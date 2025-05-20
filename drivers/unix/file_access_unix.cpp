@@ -62,8 +62,11 @@ void FileAccessUnix::check_errors(bool p_write) const {
 	}
 }
 
-Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
+Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	_close();
+
+	DEV_ASSERT(p_integrity_level != SAVE_INTEGRITY_DEFAULT); // It should have already been resolved.
+	ERR_FAIL_INDEX_V(p_integrity_level, SAVE_INTEGRITY_MAX, ERR_INVALID_PARAMETER);
 
 	path_src = p_path;
 	path = fix_path(p_path);
@@ -116,7 +119,9 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 	}
 #endif
 
-	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
+	integrity_level = p_integrity_level;
+
+	if (integrity_level > SAVE_INTEGRITY_NONE && (p_mode_flags == WRITE)) {
 		save_path = path;
 		// Create a temporary file in the same directory as the target file.
 		path = path + "-XXXXXX";

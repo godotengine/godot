@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_saver_png.h                                                  */
+/*  config_file.compat.inc                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,19 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/image.h"
-#include "core/io/resource_saver.h"
+Error ConfigFile::_save_compat_100447(const String &p_path) {
+	return save(p_path, FileAccess::SAVE_INTEGRITY_DEFAULT);
+}
 
-class ResourceSaverPNG : public ResourceFormatSaver {
-public:
-	static Error save_image(const String &p_path, const Ref<Image> &p_img, FileAccess::SaveIntegrityLevel p_integrity_level);
-	static Vector<uint8_t> save_image_to_buffer(const Ref<Image> &p_img);
+Error ConfigFile::_save_encrypted_compat_100447(const String &p_path, const Vector<uint8_t> &p_key) {
+	return save_encrypted(p_path, p_key, FileAccess::SAVE_INTEGRITY_DEFAULT);
+}
 
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) override;
-	virtual bool recognize(const Ref<Resource> &p_resource) const override;
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+Error ConfigFile::_save_encrypted_pass_compat_100447(const String &p_path, const String &p_pass) {
+	return save_encrypted_pass(p_path, p_pass, FileAccess::SAVE_INTEGRITY_DEFAULT);
+}
 
-	ResourceSaverPNG();
-};
+void ConfigFile::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("save", "path"), &ConfigFile::_save_compat_100447);
+	ClassDB::bind_compatibility_method(D_METHOD("save_encrypted", "path", "key"), &ConfigFile::_save_encrypted_compat_100447);
+	ClassDB::bind_compatibility_method(D_METHOD("save_encrypted_pass", "path", "password"), &ConfigFile::_save_encrypted_pass_compat_100447);
+}
+
+#endif

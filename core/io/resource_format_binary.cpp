@@ -1322,7 +1322,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
-		err = facw->open_internal(p_path + ".depren", FileAccess::WRITE);
+		err = facw->open_internal(p_path + ".depren", FileAccess::WRITE, FileAccess::SAVE_INTEGRITY_NONE);
 		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.depren'.", p_path));
 
 		fw = facw;
@@ -2156,7 +2156,7 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 	}
 }
 
-Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Resource::seed_scene_unique_id(p_path.hash());
 
 	Error err;
@@ -2166,9 +2166,9 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		fac.instantiate();
 		fac->configure("RSCC");
 		f = fac;
-		err = fac->open_internal(p_path, FileAccess::WRITE);
+		err = fac->open_internal(p_path, FileAccess::WRITE, FileAccess::SAVE_INTEGRITY_NONE);
 	} else {
-		f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+		f = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 	}
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create file '%s'.", p_path));
@@ -2421,7 +2421,7 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
-		err = facw->open_internal(p_path + ".uidren", FileAccess::WRITE);
+		err = facw->open_internal(p_path + ".uidren", FileAccess::WRITE, FileAccess::SAVE_INTEGRITY_NONE);
 		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.uidren'.", p_path));
 
 		fw = facw;
@@ -2513,10 +2513,10 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 	return OK;
 }
 
-Error ResourceFormatSaverBinary::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceFormatSaverBinary::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ResourceFormatSaverBinaryInstance saver;
-	return saver.save(local_path, p_resource, p_flags);
+	return saver.save(local_path, p_resource, p_flags, p_integrity_level);
 }
 
 Error ResourceFormatSaverBinary::set_uid(const String &p_path, ResourceUID::ID p_uid) {

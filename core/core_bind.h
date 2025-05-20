@@ -261,7 +261,10 @@ public:
 	bool is_keycode_unicode(char32_t p_unicode) const;
 	Key find_keycode_from_string(const String &p_code) const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_use_file_access_save_and_swap(bool p_enable);
+#endif
+	void set_default_save_integrity_level(FileAccess::SaveIntegrityLevel p_integrity_level);
 
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;

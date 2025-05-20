@@ -776,9 +776,8 @@
 		<member name="filesystem/on_save/compress_binary_resources" type="bool" setter="" getter="">
 			If [code]true[/code], uses lossless compression for binary resources.
 		</member>
-		<member name="filesystem/on_save/safe_save_on_backup_then_rename" type="bool" setter="" getter="">
-			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
-			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
+		<member name="filesystem/on_save/default_integrity_level" type="int" setter="" getter="">
+			What integrity value should the editor use by default when saving. See [method OS.set_default_save_integrity_level].
 		</member>
 		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.

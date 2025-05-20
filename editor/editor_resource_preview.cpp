@@ -238,11 +238,11 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		if (r_texture.is_valid()) {
 			// Wow it generated a preview... save cache.
 			bool has_small_texture = r_small_texture.is_valid();
-			ResourceSaver::save(r_texture, cache_base + ".png");
+			ResourceSaver::save(r_texture, cache_base + ".png", ResourceSaver::FLAG_NONE, FileAccess::SAVE_INTEGRITY_NONE);
 			if (has_small_texture) {
-				ResourceSaver::save(r_small_texture, cache_base + "_small.png");
+				ResourceSaver::save(r_small_texture, cache_base + "_small.png", ResourceSaver::FLAG_NONE, FileAccess::SAVE_INTEGRITY_NONE);
 			}
-			Ref<FileAccess> f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE, nullptr, FileAccess::SAVE_INTEGRITY_NONE);
 			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
 
 			uint64_t modtime = FileAccess::get_modified_time(p_item.path);
@@ -348,7 +348,7 @@ void EditorResourcePreview::_iterate() {
 			} else {
 				// Update modified time.
 
-				Ref<FileAccess> f2 = FileAccess::open(file, FileAccess::WRITE);
+				Ref<FileAccess> f2 = FileAccess::open(file, FileAccess::WRITE, nullptr, FileAccess::SAVE_INTEGRITY_NONE);
 				if (f2.is_null()) {
 					// Not returning as this would leave the thread hanging and would require
 					// some proper cleanup/disabling of resource preview generation.

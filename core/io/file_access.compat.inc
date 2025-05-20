@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+Ref<FileAccess> FileAccess::_open_bind_compat_100447(const String &p_path, ModeFlags p_mode_flags) {
+	return _open(p_path, p_mode_flags, SAVE_INTEGRITY_DEFAULT);
+}
+
 Ref<FileAccess> FileAccess::_open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
 	return open_encrypted(p_path, p_mode_flags, p_key, Vector<uint8_t>());
 }
@@ -91,8 +95,6 @@ void FileAccess::store_pascal_string_bind_compat_78289(const String &p_string) {
 }
 
 void FileAccess::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key"), &FileAccess::_open_encrypted_bind_compat_98918);
-
 	ClassDB::bind_compatibility_method(D_METHOD("store_8", "value"), &FileAccess::store_8_bind_compat_78289);
 	ClassDB::bind_compatibility_method(D_METHOD("store_16", "value"), &FileAccess::store_16_bind_compat_78289);
 	ClassDB::bind_compatibility_method(D_METHOD("store_32", "value"), &FileAccess::store_32_bind_compat_78289);
@@ -107,6 +109,9 @@ void FileAccess::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("store_string", "string"), &FileAccess::store_string_bind_compat_78289);
 	ClassDB::bind_compatibility_method(D_METHOD("store_var", "value", "full_objects"), &FileAccess::store_var_bind_compat_78289, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("store_pascal_string", "string"), &FileAccess::store_pascal_string_bind_compat_78289);
+
+	ClassDB::bind_compatibility_static_method("FileAccess", D_METHOD("open", "path", "flags"), &FileAccess::_open_bind_compat_100447);
+	ClassDB::bind_compatibility_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key"), &FileAccess::_open_encrypted_bind_compat_98918);
 }
 
 #endif

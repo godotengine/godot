@@ -267,3 +267,18 @@ Validate extension JSON: JSON file: Field was added in a way that breaks compati
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RichTextLabel/methods/push_underline': arguments
 
 Optional "color" argument added. Compatibility methods registered.
+
+
+GH-100447
+---------
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save_encrypted/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save_encrypted_pass/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/FileAccess/methods/open/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_exr/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_jpg/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_png/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_webp/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/ResourceFormatSaver/methods/_save/arguments': size changed value in new API, from 3 to 4.
+
+These methods now have a new argument integrity_level. Compatibility methods registered.

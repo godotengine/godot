@@ -513,7 +513,7 @@ void ShaderRD::_save_to_cache(Version *p_version, int p_group) {
 	ERR_FAIL_COND(!shader_cache_user_dir_valid);
 	String api_safe_name = String(RD::get_singleton()->get_device_api_name()).validate_filename().to_lower();
 	const String &path = _get_cache_file_path(p_version, p_group, api_safe_name, true);
-	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, nullptr, FileAccess::SAVE_INTEGRITY_SAVE_SWAP);
 	ERR_FAIL_COND(f.is_null());
 
 	PackedByteArray shader_cache_bytes = ShaderRD::save_shader_cache_bytes(group_to_variant_map[p_group], p_version->variant_data);

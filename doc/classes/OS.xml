@@ -799,6 +799,16 @@
 				On macOS (sandboxed applications only), this function clears list of user selected folders accessible to the application.
 			</description>
 		</method>
+		<method name="set_default_save_integrity_level">
+			<return type="void" />
+			<param index="0" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" />
+			<description>
+				Sets the default integrity level to use when for saving operations when the [constant FileAccess.SAVE_INTEGRITY_DEFAULT] value is requested.
+				[param integrity_level] must not be [constant FileAccess.SAVE_INTEGRITY_DEFAULT].
+				[b]Warning:[/b] Setting the default to [constant FileAccess.SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC] can cause a severe performance degradation. It's not recommended to set the default to this value.
+				[b]Note:[/b] On Windows, a value other than [constant FileAccess.SAVE_INTEGRITY_NONE] may interact negatively with certain antivirus programs. In this case, you'll have to set it to [constant FileAccess.SAVE_INTEGRITY_NONE] to prevent file locking issues.
+			</description>
+		</method>
 		<method name="set_environment" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="variable" type="String" />
@@ -826,7 +836,7 @@
 				Assigns the given name to the current thread. Returns [constant ERR_UNAVAILABLE] if unavailable on the current platform.
 			</description>
 		</method>
-		<method name="set_use_file_access_save_and_swap">
+		<method name="set_use_file_access_save_and_swap" deprecated="Use [method set_default_save_integrity_level] instead.">
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
 			<description>

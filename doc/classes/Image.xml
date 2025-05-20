@@ -469,6 +469,7 @@
 		<method name="save_dds" qualifiers="const">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
+			<param index="1" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" />
 			<description>
 				Saves the image as a DDS (DirectDraw Surface) file to [param path]. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the DDS module.
 				[b]Note:[/b] The DDS module may be disabled in certain builds, which means [method save_dds] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
@@ -485,6 +486,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="grayscale" type="bool" default="false" />
+			<param index="2" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" default="0" />
 			<description>
 				Saves the image as an EXR file to [param path]. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
 				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
@@ -502,6 +504,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="quality" type="float" default="0.75" />
+			<param index="2" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" default="0" />
 			<description>
 				Saves the image as a JPEG file to [param path] with the specified [param quality] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [param quality] values result in better-looking output at the cost of larger file sizes. Recommended [param quality] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
 				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.
@@ -518,6 +521,7 @@
 		<method name="save_png" qualifiers="const">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
+			<param index="1" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" default="0" />
 			<description>
 				Saves the image as a PNG file to the file at [param path].
 			</description>
@@ -533,6 +537,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="lossy" type="bool" default="false" />
 			<param index="2" name="quality" type="float" default="0.75" />
+			<param index="3" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" default="0" />
 			<description>
 				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.

@@ -638,7 +638,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// On save
 	_initial_set("filesystem/on_save/compress_binary_resources", true);
-	_initial_set("filesystem/on_save/safe_save_on_backup_then_rename", true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/on_save/default_integrity_level", 1, "None, Save Swap, Save Swap + Sync");
 
 	// EditorFileServer
 	_initial_set("filesystem/file_server/port", 6010);
@@ -1407,7 +1407,7 @@ void EditorSettings::save() {
 		return;
 	}
 
-	Error err = ResourceSaver::save(singleton);
+	Error err = ResourceSaver::save(singleton, "", ResourceSaver::FLAG_NONE, FileAccess::SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
 
 	if (err != OK) {
 		ERR_PRINT("Error saving editor settings to " + singleton->get_path());

@@ -130,7 +130,7 @@ Error FileAccessEncrypted::open_and_parse_password(Ref<FileAccess> p_base, const
 	return open_and_parse(p_base, key_md5, p_mode);
 }
 
-Error FileAccessEncrypted::open_internal(const String &p_path, int p_mode_flags) {
+Error FileAccessEncrypted::open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	return OK;
 }
 

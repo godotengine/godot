@@ -1531,7 +1531,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	}
 
 	String path = ProjectSettings::get_singleton()->localize_path(p_path);
-	Error err = ResourceSaver::save(p_resource, path, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
+	Error err = ResourceSaver::save(p_resource, path, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS, FileAccess::SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
 
 	if (err != OK) {
 		if (ResourceLoader::is_imported(p_resource->get_path())) {
@@ -2039,15 +2039,13 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
-	save_scene_progress->step(TTR("Saving scene"), 2);
-
 	int flg = 0;
 	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 		flg |= ResourceSaver::FLAG_COMPRESS;
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
-	err = ResourceSaver::save(sdata, p_file, flg);
+	err = ResourceSaver::save(sdata, p_file, flg, FileAccess::SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
 
 	// This needs to be emitted before saving external resources.
 	emit_signal(SNAME("scene_saved"), p_file);
@@ -5539,7 +5537,7 @@ void EditorNode::_save_editor_layout() {
 	_save_window_settings_to_config(config, "EditorWindow");
 	editor_data.get_plugin_window_layout(config);
 
-	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"), FileAccess::SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
 }
 
 void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout) {
@@ -7396,7 +7394,10 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/group_selected_nodes", TTRC("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G);
 	ED_SHORTCUT("editor/ungroup_selected_nodes", TTRC("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G);
 
-	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
+	{
+		const int integrity_level = CLAMP(int(EDITOR_GET("filesystem/on_save/default_integrity_level")) + 1, FileAccess::SAVE_INTEGRITY_NONE, FileAccess::SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
+		FileAccess::set_default_save_integrity_level(FileAccess::SaveIntegrityLevel(integrity_level));
+	}
 
 	_update_vsync_mode();
 

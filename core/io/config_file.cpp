@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "config_file.h"
+#include "config_file.compat.inc"
 
 #include "core/io/file_access_encrypted.h"
 #include "core/string/string_builder.h"
@@ -141,9 +142,9 @@ String ConfigFile::encode_to_text() const {
 	return sb.as_string();
 }
 
-Error ConfigFile::save(const String &p_path) {
+Error ConfigFile::save(const String &p_path, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 
 	if (err) {
 		return err;
@@ -152,9 +153,9 @@ Error ConfigFile::save(const String &p_path) {
 	return _internal_save(file);
 }
 
-Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
+Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_key, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Error err;
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 
 	if (err) {
 		return err;
@@ -169,9 +170,9 @@ Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_
 	return _internal_save(fae);
 }
 
-Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass) {
+Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Error err;
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 
 	if (err) {
 		return err;
@@ -322,7 +323,7 @@ void ConfigFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
 	ClassDB::bind_method(D_METHOD("parse", "data"), &ConfigFile::parse);
-	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
+	ClassDB::bind_method(D_METHOD("save", "path", "integrity_level"), &ConfigFile::save, DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
 
 	ClassDB::bind_method(D_METHOD("encode_to_text"), &ConfigFile::encode_to_text);
 
@@ -331,8 +332,8 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_encrypted", "path", "key"), &ConfigFile::load_encrypted);
 	ClassDB::bind_method(D_METHOD("load_encrypted_pass", "path", "password"), &ConfigFile::load_encrypted_pass);
 
-	ClassDB::bind_method(D_METHOD("save_encrypted", "path", "key"), &ConfigFile::save_encrypted);
-	ClassDB::bind_method(D_METHOD("save_encrypted_pass", "path", "password"), &ConfigFile::save_encrypted_pass);
+	ClassDB::bind_method(D_METHOD("save_encrypted", "path", "key", "integrity_level"), &ConfigFile::save_encrypted, DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
+	ClassDB::bind_method(D_METHOD("save_encrypted_pass", "path", "password", "integrity_level"), &ConfigFile::save_encrypted_pass, DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
 
 	ClassDB::bind_method(D_METHOD("clear"), &ConfigFile::clear);
 }

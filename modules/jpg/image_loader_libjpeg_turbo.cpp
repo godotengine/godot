@@ -170,9 +170,9 @@ static Vector<uint8_t> _jpeg_turbo_buffer_save_func(const Ref<Image> &p_img, flo
 	return output;
 }
 
-static Error _jpeg_turbo_save_func(const String &p_path, const Ref<Image> &p_img, float p_quality) {
+static Error _jpeg_turbo_save_func(const String &p_path, const Ref<Image> &p_img, float p_quality, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save JPG at path: '%s'.", p_path));
 
 	Vector<uint8_t> data = _jpeg_turbo_buffer_save_func(p_img, p_quality);

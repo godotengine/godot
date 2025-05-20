@@ -83,6 +83,16 @@ public:
 		COMPRESSION_BROTLI = Compression::MODE_BROTLI,
 	};
 
+	// These enum values only make sense when p_mode_flags == WRITE and the underlying FileAccess
+	// type supports it (e.g. regular files support it, but zip or encrypted files do not).
+	enum SaveIntegrityLevel {
+		SAVE_INTEGRITY_DEFAULT,
+		SAVE_INTEGRITY_NONE,
+		SAVE_INTEGRITY_SAVE_SWAP,
+		SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC,
+		SAVE_INTEGRITY_MAX,
+	};
+
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef Ref<FileAccess> (*CreateFunc)();
@@ -106,7 +116,7 @@ protected:
 
 	AccessType get_access_type() const;
 	virtual String fix_path(const String &p_path) const;
-	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file
+	virtual Error open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) = 0; ///< open a file
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
 	virtual uint64_t _get_access_time(const String &p_file) = 0;
 	virtual int64_t _get_size(const String &p_file) = 0;
@@ -115,6 +125,8 @@ protected:
 	static inline FileCloseFailNotify close_fail_notify = nullptr;
 
 #ifndef DISABLE_DEPRECATED
+	static Ref<FileAccess> _open_bind_compat_100447(const String &p_path, ModeFlags p_mode_flags);
+
 	static Ref<FileAccess> _open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
 
 	void store_8_bind_compat_78289(uint8_t p_dest);
@@ -136,7 +148,7 @@ protected:
 #endif
 
 private:
-	static inline bool backup_save = false;
+	static inline SaveIntegrityLevel default_save_integrity_level = FileAccess::SAVE_INTEGRITY_NONE;
 	static inline thread_local Error last_file_open_error = OK;
 
 	AccessType _access_type = ACCESS_FILESYSTEM;
@@ -146,7 +158,7 @@ private:
 		return memnew(T);
 	}
 
-	static Ref<FileAccess> _open(const String &p_path, ModeFlags p_mode_flags);
+	static Ref<FileAccess> _open(const String &p_path, ModeFlags p_mode_flags, SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT);
 
 	bool _is_temp_file = false;
 	bool _temp_keep_after_use = false;
@@ -229,11 +241,11 @@ public:
 
 	virtual bool file_exists(const String &p_name) = 0; ///< return true if a file exists
 
-	virtual Error reopen(const String &p_path, int p_mode_flags); ///< does not change the AccessType
+	virtual Error reopen(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level = SAVE_INTEGRITY_DEFAULT); ///< does not change the AccessType
 
 	static Ref<FileAccess> create(AccessType p_access); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static Ref<FileAccess> create_for_path(const String &p_path);
-	static Ref<FileAccess> open(const String &p_path, int p_mode_flags, Error *r_error = nullptr); /// Create a file access (for the current platform) this is the only portable way of accessing files.
+	static Ref<FileAccess> open(const String &p_path, int p_mode_flags, Error *r_error = nullptr, SaveIntegrityLevel p_integrity_level = SAVE_INTEGRITY_DEFAULT); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static Ref<FileAccess> create_temp(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false, Error *r_error = nullptr);
 
 	static Ref<FileAccess> open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key, const Vector<uint8_t> &p_iv = Vector<uint8_t>());
@@ -254,8 +266,8 @@ public:
 	static bool get_read_only_attribute(const String &p_file);
 	static Error set_read_only_attribute(const String &p_file, bool p_ro);
 
-	static void set_backup_save(bool p_enable) { backup_save = p_enable; }
-	static bool is_backup_save_enabled() { return backup_save; }
+	static void set_default_save_integrity_level(SaveIntegrityLevel p_integrity_level);
+	static SaveIntegrityLevel get_default_save_integrity_level() { return default_save_integrity_level; }
 
 	static String get_md5(const String &p_file);
 	static String get_sha256(const String &p_file);
@@ -274,9 +286,10 @@ public:
 
 public:
 	FileAccess() {}
-	virtual ~FileAccess();
+	virtual ~FileAccess() override;
 };
 
 VARIANT_ENUM_CAST(FileAccess::CompressionMode);
 VARIANT_ENUM_CAST(FileAccess::ModeFlags);
+VARIANT_ENUM_CAST(FileAccess::SaveIntegrityLevel);
 VARIANT_BITFIELD_CAST(FileAccess::UnixPermissionFlags);

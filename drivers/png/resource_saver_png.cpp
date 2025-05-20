@@ -35,7 +35,7 @@
 #include "drivers/png/png_driver_common.h"
 #include "scene/resources/image_texture.h"
 
-Error ResourceSaverPNG::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceSaverPNG::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Ref<ImageTexture> texture = p_resource;
 
 	ERR_FAIL_COND_V_MSG(texture.is_null(), ERR_INVALID_PARAMETER, "Can't save invalid texture as PNG.");
@@ -43,16 +43,16 @@ Error ResourceSaverPNG::save(const Ref<Resource> &p_resource, const String &p_pa
 
 	Ref<Image> img = texture->get_image();
 
-	Error err = save_image(p_path, img);
+	Error err = save_image(p_path, img, p_integrity_level);
 
 	return err;
 }
 
-Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img) {
+Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Vector<uint8_t> buffer;
 	Error err = PNGDriverCommon::image_to_png(p_img, buffer);
 	ERR_FAIL_COND_V_MSG(err, err, "Can't convert image to PNG.");
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save PNG at path: '%s'.", p_path));
 
 	const uint8_t *reader = buffer.ptr();

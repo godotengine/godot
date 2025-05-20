@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_saver_png.h                                                  */
+/*  resource_saver.compat.inc                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,19 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/image.h"
-#include "core/io/resource_saver.h"
+void ResourceFormatSaver::_bind_compatibility_methods() {
+	GDVIRTUAL_BIND_COMPAT(_save_compat_100447, "resource", "path", "flags");
+}
 
-class ResourceSaverPNG : public ResourceFormatSaver {
-public:
-	static Error save_image(const String &p_path, const Ref<Image> &p_img, FileAccess::SaveIntegrityLevel p_integrity_level);
-	static Vector<uint8_t> save_image_to_buffer(const Ref<Image> &p_img);
-
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) override;
-	virtual bool recognize(const Ref<Resource> &p_resource) const override;
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
-
-	ResourceSaverPNG();
-};
+#endif

@@ -6941,7 +6941,7 @@ void RenderingDevice::_save_pipeline_cache(void *p_data) {
 	}
 	print_verbose(vformat("Updated PSO cache (%.1f MiB)", cache_blob.size() / (1024.0f * 1024.0f)));
 
-	Ref<FileAccess> f = FileAccess::open(self->pipeline_cache_file_path, FileAccess::WRITE, nullptr);
+	Ref<FileAccess> f = FileAccess::open(self->pipeline_cache_file_path, FileAccess::WRITE, nullptr, FileAccess::SAVE_INTEGRITY_SAVE_SWAP);
 	if (f.is_valid()) {
 		f->store_buffer(cache_blob);
 	}

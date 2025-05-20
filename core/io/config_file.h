@@ -48,6 +48,14 @@ class ConfigFile : public RefCounted {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Error _save_compat_100447(const String &p_path);
+	Error _save_encrypted_compat_100447(const String &p_path, const Vector<uint8_t> &p_key);
+	Error _save_encrypted_pass_compat_100447(const String &p_path, const String &p_pass);
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	void set_value(const String &p_section, const String &p_key, const Variant &p_value);
 	Variant get_value(const String &p_section, const String &p_key, const Variant &p_default = Variant()) const;
@@ -61,7 +69,7 @@ public:
 	void erase_section(const String &p_section);
 	void erase_section_key(const String &p_section, const String &p_key);
 
-	Error save(const String &p_path);
+	Error save(const String &p_path, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT);
 	Error load(const String &p_path);
 	Error parse(const String &p_data);
 
@@ -72,6 +80,6 @@ public:
 	Error load_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
 	Error load_encrypted_pass(const String &p_path, const String &p_pass);
 
-	Error save_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
-	Error save_encrypted_pass(const String &p_path, const String &p_pass);
+	Error save_encrypted(const String &p_path, const Vector<uint8_t> &p_key, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT);
+	Error save_encrypted_pass(const String &p_path, const String &p_pass, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT);
 };

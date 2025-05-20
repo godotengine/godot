@@ -320,6 +320,7 @@
 			<return type="FileAccess" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="flags" type="int" enum="FileAccess.ModeFlags" />
+			<param index="2" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" default="0" />
 			<description>
 				Creates a new [FileAccess] object and opens the file for writing or reading, depending on the flags.
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
@@ -601,6 +602,43 @@
 		</constant>
 		<constant name="COMPRESSION_BROTLI" value="4" enum="CompressionMode">
 			Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
+		</constant>
+		<constant name="SAVE_INTEGRITY_DEFAULT" value="0" enum="SaveIntegrityLevel">
+			Use the default level globally set by [method OS.set_default_save_integrity_level].
+		</constant>
+		<constant name="SAVE_INTEGRITY_NONE" value="1" enum="SaveIntegrityLevel">
+			Make no attempts to keep the integrity of the saving operation.
+			If the app crashes while saving or the system experiences power failure/BSOD, the data will be lost. Even previously saved data will be lost or corrupted.
+			Useful for cache or temp data that can be regenerated from scratch if lost or corrupted.
+			[b]Note:[/b] The SaveIntegrityLevel flags are only relevant when the [enum FileAccess.ModeFlags] is set to [constant FileAccess.WRITE] and the underlying FileAccess type supports it (e.g. regular files support it, but zip or encrypted files do not). Otherwise it is ignored.
+		</constant>
+		<constant name="SAVE_INTEGRITY_SAVE_SWAP" value="2" enum="SaveIntegrityLevel">
+			Minor attempts to keep the integrity of the saving operation.
+			If the app crashes while saving, old data will remain safe. If the system experiences power failure/BSOD, there's still a chance that the data will be lost, even previously saved data.
+			Useful for most saving operations.
+			Integrity is kept using the following algorithm:
+			1. Write to [code]temp_file-x12354.tmp[code]
+			2. Rename [code]temp_file-x12354.tmp[/code] to [code]final.png[/code]
+			[b]Note:[/b] The SaveIntegrityLevel flags are only relevant when the [enum FileAccess.ModeFlags] is set to [constant FileAccess.WRITE] and the underlying FileAccess type supports it (e.g. regular files support it, but zip or encrypted files do not). Otherwise it is ignored.
+		</constant>
+		<constant name="SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC" value="3" enum="SaveIntegrityLevel">
+			Very strong guarantees to keep data integrity.
+			If the app crashes or system experiences power failure/BSOD, there's a very high chance data integrity will be preserved (old or new).
+			Useful for important data such as:
+			- Project files.
+			- Config files.
+			- User settings.
+			- Game saves.
+			[b]Warning:[/b] Frequent use of this flag can bring the performance of the entire system down, even on SSDs. It can also contribute to faster SSD level wear. Use with moderation.
+			[b]Note:[/b] Actual integrity will depend on various factors and cannot always be guaranteed, such as the type of file system involved or when writing to network shared drives.
+			Integrity is kept using the following algorithm:
+			1. Write to [code]temp_file.tmp[/code]
+			2. Flush disk IO
+			3. Rename [code]temp_file.tmp[/code] to [code]final.png[/code]
+			Flushing prevents the OS or disk controller from reordering the rename() on step 3 from happening before step 1 is finished.
+			[b]Note:[/b] The SaveIntegrityLevel flags are only relevant when the [enum FileAccess.ModeFlags] is set to [constant FileAccess.WRITE] and the underlying FileAccess type supports it (e.g. regular files support it, but zip or encrypted files do not). Otherwise it is ignored.
+		</constant>
+		<constant name="SAVE_INTEGRITY_MAX" value="4" enum="SaveIntegrityLevel">
 		</constant>
 		<constant name="UNIX_READ_OWNER" value="256" enum="UnixPermissionFlags" is_bitfield="true">
 			Read for owner bit.

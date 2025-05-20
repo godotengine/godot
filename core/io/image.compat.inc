@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_saver_png.h                                                  */
+/*  image.compat.inc                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,19 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/image.h"
-#include "core/io/resource_saver.h"
+Error Image::_save_png_compat_100447(const String &p_path) const {
+	return save_png(p_path, FileAccess::SAVE_INTEGRITY_DEFAULT);
+}
 
-class ResourceSaverPNG : public ResourceFormatSaver {
-public:
-	static Error save_image(const String &p_path, const Ref<Image> &p_img, FileAccess::SaveIntegrityLevel p_integrity_level);
-	static Vector<uint8_t> save_image_to_buffer(const Ref<Image> &p_img);
+Error Image::_save_jpg_compat_100447(const String &p_path, float p_quality) const {
+	return save_jpg(p_path, p_quality, FileAccess::SAVE_INTEGRITY_DEFAULT);
+}
 
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) override;
-	virtual bool recognize(const Ref<Resource> &p_resource) const override;
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+Error Image::_save_dds_compat_100447(const String &p_path) const {
+	return save_dds(p_path, FileAccess::SAVE_INTEGRITY_DEFAULT);
+}
 
-	ResourceSaverPNG();
-};
+Error Image::_save_exr_compat_100447(const String &p_path, bool p_grayscale) const {
+	return save_exr(p_path, p_grayscale, FileAccess::SAVE_INTEGRITY_DEFAULT);
+}
+
+Error Image::_save_webp_compat_100447(const String &p_path, const bool p_lossy, const float p_quality) const {
+	return save_webp(p_path, p_lossy, p_quality, FileAccess::SAVE_INTEGRITY_DEFAULT);
+}
+
+void Image::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("save_png", "path"), &Image::_save_png_compat_100447);
+	ClassDB::bind_compatibility_method(D_METHOD("save_jpg", "path", "quality"), &Image::_save_jpg_compat_100447, DEFVAL(0.75));
+	ClassDB::bind_compatibility_method(D_METHOD("save_dds", "path"), &Image::_save_dds_compat_100447);
+	ClassDB::bind_compatibility_method(D_METHOD("save_exr", "path", "grayscale"), &Image::_save_exr_compat_100447, DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("save_webp", "path", "lossy", "quality"), &Image::_save_webp_compat_100447, DEFVAL(false), DEFVAL(0.75f));
+}
+
+#endif

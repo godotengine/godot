@@ -169,7 +169,7 @@ class FileAccessPack : public FileAccess {
 	uint64_t off;
 
 	Ref<FileAccess> f;
-	virtual Error open_internal(const String &p_path, int p_mode_flags) override;
+	virtual Error open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) override;
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
 	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
 	virtual int64_t _get_size(const String &p_file) override { return -1; }
