@@ -2479,6 +2479,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 	options.languageVersion = binary_data.get_msl_version();
 	HashMap<ShaderStage, MDLibrary *> libraries;
 
+	r_name = String(binary_data.shader_name.ptr());
+
 	for (ShaderStageData &shader_data : binary_data.stages) {
 		r_shader_desc.stages.push_back(shader_data.stage);
 
@@ -2535,7 +2537,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 			su.stages = (ShaderStage)(uint8_t)uniform.stages;
 			uset.write[i] = su;
 
-			UniformInfo ui;
+			UniformInfo &ui = set.uniforms[i];
 			ui.binding = uniform.binding;
 			ui.active_stages = uniform.active_stages;
 			for (KeyValue<RDC::ShaderStage, BindingInfo> &kv : uniform.bindings) {
@@ -2544,7 +2546,6 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 			for (KeyValue<RDC::ShaderStage, BindingInfo> &kv : uniform.bindings_secondary) {
 				ui.bindings_secondary.insert(kv.key, kv.value);
 			}
-			set.uniforms[i] = ui;
 		}
 	}
 	for (UniformSetData &uniform_set : binary_data.uniforms) {
@@ -3550,17 +3551,22 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 	desc.alphaToCoverageEnabled = p_multisample_state.enable_alpha_to_coverage;
 	desc.alphaToOneEnabled = p_multisample_state.enable_alpha_to_one;
 
-	// Depth stencil.
-	if (p_depth_stencil_state.enable_depth_test && desc.depthAttachmentPixelFormat != MTLPixelFormatInvalid) {
-		pipeline->raster_state.depth_test.enabled = true;
+	// Depth buffer.
+	bool depth_enabled = p_depth_stencil_state.enable_depth_test && desc.depthAttachmentPixelFormat != MTLPixelFormatInvalid;
+	bool stencil_enabled = p_depth_stencil_state.enable_stencil && desc.stencilAttachmentPixelFormat != MTLPixelFormatInvalid;
+
+	if (depth_enabled || stencil_enabled) {
 		MTLDepthStencilDescriptor *ds_desc = [MTLDepthStencilDescriptor new];
+
+		pipeline->raster_state.depth_test.enabled = depth_enabled;
 		ds_desc.depthWriteEnabled = p_depth_stencil_state.enable_depth_write;
 		ds_desc.depthCompareFunction = COMPARE_OPERATORS[p_depth_stencil_state.depth_compare_operator];
 		if (p_depth_stencil_state.enable_depth_range) {
 			WARN_PRINT("unsupported: depth range");
 		}
 
-		if (p_depth_stencil_state.enable_stencil) {
+		if (stencil_enabled) {
+			pipeline->raster_state.stencil.enabled = true;
 			pipeline->raster_state.stencil.front_reference = p_depth_stencil_state.front_op.reference;
 			pipeline->raster_state.stencil.back_reference = p_depth_stencil_state.back_op.reference;
 
