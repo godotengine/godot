@@ -4,3 +4,11 @@ from misc.utility.scons_hints import *
 Import("env")
 
 env.add_source_files(env.servers_sources, "*.cpp")
+
+# Also requires libogg, libtheora and libvorbis.
+if env["builtin_libogg"]:
+    env.Prepend(CPPPATH=["#thirdparty/libogg"])
+if env["builtin_libtheora"]:
+    env.Prepend(CPPPATH=["#thirdparty/libtheora", "#thirdparty/misc"])
+if env["builtin_libvorbis"]:
+    env.Prepend(CPPPATH=["#thirdparty/libvorbis"])
