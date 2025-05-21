@@ -446,7 +446,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 			_pressed();
 		}
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 
 		if (shortcut_feedback && is_inside_tree()) {
 			if (shortcut_feedback_timer == nullptr) {

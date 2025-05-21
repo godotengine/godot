@@ -241,7 +241,7 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	// Tool selection was successful, accept the event to stop propagation.
-	accept_event();
+	get_viewport()->set_input_as_handled();
 }
 
 void SceneTreeDock::_scene_tree_gui_input(Ref<InputEvent> p_event) {
@@ -254,7 +254,7 @@ void SceneTreeDock::_scene_tree_gui_input(Ref<InputEvent> p_event) {
 	if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 		filter->grab_focus();
 		filter->select_all();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 
@@ -4034,7 +4034,7 @@ void SceneTreeDock::_filter_gui_input(const Ref<InputEvent> &p_event) {
 		filter_quick_menu->reset_size();
 		filter_quick_menu->popup();
 		filter_quick_menu->grab_focus();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 

@@ -191,13 +191,13 @@ void ColorPickerShape::handle_cursor_editing(const Ref<InputEvent> &p_event, Con
 	if (p_event->is_action_pressed("ui_accept", false, true)) {
 		cursor_editing = !cursor_editing;
 		p_control->queue_redraw();
-		color_picker->accept_event();
+		color_picker->get_viewport()->set_input_as_handled();
 	}
 
 	if (cursor_editing && p_event->is_action_pressed("ui_cancel", false, true)) {
 		cursor_editing = false;
 		p_control->queue_redraw();
-		color_picker->accept_event();
+		color_picker->get_viewport()->set_input_as_handled();
 	}
 
 	if (!cursor_editing) {
@@ -210,7 +210,7 @@ void ColorPickerShape::handle_cursor_editing(const Ref<InputEvent> &p_event, Con
 	if (p_event->is_action_pressed("ui_left", true) || p_event->is_action_pressed("ui_right", true) || p_event->is_action_pressed("ui_up", true) || p_event->is_action_pressed("ui_down", true)) {
 		if (is_joypad_event) {
 			if (color_picker->is_processing_internal()) {
-				color_picker->accept_event();
+				color_picker->get_viewport()->set_input_as_handled();
 				return;
 			}
 			color_picker->set_process_internal(true);
@@ -220,7 +220,7 @@ void ColorPickerShape::handle_cursor_editing(const Ref<InputEvent> &p_event, Con
 				input->is_action_pressed("ui_right") - input->is_action_pressed("ui_left"),
 				input->is_action_pressed("ui_down") - input->is_action_pressed("ui_up"));
 		update_cursor(color_change_vector, p_event->is_echo());
-		color_picker->accept_event();
+		color_picker->get_viewport()->set_input_as_handled();
 	}
 }
 
@@ -387,12 +387,12 @@ void ColorPickerShapeWheel::_wheel_input(const Ref<InputEvent> &p_event) {
 		if (!wheel_focused && p_event->is_action_pressed("ui_down", true)) {
 			wheel_focused = true;
 			wheel_uv->queue_redraw();
-			color_picker->accept_event();
+			color_picker->get_viewport()->set_input_as_handled();
 			return;
 		} else if (wheel_focused && p_event->is_action_pressed("ui_up", true)) {
 			wheel_focused = false;
 			wheel_uv->queue_redraw();
-			color_picker->accept_event();
+			color_picker->get_viewport()->set_input_as_handled();
 			return;
 		}
 	}

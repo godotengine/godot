@@ -2661,12 +2661,6 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	}
 }
 
-void Viewport::_gui_accept_event() {
-	if (is_inside_tree()) {
-		set_input_as_handled();
-	}
-}
-
 void Viewport::_drop_mouse_focus() {
 	Control *c = gui.mouse_focus;
 	BitField<MouseButtonMask> mask = gui.mouse_focus_mask;

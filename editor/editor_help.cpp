@@ -4935,7 +4935,7 @@ void FindBar::input(const Ref<InputEvent> &p_event) {
 
 		if (rich_text_label->has_focus() || (focus_owner && is_ancestor_of(focus_owner))) {
 			_hide_bar();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

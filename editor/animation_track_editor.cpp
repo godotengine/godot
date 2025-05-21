@@ -1892,7 +1892,7 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (panner->gui_input(p_event, get_global_rect())) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -1902,14 +1902,14 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (track_edit) {
 			track_edit->get_editor()->goto_prev_step(true);
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 		if (track_edit) {
 			track_edit->get_editor()->goto_next_step(true);
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && hsize_rect.has_point(mb->get_position())) {
@@ -2976,33 +2976,33 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (!read_only) {
 				emit_signal(SNAME("duplicate_request"), -1.0, false);
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 		if (ED_IS_SHORTCUT("animation_editor/cut_selected_keys", p_event)) {
 			if (!read_only) {
 				emit_signal(SNAME("cut_request"));
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 		if (ED_IS_SHORTCUT("animation_editor/copy_selected_keys", p_event)) {
 			if (!read_only) {
 				emit_signal(SNAME("copy_request"));
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		if (ED_IS_SHORTCUT("animation_editor/paste_keys", p_event)) {
 			if (!read_only) {
 				emit_signal(SNAME("paste_request"), -1.0, false);
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		if (ED_IS_SHORTCUT("animation_editor/delete_selection", p_event)) {
 			if (!read_only) {
 				emit_signal(SNAME("delete_request"));
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 
@@ -3024,7 +3024,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				undo_redo->add_undo_method(animation.ptr(), "track_set_enabled", track, animation->track_is_enabled(track));
 				undo_redo->commit_action();
 				queue_redraw();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 
 			if (icon_rect.has_point(pos)) {
@@ -3039,7 +3039,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			// Don't overlap track keys if they start at 0.
 			if (path_rect.has_point(pos + Size2(type_icon->get_width(), 0))) {
 				clicking_on_name = true;
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 
 			if (update_mode_rect.has_point(pos)) {
@@ -3065,7 +3065,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				Vector2 popup_pos = get_screen_position() + update_mode_rect.position + Vector2(0, update_mode_rect.size.height);
 				menu->set_position(popup_pos);
 				menu->popup();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 
 			if (interp_mode_rect.has_point(pos)) {
@@ -3114,7 +3114,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
 				menu->set_position(popup_pos);
 				menu->popup();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 
 			if (loop_wrap_rect.has_point(pos)) {
@@ -3134,18 +3134,18 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				Vector2 popup_pos = get_screen_position() + loop_wrap_rect.position + Vector2(0, loop_wrap_rect.size.height);
 				menu->set_position(popup_pos);
 				menu->popup();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 
 			if (remove_rect.has_point(pos)) {
 				emit_signal(SNAME("remove_request"), track);
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}
 
 		if (_try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), true)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 
@@ -3192,7 +3192,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->popup();
 
 				insert_at_pos = offset + timeline->get_value();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		}
 	}
@@ -6098,7 +6098,7 @@ void AnimationTrackEditor::_box_selection_draw() {
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	if (!box_selecting) {
 		if (panner->gui_input(p_event, scroll->get_global_rect())) {
-			scroll->accept_event();
+			scroll->get_viewport()->set_input_as_handled();
 			return;
 		}
 	}
@@ -8681,7 +8681,7 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Point2 pos = mb->get_position();
 		if (_try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), true)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (!_is_ui_pos_in_current_section(pos)) {
 			_clear_selection_for_anim(animation);
 		}
@@ -8693,25 +8693,25 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (moving_selection && moving_selection_effective) {
 				if (Math::abs(moving_selection_offset) > CMP_EPSILON) {
 					_move_selection_commit();
-					accept_event(); // So play position doesn't snap to the end of move selection.
+					get_viewport()->set_input_as_handled(); // So play position doesn't snap to the end of move selection.
 				}
 			} else if (select_single_attempt) {
 				call_deferred("_select_key", select_single_attempt, true);
 
 				// First select click should not affect play position.
 				if (!selection.has(select_single_attempt)) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				} else {
 					// Second click and onwards should snap to marker time.
 					double ofs = animation->get_marker_time(select_single_attempt);
 					timeline->set_play_position(ofs);
 					timeline->emit_signal(SNAME("timeline_changed"), ofs, mb->is_alt_pressed());
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 			} else {
 				// First select click should not affect play position.
 				if (!selection.has(select_single_attempt)) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 			}
 
@@ -8752,7 +8752,7 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->popup();
 
 				insert_at_pos = offset + timeline->get_value();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		}
 	}

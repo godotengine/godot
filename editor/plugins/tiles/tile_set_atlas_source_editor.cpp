@@ -1703,7 +1703,7 @@ void TileSetAtlasSourceEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
 		if (tools_button_group->get_pressed_button() == tool_select_button && !selection.is_empty()) {
 			_menu_option(TILE_DELETE);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

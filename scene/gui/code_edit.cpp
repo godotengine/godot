@@ -300,7 +300,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 			code_completion_pan_offset = 0;
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -314,21 +314,21 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		if (is_code_completion_scroll_pressed && mb->get_button_index() == MouseButton::LEFT) {
 			is_code_completion_scroll_pressed = false;
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			queue_redraw();
 			return;
 		}
 
 		if (is_code_completion_drag_started && !mb->is_pressed()) {
 			is_code_completion_drag_started = false;
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			queue_redraw();
 			return;
 		}
 
 		if (code_completion_active && code_completion_rect.has_point(mb->get_position())) {
 			if (!mb->is_pressed()) {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			is_code_completion_drag_started = true;
@@ -366,11 +366,11 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 			}
 
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		} else if (code_completion_active && code_completion_scroll_rect.has_point(mb->get_position())) {
 			if (mb->get_button_index() != MouseButton::LEFT) {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 
@@ -382,7 +382,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				queue_redraw();
 			}
 
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -461,26 +461,26 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
 		if (is_code_completion_scroll_hovered != scroll_hovered) {
 			is_code_completion_scroll_hovered = scroll_hovered;
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			queue_redraw();
 		}
 
 		if (is_code_completion_scroll_pressed) {
 			_update_scroll_selected_line(mpos.y);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			queue_redraw();
 			return;
 		}
 
 		if (code_completion_active && code_completion_rect.has_point(mm->get_position())) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 	}
 
 	Ref<InputEventKey> k = p_gui_input;
 	if (TextEdit::alt_input(p_gui_input)) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -522,7 +522,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	/* AUTO-COMPLETE */
 	if (code_completion_enabled && k->is_action("ui_text_completion_query", true)) {
 		request_code_completion(true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -536,7 +536,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			code_completion_force_item_center = -1;
 			code_completion_pan_offset = 0.0f;
 			queue_redraw();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_down", true)) {
@@ -548,7 +548,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			code_completion_force_item_center = -1;
 			code_completion_pan_offset = 0.0f;
 			queue_redraw();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_page_up", true)) {
@@ -556,7 +556,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			code_completion_force_item_center = -1;
 			code_completion_pan_offset = 0.0f;
 			queue_redraw();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_page_down", true)) {
@@ -564,7 +564,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			code_completion_force_item_center = -1;
 			code_completion_pan_offset = 0.0f;
 			queue_redraw();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
@@ -572,18 +572,18 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
 			confirm_code_completion(k->is_action("ui_text_completion_replace", true));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_cancel", true)) {
 			cancel_code_completion();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_backspace", true)) {
 			backspace();
 			_filter_code_completion_candidates_impl();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -597,7 +597,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	/* MISC */
 	if (!code_hint.is_empty() && k->is_action("ui_cancel", true)) {
 		set_code_hint("");
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (allow_unicode_handling && k->get_unicode() == ')') {
@@ -607,30 +607,30 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	/* Indentation */
 	if (k->is_action("ui_text_indent", true)) {
 		do_indent();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
 	if (k->is_action("ui_text_dedent", true)) {
 		unindent_lines();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
 	// Override new line actions, for auto indent.
 	if (k->is_action("ui_text_newline_above", true)) {
 		_new_line(false, true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_newline_blank", true)) {
 		_new_line(false);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_newline", true)) {
 		_new_line();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 

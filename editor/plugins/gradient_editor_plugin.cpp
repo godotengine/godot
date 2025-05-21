@@ -248,7 +248,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		grabbing = GRAB_NONE;
 		hovered_index = -1;
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -277,7 +277,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			grabbing = GRAB_NONE;
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		// Select point.
@@ -289,12 +289,12 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (!mb->is_double_click()) {
 					_show_color_picker();
 				}
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			} else if (mb->is_double_click()) {
 				set_selected_index(_get_point_at(adjusted_mb_x));
 				_show_color_picker();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 

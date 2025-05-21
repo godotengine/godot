@@ -651,7 +651,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		if (mode_buttons_group->get_pressed_button() == transform_mode_button) {
 			if (transform_mode_button->get_shortcut().is_valid() && transform_mode_button->get_shortcut()->matches_event(p_event)) {
 				select_mode_button->set_pressed(true);
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
 			return EditorPlugin::AFTER_GUI_INPUT_PASS;
@@ -669,7 +669,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					// Can't press a button without toggle mode, so just emit the signal directly.
 					b->emit_signal(SceneStringName(pressed));
 				}
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
 		}
@@ -693,13 +693,13 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		// Options menu shortcuts:
 		Ref<Shortcut> ed_shortcut = ED_GET_SHORTCUT("grid_map/previous_floor");
 		if (ed_shortcut.is_valid() && ed_shortcut->matches_event(p_event)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			_menu_option(MENU_OPTION_PREV_LEVEL);
 			return EditorPlugin::AFTER_GUI_INPUT_STOP;
 		}
 		ed_shortcut = ED_GET_SHORTCUT("grid_map/next_floor");
 		if (ed_shortcut.is_valid() && ed_shortcut->matches_event(p_event)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			_menu_option(MENU_OPTION_NEXT_LEVEL);
 			return EditorPlugin::AFTER_GUI_INPUT_STOP;
 		}
@@ -707,7 +707,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			const Ref<Shortcut> &shortcut = options->get_popup()->get_item_shortcut(i);
 			if (shortcut.is_valid() && shortcut->matches_event(p_event)) {
 				// Consume input to avoid conflicts with other plugins.
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				_menu_option(options->get_popup()->get_item_id(i));
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
@@ -881,7 +881,7 @@ void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid()) {
 		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
 			mesh_library_palette->gui_input(key);
-			search_box->accept_event();
+			search_box->get_viewport()->set_input_as_handled();
 		}
 	}
 }

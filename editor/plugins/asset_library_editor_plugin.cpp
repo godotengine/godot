@@ -737,7 +737,7 @@ void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (key->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F)) && is_visible_in_tree()) {
 			filter->grab_focus();
 			filter->select_all();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

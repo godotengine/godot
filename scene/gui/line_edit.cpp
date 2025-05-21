@@ -387,7 +387,7 @@ void LineEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 			if (text.length() != prev_len) {
 				_text_changed();
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }
@@ -417,7 +417,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal(SNAME("editing_toggled"), true);
 			}
 
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -444,7 +444,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 					text_changed_dirty = true;
 				}
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -459,7 +459,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (b->is_pressed()) {
 			apply_ime();
 
-			accept_event(); // Don't pass event further when clicked on text field.
+			get_viewport()->set_input_as_handled(); // Don't pass event further when clicked on text field.
 			if (editable && !text.is_empty() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
 				clear_button_status.pressing_inside = true;
@@ -631,7 +631,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (editable && !editing && k->is_action_pressed("ui_text_submit", false)) {
 		edit();
 		emit_signal(SNAME("editing_toggled"), true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -645,7 +645,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			menu->popup();
 			menu->grab_focus();
 
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 	}
@@ -653,13 +653,13 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (is_shortcut_keys_enabled()) {
 		if (k->is_action("ui_copy", true)) {
 			copy_text();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		if (k->is_action("ui_text_select_all", true)) {
 			select();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -669,7 +669,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				copy_text();
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 	}
@@ -690,7 +690,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		ime_selection = Vector2i(0, -1);
 		_shape();
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -706,7 +706,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		ime_selection = Vector2i(0, -1);
 		_shape();
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -722,7 +722,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		ime_selection = Vector2i(0, -1);
 		_shape();
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -738,7 +738,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		ime_selection = Vector2i(0, -1);
 		_shape();
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -809,7 +809,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		ime_selection = Vector2i(0, -1);
 		_shape();
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -849,7 +849,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			_shape();
 		}
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -862,7 +862,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		ime_selection = Vector2i();
 		_shape();
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -882,7 +882,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			emit_signal(SNAME("editing_toggled"), false);
 		}
 
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -892,27 +892,27 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			emit_signal(SNAME("editing_toggled"), false);
 		}
 
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
 	if (is_shortcut_keys_enabled()) {
 		if (k->is_action("ui_paste", true)) {
 			paste_text();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// Undo / Redo
 		if (k->is_action("ui_undo", true)) {
 			undo();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		if (k->is_action("ui_redo", true)) {
 			redo();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 	}
@@ -920,34 +920,34 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	// BACKSPACE
 	if (k->is_action("ui_text_backspace_all_to_left", true)) {
 		_backspace(false, true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_backspace_word", true)) {
 		_backspace(true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_backspace", true)) {
 		_backspace();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
 	// DELETE
 	if (k->is_action("ui_text_delete_all_to_right", true)) {
 		_delete(false, true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_delete_word", true)) {
 		_delete(true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_delete", true)) {
 		_delete();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -960,41 +960,41 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (k->is_action("ui_text_caret_word_left", true)) {
 		_move_caret_left(shift_pressed, true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_caret_left", true)) {
 		_move_caret_left(shift_pressed);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_caret_word_right", true)) {
 		_move_caret_right(shift_pressed, true);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_caret_right", true)) {
 		_move_caret_right(shift_pressed, false);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
 	// Up = Home, Down = End
 	if (k->is_action("ui_text_caret_up", true) || k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_page_up", true)) {
 		_move_caret_start(shift_pressed);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (k->is_action("ui_text_caret_down", true) || k->is_action("ui_text_caret_line_end", true) || k->is_action("ui_text_caret_page_down", true)) {
 		_move_caret_end(shift_pressed);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
 	// Misc
 	if (k->is_action("ui_swap_input_direction", true)) {
 		_swap_current_input_direction();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -1018,7 +1018,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				text_changed_dirty = true;
 			}
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 }

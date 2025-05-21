@@ -446,7 +446,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 	}
 
 	if (panner->gui_input(p_input, canvas->get_global_rect())) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 

@@ -462,7 +462,6 @@ private:
 	void _gui_control_grab_focus(Control *p_control);
 	void _gui_grab_click_focus(Control *p_control);
 	void _post_gui_grab_click_focus();
-	void _gui_accept_event();
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 

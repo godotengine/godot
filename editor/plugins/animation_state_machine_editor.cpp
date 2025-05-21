@@ -143,7 +143,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (!read_only) {
 				_erase_selected();
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 

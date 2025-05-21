@@ -2181,7 +2181,7 @@ void ThemeTypeDialog::_type_filter_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid()) {
 		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
 			add_type_options->gui_input(key);
-			add_type_filter->accept_event();
+			add_type_filter->get_viewport()->set_input_as_handled();
 		}
 	}
 }

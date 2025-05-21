@@ -1196,7 +1196,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (keycode_handled) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

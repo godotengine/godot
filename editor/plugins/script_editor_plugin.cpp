@@ -344,7 +344,7 @@ void ScriptEditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid()) {
 		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
 			search_options->gui_input(key);
-			search_box->accept_event();
+			search_box->get_viewport()->set_input_as_handled();
 		}
 	}
 }
@@ -3342,7 +3342,7 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			_go_to_tab(script_list->get_item_metadata(next_tab));
 			_update_script_names();
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 	if (ED_IS_SHORTCUT("script_editor/prev_script", p_event)) {
 		if (script_list->get_item_count() > 1) {
@@ -3351,15 +3351,15 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			_go_to_tab(script_list->get_item_metadata(next_tab));
 			_update_script_names();
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 	if (ED_IS_SHORTCUT("script_editor/window_move_up", p_event)) {
 		_menu_option(FILE_MENU_MOVE_UP);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
 		_menu_option(FILE_MENU_MOVE_DOWN);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_event);
@@ -3370,7 +3370,7 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			resource = current->get_edited_resource();
 		}
 		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, resource);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 

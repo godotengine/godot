@@ -804,7 +804,7 @@ void GroupsEditor::_groups_gui_input(Ref<InputEvent> p_event) {
 			return;
 		}
 
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 

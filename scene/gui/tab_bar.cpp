@@ -316,7 +316,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				set_process_internal(true);
 			}
 			if (is_layout_rtl() ? select_previous_available() : select_next_available()) {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		} else if (p_event->is_action("ui_left", true)) {
 			if (is_joypad_event) {
@@ -326,7 +326,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				set_process_internal(true);
 			}
 			if (is_layout_rtl() ? select_next_available() : select_previous_available()) {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		}
 	}

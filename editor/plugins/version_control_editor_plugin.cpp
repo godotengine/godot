@@ -888,7 +888,7 @@ void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent>
 
 			_commit();
 
-			commit_message->accept_event();
+			commit_message->get_viewport()->set_input_as_handled();
 		}
 	}
 }

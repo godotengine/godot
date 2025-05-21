@@ -333,7 +333,7 @@ void TileMapLayerEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<Inpu
 		undo_redo->add_do_method(*tile_set, "add_pattern", tile_map_clipboard, new_pattern_index);
 		undo_redo->add_undo_method(*tile_set, "remove_pattern", new_pattern_index);
 		undo_redo->commit_action();
-		patterns_item_list->accept_event();
+		patterns_item_list->get_viewport()->set_input_as_handled();
 	}
 
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
@@ -346,7 +346,7 @@ void TileMapLayerEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<Inpu
 			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);
 		}
 		undo_redo->commit_action();
-		patterns_item_list->accept_event();
+		patterns_item_list->get_viewport()->set_input_as_handled();
 	}
 }
 

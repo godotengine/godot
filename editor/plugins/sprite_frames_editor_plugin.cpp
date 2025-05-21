@@ -263,11 +263,11 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_sheet_zoom_on_position(scale_ratio, mb->get_position());
 			// Don't scroll up after zooming in.
-			split_sheet_scroll->accept_event();
+			split_sheet_scroll->get_viewport()->set_input_as_handled();
 		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_sheet_zoom_on_position(1 / scale_ratio, mb->get_position());
 			// Don't scroll down after zooming out.
-			split_sheet_scroll->accept_event();
+			split_sheet_scroll->get_viewport()->set_input_as_handled();
 		}
 	}
 
@@ -1318,11 +1318,11 @@ void SpriteFramesEditor::_frame_list_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_zoom_in();
 			// Don't scroll up after zooming in.
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_zoom_out();
 			// Don't scroll down after zooming out.
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			Point2 pos = mb->get_position();
 			right_clicked_frame = frame_list->get_item_at_position(pos, true);

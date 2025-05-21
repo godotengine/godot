@@ -453,7 +453,7 @@ void ScreenSelect::_handle_mouse_shortcut(const Ref<InputEvent> &p_event) {
 	if (mouse_button.is_valid()) {
 		if (mouse_button->is_pressed() && mouse_button->get_button_index() == MouseButton::LEFT) {
 			_emit_screen_signal(get_window()->get_current_screen());
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

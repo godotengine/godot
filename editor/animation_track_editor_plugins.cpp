@@ -1087,7 +1087,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -1102,7 +1102,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 		len_resizing_from_px = mb->get_position().x;
 		len_resizing_rel = 0;
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -1145,7 +1145,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 		len_resizing_index = -1;
 		len_resizing = false;
 		queue_redraw();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 

@@ -530,14 +530,14 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 		panning += pan_gesture->get_delta() * 8;
 		drag_last_pos = Vector2();
 		button_center_view->set_disabled(panning.is_zero_approx());
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
 		editor_zoom_widget->set_zoom(editor_zoom_widget->get_zoom() * magnify_gesture->get_factor());
 		_zoom_changed();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -570,11 +570,11 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_command_or_control_pressed()) {
 			editor_zoom_widget->set_zoom_by_increments(1);
 			_zoom_changed();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_command_or_control_pressed()) {
 			editor_zoom_widget->set_zoom_by_increments(-1);
 			_zoom_changed();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (tools_button_group->get_pressed_button() != button_create) {
@@ -2237,7 +2237,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 				}
 			}
 			drag_last_pos = mm->get_position();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (drag_type == DRAG_TYPE_PAINT_TERRAIN_BITS) {
 			int terrain_set = Dictionary(drag_painted_value)["terrain_set"];
 			int terrain = Dictionary(drag_painted_value)["terrain"];
@@ -2287,7 +2287,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 				}
 			}
 			drag_last_pos = mm->get_position();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 
@@ -2322,7 +2322,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						terrain_set_property_editor->update_property();
 						_update_terrain_selector();
 						picker_button->set_pressed(false);
-						accept_event();
+						get_viewport()->set_input_as_handled();
 					}
 				} else {
 					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position());
@@ -2373,7 +2373,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 							}
 							drag_last_pos = mb->get_position();
 						}
-						accept_event();
+						get_viewport()->set_input_as_handled();
 					} else if (tile_data->get_terrain_set() == terrain_set) {
 						// Paint terrain bits.
 						if (mb->get_button_index() == MouseButton::RIGHT) {
@@ -2435,7 +2435,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 							}
 							drag_last_pos = mb->get_position();
 						}
-						accept_event();
+						get_viewport()->set_input_as_handled();
 					}
 				}
 			} else {
@@ -2478,7 +2478,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					}
 					undo_redo->commit_action(true);
 					drag_type = DRAG_TYPE_NONE;
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				} else if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET) {
 					undo_redo->create_action(TTR("Painting Terrain Set"));
 					for (KeyValue<TileMapCell, Variant> &E : drag_modified) {
@@ -2499,7 +2499,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					}
 					undo_redo->commit_action(false);
 					drag_type = DRAG_TYPE_NONE;
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				} else if (drag_type == DRAG_TYPE_PAINT_TERRAIN_BITS) {
 					Dictionary painted = Dictionary(drag_painted_value);
 					int terrain_set = int(painted["terrain_set"]);
@@ -2523,7 +2523,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					}
 					undo_redo->commit_action(false);
 					drag_type = DRAG_TYPE_NONE;
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				} else if (drag_type == DRAG_TYPE_PAINT_TERRAIN_BITS_RECT) {
 					Dictionary painted = Dictionary(drag_painted_value);
 					int terrain_set = int(painted["terrain_set"]);
@@ -2592,7 +2592,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					}
 					undo_redo->commit_action(true);
 					drag_type = DRAG_TYPE_NONE;
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 			}
 		}
@@ -2629,7 +2629,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 			}
 
 			drag_last_pos = mm->get_position();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (drag_type == DRAG_TYPE_PAINT_TERRAIN_BITS) {
 			Dictionary painted = Dictionary(drag_painted_value);
 			int terrain_set = int(painted["terrain_set"]);
@@ -2682,7 +2682,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 				}
 			}
 			drag_last_pos = mm->get_position();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 
@@ -2720,7 +2720,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 						terrain_set_property_editor->update_property();
 						_update_terrain_selector();
 						picker_button->set_pressed(false);
-						accept_event();
+						get_viewport()->set_input_as_handled();
 					}
 				} else {
 					int terrain_set = int(dummy_object->get("terrain_set"));
@@ -2755,7 +2755,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 								tile_data->set_terrain_set(drag_painted_value);
 							}
 							drag_last_pos = mb->get_position();
-							accept_event();
+							get_viewport()->set_input_as_handled();
 						} else if (tile_data->get_terrain_set() == terrain_set) {
 							// Paint terrain bits.
 							if (mb->get_button_index() == MouseButton::RIGHT) {
@@ -2806,7 +2806,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 								}
 							}
 							drag_last_pos = mb->get_position();
-							accept_event();
+							get_viewport()->set_input_as_handled();
 						}
 					}
 				}
@@ -2829,7 +2829,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 					}
 					undo_redo->commit_action(false);
 					drag_type = DRAG_TYPE_NONE;
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				} else if (drag_type == DRAG_TYPE_PAINT_TERRAIN_BITS) {
 					Dictionary painted = Dictionary(drag_painted_value);
 					int terrain_set = int(painted["terrain_set"]);
@@ -2853,7 +2853,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 					}
 					undo_redo->commit_action(false);
 					drag_type = DRAG_TYPE_NONE;
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 			}
 		}

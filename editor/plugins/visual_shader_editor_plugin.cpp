@@ -5090,7 +5090,7 @@ void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid()) {
 		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
 			members->gui_input(key);
-			node_filter->accept_event();
+			node_filter->get_viewport()->set_input_as_handled();
 		}
 	}
 }

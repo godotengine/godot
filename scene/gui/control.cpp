@@ -1868,12 +1868,14 @@ void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
 void Control::gui_input(const Ref<InputEvent> &p_event) {
 }
 
+#ifndef DISABLE_DEPRECATED
 void Control::accept_event() {
-	ERR_MAIN_THREAD_GUARD;
-	if (is_inside_tree()) {
-		get_viewport()->_gui_accept_event();
+	Viewport *v = get_viewport();
+	if (v) {
+		v->set_input_as_handled();
 	}
 }
+#endif // DISABLE_DEPRECATED
 
 bool Control::has_point(const Point2 &p_point) const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -3814,7 +3816,9 @@ void Control::_notification(int p_notification) {
 }
 
 void Control::_bind_methods() {
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
+#endif // DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &Control::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"), &Control::get_combined_minimum_size);
 
