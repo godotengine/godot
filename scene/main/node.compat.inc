@@ -34,8 +34,13 @@ void Node::_set_name_bind_compat_76560(const String &p_name) {
 	set_name(p_name);
 }
 
+Node *Node::_duplicate_bind_compat_57121(int p_flags) const {
+	return duplicate(p_flags);
+}
+
 void Node::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("set_name", "name"), &Node::_set_name_bind_compat_76560);
+	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::_duplicate_bind_compat_57121, DEFVAL(DUPLICATE_USE_INSTANTIATION | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
 }
 
 #endif

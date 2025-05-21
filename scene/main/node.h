@@ -98,8 +98,9 @@ public:
 		DUPLICATE_GROUPS = 2,
 		DUPLICATE_SCRIPTS = 4,
 		DUPLICATE_USE_INSTANTIATION = 8,
+		DUPLICATE_INTERNAL_STATE = 16,
 #ifdef TOOLS_ENABLED
-		DUPLICATE_FROM_EDITOR = 16,
+		DUPLICATE_FROM_EDITOR = 32,
 #endif
 	};
 
@@ -412,6 +413,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _set_name_bind_compat_76560(const String &p_name);
+	Node *_duplicate_bind_compat_57121(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 	static void _bind_compatibility_methods();
 #endif
 
