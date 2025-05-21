@@ -1572,14 +1572,14 @@ String ResourceFormatLoaderJSON::get_resource_type(const String &p_path) const {
 	return "";
 }
 
-Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Ref<JSON> json = p_resource;
 	ERR_FAIL_COND_V(json.is_null(), ERR_INVALID_PARAMETER);
 
 	String source = json->get_parsed_text().is_empty() ? JSON::stringify(json->get_data(), "\t", false, true) : json->get_parsed_text();
 
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 
 	ERR_FAIL_COND_V_MSG(err, err, vformat("Cannot save json '%s'.", p_path));
 

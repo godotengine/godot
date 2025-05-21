@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "image.h"
+#include "image.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
@@ -2553,20 +2554,20 @@ Ref<Image> Image::load_from_file(const String &p_path) {
 	return image;
 }
 
-Error Image::save_png(const String &p_path) const {
+Error Image::save_png(const String &p_path, FileAccess::SaveIntegrityLevel p_integrity_level) const {
 	if (save_png_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
-	return save_png_func(p_path, Ref<Image>((Image *)this));
+	return save_png_func(p_path, Ref<Image>((Image *)this), p_integrity_level);
 }
 
-Error Image::save_jpg(const String &p_path, float p_quality) const {
+Error Image::save_jpg(const String &p_path, float p_quality, FileAccess::SaveIntegrityLevel p_integrity_level) const {
 	if (save_jpg_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
-	return save_jpg_func(p_path, Ref<Image>((Image *)this), p_quality);
+	return save_jpg_func(p_path, Ref<Image>((Image *)this), p_quality, p_integrity_level);
 }
 
 Vector<uint8_t> Image::save_png_to_buffer() const {
@@ -2585,12 +2586,12 @@ Vector<uint8_t> Image::save_jpg_to_buffer(float p_quality) const {
 	return save_jpg_buffer_func(Ref<Image>((Image *)this), p_quality);
 }
 
-Error Image::save_exr(const String &p_path, bool p_grayscale) const {
+Error Image::save_exr(const String &p_path, bool p_grayscale, FileAccess::SaveIntegrityLevel p_integrity_level) const {
 	if (save_exr_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
-	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
+	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale, p_integrity_level);
 }
 
 Vector<uint8_t> Image::save_exr_to_buffer(bool p_grayscale) const {
@@ -2600,12 +2601,12 @@ Vector<uint8_t> Image::save_exr_to_buffer(bool p_grayscale) const {
 	return save_exr_buffer_func(Ref<Image>((Image *)this), p_grayscale);
 }
 
-Error Image::save_dds(const String &p_path) const {
+Error Image::save_dds(const String &p_path, FileAccess::SaveIntegrityLevel p_integrity_level) const {
 	if (save_dds_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
-	return save_dds_func(p_path, Ref<Image>((Image *)this));
+	return save_dds_func(p_path, Ref<Image>((Image *)this), p_integrity_level);
 }
 
 Vector<uint8_t> Image::save_dds_to_buffer() const {
@@ -2615,13 +2616,13 @@ Vector<uint8_t> Image::save_dds_to_buffer() const {
 	return save_dds_buffer_func(Ref<Image>((Image *)this));
 }
 
-Error Image::save_webp(const String &p_path, const bool p_lossy, const float p_quality) const {
+Error Image::save_webp(const String &p_path, const bool p_lossy, const float p_quality, FileAccess::SaveIntegrityLevel p_integrity_level) const {
 	if (save_webp_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 	ERR_FAIL_COND_V_MSG(p_lossy && !(0.0f <= p_quality && p_quality <= 1.0f), ERR_INVALID_PARAMETER, vformat("The WebP lossy quality was set to %f, which is not valid. WebP lossy quality must be between 0.0 and 1.0 (inclusive).", p_quality));
 
-	return save_webp_func(p_path, Ref<Image>((Image *)this), p_lossy, p_quality);
+	return save_webp_func(p_path, Ref<Image>((Image *)this), p_lossy, p_quality, p_integrity_level);
 }
 
 Vector<uint8_t> Image::save_webp_to_buffer(const bool p_lossy, const float p_quality) const {
@@ -3549,16 +3550,16 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
 	ClassDB::bind_static_method("Image", D_METHOD("load_from_file", "path"), &Image::load_from_file);
-	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
+	ClassDB::bind_method(D_METHOD("save_png", "path", "integrity_level"), &Image::save_png, DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
 	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
-	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));
+	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality", "integrity_level"), &Image::save_jpg, DEFVAL(0.75), DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
 	ClassDB::bind_method(D_METHOD("save_jpg_to_buffer", "quality"), &Image::save_jpg_to_buffer, DEFVAL(0.75));
-	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale", "integrity_level"), &Image::save_exr, DEFVAL(false), DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
 	ClassDB::bind_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::save_exr_to_buffer, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("save_dds", "path"), &Image::save_dds);
+	ClassDB::bind_method(D_METHOD("save_dds", "path", "integrity_level"), &Image::save_dds);
 	ClassDB::bind_method(D_METHOD("save_dds_to_buffer"), &Image::save_dds_to_buffer);
 
-	ClassDB::bind_method(D_METHOD("save_webp", "path", "lossy", "quality"), &Image::save_webp, DEFVAL(false), DEFVAL(0.75f));
+	ClassDB::bind_method(D_METHOD("save_webp", "path", "lossy", "quality", "integrity_level"), &Image::save_webp, DEFVAL(false), DEFVAL(0.75f), DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
 	ClassDB::bind_method(D_METHOD("save_webp_to_buffer", "lossy", "quality"), &Image::save_webp_to_buffer, DEFVAL(false), DEFVAL(0.75f));
 
 	ClassDB::bind_method(D_METHOD("detect_alpha"), &Image::detect_alpha);

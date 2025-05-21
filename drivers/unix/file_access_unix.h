@@ -41,6 +41,7 @@ class FileAccessUnix : public FileAccess {
 	GDSOFTCLASS(FileAccessUnix, FileAccess);
 	FILE *f = nullptr;
 	int flags = 0;
+	SaveIntegrityLevel integrity_level = SAVE_INTEGRITY_NONE;
 	void check_errors(bool p_write = false) const;
 	mutable Error last_error = OK;
 	String save_path;
@@ -57,7 +58,7 @@ public:
 	typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
 	static CloseNotificationFunc close_notification_func;
 
-	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
+	virtual Error open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
 
 	virtual String get_path() const override; /// returns the path for the current open file

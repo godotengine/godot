@@ -41,6 +41,7 @@ class FileAccessWindows : public FileAccess {
 	GDSOFTCLASS(FileAccessWindows, FileAccess);
 	FILE *f = nullptr;
 	int flags = 0;
+	SaveIntegrityLevel integrity_level = SAVE_INTEGRITY_NONE;
 	void check_errors(bool p_write = false) const;
 	mutable int prev_op = 0;
 	mutable Error last_error = OK;
@@ -56,7 +57,7 @@ public:
 	static bool is_path_invalid(const String &p_path);
 
 	virtual String fix_path(const String &p_path) const override;
-	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
+	virtual Error open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
 
 	virtual String get_path() const override; /// returns the path for the current open file

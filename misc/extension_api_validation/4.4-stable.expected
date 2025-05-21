@@ -111,3 +111,18 @@ Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/cre
 Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 3 to 5.
 
 New argument added. Compatibility method registered.
+
+
+GH-100447
+--------
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save_encrypted/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save_encrypted_pass/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/FileAccess/methods/open/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_exr/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_jpg/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_png/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_webp/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/ResourceFormatSaver/methods/_save/arguments': size changed value in new API, from 3 to 4.
+
+These methods now added a new argument integrity_level. Compatibility method registered.

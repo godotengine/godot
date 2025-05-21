@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/file_access.h"
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 
@@ -39,14 +40,20 @@ class ResourceFormatSaver : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3R(Error, _save, Ref<Resource>, String, uint32_t)
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL3R_COMPAT(_save_compat_100447, Error, _save, Ref<Resource>, String, uint32_t)
+
+	static void _bind_compatibility_methods();
+#endif
+
+	GDVIRTUAL4R(Error, _save, Ref<Resource>, String, uint32_t, FileAccess::SaveIntegrityLevel)
 	GDVIRTUAL2R(Error, _set_uid, String, ResourceUID::ID)
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
 	GDVIRTUAL2RC(bool, _recognize_path, Ref<Resource>, String)
 
 public:
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT);
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
@@ -83,7 +90,7 @@ public:
 		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
-	static Error save(const Ref<Resource> &p_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE);
+	static Error save(const Ref<Resource> &p_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT);
 	static void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);

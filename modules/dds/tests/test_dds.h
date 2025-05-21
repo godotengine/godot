@@ -80,7 +80,7 @@ TEST_CASE("[SceneTree][DDSSaver] Save DDS - Save valid image with mipmap" * doct
 	image->fill(Color(1, 0, 0)); // Fill with red color
 	image->generate_mipmaps();
 	image->compress_from_channels(Image::COMPRESS_S3TC, Image::USED_CHANNELS_RGBA);
-	Error err = save_dds("res://valid_image_with_mipmap.dds", image);
+	Error err = save_dds("res://valid_image_with_mipmap.dds", image, FileAccess::SAVE_INTEGRITY_NONE);
 	CHECK(err == OK);
 
 	Ref<Image> loaded_image;

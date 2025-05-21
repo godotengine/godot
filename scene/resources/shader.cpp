@@ -345,14 +345,14 @@ String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const
 	return "";
 }
 
-Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Ref<Shader> shader = p_resource;
 	ERR_FAIL_COND_V(shader.is_null(), ERR_INVALID_PARAMETER);
 
 	String source = shader->get_code();
 
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot save shader '" + p_path + "'.");
 
