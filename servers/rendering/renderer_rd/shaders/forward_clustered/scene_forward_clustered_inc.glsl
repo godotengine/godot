@@ -169,7 +169,6 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 8)
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
 #define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 10)
-#define INSTANCE_FLAGS_PARTICLES (1 << 11)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 #define INSTANCE_FLAGS_FADE_SHIFT 24
 //3 bits of stride
@@ -197,9 +196,6 @@ layout(set = 0, binding = 6, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
-
-#define LIGHTMAP_FLAG_USE_DIRECTION 1
-#define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
 
 #define LIGHTMAP_SHADOWMASK_MODE_NONE 0
 #define LIGHTMAP_SHADOWMASK_MODE_REPLACE 1

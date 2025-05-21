@@ -958,6 +958,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool load_color = false;
 	bool copy_canvas = false;
 	bool use_ambient_cubemap = false;
+	bool use_ambient_light = false;
 	bool use_reflection_cubemap = false;
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
@@ -969,6 +970,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		bg_energy_multiplier *= environment_get_bg_intensity(p_render_data->environment);
 		RS::EnvironmentReflectionSource reflection_source = environment_get_reflection_source(p_render_data->environment);
 		use_ambient_cubemap = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
+		use_ambient_light = use_ambient_cubemap || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
 		use_reflection_cubemap = (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY;
 
 		if (p_render_data->camera_attributes.is_valid()) {
@@ -1053,20 +1055,22 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		base_specialization.directional_lights = SceneShaderForwardMobile::shader_count_for(p_render_data->directional_light_count);
 		base_specialization.directional_light_blend_splits = light_storage->get_directional_light_blend_splits(p_render_data->directional_light_count);
 
-		if (!is_environment(p_render_data->environment) || !environment_get_fog_enabled(p_render_data->environment)) {
+		bool fog_enabled = environment_get_fog_enabled(p_render_data->environment);
+		if (!is_environment(p_render_data->environment) || !fog_enabled) {
 			base_specialization.disable_fog = true;
 			base_specialization.use_fog_aerial_perspective = false;
 			base_specialization.use_fog_sun_scatter = false;
 			base_specialization.use_fog_height_density = false;
 			base_specialization.use_depth_fog = false;
 		} else {
-			base_specialization.disable_fog = false;
+			base_specialization.disable_fog = !fog_enabled;
 			base_specialization.use_fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment) > 0.0;
 			base_specialization.use_fog_sun_scatter = environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
 			base_specialization.use_fog_height_density = std::abs(environment_get_fog_height_density(p_render_data->environment)) >= 0.0001;
 			base_specialization.use_depth_fog = p_render_data->environment.is_valid() && environment_get_fog_mode(p_render_data->environment) == RS::EnvironmentFogMode::ENV_FOG_MODE_DEPTH;
 		}
 
+		base_specialization.scene_use_ambient_light = use_ambient_light;
 		base_specialization.scene_use_ambient_cubemap = use_ambient_cubemap;
 		base_specialization.scene_use_reflection_cubemap = use_reflection_cubemap;
 		base_specialization.scene_roughness_limiter_enabled = p_render_data->render_buffers.is_valid() && screen_space_roughness_limiter_is_active();
@@ -1978,7 +1982,6 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 				if (lightmap_cull_index >= 0) {
 					inst->gi_offset_cache = inst->lightmap_slice_index << 16;
 					inst->gi_offset_cache |= lightmap_cull_index;
-					flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
 					if (scene_state.lightmap_has_sh[lightmap_cull_index]) {
 						flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
 					}
@@ -2194,6 +2197,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		pipeline_specialization.multimesh_format_2d = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D);
 		pipeline_specialization.multimesh_has_color = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
 		pipeline_specialization.multimesh_has_custom_data = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA);
+		pipeline_specialization.mesh_compressed_attributes = bool(surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_COMPRESSED_ATTRIBUTES);
+		pipeline_specialization.use_lightmap_capture = bool(inst->flags_cache & INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE);
+		pipeline_specialization.use_sh_lightmap = bool(inst->flags_cache & INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP);
 
 		SceneState::PushConstant push_constant;
 		push_constant.base_index = i + p_params->element_offset;
@@ -2549,6 +2555,8 @@ void RenderForwardMobile::_update_global_pipeline_data_requirements_from_light_s
 
 void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	void *surface = mesh_storage->mesh_get_surface(p_mesh, p_surface);
+	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(surface);
 	uint32_t flags = 0;
 
 	if (p_material->shader_data->uses_sss) {
@@ -2589,6 +2597,10 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS;
 	}
 
+	if (format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_COMPRESSED_ATTRIBUTES;
+	}
+
 	SceneShaderForwardMobile::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
 	if (p_material->shader_data->uses_shared_shadow_material()) {
@@ -2612,7 +2624,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->shader = p_material->shader_data;
 	sdcache->material = p_material;
 	sdcache->material_uniform_set = p_material->uniform_set;
-	sdcache->surface = mesh_storage->mesh_get_surface(p_mesh, p_surface);
+	sdcache->surface = surface;
 	sdcache->primitive = mesh_storage->mesh_surface_get_primitive(sdcache->surface);
 	sdcache->surface_index = p_surface;
 
@@ -2642,7 +2654,6 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
 	sdcache->sort.priority = p_material->priority;
 
-	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(sdcache->surface);
 	if (p_material->shader_data->uses_tangent && !(format & RS::ARRAY_FORMAT_TANGENT)) {
 		String shader_path = p_material->shader_data->path.is_empty() ? "" : "(" + p_material->shader_data->path + ")";
 		String mesh_path = mesh_storage->mesh_get_path(p_mesh).is_empty() ? "" : "(" + mesh_storage->mesh_get_path(p_mesh) + ")";
