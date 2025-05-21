@@ -239,8 +239,10 @@ void EditorColorMap::create() {
 	add_color_conversion_mode("Geometry", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
 	add_color_conversion_mode("MeshInstance", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
 	add_color_conversion_mode("MultiMeshInstance", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("NavigationAgent", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
 	add_color_conversion_mode("NavigationLink", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
 	add_color_conversion_mode("NavigationRegion", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("NavigationObstacle", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
 	add_color_conversion_mode("Path", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
 	add_color_conversion_mode("PathFollow", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
 	add_color_conversion_mode("PhysicalBone", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
