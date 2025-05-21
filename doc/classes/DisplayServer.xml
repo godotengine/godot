@@ -2433,6 +2433,7 @@
 			<description>
 				Sets the type and state of the progress bar on the taskbar/dock icon of the window specified by [param window_id]. See [enum ProgressState] for possible values and how each mode behaves.
 				[b]Note:[/b] This method is implemented only on Windows and macOS.
+				[b]Note:[/b] On macOS, the progress bar is displayed only for the main window.
 			</description>
 		</method>
 		<method name="window_set_taskbar_progress_value">
@@ -2443,6 +2444,7 @@
 				Create a progress bar on taskbar/dock icon of the window specified by [param window_id] if not exists, set the progress of the icon.
 				[param value] act as a percentage relative, ranges from [code]0.0[/code] (lowest) to [code]1.0[/code] (highest).
 				[b]Note:[/b] This method is implemented only on Windows and macOS.
+				[b]Note:[/b] On macOS, the progress bar is displayed only for the main window.
 			</description>
 		</method>
 		<method name="window_set_title">
