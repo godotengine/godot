@@ -61,53 +61,7 @@ void Node::_notification(int p_notification) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			// Base info.
-			if (data.parent) {
-				String container_info = data.parent->get_accessibility_container_name(this);
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, container_info.is_empty() ? get_accessibility_name() : get_accessibility_name() + " " + container_info);
-			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_accessibility_name());
-			}
-			DisplayServer::get_singleton()->accessibility_update_set_description(ae, get_accessibility_description());
-			DisplayServer::get_singleton()->accessibility_update_set_live(ae, get_accessibility_live());
-
-			// Related nodes.
-			for (int i = 0; i < data.accessibility_controls_nodes.size(); i++) {
-				const NodePath &np = data.accessibility_controls_nodes[i];
-				if (!np.is_empty()) {
-					Node *n = get_node(np);
-					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_controls(ae, n->get_accessibility_element());
-					}
-				}
-			}
-			for (int i = 0; i < data.accessibility_described_by_nodes.size(); i++) {
-				const NodePath &np = data.accessibility_described_by_nodes[i];
-				if (!np.is_empty()) {
-					Node *n = get_node(np);
-					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_described_by(ae, n->get_accessibility_element());
-					}
-				}
-			}
-			for (int i = 0; i < data.accessibility_labeled_by_nodes.size(); i++) {
-				const NodePath &np = data.accessibility_labeled_by_nodes[i];
-				if (!np.is_empty()) {
-					Node *n = get_node(np);
-					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_labeled_by(ae, n->get_accessibility_element());
-					}
-				}
-			}
-			for (int i = 0; i < data.accessibility_flow_to_nodes.size(); i++) {
-				const NodePath &np = data.accessibility_flow_to_nodes[i];
-				if (!np.is_empty()) {
-					Node *n = get_node(np);
-					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_flow_to(ae, n->get_accessibility_element());
-					}
-				}
-			}
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_name());
 
 			// Node children.
 			if (!accessibility_override_tree_hierarchy()) {
@@ -1450,91 +1404,6 @@ void Node::_propagate_translation_domain_dirty() {
 	if (is_inside_tree() && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
 		notification(NOTIFICATION_TRANSLATION_CHANGED);
 	}
-}
-
-void Node::set_accessibility_name(const String &p_name) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_name != p_name) {
-		data.accessibility_name = p_name;
-		queue_accessibility_update();
-		update_configuration_warnings();
-	}
-}
-
-String Node::get_accessibility_name() const {
-	return tr(data.accessibility_name);
-}
-
-void Node::set_accessibility_description(const String &p_description) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_description != p_description) {
-		data.accessibility_description = p_description;
-		queue_accessibility_update();
-	}
-}
-
-String Node::get_accessibility_description() const {
-	return tr(data.accessibility_description);
-}
-
-void Node::set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_live != p_mode) {
-		data.accessibility_live = p_mode;
-		queue_accessibility_update();
-	}
-}
-
-DisplayServer::AccessibilityLiveMode Node::get_accessibility_live() const {
-	return data.accessibility_live;
-}
-
-void Node::set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_controls_nodes != p_node_path) {
-		data.accessibility_controls_nodes = p_node_path;
-		queue_accessibility_update();
-	}
-}
-
-TypedArray<NodePath> Node::get_accessibility_controls_nodes() const {
-	return data.accessibility_controls_nodes;
-}
-
-void Node::set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_described_by_nodes != p_node_path) {
-		data.accessibility_described_by_nodes = p_node_path;
-		queue_accessibility_update();
-	}
-}
-
-TypedArray<NodePath> Node::get_accessibility_described_by_nodes() const {
-	return data.accessibility_described_by_nodes;
-}
-
-void Node::set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_labeled_by_nodes != p_node_path) {
-		data.accessibility_labeled_by_nodes = p_node_path;
-		queue_accessibility_update();
-	}
-}
-
-TypedArray<NodePath> Node::get_accessibility_labeled_by_nodes() const {
-	return data.accessibility_labeled_by_nodes;
-}
-
-void Node::set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_flow_to_nodes != p_node_path) {
-		data.accessibility_flow_to_nodes = p_node_path;
-		queue_accessibility_update();
-	}
-}
-
-TypedArray<NodePath> Node::get_accessibility_flow_to_nodes() const {
-	return data.accessibility_flow_to_nodes;
 }
 
 StringName Node::get_name() const {
@@ -3806,15 +3675,6 @@ RID Node::get_focused_accessibility_element() const {
 	}
 }
 
-String Node::get_accessibility_container_name(const Node *p_node) const {
-	String ret;
-	if (GDVIRTUAL_CALL(_get_accessibility_container_name, p_node, ret)) {
-	} else if (data.parent) {
-		ret = data.parent->get_accessibility_container_name(this);
-	}
-	return ret;
-}
-
 void Node::queue_accessibility_update() {
 	if (is_inside_tree() && !is_part_of_edited_scene()) {
 		data.tree->_accessibility_notify_change(this);
@@ -3911,21 +3771,6 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_process_thread_group_order", "order"), &Node::set_process_thread_group_order);
 	ClassDB::bind_method(D_METHOD("get_process_thread_group_order"), &Node::get_process_thread_group_order);
-
-	ClassDB::bind_method(D_METHOD("set_accessibility_name", "name"), &Node::set_accessibility_name);
-	ClassDB::bind_method(D_METHOD("get_accessibility_name"), &Node::get_accessibility_name);
-	ClassDB::bind_method(D_METHOD("set_accessibility_description", "description"), &Node::set_accessibility_description);
-	ClassDB::bind_method(D_METHOD("get_accessibility_description"), &Node::get_accessibility_description);
-	ClassDB::bind_method(D_METHOD("set_accessibility_live", "mode"), &Node::set_accessibility_live);
-	ClassDB::bind_method(D_METHOD("get_accessibility_live"), &Node::get_accessibility_live);
-	ClassDB::bind_method(D_METHOD("set_accessibility_controls_nodes", "node_path"), &Node::set_accessibility_controls_nodes);
-	ClassDB::bind_method(D_METHOD("get_accessibility_controls_nodes"), &Node::get_accessibility_controls_nodes);
-	ClassDB::bind_method(D_METHOD("set_accessibility_described_by_nodes", "node_path"), &Node::set_accessibility_described_by_nodes);
-	ClassDB::bind_method(D_METHOD("get_accessibility_described_by_nodes"), &Node::get_accessibility_described_by_nodes);
-	ClassDB::bind_method(D_METHOD("set_accessibility_labeled_by_nodes", "node_path"), &Node::set_accessibility_labeled_by_nodes);
-	ClassDB::bind_method(D_METHOD("get_accessibility_labeled_by_nodes"), &Node::get_accessibility_labeled_by_nodes);
-	ClassDB::bind_method(D_METHOD("set_accessibility_flow_to_nodes", "node_path"), &Node::set_accessibility_flow_to_nodes);
-	ClassDB::bind_method(D_METHOD("get_accessibility_flow_to_nodes"), &Node::get_accessibility_flow_to_nodes);
 
 	ClassDB::bind_method(D_METHOD("queue_accessibility_update"), &Node::queue_accessibility_update);
 	ClassDB::bind_method(D_METHOD("get_accessibility_element"), &Node::get_accessibility_element);
@@ -4156,15 +4001,6 @@ void Node::_bind_methods() {
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
 
-	ADD_GROUP("Accessibility", "accessibility_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_name"), "set_accessibility_name", "get_accessibility_name");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_description"), "set_accessibility_description", "get_accessibility_description");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "accessibility_live", PROPERTY_HINT_ENUM, "Off,Polite,Assertive"), "set_accessibility_live", "get_accessibility_live");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_controls_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_controls_nodes", "get_accessibility_controls_nodes");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_described_by_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_described_by_nodes", "get_accessibility_described_by_nodes");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_labeled_by_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_labeled_by_nodes", "get_accessibility_labeled_by_nodes");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_flow_to_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_flow_to_nodes", "get_accessibility_flow_to_nodes");
-
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");
 	GDVIRTUAL_BIND(_enter_tree);
@@ -4177,7 +4013,6 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_unhandled_input, "event");
 	GDVIRTUAL_BIND(_unhandled_key_input, "event");
 	GDVIRTUAL_BIND(_get_focused_accessibility_element);
-	GDVIRTUAL_BIND(_get_accessibility_container_name, "node");
 }
 
 String Node::_get_name_num_separator() {
