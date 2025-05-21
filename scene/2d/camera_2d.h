@@ -201,6 +201,7 @@ public:
 	Vector2 get_zoom() const;
 
 	Point2 get_camera_screen_center() const;
+	real_t get_screen_rotation() const;
 
 	void set_custom_viewport(Node *p_viewport);
 	Node *get_custom_viewport() const;

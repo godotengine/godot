@@ -798,6 +798,10 @@ Point2 Camera2D::get_camera_screen_center() const {
 	return camera_screen_center;
 }
 
+real_t Camera2D::get_screen_rotation() const {
+	return camera_angle;
+}
+
 Size2 Camera2D::_get_camera_screen_size() const {
 	if (is_part_of_edited_scene()) {
 		return Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
@@ -981,6 +985,7 @@ void Camera2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_target_position"), &Camera2D::get_camera_position);
 	ClassDB::bind_method(D_METHOD("get_screen_center_position"), &Camera2D::get_camera_screen_center);
+	ClassDB::bind_method(D_METHOD("get_screen_rotation"), &Camera2D::get_screen_rotation);
 
 	ClassDB::bind_method(D_METHOD("set_zoom", "zoom"), &Camera2D::set_zoom);
 	ClassDB::bind_method(D_METHOD("get_zoom"), &Camera2D::get_zoom);
