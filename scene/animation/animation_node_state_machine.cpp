@@ -1717,10 +1717,6 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
 }
 
 void AnimationNodeStateMachine::_validate_property(PropertyInfo &p_property) const {
