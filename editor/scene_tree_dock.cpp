@@ -184,6 +184,9 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (focus_owner && (Object::cast_to<BaseButton>(focus_owner) || Object::cast_to<Range>(focus_owner))) {
 			return;
 		}
+		if (edit_remote->is_pressed()) {
+			return;
+		}
 		_tool_selected(TOOL_RENAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/batch_rename", p_event)) {
 		_tool_selected(TOOL_BATCH_RENAME);
