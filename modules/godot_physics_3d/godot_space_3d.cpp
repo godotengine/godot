@@ -119,98 +119,6 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 	int amount = space->broadphase->cull_segment(begin, end, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
 	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
-	
-	int r_idx = 0;
-	for (int i = 0; i < amount; i++) {
-		if (r_idx >= p_result_max) {
-			break;
-		}
-
-		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
-			continue;
-		}
-
-		if (p_parameters.pick_ray && !(space->intersection_query_results[i]->is_ray_pickable())) {
-			continue;
-		}
-
-		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
-			continue;
-		}
-
-		const GodotCollisionObject3D *col_obj = space->intersection_query_results[i];
-
-		int shape_idx = space->intersection_query_subindex_results[i];
-		Transform3D inv_xform = col_obj->get_shape_inv_transform(shape_idx) * col_obj->get_inv_transform();
-
-		Vector3 local_from = inv_xform.xform(begin);
-		Vector3 local_to = inv_xform.xform(end);
-
-		const GodotShape3D *shape = col_obj->get_shape(shape_idx);
-
-		Vector3 shape_point, shape_normal;
-		int shape_face_index = -1;
-
-		if (shape->intersect_point(local_from)) {
-			if (p_parameters.hit_from_inside) {
-				// Hit shape at starting point.
-				RayResult r_result = r_results[r_idx];
-
-				r_result.collider_id = col_obj->get_instance_id();
-				if (r_result.collider_id.is_valid()) {
-					r_result.collider = ObjectDB::get_instance(r_result.collider_id);
-				} else {
-					r_result.collider = nullptr;
-				}
-				r_result.normal = Vector3();
-				r_result.face_index = shape_face_index;
-				r_result.position = begin;
-				r_result.rid = col_obj->get_self();
-				r_result.shape = shape_idx;
-				r_idx++;
-			} else {
-				// Ignore shape when starting inside.
-				continue;
-			}
-		}
-
-		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, shape_face_index, p_parameters.hit_back_faces)) {
-			Transform3D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
-			shape_point = xform.xform(shape_point);
-
-			RayResult r_result = r_results[r_idx];
-
-			r_result.collider_id = col_obj->get_instance_id();
-			if (r_result.collider_id.is_valid()) {
-				r_result.collider = ObjectDB::get_instance(r_result.collider_id);
-			} else {
-				r_result.collider = nullptr;
-			}
-			r_result.normal = inv_xform.basis.xform_inv(shape_normal).normalized();
-			r_result.face_index = shape_face_index;
-			r_result.position = shape_point;
-			r_result.rid = col_obj->get_self();
-			r_result.shape = shape_idx;
-			r_idx++;
-		}
-	}
-
-	return r_idx;
-}
-
-bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
-	ERR_FAIL_COND_V(space->locked, false);
-
-	Vector3 begin, end;
-	Vector3 normal;
-	begin = p_parameters.from;
-	end = p_parameters.to;
-	normal = (end - begin).normalized();
-
-	int amount = space->broadphase->cull_segment(begin, end, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
-
-	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
-
 	bool collided = false;
 	Vector3 res_point, res_normal;
 	int res_face_index = -1;
@@ -218,7 +126,15 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 	const GodotCollisionObject3D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
+	int r_idx = 0;
+	bool hit_once = false;
+	bool choose_closest = (p_result_max == 1);
 	for (int i = 0; i < amount; i++) {
+		collided = false;
+		if (r_idx >= p_result_max) {
+			break;
+		}
+
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
 		}
@@ -253,49 +169,69 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 				res_shape = shape_idx;
 				res_obj = col_obj;
 				collided = true;
-				break;
 			} else {
 				// Ignore shape when starting inside.
 				continue;
 			}
-		}
-
-		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, shape_face_index, p_parameters.hit_back_faces)) {
+		} else if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, shape_face_index, p_parameters.hit_back_faces)) {
 			Transform3D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
+			res_point = shape_point;
+			res_normal = inv_xform.basis.xform_inv(shape_normal).normalized();
+			res_face_index = shape_face_index;
+			res_shape = shape_idx;
+			res_obj = col_obj;
+			collided = true;
+		}
 
-			real_t ld = normal.dot(shape_point);
-
-			if (ld < min_d) {
+		if (collided) {
+			ERR_FAIL_NULL_V(res_obj, 0); // Shouldn't happen but silences warning.
+			
+			// Filter to closest hit if only one return is allowed and we've already hit something
+			if (choose_closest && hit_once) {
+				real_t ld = normal.dot(shape_point);
+				if (ld > min_d) {
+					continue;
+				}
 				min_d = ld;
-				res_point = shape_point;
-				res_normal = inv_xform.basis.xform_inv(shape_normal).normalized();
-				res_face_index = shape_face_index;
-				res_shape = shape_idx;
-				res_obj = col_obj;
-				collided = true;
+			}
+			
+			if (r_results) {
+				r_results[r_idx].collider_id = res_obj->get_instance_id();
+				if (r_results[r_idx].collider_id.is_valid()) {
+					r_results[r_idx].collider = ObjectDB::get_instance(r_results[r_idx].collider_id);
+				} else {
+					r_results[r_idx].collider = nullptr;
+				}
+				r_results[r_idx].normal = res_normal;
+				r_results[r_idx].face_index = res_face_index;
+				r_results[r_idx].position = res_point;
+				r_results[r_idx].rid = res_obj->get_self();
+				r_results[r_idx].shape = res_shape;
+			}
+			
+			hit_once = true;
+			collided = false;
+
+			if (p_result_max > 1) {
+				r_idx += 1;
 			}
 		}
 	}
 
-	if (!collided) {
-		return false;
+	if (choose_closest) {
+		r_idx = 1;
 	}
-	ERR_FAIL_NULL_V(res_obj, false); // Shouldn't happen but silences warning.
 
-	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id.is_valid()) {
-		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
-	} else {
-		r_result.collider = nullptr;
-	}
-	r_result.normal = res_normal;
-	r_result.face_index = res_face_index;
-	r_result.position = res_point;
-	r_result.rid = res_obj->get_self();
-	r_result.shape = res_shape;
+	return r_idx;
+}
 
-	return true;
+bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+	LocalVector<RayResult> results;
+	results.push_back(r_result);
+
+	int n_collisions = intersect_ray_multiple(p_parameters, results.ptr(), 1);
+	return n_collisions > 0;
 }
 
 int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
