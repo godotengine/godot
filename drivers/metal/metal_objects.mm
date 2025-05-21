@@ -602,18 +602,18 @@ void MDCommandBuffer::_render_clear_render_area() {
 	bool clear_stencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
 
 	uint32_t color_count = subpass.color_references.size();
-	uint32_t clear_count = color_count + (clear_depth || clear_stencil ? 1 : 0);
-	if (clear_count == 0) {
+	uint32_t clears_size = color_count + (clear_depth || clear_stencil ? 1 : 0);
+	if (clears_size == 0) {
 		return;
 	}
 
-	RDD::AttachmentClear *clears = ALLOCA_ARRAY(RDD::AttachmentClear, clear_count);
-	uint32_t clears_idx = 0;
+	RDD::AttachmentClear *clears = ALLOCA_ARRAY(RDD::AttachmentClear, clears_size);
+	uint32_t clears_count = 0;
 
 	for (uint32_t i = 0; i < color_count; i++) {
 		uint32_t idx = subpass.color_references[i].attachment;
 		if (idx != RDD::AttachmentReference::UNUSED && pass.attachments[idx].shouldClear(subpass, false)) {
-			clears[clears_idx++] = { .aspect = RDD::TEXTURE_ASPECT_COLOR_BIT, .color_attachment = idx, .value = render.clear_values[idx] };
+			clears[clears_count++] = { .aspect = RDD::TEXTURE_ASPECT_COLOR_BIT, .color_attachment = idx, .value = render.clear_values[idx] };
 		}
 	}
 
@@ -627,10 +627,14 @@ void MDCommandBuffer::_render_clear_render_area() {
 			bits.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
 		}
 
-		clears[clears_idx++] = { .aspect = bits, .color_attachment = ds_index, .value = render.clear_values[ds_index] };
+		clears[clears_count++] = { .aspect = bits, .color_attachment = ds_index, .value = render.clear_values[ds_index] };
 	}
 
-	render_clear_attachments(VectorView(clears, clear_count), { render.render_area });
+	if (clears_count == 0) {
+		return;
+	}
+
+	render_clear_attachments(VectorView(clears, clears_count), { render.render_area });
 }
 
 void MDCommandBuffer::render_next_subpass() {
