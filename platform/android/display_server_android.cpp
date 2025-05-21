@@ -566,14 +566,6 @@ void DisplayServerAndroid::window_request_attention(DisplayServer::WindowID p_wi
 	// Not supported on Android.
 }
 
-void DisplayServerAndroid::window_set_taskbar_progress_value(float p_value, DisplayServer::WindowID p_window) {
-	// Not supported.
-}
-
-void DisplayServerAndroid::window_set_taskbar_progress_state(DisplayServer::ProgressState p_state, DisplayServer::WindowID p_window) {
-	// Not supported.
-}
-
 void DisplayServerAndroid::window_move_to_foreground(DisplayServer::WindowID p_window) {
 	// Not supported on Android.
 }

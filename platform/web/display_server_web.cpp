@@ -1386,14 +1386,6 @@ void DisplayServerWeb::window_request_attention(WindowID p_window) {
 	// Not supported.
 }
 
-void DisplayServerWeb::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
-	// Not supported.
-}
-
-void DisplayServerWeb::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
-	// Not supported.
-}
-
 void DisplayServerWeb::window_move_to_foreground(WindowID p_window) {
 	// Not supported.
 }
