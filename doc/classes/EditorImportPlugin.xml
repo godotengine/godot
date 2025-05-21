@@ -160,7 +160,7 @@
 			<param index="1" name="option_name" type="StringName" />
 			<param index="2" name="options" type="Dictionary" />
 			<description>
-				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled.
+				Gets whether the import option specified by [param option_name] should be visible in the Import dock. The default implementation always returns [code]true[/code], making all options visible. This is mainly useful for hiding options that depend on others if one of them is disabled.
 				[codeblocks]
 				[gdscript]
 				func _get_option_visibility(option, options):
@@ -183,7 +183,6 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Returns [code]true[/code] to make all options always visible.
 			</description>
 		</method>
 		<method name="_get_preset_count" qualifiers="virtual const">
