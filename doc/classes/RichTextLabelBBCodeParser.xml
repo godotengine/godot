@@ -23,6 +23,7 @@
 		<member name="custom_effects" type="RichTextEffect[]" setter="set_custom_effects" getter="get_custom_effects" default="[]">
 			List of custom [RichTextEffect] resources known to this parser. A custom effect decides its own BBCode tag, but can not validate its parameters.
 		</member>
+		<member name="error_handling" type="int" setter="set_error_handling" getter="get_error_handling" overrides="BBCodeParser" enum="BBCodeParser.ErrorHandling" default="1" />
 		<member name="escape_brackets" type="int" setter="set_escape_brackets" getter="get_escape_brackets" overrides="BBCodeParser" enum="BBCodeParser.EscapeBrackets" is_bitfield="true" default="4" />
 	</members>
 </class>

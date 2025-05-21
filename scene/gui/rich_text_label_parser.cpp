@@ -187,6 +187,9 @@ void RichTextLabelBBCodeParser::_bind_methods() {
 }
 
 RichTextLabelBBCodeParser::RichTextLabelBBCodeParser() {
-	set_backslash_escape_quotes(false); // For backwards-compatibility.
 	set_escape_brackets(ESCAPE_BRACKETS_ABBREVIATION);
+
+	// For backwards-compatibility:
+	set_backslash_escape_quotes(false);
+	set_error_handling(ERROR_HANDLING_PARSE_AS_TEXT);
 }

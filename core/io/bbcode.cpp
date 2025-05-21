@@ -396,16 +396,16 @@ void BBCodeParser::push_bbcode(const String &p_bbcode) {
 		}
 
 		if (is_closing_tag) {
-			pop_tag(tag);
+			_parsed_pop_tag(bbcode.substr(brk_pos, pos - brk_pos), tag);
 		} else {
-			push_tag(tag, parameters);
+			_parsed_push_tag(bbcode.substr(brk_pos, pos - brk_pos), tag, parameters);
 		}
 	}
 }
 
 void BBCodeParser::_parsed_push_text(const String &p_parsed_bbcode, const String &p_text) {
 	_update_error(validate_text(p_text));
-	if (error == OK) {
+	if (_is_ok() || error_handling == ERROR_HANDLING_PARSE_AS_TEXT) {
 		BBCodeToken *token = memnew(BBCodeToken);
 		token->set_type(BBCodeToken::TOKEN_TYPE_TEXT);
 		token->set_value(p_text);
@@ -420,7 +420,7 @@ void BBCodeParser::_parsed_push_tag(const String &p_parsed_bbcode, const String 
 	ERR_FAIL_COND(error_var.get_type() != Variant::Type::INT);
 	_update_error(static_cast<Error>(error_var));
 
-	if (error == OK) {
+	if (_is_ok()) {
 		BBCodeToken *token = memnew(BBCodeToken);
 		token->set_type(BBCodeToken::TOKEN_TYPE_OPEN_TAG);
 		token->set_value(p_tag);
@@ -436,6 +436,8 @@ void BBCodeParser::_parsed_push_tag(const String &p_parsed_bbcode, const String 
 		Variant escape_var = result.get("escape_contents", false);
 		ERR_FAIL_COND(escape_var.get_type() != Variant::Type::BOOL);
 		escape_contents = static_cast<bool>(escape_var);
+	} else if (error_handling == ERROR_HANDLING_PARSE_AS_TEXT) {
+		_parsed_push_text(p_parsed_bbcode, p_parsed_bbcode);
 	}
 }
 
@@ -479,6 +481,8 @@ void BBCodeParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_escape_brackets", "value"), &BBCodeParser::set_escape_brackets);
 	ClassDB::bind_method(D_METHOD("get_backslash_escape_quotes"), &BBCodeParser::get_backslash_escape_quotes);
 	ClassDB::bind_method(D_METHOD("set_backslash_escape_quotes", "value"), &BBCodeParser::set_backslash_escape_quotes);
+	ClassDB::bind_method(D_METHOD("get_error_handling"), &BBCodeParser::get_error_handling);
+	ClassDB::bind_method(D_METHOD("set_error_handling", "error_handling"), &BBCodeParser::set_error_handling);
 
 	ClassDB::bind_method(D_METHOD("clear"), &BBCodeParser::clear);
 	ClassDB::bind_method(D_METHOD("push_bbcode", "bbcode"), &BBCodeParser::push_bbcode);
@@ -488,6 +492,7 @@ void BBCodeParser::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "escape_brackets", PROPERTY_HINT_FLAGS, "Double Brackets,Wrapped Brackets,Backslash,Abbreviation"), "set_escape_brackets", "get_escape_brackets");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "backslash_escape_quotes"), "set_backslash_escape_quotes", "get_backslash_escape_quotes");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "error_handling", PROPERTY_HINT_ENUM, "Remove,Parse as Text,Keep"), "set_error_handling", "get_error_handling");
 
 	GDVIRTUAL_BIND(_validate_tag, "tag", "parameters")
 	GDVIRTUAL_BIND(_validate_text, "text")
@@ -496,6 +501,10 @@ void BBCodeParser::_bind_methods() {
 	BIND_BITFIELD_FLAG(ESCAPE_BRACKETS_WRAPPED);
 	BIND_BITFIELD_FLAG(ESCAPE_BRACKETS_BACKSLASH);
 	BIND_BITFIELD_FLAG(ESCAPE_BRACKETS_ABBREVIATION);
+
+	BIND_ENUM_CONSTANT(ERROR_HANDLING_REMOVE);
+	BIND_ENUM_CONSTANT(ERROR_HANDLING_PARSE_AS_TEXT);
+	BIND_ENUM_CONSTANT(ERROR_HANDLING_KEEP);
 }
 
 BBCodeParser::~BBCodeParser() {

@@ -100,7 +100,10 @@
 			Quotes used in plain-text are always treated as literals and do not need to be escaped.
 			In order to write a literal backslash inside of opening BBCode tags after enabling this escaping syntax, use [code]\\[/code].
 		</member>
-		<member name="escape_brackets" type="int" setter="set_escape_brackets" getter="get_escape_brackets" enum="BBCodeParser.EscapeBrackets" is_bitfield="true" default="0">
+		<member name="error_handling" type="int" setter="set_error_handling" getter="get_error_handling" enum="BBCodeParser.ErrorHandling" default="0">
+			How syntax or validation errors in the BBCode should be handled.
+		</member>
+		<member name="escape_brackets" type="int" setter="set_escape_brackets" getter="get_escape_brackets" enum="BBCodeParser.EscapeBrackets" is_bitfield="true" default="2">
 			Configure which syntax is supported for escaping brackets. Instead of parsing these brackets as part of tags, they are instead treated as text that contains literal brackets.
 			[b]Note:[/b] When specifying a parameter value in BBCode surrounded with quotes, the contents are handled verbatim, including brackets. Every escape mode except for [constant ESCAPE_BRACKETS_BACKSLASH] is not respected and will be left unchanged.
 		</member>
@@ -118,6 +121,15 @@
 		</constant>
 		<constant name="ESCAPE_BRACKETS_ABBREVIATION" value="4" enum="EscapeBrackets" is_bitfield="true">
 			Brackets are escaped by using special abbreviated tags: [code][lb][/code] for opening bracket and [code][rb][/code] for closing bracket.
+		</constant>
+		<constant name="ERROR_HANDLING_REMOVE" value="0" enum="ErrorHandling">
+			Erroneous data is not included in the output.
+		</constant>
+		<constant name="ERROR_HANDLING_PARSE_AS_TEXT" value="1" enum="ErrorHandling">
+			Erroneous data is included as plain-text instead.
+		</constant>
+		<constant name="ERROR_HANDLING_KEEP" value="2" enum="ErrorHandling">
+			Errors are ignored - all data is included in the output.
 		</constant>
 	</constants>
 </class>

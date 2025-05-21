@@ -79,6 +79,12 @@ public:
 		ESCAPE_BRACKETS_ABBREVIATION = (1 << 2),
 	};
 
+	enum ErrorHandling {
+		ERROR_HANDLING_REMOVE = 0,
+		ERROR_HANDLING_PARSE_AS_TEXT = 1,
+		ERROR_HANDLING_KEEP = 2,
+	};
+
 protected:
 	static void _bind_methods();
 
@@ -88,8 +94,9 @@ protected:
 	int position = 0;
 	bool backslash_escape_quotes = true;
 	bool escape_contents = false;
-	BitField<EscapeBrackets> escape_brackets = ESCAPE_BRACKETS_NONE;
+	BitField<EscapeBrackets> escape_brackets = ESCAPE_BRACKETS_BACKSLASH;
 	Error error = OK;
+	ErrorHandling error_handling = ERROR_HANDLING_REMOVE;
 	Vector<BBCodeToken *> tokens;
 	Vector<String> tag_stack;
 
@@ -103,6 +110,8 @@ protected:
 	void _parsed_push_tag(const String &p_parsed_bbcode, const String &p_tag, const Dictionary &p_parameters);
 	void _parsed_pop_tag(const String &p_parsed_bbcode, const String &p_tag);
 	void _push_token(const String &p_parsed_bbcode, BBCodeToken *p_token);
+
+	bool _is_ok() const { return error == OK || error_handling == ERROR_HANDLING_KEEP; }
 
 public:
 	// Returns { error: Error = OK, escape_contents: boolean = false, self_closing: boolean = false }
@@ -120,6 +129,9 @@ public:
 	bool get_backslash_escape_quotes() const { return backslash_escape_quotes; }
 	void set_backslash_escape_quotes(const bool p_value) { backslash_escape_quotes = p_value; }
 
+	ErrorHandling get_error_handling() const { return error_handling; }
+	void set_error_handling(ErrorHandling p_error_handling) { error_handling = p_error_handling; }
+
 	void clear();
 	void push_bbcode(const String &p_bbcode);
 	void push_text(const String &p_text);
@@ -130,4 +142,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(BBCodeToken::TokenType);
+VARIANT_ENUM_CAST(BBCodeParser::ErrorHandling);
 VARIANT_BITFIELD_CAST(BBCodeParser::EscapeBrackets);
