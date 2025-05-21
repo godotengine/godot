@@ -108,7 +108,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 	data.offset[SIDE_RIGHT] = offsets[2];
 	data.offset[SIDE_BOTTOM] = offsets[3];
 
-	_size_changed();
+	_rect_changed();
 }
 
 void Control::_edit_set_position(const Point2 &p_position) {
@@ -770,7 +770,7 @@ void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool 
 		}
 	}
 	if (is_inside_tree()) {
-		_size_changed();
+		_rect_changed();
 	}
 
 	queue_redraw();
@@ -791,7 +791,7 @@ void Control::set_offset(Side p_side, real_t p_value) {
 	}
 
 	data.offset[p_side] = p_value;
-	_size_changed();
+	_rect_changed();
 }
 
 real_t Control::get_offset(Side p_side) const {
@@ -816,7 +816,7 @@ void Control::set_begin(const Point2 &p_point) {
 
 	data.offset[0] = p_point.x;
 	data.offset[1] = p_point.y;
-	_size_changed();
+	_rect_changed();
 }
 
 Point2 Control::get_begin() const {
@@ -832,7 +832,7 @@ void Control::set_end(const Point2 &p_point) {
 
 	data.offset[2] = p_point.x;
 	data.offset[3] = p_point.y;
-	_size_changed();
+	_rect_changed();
 }
 
 Point2 Control::get_end() const {
@@ -849,7 +849,7 @@ void Control::set_h_grow_direction(GrowDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.h_grow = p_direction;
-	_size_changed();
+	_rect_changed();
 }
 
 Control::GrowDirection Control::get_h_grow_direction() const {
@@ -866,7 +866,7 @@ void Control::set_v_grow_direction(GrowDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.v_grow = p_direction;
-	_size_changed();
+	_rect_changed();
 }
 
 Control::GrowDirection Control::get_v_grow_direction() const {
@@ -1349,7 +1349,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 			break;
 	}
 
-	_size_changed();
+	_rect_changed();
 }
 
 void Control::set_anchors_and_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode, int p_margin) {
@@ -1437,7 +1437,7 @@ void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 	} else {
 		_compute_offsets(Rect2(p_point, data.size_cache), data.anchor, data.offset);
 	}
-	_size_changed();
+	_rect_changed();
 }
 
 Size2 Control::get_position() const {
@@ -1503,7 +1503,7 @@ void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
 	} else {
 		_compute_offsets(Rect2(data.pos_cache, new_size), data.anchor, data.offset);
 	}
-	_size_changed();
+	_rect_changed();
 }
 
 Size2 Control::get_size() const {
@@ -1524,7 +1524,7 @@ void Control::set_rect(const Rect2 &p_rect) {
 
 	_compute_offsets(p_rect, data.anchor, data.offset);
 	if (is_inside_tree()) {
-		_size_changed();
+		_rect_changed();
 	}
 }
 
@@ -1634,7 +1634,7 @@ void Control::_update_minimum_size() {
 
 	if (minsize != data.last_minimum_size) {
 		data.last_minimum_size = minsize;
-		_size_changed();
+		_rect_changed();
 		emit_signal(SceneStringName(minimum_size_changed));
 	}
 }
@@ -1723,7 +1723,7 @@ Size2 Control::get_combined_minimum_size() const {
 	return data.minimum_size_cache;
 }
 
-void Control::_size_changed() {
+void Control::_rect_changed() {
 	Rect2 parent_rect = get_parent_anchorable_rect();
 
 	real_t edge_pos[4];
@@ -3660,7 +3660,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.is_rtl_dirty = true;
 			update_minimum_size();
-			_size_changed();
+			_rect_changed();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -3711,24 +3711,24 @@ void Control::_notification(int p_notification) {
 			data.parent_canvas_item = get_parent_item();
 
 			if (data.parent_canvas_item) {
-				data.parent_canvas_item->connect(SceneStringName(item_rect_changed), callable_mp(this, &Control::_size_changed));
+				data.parent_canvas_item->connect(SceneStringName(item_rect_changed), callable_mp(this, &Control::_rect_changed));
 			} else {
 				// Connect viewport.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_NULL(viewport);
-				viewport->connect("size_changed", callable_mp(this, &Control::_size_changed));
+				viewport->connect("size_changed", callable_mp(this, &Control::_rect_changed));
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_CANVAS: {
 			if (data.parent_canvas_item) {
-				data.parent_canvas_item->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &Control::_size_changed));
+				data.parent_canvas_item->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &Control::_rect_changed));
 				data.parent_canvas_item = nullptr;
 			} else {
 				// Disconnect viewport.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_NULL(viewport);
-				viewport->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
+				viewport->disconnect("size_changed", callable_mp(this, &Control::_rect_changed));
 			}
 
 			if (data.RI) {
@@ -3783,7 +3783,7 @@ void Control::_notification(int p_notification) {
 			queue_redraw();
 
 			update_minimum_size();
-			_size_changed();
+			_rect_changed();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3793,7 +3793,7 @@ void Control::_notification(int p_notification) {
 				}
 			} else {
 				update_minimum_size();
-				_size_changed();
+				_rect_changed();
 			}
 		} break;
 
@@ -3807,7 +3807,7 @@ void Control::_notification(int p_notification) {
 				queue_redraw();
 
 				update_minimum_size();
-				_size_changed();
+				_rect_changed();
 			}
 		} break;
 	}
