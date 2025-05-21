@@ -32,6 +32,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/time.h"
+#include "scene/main/window.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
@@ -191,11 +192,10 @@ void MovieWriter::add_frame() {
 			String::num(movie_time_seconds % 60, 0).pad_zeros(2),
 			String::num(frame_remainder, 0).pad_zeros(2));
 
-#ifdef DEBUG_ENABLED
-	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s (DEBUG)", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
-#else
-	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
-#endif
+	Window *main_window = Window::get_from_id(DisplayServer::MAIN_WINDOW_ID);
+	if (main_window) {
+		main_window->set_title(vformat("MovieWriter: Frame %d (time: %s) - %s", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
+	}
 
 	RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
 	RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
