@@ -330,6 +330,9 @@ public:
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_precision) override;
 	virtual int soft_body_get_simulation_precision(RID p_body) const override;
 
+	virtual void soft_body_set_point_radius(RID p_body, real_t p_radius) override;
+	virtual real_t soft_body_get_point_radius(RID p_body) const override;
+
 	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass) override;
 	virtual real_t soft_body_get_total_mass(RID p_body) const override;
 
