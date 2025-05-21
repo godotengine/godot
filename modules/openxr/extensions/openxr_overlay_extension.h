@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_OVERLAY_EXTENSION_H
-#define OPENXR_OVERLAY_EXTENSION_H
+#pragma once
 
 #include "openxr_extension_wrapper.h"
 class OpenXROverlayExtension : public OpenXRExtensionWrapper {
@@ -55,5 +54,3 @@ private:
 	bool available = false;
 	bool enabled = false;
 };
-
-#endif // OPENXR_OVERLAY_EXTENSION_H
