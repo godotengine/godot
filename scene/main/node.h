@@ -191,10 +191,6 @@ private:
 		String accessibility_name;
 		String accessibility_description;
 		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
-		TypedArray<NodePath> accessibility_controls_nodes;
-		TypedArray<NodePath> accessibility_described_by_nodes;
-		TypedArray<NodePath> accessibility_labeled_by_nodes;
-		TypedArray<NodePath> accessibility_flow_to_nodes;
 
 		HashMap<StringName, GroupData> grouped;
 		List<Node *>::Element *OW = nullptr; // Owned element.
@@ -679,18 +675,6 @@ public:
 
 	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
 	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
-
-	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
-	TypedArray<NodePath> get_accessibility_controls_nodes() const;
-
-	void set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path);
-	TypedArray<NodePath> get_accessibility_described_by_nodes() const;
-
-	void set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path);
-	TypedArray<NodePath> get_accessibility_labeled_by_nodes() const;
-
-	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
-	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
 
 	void queue_accessibility_update();
 

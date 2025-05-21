@@ -71,44 +71,6 @@ void Node::_notification(int p_notification) {
 			DisplayServer::get_singleton()->accessibility_update_set_description(ae, get_accessibility_description());
 			DisplayServer::get_singleton()->accessibility_update_set_live(ae, get_accessibility_live());
 
-			// Related nodes.
-			for (int i = 0; i < data.accessibility_controls_nodes.size(); i++) {
-				const NodePath &np = data.accessibility_controls_nodes[i];
-				if (!np.is_empty()) {
-					Node *n = get_node(np);
-					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_controls(ae, n->get_accessibility_element());
-					}
-				}
-			}
-			for (int i = 0; i < data.accessibility_described_by_nodes.size(); i++) {
-				const NodePath &np = data.accessibility_described_by_nodes[i];
-				if (!np.is_empty()) {
-					Node *n = get_node(np);
-					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_described_by(ae, n->get_accessibility_element());
-					}
-				}
-			}
-			for (int i = 0; i < data.accessibility_labeled_by_nodes.size(); i++) {
-				const NodePath &np = data.accessibility_labeled_by_nodes[i];
-				if (!np.is_empty()) {
-					Node *n = get_node(np);
-					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_labeled_by(ae, n->get_accessibility_element());
-					}
-				}
-			}
-			for (int i = 0; i < data.accessibility_flow_to_nodes.size(); i++) {
-				const NodePath &np = data.accessibility_flow_to_nodes[i];
-				if (!np.is_empty()) {
-					Node *n = get_node(np);
-					if (n && !n->is_part_of_edited_scene()) {
-						DisplayServer::get_singleton()->accessibility_update_add_related_flow_to(ae, n->get_accessibility_element());
-					}
-				}
-			}
-
 			// Node children.
 			if (!accessibility_override_tree_hierarchy()) {
 				for (int i = 0; i < get_child_count(); i++) {
@@ -1495,54 +1457,6 @@ void Node::set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode) {
 
 DisplayServer::AccessibilityLiveMode Node::get_accessibility_live() const {
 	return data.accessibility_live;
-}
-
-void Node::set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_controls_nodes != p_node_path) {
-		data.accessibility_controls_nodes = p_node_path;
-		queue_accessibility_update();
-	}
-}
-
-TypedArray<NodePath> Node::get_accessibility_controls_nodes() const {
-	return data.accessibility_controls_nodes;
-}
-
-void Node::set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_described_by_nodes != p_node_path) {
-		data.accessibility_described_by_nodes = p_node_path;
-		queue_accessibility_update();
-	}
-}
-
-TypedArray<NodePath> Node::get_accessibility_described_by_nodes() const {
-	return data.accessibility_described_by_nodes;
-}
-
-void Node::set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_labeled_by_nodes != p_node_path) {
-		data.accessibility_labeled_by_nodes = p_node_path;
-		queue_accessibility_update();
-	}
-}
-
-TypedArray<NodePath> Node::get_accessibility_labeled_by_nodes() const {
-	return data.accessibility_labeled_by_nodes;
-}
-
-void Node::set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path) {
-	ERR_THREAD_GUARD
-	if (data.accessibility_flow_to_nodes != p_node_path) {
-		data.accessibility_flow_to_nodes = p_node_path;
-		queue_accessibility_update();
-	}
-}
-
-TypedArray<NodePath> Node::get_accessibility_flow_to_nodes() const {
-	return data.accessibility_flow_to_nodes;
 }
 
 StringName Node::get_name() const {
@@ -3922,14 +3836,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accessibility_description"), &Node::get_accessibility_description);
 	ClassDB::bind_method(D_METHOD("set_accessibility_live", "mode"), &Node::set_accessibility_live);
 	ClassDB::bind_method(D_METHOD("get_accessibility_live"), &Node::get_accessibility_live);
-	ClassDB::bind_method(D_METHOD("set_accessibility_controls_nodes", "node_path"), &Node::set_accessibility_controls_nodes);
-	ClassDB::bind_method(D_METHOD("get_accessibility_controls_nodes"), &Node::get_accessibility_controls_nodes);
-	ClassDB::bind_method(D_METHOD("set_accessibility_described_by_nodes", "node_path"), &Node::set_accessibility_described_by_nodes);
-	ClassDB::bind_method(D_METHOD("get_accessibility_described_by_nodes"), &Node::get_accessibility_described_by_nodes);
-	ClassDB::bind_method(D_METHOD("set_accessibility_labeled_by_nodes", "node_path"), &Node::set_accessibility_labeled_by_nodes);
-	ClassDB::bind_method(D_METHOD("get_accessibility_labeled_by_nodes"), &Node::get_accessibility_labeled_by_nodes);
-	ClassDB::bind_method(D_METHOD("set_accessibility_flow_to_nodes", "node_path"), &Node::set_accessibility_flow_to_nodes);
-	ClassDB::bind_method(D_METHOD("get_accessibility_flow_to_nodes"), &Node::get_accessibility_flow_to_nodes);
 
 	ClassDB::bind_method(D_METHOD("queue_accessibility_update"), &Node::queue_accessibility_update);
 	ClassDB::bind_method(D_METHOD("get_accessibility_element"), &Node::get_accessibility_element);
@@ -4164,10 +4070,6 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_name"), "set_accessibility_name", "get_accessibility_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_description"), "set_accessibility_description", "get_accessibility_description");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "accessibility_live", PROPERTY_HINT_ENUM, "Off,Polite,Assertive"), "set_accessibility_live", "get_accessibility_live");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_controls_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_controls_nodes", "get_accessibility_controls_nodes");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_described_by_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_described_by_nodes", "get_accessibility_described_by_nodes");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_labeled_by_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_labeled_by_nodes", "get_accessibility_labeled_by_nodes");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_flow_to_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_flow_to_nodes", "get_accessibility_flow_to_nodes");
 
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");
