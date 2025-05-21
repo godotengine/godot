@@ -262,6 +262,7 @@ private:
 	Button *erase_button = nullptr;
 
 	VSeparator *tools_settings_vsep_2 = nullptr;
+	CheckBox *paint_2x2_checkbox = nullptr;
 	CheckBox *bucket_contiguous_checkbox = nullptr;
 	void _update_toolbar();
 
