@@ -788,9 +788,9 @@ private:
 
 	bool snap_enabled;
 	bool snap_key_enabled;
-	LineEdit *snap_translate = nullptr;
-	LineEdit *snap_rotate = nullptr;
-	LineEdit *snap_scale = nullptr;
+	EditorSpinSlider *snap_translate = nullptr;
+	EditorSpinSlider *snap_rotate = nullptr;
+	EditorSpinSlider *snap_scale = nullptr;
 
 	LineEdit *xform_translate[3];
 	LineEdit *xform_rotate[3];
