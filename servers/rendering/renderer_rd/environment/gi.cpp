@@ -2943,6 +2943,10 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 		}
 	}
 
+	// probe size relative to 1 unit in world space
+	Vector3 ps = gi->voxel_gi_get_octree_size(probe) / gi->voxel_gi_get_bounds(probe).size;
+	float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z));
+
 	if (has_dynamic_object_data || p_update_light_instances || p_dynamic_objects.size()) {
 		// PROCESS MIPMAPS
 		if (mipmaps.size()) {
@@ -2961,6 +2965,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 			push_constant.dynamic_range = gi->voxel_gi_get_dynamic_range(probe);
 			push_constant.light_count = light_count;
 			push_constant.aniso_strength = 0;
+			push_constant.cell_size = cell_size;
 
 			/*		print_line("probe update to version " + itos(last_probe_version));
 			print_line("propagation " + rtos(push_constant.propagation));
@@ -3161,9 +3166,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				push_constant.prev_rect_size[1] = 0;
 				push_constant.on_mipmap = false;
 				push_constant.propagation = gi->voxel_gi_get_propagation(probe);
+				push_constant.cell_size = cell_size;
 				push_constant.pad[0] = 0;
 				push_constant.pad[1] = 0;
-				push_constant.pad[2] = 0;
 
 				//process lighting
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
