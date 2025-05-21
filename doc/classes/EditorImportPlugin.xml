@@ -36,6 +36,15 @@
 		func _get_import_options(path, preset_index):
 		    return [{"name": "my_option", "default_value": false}]
 
+		func _get_import_order():
+		    return 0
+
+		func _get_priority():
+		    return 1.0
+
+		func _get_option_visibility(path, option_name, options):
+		    return true
+
 		func _import(source_file, save_path, options, platform_variants, gen_files):
 		    var file = FileAccess.open(source_file, FileAccess.READ)
 		    if file == null:
@@ -124,14 +133,15 @@
 			<return type="bool" />
 			<description>
 				Tells whether this importer can be run in parallel on threads, or, on the contrary, it's only safe for the editor to call it from the main thread, for one file at a time.
-				If this method is not overridden, it will return [code]false[/code] by default.
 				If this importer's implementation is thread-safe and can be run in parallel, override this with [code]true[/code] to optimize for concurrency.
+				Defining this method is [b]optional[/b]. If not overridden, it will return [code]false[/code] by default.
 			</description>
 		</method>
 		<method name="_get_format_version" qualifiers="virtual const">
 			<return type="int" />
 			<description>
 				Gets the format version of this importer. Increment this version when making incompatible changes to the format of the imported resources.
+				Defining this method is [b]optional[/b]. If not overridden, the format version is 0.
 			</description>
 		</method>
 		<method name="_get_import_options" qualifiers="virtual const">
@@ -140,18 +150,21 @@
 			<param index="1" name="preset_index" type="int" />
 			<description>
 				Gets the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_import_order" qualifiers="virtual const">
 			<return type="int" />
 			<description>
 				Gets the order of this importer to be run when importing resources. Importers with [i]lower[/i] import orders will be called first, and higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported. The default import order is [code]0[/code] unless overridden by a specific importer. See [enum ResourceImporter.ImportOrder] for some predefined values.
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_importer_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the unique name of the importer.
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_option_visibility" qualifiers="virtual const">
@@ -160,7 +173,7 @@
 			<param index="1" name="option_name" type="StringName" />
 			<param index="2" name="options" type="Dictionary" />
 			<description>
-				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled.
+				This method can be used to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled.
 				[codeblocks]
 				[gdscript]
 				func _get_option_visibility(option, options):
@@ -184,12 +197,14 @@
 				[/csharp]
 				[/codeblocks]
 				Returns [code]true[/code] to make all options always visible.
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_preset_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
 				Gets the number of initial presets defined by the plugin. Use [method _get_import_options] to get the default options for the preset and [method _get_preset_name] to get the name of the preset.
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_preset_name" qualifiers="virtual const">
@@ -197,36 +212,42 @@
 			<param index="0" name="preset_index" type="int" />
 			<description>
 				Gets the name of the options preset at this index.
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_priority" qualifiers="virtual const">
 			<return type="float" />
 			<description>
 				Gets the priority of this plugin for the recognized extension. Higher priority plugins will be preferred. The default priority is [code]1.0[/code].
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_recognized_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
 				Gets the list of file extensions to associate with this loader (case-insensitive). e.g. [code]["obj"][/code].
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_resource_type" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the Godot resource type associated with this loader. e.g. [code]"Mesh"[/code] or [code]"Animation"[/code].
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_save_extension" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the extension used to save this resource in the [code].godot/imported[/code] directory (see [member ProjectSettings.application/config/use_hidden_project_data_directory]).
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_get_visible_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the name to display in the import window. You should choose this name as a continuation to "Import as", e.g. "Import as Special Mesh".
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="_import" qualifiers="virtual const">
@@ -241,6 +262,7 @@
 				The imported resource is expected to be saved to [code]save_path + "." + _get_save_extension()[/code]. If a different variant is preferred for a [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tag[/url], save the variant to [code]save_path + "." + tag + "." + _get_save_extension()[/code] and add the feature tag to [param platform_variants].
 				If additional resource files are generated in the resource filesystem ([code]res://[/code]), add their full path to [param gen_files] so that the editor knows they depend on [param source_file].
 				This method must be overridden to do the actual importing work. See this class' description for an example of overriding this method.
+				Defining this method is [b]required[/b].
 			</description>
 		</method>
 		<method name="append_import_external_resource">
