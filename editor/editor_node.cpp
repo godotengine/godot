@@ -7014,7 +7014,11 @@ static Node *_resource_get_edited_scene() {
 }
 
 void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
-	callable_mp_static(&EditorNode::_print_handler_impl).call_deferred(p_string, p_error, p_rich);
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(&EditorNode::_print_handler_impl).call_deferred(p_string, p_error, p_rich);
+	} else {
+		_print_handler_impl(p_string, p_error, p_rich);
+	}
 }
 
 void EditorNode::_print_handler_impl(const String &p_string, bool p_error, bool p_rich) {
