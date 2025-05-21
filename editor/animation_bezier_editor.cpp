@@ -1141,6 +1141,13 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		Point2 pos = mb->get_position();
+		bool no_mod_key_pressed = !mb->is_alt_pressed() && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed();
+		if (mb->is_double_click() && !moving_selection && no_mod_key_pressed) {
+			int x = pos.x - timeline->get_name_limit();
+			float ofs = x / timeline->get_zoom_scale() + timeline->get_value();
+			emit_signal(SNAME("timeline_changed"), ofs, false);
+		}
 		for (const KeyValue<int, Rect2> &E : subtracks) {
 			if (E.value.has_point(mb->get_position())) {
 				if (!locked_tracks.has(E.key) && !hidden_tracks.has(E.key)) {
@@ -2301,6 +2308,7 @@ void AnimationBezierTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single"), PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("clear_selection"));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "timeline_only")));
 }
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {

@@ -54,7 +54,9 @@ public:
 	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
 	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
 
+	template <bool p_ensure_zero = false>
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
+	_FORCE_INLINE_ static void *alloc_static_zeroed(size_t p_bytes, bool p_pad_align = false) { return alloc_static<true>(p_bytes, p_pad_align); }
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
 
@@ -107,6 +109,7 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #endif
 
 #define memalloc(m_size) Memory::alloc_static(m_size)
+#define memalloc_zeroed(m_size) Memory::alloc_static_zeroed(m_size)
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
 #define memfree(m_mem) Memory::free_static(m_mem)
 

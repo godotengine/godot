@@ -3464,18 +3464,24 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 
 	UsedChannels used_channels;
 
-	if (!c && !a) {
-		used_channels = USED_CHANNELS_L;
-	} else if (!c && a) {
-		used_channels = USED_CHANNELS_LA;
-	} else if (r && !g && !b && !a) {
-		used_channels = USED_CHANNELS_R;
-	} else if (r && g && !b && !a) {
-		used_channels = USED_CHANNELS_RG;
-	} else if (r && g && b && !a) {
-		used_channels = USED_CHANNELS_RGB;
+	if (!c) {
+		// Uniform RGB (grayscale).
+		if (a) {
+			used_channels = USED_CHANNELS_LA;
+		} else {
+			used_channels = USED_CHANNELS_L;
+		}
 	} else {
-		used_channels = USED_CHANNELS_RGBA;
+		// Colored image.
+		if (a) {
+			used_channels = USED_CHANNELS_RGBA;
+		} else if (b) {
+			used_channels = USED_CHANNELS_RGB;
+		} else if (g) {
+			used_channels = USED_CHANNELS_RG;
+		} else {
+			used_channels = USED_CHANNELS_R;
+		}
 	}
 
 	if (p_source == COMPRESS_SOURCE_SRGB && (used_channels == USED_CHANNELS_R || used_channels == USED_CHANNELS_RG)) {

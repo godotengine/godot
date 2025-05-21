@@ -82,7 +82,7 @@ namespace {
 String get_hostfxr_file_name() {
 #if defined(WINDOWS_ENABLED)
 	return "hostfxr.dll";
-#elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#elif defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	return "libhostfxr.dylib";
 #else
 	return "libhostfxr.so";

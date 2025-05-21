@@ -317,10 +317,6 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 // Limit the depth of recursive algorithms when dealing with Array/Dictionary
 #define MAX_RECURSION 100
 
-#ifdef DEBUG_ENABLED
-#define DEBUG_METHODS_ENABLED
-#endif
-
 // Macro GD_IS_DEFINED() allows to check if a macro is defined. It needs to be defined to anything (say 1) to work.
 #define __GDARG_PLACEHOLDER_1 false,
 #define __gd_take_second_arg(__ignored, val, ...) val
