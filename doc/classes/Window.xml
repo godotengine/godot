@@ -578,6 +578,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
+			The human-readable node description that is reported to assistive apps.
+		</member>
+		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
+			The human-readable node name that is reported to assistive apps.
+		</member>
 		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the window will be on top of all other windows. Does not work if [member transient] is enabled.
 		</member>

@@ -43,13 +43,6 @@
 				Returning an empty array produces no warnings.
 			</description>
 		</method>
-		<method name="_get_accessibility_container_name" qualifiers="virtual const">
-			<return type="String" />
-			<param index="0" name="node" type="Node" />
-			<description>
-				Return a human-readable description of the position of [param node] child in the custom container, added to the node name.
-			</description>
-		</method>
 		<method name="_get_configuration_warnings" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
@@ -1035,27 +1028,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="accessibility_controls_nodes" type="NodePath[]" setter="set_accessibility_controls_nodes" getter="get_accessibility_controls_nodes" default="[]">
-			The list of nodes which are controlled by this node.
-		</member>
-		<member name="accessibility_described_by_nodes" type="NodePath[]" setter="set_accessibility_described_by_nodes" getter="get_accessibility_described_by_nodes" default="[]">
-			The list of nodes which are describing this node.
-		</member>
-		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
-			The human-readable node description that is reported to assistive apps.
-		</member>
-		<member name="accessibility_flow_to_nodes" type="NodePath[]" setter="set_accessibility_flow_to_nodes" getter="get_accessibility_flow_to_nodes" default="[]">
-			The list of nodes which this node flows into.
-		</member>
-		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
-			The list of nodes which label this node.
-		</member>
-		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="DisplayServer.AccessibilityLiveMode" default="0">
-			Live region update mode, a live region is [Node] that is updated as a result of an external event when user focus may be elsewhere.
-		</member>
-		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
-			The human-readable node name that is reported to assistive apps.
-		</member>
 		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
 			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for POT generation.
 			[b]Note:[/b] For the root node, auto translate mode can also be set via [member ProjectSettings.internationalization/rendering/root_node_auto_translate].
