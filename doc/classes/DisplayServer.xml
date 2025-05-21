@@ -2750,51 +2750,46 @@
 		<constant name="ROLE_TOOLTIP" value="45" enum="AccessibilityRole">
 			Tooltip element.
 		</constant>
-		<constant name="POPUP_UNKNOWN" value="0" enum="AccessibilityPopupType">
-			Other/unknown popup type.
-		</constant>
-		<constant name="POPUP_MENU" value="1" enum="AccessibilityPopupType">
+		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType">
 			Popup menu.
 		</constant>
-		<constant name="POPUP_LIST" value="2" enum="AccessibilityPopupType">
+		<constant name="POPUP_LIST" value="1" enum="AccessibilityPopupType">
 			Popup list.
 		</constant>
-		<constant name="POPUP_TREE" value="3" enum="AccessibilityPopupType">
+		<constant name="POPUP_TREE" value="2" enum="AccessibilityPopupType">
 			Popup tree view.
 		</constant>
-		<constant name="POPUP_DIALOG" value="4" enum="AccessibilityPopupType">
+		<constant name="POPUP_DIALOG" value="3" enum="AccessibilityPopupType">
 			Popup dialog.
 		</constant>
 		<constant name="FLAG_HIDDEN" value="0" enum="AccessibilityFlags">
 			Element is hidden for accessibility tools.
 		</constant>
-		<constant name="FLAG_LINKED" value="1" enum="AccessibilityFlags">
-		</constant>
-		<constant name="FLAG_MULTISELECTABLE" value="2" enum="AccessibilityFlags">
+		<constant name="FLAG_MULTISELECTABLE" value="1" enum="AccessibilityFlags">
 			Element is support multiple item selection.
 		</constant>
-		<constant name="FLAG_REQUIRED" value="3" enum="AccessibilityFlags">
+		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags">
 			Element require user input.
 		</constant>
-		<constant name="FLAG_VISITED" value="4" enum="AccessibilityFlags">
+		<constant name="FLAG_VISITED" value="3" enum="AccessibilityFlags">
 			Element is a visited link.
 		</constant>
-		<constant name="FLAG_BUSY" value="5" enum="AccessibilityFlags">
+		<constant name="FLAG_BUSY" value="4" enum="AccessibilityFlags">
 			Element content is not ready (e.g. loading).
 		</constant>
-		<constant name="FLAG_MODAL" value="6" enum="AccessibilityFlags">
+		<constant name="FLAG_MODAL" value="5" enum="AccessibilityFlags">
 			Element is modal window.
 		</constant>
-		<constant name="FLAG_TOUCH_PASSTHROUGH" value="7" enum="AccessibilityFlags">
+		<constant name="FLAG_TOUCH_PASSTHROUGH" value="6" enum="AccessibilityFlags">
 			Element allows touches to be passed through when a screen reader is in touch exploration mode.
 		</constant>
-		<constant name="FLAG_READONLY" value="8" enum="AccessibilityFlags">
+		<constant name="FLAG_READONLY" value="7" enum="AccessibilityFlags">
 			Element is text field with selectable but read-only text.
 		</constant>
-		<constant name="FLAG_DISABLED" value="9" enum="AccessibilityFlags">
+		<constant name="FLAG_DISABLED" value="8" enum="AccessibilityFlags">
 			Element is disabled.
 		</constant>
-		<constant name="FLAG_CLIPS_CHILDREN" value="10" enum="AccessibilityFlags">
+		<constant name="FLAG_CLIPS_CHILDREN" value="9" enum="AccessibilityFlags">
 			Element clips children.
 		</constant>
 		<constant name="ACTION_CLICK" value="0" enum="AccessibilityAction">

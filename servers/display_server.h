@@ -602,7 +602,6 @@ public:
 	};
 
 	enum AccessibilityPopupType {
-		POPUP_UNKNOWN,
 		POPUP_MENU,
 		POPUP_LIST,
 		POPUP_TREE,
@@ -611,7 +610,6 @@ public:
 
 	enum AccessibilityFlags {
 		FLAG_HIDDEN,
-		FLAG_LINKED,
 		FLAG_MULTISELECTABLE,
 		FLAG_REQUIRED,
 		FLAG_VISITED,
