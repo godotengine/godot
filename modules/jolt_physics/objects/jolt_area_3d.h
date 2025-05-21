@@ -133,11 +133,7 @@ private:
 	void _notify_body_entered(const JPH::BodyID &p_body_id);
 	void _notify_body_exited(const JPH::BodyID &p_body_id);
 
-	void _force_bodies_entered();
-	void _force_bodies_exited(bool p_remove);
-
-	void _force_areas_entered();
-	void _force_areas_exited(bool p_remove);
+	void _remove_all_overlaps();
 
 	void _update_sleeping();
 	void _update_group_filter();
