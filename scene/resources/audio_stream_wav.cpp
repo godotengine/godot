@@ -520,6 +520,91 @@ Vector<uint8_t> AudioStreamWAV::get_data() const {
 	return data;
 }
 
+Error AudioStreamWAV::save_to_wav_buffer(Vector<uint8_t> wav) {
+	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM || format == AudioStreamWAV::FORMAT_QOA) {
+		WARN_PRINT("Saving IMA_ADPCM and QOA samples is not supported yet");
+		return ERR_UNAVAILABLE;
+	}
+
+	int sub_chunk_2_size = data_bytes; //Subchunk2Size = Size of data in bytes
+
+	// Format code
+	// 1:PCM format (for 8 or 16 bit)
+	// 3:IEEE float format
+	int format_code = (format == FORMAT_IMA_ADPCM) ? 3 : 1;
+
+	int n_channels = stereo ? 2 : 1;
+
+	long sample_rate = mix_rate;
+
+	int byte_pr_sample = 0;
+	switch (format) {
+		case AudioStreamWAV::FORMAT_8_BITS:
+			byte_pr_sample = 1;
+			break;
+		case AudioStreamWAV::FORMAT_16_BITS:
+		case AudioStreamWAV::FORMAT_QOA:
+			byte_pr_sample = 2;
+			break;
+		case AudioStreamWAV::FORMAT_IMA_ADPCM:
+			byte_pr_sample = 4;
+			break;
+	}
+
+	wav.clear();
+	// Create WAV Header
+	wav.push_back('R'); //ChunkID
+	wav.push_back('I');
+	wav.push_back('F');
+	wav.push_back('F');
+	push_back_32(wav, sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
+	wav.push_back('W'); //Format
+	wav.push_back('A');
+	wav.push_back('V');
+	wav.push_back('E');
+	wav.push_back('f'); //Subchunk1ID
+	wav.push_back('m');
+	wav.push_back('t');
+	wav.push_back(' ');
+	push_back_32(wav, 16); //Subchunk1Size = 16
+	push_back_16(wav, format_code); //AudioFormat
+	push_back_16(wav, n_channels); //Number of Channels
+	push_back_32(wav, sample_rate); //SampleRate
+	push_back_32(wav, sample_rate * n_channels * byte_pr_sample); //ByteRate
+	push_back_16(wav, n_channels * byte_pr_sample); //BlockAlign = NumChannels * BytePrSample
+	push_back_16(wav, byte_pr_sample * 8); //BitsPerSample
+	wav.push_back('d'); //Subchunk2ID
+	wav.push_back('a');
+	wav.push_back('t');
+	wav.push_back('a');
+	push_back_32(wav, sub_chunk_2_size); //Subchunk2Size
+
+	// Add data
+	Vector<uint8_t> stream_data = get_data();
+	const uint8_t *read_data = stream_data.ptr();
+	switch (format) {
+		case AudioStreamWAV::FORMAT_8_BITS:
+			for (unsigned int i = 0; i < data_bytes; i++) {
+				uint8_t data_point = (read_data[i] + 128);
+				wav.push_back(data_point);
+			}
+			break;
+		case AudioStreamWAV::FORMAT_16_BITS:
+		case AudioStreamWAV::FORMAT_QOA:
+			for (unsigned int i = 0; i < data_bytes / 2; i++) {
+				uint16_t data_point = decode_uint16(&read_data[i * 2]);
+				push_back_16(wav, data_point);
+			}
+			break;
+		case AudioStreamWAV::FORMAT_IMA_ADPCM:
+			//Unimplemented
+			break;
+	}
+
+	return OK;
+}
+
+
 Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM || format == AudioStreamWAV::FORMAT_QOA) {
 		WARN_PRINT("Saving IMA_ADPCM and QOA samples is not supported yet");
