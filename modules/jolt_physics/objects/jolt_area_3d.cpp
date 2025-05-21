@@ -83,7 +83,7 @@ void JoltArea3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings);
+	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings, _should_sleep());
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -275,6 +275,18 @@ void JoltArea3D::_force_areas_exited(bool p_remove) {
 	}
 }
 
+void JoltArea3D::_update_sleeping() {
+	if (space == nullptr) {
+		return;
+	}
+
+	if (_should_sleep()) {
+		space->get_body_iface().DeactivateBody(jolt_body->GetID());
+	} else {
+		space->get_body_iface().ActivateBody(jolt_body->GetID());
+	}
+}
+
 void JoltArea3D::_update_group_filter() {
 	if (!in_space()) {
 		return;
@@ -316,19 +328,23 @@ void JoltArea3D::_events_changed() {
 }
 
 void JoltArea3D::_body_monitoring_changed() {
-	if (has_body_monitor_callback()) {
+	if (is_monitoring_bodies()) {
 		_force_bodies_entered();
 	} else {
 		_force_bodies_exited(false);
 	}
+
+	_update_sleeping();
 }
 
 void JoltArea3D::_area_monitoring_changed() {
-	if (has_area_monitor_callback()) {
+	if (is_monitoring_areas()) {
 		_force_areas_entered();
 	} else {
 		_force_areas_exited(false);
 	}
+
+	_update_sleeping();
 }
 
 void JoltArea3D::_monitorable_changed() {
@@ -513,7 +529,7 @@ void JoltArea3D::set_monitorable(bool p_monitorable) {
 }
 
 bool JoltArea3D::can_monitor(const JoltBody3D &p_other) const {
-	return (collision_mask & p_other.get_collision_layer()) != 0;
+	return is_monitoring_bodies() && (collision_mask & p_other.get_collision_layer()) != 0;
 }
 
 bool JoltArea3D::can_monitor(const JoltSoftBody3D &p_other) const {
@@ -521,7 +537,7 @@ bool JoltArea3D::can_monitor(const JoltSoftBody3D &p_other) const {
 }
 
 bool JoltArea3D::can_monitor(const JoltArea3D &p_other) const {
-	return p_other.is_monitorable() && (collision_mask & p_other.get_collision_layer()) != 0;
+	return is_monitoring_areas() && p_other.is_monitorable() && (collision_mask & p_other.get_collision_layer()) != 0;
 }
 
 bool JoltArea3D::can_interact_with(const JoltBody3D &p_other) const {
