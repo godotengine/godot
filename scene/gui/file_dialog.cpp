@@ -1050,6 +1050,15 @@ void FileDialog::update_filters() {
 	processed_filters.push_back("*.*;" + f + ";application/octet-stream");
 }
 
+void FileDialog::update_features() {
+	_update_make_dir_visible();
+	show_hidden->set_visible(features[FEATURE_HIDDEN_FILES]);
+	show_filename_filter_button->set_visible(features[FEATURE_FILE_FILTER]);
+	file_sort_button->set_visible(features[FEATURE_FILE_SORT]);
+	show_hidden_separator->set_visible(features[FEATURE_HIDDEN_FILES] && (features[FEATURE_FILE_FILTER] || features[FEATURE_FILE_SORT]));
+	// TODO favorites, recent
+}
+
 void FileDialog::clear_filename_filter() {
 	set_filename_filter("");
 	update_filename_filter_gui();
@@ -1202,21 +1211,18 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 			if (mode_overrides_title) {
 				set_title(ETR("Open a File"));
 			}
-			make_dir_button->hide();
 			break;
 		case FILE_MODE_OPEN_FILES:
 			set_default_ok_text(ETR("Open"));
 			if (mode_overrides_title) {
 				set_title(ETR("Open File(s)"));
 			}
-			make_dir_button->hide();
 			break;
 		case FILE_MODE_OPEN_DIR:
 			set_default_ok_text(ETR("Select Current Folder"));
 			if (mode_overrides_title) {
 				set_title(ETR("Open a Directory"));
 			}
-			make_dir_button->show();
 			break;
 		case FILE_MODE_OPEN_ANY:
 			set_default_ok_text(ETR("Open"));
@@ -1230,9 +1236,9 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 			if (mode_overrides_title) {
 				set_title(ETR("Save a File"));
 			}
-			make_dir_button->show();
 			break;
 	}
+	_update_make_dir_visible();
 
 	if (mode == FILE_MODE_OPEN_FILES) {
 		file_list->set_select_mode(ItemList::SELECT_MULTI);
@@ -1245,6 +1251,20 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 
 FileDialog::FileMode FileDialog::get_file_mode() const {
 	return mode;
+}
+
+void FileDialog::set_feature_enabled(Feature p_feature, bool p_enabled) {
+	ERR_FAIL_INDEX(p_feature, FEATURE_MAX);
+	if (features[p_feature] == p_enabled) {
+		return;
+	}
+	features[p_feature] = p_enabled;
+	update_features();
+}
+
+bool FileDialog::is_feature_enabled(Feature p_feature) const {
+	ERR_FAIL_INDEX_V(p_feature, FEATURE_MAX, false);
+	return features[p_feature];
 }
 
 void FileDialog::set_access(Access p_access) {
@@ -1304,6 +1324,10 @@ void FileDialog::_setup_button(Button *p_button, const Ref<Texture2D> &p_icon) {
 	p_button->add_theme_color_override(SNAME("icon_focus_color"), theme_cache.icon_focus_color);
 	p_button->add_theme_color_override(SNAME("icon_pressed_color"), theme_cache.icon_pressed_color);
 	p_button->end_bulk_theme_override();
+}
+
+void FileDialog::_update_make_dir_visible() {
+	make_dir_container->set_visible(features[FEATURE_CREATE_FOLDER] && mode != FILE_MODE_OPEN_FILE && mode != FILE_MODE_OPEN_FILES);
 }
 
 FileDialog::Access FileDialog::get_access() const {
@@ -1590,6 +1614,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &FileDialog::is_showing_hidden_files);
 	ClassDB::bind_method(D_METHOD("set_use_native_dialog", "native"), &FileDialog::set_use_native_dialog);
 	ClassDB::bind_method(D_METHOD("get_use_native_dialog"), &FileDialog::get_use_native_dialog);
+	ClassDB::bind_method(D_METHOD("set_feature_enabled", "feature", "enabled"), &FileDialog::set_feature_enabled);
+	ClassDB::bind_method(D_METHOD("is_feature_enabled", "feature"), &FileDialog::is_feature_enabled);
 	ClassDB::bind_method(D_METHOD("deselect_all"), &FileDialog::deselect_all);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
@@ -1600,9 +1626,20 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "root_subfolder"), "set_root_subfolder", "get_root_subfolder");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename_filter"), "set_filename_filter", "get_filename_filter");
-	ADD_ARRAY_COUNT("Options", "option_count", "set_option_count", "get_option_count", "option_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_native_dialog"), "set_use_native_dialog", "get_use_native_dialog");
+
+	ADD_ARRAY_COUNT("Options", "option_count", "set_option_count", "get_option_count", "option_");
+
+	ADD_GROUP("Customization", "");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "hidden_files_toggle_enabled"), "set_feature_enabled", "is_feature_enabled", FEATURE_HIDDEN_FILES);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "file_filter_enabled"), "set_feature_enabled", "is_feature_enabled", FEATURE_FILE_FILTER);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "file_sort_options_enabled"), "set_feature_enabled", "is_feature_enabled", FEATURE_FILE_SORT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "folder_creation_enabled"), "set_feature_enabled", "is_feature_enabled", FEATURE_CREATE_FOLDER);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "favorites_enabled"), "set_feature_enabled", "is_feature_enabled", FEATURE_FAVORITES);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "recent_enabled"), "set_feature_enabled", "is_feature_enabled", FEATURE_RECENT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "layout_toggle_enabled"), "set_feature_enabled", "is_feature_enabled", FEATURE_LAYOUT);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
@@ -1621,6 +1658,14 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ACCESS_RESOURCES);
 	BIND_ENUM_CONSTANT(ACCESS_USERDATA);
 	BIND_ENUM_CONSTANT(ACCESS_FILESYSTEM);
+
+	BIND_ENUM_CONSTANT(FEATURE_HIDDEN_FILES);
+	BIND_ENUM_CONSTANT(FEATURE_CREATE_FOLDER);
+	BIND_ENUM_CONSTANT(FEATURE_FILE_FILTER);
+	BIND_ENUM_CONSTANT(FEATURE_FILE_SORT);
+	BIND_ENUM_CONSTANT(FEATURE_FAVORITES);
+	BIND_ENUM_CONSTANT(FEATURE_RECENT);
+	BIND_ENUM_CONSTANT(FEATURE_LAYOUT);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, forward_folder);
@@ -1715,6 +1760,10 @@ FileDialog::FileDialog() {
 	set_size(Size2(640, 360));
 	set_default_ok_text(ETR("Save")); // Default mode text.
 
+	for (int i = 0; i < FEATURE_MAX; i++) {
+		features[i] = true;
+	}
+
 	show_hidden_files = default_show_hidden_files;
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
@@ -1775,13 +1824,16 @@ FileDialog::FileDialog() {
 	top_toolbar->add_child(refresh_button);
 	refresh_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::update_file_list));
 
-	top_toolbar->add_child(memnew(VSeparator));
+	make_dir_container = memnew(HBoxContainer);
+	top_toolbar->add_child(make_dir_container);
+
+	make_dir_container->add_child(memnew(VSeparator));
 
 	make_dir_button = memnew(Button);
 	make_dir_button->set_theme_type_variation(SceneStringName(FlatButton));
 	make_dir_button->set_accessibility_name(ETR("Create New Folder"));
 	make_dir_button->set_tooltip_text(ETR("Create a new folder."));
-	top_toolbar->add_child(make_dir_button);
+	make_dir_container->add_child(make_dir_button);
 	make_dir_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_make_dir));
 
 	HBoxContainer *lower_toolbar = memnew(HBoxContainer);
@@ -1803,7 +1855,8 @@ FileDialog::FileDialog() {
 	lower_toolbar->add_child(show_hidden);
 	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_hidden_files));
 
-	lower_toolbar->add_child(memnew(VSeparator));
+	show_hidden_separator = memnew(VSeparator);
+	lower_toolbar->add_child(show_hidden_separator);
 
 	show_filename_filter_button = memnew(Button);
 	show_filename_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
