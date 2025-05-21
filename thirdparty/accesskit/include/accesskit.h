@@ -134,7 +134,6 @@ enum accesskit_has_popup
     : uint8_t
 #endif  // __cplusplus
 {
-  ACCESSKIT_HAS_POPUP_TRUE,
   ACCESSKIT_HAS_POPUP_MENU,
   ACCESSKIT_HAS_POPUP_LISTBOX,
   ACCESSKIT_HAS_POPUP_TREE,
@@ -988,12 +987,6 @@ bool accesskit_node_is_hidden(const struct accesskit_node *node);
 void accesskit_node_set_hidden(struct accesskit_node *node);
 
 void accesskit_node_clear_hidden(struct accesskit_node *node);
-
-bool accesskit_node_is_linked(const struct accesskit_node *node);
-
-void accesskit_node_set_linked(struct accesskit_node *node);
-
-void accesskit_node_clear_linked(struct accesskit_node *node);
 
 bool accesskit_node_is_multiselectable(const struct accesskit_node *node);
 
@@ -2234,6 +2227,15 @@ void accesskit_unix_adapter_free(struct accesskit_unix_adapter *adapter);
 
 #if (defined(__linux__) || defined(__DragonFly__) || defined(__FreeBSD__) || \
      defined(__NetBSD__) || defined(__OpenBSD__))
+/**
+ * Set the bounds of the top-level window. The outer bounds contain any
+ * window decoration and borders.
+ *
+ * # Caveats
+ *
+ * Since an application can not get the position of its window under
+ * Wayland, calling this method only makes sense under X11.
+ */
 void accesskit_unix_adapter_set_root_window_bounds(
     struct accesskit_unix_adapter *adapter, struct accesskit_rect outer,
     struct accesskit_rect inner);

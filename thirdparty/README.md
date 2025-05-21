@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.15.1 (0d1da94a33708041b07c61eb702c67cfa3a5f95b, 2025)
+- Version: 0.16.0 (06c1779473ff4304f42ea254f77fef2e33f982b0, 2025)
 - License: MIT
 
 Files extracted from upstream source:
