@@ -2746,6 +2746,31 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, vformat("Can't find file '%s' during file reimport.", p_file));
 	}
 
+	// Perform checks in advance for contents that will never be valid resources,
+	// and give user-friendly error messages.
+	ERR_FAIL_COND_V_MSG(FileAccess::get_size(p_file) == 0, ERR_FILE_CORRUPT,
+			vformat("Resource file is corrupt (empty size): %s", p_file));
+
+	Error fa_err;
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::READ, &fa_err);
+	ERR_FAIL_COND_V_MSG(fa_err != OK, fa_err,
+			vformat("Can't open resource file: %s", p_file));
+
+	// Handle Git LFS pointer files that haven't been replaced
+	// with the actual file by running `git lfs pull` yet.
+	// Don't use `get_line()` as it'll print Unicode errors when reading a binary file
+	// (we don't know whether the file is text or binary).
+	const char *sample = "version https://git-lfs";
+	bool match = true;
+	for (int i = 0; sample[i] != 0; i++) {
+		if (file->eof_reached() || sample[i] != file->get_8()) {
+			match = false;
+			break;
+		}
+	}
+	ERR_FAIL_COND_V_MSG(match, ERR_FILE_UNRECOGNIZED,
+			vformat("Resource file is a Git LFS pointer (run `git lfs pull` to fetch it): %s", p_file));
+
 	//try to obtain existing params
 
 	HashMap<StringName, Variant> params = p_custom_options;
