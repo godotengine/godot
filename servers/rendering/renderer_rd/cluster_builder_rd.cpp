@@ -419,7 +419,7 @@ void ClusterBuilderRD::begin(const Transform3D &p_view_transform, const Projecti
 void ClusterBuilderRD::bake_cluster() {
 	RENDER_TIMESTAMP("> Bake 3D Cluster");
 
-	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Bake Light Cluster"));
 
 	// Clear cluster buffer.
 	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size);

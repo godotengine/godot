@@ -1838,7 +1838,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	p_render_data->scene_data->emissive_exposure_normalization = -1.0;
 
-	RD::get_singleton()->draw_command_begin_label("Render Setup");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Render Setup"));
 
 	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
 	_setup_voxelgis(*p_render_data->voxel_gi_instances);
@@ -2001,7 +2001,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
-			RD::get_singleton()->draw_command_begin_label("Setup Sky");
+			RD::get_singleton()->draw_command_begin_label(Span<char>("Setup Sky"));
 
 			// Setup our sky render information for this frame/viewport
 			sky.setup_sky(p_render_data, screen_size);
@@ -2063,7 +2063,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			_post_prepass_render(p_render_data, using_sdfgi || using_voxelgi);
 		}
 
-		RD::get_singleton()->draw_command_begin_label("Render Depth Pre-Pass");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("Render Depth Pre-Pass"));
 
 		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, RID(), samplers);
 
@@ -2075,7 +2075,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		if (use_msaa) {
 			RENDER_TIMESTAMP("Resolve Depth Pre-Pass (MSAA)");
-			RD::get_singleton()->draw_command_begin_label("Resolve Depth Pre-Pass (MSAA)");
+			RD::get_singleton()->draw_command_begin_label(Span<char>("Resolve Depth Pre-Pass (MSAA)"));
 			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI) {
 				for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 					resolve_effects->resolve_gi(rb->get_depth_msaa(v), rb_data->get_normal_roughness_msaa(v), using_voxelgi ? rb_data->get_voxelgi_msaa(v) : RID(), rb->get_depth_texture(v), rb_data->get_normal_roughness(v), using_voxelgi ? rb_data->get_voxelgi(v) : RID(), rb->get_internal_size(), texture_multisamples[msaa]);
@@ -2114,7 +2114,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 
-	RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Render Opaque Pass"));
 
 	p_render_data->scene_data->directional_light_count = p_render_data->directional_light_count;
 	p_render_data->scene_data->opaque_prepass_threshold = 0.0f;
@@ -2167,7 +2167,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		}
 
 		if (render_motion_pass) {
-			RD::get_singleton()->draw_command_begin_label("Render Motion Pass");
+			RD::get_singleton()->draw_command_begin_label(Span<char>("Render Motion Pass"));
 
 			RENDER_TIMESTAMP("Render Motion Pass");
 
@@ -2202,7 +2202,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		dc.set_depth_correction(true);
 		Projection cm = (dc * p_render_data->scene_data->cam_projection) * Projection(p_render_data->scene_data->cam_transform.affine_inverse());
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(color_only_framebuffer);
-		RD::get_singleton()->draw_command_begin_label("Debug VoxelGIs");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("Debug VoxelGIs"));
 		for (int i = 0; i < (int)p_render_data->voxel_gi_instances->size(); i++) {
 			gi.debug_voxel_gi((*p_render_data->voxel_gi_instances)[i], draw_list, color_only_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION, 1.0);
 		}
@@ -2223,7 +2223,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	if (draw_sky || draw_sky_fog_only) {
 		RENDER_TIMESTAMP("Render Sky");
 
-		RD::get_singleton()->draw_command_begin_label("Draw Sky");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("Draw Sky"));
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(color_only_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0u, p_render_data->render_region);
 
 		sky.draw_sky(draw_list, rb, p_render_data->environment, color_only_framebuffer, time, sky_luminance_multiplier, sky_brightness_multiplier);
@@ -2262,14 +2262,14 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	if (using_separate_specular) {
 		if (using_sss) {
 			RENDER_TIMESTAMP("Sub-Surface Scattering");
-			RD::get_singleton()->draw_command_begin_label("Process Sub-Surface Scattering");
+			RD::get_singleton()->draw_command_begin_label(Span<char>("Process Sub-Surface Scattering"));
 			_process_sss(rb, p_render_data->scene_data->cam_projection);
 			RD::get_singleton()->draw_command_end_label();
 		}
 
 		if (using_ssr) {
 			RENDER_TIMESTAMP("Screen-Space Reflections");
-			RD::get_singleton()->draw_command_begin_label("Process Screen-Space Reflections");
+			RD::get_singleton()->draw_command_begin_label(Span<char>("Process Screen-Space Reflections"));
 			RID specular_views[RendererSceneRender::MAX_RENDER_VIEWS];
 			for (uint32_t v = 0; v < p_render_data->scene_data->view_count; v++) {
 				specular_views[v] = rb_data->get_specular(v);
@@ -2346,7 +2346,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
 
-	RD::get_singleton()->draw_command_begin_label("Render 3D Transparent Pass");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Render 3D Transparent Pass"));
 
 	rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
 
@@ -2368,7 +2368,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RENDER_TIMESTAMP("Resolve");
 
-	RD::get_singleton()->draw_command_begin_label("Resolve");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Resolve"));
 
 	if (rb_data.is_valid() && use_msaa) {
 		bool resolve_velocity_buffer = (using_taa || using_upscaling || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
@@ -2389,7 +2389,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy framebuffer for SSIL");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Copy framebuffer for SSIL"));
 	if (using_ssil) {
 		RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL)");
 		_copy_framebuffer_to_ssil(rb);
@@ -2405,7 +2405,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				exposure = luminance->get_current_luminance_buffer(rb);
 			}
 
-			RD::get_singleton()->draw_command_begin_label("FSR2");
+			RD::get_singleton()->draw_command_begin_label(Span<char>("FSR2"));
 			RENDER_TIMESTAMP("FSR2");
 
 			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
@@ -2452,7 +2452,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				exposure = luminance->get_current_luminance_buffer(rb);
 			}
 
-			RD::get_singleton()->draw_command_begin_label("MetalFX Temporal");
+			RD::get_singleton()->draw_command_begin_label(Span<char>("MetalFX Temporal"));
 			// Scale to ±0.5.
 			Vector2 jitter = p_render_data->scene_data->taa_jitter * 0.5f;
 			jitter *= Vector2(1.0, -1.0); // Flip y-axis as bottom left is origin.
@@ -2473,7 +2473,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			RD::get_singleton()->draw_command_end_label();
 #endif
 		} else if (using_taa) {
-			RD::get_singleton()->draw_command_begin_label("TAA");
+			RD::get_singleton()->draw_command_begin_label(Span<char>("TAA"));
 			RENDER_TIMESTAMP("TAA");
 			taa->process(rb, _render_buffers_get_color_format(), p_render_data->scene_data->z_near, p_render_data->scene_data->z_far);
 			RD::get_singleton()->draw_command_end_label();
@@ -2719,7 +2719,7 @@ void RenderForwardClustered::_render_shadow_pass(RID p_light, RID p_shadow_atlas
 
 void RenderForwardClustered::_render_shadow_begin() {
 	scene_state.shadow_passes.clear();
-	RD::get_singleton()->draw_command_begin_label("Shadow Setup");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Shadow Setup"));
 	_update_render_base_uniform_set();
 
 	render_list[RENDER_LIST_SECONDARY].clear();
@@ -2810,7 +2810,7 @@ void RenderForwardClustered::_render_shadow_process() {
 	RD::get_singleton()->draw_command_end_label();
 }
 void RenderForwardClustered::_render_shadow_end() {
-	RD::get_singleton()->draw_command_begin_label("Shadow Render");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Shadow Render"));
 
 	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
 		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, 0, true, false, shadow_pass.rp_uniform_set, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
@@ -2823,7 +2823,7 @@ void RenderForwardClustered::_render_shadow_end() {
 void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) {
 	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
-	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Render Collider Heightfield"));
 
 	RenderSceneDataRD scene_data;
 	scene_data.flip_y = true;
@@ -2870,7 +2870,7 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
-	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Render 3D Material"));
 
 	RenderSceneDataRD scene_data;
 	scene_data.cam_projection = p_cam_projection;
@@ -2927,7 +2927,7 @@ void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform
 void RenderForwardClustered::_render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering UV2");
 
-	RD::get_singleton()->draw_command_begin_label("Render UV2");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Render UV2"));
 
 	RenderSceneDataRD scene_data;
 	scene_data.dual_paraboloid_side = 0;
@@ -3002,7 +3002,7 @@ void RenderForwardClustered::_render_uv2(const PagedArray<RenderGeometryInstance
 void RenderForwardClustered::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Render SDFGI");
 
-	RD::get_singleton()->draw_command_begin_label("Render SDFGI Voxel");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Render SDFGI Voxel"));
 
 	RenderSceneDataRD scene_data;
 
