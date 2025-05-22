@@ -7,3 +7,11 @@ should instead be used to justify these changes and describe how users should wo
 Add new entries at the end of the file.
 
 ## Changes between 4.5-stable and 4.6-stable
+
+GH-100414
+---------
+Validate extension JSON: Error: Field 'builtin_classes/Vector2/constants/INF': value changed value in new API, from "Vector2(inf, inf)" to "Vector2(INF, INF)".
+Validate extension JSON: Error: Field 'builtin_classes/Vector3/constants/INF': value changed value in new API, from "Vector3(inf, inf, inf)" to "Vector3(INF, INF, INF)".
+Validate extension JSON: Error: Field 'builtin_classes/Vector4/constants/INF': value changed value in new API, from "Vector4(inf, inf, inf, inf)" to "Vector4(INF, INF, INF, INF)".
+
+Infinity is now serialized as "INF" instead of "inf".
