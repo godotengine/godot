@@ -162,15 +162,20 @@ class EditorPropertyPath : public EditorProperty {
 	bool global = false;
 	bool save_mode = false;
 	bool enable_uid = false;
+	bool display_uid = true;
+
 	EditorFileDialog *dialog = nullptr;
 	LineEdit *path = nullptr;
 	Button *path_edit = nullptr;
+	Button *toggle_uid = nullptr;
 
-	String _get_path_text();
+	String _get_path_text(bool p_allow_uid = false);
 
 	void _path_selected(const String &p_path);
 	void _path_pressed();
 	void _path_focus_exited();
+	void _toggle_uid_display();
+	void _update_uid_icon();
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 

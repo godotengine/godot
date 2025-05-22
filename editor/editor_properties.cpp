@@ -579,9 +579,9 @@ void EditorPropertyPath::_path_selected(const String &p_path) {
 	update_property();
 }
 
-String EditorPropertyPath::_get_path_text() {
+String EditorPropertyPath::_get_path_text(bool p_allow_uid) {
 	String full_path = get_edited_property_value();
-	if (full_path.begins_with("uid://")) {
+	if (!p_allow_uid && full_path.begins_with("uid://")) {
 		full_path = ResourceUID::uid_to_path(full_path);
 	}
 
@@ -624,9 +624,11 @@ void EditorPropertyPath::_path_pressed() {
 }
 
 void EditorPropertyPath::update_property() {
-	String full_path = _get_path_text();
+	String full_path = _get_path_text(display_uid);
 	path->set_text(full_path);
 	path->set_tooltip_text(full_path);
+
+	toggle_uid->set_visible(get_edited_property_value().operator String().begins_with("uid://"));
 }
 
 void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder, bool p_global, bool p_enable_uid) {
@@ -648,12 +650,23 @@ void EditorPropertyPath::_notification(int p_what) {
 			} else {
 				path_edit->set_button_icon(get_editor_theme_icon(SNAME("FileBrowse")));
 			}
+			_update_uid_icon();
 		} break;
 	}
 }
 
 void EditorPropertyPath::_path_focus_exited() {
 	_path_selected(path->get_text());
+}
+
+void EditorPropertyPath::_toggle_uid_display() {
+	display_uid = !display_uid;
+	_update_uid_icon();
+	update_property();
+}
+
+void EditorPropertyPath::_update_uid_icon() {
+	toggle_uid->set_button_icon(get_editor_theme_icon(display_uid ? SNAME("UID") : SNAME("NodePath")));
 }
 
 void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -708,11 +721,17 @@ EditorPropertyPath::EditorPropertyPath() {
 
 	path_edit = memnew(Button);
 	path_edit->set_accessibility_name(TTRC("Edit"));
-	path_edit->set_clip_text(true);
 	path_hb->add_child(path_edit);
 	add_focusable(path);
-	dialog = nullptr;
 	path_edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyPath::_path_pressed));
+
+	toggle_uid = memnew(Button);
+	toggle_uid->set_accessibility_name(TTRC("Toggle Display UID"));
+	toggle_uid->set_tooltip_text(TTRC("Toggles displaying between path and UID.\nThe UID is the actual value of this property."));
+	toggle_uid->set_pressed(false);
+	path_hb->add_child(toggle_uid);
+	add_focusable(toggle_uid);
+	toggle_uid->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyPath::_toggle_uid_display));
 }
 
 ///////////////////// CLASS NAME /////////////////////////
