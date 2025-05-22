@@ -527,31 +527,31 @@ inline void push_back_16(Vector<uint8_t> &r_v, uint16_t p_dest) {
 #endif
 	uint8_t *p = reinterpret_cast<uint8_t *>(&p_dest);
 	for (unsigned int i = 0; i < sizeof(uint16_t); i++) {
-		v.push_back(p[i]);
+		r_v.push_back(p[i]);
 	}
 }
 
-inline void push_back_32(Vector<uint8_t> v, uint32_t p_dest) {
+inline void push_back_32(Vector<uint8_t> &r_v, uint32_t p_dest) {
 #ifdef BIG_ENDIAN_ENABLED
 	p_dest = BSWAP32(p_dest);
 #endif
 	uint8_t *p = reinterpret_cast<uint8_t *>(&p_dest);
 	for (unsigned int i = 0; i < sizeof(uint32_t); i++) {
-		v.push_back(p[i]);
+		r_v.push_back(p[i]);
 	}
 }
 
-inline void push_back_64(Vector<uint8_t> v, uint64_t p_dest) {
+inline void push_back_64(Vector<uint8_t> &r_v, uint64_t p_dest) {
 #ifdef BIG_ENDIAN_ENABLED
 	p_dest = BSWAP64(p_dest);
 #endif
 	uint8_t *p = reinterpret_cast<uint8_t *>(&p_dest);
 	for (unsigned int i = 0; i < sizeof(uint64_t); i++) {
-		v.push_back(p[i]);
+		r_v.push_back(p[i]);
 	}
 }
 
-Error AudioStreamWAV::save_to_wav_buffer(Vector<uint8_t> wav) {
+Error AudioStreamWAV::save_to_wav_buffer(Vector<uint8_t> &r_wav) {
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM || format == AudioStreamWAV::FORMAT_QOA) {
 		WARN_PRINT("Saving IMA_ADPCM and QOA samples is not supported yet");
 		return ERR_UNAVAILABLE;
@@ -582,33 +582,33 @@ Error AudioStreamWAV::save_to_wav_buffer(Vector<uint8_t> wav) {
 			break;
 	}
 
-	wav.clear();
+	r_wav.clear();
 	// Create WAV Header
-	wav.push_back('R'); //ChunkID
-	wav.push_back('I');
-	wav.push_back('F');
-	wav.push_back('F');
-	push_back_32(wav, sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
-	wav.push_back('W'); //Format
-	wav.push_back('A');
-	wav.push_back('V');
-	wav.push_back('E');
-	wav.push_back('f'); //Subchunk1ID
-	wav.push_back('m');
-	wav.push_back('t');
-	wav.push_back(' ');
-	push_back_32(wav, 16); //Subchunk1Size = 16
-	push_back_16(wav, format_code); //AudioFormat
-	push_back_16(wav, n_channels); //Number of Channels
-	push_back_32(wav, sample_rate); //SampleRate
-	push_back_32(wav, sample_rate * n_channels * byte_pr_sample); //ByteRate
-	push_back_16(wav, n_channels * byte_pr_sample); //BlockAlign = NumChannels * BytePrSample
-	push_back_16(wav, byte_pr_sample * 8); //BitsPerSample
-	wav.push_back('d'); //Subchunk2ID
-	wav.push_back('a');
-	wav.push_back('t');
-	wav.push_back('a');
-	push_back_32(wav, sub_chunk_2_size); //Subchunk2Size
+	r_wav.push_back('R'); //ChunkID
+	r_wav.push_back('I');
+	r_wav.push_back('F');
+	r_wav.push_back('F');
+	push_back_32(r_wav, sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
+	r_wav.push_back('W'); //Format
+	r_wav.push_back('A');
+	r_wav.push_back('V');
+	r_wav.push_back('E');
+	r_wav.push_back('f'); //Subchunk1ID
+	r_wav.push_back('m');
+	r_wav.push_back('t');
+	r_wav.push_back(' ');
+	push_back_32(r_wav, 16); //Subchunk1Size = 16
+	push_back_16(r_wav, format_code); //AudioFormat
+	push_back_16(r_wav, n_channels); //Number of Channels
+	push_back_32(r_wav, sample_rate); //SampleRate
+	push_back_32(r_wav, sample_rate * n_channels * byte_pr_sample); //ByteRate
+	push_back_16(r_wav, n_channels * byte_pr_sample); //BlockAlign = NumChannels * BytePrSample
+	push_back_16(r_wav, byte_pr_sample * 8); //BitsPerSample
+	r_wav.push_back('d'); //Subchunk2ID
+	r_wav.push_back('a');
+	r_wav.push_back('t');
+	r_wav.push_back('a');
+	push_back_32(r_wav, sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
 	Vector<uint8_t> stream_data = get_data();
@@ -617,14 +617,14 @@ Error AudioStreamWAV::save_to_wav_buffer(Vector<uint8_t> wav) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
 				uint8_t data_point = (read_data[i] + 128);
-				wav.push_back(data_point);
+				r_wav.push_back(data_point);
 			}
 			break;
 		case AudioStreamWAV::FORMAT_16_BITS:
 		case AudioStreamWAV::FORMAT_QOA:
 			for (unsigned int i = 0; i < data_bytes / 2; i++) {
 				uint16_t data_point = decode_uint16(&read_data[i * 2]);
-				push_back_16(wav, data_point);
+				push_back_16(r_wav, data_point);
 			}
 			break;
 		case AudioStreamWAV::FORMAT_IMA_ADPCM:
