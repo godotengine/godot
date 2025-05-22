@@ -851,7 +851,7 @@ void Node::rpc_config(const StringName &p_method, const Variant &p_config) {
 
 Variant Node::get_rpc_config(bool script_rpc_get) const {
 	const Dictionary node_config = data.rpc_config;
-    if (script_rpc_get && get_script_instance()) { // return attached GDScript RPC configs too
+	if (script_rpc_get && get_script_instance()) { // return attached GDScript RPC configs too
 		const Dictionary script_config = get_script_instance()->get_rpc_config();
 		const Array script_names = script_config.keys();
 		Dictionary merged_config = node_config;
