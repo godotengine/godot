@@ -3484,7 +3484,7 @@ void Variant::construct_from_string(const String &p_string, Variant &r_value, Ob
 
 String Variant::get_construct_string() const {
 	String vars;
-	VariantWriter::write_to_string(*this, vars);
+	VariantWriter::write_to_string(*this, vars, nullptr, nullptr, false);
 
 	return vars;
 }

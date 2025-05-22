@@ -43,7 +43,7 @@ String DocData::get_default_value_string(const Variant &p_value) {
 		// documentation values to avoid garbage digits at the end.
 		const String s = String::num_scientific((float)p_value);
 		// Use float literals for floats in the documentation for clarity.
-		if (s != "inf" && s != "-inf" && s != "nan") {
+		if (s != "INF" && s != "-INF" && s != "NAN") {
 			if (!s.contains_char('.') && !s.contains_char('e')) {
 				return s + ".0";
 			}

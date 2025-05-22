@@ -1391,14 +1391,14 @@ String String::to_lower() const {
 
 String String::num(double p_num, int p_decimals) {
 	if (Math::is_nan(p_num)) {
-		return "nan";
+		return "NAN";
 	}
 
 	if (Math::is_inf(p_num)) {
 		if (std::signbit(p_num)) {
-			return "-inf";
+			return "-INF";
 		} else {
-			return "inf";
+			return "INF";
 		}
 	}
 

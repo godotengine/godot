@@ -569,9 +569,9 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num_scientific(3e100) == "3e+100");
 	CHECK(String::num_scientific(7e-100) == "7e-100");
 	CHECK(String::num_scientific(Math::TAU) == "6.283185307179586");
-	CHECK(String::num_scientific(Math::INF) == "inf");
-	CHECK(String::num_scientific(-Math::INF) == "-inf");
-	CHECK(String::num_scientific(Math::NaN) == "nan");
+	CHECK(String::num_scientific(Math::INF) == "INF");
+	CHECK(String::num_scientific(-Math::INF) == "-INF");
+	CHECK(String::num_scientific(Math::NaN) == "NAN");
 	CHECK(String::num_scientific(2.0) == "2");
 	CHECK(String::num_scientific(1.0) == "1");
 	CHECK(String::num_scientific(0.0) == "0");
@@ -1048,7 +1048,7 @@ TEST_CASE("[String] sprintf") {
 	args.push_back(Math::INF);
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
-	CHECK(output == String("fish         inf frog"));
+	CHECK(output == String("fish         INF frog"));
 
 	// Real right-padded.
 	format = "fish %-11f frog";
@@ -1166,13 +1166,13 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish (  19.990000,    1.000000,   -2.050000) frog"));
 
-	// Vector left-padded with inf/nan
+	// Vector left-padded with INF/NAN.
 	format = "fish %11v frog";
 	args.clear();
 	args.push_back(Variant(Vector2(Math::INF, Math::NaN)));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
-	CHECK(output == String("fish (        inf,         nan) frog"));
+	CHECK(output == String("fish (        INF,         NAN) frog"));
 
 	// Vector right-padded.
 	format = "fish %-11v frog";

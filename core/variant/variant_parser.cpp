@@ -147,12 +147,12 @@ const char *VariantParser::tk_name[TK_MAX] = {
 };
 
 static double stor_fix(const String &p_str) {
-	if (p_str == "inf") {
+	// Lowercase inf, -inf, inf_neg, and nan kept for compatibility.
+	if (p_str == "INF" || p_str == "inf") {
 		return Math::INF;
-	} else if (p_str == "-inf" || p_str == "inf_neg") {
-		// inf_neg kept for compatibility.
+	} else if (p_str == "-INF" || p_str == "-inf" || p_str == "inf_neg") {
 		return -Math::INF;
-	} else if (p_str == "nan") {
+	} else if (p_str == "NAN" || p_str == "nan") {
 		return Math::NaN;
 	}
 	return -1;
@@ -698,12 +698,14 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = false;
 		} else if (id == "null" || id == "nil") {
 			value = Variant();
-		} else if (id == "inf") {
+		} else if (id == "INF" || id == "inf") {
+			// Lowercase inf is kept for compatibility.
 			value = Math::INF;
-		} else if (id == "-inf" || id == "inf_neg") {
-			// inf_neg kept for compatibility.
+		} else if (id == "-INF" || id == "-inf" || id == "inf_neg") {
+			// Lowercase -inf and inf_neg are kept for compatibility.
 			value = -Math::INF;
-		} else if (id == "nan") {
+		} else if (id == "NAN" || id == "nan") {
+			// Lowercase nan is kept for compatibility.
 			value = Math::NaN;
 		} else if (id == "Vector2") {
 			Vector<real_t> args;
@@ -1986,9 +1988,15 @@ static String rtos_fix(double p_value, bool p_compat) {
 	if (p_value == 0.0) {
 		return "0"; // Avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
 	} else if (p_compat) {
-		// Write old inf_neg for compatibility.
-		if (std::isinf(p_value) && p_value < 0.0) {
-			return "inf_neg";
+		// Write old lowercase and inf_neg for compatibility.
+		if (std::isnan(p_value)) {
+			return "nan";
+		} else if (std::isinf(p_value)) {
+			if (p_value > 0) {
+				return "inf";
+			} else {
+				return "inf_neg";
+			}
 		}
 	}
 	// Hack to avoid garbage digits when the underlying float is 32-bit.
@@ -2023,7 +2031,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			const double value = p_variant.operator double();
 			String s = rtos_fix(value, p_compat);
 			// Append ".0" to floats to ensure they are float literals.
-			if (s != "inf" && s != "-inf" && s != "nan" && !s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
+			if (s != "INF" && s != "-INF" && s != "NAN" && s != "inf" && s != "inf_neg" && s != "nan" && !s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
 				s += ".0";
 			}
 			p_store_string_func(p_store_string_ud, s);
