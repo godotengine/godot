@@ -115,7 +115,6 @@ int GodotPhysicsDirectSpaceState2D::intersect_point(const PointParameters &p_par
 	return cc;
 }
 
-
 int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) {
 	ERR_FAIL_COND_V(space->locked, false);
 
@@ -186,7 +185,6 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 			res_shape = shape_idx;
 			res_obj = col_obj;
 			collided = true;
-			
 		}
 
 		if (collided) {
