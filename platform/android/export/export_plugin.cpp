@@ -1039,52 +1039,100 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 
 void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset) {
 	const String themes_xml_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join("res/values/themes.xml");
-	bool enable_swipe_to_dismiss = p_preset->get("gesture/swipe_to_dismiss");
 
 	if (!FileAccess::exists(themes_xml_path)) {
 		print_error("res/values/themes.xml does not exist.");
 		return;
 	}
 
-	String xml_content;
-	Ref<FileAccess> file = FileAccess::open(themes_xml_path, FileAccess::READ);
-	PackedStringArray lines = file->get_as_text().split("\n");
-	file->close();
+	// Default/Reserved theme attributes.
+	Dictionary main_theme_attributes;
+	main_theme_attributes["android:windowDrawsSystemBarBackgrounds"] = "false";
+	main_theme_attributes["android:windowSwipeToDismiss"] = bool_to_string(p_preset->get("gesture/swipe_to_dismiss"));
 
-	// Check if the themes.xml already contains <item name="android:windowSwipeToDismiss"> element.
-	// If found, update its value based on `enable_swipe_to_dismiss`.
-	bool found = false;
-	bool modified = false;
-	for (int i = 0; i < lines.size(); i++) {
-		String line = lines[i];
-		if (line.contains("<item name") && line.contains("\"android:windowSwipeToDismiss\">")) {
-			lines.set(i, vformat("		<item name=\"android:windowSwipeToDismiss\">%s</item>", bool_to_string(enable_swipe_to_dismiss)));
-			found = true;
-			modified = true;
-			break;
-		}
-	}
+	Dictionary splash_theme_attributes;
+	splash_theme_attributes["android:windowSplashScreenBackground"] = "@mipmap/icon_background";
+	splash_theme_attributes["windowSplashScreenAnimatedIcon"] = "@mipmap/icon_foreground";
+	splash_theme_attributes["postSplashScreenTheme"] = "@style/GodotAppMainTheme";
 
-	// If <item name="android:windowSwipeToDismiss"> is not found and `enable_swipe_to_dismiss` is false:
-	// Add a new <item> element before the closing </style> tag.
-	if (!found && !enable_swipe_to_dismiss) {
-		for (int i = 0; i < lines.size(); i++) {
-			if (lines[i].contains("</style>")) {
-				lines.insert(i, "		<item name=\"android:windowSwipeToDismiss\">false</item>");
-				modified = true;
-				break;
+	Dictionary custom_theme_attributes = p_preset->get("gradle_build/custom_theme_attributes");
+
+	// Does not override default/reserved theme attributes; skips any duplicates from custom_theme_attributes.
+	for (const Variant &k : custom_theme_attributes.keys()) {
+		String key = k;
+		String value = custom_theme_attributes[k];
+		if (key.begins_with("[splash]")) {
+			String splash_key = key.trim_prefix("[splash]");
+			if (splash_theme_attributes.has(splash_key)) {
+				WARN_PRINT(vformat("Skipped custom_theme_attribute '%s'; this is a reserved attribute configured via other export options or project settings.", splash_key));
+			} else {
+				splash_theme_attributes[splash_key] = value;
+			}
+		} else {
+			if (main_theme_attributes.has(key)) {
+				WARN_PRINT(vformat("Skipped custom_theme_attribute '%s'; this is a reserved attribute configured via other export options or project settings.", key));
+			} else {
+				main_theme_attributes[key] = value;
 			}
 		}
 	}
 
-	// Reconstruct the XML content from the modified lines.
-	if (modified) {
-		xml_content = String("\n").join(lines);
-		store_string_at_path(themes_xml_path, xml_content);
-		print_verbose("Successfully modified " + themes_xml_path + ": " + "\n" + xml_content);
-	} else {
-		print_verbose("No changes needed for " + themes_xml_path);
+	Ref<FileAccess> file = FileAccess::open(themes_xml_path, FileAccess::READ);
+	PackedStringArray lines = file->get_as_text().split("\n");
+	file->close();
+
+	PackedStringArray new_lines;
+	bool inside_main_theme = false;
+	bool inside_splash_theme = false;
+
+	for (int i = 0; i < lines.size(); i++) {
+		String line = lines[i];
+
+		if (line.contains("<style name=\"GodotAppMainTheme\"")) {
+			inside_main_theme = true;
+			new_lines.append(line);
+			continue;
+		}
+		if (line.contains("<style name=\"GodotAppSplashTheme\"")) {
+			inside_splash_theme = true;
+			new_lines.append(line);
+			continue;
+		}
+
+		// Inject GodotAppMainTheme attributes.
+		if (inside_main_theme && line.contains("</style>")) {
+			for (const Variant &attribute : main_theme_attributes.keys()) {
+				String value = main_theme_attributes[attribute];
+				String item_line = vformat("		<item name=\"%s\">%s</item>", attribute, value);
+				new_lines.append(item_line);
+			}
+			new_lines.append(line); // Add </style> in the end.
+			inside_main_theme = false;
+			continue;
+		}
+
+		// Inject GodotAppSplashTheme attributes.
+		if (inside_splash_theme && line.contains("</style>")) {
+			for (const Variant &attribute : splash_theme_attributes.keys()) {
+				String value = splash_theme_attributes[attribute];
+				String item_line = vformat("		<item name=\"%s\">%s</item>", attribute, value);
+				new_lines.append(item_line);
+			}
+			new_lines.append(line); // Add </style> in the end.
+			inside_splash_theme = false;
+			continue;
+		}
+
+		// Add all other lines unchanged.
+		if (!inside_main_theme && !inside_splash_theme) {
+			new_lines.append(line);
+		}
 	}
+
+	// Reconstruct the XML content from the modified lines.
+	String xml_content = String("\n").join(new_lines);
+	store_string_at_path(themes_xml_path, xml_content);
+	print_verbose("Successfully modified " + themes_xml_path + ": " + "\n" + xml_content);
 }
 
 void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
@@ -1994,6 +2042,11 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 					}
 				}
 			}
+		} else if (p_name == "gradle_build/custom_theme_attributes") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("gradle_build/custom_theme_attributes")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" is required to add custom theme attributes.");
+			}
 		} else if (p_name == "package/show_in_android_tv") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (bool(p_preset->get("package/show_in_android_tv")) && !gradle_build_enabled) {
@@ -2026,6 +2079,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	// This implies doing validation that the string is a proper int.
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_MIN_SDK_VERSION)), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "gradle_build/custom_theme_attributes", PROPERTY_HINT_DICTIONARY_TYPE, "String;String"), Dictionary()));
 
 #ifndef DISABLE_DEPRECATED
 	Vector<PluginConfigAndroid> plugins_configs = get_plugins();
@@ -2108,6 +2163,7 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 	if (p_option == "graphics/opengl_debug" ||
+			p_option == "gradle_build/custom_theme_attributes" ||
 			p_option == "command_line/extra_args" ||
 			p_option == "permissions/custom_permissions" ||
 			p_option == "keystore/debug" ||
