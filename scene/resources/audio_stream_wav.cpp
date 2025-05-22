@@ -521,7 +521,7 @@ Vector<uint8_t> AudioStreamWAV::get_data() const {
 }
 
 // Helper functions to append to a Vector<uint8_t> following FileAccess::store_X
-inline void push_back_16(Vector<uint8_t> v, uint16_t p_dest) {
+inline void push_back_16(Vector<uint8_t> &r_v, uint16_t p_dest) {
 #ifdef BIG_ENDIAN_ENABLED
 	p_dest = BSWAP16(p_dest);
 #endif
