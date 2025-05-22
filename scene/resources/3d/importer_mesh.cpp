@@ -443,8 +443,8 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 
 		float attrib_weights[attrib_count] = {};
 
-		// Give more weight to normal preservation
-		attrib_weights[0] = attrib_weights[1] = attrib_weights[2] = 2.0f;
+		// Give some weight to normal preservation
+		attrib_weights[0] = attrib_weights[1] = attrib_weights[2] = 1.0f;
 
 		// Give some weight to colors but only if present to avoid redundant computations during simplification
 		if (colors_ptr) {
@@ -474,7 +474,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
 		unsigned int last_index_count = 0;
 
-		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
+		const float max_mesh_error = 1.0f; // we only need LODs that can be selected by error threshold
 		float mesh_error = 0.0f;
 
 		while (index_target < index_count) {
