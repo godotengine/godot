@@ -341,7 +341,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				if (d.has("handle_modes")) {
 					handle_modes = d["handle_modes"];
 				} else {
-					handle_modes.resize_zeroed(times.size());
+					handle_modes.resize_initialized(times.size());
 				}
 #endif // TOOLS_ENABLED
 
