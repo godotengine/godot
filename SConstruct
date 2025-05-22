@@ -671,7 +671,7 @@ elif methods.using_gcc(env):
         print_error(
             "Detected GCC version older than 11, which does not fully support "
             "C++20. Supported versions are GCC 11 and later. Use a newer GCC "
-            'version, or Clang 10 or later by passing "use_llvm=yes" to the '
+            'version, or Clang 16 or later by passing "use_llvm=yes" to the '
             "SCons command line."
         )
         Exit(255)
@@ -687,17 +687,17 @@ elif methods.using_clang(env):
     # Apple LLVM versions differ from upstream LLVM version \o/, compare
     # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
     if methods.is_apple_clang(env):
-        if cc_version_major < 14:
+        if cc_version_major < 15:
             print_error(
-                "Detected Apple Clang version older than 14, which does not fully "
-                "support C++20. Supported versions are Apple Clang 14 and later."
+                "Detected Apple Clang version older than 15, which does not fully "
+                "support C++20. Supported versions are Apple Clang 15 and later."
             )
             Exit(255)
     else:
-        if cc_version_major < 10:
+        if cc_version_major < 16:
             print_error(
-                "Detected Clang version older than 10, which does not fully support "
-                "C++20. Supported versions are Clang 10 and later."
+                "Detected Clang version older than 16, which does not fully support "
+                "C++20. Supported versions are Clang 16 and later."
             )
             Exit(255)
 
