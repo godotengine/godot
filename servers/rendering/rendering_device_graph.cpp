@@ -2218,13 +2218,12 @@ void RenderingDeviceGraph::add_synchronization() {
 	}
 }
 
-void RenderingDeviceGraph::begin_label(const String &p_label_name, const Color &p_color) {
+void RenderingDeviceGraph::begin_label(const Span<char> &p_label_name, const Color &p_color) {
 	uint32_t command_label_offset = command_label_chars.size();
-	PackedByteArray command_label_utf8 = p_label_name.to_utf8_buffer();
-	int command_label_utf8_size = command_label_utf8.size();
-	command_label_chars.resize(command_label_offset + command_label_utf8_size + 1);
-	memcpy(&command_label_chars[command_label_offset], command_label_utf8.ptr(), command_label_utf8.size());
-	command_label_chars[command_label_offset + command_label_utf8_size] = '\0';
+	int command_label_size = p_label_name.size();
+	command_label_chars.resize(command_label_offset + command_label_size + 1);
+	memcpy(&command_label_chars[command_label_offset], p_label_name.ptr(), command_label_size);
+	command_label_chars[command_label_offset + command_label_size] = '\0';
 	command_label_colors.push_back(p_color);
 	command_label_offsets.push_back(command_label_offset);
 	command_label_index = command_label_count;

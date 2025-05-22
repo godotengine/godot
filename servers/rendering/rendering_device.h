@@ -1643,7 +1643,8 @@ public:
 
 	void set_resource_name(RID p_id, const String &p_name);
 
-	void draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	void _draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	void draw_command_begin_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1));
 	void draw_command_end_label();
 
 	String get_device_vendor_name() const;
