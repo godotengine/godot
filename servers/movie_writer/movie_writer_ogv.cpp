@@ -174,12 +174,7 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 
 	// Initialize Vorbis audio encoding.
 	vorbis_info_init(&vi);
-	int ret = 0;
-	if (audio_bitrate == 0) {
-		ret = vorbis_encode_init_vbr(&vi, audio_ch, mix_rate, audio_quality);
-	} else {
-		ret = vorbis_encode_init(&vi, audio_ch, mix_rate, -1, (int)(64870 * (ogg_int64_t)audio_bitrate >> 16), -1);
-	}
+	int ret = vorbis_encode_init_vbr(&vi, audio_ch, mix_rate, audio_quality);
 	ERR_FAIL_COND_V_MSG(ret, ERR_UNAVAILABLE, "The Ogg Vorbis encoder couldn't set up a mode according to the requested quality or bitrate.");
 
 	vorbis_comment_init(&vc);
@@ -228,43 +223,6 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 	ret = th_encode_ctl(td, TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE, &keyframe_frequency, sizeof(keyframe_frequency - 1));
 	if (ret < 0) {
 		ERR_PRINT("Couldn't set keyframe interval.");
-	}
-
-	if (vp3_compatible) {
-		ret = th_encode_ctl(td, TH_ENCCTL_SET_VP3_COMPATIBLE, &vp3_compatible, sizeof(vp3_compatible));
-		if (ret < 0) {
-			ERR_PRINT("Could not enable strict VP3 compatibility");
-		}
-	}
-
-	// Reverse the rate control flags to favor a "long time" strategy.
-	if (soft_target) {
-		int arg = TH_RATECTL_CAP_UNDERFLOW;
-		ret = th_encode_ctl(td, TH_ENCCTL_SET_RATE_FLAGS, &arg, sizeof(arg));
-		if (ret < 0) {
-			ERR_PRINT("Couldn't set encoder flags for soft-target.");
-		}
-
-		if (buffer_delay < 0) {
-			if ((keyframe_frequency * 7 >> 1) > 5 * fps) {
-				arg = keyframe_frequency * 7 >> 1;
-			} else {
-				arg = 5 * fps;
-			}
-			ret = th_encode_ctl(td, TH_ENCCTL_SET_RATE_BUFFER, &arg, sizeof(arg));
-			if (ret < 0) {
-				ERR_PRINT("Couldn't set rate control buffer for soft-target.");
-			}
-		}
-	}
-
-	// Now we can set the buffer delay if the user requested a non-default one
-	// (this has to be done after two-pass is enabled).
-	if (buffer_delay >= 0) {
-		ret = th_encode_ctl(td, TH_ENCCTL_SET_RATE_BUFFER, &buffer_delay, sizeof(buffer_delay));
-		if (ret < 0) {
-			WARN_PRINT("Couldn't set desired buffer delay.");
-		}
 	}
 
 	// Speed should also be set after the current encoder mode is established,
