@@ -159,9 +159,8 @@ public:
 		int face_index = -1;
 	};
 
-	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
-
 	virtual int intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) = 0;
+	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
 
 	struct ShapeResult {
 		RID rid;

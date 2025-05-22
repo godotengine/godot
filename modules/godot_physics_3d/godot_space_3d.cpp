@@ -130,7 +130,6 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 	bool hit_once = false;
 	bool choose_closest = (p_result_max == 1);
 	for (int i = 0; i < amount; i++) {
-		collided = false;
 		if (r_idx >= p_result_max) {
 			break;
 		}
