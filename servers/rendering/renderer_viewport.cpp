@@ -971,8 +971,12 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-	ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR && OS::get_singleton()->get_current_rendering_method() != "forward_plus", "FSR1 is only available when using the Forward+ renderer.");
-	ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 && OS::get_singleton()->get_current_rendering_method() != "forward_plus", "FSR2 is only available when using the Forward+ renderer.");
+	const String rendering_method = OS::get_singleton()->get_current_rendering_method();
+	if (rendering_method != "forward_plus") {
+		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR, "FSR1 is only available when using the Forward+ renderer.");
+		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2, "FSR2 is only available when using the Forward+ renderer.");
+		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL, "MetalFX Temporal is only available when using the Forward+ renderer.");
+	}
 
 	if (viewport->scaling_3d_mode == p_mode) {
 		return;
