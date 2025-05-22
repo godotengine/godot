@@ -159,7 +159,6 @@ public:
 	Error save_to_wav(const String &p_path);
 	Error save_to_wav_buffer(Vector<uint8_t> wav);
 
-
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
