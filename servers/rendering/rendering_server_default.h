@@ -171,6 +171,17 @@ public:
 		return ret;                                                                                                  \
 	}
 
+#define FUNCRIDTEX4(m_type, m_type1, m_type2, m_type3, m_type4)                                                          \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4) override {                               \
+		RID ret = RSG::texture_storage->texture_allocate();                                                              \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {                 \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3, p4);                                              \
+		} else {                                                                                                         \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3, p4); \
+		}                                                                                                                \
+		return ret;                                                                                                      \
+	}
+
 #define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6)                                                \
 	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override {               \
 		RID ret = RSG::texture_storage->texture_allocate();                                                                      \
@@ -232,6 +243,11 @@ public:
 	FUNCRIDTEX2(texture_rd, const RID &, const RS::TextureLayeredType)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
+
+	/* TEXTURE DRAWABLE API */
+
+	FUNCRIDTEX4(texture_drawable, int, int, RS::TextureDrawableFormat, bool);
+	FUNC1(texture_drawable_generate_mipmaps, RID);
 
 	/* SHADER API */
 
@@ -1100,10 +1116,8 @@ public:
 #define ServerName MeshRasterizer
 #define server_name RSG::mesh_rasterizer
 
-	FUNCRIDSPLIT5(mesh_rasterizer, int, int, RasterizedTextureFormat, bool, RD::TextureSamples);
-	FUNC3(mesh_rasterizer_set_mesh, RID, RID, int);
-	FUNC3(mesh_rasterizer_draw, RID, RID, const Color &);
-	FUNC1R(RID, mesh_rasterizer_get_texture, RID);
+	FUNCRIDSPLIT2(mesh_rasterizer, RID, int);
+	FUNC6(mesh_rasterizer_draw, RID, RID, RID, RS::RasterizerBlendMode, const Color &, RD::TextureSamples);
 
 	/* STATUS INFORMATION */
 

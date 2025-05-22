@@ -30,7 +30,6 @@
 
 #include "mesh_rasterizer_rd.h"
 #include "framebuffer_cache_rd.h"
-#include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/utilities.h"
 
 namespace RendererRD {
@@ -119,26 +118,8 @@ RID MeshRasterizerRD::mesh_rasterizer_allocate() {
 	return mesh_rasterizer_owner.allocate_rid();
 }
 
-void MeshRasterizerRD::mesh_rasterizer_initialize(RID p_mesh_rasterizer, int p_width, int p_height, RS::RasterizedTextureFormat p_texture_format, bool p_generate_mipmaps, RD::TextureSamples p_samples) {
+void MeshRasterizerRD::mesh_rasterizer_initialize(RID p_mesh_rasterizer, RID p_mesh, int p_surface_index) {
 	mesh_rasterizer_owner.initialize_rid(p_mesh_rasterizer);
-	MeshRasterizerData *mesh_rasterizer = mesh_rasterizer_owner.get_or_null(p_mesh_rasterizer);
-	TextureStorage *texture_storage = TextureStorage::get_singleton();
-	mesh_rasterizer->samples = p_samples;
-	mesh_rasterizer->texture = texture_storage->texture_allocate();
-	texture_storage->mesh_rasterizer_texture_initialize(mesh_rasterizer->texture, p_width, p_height, p_texture_format, p_generate_mipmaps);
-	mesh_rasterizer->rd_texture = texture_storage->texture_get_rd_texture(mesh_rasterizer->texture, p_texture_format == RS::RASTERIZED_TEXTURE_FORMAT_RGBA8_SRGB);
-
-	bool is_msaa = p_samples > RD::TEXTURE_SAMPLES_1;
-	if (is_msaa) {
-		RD::TextureFormat fmt = RD::get_singleton()->texture_get_format(mesh_rasterizer->rd_texture);
-		fmt.samples = p_samples;
-		fmt.mipmaps = 1;
-		fmt.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		mesh_rasterizer->rd_texture_samples = RD::get_singleton()->texture_create(fmt, {});
-	}
-}
-
-void MeshRasterizerRD::mesh_rasterizer_set_mesh(RID p_mesh_rasterizer, RID p_mesh, int p_surface_index) {
 	MeshRasterizerData *mesh_rasterizer = mesh_rasterizer_owner.get_or_null(p_mesh_rasterizer);
 	mesh_rasterizer->mesh = p_mesh;
 	mesh_rasterizer->surface_index = p_surface_index;
@@ -148,9 +129,14 @@ void MeshRasterizerRD::mesh_rasterizer_set_mesh(RID p_mesh_rasterizer, RID p_mes
 	}
 }
 
-void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, const Color &p_bg_color) {
+void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, RS::RasterizerBlendMode p_blend_mode, const Color &p_bg_color, RD::TextureSamples p_multisample) {
 	MeshRasterizerData *mesh_rasterizer = mesh_rasterizer_owner.get_or_null(p_mesh_rasterizer);
+	ERR_FAIL_COND(p_mesh_rasterizer.is_null());
 	ERR_FAIL_COND(p_material.is_null());
+
+	MaterialStorage::get_singleton()->_update_global_shader_uniforms(); //must do before materials, so it can queue them for update
+	MaterialStorage::get_singleton()->_update_queued_materials();
+
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	MaterialStorage::MaterialData *md = material_storage->material_get_data(p_material, MaterialStorage::SHADER_TYPE_MESH_RASTERIZER);
 	RasterizeMeshMaterialData *material_data = nullptr;
@@ -162,40 +148,90 @@ void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_materia
 	ERR_FAIL_COND(material_data == nullptr);
 	ERR_FAIL_COND(shader_data == nullptr);
 
-	MaterialStorage::get_singleton()->_update_global_shader_uniforms(); //must do before materials, so it can queue them for update
-	MaterialStorage::get_singleton()->_update_queued_materials();
-
-	bool is_msaa = mesh_rasterizer->samples > RD::TEXTURE_SAMPLES_1;
-	if (is_msaa) {
-		mesh_rasterizer->framebuffer_rid = FramebufferCacheRD::get_singleton()->get_cache(mesh_rasterizer->rd_texture_samples);
-	} else {
-		mesh_rasterizer->framebuffer_rid = FramebufferCacheRD::get_singleton()->get_cache(mesh_rasterizer->rd_texture);
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	RID rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, false);
+	RD::TextureFormat tex_fmt = RD::get_singleton()->texture_get_format(rd_texture);
+	if (tex_fmt.format == RD::DATA_FORMAT_R8G8B8A8_SRGB) {
+		rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, true);
 	}
 
-	RID pipeline;
+	// MSAA.
+	RID rd_texture_samples;
+	bool is_msaa = p_multisample > RD::TEXTURE_SAMPLES_1;
+	if (is_msaa) {
+		if (mesh_rasterizer->rd_texture_samples_cache.second.is_valid() && rd_texture == mesh_rasterizer->rd_texture_samples_cache.first) {
+			rd_texture_samples = mesh_rasterizer->rd_texture_samples_cache.second;
+		} else {
+			tex_fmt.samples = p_multisample;
+			tex_fmt.mipmaps = 1;
+			tex_fmt.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+			if (mesh_rasterizer->rd_texture_samples_cache.second.is_valid()) {
+				RD::get_singleton()->free(mesh_rasterizer->rd_texture_samples_cache.second);
+			}
+			rd_texture_samples = RD::get_singleton()->texture_create(tex_fmt, {});
 
-	RD::PipelineRasterizationState pipeline_rasterization_state;
-	pipeline_rasterization_state.cull_mode = (RD::PolygonCullMode)shader_data->cull_modei;
+			mesh_rasterizer->rd_texture_samples_cache = { rd_texture, rd_texture_samples };
+		}
+	}
+
+	RID framebuffer_rid;
+	if (is_msaa) {
+		framebuffer_rid = FramebufferCacheRD::get_singleton()->get_cache(rd_texture_samples);
+	} else {
+		framebuffer_rid = FramebufferCacheRD::get_singleton()->get_cache(rd_texture);
+	}
+
+	RD::PipelineRasterizationState rasterization_state;
+	rasterization_state.cull_mode = (RD::PolygonCullMode)shader_data->cull_modei;
 	RD::PipelineMultisampleState pipline_multisample_state;
-	pipline_multisample_state.sample_count = mesh_rasterizer->samples;
-	RD::FramebufferFormatID fb_fmt = RD::get_singleton()->framebuffer_get_format(mesh_rasterizer->framebuffer_rid);
+	pipline_multisample_state.sample_count = p_multisample;
+	RD::FramebufferFormatID fb_fmt = RD::get_singleton()->framebuffer_get_format(framebuffer_rid);
+
+	RD::PipelineColorBlendState blend_state;
+	switch (p_blend_mode) {
+		case RS::RASTERIZER_BLEND_MODE_MIX:
+			blend_state.attachments.push_back(attachment_mix);
+			break;
+		case RS::RASTERIZER_BLEND_MODE_ADD:
+			blend_state.attachments.push_back(attachment_add);
+			break;
+		case RS::RASTERIZER_BLEND_MODE_SUB:
+			blend_state.attachments.push_back(attachment_sub);
+			break;
+		case RS::RASTERIZER_BLEND_MODE_MUL:
+			blend_state.attachments.push_back(attachment_mul);
+			break;
+		case RS::RASTERIZER_BLEND_MODE_PREMULT_ALPHA:
+			blend_state.attachments.push_back(attachment_premult_alpha);
+			break;
+		default:
+			blend_state.attachments.push_back({});
+			break;
+	}
 
 	PipelineCacheKey k = {
-		shader_data->shader_rd.get_id(), fb_fmt, mesh_rasterizer->primitive, mesh_rasterizer->samples
+		shader_data->shader_rd.get_id(),
+		fb_fmt,
+		mesh_rasterizer->primitive,
+		p_multisample,
+		p_blend_mode
 	};
 
-	if (mesh_rasterizer->pipeline_cache.first == k) {
+	RID pipeline;
+	if (RD::get_singleton()->render_pipeline_is_valid(mesh_rasterizer->pipeline_cache.second) && mesh_rasterizer->pipeline_cache.first == k) {
 		pipeline = mesh_rasterizer->pipeline_cache.second;
 	} else {
 		if (RD::get_singleton()->render_pipeline_is_valid(mesh_rasterizer->pipeline_cache.second)) {
 			RD::get_singleton()->free(mesh_rasterizer->pipeline_cache.second);
 		}
-		pipeline = RD::get_singleton()->render_pipeline_create(shader_data->shader_rd, fb_fmt, singleton->vertex_format, mesh_rasterizer->primitive, pipeline_rasterization_state, pipline_multisample_state, {}, singleton->pipeline_color_blend_state);
+
+		pipeline = RD::get_singleton()->render_pipeline_create(shader_data->shader_rd, fb_fmt, singleton->vertex_format, mesh_rasterizer->primitive, rasterization_state, pipline_multisample_state, {}, blend_state);
+
 		mesh_rasterizer->pipeline_cache = { k, pipeline };
 	}
 
 	LocalVector<Color> clear_colors = { p_bg_color };
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mesh_rasterizer->framebuffer_rid, RD::DrawFlags::DRAW_CLEAR_ALL, clear_colors);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer_rid, p_blend_mode == RS::RASTERIZER_BLEND_MODE_CLEAR ? RD::DRAW_CLEAR_ALL : RD::DRAW_DEFAULT_ALL, clear_colors);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline);
 
 	// Vertex
@@ -214,28 +250,8 @@ void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_materia
 	RD::get_singleton()->draw_list_end();
 
 	if (is_msaa) {
-		RD::get_singleton()->texture_resolve_multisample(mesh_rasterizer->rd_texture_samples, mesh_rasterizer->rd_texture);
-	}
-
-	RD::TextureFormat tex_fmt = RD::get_singleton()->texture_get_format(mesh_rasterizer->rd_texture);
-	if (tex_fmt.mipmaps <= 1) {
-		return;
-	}
-
-	// Generate Gaussian Blur Mipmaps.
-	int mipmap_count = tex_fmt.mipmaps;
-	for (int i = 1; i < mipmap_count; i++) {
-		Size2i mipmap_size = Size2i(tex_fmt.width / (1 << i), tex_fmt.height / (1 << i)).maxi(1);
-		RID tex_src = RD::get_singleton()->texture_create_shared_from_slice({}, mesh_rasterizer->rd_texture, 0, i - 1);
-		RID tex_dst = RD::get_singleton()->texture_create_shared_from_slice({}, mesh_rasterizer->rd_texture, 0, i);
-
-		if (CopyEffects::get_singleton()->get_prefer_raster_effects()) {
-			CopyEffects::get_singleton()->gaussian_blur_raster(tex_src, tex_dst, Rect2i(Vector2i(), mipmap_size), mipmap_size);
-		} else {
-			CopyEffects::get_singleton()->gaussian_blur(tex_src, tex_dst, Rect2i(Vector2i(), mipmap_size), mipmap_size);
-		}
-		RD::get_singleton()->free(tex_src);
-		RD::get_singleton()->free(tex_dst);
+		Error err = RD::get_singleton()->texture_resolve_multisample(rd_texture_samples, rd_texture);
+		ERR_FAIL_COND_MSG(err != OK, vformat("Resolve multisample texture fails: %s", error_names[err]));
 	}
 }
 
@@ -389,21 +405,13 @@ void MeshRasterizerRD::MeshRasterizerData::update_vertex() {
 	vertex_array_rid = RD::get_singleton()->vertex_array_create(vertex_count, singleton->vertex_format, vertex_buffers);
 }
 
-RID MeshRasterizerRD::mesh_rasterizer_get_texture(RID p_mesh_rasterizer) {
-	MeshRasterizerData *mesh_rasterizer = mesh_rasterizer_owner.get_or_null(p_mesh_rasterizer);
-	return mesh_rasterizer->texture;
-}
-
 bool MeshRasterizerRD::free(RID p_mesh_rasterizer) {
 	MeshRasterizerData *mesh_rasterizer = mesh_rasterizer_owner.get_or_null(p_mesh_rasterizer);
 	if (mesh_rasterizer == nullptr) {
 		return false;
 	}
-	if (mesh_rasterizer->rd_texture_samples.is_valid()) {
-		RD::get_singleton()->free(mesh_rasterizer->rd_texture_samples);
-	}
-	if (TextureStorage::get_singleton()->owns_texture(mesh_rasterizer->texture)) {
-		TextureStorage::get_singleton()->texture_free(mesh_rasterizer->texture);
+	if (mesh_rasterizer->rd_texture_samples_cache.second.is_valid()) {
+		RD::get_singleton()->free(mesh_rasterizer->rd_texture_samples_cache.second);
 	}
 	if (mesh_rasterizer->index_buffer_rid.is_valid()) {
 		RD::get_singleton()->free(mesh_rasterizer->index_buffer_rid);
@@ -502,12 +510,50 @@ MeshRasterizerRD::MeshRasterizerRD() {
 
 	vertex_format = RD::get_singleton()->vertex_format_create(vertex_attrs);
 
-	pipeline_color_blend_state.attachments.append({});
-
 	RD::FramebufferPass pass;
 	pass.resolve_attachments.append(0);
 	pass.color_attachments.append(1);
 	render_passes = { pass };
+
+	attachment_mix.enable_blend = true;
+	attachment_mix.color_blend_op = RD::BLEND_OP_ADD;
+	attachment_mix.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+	attachment_mix.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	attachment_mix.alpha_blend_op = RD::BLEND_OP_ADD;
+	attachment_mix.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+	attachment_mix.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+	attachment_add.enable_blend = true;
+	attachment_add.alpha_blend_op = RD::BLEND_OP_ADD;
+	attachment_add.color_blend_op = RD::BLEND_OP_ADD;
+	attachment_add.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+	attachment_add.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+	attachment_add.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+	attachment_add.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+
+	attachment_sub.enable_blend = true;
+	attachment_sub.alpha_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
+	attachment_sub.color_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
+	attachment_sub.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+	attachment_sub.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+	attachment_sub.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+	attachment_sub.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+
+	attachment_mul.enable_blend = true;
+	attachment_mul.alpha_blend_op = RD::BLEND_OP_ADD;
+	attachment_mul.color_blend_op = RD::BLEND_OP_ADD;
+	attachment_mul.src_color_blend_factor = RD::BLEND_FACTOR_DST_COLOR;
+	attachment_mul.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
+	attachment_mul.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
+	attachment_mul.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+
+	attachment_premult_alpha.enable_blend = true;
+	attachment_premult_alpha.alpha_blend_op = RD::BLEND_OP_ADD;
+	attachment_premult_alpha.color_blend_op = RD::BLEND_OP_ADD;
+	attachment_premult_alpha.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+	attachment_premult_alpha.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	attachment_premult_alpha.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+	attachment_premult_alpha.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 }
 
 } //namespace RendererRD

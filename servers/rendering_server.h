@@ -1170,18 +1170,31 @@ public:
 	virtual void viewport_set_vrs_update_mode(RID p_viewport, ViewportVRSUpdateMode p_mode) = 0;
 	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
+	/* TEXTURE DRAWABLE API*/
+
+	enum TextureDrawableFormat {
+		TEXTURE_DRAWABLE_FORMAT_RGBA8,
+		TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB,
+		TEXTURE_DRAWABLE_FORMAT_RGBAH,
+		TEXTURE_DRAWABLE_FORMAT_RGBAF
+	};
+
+	virtual RID texture_drawable_create(int p_width, int p_height, TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) = 0;
+	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable) = 0;
+
 	/* MESH RASTERIZER API */
 
-	enum RasterizedTextureFormat {
-		RASTERIZED_TEXTURE_FORMAT_RGBA8,
-		RASTERIZED_TEXTURE_FORMAT_RGBA8_SRGB,
-		RASTERIZED_TEXTURE_FORMAT_RGBAH,
-		RASTERIZED_TEXTURE_FORMAT_RGBAF
+	enum RasterizerBlendMode {
+		RASTERIZER_BLEND_MODE_CLEAR,
+		RASTERIZER_BLEND_MODE_MIX,
+		RASTERIZER_BLEND_MODE_ADD,
+		RASTERIZER_BLEND_MODE_SUB,
+		RASTERIZER_BLEND_MODE_MUL,
+		RASTERIZER_BLEND_MODE_PREMULT_ALPHA
 	};
-	virtual RID mesh_rasterizer_create(int p_width, int p_height, RasterizedTextureFormat p_texture_format, bool p_generate_mipmaps = false, RD::TextureSamples p_samples = RD::TEXTURE_SAMPLES_1) = 0;
-	virtual void mesh_rasterizer_set_mesh(RID p_mesh_rasterizer, RID p_mesh, int p_surface_index) = 0;
-	virtual void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, const Color &p_bg_color) = 0;
-	virtual RID mesh_rasterizer_get_texture(RID p_mesh_rasterizer) = 0;
+
+	virtual RID mesh_rasterizer_create(RID p_mesh, int p_surface_index) = 0;
+	virtual void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, RasterizerBlendMode p_blend_mode, const Color &p_clear_color, RD::TextureSamples p_multisample = RD::TEXTURE_SAMPLES_1) = 0;
 
 	/* SKY API */
 
@@ -2001,7 +2014,8 @@ VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
-VARIANT_ENUM_CAST(RenderingServer::RasterizedTextureFormat);
+VARIANT_ENUM_CAST(RenderingServer::TextureDrawableFormat);
+VARIANT_ENUM_CAST(RenderingServer::RasterizerBlendMode);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(RenderingServer::Features);

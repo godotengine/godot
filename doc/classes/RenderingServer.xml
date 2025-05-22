@@ -2424,11 +2424,8 @@
 		</method>
 		<method name="mesh_rasterizer_create">
 			<return type="RID" />
-			<param index="0" name="width" type="int" />
-			<param index="1" name="height" type="int" />
-			<param index="2" name="texture_format" type="int" enum="RenderingServer.RasterizedTextureFormat" />
-			<param index="3" name="generate_mipmaps" type="bool" default="false" />
-			<param index="4" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface_index" type="int" />
 			<description>
 			</description>
 		</method>
@@ -2436,21 +2433,10 @@
 			<return type="void" />
 			<param index="0" name="mesh_rasterizer" type="RID" />
 			<param index="1" name="material" type="RID" />
-			<param index="2" name="bg_color" type="Color" />
-			<description>
-			</description>
-		</method>
-		<method name="mesh_rasterizer_get_texture">
-			<return type="RID" />
-			<param index="0" name="mesh_rasterizer" type="RID" />
-			<description>
-			</description>
-		</method>
-		<method name="mesh_rasterizer_set_mesh">
-			<return type="void" />
-			<param index="0" name="mesh_rasterizer" type="RID" />
-			<param index="1" name="mesh" type="RID" />
-			<param index="2" name="surface_index" type="int" />
+			<param index="2" name="texture_drawable" type="RID" />
+			<param index="3" name="blend_mode" type="int" enum="RenderingServer.RasterizerBlendMode" />
+			<param index="4" name="clear_color" type="Color" />
+			<param index="5" name="multisamples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
 			<description>
 			</description>
 		</method>
@@ -3762,6 +3748,21 @@
 				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. It will give you much more control over the texture's format and usage.
 			</description>
 		</method>
+		<method name="texture_drawable_ctreate">
+			<return type="RID" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="texture_format" type="int" enum="RenderingServer.TextureDrawableFormat" />
+			<param index="3" name="use_mipmaps" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_drawable_generate_mipmaps">
+			<return type="void" />
+			<param index="0" name="texture_drawable" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="texture_get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
@@ -4767,13 +4768,25 @@
 		<constant name="MULTIMESH_INTERP_QUALITY_HIGH" value="1" enum="MultimeshPhysicsInterpolationQuality">
 			MultiMesh physics interpolation favors quality over speed.
 		</constant>
-		<constant name="RASTERIZED_TEXTURE_FORMAT_RGBA8" value="0" enum="RasterizedTextureFormat">
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8" value="0" enum="TextureDrawableFormat">
 		</constant>
-		<constant name="RASTERIZED_TEXTURE_FORMAT_RGBA8_SRGB" value="1" enum="RasterizedTextureFormat">
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB" value="1" enum="TextureDrawableFormat">
 		</constant>
-		<constant name="RASTERIZED_TEXTURE_FORMAT_RGBAH" value="2" enum="RasterizedTextureFormat">
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAH" value="2" enum="TextureDrawableFormat">
 		</constant>
-		<constant name="RASTERIZED_TEXTURE_FORMAT_RGBAF" value="3" enum="RasterizedTextureFormat">
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAF" value="3" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="RASTERIZER_BLEND_MODE_CLEAR" value="0" enum="RasterizerBlendMode">
+		</constant>
+		<constant name="RASTERIZER_BLEND_MODE_MIX" value="1" enum="RasterizerBlendMode">
+		</constant>
+		<constant name="RASTERIZER_BLEND_MODE_ADD" value="2" enum="RasterizerBlendMode">
+		</constant>
+		<constant name="RASTERIZER_BLEND_MODE_SUB" value="3" enum="RasterizerBlendMode">
+		</constant>
+		<constant name="RASTERIZER_BLEND_MODE_MUL" value="4" enum="RasterizerBlendMode">
+		</constant>
+		<constant name="RASTERIZER_BLEND_MODE_PREMULT_ALPHA" value="5" enum="RasterizerBlendMode">
 		</constant>
 		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST" value="0" enum="LightProjectorFilter">
 			Nearest-neighbor filter for light projectors (use for pixel art light projectors). No mipmaps are used for rendering, which means light projectors at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.

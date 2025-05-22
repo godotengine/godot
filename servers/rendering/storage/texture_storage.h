@@ -136,6 +136,11 @@ public:
 	virtual void decal_instance_set_transform(RID p_decal_instance, const Transform3D &p_transform) = 0;
 	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) = 0;
 
+	/* TEXTURE DRAWABLE API */
+
+	virtual void texture_drawable_initialize(RID p_texture_drawable, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) = 0;
+	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable) = 0;
+
 	/* RENDER TARGET */
 
 	virtual RID render_target_create() = 0;

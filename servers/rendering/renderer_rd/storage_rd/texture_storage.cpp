@@ -3259,14 +3259,14 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 	}
 }
 
-/* MESH RASTERIZER API */
+/* TEXTURE DRAWABLE API */
 
-void TextureStorage::mesh_rasterizer_texture_initialize(RID p_rid, int p_width, int p_height, RS::RasterizedTextureFormat p_texture_format, bool p_generate_mipmaps) {
+void TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps) {
 	uint32_t mipmaps = 1;
 	{
 		uint32_t w = p_width;
 		uint32_t h = p_height;
-		if (p_generate_mipmaps) {
+		if (p_use_mipmaps) {
 			while (true) {
 				if (w == 1 && h == 1) {
 					break;
@@ -3288,16 +3288,16 @@ void TextureStorage::mesh_rasterizer_texture_initialize(RID p_rid, int p_width, 
 	}
 
 	switch (p_texture_format) {
-		case RS::RASTERIZED_TEXTURE_FORMAT_RGBA8:
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8:
 			rd_tex_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 			break;
-		case RS::RASTERIZED_TEXTURE_FORMAT_RGBA8_SRGB:
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB:
 			rd_tex_format.format = RD::DATA_FORMAT_R8G8B8A8_SRGB;
 			break;
-		case RS::RASTERIZED_TEXTURE_FORMAT_RGBAH:
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAH:
 			rd_tex_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 			break;
-		case RS::RASTERIZED_TEXTURE_FORMAT_RGBAF:
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAF:
 			rd_tex_format.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			break;
 	}
@@ -3338,6 +3338,27 @@ void TextureStorage::mesh_rasterizer_texture_initialize(RID p_rid, int p_width, 
 	texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
 
 	texture_owner.initialize_rid(p_rid, texture);
+}
+
+void RendererRD::TextureStorage::texture_drawable_generate_mipmaps(RID p_texture_drawable) {
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	RID rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, false);
+	RD::TextureFormat tex_fmt = RD::get_singleton()->texture_get_format(rd_texture);
+	int mipmap_count = tex_fmt.mipmaps;
+	// Generate Gaussian Blur Mipmaps.
+	for (int i = 1; i < mipmap_count; i++) {
+		Size2i mipmap_size = Size2i(tex_fmt.width / (1 << i), tex_fmt.height / (1 << i)).maxi(1);
+		RID tex_src = RD::get_singleton()->texture_create_shared_from_slice({}, rd_texture, 0, i - 1);
+		RID tex_dst = RD::get_singleton()->texture_create_shared_from_slice({}, rd_texture, 0, i);
+
+		if (CopyEffects::get_singleton()->get_prefer_raster_effects()) {
+			CopyEffects::get_singleton()->gaussian_blur_raster(tex_src, tex_dst, Rect2i(Vector2i(), mipmap_size), mipmap_size);
+		} else {
+			CopyEffects::get_singleton()->gaussian_blur(tex_src, tex_dst, Rect2i(Vector2i(), mipmap_size), mipmap_size);
+		}
+		RD::get_singleton()->free(tex_src);
+		RD::get_singleton()->free(tex_dst);
+	}
 }
 
 /* RENDER TARGET API */

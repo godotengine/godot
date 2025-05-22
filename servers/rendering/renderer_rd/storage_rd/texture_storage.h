@@ -734,9 +734,10 @@ public:
 	RID get_decal_buffer() { return decal_buffer; }
 	void update_decal_buffer(const PagedArray<RID> &p_decals, const Transform3D &p_camera_xform);
 
-	/* MESH RASTERIZER API*/
+	/* TEXTURE DRAWABLE API */
 
-	void mesh_rasterizer_texture_initialize(RID p_rid, int p_width, int p_height, RS::RasterizedTextureFormat p_texture_format, bool p_generate_mipmaps);
+	void texture_drawable_initialize(RID p_rid, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) override;
+	void texture_drawable_generate_mipmaps(RID p_texture_drawable) override;
 
 	/* RENDER TARGET API */
 

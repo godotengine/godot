@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
+#include "servers/rendering/rendering_device_binds.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
 
@@ -2472,16 +2473,27 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_FAST);
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_HIGH);
 
-	/* MESH RASTERIZER API */
-	BIND_ENUM_CONSTANT(RASTERIZED_TEXTURE_FORMAT_RGBA8);
-	BIND_ENUM_CONSTANT(RASTERIZED_TEXTURE_FORMAT_RGBA8_SRGB);
-	BIND_ENUM_CONSTANT(RASTERIZED_TEXTURE_FORMAT_RGBAH);
-	BIND_ENUM_CONSTANT(RASTERIZED_TEXTURE_FORMAT_RGBAF);
+	/* TEXTURE DRAWABLE API*/
 
-	ClassDB::bind_method(D_METHOD("mesh_rasterizer_create", "width", "height", "texture_format", "generate_mipmaps", "samples"), &RenderingServer::mesh_rasterizer_create, DEFVAL(false), DEFVAL(RD::TEXTURE_SAMPLES_1));
-	ClassDB::bind_method(D_METHOD("mesh_rasterizer_set_mesh", "mesh_rasterizer", "mesh", "surface_index"), &RenderingServer::mesh_rasterizer_set_mesh);
-	ClassDB::bind_method(D_METHOD("mesh_rasterizer_draw", "mesh_rasterizer", "material", "bg_color"), &RenderingServer::mesh_rasterizer_draw);
-	ClassDB::bind_method(D_METHOD("mesh_rasterizer_get_texture", "mesh_rasterizer"), &RenderingServer::mesh_rasterizer_get_texture);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAH);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAF);
+
+	ClassDB::bind_method(D_METHOD("texture_drawable_ctreate", "width", "height", "texture_format", "use_mipmaps"), &RenderingServer::texture_drawable_create, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_drawable_generate_mipmaps", "texture_drawable"), &RenderingServer::texture_drawable_generate_mipmaps);
+
+	/* MESH RASTERIZER API */
+
+	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_CLEAR);
+	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_MIX);
+	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_ADD);
+	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_SUB);
+	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_MUL);
+	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_PREMULT_ALPHA);
+
+	ClassDB::bind_method(D_METHOD("mesh_rasterizer_create", "mesh", "surface_index"), &RenderingServer::mesh_rasterizer_create);
+	ClassDB::bind_method(D_METHOD("mesh_rasterizer_draw", "mesh_rasterizer", "material", "texture_drawable", "blend_mode", "clear_color", "multisamples"), &RenderingServer::mesh_rasterizer_draw, DEFVAL(RD::TEXTURE_SAMPLES_1));
 
 	/* SKELETON API */
 
