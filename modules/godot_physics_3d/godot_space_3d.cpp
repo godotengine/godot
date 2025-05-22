@@ -185,7 +185,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 
 		if (collided) {
 			ERR_FAIL_NULL_V(res_obj, 0); // Shouldn't happen but silences warning.
-			
+
 			// Filter to closest hit if only one return is allowed and we've already hit something
 			if (choose_closest && hit_once) {
 				real_t ld = normal.dot(shape_point);
@@ -194,7 +194,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 				}
 				min_d = ld;
 			}
-			
+
 			if (r_results) {
 				r_results[r_idx].collider_id = res_obj->get_instance_id();
 				if (r_results[r_idx].collider_id.is_valid()) {
@@ -208,7 +208,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 				r_results[r_idx].rid = res_obj->get_self();
 				r_results[r_idx].shape = res_shape;
 			}
-			
+
 			hit_once = true;
 			collided = false;
 
