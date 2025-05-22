@@ -383,7 +383,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
 			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
 			Vector<uint8_t> new_vertex_data;
-			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
+			new_vertex_data.resize_initialized(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
 			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
 			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, as_storage_flag);
 			s->vertex_buffer_size = new_vertex_data.size();
@@ -1655,7 +1655,7 @@ void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 			}
 
 			Vector<uint8_t> newVector;
-			newVector.resize_zeroed(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count);
+			newVector.resize_initialized(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count);
 
 			for (uint32_t i = 0; i < mesh->surface_count; i++) {
 				uint32_t count = mesh_surface_get_vertices_drawn_count(mesh->surfaces[i]);

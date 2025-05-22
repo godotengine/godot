@@ -133,7 +133,7 @@ TEST_CASE("[PacketPeer][PacketPeerStream] Get packet buffer") {
 	// First 4 bytes are the length of the string.
 	CharString cs = godot_rules.ascii();
 	Vector<uint8_t> buffer = { (uint8_t)(cs.length() + 1), 0, 0, 0 };
-	buffer.resize_zeroed(4 + cs.length() + 1);
+	buffer.resize_initialized(4 + cs.length() + 1);
 	memcpy(buffer.ptrw() + 4, cs.get_data(), cs.length());
 	spb->set_data_array(buffer);
 

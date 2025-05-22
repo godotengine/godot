@@ -2339,7 +2339,7 @@ Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_vector_transform(const Vect
 
 	uint32_t ret_size = get_datatype_component_count(p_ret_type);
 	Vector<Scalar> value;
-	value.resize_zeroed(ret_size);
+	value.resize_initialized(ret_size);
 
 	Scalar *w = value.ptrw();
 	switch (p_ret_type) {

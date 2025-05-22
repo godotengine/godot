@@ -303,7 +303,7 @@ Error Array::resize(int p_new_size) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	Variant::Type &variant_type = _p->typed.type;
 	int old_size = _p->array.size();
-	Error err = _p->array.resize_zeroed(p_new_size);
+	Error err = _p->array.resize_initialized(p_new_size);
 	if (!err && variant_type != Variant::NIL && variant_type != Variant::OBJECT) {
 		for (int i = old_size; i < p_new_size; i++) {
 			VariantInternal::initialize(&_p->array.write[i], variant_type);

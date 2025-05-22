@@ -327,10 +327,10 @@ RID AccessibilityDriverAccessKit::accessibility_create_sub_text_edit_elements(co
 		Vector<float> char_positions;
 		Vector<float> char_widths;
 
-		char_positions.resize_zeroed(t.length());
+		char_positions.resize_initialized(t.length());
 		float *positions_ptr = char_positions.ptrw();
 
-		char_widths.resize_zeroed(t.length());
+		char_widths.resize_initialized(t.length());
 		float *widths_ptr = char_widths.ptrw();
 
 		float size_x = 0.0;
