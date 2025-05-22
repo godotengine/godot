@@ -224,7 +224,7 @@ TEST_CASE("[Audio][AudioStreamWAV] Saving to buffer equals saving to disk and re
 
 	Vector<uint8_t> test_data;
 	test_data = gen_pcm16_test(WAV_RATE, WAV_COUNT, stereo);
-	
+
 	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
 	stream->set_mix_rate(WAV_RATE);
 	stream->set_format(AudioStreamWAV::FORMAT_16_BITS);
