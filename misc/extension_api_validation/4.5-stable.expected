@@ -33,3 +33,12 @@ GH-110867
 ERROR: Validate extension JSON: Missing field in current API 'classes/FileAccess/methods/get_as_text': arguments. This is a bug.
 
 Optional argument removed. Compatibility method registered.
+
+
+GH-100414
+---------
+Validate extension JSON: Error: Field 'builtin_classes/Vector2/constants/INF': value changed value in new API, from "Vector2(inf, inf)" to "Vector2(INF, INF)".
+Validate extension JSON: Error: Field 'builtin_classes/Vector3/constants/INF': value changed value in new API, from "Vector3(inf, inf, inf)" to "Vector3(INF, INF, INF)".
+Validate extension JSON: Error: Field 'builtin_classes/Vector4/constants/INF': value changed value in new API, from "Vector4(inf, inf, inf, inf)" to "Vector4(INF, INF, INF, INF)".
+
+Infinity is now serialized as "INF" instead of "inf".
