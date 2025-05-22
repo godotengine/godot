@@ -38,7 +38,7 @@ import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
+import android.graphics.PixelFormat;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -57,7 +57,7 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final VkRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotVulkanRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler) {
+	public GodotVulkanRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler, boolean shouldBeTranslucent) {
 		super(host.getActivity());
 
 		this.host = host;
@@ -67,6 +67,10 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		setFocusableInTouchMode(true);
 		setClickable(false);
+
+		if (shouldBeTranslucent) {
+			this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		}
 	}
 
 	@Override

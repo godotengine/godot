@@ -5,6 +5,7 @@
 	<style name="GodotAppMainTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
 		<item name="android:windowDrawsSystemBarBackgrounds">false</item>
 		<item name="android:windowSwipeToDismiss">false</item>
+		<item name="android:windowIsTranslucent">false</item>
 	</style>
 
 	<!-- GodotAppSplashTheme is auto-generated during export. Manual changes will be overwritten.
@@ -13,5 +14,6 @@
 		<item name="android:windowSplashScreenBackground">@mipmap/icon_background</item>
 		<item name="windowSplashScreenAnimatedIcon">@mipmap/icon_foreground</item>
 		<item name="postSplashScreenTheme">@style/GodotAppMainTheme</item>
+		<item name="android:windowIsTranslucent">false</item>
 	</style>
 </resources>

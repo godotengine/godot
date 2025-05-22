@@ -70,6 +70,7 @@
             android:launchMode="singleTask"
             android:process=":GodotGame"
             android:autoRemoveFromRecents="true"
+            android:theme="@style/GodotGameTheme"
             android:supportsPictureInPicture="true"
             android:screenOrientation="userLandscape">
             <layout
