@@ -485,14 +485,14 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 			const String base_define = ubershader ? "\n#define UBERSHADER\n" : "";
 			shader_versions.push_back(base_define + ""); // SHADER_VERSION_COLOR_PASS
 			shader_versions.push_back(base_define + "\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
-			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
-			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_SHADOW_PASS_DP
+			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n"); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
+			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n#define SHADOW_PASS\n"); // SHADER_VERSION_SHADOW_PASS_DP
 			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 
 			// Multiview versions of our shaders.
 			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n"); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
 			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
-			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
+			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n"); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
 		}
 
 		Vector<RD::PipelineImmutableSampler> immutable_samplers;
@@ -540,6 +540,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["POINT_SIZE"] = "gl_PointSize";
 		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
 		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
+		actions.renames["Z_CLIP_SCALE"] = "z_clip_scale";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
 		actions.renames["ALPHA_HASH_SCALE"] = "alpha_hash_scale";
@@ -555,6 +556,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["E"] = String::num(Math::E);
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
+		actions.renames["IN_SHADOW_PASS"] = "IN_SHADOW_PASS";
 		actions.renames["VIEWPORT_SIZE"] = "read_viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
@@ -644,6 +646,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 		actions.usage_defines["LIGHT_VERTEX"] = "#define LIGHT_VERTEX_USED\n";
+		actions.usage_defines["Z_CLIP_SCALE"] = "#define Z_CLIP_SCALE_USED\n";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
