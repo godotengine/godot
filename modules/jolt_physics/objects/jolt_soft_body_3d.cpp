@@ -44,10 +44,6 @@
 
 namespace {
 
-bool is_face_degenerate(const int p_face[3]) {
-	return p_face[0] == p_face[1] || p_face[0] == p_face[2] || p_face[1] == p_face[2];
-}
-
 template <typename TJoltVertex>
 void pin_vertices(const JoltSoftBody3D &p_body, const HashSet<int> &p_pinned_vertices, const LocalVector<int> &p_mesh_to_physics, JPH::Array<TJoltVertex> &r_physics_vertices) {
 	const int mesh_vertex_count = p_mesh_to_physics.size();
@@ -163,7 +159,6 @@ bool JoltSoftBody3D::_ref_shared_data() {
 
 		for (int i = 0; i < mesh_index_count; i += 3) {
 			int physics_face[3];
-			int mesh_face[3];
 
 			for (int j = 0; j < 3; ++j) {
 				const int mesh_index = mesh_indices[i + j];
@@ -173,16 +168,16 @@ bool JoltSoftBody3D::_ref_shared_data() {
 
 				if (iter_physics_index == vertex_to_physics.end()) {
 					physics_vertices.emplace_back(JPH::Float3((float)vertex.x, (float)vertex.y, (float)vertex.z), JPH::Float3(0.0f, 0.0f, 0.0f), 1.0f);
-
 					iter_physics_index = vertex_to_physics.insert(vertex, physics_index_count++);
 				}
 
-				mesh_face[j] = mesh_index;
 				physics_face[j] = iter_physics_index->value;
 				mesh_to_physics[mesh_index] = iter_physics_index->value;
 			}
 
-			ERR_CONTINUE_MSG(is_face_degenerate(physics_face), vformat("Failed to append face to soft body '%s'. Face was found to be degenerate. Face consist of indices %d, %d and %d.", to_string(), mesh_face[0], mesh_face[1], mesh_face[2]));
+			if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
+				continue; // We skip degenerate faces, since they're problematic, and Jolt will assert about it anyway.
+			}
 
 			// Jolt uses a different winding order, so we swap the indices to account for that.
 			physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
