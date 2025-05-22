@@ -354,34 +354,3 @@ void Vector<T>::fill(T p_elem) {
 // Zero-constructing Vector initializes CowData.ptr() to nullptr and thus empty.
 template <typename T>
 struct is_zero_constructible<Vector<T>> : std::true_type {};
-
-// Helper functions to append to a Vector<uint8_t> following FileAccess::store_X
-inline void push_back_16(Vector<uint8_t> v, uint16_t p_dest) {
-#ifdef BIG_ENDIAN_ENABLED
-	p_dest = BSWAP16(p_dest);
-#endif
-	uint8_t * p = reinterpret_cast<uint8_t *>(&p_dest);
-	for (unsigned int i = 0; i < sizeof(uint16_t); i++) {
-		v.push_back(p[i]);
-	}
-}
-
-inline void push_back_32(Vector<uint8_t> v, uint32_t p_dest) {
-#ifdef BIG_ENDIAN_ENABLED
-	p_dest = BSWAP32(p_dest);
-#endif
-	uint8_t *p = reinterpret_cast<uint8_t *>(&p_dest);
-	for (unsigned int i = 0; i < sizeof(uint32_t); i++) {
-		v.push_back(p[i]);
-	}
-}
-
-inline void push_back_64(Vector<uint8_t> v, uint64_t p_dest) {
-#ifdef BIG_ENDIAN_ENABLED
-	p_dest = BSWAP64(p_dest);
-#endif
-	uint8_t *p = reinterpret_cast<uint8_t *>(&p_dest);
-	for (unsigned int i = 0; i < sizeof(uint64_t); i++) {
-		v.push_back(p[i]);
-	}
-}
