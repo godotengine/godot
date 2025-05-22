@@ -1931,7 +1931,7 @@ Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const
 			NSUInteger height = CGImageGetHeight(image);
 
 			Vector<uint8_t> img_data;
-			img_data.resize_zeroed(height * width * 4);
+			img_data.resize_initialized(height * width * 4);
 			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, (uint32_t)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 			if (context) {
 				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
