@@ -32,6 +32,7 @@
 
 #include "core/input/input_enums.h"
 #include "core/object/object.h"
+#include "core/object/required_obj.h"
 #include "core/os/keyboard.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
