@@ -556,6 +556,13 @@ public:
 		_call_stack.stack_pos--;
 	}
 
+	_FORCE_INLINE_ void notify_resumed_function_finished(int *p_line) {
+		if (track_call_stack) {
+			// Update line pointer to extend its lifetime.
+			_call_stack.levels[_call_stack.stack_pos - 1].line = p_line;
+		}
+	}
+
 	virtual Vector<StackInfo> debug_get_current_stack_info() override {
 		Vector<StackInfo> csi;
 		csi.resize(_call_stack.stack_pos);

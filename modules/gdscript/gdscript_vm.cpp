@@ -3874,6 +3874,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 			stack[i].~Variant();
 		}
+	} else if (p_state) {
+		// This means we have finished executing a resumed function and it was not awaited again.
+		// We update CallLevel::line pointer to CallState::line since local `line` variable will be popped from stack.
+		// This ensures frame lines are correctly reported in the debugger and backtrace.
+		p_state->line = line;
+		GDScriptLanguage::get_singleton()->notify_resumed_function_finished(&p_state->line);
 	}
 
 	// Always free reserved addresses, since they are never copied.
