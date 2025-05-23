@@ -75,6 +75,10 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform_for_view", "view", "cam_transform"), &XRInterface::get_transform_for_view);
 	ClassDB::bind_method(D_METHOD("get_projection_for_view", "view", "aspect", "near", "far"), &XRInterface::get_projection_for_view);
 
+	// methods and properties for overlays...
+	ClassDB::bind_method(D_METHOD("is_overlay_supported"), &XRInterface::is_overlay_supported);
+	ClassDB::bind_method(D_METHOD("is_overlay_enabled"), &XRInterface::is_overlay_enabled);
+
 	/** environment blend mode. */
 	ClassDB::bind_method(D_METHOD("get_supported_environment_blend_modes"), &XRInterface::get_supported_environment_blend_modes);
 	ClassDB::bind_method(D_METHOD("set_environment_blend_mode", "mode"), &XRInterface::set_environment_blend_mode);
