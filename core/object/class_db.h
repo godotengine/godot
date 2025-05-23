@@ -531,24 +531,9 @@ public:
 
 #ifdef DEBUG_ENABLED
 
-_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr) {
-}
-
-_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err) {
-	arr.push_back(p_err);
-}
-
-template <typename... P>
-_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err, P... p_args) {
-	arr.push_back(p_err);
-	errarray_add_str(arr, p_args...);
-}
-
 template <typename... P>
 _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
-	Vector<Error> arr;
-	errarray_add_str(arr, p_args...);
-	return arr;
+	return Vector<Error>({ p_args... });
 }
 
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) \
