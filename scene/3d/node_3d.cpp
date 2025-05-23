@@ -714,6 +714,7 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+	update_configuration_warnings();
 }
 
 Vector3 Node3D::get_position() const {
@@ -1228,6 +1229,20 @@ void Node3D::set_visibility_parent(const NodePath &p_path) {
 NodePath Node3D::get_visibility_parent() const {
 	ERR_READ_THREAD_GUARD_V(NodePath());
 	return visibility_parent_path;
+}
+
+PackedStringArray Node3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	Vector3 scale = get_scale();
+	if (Math::is_zero_approx(scale.x) || Math::is_zero_approx(scale.y) || Math::is_zero_approx(scale.z)) {
+		warnings.push_back(RTR("Node3D's scale components may not be exactly 0.0."));
+	}
+	if (!(scale.x >= 0.0 && scale.y >= 0.0 && scale.z >= 0.0) && !(scale.x <= 0.0 && scale.y <= 0.0 && scale.z <= 0.0)) {
+		warnings.push_back(RTR("Node3D's scale components must either be all positive or all negative."));
+	}
+
+	return warnings;
 }
 
 void Node3D::_validate_property(PropertyInfo &p_property) const {
