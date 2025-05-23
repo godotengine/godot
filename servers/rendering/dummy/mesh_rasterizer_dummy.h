@@ -38,7 +38,7 @@ class MeshRasterizerDummy : public MeshRasterizer {
 public:
 	virtual RID mesh_rasterizer_allocate() override { return RID(); }
 	void mesh_rasterizer_initialize(RID p_mesh_rasterizer, RID p_mesh, int surface_index) override {}
-	void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, RS::RasterizerBlendMode p_blend_mode, const Color &p_bg_color, RD::TextureSamples p_multisample = RD::TEXTURE_SAMPLES_1) override {}
+	void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, Ref<RasterizerBlendState> p_blend_state, const Color &p_bg_color, RD::TextureSamples p_multisample = RD::TEXTURE_SAMPLES_1) override {}
 	virtual bool free(RID p_mesh_rasterizer) override { return true; }
 };
 } //namespace RendererDummy

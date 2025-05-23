@@ -33,7 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
-#include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/mesh_rasterizer.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
 
@@ -2485,15 +2485,8 @@ void RenderingServer::_bind_methods() {
 
 	/* MESH RASTERIZER API */
 
-	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_CLEAR);
-	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_MIX);
-	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_ADD);
-	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_SUB);
-	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_MUL);
-	BIND_ENUM_CONSTANT(RASTERIZER_BLEND_MODE_PREMULT_ALPHA);
-
 	ClassDB::bind_method(D_METHOD("mesh_rasterizer_create", "mesh", "surface_index"), &RenderingServer::mesh_rasterizer_create);
-	ClassDB::bind_method(D_METHOD("mesh_rasterizer_draw", "mesh_rasterizer", "material", "texture_drawable", "blend_mode", "clear_color", "multisamples"), &RenderingServer::mesh_rasterizer_draw, DEFVAL(RD::TEXTURE_SAMPLES_1));
+	ClassDB::bind_method(D_METHOD("mesh_rasterizer_draw", "mesh_rasterizer", "material", "texture_drawable", "blend_state", "clear_color", "multisamples"), &RenderingServer::mesh_rasterizer_draw, DEFVAL(RD::TEXTURE_SAMPLES_1));
 
 	/* SKELETON API */
 

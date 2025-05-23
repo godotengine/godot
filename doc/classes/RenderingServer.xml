@@ -2434,7 +2434,7 @@
 			<param index="0" name="mesh_rasterizer" type="RID" />
 			<param index="1" name="material" type="RID" />
 			<param index="2" name="texture_drawable" type="RID" />
-			<param index="3" name="blend_mode" type="int" enum="RenderingServer.RasterizerBlendMode" />
+			<param index="3" name="blend_state" type="RasterizerBlendState" />
 			<param index="4" name="clear_color" type="Color" />
 			<param index="5" name="multisamples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
 			<description>
@@ -4775,18 +4775,6 @@
 		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAH" value="2" enum="TextureDrawableFormat">
 		</constant>
 		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAF" value="3" enum="TextureDrawableFormat">
-		</constant>
-		<constant name="RASTERIZER_BLEND_MODE_CLEAR" value="0" enum="RasterizerBlendMode">
-		</constant>
-		<constant name="RASTERIZER_BLEND_MODE_MIX" value="1" enum="RasterizerBlendMode">
-		</constant>
-		<constant name="RASTERIZER_BLEND_MODE_ADD" value="2" enum="RasterizerBlendMode">
-		</constant>
-		<constant name="RASTERIZER_BLEND_MODE_SUB" value="3" enum="RasterizerBlendMode">
-		</constant>
-		<constant name="RASTERIZER_BLEND_MODE_MUL" value="4" enum="RasterizerBlendMode">
-		</constant>
-		<constant name="RASTERIZER_BLEND_MODE_PREMULT_ALPHA" value="5" enum="RasterizerBlendMode">
 		</constant>
 		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST" value="0" enum="LightProjectorFilter">
 			Nearest-neighbor filter for light projectors (use for pixel art light projectors). No mipmaps are used for rendering, which means light projectors at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.

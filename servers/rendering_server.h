@@ -39,6 +39,8 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
+class RasterizerBlendState;
+
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
 #ifdef DEBUG_ENABLED
@@ -1184,17 +1186,8 @@ public:
 
 	/* MESH RASTERIZER API */
 
-	enum RasterizerBlendMode {
-		RASTERIZER_BLEND_MODE_CLEAR,
-		RASTERIZER_BLEND_MODE_MIX,
-		RASTERIZER_BLEND_MODE_ADD,
-		RASTERIZER_BLEND_MODE_SUB,
-		RASTERIZER_BLEND_MODE_MUL,
-		RASTERIZER_BLEND_MODE_PREMULT_ALPHA
-	};
-
 	virtual RID mesh_rasterizer_create(RID p_mesh, int p_surface_index) = 0;
-	virtual void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, RasterizerBlendMode p_blend_mode, const Color &p_clear_color, RD::TextureSamples p_multisample = RD::TEXTURE_SAMPLES_1) = 0;
+	virtual void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, Ref<RasterizerBlendState> p_blend_state, const Color &p_clear_color, RD::TextureSamples p_multisample = RD::TEXTURE_SAMPLES_1) = 0;
 
 	/* SKY API */
 
@@ -2015,7 +2008,6 @@ VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
 VARIANT_ENUM_CAST(RenderingServer::TextureDrawableFormat);
-VARIANT_ENUM_CAST(RenderingServer::RasterizerBlendMode);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(RenderingServer::Features);

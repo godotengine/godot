@@ -129,7 +129,7 @@ void MeshRasterizerRD::mesh_rasterizer_initialize(RID p_mesh_rasterizer, RID p_m
 	}
 }
 
-void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, RS::RasterizerBlendMode p_blend_mode, const Color &p_bg_color, RD::TextureSamples p_multisample) {
+void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, Ref<RasterizerBlendState> p_blend_state, const Color &p_bg_color, RD::TextureSamples p_multisample) {
 	MeshRasterizerData *mesh_rasterizer = mesh_rasterizer_owner.get_or_null(p_mesh_rasterizer);
 	ERR_FAIL_COND(p_mesh_rasterizer.is_null());
 	ERR_FAIL_COND(p_material.is_null());
@@ -188,25 +188,9 @@ void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_materia
 	RD::FramebufferFormatID fb_fmt = RD::get_singleton()->framebuffer_get_format(framebuffer_rid);
 
 	RD::PipelineColorBlendState blend_state;
-	switch (p_blend_mode) {
-		case RS::RASTERIZER_BLEND_MODE_MIX:
-			blend_state.attachments.push_back(attachment_mix);
-			break;
-		case RS::RASTERIZER_BLEND_MODE_ADD:
-			blend_state.attachments.push_back(attachment_add);
-			break;
-		case RS::RASTERIZER_BLEND_MODE_SUB:
-			blend_state.attachments.push_back(attachment_sub);
-			break;
-		case RS::RASTERIZER_BLEND_MODE_MUL:
-			blend_state.attachments.push_back(attachment_mul);
-			break;
-		case RS::RASTERIZER_BLEND_MODE_PREMULT_ALPHA:
-			blend_state.attachments.push_back(attachment_premult_alpha);
-			break;
-		default:
-			blend_state.attachments.push_back({});
-			break;
+	blend_state.attachments.push_back({});
+	if (p_blend_state.is_valid()) {
+		p_blend_state->get_rd_blend_state(blend_state);
 	}
 
 	PipelineCacheKey k = {
@@ -214,7 +198,7 @@ void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_materia
 		fb_fmt,
 		mesh_rasterizer->primitive,
 		p_multisample,
-		p_blend_mode
+		p_blend_state
 	};
 
 	RID pipeline;
@@ -231,7 +215,7 @@ void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_materia
 	}
 
 	LocalVector<Color> clear_colors = { p_bg_color };
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer_rid, p_blend_mode == RS::RASTERIZER_BLEND_MODE_CLEAR ? RD::DRAW_CLEAR_ALL : RD::DRAW_DEFAULT_ALL, clear_colors);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer_rid, p_blend_state.is_null() ? RD::DRAW_CLEAR_ALL : RD::DRAW_DEFAULT_ALL, clear_colors);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline);
 
 	// Vertex

@@ -1117,7 +1117,7 @@ public:
 #define server_name RSG::mesh_rasterizer
 
 	FUNCRIDSPLIT2(mesh_rasterizer, RID, int);
-	FUNC6(mesh_rasterizer_draw, RID, RID, RID, RS::RasterizerBlendMode, const Color &, RD::TextureSamples);
+	FUNC6(mesh_rasterizer_draw, RID, RID, RID, Ref<RasterizerBlendState>, const Color &, RD::TextureSamples);
 
 	/* STATUS INFORMATION */
 

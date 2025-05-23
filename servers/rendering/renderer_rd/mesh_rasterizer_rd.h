@@ -85,7 +85,7 @@ private:
 		RD::FramebufferFormatID framebuffer_formt;
 		RD::RenderPrimitive primitive;
 		RD::TextureSamples samples;
-		RS::RasterizerBlendMode blend_mode;
+		Ref<RasterizerBlendState> blend_state;
 
 		bool operator==(const PipelineCacheKey &b) const {
 			if (shader_id != b.shader_id) {
@@ -96,14 +96,11 @@ private:
 				return false;
 			} else if (samples != b.samples) {
 				return false;
-			} else if (blend_mode != b.blend_mode) {
-				if (b.blend_mode == RS::RASTERIZER_BLEND_MODE_CLEAR) {
-					// No need to recreate pipeline if it clears texture;
-					return true;
-				}
-				return false;
-			} else {
+			} else if (b.blend_state.is_null()) {
+				// No need to recreate pipeline if it clears texture.
 				return true;
+			} else {
+				return blend_state->equal(b.blend_state);
 			}
 		}
 	};
@@ -149,7 +146,7 @@ private:
 public:
 	RID mesh_rasterizer_allocate();
 	void mesh_rasterizer_initialize(RID p_mesh_rasterizer, RID p_mesh, int surface_index);
-	void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, RS::RasterizerBlendMode p_blend_mode, const Color &p_bg_color, RD::TextureSamples p_multisample = RD::TEXTURE_SAMPLES_1);
+	void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, Ref<RasterizerBlendState> p_blend_state, const Color &p_bg_color, RD::TextureSamples p_multisample = RD::TEXTURE_SAMPLES_1);
 
 	bool free(RID p_mesh_rasterizer);
 
