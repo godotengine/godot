@@ -17,8 +17,9 @@ layout(push_constant, std430) uniform Params {
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
 	float time;
-	vec2 pad;
+	vec3 forward;
 	float luminance_multiplier;
+	vec3 pad;
 	float brightness_multiplier;
 }
 params;
@@ -58,8 +59,9 @@ layout(push_constant, std430) uniform Params {
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
 	float time;
-	vec2 pad;
+	vec3 forward;
 	float luminance_multiplier;
+	vec3 pad;
 	float brightness_multiplier;
 }
 params;
