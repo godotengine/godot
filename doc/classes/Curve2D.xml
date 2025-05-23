@@ -88,7 +88,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="t" type="float" />
 			<description>
-				Returns the position between the vertex [param idx] and the vertex [code]idx + 1[/code], where [param t] controls if the point is the first vertex ([code]t = 0.0[/code]), the last vertex ([code]t = 1.0[/code]), or in between. Values of [param t] outside the range ([code]0.0 &lt;= t &lt;= 1.0[/code]) give strange, but predictable results.
+				Returns the position between the vertex [param idx] and the vertex [code]idx + 1[/code], where [param t] controls if the point is the first vertex ([code]t = 0.0[/code]), the last vertex ([code]t = 1.0[/code]), or in between. Values of [param t] outside the [code][0.0, 1.0][/code] range give strange, but predictable results.
 				If [param idx] is out of bounds it is truncated to the first or last vertex, and [param t] is ignored. If the curve has no points, the function sends an error to the console, and returns [code](0, 0)[/code].
 			</description>
 		</method>
@@ -107,7 +107,7 @@
 			<param index="0" name="offset" type="float" default="0.0" />
 			<param index="1" name="cubic" type="bool" default="false" />
 			<description>
-				Similar to [method sample_baked], but returns [Transform2D] that includes a rotation along the curve, with [member Transform2D.origin] as the point position and the [member Transform2D.x] vector pointing in the direction of the path at that point. Returns an empty transform if the length of the curve is [code]0[/code].
+				Similar to [method sample_baked], but returns [Transform2D] that includes a rotation along the curve, with [member Transform2D.origin] as the point position and the [member Transform2D.x] vector pointing in the direction of the path at that point. If the length of the curve is [code]0[/code], the transform will use the identity basis.
 				[codeblock]
 				var baked = curve.sample_baked_with_rotation(offset)
 				# The returned Transform2D can be set directly.
