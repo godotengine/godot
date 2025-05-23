@@ -567,7 +567,6 @@ void Camera2D::set_limit_enabled(bool p_limit_enabled) {
 #ifdef TOOLS_ENABLED
 	emit_signal("_camera_limit_enabled_updated"); // Used for Camera2DEditorPlugin.
 #endif
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_limit_enabled() const {
@@ -789,7 +788,6 @@ void Camera2D::set_rotation_smoothing_enabled(bool p_enabled) {
 		return;
 	}
 	rotation_smoothing_enabled = p_enabled;
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_rotation_smoothing_enabled() const {
@@ -858,7 +856,6 @@ void Camera2D::set_position_smoothing_enabled(bool p_enabled) {
 		return;
 	}
 	position_smoothing_enabled = p_enabled;
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_position_smoothing_enabled() const {
@@ -934,18 +931,6 @@ void Camera2D::set_margin_drawing_enabled(bool p_enabled) {
 
 bool Camera2D::is_margin_drawing_enabled() const {
 	return margin_drawing_enabled;
-}
-
-void Camera2D::_validate_property(PropertyInfo &p_property) const {
-	if (!limit_enabled && (p_property.name == "limit_smoothed" || p_property.name == "limit_left" || p_property.name == "limit_top" || p_property.name == "limit_right" || p_property.name == "limit_bottom")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (!position_smoothing_enabled && p_property.name == "position_smoothing_speed") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (!rotation_smoothing_enabled && p_property.name == "rotation_smoothing_speed") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
 }
 
 void Camera2D::_bind_methods() {
@@ -1037,7 +1022,7 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
 
 	ADD_GROUP("Limit", "limit_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_limit_enabled", "is_limit_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_limit_enabled", "is_limit_enabled");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_left", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_top", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_right", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_RIGHT);
@@ -1045,11 +1030,11 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothed"), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
 
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
 
 	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_smoothing_speed"), "set_rotation_smoothing_speed", "get_rotation_smoothing_speed");
 
 	ADD_GROUP("Drag", "drag_");
