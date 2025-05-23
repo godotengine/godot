@@ -374,7 +374,6 @@ class GDScriptInstance : public ScriptInstance {
 	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
 #endif
 	Vector<Variant> members;
-	bool base_ref_counted;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
@@ -414,7 +413,7 @@ public:
 
 	virtual const Variant get_rpc_config() const;
 
-	GDScriptInstance();
+	GDScriptInstance() {}
 	~GDScriptInstance();
 };
 
