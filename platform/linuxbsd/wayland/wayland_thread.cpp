@@ -1728,15 +1728,27 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 		}
 	}
 
-	if (pd.pointed_id == DisplayServer::INVALID_WINDOW_ID) {
+	WindowState *ws = nullptr;
+
+	// NOTE: At least on sway, with wl_pointer version 5 or greater,
+	// wl_pointer::leave might be emitted with other events (like
+	// wl_pointer::button) within the same wl_pointer::frame. Because of this, we
+	// need to account for when the currently pointed window might be invalid
+	// (third-party or even none) and fall back to the old one.
+	if (pd.pointed_id != DisplayServer::INVALID_WINDOW_ID) {
+		ws = ss->wayland_thread->window_get_state(pd.pointed_id);
+		ERR_FAIL_NULL(ws);
+	} else if (old_pd.pointed_id != DisplayServer::INVALID_WINDOW_ID) {
+		ws = ss->wayland_thread->window_get_state(old_pd.pointed_id);
+		ERR_FAIL_NULL(ws);
+	}
+
+	if (ws == nullptr) {
 		// We're probably on a decoration or some other third-party thing. Let's
 		// "commit" the data and call it a day.
 		old_pd = pd;
 		return;
 	}
-
-	WindowState *ws = ss->wayland_thread->window_get_state(pd.pointed_id);
-	ERR_FAIL_NULL(ws);
 
 	double scale = window_state_get_scale_factor(ws);
 
