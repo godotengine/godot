@@ -210,8 +210,10 @@ public:
 	void reset_mass_properties();
 
 	void apply_force(const Vector3 &p_force, const Vector3 &p_position);
+	void apply_force_at_position(const Vector3 &p_force, const Vector3 &p_world_position);
 	void apply_central_force(const Vector3 &p_force);
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position);
+	void apply_impulse_at_position(const Vector3 &p_impulse, const Vector3 &p_world_position);
 
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_torque(const Vector3 &p_torque);

@@ -48,10 +48,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="_apply_force_at_position" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="force" type="Vector3" />
+			<param index="1" name="world_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
 		<method name="_apply_impulse" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector3" />
 			<param index="1" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_apply_impulse_at_position" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="impulse" type="Vector3" />
+			<param index="1" name="world_position" type="Vector3" />
 			<description>
 			</description>
 		</method>

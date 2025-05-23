@@ -72,10 +72,12 @@ public:
 
 	virtual void apply_central_impulse(const Vector3 &p_impulse) = 0;
 	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
+	virtual void apply_impulse_at_position(const Vector3 &p_impulse, const Vector3 &p_world_position) = 0;
 	virtual void apply_torque_impulse(const Vector3 &p_impulse) = 0;
 
 	virtual void apply_central_force(const Vector3 &p_force) = 0;
 	virtual void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void apply_force_at_position(const Vector3 &p_force, const Vector3 &p_world_position) = 0;
 	virtual void apply_torque(const Vector3 &p_torque) = 0;
 
 	virtual void add_constant_central_force(const Vector3 &p_force) = 0;
@@ -467,10 +469,12 @@ public:
 
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 	virtual void body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
+	virtual void body_apply_impulse_at_position(RID p_body, const Vector3 &p_impulse, const Vector3 &p_world_position) = 0;
 	virtual void body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 
 	virtual void body_apply_central_force(RID p_body, const Vector3 &p_force) = 0;
 	virtual void body_apply_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void body_apply_force_at_position(RID p_body, const Vector3 &p_force, const Vector3 &p_world_position) = 0;
 	virtual void body_apply_torque(RID p_body, const Vector3 &p_torque) = 0;
 
 	virtual void body_add_constant_central_force(RID p_body, const Vector3 &p_force) = 0;

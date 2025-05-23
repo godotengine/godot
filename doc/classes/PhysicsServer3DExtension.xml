@@ -249,11 +249,27 @@
 			<description>
 			</description>
 		</method>
+		<method name="_body_apply_force_at_position" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<param index="2" name="world_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
 		<method name="_body_apply_impulse" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="impulse" type="Vector3" />
 			<param index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_apply_impulse_at_position" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
+			<param index="2" name="world_position" type="Vector3" />
 			<description>
 			</description>
 		</method>

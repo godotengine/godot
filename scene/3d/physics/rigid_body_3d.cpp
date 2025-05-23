@@ -543,6 +543,11 @@ void RigidBody3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_posit
 	singleton->body_apply_impulse(get_rid(), p_impulse, p_position);
 }
 
+void RigidBody3D::apply_impulse_at_position(const Vector3 &p_impulse, const Vector3 &p_world_position) {
+	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
+	singleton->body_apply_impulse_at_position(get_rid(), p_impulse, p_world_position);
+}
+
 void RigidBody3D::apply_torque_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_torque_impulse(get_rid(), p_impulse);
 }
@@ -554,6 +559,11 @@ void RigidBody3D::apply_central_force(const Vector3 &p_force) {
 void RigidBody3D::apply_force(const Vector3 &p_force, const Vector3 &p_position) {
 	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
 	singleton->body_apply_force(get_rid(), p_force, p_position);
+}
+
+void RigidBody3D::apply_force_at_position(const Vector3 &p_force, const Vector3 &p_world_position) {
+	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
+	singleton->body_apply_force_at_position(get_rid(), p_force, p_world_position);
 }
 
 void RigidBody3D::apply_torque(const Vector3 &p_torque) {
@@ -726,10 +736,12 @@ void RigidBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidBody3D::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidBody3D::apply_impulse, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_impulse_at_position", "impulse", "world_position"), &RigidBody3D::apply_impulse_at_position);
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &RigidBody3D::apply_torque_impulse);
 
 	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &RigidBody3D::apply_central_force);
 	ClassDB::bind_method(D_METHOD("apply_force", "force", "position"), &RigidBody3D::apply_force, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_force_at_position", "force", "world_position"), &RigidBody3D::apply_force_at_position);
 	ClassDB::bind_method(D_METHOD("apply_torque", "torque"), &RigidBody3D::apply_torque);
 
 	ClassDB::bind_method(D_METHOD("add_constant_central_force", "force"), &RigidBody3D::add_constant_central_force);

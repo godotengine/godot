@@ -229,6 +229,11 @@ public:
 		angular_velocity += _inv_inertia_tensor.xform((p_position - center_of_mass).cross(p_impulse));
 	}
 
+	_FORCE_INLINE_ void apply_impulse_at_position(const Vector3 &p_impulse, const Vector3 &p_world_position) {
+		linear_velocity += p_impulse * _inv_mass;
+		angular_velocity += _inv_inertia_tensor.xform((p_world_position - center_of_mass - get_transform().origin).cross(p_impulse));
+	}
+
 	_FORCE_INLINE_ void apply_torque_impulse(const Vector3 &p_impulse) {
 		angular_velocity += _inv_inertia_tensor.xform(p_impulse);
 	}
@@ -255,6 +260,11 @@ public:
 	_FORCE_INLINE_ void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
 		applied_force += p_force;
 		applied_torque += (p_position - center_of_mass).cross(p_force);
+	}
+
+	_FORCE_INLINE_ void apply_force_at_position(const Vector3 &p_force, const Vector3 &p_world_position) {
+		applied_force += p_force;
+		applied_torque += (p_world_position - center_of_mass - get_transform().origin).cross(p_force);
 	}
 
 	_FORCE_INLINE_ void apply_torque(const Vector3 &p_torque) {
