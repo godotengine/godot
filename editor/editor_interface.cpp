@@ -586,7 +586,7 @@ void EditorInterface::_create_dialog_item_selected(bool p_is_canceled, const Cal
 	const Callable callback = callable_mp(this, &EditorInterface::_create_dialog_item_selected);
 	create_dialog->disconnect(SNAME("create"), callback);
 	create_dialog->disconnect(SNAME("canceled"), callback);
-	_call_dialog_callback(p_callback, p_is_canceled ? "" : create_dialog->get_selected_type(), "create dialog");
+	_call_dialog_callback(p_callback, p_is_canceled ? Dictionary() : create_dialog->get_selected_type_info(), "create dialog");
 }
 
 void EditorInterface::_call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context) {
