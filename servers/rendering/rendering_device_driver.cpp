@@ -36,7 +36,7 @@
 /**** SHADER ****/
 /****************/
 
-Error RenderingDeviceDriver::_reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection) {
+Error RenderingDeviceDriver::_reflect_spirv(Span<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection) {
 	r_reflection = {};
 
 	for (uint32_t i = 0; i < p_spirv.size(); i++) {

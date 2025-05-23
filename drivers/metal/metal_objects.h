@@ -323,7 +323,7 @@ private:
 	void _render_set_dirty_state();
 	void _render_bind_uniform_sets();
 
-	void _populate_vertices(simd::float4 *p_vertices, Size2i p_fb_size, VectorView<Rect2i> p_rects);
+	void _populate_vertices(simd::float4 *p_vertices, Size2i p_fb_size, Span<Rect2i> p_rects);
 	uint32_t _populate_vertices(simd::float4 *p_vertices, uint32_t p_index, Rect2i const &p_rect, Size2i p_fb_size);
 	void _end_render_pass();
 	void _render_clear_render_area();
@@ -502,16 +502,16 @@ public:
 #pragma mark - Render Commands
 
 	void render_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index);
-	void render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
-	void render_clear_attachments(VectorView<RDD::AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects);
-	void render_set_viewport(VectorView<Rect2i> p_viewports);
-	void render_set_scissor(VectorView<Rect2i> p_scissors);
+	void render_bind_uniform_sets(Span<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
+	void render_clear_attachments(Span<RDD::AttachmentClear> p_attachment_clears, Span<Rect2i> p_rects);
+	void render_set_viewport(Span<Rect2i> p_viewports);
+	void render_set_scissor(Span<Rect2i> p_scissors);
 	void render_set_blend_constants(const Color &p_constants);
 	void render_begin_pass(RDD::RenderPassID p_render_pass,
 			RDD::FramebufferID p_frameBuffer,
 			RDD::CommandBufferType p_cmd_buffer_type,
 			const Rect2i &p_rect,
-			VectorView<RDD::RenderPassClearValue> p_clear_values);
+			Span<RDD::RenderPassClearValue> p_clear_values);
 	void render_next_subpass();
 	void render_draw(uint32_t p_vertex_count,
 			uint32_t p_instance_count,
@@ -536,7 +536,7 @@ public:
 #pragma mark - Compute Commands
 
 	void compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index);
-	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
+	void compute_bind_uniform_sets(Span<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
 	void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
 	void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset);
 
@@ -701,7 +701,7 @@ public:
 	Vector<UniformSet> sets;
 	bool uses_argument_buffers = true;
 
-	virtual void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) = 0;
+	virtual void encode_push_constant_data(Span<uint32_t> p_data, MDCommandBuffer *p_cb) = 0;
 
 	MDShader(CharString p_name, Vector<UniformSet> p_sets, bool p_uses_argument_buffers) :
 			name(p_name), sets(p_sets), uses_argument_buffers(p_uses_argument_buffers) {}
@@ -721,7 +721,7 @@ public:
 	CharString kernel_source;
 #endif
 
-	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
+	void encode_push_constant_data(Span<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
 	MDComputeShader(CharString p_name, Vector<UniformSet> p_sets, bool p_uses_argument_buffers, MDLibrary *p_kernel);
 };
@@ -747,7 +747,7 @@ public:
 	CharString frag_source;
 #endif
 
-	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
+	void encode_push_constant_data(Span<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
 	MDRenderShader(CharString p_name,
 			Vector<UniformSet> p_sets,
