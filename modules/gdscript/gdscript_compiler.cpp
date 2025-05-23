@@ -2692,6 +2692,8 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->member_indices.clear();
 	p_script->static_variables_indices.clear();
 	p_script->static_variables.clear();
+	p_script->themed_property_indices.clear();
+	p_script->themed_properties.clear();
 	p_script->_signals.clear();
 	p_script->initializer = nullptr;
 	p_script->implicit_initializer = nullptr;
@@ -2769,6 +2771,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 			p_script->base = base;
 			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
+			p_script->themed_property_indices = base->themed_property_indices;
 		} break;
 		default: {
 			_set_error("Parser bug (please report): invalid inheritance.", nullptr);
@@ -2834,6 +2837,16 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 					minfo.index = p_script->member_indices.size();
 					p_script->member_indices[name] = minfo;
 					p_script->members.insert(name);
+
+					if (variable->themed) {
+						Script::ThemedPropertyInfo t_info;
+						t_info.property_name = name;
+						t_info.theme_item_name = variable->themed_item_name;
+						t_info.theme_item_type = variable->themed_data_type;
+						t_info.theme_type = variable->themed_theme_type;
+						p_script->themed_properties.insert(name);
+						p_script->themed_property_indices.insert(name, t_info);
+					}
 				}
 
 #ifdef TOOLS_ENABLED
