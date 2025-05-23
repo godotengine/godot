@@ -350,7 +350,6 @@ void register_server_types() {
 		writer_mjpeg = memnew(MovieWriterMJPEG);
 		MovieWriter::add_writer(writer_mjpeg);
 	}
-
 	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		writer_pngwav = memnew(MovieWriterPNGWAV);
 		MovieWriter::add_writer(writer_pngwav);
@@ -364,12 +363,14 @@ void unregister_server_types() {
 
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
+
 	if (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
 		memdelete(writer_mjpeg);
 	}
 	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		memdelete(writer_pngwav);
 	}
+
 	OS::get_singleton()->benchmark_end_measure("Servers", "Unregister Extensions");
 }
 
