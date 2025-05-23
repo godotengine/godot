@@ -852,6 +852,7 @@ void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Textur
 void FileSystemDock::_toggle_file_display() {
 	_set_file_display(file_list_display_mode != FILE_LIST_DISPLAY_LIST);
 	emit_signal(SNAME("display_mode_changed"));
+	file_list_thumbnail_scroll->set_visible(file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS);
 }
 
 void FileSystemDock::_set_file_display(bool p_active) {
@@ -3934,6 +3935,11 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	return button;
 }
 
+void FileSystemDock::_update_thumbnail_size(int p_thumbnail_size) {
+	EditorSettings::get_singleton()->set("docks/filesystem/thumbnail_size", p_thumbnail_size);
+	_update_file_list(true);
+}
+
 bool FileSystemDock::_can_dock_horizontal() const {
 	return true;
 }
@@ -3967,7 +3973,6 @@ void FileSystemDock::_set_dock_horizontal(bool p_enable) {
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 0));
 	}
-
 	button_dock_placement->set_visible(p_enable);
 }
 
@@ -4212,6 +4217,22 @@ FileSystemDock::FileSystemDock() {
 	file_list_search_box->set_clear_button_enabled(true);
 	file_list_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
+
+	thumbnail_scroll_container = memnew(VBoxContainer);
+	thumbnail_scroll_container->set_alignment(ALIGNMENT_CENTER);
+	thumbnail_scroll_container->set_tooltip_text("Change Thumbnail Size");
+	path_hb->add_child(thumbnail_scroll_container);
+
+	file_list_thumbnail_scroll = memnew(HScrollBar);
+	file_list_thumbnail_scroll->set_step(4);
+	file_list_thumbnail_scroll->set_custom_minimum_size(Vector2(40, 10) * EDSCALE);
+	file_list_thumbnail_scroll->set_max(128);
+	file_list_thumbnail_scroll->set_min(16);
+	file_list_thumbnail_scroll->set_value(EDITOR_GET("docks/filesystem/thumbnail_size"));
+	file_list_thumbnail_scroll->set_min(16);
+	thumbnail_scroll_container->add_child(file_list_thumbnail_scroll);
+	file_list_thumbnail_scroll->hide();
+	file_list_thumbnail_scroll->connect("value_changed", callable_mp(this, &FileSystemDock::_update_thumbnail_size).unbind(1).bind(file_list_thumbnail_scroll->get_value()));
 
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);

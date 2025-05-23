@@ -166,6 +166,8 @@ private:
 	MenuButton *tree_button_sort = nullptr;
 
 	LineEdit *file_list_search_box = nullptr;
+	VBoxContainer *thumbnail_scroll_container = nullptr;
+	ScrollBar *file_list_thumbnail_scroll = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
 	PackedStringArray searched_tokens;
@@ -364,6 +366,7 @@ private:
 
 	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void _update_thumbnail_size(int p_thumbnail_size);
 
 private:
 	inline static FileSystemDock *singleton = nullptr;
