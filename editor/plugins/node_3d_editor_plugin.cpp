@@ -1738,6 +1738,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} break;
 			case MouseButton::RIGHT: {
 				if (b->is_pressed()) {
+					if (navigating) {
+						navigating = false;
+						cursor = previous_cursor;
+						break;
+					}
+
 					if (_edit.gizmo.is_valid()) {
 						// Restore.
 						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
@@ -2183,6 +2189,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		if (!navigating && (nav_mode == NAVIGATION_PAN || nav_mode == NAVIGATION_ZOOM || nav_mode == NAVIGATION_ORBIT)) {
+			navigating = true;
+			previous_cursor = cursor;
+		} else if (navigating && (nav_mode == NAVIGATION_NONE || nav_mode == NAVIGATION_LOOK)) {
+			navigating = false;
+		}
+
 		switch (nav_mode) {
 			case NAVIGATION_PAN: {
 				_nav_pan(m, _get_warped_mouse_motion(m));
@@ -2317,7 +2330,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
 			}
-			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select) {
+			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select && !navigating) {
 				_clear_selected();
 				return;
 			}
@@ -2494,6 +2507,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			set_freelook_active(!is_freelook_active());
 
 		} else if (k->get_keycode() == Key::ESCAPE) {
+			if (navigating) {
+				navigating = false;
+				cursor = previous_cursor;
+				return;
+			}
 			set_freelook_active(false);
 		}
 
