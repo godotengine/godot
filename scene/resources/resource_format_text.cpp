@@ -481,13 +481,7 @@ Error ResourceLoaderText::load() {
 			_printerr();
 			return error;
 		}
-
-		resource_current++;
 	}
-
-	//these are the ones that count
-	resources_total -= resource_current;
-	resource_current = 0;
 
 	while (true) {
 		if (next_tag.name != "sub_resource") {
@@ -564,12 +558,6 @@ Error ResourceLoaderText::load() {
 				res = Ref<Resource>(r);
 				do_assign = true;
 			}
-		}
-
-		resource_current++;
-
-		if (progress && resources_total > 0) {
-			*progress = resource_current / float(resources_total);
 		}
 
 		int_resources[id] = res; // Always assign int resources.
@@ -791,12 +779,6 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		resource_current++;
-
-		if (progress && resources_total > 0) {
-			*progress = resource_current / float(resources_total);
-		}
-
 		if (missing_resource) {
 			missing_resource->set_recording_properties(false);
 		}
@@ -838,12 +820,6 @@ Error ResourceLoaderText::load() {
 			packed_scene->set_path_cache(res_path);
 		}
 
-		resource_current++;
-
-		if (progress && resources_total > 0) {
-			*progress = resource_current / float(resources_total);
-		}
-
 		return error;
 	} else {
 		error_text = vformat("Unknown tag '%s' in file", next_tag.name);
@@ -851,14 +827,6 @@ Error ResourceLoaderText::load() {
 		error = ERR_FILE_CORRUPT;
 		return error;
 	}
-}
-
-int ResourceLoaderText::get_stage() const {
-	return resource_current;
-}
-
-int ResourceLoaderText::get_stage_count() const {
-	return resources_total; //+ext_resources;
 }
 
 void ResourceLoaderText::set_translation_remapped(bool p_remapped) {
@@ -975,13 +943,13 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				}
 
 				if (is_scene) {
-					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(format_version) + uid_text + "]\n");
+					fw->store_line("[gd_scene format=" + itos(format_version) + uid_text + "]\n");
 				} else {
 					String script_res_text;
 					if (!script_class.is_empty()) {
 						script_res_text = "script_class=\"" + script_class + "\" ";
 					}
-					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + uid_text + "]\n");
+					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "format=" + itos(format_version) + uid_text + "]\n");
 				}
 			}
 
@@ -1072,7 +1040,6 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	stream.f = f;
 	is_scene = false;
 	ignore_resource_parsing = false;
-	resource_current = 0;
 
 	VariantParser::Tag tag;
 	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
@@ -1123,12 +1090,6 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 		res_uid = ResourceUID::get_singleton()->text_to_id(tag.fields["uid"]);
 	} else {
 		res_uid = ResourceUID::INVALID_ID;
-	}
-
-	if (tag.fields.has("load_steps")) {
-		resources_total = tag.fields["load_steps"];
-	} else {
-		resources_total = 0;
 	}
 
 	if (!p_skip_first_tag) {
@@ -1755,11 +1716,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 		}
 
-		int load_steps = saved_resources.size() + external_resources.size();
-
-		if (load_steps > 1) {
-			title += "load_steps=" + itos(load_steps) + " ";
-		}
 		title += "format=" + itos(use_compat ? ResourceLoaderText::FORMAT_VERSION_COMPAT : ResourceLoaderText::FORMAT_VERSION) + "";
 
 		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(local_path, true);
@@ -2091,14 +2047,14 @@ Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
 
 	fw = FileAccess::open(local_path + ".uidren", FileAccess::WRITE);
 	if (is_scene) {
-		fw->store_string("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		fw->store_string("[gd_scene format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
 	} else {
 		String script_res_text;
 		if (!script_class.is_empty()) {
 			script_res_text = "script_class=\"" + script_class + "\" ";
 		}
 
-		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
 	}
 
 	uint8_t c = f->get_8();
