@@ -195,10 +195,6 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(pi);
 		}
 	}
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
 }
 
 void Skeleton3D::_validate_property(PropertyInfo &p_property) const {

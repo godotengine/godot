@@ -184,10 +184,6 @@ void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "group", PROPERTY_HINT_ENUM, group_names));
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "require"));
 	}
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
 }
 
 StringName SkeletonProfile::get_root_bone() {

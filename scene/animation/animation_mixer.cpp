@@ -112,10 +112,6 @@ void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const PropertyInfo &E : anim_names) {
 		p_list->push_back(E);
 	}
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
 }
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
