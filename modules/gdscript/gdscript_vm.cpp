@@ -1916,7 +1916,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #ifdef DEBUG_ENABLED
 
-				if (GDScriptLanguage::get_singleton()->profiling) {
+				bool was_base_object_freed = false;
+				base_obj = base->get_validated_object_with_check(was_base_object_freed);
+				if (GDScriptLanguage::get_singleton()->profiling && !was_base_object_freed) {
 					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
 					if (GDScriptLanguage::get_singleton()->profile_native_calls && _profile_count_as_native(base_obj, *methodname)) {
 						_profile_native_call(t_taken, *methodname, base_class);
