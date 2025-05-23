@@ -717,7 +717,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				geom->geometry_instance->set_surface_materials(instance->materials);
 				geom->geometry_instance->set_transform(instance->transform, instance->aabb, instance->transformed_aabb);
 				geom->geometry_instance->set_layer_mask(instance->layer_mask);
-				geom->geometry_instance->set_pivot_data(instance->sorting_offset, instance->use_aabb_center);
+				geom->geometry_instance->set_pivot_data(instance->sorting_offset, instance->use_aabb_center, instance->sorting_stacked_order);
 				geom->geometry_instance->set_lod_bias(instance->lod_bias);
 				geom->geometry_instance->set_transparency(instance->transparency);
 				geom->geometry_instance->set_use_baked_light(instance->baked_light);
@@ -941,17 +941,18 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 	}
 }
 
-void RendererSceneCull::instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) {
+void RendererSceneCull::instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center, int16_t p_sorting_stacked_order) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
 
 	instance->sorting_offset = p_sorting_offset;
 	instance->use_aabb_center = p_use_aabb_center;
+	instance->sorting_stacked_order = p_sorting_stacked_order;
 
 	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
-		geom->geometry_instance->set_pivot_data(p_sorting_offset, p_use_aabb_center);
+		geom->geometry_instance->set_pivot_data(p_sorting_offset, p_use_aabb_center, p_sorting_stacked_order);
 	} else if (instance->base_type == RS::INSTANCE_DECAL && instance->base_data) {
 		InstanceDecalData *decal = static_cast<InstanceDecalData *>(instance->base_data);
 		RSG::texture_storage->decal_instance_set_sorting_offset(decal->instance, instance->sorting_offset);

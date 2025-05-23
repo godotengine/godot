@@ -880,7 +880,7 @@ public:
 	FUNC2(instance_set_base, RID, RID)
 	FUNC2(instance_set_scenario, RID, RID)
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
-	FUNC3(instance_set_pivot_data, RID, float, bool)
+	FUNC4(instance_set_pivot_data, RID, float, bool, int16_t)
 	FUNC2(instance_set_transform, RID, const Transform3D &)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)

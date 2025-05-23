@@ -50,6 +50,10 @@ void RenderingServer::_canvas_item_add_circle_bind_compat_84523(RID p_item, cons
 	canvas_item_add_circle(p_item, p_pos, p_radius, p_color, false);
 }
 
+void RenderingServer::_instance_set_pivot_data_bind_compat_106593(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) {
+	instance_set_pivot_data(p_instance, p_sorting_offset, p_use_aabb_center, 0);
+}
+
 void RenderingServer::_instance_set_interpolated_bind_compat_104269(RID p_instance, bool p_interpolated) {
 	WARN_PRINT_ONCE("instance_set_interpolated() is deprecated.");
 }
@@ -64,6 +68,7 @@ void RenderingServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_multiline", "item", "points", "colors", "width"), &RenderingServer::_canvas_item_add_multiline_bind_compat_84523, DEFVAL(-1.0));
 	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_rect", "item", "rect", "color"), &RenderingServer::_canvas_item_add_rect_bind_compat_84523);
 	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color"), &RenderingServer::_canvas_item_add_circle_bind_compat_84523);
+	ClassDB::bind_compatibility_method(D_METHOD("instance_set_pivot_data", "instance", "sorting_offset", "use_aabb_center"), &RenderingServer::_instance_set_pivot_data_bind_compat_106593);
 	ClassDB::bind_compatibility_method(D_METHOD("instance_set_interpolated", "instance", "interpolated"), &RenderingServer::_instance_set_interpolated_bind_compat_104269);
 	ClassDB::bind_compatibility_method(D_METHOD("instance_reset_physics_interpolation", "instance"), &RenderingServer::_instance_reset_physics_interpolation_bind_compat_104269);
 }
