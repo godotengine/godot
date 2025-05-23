@@ -656,7 +656,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 	String err_text;
 
-	GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
+	GDScriptLanguage::CallLevel call_level;
+	GDScriptLanguage::get_singleton()->enter_function(&call_level, p_instance, this, stack, &ip, &line);
 
 #ifdef DEBUG_ENABLED
 #define GD_ERR_BREAK(m_cond)                                                                                           \
@@ -2548,7 +2549,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						// Is this even possible to be null at this point?
 						if (obj) {
 							if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
-								result = Signal(obj, "completed");
+								result = Signal(obj, SNAME("completed"));
 							}
 						}
 					}
@@ -2594,6 +2595,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 					gdfs->state.defarg = defarg;
 					gdfs->function = this;
+
+					if (p_state) {
+						// Pass down the signal from the first state.
+						gdfs->state.completed = p_state->completed;
+					} else {
+						gdfs->state.completed = Signal(gdfs.ptr(), SNAME("completed"));
+					}
 
 					retvalue = gdfs;
 
@@ -3979,6 +3987,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 
 	call_depth--;
+
+	if (p_state && !awaited) {
+		// This means we have finished executing a resumed function and it was not awaited again.
+
+		// Signal the next function-state to resume.
+		const Variant *args[1] = { &retvalue };
+		p_state->completed.emit(args, 1);
+
+		// Exit function only after executing the remaining function states to preserve async call stack.
+		GDScriptLanguage::get_singleton()->exit_function();
+	}
 
 	return retvalue;
 }
