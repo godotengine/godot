@@ -68,6 +68,8 @@ import org.godotengine.godot.utils.GameMenuUtils.fetchGameEmbedMode
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import org.godotengine.godot.utils.isNativeXRDevice
+import org.godotengine.godot.xr.HybridMode
+import org.godotengine.godot.xr.getHybridAppLaunchMode
 import kotlin.math.min
 
 /**
@@ -329,26 +331,41 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			}
 		}
 
-		return if (hasEditor) {
-			EDITOR_MAIN_INFO
-		} else {
-			// Launching a game.
-			val openxrEnabled = xrMode == XR_MODE_ON ||
-				(xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())
-			if (openxrEnabled && isNativeXRDevice(applicationContext)) {
-				XR_RUN_GAME_INFO
-			} else {
-				if (godot?.isProjectManagerHint() == true || isNativeXRDevice(applicationContext)) {
+		if (hasEditor) {
+			return EDITOR_MAIN_INFO
+		}
+
+		// Launching a game.
+		if (isNativeXRDevice(applicationContext)) {
+			if (xrMode == XR_MODE_ON) {
+				return XR_RUN_GAME_INFO
+			}
+
+			if ((xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())) {
+				val hybridLaunchMode = getHybridAppLaunchMode()
+
+				return if (hybridLaunchMode == HybridMode.PANEL) {
 					RUN_GAME_INFO
 				} else {
-					val resolvedEmbedMode = resolveGameEmbedModeIfNeeded(gameEmbedMode)
-					if (resolvedEmbedMode == GameEmbedMode.DISABLED) {
-						RUN_GAME_INFO
-					} else {
-						EMBEDDED_RUN_GAME_INFO
-					}
+					XR_RUN_GAME_INFO
 				}
 			}
+
+			// Native XR devices don't support embed mode yet.
+			return RUN_GAME_INFO
+		}
+
+		// Project manager doesn't support embed mode.
+		if (godot?.isProjectManagerHint() == true) {
+			return RUN_GAME_INFO
+		}
+
+		// Check for embed mode launch.
+		val resolvedEmbedMode = resolveGameEmbedModeIfNeeded(gameEmbedMode)
+		return if (resolvedEmbedMode == GameEmbedMode.DISABLED) {
+			RUN_GAME_INFO
+		} else {
+			EMBEDDED_RUN_GAME_INFO
 		}
 	}
 
@@ -628,6 +645,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		return verifyApk(godot.fileAccessHandler, apkPath)
 	}
 
+	@CallSuper
 	override fun supportsFeature(featureTag: String): Boolean {
 		if (featureTag == "xr_editor") {
 			return isNativeXRDevice(applicationContext)
@@ -641,7 +659,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			return BuildConfig.FLAVOR == "picoos"
 		}
 
-        return false
+        return super.supportsFeature(featureTag)
     }
 
 	internal fun onEditorConnected(connectedEditorId: Int) {
