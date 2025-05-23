@@ -6748,9 +6748,9 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 }
 
 void Node3DEditor::_snap_changed() {
-	snap_translate_value = snap_translate->get_text().to_float();
-	snap_rotate_value = snap_rotate->get_text().to_float();
-	snap_scale_value = snap_scale->get_text().to_float();
+	snap_translate_value = snap_translate->get_value();
+	snap_rotate_value = snap_rotate->get_value();
+	snap_scale_value = snap_scale->get_value();
 
 	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_translate_value", snap_translate_value);
 	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_rotate_value", snap_rotate_value);
@@ -6758,12 +6758,9 @@ void Node3DEditor::_snap_changed() {
 }
 
 void Node3DEditor::_snap_update() {
-	double snap = EDITOR_GET("interface/inspector/default_float_step");
-	int snap_step_decimals = Math::range_step_decimals(snap);
-
-	snap_translate->set_text(String::num(snap_translate_value, snap_step_decimals));
-	snap_rotate->set_text(String::num(snap_rotate_value, snap_step_decimals));
-	snap_scale->set_text(String::num(snap_scale_value, snap_step_decimals));
+	snap_translate->set_value(snap_translate_value);
+	snap_rotate->set_value(snap_rotate_value);
+	snap_scale->set_value(snap_scale_value);
 }
 
 void Node3DEditor::_xform_dialog_action() {
@@ -9400,17 +9397,23 @@ Node3DEditor::Node3DEditor() {
 	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
 	snap_dialog->add_child(snap_dialog_vbc);
 
-	snap_translate = memnew(LineEdit);
+	snap_translate = memnew(SpinBox);
+	snap_translate->set_min(0.0);
+	snap_translate->set_step(0.01);
 	snap_translate->set_select_all_on_focus(true);
 	snap_translate->set_accessibility_name(TTRC("Translate Snap"));
 	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
 
-	snap_rotate = memnew(LineEdit);
+	snap_rotate = memnew(SpinBox);
+	snap_rotate->set_min(0.0);
+	snap_rotate->set_step(0.1);
+	snap_rotate->set_allow_greater(true);
 	snap_rotate->set_select_all_on_focus(true);
 	snap_rotate->set_accessibility_name(TTRC("Rotate Snap"));
 	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"), snap_rotate);
 
-	snap_scale = memnew(LineEdit);
+	snap_scale = memnew(SpinBox);
+	snap_scale->set_min(0.0);
 	snap_scale->set_select_all_on_focus(true);
 	snap_scale->set_accessibility_name(TTRC("Scale Snap"));
 	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
