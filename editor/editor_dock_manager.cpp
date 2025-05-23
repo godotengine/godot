@@ -185,7 +185,7 @@ void EditorDockManager::update_docks_menu() {
 		} else {
 			docks_menu->add_item(dock.value.title, id);
 		}
-		const Ref<Texture2D> icon = dock.value.icon_name ? docks_menu->get_editor_theme_native_menu_icon(dock.value.icon_name, global_menu, dark_mode) : dock.value.icon;
+		const Ref<Texture2D> icon = dock.value.icon.is_valid() ? dock.value.icon : docks_menu->get_editor_theme_native_menu_icon(dock.value.icon_name, global_menu, dark_mode);
 		docks_menu->set_item_icon(id, icon.is_valid() ? icon : default_icon);
 		if (!dock.value.open) {
 			docks_menu->set_item_icon_modulate(id, closed_icon_color_mod);
@@ -403,13 +403,13 @@ void EditorDockManager::_update_tab_style(Control *p_dock) {
 			tab_container->set_tab_tooltip(index, String());
 		} break;
 		case TabStyle::ICON_ONLY: {
-			const Ref<Texture2D> icon = dock_info.icon_name ? tab_container->get_editor_theme_icon(dock_info.icon_name) : dock_info.icon;
+			const Ref<Texture2D> icon = dock_info.icon.is_valid() ? dock_info.icon : tab_container->get_editor_theme_icon(dock_info.icon_name);
 			tab_container->set_tab_title(index, icon.is_valid() ? String() : dock_info.title);
 			tab_container->set_tab_icon(index, icon);
 			tab_container->set_tab_tooltip(index, icon.is_valid() ? dock_info.title : String());
 		} break;
 		case TabStyle::TEXT_AND_ICON: {
-			const Ref<Texture2D> icon = dock_info.icon_name ? tab_container->get_editor_theme_icon(dock_info.icon_name) : dock_info.icon;
+			const Ref<Texture2D> icon = dock_info.icon.is_valid() ? dock_info.icon : tab_container->get_editor_theme_icon(dock_info.icon_name);
 			tab_container->set_tab_title(index, dock_info.title);
 			tab_container->set_tab_icon(index, icon);
 			tab_container->set_tab_tooltip(index, String());
