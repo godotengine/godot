@@ -18,9 +18,6 @@
 #define accesskit_node_is_hidden accesskit_node_is_hidden_dylibloader_orig_libaccesskit
 #define accesskit_node_set_hidden accesskit_node_set_hidden_dylibloader_orig_libaccesskit
 #define accesskit_node_clear_hidden accesskit_node_clear_hidden_dylibloader_orig_libaccesskit
-#define accesskit_node_is_linked accesskit_node_is_linked_dylibloader_orig_libaccesskit
-#define accesskit_node_set_linked accesskit_node_set_linked_dylibloader_orig_libaccesskit
-#define accesskit_node_clear_linked accesskit_node_clear_linked_dylibloader_orig_libaccesskit
 #define accesskit_node_is_multiselectable accesskit_node_is_multiselectable_dylibloader_orig_libaccesskit
 #define accesskit_node_set_multiselectable accesskit_node_set_multiselectable_dylibloader_orig_libaccesskit
 #define accesskit_node_clear_multiselectable accesskit_node_clear_multiselectable_dylibloader_orig_libaccesskit
@@ -408,9 +405,6 @@
 #undef accesskit_node_is_hidden
 #undef accesskit_node_set_hidden
 #undef accesskit_node_clear_hidden
-#undef accesskit_node_is_linked
-#undef accesskit_node_set_linked
-#undef accesskit_node_clear_linked
 #undef accesskit_node_is_multiselectable
 #undef accesskit_node_set_multiselectable
 #undef accesskit_node_clear_multiselectable
@@ -820,9 +814,6 @@ void (*accesskit_node_clear_actions_dylibloader_wrapper_libaccesskit)(struct acc
 bool (*accesskit_node_is_hidden_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_hidden_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 void (*accesskit_node_clear_hidden_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
-bool (*accesskit_node_is_linked_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
-void (*accesskit_node_set_linked_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
-void (*accesskit_node_clear_linked_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 bool (*accesskit_node_is_multiselectable_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_multiselectable_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 void (*accesskit_node_clear_multiselectable_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
@@ -1269,30 +1260,6 @@ int initialize_libaccesskit(int verbose, void *handle) {
   }
 // accesskit_node_clear_hidden
   *(void **) (&accesskit_node_clear_hidden_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_clear_hidden");
-  if (verbose) {
-    error = dlerror();
-    if (error != NULL) {
-      fprintf(stderr, "%s\n", error);
-    }
-  }
-// accesskit_node_is_linked
-  *(void **) (&accesskit_node_is_linked_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_is_linked");
-  if (verbose) {
-    error = dlerror();
-    if (error != NULL) {
-      fprintf(stderr, "%s\n", error);
-    }
-  }
-// accesskit_node_set_linked
-  *(void **) (&accesskit_node_set_linked_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_set_linked");
-  if (verbose) {
-    error = dlerror();
-    if (error != NULL) {
-      fprintf(stderr, "%s\n", error);
-    }
-  }
-// accesskit_node_clear_linked
-  *(void **) (&accesskit_node_clear_linked_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_clear_linked");
   if (verbose) {
     error = dlerror();
     if (error != NULL) {
