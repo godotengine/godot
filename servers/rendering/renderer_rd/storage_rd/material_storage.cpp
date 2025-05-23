@@ -1296,6 +1296,8 @@ MaterialStorage::~MaterialStorage() {
 	//def samplers
 	samplers_rd_free(default_samplers);
 
+	material_update_list.clear();
+
 	singleton = nullptr;
 }
 
