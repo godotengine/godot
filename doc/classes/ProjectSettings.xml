@@ -661,7 +661,6 @@
 		</member>
 		<member name="debug/settings/gdscript/always_track_call_stacks" type="bool" setter="" getter="" default="false">
 			Whether GDScript call stacks will be tracked in release builds, thus allowing [method Engine.capture_script_backtraces] to function.
-			Enabling this comes at the cost of roughly 40 KiB for every thread that runs any GDScript code.
 			[b]Note:[/b] This setting has no effect on editor builds or debug builds, where GDScript call stacks are tracked regardless.
 		</member>
 		<member name="debug/settings/gdscript/always_track_local_variables" type="bool" setter="" getter="" default="false">

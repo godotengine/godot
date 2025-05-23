@@ -575,6 +575,7 @@ public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
 
 	struct CallState {
+		Signal completed;
 		GDScript *script = nullptr;
 		GDScriptInstance *instance = nullptr;
 #ifdef DEBUG_ENABLED
