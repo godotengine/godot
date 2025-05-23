@@ -5983,9 +5983,9 @@ void EditorNode::_cancel_close_scene_tab() {
 	}
 }
 
-void EditorNode::_prepare_save_confirmation_popup() {
-	if (save_confirmation->get_window() != get_last_exclusive_window()) {
-		save_confirmation->reparent(get_last_exclusive_window());
+void EditorNode::_prepare_confirmation_dialog(ConfirmationDialog *dialog) {
+	if (dialog->get_window() != get_last_exclusive_window()) {
+		dialog->reparent(get_last_exclusive_window());
 	}
 }
 
@@ -8175,7 +8175,7 @@ EditorNode::EditorNode() {
 	save_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 	save_confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
 	save_confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_close_scene_tab));
-	save_confirmation->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_save_confirmation_popup));
+	save_confirmation->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_confirmation_dialog).bind(save_confirmation));
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
 	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
@@ -8298,6 +8298,7 @@ EditorNode::EditorNode() {
 
 		disk_changed->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_scenes));
+		disk_changed->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_confirmation_dialog).bind(disk_changed));
 	}
 
 	gui_base->add_child(disk_changed);
