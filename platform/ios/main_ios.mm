@@ -30,6 +30,7 @@
 
 #import "os_ios.h"
 
+#include "core/profiling.h"
 #import "drivers/apple_embedded/godot_app_delegate.h"
 #import "drivers/apple_embedded/main_utilities.h"
 #include "main/main.h"
@@ -43,6 +44,8 @@ char **gargv;
 static OS_IOS *os = nullptr;
 
 int main(int argc, char *argv[]) {
+	godot_init_profiler();
+
 #if defined(VULKAN_ENABLED)
 	//MoltenVK - enable full component swizzling support
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
