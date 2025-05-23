@@ -87,4 +87,8 @@
 		<constant name="COMPRESSION_MODE_ASTC" value="6" enum="CompressionMode">
 		</constant>
 	</constants>
+	<enums>
+		<enum name="CompressionMode">
+		</enum>
+	</enums>
 </class>

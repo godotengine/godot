@@ -141,4 +141,8 @@
 			[b]Note:[/b] Same as [constant ORIGIN_FROM_SPECIFIC_BONE], when specifying a [BoneAttachment3D] with a child bone assigned, the rendered result and direction will not match.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="OriginFrom">
+		</enum>
+	</enums>
 </class>
