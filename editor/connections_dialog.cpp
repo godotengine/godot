@@ -640,7 +640,7 @@ void ConnectDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			filter_nodes->grab_focus();
 			filter_nodes->select_all();
-			filter_nodes->accept_event();
+			filter_nodes->get_viewport()->set_input_as_handled();
 		}
 	}
 }
@@ -1317,14 +1317,14 @@ void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
 				update_tree();
 
 				// Stop the Delete input from propagating elsewhere.
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			search_box->grab_focus();
 			search_box->select_all();
 
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 	}
@@ -1363,7 +1363,7 @@ void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
 				class_menu->set_position(screen_position);
 				class_menu->reset_size();
 				class_menu->popup();
-				accept_event(); // Don't collapse item.
+				get_viewport()->set_input_as_handled(); // Don't collapse item.
 				break;
 			case TREE_ITEM_TYPE_SIGNAL:
 				signal_menu->set_position(screen_position);

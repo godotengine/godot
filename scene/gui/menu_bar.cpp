@@ -173,7 +173,7 @@ void MenuBar::shortcut_input(const Ref<InputEvent> &p_event) {
 				continue;
 			}
 			if (popups[i]->activate_item_by_event(p_event, false)) {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}

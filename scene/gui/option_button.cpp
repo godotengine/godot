@@ -42,7 +42,7 @@ void OptionButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed() && !p_event->is_echo() && !is_disabled() && is_visible_in_tree() && popup->activate_item_by_event(p_event, false)) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 

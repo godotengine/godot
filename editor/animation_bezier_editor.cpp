@@ -1013,7 +1013,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (panner->gui_input(p_event)) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -1022,31 +1022,31 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (!read_only) {
 				duplicate_selected_keys(-1.0, false);
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 		if (ED_IS_SHORTCUT("animation_editor/cut_selected_keys", p_event)) {
 			if (!read_only) {
 				copy_selected_keys(true);
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 		if (ED_IS_SHORTCUT("animation_editor/copy_selected_keys", p_event)) {
 			if (!read_only) {
 				copy_selected_keys(false);
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 		if (ED_IS_SHORTCUT("animation_editor/paste_keys", p_event)) {
 			if (!read_only) {
 				paste_keys(-1.0, false);
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 		if (ED_IS_SHORTCUT("animation_editor/delete_selection", p_event)) {
 			if (!read_only) {
 				delete_selection();
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 
@@ -1074,7 +1074,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			if (focused_keys.is_empty()) {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 
@@ -1117,7 +1117,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			queue_redraw();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		} else if (ED_IS_SHORTCUT("animation_bezier_editor/select_all_keys", p_event)) {
 			for (int i = 0; i < edit_points.size(); ++i) {
@@ -1125,14 +1125,14 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			queue_redraw();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		} else if (ED_IS_SHORTCUT("animation_bezier_editor/deselect_all_keys", p_event)) {
 			selection.clear();
 			emit_signal(SNAME("clear_selection"));
 
 			queue_redraw();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 	}

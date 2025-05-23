@@ -2029,7 +2029,7 @@ void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 		// Handle Unicode (with modifiers active, process after shortcuts).
 		if (has_focus() && editable && (k->get_unicode() >= 32)) {
 			handle_unicode_input(k->get_unicode());
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }
@@ -2485,7 +2485,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
-			accept_event(); // Accept event if scroll changed.
+			get_viewport()->set_input_as_handled(); // Accept event if scroll changed.
 		}
 		queue_accessibility_update();
 
@@ -2557,14 +2557,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
-		accept_event(); // Accept event if scroll changed.
+		get_viewport()->set_input_as_handled(); // Accept event if scroll changed.
 	}
 
 	Ref<InputEventKey> k = p_gui_input;
 
 	if (k.is_valid()) {
 		if (alt_input(p_gui_input)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (!k->is_pressed()) {
@@ -2589,61 +2589,61 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		// NEWLINES.
 		if (k->is_action("ui_text_newline_above", true)) {
 			_new_line(false, true);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_newline_blank", true)) {
 			_new_line(false);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_newline", true)) {
 			_new_line();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// BACKSPACE AND DELETE.
 		if (k->is_action("ui_text_backspace_all_to_left", true)) {
 			_do_backspace(false, true);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_backspace_word", true)) {
 			_do_backspace(true);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_backspace", true)) {
 			_do_backspace();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_delete_all_to_right", true)) {
 			_delete(false, true);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_delete_word", true)) {
 			_delete(true);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_delete", true)) {
 			_delete();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// SCROLLING.
 		if (k->is_action("ui_text_scroll_up", true)) {
 			_scroll_lines_up();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_scroll_down", true)) {
 			_scroll_lines_down();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -2652,67 +2652,67 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			// CLEAR CARETS AND SELECTIONS, CUT, COPY, PASTE.
 			if (k->is_action("ui_text_select_all", true)) {
 				select_all();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (k->is_action("ui_text_select_word_under_caret", true)) {
 				select_word_under_caret();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (k->is_action("ui_text_add_selection_for_next_occurrence", true)) {
 				add_selection_for_next_occurrence();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (k->is_action("ui_text_skip_selection_for_next_occurrence", true)) {
 				skip_selection_for_next_occurrence();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (k->is_action("ui_text_clear_carets_and_selection", true)) {
 				// Since the default shortcut is ESC, accepts the event only if it's actually performed.
 				if (_clear_carets_and_selection()) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					return;
 				}
 			}
 			if (k->is_action("ui_cut", true)) {
 				cut();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (k->is_action("ui_copy", true)) {
 				copy();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (k->is_action("ui_paste", true)) {
 				paste();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 
 			// UNDO/REDO.
 			if (k->is_action("ui_undo", true)) {
 				undo();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (k->is_action("ui_redo", true)) {
 				redo();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 
 			if (k->is_action("ui_text_caret_add_below", true)) {
 				add_caret_at_carets(true);
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (k->is_action("ui_text_caret_add_above", true)) {
 				add_caret_at_carets(false);
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}
@@ -2728,17 +2728,17 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				menu->popup();
 				menu->grab_focus();
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_toggle_insert_mode", true)) {
 			set_overtype_mode_enabled(!overtype_mode);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_swap_input_direction", true)) {
 			_swap_current_input_direction();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -2752,77 +2752,77 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		// CARET MOVEMENT - LEFT, RIGHT.
 		if (k->is_action("ui_text_caret_word_left", true)) {
 			_move_caret_left(shift_pressed, true);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_caret_left", true)) {
 			_move_caret_left(shift_pressed, false);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_caret_word_right", true)) {
 			_move_caret_right(shift_pressed, true);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_caret_right", true)) {
 			_move_caret_right(shift_pressed, false);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// CARET MOVEMENT - UP, DOWN.
 		if (k->is_action("ui_text_caret_up", true)) {
 			_move_caret_up(shift_pressed);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_caret_down", true)) {
 			_move_caret_down(shift_pressed);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// CARET MOVEMENT - DOCUMENT START/END.
 		if (k->is_action("ui_text_caret_document_start", true)) { // && shift_pressed) {
 			_move_caret_document_start(shift_pressed);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_caret_document_end", true)) { // && shift_pressed) {
 			_move_caret_document_end(shift_pressed);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// CARET MOVEMENT - LINE START/END.
 		if (k->is_action("ui_text_caret_line_start", true)) {
 			_move_caret_to_line_start(shift_pressed);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_caret_line_end", true)) {
 			_move_caret_to_line_end(shift_pressed);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// CARET MOVEMENT - PAGE UP/DOWN.
 		if (k->is_action("ui_text_caret_page_up", true)) {
 			_move_caret_page_up(shift_pressed);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 		if (k->is_action("ui_text_caret_page_down", true)) {
 			_move_caret_page_down(shift_pressed);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// Toggle Tab mode.
 		if (k->is_action("ui_focus_mode", true)) {
 			tab_input_mode = !tab_input_mode;
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -2831,14 +2831,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (editable) {
 				insert_text_at_caret("\t");
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
 		// Handle Unicode (if no modifiers active).
 		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
 			handle_unicode_input(k->get_unicode());
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 	}

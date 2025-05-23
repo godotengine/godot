@@ -3711,7 +3711,7 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			}
 		}
 
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 
@@ -3775,7 +3775,7 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			}
 		}
 
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 

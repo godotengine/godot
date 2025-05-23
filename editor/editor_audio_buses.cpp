@@ -597,7 +597,7 @@ void EditorAudioBus::gui_input(const Ref<InputEvent> &p_event) {
 		bus_popup->reset_size();
 		bus_popup->popup();
 
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 
@@ -607,7 +607,7 @@ void EditorAudioBus::_effects_gui_input(Ref<InputEvent> p_event) {
 		TreeItem *current_effect = effects->get_selected();
 		if (current_effect && current_effect->get_metadata(0).get_type() == Variant::INT) {
 			_delete_effect_pressed(0);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

@@ -620,7 +620,7 @@ void QuickOpenResultContainer::handle_search_box_input(const Ref<InputEvent> &p_
 		if (move_selection) {
 			_move_selection_index(key_event->get_keycode());
 			queue_redraw();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

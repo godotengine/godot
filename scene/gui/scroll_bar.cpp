@@ -47,18 +47,18 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
 			double change = ((get_page() != 0.0) ? get_page() / PAGE_DIVISOR : (get_max() - get_min()) / 16.0) * b->get_factor();
 			scroll(MAX(change, get_step()));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
 			double change = ((get_page() != 0.0) ? get_page() / PAGE_DIVISOR : (get_max() - get_min()) / 16.0) * b->get_factor();
 			scroll(-MAX(change, get_step()));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		if (b->get_button_index() != MouseButton::LEFT) {
@@ -141,7 +141,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (m.is_valid()) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 
 		if (drag.active) {
 			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;

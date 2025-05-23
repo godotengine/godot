@@ -541,7 +541,9 @@ public:
 	// Input events.
 
 	virtual void gui_input(const Ref<InputEvent> &p_event);
+#ifndef DISABLE_DEPRECATED
 	void accept_event();
+#endif // DISABLE_DEPRECATED
 
 	virtual bool has_point(const Point2 &p_point) const;
 

@@ -275,7 +275,7 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 				ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
 				script_debugger->send_message("embed:mouse_set_mode", { DisplayServer::MOUSE_MODE_VISIBLE });
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 	}
@@ -283,7 +283,7 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 	PackedByteArray data;
 	if (encode_input_event(p_event, data)) {
 		script_debugger->send_message("embed:event", { data });
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 

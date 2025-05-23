@@ -1618,25 +1618,25 @@ void AnimationPlayerEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo()) {
 		if (ED_IS_SHORTCUT("animation_editor/stop_animation", p_ev)) {
 			_stop_pressed();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (ED_IS_SHORTCUT("animation_editor/play_animation", p_ev)) {
 			_play_from_pressed();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_backwards", p_ev)) {
 			_play_bw_from_pressed();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_from_start", p_ev)) {
 			_play_pressed();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_from_end", p_ev)) {
 			_play_bw_pressed();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (ED_IS_SHORTCUT("animation_editor/go_to_next_keyframe", p_ev)) {
 			_go_to_nearest_keyframe(false);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (ED_IS_SHORTCUT("animation_editor/go_to_previous_keyframe", p_ev)) {
 			_go_to_nearest_keyframe(true);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

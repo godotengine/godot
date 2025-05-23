@@ -33,6 +33,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/label.h"
+#include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
@@ -412,26 +413,26 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 			if (selected_slot < 0) {
 				selected_slot = -1;
 			} else {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		} else if (p_event->is_action("ui_down", true)) {
 			selected_slot++;
 			if (selected_slot >= slot_count) {
 				selected_slot = -1;
 			} else {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		} else if (p_event->is_action("ui_cancel", true)) {
 			GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 			if (graph && graph->is_keyboard_connecting()) {
 				graph->force_connection_drag_end();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		} else if (p_event->is_action("ui_graph_delete", true)) {
 			GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 			if (graph && graph->is_keyboard_connecting()) {
 				graph->end_keyboard_connecting(this, -1, -1);
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		} else if (p_event->is_action("ui_graph_follow_left", true)) {
 			if (slot_table.has(selected_slot)) {
@@ -444,7 +445,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 								GraphNode *target = graph->get_input_connection_target(get_name(), i);
 								if (target) {
 									target->grab_focus();
-									accept_event();
+									get_viewport()->set_input_as_handled();
 									break;
 								}
 							}
@@ -463,7 +464,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 								GraphNode *target = graph->get_output_connection_target(get_name(), i);
 								if (target) {
 									target->grab_focus();
-									accept_event();
+									get_viewport()->set_input_as_handled();
 									break;
 								}
 							}
@@ -484,7 +485,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 								} else {
 									graph->start_keyboard_connecting(this, i, -1);
 								}
-								accept_event();
+								get_viewport()->set_input_as_handled();
 								break;
 							}
 						}
@@ -504,7 +505,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 								} else {
 									graph->start_keyboard_connecting(this, -1, i);
 								}
-								accept_event();
+								get_viewport()->set_input_as_handled();
 								break;
 							}
 						}
@@ -526,7 +527,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 					}
 					idx++;
 				}
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		}
 		queue_accessibility_update();

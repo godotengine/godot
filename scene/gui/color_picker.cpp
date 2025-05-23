@@ -178,7 +178,7 @@ void ColorPicker::_notification(int p_what) {
 					if (current_shape == SHAPE_NONE) {
 						shapes[current_shape]->echo_multiplier = 1;
 					}
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					set_process_internal(false);
 					return;
 				}
@@ -196,7 +196,7 @@ void ColorPicker::_notification(int p_what) {
 							input->is_action_pressed("ui_down") - input->is_action_pressed("ui_up"));
 
 					shapes[current_shape]->update_cursor(color_change_vector, true);
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 				return;
 			}

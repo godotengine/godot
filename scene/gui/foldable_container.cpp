@@ -30,6 +30,7 @@
 
 #include "foldable_container.h"
 
+#include "scene/main/viewport.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 
@@ -235,7 +236,7 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 	if (p_event->is_action_pressed(SNAME("ui_accept"), false, true)) {
 		set_folded(!folded);
 		emit_signal(SNAME("folding_changed"), folded);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 
@@ -245,7 +246,7 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed() && title_rect.has_point(b->get_position())) {
 			set_folded(!folded);
 			emit_signal(SNAME("folding_changed"), folded);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

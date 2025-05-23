@@ -168,7 +168,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 
 			if (scroll_value_modified && (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)) {
-				accept_event(); // Accept event if scroll changed.
+				get_viewport()->set_input_as_handled(); // Accept event if scroll changed.
 				return;
 			}
 		}
@@ -242,7 +242,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
-			accept_event(); // Accept event if scroll changed.
+			get_viewport()->set_input_as_handled(); // Accept event if scroll changed.
 		}
 		return;
 	}
@@ -257,7 +257,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
-			accept_event(); // Accept event if scroll changed.
+			get_viewport()->set_input_as_handled(); // Accept event if scroll changed.
 		}
 		return;
 	}

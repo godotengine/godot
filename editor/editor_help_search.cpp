@@ -175,7 +175,7 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid()) {
 		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
 			results_tree->gui_input(key);
-			search_box->accept_event();
+			search_box->get_viewport()->set_input_as_handled();
 		}
 	}
 }

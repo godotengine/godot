@@ -2783,7 +2783,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	accepted = (_gui_input_zoom_or_pan(p_event, accepted) || accepted);
 
 	if (accepted) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	// Handles the mouse hovering

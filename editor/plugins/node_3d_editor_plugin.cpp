@@ -2294,7 +2294,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (processed) {
 				// Ignore mouse inputs once we receive a numeric input.
 				set_process_input(false);
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}
@@ -2358,7 +2358,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				} else {
 					update_transform(Input::get_singleton()->is_key_pressed(Key::SHIFT));
 				}
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}
@@ -2519,7 +2519,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	// freelook uses most of the useful shortcuts, like save, so its ok
 	// to consider freelook active as end of the line for future events.
 	if (freelook_active) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 

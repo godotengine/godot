@@ -3360,12 +3360,12 @@ void Tree::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_action_pressed("ui_text_newline_blank", true)) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	} else if (p_event->is_action_pressed("ui_text_newline")) {
 		popup_edit_committed = true; // End edit popup processing.
 		popup_editor->hide();
 		_apply_multiline_edit();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 
@@ -3526,7 +3526,7 @@ void Tree::_go_left() {
 	}
 	queue_accessibility_update();
 	queue_redraw();
-	accept_event();
+	get_viewport()->set_input_as_handled();
 	ensure_cursor_is_visible();
 }
 
@@ -3554,7 +3554,7 @@ void Tree::_go_right() {
 	queue_accessibility_update();
 	queue_redraw();
 	ensure_cursor_is_visible();
-	accept_event();
+	get_viewport()->set_input_as_handled();
 }
 
 void Tree::_go_up() {
@@ -3589,7 +3589,7 @@ void Tree::_go_up() {
 
 	queue_accessibility_update();
 	ensure_cursor_is_visible();
-	accept_event();
+	get_viewport()->set_input_as_handled();
 }
 
 void Tree::_shift_select_range(TreeItem *new_item) {
@@ -3630,7 +3630,7 @@ void Tree::_shift_select_range(TreeItem *new_item) {
 	selected_col = s_col;
 	ensure_cursor_is_visible();
 	queue_redraw();
-	accept_event();
+	get_viewport()->set_input_as_handled();
 }
 
 void Tree::_go_down() {
@@ -3665,7 +3665,7 @@ void Tree::_go_down() {
 
 	queue_accessibility_update();
 	ensure_cursor_is_visible();
-	accept_event();
+	get_viewport()->set_input_as_handled();
 }
 
 bool Tree::_scroll(bool p_horizontal, float p_pages) {
@@ -3729,7 +3729,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
 	if (p_event->is_action(cache.rtl ? "ui_left" : "ui_right") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		if (!selected_item || selected_col > (columns.size() - 1)) {
@@ -3747,7 +3747,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	} else if (p_event->is_action(cache.rtl ? "ui_right" : "ui_left") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		if (!selected_item || selected_col < 0) {
@@ -3765,7 +3765,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 		// Shift Up Selection.
 		if (k.is_valid() && k->is_shift_pressed() && selected_item && select_mode == SELECT_MULTI) {
@@ -3777,7 +3777,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 	} else if (p_event->is_action("ui_down") && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 		// Shift Down Selection.
 		if (k.is_valid() && k->is_shift_pressed() && selected_item && select_mode == SELECT_MULTI) {
@@ -3791,10 +3791,10 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			emit_signal(SNAME("item_mouse_selected"), get_item_rect(selected_item).position, MouseButton::RIGHT);
 		}
 
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	} else if (p_event->is_action("ui_page_down") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		TreeItem *next = nullptr;
@@ -3833,7 +3833,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		ensure_cursor_is_visible();
 	} else if (p_event->is_action("ui_page_up") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		TreeItem *prev = nullptr;
@@ -3888,7 +3888,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			const TreeItem::Cell &c = selected_item->cells[selected_col];
 			emit_signal("button_clicked", selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
 		if (selected_item) {
 			// Bring up editor if possible.
@@ -3900,7 +3900,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				incr_search.clear();
 			}
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	if (allow_search && k.is_valid()) { // Incremental search.
@@ -3921,7 +3921,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (k->get_unicode() > 0) {
 			_do_incr_search(String::chr(k->get_unicode()));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 
 			return;
 		} else {
@@ -4175,25 +4175,25 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			} break;
 			case MouseButton::WHEEL_UP: {
 				if (_scroll(mb->is_shift_pressed(), -mb->get_factor() / 8)) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 
 			} break;
 			case MouseButton::WHEEL_DOWN: {
 				if (_scroll(mb->is_shift_pressed(), mb->get_factor() / 8)) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 
 			} break;
 			case MouseButton::WHEEL_LEFT: {
 				if (_scroll(!mb->is_shift_pressed(), -mb->get_factor() / 8)) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 
 			} break;
 			case MouseButton::WHEEL_RIGHT: {
 				if (_scroll(!mb->is_shift_pressed(), mb->get_factor() / 8)) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 
 			} break;
@@ -4215,7 +4215,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (v_scroll->get_value() != prev_v || h_scroll->get_value() != prev_h) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

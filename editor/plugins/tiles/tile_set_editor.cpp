@@ -421,7 +421,7 @@ void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event
 			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);
 		}
 		undo_redo->commit_action();
-		patterns_item_list->accept_event();
+		patterns_item_list->get_viewport()->set_input_as_handled();
 	}
 }
 

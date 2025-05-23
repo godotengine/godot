@@ -30,6 +30,7 @@
 
 #include "slider.h"
 
+#include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 
 Size2 Slider::get_minimum_size() const {
@@ -146,7 +147,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_event->is_action_pressed("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
@@ -162,7 +163,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
 			if (orientation != VERTICAL) {
 				return;
@@ -174,7 +175,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				set_process_internal(true);
 			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_event->is_action_pressed("ui_down", true)) {
 			if (orientation != VERTICAL) {
 				return;
@@ -186,13 +187,13 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				set_process_internal(true);
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_event->is_action("ui_home", true) && p_event->is_pressed()) {
 			set_value(get_min());
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_event->is_action("ui_end", true) && p_event->is_pressed()) {
 			set_value(get_max());
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

@@ -173,14 +173,14 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			hold_next = OS::get_singleton()->get_ticks_msec();
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	} else if (p_event->is_action_released(SNAME("ui_cancel"), true)) {
 		accept_release = true;
 	}
 	hold_next = 0;
 
-	accept_event();
+	get_viewport()->set_input_as_handled();
 	if (!(p_event->is_pressed() || accept_release) || p_event->is_echo() || p_event->is_match(event) || !_is_event_allowed(p_event)) {
 		return;
 	}

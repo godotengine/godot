@@ -2679,7 +2679,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (scroll_value_modified && vscroll->get_value() != prev_scroll) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			return;
 		}
 
@@ -2840,7 +2840,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (handled) {
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		}
 	}

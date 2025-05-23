@@ -46,7 +46,7 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid()) {
 		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
 			search_options->gui_input(key);
-			search_box->accept_event();
+			search_box->get_viewport()->set_input_as_handled();
 
 			TreeItem *root = search_options->get_root();
 			if (!root->get_first_child()) {

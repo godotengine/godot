@@ -996,7 +996,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		select();
 
 		if (keying_rect.has_point(mpos)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			emit_signal(SNAME("property_keyed"), property, use_keying_next());
 
 			if (use_keying_next()) {
@@ -1019,12 +1019,12 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 		if (delete_rect.has_point(mpos)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			emit_signal(SNAME("property_deleted"), property);
 		}
 
 		if (revert_rect.has_point(mpos)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			get_viewport()->gui_release_focus();
 			bool is_valid_revert = false;
 			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
@@ -1034,13 +1034,13 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (check_rect.has_point(mpos)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			checked = !checked;
 			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
 		}
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
 		menu->reset_size();
@@ -1076,13 +1076,13 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed()) {
 		if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
 			menu_option(MENU_COPY_VALUE);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (!is_read_only() && ED_IS_SHORTCUT("property_editor/paste_value", p_event)) {
 			menu_option(MENU_PASTE_VALUE);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
 			menu_option(MENU_COPY_PROPERTY_PATH);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }
@@ -1305,11 +1305,11 @@ void EditorProperty::menu_option(int p_option) {
 			queue_redraw();
 		} break;
 		case MENU_DELETE: {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			emit_signal(SNAME("property_deleted"), property);
 		} break;
 		case MENU_REVERT_VALUE: {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 			get_viewport()->gui_release_focus();
 			bool is_valid_revert = false;
 			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
@@ -2085,7 +2085,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
 		if (foldable && has_children_to_show && k->is_action("ui_accept", true)) {
-			accept_event();
+			get_viewport()->set_input_as_handled();
 
 			bool should_unfold = !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
@@ -2106,7 +2106,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		accept_event();
+		get_viewport()->set_input_as_handled();
 
 		if (check_rect.has_point(mb->get_position())) {
 			checked = !checked;
@@ -2372,14 +2372,14 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 
 		if (array_elements[p_index].panel->has_focus() && key.is_pressed() && key.get_keycode() == Key::KEY_DELETE) {
 			_move_element(begin_array_index + p_index, -1);
-			array_elements[p_index].panel->accept_event();
+			array_elements[p_index].panel->get_viewport()->set_input_as_handled();
 		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		if (movable && mb->get_button_index() == MouseButton::RIGHT) {
-			array_elements[p_index].panel->accept_event();
+			array_elements[p_index].panel->get_viewport()->set_input_as_handled();
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);

@@ -108,7 +108,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			if (!read_only) {
 				_erase_selected();
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 

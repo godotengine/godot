@@ -170,7 +170,7 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 				hovered_index = -1;
 				hovered_tangent_index = TANGENT_NONE;
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		if (k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::ALT) {

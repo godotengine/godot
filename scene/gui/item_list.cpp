@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 
 void ItemList::_shape_text(int p_idx) {
@@ -908,7 +909,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				emit_signal(SNAME("item_clicked"), i, get_item_rect(i).position, MouseButton::RIGHT);
 
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}
@@ -916,7 +917,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		if (select_mode == SELECT_MULTI && p_event->is_action("ui_up", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
 			int next = MAX(current - max_columns, 0);
 			_shift_range_select(current, next);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		else if (p_event->is_action("ui_up", true)) {
@@ -936,7 +937,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 							break;
 						}
 					}
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					return;
 				}
 			}
@@ -947,7 +948,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					next = next - current_columns;
 				}
 				if (next < 0) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					return;
 				}
 				set_current(next);
@@ -955,7 +956,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SceneStringName(item_selected), current);
 				}
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		}
 
@@ -963,7 +964,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_down", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
 			int next = MIN(current + max_columns, items.size() - 1);
 			_shift_range_select(current, next);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		else if (p_event->is_action("ui_down", true)) {
@@ -982,7 +983,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 							break;
 						}
 					}
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					return;
 				}
 			}
@@ -993,7 +994,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					next = next + current_columns;
 				}
 				if (next >= items.size()) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					return;
 				}
 				set_current(next);
@@ -1001,7 +1002,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SceneStringName(item_selected), current);
 				}
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		} else if (p_event->is_action("ui_page_up", true)) {
 			search_string = ""; //any mousepress cancels
@@ -1014,7 +1015,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SceneStringName(item_selected), current);
 					}
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					break;
 				}
 			}
@@ -1029,7 +1030,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SceneStringName(item_selected), current);
 					}
-					accept_event();
+					get_viewport()->set_input_as_handled();
 
 					break;
 				}
@@ -1040,7 +1041,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_left", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
 			int next = MAX(current - 1, 0);
 			_shift_range_select(current, next);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		else if (p_event->is_action("ui_left", true)) {
@@ -1053,7 +1054,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					next = next - 1;
 				}
 				if (next < 0 || !IS_SAME_ROW(next, current_row)) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					return;
 				}
 				set_current(next);
@@ -1061,7 +1062,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SceneStringName(item_selected), current);
 				}
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		}
 
@@ -1069,7 +1070,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_right", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
 			int next = MIN(current + 1, items.size() - 1);
 			_shift_range_select(current, next);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 
 		else if (p_event->is_action("ui_right", true)) {
@@ -1082,7 +1083,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					next = next + 1;
 				}
 				if (items.size() <= next || !IS_SAME_ROW(next, current_row)) {
-					accept_event();
+					get_viewport()->set_input_as_handled();
 					return;
 				}
 				set_current(next);
@@ -1090,7 +1091,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SceneStringName(item_selected), current);
 				}
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		} else if (p_event->is_action("ui_cancel", true)) {
 			search_string = "";
@@ -1160,7 +1161,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (scroll_value_modified && (scroll_bar_v->get_value() != prev_scroll_v || scroll_bar_h->get_value() != prev_scroll_h)) {
-		accept_event(); //accept event if scroll changed
+		get_viewport()->set_input_as_handled(); //accept event if scroll changed
 	}
 
 #undef CAN_SELECT

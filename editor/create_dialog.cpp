@@ -534,13 +534,13 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid()) {
 		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
 			search_options->gui_input(key);
-			search_box->accept_event();
+			search_box->get_viewport()->set_input_as_handled();
 		} else if (key->is_action_pressed("ui_select", true)) {
 			TreeItem *ti = search_options->get_selected();
 			if (ti) {
 				ti->set_collapsed(!ti->is_collapsed());
 			}
-			search_box->accept_event();
+			search_box->get_viewport()->set_input_as_handled();
 		}
 	}
 }

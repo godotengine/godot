@@ -174,7 +174,7 @@ void FindReplaceBar::input(const Ref<InputEvent> &p_event) {
 
 		if (text_editor->has_focus() || (focus_owner && is_ancestor_of(focus_owner))) {
 			_hide_bar();
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }
@@ -882,12 +882,12 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || (get_viewport()->gui_get_focus_owner() && find_replace_bar->is_ancestor_of(get_viewport()->gui_get_focus_owner())))) {
 			if (ED_IS_SHORTCUT("script_text_editor/find_next", key_event)) {
 				find_replace_bar->search_next();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (ED_IS_SHORTCUT("script_text_editor/find_previous", key_event)) {
 				find_replace_bar->search_prev();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}
@@ -896,27 +896,27 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 
 	if (ED_IS_SHORTCUT("script_text_editor/move_up", key_event)) {
 		text_editor->move_lines_up();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (ED_IS_SHORTCUT("script_text_editor/move_down", key_event)) {
 		text_editor->move_lines_down();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (ED_IS_SHORTCUT("script_text_editor/delete_line", key_event)) {
 		text_editor->delete_lines();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (ED_IS_SHORTCUT("script_text_editor/duplicate_selection", key_event)) {
 		text_editor->duplicate_selection();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 	if (ED_IS_SHORTCUT("script_text_editor/duplicate_lines", key_event)) {
 		text_editor->duplicate_lines();
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 }
@@ -928,12 +928,12 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->is_pressed() && mb->is_command_or_control_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				_zoom_in();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				_zoom_out();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}
@@ -943,7 +943,7 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
 		_zoom_to(zoom_factor * std::pow(magnify_gesture->get_factor(), 0.25f));
-		accept_event();
+		get_viewport()->set_input_as_handled();
 		return;
 	}
 #endif
@@ -954,17 +954,17 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		if (k->is_pressed()) {
 			if (ED_IS_SHORTCUT("script_editor/zoom_in", p_event)) {
 				_zoom_in();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (ED_IS_SHORTCUT("script_editor/zoom_out", p_event)) {
 				_zoom_out();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
 				_zoom_to(1);
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 		}

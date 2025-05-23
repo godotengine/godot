@@ -32,6 +32,7 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
@@ -52,7 +53,7 @@ void GraphFrame::gui_input(const Ref<InputEvent> &p_ev) {
 				resizing = true;
 				resizing_from = mpos;
 				resizing_from_size = get_size();
-				accept_event();
+				get_viewport()->set_input_as_handled();
 				return;
 			}
 

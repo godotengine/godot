@@ -189,7 +189,7 @@ LineEdit *SpinBox::get_line_edit() {
 
 void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 	if (drag.enabled) {
-		line_edit->accept_event();
+		line_edit->get_viewport()->set_input_as_handled();
 	}
 }
 
@@ -293,14 +293,14 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 				if (line_edit->is_editing()) {
 					use_custom_arrow_step = false;
 					set_value(get_value() + step * mb->get_factor());
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
 				if (line_edit->is_editing()) {
 					use_custom_arrow_step = false;
 					set_value(get_value() - step * mb->get_factor());
-					accept_event();
+					get_viewport()->set_input_as_handled();
 				}
 			} break;
 			default:

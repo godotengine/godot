@@ -176,7 +176,7 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 			is_pressing = false;
 			is_resizing = false;
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	} else if (mm.is_valid() && is_pressing) {
 		if (is_resizing) {
 			// Prevent setting minimap wider than GraphEdit.
@@ -189,7 +189,7 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 			Vector2 click_position = _convert_to_graph_position(mm->get_position() - minimap_padding) - graph_padding;
 			_adjust_graph_scroll(click_position);
 		}
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 }
 
@@ -2270,16 +2270,16 @@ void GraphEdit::key_input(const Ref<InputEvent> &p_ev) {
 	if (p_ev->is_pressed()) {
 		if (p_ev->is_action("ui_graph_duplicate", true)) {
 			emit_signal(SNAME("duplicate_nodes_request"));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_ev->is_action("ui_copy", true)) {
 			emit_signal(SNAME("copy_nodes_request"));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_ev->is_action("ui_cut", true)) {
 			emit_signal(SNAME("cut_nodes_request"));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_ev->is_action("ui_paste", true)) {
 			emit_signal(SNAME("paste_nodes_request"));
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		} else if (p_ev->is_action("ui_graph_delete", true)) {
 			TypedArray<StringName> nodes;
 
@@ -2294,7 +2294,7 @@ void GraphEdit::key_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			emit_signal(SNAME("delete_nodes_request"), nodes);
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }

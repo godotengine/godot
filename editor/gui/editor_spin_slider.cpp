@@ -139,7 +139,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				_grab_end();
 				set_value(pre_grab_value);
 			}
-			accept_event();
+			get_viewport()->set_input_as_handled();
 		}
 	}
 }
@@ -187,11 +187,11 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				set_value(get_value() + get_step());
 				mousewheel_over_grabber = true;
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				set_value(get_value() - get_step());
 				mousewheel_over_grabber = true;
-				accept_event();
+				get_viewport()->set_input_as_handled();
 			}
 		}
 	}
