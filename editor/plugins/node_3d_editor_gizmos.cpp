@@ -38,7 +38,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/resources/3d/primitive_meshes.h"
 
-#define HANDLE_HALF_SIZE 9.5
+#define HANDLE_HALF_SIZE 9.5 * MAX(1.0, EDSCALE)
 
 bool EditorNode3DGizmo::is_editable() const {
 	ERR_FAIL_NULL_V(spatial_node, false);
