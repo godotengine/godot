@@ -568,7 +568,7 @@ void EditorPropertyPath::_set_read_only(bool p_read_only) {
 void EditorPropertyPath::_path_selected(const String &p_path) {
 	String full_path = p_path;
 
-	if (!global) {
+	if (enable_uid) {
 		const ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
 		if (id != ResourceUID::INVALID_ID) {
 			full_path = ResourceUID::get_singleton()->id_to_text(id);
@@ -579,9 +579,9 @@ void EditorPropertyPath::_path_selected(const String &p_path) {
 	update_property();
 }
 
-String EditorPropertyPath::_get_path_text() {
+String EditorPropertyPath::_get_path_text(bool p_allow_uid) {
 	String full_path = get_edited_property_value();
-	if (full_path.begins_with("uid://")) {
+	if (!p_allow_uid && full_path.begins_with("uid://")) {
 		full_path = ResourceUID::uid_to_path(full_path);
 	}
 
@@ -624,15 +624,18 @@ void EditorPropertyPath::_path_pressed() {
 }
 
 void EditorPropertyPath::update_property() {
-	String full_path = _get_path_text();
+	String full_path = _get_path_text(toggle_uid->is_pressed());
 	path->set_text(full_path);
 	path->set_tooltip_text(full_path);
+
+	toggle_uid->set_visible(get_edited_property_value().operator String().begins_with("uid://"));
 }
 
-void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder, bool p_global) {
+void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder, bool p_global, bool p_enable_uid) {
 	extensions = p_extensions;
 	folder = p_folder;
 	global = p_global;
+	enable_uid = p_enable_uid;
 }
 
 void EditorPropertyPath::set_save_mode() {
@@ -647,6 +650,7 @@ void EditorPropertyPath::_notification(int p_what) {
 			} else {
 				path_edit->set_button_icon(get_editor_theme_icon(SNAME("FileBrowse")));
 			}
+			toggle_uid->set_button_icon(get_editor_theme_icon(SNAME("Key")));
 		} break;
 	}
 }
@@ -707,11 +711,18 @@ EditorPropertyPath::EditorPropertyPath() {
 
 	path_edit = memnew(Button);
 	path_edit->set_accessibility_name(TTRC("Edit"));
-	path_edit->set_clip_text(true);
 	path_hb->add_child(path_edit);
 	add_focusable(path);
-	dialog = nullptr;
 	path_edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyPath::_path_pressed));
+
+	toggle_uid = memnew(Button);
+	toggle_uid->set_accessibility_name(TTRC("Toggle Display UID"));
+	toggle_uid->set_tooltip_text(TTRC("Toggles displaying between path and UID.\nThe UID is the actual value of this property."));
+	toggle_uid->set_toggle_mode(true);
+	toggle_uid->set_pressed(false);
+	path_hb->add_child(toggle_uid);
+	add_focusable(toggle_uid);
+	toggle_uid->connect(SceneStringName(toggled), callable_mp((EditorProperty *)this, &EditorProperty::update_property).unbind(1));
 }
 
 ///////////////////// CLASS NAME /////////////////////////
@@ -3806,8 +3817,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				bool global = p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE;
 				bool folder = p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_GLOBAL_DIR;
 				bool save = p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE;
+				bool enable_uid = p_hint == PROPERTY_HINT_FILE;
 				EditorPropertyPath *editor = memnew(EditorPropertyPath);
-				editor->setup(extensions, folder, global);
+				editor->setup(extensions, folder, global, enable_uid);
 				if (save) {
 					editor->set_save_mode();
 				}
