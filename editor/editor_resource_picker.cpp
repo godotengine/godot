@@ -208,16 +208,18 @@ void EditorResourcePicker::_update_menu_items() {
 	if (is_editable()) {
 		set_create_options(edit_menu);
 
-		// Add an option to load a resource from a file using the QuickOpen dialog.
-		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
-		edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
+		if (can_load()) {
+			// Add an option to load a resource from a file using the QuickOpen dialog.
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
+			edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
 
-		// Add an option to load a resource from a file using the regular file dialog.
-		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), OBJ_MENU_LOAD);
+			// Add an option to load a resource from a file using the regular file dialog.
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), OBJ_MENU_LOAD);
+		}
 	}
 
 	// Add options for changing existing value of the resource.
-	if (edited_resource.is_valid()) {
+	if (edited_resource.is_valid() && can_load()) {
 		// Determine if the edited resource is part of another scene (foreign) which was imported
 		bool is_edited_resource_foreign_import = EditorNode::get_singleton()->is_resource_read_only(edited_resource, true);
 
@@ -281,7 +283,7 @@ void EditorResourcePicker::_update_menu_items() {
 		}
 	}
 
-	if (edited_resource.is_valid() || paste_valid) {
+	if ((edited_resource.is_valid() || paste_valid) && can_load()) {
 		edit_menu->add_separator();
 
 		if (edited_resource.is_valid()) {
@@ -1012,6 +1014,14 @@ void EditorResourcePicker::set_editable(bool p_editable) {
 
 bool EditorResourcePicker::is_editable() const {
 	return editable;
+}
+
+void EditorResourcePicker::set_can_load(bool p_load) {
+	load = p_load;
+}
+
+bool EditorResourcePicker::can_load() const {
+	return load;
 }
 
 void EditorResourcePicker::_ensure_resource_menu() {

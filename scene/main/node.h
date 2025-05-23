@@ -30,8 +30,11 @@
 
 #pragma once
 
+#include "core/io/resource.h"
 #include "core/string/node_path.h"
+#include "core/templates/hash_set.h"
 #include "core/variant/typed_array.h"
+#include "scene/main/actor.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
 
@@ -44,8 +47,8 @@ class PropertyTweener;
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
 
-class Node : public Object {
-	GDCLASS(Node, Object);
+class Node : public Actor {
+	GDCLASS(Node, Actor);
 
 	friend class SceneTreeFTI;
 
@@ -273,6 +276,7 @@ private:
 
 	Ref<MultiplayerAPI> multiplayer;
 
+private:
 	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
 	String _get_tree_string(const Node *p_node);
 
@@ -475,6 +479,11 @@ public:
 		NOTIFICATION_SUSPENDED = 9003,
 		NOTIFICATION_UNSUSPENDED = 9004
 	};
+
+	/* ACTOR/COMPONENT */
+
+	void set_component(Ref<Component> value) override;
+	void remove_component(StringName component_class) override;
 
 	/* NODE/TREE */
 

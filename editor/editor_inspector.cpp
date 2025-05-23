@@ -49,6 +49,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
@@ -4162,7 +4163,7 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				if (p.name.begins_with("metadata/")) {
+				if (p.name.begins_with("metadata/") || p.name.begins_with("components/")) {
 					Variant _default = Variant();
 					if (node != nullptr) {
 						_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
@@ -4307,19 +4308,46 @@ void EditorInspector::update_tree() {
 		}
 	}
 
+	Button *add_component = nullptr;
+	Button *add_md = nullptr;
+	{
+		Actor *actor = Object::cast_to<Actor>(object);
+		if (actor) {
+			Control *spacer = memnew(Control);
+			spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
+			main_vbox->add_child(spacer);
+
+			add_component = EditorInspector::create_inspector_action_button(TTR("Add Component"));
+			add_component->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			add_component->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_show_add_component_dialog));
+			if (all_read_only) {
+				add_component->set_disabled(true);
+			}
+		}
+	}
+
 	if (!hide_metadata && !object->call("_hide_metadata_from_inspector")) {
 		// Add 4px of spacing between the "Add Metadata" button and the content above it.
 		Control *spacer = memnew(Control);
 		spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
 		main_vbox->add_child(spacer);
 
-		Button *add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
+		add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
 		add_md->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		add_md->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_show_add_meta_dialog));
-		main_vbox->add_child(add_md);
 		if (all_read_only) {
 			add_md->set_disabled(true);
 		}
+	}
+
+	if (add_component and add_md) {
+		HBoxContainer *hbox = memnew(HBoxContainer);
+		hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+		hbox->add_child(add_component);
+		hbox->add_child(add_md);
+		main_vbox->add_child(hbox);
+	} else if (add_component) {
+		main_vbox->add_child(add_component);
 	}
 
 	// Get the lists of to add at the end.
@@ -4812,6 +4840,14 @@ void EditorInspector::_property_deleted(const String &p_path) {
 		undo_redo->add_do_method(object, "remove_meta", name);
 		undo_redo->add_undo_method(object, "set_meta", name, object->get_meta(name));
 		undo_redo->commit_action();
+	} else if (p_path.begins_with("components/")) {
+		Actor *actor = Object::cast_to<Actor>(object);
+		String name = p_path.replace_first("components/", "");
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Remove component %s"), name));
+		undo_redo->add_do_method(object, "remove_component", name);
+		undo_redo->add_undo_method(object, "set_component", name, actor->get_component(name));
+		undo_redo->commit_action();
 	}
 
 	emit_signal(SNAME("property_deleted"), p_path);
@@ -5274,6 +5310,40 @@ void EditorInspector::set_property_clipboard(const Variant &p_value) {
 
 Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
+}
+
+void EditorInspector::_add_component_confirm() {
+	// Ensure metadata is unfolded when adding a new metadata.
+	object->editor_set_section_unfold("component", true);
+
+	Ref<Component> component = add_component_dialog->get_component();
+	String name = component->get_class();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add component %s"), name));
+	undo_redo->add_do_method(object, "set_component", component);
+	undo_redo->add_undo_method(object, "remove_component", name);
+	undo_redo->commit_action();
+}
+
+void EditorInspector::_show_add_component_dialog() {
+	Actor *actor = Object::cast_to<Actor>(object);
+
+	if (!actor) {
+		return;
+	}
+
+	if (!add_component_dialog) {
+		add_component_dialog = memnew(AddComponentDialog());
+		add_component_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspector::_add_component_confirm));
+		add_child(add_component_dialog);
+	}
+
+	StringName dialog_title;
+	dialog_title = "Actor";
+
+	List<StringName> existing_components;
+	actor->get_component_class_list(&existing_components);
+	add_component_dialog->open(dialog_title, existing_components);
 }
 
 void EditorInspector::_show_add_meta_dialog() {
