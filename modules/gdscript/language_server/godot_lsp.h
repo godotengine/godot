@@ -34,6 +34,12 @@
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
+#if DEV_ENABLED
+#define DEBUG_LSP(...) print_line("[ LSP -", __FILE__, ":", __LINE__, "-", __func__, "] -", ##__VA_ARGS__)
+#else
+#define DEBUG_LSP(...) ((void)0)
+#endif
+
 namespace LSP {
 
 typedef String DocumentUri;
