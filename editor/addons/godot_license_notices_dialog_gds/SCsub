@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import editor_addons_builders
+
+from methods import glob_recursive
+
+Import("env")
+
+
+addon_name = "godot_license_notices_dialog_gds"
+base_dir = "editor/addons/" + addon_name
+sources_dir = base_dir + "/sources"
+
+symbol_prefix = str.upper(addon_name)
+
+dest = "#" + base_dir + "/" + addon_name + ".gen.h"
+sources_dir_node = Dir("#" + sources_dir)
+sources = glob_recursive("*.*", sources_dir_node)
+
+env.CommandNoCache(
+    dest,
+    sources,
+    env.Run(editor_addons_builders.create_make_builtin_addon_header(sources_dir, symbol_prefix)),
+)
