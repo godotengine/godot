@@ -2757,6 +2757,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	ResourceUID::ID uid = ResourceUID::INVALID_ID;
 	Variant generator_parameters;
+	String group_file;
 	if (p_generator_parameters) {
 		generator_parameters = *p_generator_parameters;
 	}
@@ -2784,6 +2785,10 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 				if (cf->has_section_key("remap", "uid")) {
 					String uidt = cf->get_value("remap", "uid");
 					uid = ResourceUID::get_singleton()->text_to_id(uidt);
+				}
+
+				if (cf->has_section_key("remap", "group_file")) {
+					group_file = cf->get_value("remap", "group_file");
 				}
 
 				if (!p_generator_parameters) {
@@ -2881,7 +2886,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 
 		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
-
+		if (!group_file.is_empty()) {
+			f->store_line("group_file=\"" + group_file + "\"");
+		}
 		if (err == OK) {
 			if (importer->get_save_extension().is_empty()) {
 				//no path
