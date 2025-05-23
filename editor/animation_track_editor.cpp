@@ -44,6 +44,7 @@
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
@@ -2801,6 +2802,13 @@ Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
 	return type_icons[animation->track_get_type(track)];
 }
 
+Control::CursorShape AnimationTrackEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (command_or_control_pressed && animation->track_get_type(track) == Animation::TYPE_METHOD && hovering_key_idx != -1) {
+		return Control::CURSOR_POINTING_HAND;
+	}
+	return get_default_cursor_shape();
+}
+
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	if (check_rect.has_point(p_pos)) {
 		return TTR("Toggle this track on/off.");
@@ -3144,6 +3152,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		if (mb->is_command_or_control_pressed() && _lookup_key(hovering_key_idx)) {
+			accept_event();
+			return;
+		}
+
 		if (_try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), true)) {
 			accept_event();
 		}
@@ -3164,6 +3177,13 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
 
 				menu->clear();
+				if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
+					if (hovering_key_idx != -1) {
+						lookup_key_idx = hovering_key_idx;
+						menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), vformat("%s (%s)", TTR("Go to Definition"), animation->method_track_get_name(track, lookup_key_idx)), MENU_KEY_LOOKUP);
+						menu->add_separator();
+					}
+				}
 				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key..."), MENU_KEY_INSERT);
 				if (selected || editor->is_selection_active()) {
 					menu->add_separator();
@@ -3246,6 +3266,8 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		const int previous_hovering_key_idx = hovering_key_idx;
+
+		command_or_control_pressed = mm->is_command_or_control_pressed();
 
 		// Hovering compressed keyframes for editing is not possible.
 		if (!animation->track_is_compressed(track)) {
@@ -3387,6 +3409,45 @@ bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggre
 				}
 				return true;
 			}
+		}
+	}
+	return false;
+}
+
+bool AnimationTrackEdit::_lookup_key(int p_key_idx) const {
+	if (p_key_idx < 0 || p_key_idx >= animation->track_get_key_count(track)) {
+		return false;
+	}
+
+	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
+		Node *target = root->get_node_or_null(animation->track_get_path(track));
+		if (target) {
+			StringName method = animation->method_track_get_name(track, p_key_idx);
+			// First, check every script in the inheritance chain.
+			bool found_in_script = false;
+			Ref<Script> target_script_ref = target->get_script();
+			Script *target_script = target_script_ref.ptr();
+			while (target_script) {
+				if (target_script->has_method(method)) {
+					found_in_script = true;
+					// Tell ScriptEditor to show the method's line.
+					ScriptEditor::get_singleton()->script_goto_method(target_script, animation->method_track_get_name(track, p_key_idx));
+					break;
+				}
+				target_script = target_script->get_base_script().ptr();
+			}
+
+			if (!found_in_script) {
+				// Not found in script, so it must be a native method.
+				if (ClassDB::has_method(target->get_class_name(), method)) {
+					// Show help page instead.
+					ScriptEditor::get_singleton()->goto_help(vformat("class_method:%s:%s", target->get_class_name(), method));
+				} else {
+					// Still not found, which means the target doesn't have this method. Warn the user.
+					WARN_PRINT_ED(TTR(vformat("Failed to lookup method: \"%s\"", method)));
+				}
+			}
+			return true;
 		}
 	}
 	return false;
@@ -3552,6 +3613,9 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_KEY_DELETE: {
 			emit_signal(SNAME("delete_request"));
 
+		} break;
+		case MENU_KEY_LOOKUP: {
+			_lookup_key(lookup_key_idx);
 		} break;
 		case MENU_USE_BLEND_ENABLED:
 		case MENU_USE_BLEND_DISABLED: {
