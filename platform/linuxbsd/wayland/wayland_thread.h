@@ -70,6 +70,7 @@
 #include "wayland/protocol/xdg_foreign_v2.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
 #include "wayland/protocol/xdg_system_bell.gen.h"
+#include "wayland/protocol/xx_session_management.gen.h"
 
 // NOTE: Deprecated.
 #include "wayland/protocol/xdg_foreign_v1.gen.h"
@@ -221,6 +222,11 @@ public:
 		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
 		uint32_t wp_text_input_manager_name = 0;
 
+		struct xx_session_manager_v1 *xx_session_manager = nullptr;
+		struct xx_session_v1 *xx_session = nullptr;
+		String session_path;
+		uint32_t xx_session_manager_name = 0;
+
 		// We're really not meant to use this one directly but we still need to know
 		// whether it's available.
 		uint32_t wp_fifo_manager_name = 0;
@@ -293,6 +299,8 @@ public:
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
 		struct zwp_idle_inhibitor_v1 *wp_idle_inhibitor = nullptr;
+
+		String session_id = "";
 
 #ifdef LIBDECOR_ENABLED
 		// If this is null the xdg_* variables must be set and vice-versa. This way we
@@ -735,6 +743,10 @@ private:
 
 	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
 
+	static void _xx_session_on_created(void *data, struct xx_session_v1 *xx_session, const char *id);
+	static void _xx_session_on_restored(void *data, struct xx_session_v1 *xx_session);
+	static void _xx_session_on_replaced(void *data, struct xx_session_v1 *xx_session);
+
 	// Core Wayland event listeners.
 	static constexpr struct wl_registry_listener wl_registry_listener = {
 		.global = _wl_registry_on_global,
@@ -922,6 +934,12 @@ private:
 		.done = _xdg_activation_token_on_done,
 	};
 
+	static constexpr struct xx_session_v1_listener xx_session_listener = {
+		.created = _xx_session_on_created,
+		.restored = _xx_session_on_restored,
+		.replaced = _xx_session_on_replaced
+	};
+
 #ifdef LIBDECOR_ENABLED
 	// libdecor event handlers.
 	static void libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message);
@@ -1017,6 +1035,8 @@ public:
 
 	static Vector2i scale_vector2i(const Vector2i &p_vector, double p_amount);
 
+	void set_session_path(const String &p_path);
+
 	void push_message(Ref<Message> message);
 	bool has_message();
 	Ref<Message> pop_message();
@@ -1044,6 +1064,7 @@ public:
 	void window_set_borderless(DisplayServer::WindowID p_window_id, bool p_borderless);
 	void window_set_title(DisplayServer::WindowID p_window_id, const String &p_title);
 	void window_set_app_id(DisplayServer::WindowID p_window_id, const String &p_app_id);
+	void window_set_session_id(DisplayServer::WindowID p_window_id, const String &p_session_id);
 
 	bool window_is_focused(DisplayServer::WindowID p_window_id);
 

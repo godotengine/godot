@@ -160,6 +160,14 @@ env.NoCache(
         "protocol/xdg_system_bell.gen.c",
         "#thirdparty/wayland-protocols/staging/xdg-system-bell/xdg-system-bell-v1.xml",
     ),
+    env.WAYLAND_API_HEADER(
+        "protocol/xx_session_management.gen.h",
+        "#thirdparty/wayland-protocols/experimental/xx-session-management/xx-session-management-v1.xml",
+    ),
+    env.WAYLAND_API_CODE(
+        "protocol/xx_session_management.gen.c",
+        "#thirdparty/wayland-protocols/experimental/xx-session-management/xx-session-management-v1.xml",
+    ),
 )
 
 
@@ -175,6 +183,7 @@ source_files = [
     "protocol/xdg_decoration.gen.c",
     "protocol/xdg_activation.gen.c",
     "protocol/relative_pointer.gen.c",
+    "protocol/xx_session_management.gen.c",
     "protocol/pointer_constraints.gen.c",
     "protocol/pointer_gestures.gen.c",
     "protocol/primary_selection.gen.c",
