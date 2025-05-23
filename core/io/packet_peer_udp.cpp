@@ -200,7 +200,7 @@ Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_rec
 		_sock->close();
 		return err;
 	}
-	rb.resize(nearest_shift(p_recv_buffer_size));
+	rb.resize(nearest_shift((uint32_t)p_recv_buffer_size));
 	return OK;
 }
 

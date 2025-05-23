@@ -1115,8 +1115,8 @@ bool Image::is_size_po2() const {
 void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
 
-	int w = next_power_of_2(width);
-	int h = next_power_of_2(height);
+	int w = next_power_of_2((uint32_t)width);
+	int h = next_power_of_2((uint32_t)height);
 	if (p_square) {
 		w = h = MAX(w, h);
 	}
