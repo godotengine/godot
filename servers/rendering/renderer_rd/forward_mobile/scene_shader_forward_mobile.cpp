@@ -57,6 +57,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	depth_testi = DEPTH_TEST_ENABLED;
 	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 	cull_mode = RS::CULL_MODE_BACK;
+	int depth_functioni = DEPTH_FUNCTION_GREATER_OR_EQUAL;
 
 	uses_point_size = false;
 	uses_alpha = false;
@@ -83,6 +84,12 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	int depth_drawi = DEPTH_DRAW_OPAQUE;
 
+	int stencil_readi = 0;
+	int stencil_writei = 0;
+	int stencil_write_depth_faili = 0;
+	int stencil_comparei = STENCIL_COMPARE_ALWAYS;
+	int stencil_referencei = -1;
+
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
 	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
@@ -106,6 +113,15 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_FRONT);
 	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_BACK);
+
+	actions.render_mode_values["depth_function_greater_or_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_GREATER_OR_EQUAL);
+	actions.render_mode_values["depth_function_less_or_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_LESS_OR_EQUAL);
+	actions.render_mode_values["depth_function_less"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_LESS);
+	actions.render_mode_values["depth_function_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_EQUAL);
+	actions.render_mode_values["depth_function_greater"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_GREATER);
+	actions.render_mode_values["depth_function_not_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_NOT_EQUAL);
+	actions.render_mode_values["depth_function_always"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_ALWAYS);
+	actions.render_mode_values["depth_function_never"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_NEVER);
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
@@ -141,6 +157,20 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.write_flag_pointers["PROJECTION_MATRIX"] = &writes_modelview_or_projection;
 	actions.write_flag_pointers["VERTEX"] = &uses_vertex;
 
+	actions.stencil_mode_values["read"] = Pair<int *, int>(&stencil_readi, STENCIL_FLAG_READ);
+	actions.stencil_mode_values["write"] = Pair<int *, int>(&stencil_writei, STENCIL_FLAG_WRITE);
+	actions.stencil_mode_values["write_depth_fail"] = Pair<int *, int>(&stencil_write_depth_faili, STENCIL_FLAG_WRITE_DEPTH_FAIL);
+
+	actions.stencil_mode_values["compare_less"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_LESS);
+	actions.stencil_mode_values["compare_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_EQUAL);
+	actions.stencil_mode_values["compare_less_or_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_LESS_OR_EQUAL);
+	actions.stencil_mode_values["compare_greater"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_GREATER);
+	actions.stencil_mode_values["compare_not_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_NOT_EQUAL);
+	actions.stencil_mode_values["compare_greater_or_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_GREATER_OR_EQUAL);
+	actions.stencil_mode_values["compare_always"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_ALWAYS);
+
+	actions.stencil_reference = &stencil_referencei;
+
 	actions.uniforms = &uniforms;
 
 	MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
@@ -160,6 +190,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	depth_draw = DepthDraw(depth_drawi);
 	depth_test = DepthTest(depth_testi);
+	depth_function = DepthFunction(depth_functioni);
 	uses_vertex_time = gen_code.uses_vertex_time;
 	uses_fragment_time = gen_code.uses_fragment_time;
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
@@ -170,6 +201,11 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uses_normal |= uses_bent_normal_map;
 	uses_tangent |= uses_normal_map;
 	uses_tangent |= uses_bent_normal_map;
+
+	stencil_enabled = stencil_referencei != -1;
+	stencil_flags = stencil_readi | stencil_writei | stencil_write_depth_faili;
+	stencil_compare = StencilCompare(stencil_comparei);
+	stencil_reference = stencil_referencei;
 
 #ifdef DEBUG_ENABLED
 	if (uses_sss) {
@@ -267,8 +303,20 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 
 	if (depth_test != DEPTH_TEST_DISABLED) {
 		depth_stencil_state.enable_depth_test = true;
-		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
+
+		static const RD::CompareOperator depth_function_rd_table[DEPTH_FUNCTION_MAX] = {
+			RD::COMPARE_OP_GREATER_OR_EQUAL,
+			RD::COMPARE_OP_LESS_OR_EQUAL,
+			RD::COMPARE_OP_LESS,
+			RD::COMPARE_OP_EQUAL,
+			RD::COMPARE_OP_GREATER,
+			RD::COMPARE_OP_NOT_EQUAL,
+			RD::COMPARE_OP_ALWAYS,
+			RD::COMPARE_OP_NEVER,
+		};
+
+		depth_stencil_state.depth_compare_operator = depth_function_rd_table[depth_function];
 	}
 
 	RD::RenderPrimitive primitive_rd_table[RS::PRIMITIVE_MAX] = {
@@ -278,6 +326,47 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		RD::RENDER_PRIMITIVE_TRIANGLES,
 		RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS,
 	};
+
+	depth_stencil_state.enable_stencil = stencil_enabled;
+	if (stencil_enabled) {
+		static const RD::CompareOperator stencil_compare_rd_table[STENCIL_COMPARE_MAX] = {
+			RD::COMPARE_OP_LESS,
+			RD::COMPARE_OP_EQUAL,
+			RD::COMPARE_OP_LESS_OR_EQUAL,
+			RD::COMPARE_OP_GREATER,
+			RD::COMPARE_OP_NOT_EQUAL,
+			RD::COMPARE_OP_GREATER_OR_EQUAL,
+			RD::COMPARE_OP_ALWAYS,
+		};
+
+		uint32_t stencil_mask = 255;
+
+		RD::PipelineDepthStencilState::StencilOperationState op;
+		op.fail = RD::STENCIL_OP_KEEP;
+		op.pass = RD::STENCIL_OP_KEEP;
+		op.depth_fail = RD::STENCIL_OP_KEEP;
+		op.compare = stencil_compare_rd_table[stencil_compare];
+		op.compare_mask = 0;
+		op.write_mask = 0;
+		op.reference = stencil_reference;
+
+		if (stencil_flags & STENCIL_FLAG_READ) {
+			op.compare_mask = stencil_mask;
+		}
+
+		if (stencil_flags & STENCIL_FLAG_WRITE) {
+			op.pass = RD::STENCIL_OP_REPLACE;
+			op.write_mask = stencil_mask;
+		}
+
+		if (stencil_flags & STENCIL_FLAG_WRITE_DEPTH_FAIL) {
+			op.depth_fail = RD::STENCIL_OP_REPLACE;
+			op.write_mask = stencil_mask;
+		}
+
+		depth_stencil_state.front_op = op;
+		depth_stencil_state.back_op = op;
+	}
 
 	RD::RenderPrimitive primitive_rd = uses_point_size ? RD::RENDER_PRIMITIVE_POINTS : primitive_rd_table[p_pipeline_key.primitive_type];
 

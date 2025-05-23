@@ -116,6 +116,7 @@ public:
 
 	static bool is_gles_over_gl() { return gles_over_gl; }
 	static void clear_depth(float p_depth);
+	static void clear_stencil(int32_t p_stencil);
 
 	static void make_current(bool p_gles_over_gl) {
 		gles_over_gl = p_gles_over_gl;

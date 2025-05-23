@@ -2184,7 +2184,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	scene_state.reset_gl_state();
 	scene_state.enable_gl_depth_test(true);
 	scene_state.enable_gl_depth_draw(true);
-	glDepthFunc(GL_GREATER);
+	scene_state.set_gl_depth_func(GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER);
 
 	glColorMask(0, 0, 0, 0);
 	glDrawBuffers(0, nullptr);
@@ -2503,12 +2503,15 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_depth_draw(true);
 		scene_state.enable_gl_blend(false);
-		glDepthFunc(GL_GEQUAL);
+		scene_state.set_gl_depth_func(GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER_OR_EQUAL);
 		scene_state.enable_gl_scissor_test(false);
+		scene_state.enable_gl_stencil_test(false);
+		scene_state.set_gl_stencil_write_mask(255);
 
 		glColorMask(0, 0, 0, 0);
 		RasterizerGLES3::clear_depth(0.0);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		RasterizerGLES3::clear_stencil(0);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		// Some desktop GL implementations fall apart when using Multiview with GL_NONE.
 		GLuint db = p_camera_data->view_count > 1 ? GL_COLOR_ATTACHMENT0 : GL_NONE;
 		glDrawBuffers(1, &db);
@@ -2541,16 +2544,19 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.enable_gl_scissor_test(false);
 	scene_state.enable_gl_depth_test(true);
 	scene_state.enable_gl_depth_draw(true);
-	glDepthFunc(GL_GEQUAL);
+	scene_state.set_gl_depth_func(GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER_OR_EQUAL);
 
 	{
 		GLuint db = GL_COLOR_ATTACHMENT0;
 		glDrawBuffers(1, &db);
 	}
 
+	scene_state.enable_gl_stencil_test(false);
+
 	if (!fb_cleared) {
 		RasterizerGLES3::clear_depth(0.0);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		RasterizerGLES3::clear_stencil(0);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
 	// Need to clear framebuffer unless:
@@ -2630,11 +2636,13 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	_render_list_template<PASS_MODE_COLOR>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
 	scene_state.enable_gl_depth_draw(false);
+	scene_state.enable_gl_stencil_test(false);
 
 	if (draw_sky || draw_sky_fog_only) {
 		RENDER_TIMESTAMP("Render Sky");
 
 		scene_state.enable_gl_depth_test(true);
+		scene_state.set_gl_depth_func(GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER_OR_EQUAL);
 		scene_state.enable_gl_blend(false);
 		scene_state.set_gl_cull_mode(RS::CULL_MODE_BACK);
 
@@ -2704,6 +2712,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	RenderListParameters render_list_params_alpha(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
 
 	_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(&render_list_params_alpha, &render_data, 0, render_list[RENDER_LIST_ALPHA].elements.size(), true);
+
+	scene_state.enable_gl_stencil_test(false);
 
 	if (!flip_y) {
 		// Restore the default winding order.
@@ -3019,6 +3029,8 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			scene_state.enable_gl_depth_test(shader->depth_test == GLES3::SceneShaderData::DEPTH_TEST_ENABLED);
 		}
 
+		scene_state.set_gl_depth_func(shader->depth_function);
+
 		if constexpr (p_pass_mode != PASS_MODE_SHADOW) {
 			if (shader->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE) {
 				scene_state.enable_gl_depth_draw((p_pass_mode == PASS_MODE_COLOR && !GLES3::Config::get_singleton()->use_depth_prepass) || p_pass_mode == PASS_MODE_DEPTH);
@@ -3042,6 +3054,47 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					// Don't render shadow passes when doing depth or shadow pass.
 					break;
 				}
+			}
+
+			// Stencil.
+			if (shader->stencil_enabled) {
+				static const GLenum stencil_compare_table[GLES3::SceneShaderData::STENCIL_COMPARE_MAX] = {
+					GL_LESS,
+					GL_EQUAL,
+					GL_LEQUAL,
+					GL_GREATER,
+					GL_NOTEQUAL,
+					GL_GEQUAL,
+					GL_ALWAYS,
+				};
+
+				GLenum stencil_compare = stencil_compare_table[shader->stencil_compare];
+				GLuint stencil_compare_mask = 0;
+				GLuint stencil_write_mask = 0;
+				GLenum stencil_op_dpfail = GL_KEEP;
+				GLenum stencil_op_dppass = GL_KEEP;
+
+				if (shader->stencil_flags & GLES3::SceneShaderData::STENCIL_FLAG_READ) {
+					stencil_compare_mask = 255;
+				}
+
+				if (shader->stencil_flags & GLES3::SceneShaderData::STENCIL_FLAG_WRITE) {
+					stencil_op_dppass = GL_REPLACE;
+					stencil_write_mask = 255;
+				}
+
+				if (shader->stencil_flags & GLES3::SceneShaderData::STENCIL_FLAG_WRITE_DEPTH_FAIL) {
+					stencil_op_dpfail = GL_REPLACE;
+					stencil_write_mask = 255;
+				}
+
+				scene_state.enable_gl_stencil_test(true);
+				scene_state.set_gl_stencil_func(stencil_compare, shader->stencil_reference, stencil_compare_mask);
+				scene_state.set_gl_stencil_write_mask(stencil_write_mask);
+				scene_state.set_gl_stencil_op(GL_KEEP, stencil_op_dpfail, stencil_op_dppass);
+			} else {
+				scene_state.enable_gl_stencil_test(false);
+				scene_state.set_gl_stencil_write_mask(255);
 			}
 
 			if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
@@ -3713,7 +3766,7 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 	scene_state.reset_gl_state();
 	scene_state.enable_gl_depth_test(true);
 	scene_state.enable_gl_depth_draw(true);
-	glDepthFunc(GL_GREATER);
+	scene_state.set_gl_depth_func(GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER);
 
 	glDrawBuffers(0, nullptr);
 
@@ -3759,7 +3812,7 @@ void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *
 		scene_state.reset_gl_state();
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_depth_draw(true);
-		glDepthFunc(GL_GREATER);
+		scene_state.set_gl_depth_func(GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER);
 
 		TightLocalVector<GLenum> draw_buffers;
 		draw_buffers.push_back(GL_COLOR_ATTACHMENT0);
@@ -3852,7 +3905,7 @@ void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES
 			glViewport(0, 0, shadow_atlas_size, shadow_atlas_size);
 			glActiveTexture(GL_TEXTURE0);
 			scene_state.enable_gl_depth_draw(true);
-			glDepthFunc(GL_ALWAYS);
+			scene_state.set_gl_depth_func(GLES3::SceneShaderData::DEPTH_FUNCTION_ALWAYS);
 			scene_state.set_gl_cull_mode(RS::CULL_MODE_DISABLED);
 
 			// Loop through quadrants and copy shadows over.

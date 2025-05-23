@@ -153,6 +153,18 @@ public:
 			DEPTH_TEST_ENABLED
 		};
 
+		enum DepthFunction {
+			DEPTH_FUNCTION_GREATER_OR_EQUAL,
+			DEPTH_FUNCTION_LESS_OR_EQUAL,
+			DEPTH_FUNCTION_LESS,
+			DEPTH_FUNCTION_EQUAL,
+			DEPTH_FUNCTION_GREATER,
+			DEPTH_FUNCTION_NOT_EQUAL,
+			DEPTH_FUNCTION_ALWAYS,
+			DEPTH_FUNCTION_NEVER,
+			DEPTH_FUNCTION_MAX
+		};
+
 		enum CullVariant {
 			CULL_VARIANT_NORMAL,
 			CULL_VARIANT_REVERSED,
@@ -165,6 +177,23 @@ public:
 			ALPHA_ANTIALIASING_OFF,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
+		};
+
+		enum StencilFlags {
+			STENCIL_FLAG_READ = 1,
+			STENCIL_FLAG_WRITE = 2,
+			STENCIL_FLAG_WRITE_DEPTH_FAIL = 4,
+		};
+
+		enum StencilCompare {
+			STENCIL_COMPARE_LESS,
+			STENCIL_COMPARE_EQUAL,
+			STENCIL_COMPARE_LESS_OR_EQUAL,
+			STENCIL_COMPARE_GREATER,
+			STENCIL_COMPARE_NOT_EQUAL,
+			STENCIL_COMPARE_GREATER_OR_EQUAL,
+			STENCIL_COMPARE_ALWAYS,
+			STENCIL_COMPARE_MAX // Not an actual operator, just the amount of operators.
 		};
 
 		struct PipelineKey {
@@ -210,6 +239,7 @@ public:
 		String code;
 
 		DepthDraw depth_draw = DEPTH_DRAW_OPAQUE;
+		DepthFunction depth_function = DEPTH_FUNCTION_GREATER_OR_EQUAL;
 		DepthTest depth_test = DEPTH_TEST_ENABLED;
 
 		int blend_mode = BLEND_MODE_MIX;
@@ -247,6 +277,11 @@ public:
 		bool uses_screen_texture_mipmaps = false;
 		bool uses_z_clip_scale = false;
 		RS::CullMode cull_mode = RS::CULL_MODE_DISABLED;
+
+		bool stencil_enabled = false;
+		uint32_t stencil_flags = 0;
+		StencilCompare stencil_compare = STENCIL_COMPARE_LESS;
+		uint32_t stencil_reference = 0;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
