@@ -158,6 +158,9 @@ public:
 	void set_simulation_precision(int p_simulation_precision);
 	int get_simulation_precision();
 
+	void set_point_radius(real_t p_radius);
+	real_t get_point_radius();
+
 	void set_total_mass(real_t p_total_mass);
 	real_t get_total_mass();
 
