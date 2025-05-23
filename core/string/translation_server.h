@@ -64,7 +64,7 @@ class TranslationServer : public Object {
 		String default_country;
 		HashSet<String> supported_countries;
 	};
-	static Vector<LocaleScriptInfo> locale_script_info;
+	static inline Vector<LocaleScriptInfo> locale_script_info;
 
 	struct Locale {
 		String language;
@@ -84,12 +84,12 @@ class TranslationServer : public Object {
 		Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults);
 	};
 
-	static HashMap<String, String> language_map;
-	static HashMap<String, String> script_map;
-	static HashMap<String, String> locale_rename_map;
-	static HashMap<String, String> country_name_map;
-	static HashMap<String, String> country_rename_map;
-	static HashMap<String, String> variant_map;
+	static inline HashMap<String, String> language_map;
+	static inline HashMap<String, String> script_map;
+	static inline HashMap<String, String> locale_rename_map;
+	static inline HashMap<String, String> country_name_map;
+	static inline HashMap<String, String> country_rename_map;
+	static inline HashMap<String, String> variant_map;
 
 	void init_locale_info();
 
