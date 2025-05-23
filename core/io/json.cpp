@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/object/script_language.h"
+#include "core/string/char_buffer.h"
 #include "core/variant/container_type_validate.h"
 
 const char *JSON::tk_name[TK_MAX] = {
@@ -217,7 +218,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 			}
 			case '"': {
 				index++;
-				String str;
+				CharBuffer<char32_t> str;
 				while (true) {
 					if (p_str[index] == 0) {
 						r_err_str = "Unterminated string";
@@ -352,7 +353,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 				}
 
 				r_token.type = TK_STRING;
-				r_token.value = str;
+				r_token.value = String(str.get_terminated_buffer());
 				return OK;
 
 			} break;
@@ -372,7 +373,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					return OK;
 
 				} else if (is_ascii_alphabet_char(p_str[index])) {
-					String id;
+					CharBuffer<char32_t> id;
 
 					while (is_ascii_alphabet_char(p_str[index])) {
 						id += p_str[index];
@@ -380,7 +381,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					}
 
 					r_token.type = TK_IDENTIFIER;
-					r_token.value = id;
+					r_token.value = String(id.get_terminated_buffer());
 					return OK;
 				} else {
 					r_err_str = "Unexpected character";
