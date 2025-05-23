@@ -478,19 +478,24 @@ class Godot(private val context: Context) {
 			editText.setBackgroundColor(Color.TRANSPARENT)
 			// ...add to FrameLayout
 			containerLayout?.addView(editText)
+
+			// Check whether the render view should be made transparent
+			val shouldBeTransparent = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed")) &&
+				java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/size/transparent")) &&
+				java.lang.Boolean.parseBoolean(GodotLib.getGlobal("rendering/viewport/transparent_background"))
 			renderView = if (usesVulkan()) {
 				if (meetsVulkanRequirements(activity.packageManager)) {
-					GodotVulkanRenderView(host, this, godotInputHandler)
+					GodotVulkanRenderView(host, this, godotInputHandler, shouldBeTransparent)
 				} else if (canFallbackToOpenGL()) {
 					// Fallback to OpenGl.
-					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
 				} else {
 					throw IllegalStateException(activity.getString(R.string.error_missing_vulkan_requirements_message))
 				}
 
 			} else {
 				// Fallback to OpenGl.
-				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
 			}
 
 			if (host == primaryHost) {
@@ -562,6 +567,8 @@ class Godot(private val context: Context) {
 					if (pluginView != null) {
 						if (plugin.shouldBeOnTop()) {
 							containerLayout?.addView(pluginView)
+							Log.w(TAG, "Disabling Z order on top because of plugin ${plugin.pluginName}.")
+							renderView?.view?.setZOrderOnTop(false)
 						} else {
 							containerLayout?.addView(pluginView, 0)
 						}

@@ -1037,9 +1037,14 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	store_string_at_path(manifest_path, manifest_text);
 }
 
+bool EditorExportPlatformAndroid::_should_be_transparent(const Ref<EditorExportPreset> &p_preset) const {
+	return (bool)get_project_setting(p_preset, "display/window/per_pixel_transparency/allowed") &&
+			(bool)get_project_setting(p_preset, "display/window/size/transparent") &&
+			(bool)get_project_setting(p_preset, "rendering/viewport/transparent_background");
+}
+
 void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset) {
 	const String themes_xml_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join("res/values/themes.xml");
-	bool enable_swipe_to_dismiss = p_preset->get("gesture/swipe_to_dismiss");
 
 	if (!FileAccess::exists(themes_xml_path)) {
 		print_error("res/values/themes.xml does not exist.");
@@ -1051,23 +1056,39 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 	PackedStringArray lines = file->get_as_text().split("\n");
 	file->close();
 
+	// Update the themes.xml is transparency is enabled.
+	bool should_be_transparent = _should_be_transparent(p_preset);
+
 	// Check if the themes.xml already contains <item name="android:windowSwipeToDismiss"> element.
 	// If found, update its value based on `enable_swipe_to_dismiss`.
-	bool found = false;
+	bool enable_swipe_to_dismiss = p_preset->get("gesture/swipe_to_dismiss");
+	bool found_enable_swipe_to_dismiss = false;
+
 	bool modified = false;
 	for (int i = 0; i < lines.size(); i++) {
 		String line = lines[i];
-		if (line.contains("<item name") && line.contains("\"android:windowSwipeToDismiss\">")) {
-			lines.set(i, vformat("		<item name=\"android:windowSwipeToDismiss\">%s</item>", bool_to_string(enable_swipe_to_dismiss)));
-			found = true;
-			modified = true;
-			break;
+		if (line.contains("<item name")) {
+			if (line.contains("\"android:windowSwipeToDismiss\">")) {
+				lines.set(i, vformat("		<item name=\"android:windowSwipeToDismiss\">%s</item>", bool_to_string(enable_swipe_to_dismiss)));
+				found_enable_swipe_to_dismiss = true;
+				modified = true;
+			} else if (line.contains("\"android:windowIsTranslucent\">")) {
+				lines.set(i, vformat("		<item name=\"android:windowIsTranslucent\">%s</item>", bool_to_string(should_be_transparent)));
+				modified = true;
+			} else if (line.contains("\"android:windowBackground\"")) {
+				if (should_be_transparent) {
+					lines.set(i, "		<item name=\"android:windowBackground\">@android:color/transparent</item>");
+				} else {
+					lines.set(i, "		<!--<item name=\"android:windowBackground\">@android:color/transparent</item>-->");
+				}
+				modified = true;
+			}
 		}
 	}
 
 	// If <item name="android:windowSwipeToDismiss"> is not found and `enable_swipe_to_dismiss` is false:
 	// Add a new <item> element before the closing </style> tag.
-	if (!found && !enable_swipe_to_dismiss) {
+	if (!found_enable_swipe_to_dismiss && !enable_swipe_to_dismiss) {
 		for (int i = 0; i < lines.size(); i++) {
 			if (lines[i].contains("</style>")) {
 				lines.insert(i, "		<item name=\"android:windowSwipeToDismiss\">false</item>");
@@ -2882,7 +2903,8 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		valid = false;
 	}
 
-	if (p_preset->get("gradle_build/use_gradle_build")) {
+	bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+	if (gradle_build_enabled) {
 		String build_version_path = ExportTemplateManager::get_android_build_directory(p_preset).get_base_dir().path_join(".build_version");
 		Ref<FileAccess> f = FileAccess::open(build_version_path, FileAccess::READ);
 		if (f.is_valid()) {
@@ -2892,6 +2914,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 				err += vformat(TTR(MISMATCHED_VERSIONS_MESSAGE), installed_version, current_version);
 				err += "\n";
 			}
+		}
+	} else {
+		if (_should_be_transparent(p_preset)) {
+			// Warning only, so don't override `valid`.
+			err += vformat(TTR("\"Use Gradle Build\" is required for transparent background on Android"));
+			err += "\n";
 		}
 	}
 
