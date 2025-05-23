@@ -20,14 +20,14 @@
 				var images = []
 				const LAYERS = 6
 				for i in LAYERS:
-				    var image = Image.create_empty(128, 128, false, Image.FORMAT_RGB8)
-				    if i % 3 == 0:
-				        image.fill(Color.RED)
-				    elif i % 3 == 1:
-				        image.fill(Color.GREEN)
-				    else:
-				        image.fill(Color.BLUE)
-				    images.push_back(image)
+					var image = Image.create_empty(128, 128, false, Image.FORMAT_RGB8)
+					if i % 3 == 0:
+						image.fill(Color.RED)
+					elif i % 3 == 1:
+						image.fill(Color.GREEN)
+					else:
+						image.fill(Color.BLUE)
+					images.push_back(image)
 
 				# Create and save a 2D texture array. The array of images must have at least 1 Image.
 				var texture_2d_array = Texture2DArray.new()
