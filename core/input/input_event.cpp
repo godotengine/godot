@@ -1838,6 +1838,18 @@ int InputEventMIDI::get_controller_value() const {
 	return controller_value;
 }
 
+void InputEventMIDI::open_inputs() {
+	OS::get_singleton()->open_midi_inputs();
+}
+
+void InputEventMIDI::close_inputs() {
+	OS::get_singleton()->close_midi_inputs();
+}
+
+PackedStringArray InputEventMIDI::get_connected_inputs() {
+	return OS::get_singleton()->get_connected_midi_inputs();
+}
+
 String InputEventMIDI::as_text() const {
 	return vformat(RTR("MIDI Input on Channel=%s Message=%s"), itos(channel), itos((int64_t)message));
 }
@@ -1883,6 +1895,10 @@ void InputEventMIDI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_controller_number"), &InputEventMIDI::get_controller_number);
 	ClassDB::bind_method(D_METHOD("set_controller_value", "controller_value"), &InputEventMIDI::set_controller_value);
 	ClassDB::bind_method(D_METHOD("get_controller_value"), &InputEventMIDI::get_controller_value);
+
+	ClassDB::bind_static_method("InputEventMIDI", D_METHOD("open_inputs"), &InputEventMIDI::open_inputs);
+	ClassDB::bind_static_method("InputEventMIDI", D_METHOD("close_inputs"), &InputEventMIDI::close_inputs);
+	ClassDB::bind_static_method("InputEventMIDI", D_METHOD("get_connected_inputs"), &InputEventMIDI::get_connected_inputs);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel"), "set_channel", "get_channel");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "message"), "set_message", "get_message");
