@@ -164,11 +164,14 @@ protected:
 	virtual bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	virtual void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	static void _bind_methods();
+
 public:
 	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
 	void set_preview_value(bool p_preview_value);
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
+	virtual void unfold_all_children(bool p_unfold);
 	EditorPropertyArray();
 };
 
@@ -260,11 +263,14 @@ class EditorPropertyDictionary : public EditorProperty {
 protected:
 	void _notification(int p_what);
 
+	static void _bind_methods();
+
 public:
 	void setup(PropertyHint p_hint, const String &p_hint_string = "");
 	void set_preview_value(bool p_preview_value);
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
+	virtual void unfold_all_children(bool p_unfold);
 	EditorPropertyDictionary();
 };
 

@@ -737,6 +737,10 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 	}
 }
 
+void EditorPropertyArray::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("child_section_unfold", PropertyInfo(Variant::BOOL, "unfold")));
+}
+
 Node *EditorPropertyArray::get_base_node() {
 	Node *base_node = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
 
@@ -960,6 +964,10 @@ void EditorPropertyArray::_reorder_button_up() {
 
 bool EditorPropertyArray::is_colored(ColorationMode p_mode) {
 	return p_mode == COLORATION_CONTAINER_RESOURCE;
+}
+
+void EditorPropertyArray::unfold_all_children(bool p_unfold) {
+	emit_signal(SNAME("child_section_unfold"), p_unfold);
 }
 
 EditorPropertyArray::EditorPropertyArray() {
@@ -1486,6 +1494,10 @@ void EditorPropertyDictionary::_notification(int p_what) {
 	}
 }
 
+void EditorPropertyDictionary::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("child_section_unfold", PropertyInfo(Variant::BOOL, "unfold")));
+}
+
 void EditorPropertyDictionary::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
@@ -1514,6 +1526,10 @@ void EditorPropertyDictionary::_page_changed(int p_page) {
 
 bool EditorPropertyDictionary::is_colored(ColorationMode p_mode) {
 	return p_mode == COLORATION_CONTAINER_RESOURCE;
+}
+
+void EditorPropertyDictionary::unfold_all_children(bool p_unfold) {
+	emit_signal(SNAME("child_section_unfold"), p_unfold);
 }
 
 EditorPropertyDictionary::EditorPropertyDictionary() {

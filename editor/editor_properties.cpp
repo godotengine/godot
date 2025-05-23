@@ -3386,6 +3386,17 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		resource_picker = memnew(EditorResourcePicker);
 	}
 
+
+	if (EditorPropertyArray *parent_array = Object::cast_to<EditorPropertyArray>(p_object)) {
+		parent_editor_property_container = parent_array;
+	} else if (EditorPropertyDictionary *parent_dic = Object::cast_to<EditorPropertyDictionary>(p_object)) {
+		parent_editor_property_container = parent_dic;
+	}
+
+	if (parent_editor_property_container && !parent_editor_property_container->is_connected("child_section_unfold", callable_mp(this, &EditorPropertyResource::_set_unfold))) {
+		parent_editor_property_container->connect("child_section_unfold", callable_mp(this, &EditorPropertyResource::_set_unfold));
+	}
+
 	resource_picker->set_base_type(p_base_type);
 	resource_picker->set_resource_owner(p_object);
 	resource_picker->set_editable(true);
@@ -3542,6 +3553,11 @@ void EditorPropertyResource::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void EditorPropertyResource::_set_unfold(bool p_unfold) {
+	get_edited_object()->editor_set_section_unfold(get_edited_property(), p_unfold);
+	update_property();
 }
 
 void EditorPropertyResource::_bind_methods() {

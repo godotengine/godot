@@ -43,6 +43,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/editor_properties_array_dict.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
