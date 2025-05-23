@@ -592,20 +592,21 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		Callable callable(cto, snames[c.method]);
 		if (c.unbinds > 0) {
 			callable = callable.unbind(c.unbinds);
-		} else if (!c.binds.is_empty()) {
-			Vector<Variant> binds;
-			if (c.binds.size()) {
-				binds.resize(c.binds.size());
+		} else {
+			Array binds;
+			if (c.flags & CONNECT_APPEND_SOURCE_OBJECT) {
+				binds.push_back(cfrom);
+			}
+
+			if (!c.binds.is_empty()) {
 				for (int j = 0; j < c.binds.size(); j++) {
-					binds.write[j] = props[c.binds[j]];
+					binds.push_back(props[c.binds[j]]);
 				}
 			}
 
-			const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * binds.size());
-			for (int j = 0; j < binds.size(); j++) {
-				argptrs[j] = &binds[j];
+			if (!binds.is_empty()) {
+				callable = callable.bindv(binds);
 			}
-			callable = callable.bindp(argptrs, binds.size());
 		}
 
 		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags | (p_edit_state == GEN_EDIT_STATE_MAIN ? 0 : CONNECT_INHERITED));
