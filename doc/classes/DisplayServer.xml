@@ -885,6 +885,13 @@
 				Returns the index of the screen that overlaps the most with the given rectangle. Returns [code]-1[/code] if the rectangle doesn't overlap with any screen or has no area.
 			</description>
 		</method>
+		<method name="get_session_path">
+			<return type="String" />
+			<description>
+				Return the path to the file where the current window session is stored.
+				[b]Note:[/b] This path may not be globalised.
+			</description>
+		</method>
 		<method name="get_swap_cancel_ok">
 			<return type="bool" />
 			<description>
@@ -1852,6 +1859,24 @@
 				[b]Note:[/b] Requires support for [constant FEATURE_NATIVE_ICON].
 			</description>
 		</method>
+		<method name="set_session">
+			<return type="void" />
+			<param index="0" name="session" type="String" />
+			<description>
+				Set the name of the file the DisplayServer should use to store the saved properties of windows.
+				Path to the file will be equal to "user://{session}.cfg".
+				[b]Note:[/b] This may require a restart of the main window.
+			</description>
+		</method>
+		<method name="set_session_path">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Set the path of the file the DisplayServer should use to store the saved properties of windows.
+				See also [method set_session]
+				[b]Note:[/b] This may require a restart of the main window.
+			</description>
+		</method>
 		<method name="set_system_theme_change_callback">
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
@@ -2415,6 +2440,14 @@
 			<description>
 				Sets the [param callback] that will be called when the window specified by [param window_id] is moved or resized.
 				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
+			</description>
+		</method>
+		<method name="window_set_session_id">
+			<return type="void" />
+			<param index="0" name="session_id" type="String" />
+			<description>
+				Set the key this window will use when restoring its properties after opening and closing this window.
+				This key must be a string that is [b]unique[/b] across the project and [b]consistent[/b] across restarts.
 			</description>
 		</method>
 		<method name="window_set_size">
