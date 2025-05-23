@@ -47,6 +47,8 @@ class OS_Web : public OS_Unix {
 
 	MIDIDriverWebMidi midi_driver;
 
+	HashMap<String, bool> feature_support_cache;
+
 	bool idb_is_syncing = false;
 	bool idb_available = false;
 	bool idb_needs_sync = false;
