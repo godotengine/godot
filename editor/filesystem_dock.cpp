@@ -3934,10 +3934,6 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	return button;
 }
 
-bool FileSystemDock::_can_dock_horizontal() const {
-	return true;
-}
-
 void FileSystemDock::_set_dock_horizontal(bool p_enable) {
 	if (button_dock_placement->is_visible() == p_enable) {
 		return;
@@ -3981,7 +3977,6 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_resource_tooltip_plugin", "plugin"), &FileSystemDock::remove_resource_tooltip_plugin);
 
 	ClassDB::bind_method(D_METHOD("_set_dock_horizontal", "enable"), &FileSystemDock::_set_dock_horizontal);
-	ClassDB::bind_method(D_METHOD("_can_dock_horizontal"), &FileSystemDock::_can_dock_horizontal);
 
 	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &FileSystemDock::_save_layout_to_config);
 	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &FileSystemDock::_load_layout_from_config);

@@ -47,6 +47,7 @@
 #include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/editor_context_menu_plugin.h"
+#include "editor_dock_manager.h"
 #include "main/main.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -7588,7 +7589,8 @@ EditorNode::EditorNode() {
 	left_l_vsplit->set_vertical(true);
 	left_l_hsplit->add_child(left_l_vsplit);
 
-	TabContainer *dock_slot[EditorDockManager::DOCK_SLOT_MAX];
+	// Initialize all the docks but the bottom slot.
+	TabContainer *dock_slot[EditorDockManager::DOCK_SLOT_BOTTOM];
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UL] = memnew(TabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UL]->set_name("DockSlotLeftUL");
 	left_l_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UL]);
@@ -7664,7 +7666,8 @@ EditorNode::EditorNode() {
 	editor_dock_manager->add_hsplit(main_hsplit);
 	editor_dock_manager->add_hsplit(right_hsplit);
 
-	for (int i = 0; i < EditorDockManager::DOCK_SLOT_MAX; i++) {
+	// Initialize the bottom dock later.
+	for (int i = 0; i < EditorDockManager::DOCK_SLOT_BOTTOM; i++) {
 		editor_dock_manager->register_dock_slot((EditorDockManager::DockSlot)i, dock_slot[i]);
 	}
 
@@ -8146,14 +8149,15 @@ EditorNode::EditorNode() {
 	// Bottom panels.
 
 	bottom_panel = memnew(EditorBottomPanel);
+	bottom_panel->set_theme_type_variation("BottomPanel");
+	editor_dock_manager->register_dock_slot(EditorDockManager::DOCK_SLOT_BOTTOM, bottom_panel);
+
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
+	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 
 	log = memnew(EditorLog);
-	Button *output_button = bottom_panel->add_item(TTR("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
-	log->set_tool_button(output_button);
-
-	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
+	bottom_panel->add_item(TTR("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
 
 	native_shader_source_visualizer = memnew(EditorNativeShaderSourceVisualizer);
 	gui_base->add_child(native_shader_source_visualizer);
