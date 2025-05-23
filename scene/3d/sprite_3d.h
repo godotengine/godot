@@ -33,6 +33,26 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/sprite_frames.h"
 
+struct SpriteMeshKey {
+	Vector2 vertices[4];
+	Vector2 uvs[4];
+	uint32_t v_color = 0;
+	uint32_t v_normal = 0;
+	bool alpha_cut_disabled = false;
+	bool operator==(const SpriteMeshKey &other) const {
+		return memcmp(this, &other, sizeof(SpriteMeshKey)) == 0;
+	}
+	bool operator!=(const SpriteMeshKey &other) const {
+		return memcmp(this, &other, sizeof(SpriteMeshKey)) != 0;
+	}
+};
+
+struct SpriteMeshHasher {
+	static _FORCE_INLINE_ uint32_t hash(const SpriteMeshKey &p_mesh_key) {
+		return hash_murmur3_buffer(&p_mesh_key, sizeof(SpriteMeshKey));
+	}
+};
+
 class SpriteBase3D : public GeometryInstance3D {
 	GDCLASS(SpriteBase3D, GeometryInstance3D);
 
@@ -58,6 +78,12 @@ public:
 	};
 
 private:
+	Vector<SpriteBase3D *> users;
+	SpriteMeshKey last_sprite_mesh_key;
+	SpriteBase3D *using_sprite = nullptr;
+	int using_sprite_user_index = -1; // Used to invalidate this sprite's entry in another sprite's users vector.
+	bool sharing_own_mesh = false;
+
 	bool color_dirty = true;
 	Color color_accum;
 
@@ -96,6 +122,7 @@ private:
 	void _im_update();
 
 	void _propagate_color_changed();
+	void _stop_sharing_sprite();
 
 protected:
 	Color _get_color_accum();
@@ -104,7 +131,7 @@ protected:
 	virtual void _draw() = 0;
 	void draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect);
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
-	_FORCE_INLINE_ RID &get_mesh() { return mesh; }
+	_FORCE_INLINE_ RID &get_mesh() { return using_sprite ? using_sprite->mesh : mesh; }
 	_FORCE_INLINE_ RID &get_material() { return material; }
 
 	uint32_t mesh_surface_offsets[RS::ARRAY_MAX];
