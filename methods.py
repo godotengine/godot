@@ -1666,3 +1666,7 @@ def get_default_include_paths(env):
         print_warning("Failed to find the include paths in the compiler output.")
         return []
     return [x.strip() for x in match[1].strip().splitlines()]
+
+
+def sorted_unique_list(list_to_sort):
+    return sorted(list(set(list_to_sort)))
