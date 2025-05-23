@@ -754,8 +754,6 @@ private:
 	Rect2 _get_content_rect() const; // Considering the background stylebox and scrollbars.
 	Rect2 _get_item_focus_rect(const TreeItem *p_item) const;
 
-	void _check_item_accessibility(TreeItem *p_item, PackedStringArray &r_warnings, int &r_row) const;
-
 	void _accessibility_clean_info(TreeItem *p_item);
 	void _accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_row, int p_level);
 
@@ -784,7 +782,10 @@ protected:
 	void _accessibility_action_button_press(const Variant &p_data, TreeItem *p_item, int p_col, int p_btn);
 
 public:
-	PackedStringArray get_accessibility_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _check_item_accessibility(TreeItem *p_item, List<ConfigurationInfo> *p_infos, int &r_row) const;
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 	virtual RID get_focused_accessibility_element() const override;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

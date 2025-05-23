@@ -103,7 +103,7 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	PackedStringArray get_configuration_warnings() const override;
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
 #endif
 
 	PopupPanel();

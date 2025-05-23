@@ -32,6 +32,7 @@
 
 #include "core/disabled_classes.gen.h"
 #include "core/extension/gdextension_interface.h"
+#include "core/object/configuration_info.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
@@ -334,6 +335,8 @@ struct ObjectGDExtension {
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
 	GDExtensionClassValidateProperty validate_property;
+	GDExtensionClassGetConfigurationInfo get_configuration_info;
+	GDExtensionClassFreeConfigurationInfo free_configuration_info;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
 	GDExtensionClassFreePropertyList free_property_list;
@@ -551,6 +554,15 @@ protected:                                                                      
 		}                                                                                                                                   \
 		m_inherits::_notification_backwardv(p_notification);                                                                                \
 	}                                                                                                                                       \
+	_FORCE_INLINE_ void (Object::*_get_get_configuration_info() const)(List<ConfigurationInfo> * p_infos) const {                           \
+		return (void (Object::*)(List<ConfigurationInfo> *) const) & m_class::_get_configuration_info;                                      \
+	}                                                                                                                                       \
+	virtual void _get_configuration_infov(List<ConfigurationInfo> *p_infos) const override {                                                \
+		m_inherits::_get_configuration_infov(p_infos);                                                                                      \
+		if (m_class::_get_get_configuration_info() != m_inherits::_get_get_configuration_info()) {                                          \
+			_get_configuration_info(p_infos);                                                                                               \
+		}                                                                                                                                   \
+	}                                                                                                                                       \
                                                                                                                                             \
 private:
 
@@ -738,6 +750,14 @@ protected:
 		return &Object::_notification;
 	}
 
+	virtual void _get_configuration_infov(List<ConfigurationInfo> *p_infos) const {}
+
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const {}
+
+	_FORCE_INLINE_ void (Object::*_get_get_configuration_info() const)(List<ConfigurationInfo> *p_infos) const {
+		return &Object::_get_configuration_info;
+	}
+
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
@@ -849,6 +869,8 @@ public:
 	void validate_property(PropertyInfo &p_property) const;
 	bool property_can_revert(const StringName &p_name) const;
 	Variant property_get_revert(const StringName &p_name) const;
+	void get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+	void update_configuration_info();
 
 	bool has_method(const StringName &p_method) const;
 	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;

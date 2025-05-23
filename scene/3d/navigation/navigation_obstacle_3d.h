@@ -124,7 +124,9 @@ public:
 	void set_carve_navigation_mesh(bool p_enabled);
 	bool get_carve_navigation_mesh() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;

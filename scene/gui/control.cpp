@@ -237,37 +237,30 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 }
 #endif // TOOLS_ENABLED
 
-PackedStringArray Control::get_configuration_warnings() const {
-	ERR_READ_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray warnings = CanvasItem::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void Control::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
+	ERR_READ_THREAD_GUARD;
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
-		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
+		CONFIG_WARNING_P("control_tooltip_mouse_filter_ignore",
+				RTR("The Tooltip Text won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."),
+				"tooltip_text");
 	}
-
-	return warnings;
-}
-
-PackedStringArray Control::get_accessibility_configuration_warnings() const {
-	ERR_READ_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
 
 	String ac_name = get_accessibility_name().strip_edges();
 	if (ac_name.is_empty()) {
-		warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
+		ACCESSIBILITY_WARNING_P("control_empty_accessibility_name", RTR("Accessibility Name must not be empty, or contain only spaces."), "accessibility_name");
 	}
 	if (ac_name.contains(get_class_name())) {
-		warnings.push_back(RTR("Accessibility Name must not include Node class name."));
+		ACCESSIBILITY_WARNING_P("control_accessibility_name_contains_node_class", RTR("Accessibility Name must not include Node class name."), "accessibility_name");
 	}
 	for (int i = 0; i < ac_name.length(); i++) {
 		if (is_control(ac_name[i])) {
-			warnings.push_back(RTR("Accessibility Name must not include control character."));
+			ACCESSIBILITY_WARNING_P("control_accessibility_name_contains_control_character", RTR("Accessibility Name must not include control character."), "accessibility_name");
 			break;
 		}
 	}
-
-	return warnings;
 }
+#endif
 
 bool Control::is_text_field() const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -1699,7 +1692,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 
 	data.custom_minimum_size = p_custom;
 	update_minimum_size();
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 Size2 Control::get_custom_minimum_size() const {
@@ -1894,7 +1887,7 @@ void Control::set_mouse_filter(MouseFilter p_filter) {
 
 	data.mouse_filter = p_filter;
 	notify_property_list_changed();
-	update_configuration_warnings();
+	update_configuration_info();
 
 	if (get_viewport()) {
 		get_viewport()->_gui_update_mouse_over();
@@ -3527,7 +3520,7 @@ Node::AutoTranslateMode Control::get_tooltip_auto_translate_mode() const {
 void Control::set_tooltip_text(const String &p_hint) {
 	ERR_MAIN_THREAD_GUARD;
 	data.tooltip = p_hint;
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 String Control::get_tooltip_text() const {

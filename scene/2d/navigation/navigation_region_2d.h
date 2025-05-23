@@ -108,7 +108,9 @@ public:
 	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navigation_polygon);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	void bake_navigation_polygon(bool p_on_thread);
 	void _bake_finished();

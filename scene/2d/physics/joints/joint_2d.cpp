@@ -49,7 +49,7 @@ void Joint2D::_disconnect_signals() {
 void Joint2D::_body_exit_tree() {
 	_disconnect_signals();
 	_update_joint(true);
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 void Joint2D::_update_joint(bool p_only_free) {
@@ -63,7 +63,7 @@ void Joint2D::_update_joint(bool p_only_free) {
 
 	if (p_only_free || !is_inside_tree()) {
 		PhysicsServer2D::get_singleton()->joint_clear(joint);
-		warning = String();
+		config_info = ConfigurationInfo();
 		return;
 	}
 
@@ -76,21 +76,21 @@ void Joint2D::_update_joint(bool p_only_free) {
 	bool valid = false;
 
 	if (node_a && !body_a && node_b && !body_b) {
-		warning = RTR("Node A and Node B must be PhysicsBody2Ds");
+		config_info = ConfigurationInfo("joint_invalid_physics_bodies", RTR("Node A and Node B must be PhysicsBody2Ds"));
 	} else if (node_a && !body_a) {
-		warning = RTR("Node A must be a PhysicsBody2D");
+		config_info = ConfigurationInfo("joint_invalid_physics_bodies", RTR("Node A must be a PhysicsBody2D"));
 	} else if (node_b && !body_b) {
-		warning = RTR("Node B must be a PhysicsBody2D");
+		config_info = ConfigurationInfo("joint_invalid_physics_bodies", RTR("Node B must be a PhysicsBody2D"));
 	} else if (!body_a || !body_b) {
-		warning = RTR("Joint is not connected to two PhysicsBody2Ds");
+		config_info = ConfigurationInfo("joint_invalid_physics_bodies", RTR("Joint is not connected to two PhysicsBody2Ds"));
 	} else if (body_a == body_b) {
-		warning = RTR("Node A and Node B must be different PhysicsBody2Ds");
+		config_info = ConfigurationInfo("joint_equal_physics_bodies", RTR("Node A and Node B must be different PhysicsBody2Ds"));
 	} else {
-		warning = String();
+		config_info = ConfigurationInfo();
 		valid = true;
 	}
 
-	update_configuration_warnings();
+	update_configuration_info();
 
 	if (!valid) {
 		PhysicsServer2D::get_singleton()->joint_clear(joint);
@@ -138,7 +138,7 @@ void Joint2D::set_node_a(const NodePath &p_node_a) {
 	a = p_node_a;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// When in editor, the setter may be called as a result of node rename.
-		// It happens before the node actually changes its name, which triggers false warning.
+		// It happens before the node actually changes its name, which triggers false config_info.
 		callable_mp(this, &Joint2D::_update_joint).call_deferred(false);
 	} else {
 		_update_joint();
@@ -215,15 +215,13 @@ bool Joint2D::get_exclude_nodes_from_collision() const {
 	return exclude_from_collision;
 }
 
-PackedStringArray Joint2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node2D::get_configuration_warnings();
-
-	if (!warning.is_empty()) {
-		warnings.push_back(warning);
+#ifdef TOOLS_ENABLED
+void Joint2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
+	if (!(config_info == ConfigurationInfo())) {
+		p_infos->push_back(config_info);
 	}
-
-	return warnings;
 }
+#endif
 
 void Joint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint2D::set_node_a);

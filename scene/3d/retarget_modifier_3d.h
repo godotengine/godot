@@ -99,7 +99,9 @@ protected:
 	virtual void _process_modification(double p_delta) override;
 
 public:
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	void set_use_global_pose(bool p_use_global_pose);
 	bool is_using_global_pose() const;

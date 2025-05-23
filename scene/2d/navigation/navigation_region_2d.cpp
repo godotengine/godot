@@ -277,7 +277,7 @@ void NavigationRegion2D::_navigation_polygon_changed() {
 
 	emit_signal(SNAME("navigation_polygon_changed"));
 
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 #ifdef DEBUG_ENABLED
@@ -296,17 +296,17 @@ void NavigationRegion2D::_navigation_debug_changed() {
 }
 #endif // DEBUG_ENABLED
 
-PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node2D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void NavigationRegion2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (navigation_polygon.is_null()) {
-			warnings.push_back(RTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon."));
+			CONFIG_WARNING_P("missing_resource",
+					RTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon."),
+					"navigation_polygon");
 		}
 	}
-
-	return warnings;
 }
+#endif
 
 void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationRegion2D::get_rid);

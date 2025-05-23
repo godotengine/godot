@@ -115,4 +115,8 @@ public:
 	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 
 	Transform2D get_transform() const override;
+
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 };

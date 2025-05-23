@@ -64,7 +64,9 @@ public:
 	const StringName size_flags_changed = "size_flags_changed";
 	const StringName minimum_size_changed = "minimum_size_changed";
 	const StringName sleeping_state_changed = "sleeping_state_changed";
+#ifndef DISABLE_DEPRECATED
 	const StringName node_configuration_warning_changed = "node_configuration_warning_changed";
+#endif
 	const StringName update = "update";
 	const StringName updated = "updated";
 

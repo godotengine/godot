@@ -58,6 +58,8 @@ public:
 
 	void set_base_offset_and_scale(const Point2 &p_offset, real_t p_scale);
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 	ParallaxLayer();
 };

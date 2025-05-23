@@ -127,7 +127,9 @@ protected:
 	void _notification(int p_what);
 	virtual CSGBrush *_build_brush() = 0;
 	void _make_dirty(bool p_parent_removing = false);
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	static void _bind_methods();
 

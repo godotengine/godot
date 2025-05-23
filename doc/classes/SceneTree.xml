@@ -299,7 +299,7 @@
 				Emitted when the [param node] enters this tree.
 			</description>
 		</signal>
-		<signal name="node_configuration_warning_changed">
+		<signal name="node_configuration_warning_changed" deprecated="This signal is no longer available. Call [method Object.update_configuration_info] to notify the editor of configuration info changes.">
 			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when the [param node]'s [method Node.update_configuration_warnings] is called. Only emitted in the editor.

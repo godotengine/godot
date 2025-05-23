@@ -107,7 +107,9 @@ public:
 	void share(Range *p_range);
 	void unshare();
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	Range();
 	~Range();

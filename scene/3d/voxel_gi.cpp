@@ -275,7 +275,7 @@ void VoxelGI::set_probe_data(const Ref<VoxelGIData> &p_data) {
 	}
 
 	probe_data = p_data;
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 Ref<VoxelGIData> VoxelGI::get_probe_data() const {
@@ -537,18 +537,17 @@ AABB VoxelGI::get_aabb() const {
 	return AABB(-size / 2, size);
 }
 
-PackedStringArray VoxelGI::get_configuration_warnings() const {
-	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void VoxelGI::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("VoxelGI nodes are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+		CONFIG_WARNING("unsupported_renderer", RTR("VoxelGI nodes are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
 	} else if (OS::get_singleton()->get_current_rendering_method() == "dummy") {
-		warnings.push_back(RTR("VoxelGI nodes are not supported when using the Dummy renderer."));
+		CONFIG_WARNING("unsupported_renderer", RTR("VoxelGI nodes are not supported when using the Dummy renderer."));
 	} else if (probe_data.is_null()) {
-		warnings.push_back(RTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
+		CONFIG_WARNING("voxel_gi_unbaked", RTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
 	}
-	return warnings;
 }
+#endif
 
 void VoxelGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_probe_data", "data"), &VoxelGI::set_probe_data);

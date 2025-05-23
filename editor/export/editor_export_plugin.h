@@ -87,6 +87,8 @@ class EditorExportPlugin : public RefCounted {
 	String _has_valid_export_configuration(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset);
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+
 	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
 	Ref<EditorExportPreset> get_export_preset() const;
 	Ref<EditorExportPlatform> get_export_platform() const;

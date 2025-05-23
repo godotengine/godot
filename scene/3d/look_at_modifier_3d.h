@@ -102,7 +102,9 @@ private:
 	void init_transition();
 
 protected:
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void _validate_bone_names() override;

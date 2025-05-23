@@ -86,7 +86,9 @@ public:
 	void set_debug_color(const Color &p_color);
 	Color get_debug_color() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	CollisionShape2D();
 };

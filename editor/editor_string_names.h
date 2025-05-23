@@ -44,6 +44,7 @@ public:
 
 	_FORCE_INLINE_ static EditorStringNames *get_singleton() { return singleton; }
 
+	const StringName configuration_info_changed = StringName("configuration_info_changed");
 	const StringName Editor = StringName("Editor");
 	const StringName EditorFonts = StringName("EditorFonts");
 	const StringName EditorIcons = StringName("EditorIcons");

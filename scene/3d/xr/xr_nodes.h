@@ -55,7 +55,9 @@ protected:
 	virtual void _physics_interpolated_changed() override;
 
 public:
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
@@ -116,7 +118,9 @@ public:
 
 	Ref<XRPose> get_pose();
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	XRNode3D();
 	~XRNode3D();
@@ -196,7 +200,9 @@ protected:
 	virtual void _physics_interpolated_changed() override;
 
 public:
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	real_t get_world_scale() const;
 	void set_world_scale(real_t p_world_scale);

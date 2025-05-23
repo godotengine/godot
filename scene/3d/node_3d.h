@@ -343,6 +343,10 @@ public:
 	void set_visibility_parent(const NodePath &p_path);
 	NodePath get_visibility_parent() const;
 
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
+
 	Node3D();
 	~Node3D();
 };

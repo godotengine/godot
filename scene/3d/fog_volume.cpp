@@ -117,22 +117,19 @@ AABB FogVolume::get_aabb() const {
 	return AABB();
 }
 
-PackedStringArray FogVolume::get_configuration_warnings() const {
-	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
+#ifdef TOOLS_ENABLED
+void FogVolume::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
+	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		CONFIG_WARNING("unsupported_renderer", RTR("Fog Volumes are only visible when using the Forward+ renderer."));
+		return;
+	}
 
 	Ref<Environment> environment = get_viewport()->find_world_3d()->get_environment();
-
-	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("Fog Volumes are only visible when using the Forward+ renderer."));
-		return warnings;
-	}
-
 	if (environment.is_valid() && !environment->is_volumetric_fog_enabled()) {
-		warnings.push_back(RTR("Fog Volumes need volumetric fog to be enabled in the scene's Environment in order to be visible."));
+		CONFIG_WARNING("fog_volume_needs_environment", RTR("Fog Volumes need volumetric fog to be enabled in the scene's Environment in order to be visible."));
 	}
-
-	return warnings;
 }
+#endif
 
 FogVolume::FogVolume() {
 	volume = RS::get_singleton()->fog_volume_create();

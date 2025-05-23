@@ -1883,22 +1883,20 @@ void RichTextLabel::_update_theme_item_cache() {
 	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
 }
 
-PackedStringArray RichTextLabel::get_accessibility_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_accessibility_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void RichTextLabel::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	Item *it = main;
 	while (it) {
 		if (it->type == ITEM_IMAGE) {
 			ItemImage *img = static_cast<ItemImage *>(it);
 			if (img && img->alt_text.strip_edges().is_empty()) {
-				warnings.push_back(RTR("Image alternative text must not be empty."));
+				ACCESSIBILITY_WARNING("rich_text_label_empty_image_alt_text", RTR("Image alternative text must not be empty."));
 			}
 		}
 		it = _get_next_item(it, true);
 	}
-
-	return warnings;
 }
+#endif // TOOLS_ENABLED
 
 void RichTextLabel::_accessibility_update_line(RID p_id, ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep) {
 	ERR_FAIL_NULL(p_frame);
@@ -3963,7 +3961,7 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_
 	item->image->connect_changed(callable_mp(this, &RichTextLabel::_texture_changed).bind(item->rid), CONNECT_REFERENCE_COUNTED);
 
 	_add_item(item, false);
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, bool p_pad, const String &p_tooltip, bool p_size_in_percent) {
@@ -4232,7 +4230,7 @@ bool RichTextLabel::invalidate_paragraph(int p_paragraph) {
 		queue_accessibility_update();
 	}
 	queue_redraw();
-	update_configuration_warnings();
+	update_configuration_info();
 
 	return true;
 }
@@ -4838,7 +4836,7 @@ void RichTextLabel::clear() {
 		update_minimum_size();
 	}
 	queue_accessibility_update();
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 void RichTextLabel::set_tab_size(int p_spaces) {

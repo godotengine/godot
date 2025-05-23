@@ -232,7 +232,9 @@ public:
 	void set_constant_torque(const Vector3 &p_torque);
 	Vector3 get_constant_torque() const;
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	RigidBody3D();
 	~RigidBody3D();

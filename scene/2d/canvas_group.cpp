@@ -64,9 +64,8 @@ bool CanvasGroup::is_using_mipmaps() const {
 	return use_mipmaps;
 }
 
-PackedStringArray CanvasGroup::get_configuration_warnings() const {
-	PackedStringArray warnings = Node2D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void CanvasGroup::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (is_inside_tree()) {
 		bool warned_about_ancestor_clipping = false;
 		bool warned_about_canvasgroup_ancestor = false;
@@ -74,13 +73,13 @@ PackedStringArray CanvasGroup::get_configuration_warnings() const {
 		while (n) {
 			CanvasItem *as_canvas_item = Object::cast_to<CanvasItem>(n);
 			if (!warned_about_ancestor_clipping && as_canvas_item && as_canvas_item->get_clip_children_mode() != CLIP_CHILDREN_DISABLED) {
-				warnings.push_back(vformat(RTR("Ancestor \"%s\" clips its children, so this CanvasGroup will not function properly."), as_canvas_item->get_name()));
+				CONFIG_WARNING("canvas_group_ancestor_clipping", vformat(RTR("Ancestor \"%s\" clips its children, so this CanvasGroup will not function properly."), as_canvas_item->get_name()));
 				warned_about_ancestor_clipping = true;
 			}
 
 			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
 			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
-				warnings.push_back(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this CanvasGroup will not function properly."), as_canvas_group->get_name()));
+				CONFIG_WARNING("canvas_group_ancestor_canvas_group", vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this CanvasGroup will not function properly."), as_canvas_group->get_name()));
 				warned_about_canvasgroup_ancestor = true;
 			}
 
@@ -92,9 +91,8 @@ PackedStringArray CanvasGroup::get_configuration_warnings() const {
 			n = n->get_parent();
 		}
 	}
-
-	return warnings;
 }
+#endif // TOOLS_ENABLED
 
 void CanvasGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fit_margin", "fit_margin"), &CanvasGroup::set_fit_margin);

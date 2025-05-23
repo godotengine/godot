@@ -87,6 +87,7 @@ private:
 	String doc_path;
 	bool internal = false;
 	bool has_doc_tooltip = false;
+	AcceptDialog *config_info_dialog = nullptr;
 
 	int property_usage;
 
@@ -96,7 +97,6 @@ private:
 	bool checkable = false;
 	bool checked = false;
 	bool draw_warning = false;
-	bool draw_prop_warning = false;
 	bool keying = false;
 	bool deletable = false;
 
@@ -111,6 +111,8 @@ private:
 	bool check_hover = false;
 	Rect2 delete_rect;
 	bool delete_hover = false;
+	Rect2 config_info_rect;
+	bool config_info_hover = false;
 
 	bool can_revert = false;
 	bool can_pin = false;
@@ -136,6 +138,7 @@ private:
 	Control *label_reference = nullptr;
 	Control *bottom_editor = nullptr;
 	PopupMenu *menu = nullptr;
+	Vector<ConfigurationInfo> config_info;
 
 	HashMap<StringName, Variant> cache;
 
@@ -143,6 +146,7 @@ private:
 	GDVIRTUAL1(_set_read_only, bool)
 
 	void _update_flags();
+	void _update_config_info();
 
 protected:
 	bool has_borders = false;
@@ -158,6 +162,7 @@ protected:
 	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
 	virtual StringName _get_revert_property() const;
 
+	String _get_info_tooltip() const;
 	void _update_property_bg();
 
 	void _accessibility_action_menu(const Variant &p_data);
@@ -215,6 +220,13 @@ public:
 
 	void set_deletable(bool p_enable);
 	bool is_deletable() const;
+
+	void set_config_info(const Vector<ConfigurationInfo> &p_config_info);
+	Vector<ConfigurationInfo> get_config_info() const;
+
+	Ref<Texture2D> get_config_info_icon() const;
+	bool is_config_info_visible() const;
+
 	void add_focusable(Control *p_control);
 	void grab_focus(int p_focusable = -1);
 	void select(int p_focusable = -1);
@@ -620,6 +632,7 @@ class EditorInspector : public ScrollContainer {
 	};
 
 	HashMap<StringName, HashMap<StringName, DocCacheInfo>> doc_cache;
+	Vector<ConfigurationInfo> configuration_info_cache;
 	HashSet<StringName> restart_request_props;
 	HashMap<String, String> custom_property_descriptions;
 
@@ -652,6 +665,9 @@ class EditorInspector : public ScrollContainer {
 	void _clear_current_favorites();
 
 	void _node_removed(Node *p_node);
+	void _configuration_info_changed(Object *p_object);
+	void _update_configuration_info();
+	void _update_configuration_info_of_property(const ConfigurationInfo &p_config_info);
 
 	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);

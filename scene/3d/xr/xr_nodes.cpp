@@ -78,27 +78,25 @@ void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
 
 void XRCamera3D::_physics_interpolated_changed() {
 	Camera3D::_physics_interpolated_changed();
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
-PackedStringArray XRCamera3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Camera3D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void XRCamera3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (is_visible() && is_inside_tree()) {
 		// Warn if the node has a parent which isn't an XROrigin3D!
 		Node *parent = get_parent();
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
 		if (parent && origin == nullptr) {
-			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
+			CONFIG_WARNING("invalid_parent", RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
 
 		if (is_physics_interpolated()) {
-			warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
+			CONFIG_WARNING_P("xr_camera_physics_interpolation_enabled", RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."), "physics_interpolation_mode");
 		}
 	}
-
-	return warnings;
 }
+#endif
 
 Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	// get our XRServer
@@ -291,7 +289,7 @@ void XRNode3D::set_tracker(const StringName &p_tracker_name) {
 	// see if it's already available
 	_bind_tracker();
 
-	update_configuration_warnings();
+	update_configuration_info();
 	notify_property_list_changed();
 }
 
@@ -453,7 +451,7 @@ void XRNode3D::_update_visibility() {
 }
 
 void XRNode3D::_physics_interpolated_changed() {
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 XRNode3D::XRNode3D() {
@@ -479,32 +477,30 @@ XRNode3D::~XRNode3D() {
 	xr_server->disconnect("tracker_removed", callable_mp(this, &XRNode3D::_removed_tracker));
 }
 
-PackedStringArray XRNode3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node3D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void XRNode3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (is_visible() && is_inside_tree()) {
 		// Warn if the node has a parent which isn't an XROrigin3D!
 		Node *parent = get_parent();
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
 		if (parent && origin == nullptr) {
-			warnings.push_back(RTR("XRNode3D may not function as expected without an XROrigin3D node as its parent."));
+			CONFIG_WARNING("invalid_parent", RTR("XRNode3D may not function as expected without an XROrigin3D node as its parent."));
 		};
 
 		if (tracker_name == "") {
-			warnings.push_back(RTR("No tracker name is set."));
+			CONFIG_WARNING("xr_node_empty_tracker_name", RTR("No tracker name is set."));
 		}
 
 		if (pose_name == "") {
-			warnings.push_back(RTR("No pose is set."));
+			CONFIG_WARNING("xr_node_empty_pose_name", RTR("No pose is set."));
 		}
 
 		if (is_physics_interpolated()) {
-			warnings.push_back(RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
+			CONFIG_WARNING_P("xr_camera_physics_interpolation_enabled", RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."), "physics_interpolation_mode");
 		}
 	}
-
-	return warnings;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -666,9 +662,8 @@ Plane XRAnchor3D::get_plane() const {
 
 Vector<XROrigin3D *> XROrigin3D::origin_nodes;
 
-PackedStringArray XROrigin3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node3D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void XROrigin3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (is_visible() && is_inside_tree()) {
 		bool has_camera = false;
 		for (int i = 0; !has_camera && i < get_child_count(); i++) {
@@ -680,17 +675,16 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 		}
 
 		if (!has_camera) {
-			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
+			CONFIG_WARNING("xr_origin_missing_camera", RTR("XROrigin3D requires an XRCamera3D child node."));
 		}
 	}
 
 	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	if (!xr_enabled) {
-		warnings.push_back(RTR("XR shaders are not enabled in project settings. Stereoscopic output is not supported unless they are enabled. Please enable `xr/shaders/enabled` to use stereoscopic output."));
+		CONFIG_WARNING("xr_origin_shaders_disabled", RTR("XR shaders are not enabled in project settings. Stereoscopic output is not supported unless they are enabled. Please enable `xr/shaders/enabled` to use stereoscopic output."));
 	}
-
-	return warnings;
 }
+#endif
 
 void XROrigin3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_scale", "world_scale"), &XROrigin3D::set_world_scale);

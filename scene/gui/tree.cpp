@@ -391,7 +391,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -411,7 +411,7 @@ void TreeItem::set_alt_text(int p_column, String p_text) {
 
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -1347,7 +1347,7 @@ void TreeItem::add_button(int p_column, const Ref<Texture2D> &p_button, int p_id
 
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -1383,7 +1383,7 @@ void TreeItem::erase_button(int p_column, int p_index) {
 	cells.write[p_column].buttons.remove_at(p_index);
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -1438,7 +1438,7 @@ void TreeItem::set_button_alt_text(int p_column, int p_index, const String &p_al
 	cells.write[p_column].buttons.write[p_index].alt_text = p_alt_text;
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -4525,15 +4525,16 @@ int Tree::_get_title_button_height() const {
 	return h;
 }
 
-void Tree::_check_item_accessibility(TreeItem *p_item, PackedStringArray &r_warnings, int &r_row) const {
+#ifdef TOOLS_ENABLED
+void Tree::_check_item_accessibility(TreeItem *p_item, List<ConfigurationInfo> *p_infos, int &r_row) const {
 	for (int i = 0; i < p_item->cells.size(); i++) {
 		const TreeItem::Cell &cell = p_item->cells[i];
 		if (cell.alt_text.strip_edges().is_empty() && cell.text.strip_edges().is_empty()) {
-			r_warnings.push_back(vformat(RTR("Cell %d x %d: either text or alternative text must not be empty."), r_row, i));
+			ACCESSIBILITY_WARNING("tree_cell_empty_alternative_text", vformat(RTR("Cell %d x %d: either text or alternative text must not be empty."), r_row, i));
 		}
 		for (int j = 0; j < cell.buttons.size(); j++) {
 			if (cell.buttons[j].alt_text.strip_edges().is_empty()) {
-				r_warnings.push_back(vformat(RTR("Button %d in %d x %d: alternative text must not be empty."), j, r_row, i));
+				ACCESSIBILITY_WARNING("tree_button_empty_alternative_text", vformat(RTR("Button %d in %d x %d: alternative text must not be empty."), j, r_row, i));
 			}
 		}
 	}
@@ -4543,22 +4544,19 @@ void Tree::_check_item_accessibility(TreeItem *p_item, PackedStringArray &r_warn
 	if (!p_item->collapsed) {
 		TreeItem *c = p_item->first_child;
 		while (c) {
-			_check_item_accessibility(c, r_warnings, r_row);
+			_check_item_accessibility(c, p_infos, r_row);
 			c = c->next;
 		}
 	}
 }
 
-PackedStringArray Tree::get_accessibility_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_accessibility_configuration_warnings();
-
+void Tree::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (root) {
 		int row = 1;
-		_check_item_accessibility(root, warnings, row);
+		_check_item_accessibility(root, p_infos, row);
 	}
-
-	return warnings;
 }
+#endif // TOOLS_ENABLED
 
 void Tree::_accessibility_action_scroll_down(const Variant &p_data) {
 	v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 4);

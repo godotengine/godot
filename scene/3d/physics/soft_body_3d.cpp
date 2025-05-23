@@ -389,15 +389,13 @@ void SoftBody3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DISABLE_MODE_KEEP_ACTIVE);
 }
 
-PackedStringArray SoftBody3D::get_configuration_warnings() const {
-	PackedStringArray warnings = MeshInstance3D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void SoftBody3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (mesh.is_null()) {
-		warnings.push_back(RTR("This body will be ignored until you set a mesh."));
+		CONFIG_WARNING("missing_resource", RTR("This body will be ignored until you set a mesh."));
 	}
-
-	return warnings;
 }
+#endif
 
 void SoftBody3D::_update_physics_server() {
 	if (!simulation_started) {

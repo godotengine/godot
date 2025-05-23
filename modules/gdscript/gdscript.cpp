@@ -2098,6 +2098,26 @@ void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 	}
 }
 
+void GDScriptInstance::get_configuration_info(List<ConfigurationInfo> *p_infos) const {
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		if (likely(sptr->valid)) {
+			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get_configuration_info);
+			if (E) {
+				Callable::CallError err;
+				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), nullptr, 0, err);
+				if (err.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::ARRAY) {
+					Array infos = ret;
+					for (const Variant &info : infos) {
+						p_infos->push_back(ConfigurationInfo::from_variant(info));
+					}
+				}
+			}
+		}
+		sptr = sptr->_base;
+	}
+}
+
 String GDScriptInstance::to_string(bool *r_valid) {
 	if (has_method(CoreStringName(_to_string))) {
 		Callable::CallError ce;
@@ -2935,6 +2955,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._validate_property = StringName("_validate_property");
 	strings._property_can_revert = StringName("_property_can_revert");
 	strings._property_get_revert = StringName("_property_get_revert");
+	strings._get_configuration_info = StringName("_get_configuration_info");
 	strings._script_source = StringName("script/source");
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";

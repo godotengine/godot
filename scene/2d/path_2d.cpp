@@ -286,17 +286,15 @@ void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-PackedStringArray PathFollow2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node2D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void PathFollow2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path2D>(get_parent())) {
-			warnings.push_back(RTR("PathFollow2D only works when set as a child of a Path2D node."));
+			CONFIG_WARNING("invalid_parent", RTR("PathFollow2D only works when set as a child of a Path2D node."));
 		}
 	}
-
-	return warnings;
 }
+#endif
 
 void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow2D::set_progress);

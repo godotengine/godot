@@ -2409,9 +2409,9 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 			p_flag == FLAG_USE_FOV_OVERRIDE) {
 		notify_property_list_changed();
 	}
-
 	if (p_flag == FLAG_PARTICLE_TRAILS_MODE) {
-		update_configuration_warning();
+		// GPUParticles3D node checks for this flag to produce configuration warnings.
+		update_configuration_info();
 	}
 
 	_queue_shader_change();

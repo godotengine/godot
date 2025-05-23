@@ -36,13 +36,6 @@
 				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited].
 			</description>
 		</method>
-		<method name="_get_accessibility_configuration_warnings" qualifiers="virtual const">
-			<return type="PackedStringArray" />
-			<description>
-				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script, and accessibility warnings are enabled in the editor settings.
-				Returning an empty array produces no warnings.
-			</description>
-		</method>
 		<method name="_get_accessibility_container_name" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="node" type="Node" />
@@ -50,7 +43,7 @@
 				Return a human-readable description of the position of [param node] child in the custom container, added to the node name.
 			</description>
 		</method>
-		<method name="_get_configuration_warnings" qualifiers="virtual const">
+		<method name="_get_configuration_warnings" qualifiers="virtual const" deprecated="Use [method Object._get_configuration_info] instead.">
 			<return type="PackedStringArray" />
 			<description>
 				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script.
@@ -1026,7 +1019,7 @@
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
 			</description>
 		</method>
-		<method name="update_configuration_warnings">
+		<method name="update_configuration_warnings" deprecated="Use [method Object.update_configuration_info] instead.">
 			<return type="void" />
 			<description>
 				Refreshes the warnings displayed for this node in the Scene dock. Use [method _get_configuration_warnings] to customize the warning messages to display.

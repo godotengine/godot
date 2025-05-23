@@ -203,7 +203,10 @@ public:
 
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
+
 	GeometryInstance3D();
 	virtual ~GeometryInstance3D();
 };
