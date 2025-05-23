@@ -437,6 +437,9 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ZERO);
+
 	if (rt->view_count > 1) {
 		copy_effects->copy_to_rect_3d(screenrect, p_layer, GLES3::Texture::TYPE_LAYERED);
 	} else {
