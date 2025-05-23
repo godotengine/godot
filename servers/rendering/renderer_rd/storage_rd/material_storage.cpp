@@ -1936,12 +1936,19 @@ RID MaterialStorage::shader_allocate() {
 	return shader_owner.allocate_rid();
 }
 
-void MaterialStorage::shader_initialize(RID p_rid) {
+void MaterialStorage::shader_initialize(RID p_rid, bool p_embedded) {
 	Shader shader;
 	shader.data = nullptr;
 	shader.type = SHADER_TYPE_MAX;
+	shader.embedded = p_embedded;
 
 	shader_owner.initialize_rid(p_rid, shader);
+
+	if (p_embedded) {
+		// Add to the global embedded set.
+		MutexLock lock(embedded_set_mutex);
+		embedded_set.insert(p_rid);
+	}
 }
 
 void MaterialStorage::shader_free(RID p_rid) {
@@ -1957,6 +1964,13 @@ void MaterialStorage::shader_free(RID p_rid) {
 	if (shader->data) {
 		memdelete(shader->data);
 	}
+
+	if (shader->embedded) {
+		// Remove from the global embedded set.
+		MutexLock lock(embedded_set_mutex);
+		embedded_set.erase(p_rid);
+	}
+
 	shader_owner.free(p_rid);
 }
 
@@ -2112,6 +2126,12 @@ void MaterialStorage::shader_set_data_request_function(ShaderType p_shader_type,
 	shader_data_request_func[p_shader_type] = p_function;
 }
 
+MaterialStorage::ShaderData *MaterialStorage::shader_get_data(RID p_shader) const {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL_V(shader, nullptr);
+	return shader->data;
+}
+
 RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_NULL_V(shader, RS::ShaderNativeSourceCode());
@@ -2119,6 +2139,18 @@ RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_
 		return shader->data->get_native_source_code();
 	}
 	return RS::ShaderNativeSourceCode();
+}
+
+void MaterialStorage::shader_embedded_set_lock() {
+	embedded_set_mutex.lock();
+}
+
+const HashSet<RID> &MaterialStorage::shader_embedded_set_get() const {
+	return embedded_set;
+}
+
+void MaterialStorage::shader_embedded_set_unlock() {
+	embedded_set_mutex.unlock();
 }
 
 /* MATERIAL API */
