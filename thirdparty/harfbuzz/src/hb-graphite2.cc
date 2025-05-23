@@ -68,7 +68,7 @@ struct hb_graphite2_face_data_t
 {
   hb_face_t *face;
   gr_face   *grface;
-  hb_atomic_ptr_t<hb_graphite2_tablelist_t> tlist;
+  hb_atomic_t<hb_graphite2_tablelist_t *> tlist;
 };
 
 static const void *hb_graphite2_get_table (const void *data, unsigned int tag, size_t *len)

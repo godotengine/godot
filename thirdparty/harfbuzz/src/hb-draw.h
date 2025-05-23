@@ -41,8 +41,15 @@ HB_BEGIN_DECLS
  * @path_start_y: Y component of the start of current path
  * @current_x: X component of current point
  * @current_y: Y component of current point
+ * @slant_xy: Slanting factor for synthetic oblique, Since: 11.0.0
  *
  * Current drawing state.
+ *
+ * The @slant_xy is a slanting factor for synthetic oblique. If the font's
+ * oblique angle is not 0, this factor is used to slant the drawing. For
+ * fonts with uniform x and y scales, this factor is calculated as
+ * tan(oblique_angle). For fonts with non-uniform scales, this factor is
+ * calculated as tan(oblique_angle) * x_scale / y_scale, or 0 if y_scale is 0.
  *
  * Since: 4.0.0
  **/
@@ -55,6 +62,8 @@ typedef struct hb_draw_state_t {
   float current_x;
   float current_y;
 
+  float slant_xy;
+
   /*< private >*/
   hb_var_num_t   reserved1;
   hb_var_num_t   reserved2;
@@ -62,7 +71,6 @@ typedef struct hb_draw_state_t {
   hb_var_num_t   reserved4;
   hb_var_num_t   reserved5;
   hb_var_num_t   reserved6;
-  hb_var_num_t   reserved7;
 } hb_draw_state_t;
 
 /**
@@ -70,7 +78,7 @@ typedef struct hb_draw_state_t {
  *
  * The default #hb_draw_state_t at the start of glyph drawing.
  */
-#define HB_DRAW_STATE_DEFAULT {0, 0.f, 0.f, 0.f, 0.f, {0.}, {0.}, {0.}, {0.}, {0.}, {0.}, {0.}}
+#define HB_DRAW_STATE_DEFAULT {0, 0.f, 0.f, 0.f, 0.f, 0.f, {0.}, {0.}, {0.}, {0.}, {0.}, {0.}}
 
 
 /**

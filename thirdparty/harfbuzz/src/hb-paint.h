@@ -957,6 +957,14 @@ hb_paint_push_transform (hb_paint_funcs_t *funcs, void *paint_data,
                          float dx, float dy);
 
 HB_EXTERN void
+hb_paint_push_font_transform (hb_paint_funcs_t *funcs, void *paint_data,
+                              const hb_font_t *font);
+
+HB_EXTERN void
+hb_paint_push_inverse_font_transform (hb_paint_funcs_t *funcs, void *paint_data,
+                                      const hb_font_t *font);
+
+HB_EXTERN void
 hb_paint_pop_transform (hb_paint_funcs_t *funcs, void *paint_data);
 
 HB_EXTERN hb_bool_t
