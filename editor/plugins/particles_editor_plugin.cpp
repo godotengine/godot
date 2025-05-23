@@ -293,30 +293,55 @@ Particles2DEditorPlugin::Particles2DEditorPlugin() {
 	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &Particles2DEditorPlugin::_generate_emission_mask));
 }
 
+void Particles2DEditorPlugin::_set_show_gizmos(Node *p_node, bool p_show) {
+	GPUParticles2D *gpu_particles = Object::cast_to<GPUParticles2D>(p_node);
+	if (gpu_particles) {
+		gpu_particles->set_show_gizmos(p_show);
+	}
+	CPUParticles2D *cpu_particles = Object::cast_to<CPUParticles2D>(p_node);
+	if (cpu_particles) {
+		cpu_particles->set_show_gizmos(p_show);
+	}
+
+	// The `selection_changed` signal is deferred. A node could be deleted before the signal is emitted.
+	if (p_show) {
+		p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &Particles2DEditorPlugin::_node_removed).bind(p_node));
+	} else {
+		p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Particles2DEditorPlugin::_node_removed));
+	}
+}
+
 void Particles2DEditorPlugin::_selection_changed() {
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
-	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
+	List<Node *> current_selection = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
+	if (selected_particles.is_empty() && current_selection.is_empty()) {
 		return;
 	}
 
-	for (Node *particles : selected_particles) {
-		if (GPUParticles2D *gpu_particles = Object::cast_to<GPUParticles2D>(particles)) {
-			gpu_particles->set_show_gizmos(false);
-		} else if (CPUParticles2D *cpu_particles = Object::cast_to<CPUParticles2D>(particles)) {
-			cpu_particles->set_show_gizmos(false);
+	// Turn gizmos off for nodes that are no longer selected.
+	for (List<Node *>::Element *E = selected_particles.front(); E;) {
+		Node *node = E->get();
+		List<Node *>::Element *N = E->next();
+		if (current_selection.find(node) == nullptr) {
+			_set_show_gizmos(node, false);
+			selected_particles.erase(E);
 		}
+		E = N;
 	}
 
-	selected_particles.clear();
-
-	for (Node *node : selected_nodes) {
-		if (GPUParticles2D *selected_gpu_particle = Object::cast_to<GPUParticles2D>(node)) {
-			selected_gpu_particle->set_show_gizmos(true);
-			selected_particles.push_back(selected_gpu_particle);
-		} else if (CPUParticles2D *selected_cpu_particle = Object::cast_to<CPUParticles2D>(node)) {
-			selected_cpu_particle->set_show_gizmos(true);
-			selected_particles.push_back(selected_cpu_particle);
+	// Turn gizmos on for nodes that are newly selected.
+	for (Node *node : current_selection) {
+		if (selected_particles.find(node) == nullptr) {
+			_set_show_gizmos(node, true);
+			selected_particles.push_back(node);
 		}
+	}
+}
+
+void Particles2DEditorPlugin::_node_removed(Node *p_node) {
+	List<Node *>::Element *E = selected_particles.find(p_node);
+	if (E) {
+		_set_show_gizmos(E->get(), false);
+		selected_particles.erase(E);
 	}
 }
 
