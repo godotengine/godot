@@ -454,8 +454,8 @@ private:
 	};
 
 	struct ItemRainbow : public ItemFX {
-		float saturation = 0.8f;
-		float value = 0.8f;
+		float saturation = 0.9f;
+		float value = 1.0f;
 		float frequency = 1.0f;
 		float speed = 1.0f;
 
