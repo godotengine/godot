@@ -30,22 +30,24 @@
 
 #pragma once
 
+#include "editor/editor_dock.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/script_create_dialog.h"
-#include "scene/gui/box_container.h"
 #include "scene/resources/animation.h"
 
 class CheckBox;
 class EditorData;
 class EditorSelection;
+class HBoxContainer;
 class MenuButton;
 class RenameDialog;
 class ReparentDialog;
 class ShaderCreateDialog;
 class TextureRect;
+class VBoxContainer;
 
-class SceneTreeDock : public VBoxContainer {
-	GDCLASS(SceneTreeDock, VBoxContainer);
+class SceneTreeDock : public EditorDock {
+	GDCLASS(SceneTreeDock, EditorDock);
 
 	enum Tool {
 		TOOL_NEW,

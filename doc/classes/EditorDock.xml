@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorDock" inherits="MarginContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Dockable container for the editor.
+	</brief_description>
+	<description>
+		EditorDock is a [Container] node that can be docked in one of the editor's dock slots. Docks are added by plugins to provide space for controls related to the plugin.
+		You can add a dock by using [method EditorPlugin.add_dock]. The dock can be customized by changing its properties.
+		[codeblock]
+		@tool
+		extends EditorPlugin
+
+		# Define the dock class (can be in separate file).
+		class MyDock extends EditorDock:
+		    func _init():
+		        title = "My Dock"
+		        dock_icon = load("./dock_icon.png")
+
+		        var dock_content = preload("./dock_content.tscn").instantiate()
+		        add_child(dock_content)
+
+		# Dock reference.
+		var dock
+
+		# Plugin initialization.
+		func _enter_tree():
+		    dock = MyDock.new()
+		    add_dock(dock, EditorPlugin.DOCK_SLOT_RIGHT_UL)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_load_layout_from_config" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="config" type="ConfigFile" />
+			<param index="1" name="section" type="String" />
+			<description>
+				Implement this method to handle loading dock's layout. It's equivalent to [method EditorPlugin._set_window_layout].
+			</description>
+		</method>
+		<method name="_save_layout_to_config" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="config" type="ConfigFile" />
+			<param index="1" name="section" type="String" />
+			<description>
+				Implement this method to handle saving dock's layout. It's equivalent to [method EditorPlugin._get_window_layout].
+			</description>
+		</method>
+		<method name="_set_horizontal_layout" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Implement this method to handle layout switching. [param enabled] is [code]true[/code] when the dock is being moved to the bottom panel, and [code]false[/code] in other cases.
+				[codeblock]
+				_set_horizontal_layout(enabled):
+				    box_container.vertical = not enabled
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="1">
+			Defines available layouts for the dock. See [enum DockLayout] for available layouts.
+			This property is a bitmask. If you want to make all layouts available, use [code]available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL[/code].
+		</member>
+		<member name="dock_icon" type="Texture2D" setter="set_dock_icon" getter="get_dock_icon">
+			The icon for the dock. If specified, it will override [member icon_name].
+		</member>
+		<member name="dock_shortcut" type="Shortcut" setter="set_dock_shortcut" getter="get_dock_shortcut">
+			The shortcut used to open the dock. Setting this is only reliable before the dock is added.
+		</member>
+		<member name="icon_name" type="StringName" setter="set_icon_name" getter="get_icon_name" default="&amp;&quot;&quot;">
+			The icon name for the dock. It has to use an icon name from [code]EditorIcons[/code] in editor theme. You can find the list of available icons [url=https://godot-editor-icons.github.io/]here[/url].
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			Title of the dock's tab. If empty, the dock's [member Node.name] will be used.
+		</member>
+	</members>
+	<signals>
+		<signal name="tab_style_changed">
+			<description>
+				Emitted when the dock's tab style is supposed to change as a result of changing title or icon.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DOCK_LAYOUT_VERTICAL" value="1" enum="DockLayout" is_bitfield="true">
+			Allows placing the dock in the vertical dock slots on either of the editor.
+			[b]Note:[/b] Currently this flag has no effect, because the bottom panel is not a proper dock slot (yet). The dock can always be vertical.
+		</constant>
+		<constant name="DOCK_LAYOUT_HORIZONTAL" value="2" enum="DockLayout" is_bitfield="true">
+			Allows placing the dock in the editor's bottom panel. Implement [method _set_horizontal_layout] to handle changing layouts.
+		</constant>
+	</constants>
+</class>

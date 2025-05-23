@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  import_dock.h                                                         */
+/*  editor_dock.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,82 +30,69 @@
 
 #pragma once
 
-#include "core/io/config_file.h"
-#include "core/io/resource_importer.h"
-#include "editor/editor_dock.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/popup_menu.h"
+#include "editor/editor_dock_manager.h"
+#include "scene/gui/margin_container.h"
 
-class ImportDockParameters;
-class VBoxContainer;
+class ConfigFile;
+class Shortcut;
+class WindowWrapper;
 
-class ImportDock : public EditorDock {
-	GDCLASS(ImportDock, EditorDock);
+class EditorDock : public MarginContainer {
+	GDCLASS(EditorDock, MarginContainer);
 
-	Label *imported = nullptr;
-	OptionButton *import_as = nullptr;
-	MenuButton *preset = nullptr;
-	EditorInspector *import_opts = nullptr;
-
-	List<PropertyInfo> properties;
-	HashMap<StringName, Variant> property_values;
-
-	ConfirmationDialog *reimport_confirm = nullptr;
-	Label *cleanup_warning = nullptr;
-	Label *label_warning = nullptr;
-	Button *import = nullptr;
-	List<String> need_cleanup;
-
-	Control *advanced_spacer = nullptr;
-	Button *advanced = nullptr;
-
-	ImportDockParameters *params = nullptr;
-
-	VBoxContainer *content = nullptr;
-	Label *select_a_resource = nullptr;
-
-	void _preset_selected(int p_idx);
-	void _importer_selected(int i_idx);
-	void _update_options(const String &p_path, const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
-	void _update_preset_menu();
-	void _add_keep_import_option(const String &p_importer_name);
-
-	void _property_edited(const StringName &p_prop);
-	void _property_toggled(const StringName &p_prop, bool p_checked);
-	void _set_dirty(bool p_dirty);
-	void _reimport_pressed();
-	void _reimport_attempt();
-	void _reimport_and_cleanup();
-	void _reimport();
-
-	void _advanced_options();
-	enum {
-		ITEM_SET_AS_DEFAULT = 100,
-		ITEM_LOAD_DEFAULT,
-		ITEM_CLEAR_DEFAULT,
+public:
+	enum DockLayout {
+		DOCK_LAYOUT_VERTICAL = 1,
+		DOCK_LAYOUT_HORIZONTAL = 2,
 	};
 
 private:
-	static ImportDock *singleton;
+	friend class EditorDockManager;
+	friend class DockContextPopup;
 
-public:
-	static ImportDock *get_singleton() { return singleton; }
+	String title;
+	StringName icon_name;
+	Ref<Texture2D> dock_icon;
+	Ref<Shortcut> shortcut;
+
+	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL;
+
+	bool open = false;
+	bool enabled = true;
+	bool at_bottom = false;
+	int previous_tab_index = -1;
+	bool previous_at_bottom = false;
+	WindowWrapper *dock_window = nullptr;
+	int dock_slot_index = EditorDockManager::DOCK_SLOT_NONE;
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_what);
+
+	GDVIRTUAL1(_set_horizontal_layout, bool)
+	GDVIRTUAL2C(_save_layout_to_config, Ref<ConfigFile>, const String &)
+	GDVIRTUAL2(_load_layout_from_config, Ref<ConfigFile>, const String &)
 
 public:
-	void set_edit_path(const String &p_path);
-	void set_edit_multiple_paths(const Vector<String> &p_paths);
-	void reimport_resources(const Vector<String> &p_paths);
-	void initialize_import_options() const;
-	void clear();
+	void set_title(const String &p_title);
+	String get_title() const;
 
-	ImportDock();
-	~ImportDock();
+	void set_icon_name(const StringName &p_name);
+	StringName get_icon_name() const;
+
+	void set_dock_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_dock_icon() const;
+
+	void set_dock_shortcut(const Ref<Shortcut> &p_shortcut);
+	Ref<Shortcut> get_dock_shortcut() const;
+
+	void set_available_layouts(BitField<DockLayout> p_layouts);
+	BitField<DockLayout> get_available_layouts() const;
+
+	String get_display_title() const;
+
+	virtual void set_horizontal_layout(bool p_enable);
+	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const;
+	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section);
 };
+
+VARIANT_BITFIELD_CAST(EditorDock::DockLayout);

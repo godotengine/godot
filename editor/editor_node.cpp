@@ -8102,22 +8102,22 @@ EditorNode::EditorNode() {
 	history_dock = memnew(HistoryDock);
 
 	// Scene: Top left.
-	editor_dock_manager->add_dock(SceneTreeDock::get_singleton(), TTRC("Scene"), EditorDockManager::DOCK_SLOT_LEFT_UR, ED_SHORTCUT_AND_COMMAND("docks/open_scene", TTRC("Open Scene Dock")), "PackedScene");
+	editor_dock_manager->add_dock(SceneTreeDock::get_singleton(), EditorDockManager::DOCK_SLOT_LEFT_UR);
 
 	// Import: Top left, behind Scene.
-	editor_dock_manager->add_dock(ImportDock::get_singleton(), TTRC("Import"), EditorDockManager::DOCK_SLOT_LEFT_UR, ED_SHORTCUT_AND_COMMAND("docks/open_import", TTRC("Open Import Dock")), "FileAccess");
+	editor_dock_manager->add_dock(ImportDock::get_singleton(), EditorDockManager::DOCK_SLOT_LEFT_UR);
 
 	// FileSystem: Bottom left.
-	editor_dock_manager->add_dock(FileSystemDock::get_singleton(), TTRC("FileSystem"), EditorDockManager::DOCK_SLOT_LEFT_BR, ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F), "Folder");
+	editor_dock_manager->add_dock(filesystem_dock, EditorDockManager::DOCK_SLOT_LEFT_BR);
 
 	// Inspector: Full height right.
-	editor_dock_manager->add_dock(InspectorDock::get_singleton(), TTRC("Inspector"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")), "AnimationTrackList");
+	editor_dock_manager->add_dock(InspectorDock::get_singleton(), EditorDockManager::DOCK_SLOT_RIGHT_UL);
 
 	// Node: Full height right, behind Inspector.
-	editor_dock_manager->add_dock(NodeDock::get_singleton(), TTRC("Node"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_node", TTRC("Open Node Dock")), "Object");
+	editor_dock_manager->add_dock(NodeDock::get_singleton(), EditorDockManager::DOCK_SLOT_RIGHT_UL);
 
 	// History: Full height right, behind Node.
-	editor_dock_manager->add_dock(history_dock, TTRC("History"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_history", TTRC("Open History Dock")), "History");
+	editor_dock_manager->add_dock(history_dock, EditorDockManager::DOCK_SLOT_RIGHT_UL);
 
 	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize.
 	left_r_hsplit->set_split_offset(270 * EDSCALE);
