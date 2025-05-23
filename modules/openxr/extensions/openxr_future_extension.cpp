@@ -40,6 +40,9 @@ void OpenXRFutureResult::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_future"), &OpenXRFutureResult::_get_future);
 	ClassDB::bind_method(D_METHOD("cancel_future"), &OpenXRFutureResult::cancel_future);
 
+	ClassDB::bind_method(D_METHOD("set_result_value", "result_value"), &OpenXRFutureResult::set_result_value);
+	ClassDB::bind_method(D_METHOD("get_result_value"), &OpenXRFutureResult::get_result_value);
+
 	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::OBJECT, "result", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRFutureResult")));
 
 	BIND_ENUM_CONSTANT(RESULT_RUNNING);
@@ -52,7 +55,7 @@ void OpenXRFutureResult::_mark_as_finished() {
 	status = RESULT_FINISHED;
 
 	// Perform our callback
-	on_success_callback.call((uint64_t)future);
+	on_success_callback.call(this); // Note, `this` will be converted to a variant that will be refcounted!
 
 	// Emit our signal
 	emit_signal(SNAME("completed"), this);
@@ -78,6 +81,14 @@ XrFutureEXT OpenXRFutureResult::get_future() const {
 
 uint64_t OpenXRFutureResult::_get_future() const {
 	return (uint64_t)future;
+}
+
+void OpenXRFutureResult::set_result_value(const Variant &p_result_value) {
+	result_value = p_result_value;
+}
+
+Variant OpenXRFutureResult::get_result_value() const {
+	return result_value;
 }
 
 void OpenXRFutureResult::cancel_future() {
