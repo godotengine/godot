@@ -672,6 +672,8 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &DirAccess::set_include_hidden);
 	ClassDB::bind_method(D_METHOD("get_include_hidden"), &DirAccess::get_include_hidden);
 
+	ClassDB::bind_method(D_METHOD("get_filesystem_type"), &DirAccess::get_filesystem_type);
+
 	ClassDB::bind_method(D_METHOD("is_case_sensitive", "path"), &DirAccess::is_case_sensitive);
 	ClassDB::bind_method(D_METHOD("is_equivalent", "path_a", "path_b"), &DirAccess::is_equivalent);
 
