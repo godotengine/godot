@@ -3624,9 +3624,9 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			{ // zstd.
 				Vector<uint8_t> zstd;
 				zstd.resize(Compression::get_max_compressed_buffer_size(smolv.size(), Compression::MODE_ZSTD));
-				int dst_size = Compression::compress(zstd.ptrw(), &smolv[0], smolv.size(), Compression::MODE_ZSTD);
+				const int64_t dst_size = Compression::compress(zstd.ptrw(), &smolv[0], smolv.size(), Compression::MODE_ZSTD);
 
-				if (dst_size > 0 && (uint32_t)dst_size < smolv.size()) {
+				if (dst_size > 0 && (size_t)dst_size < smolv.size()) {
 					zstd_size.push_back(dst_size);
 					zstd.resize(dst_size);
 					compressed_stages.push_back(zstd);
@@ -3895,8 +3895,8 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 		if (zstd_size > 0) {
 			// Decompress to smolv.
 			smolv.resize(smolv_size);
-			int dec_smolv_size = Compression::decompress(smolv.ptrw(), smolv.size(), binptr + read_offset, zstd_size, Compression::MODE_ZSTD);
-			ERR_FAIL_COND_V(dec_smolv_size != (int32_t)smolv_size, ShaderID());
+			int64_t dec_smolv_size = Compression::decompress(smolv.ptrw(), smolv.size(), binptr + read_offset, zstd_size, Compression::MODE_ZSTD);
+			ERR_FAIL_COND_V(dec_smolv_size != (int64_t)smolv_size, ShaderID());
 			src_smolv = smolv.ptr();
 		} else {
 			src_smolv = binptr + read_offset;
