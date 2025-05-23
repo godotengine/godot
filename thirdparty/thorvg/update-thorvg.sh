@@ -73,6 +73,10 @@ cp -rv src/loaders/external_png ../src/loaders/
 cp -rv src/loaders/external_webp ../src/loaders/
 cp -rv src/loaders/external_jpg ../src/loaders/
 
+cp -rv src/loaders/lottie  ../src/loaders/
+# Disabled: THORVG_LOTTIE_EXPRESSIONS_SUPPORT
+rm -rfv ../src/loaders/lottie/jerryscript
+
 popd
 rm -rf tmp
 popd
