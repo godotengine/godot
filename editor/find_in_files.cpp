@@ -698,9 +698,9 @@ FindInFilesPanel::FindInFilesPanel() {
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
-		Label *find_label = memnew(Label);
-		find_label->set_text(TTR("Find:"));
-		hbc->add_child(find_label);
+		_find_label = memnew(Label);
+		_find_label->set_text(TTR("Find:"));
+		hbc->add_child(_find_label);
 
 		_search_text_label = memnew(Label);
 		_search_text_label->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -715,6 +715,12 @@ FindInFilesPanel::FindInFilesPanel() {
 		_status_label = memnew(Label);
 		_status_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		hbc->add_child(_status_label);
+
+		_keep_results_button = memnew(CheckButton);
+		_keep_results_button->set_text(TTR("Keep Results"));
+		_keep_results_button->set_tooltip_text(TTR("Keep these results and show subsequent results in a new window"));
+		_keep_results_button->set_pressed(true);
+		hbc->add_child(_keep_results_button);
 
 		_refresh_button = memnew(Button);
 		_refresh_button->set_text(TTR("Refresh"));
@@ -794,6 +800,15 @@ void FindInFilesPanel::set_with_replace(bool with_replace) {
 
 void FindInFilesPanel::set_replace_text(const String &text) {
 	_replace_line_edit->set_text(text);
+}
+
+bool FindInFilesPanel::keep_results() const {
+	return _keep_results_button->is_pressed();
+}
+
+void FindInFilesPanel::set_search_labels_visibility(bool p_visible) {
+	_find_label->set_visible(p_visible);
+	_search_text_label->set_visible(p_visible);
 }
 
 void FindInFilesPanel::clear() {
@@ -1176,4 +1191,175 @@ void FindInFilesPanel::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SIGNAL_FILES_MODIFIED, PropertyInfo(Variant::STRING, "paths")));
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_CLOSE_BUTTON_CLICKED));
+}
+
+//-----------------------------------------------------------------------------
+const char *FindInFilesTab::SIGNAL_RESULT_SELECTED = "result_selected";
+const char *FindInFilesTab::SIGNAL_FILES_MODIFIED = "files_modified";
+const char *FindInFilesTab::SIGNAL_CLOSE_BUTTON_CLICKED = "close_button_clicked";
+
+FindInFilesTab::FindInFilesTab() {
+	set_drag_to_rearrange_enabled(true);
+	get_tab_bar()->set_select_with_rmb(true);
+	get_tab_bar()->set_tab_close_display_policy(TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
+	get_tab_bar()->connect("tab_close_pressed", callable_mp(this, &FindInFilesTab::_on_tab_close_pressed));
+	get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(this, &FindInFilesTab::_bar_input));
+
+	_tabs_context_menu = memnew(PopupMenu);
+	add_child(_tabs_context_menu);
+	_tabs_context_menu->add_item(TTR("Close Tab"), PANEL_CLOSE);
+	_tabs_context_menu->add_item(TTR("Close Other Tabs"), PANEL_CLOSE_OTHERS);
+	_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), PANEL_CLOSE_RIGHT);
+	_tabs_context_menu->add_item(TTR("Close All Tabs"), PANEL_CLOSE_ALL);
+	_tabs_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FindInFilesTab::_bar_menu_option));
+}
+
+FindInFilesPanel *FindInFilesTab::create_new_panel() {
+	int index = get_current_tab();
+	FindInFilesPanel *panel = memnew(FindInFilesPanel);
+	add_child(panel);
+	move_child(panel, index + 1); // New panel is added after the current activated panel.
+	set_current_tab(index + 1);
+	_update_bar_visibility();
+
+	panel->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &FindInFilesTab::_on_find_in_files_result_selected));
+	panel->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &FindInFilesTab::_on_find_in_files_modified_files));
+	panel->connect(FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED, callable_mp(this, &FindInFilesTab::_on_find_in_files_close_button_clicked).bind(panel));
+	return panel;
+}
+
+FindInFilesPanel *FindInFilesTab::get_curr_panel() {
+	FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(get_current_tab_control());
+	return panel;
+}
+
+FindInFilesPanel *FindInFilesTab::get_panel_for_results(const String &label) {
+	FindInFilesPanel *panel = nullptr;
+	// Prefer the current panel.
+	if (get_curr_panel() && !get_curr_panel()->keep_results()) {
+		panel = get_curr_panel();
+	} else {
+		// Find the first panel which does not keep results.
+		for (int i = 0; i < get_tab_count(); i++) {
+			FindInFilesPanel *p = Object::cast_to<FindInFilesPanel>(get_tab_control(i));
+			if (p && !p->keep_results()) {
+				panel = p;
+				set_current_tab(i);
+				break;
+			}
+		}
+
+		if (!panel) {
+			panel = create_new_panel();
+		}
+	}
+	set_tab_title(get_current_tab(), label);
+	return panel;
+}
+
+void FindInFilesTab::_bind_methods() {
+	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_SELECTED,
+			PropertyInfo(Variant::STRING, "path"),
+			PropertyInfo(Variant::INT, "line_number"),
+			PropertyInfo(Variant::INT, "begin"),
+			PropertyInfo(Variant::INT, "end")));
+
+	ADD_SIGNAL(MethodInfo(SIGNAL_FILES_MODIFIED, PropertyInfo(Variant::STRING, "paths")));
+
+	ADD_SIGNAL(MethodInfo(SIGNAL_CLOSE_BUTTON_CLICKED));
+}
+
+void FindInFilesTab::_on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end) {
+	emit_signal(SNAME(SIGNAL_RESULT_SELECTED), fpath, line_number, begin, end);
+}
+
+void FindInFilesTab::_on_find_in_files_modified_files(const PackedStringArray &paths) {
+	emit_signal(SNAME(SIGNAL_FILES_MODIFIED), paths);
+}
+
+void FindInFilesTab::_on_find_in_files_close_button_clicked(FindInFilesPanel *panel) {
+	ERR_FAIL_COND_MSG(panel->get_parent() != this, "This panel is not a child!");
+	remove_child(panel);
+	panel->queue_free();
+	_update_bar_visibility();
+	if (get_tab_count() == 0) {
+		emit_signal(SNAME(SIGNAL_CLOSE_BUTTON_CLICKED));
+	}
+}
+
+void FindInFilesTab::_on_tab_close_pressed(int p_tab) {
+	FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(get_tab_control(p_tab));
+	if (panel) {
+		_on_find_in_files_close_button_clicked(panel);
+	}
+}
+
+void FindInFilesTab::_update_bar_visibility() {
+	if (!_update_bar) {
+		return;
+	}
+
+	// If tab count <= 1, behaves like this is not a TabContainer and the bar is hidden.
+	bool bar_visible = get_tab_count() > 1;
+	set_tabs_visible(bar_visible);
+
+	// Panel's some labels' texts are duplicate with tab's title, so we want to change their visibility depends on the bar's visibility
+	for (int i = 0; i < get_tab_count(); i++) {
+		FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(get_tab_control(i));
+		if (panel) {
+			panel->set_search_labels_visibility(!bar_visible);
+		}
+	}
+}
+
+void FindInFilesTab::_bar_menu_option(int p_option) {
+	int tab_index = get_current_tab();
+	switch (p_option) {
+		case PANEL_CLOSE: {
+			_on_tab_close_pressed(tab_index);
+		} break;
+		case PANEL_CLOSE_OTHERS: {
+			_update_bar = false;
+			FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(get_tab_control(tab_index));
+			for (int i = get_tab_count() - 1; i >= 0; i--) {
+				FindInFilesPanel *p = Object::cast_to<FindInFilesPanel>(get_tab_control(i));
+				if (p != panel) {
+					_on_find_in_files_close_button_clicked(p);
+				}
+			}
+			_update_bar = true;
+			_update_bar_visibility();
+		} break;
+		case PANEL_CLOSE_RIGHT: {
+			_update_bar = false;
+			for (int i = get_tab_count() - 1; i > tab_index; i--) {
+				_on_tab_close_pressed(i);
+			}
+			_update_bar = true;
+			_update_bar_visibility();
+		} break;
+		case PANEL_CLOSE_ALL: {
+			_update_bar = false;
+			for (int i = get_tab_count() - 1; i >= 0; i--) {
+				_on_tab_close_pressed(i);
+			}
+			_update_bar = true;
+		} break;
+	}
+}
+
+void FindInFilesTab::_bar_input(const Ref<InputEvent> &p_input) {
+	int tab_id = get_tab_bar()->get_hovered_tab();
+	Ref<InputEventMouseButton> mb = p_input;
+
+	if (tab_id >= 0 && mb.is_valid() && mb->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::MIDDLE) {
+			_on_tab_close_pressed(tab_id);
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
+			_tabs_context_menu->set_item_disabled(_tabs_context_menu->get_item_index(PANEL_CLOSE_RIGHT), tab_id == get_tab_count() - 1);
+			_tabs_context_menu->set_position(get_tab_bar()->get_screen_position() + mb->get_position());
+			_tabs_context_menu->reset_size();
+			_tabs_context_menu->popup();
+		}
+	}
 }
