@@ -149,8 +149,6 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 			ScriptLanguage::Warning w;
 			w.start_line = warn.start_line;
 			w.end_line = warn.end_line;
-			w.leftmost_column = warn.leftmost_column;
-			w.rightmost_column = warn.rightmost_column;
 			w.code = (int)warn.code;
 			w.string_code = GDScriptWarning::get_name_from_code(warn.code);
 			w.message = warn.get_message();
