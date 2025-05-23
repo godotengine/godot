@@ -677,6 +677,9 @@ bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p
 }
 
 void OpenXRCompositionLayer::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "layer_viewport") {
 		if (use_android_surface) {
 			p_property.usage &= ~PROPERTY_USAGE_EDITOR;

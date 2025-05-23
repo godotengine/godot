@@ -31,19 +31,18 @@
 #include "look_at_modifier_3d.h"
 
 void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
-	SkeletonModifier3D::_validate_property(p_property);
-
-	if (p_property.name == "bone_name" || p_property.name == "origin_bone_name") {
-		Skeleton3D *skeleton = get_skeleton();
-		if (skeleton) {
-			p_property.hint = PROPERTY_HINT_ENUM;
-			p_property.hint_string = skeleton->get_concatenated_bone_names();
-		} else {
-			p_property.hint = PROPERTY_HINT_NONE;
-			p_property.hint_string = "";
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "bone_name" || p_property.name == "origin_bone_name") {
+			Skeleton3D *skeleton = get_skeleton();
+			if (skeleton) {
+				p_property.hint = PROPERTY_HINT_ENUM;
+				p_property.hint_string = skeleton->get_concatenated_bone_names();
+			} else {
+				p_property.hint = PROPERTY_HINT_NONE;
+				p_property.hint_string = "";
+			}
 		}
 	}
-
 	if (origin_from == ORIGIN_FROM_SPECIFIC_BONE) {
 		if (p_property.name == "origin_external_node") {
 			p_property.usage = PROPERTY_USAGE_NONE;

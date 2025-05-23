@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "fastnoise_lite.h"
+#include "core/config/engine.h"
 
 _FastNoiseLite::FractalType FastNoiseLite::_convert_domain_warp_fractal_type_enum(DomainWarpFractalType p_domain_warp_fractal_type) {
 	_FastNoiseLite::FractalType type;
@@ -477,6 +478,9 @@ void FastNoiseLite::_bind_methods() {
 }
 
 void FastNoiseLite::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name.begins_with("cellular") && get_noise_type() != TYPE_CELLULAR) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		return;

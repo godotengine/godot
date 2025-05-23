@@ -30,10 +30,6 @@
 
 #include "skeleton_modifier_3d.h"
 
-void SkeletonModifier3D::_validate_property(PropertyInfo &p_property) const {
-	//
-}
-
 PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 	if (skeleton_id.is_null()) {

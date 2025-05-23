@@ -893,12 +893,11 @@ void AnimationTree::_setup_animation_player() {
 }
 
 void AnimationTree::_validate_property(PropertyInfo &p_property) const {
-	AnimationMixer::_validate_property(p_property);
-
 	if (!animation_player.is_empty()) {
-		if (p_property.name == "root_node" || p_property.name.begins_with("libraries")) {
+		if (Engine::get_singleton()->is_editor_hint() && (p_property.name == "root_node" || p_property.name.begins_with("libraries"))) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
+
 		if (p_property.name.begins_with("libraries")) {
 			p_property.usage &= ~PROPERTY_USAGE_STORAGE;
 		}

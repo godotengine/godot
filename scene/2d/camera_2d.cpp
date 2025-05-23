@@ -937,6 +937,9 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (!limit_enabled && (p_property.name == "limit_smoothed" || p_property.name == "limit_left" || p_property.name == "limit_top" || p_property.name == "limit_right" || p_property.name == "limit_bottom")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
