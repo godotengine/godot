@@ -1935,7 +1935,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 					}
 				}
 
-				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
+				StringName class_name = res->get_class();
+				if (class_name == "MissingResource") {
+					class_name = "Resource";
+				}
+				Variant default_value = ClassDB::class_get_default_property_value(class_name, name);
 
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					continue;
