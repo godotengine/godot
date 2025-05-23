@@ -194,6 +194,8 @@ protected:
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	void _move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
+	PackedStringArray get_accessibility_configuration_warnings() const override;
+
 public:
 	RID get_tab_accessibility_element(int p_tab) const;
 	virtual RID get_focused_accessibility_element() const override;
