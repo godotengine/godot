@@ -350,7 +350,7 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 		return;
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy screen texture");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Copy screen texture"));
 
 	StringName texture_name;
 	bool can_use_storage = _render_buffers_can_be_storage();
@@ -421,7 +421,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 		return;
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy depth texture");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Copy depth texture"));
 
 	bool can_use_storage = _render_buffers_can_be_storage();
 	Size2i size = rb->get_internal_size();
@@ -478,7 +478,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes)) {
 		RENDER_TIMESTAMP("Depth of Field");
-		RD::get_singleton()->draw_command_begin_label("DOF");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("DOF"));
 
 		rb->allocate_blur_textures();
 
@@ -532,7 +532,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
 		RENDER_TIMESTAMP("Auto exposure");
 
-		RD::get_singleton()->draw_command_begin_label("Auto exposure");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("Auto exposure"));
 
 		Ref<RendererRD::Luminance::LuminanceBuffers> luminance_buffers = luminance->get_luminance_buffers(rb);
 
@@ -557,7 +557,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
 		RENDER_TIMESTAMP("Glow");
-		RD::get_singleton()->draw_command_begin_label("Gaussian Glow");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("Gaussian Glow"));
 
 		rb->allocate_blur_textures();
 
@@ -609,7 +609,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	{
 		RENDER_TIMESTAMP("Tonemap");
-		RD::get_singleton()->draw_command_begin_label("Tonemap");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("Tonemap"));
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
 
@@ -734,7 +734,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	RD::get_singleton()->draw_command_begin_label("Post Process Subpass");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Post Process Subpass"));
 
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());

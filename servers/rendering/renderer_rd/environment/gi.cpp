@@ -1238,7 +1238,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 }
 
 void GI::SDFGI::update_light() {
-	RD::get_singleton()->draw_command_begin_label("SDFGI Update dynamic Light");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("SDFGI Update dynamic Light"));
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		RD::get_singleton()->buffer_copy(cascades[i].solid_cell_dispatch_buffer_storage, cascades[i].solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
@@ -1289,7 +1289,7 @@ void GI::SDFGI::update_light() {
 }
 
 void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
-	RD::get_singleton()->draw_command_begin_label("SDFGI Update Probes");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("SDFGI Update Probes"));
 
 	SDFGIShader::IntegratePushConstant push_constant;
 	push_constant.grid_size[1] = cascade_size;
@@ -1388,7 +1388,7 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 }
 
 void GI::SDFGI::store_probes() {
-	RD::get_singleton()->draw_command_begin_label("SDFGI Store Probes");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("SDFGI Store Probes"));
 
 	SDFGIShader::IntegratePushConstant push_constant;
 	push_constant.grid_size[1] = cascade_size;
@@ -1731,7 +1731,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 	SDFGIShader::ProbeDebugMode mode = p_view_count > 1 ? SDFGIShader::PROBE_DEBUG_PROBES_MULTIVIEW : SDFGIShader::PROBE_DEBUG_PROBES;
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer);
-	RD::get_singleton()->draw_command_begin_label("Debug SDFGI");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Debug SDFGI"));
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, gi->sdfgi_shader.debug_probes_pipeline[mode].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, debug_probes_uniform_set, 0);
@@ -2030,7 +2030,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 	RendererSceneRenderRD::get_singleton()->_render_sdfgi(p_render_buffers, from, size, bounds, p_instances, render_albedo, render_emission, render_emission_aniso, render_geom_facing, p_exposure_normalization);
 
 	if (cascade_next != cascade) {
-		RD::get_singleton()->draw_command_begin_label("SDFGI Pre-Process Cascade");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("SDFGI Pre-Process Cascade"));
 
 		RENDER_TIMESTAMP("> SDFGI Update SDF");
 		//done rendering! must update SDF
@@ -2372,7 +2372,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	RD::get_singleton()->draw_command_begin_label("SDFGI Render Static Lights");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("SDFGI Render Static Lights"));
 
 	update_cascades();
 
@@ -3747,7 +3747,7 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 	}
 
 	if (p_voxel_gi_instances.size() > 0) {
-		RD::get_singleton()->draw_command_begin_label("VoxelGIs Setup");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("VoxelGIs Setup"));
 
 		RD::get_singleton()->buffer_update(voxel_gi_buffer, 0, sizeof(VoxelGIData) * MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size()), voxel_gi_data);
 
@@ -3787,7 +3787,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 
 	ERR_FAIL_COND_MSG(p_view_count > 2, "Maximum of 2 views supported for Processing GI.");
 
-	RD::get_singleton()->draw_command_begin_label("GI Render");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("GI Render"));
 
 	ERR_FAIL_COND(p_render_buffers.is_null());
 

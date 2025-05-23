@@ -518,12 +518,12 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	RENDER_TIMESTAMP("> Volumetric Fog");
-	RD::get_singleton()->draw_command_begin_label("Volumetric Fog");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Volumetric Fog"));
 
 	Ref<VolumetricFog> fog = p_settings.vfog;
 
 	if (p_fog_volumes.size() > 0) {
-		RD::get_singleton()->draw_command_begin_label("Render Volumetric Fog Volumes");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("Render Volumetric Fog Volumes"));
 
 		RENDER_TIMESTAMP("Render FogVolumes");
 
@@ -1109,7 +1109,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	sky_transform = sky_transform.inverse() * p_cam_transform.basis;
 	RendererRD::MaterialStorage::store_transform_3x3(sky_transform, params.radiance_inverse_xform);
 
-	RD::get_singleton()->draw_command_begin_label("Render Volumetric Fog");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Render Volumetric Fog"));
 
 	RENDER_TIMESTAMP("Render Fog");
 	RD::get_singleton()->buffer_update(volumetric_fog.params_ubo, 0, sizeof(VolumetricFogShader::ParamsUBO), &params);
@@ -1136,7 +1136,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	RD::get_singleton()->draw_command_end_label();
 
 	if (p_settings.volumetric_fog_filter_active) {
-		RD::get_singleton()->draw_command_begin_label("Filter Fog");
+		RD::get_singleton()->draw_command_begin_label(Span<char>("Filter Fog"));
 
 		RENDER_TIMESTAMP("Filter Fog");
 
@@ -1160,7 +1160,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	}
 
 	RENDER_TIMESTAMP("Integrate Fog");
-	RD::get_singleton()->draw_command_begin_label("Integrate Fog");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("Integrate Fog"));
 
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG]);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set, 0);

@@ -100,7 +100,7 @@ void TAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_f
 		just_allocated = true;
 	}
 
-	RD::get_singleton()->draw_command_begin_label("TAA");
+	RD::get_singleton()->draw_command_begin_label(Span<char>("TAA"));
 
 	for (uint32_t v = 0; v < view_count; v++) {
 		// Get our (cached) slices
