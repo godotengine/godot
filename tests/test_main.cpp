@@ -237,11 +237,9 @@ int test_main(int argc, char *argv[]) {
 
 	WorkerThreadPool::get_singleton()->init();
 
-	String test_path = OS::get_singleton()->get_cache_path().path_join("godot_test");
-
-	Ref<DirAccess> da;
-	if (DirAccess::exists(test_path)) {
-		da = DirAccess::open(test_path);
+	{
+		const String test_path = TestUtils::get_temp_path("");
+		Ref<DirAccess> da = DirAccess::open(test_path); // get_temp_path() automatically creates the folder.
 		ERR_FAIL_COND_V(da.is_null(), 0);
 		ERR_FAIL_COND_V_MSG(da->erase_contents_recursive() != OK, 0, "Failed to delete files");
 	}
