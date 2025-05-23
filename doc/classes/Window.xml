@@ -339,6 +339,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the window is currently embedded in another window.
+				[b]Note:[/b] This will return [code]false[/code] when "Embed Game on Next Play" is enabled, because it still is a separate native window. To check for that use [method Engine.is_embedded_in_editor].
 			</description>
 		</method>
 		<method name="is_layout_rtl" qualifiers="const">
