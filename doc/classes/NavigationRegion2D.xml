@@ -80,7 +80,7 @@
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationRegion2D] is enabled or disabled.
 		</member>
-		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
+		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			When pathfinding enters this region's navigation mesh from another regions navigation mesh the [member enter_cost] value is added to the path distance for determining the shortest path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
@@ -89,7 +89,7 @@
 		<member name="navigation_polygon" type="NavigationPolygon" setter="set_navigation_polygon" getter="get_navigation_polygon">
 			The [NavigationPolygon] resource to use.
 		</member>
-		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
+		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			When pathfinding moves inside this region's navigation mesh the traveled distances are multiplied with [member travel_cost] for determining the shortest path.
 		</member>
 		<member name="use_edge_connections" type="bool" setter="set_use_edge_connections" getter="get_use_edge_connections" default="true">

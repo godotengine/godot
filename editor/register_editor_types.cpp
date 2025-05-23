@@ -234,6 +234,8 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<MeshInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<MeshLibraryEditorPlugin>();
 	EditorPlugins::add_by_type<MultiMeshEditorPlugin>();
+	EditorPlugins::add_by_type<NavigationMeshArea3DEditorPlugin>();
+	EditorPlugins::add_by_type<NavigationObstacle3DEditorPlugin>();
 	EditorPlugins::add_by_type<OccluderInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<PackedSceneEditorPlugin>();
 	EditorPlugins::add_by_type<Path3DEditorPlugin>();

@@ -214,8 +214,8 @@ void NavigationLink3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_position"), "set_start_position", "get_start_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "end_position"), "set_end_position", "get_end_position");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_enter_cost", "get_enter_cost");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_travel_cost", "get_travel_cost");
 }
 
 #ifndef DISABLE_DEPRECATED
