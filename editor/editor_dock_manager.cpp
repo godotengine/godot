@@ -35,6 +35,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 
 #include "editor/editor_node.h"
@@ -51,6 +52,25 @@ enum class TabStyle {
 };
 
 EditorDockManager *EditorDockManager::singleton = nullptr;
+
+void DockSplitContainer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
+				touch_dragger = memnew(TextureRect);
+				touch_dragger->set_texture(get_editor_theme_icon(SNAME("TouchDragger")));
+				touch_dragger->set_modulate(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+				touch_dragger->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
+				get_drag_area_control()->add_child(touch_dragger);
+			}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			if (touch_dragger) {
+				touch_dragger->set_modulate(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			}
+		} break;
+	}
+}
 
 void DockSplitContainer::_update_visibility() {
 	if (is_updating) {
