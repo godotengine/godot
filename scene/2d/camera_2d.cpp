@@ -800,7 +800,7 @@ Point2 Camera2D::get_camera_screen_center() const {
 	return camera_screen_center;
 }
 
-float Camera2D::get_camera_current_rotation() const {
+real_t Camera2D::get_camera_current_rotation() const {
 	return camera_angle;
 }
 
