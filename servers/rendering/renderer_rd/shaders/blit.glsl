@@ -154,6 +154,9 @@ void main() {
 
 	// Colorspace conversion for final blit
 	if (data.target_color_space == COLOR_SPACE_SRGB_LINEAR) {
+		// Negative values may be interpreted as scRGB colors,
+		// so clip them to the intended sRGB colors.
+		color.rgb = max(vec3(0.0), color.rgb);
 		if (data.source_is_srgb == true) {
 			// sRGB -> linear conversion
 			color.rgb = srgb_to_linear(color.rgb);
@@ -162,11 +165,16 @@ void main() {
 		// Adjust brightness of SDR content to reference luminance
 		color.rgb *= data.reference_multiplier;
 	} else if (data.target_color_space == COLOR_SPACE_SRGB_NONLINEAR) {
+		// Negative values will be clipped by the target, so no need to
+		// clip them here.
 		if (data.source_is_srgb == false) {
 			// linear -> sRGB conversion
 			color.rgb = linear_to_srgb(color.rgb);
 		}
 	} else if (data.target_color_space == COLOR_SPACE_HDR10_ST2084) {
+		// Negative values may be interpreted as colors outside of sRGB,
+		// so clip them to the intended sRGB colors.
+		color.rgb = max(vec3(0.0), color.rgb);
 		if (data.source_is_srgb == true) {
 			// sRGB -> linear conversion
 			color.rgb = srgb_to_linear(color.rgb);
