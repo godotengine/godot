@@ -782,6 +782,103 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 	return true;
 }
 
+int JoltPhysicsDirectSpaceState3D::complete_rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_infos, int p_result_max) {
+	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "complete_rest_info must not be called while the physics space is being stepped.");
+
+	if (p_result_max == 0) {
+		return 0;
+	}
+
+	space->try_optimize();
+
+	JoltShape3D *shape = JoltPhysicsServer3D::get_singleton()->get_shape(p_parameters.shape_rid);
+	ERR_FAIL_NULL_V(shape, false);
+
+	const JPH::ShapeRefC jolt_shape = shape->try_build();
+	ERR_FAIL_NULL_V(jolt_shape, false);
+
+	Transform3D transform = p_parameters.transform;
+	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "complete_rest_info was passed an invalid transform.");
+
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
+	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "complete_rest_info was passed an invalid transform.");
+
+	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
+	const Transform3D transform_com = transform.translated_local(com_scaled);
+
+	JPH::CollideShapeSettings settings;
+	settings.mCollectFacesMode = JPH::ECollectFacesMode::CollectFaces;
+	settings.mMaxSeparationDistance = (float)p_parameters.margin;
+
+	const Vector3 &base_offset = transform_com.origin;
+
+	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude);
+	JoltQueryCollectorAnyMulti<JPH::CollideShapeCollector, 32> collector(p_result_max);
+	_collide_shape_queries(jolt_shape, to_jolt(scale), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, query_filter, query_filter, query_filter);
+
+	if (!collector.had_hit()) {
+		return 0;
+	}
+
+	int count = 0;
+
+	for (int i = 0; i < collector.get_hit_count(); i++) {
+		const JPH::CollideShapeResult &hit = collector.get_hit(i);
+
+		const float penetration_depth = hit.mPenetrationDepth + (float)p_parameters.margin;
+
+		if (penetration_depth <= 0.0f) {
+			continue;
+		}
+
+		JPH::ContactPoints contact_points1;
+		JPH::ContactPoints contact_points2;
+
+		if (p_result_max > 1) {
+			_generate_manifold(hit, contact_points1, contact_points2 JPH_IF_DEBUG_RENDERER(, to_jolt_r(base_offset)));
+		} else {
+			contact_points2.push_back(hit.mContactPointOn2);
+		}
+
+		const JoltReadableBody3D body = space->read_body(hit.mBodyID2);
+		const JoltObject3D *object = body.as_object();
+		ERR_FAIL_NULL_V(object, false);
+
+		int shape_index = 0;
+		if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
+			shape_index = shaped_object->find_shape_index(hit.mSubShapeID2);
+			ERR_FAIL_COND_V(shape_index == -1, false);
+		}
+
+		const Vector3 normal = to_godot(-hit.mPenetrationAxis.Normalized());
+
+		for (JPH::Vec3 contact_point : contact_points2) {
+			ShapeRestInfo &sri = r_infos[count++];
+
+			const Vector3 position = base_offset + to_godot(contact_point);
+
+			sri.shape = shape_index;
+			sri.point = position;
+			sri.depth = penetration_depth;
+			sri.normal = normal;
+			sri.rid = object->get_rid();
+			sri.collider_id = object->get_instance_id();
+			sri.linear_velocity = object->get_velocity_at_position(position);
+
+			if (count == p_result_max) {
+				break;
+			}
+		}
+
+		if (count == p_result_max) {
+			break;
+		}
+	}
+
+	return count;
+}
+
 Vector3 JoltPhysicsDirectSpaceState3D::get_closest_point_to_object_volume(RID p_object, Vector3 p_point) const {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), Vector3(), "get_closest_point_to_object_volume must not be called while the physics space is being stepped.");
 

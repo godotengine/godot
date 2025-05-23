@@ -124,6 +124,7 @@ class PhysicsDirectSpaceState2D : public Object {
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
 	TypedArray<Vector2> _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
+	TypedArray<Dictionary> _get_complete_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 
 protected:
 	static void _bind_methods();
@@ -192,12 +193,14 @@ public:
 		ObjectID collider_id;
 		int shape = 0;
 		Vector2 linear_velocity; // Velocity at contact point.
+		real_t depth = 0.0;
 	};
 
 	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) = 0;
 	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) = 0;
 	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) = 0;
 	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) = 0;
+	virtual int complete_rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_infos, int p_result_max) = 0;
 
 	PhysicsDirectSpaceState2D();
 };
