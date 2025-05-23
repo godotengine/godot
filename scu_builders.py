@@ -36,6 +36,10 @@ def folder_not_found(folder):
 
 
 def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exceptions, found_exceptions):
+    # Remove slash if already slashed.
+    if sub_folder and sub_folder[0] == "/":
+        sub_folder = sub_folder[1:]
+
     abs_folder = base_folder_path + folder + "/" + sub_folder
 
     if not os.path.isdir(abs_folder):
@@ -154,6 +158,85 @@ def find_section_name(sub_folder):
     return section_name
 
 
+# Purely for debugging.
+def print_folders(folders, pretext, depth, commas=False):
+    if not folders:
+        return
+
+    sz_depth = ""
+    for i in range(depth):
+        sz_depth += "\t"
+
+    sz = "\n"
+    sz += pretext + "\n"
+    for fold in folders:
+        if not commas:
+            sz += sz_depth + fold + "\n"
+        else:
+            sz += fold + ", "
+    sz += "\n"
+    print(sz)
+
+
+def find_child_folders(folder, exception_folders):
+    abs_folder = base_folder_path + folder
+    return [
+        name
+        for name in os.listdir(abs_folder)
+        if os.path.isdir(os.path.join(abs_folder, name)) and name not in exception_folders
+    ]
+
+
+def find_child_folders_recursive(root_folder, parent_folder, exception_folders, depth=0):
+    children = find_child_folders(root_folder + parent_folder, exception_folders)
+
+    children_copy = []
+    for child in children:
+        children_copy.append(parent_folder + "/" + child)
+
+    if _verbose:
+        print_folders(children, "children of " + parent_folder, depth)
+
+    for child in children:
+        subfolder = parent_folder + "/" + child
+
+        if _verbose:
+            print("checking subfolder: " + parent_folder + " / " + child)
+
+        sub_children = find_child_folders_recursive(root_folder, subfolder, exception_folders, depth + 1)
+        children_copy += sub_children
+
+    return children_copy
+
+
+# "process_folder_recursive" is syntactic sugar to "process_folder" for a folder and all subfolders
+# (as one SCU unit). This is less verbose and means subfolders can be added / deleted without modifying
+# "scu_builders.py".
+# Note that some standard folders are excluded (see below), and an optional additional list of excluded folders
+# can be specified in the 2nd parameter.
+
+
+def process_folder_recursive(
+    root_folder, exception_folders=[], sought_exceptions=[], extension="cpp", includes_per_scu=0
+):
+    # Standard exception folders not to include.
+    exception_folders.append(".scu")
+    exception_folders.append("scu")
+    exception_folders.append("__pycache__")
+
+    subfolders = find_child_folders_recursive(root_folder, "", exception_folders)
+    if _verbose:
+        print("process_folder_recursive: ")
+
+    subfolders.insert(0, root_folder)
+
+    if _verbose:
+        for folder in subfolders:
+            print("\t" + folder)
+
+    process_folder(subfolders, sought_exceptions, extension, includes_per_scu)
+
+
 # "folders" is a list of folders to add all the files from to add to the SCU
 # "section (like a module)". The name of the scu file will be derived from the first folder
 # (thus e.g. scene/3d becomes scu_scene_3d.gen.cpp)
@@ -171,7 +254,7 @@ def find_section_name(sub_folder):
 
 
 # "extension" will usually be cpp, but can also be set to c (for e.g. third party libraries that use c)
-def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension="cpp"):
+def process_folder(folders, sought_exceptions=[], extension="cpp", includes_per_scu=0):
     if len(folders) == 0:
         return
 
@@ -278,6 +361,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["core/input"])
     process_folder(["core/io"])
     process_folder(["core/math"])
+    process_folder(["core/templates"])
     process_folder(["core/object"])
     process_folder(["core/os"])
     process_folder(["core/string"])
@@ -286,10 +370,11 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["drivers/unix"])
     process_folder(["drivers/png"])
 
+    process_folder(["drivers/gles3"])
     process_folder(["drivers/gles3/effects"])
     process_folder(["drivers/gles3/storage"])
 
-    process_folder(["editor"], ["file_system_dock", "editor_resource_preview"], 32)
+    process_folder(["editor"], ["file_system_dock", "editor_resource_preview"], "cpp", 32)
     process_folder(["editor/debugger"])
     process_folder(["editor/debugger/debug_adapter"])
     process_folder(["editor/export"])
@@ -327,7 +412,9 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["modules/openxr"], ["register_types"])
     process_folder(["modules/openxr/action_map"])
     process_folder(["modules/openxr/editor"])
-    # process_folder(["modules/openxr/extensions"])  # Sensitive include order for platform code.
+    process_folder(
+        ["modules/openxr/extensions"], ["openxr_fb_update_swapchain_extension", "openxr_fb_foveation_extension"]
+    )
     process_folder(["modules/openxr/scene"])
     process_folder(["modules/godot_physics_2d"])
     process_folder(["modules/godot_physics_3d"])
@@ -337,13 +424,22 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["modules/gdscript"])
     process_folder(["modules/gdscript/editor"])
     process_folder(["modules/gdscript/language_server"])
+    process_folder(["modules/webxr"])
+    process_folder(["modules/websocket"])
+
+    # Note that if folders are to be excluded they can be supplied in a list as the second parameter
+    # to process_folder_recursive().
+    process_folder_recursive("thirdparty/jolt_physics/Jolt")
+    process_folder_recursive("modules/jolt_physics")
 
     process_folder(["scene/2d"])
     process_folder(["scene/2d/physics"])
     process_folder(["scene/2d/physics/joints"])
+    process_folder(["scene/2d/navigation"])
     process_folder(["scene/3d"])
     process_folder(["scene/3d/physics"])
     process_folder(["scene/3d/physics/joints"])
+    process_folder(["scene/3d/navigation"])
     process_folder(["scene/3d/xr"])
     process_folder(["scene/animation"])
     process_folder(["scene/gui"])
@@ -354,7 +450,6 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["scene/resources/2d/skeleton"])
     process_folder(["scene/resources/3d"])
 
-    process_folder(["servers"])
     process_folder(["servers/rendering"])
     process_folder(["servers/rendering/dummy/storage"])
     process_folder(["servers/rendering/storage"])
@@ -366,6 +461,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["servers/rendering/renderer_rd/forward_mobile"])
     process_folder(["servers/audio"])
     process_folder(["servers/audio/effects"])
+    process_folder(["servers/movie_writer"])
     process_folder(["servers/navigation"])
     process_folder(["servers/xr"])
 

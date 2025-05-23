@@ -160,19 +160,31 @@ env_thirdparty = env_jolt.Clone()
 env_thirdparty.disable_warnings()
 
 thirdparty_obj = []
-env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+
+# If in a SCU build, add all the jolt files at once,
+# specify the jolt folders in "scu_builders.py".
+if env["scu_build"]:
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "Jolt/*.cpp")
+else:
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+
 env.modules_sources += thirdparty_obj
 
 # Godot source files
 
 module_obj = []
 
-env_jolt.add_source_files(module_obj, "*.cpp")
-env_jolt.add_source_files(module_obj, "joints/*.cpp")
-env_jolt.add_source_files(module_obj, "misc/*.cpp")
-env_jolt.add_source_files(module_obj, "objects/*.cpp")
-env_jolt.add_source_files(module_obj, "shapes/*.cpp")
-env_jolt.add_source_files(module_obj, "spaces/*.cpp")
+# If not in a SCU build, add the subfolders individually.
+if env["scu_build"]:
+    env_jolt.add_source_files(module_obj, "*.cpp")
+else:
+    env_jolt.add_source_files(module_obj, "*.cpp")
+    env_jolt.add_source_files(module_obj, "joints/*.cpp")
+    env_jolt.add_source_files(module_obj, "misc/*.cpp")
+    env_jolt.add_source_files(module_obj, "objects/*.cpp")
+    env_jolt.add_source_files(module_obj, "shapes/*.cpp")
+    env_jolt.add_source_files(module_obj, "spaces/*.cpp")
+
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
