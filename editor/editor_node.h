@@ -435,6 +435,8 @@ private:
 	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
+	LocalVector<String> disk_changed_scenes;
+	bool disk_changed_project = false;
 	ConfirmationDialog *disk_changed = nullptr;
 	ConfirmationDialog *project_data_missing = nullptr;
 
@@ -675,7 +677,7 @@ private:
 	void _scan_external_changes();
 	void _reload_modified_scenes();
 	void _reload_project_settings();
-	void _resave_scenes(String p_str);
+	void _resave_externally_modified_scenes(String p_str);
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);

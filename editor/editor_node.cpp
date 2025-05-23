@@ -1304,21 +1304,27 @@ void EditorNode::_scan_external_changes() {
 	disk_changed_list->set_hide_root(true);
 	bool need_reload = false;
 
-	// Check if any edited scene has changed.
+	disk_changed_scenes.clear();
+	disk_changed_project = false;
 
+	// Check if any edited scene has changed.
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (editor_data.get_scene_path(i) == "" || !da->file_exists(editor_data.get_scene_path(i))) {
+
+		const String scene_path = editor_data.get_scene_path(i);
+
+		if (scene_path == "" || !da->file_exists(scene_path)) {
 			continue;
 		}
 
 		uint64_t last_date = editor_data.get_scene_modified_time(i);
-		uint64_t date = FileAccess::get_modified_time(editor_data.get_scene_path(i));
+		uint64_t date = FileAccess::get_modified_time(scene_path);
 
 		if (date > last_date) {
 			TreeItem *ti = disk_changed_list->create_item(r);
-			ti->set_text(0, editor_data.get_scene_path(i).get_file());
+			ti->set_text(0, scene_path.get_file());
 			need_reload = true;
+			disk_changed_scenes.push_back(scene_path);
 		}
 	}
 
@@ -1327,6 +1333,7 @@ void EditorNode::_scan_external_changes() {
 		TreeItem *ti = disk_changed_list->create_item(r);
 		ti->set_text(0, "project.godot");
 		need_reload = true;
+		disk_changed_project = true;
 	}
 
 	if (need_reload) {
@@ -1334,9 +1341,15 @@ void EditorNode::_scan_external_changes() {
 	}
 }
 
-void EditorNode::_resave_scenes(String p_str) {
-	save_all_scenes();
-	ProjectSettings::get_singleton()->save();
+void EditorNode::_resave_externally_modified_scenes(String p_str) {
+	for (const String &scene_path : disk_changed_scenes) {
+		_save_scene(scene_path);
+	}
+
+	if (disk_changed_project) {
+		ProjectSettings::get_singleton()->save();
+	}
+
 	disk_changed->hide();
 }
 
@@ -8304,7 +8317,7 @@ EditorNode::EditorNode() {
 		disk_changed->set_ok_button_text(TTR("Reload from disk"));
 
 		disk_changed->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
-		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_scenes));
+		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_externally_modified_scenes));
 	}
 
 	gui_base->add_child(disk_changed);
