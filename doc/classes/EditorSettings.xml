@@ -973,6 +973,9 @@
 		<member name="interface/inspector/auto_unfold_foreign_scenes" type="bool" setter="" getter="">
 			If [code]true[/code], automatically expands property groups in the Inspector dock when opening a scene that hasn't been opened previously. If [code]false[/code], all groups remain collapsed by default.
 		</member>
+		<member name="interface/inspector/color_picker_show_intensity" type="bool" setter="" getter="">
+			If [code]true[/code], show the intensity slider in the [ColorPicker]s opened in the editor.
+		</member>
 		<member name="interface/inspector/default_color_picker_mode" type="int" setter="" getter="">
 			The default color picker mode to use when opening [ColorPicker]s in the editor. This mode can be temporarily adjusted on the color picker itself.
 		</member>
