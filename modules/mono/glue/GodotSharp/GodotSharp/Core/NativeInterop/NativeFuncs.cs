@@ -433,6 +433,12 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_array_to_string(ref godot_array p_self, out godot_string r_str);
 
+        public static partial void godotsharp_packed_byte_array_compress(scoped in godot_packed_byte_array p_src, int p_mode, out godot_packed_byte_array r_dst);
+
+        public static partial void godotsharp_packed_byte_array_decompress(scoped in godot_packed_byte_array p_src, long p_buffer_size, int p_mode, out godot_packed_byte_array r_dst);
+
+        public static partial void godotsharp_packed_byte_array_decompress_dynamic(scoped in godot_packed_byte_array p_src, long p_buffer_size, int p_mode, out godot_packed_byte_array r_dst);
+
         // Dictionary
 
         public static partial godot_bool godotsharp_dictionary_try_get_value(scoped ref godot_dictionary p_self,
