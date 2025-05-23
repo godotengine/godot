@@ -89,6 +89,7 @@
 		[/codeblocks]
 		Some [Tweener]s use transitions and eases. The first accepts a [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.webp]Tween easing and transition types cheatsheet[/url]
+		Alternatively, you can use a custom [Curve], either with [method PropertyTweener.set_custom_interpolator] or [method tween_method].
 		[b]Note:[/b] Tweens are not designed to be reused and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
 		[b]Note:[/b] The tween is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the tween (or [method Node._physics_process] depending on the value passed to [method set_process_mode]).
 	</description>
@@ -434,6 +435,18 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Example:[/b] Tweening property along a custom [Curve]:
+				[codeblock]
+				@export var curve: Curve
+
+				func _ready():
+				    var tween = create_tween()
+				    # The property and starting and finishing values are provided with bind(), while "from" and "to" are always 0 and 1.
+				    tween.tween_method(tween_curve.bind("position", Vector2(0, 100), Vector2(1000, 100)), 0.0, 1.0, 5.0)
+
+				func tween_curve(value, property, from, to):
+				    set(property, lerp(from, to, curve.sample_baked(value)))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="tween_property">
