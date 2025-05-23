@@ -3248,6 +3248,7 @@
 		</member>
 		<member name="rendering/scaling_3d/scale" type="float" setter="" getter="" default="1.0">
 			Scales the 3D render buffer based on the viewport size uses an image filter specified in [member rendering/scaling_3d/mode] to scale the output image to the full viewport size. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] are only valid for bilinear mode and can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member rendering/anti_aliasing/quality/msaa_3d] for multi-sample antialiasing, which is significantly cheaper but only smooths the edges of polygons.
+			[b]Note:[/b] When using the [b]Nearest[/b] scaling mode, to avoid uneven pixel scaling, it's highly recommended to use a value equal to an integer divisor of 1, such as [code]1.0 / 2 = 0.5[/code]. For example, it's best to use a scale of [code]0.5[/code] (2×2), [code]0.3333[/code] (3×3), [code]0.25[/code] (4×4), [code]0.2[/code] (5×5), and so on.
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
 		</member>
