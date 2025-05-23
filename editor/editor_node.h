@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/string/string_name.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/editor_folding.h"
@@ -785,6 +786,8 @@ public:
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
+
+	void save_resource_bulk(const LocalVector<Ref<Resource>> &p_bulk);
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
