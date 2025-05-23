@@ -849,8 +849,21 @@ void Node::rpc_config(const StringName &p_method, const Variant &p_config) {
 	}
 }
 
-Variant Node::get_rpc_config() const {
-	return data.rpc_config;
+Variant Node::get_rpc_config(bool script_rpc_get) const {
+	const Dictionary node_config = data.rpc_config;
+	if (script_rpc_get && get_script_instance()) { // return attached GDScript RPC configs too
+		const Dictionary script_config = get_script_instance()->get_rpc_config();
+		const Array script_names = script_config.keys();
+		Dictionary merged_config = node_config;
+		for (int i = 0; i < script_names.size(); i++) {
+			const auto name = script_names[i];
+			ERR_FAIL_COND_V_MSG(merged_config.has(name) == true, node_config, "Detected GDScript function RPC name collision. Only Node RPC configuration will be returned.");
+			merged_config[name] = script_config[name];
+		}
+		return merged_config;
+	} else {
+		return node_config;
+	}
 }
 
 /***** RPC FUNCTIONS ********/
@@ -3980,7 +3993,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "config"), &Node::rpc_config);
-	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Node::get_rpc_config);
+	ClassDB::bind_method(D_METHOD("get_rpc_config", "script_rpc_get"), &Node::get_rpc_config, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
