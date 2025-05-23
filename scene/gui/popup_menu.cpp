@@ -3211,19 +3211,22 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		moved = Vector2();
 		popup_time_msec = OS::get_singleton()->get_ticks_msec();
 
-		Size2 scale = get_parent_viewport()->get_popup_base_transform().get_scale();
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
-		if (c) {
-			scale *= c->get_global_transform_with_canvas().get_scale();
-		}
-		real_t popup_scale = MIN(scale.x, scale.y);
-		set_content_scale_factor(popup_scale);
-		Size2 minsize = get_contents_minimum_size() * popup_scale;
-		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
-		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-		set_size(Vector2(0, 0)); // Shrinkwraps to min size.
 		Popup::popup(p_bounds);
 	}
+}
+
+void PopupMenu::_pre_popup() {
+	Size2 scale = get_parent_viewport()->get_popup_base_transform().get_scale();
+	CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
+	if (c) {
+		scale *= c->get_global_transform_with_canvas().get_scale();
+	}
+	real_t popup_scale = MIN(scale.x, scale.y);
+	set_content_scale_factor(popup_scale);
+	Size2 minsize = get_contents_minimum_size() * popup_scale;
+	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
+	reset_size(); // Shrinkwraps to min size.
 }
 
 void PopupMenu::set_visible(bool p_visible) {
