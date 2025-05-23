@@ -7588,11 +7588,11 @@ EditorNode::EditorNode() {
 	left_l_vsplit->set_vertical(true);
 	left_l_hsplit->add_child(left_l_vsplit);
 
-	TabContainer *dock_slot[EditorDockManager::DOCK_SLOT_MAX];
-	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UL] = memnew(TabContainer);
+	EditorDockTabContainer *dock_slot[EditorDockManager::DOCK_SLOT_MAX];
+	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UL] = memnew(EditorDockTabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UL]->set_name("DockSlotLeftUL");
 	left_l_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UL]);
-	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BL] = memnew(TabContainer);
+	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BL] = memnew(EditorDockTabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BL]->set_name("DockSlotLeftBL");
 	left_l_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BL]);
 
@@ -7603,10 +7603,10 @@ EditorNode::EditorNode() {
 	left_r_vsplit->set_name("DockVSplitLeftR");
 	left_r_vsplit->set_vertical(true);
 	left_r_hsplit->add_child(left_r_vsplit);
-	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UR] = memnew(TabContainer);
+	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UR] = memnew(EditorDockTabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UR]->set_name("DockSlotLeftUR");
 	left_r_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UR]);
-	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BR] = memnew(TabContainer);
+	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BR] = memnew(EditorDockTabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BR]->set_name("DockSlotLeftBR");
 	left_r_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BR]);
 
@@ -7633,10 +7633,10 @@ EditorNode::EditorNode() {
 	right_l_vsplit->set_name("DockVSplitRightL");
 	right_l_vsplit->set_vertical(true);
 	right_hsplit->add_child(right_l_vsplit);
-	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UL] = memnew(TabContainer);
+	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UL] = memnew(EditorDockTabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UL]->set_name("DockSlotRightUL");
 	right_l_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UL]);
-	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_BL] = memnew(TabContainer);
+	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_BL] = memnew(EditorDockTabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_BL]->set_name("DockSlotRightBL");
 	right_l_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_BL]);
 
@@ -7644,10 +7644,10 @@ EditorNode::EditorNode() {
 	right_r_vsplit->set_name("DockVSplitRightR");
 	right_r_vsplit->set_vertical(true);
 	right_hsplit->add_child(right_r_vsplit);
-	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UR] = memnew(TabContainer);
+	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UR] = memnew(EditorDockTabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UR]->set_name("DockSlotRightUR");
 	right_r_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UR]);
-	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_BR] = memnew(TabContainer);
+	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_BR] = memnew(EditorDockTabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_BR]->set_name("DockSlotRightBR");
 	right_r_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_BR]);
 

@@ -37,6 +37,8 @@
 class TabBar : public Control {
 	GDCLASS(TabBar, Control);
 
+	friend class TabContainer;
+
 public:
 	enum AlignmentMode {
 		ALIGNMENT_LEFT,
@@ -189,18 +191,18 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	Variant get_drag_data(const Point2 &p_point) override;
-	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
-	void drop_data(const Point2 &p_point, const Variant &p_data) override;
+	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
+	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
+	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
 	void _move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
 public:
 	RID get_tab_accessibility_element(int p_tab) const;
 	virtual RID get_focused_accessibility_element() const override;
 
-	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
-	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
-	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
+	Variant get_drag_data(const Point2 &p_point) override;
+	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
