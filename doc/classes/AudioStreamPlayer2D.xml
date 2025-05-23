@@ -38,6 +38,17 @@
 				Queues the audio to play on the next physics frame, from the given position [param from_position], in seconds.
 			</description>
 		</method>
+		<method name="play_scheduled" experimental="">
+			<return type="void" />
+			<param index="0" name="absolute_time" type="float" />
+			<param index="1" name="from_position" type="float" default="0.0" />
+			<description>
+				Schedules a sound to be played on the [AudioServer]'s timeline at [param absolute_time] in seconds. If the sound is scheduled to play earlier than the value returned by [method AudioServer.get_absolute_time], it will be played immediately. The sound starts from the given [param from_position] in seconds.
+				Use this method for high precision playbacks, such as a metronome or other rhythm-based sounds.
+				[b]Note:[/b] Calling this method after [member max_polyphony] is reached will cut off the oldest sound playing on this node.
+				[b]Note:[/b] On the Web platform, [member playback_type] must be set to [constant AudioServer.PLAYBACK_TYPE_STREAM]. Otherwise, this method will behave like [method play].
+			</description>
+		</method>
 		<method name="seek">
 			<return type="void" />
 			<param index="0" name="to_position" type="float" />
@@ -70,7 +81,7 @@
 			Maximum distance from which audio is still hearable.
 		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
-			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
+			The maximum number of sounds this node can play and schedule at the same time. Calling [method play] or [method play_scheduled] after this value is reached will cut off the oldest sounds.
 		</member>
 		<member name="panning_strength" type="float" setter="set_panning_strength" getter="get_panning_strength" default="1.0">
 			Scales the panning strength for this node by multiplying the base [member ProjectSettings.audio/general/2d_panning_strength] with this factor. Higher values will pan audio from left to right more dramatically than lower values.
