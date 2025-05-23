@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonIK3D" inherits="SkeletonModifier3D" deprecated="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SkeletonIK3D" inherits="SkeletonModifier3D" deprecated="" keywords="modifier" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used to rotate all bones of a [Skeleton3D] bone chain a way that places the end bone at a desired 3D position.
 	</brief_description>
