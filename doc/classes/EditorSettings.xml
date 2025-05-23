@@ -853,6 +853,9 @@
 		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
 			Tab style of editor docks.
 		</member>
+		<member name="interface/editor/dragging_unfold_wait_seconds" type="float" setter="" getter="">
+			During a drag-and-drop, this is how long to wait over a section before the section unfolds to show nested items.
+		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
