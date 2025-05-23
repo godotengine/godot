@@ -37,7 +37,7 @@
 #include <type_traits>
 
 class CallableCustomMethodPointerBase : public CallableCustom {
-	uint32_t *comp_ptr = nullptr;
+	const uint8_t *comp_ptr = nullptr;
 	uint32_t comp_size;
 	uint32_t h;
 #ifdef DEBUG_ENABLED
@@ -47,7 +47,7 @@ class CallableCustomMethodPointerBase : public CallableCustom {
 	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
 
 protected:
-	void _setup(uint32_t *p_base_ptr, uint32_t p_ptr_size);
+	void _setup(const uint8_t *p_base_ptr, uint32_t p_ptr_size);
 
 public:
 	virtual StringName get_method() const {
@@ -111,7 +111,7 @@ public:
 		data.instance = p_instance;
 		data.object_id = p_instance->get_instance_id();
 		data.method = p_method;
-		_setup((uint32_t *)&data, sizeof(Data));
+		_setup((const uint8_t *)&data, sizeof(Data));
 	}
 };
 
@@ -180,7 +180,7 @@ public:
 		data.instance = p_instance;
 		data.object_id = p_instance->get_instance_id();
 		data.method = p_method;
-		_setup((uint32_t *)&data, sizeof(Data));
+		_setup((const uint8_t *)&data, sizeof(Data));
 	}
 };
 
@@ -251,7 +251,7 @@ public:
 	CallableCustomStaticMethodPointer(R (*p_method)(P...)) {
 		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.method = p_method;
-		_setup((uint32_t *)&data, sizeof(Data));
+		_setup((const uint8_t *)&data, sizeof(Data));
 	}
 };
 
