@@ -2437,7 +2437,9 @@ String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
-	return String::ascii(Span((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN));
+
+	// Note: Windows API returns a GUID with null termination.
+	return String::ascii(Span<char>(HwProfInfo.szHwProfileGuid, strnlen(HwProfInfo.szHwProfileGuid, HW_PROFILE_GUIDLEN)));
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
