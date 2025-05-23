@@ -544,8 +544,10 @@ Error SkinTool::_create_skeletons(
 		HashMap<ObjectID, GLTFSkeletonIndex> &skeleton3d_to_gltf_skeleton,
 		Vector<Ref<GLTFSkeleton>> &skeletons,
 		HashMap<GLTFNodeIndex, Node *> &scene_nodes) {
+	HashSet<String> unique_node_names = unique_names.duplicate();
 	for (SkinSkeletonIndex skel_i = 0; skel_i < skeletons.size(); ++skel_i) {
 		Ref<GLTFSkeleton> gltf_skeleton = skeletons.write[skel_i];
+		HashSet<String> skel_unique_names = unique_node_names.duplicate();
 
 		Skeleton3D *skeleton = memnew(Skeleton3D);
 		gltf_skeleton->godot_skeleton = skeleton;
@@ -593,7 +595,12 @@ Error SkinTool::_create_skeletons(
 				node->set_name("bone");
 			}
 
-			node->set_name(_gen_unique_bone_name(unique_names, node->get_name()));
+			// Make sure the bone name is unique in the skeleton and unique compared
+			// to scene nodes, but bone names may be duplicated between skeletons.
+			// Example: Two skeletons with a "Head" bone should not have one become "Head_2".
+			const String unique_bone_name = _gen_unique_bone_name(skel_unique_names, node->get_name());
+			unique_names.insert(unique_bone_name);
+			node->set_name(unique_bone_name);
 
 			skeleton->add_bone(node->get_name());
 			Transform3D rest_transform = node->get_additional_data("GODOT_rest_transform");
