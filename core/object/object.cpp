@@ -1265,7 +1265,6 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	OBJ_DEBUG_LOCK
 
 	Error err = OK;
-	Variant appended_self;
 
 	for (uint32_t i = 0; i < slot_count; ++i) {
 		const Callable &callable = slot_callables[i];
@@ -1278,18 +1277,6 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 		const Variant **args = p_args;
 		int argc = p_argcount;
-
-		if (flags & CONNECT_APPEND_SOURCE_OBJECT) {
-			argc += 1;
-			args = (const Variant **)alloca(sizeof(Variant *) * argc);
-			for (int j = 0; j < p_argcount; j++) {
-				args[j] = (const Variant *)p_args[j];
-			}
-			if (unlikely(appended_self.get_type() == Variant::NIL)) {
-				appended_self = this;
-			}
-			args[p_argcount] = &appended_self;
-		}
 
 		if (flags & CONNECT_DEFERRED) {
 			MessageQueue::get_singleton()->push_callablep(callable, args, argc, true);
