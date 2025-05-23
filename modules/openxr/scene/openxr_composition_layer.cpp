@@ -697,16 +697,16 @@ void OpenXRCompositionLayer::_get_configuration_info(List<ConfigurationInfo> *p_
 	if (is_visible() && is_inside_tree()) {
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 		if (origin == nullptr) {
-			CONFIG_WARNING(RTR("OpenXR composition layers must have an XROrigin3D node as their parent."));
+			CONFIG_WARNING("invalid_parent", RTR("OpenXR composition layers must have an XROrigin3D node as their parent."));
 		}
 	}
 
 	if (!get_transform().basis.is_orthonormal()) {
-		CONFIG_WARNING(RTR("OpenXR composition layers must have orthonormalized transforms (ie. no scale or shearing)."));
+		CONFIG_WARNING("openxr_composition_layer_invalid_transform", RTR("OpenXR composition layers must have orthonormalized transforms (ie. no scale or shearing)."));
 	}
 
 	if (enable_hole_punch && get_sort_order() >= 0) {
-		CONFIG_WARNING(RTR("Hole punching won't work as expected unless the sort order is less than zero."));
+		CONFIG_WARNING("openxr_composition_layer_hole_punch_sort_order", RTR("Hole punching won't work as expected unless the sort order is less than zero."));
 	}
 }
 #endif

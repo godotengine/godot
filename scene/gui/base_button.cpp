@@ -517,7 +517,7 @@ bool BaseButton::_was_pressed_by_mouse() const {
 #ifdef TOOLS_ENABLED
 void BaseButton::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (get_button_group().is_valid() && !is_toggle_mode()) {
-		CONFIG_WARNING(RTR("ButtonGroup is intended to be used only with buttons that have toggle_mode set to true."));
+		CONFIG_WARNING("button_group_needs_toggle_mode", RTR("ButtonGroup is intended to be used only with buttons that have toggle_mode set to true."));
 	}
 }
 #endif

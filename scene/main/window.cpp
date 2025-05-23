@@ -3053,7 +3053,7 @@ void Window::_mouse_leave_viewport() {
 void Window::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	ERR_MAIN_THREAD_GUARD;
 	if (size.x <= 1 || size.y <= 1) {
-		CONFIG_WARNING_P(RTR("The Window size must be greater than or equal to 2 pixels on both dimensions to render anything."), "size");
+		CONFIG_WARNING_P("viewport_size_too_small", RTR("The Window size must be greater than or equal to 2 pixels on both dimensions to render anything."), "size");
 	}
 }
 #endif

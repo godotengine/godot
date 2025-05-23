@@ -919,5 +919,5 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 #endif
 
 // Add these macro to your class's 'get_configuration_info' function to have warnings show up in the scene tree inspector.
-#define DEPRECATED_NODE_WARNING CONFIG_WARNING(RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));
-#define EXPERIMENTAL_NODE_WARNING CONFIG_WARNING(RTR("This node is marked as experimental and may be subject to removal or major changes in future versions."));
+#define DEPRECATED_NODE_WARNING CONFIG_WARNING("deprecated", RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));
+#define EXPERIMENTAL_NODE_WARNING CONFIG_WARNING("experimental", RTR("This node is marked as experimental and may be subject to removal or major changes in future versions."));

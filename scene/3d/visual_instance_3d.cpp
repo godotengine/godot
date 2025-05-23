@@ -513,23 +513,23 @@ Ref<TriangleMesh> GeometryInstance3D::generate_triangle_mesh() const {
 #ifdef TOOLS_ENABLED
 void GeometryInstance3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!Math::is_zero_approx(visibility_range_end) && visibility_range_end <= visibility_range_begin) {
-		CONFIG_WARNING(RTR("The GeometryInstance3D visibility range's End distance is set to a non-zero value, but is lower than the Begin distance.\nThis means the GeometryInstance3D will never be visible.\nTo resolve this, set the End distance to 0 or to a value greater than the Begin distance."));
+		CONFIG_WARNING("geometry_visibility_range_never_visible", RTR("The GeometryInstance3D visibility range's End distance is set to a non-zero value, but is lower than the Begin distance.\nThis means the GeometryInstance3D will never be visible.\nTo resolve this, set the End distance to 0 or to a value greater than the Begin distance."));
 	}
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && !Math::is_zero_approx(visibility_range_begin) && Math::is_zero_approx(visibility_range_begin_margin)) {
-		CONFIG_WARNING(RTR("The GeometryInstance3D is configured to fade in smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range Begin Margin above 0."));
+		CONFIG_WARNING("geometry_fade_transition_distance_zero", RTR("The GeometryInstance3D is configured to fade in smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range Begin Margin above 0."));
 	}
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && !Math::is_zero_approx(visibility_range_end) && Math::is_zero_approx(visibility_range_end_margin)) {
-		CONFIG_WARNING(RTR("The GeometryInstance3D is configured to fade out smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range End Margin above 0."));
+		CONFIG_WARNING("geometry_fade_transition_distance_zero", RTR("The GeometryInstance3D is configured to fade out smoothly over distance, but the fade transition distance is set to 0.\nTo resolve this, increase Visibility Range End Margin above 0."));
 	}
 
 	if (!Math::is_zero_approx(transparency) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		CONFIG_WARNING(RTR("GeometryInstance3D transparency is only available when using the Forward+ rendering method."));
+		CONFIG_WARNING("unsupported_renderer", RTR("GeometryInstance3D transparency is only available when using the Forward+ rendering method."));
 	}
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		CONFIG_WARNING_P(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ rendering method."), "visibility_range_fade_mode");
+		CONFIG_WARNING_P("unsupported_renderer", RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ rendering method."), "visibility_range_fade_mode");
 	}
 }
 #endif

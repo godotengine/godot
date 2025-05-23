@@ -373,7 +373,7 @@ void GPUParticles2D::request_particles_process(real_t p_requested_process_time) 
 #ifdef TOOLS_ENABLED
 void GPUParticles2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (process_material.is_null()) {
-		CONFIG_WARNING(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
+		CONFIG_WARNING("missing_resource", RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {
 		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 
@@ -382,17 +382,17 @@ void GPUParticles2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) c
 			if (process &&
 					(process->get_param_max(ParticleProcessMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticleProcessMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 							process->get_param_texture(ParticleProcessMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticleProcessMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-				CONFIG_WARNING(RTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
+				CONFIG_WARNING("particles_material_needs_animation", RTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
 			}
 		}
 	}
 
 	if (trail_enabled && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
-		CONFIG_WARNING(RTR("Particle trails are only available when using the Forward+ or Mobile renderers."));
+		CONFIG_WARNING("unsupported_renderer", RTR("Particle trails are only available when using the Forward+ or Mobile renderers."));
 	}
 
 	if (sub_emitter != NodePath() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
-		CONFIG_WARNING(RTR("Particle sub-emitters are not available when using the Compatibility renderer."));
+		CONFIG_WARNING("unsupported_renderer", RTR("Particle sub-emitters are not available when using the Compatibility renderer."));
 	}
 }
 #endif

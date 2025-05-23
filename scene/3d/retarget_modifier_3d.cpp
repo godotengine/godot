@@ -33,7 +33,7 @@
 #ifdef TOOLS_ENABLED
 void RetargetModifier3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (child_skeletons.is_empty()) {
-		CONFIG_WARNING(RTR("There is no child Skeleton3D!"));
+		CONFIG_WARNING("skeleton_modifier_missing_skeleton", RTR("There is no child Skeleton3D!"));
 	}
 }
 #endif

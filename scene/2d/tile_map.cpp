@@ -843,7 +843,7 @@ TypedArray<Vector2i> TileMap::get_surrounding_cells(const Vector2i &p_coords) {
 
 #ifdef TOOLS_ENABLED
 void TileMap::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
-	CONFIG_WARNING(RTR("The TileMap node is deprecated as it is superseded by the use of multiple TileMapLayer nodes.\nTo convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with this node selected, click the toolbox icon in the top-right corner and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."));
+	CONFIG_WARNING("deprecated", RTR("The TileMap node is deprecated as it is superseded by the use of multiple TileMapLayer nodes.\nTo convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with this node selected, click the toolbox icon in the top-right corner and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."));
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
 	RBSet<int> y_sorted_z_index;
@@ -856,7 +856,7 @@ void TileMap::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	// Check if we have a non-sorted layer in a Z-index with a Y-sorted layer.
 	for (const TileMapLayer *layer : layers) {
 		if (!layer->is_y_sort_enabled() && y_sorted_z_index.has(layer->get_z_index())) {
-			CONFIG_WARNING(RTR("A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole with tiles from Y-sorted layers."));
+			CONFIG_WARNING("tilemap_y_sorted_same_z_index", RTR("A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole with tiles from Y-sorted layers."));
 			break;
 		}
 	}
@@ -865,7 +865,7 @@ void TileMap::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 		// Check if Y-sort is enabled on a layer but not on the node.
 		for (const TileMapLayer *layer : layers) {
 			if (layer->is_y_sort_enabled()) {
-				CONFIG_WARNING(RTR("A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap node itself."));
+				CONFIG_WARNING("tilemap_y_sort_disabled_on_node", RTR("A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap node itself."));
 				break;
 			}
 		}
@@ -879,7 +879,7 @@ void TileMap::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 			}
 		}
 		if (need_warning) {
-			CONFIG_WARNING(RTR("The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the TileMap's layers.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole."));
+			CONFIG_WARNING("tilemap_y_sort_disabled_on_layers", RTR("The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the TileMap's layers.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole."));
 		}
 	}
 
@@ -896,7 +896,7 @@ void TileMap::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 		}
 
 		if (warn) {
-			CONFIG_WARNING(RTR("Isometric TileSet will likely not look as intended without Y-sort enabled for the TileMap and all of its layers."));
+			CONFIG_WARNING("tilemap_y_sort_disabled_in_isometric", RTR("Isometric TileSet will likely not look as intended without Y-sort enabled for the TileMap and all of its layers."));
 		}
 	}
 }

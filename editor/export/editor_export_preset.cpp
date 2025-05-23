@@ -147,7 +147,7 @@ void EditorExportPreset::_get_configuration_info(List<ConfigurationInfo> *p_info
 
 		String warning = platform->get_export_option_warning(this, option_name);
 		if (!warning.is_empty()) {
-			CONFIG_WARNING_P(warning, option_name);
+			CONFIG_WARNING_P("", warning, option_name);
 		}
 	}
 
@@ -168,7 +168,7 @@ void EditorExportPreset::_get_configuration_info(List<ConfigurationInfo> *p_info
 
 			String plugin_warning = export_plugins[i]->_get_export_option_warning(platform, option_name);
 			if (!plugin_warning.is_empty()) {
-				CONFIG_WARNING_P(plugin_warning, option_name);
+				CONFIG_WARNING_P("", plugin_warning, option_name);
 			}
 		}
 	}

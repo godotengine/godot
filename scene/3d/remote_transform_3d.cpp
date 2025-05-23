@@ -205,7 +205,7 @@ void RemoteTransform3D::force_update_cache() {
 #ifdef TOOLS_ENABLED
 void RemoteTransform3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("invalid_path",
 				RTR("Path must point to a valid Node3D or Node3D-derived node to work."),
 				"remote_path");
 	}

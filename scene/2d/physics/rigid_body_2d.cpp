@@ -644,7 +644,7 @@ void RigidBody2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) cons
 	Transform2D t = get_transform();
 
 	if (Math::abs(t.columns[0].length() - 1.0) > 0.05 || Math::abs(t.columns[1].length() - 1.0) > 0.05) {
-		CONFIG_WARNING(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+		CONFIG_WARNING("rigid_body_scaled_transform", RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 }
 #endif

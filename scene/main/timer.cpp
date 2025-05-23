@@ -199,7 +199,7 @@ void Timer::_set_process(bool p_process, bool p_force) {
 #ifdef TOOLS_ENABLED
 void Timer::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (wait_time < 0.05 - CMP_EPSILON) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("timer_low_wait_time",
 				RTR("Very low timer wait times (< 0.05 seconds) may behave in significantly different ways depending on the rendered or physics frame rate.\nConsider using a script's process loop instead of relying on a Timer for very low wait times."),
 				"wait_time");
 	}

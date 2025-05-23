@@ -85,13 +85,13 @@ bool MissingNode::is_recording_properties() const {
 #ifdef TOOLS_ENABLED
 void MissingNode::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!original_scene.is_empty()) {
-		CONFIG_WARNING(vformat(RTR("This node was an instance of scene '%s', which was no longer available when this scene was loaded."), original_scene));
-		CONFIG_WARNING(vformat(RTR("Saving current scene will discard instance and all its properties, including editable children edits (if existing).")));
+		CONFIG_WARNING("missing_node_scene_instance", vformat(RTR("This node was an instance of scene '%s', which was no longer available when this scene was loaded."), original_scene));
+		CONFIG_WARNING("missing_node_scene_instance", vformat(RTR("Saving current scene will discard instance and all its properties, including editable children edits (if existing).")));
 	} else if (!original_class.is_empty()) {
-		CONFIG_WARNING(vformat(RTR("This node was saved as class type '%s', which was no longer available when this scene was loaded."), original_class));
-		CONFIG_WARNING(RTR("Data from the original node is kept as a placeholder until this type of node is available again. It can hence be safely re-saved without risk of data loss."));
+		CONFIG_WARNING("missing_node_class_instance", vformat(RTR("This node was saved as class type '%s', which was no longer available when this scene was loaded."), original_class));
+		CONFIG_WARNING("missing_node_class_instance", RTR("Data from the original node is kept as a placeholder until this type of node is available again. It can hence be safely re-saved without risk of data loss."));
 	} else {
-		CONFIG_WARNING(RTR("Unrecognized missing node. Check scene dependency errors for details."));
+		CONFIG_WARNING("missing_node_unrecognized", RTR("Unrecognized missing node. Check scene dependency errors for details."));
 	}
 }
 #endif

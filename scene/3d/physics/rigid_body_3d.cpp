@@ -663,7 +663,7 @@ void RigidBody3D::_reload_physics_characteristics() {
 void RigidBody3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	Vector3 scale = get_transform().get_basis().get_scale();
 	if (Math::abs(scale.x - 1.0) > 0.05 || Math::abs(scale.y - 1.0) > 0.05 || Math::abs(scale.z - 1.0) > 0.05) {
-		CONFIG_WARNING(RTR("Scale changes to RigidBody3D will be overridden by the physics engine when running.\nPlease change the size in children collision shapes instead."));
+		CONFIG_WARNING("rigid_body_scaled_transform", RTR("Scale changes to RigidBody3D will be overridden by the physics engine when running.\nPlease change the size in children collision shapes instead."));
 	}
 }
 #endif

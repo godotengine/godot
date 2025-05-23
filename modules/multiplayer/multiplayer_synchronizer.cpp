@@ -146,7 +146,7 @@ bool MultiplayerSynchronizer::update_inbound_sync_time(uint16_t p_network_time) 
 #ifdef TOOLS_ENABLED
 void MultiplayerSynchronizer::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (root_path.is_empty() || !has_node(root_path)) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("invalid_path",
 				RTR("A valid NodePath must be set in order for MultiplayerSynchronizer to be able to synchronize properties."),
 				"root_path");
 	}

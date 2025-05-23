@@ -253,7 +253,7 @@ bool NavigationRegion3D::is_baking() const {
 void NavigationRegion3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (navigation_mesh.is_null()) {
-			CONFIG_WARNING(RTR("A NavigationMesh resource must be set or created for this node to work."));
+			CONFIG_WARNING("missing_resource", RTR("A NavigationMesh resource must be set or created for this node to work."));
 		}
 	}
 }

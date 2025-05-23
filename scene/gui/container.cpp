@@ -207,7 +207,7 @@ void Container::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 void Container::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (get_class() == "Container" && get_script().is_null()) {
-		CONFIG_WARNING(RTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
+		CONFIG_WARNING("container_base_class", RTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
 	}
 }
 #endif

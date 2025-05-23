@@ -526,7 +526,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 #ifdef TOOLS_ENABLED
 void GPUParticlesCollisionSDF3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (bake_mask == 0) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("particles_collision_empty_bake_mask",
 				RTR("The Bake Mask has no bits enabled, which means baking will not produce any collision for this GPUParticlesCollisionSDF3D.\nTo resolve this, enable at least one bit in the Bake Mask."),
 				"bake_mask");
 	}

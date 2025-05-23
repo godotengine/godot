@@ -36,7 +36,7 @@
 void SpringBoneCollision3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	SpringBoneSimulator3D *parent = Object::cast_to<SpringBoneSimulator3D>(get_parent());
 	if (!parent) {
-		CONFIG_WARNING(RTR("Parent node should be a SpringBoneSimulator3D node."));
+		CONFIG_WARNING("invalid_parent", RTR("Parent node should be a SpringBoneSimulator3D node."));
 	}
 }
 #endif

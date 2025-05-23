@@ -172,13 +172,13 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 void CollisionShape2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	CollisionObject2D *col_object = Object::cast_to<CollisionObject2D>(get_parent());
 	if (col_object == nullptr) {
-		CONFIG_WARNING(RTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node.\nPlease only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
+		CONFIG_WARNING("invalid_parent", RTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node.\nPlease only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
 	if (shape.is_null()) {
-		CONFIG_WARNING_P(RTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"), "shape");
+		CONFIG_WARNING_P("missing_resource", RTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"), "shape");
 	}
 	if (one_way_collision && Object::cast_to<Area2D>(col_object)) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("area_ignores_one_way_collision",
 				RTR("One Way Collision will be ignored when the collision object is an Area2D."),
 				"one_way_collision");
 	}
@@ -186,7 +186,7 @@ void CollisionShape2D::_get_configuration_info(List<ConfigurationInfo> *p_infos)
 	Ref<ConvexPolygonShape2D> convex = shape;
 	Ref<ConcavePolygonShape2D> concave = shape;
 	if (convex.is_valid() || concave.is_valid()) {
-		CONFIG_WARNING(RTR("The CollisionShape2D node has limited editing options for polygon-based shapes. Consider using a CollisionPolygon2D node instead."));
+		CONFIG_WARNING("collision_shape_polygon", RTR("The CollisionShape2D node has limited editing options for polygon-based shapes. Consider using a CollisionPolygon2D node instead."));
 	}
 }
 #endif

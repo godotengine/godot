@@ -1890,7 +1890,7 @@ void RichTextLabel::_get_configuration_info(List<ConfigurationInfo> *p_infos) co
 		if (it->type == ITEM_IMAGE) {
 			ItemImage *img = static_cast<ItemImage *>(it);
 			if (img && img->alt_text.strip_edges().is_empty()) {
-				ACCESSIBILITY_WARNING(RTR("Image alternative text must not be empty."));
+				ACCESSIBILITY_WARNING("rich_text_label_empty_image_alt_text", RTR("Image alternative text must not be empty."));
 			}
 		}
 		it = _get_next_item(it, true);

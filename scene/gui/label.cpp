@@ -659,7 +659,7 @@ void Label::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 		// and it can be a container, but that makes no difference to the user.
 		Container *parent_container = Object::cast_to<Container>(get_parent_control());
 		if (parent_container && autowrap_mode != TextServer::AUTOWRAP_OFF && get_custom_minimum_size() == Size2()) {
-			CONFIG_WARNING_P(
+			CONFIG_WARNING_P("label_autowrapping_needs_minimum_size",
 					RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."),
 					"autowrap_mode");
 		}
@@ -682,7 +682,7 @@ void Label::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 			int64_t glyph_count = TS->shaped_text_get_glyph_count(para.text_rid);
 			for (int64_t i = 0; i < glyph_count; i++) {
 				if (glyph[i].font_rid == RID()) {
-					CONFIG_WARNING_P(RTR("The current font does not support rendering one or more characters used in this Label's text."), "text");
+					CONFIG_WARNING_P("label_font_unsupported_characters", RTR("The current font does not support rendering one or more characters used in this Label's text."), "text");
 					break;
 				}
 			}

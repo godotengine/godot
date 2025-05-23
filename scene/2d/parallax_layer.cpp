@@ -135,7 +135,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 #ifdef TOOLS_ENABLED
 void ParallaxLayer::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
-		CONFIG_WARNING(RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
+		CONFIG_WARNING("invalid_parent", RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
 	}
 }
 #endif

@@ -494,7 +494,7 @@ void NavigationLink3D::set_travel_cost(real_t p_travel_cost) {
 #ifdef TOOLS_ENABLED
 void NavigationLink3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (start_position.is_equal_approx(end_position)) {
-		CONFIG_WARNING(RTR("NavigationLink3D start position should be different than the end position to be useful."));
+		CONFIG_WARNING("navigation_link_start_equals_end", RTR("NavigationLink3D start position should be different than the end position to be useful."));
 	}
 }
 #endif

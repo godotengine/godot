@@ -1268,13 +1268,13 @@ void CanvasItem::_get_configuration_info(List<ConfigurationInfo> *p_infos) const
 		while (n) {
 			CanvasItem *as_canvas_item = Object::cast_to<CanvasItem>(n);
 			if (!warned_about_ancestor_clipping && as_canvas_item && as_canvas_item->clip_children_mode != CLIP_CHILDREN_DISABLED) {
-				CONFIG_WARNING(vformat(RTR("Ancestor \"%s\" clips its children, so this node will not be able to clip its children."), as_canvas_item->get_name()));
+				CONFIG_WARNING("canvas_item_ancestor_clipping", vformat(RTR("Ancestor \"%s\" clips its children, so this node will not be able to clip its children."), as_canvas_item->get_name()));
 				warned_about_ancestor_clipping = true;
 			}
 
 			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
 			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
-				CONFIG_WARNING(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
+				CONFIG_WARNING("canvas_item_ancestor_canvas_group", vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
 				warned_about_canvasgroup_ancestor = true;
 			}
 

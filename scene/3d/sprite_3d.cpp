@@ -1457,7 +1457,7 @@ StringName AnimatedSprite3D::get_animation() const {
 #ifdef TOOLS_ENABLED
 void AnimatedSprite3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (frames.is_null()) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("missing_resource",
 				RTR("A SpriteFrames resource must be created or set in order for AnimatedSprite3D to display frames."),
 				"sprite_frames");
 	}

@@ -1782,18 +1782,18 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 void LightmapGI::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 #ifdef MODULE_LIGHTMAPPER_RD_ENABLED
 	if (!DisplayServer::get_singleton()->can_create_rendering_device()) {
-		CONFIG_WARNING(vformat(RTR("Lightmaps can only be baked from a GPU that supports the RenderingDevice backends.\nYour GPU (%s) does not support RenderingDevice, as it does not support Vulkan, Direct3D 12, or Metal.\nLightmap baking will not be available on this device, although rendering existing baked lightmaps will work."), RenderingServer::get_singleton()->get_video_adapter_name()));
+		CONFIG_WARNING("lightmap_bake_unsupported_gpu", vformat(RTR("Lightmaps can only be baked from a GPU that supports the RenderingDevice backends.\nYour GPU (%s) does not support RenderingDevice, as it does not support Vulkan, Direct3D 12, or Metal.\nLightmap baking will not be available on this device, although rendering existing baked lightmaps will work."), RenderingServer::get_singleton()->get_video_adapter_name()));
 		return;
 	}
 
 	if (shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE && light_data.is_valid() && !light_data->has_shadowmask_textures()) {
-		CONFIG_WARNING(RTR("The lightmap has no baked shadowmask textures. Please rebake with the Shadowmask Mode set to anything other than None."));
+		CONFIG_WARNING("lightmap_bake_no_shadowmask", RTR("The lightmap has no baked shadowmask textures. Please rebake with the Shadowmask Mode set to anything other than None."));
 	}
 
 #elif defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
-	CONFIG_WARNING(vformat(RTR("Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will still work."), OS::get_singleton()->get_name()));
+	CONFIG_WARNING("lightmap_bake_unsupported_platform", vformat(RTR("Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will still work."), OS::get_singleton()->get_name()));
 #else
-	CONFIG_WARNING(RTR("Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at compile-time. Rendering existing baked lightmaps will still work."));
+	CONFIG_WARNING("lightmap_bake_module_disabled", RTR("Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at compile-time. Rendering existing baked lightmaps will still work."));
 #endif
 }
 #endif

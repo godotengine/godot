@@ -87,7 +87,7 @@ void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
 #ifdef TOOLS_ENABLED
 void MultiplayerSpawner::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (spawn_path.is_empty() || !has_node(spawn_path)) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("invalid_path",
 				RTR("A valid NodePath must be set in order for MultiplayerSpawner to be able to spawn Nodes."),
 				"spawn_path");
 	}

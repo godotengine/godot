@@ -540,11 +540,11 @@ AABB VoxelGI::get_aabb() const {
 #ifdef TOOLS_ENABLED
 void VoxelGI::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		CONFIG_WARNING(RTR("VoxelGI nodes are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+		CONFIG_WARNING("unsupported_renderer", RTR("VoxelGI nodes are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
 	} else if (OS::get_singleton()->get_current_rendering_method() == "dummy") {
-		CONFIG_WARNING(RTR("VoxelGI nodes are not supported when using the Dummy renderer."));
+		CONFIG_WARNING("unsupported_renderer", RTR("VoxelGI nodes are not supported when using the Dummy renderer."));
 	} else if (probe_data.is_null()) {
-		CONFIG_WARNING(RTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
+		CONFIG_WARNING("voxel_gi_unbaked", RTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
 	}
 }
 #endif

@@ -278,7 +278,7 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 void ShaderGlobalsOverride::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!active) {
-		CONFIG_WARNING(RTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene."));
+		CONFIG_WARNING("shader_globals_override_multiple_instances", RTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene."));
 	}
 }
 #endif

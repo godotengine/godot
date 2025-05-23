@@ -179,20 +179,20 @@ void Decal::_validate_property(PropertyInfo &p_property) const {
 #ifdef TOOLS_ENABLED
 void Decal::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
-		CONFIG_WARNING(RTR("Decals are only available when using the Forward+ or Mobile renderers."));
+		CONFIG_WARNING("unsupported_renderer", RTR("Decals are only available when using the Forward+ or Mobile renderers."));
 		return;
 	}
 
 	if (textures[TEXTURE_ALBEDO].is_null() && textures[TEXTURE_NORMAL].is_null() && textures[TEXTURE_ORM].is_null() && textures[TEXTURE_EMISSION].is_null()) {
-		CONFIG_WARNING(RTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
+		CONFIG_WARNING("decal_empty_textures", RTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
 	}
 
 	if ((textures[TEXTURE_NORMAL].is_valid() || textures[TEXTURE_ORM].is_valid()) && textures[TEXTURE_ALBEDO].is_null()) {
-		CONFIG_WARNING(RTR("The decal has a Normal and/or ORM texture, but no Albedo texture is set.\nAn Albedo texture with an alpha channel is required to blend the normal/ORM maps onto the underlying surface.\nIf you don't want the Albedo texture to be visible, set Albedo Mix to 0."));
+		CONFIG_WARNING("decal_empty_albedo", RTR("The decal has a Normal and/or ORM texture, but no Albedo texture is set.\nAn Albedo texture with an alpha channel is required to blend the normal/ORM maps onto the underlying surface.\nIf you don't want the Albedo texture to be visible, set Albedo Mix to 0."));
 	}
 
 	if (cull_mask == 0) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("decal_empty_cull_mask",
 				RTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask."),
 				"cull_mask");
 	}

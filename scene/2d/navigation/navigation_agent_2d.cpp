@@ -661,7 +661,7 @@ void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
 #ifdef TOOLS_ENABLED
 void NavigationAgent2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		CONFIG_WARNING(RTR("The NavigationAgent2D can be used only under a Node2D inheriting parent node."));
+		CONFIG_WARNING("invalid_parent", RTR("The NavigationAgent2D can be used only under a Node2D inheriting parent node."));
 	}
 }
 #endif

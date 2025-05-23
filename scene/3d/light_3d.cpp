@@ -181,7 +181,7 @@ AABB Light3D::get_aabb() const {
 #ifdef TOOLS_ENABLED
 void Light3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
-		CONFIG_WARNING(RTR("A light's scale does not affect the visual size of the light."));
+		CONFIG_WARNING("light_ignores_scale", RTR("A light's scale does not affect the visual size of the light."));
 	}
 }
 #endif
@@ -626,11 +626,11 @@ OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
 #ifdef TOOLS_ENABLED
 void OmniLight3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!has_shadow() && get_projector().is_valid()) {
-		CONFIG_WARNING(RTR("Projector texture only works with shadows active."));
+		CONFIG_WARNING("light_projector_needs_shadows", RTR("Projector texture only works with shadows active."));
 	}
 
 	if (get_projector().is_valid() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
-		CONFIG_WARNING(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+		CONFIG_WARNING("unsupported_renderer", RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
 	}
 }
 #endif
@@ -656,15 +656,15 @@ OmniLight3D::OmniLight3D() :
 #ifdef TOOLS_ENABLED
 void SpotLight3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
-		CONFIG_WARNING(RTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."));
+		CONFIG_WARNING("light_spot_wide_angle_shadows", RTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."));
 	}
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		CONFIG_WARNING(RTR("Projector texture only works with shadows active."));
+		CONFIG_WARNING("light_projector_needs_shadows", RTR("Projector texture only works with shadows active."));
 	}
 
 	if (get_projector().is_valid() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
-		CONFIG_WARNING(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+		CONFIG_WARNING("unsupported_renderer", RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
 	}
 }
 #endif

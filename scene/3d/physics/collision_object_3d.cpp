@@ -733,12 +733,12 @@ bool CollisionObject3D::get_capture_input_on_drag() const {
 #ifdef TOOLS_ENABLED
 void CollisionObject3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (shapes.is_empty()) {
-		CONFIG_WARNING(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape."));
+		CONFIG_WARNING("collision_object_missing_shapes", RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape."));
 	}
 
 	Vector3 scale = get_transform().get_basis().get_scale();
 	if (!(Math::is_zero_approx(scale.x - scale.y) && Math::is_zero_approx(scale.y - scale.z))) {
-		CONFIG_WARNING(RTR("With a non-uniform scale this node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change the size in children collision shapes instead."));
+		CONFIG_WARNING("collision_object_non_uniform_scale", RTR("With a non-uniform scale this node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change the size in children collision shapes instead."));
 	}
 }
 #endif

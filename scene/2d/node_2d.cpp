@@ -432,7 +432,7 @@ void Node2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	// Note: Warn for Node2D but not all CanvasItems, don't warn for Control nodes.
 	// Control nodes may have reasons to use a transformed root node like anchors.
 	if (get_tree()->get_edited_scene_root() == this && !get_transform().is_equal_approx(Transform2D())) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("node_root_transformed",
 				TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform to remove this warning."),
 				"transform");
 	}

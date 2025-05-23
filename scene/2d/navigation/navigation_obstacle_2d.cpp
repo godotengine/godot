@@ -329,15 +329,15 @@ bool NavigationObstacle2D::get_carve_navigation_mesh() const {
 void NavigationObstacle2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	const Vector2 global_scale = get_global_scale();
 	if (global_scale.x < 0.001 || global_scale.y < 0.001) {
-		CONFIG_WARNING_P(RTR("NavigationObstacle2D does not support negative or zero scaling."), "scale");
+		CONFIG_WARNING_P("navigation_obstacle_non_positive_scale", RTR("NavigationObstacle2D does not support negative or zero scaling."), "scale");
 	}
 
 	if (radius > 0.0 && !get_global_transform().is_conformal()) {
-		CONFIG_WARNING(RTR("The agent radius can only be scaled uniformly. The largest value along the two axes of the global scale will be used to scale the radius. This value may change in unexpected ways when the node is rotated."));
+		CONFIG_WARNING("navigation_obstacle_non_uniform_scale", RTR("The agent radius can only be scaled uniformly. The largest value along the two axes of the global scale will be used to scale the radius. This value may change in unexpected ways when the node is rotated."));
 	}
 
 	if (radius > 0.0 && get_global_skew() != 0.0) {
-		CONFIG_WARNING_P(RTR("Skew has no effect on the agent radius."), "skew");
+		CONFIG_WARNING_P("navigation_obstacle_radius_skew", RTR("Skew has no effect on the agent radius."), "skew");
 	}
 }
 #endif

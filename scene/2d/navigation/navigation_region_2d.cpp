@@ -300,7 +300,7 @@ void NavigationRegion2D::_navigation_debug_changed() {
 void NavigationRegion2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (navigation_polygon.is_null()) {
-			CONFIG_WARNING_P(
+			CONFIG_WARNING_P("missing_resource",
 					RTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon."),
 					"navigation_polygon");
 		}

@@ -303,7 +303,7 @@ void CPUParticles2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) c
 	if (get_material().is_null() || (mat && !mat->get_particles_animation())) {
 		if (get_param_max(PARAM_ANIM_SPEED) != 0.0 || get_param_max(PARAM_ANIM_OFFSET) != 0.0 ||
 				get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid()) {
-			CONFIG_WARNING(RTR("CPUParticles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
+			CONFIG_WARNING("particles_material_needs_animation", RTR("CPUParticles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
 		}
 	}
 }

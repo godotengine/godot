@@ -37,7 +37,7 @@ void SkeletonModifier3D::_validate_property(PropertyInfo &p_property) const {
 #ifdef TOOLS_ENABLED
 void SkeletonModifier3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (skeleton_id.is_null()) {
-		CONFIG_WARNING(RTR("Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."));
+		CONFIG_WARNING("invalid_parent", RTR("Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."));
 	}
 }
 #endif

@@ -1233,7 +1233,7 @@ NodePath Node3D::get_visibility_parent() const {
 #ifdef TOOLS_ENABLED
 void Node3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (get_tree()->get_edited_scene_root() == this && !get_transform().is_equal_approx(Transform3D())) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("node_root_transformed",
 				TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform to remove this warning."),
 				"transform");
 	}

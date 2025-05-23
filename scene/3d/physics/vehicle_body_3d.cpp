@@ -144,7 +144,7 @@ void VehicleWheel3D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 void VehicleWheel3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!Object::cast_to<VehicleBody3D>(get_parent())) {
-		CONFIG_WARNING(RTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D."));
+		CONFIG_WARNING("invalid_parent", RTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D."));
 	}
 }
 #endif

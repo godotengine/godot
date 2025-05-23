@@ -433,7 +433,7 @@ Vector2 PointLight2D::get_texture_offset() const {
 #ifdef TOOLS_ENABLED
 void PointLight2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (texture.is_null()) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("missing_resource",
 				RTR("A texture with the shape of the light must be supplied."),
 				"texture");
 	}

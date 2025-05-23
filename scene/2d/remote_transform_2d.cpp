@@ -213,7 +213,7 @@ void RemoteTransform2D::force_update_cache() {
 #ifdef TOOLS_ENABLED
 void RemoteTransform2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("invalid_path",
 				RTR("Path must point to a valid Node2D node to work."),
 				"remote_path");
 	}

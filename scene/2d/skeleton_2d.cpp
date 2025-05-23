@@ -415,14 +415,14 @@ int Bone2D::get_index_in_skeleton() const {
 void Bone2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!skeleton) {
 		if (parent_bone) {
-			CONFIG_WARNING(RTR("This Bone2D chain should end at a Skeleton2D node."));
+			CONFIG_WARNING("invalid_parent", RTR("This Bone2D chain should end at a Skeleton2D node."));
 		} else {
-			CONFIG_WARNING(RTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node."));
+			CONFIG_WARNING("invalid_parent", RTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node."));
 		}
 	}
 
 	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
-		CONFIG_WARNING(RTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."));
+		CONFIG_WARNING("bone_missing_rest_pose", RTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."));
 	}
 }
 #endif

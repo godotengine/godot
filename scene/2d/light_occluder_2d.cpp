@@ -266,11 +266,11 @@ int LightOccluder2D::get_occluder_light_mask() const {
 #ifdef TOOLS_ENABLED
 void LightOccluder2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (occluder_polygon.is_null()) {
-		CONFIG_WARNING(RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
+		CONFIG_WARNING("missing_resource", RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
 	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().is_empty()) {
-		CONFIG_WARNING(RTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
+		CONFIG_WARNING("light_occluder_empty_shape", RTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 }
 #endif

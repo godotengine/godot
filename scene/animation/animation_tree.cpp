@@ -710,7 +710,7 @@ uint64_t AnimationTree::get_last_process_pass() const {
 #ifdef TOOLS_ENABLED
 void AnimationTree::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (root_animation_node.is_null()) {
-		CONFIG_WARNING(RTR("No root AnimationNode for the graph is set."));
+		CONFIG_WARNING("missing_resource", RTR("No root AnimationNode for the graph is set."));
 	}
 }
 #endif

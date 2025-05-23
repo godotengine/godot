@@ -33,7 +33,7 @@
 #ifdef TOOLS_ENABLED
 void Range::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (shared->exp_ratio && shared->min < 0) {
-		CONFIG_WARNING(RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater or equal to 0."));
+		CONFIG_WARNING("range_exp_edit_min_value", RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater or equal to 0."));
 	}
 }
 #endif

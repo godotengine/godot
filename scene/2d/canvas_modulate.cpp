@@ -120,7 +120,7 @@ void CanvasModulate::_get_configuration_info(List<ConfigurationInfo> *p_infos) c
 		get_tree()->get_nodes_in_group("_canvas_modulate_" + itos(get_canvas().get_id()), &nodes);
 
 		if (nodes.size() > 1) {
-			CONFIG_WARNING(RTR("Only one visible CanvasModulate is allowed per canvas.\nWhen there are more than one, only one of them will be active. Which one is undefined."));
+			CONFIG_WARNING("canvas_modulate_multiple", RTR("Only one visible CanvasModulate is allowed per canvas.\nWhen there are more than one, only one of them will be active. Which one is undefined."));
 		}
 	}
 }

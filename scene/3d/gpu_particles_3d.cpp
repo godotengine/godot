@@ -362,17 +362,17 @@ void GPUParticles3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) c
 	}
 
 	if (!meshes_found) {
-		CONFIG_WARNING(RTR("Nothing is visible because meshes have not been assigned to draw passes."));
+		CONFIG_WARNING("particles_missing_mesh", RTR("Nothing is visible because meshes have not been assigned to draw passes."));
 	}
 
 	if (process_material.is_null()) {
-		CONFIG_WARNING(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
+		CONFIG_WARNING("missing_resource", RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
 	} else {
 		const ParticleProcessMaterial *process = Object::cast_to<ParticleProcessMaterial>(process_material.ptr());
 		if (!anim_material_found && process &&
 				(process->get_param_max(ParticleProcessMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticleProcessMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 						process->get_param_texture(ParticleProcessMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticleProcessMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-			CONFIG_WARNING(RTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
+			CONFIG_WARNING("particles_material_needs_animation", RTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 		}
 	}
 
@@ -414,23 +414,23 @@ void GPUParticles3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) c
 		}
 
 		if (dp_count && skin.is_valid()) {
-			CONFIG_WARNING(RTR("Using Trail meshes with a skin causes Skin to override Trail poses. Suggest removing the Skin."));
+			CONFIG_WARNING("particles_trail_with_skin", RTR("Using Trail meshes with a skin causes Skin to override Trail poses. Suggest removing the Skin."));
 		} else if (dp_count == 0 && skin.is_null()) {
-			CONFIG_WARNING(RTR("Trails active, but neither Trail meshes or a Skin were found."));
+			CONFIG_WARNING("particles_trail_without_meshes", RTR("Trails active, but neither Trail meshes or a Skin were found."));
 		} else if (dp_count > 1) {
-			CONFIG_WARNING(RTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
+			CONFIG_WARNING("particles_trail_multiple_meshes", RTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
 		}
 
 		if ((dp_count || skin.is_valid()) && (missing_trails || no_materials)) {
-			CONFIG_WARNING(RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
+			CONFIG_WARNING("particles_trail_invalid_materials", RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
 		}
 		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
-			CONFIG_WARNING(RTR("Particle trails are only available when using the Forward+ or Mobile renderers."));
+			CONFIG_WARNING("unsupported_renderer", RTR("Particle trails are only available when using the Forward+ or Mobile renderers."));
 		}
 	}
 
 	if (sub_emitter != NodePath() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
-		CONFIG_WARNING(RTR("Particle sub-emitters are only available when using the Forward+ or Mobile renderers."));
+		CONFIG_WARNING("unsupported_renderer", RTR("Particle sub-emitters are only available when using the Forward+ or Mobile renderers."));
 	}
 }
 #endif

@@ -46,7 +46,7 @@ class Joint2D : public Node2D {
 
 	bool exclude_from_collision = true;
 	bool configured = false;
-	String warning;
+	ConfigurationInfo config_info;
 
 protected:
 	void _disconnect_signals();

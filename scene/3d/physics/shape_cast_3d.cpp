@@ -181,10 +181,10 @@ void ShapeCast3D::_bind_methods() {
 #ifdef TOOLS_ENABLED
 void ShapeCast3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (shape.is_null()) {
-		CONFIG_WARNING(RTR("This node cannot interact with other objects unless a Shape3D is assigned."));
+		CONFIG_WARNING("missing_resource", RTR("This node cannot interact with other objects unless a Shape3D is assigned."));
 	}
 	if (shape.is_valid() && Object::cast_to<ConcavePolygonShape3D>(*shape)) {
-		CONFIG_WARNING(RTR("ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be reported."));
+		CONFIG_WARNING("shape_cast_polygon_shape_unsupported", RTR("ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be reported."));
 	}
 }
 #endif

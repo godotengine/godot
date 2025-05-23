@@ -392,7 +392,7 @@ void SoftBody3D::_bind_methods() {
 #ifdef TOOLS_ENABLED
 void SoftBody3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (mesh.is_null()) {
-		CONFIG_WARNING(RTR("This body will be ignored until you set a mesh."));
+		CONFIG_WARNING("missing_resource", RTR("This body will be ignored until you set a mesh."));
 	}
 }
 #endif

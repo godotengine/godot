@@ -109,15 +109,15 @@ void PhysicalBone2D::_find_joint_child() {
 #ifdef TOOLS_ENABLED
 void PhysicalBone2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!parent_skeleton) {
-		CONFIG_WARNING(RTR("A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a parent node!"));
+		CONFIG_WARNING("invalid_parent", RTR("A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a parent node!"));
 	}
 	if (parent_skeleton && bone2d_index <= -1) {
-		CONFIG_WARNING(RTR("A PhysicalBone2D needs to be assigned to a Bone2D node in order to function! Please set a Bone2D node in the inspector."));
+		CONFIG_WARNING("physical_bone_missing_bone", RTR("A PhysicalBone2D needs to be assigned to a Bone2D node in order to function! Please set a Bone2D node in the inspector."));
 	}
 	if (!child_joint) {
 		PhysicalBone2D *parent_bone = Object::cast_to<PhysicalBone2D>(get_parent());
 		if (parent_bone) {
-			CONFIG_WARNING(RTR("A PhysicalBone2D node should have a Joint2D-based child node to keep bones connected! Please add a Joint2D-based node as a child to this node!"));
+			CONFIG_WARNING("physical_bone_joint_child", RTR("A PhysicalBone2D node should have a Joint2D-based child node to keep bones connected! Please add a Joint2D-based node as a child to this node!"));
 		}
 	}
 }

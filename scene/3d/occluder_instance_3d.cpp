@@ -693,17 +693,17 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, 
 #ifdef TOOLS_ENABLED
 void OccluderInstance3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!bool(GLOBAL_GET_CACHED(bool, "rendering/occlusion_culling/use_occlusion_culling"))) {
-		CONFIG_WARNING(RTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
+		CONFIG_WARNING("occluder_project_setting_disabled", RTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
 	}
 
 	if (bake_mask == 0) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("occluder_empty_bake_mask",
 				RTR("The Bake Mask has no bits enabled, which means baking will not produce any occluder meshes for this OccluderInstance3D.\nTo resolve this, enable at least one bit in the Bake Mask."),
 				"bake_mask");
 	}
 
 	if (occluder.is_null()) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("occluder_missing_mesh",
 				RTR("No occluder mesh is defined in the Occluder property, so no occlusion culling will be performed using this OccluderInstance3D.\nTo resolve this, set the Occluder to one of the primitive occluder types or bake the scene meshes by selecting the OccluderInstance3D and pressing the Bake Occluders button at the top of the 3D editor viewport."),
 				"occluder");
 	} else {
@@ -711,11 +711,11 @@ void OccluderInstance3D::_get_configuration_info(List<ConfigurationInfo> *p_info
 		if (arr_occluder.is_valid() && arr_occluder->get_indices().size() < 3) {
 			// Setting a new ArrayOccluder3D from the inspector will create an empty occluder,
 			// so warn the user about this.
-			CONFIG_WARNING(RTR("The occluder mesh has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nTo generate a proper occluder mesh, select the OccluderInstance3D then use the Bake Occluders button at the top of the 3D editor viewport."));
+			CONFIG_WARNING("occluder_array_too_few_vertices", RTR("The occluder mesh has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nTo generate a proper occluder mesh, select the OccluderInstance3D then use the Bake Occluders button at the top of the 3D editor viewport."));
 		}
 		Ref<PolygonOccluder3D> poly_occluder = occluder;
 		if (poly_occluder.is_valid() && poly_occluder->get_polygon().size() < 3) {
-			CONFIG_WARNING(RTR("The polygon occluder has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nVertices can be added in the inspector or using the polygon editing tools at the top of the 3D editor viewport."));
+			CONFIG_WARNING("occluder_mesh_too_few_vertices", RTR("The polygon occluder has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nVertices can be added in the inspector or using the polygon editing tools at the top of the 3D editor viewport."));
 		}
 	}
 }

@@ -70,7 +70,7 @@ void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
 #ifdef TOOLS_ENABLED
 void LookAtModifier3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (get_axis_from_bone_axis(forward_axis) == primary_rotation_axis) {
-		CONFIG_WARNING(RTR("Forward axis and primary rotation axis must not be parallel."));
+		CONFIG_WARNING("look_at_modifier_parallel_axes", RTR("Forward axis and primary rotation axis must not be parallel."));
 	}
 }
 #endif

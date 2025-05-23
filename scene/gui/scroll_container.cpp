@@ -704,7 +704,7 @@ void ScrollContainer::_get_configuration_info(List<ConfigurationInfo> *p_infos) 
 	}
 
 	if (found != 1) {
-		CONFIG_WARNING(RTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually."));
+		CONFIG_WARNING("scroll_container_multiple_children", RTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually."));
 	}
 }
 #endif

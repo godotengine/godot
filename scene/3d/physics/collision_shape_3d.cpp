@@ -123,11 +123,11 @@ void CollisionShape3D::resource_changed(Ref<Resource> res) {
 void CollisionShape3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	CollisionObject3D *col_object = Object::cast_to<CollisionObject3D>(get_parent());
 	if (col_object == nullptr) {
-		CONFIG_WARNING(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
+		CONFIG_WARNING("invalid_parent", RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
 	if (shape.is_null()) {
-		CONFIG_WARNING_P(RTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it."), "shape");
+		CONFIG_WARNING_P("missing_resource", RTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it."), "shape");
 	}
 
 	if (shape.is_valid() && Object::cast_to<RigidBody3D>(col_object)) {
@@ -137,21 +137,21 @@ void CollisionShape3D::_get_configuration_info(List<ConfigurationInfo> *p_infos)
 		}
 
 		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
-			CONFIG_WARNING(vformat(RTR("When used for collision, ConcavePolygonShape3D is intended to work with static CollisionObject3D nodes like StaticBody3D.\nIt will likely not behave well for %ss (except when frozen and freeze_mode set to FREEZE_MODE_STATIC)."), body_type));
+			CONFIG_WARNING("rigid_body_polygon_non_static", vformat(RTR("When used for collision, ConcavePolygonShape3D is intended to work with static CollisionObject3D nodes like StaticBody3D.\nIt will likely not behave well for %ss (except when frozen and freeze_mode set to FREEZE_MODE_STATIC)."), body_type));
 		} else if (Object::cast_to<WorldBoundaryShape3D>(*shape)) {
-			CONFIG_WARNING(RTR("WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."));
+			CONFIG_WARNING("rigid_body_world_boundary_non_static", RTR("WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."));
 		}
 	}
 
 	if (shape.is_valid() && Object::cast_to<CharacterBody3D>(col_object)) {
 		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
-			CONFIG_WARNING(RTR("When used for collision, ConcavePolygonShape3D is intended to work with static CollisionObject3D nodes like StaticBody3D.\nIt will likely not behave well for CharacterBody3Ds."));
+			CONFIG_WARNING("character_body_polygon_non_static", RTR("When used for collision, ConcavePolygonShape3D is intended to work with static CollisionObject3D nodes like StaticBody3D.\nIt will likely not behave well for CharacterBody3Ds."));
 		}
 	}
 
 	Vector3 scale = get_transform().get_basis().get_scale();
 	if (!(Math::is_zero_approx(scale.x - scale.y) && Math::is_zero_approx(scale.y - scale.z))) {
-		CONFIG_WARNING(RTR("A non-uniformly scaled CollisionShape3D node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change the size of its shape resource instead."));
+		CONFIG_WARNING("collision_shape_non_uniform_scale", RTR("A non-uniformly scaled CollisionShape3D node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change the size of its shape resource instead."));
 	}
 }
 #endif

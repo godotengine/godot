@@ -287,7 +287,7 @@ void XRHandModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
 void XRHandModifier3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	// Detect OpenXR without the Hand Tracking extension.
 	if (GLOBAL_GET("xr/openxr/enabled") && !GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {
-		CONFIG_WARNING("XRHandModifier3D requires the OpenXR Hand Tracking extension to be enabled.");
+		CONFIG_WARNING("xr_hand_modifier_needs_extension", "XRHandModifier3D requires the OpenXR Hand Tracking extension to be enabled.");
 	}
 }
 #endif

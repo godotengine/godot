@@ -45,7 +45,7 @@ class Joint3D : public Node3D {
 
 	int solver_priority = 1;
 	bool exclude_from_collision = true;
-	String warning;
+	ConfigurationInfo config_info;
 	bool configured = false;
 
 protected:

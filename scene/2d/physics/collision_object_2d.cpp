@@ -584,7 +584,7 @@ void CollisionObject2D::_update_pickable() {
 #ifdef TOOLS_ENABLED
 void CollisionObject2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (shapes.is_empty()) {
-		CONFIG_WARNING(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape."));
+		CONFIG_WARNING("collision_object_missing_shapes", RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape."));
 	}
 }
 #endif

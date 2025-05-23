@@ -404,7 +404,7 @@ Array ShapeCast2D::get_collision_result() const {
 #ifdef TOOLS_ENABLED
 void ShapeCast2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (shape.is_null()) {
-		CONFIG_WARNING(RTR("This node cannot interact with other objects unless a Shape2D is assigned."));
+		CONFIG_WARNING("missing_resource", RTR("This node cannot interact with other objects unless a Shape2D is assigned."));
 	}
 }
 #endif

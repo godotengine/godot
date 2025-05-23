@@ -88,11 +88,11 @@ void XRCamera3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const
 		Node *parent = get_parent();
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
 		if (parent && origin == nullptr) {
-			CONFIG_WARNING(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
+			CONFIG_WARNING("invalid_parent", RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
 
 		if (is_physics_interpolated()) {
-			CONFIG_WARNING_P(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."), "physics_interpolation_mode");
+			CONFIG_WARNING_P("xr_camera_physics_interpolation_enabled", RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."), "physics_interpolation_mode");
 		}
 	}
 }
@@ -484,19 +484,19 @@ void XRNode3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 		Node *parent = get_parent();
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
 		if (parent && origin == nullptr) {
-			CONFIG_WARNING(RTR("XRNode3D may not function as expected without an XROrigin3D node as its parent."));
+			CONFIG_WARNING("invalid_parent", RTR("XRNode3D may not function as expected without an XROrigin3D node as its parent."));
 		};
 
 		if (tracker_name == "") {
-			CONFIG_WARNING(RTR("No tracker name is set."));
+			CONFIG_WARNING("xr_node_empty_tracker_name", RTR("No tracker name is set."));
 		}
 
 		if (pose_name == "") {
-			CONFIG_WARNING(RTR("No pose is set."));
+			CONFIG_WARNING("xr_node_empty_pose_name", RTR("No pose is set."));
 		}
 
 		if (is_physics_interpolated()) {
-			CONFIG_WARNING_P(RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."), "physics_interpolation_mode");
+			CONFIG_WARNING_P("xr_camera_physics_interpolation_enabled", RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."), "physics_interpolation_mode");
 		}
 	}
 }
@@ -675,13 +675,13 @@ void XROrigin3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const
 		}
 
 		if (!has_camera) {
-			CONFIG_WARNING(RTR("XROrigin3D requires an XRCamera3D child node."));
+			CONFIG_WARNING("xr_origin_missing_camera", RTR("XROrigin3D requires an XRCamera3D child node."));
 		}
 	}
 
 	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	if (!xr_enabled) {
-		CONFIG_WARNING(RTR("XR shaders are not enabled in project settings. Stereoscopic output is not supported unless they are enabled. Please enable `xr/shaders/enabled` to use stereoscopic output."));
+		CONFIG_WARNING("xr_origin_shaders_disabled", RTR("XR shaders are not enabled in project settings. Stereoscopic output is not supported unless they are enabled. Please enable `xr/shaders/enabled` to use stereoscopic output."));
 	}
 }
 #endif

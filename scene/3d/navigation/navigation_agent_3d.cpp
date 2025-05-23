@@ -727,7 +727,7 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 #ifdef TOOLS_ENABLED
 void NavigationAgent3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		CONFIG_WARNING(RTR("The NavigationAgent3D can be used only under a Node3D inheriting parent node."));
+		CONFIG_WARNING("invalid_parent", RTR("The NavigationAgent3D can be used only under a Node3D inheriting parent node."));
 	}
 }
 #endif

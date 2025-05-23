@@ -63,7 +63,7 @@ void Joint3D::_update_joint(bool p_only_free) {
 
 	if (p_only_free || !is_inside_tree()) {
 		PhysicsServer3D::get_singleton()->joint_clear(joint);
-		warning = String();
+		config_info = ConfigurationInfo();
 		return;
 	}
 
@@ -73,23 +73,26 @@ void Joint3D::_update_joint(bool p_only_free) {
 	PhysicsBody3D *body_a = Object::cast_to<PhysicsBody3D>(node_a);
 	PhysicsBody3D *body_b = Object::cast_to<PhysicsBody3D>(node_b);
 
+	bool valid = false;
+
 	if (node_a && !body_a && node_b && !body_b) {
-		warning = RTR("Node A and Node B must be PhysicsBody3Ds");
+		config_info = ConfigurationInfo("joint_invalid_physics_bodies", RTR("Node A and Node B must be PhysicsBody3Ds"));
 	} else if (node_a && !body_a) {
-		warning = RTR("Node A must be a PhysicsBody3D");
+		config_info = ConfigurationInfo("joint_invalid_physics_bodies", RTR("Node A must be a PhysicsBody3D"));
 	} else if (node_b && !body_b) {
-		warning = RTR("Node B must be a PhysicsBody3D");
+		config_info = ConfigurationInfo("joint_invalid_physics_bodies", RTR("Node B must be a PhysicsBody3D"));
 	} else if (!body_a && !body_b) {
-		warning = RTR("Joint is not connected to any PhysicsBody3Ds");
+		config_info = ConfigurationInfo("joint_invalid_physics_bodies", RTR("Joint is not connected to any PhysicsBody3Ds"));
 	} else if (body_a == body_b) {
-		warning = RTR("Node A and Node B must be different PhysicsBody3Ds");
+		config_info = ConfigurationInfo("joint_equal_physics_bodies", RTR("Node A and Node B must be different PhysicsBody3Ds"));
 	} else {
-		warning = String();
+		config_info = ConfigurationInfo();
+		valid = true;
 	}
 
 	update_configuration_info();
 
-	if (!warning.is_empty()) {
+	if (!valid) {
 		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		return;
 	}
@@ -202,8 +205,8 @@ bool Joint3D::get_exclude_nodes_from_collision() const {
 
 #ifdef TOOLS_ENABLED
 void Joint3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
-	if (!warning.is_empty()) {
-		CONFIG_WARNING(warning);
+	if (!(config_info == ConfigurationInfo())) {
+		p_infos->push_back(config_info);
 	}
 }
 #endif

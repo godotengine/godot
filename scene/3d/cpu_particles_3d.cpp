@@ -229,11 +229,11 @@ void CPUParticles3D::_get_configuration_info(List<ConfigurationInfo> *p_infos) c
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 
 	if (!mesh_found) {
-		CONFIG_WARNING(RTR("Nothing is visible because no mesh has been assigned."));
+		CONFIG_WARNING("particles_missing_mesh", RTR("Nothing is visible because no mesh has been assigned."));
 	}
 
 	if (!anim_material_found && (get_param_max(PARAM_ANIM_SPEED) != 0.0 || get_param_max(PARAM_ANIM_OFFSET) != 0.0 || get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
-		CONFIG_WARNING(RTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
+		CONFIG_WARNING("particles_material_needs_animation", RTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 	}
 }
 #endif

@@ -69,7 +69,7 @@ void OpenXRVisibilityMask::_get_configuration_info(List<ConfigurationInfo> *p_in
 	if (is_visible() && is_inside_tree()) {
 		XRCamera3D *camera = Object::cast_to<XRCamera3D>(get_parent());
 		if (camera == nullptr) {
-			CONFIG_WARNING(RTR("OpenXR visibility mask must have an XRCamera3D node as their parent."));
+			CONFIG_WARNING("invalid_parent", RTR("OpenXR visibility mask must have an XRCamera3D node as their parent."));
 		}
 	}
 }

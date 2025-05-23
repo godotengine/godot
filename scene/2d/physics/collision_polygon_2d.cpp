@@ -232,24 +232,24 @@ bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 #ifdef TOOLS_ENABLED
 void CollisionPolygon2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		CONFIG_WARNING(RTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
+		CONFIG_WARNING("invalid_parent", RTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
 
 	int polygon_count = polygon.size();
 	if (polygon_count == 0) {
-		CONFIG_WARNING(RTR("An empty CollisionPolygon2D has no effect on collision."));
+		CONFIG_WARNING("collision_polygon_empty", RTR("An empty CollisionPolygon2D has no effect on collision."));
 	} else {
 		bool solids = build_mode == BUILD_SOLIDS;
 		if (solids) {
 			if (polygon_count < 3) {
-				CONFIG_WARNING(RTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode."));
+				CONFIG_WARNING("collision_polygon_invalid_count", RTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode."));
 			}
 		} else if (polygon_count < 2) {
-			CONFIG_WARNING(RTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode."));
+			CONFIG_WARNING("collision_polygon_invalid_count", RTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode."));
 		}
 	}
 	if (one_way_collision && Object::cast_to<Area2D>(get_parent())) {
-		CONFIG_WARNING_P(
+		CONFIG_WARNING_P("area_ignores_one_way_collision",
 				RTR("One Way Collision will be ignored when the collision object is an Area2D."),
 				"one_way_collision");
 	}
