@@ -817,7 +817,16 @@ void EditorNode::_notification(int p_what) {
 			feature_profile_manager->notify_changed();
 
 			// Save the project after opening to mark it as last modified, except in headless mode.
+			// Also use this opportunity to ensure default settings are applied to new projects created from the command line
+			// using `touch project.godot`.
 			if (DisplayServer::get_singleton()->window_can_draw()) {
+				const String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().path_join("project.godot");
+				if (FileAccess::get_file_as_string(project_settings_path).strip_edges().is_empty()) {
+					const ProjectSettings::CustomMap initial_settings = get_initial_settings();
+					for (const KeyValue<String, Variant> &initial_setting : initial_settings) {
+						ProjectSettings::get_singleton()->set_setting(initial_setting.key, initial_setting.value);
+					}
+				}
 				ProjectSettings::get_singleton()->save();
 			}
 
@@ -7242,6 +7251,17 @@ GameViewPluginBase *get_game_view_plugin() {
 	return memnew(GameViewPlugin);
 }
 #endif
+
+// Returns the list of project settings to add to new projects. This is used by the
+// project manager creation dialog, but also applies to empty `project.godot` files
+// to cover the command line workflow of creating projects using `touch project.godot`.
+//
+// This is used to set better defaults for new projects without affecting existing projects.
+ProjectSettings::CustomMap EditorNode::get_initial_settings() {
+	ProjectSettings::CustomMap settings;
+	settings["physics/3d/physics_engine"] = "Jolt Physics";
+	return settings;
+}
 
 EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);
