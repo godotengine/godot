@@ -78,7 +78,7 @@
 			Luminance of background measured in nits (candela per square meter). Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled. The default value is roughly equivalent to the sky at midday.
 		</member>
 		<member name="background_mode" type="int" setter="set_background" getter="get_background" enum="Environment.BGMode" default="0">
-			The background mode. See [enum BGMode] for possible values.
+			The background mode.
 		</member>
 		<member name="fog_aerial_perspective" type="float" setter="set_fog_aerial_perspective" getter="get_fog_aerial_perspective" default="0.0">
 			If set above [code]0.0[/code] (exclusive), blends between the fog's color and the color of the background [Sky], as read from the radiance cubemap. This has a small performance cost when set above [code]0.0[/code]. Must have [member background_mode] set to [constant BG_SKY].
@@ -115,7 +115,7 @@
 			The fog's brightness. Higher values result in brighter fog.
 		</member>
 		<member name="fog_mode" type="int" setter="set_fog_mode" getter="get_fog_mode" enum="Environment.FogMode" default="0">
-			The fog mode. See [enum FogMode] for possible values.
+			The fog mode.
 		</member>
 		<member name="fog_sky_affect" type="float" setter="set_fog_sky_affect" getter="get_fog_sky_affect" default="1.0">
 			The factor to use when affecting the sky with non-volumetric fog. [code]1.0[/code] means that fog can fully obscure the sky. Lower values reduce the impact of fog on sky rendering, with [code]0.0[/code] not affecting sky rendering at all.

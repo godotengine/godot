@@ -68,7 +68,7 @@
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<description>
-				Returns the current format being used by this texture. See [enum Image.Format] for details.
+				Returns the current format being used by this texture.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">

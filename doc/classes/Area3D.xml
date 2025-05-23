@@ -67,7 +67,7 @@
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_damp_space_override" type="int" setter="set_angular_damp_space_override_mode" getter="get_angular_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
-			Override mode for angular damping calculations within this area. See [enum SpaceOverride] for possible values.
+			Override mode for angular damping calculations within this area.
 		</member>
 		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&amp;&quot;Master&quot;">
 			The name of the area's audio bus.
@@ -92,14 +92,14 @@
 			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
 		</member>
 		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area3D.SpaceOverride" default="0">
-			Override mode for gravity calculations within this area. See [enum SpaceOverride] for possible values.
+			Override mode for gravity calculations within this area.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
 			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_damp_space_override" type="int" setter="set_linear_damp_space_override_mode" getter="get_linear_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
-			Override mode for linear damping calculations within this area. See [enum SpaceOverride] for possible values.
+			Override mode for linear damping calculations within this area.
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
 			If [code]true[/code], other monitoring areas can detect this area.

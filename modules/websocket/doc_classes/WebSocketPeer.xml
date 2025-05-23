@@ -100,7 +100,7 @@
 		<method name="get_ready_state" qualifiers="const">
 			<return type="int" enum="WebSocketPeer.State" />
 			<description>
-				Returns the ready state of the connection. See [enum State].
+				Returns the ready state of the connection.
 			</description>
 		</method>
 		<method name="get_requested_url" qualifiers="const">
