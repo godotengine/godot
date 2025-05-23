@@ -240,6 +240,15 @@
 		<theme_item name="create_folder" data_type="icon" type="Texture2D">
 			Custom icon for the create folder button.
 		</theme_item>
+		<theme_item name="favorite" data_type="icon" type="Texture2D">
+			Custom icon for favorite folder button.
+		</theme_item>
+		<theme_item name="favorite_down" data_type="icon" type="Texture2D">
+			Custom icon for button to move down a favorite entry.
+		</theme_item>
+		<theme_item name="favorite_up" data_type="icon" type="Texture2D">
+			Custom icon for button to move up a favorite entry.
+		</theme_item>
 		<theme_item name="file" data_type="icon" type="Texture2D">
 			Custom icon for files.
 		</theme_item>
