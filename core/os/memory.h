@@ -36,6 +36,11 @@
 #include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
+static constexpr size_t mem_aligned_address(size_t p_address, size_t p_alignment) {
+	const size_t n_bytes_unaligned = p_address % p_alignment;
+	return (n_bytes_unaligned == 0) ? p_address : (p_address + p_alignment - n_bytes_unaligned);
+}
+
 class Memory {
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> mem_usage;
@@ -51,8 +56,8 @@ public:
 	// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
 
 	static constexpr size_t SIZE_OFFSET = 0;
-	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
-	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
+	static constexpr size_t ELEMENT_OFFSET = mem_aligned_address(SIZE_OFFSET + sizeof(uint64_t), alignof(uint64_t));
+	static constexpr size_t DATA_OFFSET = mem_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), alignof(max_align_t));
 
 	template <bool p_ensure_zero = false>
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
