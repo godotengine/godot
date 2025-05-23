@@ -692,6 +692,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	EditorResourcePicker *resource_picker = nullptr;
 	SceneTreeDialog *scene_tree = nullptr;
+	EditorProperty *parent_editor_property_container = nullptr;
 
 	bool use_sub_inspector = false;
 	EditorInspector *sub_inspector = nullptr;
@@ -714,6 +715,7 @@ class EditorPropertyResource : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	virtual void _set_unfold(bool p_unfold);
 	static void _bind_methods();
 
 public:
