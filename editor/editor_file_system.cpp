@@ -2746,6 +2746,30 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, vformat("Can't find file '%s' during file reimport.", p_file));
 	}
 
+	// Perform checks in advance for contents that will never be valid resources,
+	// and give user-friendly error messages.
+	ERR_FAIL_COND_V_MSG(FileAccess::get_size(p_file) == 0, ERR_FILE_CORRUPT,
+			vformat("Resource file is corrupt (empty size): %s", p_file));
+
+	Error fa_err;
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::READ, &fa_err);
+	ERR_FAIL_COND_V_MSG(fa_err != OK, fa_err,
+			vformat("Can't open resource file: %s", p_file));
+
+	// Handle Git LFS pointer files that haven't been replaced
+	// with the actual file by running `git lfs pull` yet.
+	// Check the first bytes to make sure we aren't trying to read a binary file.
+	// Otherwise, `get_line()` will print Unicode errors.
+	const uint8_t first_byte = file->get_8();
+	const uint8_t second_byte = file->get_8();
+	const uint8_t third_byte = file->get_8();
+	const uint8_t fourth_byte = file->get_8();
+	if (first_byte == 'v' && second_byte == 'e' && third_byte == 'r' && fourth_byte == 's') { // "vers" in "version"
+		// Check the rest of the beginning of the line to see if it matches the Git LFS pointer format.
+		ERR_FAIL_COND_V_MSG(file->get_line().begins_with("ion https://git-lfs"), ERR_FILE_UNRECOGNIZED,
+				vformat("Resource file is a Git LFS pointer (run `git lfs pull` to fetch it): %s", p_file));
+	}
+
 	//try to obtain existing params
 
 	HashMap<StringName, Variant> params = p_custom_options;
