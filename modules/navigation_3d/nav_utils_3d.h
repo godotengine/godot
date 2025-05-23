@@ -33,8 +33,8 @@
 #include "core/math/vector3.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
-#include "servers/navigation/nav_heap.h"
-#include "servers/navigation/navigation_utilities.h"
+#include "core/templates/local_vector.h"
+#include "servers/navigation_3d/navigation_constants_3d.h"
 
 struct NavBaseIteration3D;
 
