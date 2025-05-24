@@ -43,7 +43,7 @@ class RasterizedMeshTexture : public Texture2D {
 	Color bg_color = Color(0, 0, 0, 0);
 	Ref<Mesh> mesh;
 	Ref<ShaderMaterial> material;
-	RS::TextureDrawableFormat texture_format = RS::TEXTURE_DRAWABLE_FORMAT_RGBA8;
+	RD::DataFormat texture_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	RD::TextureSamples multisample = RD::TEXTURE_SAMPLES_1;
 	bool generate_mipmaps = false;
 
@@ -86,8 +86,8 @@ public:
 	void set_surface_index(int p_surface_index);
 	int get_surface_index() const;
 
-	void set_texture_format(RS::TextureDrawableFormat p_texture_format);
-	RS::TextureDrawableFormat get_texture_format() const;
+	void set_texture_format(RD::DataFormat p_texture_format);
+	RD::DataFormat get_texture_format() const;
 
 	void set_multisample(RD::TextureSamples p_multisample);
 	RD::TextureSamples get_multisample() const;

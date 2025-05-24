@@ -124,13 +124,13 @@ int RasterizedMeshTexture::get_surface_index() const {
 	return surface_index;
 }
 
-void RasterizedMeshTexture::set_texture_format(RS::TextureDrawableFormat p_texture_format) {
+void RasterizedMeshTexture::set_texture_format(RD::DataFormat p_texture_format) {
 	texture_format = p_texture_format;
 	texture_dirty = true;
 	queue_update();
 }
 
-RS::TextureDrawableFormat RasterizedMeshTexture::get_texture_format() const {
+RD::DataFormat RasterizedMeshTexture::get_texture_format() const {
 	return texture_format;
 }
 
@@ -223,7 +223,7 @@ void RasterizedMeshTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "surface_index", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), "set_surface_index", "get_surface_index");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"), "set_material", "get_material");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_format", PROPERTY_HINT_ENUM, "RGBA8,RGBA8_SRGB,RGBAH,RGBAF"), "set_texture_format", "get_texture_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_format", PROPERTY_HINT_ENUM, vformat("RGBA8:%d,RGBAH:%d,RGBAF:%d", RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::DATA_FORMAT_R32G32B32A32_SFLOAT)), "set_texture_format", "get_texture_format");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "multisample", PROPERTY_HINT_ENUM, "1x,2x,4x,8x"), "set_multisample", "get_multisample");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "is_generating_mipmaps");
 }

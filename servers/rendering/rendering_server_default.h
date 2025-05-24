@@ -246,7 +246,7 @@ public:
 
 	/* TEXTURE DRAWABLE API */
 
-	FUNCRIDTEX4(texture_drawable, int, int, RS::TextureDrawableFormat, bool);
+	FUNCRIDTEX4(texture_drawable, int, int, RD::DataFormat, bool);
 	FUNC1(texture_drawable_generate_mipmaps, RID);
 
 	/* SHADER API */

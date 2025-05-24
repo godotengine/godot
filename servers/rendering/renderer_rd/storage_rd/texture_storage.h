@@ -736,7 +736,7 @@ public:
 
 	/* TEXTURE DRAWABLE API */
 
-	void texture_drawable_initialize(RID p_rid, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) override;
+	void texture_drawable_initialize(RID p_rid, int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps = false) override;
 	void texture_drawable_generate_mipmaps(RID p_texture_drawable) override;
 
 	/* RENDER TARGET API */

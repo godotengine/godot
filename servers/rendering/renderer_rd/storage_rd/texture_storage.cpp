@@ -3261,7 +3261,10 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 
 /* TEXTURE DRAWABLE API */
 
-void TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps) {
+void TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps) {
+	TextureFromRDFormat imfmt;
+	_texture_format_from_rd(p_texture_format, imfmt);
+	ERR_FAIL_COND(imfmt.image_format == Image::FORMAT_MAX);
 	uint32_t mipmaps = 1;
 	{
 		uint32_t w = p_width;
@@ -3286,21 +3289,7 @@ void TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_h
 	if (!CopyEffects::get_singleton()->get_prefer_raster_effects()) {
 		rd_tex_format.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
 	}
-
-	switch (p_texture_format) {
-		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8:
-			rd_tex_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-			break;
-		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB:
-			rd_tex_format.format = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-			break;
-		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAH:
-			rd_tex_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-			break;
-		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAF:
-			rd_tex_format.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-			break;
-	}
+	rd_tex_format.format = imfmt.rd_format;
 
 	Texture texture;
 	texture.type = TextureStorage::TYPE_2D;
@@ -3309,8 +3298,6 @@ void TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_h
 	texture.layers = 1;
 	texture.mipmaps = mipmaps;
 	texture.depth = 1;
-	TextureFromRDFormat imfmt;
-	_texture_format_from_rd(rd_tex_format.format, imfmt);
 	texture.format = imfmt.image_format;
 	texture.validated_format = imfmt.image_format;
 	texture.rd_type = rd_tex_format.texture_type;

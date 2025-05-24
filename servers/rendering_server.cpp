@@ -2475,11 +2475,6 @@ void RenderingServer::_bind_methods() {
 
 	/* TEXTURE DRAWABLE API*/
 
-	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8);
-	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB);
-	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAH);
-	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAF);
-
 	ClassDB::bind_method(D_METHOD("texture_drawable_ctreate", "width", "height", "texture_format", "use_mipmaps"), &RenderingServer::texture_drawable_create, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("texture_drawable_generate_mipmaps", "texture_drawable"), &RenderingServer::texture_drawable_generate_mipmaps);
 

@@ -151,9 +151,6 @@ void MeshRasterizerRD::mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_materia
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
 	RID rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, false);
 	RD::TextureFormat tex_fmt = RD::get_singleton()->texture_get_format(rd_texture);
-	if (tex_fmt.format == RD::DATA_FORMAT_R8G8B8A8_SRGB) {
-		rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, true);
-	}
 
 	// MSAA.
 	RID rd_texture_samples;

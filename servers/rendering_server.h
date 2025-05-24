@@ -1174,14 +1174,7 @@ public:
 
 	/* TEXTURE DRAWABLE API*/
 
-	enum TextureDrawableFormat {
-		TEXTURE_DRAWABLE_FORMAT_RGBA8,
-		TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB,
-		TEXTURE_DRAWABLE_FORMAT_RGBAH,
-		TEXTURE_DRAWABLE_FORMAT_RGBAF
-	};
-
-	virtual RID texture_drawable_create(int p_width, int p_height, TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) = 0;
+	virtual RID texture_drawable_create(int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps = false) = 0;
 	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable) = 0;
 
 	/* MESH RASTERIZER API */
@@ -2007,7 +2000,6 @@ VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
-VARIANT_ENUM_CAST(RenderingServer::TextureDrawableFormat);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(RenderingServer::Features);
