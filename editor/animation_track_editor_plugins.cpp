@@ -912,31 +912,56 @@ void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) 
 
 			float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), i);
 			float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), i);
-			len -= end_ofs;
-			len -= start_ofs;
+
+			float anim_len = len - start_ofs - end_ofs;
 
 			if (get_animation()->track_get_key_count(get_track()) > i + 1) {
-				len = MIN(len, get_animation()->track_get_key_time(get_track(), i + 1) - get_animation()->track_get_key_time(get_track(), i));
+				anim_len = MIN(anim_len, get_animation()->track_get_key_time(get_track(), i + 1) - get_animation()->track_get_key_time(get_track(), i));
 			}
 
 			float ofs = get_animation()->track_get_key_time(get_track(), i);
+			float scl_ofs = ((ofs - get_timeline()->get_value()) * get_timeline()->get_zoom_scale()) + get_timeline()->get_name_limit();
+			float scl_end = scl_ofs + anim_len * get_timeline()->get_zoom_scale();
 
-			ofs -= get_timeline()->get_value();
-			ofs *= get_timeline()->get_zoom_scale();
-			ofs += get_timeline()->get_name_limit();
+			float diff_left = scl_ofs - mm->get_position().x;
+			float diff_right = mm->get_position().x - scl_end;
+			
+			float dir = (diff_right - diff_left);
 
-			int end = ofs + len * get_timeline()->get_zoom_scale();
+			if (scl_ofs >= get_timeline()->get_name_limit() && scl_ofs <= get_size().width - get_timeline()->get_buttons_width() &&
+					scl_end >= get_timeline()->get_name_limit() && scl_end <= get_size().width - get_timeline()->get_buttons_width()) {
 
-			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - end) < 5 * EDSCALE) {
-				len_resizing_start = false;
-				use_hsize_cursor = true;
-				len_resizing_index = i;
-			}
+				bool resize_start = false;
+				bool can_resize = false;
 
-			if (ofs >= get_timeline()->get_name_limit() && ofs <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - ofs) < 5 * EDSCALE) {
-				len_resizing_start = true;
-				use_hsize_cursor = true;
-				len_resizing_index = i;
+				if (diff_left > 0) { // left outside clip
+					if (Math::abs(diff_left) < 5 * EDSCALE) {
+						resize_start = true;
+						can_resize = true;
+					}
+				} else if (diff_right > 0) { // right outside clip
+					if (Math::abs(diff_right) < 5 * EDSCALE) {
+						resize_start = false;
+						can_resize = true;
+					}
+				} else { // inside clip
+					if (Math::abs(diff_left) < 5 * EDSCALE && Math::abs(diff_right) < 5 * EDSCALE) { // closest inside clip
+						resize_start = Math::abs(diff_left) < Math::abs(diff_right);
+						can_resize = true;
+					} else if (Math::abs(diff_left) < 5 * EDSCALE) { // left inside clip
+						resize_start = true;
+						can_resize = true;
+					} else if (Math::abs(diff_right) < 5 * EDSCALE) { // right inside clip
+						resize_start = false;
+						can_resize = true;
+					}
+				}
+
+				if (can_resize) {
+					len_resizing_start = resize_start;
+					len_resizing_index = i;
+					use_hsize_cursor = true;
+				}
 			}
 		}
 		over_drag_position = use_hsize_cursor;
@@ -959,9 +984,9 @@ void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) 
 		}
 
 		if (len_resizing_start) {
-			len_resizing_rel = CLAMP(ofs_local, -prev_ofs_start, len - prev_ofs_end - prev_ofs_start) * get_timeline()->get_zoom_scale();
+			len_resizing_rel = CLAMP(ofs_local, -prev_ofs_start, MAX(0.0, len - prev_ofs_end - prev_ofs_start)) * get_timeline()->get_zoom_scale();
 		} else {
-			len_resizing_rel = CLAMP(ofs_local, -(len - prev_ofs_end - prev_ofs_start), prev_ofs_end) * get_timeline()->get_zoom_scale();
+			len_resizing_rel = CLAMP(ofs_local, -(MAX(0.0, len - prev_ofs_end - prev_ofs_start)), prev_ofs_end) * get_timeline()->get_zoom_scale();
 		}
 
 		queue_redraw();
