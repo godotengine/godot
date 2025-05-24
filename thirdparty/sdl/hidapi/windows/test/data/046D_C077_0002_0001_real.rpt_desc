@@ -1,0 +1,24 @@
+Usage Page (Generic Desktop) 05 01  
+Usage (Mouse) 09 02  
+Collection (Application) A1 01  
+    Usage (Pointer) 09 01  
+    Collection (Physical) A1 00  
+        Usage Page (Button) 05 09  
+        Usage Minimum (Button 1) 19 01  
+        Usage Maximum (Button 3) 29 03  
+        Logical Minimum (0) 15 00  
+        Logical Maximum (1) 25 01  
+        Report Count (8) 95 08  
+        Report Size (1) 75 01  
+        Input (Data,Var,Abs,NWrp,Lin,Pref,NNul,Bit) 81 02  
+        Usage Page (Generic Desktop) 05 01  
+        Usage (X) 09 30  
+        Usage (Y) 09 31  
+        Usage (Wheel) 09 38  
+        Logical Minimum (-127) 15 81  
+        Logical Maximum (127) 25 7F  
+        Report Size (8) 75 08  
+        Report Count (3) 95 03  
+        Input (Data,Var,Rel,NWrp,Lin,Pref,NNul,Bit) 81 06  
+    End Collection C0  
+End Collection C0 

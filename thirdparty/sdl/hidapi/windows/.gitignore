@@ -1,0 +1,17 @@
+Debug
+Release
+.vs/
+*.exp
+*.ilk
+*.lib
+*.suo
+*.vcproj.*
+*.vcxproj.*
+*.ncb
+*.suo
+*.dll
+*.pdb
+.deps
+.libs
+*.lo
+*.la

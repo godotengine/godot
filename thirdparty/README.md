@@ -444,6 +444,24 @@ Files extracted from upstream source:
   - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`, `wasm/*`
 
 
+## hidapi
+
+- Upstream: https://github.com/libsdl-org/SDL/tree/main/src/hidapi
+- Version: 0.14.0 (8d604353a53853fa56d1bdce0363535605ca868f, 2025)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `AUTHORS.txt`, `LICENSE.txt`, `LICENSE-bsd.txt`, `README.md`, `VERSION`
+- `hidapi/`
+- `linux/`
+- `mac/`
+- `windows/`
+
+The source code of this library is being bundled with SDL's source code files.
+The files of hidapi are stored in `thirdparty/sdl/hidapi/` folder.
+
+
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
@@ -928,6 +946,59 @@ Important: Nearly all files have Godot-made changes and renames
 to make the 2D and 3D rvo libraries compatible with each other
 and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
+
+
+## sdl
+
+- Upstream: https://github.com/libsdl-org/SDL
+- Version: 3.2.14 (8d604353a53853fa56d1bdce0363535605ca868f, 2025)
+- License: Zlib
+
+Files extracted from upstream source:
+
+- `include/`
+- `src/atomic/`
+- `src/audio/SDL_sysaudio.h`
+- `src/core/linux/`, `src/core/unix/`, `src/core/windows/` folders, `.c` and `.h` files from `src/core/` folder
+- `src/events/SDL_events.c`
+- `src/events/SDL_events_c.h`
+- `src/events/SDL_eventwatch.c`
+- `src/events/SDL_eventwatch_c.h`
+- `src/events/SDL_mouse_c.h`
+- `src/haptic/darwin/`, `src/haptic/linux/` and `src/haptic/windows/` folders, `.c` and `.h` files from `src/haptic/` folder
+- `.c` and `.h` files from `src/hidapi/` folder
+- `src/io/SDL_iostream.c`
+- `src/io/SDL_iostream_c.h`
+- `src/io/SDL_sysasyncio.h`
+- `.c` and `.h` files from `src/joystick/` folder and following `src/joystick/` subfolders:
+	- `src/joystick/apple/`
+	- `src/joystick/darwin/`
+	- `src/joystick/dummy/`
+	- `src/joystick/hidapi/`
+	- `src/joystick/linux/`
+	- `src/joystick/windows/`
+- `src/libm/`
+- `src/loadso/dlopen/`
+- `src/sensor/dummy/`
+- `src/sensor/SDL_sensor.c`
+- `src/sensor/SDL_sensor_c.h`
+- `src/sensor/SDL_syssensor.h`
+- `src/stdlib/`
+- `src/thread/generic/`, `src/thread/pthread/`, `src/thread/windows/` folders, `.c` and `.h` files from `src/thread/` folder
+- `src/timer/unix/`, `src/timer/windows/` folders, `.c` and `.h` files from `src/timer/` folder
+- `src/video/SDL_surface_c.h`
+- `src/video/SDL_sysvideo.h`
+- `.c` and `.h` files from `src/` folder
+- `src/LICENSE.txt`
+- `src/REVISION.txt`
+
+Patches:
+
+- `0001-windows-sdl-helper-window.patch` (GH-106218)
+- `0002-remove-unnecessary-subsystems.patch` (GH-106218)
+- `0003-send-mouse-wheel-fix.patch` (GH-106218)
+
+The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
 
 
 ## spirv-cross

@@ -1,0 +1,61 @@
+
+mac-hid-dump on  main ❯ ./mac-hid-dump 
+mac-hid-dump:
+...
+046D B010: Unknown - Bluetooth Mouse M557
+DESCRIPTOR:
+  05  01  09  02  a1  01  85  02  09  01  a1  00  05  09  19  01 
+  29  08  15  00  25  01  75  01  95  08  81  02  05  01  09  30 
+  09  31  16  01  f8  26  ff  07  75  0c  95  02  81  06  09  38 
+  15  81  25  7f  75  08  95  01  81  06  05  0c  0a  38  02  75 
+  08  95  01  81  06  c0  c0  05  0c  09  01  a1  01  85  03  05 
+  06  09  20  15  00  26  64  00  75  08  95  01  81  02  c0  06 
+  00  ff  09  01  a1  01  85  10  75  08  95  06  15  00  26  ff 
+  00  09  01  81  00  09  01  91  00  c0  06  00  ff  09  02  a1 
+  01  85  11  75  08  95  13  15  00  26  ff  00  09  02  81  00 
+  09  02  91  00  c0  05  01  09  06  a1  01  85  04  75  01  95 
+  08  05  07  19  e0  29  e7  15  00  25  01  81  02  95  01  75 
+  08  81  03  95  05  75  01  05  08  19  01  29  05  91  02  95 
+  01  75  03  91  03  95  06  75  08  15  00  26  ff  00  05  07 
+  19  00  29  ff  81  00  c0  05  0c  09  01  a1  01  85  05  15 
+  00  25  01  75  01  95  02  0a  25  02  0a  24  02  81  02  95 
+  01  75  06  81  03  c0  
+  (246 bytes)
+
+Parser output:
+
+0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+0x09, 0x02,        // Usage (Mouse)
+0xA1, 0x01,        // Collection (Application)
+0x85, 0x02,        //   Report ID (2)
+0x09, 0x01,        //   Usage (Pointer)
+0xA1, 0x00,        //   Collection (Physical)
+0x05, 0x09,        //     Usage Page (Button)
+0x19, 0x01,        //     Usage Minimum (0x01)
+0x29, 0x08,        //     Usage Maximum (0x08)
+0x15, 0x00,        //     Logical Minimum (0)
+0x25, 0x01,        //     Logical Maximum (1)
+0x75, 0x01,        //     Report Size (1)
+0x95, 0x08,        //     Report Count (8)
+0x81, 0x02,        //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+0x05, 0x01,        //     Usage Page (Generic Desktop Ctrls)
+0x09, 0x30,        //     Usage (X)
+0x09, 0x31,        //     Usage (Y)
+0x16, 0x01, 0xF8,  //     Logical Minimum (-2047)
+0x26, 0xFF, 0x07,  //     Logical Maximum (2047)
+0x75, 0x0C,        //     Report Size (12)
+0x95, 0x02,        //     Report Count (2)
+0x81, 0x06,        //     Input (Data,Var,Rel,No Wrap,Linear,Preferred State,No Null Position)
+0x09, 0x38,        //     Usage (Wheel)
+0x15, 0x81,        //     Logical Minimum (-127)
+0x25, 0x7F,        //     Logical Maximum (127)
+0x75, 0x08,        //     Report Size (8)
+0x95, 0x01,        //     Report Count (1)
+0x81, 0x06,        //     Input (Data,Var,Rel,No Wrap,Linear,Preferred State,No Null Position)
+0x05, 0x0C,        //     Usage Page (Consumer)
+0x0A, 0x38, 0x02,  //     Usage (AC Pan)
+0x75, 0x08,        //     Report Size (8)
+0x95, 0x01,        //     Report Count (1)
+0x81, 0x06,        //     Input (Data,Var,Rel,No Wrap,Linear,Preferred State,No Null Position)
+0xC0,              //   End Collection
+0xC0,              // End Collection

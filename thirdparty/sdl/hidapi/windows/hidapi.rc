@@ -1,0 +1,35 @@
+#include "winresrc.h"
+
+#include "hidapi.h"
+
+// English
+LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION HID_API_VERSION_MAJOR,HID_API_VERSION_MINOR,HID_API_VERSION_PATCH,0
+ PRODUCTVERSION HID_API_VERSION_MAJOR,HID_API_VERSION_MINOR,HID_API_VERSION_PATCH,0
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+ FILEFLAGS 0
+#ifdef _DEBUG
+  | VS_FF_DEBUG
+#endif
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_DLL
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "04090000"
+		BEGIN
+			VALUE "CompanyName", "libusb/hidapi Team"
+			VALUE "FileDescription", "A multi-platform library to interface with HID devices (USB, Bluetooth, etc.)"
+			VALUE "FileVersion", HID_API_VERSION_STR
+			VALUE "ProductName", "HIDAPI"
+			VALUE "ProductVersion", HID_API_VERSION_STR
+			VALUE "Licence", "https://github.com/libusb/hidapi/blob/master/LICENSE.txt"
+			VALUE "Comments", "https://github.com/libusb/hidapi"
+		END
+	END
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x409, 0
+	END
+END
