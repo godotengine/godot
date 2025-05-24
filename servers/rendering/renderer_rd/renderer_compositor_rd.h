@@ -34,6 +34,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
+#include "servers/rendering/renderer_rd/mesh_rasterizer_rd.h"
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
@@ -56,6 +57,7 @@ protected:
 	RendererRD::MeshStorage *mesh_storage = nullptr;
 	RendererRD::ParticlesStorage *particles_storage = nullptr;
 	RendererRD::TextureStorage *texture_storage = nullptr;
+	RendererRD::MeshRasterizerRD *mesh_rasterizer = nullptr;
 	RendererRD::Fog *fog = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
 
@@ -110,6 +112,7 @@ public:
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
 	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
 	RendererTextureStorage *get_texture_storage() { return texture_storage; }
+	MeshRasterizer *get_mesh_rasterizer() { return mesh_rasterizer; }
 	RendererGI *get_gi() {
 		ERR_FAIL_NULL_V(scene, nullptr);
 		return scene->get_gi();

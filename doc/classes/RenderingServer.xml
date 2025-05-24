@@ -2422,6 +2422,24 @@
 				Returns a mesh's number of surfaces.
 			</description>
 		</method>
+		<method name="mesh_rasterizer_create">
+			<return type="RID" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="mesh_rasterizer_draw">
+			<return type="void" />
+			<param index="0" name="mesh_rasterizer" type="RID" />
+			<param index="1" name="material" type="RID" />
+			<param index="2" name="texture_drawable" type="RID" />
+			<param index="3" name="blend_state" type="RasterizerBlendState" />
+			<param index="4" name="clear_color" type="Color" />
+			<param index="5" name="multisamples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
+			<description>
+			</description>
+		</method>
 		<method name="mesh_set_blend_shape_mode">
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />
@@ -3730,6 +3748,21 @@
 				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. It will give you much more control over the texture's format and usage.
 			</description>
 		</method>
+		<method name="texture_drawable_ctreate">
+			<return type="RID" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="texture_format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="3" name="use_mipmaps" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_drawable_generate_mipmaps">
+			<return type="void" />
+			<param index="0" name="texture_drawable" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="texture_get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
@@ -4519,7 +4552,7 @@
 		<constant name="SHADER_FOG" value="4" enum="ShaderMode">
 			Shader is a 3D fog shader.
 		</constant>
-		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
+		<constant name="SHADER_MAX" value="6" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">

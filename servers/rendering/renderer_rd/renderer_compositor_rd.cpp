@@ -176,6 +176,7 @@ void RendererCompositorRD::finalize() {
 	memdelete(mesh_storage);
 	memdelete(material_storage);
 	memdelete(texture_storage);
+	memdelete(mesh_rasterizer);
 	memdelete(utilities);
 
 	//only need to erase these, the rest are erased by cascade
@@ -318,6 +319,7 @@ RendererCompositorRD::RendererCompositorRD() {
 	utilities = memnew(RendererRD::Utilities);
 	texture_storage = memnew(RendererRD::TextureStorage);
 	material_storage = memnew(RendererRD::MaterialStorage);
+	mesh_rasterizer = memnew(RendererRD::MeshRasterizerRD);
 	mesh_storage = memnew(RendererRD::MeshStorage);
 	light_storage = memnew(RendererRD::LightStorage);
 	particles_storage = memnew(RendererRD::ParticlesStorage);
