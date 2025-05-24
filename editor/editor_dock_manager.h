@@ -32,6 +32,7 @@
 
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/tab_container.h"
 
 class Button;
 class ConfigFile;
@@ -40,6 +41,31 @@ class PopupMenu;
 class TabContainer;
 class VBoxContainer;
 class WindowWrapper;
+class StyleBoxFlat;
+
+class EditorDockTabContainer : public TabContainer {
+	GDCLASS(EditorDockTabContainer, TabContainer);
+
+private:
+	friend class EditorDockManager;
+
+	Dictionary dock_drop_data;
+	Color valid_drop_color;
+	Color invalid_drop_color;
+	Ref<StyleBoxFlat> dock_drop_highlight;
+	bool is_dragging_dock = false;
+	bool can_drop_dock = false;
+	bool mouse_inside = false;
+	bool is_layout_horizontal = false;
+
+	virtual void input(const Ref<InputEvent> &p_event) override;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	EditorDockTabContainer();
+};
 
 class DockSplitContainer : public SplitContainer {
 	GDCLASS(DockSplitContainer, SplitContainer);
@@ -97,7 +123,7 @@ private:
 	Vector<DockSplitContainer *> hsplits;
 
 	Vector<WindowWrapper *> dock_windows;
-	TabContainer *dock_slot[DOCK_SLOT_MAX];
+	EditorDockTabContainer *dock_slot[DOCK_SLOT_MAX];
 	HashMap<Control *, DockInfo> all_docks;
 	bool docks_visible = true;
 
@@ -107,9 +133,9 @@ private:
 	Control *closed_dock_parent = nullptr;
 
 	void _dock_split_dragged(int p_offset);
-	void _dock_container_gui_input(const Ref<InputEvent> &p_input, TabContainer *p_dock_container);
+	void _dock_container_gui_input(const Ref<InputEvent> &p_input, EditorDockTabContainer *p_dock_container);
 	void _bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, Control *p_dock, Button *p_bottom_button);
-	void _dock_container_update_visibility(TabContainer *p_dock_container);
+	void _dock_container_update_visibility(EditorDockTabContainer *p_dock_container);
 	void _update_layout();
 
 	void _docks_menu_option(int p_id);
@@ -137,7 +163,7 @@ public:
 
 	void add_vsplit(DockSplitContainer *p_split);
 	void add_hsplit(DockSplitContainer *p_split);
-	void register_dock_slot(DockSlot p_dock_slot, TabContainer *p_tab_container);
+	void register_dock_slot(DockSlot p_dock_slot, EditorDockTabContainer *p_tab_container);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
@@ -149,7 +175,7 @@ public:
 	void open_dock(Control *p_dock, bool p_set_current = true);
 	void focus_dock(Control *p_dock);
 
-	TabContainer *get_dock_tab_container(Control *p_dock) const;
+	EditorDockTabContainer *get_dock_tab_container(Control *p_dock) const;
 
 	void bottom_dock_show_placement_popup(const Rect2i &p_position, Control *p_dock);
 
