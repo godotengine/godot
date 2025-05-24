@@ -1379,7 +1379,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			particles->instance_motion_vectors_enabled = true;
 		}
 
-		data.resize_zeroed(particle_instance_buffer_size);
+		data.resize_initialized(particle_instance_buffer_size);
 
 		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data);
 
