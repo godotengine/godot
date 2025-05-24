@@ -150,6 +150,8 @@ protected:
 
 	void _notification(int p_what);
 
+	virtual void _validate_bone_names() override;
+
 	static void _bind_methods();
 
 	virtual void _set_active(bool p_active) override;

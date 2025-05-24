@@ -108,8 +108,8 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (4d3fe6683f651d96be1bbef316b201e9b33b274d, 2024),
-  generated from mozilla-release changeset b8ea2342548b8571e58f9176d9555ccdb5ec199f
+- Version: git (bcc414c5b5282f9321651bf71dc1e254ae87e3f8, 2025),
+  generated from mozilla-release changeset 60d4997d339bb7ac6d033819ac50dcad4b9be09d
 - License: MPL 2.0
 
 Files extracted from upstream source:
@@ -415,6 +415,21 @@ Files extracted from upstream source:
 - `COPYING`
 
 
+## grisu2
+
+- Upstream: https://github.com/simdjson/simdjson/blob/master/src/to_chars.cpp
+- Version: git (4f4e81668ecb9d4d37fd5f59a1556d492507421d, 2023)
+- License: Apache and MIT
+
+Files extracted from upstream source:
+
+- The `src/to_chars.cpp` file renamed to `grisu2.h` and slightly modified.
+
+Patches:
+
+- `0001-godot-changes.patch` (GH-98750)
+
+
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
@@ -647,17 +662,13 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.22 (4affad044571506a5724c9a6f15424f43e86f731, 2024)
+- Version: 0.23 (3e9d1ff3135794f519f3237515277c8d9a3fd3f2, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
 
 - All files in `src/`
 - `LICENSE.md`
-
-Patches:
-
-- `0001-simplifier-distance-only-error.patch` (GH-98529)
 
 
 ## mingw-std-threads
@@ -792,7 +803,7 @@ Collection of single-file libraries used in Godot components.
     - `polypartition-0002-shadow-warning.patch` (GH-66808)
 - `qoa.{c,h}`
   * Upstream: https://github.com/phoboslab/qoa
-  * Version: git (a2d927f8ce78a85e903676a33e0f956e53b89f7d, 2024)
+  * Version: git (ae07b57deb98127a5b40916cb57775823d7437d2, 2025)
   * License: MIT
   * Modifications: Added implementation through `qoa.c`.
 - `r128.{c,h}`

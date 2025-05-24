@@ -255,11 +255,11 @@ public:
 	};
 
 	void get_core_type_words(List<String> *p_core_type_words) const;
-	virtual void get_reserved_words(List<String> *p_words) const = 0;
+	virtual Vector<String> get_reserved_words() const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
+	virtual Vector<String> get_comment_delimiters() const = 0;
+	virtual Vector<String> get_doc_comment_delimiters() const = 0;
+	virtual Vector<String> get_string_delimiters() const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }

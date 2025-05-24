@@ -54,6 +54,7 @@
 #include "scene/resources/image_texture.h"
 
 #ifdef TOOLS_ENABLED
+#import "display_server_embedded.h"
 #import "editor/embedded_process_macos.h"
 #endif
 
@@ -87,7 +88,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 	{
 		WindowData &wd = windows[id];
 
-		wd.window_delegate = [[GodotWindowDelegate alloc] init];
+		wd.window_delegate = [[GodotWindowDelegate alloc] initWithDisplayServer:this];
 		ERR_FAIL_NULL_V_MSG(wd.window_delegate, INVALID_WINDOW_ID, "Can't create a window delegate");
 		[wd.window_delegate setWindowID:id];
 
@@ -2196,6 +2197,8 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 	WindowData &wd = windows[p_window];
 	NSScreen *screen = [wd.window_object screen];
 
+	_window_update_display_id(&wd);
+
 	if (wd.transient_parent != INVALID_WINDOW_ID) {
 		WindowData &wd_parent = windows[wd.transient_parent];
 		NSScreen *parent_screen = [wd_parent.window_object screen];
@@ -3284,9 +3287,34 @@ void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
 		ERR_FAIL_V(m_retval);                        \
 	}
 
+uint32_t DisplayServerMacOS::window_get_display_id(WindowID p_window) const {
+	const WindowData *wd;
+	GET_OR_FAIL_V(wd, windows, p_window, -1);
+	return wd->display_id;
+}
+
+void DisplayServerMacOS::_window_update_display_id(WindowData *p_wd) {
+	NSScreen *screen = [p_wd->window_object screen];
+	CGDirectDisplayID display_id = [[screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
+	if (p_wd->display_id == display_id) {
+		return;
+	}
+
+	p_wd->display_id = display_id;
+
+#ifdef TOOLS_ENABLED
+	// Notify any embedded processes of the new display ID, so that they can potentially update their vsync.
+	for (KeyValue<OS::ProcessID, EmbeddedProcessData> &E : embedded_processes) {
+		if (E.value.wd == p_wd) {
+			E.value.process->display_state_changed();
+		}
+	}
+#endif
+}
+
 #ifdef TOOLS_ENABLED
 
-Error DisplayServerMacOS::embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process) {
+Error DisplayServerMacOS::embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process) {
 	_THREAD_SAFE_METHOD_
 
 	WindowData *wd;
@@ -3303,6 +3331,7 @@ Error DisplayServerMacOS::embed_process_update(WindowID p_window, const Embedded
 		ed = &embedded_processes.insert(p_pid, EmbeddedProcessData())->value;
 
 		ed->process = p_process;
+		ed->wd = wd;
 
 		CALayerHost *host = [CALayerHost new];
 		uint32_t p_context_id = p_process->get_context_id();

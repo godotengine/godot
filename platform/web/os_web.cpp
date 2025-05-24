@@ -129,7 +129,7 @@ Error OS_Web::kill(const ProcessID &p_pid) {
 }
 
 int OS_Web::get_process_id() const {
-	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the Web platform.");
+	return 0;
 }
 
 bool OS_Web::is_process_running(const ProcessID &p_pid) const {

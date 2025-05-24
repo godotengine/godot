@@ -811,10 +811,14 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 #endif
 }
 
-int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options) {
+int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid) {
 	while (true) {
-		if (waitpid(p_pid, r_status, p_options) != -1) {
+		pid_t pid = waitpid(p_pid, r_status, p_options);
+		if (pid != -1) {
 			// Thread exited normally.
+			if (r_pid) {
+				*r_pid = pid;
+			}
 			return 0;
 		}
 		const int error = errno;
@@ -838,10 +842,14 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 		return false;
 	}
 
+	pid_t pid = -1;
 	int status = 0;
-	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG);
+	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG, &pid);
 	if (result == 0) {
 		// Thread is still running.
+		if (pi && pid == p_pid) {
+			pi->exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+		}
 		return true;
 	}
 
@@ -852,7 +860,9 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 
 	if (pi) {
 		pi->is_running = false;
-		pi->exit_code = status;
+		if (pid == p_pid) {
+			pi->exit_code = status;
+		}
 	}
 
 	if (r_status) {

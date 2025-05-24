@@ -23,12 +23,8 @@ layout(push_constant, std430) uniform DrawCall {
 #ifdef UBERSHADER
 	uint sc_packed_0;
 	uint sc_packed_1;
-	uint sc_packed_2;
-	float sc_packed_3;
+	float sc_packed_2;
 	uint uc_packed_0;
-	uint uc_padding_1;
-	uint uc_padding_2;
-	uint uc_padding_3;
 #endif
 }
 draw_call;
@@ -50,12 +46,8 @@ uint sc_packed_1() {
 	return draw_call.sc_packed_1;
 }
 
-uint sc_packed_2() {
+float sc_packed_2() {
 	return draw_call.sc_packed_2;
-}
-
-float sc_packed_3() {
-	return draw_call.sc_packed_3;
 }
 
 uint uc_cull_mode() {
@@ -67,8 +59,7 @@ uint uc_cull_mode() {
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
 layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
-layout(constant_id = 2) const uint pso_sc_packed_2 = 0;
-layout(constant_id = 3) const float pso_sc_packed_3 = 2.0;
+layout(constant_id = 2) const float pso_sc_packed_2 = 2.0;
 
 uint sc_packed_0() {
 	return pso_sc_packed_0;
@@ -78,12 +69,8 @@ uint sc_packed_1() {
 	return pso_sc_packed_1;
 }
 
-uint sc_packed_2() {
+float sc_packed_2() {
 	return pso_sc_packed_2;
-}
-
-float sc_packed_3() {
-	return pso_sc_packed_3;
 }
 
 #endif
@@ -176,32 +163,55 @@ uint sc_directional_penumbra_shadow_samples() {
 	return (sc_packed_1() >> 6) & 63U;
 }
 
-uint sc_omni_lights() {
-	return (sc_packed_1() >> 12) & 15U;
+#define SHADER_COUNT_NONE 0
+#define SHADER_COUNT_SINGLE 1
+#define SHADER_COUNT_MULTIPLE 2
+
+uint option_to_count(uint option, uint bound) {
+	switch (option) {
+		case SHADER_COUNT_NONE:
+			return 0;
+		case SHADER_COUNT_SINGLE:
+			return 1;
+		case SHADER_COUNT_MULTIPLE:
+			return bound;
+	}
 }
 
-uint sc_spot_lights() {
-	return (sc_packed_1() >> 16) & 15U;
+uint sc_omni_lights(uint bound) {
+	uint option = (sc_packed_1() >> 12) & 3U;
+	return option_to_count(option, bound);
 }
 
-uint sc_reflection_probes() {
-	return (sc_packed_1() >> 20) & 15U;
+uint sc_spot_lights(uint bound) {
+	uint option = (sc_packed_1() >> 14) & 3U;
+	return option_to_count(option, bound);
 }
 
-uint sc_directional_lights() {
-	return (sc_packed_1() >> 24) & 15U;
+uint sc_reflection_probes(uint bound) {
+	uint option = (sc_packed_1() >> 16) & 3U;
+	return option_to_count(option, bound);
 }
 
-uint sc_decals() {
-	return (sc_packed_1() >> 28) & 15U;
+uint sc_directional_lights(uint bound) {
+	uint option = (sc_packed_1() >> 18) & 3U;
+	return option_to_count(option, bound);
+}
+
+uint sc_decals(uint bound) {
+	if (((sc_packed_1() >> 20) & 1U) != 0) {
+		return bound;
+	} else {
+		return 0;
+	}
 }
 
 bool sc_directional_light_blend_split(uint i) {
-	return ((sc_packed_2() >> i) & 1U) != 0;
+	return ((sc_packed_1() >> (21 + i)) & 1U) != 0;
 }
 
 float sc_luminance_multiplier() {
-	return sc_packed_3();
+	return sc_packed_2();
 }
 
 /* Set 0: Base Pass (never changes) */

@@ -1419,9 +1419,9 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	_focus_file_text();
 
 	if (is_visible()) {
+		_focus_file_text();
 		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 	}
 }

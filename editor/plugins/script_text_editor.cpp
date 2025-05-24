@@ -233,8 +233,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 	text_edit->get_syntax_highlighter()->update_cache();
 
-	List<String> strings;
-	script->get_language()->get_string_delimiters(&strings);
+	Vector<String> strings = script->get_language()->get_string_delimiters();
 	text_edit->clear_string_delimiters();
 	for (const String &string : strings) {
 		String beg = string.get_slicec(' ', 0);
@@ -250,9 +249,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 
 	text_edit->clear_comment_delimiters();
 
-	List<String> comments;
-	script->get_language()->get_comment_delimiters(&comments);
-	for (const String &comment : comments) {
+	for (const String &comment : script->get_language()->get_comment_delimiters()) {
 		String beg = comment.get_slicec(' ', 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
@@ -262,9 +259,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		}
 	}
 
-	List<String> doc_comments;
-	script->get_language()->get_doc_comment_delimiters(&doc_comments);
-	for (const String &doc_comment : doc_comments) {
+	for (const String &doc_comment : script->get_language()->get_doc_comment_delimiters()) {
 		String beg = doc_comment.get_slicec(' ', 0);
 		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
@@ -606,6 +601,50 @@ void ScriptTextEditor::_update_color_constructor_options() {
 	}
 }
 
+void ScriptTextEditor::_update_background_color() {
+	// Clear background lines.
+	CodeEdit *te = code_editor->get_text_editor();
+	for (int i = 0; i < te->get_line_count(); i++) {
+		bool is_folded_code_region = te->is_line_code_region_start(i) && te->is_line_folded(i);
+		te->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
+	}
+
+	// Set the warning background.
+	if (warning_line_color.a != 0.0) {
+		for (const ScriptLanguage::Warning &warning : warnings) {
+			int folder_line_header = te->get_folded_line_header(warning.end_line - 2);
+			bool is_folded = folder_line_header != (warning.end_line - 2);
+
+			if (is_folded) {
+				te->set_line_background_color(folder_line_header, warning_line_color);
+			} else if (warning.end_line - warning.start_line > 0 && warning.end_line - warning.start_line < 20) {
+				// If the warning spans below 20 lines (arbitrary), set the background color for all lines.
+				// (W.end_line - W.start_line > 0) ensures that we set the background for single line warnings.
+				for (int i = warning.start_line - 1; i < warning.end_line - 1; i++) {
+					te->set_line_background_color(i, warning_line_color);
+				}
+			} else {
+				// Otherwise, just set the background color for the start line of the warning.
+				te->set_line_background_color(warning.start_line - 1, warning_line_color);
+			}
+		}
+	}
+
+	// Set the error background.
+	if (marked_line_color.a != 0.0) {
+		for (const ScriptLanguage::ScriptError &error : errors) {
+			int folder_line_header = te->get_folded_line_header(error.line - 1);
+			bool is_folded_code = folder_line_header != (error.line - 1);
+
+			if (is_folded_code) {
+				te->set_line_background_color(folder_line_header, marked_line_color);
+			} else {
+				te->set_line_background_color(error.line - 1, marked_line_color);
+			}
+		}
+	}
+}
+
 void ScriptTextEditor::_update_color_text() {
 	if (inline_color_line < 0) {
 		return;
@@ -807,6 +846,7 @@ void ScriptTextEditor::_validate_script() {
 	_update_connected_methods();
 	_update_warnings();
 	_update_errors();
+	_update_background_color();
 
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
@@ -875,17 +915,6 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->pop(); // Cell.
 	}
 	warnings_panel->pop(); // Table.
-	if (warning_line_color.a != 0.0) {
-		CodeEdit *te = code_editor->get_text_editor();
-		for (int i = 0; i < te->get_line_count(); i++) {
-			for (const ScriptLanguage::Warning &W : warnings) {
-				if (i >= W.start_line - 1 && i < W.end_line) {
-					te->set_line_background_color(i, warning_line_color);
-					break;
-				}
-			}
-		}
-	}
 }
 
 void ScriptTextEditor::_update_errors() {
@@ -948,23 +977,11 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->pop(); // Indent.
 	}
 
-	CodeEdit *te = code_editor->get_text_editor();
 	bool highlight_safe = EDITOR_GET("text_editor/appearance/gutters/highlight_type_safe_lines");
 	bool last_is_safe = false;
-	for (int i = 0; i < te->get_line_count(); i++) {
-		if (errors.is_empty()) {
-			bool is_folded_code_region = te->is_line_code_region_start(i) && te->is_line_folded(i);
-			te->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
-		} else if (marked_line_color.a != 0) {
-			for (const ScriptLanguage::ScriptError &E : errors) {
-				bool error_line = i == E.line - 1;
-				te->set_line_background_color(i, error_line ? marked_line_color : Color(0, 0, 0, 0));
-				if (error_line) {
-					break;
-				}
-			}
-		}
+	CodeEdit *te = code_editor->get_text_editor();
 
+	for (int i = 0; i < te->get_line_count(); i++) {
 		if (highlight_safe) {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
@@ -1732,11 +1749,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
 			tx->fold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_UNFOLD_ALL_LINES: {
 			tx->unfold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_CREATE_CODE_REGION: {
 			tx->create_code_region();
@@ -1990,10 +2005,8 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	}
 
 	String delimiter = "#";
-	List<String> comment_delimiters;
-	script->get_language()->get_comment_delimiters(&comment_delimiters);
 
-	for (const String &script_delimiter : comment_delimiters) {
+	for (const String &script_delimiter : script->get_language()->get_comment_delimiters()) {
 		if (!script_delimiter.contains_char(' ')) {
 			delimiter = script_delimiter;
 			break;
@@ -2038,6 +2051,7 @@ void ScriptTextEditor::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				_update_warnings();
 				_update_errors();
+				_update_background_color();
 			}
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
@@ -2595,6 +2609,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
+	code_editor->get_text_editor()->connect("_fold_line_updated", callable_mp(this, &ScriptTextEditor::_update_background_color));
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
 	code_editor->show_toggle_files_button();
 	_update_gutter_indexes();

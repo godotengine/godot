@@ -88,7 +88,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_fsr2(Rende
 	}
 }
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 bool RenderForwardClustered::RenderBufferDataForwardClustered::ensure_mfx_temporal(RendererRD::MFXTemporalEffect *p_effect) {
 	if (mfx_temporal_context == nullptr) {
 		RendererRD::MFXTemporalEffect::CreateParams params;
@@ -127,7 +127,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 		fsr2_context = nullptr;
 	}
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	if (mfx_temporal_context) {
 		memdelete(mfx_temporal_context);
 		mfx_temporal_context = nullptr;
@@ -1730,7 +1730,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			scale_type = SCALE_FSR2;
 			break;
 		case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 			scale_type = SCALE_MFX;
 #else
 			scale_type = SCALE_NONE;
@@ -2444,7 +2444,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 			RD::get_singleton()->draw_command_end_label();
 		} else if (scale_type == SCALE_MFX) {
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 			bool reset = rb_data->ensure_mfx_temporal(mfx_temporal_effect);
 
 			RID exposure;
@@ -2744,6 +2744,7 @@ void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const Page
 	scene_data.time = time;
 	scene_data.time_step = time_step;
 	scene_data.main_cam_transform = p_main_cam_transform;
+	scene_data.shadow_pass = true;
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
@@ -2836,6 +2837,7 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 	scene_data.time = time;
 	scene_data.time_step = time_step;
 	scene_data.main_cam_transform = p_cam_transform;
+	scene_data.shadow_pass = true; // Not a shadow pass, but should be treated like one.
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
@@ -5005,7 +5007,7 @@ RenderForwardClustered::RenderForwardClustered() {
 	taa = memnew(RendererRD::TAA);
 	fsr2_effect = memnew(RendererRD::FSR2Effect);
 	ss_effects = memnew(RendererRD::SSEffects);
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	motion_vectors_store = memnew(RendererRD::MotionVectorsStore);
 	mfx_temporal_effect = memnew(RendererRD::MFXTemporalEffect);
 #endif
@@ -5027,7 +5029,7 @@ RenderForwardClustered::~RenderForwardClustered() {
 		fsr2_effect = nullptr;
 	}
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	if (mfx_temporal_effect) {
 		memdelete(mfx_temporal_effect);
 		mfx_temporal_effect = nullptr;

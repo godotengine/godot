@@ -1994,7 +1994,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
 
-	bool should_fit = !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
+	bool should_fit = is_embedded() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
 
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);

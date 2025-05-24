@@ -380,11 +380,11 @@ struct ObjectGDExtension {
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
 #define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 #define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
 #else
 #define GDVIRTUAL_BIND(m_name, ...)
-#endif
+#endif // DEBUG_ENABLED
 #define GDVIRTUAL_BIND_COMPAT(m_alias, ...) ::ClassDB::add_virtual_compatibility_method(get_class_static(), _gdvirtual_##m_alias##_get_method_info(), true, sarray(__VA_ARGS__));
 #define GDVIRTUAL_IS_OVERRIDDEN(m_name) _gdvirtual_##m_name##_overridden()
 #define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overridden()
@@ -592,7 +592,7 @@ public:
 private:
 #ifdef DEBUG_ENABLED
 	friend struct _ObjectDebugLock;
-#endif
+#endif // DEBUG_ENABLED
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
 
@@ -616,7 +616,7 @@ private:
 	List<Connection> connections;
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
-#endif
+#endif // DEBUG_ENABLED
 	bool _block_signals = false;
 	int _predelete_ok = 0;
 	ObjectID _instance_id;
@@ -893,7 +893,7 @@ public:
 #define MTVIRTUAL virtual
 #else
 #define MTVIRTUAL
-#endif
+#endif // DEBUG_ENABLED
 
 	MTVIRTUAL void set_script(const Variant &p_script);
 	MTVIRTUAL Variant get_script() const;
