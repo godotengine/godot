@@ -1426,12 +1426,13 @@
 			<description>
 				Returns the internal type of the given [param variable], using the [enum Variant.Type] values.
 				[codeblock]
-				var boolTest = true
-				var stringTest = "A"
-				var intTest = 5
-				print(typeof(boolTest))	 # Prints 1
-				print(typeof(stringTest))	# Prints 4
-				print(typeof(intTest))	# Prints 2
+				var json = JSON.new()
+				json.parse('["a", "b", "c"]')
+				var result = json.get_data()
+				if typof(result) == TYPE_ARRAY:
+				    print(result[0]) # Prints "a"
+				else:
+				    print("Unexpected result!")
 				[/codeblock]
 				See also [method type_string].
 			</description>
