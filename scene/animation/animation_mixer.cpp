@@ -893,6 +893,78 @@ bool AnimationMixer::_update_caches() {
 
 						track = track_animation;
 
+					/*
+					//NEW 0
+#ifndef _3D_DISABLED
+						Node3D *node_3d = Object::cast_to<Node3D>(child);
+
+						if (!node_3d) {
+							ERR_PRINT(mixer_name + ": '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'.");
+							continue;
+						}
+
+						TrackCacheTransform *track_xform = memnew(TrackCacheTransform);
+						track_xform->type = Animation::TYPE_POSITION_3D;
+
+						track_xform->bone_idx = -1;
+
+						bool has_rest = false;
+						Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
+						if (sk && path.get_subname_count() == 1) {
+							track_xform->skeleton_id = sk->get_instance_id();
+							int bone_idx = sk->find_bone(path.get_subname(0));
+							if (bone_idx != -1) {
+								has_rest = true;
+								track_xform->bone_idx = bone_idx;
+								Transform3D rest = sk->get_bone_rest(bone_idx);
+								track_xform->init_loc = rest.origin;
+								track_xform->init_rot = rest.basis.get_rotation_quaternion();
+								track_xform->init_scale = rest.basis.get_scale();
+							}
+						}
+
+						track_xform->object_id = node_3d->get_instance_id();
+
+						track = track_xform;
+
+						switch (track_src_type) {
+							case Animation::TYPE_POSITION_3D: {
+								track_xform->loc_used = true;
+							} break;
+							case Animation::TYPE_ROTATION_3D: {
+								track_xform->rot_used = true;
+							} break;
+							case Animation::TYPE_SCALE_3D: {
+								track_xform->scale_used = true;
+							} break;
+							default: {
+							}
+						}
+
+						// For non Skeleton3D bone animation.
+						if (has_reset_anim && !has_rest) {
+							int rt = reset_anim->find_track(path, track_src_type);
+							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
+								switch (track_src_type) {
+									case Animation::TYPE_POSITION_3D: {
+										track_xform->init_loc = reset_anim->track_get_key_value(rt, 0);
+									} break;
+									case Animation::TYPE_ROTATION_3D: {
+										track_xform->init_rot = reset_anim->track_get_key_value(rt, 0);
+									} break;
+									case Animation::TYPE_SCALE_3D: {
+										track_xform->init_scale = reset_anim->track_get_key_value(rt, 0);
+									} break;
+									default: {
+									}
+								}
+							}
+						}
+#endif // _3D_DISABLED
+					//NEW 0
+					*/
+
+
 					} break;
 					default: {
 						ERR_PRINT("Animation corrupted (invalid track type).");
@@ -1782,10 +1854,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 				} break;
 				case Animation::TYPE_ANIMATION: {
-					//if (Math::is_zero_approx(blend)) {
-					//	continue;
-					//}
-
+					if (Math::is_zero_approx(blend)) {
+						continue;
+					}
 					
 					TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 					Object *t_obj = ObjectDB::get_instance(t->object_id);
@@ -1837,18 +1908,19 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						continue;
 					}
 
-					// Play animation.
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
+					while (String(anim_name) == "[stop]" && idx > 0) {
+						idx = idx - 1;
+						anim_name = a->animation_track_get_key_animation(i, idx);
+					}
+
+					if (String(anim_name) == "[stop]") {
+						animation_playback->stop();
+						continue;
+					}
+
 					Ref<Animation> anim = animation_playback->get_animation(anim_name);
 					if (anim.is_valid()) {
-						double start_ofs = a->animation_track_get_key_start_offset(i, idx);
-						double end_ofs = a->animation_track_get_key_end_offset(i, idx);
-						double len = anim->get_length();
-
-						double len_ofs = len - start_ofs - end_ofs;
-
-						double anim_time = start_ofs;
-						double pos = a->track_get_key_time(i, idx);
 						switch (a->get_loop_mode()) {
 							case Animation::LOOP_NONE: {
 								time = MIN(end - start, MAX(0.0, time - start)) + start;
@@ -1862,40 +1934,105 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							default:
 								break;
 						}
-						anim_time += time - pos;
+
+						double start_ofs = a->animation_track_get_key_start_offset(i, idx);
+						double end_ofs = a->animation_track_get_key_end_offset(i, idx);
+						double key_time = a->track_get_key_time(i, idx);
+						double len = anim->get_length();
+
+						double len_ofs = len - start_ofs - end_ofs;
+						double anim_time = (time - key_time) + start_ofs;
 
 						t->anim_name = anim_name;
 
+						bool anim_changed = false;
 						if (StringName(animation_playback->get_assigned_animation()) != t->anim_name) {
 							animation_playback->stop();
 							animation_playback->set_assigned_animation(t->anim_name);
+
+							anim_changed = true;
 
 							if (!playing_animation_players.has(asp)) {
 								playing_animation_players.push_back(asp);
 							}
 						}
 
-						//int prev_idx = idx - 1;
-						//if (prev_idx >= 0) {
-						//	StringName anim_name = a->animation_track_get_key_animation(i, prev_idx);
-						//	//ERR_FAIL_COND_V_MSG(err, ret, "prev idx: " + anim_name);
-						//}
-						//track_info.use_blend
-						
+						AnimationPlayer *ap_root = Object::cast_to<AnimationPlayer>(this);
+						bool root_is_playing = ap_root && ap_root->is_playing();
 
 						double anim_time_end = start_ofs + len_ofs;
 						double anim_time_start = MIN(anim_time_end, MAX(start_ofs, anim_time));
 
-						AnimationPlayer *ap_root = Object::cast_to<AnimationPlayer>(this);
-						bool root_is_playing = ap_root && ap_root->is_playing();
+						animation_playback->seek(anim_time_start, seeked || !root_is_playing || anim_changed, p_update_only);
 
-						animation_playback->seek(anim_time_start, seeked || !root_is_playing, p_update_only);
-
+						/*
+						
 						PlayingAnimationInfo pasi;
 
 						pasi.anim_name = t->anim_name;
+						pasi.anim_time = anim_time;
+						pasi.start = time;
+						if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
+							pasi.len = len - anim_time - end_ofs;
+						} else {
+							pasi.len = 0;
+						}
 
-						if (root_is_playing) {
+						//////////////////////////
+
+						int prev_idx = idx - 1;
+						if (prev_idx >= 0) {
+							StringName prev_anim_name = a->animation_track_get_key_animation(i, prev_idx);
+							if (String(prev_anim_name) != "[stop]") {
+								Ref<Animation> prev_anim = animation_playback->get_animation(prev_anim_name);
+								if (prev_anim.is_valid()) {
+									double prev_start_ofs = a->animation_track_get_key_start_offset(i, prev_idx);
+									double prev_end_ofs = a->animation_track_get_key_end_offset(i, prev_idx);
+									double prev_key_time = a->track_get_key_time(i, prev_idx);
+									double prev_len = prev_anim->get_length();
+
+									double prev_len_ofs = prev_len - prev_start_ofs - prev_end_ofs;
+									double prev_anim_time = (time - prev_key_time) + prev_start_ofs;
+
+									//
+									double prev_start = prev_key_time;
+									double prev_end = prev_key_time + prev_len_ofs;
+									double curr_start = key_time;
+									double curr_end = key_time + len_ofs;
+
+									double overlap_start = MAX(curr_start, prev_start);
+									double overlap_end = MIN(curr_end, prev_end);
+
+									if (overlap_start < overlap_end && time >= overlap_start && time <= overlap_end) {
+										PlayingAnimationInfo prev_pasi;
+										prev_pasi.anim_name = prev_anim_name;
+										prev_pasi.anim_time = prev_anim_time;
+
+										prev_pasi.start = time;
+										if (prev_len && Animation::is_greater_approx(prev_end_ofs, 0)) { // Force an end at a time.
+											prev_pasi.len = prev_len - prev_anim_time - prev_end_ofs;
+										} else {
+											prev_pasi.len = 0;
+										}
+
+										prev_pasi.anim_overlap_start = overlap_start - prev_key_time + prev_start_ofs;
+										prev_pasi.anim_overlap_end = overlap_end - prev_key_time + prev_start_ofs;
+
+										map[prev_idx] = prev_pasi;
+
+										pasi.anim_overlap_start = overlap_start - key_time + start_ofs;
+										pasi.anim_overlap_end = overlap_end - key_time + start_ofs;
+									}
+								}
+							}
+						}
+
+						map[idx] = pasi;
+						*/
+
+						//////////////////////////
+
+						if (root_is_playing) { //&& map.size() != 1) {
 							if (anim_time >= anim_time_start && anim_time <= anim_time_end && anim_time_start != anim_time_end) {
 								animation_playback->play_section(t->anim_name, anim_time_start, anim_time_end);
 
@@ -1908,13 +2045,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						}
-						pasi.start = time;
-						if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
-							pasi.len = len - anim_time - end_ofs;
-						} else {
-							pasi.len = 0;
-						}
-						map[idx] = pasi;
 					}
 				} break;
 			}
@@ -2086,65 +2216,255 @@ void AnimationMixer::_blend_apply() {
 			case Animation::TYPE_ANIMATION: {
 				TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
-				// Animation ending process.
+				Object *t_obj = ObjectDB::get_instance(t->object_id);
+				if (!t_obj) {
+					WARN_PRINT("Invalid object ID for AnimationPlayer");
+					continue;
+				}
+				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(t_obj);
+				if (!ap) {
+					WARN_PRINT("Object is not an AnimationPlayer");
+					continue;
+				}
+
+				// Animation ending and blending process
 				LocalVector<ObjectID> erase_maps;
 				for (KeyValue<ObjectID, PlayingAnimationTrackInfo> &L : t->playing_anims) {
 					PlayingAnimationTrackInfo &track_info = L.value;
-					float weight = track_info.use_blend ? track_info.weight : 1.0;
+
 					LocalVector<int> erase_anims;
+
+					// Structure for interpolated values
+					struct BlendedTrackValue {
+						NodePath path;
+						Animation::TrackType type;
+						Variant value;
+					};
+
+					AHashMap<Animation::TypeHash, BlendedTrackValue> blended_values;
+
+					
 					AHashMap<int, PlayingAnimationInfo> &map = track_info.anim_info;
 					for (const KeyValue<int, PlayingAnimationInfo> &M : map) {
+						/*
 						PlayingAnimationInfo pasi = M.value;
 
-						//double blend_time = seeked ? (1.0 - track_info.weight) * 1.5 : 1.0 - track_info.weight; // Längere Blend-Zeit beim Seeking
-						//blend_time = MAX(0.1, blend_time);
+						double overlap_len = pasi.anim_overlap_end - pasi.anim_overlap_start;
+						if (overlap_len > 0) {
+							double norm_time = (pasi.anim_time - pasi.anim_overlap_start) / overlap_len;
+							//WARN_PRINT("Invalid blend shape value: " + String::num(norm_time));
 
-						/*
-						Object *t_obj = ObjectDB::get_instance(t->object_id);
-						if (!t_obj) {
-							continue;
-						}
-						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(t_obj);
-						if (!ap) {
-							continue;
-						}
+							Ref<Animation> anim = ap->get_animation(pasi.anim_name);
+							if (!anim.is_valid()) {
+								WARN_PRINT("Invalid animation: " + String(pasi.anim_name));
+								continue;
+							}
 
-						bool stop = false;
-						if (ap->get_current_animation() != pasi.anim_name) {
-							stop = true;
-						}
-						if (!track_info.loop) {
-							if (!track_info.backward) {
-								if (Animation::is_less_approx(track_info.time, pasi.start)) {
-									stop = true;
+							double anim_time = pasi.anim_time;
+
+							for (int i = 0; i < anim->get_track_count(); i++) {
+								if (!anim->track_is_enabled(i)) {
+									continue;
 								}
-							} else if (track_info.backward) {
-								if (Animation::is_greater_approx(track_info.time, pasi.start)) {
-									stop = true;
+								Animation::TrackType track_type = anim->track_get_type(i);
+								NodePath track_path = anim->track_get_path(i);
+								Animation::TypeHash thash = anim->track_get_type_hash(i);
+
+								Variant current_value;
+
+								//////////NEW
+								Ref<Resource> resource;
+								Vector<StringName> subpath;
+
+								Node *target_node = object->get_node_and_resource(track_path, resource, subpath);
+								if (!target_node) {
+									WARN_PRINT("Target node not found for path: " + String(track_path));
+									continue;
+								}
+								///////////NEW
+
+								switch (track_type) {
+									case Animation::TYPE_POSITION_3D: {
+										Vector3 loc;
+
+										if (anim->try_position_track_interpolate(i, anim_time, &loc) == OK) {
+											if (!loc.is_finite()) {
+												WARN_PRINT("Invalid position value: " + String(loc));
+												continue;
+											}
+											current_value = loc;
+										}
+
+									} break;
+									case Animation::TYPE_ROTATION_3D: {
+										Quaternion rot;
+										if (anim->try_rotation_track_interpolate(i, anim_time, &rot) == OK) {
+											if (!rot.is_finite() || !rot.is_normalized()) {
+												WARN_PRINT("Invalid or unnormalized quaternion: " + String(rot));
+												rot = Quaternion().normalized();
+											}
+											current_value = rot;
+										}
+									} break;
+									case Animation::TYPE_SCALE_3D: {
+										Vector3 scale;
+										if (anim->try_scale_track_interpolate(i, anim_time, &scale) == OK) {
+											if (!scale.is_finite() || scale.length_squared() < 0.0001) {
+												WARN_PRINT("Invalid scale value: " + String(scale));
+												scale = Vector3(1, 1, 1);
+											}
+											current_value = scale;
+										}
+									} break;
+									case Animation::TYPE_VALUE: {
+										current_value = anim->value_track_interpolate(i, anim_time);
+										if (current_value == Variant()) {
+											continue;
+										}
+									} break;
+									case Animation::TYPE_BLEND_SHAPE: {
+										float value;
+										if (anim->try_blend_shape_track_interpolate(i, anim_time, &value) == OK) {
+											if (!Math::is_finite(value)) {
+												WARN_PRINT("Invalid blend shape value: " + String::num(value));
+												continue;
+											}
+											current_value = value;
+										}
+									} break;
+									default:
+										continue;
+								}
+
+								if (current_value == Variant()) {
+									continue;
+								}
+
+								//current_value = post_process_key_value(anim, i, current_value, t->object_id, -1);
+								//if (current_value == Variant()) {
+								//	continue;
+								//}
+
+								if (!blended_values.has(thash)) {
+									BlendedTrackValue btv;
+									btv.path = track_path;
+									btv.type = track_type;
+									btv.value = current_value;
+
+									blended_values[thash] = btv;
+								}
+
+								BlendedTrackValue &btv = blended_values[thash];
+
+								switch (track_type) {
+									case Animation::TYPE_POSITION_3D: {
+										Vector3 v1 = btv.value;
+										Vector3 v2 = current_value;
+										if (!v1.is_equal_approx(v2)) {
+											btv.value = v1.lerp(v2, norm_time);
+										}
+									} break;
+									case Animation::TYPE_SCALE_3D: {
+										Vector3 v1 = btv.value;
+										Vector3 v2 = current_value;
+										if (!v1.is_equal_approx(v2)) {
+											btv.value = v1.lerp(v2, norm_time);
+										}
+									} break;
+									case Animation::TYPE_ROTATION_3D: {
+										Quaternion q1 = btv.value;
+										Quaternion q2 = current_value;
+										if (!q1.is_equal_approx(q2)) {
+											btv.value = q1.slerp(q2, norm_time).normalized();
+										}
+									} break;
+									case Animation::TYPE_VALUE: {
+										if (Animation::is_variant_interpolatable(current_value)) {
+											btv.value = Animation::blend_variant(btv.value, current_value, norm_time);
+										} else {
+											btv.value = norm_time > 0.5 ? current_value : btv.value;
+										}
+									} break;
+									case Animation::TYPE_BLEND_SHAPE: {
+										float v1 = btv.value;
+										float v2 = current_value;
+										if (!Math::is_equal_approx(v1, v2)) {
+											btv.value = (float)Math::lerp((double)v1, (double)v2, norm_time);
+										}
+									} break;
+									default:
+										break;
 								}
 							}
-						}
-						if (Animation::is_greater_approx(pasi.len, 0)) {
-							double len = 0.0;
-							if (!track_info.backward) {
-								len = Animation::is_greater_approx(pasi.start, track_info.time) ? (track_info.length - pasi.start) + track_info.time : track_info.time - pasi.start;
-							} else {
-								len = Animation::is_less_approx(pasi.start, track_info.time) ? (track_info.length - track_info.time) + pasi.start : pasi.start - track_info.time;
-							}
-							if (Animation::is_greater_approx(len, pasi.len)) {
-								stop = true;
-							}
-						}
-
-						if (stop) {
-							// Time to stop.
-							ap->stop(true);
-							erase_anims.push_back(M.key);
-						} else {
-							ap->set_blend_time(ap->get_current_animation(), pasi.anim_name, weight);
 						}
 						*/
+						erase_anims.push_back(M.key);
 					}
+
+					/*
+					for (const KeyValue<Animation::TypeHash, BlendedTrackValue> &E : blended_values) {
+						const BlendedTrackValue &btv = E.value;
+
+						Ref<Resource> resource;
+						Vector<StringName> subpath;
+
+						Node *target_node = object->get_node_and_resource(btv.path, resource, subpath);
+						if (!target_node) {
+							WARN_PRINT("Target node not found for path: " + String(btv.path));
+							continue;
+						}
+
+						switch (btv.type) {
+							case Animation::TYPE_POSITION_3D: {
+								Vector3 loc = btv.value;
+								if (!loc.is_finite()) {
+									WARN_PRINT("Skipping invalid position: " + String(loc));
+									continue;
+								}
+								if (Node3D *node_3d = Object::cast_to<Node3D>(target_node)) {
+									node_3d->set_position(loc);
+								}
+							} break;
+							case Animation::TYPE_ROTATION_3D: {
+								Quaternion rot = btv.value;
+								if (!rot.is_finite() || !rot.is_normalized()) {
+									WARN_PRINT("Skipping invalid rotation: " + String(rot));
+									continue;
+								}
+								if (Node3D *node_3d = Object::cast_to<Node3D>(target_node)) {
+									node_3d->set_quaternion(rot);
+								}
+							} break;
+							case Animation::TYPE_SCALE_3D: {
+								Vector3 scale = btv.value;
+								if (!scale.is_finite() || scale.length_squared() < 0.0001) {
+									WARN_PRINT("Skipping invalid scale: " + String(scale));
+									continue;
+								}
+								if (Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(target_node)) {
+									if (subpath.size() == 1) {
+										int bone_idx = skeleton->find_bone(subpath[0]);
+										if (bone_idx >= 0) {
+											skeleton->set_bone_pose_scale(bone_idx, scale);
+										}
+									}
+								} else if (Node3D *node_3d = Object::cast_to<Node3D>(target_node)) {
+									node_3d->set_scale(scale);
+								}
+							} break;
+							case Animation::TYPE_VALUE:
+							case Animation::TYPE_BLEND_SHAPE: {
+								Object *t_obj = ObjectDB::get_instance(t->object_id);
+								if (t_obj) {
+									t_obj->set_indexed(subpath, btv.value);
+								}
+							} break;
+							default:
+								break;
+						}
+					}
+					*/
+
 					for (uint32_t erase_idx = 0; erase_idx < erase_anims.size(); erase_idx++) {
 						map.erase(erase_anims[erase_idx]);
 					}
@@ -2152,6 +2472,7 @@ void AnimationMixer::_blend_apply() {
 						erase_maps.push_back(L.key);
 					}
 				}
+
 				for (uint32_t erase_idx = 0; erase_idx < erase_maps.size(); erase_idx++) {
 					t->playing_anims.erase(erase_maps[erase_idx]);
 				}

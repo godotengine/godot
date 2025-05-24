@@ -302,6 +302,10 @@ protected:
 		StringName anim_name; //AnimationPlayer::ID index = -1; // ID retrieved from AudioStreamPlaybackPolyphonic.
 		double start = 0.0;
 		double len = 0.0;
+		//double overlap_time = 0.0;
+		double anim_time = 0.0;
+		double anim_overlap_start = 0.0;
+		double anim_overlap_end = 0.0;
 	};
 
 	// Animation information for mixng and ending.
