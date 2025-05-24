@@ -4015,11 +4015,8 @@ Dictionary EditorNode::_get_main_scene_state() {
 	return state;
 }
 
-void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
-	if (get_edited_scene() != p_for_scene && p_for_scene != nullptr) {
-		return; // Not for this scene.
-	}
-
+void EditorNode::_set_main_scene_state() {
+	is_set_main_scene_state_queued = false;
 	changing_scene = false;
 
 	if (get_edited_scene()) {
@@ -4036,15 +4033,15 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 		}
 	}
 
-	if (p_state.has("scene_tree_offset")) {
-		SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["scene_tree_offset"]);
+	if (new_main_scene_state.has("scene_tree_offset")) {
+		SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_value(new_main_scene_state["scene_tree_offset"]);
 	}
-	if (p_state.has("property_edit_offset")) {
-		InspectorDock::get_inspector_singleton()->set_scroll_offset(p_state["property_edit_offset"]);
+	if (new_main_scene_state.has("property_edit_offset")) {
+		InspectorDock::get_inspector_singleton()->set_scroll_offset(new_main_scene_state["property_edit_offset"]);
 	}
 
-	if (p_state.has("node_filter")) {
-		SceneTreeDock::get_singleton()->set_filter(p_state["node_filter"]);
+	if (new_main_scene_state.has("node_filter")) {
+		SceneTreeDock::get_singleton()->set_filter(new_main_scene_state["node_filter"]);
 	}
 
 	// This should only happen at the very end.
@@ -4114,14 +4111,17 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(p_idx), false);
 	}
 
-	Dictionary state = editor_data.restore_edited_scene_state(editor_selection, &editor_history);
+	new_main_scene_state = editor_data.restore_edited_scene_state(editor_selection, &editor_history);
 	_edit_current(true);
 
 	_update_title();
 	callable_mp(scene_tabs, &EditorSceneTabs::update_scene_tabs).call_deferred();
 
 	if (tabs_to_close.is_empty()) {
-		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
+		if (!is_set_main_scene_state_queued) {
+			is_set_main_scene_state_queued = true;
+			callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(); // Do after everything else is done setting up.
+		}
 	}
 
 	_update_undo_redo_allowed();
@@ -4905,6 +4905,18 @@ bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
 	}
 
 	return false;
+}
+
+bool EditorNode::close_scene() {
+	int tab_index = editor_data.get_edited_scene();
+	if (tab_index == 0 && get_edited_scene() == nullptr) {
+		return false;
+	}
+
+	_remove_scene(tab_index);
+	scene_tabs->update_scene_tabs();
+	changing_scene = false;
+	return true;
 }
 
 bool EditorNode::is_scene_in_use(const String &p_path) {
