@@ -40,12 +40,38 @@
 
 // If tight, it grows strictly as much as needed.
 // Otherwise, it grows exponentially (the default and what you want in most cases).
+// force_trivial is used to avoid T's default value on resize, for improved performance.
+// This requires T to be trivially destructible.
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
 class LocalVector {
 private:
 	U count = 0;
 	U capacity = 0;
 	T *data = nullptr;
+
+	template <bool p_init>
+	void _resize(U p_size) {
+		if (p_size < count) {
+			if constexpr (!std::is_trivially_destructible_v<T>) {
+				for (U i = p_size; i < count; i++) {
+					data[i].~T();
+				}
+			}
+			count = p_size;
+		} else if (p_size > count) {
+			if (unlikely(p_size > capacity)) {
+				capacity = tight ? p_size : nearest_power_of_2_templated(p_size);
+				data = (T *)memrealloc(data, capacity * sizeof(T));
+				CRASH_COND_MSG(!data, "Out of memory");
+			}
+			if constexpr (p_init) {
+				memnew_arr_placement(data + count, p_size - count);
+			} else {
+				static_assert(std::is_trivially_destructible_v<T>, "T must be trivially destructible to resize uninitialized");
+			}
+			count = p_size;
+		}
+	}
 
 public:
 	_FORCE_INLINE_ T *ptr() { return data; }
@@ -154,26 +180,22 @@ public:
 		}
 	}
 
+	/// Resize the vector.
+	/// Elements are initialized (or not) depending on what the default C++ behavior for T is.
+	/// Note: If force_trivial is set, this will behave like resize_trivial instead.
 	void resize(U p_size) {
-		// We must statically assert this in a function because otherwise,
-		// `LocalVector` cannot be used with a forward-declared type.
-		static_assert(!force_trivial || std::is_trivially_destructible_v<T>, "T must be trivially destructible if force_trivial is set");
-
-		if (p_size < count) {
-			if constexpr (!std::is_trivially_destructible_v<T>) {
-				for (U i = p_size; i < count; i++) {
-					data[i].~T();
-				}
-			}
-			count = p_size;
-		} else if (p_size > count) {
-			reserve(p_size);
-			if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-				memnew_arr_placement(data + count, p_size - count);
-			}
-			count = p_size;
-		}
+		// Don't init when trivially constructible, or force_trivial is set.
+		_resize<!force_trivial && !std::is_trivially_constructible_v<T>>(p_size);
 	}
+
+	/// Resize and set all values to 0 / false / nullptr.
+	/// This is only available for zero constructible types.
+	_FORCE_INLINE_ void resize_initialized(U p_size) { _resize<true>(p_size); }
+
+	/// Resize and set all values to 0 / false / nullptr.
+	/// This is only available for trivially destructible types (otherwise, trivial resize might be UB).
+	_FORCE_INLINE_ void resize_uninitialized(U p_size) { _resize<false>(p_size); }
+
 	_FORCE_INLINE_ const T &operator[](U p_index) const {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
