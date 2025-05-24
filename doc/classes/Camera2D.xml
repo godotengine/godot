@@ -26,6 +26,13 @@
 				Forces the camera to update scroll immediately.
 			</description>
 		</method>
+		<method name="get_camera_current_rotation" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the current global rotation of the camera.
+				[b]Note:[/b] Current rotation can be different from [member Node2D.global_rotation] if [Camera2D] is currently in smoothed rotation due to [member rotation_smoothing_enabled].
+			</description>
+		</method>
 		<method name="get_drag_margin" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="margin" type="int" enum="Side" />
@@ -52,13 +59,6 @@
 			<description>
 				Returns this camera's target position, in global coordinates.
 				[b]Note:[/b] The returned value is not the same as [member Node2D.global_position], as it is affected by the drag properties. It is also not the same as the current position if [member position_smoothing_enabled] is [code]true[/code] (see [method get_screen_center_position]).
-			</description>
-		</method>
-		<method name="get_camera_current_rotation" qualifiers="const">
-			<return type="float" />
-			<description>
-				Returns the current global rotation of the camera.
-				[b]Note:[/b] Current rotation can be different from [member Node2D.global_rotation] if [Camera2D] is currently in smoothed rotation due to [member rotation_smoothing_enabled].
 			</description>
 		</method>
 		<method name="is_current" qualifiers="const">
