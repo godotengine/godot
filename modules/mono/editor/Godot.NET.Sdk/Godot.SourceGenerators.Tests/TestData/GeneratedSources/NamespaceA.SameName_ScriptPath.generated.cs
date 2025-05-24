@@ -2,7 +2,7 @@ using Godot;
 namespace NamespaceA {
 
 [ScriptPathAttribute("res://SameName.cs")]
-partial class SameName
+partial class @SameName
 {
 }
 
