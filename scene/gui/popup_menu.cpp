@@ -3156,19 +3156,30 @@ void PopupMenu::_bind_methods() {
 }
 
 void PopupMenu::_native_popup(const Rect2i &p_rect) {
-	Point2i popup_pos = p_rect.position;
-	if (is_embedded()) {
-		popup_pos = get_embedder()->get_screen_transform().xform(popup_pos); // Note: for embedded windows "screen transform" is transform relative to embedder not the actual screen.
-		DisplayServer::WindowID wid = get_window_id();
-		if (wid == DisplayServer::INVALID_WINDOW_ID) {
-			wid = DisplayServer::MAIN_WINDOW_ID;
-		}
-		popup_pos += DisplayServer::get_singleton()->window_get_position(wid);
-	}
-	float win_scale = get_parent_visible_window()->get_content_scale_factor();
-	NativeMenu::get_singleton()->set_minimum_width(global_menu, p_rect.size.x * win_scale);
-	NativeMenu::get_singleton()->popup(global_menu, popup_pos);
+    Point2i popup_pos = p_rect.position;
+    if (is_embedded()) {
+        popup_pos = get_embedder()->get_screen_transform().xform(popup_pos); // Note: for embedded windows "screen transform" is transform relative to embedder not the actual screen.
+        DisplayServer::WindowID wid = get_window_id();
+        if (wid == DisplayServer::INVALID_WINDOW_ID) {
+            wid = DisplayServer::MAIN_WINDOW_ID;
+        }
+        popup_pos += DisplayServer::get_singleton()->window_get_position(wid);
+    }
+    float win_scale = get_parent_visible_window()->get_content_scale_factor();
+    NativeMenu::get_singleton()->set_minimum_width(global_menu, p_rect.size.x * win_scale);
+    NativeMenu::get_singleton()->popup(global_menu, popup_pos);
+
+    // After items might have been removed in about_to_popup, force recalculation:
+    minimum_size_changed();
+    
+    // Resize the popup window to the updated minimum size
+    Size2 new_size = get_combined_minimum_size();
+    set_size(new_size);
+
+    // Call the base popup function or continue showing the popup
+    Popup::popup(p_rect);
 }
+
 
 String PopupMenu::_atr(int p_idx, const String &p_text) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), atr(p_text));
