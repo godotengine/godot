@@ -99,6 +99,8 @@ private:
 			} else if (b.blend_state.is_null()) {
 				// No need to recreate pipeline if it clears texture.
 				return true;
+			} else if (blend_state.is_null()) {
+				return false;
 			} else {
 				return blend_state->equal(b.blend_state);
 			}
