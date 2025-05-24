@@ -235,13 +235,16 @@ void VideoStreamPlaybackTheora::video_write(th_ycbcr_buffer yuv) {
 	uint8_t *w = frame_data.ptrw();
 	char *dst = (char *)w;
 	uint32_t y_offset = region.position.y * yuv[0].stride + region.position.x;
-	uint32_t uv_offset = region.position.y * yuv[1].stride + region.position.x;
+	uint32_t uv_offset = 0;
 
 	if (px_fmt == TH_PF_444) {
+		uv_offset += region.position.y * yuv[1].stride + region.position.x;
 		yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
 	} else if (px_fmt == TH_PF_422) {
+		uv_offset += region.position.y * yuv[1].stride + region.position.x / 2;
 		yuv422_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
 	} else if (px_fmt == TH_PF_420) {
+		uv_offset += region.position.y * yuv[1].stride / 2 + region.position.x / 2;
 		yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
 	}
 
