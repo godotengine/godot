@@ -184,7 +184,8 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_DRAG:
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_SUBWINDOWS:
-		case FEATURE_SELF_FITTING_WINDOWS: {
+		case FEATURE_SELF_FITTING_WINDOWS:
+		case FEATURE_HDR: {
 			return true;
 		} break;
 
@@ -678,6 +679,47 @@ bool DisplayServerWayland::screen_is_kept_on() const {
 #else
 	return wayland_thread.window_get_idle_inhibition(MAIN_WINDOW_ID);
 #endif
+}
+
+bool DisplayServerWayland::screen_is_hdr_supported(int p_screen) const {
+	// window_get_current_screen is unimplemented.
+	// That means `get_window().current_screen` (most common way we'll be using screen)
+	// will give a fake screen and if we use it here give bad data.
+	// To avoid that assume the user did actually use get_window().current_screen and wants the preferred profile.
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	// The Wayland spec says as long the compositors supports HDR formats, all outputs support those HDR formats.
+	// We do not do that because it would be inconsistent with how _window_update_hdr_state() actually enables HDR.
+	const WaylandThread::WindowState *window = wayland_thread.window_get_state(DisplayServer::MAIN_WINDOW_ID);
+	return window->preferred_color_profile.max_luminance > window->preferred_color_profile.sdr_white;
+}
+
+float DisplayServerWayland::screen_get_min_luminance(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	const WaylandThread::WindowState *window = wayland_thread.window_get_state(DisplayServer::MAIN_WINDOW_ID);
+	return window->preferred_color_profile.min_luminance;
+}
+
+float DisplayServerWayland::screen_get_max_luminance(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	const WaylandThread::WindowState *window = wayland_thread.window_get_state(DisplayServer::MAIN_WINDOW_ID);
+	return window->preferred_color_profile.max_luminance;
+}
+
+float DisplayServerWayland::screen_get_max_full_frame_luminance(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	const WaylandThread::WindowState *window = wayland_thread.window_get_state(DisplayServer::MAIN_WINDOW_ID);
+	return window->preferred_color_profile.target_max_fall;
+}
+
+float DisplayServerWayland::screen_get_sdr_white_level(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	const WaylandThread::WindowState *window = wayland_thread.window_get_state(DisplayServer::MAIN_WINDOW_ID);
+	return window->preferred_color_profile.sdr_white;
 }
 
 Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
@@ -1407,6 +1449,136 @@ void DisplayServerWayland::window_start_resize(WindowResizeEdge p_edge, WindowID
 	wayland_thread.window_start_resize(p_edge, p_window);
 }
 
+void DisplayServerWayland::_window_update_hdr_state(WindowID p_window) {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		MutexLock mutex_lock(wayland_thread.mutex);
+		WaylandThread::WindowState *window = wayland_thread.window_get_state(p_window);
+
+		// The `display/window/hdr/enabled` project setting makes all windows request hdr.
+		// On Windows this means enable hdr for all windows on an hdr screen.
+		// Since on Wayland all screens support hdr we use whether the window "prefers" hdr or not instead.
+		bool hdr_preferred = window->preferred_color_profile.max_luminance > window->preferred_color_profile.sdr_white;
+		bool hdr_desired = wayland_thread.supports_hdr() && hdr_preferred && window->hdr_output_requested;
+
+		if (hdr_desired) {
+			rendering_context->window_set_hdr_output_enabled(p_window, true);
+
+			if (window->use_screen_luminance) {
+				rendering_context->window_set_hdr_output_max_luminance(p_window, window->preferred_color_profile.max_luminance);
+				rendering_context->window_set_hdr_output_reference_luminance(p_window, window->preferred_color_profile.sdr_white);
+			} else {
+				rendering_context->window_set_hdr_output_max_luminance(p_window, window->user_color_profile.max_luminance);
+				rendering_context->window_set_hdr_output_reference_luminance(p_window, window->user_color_profile.sdr_white);
+			}
+		} else {
+			rendering_context->window_set_hdr_output_enabled(p_window, false);
+		}
+	}
+#endif
+}
+
+void DisplayServerWayland::window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	ERR_FAIL_COND_MSG(!wayland_thread.supports_hdr(), "Wayland Compositor does not support HDR rendering.");
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(!(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "Rendering Device does not support HDR rendering.");
+#endif
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_state(p_window);
+	window->hdr_output_requested = p_enabled;
+
+	_window_update_hdr_state(p_window);
+}
+
+bool DisplayServerWayland::window_is_hdr_output_enabled(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerWayland::window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window) {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_prefer_high_precision(p_window, p_enabled);
+	}
+#endif
+}
+
+bool DisplayServerWayland::window_is_hdr_output_preferring_high_precision(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_prefer_high_precision(p_window);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerWayland::window_set_hdr_output_use_screen_luminance(const bool p_enabled, WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_state(p_window);
+	window->use_screen_luminance = p_enabled;
+
+	_window_update_hdr_state(p_window);
+}
+
+bool DisplayServerWayland::window_is_hdr_output_using_screen_luminance(WindowID p_window) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	const WaylandThread::WindowState *window = wayland_thread.window_get_state(p_window);
+	return window->use_screen_luminance;
+}
+
+void DisplayServerWayland::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	ERR_FAIL_COND_MSG(window_is_hdr_output_using_screen_luminance(p_window), "Cannot set luminance on a window using screen luminance");
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_state(p_window);
+	window->user_color_profile.sdr_white = p_reference_luminance;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_reference_luminance(p_window, p_reference_luminance);
+	}
+#endif
+}
+
+float DisplayServerWayland::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
+	}
+#endif
+	return 0.0f;
+}
+
+void DisplayServerWayland::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	ERR_FAIL_COND_MSG(window_is_hdr_output_using_screen_luminance(p_window), "Cannot set luminance on a window using screen luminance");
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_state(p_window);
+	window->user_color_profile.max_luminance = p_max_luminance;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_max_luminance(p_window, p_max_luminance);
+	}
+#endif
+}
+
+float DisplayServerWayland::window_get_hdr_output_max_luminance(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window);
+	}
+#endif
+	return 0.0f;
+}
+
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
@@ -1699,6 +1871,11 @@ void DisplayServerWayland::process_events() {
 				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 			}
 			continue;
+		}
+
+		Ref<WaylandThread::ColorProfileMessage> color_profile_msg = msg;
+		if (color_profile_msg.is_valid()) {
+			_window_update_hdr_state(color_profile_msg->window_id);
 		}
 	}
 
