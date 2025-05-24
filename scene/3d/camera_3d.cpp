@@ -457,6 +457,9 @@ Vector3 Camera3D::project_local_ray_normal(const Point2 &p_pos) const {
 
 	if (mode == PROJECTION_ORTHOGONAL) {
 		ray = Vector3(0, 0, -1);
+	} else if (mode == PROJECTION_CUSTOM) {
+		Vector3 from;
+		_get_camera_projection(_near).project_origin_and_ray(p_pos, viewport_size, from, ray);
 	} else {
 		Projection cm = _get_camera_projection(_near);
 		Vector2 screen_he = cm.get_viewport_half_extents();
@@ -472,6 +475,8 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 	ERR_FAIL_COND_V(viewport_size.y == 0, Vector3());
+
+	Vector3 origin;
 
 	if (mode == PROJECTION_ORTHOGONAL) {
 		Vector2 pos = cpos / viewport_size;
@@ -489,10 +494,18 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 		ray.y = (1.0 - pos.y) * (vsize)-vsize / 2;
 		ray.z = -_near;
 		ray = get_camera_transform().xform(ray);
-		return ray;
+		origin = ray;
+	} else if (mode == PROJECTION_CUSTOM) {
+		Vector3 from;
+		Vector3 ray;
+		_get_camera_projection(_near).project_origin_and_ray(p_pos, viewport_size, from, ray);
+
+		origin = get_camera_transform().xform(from);
 	} else {
-		return get_camera_transform().origin;
-	};
+		origin = get_camera_transform().origin;
+	}
+
+	return origin;
 }
 
 bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
