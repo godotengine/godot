@@ -2594,6 +2594,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			ScriptEditor::get_singleton()->open_text_file_create_dialog(dir);
 		} break;
+		case FILE_MENU_RUN_SCRIPT: {
+			if (p_selected.size() == 1) {
+				const String &fpath = p_selected[0];
+				Ref<Script> scr = ResourceLoader::load(fpath);
+				ERR_FAIL_COND(scr.is_null());
+				EditorNode::get_singleton()->run_editor_script(scr);
+			}
+		} break;
 
 		case EXTRA_FOCUS_PATH: {
 			focus_on_filter();
@@ -3279,6 +3287,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open"), FILE_MENU_OPEN);
+
+			String type = EditorFileSystem::get_singleton()->get_file_type(filenames[0]);
+			if (ClassDB::is_parent_class(type, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(filenames[0]);
+				if (scr.is_valid()) {
+					if (ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
+						p_popup->add_icon_item(get_editor_theme_icon(SNAME("MainPlay")), TTRC("Run"), FILE_MENU_RUN_SCRIPT);
+					}
+				}
+			}
 			p_popup->add_separator();
 		}
 
