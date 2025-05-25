@@ -540,8 +540,10 @@
 		</method>
 		<method name="get_rpc_config" qualifiers="const">
 			<return type="Variant" />
+			<param index="0" name="script_rpc_get" type="bool" default="true" />
 			<description>
 				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
+				If [param script_rpc_get] is [code]true[/code], return [Dictionary] will also contain functions RPC configuration of attached GDScript.
 			</description>
 		</method>
 		<method name="get_scene_instance_load_placeholder" qualifiers="const">

@@ -784,7 +784,7 @@ public:
 	bool is_multiplayer_authority() const;
 
 	void rpc_config(const StringName &p_method, const Variant &p_config); // config a local method for RPC
-	Variant get_rpc_config() const;
+	Variant get_rpc_config(bool script_rpc_get = false) const;
 
 	template <typename... VarArgs>
 	Error rpc(const StringName &p_method, VarArgs... p_args);
