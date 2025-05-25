@@ -739,14 +739,18 @@ void ProjectDialog::ok_pressed() {
 	hide();
 	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
 #ifdef ANDROID_ENABLED
-		// Create a .nomedia file to hide assets from media apps on Android.
-		const String nomedia_file_path = path.path_join(".nomedia");
-		Ref<FileAccess> f2 = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
-		if (f2.is_null()) {
-			// .nomedia isn't so critical.
-			ERR_PRINT("Couldn't create .nomedia in project path.");
-		} else {
-			f2->close();
+		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479, GH-105399 for details.
+		String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
+		if (sdk_version != "30") {
+			// Create a .nomedia file to hide assets from media apps on Android.
+			const String nomedia_file_path = path.path_join(".nomedia");
+			Ref<FileAccess> f2 = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
+			if (f2.is_null()) {
+				// .nomedia isn't so critical.
+				ERR_PRINT("Couldn't create .nomedia in project path.");
+			} else {
+				f2->close();
+			}
 		}
 #endif
 		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
