@@ -462,6 +462,7 @@ private:
 
 		GLES3::SceneShaderData::BlendMode current_blend_mode = GLES3::SceneShaderData::BLEND_MODE_MIX;
 		RS::CullMode cull_mode = RS::CULL_MODE_BACK;
+		GLES3::SceneShaderData::DepthFunction current_depth_function = GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER_OR_EQUAL;
 
 		bool current_blend_enabled = false;
 		bool current_depth_draw_enabled = false;
@@ -483,6 +484,18 @@ private:
 			current_depth_draw_enabled = false;
 			glDisable(GL_DEPTH_TEST);
 			current_depth_test_enabled = false;
+
+			glDepthFunc(GL_GEQUAL);
+			current_depth_function = GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER_OR_EQUAL;
+
+			glDisable(GL_STENCIL_TEST);
+			current_stencil_test_enabled = false;
+			glStencilMask(255);
+			current_stencil_write_mask = 255;
+			glStencilFunc(GL_ALWAYS, 0, 255);
+			current_stencil_compare = GL_ALWAYS;
+			current_stencil_reference = 0;
+			current_stencil_compare_mask = 255;
 		}
 
 		void set_gl_cull_mode(RS::CullMode p_mode) {
@@ -539,6 +552,69 @@ private:
 				current_depth_test_enabled = p_enabled;
 			}
 		}
+
+		void set_gl_depth_func(GLES3::SceneShaderData::DepthFunction p_depth_func) {
+			if (current_depth_function != p_depth_func) {
+				GLenum depth_function_table[GLES3::SceneShaderData::DEPTH_FUNCTION_MAX] = {
+					GL_GEQUAL,
+					GL_LEQUAL,
+					GL_LESS,
+					GL_EQUAL,
+					GL_GREATER,
+					GL_NOTEQUAL,
+					GL_ALWAYS,
+					GL_NEVER,
+				};
+
+				glDepthFunc(depth_function_table[p_depth_func]);
+				current_depth_function = p_depth_func;
+			}
+		}
+
+		void enable_gl_stencil_test(bool p_enabled) {
+			if (current_stencil_test_enabled != p_enabled) {
+				if (p_enabled) {
+					glEnable(GL_STENCIL_TEST);
+				} else {
+					glDisable(GL_STENCIL_TEST);
+				}
+				current_stencil_test_enabled = p_enabled;
+			}
+		}
+
+		void set_gl_stencil_func(GLenum p_compare, GLint p_reference, GLenum p_compare_mask) {
+			if (current_stencil_compare != p_compare || current_stencil_reference != p_reference || current_stencil_compare_mask != p_compare_mask) {
+				glStencilFunc(p_compare, p_reference, p_compare_mask);
+				current_stencil_compare = p_compare;
+				current_stencil_reference = p_reference;
+				current_stencil_compare_mask = p_compare_mask;
+			}
+		}
+
+		void set_gl_stencil_write_mask(GLuint p_mask) {
+			if (current_stencil_write_mask != p_mask) {
+				glStencilMask(p_mask);
+				current_stencil_write_mask = p_mask;
+			}
+		}
+
+		void set_gl_stencil_op(GLenum p_op_fail, GLenum p_op_dpfail, GLenum p_op_dppass) {
+			if (current_stencil_op_fail != p_op_fail || current_stencil_op_dpfail != p_op_dpfail || current_stencil_op_dppass != p_op_dppass) {
+				glStencilOp(p_op_fail, p_op_dpfail, p_op_dppass);
+				current_stencil_op_fail = p_op_fail;
+				current_stencil_op_dpfail = p_op_dpfail;
+				current_stencil_op_dppass = p_op_dppass;
+			}
+		}
+
+		GLenum current_stencil_compare = GL_ALWAYS;
+		GLuint current_stencil_compare_mask = 255;
+		GLuint current_stencil_write_mask = 255;
+		GLint current_stencil_reference = 0;
+		GLenum current_stencil_op_fail = GL_KEEP;
+		GLenum current_stencil_op_dpfail = GL_KEEP;
+		GLenum current_stencil_op_dppass = GL_KEEP;
+		bool current_stencil_test_enabled = false;
 
 		bool texscreen_copied = false;
 		bool used_screen_texture = false;
