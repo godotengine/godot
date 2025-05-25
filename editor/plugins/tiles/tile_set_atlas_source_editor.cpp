@@ -894,10 +894,9 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 
 	// Get the correct editor for the TileData's property.
 	if (current_tile_data_editor) {
-		current_tile_data_editor_toolbar = current_tile_data_editor->get_toolbar();
 		current_property = property;
 		current_tile_data_editor->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
-		current_tile_data_editor_toolbar->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
+		current_tile_data_editor->get_toolbar()->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
 	}
 }
 
@@ -1031,6 +1030,10 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 
 void TileSetAtlasSourceEditor::_update_toolbar() {
 	// Show the tools and settings.
+	Control *current_tile_data_editor_toolbar = nullptr;
+	if (current_tile_data_editor) {
+		current_tile_data_editor_toolbar = current_tile_data_editor->get_toolbar();
+	}
 	if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
 		if (current_tile_data_editor_toolbar) {
 			current_tile_data_editor_toolbar->hide();
