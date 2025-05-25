@@ -893,78 +893,6 @@ bool AnimationMixer::_update_caches() {
 
 						track = track_animation;
 
-					/*
-					//NEW 0
-#ifndef _3D_DISABLED
-						Node3D *node_3d = Object::cast_to<Node3D>(child);
-
-						if (!node_3d) {
-							ERR_PRINT(mixer_name + ": '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'.");
-							continue;
-						}
-
-						TrackCacheTransform *track_xform = memnew(TrackCacheTransform);
-						track_xform->type = Animation::TYPE_POSITION_3D;
-
-						track_xform->bone_idx = -1;
-
-						bool has_rest = false;
-						Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
-						if (sk && path.get_subname_count() == 1) {
-							track_xform->skeleton_id = sk->get_instance_id();
-							int bone_idx = sk->find_bone(path.get_subname(0));
-							if (bone_idx != -1) {
-								has_rest = true;
-								track_xform->bone_idx = bone_idx;
-								Transform3D rest = sk->get_bone_rest(bone_idx);
-								track_xform->init_loc = rest.origin;
-								track_xform->init_rot = rest.basis.get_rotation_quaternion();
-								track_xform->init_scale = rest.basis.get_scale();
-							}
-						}
-
-						track_xform->object_id = node_3d->get_instance_id();
-
-						track = track_xform;
-
-						switch (track_src_type) {
-							case Animation::TYPE_POSITION_3D: {
-								track_xform->loc_used = true;
-							} break;
-							case Animation::TYPE_ROTATION_3D: {
-								track_xform->rot_used = true;
-							} break;
-							case Animation::TYPE_SCALE_3D: {
-								track_xform->scale_used = true;
-							} break;
-							default: {
-							}
-						}
-
-						// For non Skeleton3D bone animation.
-						if (has_reset_anim && !has_rest) {
-							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
-								switch (track_src_type) {
-									case Animation::TYPE_POSITION_3D: {
-										track_xform->init_loc = reset_anim->track_get_key_value(rt, 0);
-									} break;
-									case Animation::TYPE_ROTATION_3D: {
-										track_xform->init_rot = reset_anim->track_get_key_value(rt, 0);
-									} break;
-									case Animation::TYPE_SCALE_3D: {
-										track_xform->init_scale = reset_anim->track_get_key_value(rt, 0);
-									} break;
-									default: {
-									}
-								}
-							}
-						}
-#endif // _3D_DISABLED
-					//NEW 0
-					*/
-
-
 					} break;
 					default: {
 						ERR_PRINT("Animation corrupted (invalid track type).");
@@ -1905,17 +1833,40 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 					}
 					if (idx < 0) {
+						if (playing_caches.has(t)) {
+							playing_caches.erase(t);
+						}
 						continue;
 					}
 
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
+					int curr_idx = idx;
 					while (String(anim_name) == "[stop]" && idx > 0) {
 						idx = idx - 1;
 						anim_name = a->animation_track_get_key_animation(i, idx);
 					}
 
+					int stop_idx = -1;
+					if (curr_idx != idx) {
+						if (String(anim_name) != "[stop]") {
+							stop_idx = idx + 1;
+						}
+						animation_playback->stop(true);
+						if (playing_caches.has(t)) {
+							playing_caches.erase(t);
+						}
+					}
+
+					while (String(anim_name) == "[stop]" && idx < a->track_get_key_count(i)) {
+						idx = idx + 1;
+						anim_name = a->animation_track_get_key_animation(i, idx);
+					}
+
 					if (String(anim_name) == "[stop]") {
-						animation_playback->stop();
+						animation_playback->stop(true);
+						if (playing_caches.has(t)) {
+							playing_caches.erase(t);
+						}
 						continue;
 					}
 
@@ -1939,8 +1890,19 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double end_ofs = a->animation_track_get_key_end_offset(i, idx);
 						double key_time = a->track_get_key_time(i, idx);
 						double len = anim->get_length();
-
 						double len_ofs = len - start_ofs - end_ofs;
+
+						if (stop_idx >= 0) {
+							double stop_key_time = a->track_get_key_time(i, stop_idx);
+							double end = key_time + len_ofs;
+							double clamped_end = MIN(end, stop_key_time);
+							double cropped_len = clamped_end - end;
+							if (cropped_len < 0) {
+								end_ofs -= cropped_len;
+								len_ofs += cropped_len;
+							}
+						}
+
 						double anim_time = (time - key_time) + start_ofs;
 
 						t->anim_name = anim_name;
@@ -1952,21 +1914,25 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 
 							anim_changed = true;
 
+							if (playing_caches.has(t)) {
+								playing_caches.erase(t);
+							}
+
 							if (!playing_animation_players.has(asp)) {
 								playing_animation_players.push_back(asp);
 							}
 						}
 
-						AnimationPlayer *ap_root = Object::cast_to<AnimationPlayer>(this);
-						bool root_is_playing = ap_root && ap_root->is_playing();
+						bool root_is_playing = false;
+						if (AnimationPlayer *ap_root = Object::cast_to<AnimationPlayer>(this)) {
+							root_is_playing = ap_root && ap_root->is_playing();
+						}
 
 						double anim_time_end = start_ofs + len_ofs;
 						double anim_time_start = MIN(anim_time_end, MAX(start_ofs, anim_time));
 
 						animation_playback->seek(anim_time_start, seeked || !root_is_playing || anim_changed, p_update_only);
 
-						/*
-						
 						PlayingAnimationInfo pasi;
 
 						pasi.anim_name = t->anim_name;
@@ -1980,6 +1946,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 
 						//////////////////////////
 
+						/*
 						int prev_idx = idx - 1;
 						if (prev_idx >= 0) {
 							StringName prev_anim_name = a->animation_track_get_key_animation(i, prev_idx);
@@ -2026,13 +1993,13 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						}
+						*/
 
 						map[idx] = pasi;
-						*/
 
 						//////////////////////////
 
-						if (root_is_playing) { //&& map.size() != 1) {
+						if (root_is_playing && map.size() == 1) {
 							if (anim_time >= anim_time_start && anim_time <= anim_time_end && anim_time_start != anim_time_end) {
 								animation_playback->play_section(t->anim_name, anim_time_start, anim_time_end);
 
@@ -2040,6 +2007,10 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 									playing_caches.insert(t);
 								}
 							} else {
+								//if (stop_idx != -1) {
+								//	animation_playback->seek(anim_time_start, false, p_update_only);
+								//}
+
 								if (playing_caches.has(t)) {
 									playing_caches.erase(t);
 								}
@@ -2216,6 +2187,7 @@ void AnimationMixer::_blend_apply() {
 			case Animation::TYPE_ANIMATION: {
 				TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
+				/*
 				Object *t_obj = ObjectDB::get_instance(t->object_id);
 				if (!t_obj) {
 					WARN_PRINT("Invalid object ID for AnimationPlayer");
@@ -2227,13 +2199,21 @@ void AnimationMixer::_blend_apply() {
 					continue;
 				}
 
+				NodePath object_node_path = ap->get_root_node();
+				Node *object = ap->get_node_or_null(object_node_path);
+				if (!object) {
+					WARN_PRINT("Root node not found");
+					continue;
+				}
+				*/
+
 				// Animation ending and blending process
 				LocalVector<ObjectID> erase_maps;
 				for (KeyValue<ObjectID, PlayingAnimationTrackInfo> &L : t->playing_anims) {
 					PlayingAnimationTrackInfo &track_info = L.value;
 
 					LocalVector<int> erase_anims;
-
+					/*
 					// Structure for interpolated values
 					struct BlendedTrackValue {
 						NodePath path;
@@ -2242,13 +2222,11 @@ void AnimationMixer::_blend_apply() {
 					};
 
 					AHashMap<Animation::TypeHash, BlendedTrackValue> blended_values;
-
-					
+					*/
 					AHashMap<int, PlayingAnimationInfo> &map = track_info.anim_info;
 					for (const KeyValue<int, PlayingAnimationInfo> &M : map) {
-						/*
 						PlayingAnimationInfo pasi = M.value;
-
+						/*
 						double overlap_len = pasi.anim_overlap_end - pasi.anim_overlap_start;
 						if (overlap_len > 0) {
 							double norm_time = (pasi.anim_time - pasi.anim_overlap_start) / overlap_len;
@@ -2340,10 +2318,10 @@ void AnimationMixer::_blend_apply() {
 									continue;
 								}
 
-								//current_value = post_process_key_value(anim, i, current_value, t->object_id, -1);
-								//if (current_value == Variant()) {
-								//	continue;
-								//}
+								current_value = post_process_key_value(anim, i, current_value, t->object_id, -1);
+								if (current_value == Variant()) {
+									continue;
+								}
 
 								if (!blended_values.has(thash)) {
 									BlendedTrackValue btv;
@@ -2421,7 +2399,12 @@ void AnimationMixer::_blend_apply() {
 									WARN_PRINT("Skipping invalid position: " + String(loc));
 									continue;
 								}
-								if (Node3D *node_3d = Object::cast_to<Node3D>(target_node)) {
+								if (Skeleton3D *skel = Object::cast_to<Skeleton3D>(target_node)) {
+									int bone_idx = skel->find_bone(subpath[0]);
+									if (bone_idx >= 0) {
+										skel->set_bone_pose_position(bone_idx, loc);
+									}
+								} else if (Node3D *node_3d = Object::cast_to<Node3D>(target_node)) {
 									node_3d->set_position(loc);
 								}
 							} break;
@@ -2431,7 +2414,12 @@ void AnimationMixer::_blend_apply() {
 									WARN_PRINT("Skipping invalid rotation: " + String(rot));
 									continue;
 								}
-								if (Node3D *node_3d = Object::cast_to<Node3D>(target_node)) {
+								if (Skeleton3D *skel = Object::cast_to<Skeleton3D>(target_node)) {
+									int bone_idx = skel->find_bone(subpath[0]);
+									if (bone_idx >= 0) {
+										skel->set_bone_pose_rotation(bone_idx, rot);
+									}
+								} else if (Node3D *node_3d = Object::cast_to<Node3D>(target_node)) {
 									node_3d->set_quaternion(rot);
 								}
 							} break;
@@ -2441,12 +2429,10 @@ void AnimationMixer::_blend_apply() {
 									WARN_PRINT("Skipping invalid scale: " + String(scale));
 									continue;
 								}
-								if (Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(target_node)) {
-									if (subpath.size() == 1) {
-										int bone_idx = skeleton->find_bone(subpath[0]);
-										if (bone_idx >= 0) {
-											skeleton->set_bone_pose_scale(bone_idx, scale);
-										}
+								if (Skeleton3D *skel = Object::cast_to<Skeleton3D>(target_node)) {
+									int bone_idx = skel->find_bone(subpath[0]);
+									if (bone_idx >= 0) {
+										skel->set_bone_pose_scale(bone_idx, scale);
 									}
 								} else if (Node3D *node_3d = Object::cast_to<Node3D>(target_node)) {
 									node_3d->set_scale(scale);
