@@ -44,10 +44,6 @@
 
 namespace {
 
-bool is_face_degenerate(const int p_face[3]) {
-	return p_face[0] == p_face[1] || p_face[0] == p_face[2] || p_face[1] == p_face[2];
-}
-
 template <typename TJoltVertex>
 void pin_vertices(const JoltSoftBody3D &p_body, const HashSet<int> &p_pinned_vertices, const LocalVector<int> &p_mesh_to_physics, JPH::Array<TJoltVertex> &r_physics_vertices) {
 	const int mesh_vertex_count = p_mesh_to_physics.size();
@@ -78,15 +74,12 @@ JPH::ObjectLayer JoltSoftBody3D::_get_object_layer() const {
 void JoltSoftBody3D::_space_changing() {
 	JoltObject3D::_space_changing();
 
-	_deref_shared_data();
-
-	if (space != nullptr && !jolt_id.IsInvalid()) {
-		const JoltReadableBody3D body = space->read_body(jolt_id);
-		ERR_FAIL_COND(body.is_invalid());
-
-		jolt_settings = new JPH::SoftBodyCreationSettings(body->GetSoftBodyCreationSettings());
+	if (in_space()) {
+		jolt_settings = new JPH::SoftBodyCreationSettings(jolt_body->GetSoftBodyCreationSettings());
 		jolt_settings->mSettings = nullptr;
 	}
+
+	_deref_shared_data();
 }
 
 void JoltSoftBody3D::_space_changed() {
@@ -117,12 +110,12 @@ void JoltSoftBody3D::_add_to_space() {
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
 
-	const JPH::BodyID new_jolt_id = space->add_soft_body(*this, *jolt_settings);
-	if (new_jolt_id.IsInvalid()) {
+	JPH::Body *new_jolt_body = space->add_soft_body(*this, *jolt_settings);
+	if (new_jolt_body == nullptr) {
 		return;
 	}
 
-	jolt_id = new_jolt_id;
+	jolt_body = new_jolt_body;
 
 	delete jolt_settings;
 	jolt_settings = nullptr;
@@ -166,7 +159,6 @@ bool JoltSoftBody3D::_ref_shared_data() {
 
 		for (int i = 0; i < mesh_index_count; i += 3) {
 			int physics_face[3];
-			int mesh_face[3];
 
 			for (int j = 0; j < 3; ++j) {
 				const int mesh_index = mesh_indices[i + j];
@@ -176,16 +168,16 @@ bool JoltSoftBody3D::_ref_shared_data() {
 
 				if (iter_physics_index == vertex_to_physics.end()) {
 					physics_vertices.emplace_back(JPH::Float3((float)vertex.x, (float)vertex.y, (float)vertex.z), JPH::Float3(0.0f, 0.0f, 0.0f), 1.0f);
-
 					iter_physics_index = vertex_to_physics.insert(vertex, physics_index_count++);
 				}
 
-				mesh_face[j] = mesh_index;
 				physics_face[j] = iter_physics_index->value;
 				mesh_to_physics[mesh_index] = iter_physics_index->value;
 			}
 
-			ERR_CONTINUE_MSG(is_face_degenerate(physics_face), vformat("Failed to append face to soft body '%s'. Face was found to be degenerate. Face consist of indices %d, %d and %d.", to_string(), mesh_face[0], mesh_face[1], mesh_face[2]));
+			if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
+				continue; // We skip degenerate faces, since they're problematic, and Jolt will assert about it anyway.
+			}
 
 			// Jolt uses a different winding order, so we swap the indices to account for that.
 			physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
@@ -237,11 +229,7 @@ void JoltSoftBody3D::_update_mass() {
 		return;
 	}
 
-	JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
-
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 
 	const float inverse_vertex_mass = mass == 0.0f ? 1.0f : (float)physics_vertices.size() / mass;
@@ -259,11 +247,7 @@ void JoltSoftBody3D::_update_pressure() {
 		return;
 	}
 
-	JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
-
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	motion_properties.SetPressure(pressure);
 }
 
@@ -273,11 +257,7 @@ void JoltSoftBody3D::_update_damping() {
 		return;
 	}
 
-	JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
-
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	motion_properties.SetLinearDamping(linear_damping);
 }
 
@@ -287,11 +267,7 @@ void JoltSoftBody3D::_update_simulation_precision() {
 		return;
 	}
 
-	JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
-
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	motion_properties.SetNumIterations((JPH::uint32)simulation_precision);
 }
 
@@ -300,13 +276,9 @@ void JoltSoftBody3D::_update_group_filter() {
 
 	if (!in_space()) {
 		jolt_settings->mCollisionGroup.SetGroupFilter(group_filter);
-		return;
+	} else {
+		jolt_body->GetCollisionGroup().SetGroupFilter(group_filter);
 	}
-
-	const JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	body->GetCollisionGroup().SetGroupFilter(group_filter);
 }
 
 void JoltSoftBody3D::_try_rebuild() {
@@ -407,21 +379,16 @@ void JoltSoftBody3D::set_mesh(const RID &p_mesh) {
 	}
 
 	_deref_shared_data();
-
 	mesh = p_mesh;
-
 	_mesh_changed();
 }
 
 bool JoltSoftBody3D::is_sleeping() const {
 	if (!in_space()) {
 		return false;
+	} else {
+		return !jolt_body->IsActive();
 	}
-
-	const JoltReadableBody3D body = space->read_body(jolt_id);
-	ERR_FAIL_COND_V(body.is_invalid(), false);
-
-	return !body->IsActive();
 }
 
 void JoltSoftBody3D::set_is_sleeping(bool p_enabled) {
@@ -432,32 +399,26 @@ void JoltSoftBody3D::set_is_sleeping(bool p_enabled) {
 	JPH::BodyInterface &body_iface = space->get_body_iface();
 
 	if (p_enabled) {
-		body_iface.DeactivateBody(jolt_id);
+		body_iface.DeactivateBody(jolt_body->GetID());
 	} else {
-		body_iface.ActivateBody(jolt_id);
+		body_iface.ActivateBody(jolt_body->GetID());
 	}
 }
 
 bool JoltSoftBody3D::is_sleep_allowed() const {
 	if (!in_space()) {
-		return true;
+		return jolt_settings->mAllowSleeping;
+	} else {
+		return jolt_body->GetAllowSleeping();
 	}
-
-	const JoltReadableBody3D body = space->read_body(jolt_id);
-	ERR_FAIL_COND_V(body.is_invalid(), false);
-
-	return body->GetAllowSleeping();
 }
 
 void JoltSoftBody3D::set_is_sleep_allowed(bool p_enabled) {
 	if (!in_space()) {
-		return;
+		jolt_settings->mAllowSleeping = p_enabled;
+	} else {
+		jolt_body->SetAllowSleeping(p_enabled);
 	}
-
-	const JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	body->SetAllowSleeping(p_enabled);
 }
 
 void JoltSoftBody3D::set_simulation_precision(int p_precision) {
@@ -571,9 +532,6 @@ Transform3D JoltSoftBody3D::get_transform() const {
 void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to set transform for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
-	JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
 	// For whatever reason this has to be interpreted as a relative global-space transform rather than an absolute one,
 	// because `SoftBody3D` will immediately upon entering the scene tree set itself to be top-level and also set its
 	// transform to be identity, while still expecting to stay in its original position.
@@ -581,7 +539,7 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 	// We also discard any scaling, since we have no way of scaling the actual edge lengths.
 	const JPH::Mat44 relative_transform = to_jolt(p_transform.orthonormalized());
 
-	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 
 	for (JPH::SoftBodyVertex &vertex : physics_vertices) {
@@ -592,11 +550,7 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 
 AABB JoltSoftBody3D::get_bounds() const {
 	ERR_FAIL_COND_V_MSG(!in_space(), AABB(), vformat("Failed to retrieve world bounds of '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
-
-	const JoltReadableBody3D body = space->read_body(jolt_id);
-	ERR_FAIL_COND_V(body.is_invalid(), AABB());
-
-	return to_godot(body->GetWorldSpaceBounds());
+	return to_godot(jolt_body->GetWorldSpaceBounds());
 }
 
 void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) {
@@ -605,10 +559,7 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 		return;
 	}
 
-	const JoltReadableBody3D body = space->read_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	const JPH::SoftBodyMotionProperties &motion_properties = static_cast<const JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
+	const JPH::SoftBodyMotionProperties &motion_properties = static_cast<const JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 
 	typedef JPH::SoftBodyMotionProperties::Vertex SoftBodyVertex;
 	typedef JPH::SoftBodyMotionProperties::Face SoftBodyFace;
@@ -660,14 +611,11 @@ Vector3 JoltSoftBody3D::get_vertex_position(int p_index) {
 	ERR_FAIL_INDEX_V(p_index, (int)shared->mesh_to_physics.size(), Vector3());
 	const size_t physics_index = (size_t)shared->mesh_to_physics[p_index];
 
-	const JoltReadableBody3D body = space->read_body(jolt_id);
-	ERR_FAIL_COND_V(body.is_invalid(), Vector3());
-
-	const JPH::SoftBodyMotionProperties &motion_properties = static_cast<const JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
+	const JPH::SoftBodyMotionProperties &motion_properties = static_cast<const JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	const JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 	const JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
-	return to_godot(body->GetCenterOfMassPosition() + physics_vertex.mPosition);
+	return to_godot(jolt_body->GetCenterOfMassPosition() + physics_vertex.mPosition);
 }
 
 void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position) {
@@ -677,25 +625,12 @@ void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position)
 	ERR_FAIL_INDEX(p_index, (int)shared->mesh_to_physics.size());
 	const size_t physics_index = (size_t)shared->mesh_to_physics[p_index];
 
-	const float last_step = space->get_last_step();
-	if (unlikely(last_step == 0.0f)) {
-		return;
-	}
-
-	JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
-
-	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*body->GetMotionPropertiesUnchecked());
-
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 	JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
-	const JPH::RVec3 center_of_mass = body->GetCenterOfMassPosition();
-	const JPH::Vec3 local_position = JPH::Vec3(to_jolt_r(p_position) - center_of_mass);
-	const JPH::Vec3 displacement = local_position - physics_vertex.mPosition;
-	const JPH::Vec3 velocity = displacement / last_step;
-
-	physics_vertex.mVelocity = velocity;
+	const JPH::RVec3 center_of_mass = jolt_body->GetCenterOfMassPosition();
+	physics_vertex.mPosition = JPH::Vec3(to_jolt_r(p_position) - center_of_mass);
 
 	_vertices_changed();
 }

@@ -50,7 +50,7 @@ class NavObstacle2D;
 class NavMap2D : public NavRid2D {
 	/// To find the polygons edges the vertices are displaced in a grid where
 	/// each cell has the following cell_size.
-	real_t cell_size = NavigationDefaults2D::navmesh_cell_size;
+	real_t cell_size = NavigationDefaults2D::NAV_MESH_CELL_SIZE;
 
 	// For the inter-region merging to work, internal rasterization is performed.
 	Vector2 merge_rasterizer_cell_size = Vector2(cell_size, cell_size);
@@ -60,10 +60,10 @@ class NavMap2D : public NavRid2D {
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
-	real_t edge_connection_margin = NavigationDefaults2D::edge_connection_margin;
+	real_t edge_connection_margin = NavigationDefaults2D::EDGE_CONNECTION_MARGIN;
 
 	/// This value is used to limit how far links search to find polygons to connect to.
-	real_t link_connection_radius = NavigationDefaults2D::link_connection_radius;
+	real_t link_connection_radius = NavigationDefaults2D::LINK_CONNECTION_RADIUS;
 
 	bool map_settings_dirty = true;
 
@@ -99,7 +99,7 @@ class NavMap2D : public NavRid2D {
 	bool avoidance_use_high_priority_threads = true;
 
 	// Performance Monitor
-	nav_2d::PerformanceData performance_data;
+	Nav2D::PerformanceData performance_data;
 
 	struct {
 		SelfList<NavRegion2D>::List regions;
@@ -159,13 +159,13 @@ public:
 		return link_connection_radius;
 	}
 
-	nav_2d::PointKey get_point_key(const Vector2 &p_pos) const;
+	Nav2D::PointKey get_point_key(const Vector2 &p_pos) const;
 	Vector2 get_merge_rasterizer_cell_size() const;
 
 	void query_path(NavMeshQueries2D::NavMeshPathQueryTask2D &p_query_task);
 
 	Vector2 get_closest_point(const Vector2 &p_point) const;
-	nav_2d::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
+	Nav2D::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
 	RID get_closest_point_owner(const Vector2 &p_point) const;
 
 	void add_region(NavRegion2D *p_region);

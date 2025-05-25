@@ -39,6 +39,10 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_inferred_direction"), &TextLine::get_inferred_direction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
+	// If compiling the editor with TextServerFallback only,
+	// `--doctool` would change the default value to `TextServer::DIRECTION_LTR`.
+	// Force it so that it's consistent regardless of the backend.
+	ADD_PROPERTY_DEFAULT("direction", TextServer::DIRECTION_AUTO);
 
 	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &TextLine::set_orientation);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &TextLine::get_orientation);

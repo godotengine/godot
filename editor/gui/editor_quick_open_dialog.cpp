@@ -43,6 +43,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
@@ -205,6 +206,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 			panel_container->add_child(no_results_container);
 
 			no_results_label = memnew(Label);
+			no_results_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 			no_results_label->add_theme_font_size_override(SceneStringName(font_size), 24 * EDSCALE);
 			no_results_container->add_child(no_results_label);
 			no_results_container->hide();
@@ -245,6 +247,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 	{
 		// Selected filepath
 		file_details_path = memnew(Label);
+		file_details_path->set_focus_mode(FOCUS_ACCESSIBILITY);
 		file_details_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		file_details_path->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 		file_details_path->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
@@ -346,8 +349,7 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
 
 		bool history_modified = false;
-		List<String> history_keys;
-		history_file->get_section_keys("selected_history", &history_keys);
+		Vector<String> history_keys = history_file->get_section_keys("selected_history");
 		for (const String &type : history_keys) {
 			const StringName type_name = type;
 			const PackedStringArray paths = history_file->get_value("selected_history", type);
@@ -787,10 +789,10 @@ String QuickOpenResultContainer::get_selected() const {
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
 	static const Vector<StringName> grid_preferred_types = {
-		"Font",
-		"Texture2D",
-		"Material",
-		"Mesh"
+		StringName("Font", true),
+		StringName("Texture2D", true),
+		StringName("Material", true),
+		StringName("Mesh", true),
 	};
 
 	for (const StringName &type : grid_preferred_types) {

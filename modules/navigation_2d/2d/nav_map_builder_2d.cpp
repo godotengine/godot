@@ -37,7 +37,7 @@
 #include "nav_map_iteration_2d.h"
 #include "nav_region_iteration_2d.h"
 
-using namespace nav_2d;
+using namespace Nav2D;
 
 PointKey NavMapBuilder2D::get_point_key(const Vector2 &p_pos, const Vector2 &p_cell_size) {
 	const int x = static_cast<int>(Math::floor(p_pos.x / p_cell_size.x));

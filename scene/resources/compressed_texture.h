@@ -107,7 +107,6 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
-	CompressedTexture2D();
 	~CompressedTexture2D();
 };
 
@@ -258,7 +257,6 @@ public:
 
 	virtual Vector<Ref<Image>> get_data() const override;
 
-	CompressedTexture3D();
 	~CompressedTexture3D();
 };
 

@@ -2176,6 +2176,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	VBoxContainer *vb = memnew(VBoxContainer);
 	revoke_dialog->add_child(vb);
 	revoke_dialog_label = memnew(Label);
+	revoke_dialog_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(revoke_dialog_label);
 	ask_before_revoke_checkbox = memnew(CheckBox(TTR("Don't Ask Again")));
 	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
@@ -2255,6 +2256,7 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 
 		Label *label = memnew(Label);
 		hb->add_child(label);
+		label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		label->set_text(name);
 		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	}

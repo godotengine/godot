@@ -130,10 +130,8 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	}
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		List<String> keywords;
-		ScriptServer::get_language(i)->get_reserved_words(&keywords);
-		for (const String &E : keywords) {
-			if (E == p_name) {
+		for (const String &keyword : ScriptServer::get_language(i)->get_reserved_words()) {
+			if (keyword == p_name) {
 				if (r_error) {
 					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an Autoload name.");
 				}
@@ -890,6 +888,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_child(hbc);
 
 	error_message = memnew(Label);
+	error_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_message->hide();
 	error_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	error_message->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));

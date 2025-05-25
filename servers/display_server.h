@@ -360,7 +360,7 @@ public:
 		float scale = 1.f;
 		int screen_count = get_screen_count();
 		for (int i = 0; i < screen_count; i++) {
-			scale = fmax(scale, screen_get_scale(i));
+			scale = std::fmax(scale, screen_get_scale(i));
 		}
 		return scale;
 	}

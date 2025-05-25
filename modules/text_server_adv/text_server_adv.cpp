@@ -1202,7 +1202,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 /* Font Cache                                                            */
 /*************************************************************************/
 
-_FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling) const {
+bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling) const {
 	FontForSizeAdvanced *fd = nullptr;
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(p_font_data, p_size, fd, false, p_oversampling), false);
 
@@ -1369,7 +1369,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 	return false;
 }
 
-_FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size, bool p_silent, uint32_t p_oversampling) const {
+bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size, bool p_silent, uint32_t p_oversampling) const {
 	ERR_FAIL_COND_V(p_size.x <= 0, false);
 
 	HashMap<Vector2i, FontForSizeAdvanced *>::Iterator E = p_font_data->cache.find(p_size);
@@ -3865,8 +3865,12 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		}
 	}
 	bool skip_oversampling = fd->msdf || fd->fixed_size > 0;
-	uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
-	oversampling_factor = double(oversampling_level) / 64.0;
+	if (skip_oversampling) {
+		oversampling_factor = 1.0;
+	} else {
+		uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
+		oversampling_factor = double(oversampling_level) / 64.0;
+	}
 
 	Vector2i size;
 	if (skip_oversampling) {
@@ -3943,8 +3947,8 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
 					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
 				} else {
-					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 					Point2 cpos = p_pos;
+					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
 						cpos.x = cpos.x + 0.125;
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
@@ -4005,14 +4009,18 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 		}
 	}
 	bool skip_oversampling = fd->msdf || fd->fixed_size > 0;
-	uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
-	oversampling_factor = double(oversampling_level) / 64.0;
+	if (skip_oversampling) {
+		oversampling_factor = 1.0;
+	} else {
+		uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
+		oversampling_factor = double(oversampling_level) / 64.0;
+	}
 
 	Vector2i size;
 	if (skip_oversampling) {
 		size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
 	} else {
-		size = Vector2i(p_size * 64 * oversampling_factor, p_outline_size);
+		size = Vector2i(p_size * 64 * oversampling_factor, p_outline_size * oversampling_factor);
 	}
 
 	FontForSizeAdvanced *ffsd = nullptr;
@@ -4933,11 +4941,11 @@ bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const V
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
 					sd->objects[key].rect.position.x = sd->width;
 					sd->width += sd->objects[key].rect.size.x;
-					sd->glyphs.write[i].advance = sd->objects[key].rect.size.x;
+					sd->glyphs[i].advance = sd->objects[key].rect.size.x;
 				} else {
 					sd->objects[key].rect.position.y = sd->width;
 					sd->width += sd->objects[key].rect.size.y;
-					sd->glyphs.write[i].advance = sd->objects[key].rect.size.y;
+					sd->glyphs[i].advance = sd->objects[key].rect.size.y;
 				}
 			} else {
 				if (gl.font_rid.is_valid()) {
@@ -4953,7 +4961,8 @@ bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const V
 				} else if (sd->preserve_invalid || (sd->preserve_control && is_control(gl.index))) {
 					// Glyph not found, replace with hex code box.
 					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
+						sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.85);
+						sd->descent = MAX(sd->descent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.15);
 					} else {
 						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
@@ -5196,7 +5205,8 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 				int32_t bidi_run_end = _convert_pos(p_sd, ov_start + start + _bidi_run_start + _bidi_run_length);
 
 				for (int j = 0; j < sd_size; j++) {
-					if ((sd_glyphs[j].start >= bidi_run_start) && (sd_glyphs[j].end <= bidi_run_end)) {
+					int col_key_off = (sd_glyphs[j].start == sd_glyphs[j].end) ? 1 : 0;
+					if ((sd_glyphs[j].start >= bidi_run_start) && (sd_glyphs[j].end <= bidi_run_end - col_key_off)) {
 						// Copy glyphs.
 						Glyph gl = sd_glyphs[j];
 						if (gl.span_index >= 0) {
@@ -5233,7 +5243,8 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 							} else if (p_new_sd->preserve_invalid || (p_new_sd->preserve_control && is_control(gl.index))) {
 								// Glyph not found, replace with hex code box.
 								if (p_new_sd->orientation == ORIENTATION_HORIZONTAL) {
-									p_new_sd->ascent = MAX(p_new_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
+									p_new_sd->ascent = MAX(p_new_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.85);
+									p_new_sd->descent = MAX(p_new_sd->descent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.15);
 								} else {
 									p_new_sd->ascent = MAX(p_new_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 									p_new_sd->descent = MAX(p_new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
@@ -5323,12 +5334,12 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 		// Trim spaces.
 		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			justification_width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
-			sd->glyphs.write[start_pos].advance = 0;
+			sd->glyphs[start_pos].advance = 0;
 			start_pos += sd->glyphs[start_pos].count;
 		}
 		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			justification_width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
-			sd->glyphs.write[end_pos].advance = 0;
+			sd->glyphs[end_pos].advance = 0;
 			end_pos -= sd->glyphs[end_pos].count;
 		}
 	} else {
@@ -5361,7 +5372,7 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 	if ((elongation_count > 0) && p_jst_flags.has_flag(JUSTIFICATION_KASHIDA)) {
 		double delta_width_per_kashida = (p_width - justification_width) / elongation_count;
 		for (int i = start_pos; i <= end_pos; i++) {
-			Glyph &gl = sd->glyphs.write[i];
+			Glyph &gl = sd->glyphs[i];
 			if (gl.count > 0) {
 				if (((gl.flags & GRAPHEME_IS_ELONGATION) == GRAPHEME_IS_ELONGATION) && (gl.advance > 0)) {
 					if ((i > 0) && ((sd->glyphs[i - 1].flags & GRAPHEME_IS_ELONGATION) != GRAPHEME_IS_ELONGATION)) {
@@ -5383,7 +5394,7 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 		double delta_width_per_space = (p_width - justification_width) / space_count;
 		double adv_remain = 0;
 		for (int i = start_pos; i <= end_pos; i++) {
-			Glyph &gl = sd->glyphs.write[i];
+			Glyph &gl = sd->glyphs[i];
 			if (gl.count > 0) {
 				if ((gl.flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN && (gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
 					double old_adv = gl.advance;
@@ -5451,7 +5462,7 @@ double TextServerAdvanced::_shaped_text_tab_align(const RID &p_shaped, const Pac
 		delta = -1;
 	}
 
-	Glyph *gl = sd->glyphs.ptrw();
+	Glyph *gl = sd->glyphs.ptr();
 
 	for (int i = start; i != end; i += delta) {
 		if ((gl[i].flags & GRAPHEME_IS_TAB) == GRAPHEME_IS_TAB) {
@@ -5660,7 +5671,7 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	bool enforce_ellipsis = p_trim_flags.has_flag(OVERRUN_ENFORCE_ELLIPSIS);
 	bool justification_aware = p_trim_flags.has_flag(OVERRUN_JUSTIFICATION_AWARE);
 
-	Glyph *sd_glyphs = sd->glyphs.ptrw();
+	Glyph *sd_glyphs = sd->glyphs.ptr();
 
 	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIM || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
 		sd->overrun_trim_data.trim_pos = -1;
@@ -5986,7 +5997,11 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 		while (i < span_size) {
 			String language = sd->spans[i].language;
 			int r_start = sd->spans[i].start;
-			while (i + 1 < span_size && language == sd->spans[i + 1].language) {
+			if (r_start == sd->spans[i].end) {
+				i++;
+				continue;
+			}
+			while (i + 1 < span_size && (language == sd->spans[i + 1].language || sd->spans[i + 1].start == sd->spans[i + 1].end)) {
 				i++;
 			}
 			int r_end = sd->spans[i].end;
@@ -6031,17 +6046,17 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 		sd->break_ops_valid = true;
 	}
 
-	Vector<Glyph> glyphs_new;
+	LocalVector<Glyph> glyphs_new;
 
 	bool rewrite = false;
 	int sd_shift = 0;
 	int sd_size = sd->glyphs.size();
-	Glyph *sd_glyphs = sd->glyphs.ptrw();
+	Glyph *sd_glyphs = sd->glyphs.ptr();
 	Glyph *sd_glyphs_new = nullptr;
 
 	if (sd->break_inserts > 0) {
 		glyphs_new.resize(sd->glyphs.size() + sd->break_inserts);
-		sd_glyphs_new = glyphs_new.ptrw();
+		sd_glyphs_new = glyphs_new.ptr();
 		rewrite = true;
 	} else {
 		sd_glyphs_new = sd_glyphs;
@@ -6114,6 +6129,11 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 							continue;
 						}
 					}
+					// Do not add extra space for color picker object.
+					if (((sd_glyphs[i].flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && sd_glyphs[i].start == sd_glyphs[i].end) || (uint32_t(i + 1) < sd->glyphs.size() && (sd_glyphs[i + 1].flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && sd_glyphs[i + 1].start == sd_glyphs[i + 1].end)) {
+						i += (sd_glyphs[i].count - 1);
+						continue;
+					}
 					Glyph gl;
 					gl.span_index = sd_glyphs[i].span_index;
 					gl.start = sd_glyphs[i].start;
@@ -6157,7 +6177,7 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 	}
 
 	if (sd->break_inserts > 0) {
-		sd->glyphs = glyphs_new;
+		sd->glyphs = std::move(glyphs_new);
 	}
 
 	sd->line_breaks_valid = true;
@@ -6269,7 +6289,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 			// No data - use fallback.
 			int limit = 0;
 			for (int i = 0; i < sd->text.length(); i++) {
-				if (is_whitespace(data[i])) {
+				if (is_whitespace(sd->text[i])) {
 					int ks = _generate_kashida_justification_opportunities(sd->text, limit, i) + sd->start;
 					if (ks != -1) {
 						sd->jstops[ks] = true;
@@ -6303,7 +6323,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 	sd->sort_valid = false;
 	sd->glyphs_logical.clear();
 
-	Glyph *sd_glyphs = sd->glyphs.ptrw();
+	Glyph *sd_glyphs = sd->glyphs.ptr();
 	int sd_size = sd->glyphs.size();
 	if (!sd->jstops.is_empty()) {
 		for (int i = 0; i < sd_size; i++) {
@@ -6341,7 +6361,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 
 									// Update write pointer and size.
 									sd_size = sd->glyphs.size();
-									sd_glyphs = sd->glyphs.ptrw();
+									sd_glyphs = sd->glyphs.ptr();
 									continue;
 								}
 							}
@@ -6381,7 +6401,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 
 						// Update write pointer and size.
 						sd_size = sd->glyphs.size();
-						sd_glyphs = sd->glyphs.ptrw();
+						sd_glyphs = sd->glyphs.ptr();
 						continue;
 					}
 				}
@@ -6575,7 +6595,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 					gl.index = p_sd->text[i];
 					if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 						gl.advance = get_hex_code_box_size(fs, gl.index).x;
-						p_sd->ascent = MAX(p_sd->ascent, get_hex_code_box_size(fs, gl.index).y);
+						p_sd->ascent = MAX(p_sd->ascent, get_hex_code_box_size(fs, gl.index).y * 0.85);
+						p_sd->descent = MAX(p_sd->descent, get_hex_code_box_size(fs, gl.index).y * 0.15);
 					} else {
 						gl.advance = get_hex_code_box_size(fs, gl.index).y;
 						gl.y_off = get_hex_code_box_size(fs, gl.index).y;
@@ -6983,7 +7004,8 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 
 					for (int k = spn_from; k != spn_to; k += spn_delta) {
 						const ShapedTextDataAdvanced::Span &span = sd->spans[k];
-						if (span.start - sd->start >= script_run_end || span.end - sd->start <= script_run_start) {
+						int col_key_off = (span.start == span.end) ? 1 : 0;
+						if (span.start - sd->start >= script_run_end || span.end - sd->start <= script_run_start - col_key_off) {
 							continue;
 						}
 						if (span.embedded_key != Variant()) {

@@ -45,17 +45,12 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "servers/display_server.h"
-
-EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
-EditorFileDialog::GetIconFunc EditorFileDialog::get_thumbnail_func = nullptr;
-
-EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
-EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
 
 void EditorFileDialog::_native_popup() {
 	// Show native dialog directly.
@@ -1424,9 +1419,9 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	_focus_file_text();
 
 	if (is_visible()) {
+		_focus_file_text();
 		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 	}
 }
@@ -1983,10 +1978,6 @@ void EditorFileDialog::_go_forward() {
 	dir_next->set_disabled(local_history_pos == local_history.size() - 1);
 }
 
-bool EditorFileDialog::default_show_hidden_files = false;
-
-EditorFileDialog::DisplayMode EditorFileDialog::default_display_mode = DISPLAY_THUMBNAILS;
-
 void EditorFileDialog::set_display_mode(DisplayMode p_mode) {
 	if (display_mode == p_mode) {
 		return;
@@ -2061,7 +2052,6 @@ void EditorFileDialog::_update_option_controls() {
 		} else {
 			Label *lbl = memnew(Label);
 			lbl->set_text(opt.name);
-			lbl->set_focus_mode(Control::FOCUS_NONE);
 			grid_select_options->add_child(lbl);
 
 			OptionButton *ob = memnew(OptionButton);
@@ -2428,7 +2418,6 @@ EditorFileDialog::EditorFileDialog() {
 	dir_up->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_go_up));
 
 	Label *l = memnew(Label(TTRC("Path:")));
-	l->set_focus_mode(Control::FOCUS_NONE);
 	l->set_theme_type_variation("HeaderSmall");
 	pathhb->add_child(l);
 
@@ -2504,7 +2493,6 @@ EditorFileDialog::EditorFileDialog() {
 	fav_vb->add_child(fav_hb);
 
 	l = memnew(Label(TTRC("Favorites:")));
-	l->set_focus_mode(Control::FOCUS_NONE);
 	l->set_theme_type_variation("HeaderSmall");
 	fav_hb->add_child(l);
 
@@ -2555,7 +2543,6 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	l = memnew(Label(TTRC("Directories & Files:")));
-	l->set_focus_mode(Control::FOCUS_NONE);
 	l->set_theme_type_variation("HeaderSmall");
 	l->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -2665,7 +2652,6 @@ EditorFileDialog::EditorFileDialog() {
 	file_box = memnew(HBoxContainer);
 
 	l = memnew(Label(TTRC("File:")));
-	l->set_focus_mode(Control::FOCUS_NONE);
 	l->set_theme_type_variation("HeaderSmall");
 	file_box->add_child(l);
 

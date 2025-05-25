@@ -132,6 +132,7 @@ public:
 
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) override;
 	virtual void mesh_clear(RID p_mesh) override;
+	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) override {}
 
 	/* MESH INSTANCE */
 

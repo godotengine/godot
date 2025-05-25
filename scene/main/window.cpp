@@ -236,20 +236,41 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Window::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "position" && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "current_screen" && initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "theme_type_variation") {
+	if (p_property.name == "position") {
+		if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "current_screen") {
+		if (initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
-		// Only the default theme and the project theme are used for the list of options.
-		// This is an imposed limitation to simplify the logic needed to leverage those options.
 		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
+
+		// Iterate to find all themes.
+		Control *tmp_control = Object::cast_to<Control>(get_parent());
+		Window *tmp_window = Object::cast_to<Window>(get_parent());
+		while (tmp_control || tmp_window) {
+			// We go up and any non Control/Window will break the chain.
+			if (tmp_control) {
+				if (tmp_control->get_theme().is_valid()) {
+					tmp_control->get_theme()->get_type_variation_list(get_class_name(), &names);
+				}
+				tmp_window = Object::cast_to<Window>(tmp_control->get_parent());
+				tmp_control = Object::cast_to<Control>(tmp_control->get_parent());
+			} else { // Window.
+				if (tmp_window->get_theme().is_valid()) {
+					tmp_window->get_theme()->get_type_variation_list(get_class_name(), &names);
+				}
+				tmp_control = Object::cast_to<Control>(tmp_window->get_parent());
+				tmp_window = Object::cast_to<Window>(tmp_window->get_parent());
+			}
+		}
+		if (get_theme().is_valid()) {
+			get_theme()->get_type_variation_list(get_class_name(), &names);
+		}
 		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
 			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
 		}
@@ -761,7 +782,7 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 		size = p_callback.size;
 		_update_viewport_size();
 	}
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServer::INVALID_WINDOW_ID && !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
 		Vector2 sz_out = DisplayServer::get_singleton()->window_get_size_with_decorations(window_id);
 		Vector2 pos_out = DisplayServer::get_singleton()->window_get_position_with_decorations(window_id);
 		Vector2 sz_in = DisplayServer::get_singleton()->window_get_size(window_id);
@@ -953,7 +974,7 @@ void Window::set_visible(bool p_visible) {
 			embedder = embedder_vp;
 			if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
 				if (is_in_edited_scene_root()) {
-					Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+					Size2 screen_size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
 					position = (screen_size - size) / 2;
 				} else {
 					position = (embedder->get_visible_rect().size - size) / 2;
@@ -1322,6 +1343,7 @@ void Window::_update_viewport_size() {
 
 	if (embedder) {
 		float scale = MIN(embedder->stretch_transform.get_scale().width, embedder->stretch_transform.get_scale().height);
+		Viewport::set_oversampling_override(scale);
 		Size2 s = Size2(final_size.width * scale, final_size.height * scale).ceil();
 		RS::get_singleton()->viewport_set_global_canvas_transform(get_viewport_rid(), global_canvas_transform * scale * content_scale_factor);
 		RS::get_singleton()->viewport_set_size(get_viewport_rid(), s.width, s.height);
@@ -1429,8 +1451,12 @@ void Window::_notification(int p_what) {
 				DisplayServer::get_singleton()->accessibility_update_set_name(accessibility_title_element, tr_title);
 				DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_title_element, Rect2(Vector2(0, -w), Size2(size.x, w)));
 			} else {
-				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, Transform2D());
-				DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), size));
+				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_final_transform());
+				if (_get_size_2d_override() != Size2()) {
+					DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), _get_size_2d_override()));
+				} else {
+					DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), _get_size()));
+				}
 
 				if (accessibility_announcement_element.is_null()) {
 					accessibility_announcement_element = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
@@ -1483,7 +1509,7 @@ void Window::_notification(int p_what) {
 				if (embedder) {
 					if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
 						if (is_in_edited_scene_root()) {
-							Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+							Size2 screen_size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
 							position = (screen_size - size) / 2;
 						} else {
 							position = (embedder->get_visible_rect().size - size) / 2;
@@ -1968,7 +1994,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
 
-	bool should_fit = !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
+	bool should_fit = is_embedded() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
 
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
@@ -2853,13 +2879,13 @@ bool Window::is_layout_rtl() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
 #ifdef TOOLS_ENABLED
-		if (is_part_of_edited_scene() && GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+		if (is_part_of_edited_scene() && GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		}
 		if (is_inside_tree()) {
 			Node *edited_scene_root = get_tree()->get_edited_scene_root();
 			if (edited_scene_root == this) {
-				int proj_root_layout_direction = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
+				int proj_root_layout_direction = GLOBAL_GET_CACHED(int, "internationalization/rendering/root_node_layout_direction");
 				if (proj_root_layout_direction == 1) {
 					return false;
 				} else if (proj_root_layout_direction == 2) {
@@ -2874,7 +2900,7 @@ bool Window::is_layout_rtl() const {
 			}
 		}
 #else
-		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		}
 #endif
@@ -2904,14 +2930,14 @@ bool Window::is_layout_rtl() const {
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
-		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		} else {
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
-		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		} else {
 			String locale = OS::get_singleton()->get_locale();

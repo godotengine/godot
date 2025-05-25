@@ -30,18 +30,21 @@
 
 #include "sprite_2d.h"
 
+#include "core/input/input.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
+	state["region_rect"] = region_rect;
 	return state;
 }
 
 void Sprite2D::_edit_set_state(const Dictionary &p_state) {
 	Node2D::_edit_set_state(p_state);
 	set_offset(p_state["offset"]);
+	set_region_rect(p_state["region_rect"]);
 }
 
 void Sprite2D::_edit_set_pivot(const Point2 &p_pivot) {
@@ -55,6 +58,19 @@ Point2 Sprite2D::_edit_get_pivot() const {
 
 bool Sprite2D::_edit_use_pivot() const {
 	return true;
+}
+
+void Sprite2D::_edit_set_rect(const Rect2 &p_rect) {
+	if (texture.is_null()) {
+		return;
+	}
+	if (!(region_enabled && hframes <= 1 && vframes <= 1 && Input::get_singleton()->is_key_label_pressed(Key::CTRL))) {
+		Node2D::_edit_set_rect(p_rect);
+		return;
+	}
+	Point2 delta = p_rect.position - (centered ? _get_rect_offset(p_rect.size) : Vector2());
+	set_region_rect(Rect2(region_rect.position, p_rect.size));
+	set_position(get_position() + get_transform().basis_xform(delta));
 }
 #endif // TOOLS_ENABLED
 
@@ -111,6 +127,19 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	if (vflip) {
 		r_dst_rect.size.y = -r_dst_rect.size.y;
 	}
+}
+
+Point2 Sprite2D::_get_rect_offset(const Size2i &p_size) const {
+	Point2 ofs = offset;
+	if (centered) {
+		ofs -= Size2(p_size) / 2;
+	}
+
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+		ofs = (ofs + Point2(0.5, 0.5)).floor();
+	}
+
+	return ofs;
 }
 
 void Sprite2D::_notification(int p_what) {
@@ -226,6 +255,7 @@ void Sprite2D::set_region_enabled(bool p_region_enabled) {
 	}
 
 	region_enabled = p_region_enabled;
+	_emit_region_rect_enabled();
 	queue_redraw();
 	notify_property_list_changed();
 }
@@ -301,6 +331,7 @@ void Sprite2D::set_vframes(int p_amount) {
 	if (frame >= vframes * hframes) {
 		frame = 0;
 	}
+	_emit_region_rect_enabled();
 	queue_redraw();
 	item_rect_changed();
 	notify_property_list_changed();
@@ -332,6 +363,7 @@ void Sprite2D::set_hframes(int p_amount) {
 	if (frame >= vframes * hframes) {
 		frame = 0;
 	}
+	_emit_region_rect_enabled();
 	queue_redraw();
 	item_rect_changed();
 	notify_property_list_changed();
@@ -392,6 +424,10 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 	return texture->is_pixel_opaque((int)q.x, (int)q.y);
 }
 
+bool Sprite2D::is_editor_region_rect_draggable() const {
+	return hframes <= 1 && vframes <= 1 && region_enabled;
+}
+
 Rect2 Sprite2D::get_rect() const {
 	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
@@ -407,14 +443,7 @@ Rect2 Sprite2D::get_rect() const {
 
 	s = s / Point2(hframes, vframes);
 
-	Point2 ofs = offset;
-	if (centered) {
-		ofs -= Size2(s) / 2;
-	}
-
-	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		ofs = (ofs + Point2(0.5, 0.5)).floor();
-	}
+	Point2 ofs = _get_rect_offset(s);
 
 	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
@@ -445,6 +474,10 @@ void Sprite2D::_texture_changed() {
 	if (texture.is_valid()) {
 		queue_redraw();
 	}
+}
+
+void Sprite2D::_emit_region_rect_enabled() {
+	emit_signal("_editor_region_rect_enabled", is_editor_region_rect_draggable());
 }
 
 void Sprite2D::_bind_methods() {
@@ -510,6 +543,9 @@ void Sprite2D::_bind_methods() {
 }
 
 Sprite2D::Sprite2D() {
+#ifdef TOOLS_ENABLED
+	add_user_signal(MethodInfo("_editor_region_rect_enabled", PropertyInfo(Variant::BOOL, "enabled"))); // Sprite2DEditorPlugin listens to this.
+#endif
 }
 
 Sprite2D::~Sprite2D() {

@@ -535,12 +535,18 @@ void ScriptServer::save_global_classes() {
 	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
 }
 
-////////////////////
-
-ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
-ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
-	singleton = this;
+Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_include_variables) {
+	int language_count = ScriptServer::get_language_count();
+	Vector<Ref<ScriptBacktrace>> result;
+	result.resize(language_count);
+	for (int i = 0; i < language_count; i++) {
+		ScriptLanguage *language = ScriptServer::get_language(i);
+		result.write[i].instantiate(language, p_include_variables);
+	}
+	return result;
 }
+
+////////////////////
 
 void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const {
 	p_core_type_words->push_back("String");

@@ -110,7 +110,7 @@ void Shape2D::_bind_methods() {
 }
 
 bool Shape2D::is_collision_outline_enabled() {
-	return GLOBAL_GET("debug/shapes/collision/draw_2d_outlines");
+	return GLOBAL_GET_CACHED(bool, "debug/shapes/collision/draw_2d_outlines");
 }
 
 Shape2D::Shape2D(const RID &p_rid) {

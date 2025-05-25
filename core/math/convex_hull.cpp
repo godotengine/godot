@@ -88,7 +88,7 @@ subject to the following restrictions:
 #endif
 
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 // Convex hull implementation based on Preparata and Hong

@@ -424,28 +424,6 @@ StringName TranslationServer::translate_plural(const StringName &p_message, cons
 	return main_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
-bool TranslationServer::_load_translations(const String &p_from) {
-	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
-		const Vector<String> &translation_names = GLOBAL_GET(p_from);
-
-		int tcount = translation_names.size();
-
-		if (tcount) {
-			const String *r = translation_names.ptr();
-
-			for (int i = 0; i < tcount; i++) {
-				Ref<Translation> tr = ResourceLoader::load(r[i]);
-				if (tr.is_valid()) {
-					add_translation(tr);
-				}
-			}
-		}
-		return true;
-	}
-
-	return false;
-}
-
 bool TranslationServer::has_domain(const StringName &p_domain) const {
 	if (p_domain == StringName()) {
 		return true;
@@ -641,11 +619,16 @@ void TranslationServer::_bind_methods() {
 }
 
 void TranslationServer::load_translations() {
-	_load_translations("internationalization/locale/translations"); //all
-	_load_translations("internationalization/locale/translations_" + locale.substr(0, 2));
-
-	if (locale.substr(0, 2) != locale) {
-		_load_translations("internationalization/locale/translations_" + locale);
+	const String prop = "internationalization/locale/translations";
+	if (!ProjectSettings::get_singleton()->has_setting(prop)) {
+		return;
+	}
+	const Vector<String> &translations = GLOBAL_GET(prop);
+	for (const String &path : translations) {
+		Ref<Translation> tr = ResourceLoader::load(path);
+		if (tr.is_valid()) {
+			add_translation(tr);
+		}
 	}
 }
 

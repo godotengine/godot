@@ -50,7 +50,7 @@ class NavRegion2D : public NavBase2D {
 	bool region_dirty = true;
 	bool polygons_dirty = true;
 
-	LocalVector<nav_2d::Polygon> navmesh_polygons;
+	LocalVector<Nav2D::Polygon> navmesh_polygons;
 
 	real_t surface_area = 0.0;
 	Rect2 bounds;
@@ -91,11 +91,11 @@ public:
 
 	void set_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon);
 
-	LocalVector<nav_2d::Polygon> const &get_polygons() const {
+	LocalVector<Nav2D::Polygon> const &get_polygons() const {
 		return navmesh_polygons;
 	}
 
-	nav_2d::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
+	Nav2D::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
 	Vector2 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
 	real_t get_surface_area() const { return surface_area; }

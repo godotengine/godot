@@ -142,15 +142,18 @@ String Resource::generate_scene_unique_id() {
 	static constexpr uint32_t char_count = ('z' - 'a');
 	static constexpr uint32_t base = char_count + ('9' - '0');
 	String id;
+	id.resize(characters + 1);
+	char32_t *ptr = id.ptrw();
 	for (uint32_t i = 0; i < characters; i++) {
 		uint32_t c = random_num % base;
 		if (c < char_count) {
-			id += String::chr('a' + c);
+			ptr[i] = ('a' + c);
 		} else {
-			id += String::chr('0' + (c - char_count));
+			ptr[i] = ('0' + (c - char_count));
 		}
 		random_num /= base;
 	}
+	ptr[characters] = '\0';
 
 	return id;
 }

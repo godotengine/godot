@@ -79,7 +79,6 @@ TextureRect *TexturePreview::get_texture_display() {
 
 void TexturePreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (!is_inside_tree()) {
 				// TODO: This is a workaround because `NOTIFICATION_THEME_CHANGED`
@@ -284,6 +283,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 
 	if (p_show_metadata) {
 		metadata_label = memnew(Label);
+		metadata_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 
 		if (p_texture.is_valid()) {
 			_update_metadata_label_text();

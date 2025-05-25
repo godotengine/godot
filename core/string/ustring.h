@@ -38,6 +38,10 @@
 #include "core/typedefs.h"
 #include "core/variant/array.h"
 
+class String;
+template <typename T>
+class CharStringT;
+
 /*************************************************************************/
 /*  Utility Functions                                                    */
 /*************************************************************************/
@@ -62,39 +66,60 @@ constexpr size_t strlen(const char32_t *p_str) {
 }
 
 // strlen equivalent function for wchar_t * arguments; depends on the platform.
-constexpr size_t strlen(const wchar_t *str) {
+constexpr size_t strlen(const wchar_t *p_str) {
 	// Use static_cast twice because reinterpret_cast is not allowed in constexpr
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return strlen(static_cast<const char16_t *>(static_cast<const void *>(str)));
+	return strlen(static_cast<const char16_t *>(static_cast<const void *>(p_str)));
 #else
 	// wchar_t is 32-bit
-	return strlen(static_cast<const char32_t *>(static_cast<const void *>(str)));
+	return strlen(static_cast<const char32_t *>(static_cast<const void *>(p_str)));
 #endif
 }
 
-constexpr size_t _strlen_clipped(const char *p_str, int p_clip_to_len) {
-	if (p_clip_to_len < 0) {
-		return strlen(p_str);
-	}
-
-	int len = 0;
+// strnlen equivalent function for char16_t * arguments.
+constexpr size_t strnlen(const char16_t *p_str, size_t p_clip_to_len) {
+	size_t len = 0;
 	while (len < p_clip_to_len && *(p_str++) != 0) {
 		len++;
 	}
 	return len;
 }
 
-constexpr size_t _strlen_clipped(const char32_t *p_str, int p_clip_to_len) {
-	if (p_clip_to_len < 0) {
-		return strlen(p_str);
-	}
-
-	int len = 0;
+// strnlen equivalent function for char32_t * arguments.
+constexpr size_t strnlen(const char32_t *p_str, size_t p_clip_to_len) {
+	size_t len = 0;
 	while (len < p_clip_to_len && *(p_str++) != 0) {
 		len++;
 	}
 	return len;
+}
+
+// strnlen equivalent function for wchar_t * arguments; depends on the platform.
+constexpr size_t strnlen(const wchar_t *p_str, size_t p_clip_to_len) {
+	// Use static_cast twice because reinterpret_cast is not allowed in constexpr
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit
+	return strnlen(static_cast<const char16_t *>(static_cast<const void *>(p_str)), p_clip_to_len);
+#else
+	// wchar_t is 32-bit
+	return strnlen(static_cast<const char32_t *>(static_cast<const void *>(p_str)), p_clip_to_len);
+#endif
+}
+
+template <typename L, typename R>
+constexpr int64_t str_compare(const L *l_ptr, const R *r_ptr) {
+	while (true) {
+		const char32_t l = *l_ptr;
+		const char32_t r = *r_ptr;
+
+		if (l == 0 || l != r) {
+			return static_cast<int64_t>(l) - static_cast<int64_t>(r);
+		}
+
+		l_ptr++;
+		r_ptr++;
+	}
 }
 
 /*************************************************************************/
@@ -102,14 +127,13 @@ constexpr size_t _strlen_clipped(const char32_t *p_str, int p_clip_to_len) {
 /*************************************************************************/
 
 template <typename T>
-class CharProxy {
-	friend class Char16String;
-	friend class CharString;
-	friend class String;
+class [[nodiscard]] CharProxy {
+	friend String;
+	friend CharStringT<T>;
 
 	const int _index;
 	CowData<T> &_cowdata;
-	static const T _null = 0;
+	static constexpr T _null = 0;
 
 	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &p_cowdata) :
 			_index(p_index),
@@ -142,106 +166,109 @@ public:
 };
 
 /*************************************************************************/
-/*  Char16String                                                         */
+/*  CharStringT                                                          */
 /*************************************************************************/
 
-class Char16String {
-	CowData<char16_t> _cowdata;
-	static const char16_t _null;
+template <typename T>
+class [[nodiscard]] CharStringT {
+	CowData<T> _cowdata;
+	static constexpr T _null = 0;
 
 public:
-	_FORCE_INLINE_ char16_t *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const char16_t *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 
-	_FORCE_INLINE_ operator Span<char16_t>() const { return Span(ptr(), length()); }
-	_FORCE_INLINE_ Span<char16_t> span() const { return Span(ptr(), length()); }
+	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
+	_FORCE_INLINE_ Span<T> span() const { return Span(ptr(), length()); }
 
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.resize(p_size); }
 
-	_FORCE_INLINE_ char16_t get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const char16_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ const char16_t &operator[](int p_index) const {
+	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
+	_FORCE_INLINE_ const T &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
 		}
-
 		return _cowdata.get(p_index);
 	}
-	_FORCE_INLINE_ CharProxy<char16_t> operator[](int p_index) { return CharProxy<char16_t>(p_index, _cowdata); }
+	_FORCE_INLINE_ CharProxy<T> operator[](int p_index) { return CharProxy<T>(p_index, _cowdata); }
 
-	_FORCE_INLINE_ Char16String() {}
-	_FORCE_INLINE_ Char16String(const Char16String &p_str) = default;
-	_FORCE_INLINE_ Char16String(Char16String &&p_str) = default;
-	_FORCE_INLINE_ void operator=(const Char16String &p_str) { _cowdata = p_str._cowdata; }
-	_FORCE_INLINE_ void operator=(Char16String &&p_str) { _cowdata = std::move(p_str._cowdata); }
-	_FORCE_INLINE_ Char16String(const char16_t *p_cstr) { copy_from(p_cstr); }
+	_FORCE_INLINE_ CharStringT() = default;
+	_FORCE_INLINE_ CharStringT(const CharStringT &p_str) = default;
+	_FORCE_INLINE_ CharStringT(CharStringT &&p_str) = default;
+	_FORCE_INLINE_ void operator=(const CharStringT &p_str) { _cowdata = p_str._cowdata; }
+	_FORCE_INLINE_ void operator=(CharStringT &&p_str) { _cowdata = std::move(p_str._cowdata); }
+	_FORCE_INLINE_ CharStringT(const T *p_cstr) { copy_from(p_cstr); }
+	_FORCE_INLINE_ void operator=(const T *p_cstr) { copy_from(p_cstr); }
 
-	void operator=(const char16_t *p_cstr);
-	bool operator<(const Char16String &p_right) const;
-	Char16String &operator+=(char16_t p_char);
-	int length() const { return size() ? size() - 1 : 0; }
-	const char16_t *get_data() const;
+	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const {
+		if (length() != p_other.length()) {
+			return false;
+		}
+		return memcmp(ptr(), p_other.ptr(), length() * sizeof(T)) == 0;
+	}
+	_FORCE_INLINE_ bool operator!=(const CharStringT<T> &p_other) const { return !(*this == p_other); }
+	_FORCE_INLINE_ bool operator<(const CharStringT<T> &p_other) const {
+		if (length() == 0) {
+			return p_other.length() != 0;
+		}
+		return str_compare(get_data(), p_other.get_data()) < 0;
+	}
+	_FORCE_INLINE_ CharStringT<T> &operator+=(T p_char) {
+		const int lhs_len = length();
+		resize(lhs_len + 2);
+
+		T *dst = ptrw();
+		dst[lhs_len] = p_char;
+		dst[lhs_len + 1] = _null;
+
+		return *this;
+	}
+
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
+	_FORCE_INLINE_ const T *get_data() const {
+		if (size()) {
+			return &operator[](0);
+		}
+		return &_null;
+	}
 
 protected:
-	void copy_from(const char16_t *p_cstr);
-};
-
-/*************************************************************************/
-/*  CharString                                                           */
-/*************************************************************************/
-
-class CharString {
-	CowData<char> _cowdata;
-	static const char _null;
-
-public:
-	_FORCE_INLINE_ char *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const char *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-
-	_FORCE_INLINE_ operator Span<char>() const { return Span(ptr(), length()); }
-	_FORCE_INLINE_ Span<char> span() const { return Span(ptr(), length()); }
-
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
-
-	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ const char &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size())) {
-			return _null;
+	void copy_from(const T *p_cstr) {
+		if (!p_cstr) {
+			resize(0);
+			return;
 		}
 
-		return _cowdata.get(p_index);
+		size_t len = strlen(p_cstr);
+		if (len == 0) {
+			resize(0);
+			return;
+		}
+
+		Error err = resize(++len); // include terminating null char.
+
+		ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
+
+		memcpy(ptrw(), p_cstr, len * sizeof(T));
 	}
-	_FORCE_INLINE_ CharProxy<char> operator[](int p_index) { return CharProxy<char>(p_index, _cowdata); }
-
-	_FORCE_INLINE_ CharString() {}
-	_FORCE_INLINE_ CharString(const CharString &p_str) = default;
-	_FORCE_INLINE_ CharString(CharString &&p_str) = default;
-	_FORCE_INLINE_ void operator=(const CharString &p_str) { _cowdata = p_str._cowdata; }
-	_FORCE_INLINE_ void operator=(CharString &&p_str) { _cowdata = std::move(p_str._cowdata); }
-	_FORCE_INLINE_ CharString(const char *p_cstr) { copy_from(p_cstr); }
-
-	void operator=(const char *p_cstr);
-	bool operator<(const CharString &p_right) const;
-	bool operator==(const CharString &p_right) const;
-	CharString &operator+=(char p_char);
-	int length() const { return size() ? size() - 1 : 0; }
-	const char *get_data() const;
-
-protected:
-	void copy_from(const char *p_cstr);
 };
+
+template <typename T>
+struct is_zero_constructible<CharStringT<T>> : std::true_type {};
+
+using CharString = CharStringT<char>;
+using Char16String = CharStringT<char16_t>;
 
 /*************************************************************************/
 /*  String                                                               */
 /*************************************************************************/
 
-class String {
+class [[nodiscard]] String {
 	CowData<char32_t> _cowdata;
-	static const char32_t _null;
-	static const char32_t _replacement_char;
+	static constexpr char32_t _null = 0;
+	static constexpr char32_t _replacement_char = 0xfffd;
 
 	// Known-length copy.
 	void copy_from_unchecked(const char32_t *p_char, int p_length);
@@ -419,6 +446,7 @@ public:
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
+	static String num_scientific(float p_num);
 	static String num_real(double p_num, bool p_trailing = true);
 	static String num_real(float p_num, bool p_trailing = true);
 	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
@@ -493,7 +521,7 @@ public:
 	String rstrip(const String &p_chars) const;
 	String get_extension() const;
 	String get_basename() const;
-	String path_join(const String &p_file) const;
+	String path_join(const String &p_path) const;
 	char32_t unicode_at(int p_idx) const;
 
 	CharString ascii(bool p_allow_extended = false) const;
@@ -518,7 +546,11 @@ public:
 	Error append_utf8(const Span<char> &p_range, bool p_skip_cr = false) {
 		return append_utf8(p_range.ptr(), p_range.size(), p_skip_cr);
 	}
-	static String utf8(const char *p_utf8, int p_len = -1);
+	static String utf8(const char *p_utf8, int p_len = -1) {
+		String ret;
+		ret.append_utf8(p_utf8, p_len);
+		return ret;
+	}
 	static String utf8(const Span<char> &p_range) { return utf8(p_range.ptr(), p_range.size()); }
 
 	Char16String utf16() const;
@@ -526,7 +558,11 @@ public:
 	Error append_utf16(const Span<char16_t> p_range, bool p_skip_cr = false) {
 		return append_utf16(p_range.ptr(), p_range.size(), p_skip_cr);
 	}
-	static String utf16(const char16_t *p_utf16, int p_len = -1);
+	static String utf16(const char16_t *p_utf16, int p_len = -1) {
+		String ret;
+		ret.append_utf16(p_utf16, p_len);
+		return ret;
+	}
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
 	void append_utf32(const Span<char32_t> &p_cstr);
@@ -683,21 +719,6 @@ struct FileNoCaseComparator {
 		return p_a.filenocasecmp_to(p_b) < 0;
 	}
 };
-
-template <typename L, typename R>
-_FORCE_INLINE_ int64_t str_compare(const L *l_ptr, const R *r_ptr) {
-	while (true) {
-		const char32_t l = *l_ptr;
-		const char32_t r = *r_ptr;
-
-		if (l == 0 || l != r) {
-			return static_cast<int64_t>(l) - static_cast<int64_t>(r);
-		}
-
-		l_ptr++;
-		r_ptr++;
-	}
-}
 
 /* end of namespace */
 

@@ -55,8 +55,10 @@ class Sprite2D : public Node2D {
 	int hframes = 1;
 
 	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip_enabled) const;
+	Point2 _get_rect_offset(const Size2i &p_size) const;
 
 	void _texture_changed();
+	void _emit_region_rect_enabled();
 
 protected:
 	void _notification(int p_what);
@@ -73,6 +75,8 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
+
+	virtual void _edit_set_rect(const Rect2 &p_rect) override;
 #endif // TOOLS_ENABLED
 
 #ifdef DEBUG_ENABLED
@@ -83,6 +87,7 @@ public:
 #endif // DEBUG_ENABLED
 
 	bool is_pixel_opaque(const Point2 &p_point) const;
+	bool is_editor_region_rect_draggable() const;
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;

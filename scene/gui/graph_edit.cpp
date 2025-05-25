@@ -2263,6 +2263,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
+	key_input(p_ev);
+}
+
+void GraphEdit::key_input(const Ref<InputEvent> &p_ev) {
 	if (p_ev->is_pressed()) {
 		if (p_ev->is_action("ui_graph_duplicate", true)) {
 			emit_signal(SNAME("duplicate_nodes_request"));
@@ -2430,8 +2434,8 @@ float GraphEdit::get_zoom() const {
 }
 
 void GraphEdit::set_zoom_step(float p_zoom_step) {
-	p_zoom_step = abs(p_zoom_step);
-	ERR_FAIL_COND(!isfinite(p_zoom_step));
+	p_zoom_step = std::abs(p_zoom_step);
+	ERR_FAIL_COND(!std::isfinite(p_zoom_step));
 	if (zoom_step == p_zoom_step) {
 		return;
 	}

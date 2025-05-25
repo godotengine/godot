@@ -367,7 +367,7 @@ void LineBuilder::build() {
 				float dot_product = vbegin.dot(vend);
 				// Note that we're comparing against -0.f for clarity but 0.f would
 				// match as well, therefore we need the explicit signbit check too.
-				if (cross_product == -0.f && signbit(cross_product)) {
+				if (cross_product == -0.f && std::signbit(cross_product)) {
 					cross_product = 0.f;
 				}
 				float angle_delta = Math::atan2(cross_product, dot_product);

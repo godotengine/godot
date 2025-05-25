@@ -925,8 +925,8 @@ static Vector2 compute_polyline_edge_offset_clamped(const Vector2 &p_segment_dir
 
 	bisector = (p_prev_segment_dir * p_segment_dir.length() - p_segment_dir * p_prev_segment_dir.length()).normalized();
 
-	float angle = atan2f(bisector.cross(p_prev_segment_dir), bisector.dot(p_prev_segment_dir));
-	float sin_angle = sinf(angle);
+	float angle = std::atan2(bisector.cross(p_prev_segment_dir), bisector.dot(p_prev_segment_dir));
+	float sin_angle = std::sin(angle);
 
 	if (!Math::is_zero_approx(sin_angle) && !p_segment_dir.is_equal_approx(p_prev_segment_dir)) {
 		length = 1.0f / sin_angle;
@@ -1735,7 +1735,7 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	polygon->texture = p_texture;
 
-	polygon->polygon.create(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights);
+	polygon->polygon.create(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights, p_count);
 
 	polygon->primitive = RS::PRIMITIVE_TRIANGLES;
 }

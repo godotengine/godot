@@ -281,6 +281,7 @@ void OS_Windows::initialize() {
 	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	TIMECAPS time_caps;
@@ -292,6 +293,9 @@ void OS_Windows::initialize() {
 		delay_resolution = 1000;
 		timeBeginPeriod(1);
 	}
+#else
+	delay_resolution = 1000;
+#endif
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -374,7 +378,9 @@ void OS_Windows::finalize_core() {
 
 	FileAccessWindows::finalize();
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	timeEndPeriod(1);
+#endif
 
 	memdelete(process_map);
 	NetSocketWinSock::cleanup();
@@ -2564,6 +2570,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 bool OS_Windows::_test_create_rendering_device(const String &p_display_driver) const {
 	// Tests Rendering Device creation.
 
@@ -2656,6 +2663,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
 	return ok;
 }
+#endif
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;

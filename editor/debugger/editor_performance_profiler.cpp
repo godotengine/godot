@@ -417,6 +417,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	add_child(monitor_draw);
 
 	info_message = memnew(Label);
+	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

@@ -204,6 +204,7 @@ OpenXRBindingModifiersDialog::OpenXRBindingModifiersDialog() {
 	binding_modifier_sc->add_child(binding_modifiers_vb);
 
 	binding_warning_label = memnew(Label);
+	binding_warning_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	binding_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	binding_warning_label->set_text(TTR("Note: modifiers will only be applied if supported on the host system."));
 	binding_modifiers_vb->add_child(binding_warning_label);

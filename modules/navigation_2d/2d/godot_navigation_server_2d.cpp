@@ -644,6 +644,13 @@ RID GodotNavigationServer2D::link_create() {
 	return rid;
 }
 
+uint32_t GodotNavigationServer2D::link_get_iteration_id(RID p_link) const {
+	NavLink2D *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_NULL_V(link, 0);
+
+	return link->get_iteration_id();
+}
+
 COMMAND_2(link_set_map, RID, p_link, RID, p_map) {
 	NavLink2D *link = link_owner.get_or_null(p_link);
 	ERR_FAIL_NULL(link);

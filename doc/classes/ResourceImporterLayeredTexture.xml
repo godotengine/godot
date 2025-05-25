@@ -40,6 +40,14 @@
 			[b]Basis Universal:[/b] Reduced quality, low memory usage, lowest size on disk, slow import. Only use for textures in 3D scenes, not for 2D elements.
 			See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#compress-mode]Compress mode[/url] in the manual for more details.
 		</member>
+		<member name="compress/rdo_quality_loss" type="float" setter="" getter="" default="0.0">
+			If greater than or equal to [code]0.01[/code], enables Rate-Distortion Optimization (RDO) to reduce file size. Higher values result in smaller file sizes but lower quality.
+			[b]Note:[/b] Enabling RDO makes encoding times significantly longer, especially when the image is large.
+			See also [member ProjectSettings.rendering/textures/basis_universal/rdo_dict_size] and [member ProjectSettings.rendering/textures/basis_universal/zstd_supercompression_level] if you want to reduce the file size further.
+		</member>
+		<member name="compress/uastc_level" type="int" setter="" getter="" default="0">
+			The UASTC encoding level. Higher values result in better quality but make encoding times longer.
+		</member>
 		<member name="mipmaps/generate" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], smaller versions of the texture are generated on import. For example, a 64×64 texture will generate 6 mipmaps (32×32, 16×16, 8×8, 4×4, 2×2, 1×1). This has several benefits:
 			- Textures will not become grainy in the distance (in 3D), or if scaled down due to [Camera2D] zoom or [CanvasItem] scale (in 2D).

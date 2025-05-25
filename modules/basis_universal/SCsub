@@ -20,22 +20,25 @@ basisu_encoder = env.editor_build
 if basisu_encoder:
     encoder_sources = [
         "3rdparty/android_astc_decomp.cpp",
-        "basisu_astc_hdr_enc.cpp",
+        "basisu_astc_hdr_6x6_enc.cpp",
+        "basisu_astc_hdr_common.cpp",
         "basisu_backend.cpp",
         "basisu_basis_file.cpp",
         "basisu_bc7enc.cpp",
-        "basisu_opencl.cpp",
         "basisu_comp.cpp",
         "basisu_enc.cpp",
         "basisu_etc.cpp",
         "basisu_frontend.cpp",
         "basisu_gpu_texture.cpp",
         "basisu_kernels_sse.cpp",
+        "basisu_opencl.cpp",
         "basisu_pvrtc1_4.cpp",
-        "basisu_resampler.cpp",
         "basisu_resample_filters.cpp",
+        "basisu_resampler.cpp",
         "basisu_ssim.cpp",
         "basisu_uastc_enc.cpp",
+        "basisu_uastc_hdr_4x4_enc.cpp",
+        "jpgd.cpp",
         "pvpngreader.cpp",
     ]
     encoder_sources = [thirdparty_dir + "encoder/" + file for file in encoder_sources]
@@ -45,7 +48,6 @@ transcoder_sources = [thirdparty_dir + "transcoder/basisu_transcoder.cpp"]
 env_basisu.Prepend(CPPEXTPATH=[thirdparty_dir])
 
 if basisu_encoder:
-    env_basisu.Prepend(CPPEXTPATH=["#thirdparty/jpeg-compressor"])
     env_basisu.Prepend(CPPEXTPATH=["#thirdparty/tinyexr"])
 
 if env["builtin_zstd"]:
@@ -58,13 +60,8 @@ env_thirdparty.disable_warnings()
 # <https://github.com/BinomialLLC/basis_universal/wiki/How-to-Use-and-Configure-the-Transcoder>
 env_thirdparty.Append(
     CPPDEFINES=[
-        # Storage formats.
-        # Godot only implements `.basis` support through basis_universal.
-        # Support for `.ktx` files are implemented with a direct libktx implementation.
-        # Building the encoder requires `BASISD_SUPPORT_KTX2` to be enabled,
-        # so we can only disable Zstandard compression for `.ktx` files
-        # (this is not used in `.basis` files).
-        ("BASISD_SUPPORT_KTX2_ZSTD", 0),
+        # Enable ktx2 zstd supercompression.
+        ("BASISD_SUPPORT_KTX2_ZSTD", 1),
         # GPU compression formats.
         ("BASISD_SUPPORT_ATC", 0),  # Proprietary Adreno format not supported by Godot.
         ("BASISD_SUPPORT_FXT1", 0),  # Legacy format not supported by Godot.

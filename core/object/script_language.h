@@ -32,6 +32,7 @@
 
 #include "core/doc_data.h"
 #include "core/io/resource.h"
+#include "core/object/script_backtrace.h"
 #include "core/object/script_instance.h"
 #include "core/templates/pair.h"
 #include "core/templates/safe_refcount.h"
@@ -100,6 +101,8 @@ public:
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
+
+	static Vector<Ref<ScriptBacktrace>> capture_script_backtraces(bool p_include_variables = false);
 
 	static void init_languages();
 	static void finish_languages();
@@ -193,17 +196,6 @@ public:
 	Script() {}
 };
 
-class ScriptCodeCompletionCache {
-	static ScriptCodeCompletionCache *singleton;
-
-public:
-	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
-
-	ScriptCodeCompletionCache();
-
-	virtual ~ScriptCodeCompletionCache() {}
-};
-
 class ScriptLanguage : public Object {
 	GDCLASS(ScriptLanguage, Object)
 
@@ -263,11 +255,11 @@ public:
 	};
 
 	void get_core_type_words(List<String> *p_core_type_words) const;
-	virtual void get_reserved_words(List<String> *p_words) const = 0;
+	virtual Vector<String> get_reserved_words() const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
+	virtual Vector<String> get_comment_delimiters() const = 0;
+	virtual Vector<String> get_doc_comment_delimiters() const = 0;
+	virtual Vector<String> get_string_delimiters() const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }

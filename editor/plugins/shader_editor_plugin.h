@@ -32,6 +32,7 @@
 
 #include "editor/plugins/editor_plugin.h"
 
+class CodeTextEditor;
 class HSplitContainer;
 class ItemList;
 class MenuButton;
@@ -43,10 +44,6 @@ class VBoxContainer;
 class HBoxContainer;
 class VisualShaderEditor;
 class WindowWrapper;
-
-#ifdef MINGW_ENABLED
-#undef FILE_OPEN
-#endif
 
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
@@ -61,21 +58,21 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	LocalVector<EditedShader> edited_shaders;
 
-	enum {
-		FILE_NEW,
-		FILE_NEW_INCLUDE,
-		FILE_OPEN,
-		FILE_OPEN_INCLUDE,
-		FILE_SAVE,
-		FILE_SAVE_AS,
-		FILE_INSPECT,
-		FILE_INSPECT_NATIVE_SHADER_CODE,
-		FILE_CLOSE,
-		CLOSE_ALL,
-		CLOSE_OTHER_TABS,
-		SHOW_IN_FILE_SYSTEM,
-		COPY_PATH,
-		TOGGLE_FILES_PANEL,
+	enum FileMenu {
+		FILE_MENU_NEW,
+		FILE_MENU_NEW_INCLUDE,
+		FILE_MENU_OPEN,
+		FILE_MENU_OPEN_INCLUDE,
+		FILE_MENU_SAVE,
+		FILE_MENU_SAVE_AS,
+		FILE_MENU_INSPECT,
+		FILE_MENU_INSPECT_NATIVE_SHADER_CODE,
+		FILE_MENU_CLOSE,
+		FILE_MENU_CLOSE_ALL,
+		FILE_MENU_CLOSE_OTHER_TABS,
+		FILE_MENU_SHOW_IN_FILE_SYSTEM,
+		FILE_MENU_COPY_PATH,
+		FILE_MENU_TOGGLE_FILES_PANEL,
 	};
 
 	enum PopupMenuType {
@@ -129,6 +126,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _window_changed(bool p_visible);
 
 	void _set_text_shader_zoom_factor(float p_zoom_factor);
+	void _update_shader_editor_zoom_factor(CodeTextEditor *p_shader_editor) const;
+
 	void _switch_to_editor(ShaderEditor *p_editor);
 
 protected:

@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "core/doc_data.h"
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_importer.h"
@@ -178,10 +179,8 @@ static void merge_methods(Vector<DocData::MethodDoc> &p_to, const Vector<DocData
 	DocData::MethodDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::MethodDoc, MethodCompare> search_array;
-
 	for (const DocData::MethodDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect<MethodCompare>(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -206,10 +205,8 @@ static void merge_constants(Vector<DocData::ConstantDoc> &p_to, const Vector<Doc
 	const DocData::ConstantDoc *from_ptr = p_from.ptr();
 	int64_t from_size = p_from.size();
 
-	SearchArray<DocData::ConstantDoc> search_array;
-
 	for (DocData::ConstantDoc &to : p_to) {
-		int64_t found = search_array.bisect(from_ptr, from_size, to, true);
+		int64_t found = p_from.span().bisect(to, true);
 
 		if (found >= from_size) {
 			continue;
@@ -234,10 +231,8 @@ static void merge_properties(Vector<DocData::PropertyDoc> &p_to, const Vector<Do
 	DocData::PropertyDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::PropertyDoc> search_array;
-
 	for (const DocData::PropertyDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -262,10 +257,8 @@ static void merge_theme_properties(Vector<DocData::ThemeItemDoc> &p_to, const Ve
 	DocData::ThemeItemDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::ThemeItemDoc> search_array;
-
 	for (const DocData::ThemeItemDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -290,10 +283,8 @@ static void merge_operators(Vector<DocData::MethodDoc> &p_to, const Vector<DocDa
 	DocData::MethodDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::MethodDoc, OperatorCompare> search_array;
-
 	for (const DocData::MethodDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -940,7 +931,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
 			Variant value = Variant::get_constant_value(Variant::Type(i), E);
-			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace_char('\n', ' ');
+			constant.value = DocData::get_default_value_string(value);
 			constant.is_value_valid = true;
 			constant.type = Variant::get_type_name(value.get_type());
 			c.constants.push_back(constant);

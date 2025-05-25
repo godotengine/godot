@@ -672,6 +672,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	search_box->set_placeholder(TTR("Filter Settings"));
 	search_box->set_accessibility_name(TTRC("Filter Settings"));
 	search_box->set_clear_button_enabled(true);
+	search_box->set_virtual_keyboard_show_on_focus(false);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
 
@@ -717,6 +718,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->register_search_box(search_box);
 	general_settings_inspector->register_advanced_toggle(advanced);
 	general_settings_inspector->get_inspector()->set_use_filter(true);
+	general_settings_inspector->get_inspector()->set_mark_unsaved(false);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
 	general_settings_inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
@@ -734,6 +736,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_child(restart_icon);
 
 	restart_label = memnew(Label);
+	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	restart_label->set_text(TTR("Changed settings will be applied to the editor after restarting."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();

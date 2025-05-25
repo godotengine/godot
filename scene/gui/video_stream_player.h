@@ -124,6 +124,5 @@ public:
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 
-	VideoStreamPlayer();
 	~VideoStreamPlayer();
 };

@@ -748,7 +748,6 @@ void TextShaderEditor::_prepare_edit_menu() {
 
 void TextShaderEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
 		} break;
@@ -1257,6 +1256,7 @@ TextShaderEditor::TextShaderEditor() {
 	disk_changed->add_child(vbc);
 
 	Label *dl = memnew(Label);
+	dl->set_focus_mode(FOCUS_ACCESSIBILITY);
 	dl->set_text(TTR("This shader has been modified on disk.\nWhat action should be taken?"));
 	vbc->add_child(dl);
 

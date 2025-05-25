@@ -162,8 +162,8 @@ public:
 		TEXTURE_DETAIL_ALBEDO,
 		TEXTURE_DETAIL_NORMAL,
 		TEXTURE_ORM,
+		TEXTURE_BENT_NORMAL,
 		TEXTURE_MAX
-
 	};
 
 	enum TextureFilter {
@@ -218,6 +218,7 @@ public:
 		FEATURE_BACKLIGHT,
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
+		FEATURE_BENT_NORMAL_MAPPING,
 		FEATURE_MAX
 	};
 
@@ -267,6 +268,9 @@ public:
 		FLAG_PARTICLE_TRAILS_MODE,
 		FLAG_ALBEDO_TEXTURE_MSDF,
 		FLAG_DISABLE_FOG,
+		FLAG_DISABLE_SPECULAR_OCCLUSION,
+		FLAG_USE_Z_CLIP_SCALE,
+		FLAG_USE_FOV_OVERRIDE,
 		FLAG_MAX
 	};
 
@@ -464,6 +468,8 @@ private:
 
 		StringName alpha_antialiasing_edge;
 		StringName albedo_texture_size;
+		StringName z_clip_scale;
+		StringName fov_override;
 	};
 
 	static Mutex material_mutex;
@@ -560,6 +566,9 @@ private:
 	TextureChannel refraction_texture_channel;
 
 	AlphaAntiAliasing alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
+
+	float z_clip_scale = 1.0;
+	float fov_override = 75.0;
 
 	bool features[FEATURE_MAX] = {};
 
@@ -779,6 +788,11 @@ public:
 	TextureChannel get_ao_texture_channel() const;
 	void set_refraction_texture_channel(TextureChannel p_channel);
 	TextureChannel get_refraction_texture_channel() const;
+
+	void set_z_clip_scale(float p_z_clip_scale);
+	float get_z_clip_scale() const;
+	void set_fov_override(float p_fov_override);
+	float get_fov_override() const;
 
 	static void init_shaders();
 	static void finish_shaders();

@@ -48,7 +48,7 @@ def make_default_controller_mappings(target, source, env):
             "Windows": "WINDOWS",
             "Mac OS X": "MACOS",
             "Android": "ANDROID",
-            "iOS": "IOS",
+            "iOS": "APPLE_EMBEDDED",
             "Web": "WEB",
         }
 

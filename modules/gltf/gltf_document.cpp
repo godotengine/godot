@@ -77,8 +77,8 @@
 #define GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
 #define GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION 64
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 constexpr int COMPONENT_COUNT_FOR_ACCESSOR_TYPE[7] = {
 	1, 2, 3, 4, 4, 9, 16
@@ -443,6 +443,17 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 			extensions["KHR_lights_punctual"] = lights_punctual;
 			lights_punctual["light"] = gltf_node->light;
 		}
+		if (!gltf_node->visible) {
+			Dictionary khr_node_visibility;
+			extensions["KHR_node_visibility"] = khr_node_visibility;
+			khr_node_visibility["visible"] = gltf_node->visible;
+			if (!p_state->extensions_used.has("KHR_node_visibility")) {
+				p_state->extensions_used.push_back("KHR_node_visibility");
+				if (_visibility_mode == VISIBILITY_MODE_INCLUDE_REQUIRED) {
+					p_state->extensions_required.push_back("KHR_node_visibility");
+				}
+			}
+		}
 		if (gltf_node->mesh != -1) {
 			node["mesh"] = gltf_node->mesh;
 		}
@@ -635,6 +646,12 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 				if (lights_punctual.has("light")) {
 					GLTFLightIndex light = lights_punctual["light"];
 					node->light = light;
+				}
+			}
+			if (extensions.has("KHR_node_visibility")) {
+				Dictionary khr_node_visibility = extensions["KHR_node_visibility"];
+				if (khr_node_visibility.has("visible")) {
+					node->visible = khr_node_visibility["visible"];
 				}
 			}
 			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
@@ -3592,7 +3609,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				} else {
 					for (int vert = 0; vert < normals.size(); vert++) {
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-						if (abs(tan.dot(normals[vert])) > 0.0001) {
+						if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 							// Tangent is not perpendicular to the normal, so we can't use compression.
 							flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 						}
@@ -3814,6 +3831,22 @@ float GLTFDocument::get_lossy_quality() const {
 	return _lossy_quality;
 }
 
+void GLTFDocument::set_fallback_image_format(const String &p_fallback_image_format) {
+	_fallback_image_format = p_fallback_image_format;
+}
+
+String GLTFDocument::get_fallback_image_format() const {
+	return _fallback_image_format;
+}
+
+void GLTFDocument::set_fallback_image_quality(float p_fallback_image_quality) {
+	_fallback_image_quality = p_fallback_image_quality;
+}
+
+float GLTFDocument::get_fallback_image_quality() const {
+	return _fallback_image_quality;
+}
+
 Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 	Array images;
 	// Check if any extension wants to be the image saver.
@@ -3829,83 +3862,21 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 	// Serialize every image in the state's images array.
 	for (int i = 0; i < p_state->images.size(); i++) {
 		Dictionary image_dict;
-
-		ERR_CONTINUE(p_state->images[i].is_null());
-
-		Ref<Image> image = p_state->images[i]->get_image();
-		ERR_CONTINUE(image.is_null());
-		if (image->is_compressed()) {
-			image->decompress();
-			ERR_FAIL_COND_V_MSG(image->is_compressed(), ERR_INVALID_DATA, "glTF: Image was compressed, but could not be decompressed.");
-		}
-
-		if (p_state->filename.to_lower().ends_with("gltf")) {
-			String img_name = p_state->images[i]->get_name();
-			if (img_name.is_empty()) {
-				img_name = itos(i).pad_zeros(3);
-			}
-			img_name = _gen_unique_name(p_state, img_name);
-			String relative_texture_dir = "textures";
-			String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
-			Ref<DirAccess> da = DirAccess::open(p_state->base_path);
-			ERR_FAIL_COND_V(da.is_null(), FAILED);
-
-			if (!da->dir_exists(full_texture_dir)) {
-				da->make_dir(full_texture_dir);
-			}
-			if (_image_save_extension.is_valid()) {
-				img_name = img_name + _image_save_extension->get_image_file_extension();
-				Error err = _image_save_extension->save_image_at_path(p_state, image, full_texture_dir.path_join(img_name), _image_format, _lossy_quality);
-				ERR_FAIL_COND_V_MSG(err != OK, err, "glTF: Failed to save image in '" + _image_format + "' format as a separate file.");
-			} else if (_image_format == "PNG") {
-				img_name = img_name + ".png";
-				image->save_png(full_texture_dir.path_join(img_name));
-			} else if (_image_format == "JPEG") {
-				img_name = img_name + ".jpg";
-				image->save_jpg(full_texture_dir.path_join(img_name), _lossy_quality);
-			} else {
-				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Unknown image format '" + _image_format + "'.");
-			}
-			image_dict["uri"] = relative_texture_dir.path_join(img_name).uri_encode();
+		if (p_state->images[i].is_null()) {
+			ERR_PRINT("glTF export: Image Texture2D is null.");
 		} else {
-			GLTFBufferViewIndex bvi;
-
-			Ref<GLTFBufferView> bv;
-			bv.instantiate();
-
-			const GLTFBufferIndex bi = 0;
-			bv->buffer = bi;
-			bv->byte_offset = p_state->buffers[bi].size();
-			ERR_FAIL_INDEX_V(bi, p_state->buffers.size(), ERR_PARAMETER_RANGE_ERROR);
-
-			Vector<uint8_t> buffer;
-			Ref<ImageTexture> img_tex = image;
-			if (img_tex.is_valid()) {
-				image = img_tex->get_image();
-			}
-			// Save in various image formats. Note that if the format is "None",
-			// the state's images will be empty, so this code will not be reached.
-			if (_image_save_extension.is_valid()) {
-				buffer = _image_save_extension->serialize_image_to_bytes(p_state, image, image_dict, _image_format, _lossy_quality);
-			} else if (_image_format == "PNG") {
-				buffer = image->save_png_to_buffer();
-				image_dict["mimeType"] = "image/png";
-			} else if (_image_format == "JPEG") {
-				buffer = image->save_jpg_to_buffer(_lossy_quality);
-				image_dict["mimeType"] = "image/jpeg";
+			Ref<Image> image = p_state->images[i]->get_image();
+			if (image.is_null()) {
+				ERR_PRINT("glTF export: Image's image is null.");
 			} else {
-				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Unknown image format '" + _image_format + "'.");
+				String image_name = p_state->images[i]->get_name();
+				if (image_name.is_empty()) {
+					image_name = itos(i).pad_zeros(3);
+				}
+				image_name = _gen_unique_name(p_state, image_name);
+				image->set_name(image_name);
+				image_dict = _serialize_image(p_state, image, _image_format, _lossy_quality, _image_save_extension);
 			}
-			ERR_FAIL_COND_V_MSG(buffer.is_empty(), ERR_INVALID_DATA, "glTF: Failed to save image in '" + _image_format + "' format.");
-
-			bv->byte_length = buffer.size();
-			p_state->buffers.write[bi].resize(p_state->buffers[bi].size() + bv->byte_length);
-			memcpy(&p_state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
-			ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > p_state->buffers[bi].size(), ERR_FILE_CORRUPT);
-
-			p_state->buffer_views.push_back(bv);
-			bvi = p_state->buffer_views.size() - 1;
-			image_dict["bufferView"] = bvi;
 		}
 		images.push_back(image_dict);
 	}
@@ -3918,6 +3889,80 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 	p_state->json["images"] = images;
 
 	return OK;
+}
+
+Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_image, const String &p_image_format, float p_lossy_quality, Ref<GLTFDocumentExtension> p_image_save_extension) {
+	Dictionary image_dict;
+	if (p_image->is_compressed()) {
+		p_image->decompress();
+		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
+	}
+
+	if (p_state->filename.to_lower().ends_with("gltf")) {
+		String relative_texture_dir = "textures";
+		String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
+		Ref<DirAccess> da = DirAccess::open(p_state->base_path);
+		ERR_FAIL_COND_V(da.is_null(), image_dict);
+
+		if (!da->dir_exists(full_texture_dir)) {
+			da->make_dir(full_texture_dir);
+		}
+		String image_file_name = p_image->get_name();
+		if (p_image_save_extension.is_valid()) {
+			image_file_name = image_file_name + p_image_save_extension->get_image_file_extension();
+			Error err = p_image_save_extension->save_image_at_path(p_state, p_image, full_texture_dir.path_join(image_file_name), p_image_format, p_lossy_quality);
+			ERR_FAIL_COND_V_MSG(err != OK, image_dict, "glTF: Failed to save image in '" + p_image_format + "' format as a separate file, error " + itos(err) + ".");
+		} else if (p_image_format == "PNG") {
+			image_file_name = image_file_name + ".png";
+			p_image->save_png(full_texture_dir.path_join(image_file_name));
+		} else if (p_image_format == "JPEG") {
+			image_file_name = image_file_name + ".jpg";
+			p_image->save_jpg(full_texture_dir.path_join(image_file_name), p_lossy_quality);
+		} else {
+			ERR_FAIL_V_MSG(image_dict, "glTF: Unknown image format '" + p_image_format + "'.");
+		}
+		image_dict["uri"] = relative_texture_dir.path_join(image_file_name).uri_encode();
+	} else {
+		GLTFBufferViewIndex bvi;
+
+		Ref<GLTFBufferView> bv;
+		bv.instantiate();
+
+		const GLTFBufferIndex bi = 0;
+		bv->buffer = bi;
+		ERR_FAIL_INDEX_V(bi, p_state->buffers.size(), image_dict);
+		bv->byte_offset = p_state->buffers[bi].size();
+
+		Vector<uint8_t> buffer;
+		Ref<ImageTexture> img_tex = p_image;
+		if (img_tex.is_valid()) {
+			p_image = img_tex->get_image();
+		}
+		// Save in various image formats. Note that if the format is "None",
+		// the state's images will be empty, so this code will not be reached.
+		if (_image_save_extension.is_valid()) {
+			buffer = _image_save_extension->serialize_image_to_bytes(p_state, p_image, image_dict, p_image_format, p_lossy_quality);
+		} else if (p_image_format == "PNG") {
+			buffer = p_image->save_png_to_buffer();
+			image_dict["mimeType"] = "image/png";
+		} else if (p_image_format == "JPEG") {
+			buffer = p_image->save_jpg_to_buffer(p_lossy_quality);
+			image_dict["mimeType"] = "image/jpeg";
+		} else {
+			ERR_FAIL_V_MSG(image_dict, "glTF: Unknown image format '" + p_image_format + "'.");
+		}
+		ERR_FAIL_COND_V_MSG(buffer.is_empty(), image_dict, "glTF: Failed to save image in '" + p_image_format + "' format.");
+
+		bv->byte_length = buffer.size();
+		p_state->buffers.write[bi].resize(p_state->buffers[bi].size() + bv->byte_length);
+		memcpy(&p_state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
+		ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > p_state->buffers[bi].size(), image_dict);
+
+		p_state->buffer_views.push_back(bv);
+		bvi = p_state->buffer_views.size() - 1;
+		image_dict["bufferView"] = bvi;
+	}
+	return image_dict;
 }
 
 Ref<Image> GLTFDocument::_parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index, String &r_file_extension) {
@@ -4209,6 +4254,21 @@ Error GLTFDocument::_serialize_textures(Ref<GLTFState> p_state) {
 		if (_image_save_extension.is_valid()) {
 			Error err = _image_save_extension->serialize_texture_json(p_state, texture_dict, gltf_texture, _image_format);
 			ERR_FAIL_COND_V(err != OK, err);
+			// If a fallback image format was specified, serialize another image for it.
+			// Note: This must only be done after serializing other images to keep the indices of those consistent.
+			if (_fallback_image_format != "None" && p_state->json.has("images")) {
+				Array json_images = p_state->json["images"];
+				texture_dict["source"] = json_images.size();
+				Ref<Image> image = p_state->source_images[gltf_texture->get_src_image()];
+				String fallback_name = _gen_unique_name(p_state, image->get_name() + "_fallback");
+				image = image->duplicate();
+				image->set_name(fallback_name);
+				ERR_CONTINUE(image.is_null());
+				if (_fallback_image_format == "PNG") {
+					image->resize(image->get_width() * _fallback_image_quality, image->get_height() * _fallback_image_quality);
+				}
+				json_images.push_back(_serialize_image(p_state, image, _fallback_image_format, _fallback_image_quality, nullptr));
+			}
 		} else {
 			ERR_CONTINUE(gltf_texture->get_src_image() == -1);
 			texture_dict["source"] = gltf_texture->get_src_image();
@@ -5844,11 +5904,6 @@ Node3D *GLTFDocument::_generate_spatial(Ref<GLTFState> p_state, const GLTFNodeIn
 }
 
 void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, const GLTFNodeIndex p_gltf_parent, const GLTFNodeIndex p_gltf_root) {
-	bool retflag = true;
-	_check_visibility(p_current, retflag);
-	if (retflag) {
-		return;
-	}
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && p_gltf_root != -1 && p_current->get_owner() == nullptr) {
 		WARN_VERBOSE("glTF export warning: Node '" + p_current->get_name() + "' has no owner. This is likely a temporary node generated by a @tool script. This would not be saved when saving the Godot scene, therefore it will not be exported to glTF.");
@@ -5857,6 +5912,13 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 #endif // TOOLS_ENABLED
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instantiate();
+	if (p_current->has_method("is_visible")) {
+		bool visible = p_current->call("is_visible");
+		if (!visible && _visibility_mode == VISIBILITY_MODE_EXCLUDE) {
+			return;
+		}
+		gltf_node->visible = visible;
+	}
 	gltf_node->set_original_name(p_current->get_name());
 	gltf_node->set_name(_gen_unique_name(p_state, p_current->get_name()));
 	gltf_node->merge_meta_from(p_current);
@@ -5977,19 +6039,6 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	p_gltf_node->set_original_name(csg->get_name());
 	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
 #endif // MODULE_CSG_ENABLED
-}
-
-void GLTFDocument::_check_visibility(Node *p_node, bool &r_retflag) {
-	r_retflag = true;
-	Node3D *spatial = Object::cast_to<Node3D>(p_node);
-	Node2D *node_2d = Object::cast_to<Node2D>(p_node);
-	if (node_2d && !node_2d->is_visible()) {
-		return;
-	}
-	if (spatial && !spatial->is_visible()) {
-		return;
-	}
-	r_retflag = false;
 }
 
 void GLTFDocument::_convert_camera_to_gltf(Camera3D *camera, Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node) {
@@ -6275,6 +6324,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	if (!gltf_node_name.is_empty()) {
 		current_node->set_name(gltf_node_name);
 	}
+	current_node->set_visible(gltf_node->visible);
 	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
 	if (p_scene_root == nullptr) {
 		// If the root node argument is null, this is the root node.
@@ -8165,12 +8215,22 @@ void GLTFDocument::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_KEEP_ROOT);
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_MULTI_ROOT);
 
+	BIND_ENUM_CONSTANT(VISIBILITY_MODE_INCLUDE_REQUIRED);
+	BIND_ENUM_CONSTANT(VISIBILITY_MODE_INCLUDE_OPTIONAL);
+	BIND_ENUM_CONSTANT(VISIBILITY_MODE_EXCLUDE);
+
 	ClassDB::bind_method(D_METHOD("set_image_format", "image_format"), &GLTFDocument::set_image_format);
 	ClassDB::bind_method(D_METHOD("get_image_format"), &GLTFDocument::get_image_format);
 	ClassDB::bind_method(D_METHOD("set_lossy_quality", "lossy_quality"), &GLTFDocument::set_lossy_quality);
 	ClassDB::bind_method(D_METHOD("get_lossy_quality"), &GLTFDocument::get_lossy_quality);
+	ClassDB::bind_method(D_METHOD("set_fallback_image_format", "fallback_image_format"), &GLTFDocument::set_fallback_image_format);
+	ClassDB::bind_method(D_METHOD("get_fallback_image_format"), &GLTFDocument::get_fallback_image_format);
+	ClassDB::bind_method(D_METHOD("set_fallback_image_quality", "fallback_image_quality"), &GLTFDocument::set_fallback_image_quality);
+	ClassDB::bind_method(D_METHOD("get_fallback_image_quality"), &GLTFDocument::get_fallback_image_quality);
 	ClassDB::bind_method(D_METHOD("set_root_node_mode", "root_node_mode"), &GLTFDocument::set_root_node_mode);
 	ClassDB::bind_method(D_METHOD("get_root_node_mode"), &GLTFDocument::get_root_node_mode);
+	ClassDB::bind_method(D_METHOD("set_visibility_mode", "visibility_mode"), &GLTFDocument::set_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_visibility_mode"), &GLTFDocument::get_visibility_mode);
 	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "base_path"),
 			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("append_from_buffer", "bytes", "base_path", "state", "flags"),
@@ -8186,7 +8246,10 @@ void GLTFDocument::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_format"), "set_image_format", "get_image_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "fallback_image_format"), "set_fallback_image_format", "get_fallback_image_format");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_image_quality"), "set_fallback_image_quality", "get_fallback_image_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode"), "set_visibility_mode", "get_visibility_mode");
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("import_object_model_property", "state", "json_pointer"), &GLTFDocument::import_object_model_property);
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("export_object_model_property", "state", "node_path", "godot_node", "gltf_node_index"), &GLTFDocument::export_object_model_property);
@@ -8257,6 +8320,7 @@ HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
 	supported_extensions.insert("KHR_materials_emissive_strength");
 	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
 	supported_extensions.insert("KHR_materials_unlit");
+	supported_extensions.insert("KHR_node_visibility");
 	supported_extensions.insert("KHR_texture_transform");
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -8655,6 +8719,14 @@ void GLTFDocument::set_root_node_mode(GLTFDocument::RootNodeMode p_root_node_mod
 
 GLTFDocument::RootNodeMode GLTFDocument::get_root_node_mode() const {
 	return _root_node_mode;
+}
+
+void GLTFDocument::set_visibility_mode(VisibilityMode p_visibility_mode) {
+	_visibility_mode = p_visibility_mode;
+}
+
+GLTFDocument::VisibilityMode GLTFDocument::get_visibility_mode() const {
+	return _visibility_mode;
 }
 
 String GLTFDocument::_gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name) {

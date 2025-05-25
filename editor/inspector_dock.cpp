@@ -841,6 +841,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	unique_resources_confirmation->add_child(container);
 
 	unique_resources_label = memnew(Label);
+	unique_resources_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	container->add_child(unique_resources_label);
 
 	unique_resources_list_tree = memnew(Tree);
@@ -851,6 +852,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	container->add_child(unique_resources_list_tree);
 
 	Label *bottom_label = memnew(Label);
+	bottom_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	bottom_label->set_text(TTRC("This cannot be undone. Are you sure?"));
 	container->add_child(bottom_label);
 

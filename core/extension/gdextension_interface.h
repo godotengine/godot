@@ -34,15 +34,16 @@
  * Together with the JSON file, you should be able to generate any binder.
  */
 
+#ifndef __cplusplus
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef __cplusplus
 typedef uint32_t char32_t;
 typedef uint16_t char16_t;
-#endif
+#else
+#include <cstddef>
+#include <cstdint>
 
-#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -2385,6 +2386,7 @@ typedef GDExtensionVariantPtr (*GDExtensionInterfaceArrayOperatorIndexConst)(GDE
 /**
  * @name array_ref
  * @since 4.1
+ * @deprecated in Godot 4.5. use `Array::operator=` instead.
  *
  * Sets an Array to be a reference to another Array object.
  *

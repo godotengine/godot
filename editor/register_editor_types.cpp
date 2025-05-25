@@ -47,6 +47,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/editor_vcs_interface.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/export/editor_export_platform_apple_embedded.h"
 #include "editor/export/editor_export_platform_extension.h"
 #include "editor/export/editor_export_platform_pc.h"
 #include "editor/export/editor_export_plugin.h"
@@ -65,6 +66,7 @@
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_shader_file.h"
+#include "editor/import/resource_importer_svg.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
@@ -83,6 +85,7 @@
 #include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_resource_tooltip_plugins.h"
+#include "editor/plugins/editor_script_plugin.h"
 #include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gpu_particles_collision_sdf_editor_plugin.h"
 #include "editor/plugins/gradient_editor_plugin.h"
@@ -96,14 +99,9 @@
 #include "editor/plugins/mesh_instance_3d_editor_plugin.h"
 #include "editor/plugins/mesh_library_editor_plugin.h"
 #include "editor/plugins/multimesh_editor_plugin.h"
-#include "editor/plugins/navigation_link_2d_editor_plugin.h"
-#include "editor/plugins/navigation_obstacle_2d_editor_plugin.h"
-#include "editor/plugins/navigation_obstacle_3d_editor_plugin.h"
-#include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_editor_plugin.h"
-#include "editor/plugins/parallax_background_editor_plugin.h"
 #include "editor/plugins/particles_editor_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
@@ -116,7 +114,6 @@
 #include "editor/plugins/shader_file_editor_plugin.h"
 #include "editor/plugins/skeleton_2d_editor_plugin.h"
 #include "editor/plugins/skeleton_3d_editor_plugin.h"
-#include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
 #include "editor/plugins/sprite_2d_editor_plugin.h"
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
@@ -130,6 +127,10 @@
 #include "editor/plugins/tool_button_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/register_exporters.h"
+#ifndef DISABLE_DEPRECATED
+#include "editor/plugins/parallax_background_editor_plugin.h"
+#include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
+#endif
 
 void register_editor_types() {
 	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");
@@ -163,6 +164,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorExportPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformPC);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformAppleEmbedded);
 	GDREGISTER_CLASS(EditorExportPlatformExtension);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPreset);
 
@@ -197,6 +199,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(ResourceImporterDynamicFont);
 	GDREGISTER_CLASS(ResourceImporterImage);
 	GDREGISTER_CLASS(ResourceImporterImageFont);
+	GDREGISTER_CLASS(ResourceImporterSVG);
 	GDREGISTER_CLASS(ResourceImporterLayeredTexture);
 	GDREGISTER_CLASS(ResourceImporterOBJ);
 	GDREGISTER_CLASS(ResourceImporterScene);
@@ -218,6 +221,7 @@ void register_editor_types() {
 	if (!Engine::get_singleton()->is_recovery_mode_hint()) {
 		EditorPlugins::add_by_type<DebugAdapterServer>();
 	}
+	EditorPlugins::add_by_type<EditorScriptPlugin>();
 	EditorPlugins::add_by_type<FontEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticlesCollisionSDF3DEditorPlugin>();
@@ -230,7 +234,6 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<MeshInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<MeshLibraryEditorPlugin>();
 	EditorPlugins::add_by_type<MultiMeshEditorPlugin>();
-	EditorPlugins::add_by_type<NavigationObstacle3DEditorPlugin>();
 	EditorPlugins::add_by_type<OccluderInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<PackedSceneEditorPlugin>();
 	EditorPlugins::add_by_type<Path3DEditorPlugin>();
@@ -240,7 +243,6 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<ShaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderFileEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton3DEditorPlugin>();
-	EditorPlugins::add_by_type<SkeletonIK3DEditorPlugin>();
 	EditorPlugins::add_by_type<SpriteFramesEditorPlugin>();
 	EditorPlugins::add_by_type<StyleBoxEditorPlugin>();
 	EditorPlugins::add_by_type<SubViewportPreviewEditorPlugin>();
@@ -251,6 +253,9 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<ThemeEditorPlugin>();
 	EditorPlugins::add_by_type<ToolButtonEditorPlugin>();
 	EditorPlugins::add_by_type<VoxelGIEditorPlugin>();
+#ifndef DISABLE_DEPRECATED
+	EditorPlugins::add_by_type<SkeletonIK3DEditorPlugin>();
+#endif
 
 	// 2D
 	EditorPlugins::add_by_type<Camera2DEditorPlugin>();
@@ -260,10 +265,6 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<GPUParticles2DEditorPlugin>();
 	EditorPlugins::add_by_type<LightOccluder2DEditorPlugin>();
 	EditorPlugins::add_by_type<Line2DEditorPlugin>();
-	EditorPlugins::add_by_type<NavigationLink2DEditorPlugin>();
-	EditorPlugins::add_by_type<NavigationObstacle2DEditorPlugin>();
-	EditorPlugins::add_by_type<NavigationPolygonEditorPlugin>();
-	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 	EditorPlugins::add_by_type<Path2DEditorPlugin>();
 	EditorPlugins::add_by_type<Polygon2DEditorPlugin>();
 	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
@@ -271,6 +272,9 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+#ifndef DISABLE_DEPRECATED
+	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
+#endif
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");

@@ -338,9 +338,10 @@ bool FuzzySearch::search(const String &p_target, FuzzySearchResult &p_result) co
 void FuzzySearch::search_all(const PackedStringArray &p_targets, Vector<FuzzySearchResult> &p_results) const {
 	p_results.clear();
 
-	for (const String &target : p_targets) {
+	for (int i = 0; i < p_targets.size(); i++) {
 		FuzzySearchResult result;
-		if (search(target, result)) {
+		result.original_index = i;
+		if (search(p_targets[i], result)) {
 			p_results.append(result);
 		}
 	}

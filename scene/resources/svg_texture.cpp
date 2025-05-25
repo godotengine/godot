@@ -45,35 +45,39 @@ Mutex SVGTexture::mutex;
 HashMap<double, SVGTexture::ScalingLevel> SVGTexture::scaling_levels;
 
 void SVGTexture::reference_scaling_level(double p_scale) {
-	if (Math::is_equal_approx(p_scale, 1.0)) {
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
 		return;
 	}
+	double scale = double(oversampling) / 64.0;
 
 	MutexLock lock(mutex);
-	ScalingLevel *sl = scaling_levels.getptr(p_scale);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
 	if (sl) {
 		sl->refcount++;
 	} else {
 		ScalingLevel new_sl;
-		scaling_levels.insert(p_scale, new_sl);
+		scaling_levels.insert(scale, new_sl);
 	}
 }
 
 void SVGTexture::unreference_scaling_level(double p_scale) {
-	if (Math::is_equal_approx(p_scale, 1.0)) {
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
 		return;
 	}
+	double scale = double(oversampling) / 64.0;
 
 	MutexLock lock(mutex);
-	ScalingLevel *sl = scaling_levels.getptr(p_scale);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
 	if (sl) {
 		sl->refcount--;
 		if (sl->refcount == 0) {
 			for (SVGTexture *tx : sl->textures) {
-				tx->_remove_scale(p_scale);
+				tx->_remove_scale(scale);
 			}
 			sl->textures.clear();
-			scaling_levels.erase(p_scale);
+			scaling_levels.erase(scale);
 		}
 	}
 }
@@ -158,24 +162,27 @@ void SVGTexture::_remove_scale(double p_scale) {
 }
 
 RID SVGTexture::_ensure_scale(double p_scale) const {
-	if (Math::is_equal_approx(p_scale, 1.0)) {
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
 		if (base_texture.is_null()) {
 			base_texture = _load_at_scale(p_scale, true);
 		}
 		return base_texture;
 	}
-	RID *rid = texture_cache.getptr(p_scale);
+	double scale = double(oversampling) / 64.0;
+
+	RID *rid = texture_cache.getptr(scale);
 	if (rid) {
 		return *rid;
 	}
 
 	MutexLock lock(mutex);
-	ScalingLevel *sl = scaling_levels.getptr(p_scale);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
 	ERR_FAIL_NULL_V_MSG(sl, RID(), "Invalid scaling level");
 	sl->textures.insert(const_cast<SVGTexture *>(this));
 
-	RID new_rid = _load_at_scale(p_scale, false);
-	texture_cache[p_scale] = new_rid;
+	RID new_rid = _load_at_scale(scale, false);
+	texture_cache[scale] = new_rid;
 	return new_rid;
 }
 
@@ -186,7 +193,9 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale * base_scale), p_scale * base_scale);
 
 	Error err = ImageLoaderSVG::create_image_from_string(img, source, p_scale * base_scale, upsample, cmap);
-	ERR_FAIL_COND_V_MSG(err != OK, RID(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
+	if (err != OK) {
+		return RID();
+	}
 #else
 	img = Image::create_empty(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale), false, Image::FORMAT_RGBA8);
 #endif
@@ -228,8 +237,6 @@ void SVGTexture::_clear() {
 
 void SVGTexture::_update_texture() {
 	_clear();
-	_ensure_scale(1.0);
-
 	emit_changed();
 }
 
@@ -243,10 +250,12 @@ Ref<Image> SVGTexture::get_image() const {
 }
 
 int SVGTexture::get_width() const {
+	_ensure_scale(1.0);
 	return size.x;
 }
 
 int SVGTexture::get_height() const {
+	_ensure_scale(1.0);
 	return size.y;
 }
 
@@ -333,7 +342,10 @@ void SVGTexture::set_size_override(const Size2i &p_size) {
 		return;
 	}
 	size_override = p_size;
-	size = base_size;
+	if (size_override.x == 0 || size_override.y == 0) {
+		_ensure_scale(1.0);
+		size = base_size;
+	}
 	if (size_override.x != 0) {
 		size.x = size_override.x;
 	}
@@ -365,10 +377,10 @@ void SVGTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_color_map"), &SVGTexture::get_color_map);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &SVGTexture::set_size_override);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source", PROPERTY_HINT_MULTILINE_TEXT), "set_source", "get_source");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE), "set_source", "get_source");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.01,10.0,0.01"), "set_base_scale", "get_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "saturation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_saturation", "get_saturation");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_map"), "set_color_map", "get_color_map");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_map", PROPERTY_HINT_DICTIONARY_TYPE, "Color;Color"), "set_color_map", "get_color_map");
 }
 
 SVGTexture::~SVGTexture() {

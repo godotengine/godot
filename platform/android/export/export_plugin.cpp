@@ -61,8 +61,6 @@
 #include "../os_android.h"
 #endif
 
-#include <string.h>
-
 static const char *ANDROID_PERMS[] = {
 	"ACCESS_CHECKIN_PROPERTIES",
 	"ACCESS_COARSE_LOCATION",
@@ -281,11 +279,10 @@ static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
 static const char *APK_ASSETS_DIRECTORY = "assets";
-static const char *AAB_ASSETS_DIRECTORY = "assetPacks/installTime/src/main/assets";
+static const char *AAB_ASSETS_DIRECTORY = "assetPackInstallTime/src/main/assets";
 
-static const int OPENGL_MIN_SDK_VERSION = 21; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
-static const int VULKAN_MIN_SDK_VERSION = 24;
-static const int DEFAULT_TARGET_SDK_VERSION = 34; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
+static const int DEFAULT_MIN_SDK_VERSION = 24; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
+static const int DEFAULT_TARGET_SDK_VERSION = 35; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
 
 #ifndef ANDROID_ENABLED
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
@@ -716,7 +713,7 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_plugins() {
 		Vector<String> plugins_filenames = list_gdap_files(plugins_dir);
 
 		if (!plugins_filenames.is_empty()) {
-			Ref<ConfigFile> config_file = memnew(ConfigFile);
+			Ref<ConfigFile> config_file;
 			for (int i = 0; i < plugins_filenames.size(); i++) {
 				PluginConfigAndroid config = PluginConfigAndroid::load_plugin_config(config_file, plugins_dir.path_join(plugins_filenames[i]));
 				if (config.valid_config) {
@@ -788,7 +785,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 			String abi = abis[abi_index].abi;
 			String dst_path = String("lib").path_join(abi).path_join(p_so.path.get_file());
 			Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_so.path);
-			Error store_err = store_in_apk(ed, dst_path, array);
+			Error store_err = store_in_apk(ed, dst_path, array, Z_NO_COMPRESSION);
 			ERR_FAIL_COND_V_MSG(store_err, store_err, "Cannot store in apk file '" + dst_path + "'.");
 		}
 	}
@@ -1953,11 +1950,6 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!enabled_deprecated_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 			}
-		} else if (p_name == "gradle_build/compress_native_libraries") {
-			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			if (bool(p_preset->get("gradle_build/compress_native_libraries")) && !gradle_build_enabled) {
-				return TTR("\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is enabled.");
-			}
 		} else if (p_name == "gradle_build/export_format") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (int(p_preset->get("gradle_build/export_format")) == EXPORT_FORMAT_AAB && !gradle_build_enabled) {
@@ -1965,7 +1957,6 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			}
 		} else if (p_name == "gradle_build/min_sdk") {
 			String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-			int min_sdk_int = VULKAN_MIN_SDK_VERSION;
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
 				if (!gradle_build_enabled) {
@@ -1974,9 +1965,9 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 				if (!min_sdk_str.is_valid_int()) {
 					return vformat(TTR("\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."), min_sdk_str);
 				} else {
-					min_sdk_int = min_sdk_str.to_int();
-					if (min_sdk_int < OPENGL_MIN_SDK_VERSION) {
-						return vformat(TTR("\"Min SDK\" cannot be lower than %d, which is the version needed by the Godot library."), OPENGL_MIN_SDK_VERSION);
+					int min_sdk_int = min_sdk_str.to_int();
+					if (min_sdk_int < DEFAULT_MIN_SDK_VERSION) {
+						return vformat(TTR("\"Min SDK\" cannot be lower than %d, which is the version needed by the Godot library."), DEFAULT_MIN_SDK_VERSION);
 					}
 				}
 			}
@@ -1985,7 +1976,7 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
 
 			String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-			int min_sdk_int = VULKAN_MIN_SDK_VERSION;
+			int min_sdk_int = DEFAULT_MIN_SDK_VERSION;
 			if (min_sdk_str.is_valid_int()) {
 				min_sdk_int = min_sdk_str.to_int();
 			}
@@ -2030,11 +2021,10 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/use_gradle_build"), false, true, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/gradle_build_directory", PROPERTY_HINT_PLACEHOLDER_TEXT, "res://android"), "", false, false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/android_source_template", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/compress_native_libraries"), false, false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK, false, true));
 	// Using String instead of int to default to an empty string (no override) with placeholder for instructions (see GH-62465).
 	// This implies doing validation that the string is a proper int.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", VULKAN_MIN_SDK_VERSION)), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_MIN_SDK_VERSION)), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
 
 #ifndef DISABLE_DEPRECATED
@@ -2522,6 +2512,13 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
 	if (!java_sdk_path.is_empty()) {
 		OS::get_singleton()->set_environment("JAVA_HOME", java_sdk_path);
+
+#ifdef UNIX_ENABLED
+		String env_path = OS::get_singleton()->get_environment("PATH");
+		if (!env_path.contains(java_sdk_path)) {
+			OS::get_singleton()->set_environment("PATH", java_sdk_path + "/bin:" + env_path);
+		}
+#endif
 	}
 
 	List<String> args;
@@ -2898,14 +2895,6 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		}
 	}
 
-	String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-	int min_sdk_int = VULKAN_MIN_SDK_VERSION;
-	if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
-		if (min_sdk_str.is_valid_int()) {
-			min_sdk_int = min_sdk_str.to_int();
-		}
-	}
-
 	String target_sdk_str = p_preset->get("gradle_build/target_sdk");
 	int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
 	if (!target_sdk_str.is_empty()) { // Empty means no override, nothing to do.
@@ -2923,12 +2912,6 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	if (current_renderer == "forward_plus") {
 		// Warning only, so don't override `valid`.
 		err += vformat(TTR("The \"%s\" renderer is designed for Desktop devices, and is not suitable for Android devices."), current_renderer);
-		err += "\n";
-	}
-
-	if (_uses_vulkan(p_preset) && min_sdk_int < VULKAN_MIN_SDK_VERSION) {
-		// Warning only, so don't override `valid`.
-		err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
 		err += "\n";
 	}
 
@@ -3502,7 +3485,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String version_name = p_preset->get_version("version/name");
 		String min_sdk_version = p_preset->get("gradle_build/min_sdk");
 		if (!min_sdk_version.is_valid_int()) {
-			min_sdk_version = itos(VULKAN_MIN_SDK_VERSION);
+			min_sdk_version = itos(DEFAULT_MIN_SDK_VERSION);
 		}
 		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
@@ -3511,7 +3494,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String enabled_abi_string = join_abis(enabled_abis, "|", false);
 		String sign_flag = should_sign ? "true" : "false";
 		String zipalign_flag = "true";
-		String compress_native_libraries_flag = bool(p_preset->get("gradle_build/compress_native_libraries")) ? "true" : "false";
 
 		Vector<String> android_libraries;
 		Vector<String> android_dependencies;
@@ -3586,7 +3568,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pplugins_maven_repos=" + combined_android_dependencies_maven_repos); // argument to specify the list of maven repos for android dependencies provided by plugins.
 		cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
-		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
 
 		// NOTE: The release keystore is not included in the verbose logging
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
@@ -3942,6 +3923,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	// Let's zip-align (must be done before signing)
 
+	static const int PAGE_SIZE_KB = 16 * 1024;
 	static const int ZIP_ALIGNMENT = 4;
 
 	// If we're not signing the apk, then the next step should be the last.
@@ -3993,7 +3975,12 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		if (!info.compression_method) {
 			// Uncompressed file => Align
 			long new_offset = file_offset + bias;
-			padding = (ZIP_ALIGNMENT - (new_offset % ZIP_ALIGNMENT)) % ZIP_ALIGNMENT;
+			const char *ext = strrchr(fname, '.');
+			if (ext && strcmp(ext, ".so") == 0) {
+				padding = (PAGE_SIZE_KB - (new_offset % PAGE_SIZE_KB)) % PAGE_SIZE_KB;
+			} else {
+				padding = (ZIP_ALIGNMENT - (new_offset % ZIP_ALIGNMENT)) % ZIP_ALIGNMENT;
+			}
 		}
 
 		memset(extra + info.size_file_extra, 0, padding);

@@ -246,7 +246,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				if (step < 1) {
 					double divisor = 1.0 / step;
 
-					if (trunc(divisor) == divisor) {
+					if (std::trunc(divisor) == divisor) {
 						step = 1.0;
 					}
 				}

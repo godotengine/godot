@@ -738,7 +738,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 	Transform3D emission_xform;
 	Basis velocity_xform;
 	if (!local_coords) {
-		emission_xform = get_global_transform();
+		emission_xform = get_global_transform_interpolated();
 		velocity_xform = emission_xform.basis;
 	}
 

@@ -43,6 +43,8 @@
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
+#include "thirdparty/grisu2/grisu2.h"
+
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
 #endif
@@ -56,11 +58,6 @@ static const int MAX_DECIMALS = 32;
 static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
 	return (is_ascii_upper_case(c) ? (c + ('a' - 'A')) : c);
 }
-
-const char CharString::_null = 0;
-const char16_t Char16String::_null = 0;
-const char32_t String::_null = 0;
-const char32_t String::_replacement_char = 0xfffd;
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
@@ -89,135 +86,6 @@ bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 		return false;
 	}
 }
-
-/*************************************************************************/
-/*  Char16String                                                         */
-/*************************************************************************/
-
-bool Char16String::operator<(const Char16String &p_right) const {
-	if (length() == 0) {
-		return p_right.length() != 0;
-	}
-
-	return str_compare(get_data(), p_right.get_data()) < 0;
-}
-
-Char16String &Char16String::operator+=(char16_t p_char) {
-	const int lhs_len = length();
-	resize(lhs_len + 2);
-
-	char16_t *dst = ptrw();
-	dst[lhs_len] = p_char;
-	dst[lhs_len + 1] = 0;
-
-	return *this;
-}
-
-void Char16String::operator=(const char16_t *p_cstr) {
-	copy_from(p_cstr);
-}
-
-const char16_t *Char16String::get_data() const {
-	if (size()) {
-		return &operator[](0);
-	} else {
-		return u"";
-	}
-}
-
-void Char16String::copy_from(const char16_t *p_cstr) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	const char16_t *s = p_cstr;
-	for (; *s; s++) {
-	}
-	size_t len = s - p_cstr;
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	Error err = resize(++len); // include terminating null char
-
-	ERR_FAIL_COND_MSG(err != OK, "Failed to copy char16_t string.");
-
-	memcpy(ptrw(), p_cstr, len * sizeof(char16_t));
-}
-
-/*************************************************************************/
-/*  CharString                                                           */
-/*************************************************************************/
-
-bool CharString::operator<(const CharString &p_right) const {
-	if (length() == 0) {
-		return p_right.length() != 0;
-	}
-
-	return str_compare(get_data(), p_right.get_data()) < 0;
-}
-
-bool CharString::operator==(const CharString &p_right) const {
-	if (length() == 0) {
-		// True if both have length 0, false if only p_right has a length
-		return p_right.length() == 0;
-	} else if (p_right.length() == 0) {
-		// False due to unequal length
-		return false;
-	}
-
-	return strcmp(ptr(), p_right.ptr()) == 0;
-}
-
-CharString &CharString::operator+=(char p_char) {
-	const int lhs_len = length();
-	resize(lhs_len + 2);
-
-	char *dst = ptrw();
-	dst[lhs_len] = p_char;
-	dst[lhs_len + 1] = 0;
-
-	return *this;
-}
-
-void CharString::operator=(const char *p_cstr) {
-	copy_from(p_cstr);
-}
-
-const char *CharString::get_data() const {
-	if (size()) {
-		return &operator[](0);
-	} else {
-		return "";
-	}
-}
-
-void CharString::copy_from(const char *p_cstr) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	size_t len = strlen(p_cstr);
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	Error err = resize(++len); // include terminating null char
-
-	ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
-
-	memcpy(ptrw(), p_cstr, len);
-}
-
-/*************************************************************************/
-/*  String                                                               */
-/*************************************************************************/
 
 Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path, String &r_fragment) const {
 	// Splits the URL into scheme, host, port, path, fragment. Strip credentials when present.
@@ -1579,7 +1447,7 @@ String String::num(double p_num, int p_decimals) {
 	}
 
 	if (Math::is_inf(p_num)) {
-		if (signbit(p_num)) {
+		if (std::signbit(p_num)) {
 			return "-inf";
 		} else {
 			return "inf";
@@ -1592,7 +1460,7 @@ String String::num(double p_num, int p_decimals) {
 		if (abs_num > 10) {
 			// We want to align the digits to the above reasonable default, so we only
 			// need to subtract log10 for numbers with a positive power of ten.
-			p_decimals -= (int)floor(log10(abs_num));
+			p_decimals -= (int)std::floor(std::log10(abs_num));
 		}
 	}
 	if (p_decimals > MAX_DECIMALS) {
@@ -1758,7 +1626,7 @@ String String::num_real(double p_num, bool p_trailing) {
 	// to subtract log10 for numbers with a positive power of ten magnitude.
 	const double abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
-		decimals -= (int)floor(log10(abs_num));
+		decimals -= (int)std::floor(std::log10(abs_num));
 	}
 
 	return num(p_num, decimals);
@@ -1781,7 +1649,7 @@ String String::num_real(float p_num, bool p_trailing) {
 	// to subtract log10 for numbers with a positive power of ten magnitude.
 	const float abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
-		decimals -= (int)floor(log10(abs_num));
+		decimals -= (int)std::floor(std::log10(abs_num));
 	}
 	return num(p_num, decimals);
 }
@@ -1790,28 +1658,18 @@ String String::num_scientific(double p_num) {
 	if (Math::is_nan(p_num) || Math::is_inf(p_num)) {
 		return num(p_num, 0);
 	}
+	char buffer[256];
+	char *last = grisu2::to_chars(buffer, p_num);
+	return String::ascii(Span(buffer, last - buffer));
+}
 
-	char buf[256];
-
-#if defined(__GNUC__) || defined(_MSC_VER)
-
-#if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
-	// MinGW requires _set_output_format() to conform to C99 output for printf
-	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
-#endif
-	snprintf(buf, 256, "%lg", p_num);
-
-#if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
-	_set_output_format(old_exponent_format);
-#endif
-
-#else
-	sprintf(buf, "%.16lg", p_num);
-#endif
-
-	buf[255] = 0;
-
-	return buf;
+String String::num_scientific(float p_num) {
+	if (Math::is_nan(p_num) || Math::is_inf(p_num)) {
+		return num(p_num, 0);
+	}
+	char buffer[256];
+	char *last = grisu2::to_chars(buffer, p_num);
+	return String::ascii(Span(buffer, last - buffer));
 }
 
 String String::md5(const uint8_t *p_md5) {
@@ -1922,13 +1780,6 @@ Error String::append_ascii(const Span<char> &p_range) {
 	}
 	*dst = _null;
 	return decode_failed ? ERR_INVALID_DATA : OK;
-}
-
-String String::utf8(const char *p_utf8, int p_len) {
-	String ret;
-	ret.append_utf8(p_utf8, p_len);
-
-	return ret;
 }
 
 Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
@@ -2198,13 +2049,6 @@ CharString String::utf8(Vector<uint8_t> *r_ch_length_map) const {
 	*cdst = 0; //trailing zero
 
 	return utf8s;
-}
-
-String String::utf16(const char16_t *p_utf16, int p_len) {
-	String ret;
-	ret.append_utf16(p_utf16, p_len, true);
-
-	return ret;
 }
 
 Error String::append_utf16(const char16_t *p_utf16, int p_len, bool p_default_little_endian) {
@@ -3977,34 +3821,28 @@ bool String::matchn(const String &p_wildcard) const {
 }
 
 String String::format(const Variant &values, const String &placeholder) const {
-	String new_string = String(ptr());
+	String new_string = *this;
 
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
 
 		for (int i = 0; i < values_arr.size(); i++) {
-			String i_as_str = String::num_int64(i);
-
 			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
 				Array value_arr = values_arr[i];
 
 				if (value_arr.size() == 2) {
-					Variant v_key = value_arr[0];
-					String key = v_key;
-
-					Variant v_val = value_arr[1];
-					String val = v_val;
+					String key = value_arr[0];
+					String val = value_arr[1];
 
 					new_string = new_string.replace(placeholder.replace("_", key), val);
 				} else {
-					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
+					ERR_PRINT(vformat("Invalid format: the inner Array at index %d needs to contain only 2 elements, as a key-value pair.", i).ascii().get_data());
 				}
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
-				Variant v_val = values_arr[i];
-				String val = v_val;
+				String val = values_arr[i];
 
 				if (placeholder.contains_char('_')) {
-					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
+					new_string = new_string.replace(placeholder.replace("_", String::num_int64(i)), val);
 				} else {
 					new_string = new_string.replace_first(placeholder, val);
 				}
@@ -5755,7 +5593,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					double value = values[value_index];
-					bool is_negative = signbit(value);
+					bool is_negative = std::signbit(value);
 					String str = String::num(Math::abs(value), min_decimals);
 					const bool is_finite = Math::is_finite(value);
 

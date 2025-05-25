@@ -6,7 +6,10 @@
 #include "rtcore_device.h"
 
 RTC_NAMESPACE_BEGIN
-  
+
+/* Opaque traversable type */
+typedef struct RTCTraversableTy* RTCTraversable;
+
 /* Forward declarations for ray structures */
 struct RTCRayHit;
 struct RTCRayHit4;
@@ -16,11 +19,12 @@ struct RTCRayHit16;
 /* Scene flags */
 enum RTCSceneFlags
 {
-  RTC_SCENE_FLAG_NONE                    = 0,
-  RTC_SCENE_FLAG_DYNAMIC                 = (1 << 0),
-  RTC_SCENE_FLAG_COMPACT                 = (1 << 1),
-  RTC_SCENE_FLAG_ROBUST                  = (1 << 2),
-  RTC_SCENE_FLAG_FILTER_FUNCTION_IN_ARGUMENTS = (1 << 3)
+  RTC_SCENE_FLAG_NONE                         = 0,
+  RTC_SCENE_FLAG_DYNAMIC                      = (1 << 0),
+  RTC_SCENE_FLAG_COMPACT                      = (1 << 1),
+  RTC_SCENE_FLAG_ROBUST                       = (1 << 2),
+  RTC_SCENE_FLAG_FILTER_FUNCTION_IN_ARGUMENTS = (1 << 3),
+  RTC_SCENE_FLAG_PREFETCH_USM_SHARED_ON_GPU   = (1 << 4),
 };
 
 /* Additional arguments for rtcIntersect1/4/8/16 calls */
@@ -91,6 +95,8 @@ RTC_API void rtcRetainScene(RTCScene scene);
 /* Releases the scene (decrements the reference count). */
 RTC_API void rtcReleaseScene(RTCScene scene);
 
+/* Returns the traversable object of the scene which can be passed to ray queries. */
+RTC_API RTCTraversable rtcGetSceneTraversable(RTCScene scene);
 
 /* Attaches the geometry to a scene. */
 RTC_API unsigned int rtcAttachGeometry(RTCScene scene, RTCGeometry geometry);
@@ -106,12 +112,6 @@ RTC_API RTCGeometry rtcGetGeometry(RTCScene scene, unsigned int geomID);
 
 /* Gets a geometry handle from the scene. This function is thread safe and should NOT get used during rendering. */
 RTC_API RTCGeometry rtcGetGeometryThreadSafe(RTCScene scene, unsigned int geomID);
-
-/* Gets the user-defined data pointer of the geometry. This function is not thread safe and should get used during rendering. */
-RTC_SYCL_API void* rtcGetGeometryUserDataFromScene(RTCScene scene, unsigned int geomID);
-
-/* Returns the interpolated transformation of an instance for the specified time. */
-RTC_SYCL_API void rtcGetGeometryTransformFromScene(RTCScene scene, unsigned int geomID, float time, enum RTCFormat format, void* xfm);
 
 
 /* Commits the scene. */
@@ -142,6 +142,13 @@ RTC_API void rtcGetSceneBounds(RTCScene scene, struct RTCBounds* bounds_o);
 /* Returns the linear axis-aligned bounds of the scene. */
 RTC_API void rtcGetSceneLinearBounds(RTCScene scene, struct RTCLinearBounds* bounds_o);
 
+#if !defined(__SYCL_DEVICE_ONLY__)
+
+/* Gets the user-defined data pointer of the geometry. This function is not thread safe and should get used during rendering. */
+RTC_SYCL_API void* rtcGetGeometryUserDataFromScene(RTCScene scene, unsigned int geomID);
+
+/* Returns the interpolated transformation of an instance for the specified time. */
+RTC_SYCL_API void rtcGetGeometryTransformFromScene(RTCScene scene, unsigned int geomID, float time, enum RTCFormat format, void* xfm);
 
 /* Perform a closest point query of the scene. */
 RTC_API bool rtcPointQuery(RTCScene scene, struct RTCPointQuery* query, struct RTCPointQueryContext* context, RTCPointQueryFunction queryFunc, void* userPtr);
@@ -231,6 +238,102 @@ RTC_API void rtcForwardOccluded16(const int* valid, const struct RTCOccludedFunc
 /* Forwards occlusion ray packet of size 16 inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
 RTC_API void rtcForwardOccluded16Ex(const int* valid, const struct RTCOccludedFunctionNArguments* args, RTCScene scene, struct RTCRay16* ray, unsigned int instID, unsigned int instPrimID);
 
+#endif
+
+/* Gets the user-defined data pointer of the geometry. This function is not thread safe and should get used during rendering. */
+RTC_SYCL_API void* rtcGetGeometryUserDataFromTraversable(RTCTraversable traversable, unsigned int geomID);
+
+/* Returns the interpolated transformation of an instance for the specified time. */
+RTC_SYCL_API void rtcGetGeometryTransformFromTraversable(RTCTraversable traversable, unsigned int geomID, float time, enum RTCFormat format, void* xfm);
+
+/* Perform a closest point query of the scene. */
+RTC_API bool rtcTraversablePointQuery(RTCTraversable traversable, struct RTCPointQuery* query, struct RTCPointQueryContext* context, RTCPointQueryFunction queryFunc, void* userPtr);
+
+/* Perform a closest point query with a packet of 4 points with the scene. */
+RTC_API bool rtcTraversablePointQuery4(const int* valid, RTCTraversable traversable, struct RTCPointQuery4* query, struct RTCPointQueryContext* context, RTCPointQueryFunction queryFunc, void** userPtr);
+
+/* Perform a closest point query with a packet of 4 points with the scene. */
+RTC_API bool rtcTraversablePointQuery8(const int* valid, RTCTraversable traversable, struct RTCPointQuery8* query, struct RTCPointQueryContext* context, RTCPointQueryFunction queryFunc, void** userPtr);
+
+/* Perform a closest point query with a packet of 4 points with the scene. */
+RTC_API bool rtcTraversablePointQuery16(const int* valid, RTCTraversable traversable, struct RTCPointQuery16* query, struct RTCPointQueryContext* context, RTCPointQueryFunction queryFunc, void** userPtr);
+
+
+/* Intersects a single ray with the scene. */
+RTC_SYCL_API void rtcTraversableIntersect1(RTCTraversable traversable, struct RTCRayHit* rayhit, struct RTCIntersectArguments* args RTC_OPTIONAL_ARGUMENT);
+
+/* Intersects a packet of 4 rays with the scene. */
+RTC_API void rtcTraversableIntersect4(const int* valid, RTCTraversable traversable, struct RTCRayHit4* rayhit, struct RTCIntersectArguments* args RTC_OPTIONAL_ARGUMENT);
+
+/* Intersects a packet of 8 rays with the scene. */
+RTC_API void rtcTraversableIntersect8(const int* valid, RTCTraversable traversable, struct RTCRayHit8* rayhit, struct RTCIntersectArguments* args RTC_OPTIONAL_ARGUMENT);
+
+/* Intersects a packet of 16 rays with the scene. */
+RTC_API void rtcTraversableIntersect16(const int* valid, RTCTraversable traversable, struct RTCRayHit16* rayhit, struct RTCIntersectArguments* args RTC_OPTIONAL_ARGUMENT);
+
+
+/* Forwards ray inside user geometry callback. */
+RTC_SYCL_API void rtcTraversableForwardIntersect1(const struct RTCIntersectFunctionNArguments* args, RTCTraversable traversable, struct RTCRay* ray, unsigned int instID);
+
+/* Forwards ray inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
+RTC_SYCL_API void rtcTraversableForwardIntersect1Ex(const struct RTCIntersectFunctionNArguments* args, RTCTraversable traversable, struct RTCRay* ray, unsigned int instID, unsigned int instPrimID);
+
+/* Forwards ray packet of size 4 inside user geometry callback. */
+RTC_API void rtcTraversableForwardIntersect4(const int* valid, const struct RTCIntersectFunctionNArguments* args, RTCTraversable traversable, struct RTCRay4* ray, unsigned int instID);
+
+/* Forwards ray packet of size 4 inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
+RTC_API void rtcTraversableForwardIntersect4Ex(const int* valid, const struct RTCIntersectFunctionNArguments* args, RTCTraversable traversable, struct RTCRay4* ray, unsigned int instID, unsigned int primInstID);
+
+/* Forwards ray packet of size 8 inside user geometry callback. */
+RTC_API void rtcTraversableForwardIntersect8(const int* valid, const struct RTCIntersectFunctionNArguments* args, RTCTraversable traversable, struct RTCRay8* ray, unsigned int instID);
+
+/* Forwards ray packet of size 4 inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
+RTC_API void rtcTraversableForwardIntersect8Ex(const int* valid, const struct RTCIntersectFunctionNArguments* args, RTCTraversable traversable, struct RTCRay8* ray, unsigned int instID, unsigned int primInstID);
+
+/* Forwards ray packet of size 16 inside user geometry callback. */
+RTC_API void rtcTraversableForwardIntersect16(const int* valid, const struct RTCIntersectFunctionNArguments* args, RTCTraversable traversable, struct RTCRay16* ray, unsigned int instID);
+
+/* Forwards ray packet of size 4 inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
+RTC_API void rtcTraversableForwardIntersect16Ex(const int* valid, const struct RTCIntersectFunctionNArguments* args, RTCTraversable traversable, struct RTCRay16* ray, unsigned int instID, unsigned int primInstID);
+
+
+/* Tests a single ray for occlusion with the scene. */
+RTC_SYCL_API void rtcTraversableOccluded1(RTCTraversable traversable, struct RTCRay* ray, struct RTCOccludedArguments* args RTC_OPTIONAL_ARGUMENT);
+
+/* Tests a packet of 4 rays for occlusion occluded with the scene. */
+RTC_API void rtcTraversableOccluded4(const int* valid, RTCTraversable traversable, struct RTCRay4* ray, struct RTCOccludedArguments* args RTC_OPTIONAL_ARGUMENT);
+
+/* Tests a packet of 8 rays for occlusion with the scene. */
+RTC_API void rtcTraversableOccluded8(const int* valid, RTCTraversable traversable, struct RTCRay8* ray, struct RTCOccludedArguments* args RTC_OPTIONAL_ARGUMENT);
+
+/* Tests a packet of 16 rays for occlusion with the scene. */
+RTC_API void rtcTraversableOccluded16(const int* valid, RTCTraversable traversable, struct RTCRay16* ray, struct RTCOccludedArguments* args RTC_OPTIONAL_ARGUMENT);
+
+
+/* Forwards single occlusion ray inside user geometry callback. */
+RTC_SYCL_API void rtcTraversableForwardOccluded1(const struct RTCOccludedFunctionNArguments* args, RTCTraversable traversable, struct RTCRay* ray, unsigned int instID);
+
+/* Forwards single occlusion ray inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
+RTC_SYCL_API void rtcTraversableForwardOccluded1Ex(const struct RTCOccludedFunctionNArguments* args, RTCTraversable traversable, struct RTCRay* ray, unsigned int instID, unsigned int instPrimID);
+
+/* Forwards occlusion ray packet of size 4 inside user geometry callback. */
+RTC_API void rtcTraversableForwardOccluded4(const int* valid, const struct RTCOccludedFunctionNArguments* args, RTCTraversable traversable, struct RTCRay4* ray, unsigned int instID);
+
+/* Forwards occlusion ray packet of size 4 inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
+RTC_API void rtcTraversableForwardOccluded4Ex(const int* valid, const struct RTCOccludedFunctionNArguments* args, RTCTraversable traversable, struct RTCRay4* ray, unsigned int instID, unsigned int instPrimID);
+
+/* Forwards occlusion ray packet of size 8 inside user geometry callback. */
+RTC_API void rtcTraversableForwardOccluded8(const int* valid, const struct RTCOccludedFunctionNArguments* args, RTCTraversable traversable, struct RTCRay8* ray, unsigned int instID);
+
+/* Forwards occlusion ray packet of size 8 inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
+RTC_API void rtcTraversableForwardOccluded8Ex(const int* valid, const struct RTCOccludedFunctionNArguments* args, RTCTraversable traversable, struct RTCRay8* ray, unsigned int instID, unsigned int instPrimID);
+
+/* Forwards occlusion ray packet of size 16 inside user geometry callback. */
+RTC_API void rtcTraversableForwardOccluded16(const int* valid, const struct RTCOccludedFunctionNArguments* args, RTCTraversable traversable, struct RTCRay16* ray, unsigned int instID);
+
+/* Forwards occlusion ray packet of size 16 inside user geometry callback. Extended to handle instance arrays using instPrimID parameter. */
+RTC_API void rtcTraversableForwardOccluded16Ex(const int* valid, const struct RTCOccludedFunctionNArguments* args, RTCTraversable traversable, struct RTCRay16* ray, unsigned int instID, unsigned int instPrimID);
+
 
 /*! collision callback */
 struct RTCCollision { unsigned int geomID0; unsigned int primID0; unsigned int geomID1; unsigned int primID1; };
@@ -238,7 +341,7 @@ typedef void (*RTCCollideFunc) (void* userPtr, struct RTCCollision* collisions, 
 
 /*! Performs collision detection of two scenes */
 RTC_API void rtcCollide (RTCScene scene0, RTCScene scene1, RTCCollideFunc callback, void* userPtr);
- 
+
 #if defined(__cplusplus)
 
 /* Helper for easily combining scene flags */

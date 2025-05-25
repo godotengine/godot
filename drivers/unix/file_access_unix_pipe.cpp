@@ -35,12 +35,12 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cerrno>
 
 Error FileAccessUnixPipe::open_existing(int p_rfd, int p_wfd, bool p_blocking) {
 	// Open pipe using handles created by pipe(fd) call in the OS.execute_with_pipe.

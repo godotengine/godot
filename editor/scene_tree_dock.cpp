@@ -1182,6 +1182,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+			if (determine_path_automatically) {
+				new_scene_from_dialog->set_current_dir(editor_data->get_edited_scene_root()->get_scene_file_path().get_base_dir());
+			} else {
+				determine_path_automatically = true;
+			}
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
@@ -1229,8 +1234,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			for (const Node *node : selection) {
 				String class_name;
 				Ref<Script> script_base = node->get_script();
-				if (script_base.is_valid()) {
+				while (script_base.is_valid()) {
 					class_name = script_base->get_global_name();
+					if (!class_name.is_empty()) {
+						break;
+					}
+					script_base = script_base->get_base_script();
 				}
 				if (class_name.is_empty()) {
 					class_name = node->get_class();
@@ -4069,6 +4078,7 @@ void SceneTreeDock::set_filter(const String &p_filter) {
 
 void SceneTreeDock::save_branch_to_file(const String &p_directory) {
 	new_scene_from_dialog->set_current_dir(p_directory);
+	determine_path_automatically = false;
 	_tool_selected(TOOL_NEW_SCENE_FROM);
 }
 
@@ -4846,6 +4856,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	delete_dialog->add_child(vb);
 
 	delete_dialog_label = memnew(Label);
+	delete_dialog_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	vb->add_child(delete_dialog_label);
 
 	delete_tracks_checkbox = memnew(CheckBox(TTR("Delete Related Animation Tracks")));

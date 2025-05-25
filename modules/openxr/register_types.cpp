@@ -41,13 +41,13 @@
 
 #ifndef DISABLE_DEPRECATED
 #include "extensions/openxr_extension_wrapper_extension.h"
+#include "scene/openxr_hand.h"
 #endif // DISABLE_DEPRECATED
 
 #include "scene/openxr_composition_layer.h"
 #include "scene/openxr_composition_layer_cylinder.h"
 #include "scene/openxr_composition_layer_equirect.h"
 #include "scene/openxr_composition_layer_quad.h"
-#include "scene/openxr_hand.h"
 #include "scene/openxr_visibility_mask.h"
 
 #include "extensions/openxr_composition_layer_depth_extension.h"
@@ -229,7 +229,9 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRCompositionLayerCylinder);
 		GDREGISTER_CLASS(OpenXRCompositionLayerQuad);
 
+#ifndef DISABLE_DEPRECATED
 		GDREGISTER_CLASS(OpenXRHand);
+#endif
 
 		GDREGISTER_CLASS(OpenXRVisibilityMask);
 

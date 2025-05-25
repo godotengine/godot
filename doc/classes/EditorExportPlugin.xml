@@ -251,6 +251,57 @@
 				If no modifications are needed, then an empty [PackedByteArray] should be returned.
 			</description>
 		</method>
+		<method name="add_apple_embedded_platform_bundle_file">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Adds an Apple embedded platform bundle file from the given [param path] to the exported project.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_cpp_code">
+			<return type="void" />
+			<param index="0" name="code" type="String" />
+			<description>
+				Adds C++ code to the Apple embedded platform export. The final code is created from the code appended by each active export plugin.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_embedded_framework">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Adds a dynamic library (*.dylib, *.framework) to the Linking Phase in the Apple embedded platform's Xcode project and embeds it into the resulting binary.
+				[b]Note:[/b] For static libraries (*.a), this works in the same way as [method add_apple_embedded_platform_framework].
+				[b]Note:[/b] This method should not be used for System libraries as they are already present on the device.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_framework">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Adds a static library (*.a) or a dynamic library (*.dylib, *.framework) to the Linking Phase to the Apple embedded platform's Xcode project.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_linker_flags">
+			<return type="void" />
+			<param index="0" name="flags" type="String" />
+			<description>
+				Adds linker flags for the Apple embedded platform export.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_plist_content">
+			<return type="void" />
+			<param index="0" name="plist_content" type="String" />
+			<description>
+				Adds additional fields to the Apple embedded platform's project Info.plist file.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_project_static_lib">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Adds a static library from the given [param path] to the Apple embedded platform project.
+			</description>
+		</method>
 		<method name="add_file">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
@@ -262,55 +313,55 @@
 				[param file] will not be imported, so consider using [method _customize_resource] to remap imported resources.
 			</description>
 		</method>
-		<method name="add_ios_bundle_file">
+		<method name="add_ios_bundle_file" deprecated="Use [method add_apple_embedded_platform_bundle_file] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds an iOS bundle file from the given [param path] to the exported project.
 			</description>
 		</method>
-		<method name="add_ios_cpp_code">
+		<method name="add_ios_cpp_code" deprecated="Use [method add_apple_embedded_platform_cpp_code] instead.">
 			<return type="void" />
 			<param index="0" name="code" type="String" />
 			<description>
-				Adds a C++ code to the iOS export. The final code is created from the code appended by each active export plugin.
+				Adds C++ code to the iOS export. The final code is created from the code appended by each active export plugin.
 			</description>
 		</method>
-		<method name="add_ios_embedded_framework">
+		<method name="add_ios_embedded_framework" deprecated="Use [method add_apple_embedded_platform_embedded_framework] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
-				[b]Note:[/b] For static libraries (*.a) works in same way as [method add_ios_framework].
+				[b]Note:[/b] For static libraries (*.a), this works the in same way as [method add_apple_embedded_platform_framework].
 				[b]Note:[/b] This method should not be used for System libraries as they are already present on the device.
 			</description>
 		</method>
-		<method name="add_ios_framework">
+		<method name="add_ios_framework" deprecated="Use [method add_apple_embedded_platform_framework] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Adds a static library (*.a) or dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project.
+				Adds a static library (*.a) or a dynamic library (*.dylib, *.framework) to the Linking Phase to the iOS Xcode project.
 			</description>
 		</method>
-		<method name="add_ios_linker_flags">
+		<method name="add_ios_linker_flags" deprecated="Use [method add_apple_embedded_platform_linker_flags] instead.">
 			<return type="void" />
 			<param index="0" name="flags" type="String" />
 			<description>
 				Adds linker flags for the iOS export.
 			</description>
 		</method>
-		<method name="add_ios_plist_content">
+		<method name="add_ios_plist_content" deprecated="Use [method add_apple_embedded_platform_plist_content] instead.">
 			<return type="void" />
 			<param index="0" name="plist_content" type="String" />
 			<description>
-				Adds content for iOS Property List files.
+				Adds additional fields to the iOS project Info.plist file.
 			</description>
 		</method>
-		<method name="add_ios_project_static_lib">
+		<method name="add_ios_project_static_lib" deprecated="Use [method add_apple_embedded_platform_project_static_lib] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Adds a static lib from the given [param path] to the iOS project.
+				Adds a static library from the given [param path] to the iOS project.
 			</description>
 		</method>
 		<method name="add_macos_plugin_file">

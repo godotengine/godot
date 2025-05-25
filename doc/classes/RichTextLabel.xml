@@ -106,6 +106,14 @@
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
+		<method name="get_line_height" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns the height of the line found at the provided index.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
+			</description>
+		</method>
 		<method name="get_line_offset">
 			<return type="float" />
 			<param index="0" name="line" type="int" />
@@ -121,6 +129,14 @@
 				Returns the indexes of the first and last visible characters for the given [param line], as a [Vector2i].
 				[b]Note:[/b] If [member visible_characters_behavior] is set to [constant TextServer.VC_CHARS_BEFORE_SHAPING] only visible wrapped lines are counted.
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+			</description>
+		</method>
+		<method name="get_line_width" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns the width of the line found at the provided index.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">

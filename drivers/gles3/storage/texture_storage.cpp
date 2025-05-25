@@ -1481,6 +1481,7 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
 		tinfo.bytes = t->total_data_size;
+		tinfo.type = static_cast<RenderingServer::TextureType>(t->type);
 
 		switch (t->type) {
 			case Texture::TYPE_3D:

@@ -51,20 +51,25 @@
 #include "editor/editor_settings.h"
 #endif
 
-void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("#");
+Vector<String> GDScriptLanguage::get_comment_delimiters() const {
+	static const Vector<String> delimiters = { "#" };
+	return delimiters;
 }
 
-void GDScriptLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("##");
+Vector<String> GDScriptLanguage::get_doc_comment_delimiters() const {
+	static const Vector<String> delimiters = { "##" };
+	return delimiters;
 }
 
-void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("\" \"");
-	p_delimiters->push_back("' '");
-	p_delimiters->push_back("\"\"\" \"\"\"");
-	p_delimiters->push_back("''' '''");
+Vector<String> GDScriptLanguage::get_string_delimiters() const {
+	static const Vector<String> delimiters = {
+		"\" \"",
+		"' '",
+		"\"\"\" \"\"\"",
+		"''' '''",
+	};
 	// NOTE: StringName, NodePath and r-strings are not listed here.
+	return delimiters;
 }
 
 bool GDScriptLanguage::is_using_templates() {
@@ -177,7 +182,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 			}
 		}
 		return false;
-	} else {
+	} else if (r_functions) {
 		const GDScriptParser::ClassNode *cl = parser.get_tree();
 		HashMap<int, String> funcs;
 
@@ -1491,7 +1496,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	static const char *_keywords_with_space[] = {
 		"and", "not", "or", "in", "as", "class", "class_name", "extends", "is", "func", "signal", "await",
-		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "when", "while",
+		"const", "enum", "abstract", "static", "var", "if", "elif", "else", "for", "match", "when", "while",
 		nullptr
 	};
 
@@ -1524,7 +1529,6 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	for (const StringName &util_func_name : utility_func_names) {
 		ScriptLanguage::CodeCompletionOption option(util_func_name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
-		option.insert_text += "(";
 		if (p_add_braces) {
 			option.insert_text += "(";
 			option.display += U"(\u2026)"; // As all utility functions contain an argument or more, this is hardcoded here.

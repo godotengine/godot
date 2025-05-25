@@ -115,7 +115,7 @@ class GDExtension : public Resource {
 	void clear_instance_bindings();
 #endif
 
-	static HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
+	static inline HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
 
 protected:
 	static void _bind_methods();
@@ -189,7 +189,7 @@ public:
 #ifdef TOOLS_ENABLED
 class GDExtensionEditorPlugins {
 private:
-	static Vector<StringName> extension_classes;
+	static inline Vector<StringName> extension_classes;
 
 protected:
 	friend class EditorNode;
@@ -197,8 +197,8 @@ protected:
 	// Since this in core, we can't directly reference EditorNode, so it will
 	// set these function pointers in its constructor.
 	typedef void (*EditorPluginRegisterFunc)(const StringName &p_class_name);
-	static EditorPluginRegisterFunc editor_node_add_plugin;
-	static EditorPluginRegisterFunc editor_node_remove_plugin;
+	static inline EditorPluginRegisterFunc editor_node_add_plugin = nullptr;
+	static inline EditorPluginRegisterFunc editor_node_remove_plugin = nullptr;
 
 public:
 	static void add_extension_class(const StringName &p_class_name);
@@ -218,10 +218,10 @@ protected:
 	// is initialized even _before_ it gets instantiated, as we need to rely on
 	// this method while initializing the engine.
 	typedef void (*EditorHelpLoadXmlBufferFunc)(const uint8_t *p_buffer, int p_size);
-	static EditorHelpLoadXmlBufferFunc editor_help_load_xml_buffer;
+	static inline EditorHelpLoadXmlBufferFunc editor_help_load_xml_buffer = nullptr;
 
 	typedef void (*EditorHelpRemoveClassFunc)(const String &p_class);
-	static EditorHelpRemoveClassFunc editor_help_remove_class;
+	static inline EditorHelpRemoveClassFunc editor_help_remove_class = nullptr;
 
 public:
 	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);

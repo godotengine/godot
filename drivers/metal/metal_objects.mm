@@ -597,37 +597,44 @@ void MDCommandBuffer::_render_clear_render_area() {
 	MDRenderPass const &pass = *render.pass;
 	MDSubpass const &subpass = render.get_subpass();
 
-	// First determine attachments that should be cleared.
-	LocalVector<RDD::AttachmentClear> clears;
-	clears.reserve(subpass.color_references.size() + /* possible depth stencil clear */ 1);
-
-	for (uint32_t i = 0; i < subpass.color_references.size(); i++) {
-		uint32_t idx = subpass.color_references[i].attachment;
-		if (idx != RDD::AttachmentReference::UNUSED && pass.attachments[idx].shouldClear(subpass, false)) {
-			clears.push_back({ .aspect = RDD::TEXTURE_ASPECT_COLOR_BIT, .color_attachment = idx, .value = render.clear_values[idx] });
-		}
-	}
 	uint32_t ds_index = subpass.depth_stencil_reference.attachment;
-	bool shouldClearDepth = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, false));
-	bool shouldClearStencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
-	if (shouldClearDepth || shouldClearStencil) {
-		MDAttachment const &attachment = pass.attachments[ds_index];
-		BitField<RDD::TextureAspectBits> bits = {};
-		if (shouldClearDepth && attachment.type & MDAttachmentType::Depth) {
-			bits.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
-		}
-		if (shouldClearStencil && attachment.type & MDAttachmentType::Stencil) {
-			bits.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
-		}
+	bool clear_depth = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, false));
+	bool clear_stencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
 
-		clears.push_back({ .aspect = bits, .color_attachment = ds_index, .value = render.clear_values[ds_index] });
-	}
-
-	if (clears.is_empty()) {
+	uint32_t color_count = subpass.color_references.size();
+	uint32_t clears_size = color_count + (clear_depth || clear_stencil ? 1 : 0);
+	if (clears_size == 0) {
 		return;
 	}
 
-	render_clear_attachments(clears, { render.render_area });
+	RDD::AttachmentClear *clears = ALLOCA_ARRAY(RDD::AttachmentClear, clears_size);
+	uint32_t clears_count = 0;
+
+	for (uint32_t i = 0; i < color_count; i++) {
+		uint32_t idx = subpass.color_references[i].attachment;
+		if (idx != RDD::AttachmentReference::UNUSED && pass.attachments[idx].shouldClear(subpass, false)) {
+			clears[clears_count++] = { .aspect = RDD::TEXTURE_ASPECT_COLOR_BIT, .color_attachment = idx, .value = render.clear_values[idx] };
+		}
+	}
+
+	if (clear_depth || clear_stencil) {
+		MDAttachment const &attachment = pass.attachments[ds_index];
+		BitField<RDD::TextureAspectBits> bits = {};
+		if (clear_depth && attachment.type & MDAttachmentType::Depth) {
+			bits.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
+		}
+		if (clear_stencil && attachment.type & MDAttachmentType::Stencil) {
+			bits.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
+		}
+
+		clears[clears_count++] = { .aspect = bits, .color_attachment = ds_index, .value = render.clear_values[ds_index] };
+	}
+
+	if (clears_count == 0) {
+		return;
+	}
+
+	render_clear_attachments(VectorView(clears, clears_count), { render.render_area });
 }
 
 void MDCommandBuffer::render_next_subpass() {
@@ -1448,9 +1455,9 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 
 			for (uint32_t i = 0; i < uniforms.size(); i++) {
 				RDD::BoundUniform const &uniform = uniforms[i];
-				UniformInfo ui = set.uniforms[i];
+				const UniformInfo &ui = set.uniforms[i];
 
-				BindingInfo *bi = ui.bindings.getptr(stage);
+				const BindingInfo *bi = ui.bindings.getptr(stage);
 				if (bi == nullptr) {
 					// No binding for this stage.
 					continue;
@@ -1481,7 +1488,7 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 							textures[j] = texture;
 							add_usage(texture, stage, bi->usage);
 						}
-						BindingInfo *sbi = ui.bindings_secondary.getptr(stage);
+						const BindingInfo *sbi = ui.bindings_secondary.getptr(stage);
 						if (sbi) {
 							[enc setSamplerStates:samplers withRange:NSMakeRange(sbi->index, count)];
 						}
@@ -1510,7 +1517,7 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 							id<MTLTexture> obj = rid::get(uniform.ids[0]);
 							[enc setTexture:obj atIndex:bi->index];
 							add_usage(obj, stage, bi->usage);
-							BindingInfo *sbi = ui.bindings_secondary.getptr(stage);
+							const BindingInfo *sbi = ui.bindings_secondary.getptr(stage);
 							if (sbi) {
 								id<MTLTexture> tex = obj.parentTexture ? obj.parentTexture : obj;
 								id<MTLBuffer> buf = tex.buffer;
@@ -1571,14 +1578,13 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 		}
 	}
 
-	SearchArray<__unsafe_unretained id<MTLResource>> search;
 	ResourceUsageMap usage_to_resources;
 	for (KeyValue<id<MTLResource>, StageResourceUsage> const &keyval : bound_resources) {
 		ResourceVector *resources = usage_to_resources.getptr(keyval.value);
 		if (resources == nullptr) {
 			resources = &usage_to_resources.insert(keyval.value, ResourceVector())->value;
 		}
-		int64_t pos = search.bisect(resources->ptr(), resources->size(), keyval.key, true);
+		int64_t pos = resources->span().bisect(keyval.key, true);
 		if (pos == resources->size() || (*resources)[pos] != keyval.key) {
 			resources->insert(pos, keyval.key);
 		}
@@ -1977,7 +1983,7 @@ void ShaderCacheEntry::notify_free() const {
 								 options:(MTLCompileOptions *)options
 								strategy:(ShaderLoadStrategy)strategy {
 	switch (strategy) {
-		case ShaderLoadStrategy::DEFAULT:
+		case ShaderLoadStrategy::IMMEDIATE:
 			[[fallthrough]];
 		default:
 			return [[MDImmediateLibrary alloc] initWithCacheEntry:entry device:device source:source options:options];
