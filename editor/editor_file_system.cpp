@@ -1069,15 +1069,19 @@ void EditorFileSystem::scan() {
 	if (first_scan) {
 		_first_scan_filesystem();
 #ifdef ANDROID_ENABLED
-		const String nomedia_file_path = ProjectSettings::get_singleton()->get_resource_path().path_join(".nomedia");
-		if (!FileAccess::exists(nomedia_file_path)) {
-			// Create a .nomedia file to hide assets from media apps on Android.
-			Ref<FileAccess> f = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
-			if (f.is_null()) {
-				// .nomedia isn't so critical.
-				ERR_PRINT("Couldn't create .nomedia in project path.");
-			} else {
-				f->close();
+		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479 and GH-105399 for details.
+		String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
+		if (sdk_version != "30") {
+			const String nomedia_file_path = ProjectSettings::get_singleton()->get_resource_path().path_join(".nomedia");
+			if (!FileAccess::exists(nomedia_file_path)) {
+				// Create a .nomedia file to hide assets from media apps on Android.
+				Ref<FileAccess> f = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
+				if (f.is_null()) {
+					// .nomedia isn't so critical.
+					ERR_PRINT("Couldn't create .nomedia in project path.");
+				} else {
+					f->close();
+				}
 			}
 		}
 #endif
