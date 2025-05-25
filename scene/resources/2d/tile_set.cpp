@@ -3509,6 +3509,7 @@ void TileSet::_compatibility_conversion() {
 							compatibility_tilemap_mapping_tile_modes[E.key] = COMPATIBILITY_TILE_MODE_ATLAS_TILE;
 
 							TileData *tile_data = atlas_source->get_tile_data(coords, alternative_tile);
+							ERR_CONTINUE(!tile_data);
 
 							tile_data->set_flip_h(flip_h);
 							tile_data->set_flip_v(flip_v);
