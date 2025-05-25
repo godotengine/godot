@@ -1076,7 +1076,11 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 		Variant *V = &metadata.insert(p_name, p_value)->value;
 
 		const String &sname = p_name;
-		metadata_properties["metadata/" + sname] = V;
+		StringName property_key = StringName::search("metadata/", sname);
+		if (property_key.is_empty()) {
+			property_key = "metadata/" + sname;
+		}
+		metadata_properties[property_key] = V;
 		if (!sname.begins_with("_")) {
 			notify_property_list_changed();
 		}
