@@ -455,6 +455,7 @@ private:
 	void _list_select(Ref<InputEventMouseButton> b);
 
 	Vector3 _get_instance_position(const Point2 &p_pos, Node3D *p_node) const;
+	void _collision_reposition_multi(const List<Node *> &p_selection);
 	static AABB _calculate_spatial_bounds(const Node3D *p_parent, bool p_omit_top_level = false, const Transform3D *p_bounds_orientation = nullptr);
 
 	Node *_sanitize_preview_node(Node *p_node) const;
@@ -813,6 +814,7 @@ private:
 	Ref<Environment> viewport_environment;
 
 	Node3D *selected = nullptr;
+	Node3D *active_node = nullptr;
 
 	Node3DEditorViewport *freelook_viewport = nullptr;
 
@@ -991,6 +993,7 @@ public:
 
 	VSplitContainer *get_shader_split();
 
+	Node3D *get_active_node() { return active_node; }
 	Node3D *get_single_selected_node() { return selected; }
 	bool is_current_selected_gizmo(const EditorNode3DGizmo *p_gizmo);
 	bool is_subgizmo_selected(int p_id);
