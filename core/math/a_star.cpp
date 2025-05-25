@@ -293,11 +293,7 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	Point *from_point = nullptr, *to_point = nullptr;
 	points.lookup(closest_segment_points[0], from_point);
 	points.lookup(closest_segment_points[1], to_point);
-	Vector3 segment[2] = {
-		from_point->pos,
-		to_point->pos,
-	};
-	Vector3 closest_point = Geometry3D::get_closest_point_to_segment(p_point, segment);
+	Vector3 closest_point = Geometry3D::get_closest_point_to_segment(p_point, from_point->pos, to_point->pos);
 	return closest_point;
 }
 
