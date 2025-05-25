@@ -393,6 +393,7 @@
 		</signal>
 		<signal name="bone_list_changed">
 			<description>
+				Emitted when the list of bones changes. For example when adding and removing bones, setting a parent, unparenting and clearing all bones.
 			</description>
 		</signal>
 		<signal name="pose_updated">
