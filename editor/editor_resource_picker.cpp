@@ -33,6 +33,7 @@
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
+#include "editor/editor_properties_array_dict.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -41,7 +42,6 @@
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/editor_properties_array_dict.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
@@ -461,7 +461,6 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_EXPAND_ALL: {
-			
 			if (EditorPropertyArray *owner_array = Object::cast_to<EditorPropertyArray>(resource_owner)) {
 				owner_array->unfold_all_children(true);
 			} else if (EditorPropertyDictionary *owner_dic = Object::cast_to<EditorPropertyDictionary>(resource_owner)) {

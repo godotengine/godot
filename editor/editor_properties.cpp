@@ -3386,7 +3386,6 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		resource_picker = memnew(EditorResourcePicker);
 	}
 
-
 	if (EditorPropertyArray *parent_array = Object::cast_to<EditorPropertyArray>(p_object)) {
 		parent_editor_property_container = parent_array;
 	} else if (EditorPropertyDictionary *parent_dic = Object::cast_to<EditorPropertyDictionary>(p_object)) {
