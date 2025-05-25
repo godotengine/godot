@@ -225,6 +225,8 @@ void Node::_propagate_physics_interpolated(bool p_interpolated) {
 	// allow a call to the VisualServer etc in derived classes
 	_physics_interpolated_changed();
 
+	update_configuration_warning();
+
 	data.blocked++;
 	for (int i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_physics_interpolated(p_interpolated);

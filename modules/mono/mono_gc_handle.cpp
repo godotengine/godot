@@ -32,6 +32,8 @@
 
 #include "mono_gd/gd_mono.h"
 
+namespace gdmono {
+
 uint32_t MonoGCHandle::new_strong_handle(MonoObject *p_object) {
 	return mono_gchandle_new(p_object, /* pinned: */ false);
 }
@@ -76,3 +78,5 @@ MonoGCHandle::MonoGCHandle(uint32_t p_handle, HandleType p_handle_type) {
 MonoGCHandle::~MonoGCHandle() {
 	release();
 }
+
+} // namespace gdmono

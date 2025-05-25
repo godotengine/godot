@@ -1103,7 +1103,9 @@ Error Expression::_get_token(Token &r_token) {
 						is_first_char = false;
 					}
 
-					str_ofs--;
+					if (c != 0) {
+						str_ofs--;
+					}
 
 					r_token.type = TK_CONSTANT;
 

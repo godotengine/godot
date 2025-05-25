@@ -98,6 +98,19 @@ void PhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody::_get_layers);
 }
 
+String PhysicsBody::get_configuration_warning() const {
+	String warning = CollisionObject::get_configuration_warning();
+
+	if (!is_physics_interpolated()) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("PhysicsBody will not work correctly on a non-interpolated branch of the SceneTree.\nCheck the node's inherited physics_interpolation_mode.");
+	}
+
+	return warning;
+}
+
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 		CollisionObject(RID_PRIME(PhysicsServer::get_singleton()->body_create(p_mode)), false) {
 }
@@ -783,7 +796,7 @@ Array RigidBody::get_colliding_bodies() const {
 String RigidBody::get_configuration_warning() const {
 	Transform t = get_transform();
 
-	String warning = CollisionObject::get_configuration_warning();
+	String warning = PhysicsBody::get_configuration_warning();
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
 		if (warning != String()) {
@@ -1083,7 +1096,12 @@ Vector3 KinematicBody::_move_and_slide_internal(const Vector3 &p_linear_velocity
 
 		// We need to check the on_floor_body still exists before accessing.
 		// A valid RID is no guarantee that the object has not been deleted.
-		if (ObjectDB::get_instance(on_floor_body_id)) {
+
+		// We can only perform the ObjectDB lifetime check on Object derived objects.
+		// Note that physics also creates RIDs for non-Object derived objects, these cannot
+		// be lifetime checked through ObjectDB, and therefore there is a still a vulnerability
+		// to dangling RIDs (access after free) in this scenario.
+		if (!on_floor_body_id || ObjectDB::get_instance(on_floor_body_id)) {
 			// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 			bs = PhysicsServer::get_singleton()->body_get_direct_state(on_floor_body_rid);
 		}

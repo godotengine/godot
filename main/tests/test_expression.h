@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  mono_gc_handle.h                                                      */
+/*  test_expression.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,52 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MONO_GC_HANDLE_H
-#define MONO_GC_HANDLE_H
+#ifndef TEST_EXPRESSION_H
+#define TEST_EXPRESSION_H
 
-#include <mono/jit/jit.h>
+#include "core/os/main_loop.h"
 
-#include "core/reference.h"
+namespace TestExpression {
 
-namespace gdmono {
+MainLoop *test();
+}
 
-class MonoGCHandle : public Reference {
-	GDCLASS(MonoGCHandle, Reference);
-
-	bool released;
-	bool weak;
-	uint32_t handle;
-
-public:
-	enum HandleType {
-		STRONG_HANDLE,
-		WEAK_HANDLE
-	};
-
-	static uint32_t new_strong_handle(MonoObject *p_object);
-	static uint32_t new_strong_handle_pinned(MonoObject *p_object);
-	static uint32_t new_weak_handle(MonoObject *p_object);
-	static void free_handle(uint32_t p_gchandle);
-
-	static Ref<MonoGCHandle> create_strong(MonoObject *p_object);
-	static Ref<MonoGCHandle> create_weak(MonoObject *p_object);
-
-	_FORCE_INLINE_ bool is_released() { return released; }
-	_FORCE_INLINE_ bool is_weak() { return weak; }
-
-	_FORCE_INLINE_ MonoObject *get_target() const { return released ? NULL : mono_gchandle_get_target(handle); }
-
-	_FORCE_INLINE_ void set_handle(uint32_t p_handle, HandleType p_handle_type) {
-		released = false;
-		weak = p_handle_type == WEAK_HANDLE;
-		handle = p_handle;
-	}
-	void release();
-
-	MonoGCHandle(uint32_t p_handle, HandleType p_handle_type);
-	~MonoGCHandle();
-};
-
-} // namespace gdmono
-
-#endif // MONO_GC_HANDLE_H
+#endif // TEST_EXPRESSION_H

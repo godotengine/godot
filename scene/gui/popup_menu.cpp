@@ -32,8 +32,6 @@
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/translation.h"
 
 String PopupMenu::_get_accel_text(int p_item) const {
 	ERR_FAIL_INDEX_V(p_item, items.size(), String());
@@ -119,8 +117,7 @@ int PopupMenu::_get_items_total_height() const {
 		items_total_height += MAX(items[i].get_icon_size().height, font_height) + vsep;
 	}
 
-	// Subtract a separator which is not needed for the last item.
-	return items_total_height - vsep;
+	return items_total_height;
 }
 
 void PopupMenu::_scroll_to_item(int p_item) {
@@ -149,16 +146,12 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	int vseparation = get_constant("vseparation");
 	float font_h = get_font("font")->get_height();
 
-	Point2 ofs = style->get_offset() + Point2(0, vseparation / 2);
+	real_t ofs = style->get_margin(MARGIN_TOP) + control->get_position().y;
 
 	for (int i = 0; i < items.size(); i++) {
-		if (i > 0) {
-			ofs.y += vseparation;
-		}
+		ofs += MAX(items[i].get_icon_size().height, font_h) + vseparation;
 
-		ofs.y += MAX(items[i].get_icon_size().height, font_h);
-
-		if (p_over.y - control->get_position().y < ofs.y) {
+		if (p_over.y < ofs) {
 			return i;
 		}
 	}
@@ -328,7 +321,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 	// Make an area which does not include v scrollbar, so that items are not activated when dragging scrollbar.
 	Transform2D xform = get_global_transform_with_canvas();
-	Point2 item_origin = xform.get_origin();
+	Point2 item_origin = scroll_container->get_global_position();
 	float scroll_width = scroll_container->get_v_scrollbar()->is_visible_in_tree() ? scroll_container->get_v_scrollbar()->get_size().width : 0;
 	Size2 item_size = (control->get_global_rect().get_size() - Vector2(scroll_width, 0)) * xform.get_scale();
 	Rect2 item_clickable_area = Rect2(item_origin, item_size);
@@ -465,7 +458,6 @@ void PopupMenu::_draw_items() {
 	margin_size.width = margin_container->get_constant("margin_right") + margin_container->get_constant("margin_left");
 	margin_size.height = margin_container->get_constant("margin_top") + margin_container->get_constant("margin_bottom");
 
-	Ref<StyleBox> style = get_stylebox("panel");
 	Ref<StyleBox> hover = get_stylebox("hover");
 	Ref<Font> font = get_font("font");
 	select_font(font);
@@ -508,7 +500,7 @@ void PopupMenu::_draw_items() {
 		check_ofs = MAX(get_icon("checked")->get_width(), get_icon("radio_checked")->get_width()) + hseparation;
 	}
 
-	Point2 ofs = Point2();
+	Point2 ofs = Point2(0, vseparation / 2);
 
 	// Loop through all items and draw each.
 	for (int i = 0; i < items.size(); i++) {
