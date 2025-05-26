@@ -577,6 +577,7 @@ public:
 		CONNECT_ONE_SHOT = 4,
 		CONNECT_REFERENCE_COUNTED = 8,
 		CONNECT_INHERITED = 16, // Used in editor builds.
+		CONNECT_FRONTINSERT = 32 // Inserted at the front of the Signal Map.
 	};
 
 	struct Connection {
