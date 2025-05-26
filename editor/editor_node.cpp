@@ -8410,14 +8410,14 @@ EditorNode::EditorNode() {
 	default_layout->set_value(docks_section, "dock_4", "FileSystem");
 	default_layout->set_value(docks_section, "dock_5", "Inspector,Node,History");
 
-	// There are 4 vsplits and 4 hsplits.
+	int hsplits[] = { 0, 270, -270, 0 };
+	DEV_ASSERT((int)std::size(hsplits) == editor_dock_manager->get_hsplit_count());
+	for (int i = 0; i < editor_dock_manager->get_hsplit_count(); i++) {
+		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), hsplits[i]);
+	}
 	for (int i = 0; i < editor_dock_manager->get_vsplit_count(); i++) {
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
 	}
-	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
-	default_layout->set_value(docks_section, "dock_hsplit_2", 270);
-	default_layout->set_value(docks_section, "dock_hsplit_3", -270);
-	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
 
 	_update_layouts_menu();
 
