@@ -1074,3 +1074,39 @@ public:
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 };
+
+// Temporary, minimal wrapper for objects that shouldn't have a null value.
+
+template <typename T>
+class RequiredBind {
+	static_assert(!std::is_scalar_v<T>, "T may not be a scalar type");
+	static_assert(!std::is_reference_v<T>, "T may not be a reference type");
+	static_assert(!std::is_const_v<T> && !std::is_volatile_v<T>, "T may not be cv-qualified");
+
+	T *_value = nullptr;
+
+public:
+	constexpr RequiredBind() = default;
+	constexpr RequiredBind(const T *p_ptr) :
+			_value(const_cast<T *>(p_ptr)) {}
+	constexpr RequiredBind &operator=(const T *p_ptr) {
+		_value = const_cast<T *>(p_ptr);
+		return *this;
+	}
+	constexpr T *operator->() const {
+		return _value;
+	}
+	constexpr operator T *() const {
+		return _value;
+	}
+
+	RequiredBind(const Variant &p_variant) :
+			_value(static_cast<T *>(p_variant.get_validated_object())) {}
+	RequiredBind &operator=(const Variant &p_variant) {
+		_value = static_cast<T *>(p_variant.get_validated_object());
+		return *this;
+	}
+	operator Variant() const {
+		return Variant(_value);
+	}
+};
