@@ -205,8 +205,8 @@ bool SceneTree::is_accessibility_enabled() const {
 	}
 
 	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
-	int screen_reader_acvite = DisplayServer::get_singleton()->accessibility_screen_reader_active();
-	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_acvite == 0))) {
+	int screen_reader_active = DisplayServer::get_singleton()->accessibility_screen_reader_active();
+	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_active != 1))) {
 		return false;
 	}
 	return true;
