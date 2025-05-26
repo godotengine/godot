@@ -157,6 +157,7 @@ protected:
 
 	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
 	virtual StringName _get_revert_property() const;
+	virtual void _refresh_edit_from_internal() {}
 
 	void _update_property_bg();
 
