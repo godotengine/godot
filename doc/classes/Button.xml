@@ -140,6 +140,12 @@
 		<theme_item name="font" data_type="font" type="Font">
 			[Font] of the [Button]'s text.
 		</theme_item>
+		<theme_item name="font_pressed_offset_x" data_type="constant" type="float">
+			The horizontal text offset used when pressed.
+		</theme_item>
+		<theme_item name="font_pressed_offset_y" data_type="constant" type="float">
+			The vertical text offset used when pressed.
+		</theme_item>
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the [Button]'s text.
 		</theme_item>

@@ -308,6 +308,7 @@ void Button::_notification(int p_what) {
 
 			Color font_color;
 			Color icon_modulate_color(1, 1, 1, 1);
+			bool pressed = false;
 			// Get the font color and icon modulate color in the current state.
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
@@ -329,6 +330,7 @@ void Button::_notification(int p_what) {
 					if (has_theme_color(SNAME("icon_hover_pressed_color"))) {
 						icon_modulate_color = theme_cache.icon_hover_pressed_color;
 					}
+					pressed = true;
 
 				} break;
 				case DRAW_PRESSED: {
@@ -340,6 +342,7 @@ void Button::_notification(int p_what) {
 					if (has_theme_color(SNAME("icon_pressed_color"))) {
 						icon_modulate_color = theme_cache.icon_pressed_color;
 					}
+					pressed = true;
 
 				} break;
 				case DRAW_HOVER: {
@@ -478,12 +481,20 @@ void Button::_notification(int p_what) {
 							// Offset by the space's width that occupied by icon and h_separation together.
 							text_ofs.x += custom_element_size.width - drawable_size_remained.width;
 						}
+
+						if (pressed && theme_cache.font_pressed_offset_x != 0) {
+							text_ofs.x += theme_cache.font_pressed_offset_x;
+						}
 					} break;
 				}
 
 				text_ofs.y = (drawable_size_remained.height - text_buf->get_size().height) / 2.0f + style_margin_top;
 				if (vertical_icon_alignment == VERTICAL_ALIGNMENT_TOP) {
 					text_ofs.y += custom_element_size.height - drawable_size_remained.height; // Offset by the icon's height.
+				}
+
+				if (pressed && theme_cache.font_pressed_offset_y != 0) {
+					text_ofs.y += theme_cache.font_pressed_offset_y;
 				}
 
 				Color font_outline_color = theme_cache.font_outline_color;

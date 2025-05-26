@@ -85,6 +85,8 @@ private:
 		Color font_disabled_color;
 
 		Ref<Font> font;
+		float font_pressed_offset_x = 0;
+		float font_pressed_offset_y = 0;
 		int font_size = 0;
 		int outline_size = 0;
 		Color font_outline_color;
