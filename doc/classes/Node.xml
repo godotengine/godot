@@ -538,12 +538,6 @@
 				[b]Note:[/b] The returned value will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [code]delta[/code] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
 			</description>
 		</method>
-		<method name="get_rpc_config" qualifiers="const">
-			<return type="Variant" />
-			<description>
-				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
-			</description>
-		</method>
 		<method name="get_scene_instance_load_placeholder" qualifiers="const">
 			<return type="bool" />
 			<description>
