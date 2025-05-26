@@ -208,7 +208,7 @@ public:
 		return _ptr[p_index];
 	}
 
-	template <bool p_ensure_zero = false>
+	template <bool p_initialize = true>
 	Error resize(Size p_size);
 
 	_FORCE_INLINE_ void remove_at(Size p_index) {
@@ -366,7 +366,7 @@ Error CowData<T>::_fork_allocate(USize p_size) {
 }
 
 template <typename T>
-template <bool p_ensure_zero>
+template <bool p_initialize>
 Error CowData<T>::resize(Size p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
@@ -380,8 +380,12 @@ Error CowData<T>::resize(Size p_size) {
 		return error;
 	}
 
-	if (p_size > prev_size) {
-		memnew_arr_placement<p_ensure_zero>(_ptr + prev_size, p_size - prev_size);
+	if constexpr (p_initialize) {
+		if (p_size > prev_size) {
+			memnew_arr_placement(_ptr + prev_size, p_size - prev_size);
+		}
+	} else {
+		static_assert(std::is_trivially_destructible_v<T>);
 	}
 
 	return OK;
