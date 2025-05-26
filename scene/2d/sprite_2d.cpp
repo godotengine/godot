@@ -64,7 +64,7 @@ void Sprite2D::_edit_set_rect(const Rect2 &p_rect) {
 	if (texture.is_null()) {
 		return;
 	}
-	if (!(region_enabled && hframes <= 1 && vframes <= 1 && Input::get_singleton()->is_key_label_pressed(Key::CTRL))) {
+	if (!region_enabled || hframes > 1 || vframes > 1 || !dragging_to_resize_rect) {
 		Node2D::_edit_set_rect(p_rect);
 		return;
 	}
@@ -427,6 +427,15 @@ bool Sprite2D::is_editor_region_rect_draggable() const {
 	return hframes <= 1 && vframes <= 1 && region_enabled;
 }
 
+#ifdef TOOLS_ENABLED
+void Sprite2D::_editor_set_dragging_to_resize_rect(bool p_dragging_to_resize_rect) {
+	dragging_to_resize_rect = p_dragging_to_resize_rect;
+}
+bool Sprite2D::_editor_is_dragging_to_resiz_rect() const {
+	return dragging_to_resize_rect;
+}
+#endif
+
 Rect2 Sprite2D::get_rect() const {
 	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
@@ -472,7 +481,7 @@ void Sprite2D::_texture_changed() {
 }
 
 void Sprite2D::_emit_region_rect_enabled() {
-	emit_signal("_editor_region_rect_enabled", is_editor_region_rect_draggable());
+	emit_signal("_editor_region_rect_enabled");
 }
 
 void Sprite2D::_bind_methods() {
@@ -539,9 +548,6 @@ void Sprite2D::_bind_methods() {
 
 Sprite2D::Sprite2D() {
 #ifdef TOOLS_ENABLED
-	add_user_signal(MethodInfo("_editor_region_rect_enabled", PropertyInfo(Variant::BOOL, "enabled"))); // Sprite2DEditorPlugin listens to this.
+	add_user_signal(MethodInfo("_editor_region_rect_enabled"));
 #endif
-}
-
-Sprite2D::~Sprite2D() {
 }
