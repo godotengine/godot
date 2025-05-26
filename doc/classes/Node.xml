@@ -495,6 +495,13 @@
 				Fetches a node by [NodePath]. Similar to [method get_node], but does not generate an error if [param path] does not point to a valid node.
 			</description>
 		</method>
+		<method name="get_node_rpc_config" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
+				[b]Note:[/b] This method only returns the RPC configuration assigned via [method rpc_config]. See [method Script.get_rpc_config] to retrieve the RPCs defined by the [Script].
+			</description>
+		</method>
 		<method name="get_orphan_node_ids" qualifiers="static">
 			<return type="int[]" />
 			<description>

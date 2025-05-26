@@ -251,3 +251,10 @@ Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/argum
 Validate extension JSON: Error: Field 'global_enums/KeyModifierMask/values/KEY_MODIFIER_MASK': value changed value in new API, from 532676600.0 to 2130706432.
 
 Precision of string-serialized Variant constants increased.
+
+
+GH-106848
+---------
+Validate extension JSON: API was removed: classes/Node/methods/get_rpc_config
+
+Change Node `get_rpc_config` to `get_node_rpc_config`. Compatibility method registered.
