@@ -351,6 +351,7 @@ void ResourceUID::clear() {
 	unique_ids.clear();
 	changed = false;
 }
+
 void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
 	ClassDB::bind_method(D_METHOD("text_to_id", "text_id"), &ResourceUID::text_to_id);
