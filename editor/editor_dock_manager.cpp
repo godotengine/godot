@@ -832,6 +832,10 @@ void EditorDockManager::register_dock_slot(DockSlot p_dock_slot, TabContainer *p
 	p_tab_container->hide();
 }
 
+int EditorDockManager::get_hsplit_count() const {
+	return hsplits.size();
+}
+
 int EditorDockManager::get_vsplit_count() const {
 	return vsplits.size();
 }
