@@ -324,7 +324,13 @@ Ref<VisualShaderNode> ResourceFormatLoaderMtlx::_read_node(const mx::NodePtr &p_
 	} else if (category == "bump") {
 		return nullptr;
 	} else if (category == "texcoord") {
-		return nullptr;
+		//!!!!!!!!!!
+		Ref<VisualShaderNodeInput> input_node;
+		input_node.instantiate();
+
+		input_node->set_input_name("point_coord");
+
+		return input_node;
 	} else if (category == "geomcolor") {
 		return nullptr;
 	} else if (category == "geompropvalue") {
@@ -523,7 +529,17 @@ Ref<VisualShaderNode> ResourceFormatLoaderMtlx::_read_node(const mx::NodePtr &p_
 	} else if (category == "transformmatrix") {
 		return nullptr;
 	} else if (category == "normalmap") {
-		return nullptr;
+		//!!!!!!!!!!!!!!!!!!!!!!!!!
+		Ref<VisualShaderNodeReroute> noop_node;
+		noop_node.instantiate();
+
+		_connection_or_default(noop_node, 0, p_node, "in");
+		//_connection_or_default(noop_node, 1, p_node, "scale");
+		//_connection_or_default(noop_node, 2, p_node, "normal");
+		//_connection_or_default(noop_node, 3, p_node, "tangent");
+		//_connection_or_default(noop_node, 4, p_node, "bitangent");
+
+		return noop_node;
 	} else if (category == "creatematrix") {
 		return nullptr;
 	} else if (category == "transform") {
@@ -640,7 +656,22 @@ Ref<VisualShaderNode> ResourceFormatLoaderMtlx::_read_node(const mx::NodePtr &p_
 	} else if (category == "switch") {
 		return nullptr;
 	} else if (category == "extract") {
-		return nullptr;
+		Ref<VisualShaderNodeExtract> extract_node;
+		extract_node.instantiate();
+
+		_connection_or_default(extract_node, 0, p_node, "in");
+		_connection_or_default(extract_node, 1, p_node, "index");
+
+		std::string type = p_node->getType();
+		if (type == "vector2") {
+			extract_node->set_op_type(VisualShaderNodeVectorBase::OP_TYPE_VECTOR_2D);
+		} else if (type == "vector3") {
+			extract_node->set_op_type(VisualShaderNodeVectorBase::OP_TYPE_VECTOR_3D);
+		} else {
+			extract_node->set_op_type(VisualShaderNodeVectorBase::OP_TYPE_VECTOR_4D);
+		}
+
+		return extract_node;
 	} else if (category == "convert") {
 		return nullptr;
 	} else if (category == "combine2") {
