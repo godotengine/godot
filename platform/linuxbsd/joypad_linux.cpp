@@ -326,6 +326,12 @@ void JoypadLinux::setup_joypad_properties(Joypad &p_joypad) {
 			if (ioctl(p_joypad.fd, EVIOCGABS(i), p_joypad.abs_info[i]) < 0) {
 				memdelete(p_joypad.abs_info[i]);
 				p_joypad.abs_info[i] = nullptr;
+			} else {
+				JoypadEvent joypad_event;
+				joypad_event.type = EV_ABS;
+				joypad_event.code = i;
+				joypad_event.value = p_joypad.abs_info[i]->value;
+				p_joypad.events.push_back(joypad_event);
 			}
 		}
 	}
