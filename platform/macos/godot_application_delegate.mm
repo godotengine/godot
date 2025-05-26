@@ -51,6 +51,7 @@
 	bool reduce_transparency;
 	bool voice_over;
 	OS_MacOS_NSApp *os_mac;
+	id screen_observer;
 }
 
 - (GodotApplicationDelegate *)initWithOS:(OS_MacOS_NSApp *)os {
@@ -68,6 +69,16 @@
 
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleColorPreferencesChangedNotification" object:nil];
+
+	screen_observer = [NSNotificationCenter.defaultCenter addObserverForName:NSApplicationDidChangeScreenParametersNotification
+																	  object:nil
+																	   queue:nil
+																  usingBlock:^(NSNotification *_Nonnull note) {
+																	  DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+																	  if (ds) {
+																		  ds->update_screen_parameters();
+																	  }
+																  }];
 
 	return self;
 }
@@ -143,6 +154,7 @@
 static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 
 - (void)dealloc {
+	[NSNotificationCenter.defaultCenter removeObserver:screen_observer];
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleInterfaceThemeChangedNotification" object:nil];
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleColorPreferencesChangedNotification" object:nil];
 	[[NSWorkspace sharedWorkspace] removeObserver:self forKeyPath:@"voiceOverEnabled" context:(void *)godot_ac_ctx];

@@ -836,6 +836,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 		case FEATURE_WINDOW_EMBEDDING:
+		case FEATURE_HDR:
 			return true;
 #ifdef ACCESSKIT_ENABLED
 		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
@@ -1825,6 +1826,43 @@ void DisplayServerMacOS::screen_set_keep_on(bool p_enable) {
 	}
 }
 
+// Display capabilities for HDR.
+bool DisplayServerMacOS::screen_is_hdr_supported(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	NSScreen *screen = NSScreen.screens[p_screen];
+	// Per https://developer.apple.com/documentation/appkit/nsscreen/maximumpotentialextendeddynamicrangecolorcomponentvalue?language=objc#Discussion,
+	// if the value is greater than 1.0, the screen supports HDR.
+	return screen.maximumPotentialExtendedDynamicRangeColorComponentValue > 1.0;
+}
+
+float DisplayServerMacOS::screen_get_min_luminance(int p_screen) const {
+	return 0.0f; // macOS does not provide a way to get the minimum luminance of a screen.
+}
+
+float DisplayServerMacOS::screen_get_max_luminance(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	NSScreen *screen = NSScreen.screens[p_screen];
+	return screen.maximumExtendedDynamicRangeColorComponentValue * 100.0;
+}
+
+float DisplayServerMacOS::screen_get_max_full_frame_luminance(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	NSScreen *screen = NSScreen.screens[p_screen];
+	return screen.maximumExtendedDynamicRangeColorComponentValue * 100.0;
+}
+
+float DisplayServerMacOS::screen_get_sdr_white_level(int p_screen) const {
+	// Per https://developer.apple.com/documentation/metal/performing-your-own-tone-mapping?language=objc#Understand-EDR-Pixel-Values,
+	// the SDR white level is always 1.0.
+	return 100.0f; // 100 nits.
+}
+
 Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
@@ -1839,11 +1877,16 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
-	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
-		if (p_flags & (1 << i)) {
-			window_set_flag(WindowFlags(i), true, id);
-		}
+
+	uint32_t set_flags = p_flags & ~(WINDOW_FLAG_MAX - 1); // Clear the flags that are not supported by the window.
+	while (set_flags != 0) {
+		// Find the index of the next set bit.
+		uint32_t index = (uint32_t)__builtin_ctzll(set_flags);
+		// Clear the set bit.
+		set_flags &= (set_flags - 1);
+		window_set_flag(WindowFlags(index), true, id);
 	}
+
 #ifdef RD_ENABLED
 	if (rendering_device) {
 		rendering_device->screen_create(id);
@@ -2951,6 +2994,131 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+void DisplayServerMacOS::_update_hdr_output_for_window(DisplayServer::WindowID p_window, const DisplayServerMacOS::WindowData &p_wd) {
+#ifdef RD_ENABLED
+	if (rendering_context) {
+		bool current_hdr_enabled = rendering_context->window_get_hdr_output_enabled(p_window);
+		bool desired_hdr_enabled = p_wd.hdr_output_requested;
+		if (current_hdr_enabled != desired_hdr_enabled) {
+			rendering_context->window_set_hdr_output_enabled(p_window, desired_hdr_enabled);
+		}
+
+		// MacOS always uses screen luminance for HDR output.
+
+		NSScreen *screen = p_wd.window_object.screen;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+
+		CGFloat max_edr_ccv = screen.maximumExtendedDynamicRangeColorComponentValue * 100.0f; // Convert to nits.
+		rendering_context->window_set_hdr_output_max_luminance(p_window, max_edr_ccv);
+
+		// TODO(sgc): Is this correct? 203 nits is also a common reference luminance.
+		rendering_context->window_set_hdr_output_reference_luminance(p_window, 100.0);
+#pragma clang diagnostic pop
+	}
+#endif
+}
+
+void DisplayServerMacOS::update_screen_parameters() {
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hdr_output_requested) {
+			_update_hdr_output_for_window(E.key, E.value);
+		}
+	}
+}
+
+void DisplayServerMacOS::window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG((rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) == false, "HDR output is not supported by the rendering device.");
+
+	WindowData *wd = windows.getptr(p_window);
+	ERR_FAIL_NULL(wd);
+
+	wd->hdr_output_requested = p_enabled;
+
+	_update_hdr_output_for_window(p_window, *wd);
+#endif
+}
+
+bool DisplayServerMacOS::window_is_hdr_output_enabled(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+
+	return false;
+}
+
+void DisplayServerMacOS::window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_prefer_high_precision(p_window, p_enabled);
+	}
+#endif
+}
+
+bool DisplayServerMacOS::window_is_hdr_output_preferring_high_precision(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_prefer_high_precision(p_window);
+	}
+#endif
+
+	return false;
+}
+
+void DisplayServerMacOS::window_set_hdr_output_use_screen_luminance(const bool p_enabled, WindowID p_window) {
+	// Apple platforms only support using screen luminance
+}
+
+bool DisplayServerMacOS::window_is_hdr_output_using_screen_luminance(WindowID p_window) const {
+	ERR_FAIL_V_MSG(true, "Not implemented");
+}
+
+void DisplayServerMacOS::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_reference_luminance(p_window, p_reference_luminance);
+	}
+#endif
+}
+
+float DisplayServerMacOS::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
+	}
+#endif
+
+	return 0.0f;
+}
+
+void DisplayServerMacOS::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+}
+
+float DisplayServerMacOS::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window);
+	}
+#endif
+
+	return 0.0f;
 }
 
 int DisplayServerMacOS::accessibility_should_increase_contrast() const {
