@@ -574,8 +574,6 @@ private:
 
 	Ref<Texture2D> textures[TEXTURE_MAX];
 
-	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
-
 	static HashMap<uint64_t, Ref<StandardMaterial3D>> materials_for_2d; //used by Sprite3D, Label3D and other stuff
 
 protected:

@@ -257,7 +257,6 @@ void Sprite2D::set_region_enabled(bool p_region_enabled) {
 	region_enabled = p_region_enabled;
 	_emit_region_rect_enabled();
 	queue_redraw();
-	notify_property_list_changed();
 }
 
 bool Sprite2D::is_region_enabled() const {
@@ -462,10 +461,6 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "frame_coords") {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
-
-	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip_enabled")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
 }
 
 void Sprite2D::_texture_changed() {
@@ -537,7 +532,7 @@ void Sprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 
 	ADD_GROUP("Region", "region_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_region_enabled", "is_region_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_filter_clip_enabled"), "set_region_filter_clip_enabled", "is_region_filter_clip_enabled");
 }
