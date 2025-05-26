@@ -314,7 +314,7 @@ void EditorResourcePicker::_update_menu_items() {
 		}
 	}
 
-	if (Object::cast_to<EditorPropertyArray>(resource_owner) or Object::cast_to<EditorPropertyDictionary>(resource_owner)) {
+	if (Object::cast_to<EditorPropertyArray>(resource_owner) || Object::cast_to<EditorPropertyDictionary>(resource_owner)) {
 		edit_menu->add_separator();
 		edit_menu->add_item(TTR("Expand All"), OBJ_MENU_EXPAND_ALL);
 		edit_menu->add_item(TTR("Collapse All"), OBJ_MENU_COLLAPSE_ALL);
