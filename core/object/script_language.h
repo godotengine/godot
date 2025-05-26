@@ -191,7 +191,7 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
-	virtual Variant get_rpc_config() const = 0;
+	virtual const Variant get_rpc_config() const = 0;
 
 	Script() {}
 };
