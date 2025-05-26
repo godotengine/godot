@@ -139,8 +139,8 @@ Ref<Resource> ResourceFormatLoaderMtlx::load(const String &p_path, const String 
 			//_connect_or_default(shader_node, "base_color", 6); // AO
 			//_connect_or_default(shader_node, "base_color", 7); // AO Light Effect
 
-			_connect_or_default(shader_node, "normal", 8); // Normal
-			//_connect_or_default(shader_node, "base_color", 9); // Normal Map
+			//_connect_or_default(shader_node, "normal", 8); // Normal
+			_connect_or_default(shader_node, "normal", 9); // Normal Map
 			//_connect_or_default(shader_node, "base_color", 10); // Normal Map Depth
 
 			//_connect_or_default(shader_node, "base_color", 11); // Bent Normal Map
@@ -328,7 +328,7 @@ Ref<VisualShaderNode> ResourceFormatLoaderMtlx::_read_node(const mx::NodePtr &p_
 		Ref<VisualShaderNodeInput> input_node;
 		input_node.instantiate();
 
-		input_node->set_input_name("point_coord");
+		input_node->set_input_name("uv");
 
 		return input_node;
 	} else if (category == "geomcolor") {

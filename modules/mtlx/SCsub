@@ -11,25 +11,17 @@ if env.msvc:
 else:
     env_materialx.Append(CCFLAGS="-fexceptions")
 
-env_materialx.Prepend(
-    CPPPATH=["#modules/mtlx", "/nix/store/7bwfgs2nh289ynlljfm3dl0ybb1byp7k-python3.12-materialx-1.38.10/include"]
-)
-env.Append(LIBPATH=["/nix/store/7bwfgs2nh289ynlljfm3dl0ybb1byp7k-python3.12-materialx-1.38.10/lib"])
-env.Append(
-    LIBS=[
-        "MaterialXCore",
-        "MaterialXFormat",
-        "MaterialXGenGlsl",
-        "MaterialXGenMdl",
-        "MaterialXGenMsl",
-        "MaterialXGenOsl",
-        "MaterialXGenShader",
-        "MaterialXRender",
-        "MaterialXRenderGlsl",
-        "MaterialXRenderHw",
-        "MaterialXRenderOsl",
-    ]
-)
+env_materialx.Prepend(CPPPATH=["#modules/mtlx", "#thirdparty/materialx/source"])
+
+thirdparty_obj = []
+
+env_thirdparty = env_materialx.Clone()
+env_thirdparty.disable_warnings()
+
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXCore/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXFormat/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXFormat/External/PugiXML/*.cpp")
+env.modules_sources += thirdparty_obj
 
 if env["platform"] == "macos" or env["platform"] == "ios":
     env_materialx.Append(CPPDEFINES=["DMATERIALXVIEW_METAL_BACKEND=1"])
@@ -38,7 +30,8 @@ elif env["platform"] == "linux":
 
 env_materialx.Append(CPPDEFINES=["GL_SILENCE_DEPRECATION"])
 
-module_objs = []
+module_obj = []
 
-env_materialx.add_source_files(module_objs, "*.cpp")
-env.modules_sources += module_objs
+env_materialx.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+env.Depends(module_obj, thirdparty_obj)
