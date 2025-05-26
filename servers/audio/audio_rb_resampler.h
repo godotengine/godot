@@ -42,6 +42,7 @@ struct AudioRBResampler {
 	uint32_t channels;
 	uint32_t src_mix_rate;
 	uint32_t target_mix_rate;
+	double playback_speed = 1.0;
 
 	SafeNumeric<int> rb_read_pos;
 	SafeNumeric<int> rb_write_pos;
@@ -176,6 +177,8 @@ public:
 	void clear();
 	bool mix(AudioFrame *p_dest, int p_frames);
 	int get_num_of_ready_frames();
+	void set_playback_speed(double p_playback_speed);
+	double get_playback_speed() const;
 
 	AudioRBResampler();
 	~AudioRBResampler();

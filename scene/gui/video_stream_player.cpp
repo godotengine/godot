@@ -154,14 +154,10 @@ void VideoStreamPlayer::_notification(int p_notification) {
 				return;
 			}
 
-			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec());
+			double delta = first_frame ? 0 : get_process_delta_time();
+			first_frame = false;
 
-			double delta = last_audio_time == 0 ? 0 : audio_time - last_audio_time;
-			last_audio_time = audio_time;
-
-			if (delta == 0) {
-				return;
-			}
+			resampler.set_playback_speed(Engine::get_singleton()->get_time_scale());
 
 			playback->update(delta); // playback->is_playing() returns false in the last video frame
 
@@ -195,7 +191,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 					playback->set_paused(true);
 					set_process_internal(false);
 				}
-				last_audio_time = 0;
 			}
 		} break;
 
@@ -213,7 +208,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 					playback->set_paused(false);
 					set_process_internal(true);
 				}
-				last_audio_time = 0;
 			}
 		} break;
 	}
@@ -341,10 +335,7 @@ void VideoStreamPlayer::play() {
 	}
 	playback->play();
 	set_process_internal(true);
-	last_audio_time = 0;
-
-	// We update the playback to render the first frame immediately.
-	playback->update(0);
+	first_frame = true;
 
 	if (!can_process()) {
 		_notification(NOTIFICATION_PAUSED);
@@ -362,7 +353,6 @@ void VideoStreamPlayer::stop() {
 	playback->stop();
 	resampler.flush();
 	set_process_internal(false);
-	last_audio_time = 0;
 }
 
 bool VideoStreamPlayer::is_playing() const {
@@ -391,7 +381,6 @@ void VideoStreamPlayer::set_paused(bool p_paused) {
 		playback->set_paused(p_paused);
 		set_process_internal(!p_paused);
 	}
-	last_audio_time = 0;
 }
 
 bool VideoStreamPlayer::is_paused() const {
@@ -469,7 +458,7 @@ void VideoStreamPlayer::set_stream_position(double p_position) {
 	if (playback.is_valid()) {
 		resampler.flush();
 		playback->seek(p_position);
-		last_audio_time = 0;
+		first_frame = true;
 	}
 }
 
