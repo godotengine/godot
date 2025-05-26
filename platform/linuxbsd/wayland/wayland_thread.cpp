@@ -4566,6 +4566,7 @@ void WaylandThread::selection_set_text(const String &p_text) {
 
 	if (ss->wl_data_device == nullptr) {
 		DEBUG_LOG_WAYLAND_THREAD("Couldn't set selection, seat doesn't have wl_data_device.");
+		return;
 	}
 
 	ss->selection_data = p_text.to_utf8_buffer();
