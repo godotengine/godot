@@ -35,7 +35,6 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/spin_box.h"
-#include "scene/resources/texture.h"
 
 class CheckBox;
 
@@ -59,7 +58,6 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	Label *_duration_label = nullptr;
 
 	HScrollBar *zoom_bar = nullptr;
-	Control *zoom_spacer = nullptr;
 	Button *zoom_in = nullptr;
 	Button *zoom_reset = nullptr;
 	Button *zoom_out = nullptr;
