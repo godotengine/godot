@@ -1483,36 +1483,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				current->apply_code();
 
-				Error err = scr->reload(true); // Always hard reload the script before running.
-				if (err != OK || !scr->is_valid()) {
-					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it contains errors, check the output log."), EditorToaster::SEVERITY_WARNING);
-					return;
-				}
-
-				// Perform additional checks on the script to evaluate if it's runnable.
-
-				bool is_runnable = true;
-				if (!ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
-					is_runnable = false;
-
-					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it doesn't extend EditorScript."), EditorToaster::SEVERITY_WARNING);
-				}
-				if (!scr->is_tool()) {
-					is_runnable = false;
-
-					if (scr->get_class() == "GDScript") {
-						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the @tool annotation at the top)."), EditorToaster::SEVERITY_WARNING);
-					} else {
-						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script."), EditorToaster::SEVERITY_WARNING);
-					}
-				}
-				if (!is_runnable) {
-					return;
-				}
-
-				Ref<EditorScript> es = memnew(EditorScript);
-				es->set_script(scr);
-				es->run();
+				EditorNode::get_singleton()->run_editor_script(scr);
 			} break;
 
 			case FILE_MENU_CLOSE: {
