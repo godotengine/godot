@@ -209,11 +209,11 @@ private:
 	struct SwapChain {
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		RenderPassID render_pass;
-		RDD::DataFormat data_format = DATA_FORMAT_MAX;
-		SwapChain() :
-				render_pass(nullptr) {}
+		DataFormat data_format = DATA_FORMAT_MAX;
+		ColorSpace color_space = COLOR_SPACE_MAX;
 	};
 
+	RenderPassID _swap_chain_create_render_pass(DataFormat p_format);
 	void _swap_chain_release(SwapChain *p_swap_chain);
 	void _swap_chain_release_buffers(SwapChain *p_swap_chain);
 
