@@ -108,6 +108,17 @@ void ColorModeHSV::_value_changed() {
 	if (values[2] > 0 || values[1] != cached_saturation) {
 		cached_saturation = values[1];
 	}
+
+	// Cache real HSV values in ColorPicker.
+	color_picker->h = color_picker->sliders[0]->get_value();
+	color_picker->s = color_picker->sliders[1]->get_value();
+	color_picker->v = color_picker->sliders[2]->get_value();
+	color_picker->ok_hsl_h = color_picker->color.get_ok_hsl_h();
+	color_picker->ok_hsl_s = color_picker->color.get_ok_hsl_s();
+	color_picker->ok_hsl_l = color_picker->color.get_ok_hsl_l();
+
+	// This prevents _set_pick_color() from overwriting the values set above.
+	color_picker->last_color = color_picker->color;
 }
 
 String ColorModeHSV::get_slider_label(int idx) const {
@@ -281,6 +292,17 @@ void ColorModeOKHSL::_value_changed() {
 	if (values[2] > 0 || values[1] != cached_saturation) {
 		cached_saturation = values[1];
 	}
+
+	// Cache real OKHSL values in ColorPicker.
+	color_picker->ok_hsl_h = color_picker->sliders[0]->get_value() / 360.0;
+	color_picker->ok_hsl_s = color_picker->sliders[1]->get_value() / 100.0;
+	color_picker->ok_hsl_l = color_picker->sliders[2]->get_value() / 100.0;
+	color_picker->h = color_picker->color.get_h();
+	color_picker->s = color_picker->color.get_s();
+	color_picker->v = color_picker->color.get_v();
+
+	// This prevents _set_pick_color() from overwriting the values set above.
+	color_picker->last_color = color_picker->color;
 }
 
 String ColorModeOKHSL::get_slider_label(int idx) const {
