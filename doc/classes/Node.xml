@@ -544,10 +544,22 @@
 				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
 			</description>
 		</method>
+		<method name="get_scene_inherited_state" qualifiers="const">
+			<return type="SceneState" />
+			<description>
+				Returns the base [SceneState] of the scene that instantiated this node, if it was instantiated from a [PackedScene] and inherits from another scene, otherwise returns [code]null[/code].
+			</description>
+		</method>
 		<method name="get_scene_instance_load_placeholder" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this node is an instance load placeholder. See [InstancePlaceholder] and [method set_scene_instance_load_placeholder].
+			</description>
+		</method>
+		<method name="get_scene_instance_state" qualifiers="const">
+			<return type="SceneState" />
+			<description>
+				Returns the [SceneState] of the scene that instantiated this node, if it was instantiated from a [PackedScene], otherwise returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_tree" qualifiers="const">
