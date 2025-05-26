@@ -714,6 +714,7 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_plugins() {
 
 		if (!plugins_filenames.is_empty()) {
 			Ref<ConfigFile> config_file;
+			config_file.instantiate();
 			for (int i = 0; i < plugins_filenames.size(); i++) {
 				PluginConfigAndroid config = PluginConfigAndroid::load_plugin_config(config_file, plugins_dir.path_join(plugins_filenames[i]));
 				if (config.valid_config) {
