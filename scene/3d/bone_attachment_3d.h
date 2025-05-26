@@ -35,7 +35,17 @@
 class BoneAttachment3D : public Node3D {
 	GDCLASS(BoneAttachment3D, Node3D);
 
-	bool bound = false;
+public:
+	enum ExtraUpdate {
+		EXTRA_UPDATE_NONE,
+		EXTRA_UPDATE_BEFORE_SKELETON_UPDATE,
+		EXTRA_UPDATE_SUBSCRIBE_MODIFIER,
+	};
+
+private:
+	bool bound_skeleton = false;
+	bool bound_subscribe = false;
+
 	String bone_name;
 	int bone_idx = -1;
 
@@ -47,18 +57,29 @@ class BoneAttachment3D : public Node3D {
 	NodePath external_skeleton_node;
 	ObjectID external_skeleton_node_cache;
 
+	ExtraUpdate extra_update = EXTRA_UPDATE_NONE;
+	NodePath subscribe_modifier;
+	ObjectID subscribe_node_cache;
+
+	void _validate_bind_states();
+
 	void _check_bind();
+	void _check_bind_skeleton();
+	void _check_bind_subscribe();
+
 	void _check_unbind();
+	void _check_unbind_skeleton();
+	void _check_unbind_subscribe();
 
 	bool updating = false;
 	void _transform_changed();
+
+	void _update_node_cache();
 	void _update_external_skeleton_cache();
+	void _update_subscribe_node_cache();
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 
 	static void _bind_methods();
@@ -85,10 +106,15 @@ public:
 	void set_override_pose(bool p_override);
 	bool get_override_pose() const;
 
-	void set_use_external_skeleton(bool p_external_skeleton);
+	void set_use_external_skeleton(bool p_use_external_skeleton);
 	bool get_use_external_skeleton() const;
-	void set_external_skeleton(NodePath p_skeleton);
+	void set_external_skeleton(NodePath p_external_skeleton);
 	NodePath get_external_skeleton() const;
+
+	void set_extra_update(ExtraUpdate p_extra_update);
+	ExtraUpdate get_extra_update() const;
+	void set_subscribe_modifier(NodePath p_subscribe_modifier);
+	NodePath get_subscribe_modifier() const;
 
 	virtual void on_skeleton_update();
 
@@ -98,3 +124,5 @@ public:
 
 	BoneAttachment3D();
 };
+
+VARIANT_ENUM_CAST(BoneAttachment3D::ExtraUpdate);
