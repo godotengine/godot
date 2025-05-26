@@ -2082,6 +2082,14 @@ Node *Node::find_parent(const String &p_pattern) const {
 	return nullptr;
 }
 
+void Node::set_unique_scene_id(int32_t p_unique_id) {
+	data.unique_scene_id = p_unique_id;
+}
+
+int32_t Node::get_unique_scene_id() const {
+	return data.unique_scene_id;
+}
+
 Window *Node::get_window() const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Viewport *vp = get_viewport();
