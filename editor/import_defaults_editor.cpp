@@ -36,6 +36,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/label.h"
 
 class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)

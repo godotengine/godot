@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include "editor/gui/editor_validation_panel.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
+
+class EditorValidationPanel;
+class LineEdit;
+class OptionButton;
 
 class AddMetadataDialog : public ConfirmationDialog {
 	GDCLASS(AddMetadataDialog, ConfirmationDialog);
