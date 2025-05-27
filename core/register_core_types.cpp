@@ -82,6 +82,8 @@
 #ifndef DISABLE_DEPRECATED
 #include "core/io/packed_data_container.h"
 #endif
+#include "main/performance.h"
+#include "servers/text_server.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -131,6 +133,16 @@ void register_core_types() {
 	ObjectDB::setup();
 
 	StringName::setup();
+	CoreStringNames::create();
+
+	GDREGISTER_CLASS(Object);
+	GDREGISTER_CLASS(RefCounted);
+	GDREGISTER_CLASS(WeakRef);
+
+	GDREGISTER_CLASS(Resource);
+	GDREGISTER_VIRTUAL_CLASS(MissingResource);
+
+	GDREGISTER_CLASS(Time);
 	_time = memnew(Time);
 	ResourceLoader::initialize();
 
@@ -138,7 +150,8 @@ void register_core_types() {
 
 	Variant::register_types();
 
-	CoreStringNames::create();
+	GDREGISTER_CLASS(ResourceFormatSaver);
+	GDREGISTER_CLASS(ResourceFormatLoader);
 
 	if (GD_IS_CLASS_ENABLED(Translation)) {
 		resource_format_po.instantiate();
@@ -161,7 +174,7 @@ void register_core_types() {
 		ResourceLoader::add_resource_format_loader(resource_format_image);
 	}
 
-	GDREGISTER_CLASS(Object);
+	GDREGISTER_CLASS(ProjectSettings);
 
 	GDREGISTER_ABSTRACT_CLASS(Script);
 	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
@@ -169,16 +182,12 @@ void register_core_types() {
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
 	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
-	GDREGISTER_CLASS(RefCounted);
-	GDREGISTER_CLASS(WeakRef);
-	GDREGISTER_CLASS(Resource);
-	GDREGISTER_VIRTUAL_CLASS(MissingResource);
 	GDREGISTER_CLASS(Image);
 
 	GDREGISTER_CLASS(Shortcut);
 	GDREGISTER_ABSTRACT_CLASS(InputEvent);
-	GDREGISTER_ABSTRACT_CLASS(InputEventWithModifiers);
 	GDREGISTER_ABSTRACT_CLASS(InputEventFromWindow);
+	GDREGISTER_ABSTRACT_CLASS(InputEventWithModifiers);
 	GDREGISTER_CLASS(InputEventKey);
 	GDREGISTER_CLASS(InputEventShortcut);
 	GDREGISTER_ABSTRACT_CLASS(InputEventMouse);
@@ -249,9 +258,6 @@ void register_core_types() {
 	GDREGISTER_CLASS(UndoRedo);
 	GDREGISTER_CLASS(TriangleMesh);
 
-	GDREGISTER_CLASS(ResourceFormatLoader);
-	GDREGISTER_CLASS(ResourceFormatSaver);
-
 	GDREGISTER_ABSTRACT_CLASS(FileAccess);
 	GDREGISTER_ABSTRACT_CLASS(DirAccess);
 	GDREGISTER_CLASS(CoreBind::Thread);
@@ -299,15 +305,31 @@ void register_core_types() {
 
 	ip = IP::create();
 
+	GDREGISTER_CLASS(CoreBind::Geometry2D);
 	_geometry_2d = memnew(CoreBind::Geometry2D);
+
+	GDREGISTER_CLASS(CoreBind::Geometry3D);
 	_geometry_3d = memnew(CoreBind::Geometry3D);
 
+	GDREGISTER_CLASS(CoreBind::ResourceLoader);
 	_resource_loader = memnew(CoreBind::ResourceLoader);
+
+	GDREGISTER_CLASS(CoreBind::ResourceSaver);
 	_resource_saver = memnew(CoreBind::ResourceSaver);
+
+	GDREGISTER_CLASS(CoreBind::OS);
 	_os = memnew(CoreBind::OS);
+
+	GDREGISTER_CLASS(CoreBind::Engine);
 	_engine = memnew(CoreBind::Engine);
+
+	GDREGISTER_CLASS(CoreBind::Special::ClassDB);
 	_classdb = memnew(CoreBind::Special::ClassDB);
+
+	GDREGISTER_CLASS(CoreBind::Marshalls);
 	_marshalls = memnew(CoreBind::Marshalls);
+
+	GDREGISTER_CLASS(CoreBind::EngineDebugger);
 	_engine_debugger = memnew(CoreBind::EngineDebugger);
 
 	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
@@ -315,6 +337,17 @@ void register_core_types() {
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
 	worker_thread_pool = memnew(WorkerThreadPool);
+
+	GDREGISTER_ABSTRACT_CLASS(Input);
+	GDREGISTER_CLASS(Expression);
+
+	GDREGISTER_CLASS(TextServerManager);
+
+	GDREGISTER_CLASS(InputMap);
+
+	GDREGISTER_CLASS(TranslationServer);
+
+	GDREGISTER_CLASS(Performance);
 
 	OS::get_singleton()->benchmark_end_measure("Core", "Register Types");
 }
@@ -330,34 +363,14 @@ void register_core_settings() {
 }
 
 void register_early_core_singletons() {
-	GDREGISTER_CLASS(CoreBind::Engine);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", CoreBind::Engine::get_singleton()));
-
-	GDREGISTER_CLASS(ProjectSettings);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
-
-	GDREGISTER_CLASS(CoreBind::OS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", CoreBind::OS::get_singleton()));
-
-	GDREGISTER_CLASS(Time);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 }
 
 void register_core_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Core", "Register Singletons");
-
-	GDREGISTER_ABSTRACT_CLASS(IP);
-	GDREGISTER_CLASS(CoreBind::Geometry2D);
-	GDREGISTER_CLASS(CoreBind::Geometry3D);
-	GDREGISTER_CLASS(CoreBind::ResourceLoader);
-	GDREGISTER_CLASS(CoreBind::ResourceSaver);
-	GDREGISTER_CLASS(CoreBind::Special::ClassDB);
-	GDREGISTER_CLASS(CoreBind::Marshalls);
-	GDREGISTER_CLASS(TranslationServer);
-	GDREGISTER_ABSTRACT_CLASS(Input);
-	GDREGISTER_CLASS(InputMap);
-	GDREGISTER_CLASS(Expression);
-	GDREGISTER_CLASS(CoreBind::EngineDebugger);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", CoreBind::Geometry2D::get_singleton()));

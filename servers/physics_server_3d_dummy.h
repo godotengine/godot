@@ -129,6 +129,10 @@ class PhysicsServer3DDummy : public PhysicsServer3D {
 	PhysicsDirectSpaceState3DDummy *space_state_dummy = nullptr;
 
 public:
+	static PhysicsServer3D *create() {
+		return memnew(PhysicsServer3DDummy);
+	}
+
 	virtual RID world_boundary_shape_create() override { return RID(); }
 	virtual RID separation_ray_shape_create() override { return RID(); }
 	virtual RID sphere_shape_create() override { return RID(); }

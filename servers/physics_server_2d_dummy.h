@@ -125,6 +125,8 @@ class PhysicsServer2DDummy : public PhysicsServer2D {
 	PhysicsDirectBodyState2DDummy *body_state_dummy = nullptr;
 
 public:
+	static PhysicsServer2D *create() { return memnew(PhysicsServer2DDummy); }
+
 	virtual RID world_boundary_shape_create() override { return RID(); }
 	virtual RID separation_ray_shape_create() override { return RID(); }
 	virtual RID segment_shape_create() override { return RID(); }

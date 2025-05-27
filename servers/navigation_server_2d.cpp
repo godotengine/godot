@@ -32,6 +32,12 @@
 #include "navigation_server_2d.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "scene/2d/mesh_instance_2d.h"
+#include "scene/2d/multimesh_instance_2d.h"
+#include "scene/2d/navigation/navigation_obstacle_2d.h"
+#include "scene/2d/physics/static_body_2d.h"
+#include "scene/2d/polygon_2d.h"
+#include "scene/2d/tile_map.h"
 #include "scene/main/node.h"
 #include "servers/navigation/navigation_globals.h"
 #include "servers/navigation_server_2d_dummy.h"
@@ -572,6 +578,20 @@ void NavigationServer2DManager::initialize_server() {
 
 	ERR_FAIL_NULL_MSG(navigation_server_2d, "Failed to initialize NavigationServer2D.");
 	navigation_server_2d->init();
+
+	// 2D nodes that support navmesh baking need to server register their source geometry parsers.
+	MeshInstance2D::navmesh_parse_init();
+	MultiMeshInstance2D::navmesh_parse_init();
+	NavigationObstacle2D::navmesh_parse_init();
+	Polygon2D::navmesh_parse_init();
+
+#ifndef DISABLE_DEPRECATED
+	TileMap::navmesh_parse_init();
+#endif
+	TileMapLayer::navmesh_parse_init();
+#ifndef PHYSICS_2D_DISABLED
+	StaticBody2D::navmesh_parse_init();
+#endif // PHYSICS_2D_DISABLED
 }
 
 void NavigationServer2DManager::finalize_server() {

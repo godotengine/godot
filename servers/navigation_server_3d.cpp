@@ -32,6 +32,14 @@
 #include "navigation_server_3d.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
+#ifndef NAVIGATION_3D_DISABLED
+#include "scene/3d/navigation/navigation_obstacle_3d.h"
+#endif
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/3d/physics/static_body_3d.h"
+#endif
 #include "scene/main/node.h"
 #include "servers/navigation/navigation_globals.h"
 #include "servers/navigation_server_3d_dummy.h"
@@ -1061,6 +1069,16 @@ void NavigationServer3DManager::initialize_server() {
 	// Should be impossible, but make sure it's not null.
 	ERR_FAIL_NULL_MSG(navigation_server_3d, "Failed to initialize NavigationServer3D.");
 	navigation_server_3d->init();
+
+#ifndef NAVIGATION_3D_DISABLED
+	// 3D nodes that support navmesh baking need to server register their source geometry parsers.
+	MeshInstance3D::navmesh_parse_init();
+	MultiMeshInstance3D::navmesh_parse_init();
+	NavigationObstacle3D::navmesh_parse_init();
+#ifndef PHYSICS_3D_DISABLED
+	StaticBody3D::navmesh_parse_init();
+#endif // PHYSICS_3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
 }
 
 void NavigationServer3DManager::finalize_server() {

@@ -59,7 +59,7 @@ static void _editor_init_callback() {
 #endif
 
 void initialize_websocket_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 #ifdef WEB_ENABLED
 		EMWSPeer::initialize();
 #else
