@@ -34,6 +34,8 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "servers/rendering/shader_language.h"
 
 static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
