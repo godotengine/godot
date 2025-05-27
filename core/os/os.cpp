@@ -502,68 +502,30 @@ bool OS::has_feature(const String &p_feature) {
 	if (sizeof(void *) == 4 && p_feature == "32") {
 		return true;
 	}
-#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 #if defined(MACOS_ENABLED)
 	if (p_feature == "universal") {
 		return true;
 	}
 #endif
-	if (p_feature == "x86_64") {
+	if (p_feature == "x86_64" || p_feature == "x86") {
 		return true;
 	}
-#elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
-	if (p_feature == "x86_32") {
-		return true;
-	}
-#endif
-	if (p_feature == "x86") {
-		return true;
-	}
-#elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
-#if defined(__aarch64__) || defined(_M_ARM64)
+#elif defined(__aarch64__) || defined(_M_ARM64)
 #if defined(MACOS_ENABLED)
 	if (p_feature == "universal") {
 		return true;
 	}
 #endif
-	if (p_feature == "arm64") {
-		return true;
-	}
-#elif defined(__arm__) || defined(_M_ARM)
-	if (p_feature == "arm32") {
-		return true;
-	}
-#endif
-#if defined(__ARM_ARCH_7A__)
-	if (p_feature == "armv7a" || p_feature == "armv7") {
-		return true;
-	}
-#endif
-#if defined(__ARM_ARCH_7S__)
-	if (p_feature == "armv7s" || p_feature == "armv7") {
-		return true;
-	}
-#endif
-	if (p_feature == "arm") {
+	if (p_feature == "arm64" || p_feature == "arm") {
 		return true;
 	}
 #elif defined(__riscv)
-#if __riscv_xlen == 8
-	if (p_feature == "rv64") {
-		return true;
-	}
-#endif
-	if (p_feature == "riscv") {
+	if (p_feature == "rv64" || p_feature == "riscv") {
 		return true;
 	}
 #elif defined(__powerpc__)
-#if defined(__powerpc64__)
-	if (p_feature == "ppc64") {
-		return true;
-	}
-#endif
-	if (p_feature == "ppc") {
+	if (p_feature == "ppc64" || p_feature == "ppc") {
 		return true;
 	}
 #elif defined(__wasm__)
@@ -698,9 +660,9 @@ Error OS::setup_remote_filesystem(const String &p_server_host, int p_port, const
 }
 
 OS::PreferredTextureFormat OS::get_preferred_texture_format() const {
-#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64)
 	return PREFERRED_TEXTURE_FORMAT_ETC2_ASTC; // By rule, ARM hardware uses ETC texture compression.
-#elif defined(__x86_64__) || defined(_M_X64) || defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+#elif defined(__x86_64__) || defined(_M_X64)
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // By rule, X86 hardware prefers S3TC and derivatives.
 #else
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // Override in platform if needed.

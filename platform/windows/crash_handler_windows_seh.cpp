@@ -183,10 +183,6 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	frame.AddrPC.Offset = context->Pc;
 	frame.AddrStack.Offset = context->Sp;
 	frame.AddrFrame.Offset = context->Fp;
-#elif defined(_M_ARM)
-	frame.AddrPC.Offset = context->Pc;
-	frame.AddrStack.Offset = context->Sp;
-	frame.AddrFrame.Offset = context->R11;
 #else
 	frame.AddrPC.Offset = context->Eip;
 	frame.AddrStack.Offset = context->Esp;

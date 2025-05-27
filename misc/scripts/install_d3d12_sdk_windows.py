@@ -43,9 +43,6 @@ color_print(f"{Ansi.BOLD}[1/3] Mesa NIR")
 for arch in [
     "arm64-llvm",
     "arm64-msvc",
-    "x86_32-gcc",
-    "x86_32-llvm",
-    "x86_32-msvc",
     "x86_64-gcc",
     "x86_64-llvm",
     "x86_64-msvc",

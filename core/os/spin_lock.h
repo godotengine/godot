@@ -70,18 +70,18 @@ public:
 _ALWAYS_INLINE_ static void _cpu_pause() {
 #if defined(_MSC_VER)
 // ----- MSVC.
-#if defined(_M_ARM) || defined(_M_ARM64) // ARM.
+#if defined(_M_ARM64) // ARM.
 	__yield();
-#elif defined(_M_IX86) || defined(_M_X64) // x86.
+#elif defined(_M_X64) // x86.
 	_mm_pause();
 #endif
 #elif defined(__GNUC__) || defined(__clang__)
 // ----- GCC/Clang.
-#if defined(__i386__) || defined(__x86_64__) // x86.
+#if defined(__x86_64__) // x86.
 	__builtin_ia32_pause();
-#elif defined(__arm__) || defined(__aarch64__) // ARM.
+#elif defined(__aarch64__) // ARM.
 	asm volatile("yield");
-#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__) // PowerPC.
+#elif defined(__powerpc__) // PowerPC.
 	asm volatile("or 27,27,27");
 #elif defined(__riscv) // RISC-V.
 	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");

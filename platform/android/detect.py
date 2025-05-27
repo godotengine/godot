@@ -116,7 +116,7 @@ def detect_swappy():
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
+    supported_arches = ["x86_64", "arm64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
@@ -131,12 +131,8 @@ def configure(env: "SConsEnvironment"):
 
     # Architecture
 
-    if env["arch"] == "arm32":
-        target_triple = "armv7a-linux-androideabi"
-    elif env["arch"] == "arm64":
+    if env["arch"] == "arm64":
         target_triple = "aarch64-linux-android"
-    elif env["arch"] == "x86_32":
-        target_triple = "i686-linux-android"
     elif env["arch"] == "x86_64":
         target_triple = "x86_64-linux-android"
 
@@ -205,18 +201,9 @@ def configure(env: "SConsEnvironment"):
     if get_min_sdk_version(env["ndk_platform"]) >= 24:
         env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
-    if env["arch"] == "x86_32":
-        if has_swappy:
-            env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/x86"])
-    elif env["arch"] == "x86_64":
+    if env["arch"] == "x86_64":
         if has_swappy:
             env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/x86_64"])
-    elif env["arch"] == "arm32":
-        env.Append(CCFLAGS=["-march=armv7-a", "-mfloat-abi=softfp"])
-        env.Append(CPPDEFINES=["__ARM_ARCH_7__", "__ARM_ARCH_7A__"])
-        env.Append(CPPDEFINES=["__ARM_NEON__"])
-        if has_swappy:
-            env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/armeabi-v7a"])
     elif env["arch"] == "arm64":
         env.Append(CCFLAGS=["-mfix-cortex-a53-835769"])
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])

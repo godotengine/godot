@@ -22,19 +22,11 @@ jobs:
           - name: Editor (target=editor)
             cache-name: android-editor
             target: editor
-            scons-flags: >-
-              arch=arm64
-              production=yes
+            scons-flags: production=yes
 
-          - name: Template arm32 (target=template_release, arch=arm32)
-            cache-name: android-template-arm32
+          - name: Template (target=template_release)
+            cache-name: android-template
             target: template_release
-            scons-flags: arch=arm32
-
-          - name: Template arm64 (target=template_release, arch=arm64)
-            cache-name: android-template-arm64
-            target: template_release
-            scons-flags: arch=arm64
 
     steps:
       - name: Checkout

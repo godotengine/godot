@@ -844,19 +844,9 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
 		return true;
 	}
-#if defined(__aarch64__)
 	if (p_feature == "arm64-v8a" || p_feature == "arm64") {
 		return true;
 	}
-#elif defined(__ARM_ARCH_7A__)
-	if (p_feature == "armeabi-v7a" || p_feature == "armeabi" || p_feature == "arm32") {
-		return true;
-	}
-#elif defined(__arm__)
-	if (p_feature == "armeabi" || p_feature == "arm") {
-		return true;
-	}
-#endif
 
 	if (godot_java->has_feature(p_feature)) {
 		return true;

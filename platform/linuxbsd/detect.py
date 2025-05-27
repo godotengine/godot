@@ -73,7 +73,7 @@ def get_flags():
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "loongarch64"]
+    supported_arches = ["x86_64", "arm64", "rv64", "ppc64", "loongarch64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     ## Build type
@@ -86,10 +86,7 @@ def configure(env: "SConsEnvironment"):
     # Cross-compilation
     # TODO: Support cross-compilation on architectures other than x86.
     host_is_64_bit = sys.maxsize > 2**32
-    if host_is_64_bit and env["arch"] == "x86_32":
-        env.Append(CCFLAGS=["-m32"])
-        env.Append(LINKFLAGS=["-m32"])
-    elif not host_is_64_bit and env["arch"] == "x86_64":
+    if not host_is_64_bit:
         env.Append(CCFLAGS=["-m64"])
         env.Append(LINKFLAGS=["-m64"])
 
@@ -259,7 +256,7 @@ def configure(env: "SConsEnvironment"):
         env["builtin_libvorbis"] = False  # Needed to link against system libtheora
         env.ParseConfig("pkg-config theora theoradec --cflags --libs")
     else:
-        if env["arch"] in ["x86_64", "x86_32"]:
+        if env["arch"] == "x86_64":
             env["x86_libtheora_opt_gcc"] = True
 
     if not env["builtin_libvorbis"]:
@@ -471,14 +468,10 @@ def configure(env: "SConsEnvironment"):
             env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["arch"] == "arm64":
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
-            elif env["arch"] == "arm32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
             elif env["arch"] == "rv64":
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
             elif env["arch"] == "x86_64":
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
-            elif env["arch"] == "x86_32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
             env.Append(LIBS=["accesskit"])
         else:
             env.Append(CPPDEFINES=["ACCESSKIT_DYNAMIC"])

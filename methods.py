@@ -1425,10 +1425,6 @@ def generate_vs_project(env, original_args, project_name="godot"):
             for t in conf["targets"]:
                 godot_target = t
 
-                # Windows x86 is a special little flower that requires a project platform == Win32 but a solution platform == x86.
-                if godot_platform == "windows" and godot_target == "editor" and godot_arch == "x86_32":
-                    sln_plat = "x86"
-
                 configurations += [
                     f'<ProjectConfiguration Include="{godot_target}|{proj_plat}">',
                     f"  <Configuration>{godot_target}</Configuration>",

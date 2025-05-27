@@ -609,12 +609,7 @@ static _FORCE_INLINE_ uint32_t fastmod(const uint32_t n, const uint64_t c, const
 #if defined(_MSC_VER)
 	// Returns the upper 64 bits of the product of two 64-bit unsigned integers.
 	// This intrinsic function is required since MSVC does not support unsigned 128-bit integers.
-#if defined(_M_X64) || defined(_M_ARM64)
 	return __umulh(c * n, d);
-#else
-	// Fallback to the slower method for 32-bit platforms.
-	return n % d;
-#endif // _M_X64 || _M_ARM64
 #else
 #ifdef __SIZEOF_INT128__
 	// Prevent compiler warning, because we know what we are doing.

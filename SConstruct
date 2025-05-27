@@ -731,13 +731,6 @@ elif env.msvc:
         )
         Exit(255)
 
-# Default architecture flags.
-if env["arch"] == "x86_32":
-    if env.msvc:
-        env.Append(CCFLAGS=["/arch:SSE2"])
-    else:
-        env.Append(CCFLAGS=["-msse2", "-mfpmath=sse", "-mstackrealign"])
-
 # Explicitly specify colored output.
 if methods.using_gcc(env):
     env.AppendUnique(CCFLAGS=["-fdiagnostics-color" if is_stderr_color() else "-fno-diagnostics-color"])

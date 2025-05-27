@@ -21,7 +21,7 @@ def get_name():
 
 
 def try_cmd(test, prefix, arch, check_clang=False):
-    archs = ["x86_64", "x86_32", "arm64", "arm32"]
+    archs = ["x86_64", "arm64"]
     if arch:
         archs = [arch]
 
@@ -63,8 +63,6 @@ def get_mingw_bin_prefix(prefix, arch):
     bin_prefix = (os.path.normpath(os.path.join(prefix, "bin")) + os.sep) if prefix else ""
     ARCH_PREFIXES = {
         "x86_64": "x86_64-w64-mingw32-",
-        "x86_32": "i686-w64-mingw32-",
-        "arm32": "armv7-w64-mingw32-",
         "arm64": "aarch64-w64-mingw32-",
     }
     arch_prefix = ARCH_PREFIXES[arch] if arch else ""
@@ -82,14 +80,8 @@ def get_detected(env: "SConsEnvironment", tool: str) -> str:
 def detect_build_env_arch():
     msvc_target_aliases = {
         "amd64": "x86_64",
-        "i386": "x86_32",
-        "i486": "x86_32",
-        "i586": "x86_32",
-        "i686": "x86_32",
-        "x86": "x86_32",
         "x64": "x86_64",
         "x86_64": "x86_64",
-        "arm": "arm32",
         "arm64": "arm64",
         "aarch64": "arm64",
     }
@@ -109,14 +101,10 @@ def detect_build_env_arch():
             PATH = os.getenv("PATH").upper()
             VCINSTALLDIR = os.getenv("VCINSTALLDIR").upper()
             path_arch = {
-                "BIN\\x86_ARM;": "arm32",
-                "BIN\\amd64_ARM;": "arm32",
                 "BIN\\x86_ARM64;": "arm64",
                 "BIN\\amd64_ARM64;": "arm64",
                 "BIN\\x86_amd64;": "a86_64",
                 "BIN\\amd64;": "x86_64",
-                "BIN\\amd64_x86;": "x86_32",
-                "BIN;": "x86_32",
             }
             for path, arch in path_arch.items():
                 final_path = VCINSTALLDIR + path
@@ -132,11 +120,9 @@ def detect_build_env_arch():
                     return msvc_target_aliases[first_path_arch]
 
     msys_target_aliases = {
-        "mingw32": "x86_32",
         "mingw64": "x86_64",
         "ucrt64": "x86_64",
         "clang64": "x86_64",
-        "clang32": "x86_32",
         "clangarm64": "arm64",
     }
     if os.getenv("MSYSTEM"):
@@ -153,8 +139,7 @@ def get_tools(env: "SConsEnvironment"):
     if os.name != "nt" or env.get("use_mingw") or not msvc_exists():
         return ["mingw"]
     else:
-        msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}
-        env["TARGET_ARCH"] = msvc_arch_aliases.get(env["arch"], env["arch"])
+        env["TARGET_ARCH"] = env["arch"]
         env["MSVC_VERSION"] = env["MSVS_VERSION"] = env.get("msvc_version")
         return ["msvc", "mslink", "mslib"]
 
@@ -247,18 +232,11 @@ def get_flags():
 
 def build_def_file(target, source, env: "SConsEnvironment"):
     arch_aliases = {
-        "x86_32": "i386",
         "x86_64": "i386:x86-64",
-        "arm32": "arm",
         "arm64": "arm64",
     }
 
-    cmdbase = "dlltool -m " + arch_aliases[env["arch"]]
-    if env["arch"] == "x86_32":
-        cmdbase += " -k"
-    else:
-        cmdbase += " --no-leading-underscore"
-
+    cmdbase = "dlltool -m " + arch_aliases[env["arch"]] + " --no-leading-underscore"
     mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
 
     for x in range(len(source)):
@@ -391,9 +369,6 @@ def configure_msvc(env: "SConsEnvironment"):
     if not env["incremental_link"]:
         env.Append(LINKFLAGS=["/INCREMENTAL:NO"])
 
-    if env["arch"] == "x86_32":
-        env["x86_libtheora_opt_vc"] = True
-
     env.Append(CCFLAGS=["/fp:strict"])
 
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
@@ -473,8 +448,6 @@ def configure_msvc(env: "SConsEnvironment"):
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/msvc/static"])
             elif env["arch"] == "x86_64":
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/msvc/static"])
-            elif env["arch"] == "x86_32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/msvc/static"])
             LIBS += [
                 "accesskit",
                 "uiautomationcore",
@@ -702,17 +675,8 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compiler configuration
 
-    if env["arch"] == "x86_32":
-        if env["use_static_cpp"]:
-            env.Append(LINKFLAGS=["-static"])
-            env.Append(LINKFLAGS=["-static-libgcc"])
-            env.Append(LINKFLAGS=["-static-libstdc++"])
-    else:
-        if env["use_static_cpp"]:
-            env.Append(LINKFLAGS=["-static"])
-
-    if env["arch"] == "x86_32":
-        env["x86_libtheora_opt_gcc"] = True
+    if env["use_static_cpp"]:
+        env.Append(LINKFLAGS=["-static"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
@@ -731,9 +695,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     env["RC"] = get_detected(env, "windres")
     ARCH_TARGETS = {
-        "x86_32": "pe-i386",
         "x86_64": "pe-x86-64",
-        "arm32": "armv7-w64-mingw32",
         "arm64": "aarch64-w64-mingw32",
     }
     env.AppendUnique(RCFLAGS=f"--target={ARCH_TARGETS[env['arch']]}")
@@ -786,8 +748,8 @@ def configure_mingw(env: "SConsEnvironment"):
         if not env["use_llvm"]:
             print("GCC does not support sanitizers on Windows.")
             sys.exit(255)
-        if env["arch"] not in ["x86_32", "x86_64"]:
-            print("Sanitizers are only supported for x86_32 and x86_64.")
+        if env["arch"] != "x86_64":
+            print("Sanitizers are only supported for x86_64.")
             sys.exit(255)
 
         env.extra_suffix += ".san"
@@ -852,13 +814,9 @@ def configure_mingw(env: "SConsEnvironment"):
                     env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/mingw-llvm/static/"])
                 elif env["arch"] == "x86_64":
                     env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw-llvm/static/"])
-                elif env["arch"] == "x86_32":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw-llvm/static/"])
             else:
                 if env["arch"] == "x86_64":
                     env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
-                elif env["arch"] == "x86_32":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
             env.Append(LIBPATH=["#bin/obj/platform/windows"])
             env.Append(
                 LIBS=[
@@ -936,7 +894,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
+    supported_arches = ["x86_64", "arm64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     # At this point the env has been set up with basic tools/compilers.

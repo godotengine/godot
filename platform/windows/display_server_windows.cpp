@@ -7041,7 +7041,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	if (rendering_driver == "opengl3") {
 		// There's no native OpenGL drivers on Windows for ARM, always enable fallback.
-#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64)
 		fallback = true;
 		show_warning = false;
 #else
