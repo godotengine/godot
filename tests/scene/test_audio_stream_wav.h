@@ -216,18 +216,15 @@ TEST_CASE("[Audio][AudioStreamWAV] Saving IMA ADPCM is not supported") {
 	ERR_PRINT_ON;
 }
 
-TEST_CASE("[Audio][AudioStreamWAV] Saving to buffer equals saving to disk and retrieving data from file") {
-	String file_name = "test_buffer.wav";
-	bool stereo = true;
-
+void run_save_test(String file_name, AudioStreamWAV::Format data_format, bool stereo, float wav_rate, float wav_count) {
 	String save_path = TestUtils::get_temp_path(file_name);
 
 	Vector<uint8_t> test_data;
-	test_data = gen_pcm16_test(WAV_RATE, WAV_COUNT, stereo);
+	test_data = gen_pcm16_test(wav_rate, wav_count, stereo);
 
 	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
-	stream->set_mix_rate(WAV_RATE);
-	stream->set_format(AudioStreamWAV::FORMAT_16_BITS);
+	stream->set_mix_rate(wav_rate);
+	stream->set_format(data_format);
 	stream->set_stereo(stereo);
 	stream->set_data(test_data);
 
@@ -238,6 +235,12 @@ TEST_CASE("[Audio][AudioStreamWAV] Saving to buffer equals saving to disk and re
 	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(save_path);
 
 	CHECK(stream_data == wav);
+}
+
+TEST_CASE("[Audio][AudioStreamWAV] Saving to buffer equals saving to disk and retrieving data from file") {
+	bool stereo = true;
+	run_save_test("test_buffer_8.wav", AudioStreamWAV::FORMAT_8_BITS, stereo, WAV_RATE, WAV_COUNT);
+	run_save_test("test_buffer_16.wav", AudioStreamWAV::FORMAT_16_BITS, stereo, WAV_RATE, WAV_COUNT);
 }
 
 } // namespace TestAudioStreamWAV
