@@ -895,6 +895,11 @@ void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) 
 			if (anim_name.is_empty()) {
 				continue;
 			}
+
+			if (String(anim_name) == "[stop]") {
+				continue;
+			}
+
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
 			if (!ap || !ap->has_animation(anim_name)) {
 				continue;
@@ -930,7 +935,6 @@ void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) 
 
 			if (scl_ofs >= get_timeline()->get_name_limit() && scl_ofs <= get_size().width - get_timeline()->get_buttons_width() &&
 					scl_end >= get_timeline()->get_name_limit() && scl_end <= get_size().width - get_timeline()->get_buttons_width()) {
-
 				bool resize_start = false;
 				bool can_resize = false;
 
@@ -1314,31 +1318,55 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 
 			float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), i);
 			float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), i);
-			len -= end_ofs;
-			len -= start_ofs;
+
+			float anim_len = len - start_ofs - end_ofs;
 
 			if (get_animation()->track_get_key_count(get_track()) > i + 1) {
-				len = MIN(len, get_animation()->track_get_key_time(get_track(), i + 1) - get_animation()->track_get_key_time(get_track(), i));
+				anim_len = MIN(anim_len, get_animation()->track_get_key_time(get_track(), i + 1) - get_animation()->track_get_key_time(get_track(), i));
 			}
 
 			float ofs = get_animation()->track_get_key_time(get_track(), i);
+			float scl_ofs = ((ofs - get_timeline()->get_value()) * get_timeline()->get_zoom_scale()) + get_timeline()->get_name_limit();
+			float scl_end = scl_ofs + anim_len * get_timeline()->get_zoom_scale();
 
-			ofs -= get_timeline()->get_value();
-			ofs *= get_timeline()->get_zoom_scale();
-			ofs += get_timeline()->get_name_limit();
+			float diff_left = scl_ofs - mm->get_position().x;
+			float diff_right = mm->get_position().x - scl_end;
+			
+			float dir = (diff_right - diff_left);
 
-			int end = ofs + len * get_timeline()->get_zoom_scale();
+			if (scl_ofs >= get_timeline()->get_name_limit() && scl_ofs <= get_size().width - get_timeline()->get_buttons_width() &&
+					scl_end >= get_timeline()->get_name_limit() && scl_end <= get_size().width - get_timeline()->get_buttons_width()) {
+				bool resize_start = false;
+				bool can_resize = false;
 
-			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - end) < 5 * EDSCALE) {
-				len_resizing_start = false;
-				use_hsize_cursor = true;
-				len_resizing_index = i;
-			}
+				if (diff_left > 0) { // left outside clip
+					if (Math::abs(diff_left) < 5 * EDSCALE) {
+						resize_start = true;
+						can_resize = true;
+					}
+				} else if (diff_right > 0) { // right outside clip
+					if (Math::abs(diff_right) < 5 * EDSCALE) {
+						resize_start = false;
+						can_resize = true;
+					}
+				} else { // inside clip
+					if (Math::abs(diff_left) < 5 * EDSCALE && Math::abs(diff_right) < 5 * EDSCALE) { // closest inside clip
+						resize_start = Math::abs(diff_left) < Math::abs(diff_right);
+						can_resize = true;
+					} else if (Math::abs(diff_left) < 5 * EDSCALE) { // left inside clip
+						resize_start = true;
+						can_resize = true;
+					} else if (Math::abs(diff_right) < 5 * EDSCALE) { // right inside clip
+						resize_start = false;
+						can_resize = true;
+					}
+				}
 
-			if (ofs >= get_timeline()->get_name_limit() && ofs <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - ofs) < 5 * EDSCALE) {
-				len_resizing_start = true;
-				use_hsize_cursor = true;
-				len_resizing_index = i;
+				if (can_resize) {
+					len_resizing_start = resize_start;
+					len_resizing_index = i;
+					use_hsize_cursor = true;
+				}
 			}
 		}
 		over_drag_position = use_hsize_cursor;
@@ -1359,9 +1387,9 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (len_resizing_start) {
-			len_resizing_rel = CLAMP(ofs_local, -prev_ofs_start, len - prev_ofs_end - prev_ofs_start) * get_timeline()->get_zoom_scale();
+			len_resizing_rel = CLAMP(ofs_local, -prev_ofs_start, MAX(0.0, len - prev_ofs_end - prev_ofs_start)) * get_timeline()->get_zoom_scale();
 		} else {
-			len_resizing_rel = CLAMP(ofs_local, -(len - prev_ofs_end - prev_ofs_start), prev_ofs_end) * get_timeline()->get_zoom_scale();
+			len_resizing_rel = CLAMP(ofs_local, -(MAX(0.0, len - prev_ofs_end - prev_ofs_start)), prev_ofs_end) * get_timeline()->get_zoom_scale();
 		}
 
 		queue_redraw();
@@ -1465,40 +1493,39 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 	}
 
 	String anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
-	Ref<Animation> anim = ap->get_animation(anim_name);
-	if (!anim.is_valid()) {
-		return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
-	}
-
-	if (anim_name != StringName("[stop]") && ap->has_animation(anim_name)) {
-		float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
-		float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
-
-		float len = anim->get_length();
-
-		if (len == 0) {
-			Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(anim);
-			len = preview->get_length();
-		}
-
-		len -= end_ofs;
-		len -= start_ofs;
-		if (len <= 0.0001) {
-			len = 0.0001;
-		}
-
-
-		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-			len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
-		}
-
-		return Rect2(0, 0, len * p_pixels_sec, get_size().height);
-	} else {
+	if (String(anim_name) == "[stop]") {
 		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 		int fh = font->get_height(font_size) * 0.8;
 		return Rect2(0, 0, fh, get_size().height);
 	}
+
+	Ref<Animation> anim = ap->get_animation(anim_name);
+	if (!anim.is_valid()) {
+		return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
+	}
+
+	float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
+	float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
+
+	float len = anim->get_length();
+
+	if (len == 0) {
+		Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(anim);
+		len = preview->get_length();
+	}
+
+	len -= end_ofs;
+	len -= start_ofs;
+	if (len <= 0.0001) {
+		len = 0.0001;
+	}
+
+	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+		len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+	}
+
+	return Rect2(0, 0, len * p_pixels_sec, get_size().height);
 }
 
 bool AnimationTrackEditTypeAnimation::is_key_selectable_by_distance() const {
@@ -1584,7 +1611,6 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 	Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
 	draw_rect(rect, Color(0.25, 0.25, 0.25));
 
-	// Zeichne Keyframe-Marker mit AnimationPreview
 	Vector<Vector2> points;
 	Vector<Color> colors = { Color(1.0, 1.0, 1.0) };
 	Vector<TrackKeyTime> key_times = preview->get_key_times_with_tracks();
@@ -1592,9 +1618,9 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 	float track_h = track_count > 0 ? (rect.size.height - 2) / track_count : rect.size.height;
 
 	for (const TrackKeyTime &kt : key_times) {
-		float ofs = kt.time - start_ofs; // Verschiebe Keyframe relativ zu start_offset
+		float ofs = kt.time - start_ofs;
 		if (ofs < 0 || ofs > len) {
-			continue; // Ignoriere Keyframes außerhalb des sichtbaren Bereichs
+			continue;
 		}
 		int x = pixel_begin + ofs * p_pixels_sec;
 
@@ -1611,7 +1637,6 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		draw_multiline_colors(points, colors);
 	}
 
-	// Zeichne Offset-Markierungen
 	Color cut_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	cut_color.a = 0.7;
 	if (start_ofs > 0 && pixel_begin > p_clip_left) {
@@ -1621,7 +1646,6 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		draw_rect(Rect2(pixel_end, rect.position.y, 1, rect.size.y), cut_color);
 	}
 
-	// Hervorhebung bei Auswahl
 	if (p_selected) {
 		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		draw_rect(rect, accent, false);
