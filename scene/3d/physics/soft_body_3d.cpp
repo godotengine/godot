@@ -352,6 +352,9 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_linear_stiffness", "linear_stiffness"), &SoftBody3D::set_linear_stiffness);
 	ClassDB::bind_method(D_METHOD("get_linear_stiffness"), &SoftBody3D::get_linear_stiffness);
 
+	ClassDB::bind_method(D_METHOD("set_shrinking_factor", "shrinking_factor"), &SoftBody3D::set_shrinking_factor);
+	ClassDB::bind_method(D_METHOD("get_shrinking_factor"), &SoftBody3D::get_shrinking_factor);
+
 	ClassDB::bind_method(D_METHOD("set_pressure_coefficient", "pressure_coefficient"), &SoftBody3D::set_pressure_coefficient);
 	ClassDB::bind_method(D_METHOD("get_pressure_coefficient"), &SoftBody3D::get_pressure_coefficient);
 
@@ -382,6 +385,7 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shrinking_factor", PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"), "set_shrinking_factor", "get_shrinking_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
@@ -646,6 +650,14 @@ void SoftBody3D::set_linear_stiffness(real_t p_linear_stiffness) {
 
 real_t SoftBody3D::get_linear_stiffness() {
 	return PhysicsServer3D::get_singleton()->soft_body_get_linear_stiffness(physics_rid);
+}
+
+void SoftBody3D::set_shrinking_factor(real_t p_shrinking_factor) {
+	PhysicsServer3D::get_singleton()->soft_body_set_shrinking_factor(physics_rid, p_shrinking_factor);
+}
+
+real_t SoftBody3D::get_shrinking_factor() {
+	return PhysicsServer3D::get_singleton()->soft_body_get_shrinking_factor(physics_rid);
 }
 
 real_t SoftBody3D::get_pressure_coefficient() {

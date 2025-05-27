@@ -445,6 +445,9 @@ public:
 	EXBIND2(soft_body_set_linear_stiffness, RID, real_t)
 	EXBIND1RC(real_t, soft_body_get_linear_stiffness, RID)
 
+	EXBIND2(soft_body_set_shrinking_factor, RID, real_t)
+	EXBIND1RC(real_t, soft_body_get_shrinking_factor, RID)
+
 	EXBIND2(soft_body_set_pressure_coefficient, RID, real_t)
 	EXBIND1RC(real_t, soft_body_get_pressure_coefficient, RID)
 
