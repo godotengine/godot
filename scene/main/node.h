@@ -210,7 +210,7 @@ private:
 		void *process_group = nullptr; // to avoid cyclic dependency
 
 		int multiplayer_authority = 1; // Server by default.
-		Variant rpc_config = Dictionary();
+		Variant rpc_config;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		int process_priority = 0;
@@ -389,6 +389,10 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
+	Variant _get_node_rpc_config_bind() const {
+		return get_node_rpc_config().duplicate(true);
+	}
+
 protected:
 	virtual bool _uses_signal_mutex() const override { return false; } // Node uses thread guards instead.
 
@@ -415,6 +419,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _set_name_bind_compat_76560(const String &p_name);
+	Variant _get_rpc_config_bind_compat_106848() const;
 	static void _bind_compatibility_methods();
 #endif
 
@@ -787,7 +792,7 @@ public:
 	bool is_multiplayer_authority() const;
 
 	void rpc_config(const StringName &p_method, const Variant &p_config); // config a local method for RPC
-	Variant get_rpc_config() const;
+	const Variant get_node_rpc_config() const;
 
 	template <typename... VarArgs>
 	Error rpc(const StringName &p_method, VarArgs... p_args);
