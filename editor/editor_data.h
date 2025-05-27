@@ -146,7 +146,7 @@ private:
 
 	HashMap<StringName, String> _script_class_icon_paths;
 	HashMap<String, StringName> _script_class_file_to_path;
-	HashMap<String, Ref<Texture>> _script_icon_cache;
+	HashMap<String, Ref<Texture2D>> _script_icon_cache;
 
 	Ref<Texture2D> _load_script_icon(const String &p_path) const;
 
