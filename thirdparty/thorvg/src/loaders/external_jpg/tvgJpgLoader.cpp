@@ -132,7 +132,7 @@ bool JpgLoader::read()
 
     //determine the image format
     TJPF format;
-    if (cs == ColorSpace::ARGB8888 || cs == ColorSpace::ARGB8888S) {
+    if (ImageLoader::cs == ColorSpace::ARGB8888 || ImageLoader::cs == ColorSpace::ARGB8888S) {
         format = TJPF_BGRX;
         surface.cs = ColorSpace::ARGB8888;
     } else {
