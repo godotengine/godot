@@ -88,6 +88,7 @@
 #include "tests/core/object/test_class_db.h"
 #include "tests/core/object/test_method_bind.h"
 #include "tests/core/object/test_object.h"
+#include "tests/core/object/test_required_obj.h"
 #include "tests/core/object/test_undo_redo.h"
 #include "tests/core/os/test_os.h"
 #include "tests/core/string/test_fuzzy_search.h"

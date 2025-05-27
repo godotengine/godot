@@ -36,9 +36,9 @@
 
 // IWYU pragma: always_keep
 
-// Ensure that C++ standard is at least C++17.
+// Ensure that C++ standard is at least C++20.
 // If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
-static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
+static_assert(__cplusplus >= 202002L, "Minimum of C++20 required.");
 
 // IWYU pragma: begin_exports
 
@@ -384,3 +384,12 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_MSVC_WARNING_POP
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
 #endif
+
+#define GODOT_DEPRECATED_BEGIN                                       \
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") \
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")   \
+	GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4996)
+#define GODOT_DEPRECATED_END \
+	GODOT_CLANG_WARNING_POP  \
+	GODOT_GCC_WARNING_POP    \
+	GODOT_MSVC_WARNING_POP

@@ -982,6 +982,7 @@ Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
 - `0002-png-explicit-variable-scope.patch` (GH-105093)
+- `0003-cpp20-explicit-namespace.patch` (GH-100749)
 
 
 ## tinyexr
