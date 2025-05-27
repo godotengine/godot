@@ -56,8 +56,8 @@
 
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
 class PooledList {
-	LocalVector<T, U, force_trivial> list;
-	LocalVector<U, U, true> freelist;
+	LocalVector<T, U> list;
+	LocalVector<U, U> freelist;
 
 	// not all list members are necessarily used
 	U _used_size;
@@ -102,13 +102,17 @@ public:
 			// pop from freelist
 			int new_size = freelist.size() - 1;
 			r_id = freelist[new_size];
-			freelist.resize(new_size);
+			freelist.resize_uninitialized(new_size);
 
 			return &list[r_id];
 		}
 
 		r_id = list.size();
-		list.resize(r_id + 1);
+		if constexpr (force_trivial || std::is_trivially_constructible_v<T>) {
+			list.resize_uninitialized(r_id + 1);
+		} else {
+			list.resize_initialized(r_id + 1);
+		}
 
 		static_assert((!zero_on_first_request) || (__is_pod(T)), "zero_on_first_request requires trivial type");
 		if constexpr (zero_on_first_request && __is_pod(T)) {
@@ -169,7 +173,7 @@ public:
 
 		// expand the active map (this should be in sync with the pool list
 		if (_pool.used_size() > _active_map.size()) {
-			_active_map.resize(_pool.used_size());
+			_active_map.resize_uninitialized(_pool.used_size());
 		}
 
 		// store in the active map
