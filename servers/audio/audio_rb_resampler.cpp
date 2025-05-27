@@ -120,7 +120,7 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 		return false;
 	}
 
-	int32_t increment = (src_mix_rate * MIX_FRAC_LEN) / target_mix_rate;
+	int32_t increment = (src_mix_rate * MIX_FRAC_LEN * playback_speed) / target_mix_rate;
 	int read_space = get_reader_space();
 	int target_todo = MIN(get_num_of_ready_frames(), p_frames);
 
@@ -226,6 +226,14 @@ void AudioRBResampler::clear() {
 	rb_read_pos.set(0);
 	rb_write_pos.set(0);
 	read_buf = nullptr;
+}
+
+void AudioRBResampler::set_playback_speed(double p_playback_speed) {
+	playback_speed = p_playback_speed;
+}
+
+double AudioRBResampler::get_playback_speed() const {
+	return playback_speed;
 }
 
 AudioRBResampler::AudioRBResampler() {
