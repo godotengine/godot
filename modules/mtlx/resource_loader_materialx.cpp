@@ -136,6 +136,7 @@ Error MaterialXShader::load_file(const String &p_path) {
 
 			Ref<VisualShaderNode> new_node = _read_node(node, node_i);
 			if (new_node.is_null()) {
+				WARN_PRINT(vformat("Skipping node [%s] of type [%s]", node->getName().c_str(), node->getCategory().c_str()));
 				continue;
 			}
 
@@ -256,13 +257,11 @@ Ref<VisualShaderNode> MaterialXShader::_read_node(const mx::NodePtr &p_node, int
 			texture_node->set_texture(texture);
 		}
 
-		//TODO not done
-		String layer = p_node->getInput("layer")->getValueString().c_str();
-		//String default_value = p_node->getInput("default")->asString().c_str();
-		//String texcoord = p_node->getInput("texcoord")->asString().c_str();
-		String uaddressmode = p_node->getInput("uaddressmode")->getValueString().c_str();
-		String vaddressmode = p_node->getInput("vaddressmode")->getValueString().c_str();
-		String filtertype = p_node->getInput("filtertype")->getValueString().c_str();
+		//_connection_or_default(texture_node, 0, p_node, "layer");
+		//_connection_or_default(texture_node, 0, p_node, "default");
+		_connection_or_default(texture_node, 0, p_node, "texcoord");
+		//_connection_or_default(texture_node, 0, p_node, "uaddressmode");
+		//_connection_or_default(texture_node, 0, p_node, "filtertype");
 
 		return texture_node;
 	} else if (category == "tiledimage") {
@@ -326,9 +325,22 @@ Ref<VisualShaderNode> MaterialXShader::_read_node(const mx::NodePtr &p_node, int
 	} else if (category == "position") {
 		return nullptr;
 	} else if (category == "normal") {
-		return nullptr;
+		Ref<VisualShaderNodeInput> input_node;
+		input_node.instantiate();
+
+		input_node->set_input_name("normal");
+		//_connection_or_default(input_node, 0, p_node, "space");
+
+		return input_node;
 	} else if (category == "tangent") {
-		return nullptr;
+		Ref<VisualShaderNodeInput> input_node;
+		input_node.instantiate();
+
+		input_node->set_input_name("tangent");
+		//_connection_or_default(input_node, 0, p_node, "space");
+		//_connection_or_default(input_node, 0, p_node, "index");
+
+		return input_node;
 	} else if (category == "bitangent") {
 		return nullptr;
 	} else if (category == "bump") {
@@ -338,6 +350,7 @@ Ref<VisualShaderNode> MaterialXShader::_read_node(const mx::NodePtr &p_node, int
 		input_node.instantiate();
 
 		input_node->set_input_name("uv");
+		//_connection_or_default(input_node, 0, p_node, "index");
 
 		return input_node;
 	} else if (category == "geomcolor") {
@@ -354,6 +367,24 @@ Ref<VisualShaderNode> MaterialXShader::_read_node(const mx::NodePtr &p_node, int
 		std::string type = p_node->getType();
 		if (type == "float") {
 			return _read_binary_operator_node(p_node, VisualShaderNodeFloatOp::OP_ADD);
+		} else if (type == "vector2") {
+			Ref<VisualShaderNodeVectorOp> vector_op = memnew(VisualShaderNodeVectorOp);
+			vector_op->set_op_type(VisualShaderNodeVectorOp::OP_TYPE_VECTOR_2D);
+			vector_op->set_operator(VisualShaderNodeVectorOp::OP_ADD);
+
+			_connection_or_default(vector_op, 0, p_node, "in1");
+			_connection_or_default(vector_op, 1, p_node, "in2");
+
+			return vector_op;
+		} else if (type == "vector3") {
+			Ref<VisualShaderNodeVectorOp> vector_op = memnew(VisualShaderNodeVectorOp);
+			vector_op->set_op_type(VisualShaderNodeVectorOp::OP_TYPE_VECTOR_3D);
+			vector_op->set_operator(VisualShaderNodeVectorOp::OP_ADD);
+
+			_connection_or_default(vector_op, 0, p_node, "in1");
+			_connection_or_default(vector_op, 1, p_node, "in2");
+
+			return vector_op;
 		}
 
 		return nullptr;
@@ -368,6 +399,24 @@ Ref<VisualShaderNode> MaterialXShader::_read_node(const mx::NodePtr &p_node, int
 		std::string type = p_node->getType();
 		if (type == "float") {
 			return _read_binary_operator_node(p_node, VisualShaderNodeFloatOp::OP_MUL);
+		} else if (type == "vector2") {
+			Ref<VisualShaderNodeVectorOp> vector_op = memnew(VisualShaderNodeVectorOp);
+			vector_op->set_op_type(VisualShaderNodeVectorOp::OP_TYPE_VECTOR_2D);
+			vector_op->set_operator(VisualShaderNodeVectorOp::OP_MUL);
+
+			_connection_or_default(vector_op, 0, p_node, "in1");
+			_connection_or_default(vector_op, 1, p_node, "in2");
+
+			return vector_op;
+		} else if (type == "vector3") {
+			Ref<VisualShaderNodeVectorOp> vector_op = memnew(VisualShaderNodeVectorOp);
+			vector_op->set_op_type(VisualShaderNodeVectorOp::OP_TYPE_VECTOR_3D);
+			vector_op->set_operator(VisualShaderNodeVectorOp::OP_MUL);
+
+			_connection_or_default(vector_op, 0, p_node, "in1");
+			_connection_or_default(vector_op, 1, p_node, "in2");
+
+			return vector_op;
 		}
 
 		return nullptr;
@@ -647,14 +696,18 @@ Ref<VisualShaderNode> MaterialXShader::_read_node(const mx::NodePtr &p_node, int
 		_connection_or_default(mix_node, 2, p_node, "mix");
 
 		std::string type = p_node->getType();
+		std::string weight_type = p_node->getInput("mix")->getType();
 		if (type == "float" || type == "integer") {
 			mix_node->set_op_type(VisualShaderNodeMix::OP_TYPE_SCALAR);
 		} else if (type == "vector2") {
-			mix_node->set_op_type(VisualShaderNodeMix::OP_TYPE_VECTOR_2D);
-		} else if (type == "vector3") {
-			mix_node->set_op_type(VisualShaderNodeMix::OP_TYPE_VECTOR_3D);
-		} else if (type == "vector4") {
-			mix_node->set_op_type(VisualShaderNodeMix::OP_TYPE_VECTOR_4D);
+			VisualShaderNodeMix::OpType op_type = weight_type == "float" ? VisualShaderNodeMix::OP_TYPE_VECTOR_2D_SCALAR : VisualShaderNodeMix::OP_TYPE_VECTOR_2D;
+			mix_node->set_op_type(op_type);
+		} else if (type == "vector3" || type == "color3") {
+			VisualShaderNodeMix::OpType op_type = weight_type == "float" ? VisualShaderNodeMix::OP_TYPE_VECTOR_3D_SCALAR : VisualShaderNodeMix::OP_TYPE_VECTOR_3D;
+			mix_node->set_op_type(op_type);
+		} else if (type == "vector4" || type == "color4") {
+			VisualShaderNodeMix::OpType op_type = weight_type == "float" ? VisualShaderNodeMix::OP_TYPE_VECTOR_4D_SCALAR : VisualShaderNodeMix::OP_TYPE_VECTOR_4D;
+			mix_node->set_op_type(op_type);
 		}
 
 		return mix_node;

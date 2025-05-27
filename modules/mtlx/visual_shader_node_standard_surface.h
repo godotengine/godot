@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  visual_shader_node_standard_surface.h                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "materialx_shader.h"
-#include "resource_loader_materialx.h"
-#include "resource_saver_materialx.h"
+#include "scene/resources/visual_shader.h"
 
-#include "core/io/resource.h"
-#include "core/object/class_db.h"
-#include "modules/register_module_types.h"
+class VisualShaderNodeStandardSurface : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeStandardSurface, VisualShaderNode);
 
-static Ref<ResourceFormatLoaderMtlx> resource_loader_mtlx;
-static Ref<ResourceFormatSaverMtlx> resource_saver_mtlx;
+public:
+	virtual String get_caption() const override;
 
-void initialize_mtlx_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(MaterialXShader);
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-		resource_loader_mtlx.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_mtlx);
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-		resource_saver_mtlx.instantiate();
-		ResourceSaver::add_resource_format_saver(resource_saver_mtlx);
-	}
-}
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-void uninitialize_mtlx_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_mtlx);
-		resource_loader_mtlx.unref();
+	virtual Category get_category() const override { return CATEGORY_SPECIAL; }
 
-		ResourceSaver::remove_resource_format_saver(resource_saver_mtlx);
-		resource_saver_mtlx.unref();
-	}
-}
+	VisualShaderNodeStandardSurface();
+};

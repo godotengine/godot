@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  resource_saver_materialx.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "materialx_shader.h"
-#include "resource_loader_materialx.h"
-#include "resource_saver_materialx.h"
+#include "core/io/resource_saver.h"
 
-#include "core/io/resource.h"
-#include "core/object/class_db.h"
-#include "modules/register_module_types.h"
+class ResourceFormatSaverMtlx : public ResourceFormatSaver {
+	GDCLASS(ResourceFormatSaverMtlx, ResourceFormatSaver);
 
-static Ref<ResourceFormatLoaderMtlx> resource_loader_mtlx;
-static Ref<ResourceFormatSaverMtlx> resource_saver_mtlx;
-
-void initialize_mtlx_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(MaterialXShader);
-
-		resource_loader_mtlx.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_mtlx);
-
-		resource_saver_mtlx.instantiate();
-		ResourceSaver::add_resource_format_saver(resource_saver_mtlx);
-	}
-}
-
-void uninitialize_mtlx_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_mtlx);
-		resource_loader_mtlx.unref();
-
-		ResourceSaver::remove_resource_format_saver(resource_saver_mtlx);
-		resource_saver_mtlx.unref();
-	}
-}
+public:
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
+	virtual bool recognize(const Ref<Resource> &p_resource) const override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+};
