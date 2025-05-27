@@ -397,6 +397,7 @@ class OS_Windows : public OS {
 	void _update_window_mouse_passthrough();
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
+	void _nvapi_disable_threaded_optimization();
 
 	// functions used by main to initialize/deinitialize the OS
 protected:
