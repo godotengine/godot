@@ -34,6 +34,14 @@
 
 class TextureRect;
 class Tree;
+class EditorPlugin;
+
+struct EditorAddonInfo {
+	String dir_name;
+	String config_path;
+	bool has_public_file = false;
+	EditorPlugin *plugin = nullptr;
+};
 
 class EditorPluginSettings : public VBoxContainer {
 	GDCLASS(EditorPluginSettings, VBoxContainer);
@@ -62,10 +70,11 @@ class EditorPluginSettings : public VBoxContainer {
 	void _create_clicked();
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
-	static Vector<String> _get_plugins(const String &p_dir);
+	static Vector<String> _get_plugins(const String &p_dir, Vector<EditorAddonInfo> &r_addons, bool &r_has_public_file);
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	void update_plugins();

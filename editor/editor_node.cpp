@@ -708,6 +708,21 @@ bool EditorNode::_is_project_data_missing() {
 	return false;
 }
 
+void EditorNode::_on_editor_addons_updated(Array addons) const {
+	for (Dictionary addon : addons) {
+		String config_path = addon[SNAME("config_path")].operator String();
+		if (config_path.length() > 0) {
+			EditorPlugin *const *ep = addon_name_to_plugin.getptr(config_path);
+			if (ep) {
+				addon[SNAME("plugin")] = *ep;
+			}
+		}
+	}
+	for (const KeyValue<String, EditorPlugin *> &E : addon_name_to_plugin) {
+		E.value->emit_signal(SNAME("addons_updated"), addons);
+	}
+}
+
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1028,6 +1043,8 @@ void EditorNode::init_plugins() {
 	if (!pending_addons.is_empty()) {
 		EditorFileSystem::get_singleton()->connect("script_classes_updated", callable_mp(this, &EditorNode::_enable_pending_addons), CONNECT_ONE_SHOT);
 	}
+
+	EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(project_settings_editor, &ProjectSettingsEditor::update_plugins), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 }
 
 void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_name) {

@@ -781,6 +781,17 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="addons_updated">
+			<param index="0" name="addons" type="Dictionary[]" />
+			<description>
+				Emitted when addon information is changed or newly detected by the editor. The argument is an array of dictionaries detailing every folder relative to [code]res://addons[/code] that contains either a [code]plugin.cfg[/code] or some other non-hidden file.
+				The key-value pairs of each Dictionary are as follows:
+				- [b]&amp;"dir_name"[/b]: ([String]) The directory path relative to [code]res://addons/[/code]: [code]"my_plugin"[/code]
+				- [b]&amp;"config_path"[/b]: ([String]) The absolute path to the [code]plugin.cfg[/code] file: [code]"res://addons/my_plugin/plugin.cfg"[/code]. May be empty if an addon.
+				- [b]&amp;"script_path"[/b]: ([String]) The simplified absolute path to the plugin's specified [EditorPlugin] script: [code]"res://addons/my_plugin/plugin.gd"[/code]. May be empty if an addon.
+				- [b]&amp;"plugin"[/b]: ([EditorPlugin]) The plugin instance. Will be [code]null[/code] if the addon is not a plugin or the plugin is not enabled.
+			</description>
+		</signal>
 		<signal name="main_screen_changed">
 			<param index="0" name="screen_name" type="String" />
 			<description>

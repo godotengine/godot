@@ -716,6 +716,7 @@ public:
 	// Public for use with callable_mp.
 	void init_plugins();
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+	void _on_editor_addons_updated(Array addons) const;
 
 	bool call_build();
 

@@ -789,6 +789,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));
+	plugin_settings->connect("editor_addons_updated", callable_mp(EditorNode::get_singleton(), &EditorNode::_on_editor_addons_updated));
 	tab_container->add_child(plugin_settings);
 
 	timer = memnew(Timer);
