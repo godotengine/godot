@@ -840,7 +840,18 @@ use_script:
 	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
-void ClassDB::_add_class(const StringName &p_class, const StringName &p_inherits) {
+void ClassDB::_add_class(const StringName &p_class, const StringName &p_inherits, Object::RegistrationContext p_context) {
+#if defined(DEV_ENABLED) && !defined(TESTS_ENABLED)
+	// For programmers: Please register all Object classes during initialization
+	// using GDREGISTER_CLASS (or one of the other macros).
+	// If you do not intend to expose the class, use GDSOFTCLASS instead of GDCLASS.
+	if (p_context == Object::RegistrationContext::OBJECT_CONSTRUCTION) {
+		WARN_PRINT(vformat("Minor bug, please report: Class \"%s\" was automatically registered during object initialization.", p_class));
+	} else if (p_context == Object::RegistrationContext::SUPERCLASS) {
+		WARN_PRINT(vformat("Minor bug, please report: Class \"%s\" was automatically registered during registration of a subclass.", p_class));
+	}
+#endif
+
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	const StringName &name = p_class;
