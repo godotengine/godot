@@ -36,26 +36,6 @@
 #include "tests/test_macros.h"
 
 namespace TestVariant {
-
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-static inline Dictionary build_dictionary() {
-	return Dictionary();
-}
-template <typename... Targs>
-static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fargs) {
-	Dictionary d = build_dictionary(Fargs...);
-	d[key] = item;
-	return d;
-}
-
 TEST_CASE("[Variant] Writer and parser integer") {
 	int64_t a32 = 2147483648; // 2^31, so out of bounds for 32-bit signed int [-2^31, +2^31-1].
 	String a32_str;
@@ -1787,7 +1767,7 @@ TEST_CASE("[Variant] Writer and parser Vector2") {
 }
 
 TEST_CASE("[Variant] Writer and parser array") {
-	Array a = build_array(1, String("hello"), build_array(Variant()));
+	Array a = { 1, String("hello"), Array({ Variant() }) };
 	String a_str;
 	VariantWriter::write_to_string(a, a_str);
 
@@ -1838,7 +1818,7 @@ TEST_CASE("[Variant] Writer recursive array") {
 
 TEST_CASE("[Variant] Writer and parser dictionary") {
 	// d = {{1: 2}: 3, 4: "hello", 5: {null: []}}
-	Dictionary d = build_dictionary(build_dictionary(1, 2), 3, 4, String("hello"), 5, build_dictionary(Variant(), build_array()));
+	Dictionary d = { { Dictionary({ { 1, 2 } }), 3 }, { 4, String("hello") }, { 5, Dictionary({ { Variant(), Array() } }) } };
 	String d_str;
 	VariantWriter::write_to_string(d, d_str);
 
@@ -1856,7 +1836,7 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 }
 
 TEST_CASE("[Variant] Writer key sorting") {
-	Dictionary d = build_dictionary(StringName("C"), 3, "A", 1, StringName("B"), 2, "D", 4);
+	Dictionary d = { { StringName("C"), 3 }, { "A", 1 }, { StringName("B"), 2 }, { "D", 4 } };
 	String d_str;
 	VariantWriter::write_to_string(d, d_str);
 
@@ -2145,9 +2125,9 @@ TEST_CASE("[Variant] Identity comparison") {
 }
 
 TEST_CASE("[Variant] Nested array comparison") {
-	Array a1 = build_array(1, build_array(2, 3));
-	Array a2 = build_array(1, build_array(2, 3));
-	Array a_other = build_array(1, build_array(2, 4));
+	Array a1 = { 1, { 2, 3 } };
+	Array a2 = { 1, { 2, 3 } };
+	Array a_other = { 1, { 2, 4 } };
 	Variant v_a1 = a1;
 	Variant v_a1_ref2 = a1;
 	Variant v_a2 = a2;
@@ -2165,10 +2145,10 @@ TEST_CASE("[Variant] Nested array comparison") {
 }
 
 TEST_CASE("[Variant] Nested dictionary comparison") {
-	Dictionary d1 = build_dictionary(build_dictionary(1, 2), build_dictionary(3, 4));
-	Dictionary d2 = build_dictionary(build_dictionary(1, 2), build_dictionary(3, 4));
-	Dictionary d_other_key = build_dictionary(build_dictionary(1, 0), build_dictionary(3, 4));
-	Dictionary d_other_val = build_dictionary(build_dictionary(1, 2), build_dictionary(3, 0));
+	Dictionary d1 = { { Dictionary({ { 1, 2 } }), Dictionary({ { 3, 4 } }) } };
+	Dictionary d2 = { { Dictionary({ { 1, 2 } }), Dictionary({ { 3, 4 } }) } };
+	Dictionary d_other_key = { { Dictionary({ { 1, 0 } }), Dictionary({ { 3, 4 } }) } };
+	Dictionary d_other_val = { { Dictionary({ { 1, 2 } }), Dictionary({ { 3, 0 } }) } };
 	Variant v_d1 = d1;
 	Variant v_d1_ref2 = d1;
 	Variant v_d2 = d2;
