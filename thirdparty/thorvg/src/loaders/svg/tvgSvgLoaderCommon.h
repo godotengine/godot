@@ -577,7 +577,7 @@ struct SvgLoaderData
     SvgNode* def = nullptr; //also used to store nested graphic nodes
     SvgNode* cssStyle = nullptr;
     Array<SvgStyleGradient*> gradients;
-    SvgStyleGradient* latestGradient = nullptr; //For stops
+    Array<SvgStyleGradient*> gradientStack; //For stops
     SvgParser* svgParse = nullptr;
     Array<SvgNodeIdPair> cloneNodes;
     Array<SvgNodeIdPair> nodesToStyle;
