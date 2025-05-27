@@ -52,6 +52,10 @@
 #include "editor/editor_undo_redo_manager.h"
 #endif // TOOLS_ENABLED
 
+#ifndef ANIM_INTERP_ENABLED
+//#define ANIM_INTERP_ENABLED
+#endif //ANIM_INTERP_ENABLED
+
 bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 
@@ -1782,10 +1786,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 				} break;
 				case Animation::TYPE_ANIMATION: {
-					if (Math::is_zero_approx(blend)) {
-						continue;
-					}
-					
+					// The end of animation should be observed even if the blend value is 0, build up the information and store to the cache for that.
 					TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 					Object *t_obj = ObjectDB::get_instance(t->object_id);
 					Node *asp = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
@@ -1839,22 +1840,12 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						continue;
 					}
 
+					// Handle stop keys
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
 					int curr_idx = idx;
 					while (String(anim_name) == "[stop]" && idx > 0) {
 						idx = idx - 1;
 						anim_name = a->animation_track_get_key_animation(i, idx);
-					}
-
-					int stop_idx = -1;
-					if (curr_idx != idx) {
-						if (String(anim_name) != "[stop]") {
-							stop_idx = idx + 1;
-						}
-						animation_playback->stop(true);
-						if (playing_caches.has(t)) {
-							playing_caches.erase(t);
-						}
 					}
 
 					while (String(anim_name) == "[stop]" && idx < a->track_get_key_count(i)) {
@@ -1870,6 +1861,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						continue;
 					}
 
+					// Handle animation seeking
 					Ref<Animation> anim = animation_playback->get_animation(anim_name);
 					if (anim.is_valid()) {
 						switch (a->get_loop_mode()) {
@@ -1892,10 +1884,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double len = anim->get_length();
 						double len_ofs = len - start_ofs - end_ofs;
 
-						if (stop_idx >= 0) {
-							double stop_key_time = a->track_get_key_time(i, stop_idx);
+						double next_key = idx + 1;
+						if (next_key < a->track_get_key_count(i)) {
+							double next_key_time = a->track_get_key_time(i, next_key);
 							double end = key_time + len_ofs;
-							double clamped_end = MIN(end, stop_key_time);
+							double clamped_end = MIN(end, next_key_time);
 							double cropped_len = clamped_end - end;
 							if (cropped_len < 0) {
 								end_ofs -= cropped_len;
@@ -1944,9 +1937,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							pasi.len = 0;
 						}
 
-						//////////////////////////
-
-						/*
+#ifdef ANIM_INTERP_ENABLED
+						// Handle interpolation
 						int prev_idx = idx - 1;
 						if (prev_idx >= 0) {
 							StringName prev_anim_name = a->animation_track_get_key_animation(i, prev_idx);
@@ -1993,12 +1985,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						}
-						*/
+#endif // ANIM_INTERP_ENABLED
 
 						map[idx] = pasi;
 
-						//////////////////////////
-
+						// Handle non-interpolation playing
 						if (root_is_playing && map.size() == 1) {
 							if (anim_time >= anim_time_start && anim_time <= anim_time_end && anim_time_start != anim_time_end) {
 								animation_playback->play_section(t->anim_name, anim_time_start, anim_time_end);
@@ -2007,10 +1998,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 									playing_caches.insert(t);
 								}
 							} else {
-								//if (stop_idx != -1) {
-								//	animation_playback->seek(anim_time_start, false, p_update_only);
-								//}
-
 								if (playing_caches.has(t)) {
 									playing_caches.erase(t);
 								}
@@ -2187,7 +2174,7 @@ void AnimationMixer::_blend_apply() {
 			case Animation::TYPE_ANIMATION: {
 				TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
-				/*
+#ifdef ANIM_INTERP_ENABLED
 				Object *t_obj = ObjectDB::get_instance(t->object_id);
 				if (!t_obj) {
 					WARN_PRINT("Invalid object ID for AnimationPlayer");
@@ -2205,7 +2192,7 @@ void AnimationMixer::_blend_apply() {
 					WARN_PRINT("Root node not found");
 					continue;
 				}
-				*/
+#endif // ANIM_INTERP_ENABLED
 
 				// Animation ending and blending process
 				LocalVector<ObjectID> erase_maps;
@@ -2213,7 +2200,7 @@ void AnimationMixer::_blend_apply() {
 					PlayingAnimationTrackInfo &track_info = L.value;
 
 					LocalVector<int> erase_anims;
-					/*
+#ifdef ANIM_INTERP_ENABLED
 					// Structure for interpolated values
 					struct BlendedTrackValue {
 						NodePath path;
@@ -2222,11 +2209,11 @@ void AnimationMixer::_blend_apply() {
 					};
 
 					AHashMap<Animation::TypeHash, BlendedTrackValue> blended_values;
-					*/
+#endif // ANIM_INTERP_ENABLED
 					AHashMap<int, PlayingAnimationInfo> &map = track_info.anim_info;
 					for (const KeyValue<int, PlayingAnimationInfo> &M : map) {
 						PlayingAnimationInfo pasi = M.value;
-						/*
+#ifdef ANIM_INTERP_ENABLED
 						double overlap_len = pasi.anim_overlap_end - pasi.anim_overlap_start;
 						if (overlap_len > 0) {
 							double norm_time = (pasi.anim_time - pasi.anim_overlap_start) / overlap_len;
@@ -2375,11 +2362,11 @@ void AnimationMixer::_blend_apply() {
 								}
 							}
 						}
-						*/
+#endif // ANIM_INTERP_ENABLED
 						erase_anims.push_back(M.key);
 					}
 
-					/*
+#ifdef ANIM_INTERP_ENABLED
 					for (const KeyValue<Animation::TypeHash, BlendedTrackValue> &E : blended_values) {
 						const BlendedTrackValue &btv = E.value;
 
@@ -2449,7 +2436,7 @@ void AnimationMixer::_blend_apply() {
 								break;
 						}
 					}
-					*/
+#endif // ANIM_INTERP_ENABLED
 
 					for (uint32_t erase_idx = 0; erase_idx < erase_anims.size(); erase_idx++) {
 						map.erase(erase_anims[erase_idx]);
