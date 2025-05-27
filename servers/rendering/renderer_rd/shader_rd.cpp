@@ -189,9 +189,9 @@ void ShaderRD::_initialize_version(Version *p_version) {
 	p_version->valid = false;
 	p_version->dirty = false;
 
-	p_version->variants.resize_zeroed(variant_defines.size());
+	p_version->variants.resize_initialized(variant_defines.size());
 	p_version->variant_data.resize(variant_defines.size());
-	p_version->group_compilation_tasks.resize_zeroed(group_enabled.size());
+	p_version->group_compilation_tasks.resize_initialized(group_enabled.size());
 }
 
 void ShaderRD::_clear_version(Version *p_version) {
@@ -869,7 +869,7 @@ void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const 
 	}
 
 	// Set all to groups to false, then enable those that should be default.
-	group_enabled.resize_zeroed(max_group_id + 1);
+	group_enabled.resize_initialized(max_group_id + 1);
 	bool *enabled_ptr = group_enabled.ptrw();
 	for (int i = 0; i < p_variant_defines.size(); i++) {
 		if (p_variant_defines[i].default_enabled) {

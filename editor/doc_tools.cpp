@@ -141,7 +141,7 @@ static void merge_constructors(Vector<DocData::MethodDoc> &p_to, const Vector<Do
 				// the arguments so we make sure they are different.
 				int64_t arg_count = from.arguments.size();
 				Vector<bool> arg_used;
-				arg_used.resize_zeroed(arg_count);
+				arg_used.resize_initialized(arg_count);
 				// Also there is no guarantee that argument ordering will match,
 				// so we have to check one by one so we make sure we have an exact match.
 				for (int64_t arg_i = 0; arg_i < arg_count; ++arg_i) {

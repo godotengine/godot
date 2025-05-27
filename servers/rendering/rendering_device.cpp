@@ -3183,7 +3183,7 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 	VertexArray vertex_array;
 
 	if (p_offsets.is_empty()) {
-		vertex_array.offsets.resize_zeroed(p_src_buffers.size());
+		vertex_array.offsets.resize_initialized(p_src_buffers.size());
 	} else {
 		ERR_FAIL_COND_V(p_offsets.size() != p_src_buffers.size(), RID());
 		vertex_array.offsets = p_offsets;
