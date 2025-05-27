@@ -40,10 +40,10 @@
 
 // If tight, it grows strictly as much as needed.
 // Otherwise, it grows exponentially (the default and what you want in most cases).
-// force_trivial is used to avoid T's default value on resize, for improved performance.
-// This requires T to be trivially destructible.
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
 class LocalVector {
+	static_assert(!force_trivial, "force_trivial is no longer supported. Use resize_uninitialized instead.");
+
 private:
 	U count = 0;
 	U capacity = 0;
@@ -182,14 +182,13 @@ public:
 
 	/// Resize the vector.
 	/// Elements are initialized (or not) depending on what the default C++ behavior for T is.
-	/// Note: If force_trivial is set, this will behave like resize_trivial instead.
+	/// Note: If force_trivial is set, this will behave like resize_uninitialized instead.
 	void resize(U p_size) {
-		// Don't init when trivially constructible, or force_trivial is set.
-		_resize<!force_trivial && !std::is_trivially_constructible_v<T>>(p_size);
+		// Don't init when trivially constructible.
+		_resize<!std::is_trivially_constructible_v<T>>(p_size);
 	}
 
 	/// Resize and set all values to 0 / false / nullptr.
-	/// This is only available for zero constructible types.
 	_FORCE_INLINE_ void resize_initialized(U p_size) { _resize<true>(p_size); }
 
 	/// Resize and set all values to 0 / false / nullptr.
@@ -410,8 +409,8 @@ public:
 	}
 };
 
-template <typename T, typename U = uint32_t, bool force_trivial = false>
-using TightLocalVector = LocalVector<T, U, force_trivial, true>;
+template <typename T, typename U = uint32_t>
+using TightLocalVector = LocalVector<T, U, false, true>;
 
 // Zero-constructing LocalVector initializes count, capacity and data to 0 and thus empty.
 template <typename T, typename U, bool force_trivial, bool tight>
