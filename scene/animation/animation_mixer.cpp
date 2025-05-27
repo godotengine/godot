@@ -394,6 +394,14 @@ void AnimationMixer::get_animation_list(List<StringName> *p_animations) const {
 }
 
 Ref<Animation> AnimationMixer::get_animation(const StringName &p_name) const {
+	if (p_name == "[stop]") {
+		int a = 0;
+	}
+
+	if (p_name.is_empty()) {
+		int a = 0;
+	}
+
 	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
 	const AnimationData &anim_data = animation_set[p_name];
 	return anim_data.animation;
@@ -1848,12 +1856,12 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						anim_name = a->animation_track_get_key_animation(i, idx);
 					}
 
-					while (String(anim_name) == "[stop]" && idx < a->track_get_key_count(i)) {
+					while (String(anim_name) == "[stop]" && idx < a->track_get_key_count(i)-1) {
 						idx = idx + 1;
 						anim_name = a->animation_track_get_key_animation(i, idx);
 					}
 
-					if (String(anim_name) == "[stop]") {
+					if (String(anim_name) == "[stop]" || anim_name.is_empty()) {
 						animation_playback->stop(true);
 						if (playing_caches.has(t)) {
 							playing_caches.erase(t);
