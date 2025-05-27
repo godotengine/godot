@@ -1107,6 +1107,10 @@ void EditorProperty::set_bottom_editor(Control *p_control) {
 	}
 }
 
+Control *EditorProperty::get_bottom_editor() const {
+	return bottom_editor;
+}
+
 Variant EditorProperty::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
 	return object->get(p_prop, &r_valid);
 }

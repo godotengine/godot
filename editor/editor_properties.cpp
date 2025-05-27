@@ -109,6 +109,10 @@ void EditorPropertyVariant::update_property() {
 
 		if (sub_property) {
 			memdelete(sub_property);
+			if (get_bottom_editor()) {
+				memdelete(get_bottom_editor());
+				set_bottom_editor(nullptr);
+			}
 			sub_property = nullptr;
 		}
 
@@ -128,10 +132,20 @@ void EditorPropertyVariant::update_property() {
 		sub_property->connect(SNAME("property_changed"), callable_mp((EditorProperty *)this, &EditorProperty::emit_changed));
 		content->add_child(sub_property);
 		content->move_child(sub_property, 0);
-		sub_property->update_property();
-	} else if (sub_property) {
-		sub_property->update_property();
 	}
+
+	if (sub_property) {
+		sub_property->update_property();
+
+		Control *sub_property_bottom_editor = sub_property->get_bottom_editor();
+		if (sub_property_bottom_editor) {
+			sub_property->set_bottom_editor(nullptr);
+			sub_property->remove_child(sub_property_bottom_editor);
+			add_child(sub_property_bottom_editor);
+			set_bottom_editor(sub_property_bottom_editor);
+		}
+	}
+
 	new_type = Variant::VARIANT_MAX;
 }
 
