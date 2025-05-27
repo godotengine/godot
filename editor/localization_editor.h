@@ -30,12 +30,16 @@
 
 #pragma once
 
-#include "editor/editor_locale_dialog.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/box_container.h"
 
+class Button;
+class CheckBox;
 class EditorFileDialog;
+class EditorLocaleDialog;
 class FileSystemDock;
+class LineEdit;
+class Timer;
+class Tree;
 
 class LocalizationEditor : public VBoxContainer {
 	GDCLASS(LocalizationEditor, VBoxContainer);
@@ -53,6 +57,8 @@ class LocalizationEditor : public VBoxContainer {
 
 	Tree *translation_pot_list = nullptr;
 	CheckBox *translation_pot_add_builtin = nullptr;
+	LineEdit *translation_pot_exclude_prefix = nullptr;
+	Timer *translation_pot_exclude_prefix_debounce = nullptr;
 	EditorFileDialog *pot_file_open_dialog = nullptr;
 	EditorFileDialog *pot_generate_dialog = nullptr;
 	Button *pot_generate_button = nullptr;
@@ -80,6 +86,7 @@ class LocalizationEditor : public VBoxContainer {
 	void _pot_file_open();
 	void _pot_generate_open();
 	void _pot_add_builtin_toggled();
+	void _pot_prefix_changed();
 	void _pot_generate(const String &p_file);
 	void _update_pot_file_extensions();
 
