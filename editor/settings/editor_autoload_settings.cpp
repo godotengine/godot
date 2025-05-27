@@ -957,10 +957,12 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_column_titles_visible(true);
 
 	tree->set_column_title(0, TTRC("Name"));
+	tree->set_column_title_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 	tree->set_column_expand(0, true);
 	tree->set_column_expand_ratio(0, 1);
 
 	tree->set_column_title(1, TTRC("Path"));
+	tree->set_column_title_alignment(1, HORIZONTAL_ALIGNMENT_LEFT);
 	tree->set_column_expand(1, true);
 	tree->set_column_clip_content(1, true);
 	tree->set_column_expand_ratio(1, 2);
