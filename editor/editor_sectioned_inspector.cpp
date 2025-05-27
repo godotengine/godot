@@ -35,6 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 
 static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {

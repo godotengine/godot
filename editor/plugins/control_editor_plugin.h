@@ -33,6 +33,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
 class CheckBox;
@@ -42,6 +43,7 @@ class GridContainer;
 class Label;
 class OptionButton;
 class PanelContainer;
+class PopupPanel;
 class Separator;
 class TextureRect;
 

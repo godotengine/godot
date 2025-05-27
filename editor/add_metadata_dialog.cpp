@@ -30,7 +30,10 @@
 
 #include "add_metadata_dialog.h"
 
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
 
 AddMetadataDialog::AddMetadataDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
