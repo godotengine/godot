@@ -1347,7 +1347,7 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-	String lang = get("interface/editor/editor_language");
+	String lang = _EDITOR_GET("interface/editor/editor_language");
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
@@ -1460,6 +1460,9 @@ void EditorSettings::set_setting(const String &p_setting, const Variant &p_value
 
 Variant EditorSettings::get_setting(const String &p_setting) const {
 	_THREAD_SAFE_METHOD_
+	if (ProjectSettings::get_singleton()->has_editor_setting_override(p_setting)) {
+		return ProjectSettings::get_singleton()->get_editor_setting_override(p_setting);
+	}
 	return get(p_setting);
 }
 
@@ -1534,7 +1537,7 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 
 Variant _EDITOR_GET(const String &p_setting) {
 	ERR_FAIL_COND_V(!EditorSettings::get_singleton() || !EditorSettings::get_singleton()->has_setting(p_setting), Variant());
-	return EditorSettings::get_singleton()->get(p_setting);
+	return EditorSettings::get_singleton()->get_setting(p_setting);
 }
 
 bool EditorSettings::_property_can_revert(const StringName &p_name) const {
