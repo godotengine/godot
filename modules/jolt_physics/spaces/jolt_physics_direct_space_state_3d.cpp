@@ -464,8 +464,15 @@ JoltPhysicsDirectSpaceState3D::JoltPhysicsDirectSpaceState3D(JoltSpace3D *p_spac
 int JoltPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_ray must not be called while the physics space is being stepped.");
 
+	// Parity for godot physics 3d - if a single result is expected then return the closest hit (same as intersect_ray)
 	if (p_result_max == 0) {
 		return 0;
+	} else if (p_result_max == 1) {
+		if (intersect_ray(p_parameters, r_results[0])) {
+			return 1;
+		} else {
+			return 0;
+		}
 	}
 
 	space->try_optimize();
