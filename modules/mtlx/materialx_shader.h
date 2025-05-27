@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_loader_materialx.h                                           */
+/*  materialx_shader.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,14 +30,45 @@
 
 #pragma once
 
-#include "core/io/resource_loader.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "scene/resources/visual_shader.h"
+#include "scene/resources/visual_shader_nodes.h"
 
-class ResourceFormatLoaderMtlx : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderMtlx, ResourceFormatLoader);
+#include <MaterialXCore/Document.h>
+#include <MaterialXCore/Value.h>
+#include <MaterialXFormat/File.h>
+#include <MaterialXFormat/XmlIo.h>
+
+namespace mx = MaterialX;
+
+class MaterialXShader : public VisualShader {
+	GDCLASS(MaterialXShader, VisualShader)
+
+	HashMap<StringName, int> node_id_map;
+	HashMap<StringName, int> node_output_port_map;
+	HashMap<StringName, StringName> output_to_node_map;
+
+	typedef struct {
+		StringName node_out;
+		StringName node_in;
+		int node_in_port;
+	} NodeConnection;
+	Vector<NodeConnection> node_connections;
 
 public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
+	Error load_file(const String &p_path);
+	Error save_file(const String &p_path = "");
+
+private:
+	void _connect_or_default(mx::NodePtr p_shader, std::string p_outgoing_port, int p_incoming_port);
+	void _connection_or_default(Ref<VisualShaderNode> p_shader_node, int p_port, const mx::NodePtr &p_mtlx_node, std::string p_input);
+
+	Ref<VisualShaderNode> _read_node(const mx::NodePtr &node, int p_id);
+	Ref<VisualShaderNodeConstant> _read_constant_node(const mx::NodePtr &p_node) const;
+	Ref<VisualShaderNodeFloatFunc> _read_unary_operator_node(const mx::NodePtr &p_node, VisualShaderNodeFloatFunc::Function p_unary_op);
+	Ref<VisualShaderNodeFloatOp> _read_binary_operator_node(const mx::NodePtr &p_node, VisualShaderNodeFloatOp::Operator p_binary_op);
+
+	static int _get_mtlx_type_as_port_type(const std::string &p_type);
+	static Variant _get_mtlx_value_as_port_value(const mx::ValuePtr &p_value);
 };

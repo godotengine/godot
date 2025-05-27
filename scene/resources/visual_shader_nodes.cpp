@@ -4869,6 +4869,10 @@ int VisualShaderNodeExtract::get_output_port_count() const {
 	return 1;
 }
 
+VisualShaderNode::PortType VisualShaderNodeExtract::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
 String VisualShaderNodeExtract::get_output_port_name(int p_port) const {
 	return "out";
 }
@@ -4877,31 +4881,25 @@ void VisualShaderNodeExtract::set_op_type(OpType p_op_type) {
 	op_type = p_op_type;
 	switch (p_op_type) {
 		case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_2D: {
-			float p1 = get_input_port_default_value(0);
-			float p2 = get_input_port_default_value(1);
+			Vector2 p1 = get_input_port_default_value(0);
+			int p2 = get_input_port_default_value(1);
 
 			set_input_port_default_value(0, p1);
 			set_input_port_default_value(1, p2);
 		} break;
 		case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_3D: {
-			float p1 = get_input_port_default_value(0);
-			float p2 = get_input_port_default_value(1);
-			float p3 = get_input_port_default_value(2);
+			Vector3 p1 = get_input_port_default_value(0);
+			int p2 = get_input_port_default_value(1);
 
 			set_input_port_default_value(0, p1);
 			set_input_port_default_value(1, p2);
-			set_input_port_default_value(2, p3);
 		} break;
 		case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_4D: {
-			float p1 = get_input_port_default_value(0);
-			float p2 = get_input_port_default_value(1);
-			float p3 = get_input_port_default_value(2);
-			float p4 = get_input_port_default_value(3);
+			Vector4 p1 = get_input_port_default_value(0);
+			int p2 = get_input_port_default_value(1);
 
 			set_input_port_default_value(0, p1);
 			set_input_port_default_value(1, p2);
-			set_input_port_default_value(2, p3);
-			set_input_port_default_value(3, p4);
 		} break;
 		default:
 			break;
@@ -4910,11 +4908,11 @@ void VisualShaderNodeExtract::set_op_type(OpType p_op_type) {
 }
 
 String VisualShaderNodeExtract::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return vformat("\t%s = %s[%s]", p_output_vars[0], p_input_vars[0], p_input_vars[1]);
+	return vformat("\t%s = %s[%s];", p_output_vars[0], p_input_vars[0], p_input_vars[1]);
 }
 
 VisualShaderNodeExtract::VisualShaderNodeExtract() {
-	set_input_port_default_value(0, 0.0);
+	set_input_port_default_value(0, Vector3());
 	set_input_port_default_value(1, 0);
 }
 

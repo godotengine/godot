@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_loader_materialx.h                                           */
+/*  Generated.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,14 +30,30 @@
 
 #pragma once
 
-#include "core/io/resource_loader.h"
+//
+// Copyright Contributors to the MaterialX Project
+// SPDX-License-Identifier: Apache-2.0
+//
 
-class ResourceFormatLoaderMtlx : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderMtlx, ResourceFormatLoader);
+#ifndef MATERIALX_GENERATED_H
+#define MATERIALX_GENERATED_H
 
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
-};
+#define MATERIALX_MAJOR_VERSION 1
+#define MATERIALX_MINOR_VERSION 38
+#define MATERIALX_BUILD_VERSION 10
+
+/* #undef MATERIALX_BUILD_SHARED_LIBS */
+
+// Establish namespace:
+namespace MaterialX_v1_38_10 {
+}
+
+// Establish alias to allow downstream clients to still use the MaterialX namespace:
+namespace MaterialX = MaterialX_v1_38_10;
+
+// All code in this project must use these macros for opening and closing the
+// global MaterialX namespace:
+#define MATERIALX_NAMESPACE_BEGIN namespace MaterialX_v1_38_10 {
+#define MATERIALX_NAMESPACE_END }
+
+#endif

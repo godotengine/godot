@@ -30,15 +30,19 @@
 
 #include "register_types.h"
 
+#include "materialx_shader.h"
 #include "resource_loader_materialx.h"
 
 #include "core/io/resource.h"
+#include "core/object/class_db.h"
 #include "modules/register_module_types.h"
 
 static Ref<ResourceFormatLoaderMtlx> resource_loader_mtlx;
 
 void initialize_mtlx_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(MaterialXShader);
+
 		resource_loader_mtlx.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_mtlx);
 	}

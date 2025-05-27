@@ -11,7 +11,7 @@ if env.msvc:
 else:
     env_materialx.Append(CCFLAGS="-fexceptions")
 
-env_materialx.Prepend(CPPPATH=["#modules/mtlx", "#thirdparty/materialx/source"])
+env_materialx.Prepend(CPPPATH=["#modules/mtlx", "#modules/mtlx/MaterialXCore", "#thirdparty/materialx/source"])
 
 thirdparty_obj = []
 

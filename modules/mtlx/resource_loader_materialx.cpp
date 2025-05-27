@@ -30,6 +30,8 @@
 
 #include "resource_loader_materialx.h"
 
+#include "materialx_shader.h"
+
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
@@ -56,11 +58,46 @@
 #include <MaterialXFormat/XmlIo.h>
 
 Ref<Resource> ResourceFormatLoaderMtlx::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	*r_error = OK;
+
+	Ref<MaterialXShader> shader = memnew(MaterialXShader);
+	shader->set_path(p_original_path);
+
+	Error err = shader->load_file(p_original_path);
+	if (err != OK) {
+		*r_error = err;
+		return nullptr;
+	}
+
+	Ref<ShaderMaterial> mat = memnew(ShaderMaterial);
+	mat->set_shader(shader);
+
+	return mat;
+}
+
+void ResourceFormatLoaderMtlx::get_recognized_extensions(List<String> *p_extensions) const {
+	if (!p_extensions->find("mtlx")) {
+		p_extensions->push_back("mtlx");
+	}
+}
+
+bool ResourceFormatLoaderMtlx::handles_type(const String &p_type) const {
+	return ClassDB::is_parent_class(p_type, "ShaderMaterial");
+}
+
+String ResourceFormatLoaderMtlx::get_resource_type(const String &p_path) const {
+	String el = p_path.get_extension().to_lower();
+	if (el == "mtlx") {
+		return "ShaderMaterial";
+	}
+	return "";
+}
+
+Error MaterialXShader::load_file(const String &p_path) {
 	// Prepare + Load MaterialX document.
 	mx::DocumentPtr doc = mx::createDocument();
 
-	String resource_path = ProjectSettings::get_singleton()->globalize_path(p_original_path);
-	resource_base_path = resource_path.get_base_dir();
+	String resource_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 	mx::FilePath mx_absolute_path = mx::FilePath(resource_path.utf8().get_data());
 
 	mx::readFromXmlFile(doc, mx_absolute_path);
@@ -69,15 +106,9 @@ Ref<Resource> ResourceFormatLoaderMtlx::load(const String &p_path, const String 
 	std::string message;
 	bool document_valid = doc->validate(&message);
 	if (!document_valid) {
-		*r_error = ERR_PARSE_ERROR;
 		String msg = vformat("The MaterialX document is invalid: [%s] %s", resource_path, message.c_str());
-		ERR_FAIL_V_MSG(Ref<Resource>(), msg);
+		ERR_FAIL_V_MSG(ERR_PARSE_ERROR, msg);
 	}
-
-	// Convert MaterialX document into VisualShader
-	Ref<ShaderMaterial> mat;
-	mat.instantiate();
-	shader.instantiate();
 
 	int node_i = 2;
 	for (mx::NodeGraphPtr graph : doc->getNodeGraphs()) {
@@ -114,9 +145,9 @@ Ref<Resource> ResourceFormatLoaderMtlx::load(const String &p_path, const String 
 			frame_node.instantiate();
 			frame_node->set_title(node->getName().c_str());
 
-			shader->add_node(VisualShader::TYPE_FRAGMENT, new_node, Vector2(150, -200 + 100 * node_i), node_i);
-			shader->add_node(VisualShader::TYPE_FRAGMENT, frame_node, Vector2(150, 0 + 100 * node_i), node_i + 1);
-			shader->attach_node_to_frame(VisualShader::TYPE_FRAGMENT, node_i, node_i + 1);
+			add_node(VisualShader::TYPE_FRAGMENT, new_node, Vector2(150, -200 + 100 * node_i), node_i);
+			add_node(VisualShader::TYPE_FRAGMENT, frame_node, Vector2(150, 0 + 100 * node_i), node_i + 1);
+			attach_node_to_frame(VisualShader::TYPE_FRAGMENT, node_i, node_i + 1);
 
 			node_i += 2;
 		}
@@ -161,8 +192,6 @@ Ref<Resource> ResourceFormatLoaderMtlx::load(const String &p_path, const String 
 
 			//_connect_or_default(shader_node, "base_color", 24); // Depth
 		} else if (shader_type == "usd_preview_surface") {
-		} else {
-			WARN_PRINT(vformat("Unknown shader type [%s]", shader_type.c_str()));
 		}
 	}
 
@@ -174,40 +203,21 @@ Ref<Resource> ResourceFormatLoaderMtlx::load(const String &p_path, const String 
 
 		int node_out_id = node_id_map.get(connection.node_out);
 		int node_in_id = node_id_map.get(connection.node_in);
-		shader->connect_nodes(VisualShader::TYPE_FRAGMENT, node_out_id, 0, node_in_id, connection.node_in_port);
+		connect_nodes(VisualShader::TYPE_FRAGMENT, node_out_id, 0, node_in_id, connection.node_in_port);
 	}
 
-	mat->set_shader(shader);
-	return mat;
+	return OK;
 }
 
-void ResourceFormatLoaderMtlx::get_recognized_extensions(List<String> *p_extensions) const {
-	if (!p_extensions->find("mtlx")) {
-		p_extensions->push_back("mtlx");
-	}
-}
-
-bool ResourceFormatLoaderMtlx::handles_type(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "ShaderMaterial");
-}
-
-String ResourceFormatLoaderMtlx::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "mtlx") {
-		return "ShaderMaterial";
-	}
-	return "";
-}
-
-void ResourceFormatLoaderMtlx::_connect_or_default(mx::NodePtr p_shader, std::string p_outgoing_port, int p_incoming_port) {
-	Ref<VisualShaderNodeOutput> output = shader->get_node(VisualShader::TYPE_FRAGMENT, VisualShader::NODE_ID_OUTPUT);
+void MaterialXShader::_connect_or_default(mx::NodePtr p_shader, std::string p_outgoing_port, int p_incoming_port) {
+	Ref<VisualShaderNodeOutput> output = get_node(VisualShader::TYPE_FRAGMENT, VisualShader::NODE_ID_OUTPUT);
 
 	mx::OutputPtr graph_output = p_shader->getConnectedOutput(p_outgoing_port);
 	if (graph_output) {
 		StringName node_output = output_to_node_map[graph_output->getName().c_str()];
 		if (node_id_map.has(node_output)) {
 			int node_id = node_id_map.get(node_output);
-			shader->connect_nodes(VisualShader::TYPE_FRAGMENT, node_id, 0, VisualShader::NODE_ID_OUTPUT, p_incoming_port);
+			connect_nodes(VisualShader::TYPE_FRAGMENT, node_id, 0, VisualShader::NODE_ID_OUTPUT, p_incoming_port);
 		} else {
 			ERR_PRINT(vformat("Cannot connect nodes [%s] -> [output]", node_output));
 		}
@@ -219,10 +229,10 @@ void ResourceFormatLoaderMtlx::_connect_or_default(mx::NodePtr p_shader, std::st
 	output->set_input_port_default_value(p_incoming_port, def_value);
 }
 
-void ResourceFormatLoaderMtlx::_connection_or_default(Ref<VisualShaderNode> p_shader_node, int p_port, const mx::NodePtr &p_mtlx_node, std::string p_input) {
+void MaterialXShader::_connection_or_default(Ref<VisualShaderNode> p_shader_node, int p_port, const mx::NodePtr &p_mtlx_node, std::string p_input) {
 	std::string nodename = p_mtlx_node->getConnectedNodeName(p_input);
 	if (!nodename.empty()) {
-		ResourceFormatLoaderMtlx::NodeConnection connection;
+		MaterialXShader::NodeConnection connection;
 		connection.node_out = nodename.c_str();
 		connection.node_in = p_mtlx_node->getName().c_str();
 		connection.node_in_port = p_port;
@@ -233,14 +243,14 @@ void ResourceFormatLoaderMtlx::_connection_or_default(Ref<VisualShaderNode> p_sh
 	}
 }
 
-Ref<VisualShaderNode> ResourceFormatLoaderMtlx::_read_node(const mx::NodePtr &p_node, int p_id) {
+Ref<VisualShaderNode> MaterialXShader::_read_node(const mx::NodePtr &p_node, int p_id) {
 	std::string category = p_node->getCategory();
 	if (category == "image") {
 		Ref<VisualShaderNodeTexture> texture_node;
 		texture_node.instantiate();
 
 		String file = p_node->getInput("file")->getValueString().c_str();
-		String path = vformat("%s/%s", resource_base_path, file);
+		String path = vformat("%s/%s", get_path().get_base_dir(), file);
 		if (FileAccess::exists(path)) {
 			Ref<Texture2D> texture = ResourceLoader::load(path, "Texture2D");
 			texture_node->set_texture(texture);
@@ -324,7 +334,6 @@ Ref<VisualShaderNode> ResourceFormatLoaderMtlx::_read_node(const mx::NodePtr &p_
 	} else if (category == "bump") {
 		return nullptr;
 	} else if (category == "texcoord") {
-		//!!!!!!!!!!
 		Ref<VisualShaderNodeInput> input_node;
 		input_node.instantiate();
 
@@ -529,7 +538,9 @@ Ref<VisualShaderNode> ResourceFormatLoaderMtlx::_read_node(const mx::NodePtr &p_
 	} else if (category == "transformmatrix") {
 		return nullptr;
 	} else if (category == "normalmap") {
-		//!!!!!!!!!!!!!!!!!!!!!!!!!
+		//! This is a hack based on the expectations of standard surface shaders
+		// These shaders always pass their "normal" through a "normalmap" node before sending to "normal" output
+		// We connect the standard shader "normal" output to godot's normal map output which is why this can be a noop
 		Ref<VisualShaderNodeReroute> noop_node;
 		noop_node.instantiate();
 
@@ -729,7 +740,7 @@ Ref<VisualShaderNode> ResourceFormatLoaderMtlx::_read_node(const mx::NodePtr &p_
 	}*/
 }
 
-Ref<VisualShaderNodeConstant> ResourceFormatLoaderMtlx::_read_constant_node(const mx::NodePtr &p_node) const {
+Ref<VisualShaderNodeConstant> MaterialXShader::_read_constant_node(const mx::NodePtr &p_node) const {
 	Variant value = _get_mtlx_value_as_port_value(p_node->getInput("value")->getValue());
 
 	std::string type = p_node->getType();
@@ -780,7 +791,7 @@ Ref<VisualShaderNodeConstant> ResourceFormatLoaderMtlx::_read_constant_node(cons
 	}
 }
 
-Ref<VisualShaderNodeFloatFunc> ResourceFormatLoaderMtlx::_read_unary_operator_node(const mx::NodePtr &p_node, VisualShaderNodeFloatFunc::Function p_unary_op) {
+Ref<VisualShaderNodeFloatFunc> MaterialXShader::_read_unary_operator_node(const mx::NodePtr &p_node, VisualShaderNodeFloatFunc::Function p_unary_op) {
 	Ref<VisualShaderNodeFloatFunc> float_op_node;
 	float_op_node.instantiate();
 	float_op_node->set_function(p_unary_op);
@@ -790,7 +801,7 @@ Ref<VisualShaderNodeFloatFunc> ResourceFormatLoaderMtlx::_read_unary_operator_no
 	return float_op_node;
 }
 
-Ref<VisualShaderNodeFloatOp> ResourceFormatLoaderMtlx::_read_binary_operator_node(const mx::NodePtr &p_node, VisualShaderNodeFloatOp::Operator p_binary_op) {
+Ref<VisualShaderNodeFloatOp> MaterialXShader::_read_binary_operator_node(const mx::NodePtr &p_node, VisualShaderNodeFloatOp::Operator p_binary_op) {
 	Ref<VisualShaderNodeFloatOp> float_op_node;
 	float_op_node.instantiate();
 	float_op_node->set_operator(p_binary_op);
@@ -801,7 +812,7 @@ Ref<VisualShaderNodeFloatOp> ResourceFormatLoaderMtlx::_read_binary_operator_nod
 	return float_op_node;
 }
 
-int ResourceFormatLoaderMtlx::_get_mtlx_type_as_port_type(const std::string &p_type_string) {
+int MaterialXShader::_get_mtlx_type_as_port_type(const std::string &p_type_string) {
 	//Unused port types
 	//PORT_TYPE_SCALAR_UINT
 	//PORT_TYPE_TRANSFORM
@@ -824,7 +835,7 @@ int ResourceFormatLoaderMtlx::_get_mtlx_type_as_port_type(const std::string &p_t
 	}
 }
 
-Variant ResourceFormatLoaderMtlx::_get_mtlx_value_as_port_value(const mx::ValuePtr &p_value) {
+Variant MaterialXShader::_get_mtlx_value_as_port_value(const mx::ValuePtr &p_value) {
 	if (!p_value) {
 		return Variant();
 	}
