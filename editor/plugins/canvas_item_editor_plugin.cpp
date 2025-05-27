@@ -41,6 +41,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/gui/editor_translation_preview_button.h"
+#include "editor/gui/editor_translation_preview_menu.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/editor_context_menu_plugin.h"
@@ -5395,6 +5397,13 @@ CanvasItemEditor::CanvasItemEditor() {
 	controls_hb->add_child(zoom_widget);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
+	EditorTranslationPreviewButton *translation_preview_button = memnew(EditorTranslationPreviewButton);
+	translation_preview_button->set_flat(true);
+	translation_preview_button->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
+	translation_preview_button->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+	translation_preview_button->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+	controls_hb->add_child(translation_preview_button);
+
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
 
@@ -5674,6 +5683,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
 		theme_menu->set_item_checked(i, i == theme_preview);
 	}
+
+	p->add_submenu_node_item(TTRC("Preview Translation"), memnew(EditorTranslationPreviewMenu));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
