@@ -30,6 +30,7 @@
 
 #include "visual_shader_node_standard_surface.h"
 
+#include "core/variant/variant.h"
 #include "scene/resources/visual_shader.h"
 
 String VisualShaderNodeStandardSurface::get_caption() const {
@@ -244,7 +245,7 @@ String VisualShaderNodeStandardSurface::get_input_port_name(int p_port) const {
 }
 
 int VisualShaderNodeStandardSurface::get_output_port_count() const {
-	return 0;
+	return 1;
 }
 
 VisualShaderNode::PortType VisualShaderNodeStandardSurface::get_output_port_type(int p_port) const {
@@ -252,13 +253,80 @@ VisualShaderNode::PortType VisualShaderNodeStandardSurface::get_output_port_type
 }
 
 String VisualShaderNodeStandardSurface::get_output_port_name(int p_port) const {
-	return "out";
+	return "metallic";
 }
 
 String VisualShaderNodeStandardSurface::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
 
-	// hehehe  hahaaha
+	code += vformat("float hasCoatColor = dot(%s, vec3(1, 1, 1));\n", p_input_vars[26]);
+
+	String transmission_cond =
+			"	// transmission_depth\n"
+			"	if (%s > 0.0) {\n"
+			"		ALBEDO = vec3(1, 1, 1);\n"
+			"	} else {\n"
+			"		// transmission_color\n"
+			"		ALBEDO = %s;\n"
+			"	}\n";
+
+	String transmission_compiled = vformat(transmission_cond, p_input_vars[12], p_input_vars[11]);
+
+	String base_color_cond =
+			"	// base, base_color\n"
+			"	vec3 base_color = %s * %s;\n"
+			"	// coat_color\n"
+			"	if (hasCoatColor == 0.0) {\n"
+			"		ALBEDO = base_color;\n"
+			"	} else {\n"
+			"		//coat_color, coat\n"
+			"		vec3 coatAttenuation = mix(%s, vec3(1, 1, 1), %s);\n"
+			"		ALBEDO = base_color * coatAttenuation;\n"
+			"	}\n";
+
+	String base_color_compiled = vformat(base_color_cond, p_input_vars[0], p_input_vars[1], p_input_vars[26], p_input_vars[25]);
+
+	String condition =
+			"// transmission \n"
+			"if (%s > 0.0) {\n" +
+			transmission_compiled +
+			"} else {\n" +
+			base_color_compiled +
+			"}\n";
+
+	code += vformat(condition, p_input_vars[10]);
+
+	code += vformat("%s = %s;\n", p_output_vars[0], p_input_vars[3]);
+	code += vformat("ROUGHNESS = %s;\n", p_input_vars[6]);
+	code += vformat("SPECULAR = %s;\n", p_input_vars[4]);
+
+	//?
+	//code += vformat("TRANSMISSION = %s;\n", p_input_vars[10]);
+	//code += vformat("THICKNESS = %s;", p_input_vars[12]);
+	//code += vformat("attenuation_color = %s;", p_input_vars[12]);
+	//code += vformat("sheen_color = %s;", p_input_vars[12]);
+	//code += vformat("sheen_roughness = %s;", p_input_vars[12]);
+
+	String clearcoat =
+			"if (hasCoatColor != 0.0) {\n"
+			"	//coat, coat_color\n"
+			"	vec3 coatColorScaled = %s * %s;\n"
+			"	float one_third = 1.0/3.0;\n"
+			"	CLEARCOAT = dot(coatColorScaled, vec3(one_third, one_third, one_third));\n"
+			"} else {\n"
+			"	// coat\n"
+			"	CLEARCOAT = %s;\n"
+			"}\n";
+
+	code += vformat(clearcoat, p_input_vars[25], p_input_vars[26], p_input_vars[25]);
+	code += vformat("CLEARCOAT_ROUGHNESS = %s;\n", p_input_vars[27]);
+	code += vformat("EMISSION = %s * %s;\n", p_input_vars[36], p_input_vars[37]);
+
+	code += vformat("NORMAL_MAP = %s;\n", p_input_vars[40]);
+	code += vformat("TANGENT = %s;\n", p_input_vars[41]);
 
 	return code;
+}
+
+VisualShaderNodeStandardSurface::VisualShaderNodeStandardSurface() {
 }

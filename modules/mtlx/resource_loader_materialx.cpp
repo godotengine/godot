@@ -31,12 +31,14 @@
 #include "resource_loader_materialx.h"
 
 #include "materialx_shader.h"
+#include "visual_shader_node_standard_surface.h"
 
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/math/vector2.h"
 #include "core/math/vector4.h"
 #include "core/object/class_db.h"
 #include "core/string/print_string.h"
@@ -111,15 +113,15 @@ Error MaterialXShader::load_file(const String &p_path) {
 	}
 
 	int node_i = 2;
-	for (mx::NodeGraphPtr graph : doc->getNodeGraphs()) {
-		String graph_name = graph->getName().c_str();
+	for (mx::NodeGraphPtr node_graph : doc->getNodeGraphs()) {
+		String graph_name = node_graph->getName().c_str();
 		if (!graph_name.begins_with("NG_")) {
 			WARN_PRINT(graph_name);
 			continue;
 		}
 
 		print_line(vformat("MaterialX nodegraph %s", graph_name));
-		std::vector<mx::ElementPtr> sorted_nodes = graph->topologicalSort();
+		std::vector<mx::ElementPtr> sorted_nodes = node_graph->topologicalSort();
 
 		for (const mx::ElementPtr &element : sorted_nodes) {
 			if (element->getCategory() == "output") {
@@ -162,17 +164,48 @@ Error MaterialXShader::load_file(const String &p_path) {
 		} else if (shader_type == "standard_surface") {
 			mx::NodePtr shader_node = element->asA<mx::Node>();
 
-			_connect_or_default(shader_node, "base_color", 0); // Albedo
+			Ref<VisualShaderNodeStandardSurface> surface_shader = memnew(VisualShaderNodeStandardSurface);
+			add_node(VisualShader::TYPE_FRAGMENT, surface_shader, Vector2(0, 0), node_i);
+
+			for (int port = 0; port < surface_shader->get_input_port_count(); port++) {
+				std::string port_name = surface_shader->get_input_port_name(port).utf8().get_data();
+
+				mx::OutputPtr graph_output = shader_node->getConnectedOutput(port_name);
+				if (graph_output) {
+					StringName node_output = output_to_node_map[graph_output->getName().c_str()];
+					if (node_id_map.has(node_output)) {
+						int node_source_id = node_id_map.get(node_output);
+						connect_nodes(VisualShader::TYPE_FRAGMENT, node_source_id, 0, node_i, port);
+					} else {
+						ERR_PRINT(vformat("Cannot connect nodes [%s] -> [output]", node_output));
+					}
+				} else {
+					Variant def_value = _get_mtlx_value_as_port_value(shader_node->getInputValue(port_name));
+					surface_shader->set_input_port_default_value(port, def_value);
+				}
+			}
+
+			connect_nodes(VisualShader::TYPE_FRAGMENT, node_i, 0, VisualShader::NODE_ID_OUTPUT, 2);
+
+			//!
+			//_connect_or_default(shader_node, "base_color", 0); // Albedo
+
 			//_connect_or_default(shader_node, "opacity", 1); // Alpha
-			_connect_or_default(shader_node, "metalness", 2); // Metallic
-			_connect_or_default(shader_node, "roughness", 3); // Roughness
-			_connect_or_default(shader_node, "specular", 4); // Specular
+
+			//!
+			//_connect_or_default(shader_node, "metalness", 2); // Metallic
+			//_connect_or_default(shader_node, "roughness", 3); // Roughness
+			//_connect_or_default(shader_node, "specular", 4); // Specular
+
 			//_connect_or_default(shader_node, "emission", 5); // Emission
 			//_connect_or_default(shader_node, "base_color", 6); // AO
 			//_connect_or_default(shader_node, "base_color", 7); // AO Light Effect
 
 			//_connect_or_default(shader_node, "normal", 8); // Normal
-			_connect_or_default(shader_node, "normal", 9); // Normal Map
+
+			//!
+			//_connect_or_default(shader_node, "normal", 9); // Normal Map
+
 			//_connect_or_default(shader_node, "base_color", 10); // Normal Map Depth
 
 			//_connect_or_default(shader_node, "base_color", 11); // Bent Normal Map
@@ -208,26 +241,6 @@ Error MaterialXShader::load_file(const String &p_path) {
 	}
 
 	return OK;
-}
-
-void MaterialXShader::_connect_or_default(mx::NodePtr p_shader, std::string p_outgoing_port, int p_incoming_port) {
-	Ref<VisualShaderNodeOutput> output = get_node(VisualShader::TYPE_FRAGMENT, VisualShader::NODE_ID_OUTPUT);
-
-	mx::OutputPtr graph_output = p_shader->getConnectedOutput(p_outgoing_port);
-	if (graph_output) {
-		StringName node_output = output_to_node_map[graph_output->getName().c_str()];
-		if (node_id_map.has(node_output)) {
-			int node_id = node_id_map.get(node_output);
-			connect_nodes(VisualShader::TYPE_FRAGMENT, node_id, 0, VisualShader::NODE_ID_OUTPUT, p_incoming_port);
-		} else {
-			ERR_PRINT(vformat("Cannot connect nodes [%s] -> [output]", node_output));
-		}
-
-		return;
-	}
-
-	Variant def_value = _get_mtlx_value_as_port_value(p_shader->getInputValue(p_outgoing_port));
-	output->set_input_port_default_value(p_incoming_port, def_value);
 }
 
 void MaterialXShader::_connection_or_default(Ref<VisualShaderNode> p_shader_node, int p_port, const mx::NodePtr &p_mtlx_node, std::string p_input) {

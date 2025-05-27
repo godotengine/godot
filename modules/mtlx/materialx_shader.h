@@ -61,7 +61,6 @@ public:
 	Error save_file(const String &p_path = "");
 
 private:
-	void _connect_or_default(mx::NodePtr p_shader, std::string p_outgoing_port, int p_incoming_port);
 	void _connection_or_default(Ref<VisualShaderNode> p_shader_node, int p_port, const mx::NodePtr &p_mtlx_node, std::string p_input);
 
 	Ref<VisualShaderNode> _read_node(const mx::NodePtr &node, int p_id);
