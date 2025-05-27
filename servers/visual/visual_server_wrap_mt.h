@@ -494,6 +494,12 @@ public:
 
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
 
+	/* FTI HELPER API */
+	FUNCRID(fti_instance)
+	FUNC2(fti_instance_prepare, RID, RID)
+	FUNC2(fti_instance_set_transform, RID, const Transform &)
+	FUNC1(fti_instance_reset, RID)
+
 	/* PORTALS API */
 
 	FUNC2(instance_set_portal_mode, RID, InstancePortalMode)
