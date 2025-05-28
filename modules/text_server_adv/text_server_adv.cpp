@@ -397,6 +397,12 @@ void TextServerAdvanced::_free_rid(const RID &p_rid) {
 		MutexLock ftlock(ft_mutex);
 
 		FontAdvanced *fd = font_owner.get_or_null(p_rid);
+		for (const KeyValue<Vector2i, FontForSizeAdvanced *> &ffsd : fd->cache) {
+			OversamplingLevel *ol = oversampling_levels.getptr(ffsd.value->viewport_oversampling);
+			if (ol != nullptr) {
+				ol->fonts.erase(ffsd.value);
+			}
+		}
 		{
 			MutexLock lock(fd->mutex);
 			font_owner.free(p_rid);
