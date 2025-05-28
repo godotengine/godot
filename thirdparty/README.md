@@ -888,6 +888,8 @@ Exclude:
   `*.{def,expsym,in,json,map,pom,rc,txt}`
 - All dotfiles
 
+Additional:
+- Update `openxrLoaderVersion` in `platform/android/java/app/config.gradle`
 
 ## pcre2
 
