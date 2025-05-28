@@ -31,10 +31,10 @@
 #include "openxr_editor_plugin.h"
 
 #include "../action_map/openxr_action_map.h"
-#include "../openxr_api.h"
 
-#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
+#include "editor/gui/editor_bottom_panel.h"
+#include "editor/settings/editor_command_palette.h"
 #include "platform/android/export/export_plugin.h"
 
 #include <openxr/openxr.h>
@@ -47,12 +47,9 @@ bool OpenXRExportPlugin::supports_platform(const Ref<EditorExportPlatform> &p_ex
 }
 
 bool OpenXRExportPlugin::is_openxr_mode() const {
-	// Check if OpenXR is enabled using `EditorExportPlatform::get_project_settings()` because that'll
-	// take into account the feature tags on the specific export preset that is being exported.
-	bool openxr_enabled = (bool)get_export_platform()->get_project_setting(get_export_preset(), "xr/openxr/enabled");
 	int xr_mode_index = get_option("xr_features/xr_mode");
 
-	return openxr_enabled && xr_mode_index == XR_MODE_OPENXR;
+	return xr_mode_index == XR_MODE_OPENXR;
 }
 
 String OpenXRExportPlugin::_get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const {
@@ -153,7 +150,7 @@ String OpenXRExportPlugin::get_android_manifest_activity_element_contents(const 
 // OpenXREditorPlugin
 
 void OpenXREditorPlugin::edit(Object *p_node) {
-	if (action_map_editor && Object::cast_to<OpenXRActionMap>(p_node)) {
+	if (Object::cast_to<OpenXRActionMap>(p_node)) {
 		String path = Object::cast_to<OpenXRActionMap>(p_node)->get_path();
 		if (path.is_resource_file()) {
 			action_map_editor->open_action_map(path);
@@ -162,29 +159,23 @@ void OpenXREditorPlugin::edit(Object *p_node) {
 }
 
 bool OpenXREditorPlugin::handles(Object *p_node) const {
-	if (action_map_editor) {
-		return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
-	}
-	return false;
+	return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
 }
 
 void OpenXREditorPlugin::make_visible(bool p_visible) {
 }
 
 OpenXREditorPlugin::OpenXREditorPlugin() {
-	// Only add our OpenXR action map editor if OpenXR is enabled for the whole project.
-	if (OpenXRAPI::openxr_is_enabled(false)) {
-		action_map_editor = memnew(OpenXRActionMapEditor);
-		EditorDockManager::get_singleton()->add_dock(action_map_editor);
+	action_map_editor = memnew(OpenXRActionMapEditor);
+	EditorNode::get_bottom_panel()->add_item(TTRC("OpenXR Action Map"), action_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTRC("Toggle OpenXR Action Map Bottom Panel")));
 
-		binding_modifier_inspector_plugin = Ref<EditorInspectorPluginBindingModifier>(memnew(EditorInspectorPluginBindingModifier));
-		EditorInspector::add_inspector_plugin(binding_modifier_inspector_plugin);
+	binding_modifier_inspector_plugin = Ref<EditorInspectorPluginBindingModifier>(memnew(EditorInspectorPluginBindingModifier));
+	EditorInspector::add_inspector_plugin(binding_modifier_inspector_plugin);
 
 #ifndef ANDROID_ENABLED
-		select_runtime = memnew(OpenXRSelectRuntime);
-		add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
+	select_runtime = memnew(OpenXRSelectRuntime);
+	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
 #endif
-	}
 }
 
 void OpenXREditorPlugin::_notification(int p_what) {
