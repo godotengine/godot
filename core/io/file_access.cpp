@@ -769,7 +769,7 @@ bool FileAccess::store_pascal_string(const String &p_string) {
 String FileAccess::get_pascal_string() {
 	uint32_t sl = get_32();
 	CharString cs;
-	cs.resize(sl + 1);
+	cs.resize_uninitialized(sl + 1);
 	get_buffer((uint8_t *)cs.ptr(), sl);
 	cs[sl] = 0;
 

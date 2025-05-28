@@ -1504,7 +1504,7 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 					continue;
 				}
 				unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
-				p_font_data->font_name.resize(text_size);
+				p_font_data->font_name.resize_uninitialized(text_size);
 				hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)p_font_data->font_name.ptrw());
 			}
 			if (p_font_data->font_name.is_empty() && fd->face->family_name != nullptr) {
@@ -2308,7 +2308,7 @@ Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) 
 		}
 		String text;
 		unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
-		text.resize(text_size);
+		text.resize_uninitialized(text_size);
 		hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)text.ptrw());
 		if (!text.is_empty()) {
 			Dictionary &id_string = names_for_lang[String(hb_language_to_string(names[i].language))];

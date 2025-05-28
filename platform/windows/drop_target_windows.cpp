@@ -41,7 +41,7 @@
 static String create_temp_dir() {
 	Char16String buf;
 	int bufsize = GetTempPathW(0, nullptr) + 1;
-	buf.resize(bufsize);
+	buf.resize_uninitialized(bufsize);
 	if (GetTempPathW(bufsize, (LPWSTR)buf.ptrw()) == 0) {
 		return "";
 	}
@@ -158,7 +158,7 @@ HRESULT DropTargetWindows::handle_hdrop_format(Vector<String> *p_files, IDataObj
 
 	for (int i = 0; i < fcount; i++) {
 		int buffsize = DragQueryFileW(hDropInfo, i, nullptr, 0);
-		buf.resize(buffsize + 1);
+		buf.resize_uninitialized(buffsize + 1);
 		if (DragQueryFileW(hDropInfo, i, (LPWSTR)buf.ptrw(), buffsize + 1) == 0) {
 			res = E_UNEXPECTED;
 			goto cleanup;

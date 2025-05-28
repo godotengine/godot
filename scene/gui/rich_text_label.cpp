@@ -212,7 +212,7 @@ String RichTextLabel::_letters(int p_num, bool p_capitalize) const {
 	} while (n);
 
 	String s;
-	s.resize(chars + 1);
+	s.resize_uninitialized(chars + 1);
 	char32_t *c = s.ptrw();
 	c[chars] = 0;
 	n = p_num;

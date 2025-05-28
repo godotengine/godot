@@ -306,7 +306,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	for (int i = 0; i < file_count; i++) {
 		uint32_t sl = f->get_32();
 		CharString cs;
-		cs.resize(sl + 1);
+		cs.resize_uninitialized(sl + 1);
 		f->get_buffer((uint8_t *)cs.ptr(), sl);
 		cs[sl] = 0;
 
