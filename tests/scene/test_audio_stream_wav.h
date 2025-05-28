@@ -228,13 +228,18 @@ void run_save_test(String file_name, AudioStreamWAV::Format data_format, bool st
 	stream->set_stereo(stereo);
 	stream->set_data(test_data);
 
-	Vector<uint8_t> wav;
+	TypedArray<uint8_t> wav;
 	REQUIRE(stream->save_to_wav_buffer(wav) == OK);
 	REQUIRE(stream->save_to_wav(save_path) == OK);
 
 	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(save_path);
 
-	CHECK(stream_data == wav);
+	TypedArray<uint8_t> typed_stream_data;
+	for (int i = 0; i < wav.size(); i++) {
+		typed_stream_data.push_back(stream_data[i]);
+	}
+
+	CHECK(typed_stream_data == wav);
 }
 
 TEST_CASE("[Audio][AudioStreamWAV] Saving to buffer equals saving to disk and retrieving data from file") {
