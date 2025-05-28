@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_web.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
-#if defined(WEB_ENABLED)
-#include "camera_web.h"
-#endif
+#include "platform/web/camera_driver_web.h"
+#include "servers/camera/camera_feed.h"
+#include "servers/camera_server.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+class CameraFeedWeb : public CameraFeed {
+	GDCLASS(CameraFeedWeb, CameraFeed);
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-#if defined(WEB_ENABLED)
-	CameraServer::make_default<CameraWeb>();
-#endif
-}
+private:
+	String device_id;
+	Ref<Image> image;
+	Vector<uint8_t> data;
+	static void _on_get_pixeldata(void *, const uint8_t *, const int, const int, const int, const char *error);
+	static void _on_denied_callback(void *context);
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+protected:
+public:
+	bool activate_feed() override;
+	void deactivate_feed() override;
+	bool set_format(int p_index, const Dictionary &p_parameters) override;
+	Array get_formats() const override;
+	FeedFormat get_format() const override;
+
+	CameraFeedWeb(const CameraInfo &info);
+	~CameraFeedWeb();
+};
+
+class CameraWeb : public CameraServer {
+	GDCLASS(CameraWeb, CameraServer);
+
+private:
+	CameraDriverWeb *camera_driver_web = nullptr;
+	void _cleanup();
+	void _update_feeds();
+
+protected:
+public:
+	void set_monitoring_feeds(bool p_monitoring_feeds) override;
+
+	~CameraWeb();
+};
