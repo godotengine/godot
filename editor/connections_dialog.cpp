@@ -39,6 +39,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -46,11 +47,11 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
 
@@ -209,7 +210,7 @@ void ConnectDialog::_method_selected() {
  * Adds a new parameter bind to connection.
  */
 void ConnectDialog::_add_bind() {
-	Variant::Type type = (Variant::Type)type_list->get_item_id(type_list->get_selected());
+	Variant::Type type = type_list->get_selected_type();
 
 	Variant value;
 	Callable::CallError err;
@@ -493,11 +494,6 @@ void ConnectDialog::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			for (int i = 0; i < type_list->get_item_count(); i++) {
-				String type_name = Variant::get_type_name((Variant::Type)type_list->get_item_id(i));
-				type_list->set_item_icon(i, get_editor_theme_icon(type_name));
-			}
-
 			method_search->set_right_icon(get_editor_theme_icon("Search"));
 			open_method_tree->set_button_icon(get_editor_theme_icon("Edit"));
 		} break;
@@ -839,18 +835,11 @@ ConnectDialog::ConnectDialog() {
 
 	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
 
-	type_list = memnew(OptionButton);
+	type_list = memnew(EditorVariantTypeOptionButton);
 	type_list->set_accessibility_name(TTRC("Type"));
 	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type_list->populate({ Variant::NIL, Variant::OBJECT });
 	add_bind_hb->add_child(type_list);
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
-			// These types can't be constructed or serialized properly, so skip them.
-			continue;
-		}
-
-		type_list->add_item(Variant::get_type_name(Variant::Type(i)), i);
-	}
 	bind_controls.push_back(type_list);
 
 	Button *add_bind = memnew(Button);

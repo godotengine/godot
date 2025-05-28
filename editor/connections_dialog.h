@@ -30,14 +30,15 @@
 
 #pragma once
 
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
 class Button;
 class CheckBox;
+class CheckButton;
 class ConnectDialogBinds;
 class EditorInspector;
+class EditorVariantTypeOptionButton;
 class Label;
 class LineEdit;
 class OptionButton;
@@ -133,7 +134,7 @@ private:
 
 	SpinBox *unbind_count = nullptr;
 	EditorInspector *bind_editor = nullptr;
-	OptionButton *type_list = nullptr;
+	EditorVariantTypeOptionButton *type_list = nullptr;
 	CheckBox *deferred = nullptr;
 	CheckBox *one_shot = nullptr;
 	CheckBox *append_source = nullptr;

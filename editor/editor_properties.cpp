@@ -41,6 +41,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -80,8 +81,20 @@ void EditorPropertyVariant::_change_type(int p_to_type) {
 	emit_changed(get_edited_property(), zero);
 }
 
+void EditorPropertyVariant::_popup_edit_menu() {
+	if (change_type == nullptr) {
+		change_type = memnew(EditorVariantTypePopupMenu(false));
+		change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyVariant::_change_type));
+		content->add_child(change_type);
+	}
+
+	Rect2 rect = edit_button->get_screen_rect();
+	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->popup();
+}
+
 void EditorPropertyVariant::_set_read_only(bool p_read_only) {
-	change_type->set_disabled(p_read_only);
+	edit_button->set_disabled(p_read_only);
 	if (sub_property) {
 		sub_property->set_read_only(p_read_only);
 	}
@@ -89,12 +102,7 @@ void EditorPropertyVariant::_set_read_only(bool p_read_only) {
 
 void EditorPropertyVariant::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		change_type->set_button_icon(get_editor_theme_icon("Edit"));
-
-		PopupMenu *popup = change_type->get_popup();
-		for (int i = 0; i < popup->get_item_count(); i++) {
-			popup->set_item_icon(i, get_editor_theme_icon(Variant::get_type_name(Variant::Type(popup->get_item_id(i)))));
-		}
+		edit_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 	}
 }
 
@@ -139,19 +147,11 @@ EditorPropertyVariant::EditorPropertyVariant() {
 	content = memnew(HBoxContainer);
 	add_child(content);
 
-	change_type = memnew(MenuButton);
-	change_type->set_flat(false);
-
-	PopupMenu *popup = change_type->get_popup();
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
-			// These types can't be constructed or serialized properly, so skip them.
-			continue;
-		}
-		popup->add_item(Variant::get_type_name(Variant::Type(i)), i);
-	}
-	popup->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyVariant::_change_type));
-	content->add_child(change_type);
+	edit_button = memnew(Button);
+	edit_button->set_flat(true);
+	edit_button->set_accessibility_name(TTRC("Edit"));
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyVariant::_popup_edit_menu));
+	content->add_child(edit_button);
 }
 
 ///////////////////// TEXT /////////////////////////
