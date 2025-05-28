@@ -31,6 +31,8 @@
 #include "config_file.h"
 
 #include "core/io/file_access_encrypted.h"
+#include "core/io/resource_saver.h"
+#include "core/io/resource_uid.h"
 #include "core/string/string_builder.h"
 #include "core/variant/variant_parser.h"
 
@@ -187,8 +189,31 @@ Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass
 	return _internal_save(fae);
 }
 
+struct ConfigFileUIDReferenceData {
+	HashSet<String> known_uids;
+	Dictionary newly_added_path_mapping;
+};
+
+static String encode_resource_func(void *ud, const Ref<Resource> &p_resource) {
+	ConfigFileUIDReferenceData *uid_ref_data = (ConfigFileUIDReferenceData *)ud;
+	String res_path = p_resource->get_path();
+	if (res_path.is_resource_file()) {
+		if (!uid_ref_data->known_uids.has(res_path)) {
+			uid_ref_data->known_uids.insert(res_path);
+			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(res_path);
+			if (uid != ResourceUID::INVALID_ID) {
+				String uid_str = ResourceUID::get_singleton()->id_to_text(uid);
+				uid_ref_data->newly_added_path_mapping.set(res_path, uid_str);
+			}
+		}
+		return "Resource(\"" + res_path + "\")";
+	}
+	return "";
+}
+
 Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 	bool first = true;
+	ConfigFileUIDReferenceData uid_ref_data;
 	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
 		if (first) {
 			first = false;
@@ -201,7 +226,13 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
-			VariantWriter::write_to_string(F.value, vstr);
+			VariantWriter::write_to_string(F.value, vstr, &encode_resource_func, &uid_ref_data);
+			if (!uid_ref_data.newly_added_path_mapping.is_empty()) {
+				String uid_ref_str;
+				VariantWriter::write_to_string(uid_ref_data.newly_added_path_mapping, uid_ref_str);
+				file->store_string("=" + uid_ref_str + "\n"); // Non-processed line.
+				uid_ref_data.newly_added_path_mapping.clear();
+			}
 			file->store_string(F.key.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
@@ -280,12 +311,14 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 
 	String section;
 
+	VariantParser::ResourceParser rp;
+
 	while (true) {
 		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, nullptr, true);
+		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, &rp, true);
 		if (err == ERR_FILE_EOF) {
 			return OK;
 		} else if (err != OK) {
@@ -297,6 +330,11 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 			set_value(section, assign, value);
 		} else if (!next_tag.name.is_empty()) {
 			section = next_tag.name.replace("\\]", "]");
+		} else if (value.get_type() == Variant::DICTIONARY) {
+			Dictionary val_dict = value.operator Dictionary();
+			for (const KeyValue<Variant, Variant> &kv : val_dict) {
+				rp.path_to_uid.insert(kv.key.operator String(), kv.value.operator String());
+			}
 		}
 	}
 
