@@ -30,6 +30,8 @@
 
 #include "sub_viewport_preview_editor_plugin.h"
 
+#include "scene/main/viewport.h"
+
 bool EditorInspectorPluginSubViewportPreview::can_handle(Object *p_object) {
 	return Object::cast_to<SubViewport>(p_object) != nullptr;
 }

@@ -51,6 +51,7 @@
 #endif
 #endif // RD_ENABLED
 
+#define FontVariation __FontVariation
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
 #import <AppKit/AppKit.h>
@@ -60,8 +61,18 @@
 #import <Foundation/Foundation.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
+@class GodotWindow;
+@class GodotContentView;
+@class GodotWindowDelegate;
+@class GodotButtonView;
+@class GodotEmbeddedView;
+@class CALayerHost;
+
 #undef BitMap
 #undef CursorShape
+#undef FontVariation
+
+class EmbeddedProcessMacOS;
 
 class DisplayServerMacOS : public DisplayServer {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServer);
@@ -83,12 +94,14 @@ public:
 	};
 
 	struct WindowData {
-		id window_delegate;
-		id window_object;
-		id window_view;
-		id window_button_view;
+		GodotWindowDelegate *window_delegate;
+		GodotWindow *window_object;
+		GodotContentView *window_view;
+		GodotButtonView *window_button_view;
 
 		Vector<Vector2> mpath;
+
+		CGDirectDisplayID display_id = -1;
 
 		Point2i mouse_pos;
 		WindowResizeEdge edge = WINDOW_EDGE_MAX;
@@ -241,6 +254,14 @@ private:
 
 	void initialize_tts() const;
 
+	struct EmbeddedProcessData {
+		EmbeddedProcessMacOS *process;
+		WindowData *wd = nullptr;
+		CALayer *layer_host = nil;
+	};
+	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
+	void _window_update_display_id(WindowData *p_wd);
+
 public:
 	void menu_callback(id p_sender);
 
@@ -277,6 +298,10 @@ public:
 
 	bool is_always_on_top_recursive(WindowID p_window) const;
 
+	/**
+	 * Get the display ID of a window.
+	 */
+	uint32_t window_get_display_id(WindowID p_window) const;
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
 	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
@@ -441,6 +466,13 @@ public:
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
 	virtual bool get_swap_cancel_ok() override;
+
+	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
+#ifdef TOOLS_ENABLED
+	Error embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process);
+#endif
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;

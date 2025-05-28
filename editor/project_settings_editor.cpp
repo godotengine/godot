@@ -42,8 +42,6 @@
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
-ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
-
 void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
 	localization_editor->connect_filesystem_dock_signals(p_fs_dock);
 	group_settings->connect_filesystem_dock_signals(p_fs_dock);
@@ -179,35 +177,45 @@ void ProjectSettingsEditor::_property_box_changed(const String &p_text) {
 }
 
 void ProjectSettingsEditor::_feature_selected(int p_index) {
-	Vector<String> t = property_box->get_text().strip_edges().split(".", true, 1);
-	const String feature = p_index ? "." + feature_box->get_item_text(p_index) : "";
-	property_box->set_text(t[0] + feature);
+	const String property = property_box->get_text().strip_edges().get_slicec('.', 0);
+	if (p_index == FEATURE_ALL) {
+		property_box->set_text(property);
+	} else if (p_index == FEATURE_CUSTOM) {
+		property_box->set_text(property + ".custom");
+		const int len = property.length() + 1;
+		property_box->select(len);
+		property_box->set_caret_column(len);
+		property_box->grab_focus();
+	} else {
+		property_box->set_text(property + "." + feature_box->get_item_text(p_index));
+	};
 	_update_property_box();
 }
 
 void ProjectSettingsEditor::_update_property_box() {
 	const String setting = _get_setting_name();
-	const Vector<String> t = setting.split(".", true, 1);
-	const String &name = t[0];
-	const String feature = (t.size() == 2) ? t[1] : "";
-	bool feature_invalid = (t.size() == 2) && (t[1].is_empty());
+	int slices = setting.get_slice_count(".");
+	const String name = setting.get_slicec('.', 0);
+	const String feature = setting.get_slicec('.', 1);
+	bool feature_invalid = slices > 2 || (slices == 2 && feature.is_empty());
 
 	add_button->set_disabled(true);
 	del_button->set_disabled(true);
 
-	if (!feature.is_empty()) {
-		feature_invalid = true;
-		for (int i = 1; i < feature_box->get_item_count(); i++) {
+	if (feature.is_empty() || feature_invalid) {
+		feature_box->select(FEATURE_ALL);
+	} else {
+		bool is_custom = true;
+		for (int i = FEATURE_FIRST; i < feature_box->get_item_count(); i++) {
 			if (feature == feature_box->get_item_text(i)) {
-				feature_invalid = false;
+				is_custom = false;
 				feature_box->select(i);
 				break;
 			}
 		}
-	}
-
-	if (feature.is_empty() || feature_invalid) {
-		feature_box->select(0);
+		if (is_custom) {
+			feature_box->select(FEATURE_CUSTOM);
+		}
 	}
 
 	if (property_box->get_text().is_empty()) {
@@ -330,8 +338,13 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	}
 
 	feature_box->clear();
-	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.
-	int id = 1;
+	feature_box->add_item(TTRC("(All)"), FEATURE_ALL); // So it is always on top.
+	feature_box->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
+	feature_box->add_item(TTRC("Custom"), FEATURE_CUSTOM);
+	feature_box->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
+	feature_box->add_separator();
+
+	int id = FEATURE_FIRST;
 	for (const String &E : presets) {
 		feature_box->add_item(E, id++);
 	}
@@ -636,7 +649,7 @@ void ProjectSettingsEditor::_bind_methods() {
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	singleton = this;
-	set_title(TTR("Project Settings (project.godot)"));
+	set_title(TTRC("Project Settings (project.godot)"));
 	set_clamp_to_embedder(true);
 
 	ps = ProjectSettings::get_singleton();
@@ -649,7 +662,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_child(tab_container);
 
 	general_editor = memnew(VBoxContainer);
-	general_editor->set_name(TTR("General"));
+	general_editor->set_name(TTRC("General"));
 	general_editor->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 	general_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_container->add_child(general_editor);
@@ -658,21 +671,22 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_editor->add_child(search_bar);
 
 	search_box = memnew(LineEdit);
-	search_box->set_placeholder(TTR("Filter Settings"));
+	search_box->set_placeholder(TTRC("Filter Settings"));
 	search_box->set_accessibility_name(TTRC("Filter Settings"));
 	search_box->set_clear_button_enabled(true);
+	search_box->set_virtual_keyboard_show_on_focus(false);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
 
 	advanced = memnew(CheckButton);
-	advanced->set_text(TTR("Advanced Settings"));
+	advanced->set_text(TTRC("Advanced Settings"));
 	search_bar->add_child(advanced);
 
 	custom_properties = memnew(HBoxContainer);
 	general_editor->add_child(custom_properties);
 
 	property_box = memnew(LineEdit);
-	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
+	property_box->set_placeholder(TTRC("Select a Setting or Type its Name"));
 	property_box->set_accessibility_name(TTRC("Setting Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	property_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
@@ -681,6 +695,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	feature_box = memnew(OptionButton);
 	feature_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	feature_box->set_accessibility_name(TTRC("Feature"));
+	feature_box->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	feature_box->connect(SceneStringName(item_selected), callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 	custom_properties->add_child(feature_box);
 
@@ -690,13 +705,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	custom_properties->add_child(type_box);
 
 	add_button = memnew(Button);
-	add_button->set_text(TTR("Add"));
+	add_button->set_text(TTRC("Add"));
 	add_button->set_disabled(true);
 	add_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_add_setting));
 	custom_properties->add_child(add_button);
 
 	del_button = memnew(Button);
-	del_button->set_text(TTR("Delete"));
+	del_button->set_text(TTRC("Delete"));
 	del_button->set_disabled(true);
 	del_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_delete_setting));
 	custom_properties->add_child(del_button);
@@ -706,6 +721,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->register_search_box(search_box);
 	general_settings_inspector->register_advanced_toggle(advanced);
 	general_settings_inspector->get_inspector()->set_use_filter(true);
+	general_settings_inspector->get_inspector()->set_mark_unsaved(false);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
 	general_settings_inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
@@ -723,14 +739,15 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_child(restart_icon);
 
 	restart_label = memnew(Label);
-	restart_label->set_text(TTR("Changed settings will be applied to the editor after restarting."));
+	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	restart_label->set_text(TTRC("Changed settings will be applied to the editor after restarting."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 
 	Button *restart_button = memnew(Button);
 	restart_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_editor_restart));
 	restart_hb->add_child(restart_button);
-	restart_button->set_text(TTR("Save & Restart"));
+	restart_button->set_text(TTRC("Save & Restart"));
 
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);
@@ -739,7 +756,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_child(restart_close_button);
 
 	action_map_editor = memnew(ActionMapEditor);
-	action_map_editor->set_name(TTR("Input Map"));
+	action_map_editor->set_name(TTRC("Input Map"));
 	action_map_editor->connect("action_added", callable_mp(this, &ProjectSettingsEditor::_action_added));
 	action_map_editor->connect("action_edited", callable_mp(this, &ProjectSettingsEditor::_action_edited));
 	action_map_editor->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
@@ -750,31 +767,31 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(action_map_editor);
 
 	localization_editor = memnew(LocalizationEditor);
-	localization_editor->set_name(TTR("Localization"));
+	localization_editor->set_name(TTRC("Localization"));
 	localization_editor->connect("localization_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(localization_editor);
 
 	TabContainer *globals_container = memnew(TabContainer);
-	globals_container->set_name(TTR("Globals"));
+	globals_container->set_name(TTRC("Globals"));
 	tab_container->add_child(globals_container);
 
 	autoload_settings = memnew(EditorAutoloadSettings);
-	autoload_settings->set_name(TTR("Autoload"));
+	autoload_settings->set_name(TTRC("Autoload"));
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	globals_container->add_child(autoload_settings);
 
 	shaders_global_shader_uniforms_editor = memnew(ShaderGlobalsEditor);
-	shaders_global_shader_uniforms_editor->set_name(TTR("Shader Globals"));
+	shaders_global_shader_uniforms_editor->set_name(TTRC("Shader Globals"));
 	shaders_global_shader_uniforms_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	globals_container->add_child(shaders_global_shader_uniforms_editor);
 
 	group_settings = memnew(GroupSettingsEditor);
-	group_settings->set_name(TTR("Groups"));
+	group_settings->set_name(TTRC("Groups"));
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	globals_container->add_child(group_settings);
 
 	plugin_settings = memnew(EditorPluginSettings);
-	plugin_settings->set_name(TTR("Plugins"));
+	plugin_settings->set_name(TTRC("Plugins"));
 	tab_container->add_child(plugin_settings);
 
 	timer = memnew(Timer);
@@ -783,7 +800,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	timer->set_one_shot(true);
 	add_child(timer);
 
-	set_ok_button_text(TTR("Close"));
+	set_ok_button_text(TTRC("Close"));
 	set_hide_on_ok(true);
 
 	bool use_advanced = EDITOR_DEF("_project_settings_advanced_mode", false);
@@ -795,7 +812,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	_update_advanced(use_advanced);
 
 	import_defaults_editor = memnew(ImportDefaultsEditor);
-	import_defaults_editor->set_name(TTR("Import Defaults"));
+	import_defaults_editor->set_name(TTRC("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
 
 	MovieWriter::set_extensions_hint(); // ensure extensions are properly displayed.

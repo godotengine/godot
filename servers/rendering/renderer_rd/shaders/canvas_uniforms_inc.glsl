@@ -109,8 +109,8 @@ layout(set = 0, binding = 1, std140) uniform CanvasData {
 
 	uint directional_light_count;
 	float tex_to_sdf;
+	float shadow_pixel_size;
 	uint flags;
-	uint pad2;
 }
 canvas_data;
 

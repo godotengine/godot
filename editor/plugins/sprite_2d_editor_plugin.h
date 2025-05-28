@@ -35,8 +35,10 @@
 #include "scene/gui/spin_box.h"
 
 class AcceptDialog;
+class Button;
 class ConfirmationDialog;
 class EditorZoomWidget;
+class HBoxContainer;
 class MenuButton;
 class Panel;
 class ViewPanner;
@@ -51,11 +53,14 @@ class Sprite2DEditor : public Control {
 		MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D
 	};
 
+	HBoxContainer *top_hb = nullptr;
+
 	Menu selected_menu_item;
 
 	Sprite2D *node = nullptr;
 
 	MenuButton *options = nullptr;
+	Button *resize_region_rect = nullptr;
 
 	ConfirmationDialog *outline_dialog = nullptr;
 
@@ -104,6 +109,9 @@ class Sprite2DEditor : public Control {
 
 	void _add_as_sibling_or_child(Node *p_own_node, Node *p_new_node);
 
+	void _sync_sprite_resize_mode();
+	void _update_sprite_resize_mode_button();
+
 protected:
 	void _node_removed(Node *p_node);
 	void _notification(int p_what);
@@ -118,6 +126,8 @@ class Sprite2DEditorPlugin : public EditorPlugin {
 	GDCLASS(Sprite2DEditorPlugin, EditorPlugin);
 
 	Sprite2DEditor *sprite_editor = nullptr;
+
+	Label *dragging_mode_hint = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "Sprite2D"; }

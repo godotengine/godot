@@ -98,6 +98,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	RID _shader_create_from_bytecode_bind_compat_79606(const Vector<uint8_t> &p_shader_binary);
+	RID _texture_create_from_extension_compat_105570(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -321,7 +322,7 @@ public:
 		RID owner;
 
 		RDG::ResourceTracker *draw_tracker = nullptr;
-		HashMap<Rect2i, RDG::ResourceTracker *> slice_trackers;
+		HashMap<Rect2i, RDG::ResourceTracker *> *slice_trackers = nullptr;
 		SharedFallback *shared_fallback = nullptr;
 		int32_t transfer_worker_index = -1;
 		uint64_t transfer_worker_operation = 0;
@@ -407,7 +408,7 @@ public:
 
 	RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
-	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
+	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps = 1);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
@@ -429,7 +430,7 @@ public:
 	void texture_set_discardable(RID p_texture, bool p_discardable);
 	bool texture_is_discardable(RID p_texture);
 
-private:
+public:
 	/*************/
 	/**** VRS ****/
 	/*************/
@@ -440,6 +441,7 @@ private:
 		VRS_METHOD_FRAGMENT_DENSITY_MAP,
 	};
 
+private:
 	VRSMethod vrs_method = VRS_METHOD_NONE;
 	DataFormat vrs_format = DATA_FORMAT_MAX;
 	Size2i vrs_texel_size;
@@ -450,6 +452,7 @@ private:
 	void _vrs_detect_method();
 
 public:
+	VRSMethod vrs_get_method() const;
 	DataFormat vrs_get_format() const;
 	Size2i vrs_get_texel_size() const;
 
@@ -1640,7 +1643,8 @@ public:
 
 	void set_resource_name(RID p_id, const String &p_name);
 
-	void draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	void _draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	void draw_command_begin_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1));
 	void draw_command_end_label();
 
 	String get_device_vendor_name() const;

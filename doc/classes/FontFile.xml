@@ -651,8 +651,8 @@
 		<member name="opentype_feature_overrides" type="Dictionary" setter="set_opentype_feature_overrides" getter="get_opentype_feature_overrides" default="{}">
 			Font OpenType feature set override.
 		</member>
-		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
-			Font oversampling factor. If set to [code]0.0[/code], the global oversampling factor is used instead. Used by dynamic fonts only (MSDF fonts ignore oversampling).
+		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" deprecated="Use the [code skip-lint]oversampling[/code] argument of the [code skip-lint]draw_*[/code] methods instead.">
+			Deprecated. This property does nothing.
 		</member>
 		<member name="style_name" type="String" setter="set_font_style_name" getter="get_font_style_name" default="&quot;&quot;">
 			Font style name.

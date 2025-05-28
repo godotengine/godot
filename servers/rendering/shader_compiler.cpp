@@ -1563,7 +1563,8 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 
 	shader = parser.get_shader();
 	function = nullptr;
-	_dump_node_code(shader, 1, r_gen_code, *p_actions, actions, false);
+	// Return value only relevant within nested calls.
+	_ALLOW_DISCARD_ _dump_node_code(shader, 1, r_gen_code, *p_actions, actions, false);
 
 	return OK;
 }

@@ -107,30 +107,46 @@ bool FileSystemList::edit_selected() {
 	Rect2 popup_rect;
 	Vector2 ofs;
 
-	Vector2 icon_size = get_item_icon(s)->get_size();
+	Vector2 icon_size = get_fixed_icon_size() * get_icon_scale();
 
 	// Handles the different icon modes (TOP/LEFT).
 	switch (get_icon_mode()) {
 		case ItemList::ICON_MODE_LEFT:
 			rect = get_item_rect(s, true);
+			if (get_v_scroll_bar()->is_visible()) {
+				rect.position.y -= get_v_scroll_bar()->get_value();
+			}
+			if (get_h_scroll_bar()->is_visible()) {
+				rect.position.x -= get_h_scroll_bar()->get_value();
+			}
 			ofs = Vector2(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height) - rect.size.height) / 2));
-			popup_rect.position = get_screen_position() + rect.position - ofs;
+			popup_rect.position = rect.position - ofs;
 			popup_rect.size = rect.size;
 
 			// Adjust for icon position and size.
-			popup_rect.size.x -= icon_size.x;
-			popup_rect.position.x += icon_size.x;
+			popup_rect.size.x -= MAX(theme_cache.h_separation, 0) / 2 + icon_size.x;
+			popup_rect.position.x += MAX(theme_cache.h_separation, 0) / 2 + icon_size.x;
 			break;
 		case ItemList::ICON_MODE_TOP:
 			rect = get_item_rect(s, false);
-			popup_rect.position = get_screen_position() + rect.position;
+			if (get_v_scroll_bar()->is_visible()) {
+				rect.position.y -= get_v_scroll_bar()->get_value();
+			}
+			if (get_h_scroll_bar()->is_visible()) {
+				rect.position.x -= get_h_scroll_bar()->get_value();
+			}
+			popup_rect.position = rect.position;
 			popup_rect.size = rect.size;
 
 			// Adjust for icon position and size.
-			popup_rect.size.y -= icon_size.y;
-			popup_rect.position.y += icon_size.y;
+			popup_rect.size.y -= MAX(theme_cache.v_separation, 0) / 2 + theme_cache.icon_margin + icon_size.y;
+			popup_rect.position.y += MAX(theme_cache.v_separation, 0) / 2 + theme_cache.icon_margin + icon_size.y;
 			break;
 	}
+	if (is_layout_rtl()) {
+		popup_rect.position.x = get_size().width - popup_rect.position.x - popup_rect.size.x;
+	}
+	popup_rect.position += get_screen_position();
 
 	popup_editor->set_position(popup_rect.position);
 	popup_editor->set_size(popup_rect.size);
@@ -698,7 +714,7 @@ void FileSystemDock::_set_current_path_line_edit_text(const String &p_path) {
 	}
 }
 
-void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites) {
+void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites, bool p_grab_focus) {
 	String target_path = p_path;
 	bool is_directory = false;
 
@@ -751,9 +767,15 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 			}
 			item = item->get_next();
 		}
+		if (p_grab_focus) {
+			tree->grab_focus();
+		}
 	} else {
 		(*directory_ptr)->select(0);
 		_update_file_list(false);
+		if (p_grab_focus) {
+			files->grab_focus();
+		}
 	}
 	tree->ensure_cursor_is_visible();
 }
@@ -790,10 +812,10 @@ bool FileSystemDock::_update_filtered_items(TreeItem *p_tree_item) {
 
 void FileSystemDock::navigate_to_path(const String &p_path) {
 	file_list_search_box->clear();
-	_navigate_to_path(p_path);
-
-	// Ensure that the FileSystem dock is visible.
+	// Try to set the FileSystem dock visible.
 	EditorDockManager::get_singleton()->focus_dock(this);
+	_navigate_to_path(p_path, false, is_visible_in_tree());
+
 	import_dock_needs_update = true;
 	_update_import_dock();
 }
@@ -2084,18 +2106,24 @@ Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> select
 }
 
 void FileSystemDock::_tree_rmb_option(int p_option) {
+	if (p_option > FILE_MENU_MAX) {
+		// Extra options don't need paths.
+		_file_option(p_option, {});
+		return;
+	}
+
 	Vector<String> selected_strings = _tree_get_selected(false);
 
 	// Execute the current option.
 	switch (p_option) {
-		case FOLDER_EXPAND_ALL:
-		case FOLDER_COLLAPSE_ALL: {
+		case FILE_MENU_EXPAND_ALL:
+		case FILE_MENU_COLLAPSE_ALL: {
 			// Expand or collapse the folder
 			if (selected_strings.size() == 1) {
-				tree->get_selected()->set_collapsed_recursive(p_option == FOLDER_COLLAPSE_ALL);
+				tree->get_selected()->set_collapsed_recursive(p_option == FILE_MENU_COLLAPSE_ALL);
 			}
 		} break;
-		case FILE_RENAME: {
+		case FILE_MENU_RENAME: {
 			selected_strings = _tree_get_selected(false, true);
 			[[fallthrough]];
 		}
@@ -2106,8 +2134,14 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 }
 
 void FileSystemDock::_file_list_rmb_option(int p_option) {
-	Vector<int> selected_id = files->get_selected_items();
 	Vector<String> selected;
+	if (p_option > FILE_MENU_MAX) {
+		// Extra options don't need paths.
+		_file_option(p_option, selected);
+		return;
+	}
+
+	Vector<int> selected_id = files->get_selected_items();
 	for (int i = 0; i < selected_id.size(); i++) {
 		selected.push_back(files->get_item_metadata(selected_id[i]));
 	}
@@ -2128,7 +2162,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 	// The first one should be the active item.
 
 	switch (p_option) {
-		case FILE_SHOW_IN_EXPLORER: {
+		case FILE_MENU_SHOW_IN_EXPLORER: {
 			// Show the file/folder in the OS explorer.
 			String fpath = current_path;
 			if (current_path == "Favorites") {
@@ -2139,7 +2173,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			OS::get_singleton()->shell_show_in_file_manager(dir, true);
 		} break;
 
-		case FILE_OPEN_EXTERNAL: {
+		case FILE_MENU_OPEN_EXTERNAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
 				fpath = p_selected[0];
@@ -2176,7 +2210,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_OPEN_IN_TERMINAL: {
+		case FILE_MENU_OPEN_IN_TERMINAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
 				fpath = p_selected[0];
@@ -2311,7 +2345,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_OPEN: {
+		case FILE_MENU_OPEN: {
 			// Open folders.
 			TreeItem *selected = tree->get_root();
 			selected = tree->get_next_selected(selected);
@@ -2327,14 +2361,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_INHERIT: {
+		case FILE_MENU_INHERIT: {
 			// Create a new scene inherited from the selected one.
 			if (p_selected.size() == 1) {
 				emit_signal(SNAME("inherit"), p_selected[0]);
 			}
 		} break;
 
-		case FILE_MAIN_SCENE: {
+		case FILE_MENU_MAIN_SCENE: {
 			// Set as main scene with selected scene file.
 			if (p_selected.size() == 1) {
 				ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(p_selected[0]));
@@ -2344,7 +2378,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_INSTANTIATE: {
+		case FILE_MENU_INSTANTIATE: {
 			// Instantiate all selected scenes.
 			Vector<String> paths;
 			for (int i = 0; i < p_selected.size(); i++) {
@@ -2358,7 +2392,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_ADD_FAVORITE: {
+		case FILE_MENU_ADD_FAVORITE: {
 			// Add the files from favorites.
 			Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < p_selected.size(); i++) {
@@ -2370,7 +2404,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			_update_tree(get_uncollapsed_paths());
 		} break;
 
-		case FILE_REMOVE_FAVORITE: {
+		case FILE_MENU_REMOVE_FAVORITE: {
 			// Remove the files from favorites.
 			Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < p_selected.size(); i++) {
@@ -2383,13 +2417,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_SHOW_IN_FILESYSTEM: {
+		case FILE_MENU_SHOW_IN_FILESYSTEM: {
 			if (!p_selected.is_empty()) {
 				navigate_to_path(p_selected[0]);
 			}
 		} break;
 
-		case FILE_DEPENDENCIES: {
+		case FILE_MENU_DEPENDENCIES: {
 			// Checkout the file dependencies.
 			if (!p_selected.is_empty()) {
 				const String &fpath = p_selected[0];
@@ -2397,7 +2431,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_OWNERS: {
+		case FILE_MENU_OWNERS: {
 			// Checkout the file owners.
 			if (!p_selected.is_empty()) {
 				const String &fpath = p_selected[0];
@@ -2405,7 +2439,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_MOVE: {
+		case FILE_MENU_MOVE: {
 			// Move or copy the files to a given location.
 			to_move.clear();
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
@@ -2421,7 +2455,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_RENAME: {
+		case FILE_MENU_RENAME: {
 			if (!p_selected.is_empty()) {
 				// Set to_rename variable for callback execution.
 				to_rename.path = p_selected[0];
@@ -2451,7 +2485,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_REMOVE: {
+		case FILE_MENU_REMOVE: {
 			// Remove the selected files.
 			Vector<String> remove_files;
 			Vector<String> remove_folders;
@@ -2473,7 +2507,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_DUPLICATE: {
+		case FILE_MENU_DUPLICATE: {
 			if (p_selected.size() != 1) {
 				return;
 			}
@@ -2492,11 +2526,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_dir_dialog->popup_centered();
 		} break;
 
-		case FILE_REIMPORT: {
+		case FILE_MENU_REIMPORT: {
 			ImportDock::get_singleton()->reimport_resources(p_selected);
 		} break;
 
-		case FILE_NEW_FOLDER: {
+		case FILE_MENU_NEW_FOLDER: {
 			String directory = current_path;
 			if (!directory.ends_with("/")) {
 				directory = directory.get_base_dir();
@@ -2506,7 +2540,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_dir_dialog->popup_centered();
 		} break;
 
-		case FILE_NEW_SCENE: {
+		case FILE_MENU_NEW_SCENE: {
 			String directory = current_path;
 			if (!directory.ends_with("/")) {
 				directory = directory.get_base_dir();
@@ -2515,7 +2549,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_scene_dialog->popup_centered();
 		} break;
 
-		case FILE_NEW_SCRIPT: {
+		case FILE_MENU_NEW_SCRIPT: {
 			String fpath = current_path;
 			if (!fpath.ends_with("/")) {
 				fpath = fpath.get_base_dir();
@@ -2524,14 +2558,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_script_dialog->popup_centered();
 		} break;
 
-		case FILE_COPY_PATH: {
+		case FILE_MENU_COPY_PATH: {
 			if (!p_selected.is_empty()) {
 				const String &fpath = p_selected[0];
 				DisplayServer::get_singleton()->clipboard_set(fpath);
 			}
 		} break;
 
-		case FILE_COPY_ABSOLUTE_PATH: {
+		case FILE_MENU_COPY_ABSOLUTE_PATH: {
 			if (!p_selected.is_empty()) {
 				const String &fpath = p_selected[0];
 				const String absolute_path = ProjectSettings::get_singleton()->globalize_path(fpath);
@@ -2539,7 +2573,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_COPY_UID: {
+		case FILE_MENU_COPY_UID: {
 			if (!p_selected.is_empty()) {
 				ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_selected[0]);
 				if (uid != ResourceUID::INVALID_ID) {
@@ -2549,16 +2583,31 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
-		case FILE_NEW_RESOURCE: {
+		case FILE_MENU_NEW_RESOURCE: {
 			new_resource_dialog->popup_create(true);
 		} break;
-		case FILE_NEW_TEXTFILE: {
+		case FILE_MENU_NEW_TEXTFILE: {
 			String fpath = current_path;
 			if (!fpath.ends_with("/")) {
 				fpath = fpath.get_base_dir();
 			}
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			ScriptEditor::get_singleton()->open_text_file_create_dialog(dir);
+		} break;
+		case FILE_MENU_RUN_SCRIPT: {
+			if (p_selected.size() == 1) {
+				const String &fpath = p_selected[0];
+				Ref<Script> scr = ResourceLoader::load(fpath);
+				ERR_FAIL_COND(scr.is_null());
+				EditorNode::get_singleton()->run_editor_script(scr);
+			}
+		} break;
+
+		case EXTRA_FOCUS_PATH: {
+			focus_on_filter();
+		} break;
+		case EXTRA_FOCUS_FILTER: {
+			focus_on_filter();
 		} break;
 
 		default: {
@@ -2588,6 +2637,33 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			break;
 		}
 	}
+}
+
+int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
+	if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_key)) {
+		return FILE_MENU_DUPLICATE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_key)) {
+		return FILE_MENU_COPY_PATH;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_key)) {
+		return FILE_MENU_COPY_ABSOLUTE_PATH;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_key)) {
+		return FILE_MENU_COPY_UID;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_key)) {
+		return FILE_MENU_REMOVE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_key)) {
+		return FILE_MENU_RENAME;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_key)) {
+		return FILE_MENU_SHOW_IN_EXPLORER;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_key)) {
+		return FILE_MENU_OPEN_EXTERNAL;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_key)) {
+		return FILE_MENU_OPEN_IN_TERMINAL;
+	} else if (ED_IS_SHORTCUT("file_dialog/focus_path", p_key)) {
+		return EXTRA_FOCUS_PATH;
+	} else if (ED_IS_SHORTCUT("editor/open_search", p_key)) {
+		return EXTRA_FOCUS_FILTER;
+	}
+	return -1;
 }
 
 void FileSystemDock::_resource_created() {
@@ -3199,24 +3275,34 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (all_files) {
 		if (all_files_scenes) {
 			if (filenames.size() == 1) {
-				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scene"), FILE_OPEN);
-				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTRC("New Inherited Scene"), FILE_INHERIT);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scene"), FILE_MENU_OPEN);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTRC("New Inherited Scene"), FILE_MENU_INHERIT);
 				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
-					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTRC("Set as Main Scene"), FILE_MAIN_SCENE);
+					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTRC("Set as Main Scene"), FILE_MENU_MAIN_SCENE);
 				}
 			} else {
-				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scenes"), FILE_OPEN);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scenes"), FILE_MENU_OPEN);
 			}
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTRC("Instantiate"), FILE_INSTANTIATE);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTRC("Instantiate"), FILE_MENU_INSTANTIATE);
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open"), FILE_OPEN);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open"), FILE_MENU_OPEN);
+
+			String type = EditorFileSystem::get_singleton()->get_file_type(filenames[0]);
+			if (ClassDB::is_parent_class(type, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(filenames[0]);
+				if (scr.is_valid()) {
+					if (ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
+						p_popup->add_icon_item(get_editor_theme_icon(SNAME("MainPlay")), TTRC("Run"), FILE_MENU_RUN_SCRIPT);
+					}
+				}
+			}
 			p_popup->add_separator();
 		}
 
 		if (filenames.size() == 1) {
-			p_popup->add_item(TTRC("Edit Dependencies..."), FILE_DEPENDENCIES);
-			p_popup->add_item(TTRC("View Owners..."), FILE_OWNERS);
+			p_popup->add_item(TTRC("Edit Dependencies..."), FILE_MENU_DEPENDENCIES);
+			p_popup->add_item(TTRC("View Owners..."), FILE_MENU_OWNERS);
 			p_popup->add_separator();
 		}
 	}
@@ -3225,14 +3311,14 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		PopupMenu *new_menu = memnew(PopupMenu);
 		new_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_generic_rmb_option_selected));
 
-		p_popup->add_submenu_node_item(TTRC("Create New"), new_menu, FILE_NEW);
-		p_popup->set_item_icon(p_popup->get_item_index(FILE_NEW), get_editor_theme_icon(SNAME("Add")));
+		p_popup->add_submenu_node_item(TTRC("Create New"), new_menu, FILE_MENU_NEW);
+		p_popup->set_item_icon(p_popup->get_item_index(FILE_MENU_NEW), get_editor_theme_icon(SNAME("Add")));
 
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Folder..."), FILE_NEW_FOLDER);
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("Scene..."), FILE_NEW_SCENE);
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("Script..."), FILE_NEW_SCRIPT);
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("Resource..."), FILE_NEW_RESOURCE);
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("TextFile..."), FILE_NEW_TEXTFILE);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Folder..."), FILE_MENU_NEW_FOLDER);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("Scene..."), FILE_MENU_NEW_SCENE);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("Script..."), FILE_MENU_NEW_SCRIPT);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("Resource..."), FILE_MENU_NEW_RESOURCE);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
 
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_paths);
 		p_popup->add_separator();
@@ -3243,11 +3329,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	bool root_path_not_selected = p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://");
 
 	if (all_folders && foldernames.size() > 0) {
-		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_OPEN);
+		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
 
 		if (foldernames.size() == 1) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FOLDER_EXPAND_ALL);
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FOLDER_COLLAPSE_ALL);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
 		}
 
 		p_popup->add_separator();
@@ -3275,21 +3361,21 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 	// Add the options that are only available when a single item is selected.
 	if (p_paths.size() == 1) {
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_COPY_PATH);
-		p_popup->add_shortcut(ED_GET_SHORTCUT("filesystem_dock/copy_absolute_path"), FILE_COPY_ABSOLUTE_PATH);
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_MENU_COPY_PATH);
+		p_popup->add_shortcut(ED_GET_SHORTCUT("filesystem_dock/copy_absolute_path"), FILE_MENU_COPY_ABSOLUTE_PATH);
 		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
-			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_COPY_UID);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_MENU_COPY_UID);
 		}
 		if (root_path_not_selected) {
-			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("filesystem_dock/rename"), FILE_RENAME);
-			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Duplicate")), ED_GET_SHORTCUT("filesystem_dock/duplicate"), FILE_DUPLICATE);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("filesystem_dock/rename"), FILE_MENU_RENAME);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Duplicate")), ED_GET_SHORTCUT("filesystem_dock/duplicate"), FILE_MENU_DUPLICATE);
 		}
 	}
 
 	// Add the options that are only available when the root path is not selected.
 	if (root_path_not_selected) {
-		p_popup->add_icon_item(get_editor_theme_icon(SNAME("MoveUp")), TTRC("Move/Duplicate To..."), FILE_MOVE);
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("filesystem_dock/delete"), FILE_REMOVE);
+		p_popup->add_icon_item(get_editor_theme_icon(SNAME("MoveUp")), TTRC("Move/Duplicate To..."), FILE_MENU_MOVE);
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("filesystem_dock/delete"), FILE_MENU_REMOVE);
 	}
 
 	// Only add a separator if we have actually placed any options in the menu since the last separator.
@@ -3300,10 +3386,10 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	// Add the options that are available when one or more items are selected.
 	if (p_paths.size() >= 1) {
 		if (!all_favorites) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTRC("Add to Favorites"), FILE_ADD_FAVORITE);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTRC("Add to Favorites"), FILE_MENU_ADD_FAVORITE);
 		}
 		if (!all_not_favorites) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("NonFavorite")), TTRC("Remove from Favorites"), FILE_REMOVE_FAVORITE);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("NonFavorite")), TTRC("Remove from Favorites"), FILE_MENU_REMOVE_FAVORITE);
 		}
 
 		if (root_path_not_selected) {
@@ -3323,7 +3409,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 					container_menu = memnew(PopupMenu);
 					container_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_generic_rmb_option_selected));
 
-					p_popup->add_submenu_node_item(TTRC("Convert to..."), container_menu, FILE_NEW);
+					p_popup->add_submenu_node_item(TTRC("Convert to..."), container_menu, FILE_MENU_NEW);
 					conversion_string_template = "%s";
 				}
 
@@ -3368,7 +3454,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			}
 
 			if (resource_valid) {
-				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Reimport"), FILE_REIMPORT);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Reimport"), FILE_MENU_REIMPORT);
 			}
 		}
 	}
@@ -3393,7 +3479,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			if (is_item_in_favorites) {
 				p_popup->add_separator();
 				added_separator = true;
-				p_popup->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTRC("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTRC("Show in FileSystem"), FILE_MENU_SHOW_IN_FILESYSTEM);
 			}
 		}
 
@@ -3406,15 +3492,15 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		// Opening the system file manager is not supported on the Android and web editors.
 		const bool is_directory = fpath.ends_with("/");
 
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_OPEN_IN_TERMINAL), is_directory ? TTRC("Open in Terminal") : TTRC("Open Folder in Terminal"));
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_OPEN_IN_TERMINAL), is_directory ? TTRC("Open in Terminal") : TTRC("Open Folder in Terminal"));
 
 		if (!is_directory) {
-			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
 		}
 
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), is_directory ? TTRC("Open in File Manager") : TTRC("Show in File Manager"));
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_SHOW_IN_EXPLORER), is_directory ? TTRC("Open in File Manager") : TTRC("Show in File Manager"));
 #endif
 
 		current_path = fpath;
@@ -3451,16 +3537,18 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	current_path = "res://";
 	tree_popup->clear();
 	tree_popup->reset_size();
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("New Folder..."), FILE_NEW_FOLDER);
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("New Scene..."), FILE_NEW_SCENE);
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_NEW_SCRIPT);
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_NEW_RESOURCE);
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_NEW_TEXTFILE);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("New Folder..."), FILE_MENU_NEW_FOLDER);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("New Scene..."), FILE_MENU_NEW_SCENE);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(tree_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
-	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
-	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
+	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
 #endif
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
@@ -3521,14 +3609,16 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->clear();
 	file_list_popup->reset_size();
 
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("New Folder..."), FILE_NEW_FOLDER);
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("New Scene..."), FILE_NEW_SCENE);
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_NEW_SCRIPT);
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_NEW_RESOURCE);
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_NEW_TEXTFILE);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("New Folder..."), FILE_MENU_NEW_FOLDER);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("New Scene..."), FILE_MENU_NEW_SCENE);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(file_list_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
 	file_list_popup->add_separator();
-	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
-	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
+	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
 
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
@@ -3597,8 +3687,6 @@ void FileSystemDock::_reselect_items_selected_on_drag_begin(bool reset) {
 }
 
 void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
-	Ref<InputEventKey> key = p_event;
-
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		TreeItem *item = tree->get_item_at_position(mm->get_position());
@@ -3627,29 +3715,11 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 		}
 	}
 
+	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
-		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
-			_tree_rmb_option(FILE_DUPLICATE);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
-			_tree_rmb_option(FILE_COPY_PATH);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_event)) {
-			_tree_rmb_option(FILE_COPY_ABSOLUTE_PATH);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_event)) {
-			_tree_rmb_option(FILE_COPY_UID);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
-			_tree_rmb_option(FILE_REMOVE);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
-			_tree_rmb_option(FILE_RENAME);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
-			_tree_rmb_option(FILE_SHOW_IN_EXPLORER);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_event)) {
-			_tree_rmb_option(FILE_OPEN_EXTERNAL);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
-			_tree_rmb_option(FILE_OPEN_IN_TERMINAL);
-		} else if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
-			focus_on_path();
-		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
-			focus_on_filter();
+		int option_id = _get_menu_option_from_key(key);
+		if (option_id > -1) {
+			_tree_rmb_option(option_id);
 		} else {
 			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
 			if (!custom_callback.is_valid()) {
@@ -3711,22 +3781,9 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
-		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
-			_file_list_rmb_option(FILE_DUPLICATE);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
-			_file_list_rmb_option(FILE_COPY_PATH);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_event)) {
-			_file_list_rmb_option(FILE_COPY_ABSOLUTE_PATH);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
-			_file_list_rmb_option(FILE_REMOVE);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
-			_file_list_rmb_option(FILE_RENAME);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
-			_file_list_rmb_option(FILE_SHOW_IN_EXPLORER);
-		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
-			_file_list_rmb_option(FILE_OPEN_IN_TERMINAL);
-		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
-			focus_on_filter();
+		int option_id = _get_menu_option_from_key(key);
+		if (option_id > -1) {
+			_file_list_rmb_option(option_id);
 		} else {
 			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
 			if (!custom_callback.is_valid()) {

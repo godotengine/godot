@@ -59,7 +59,8 @@ static String _get_parent_class_of_script(const String &p_path) {
 
 	// Inherits from a built-in class.
 	if (base.is_null()) {
-		script->get_language()->get_global_class_name(script->get_path(), &class_name);
+		// We only care about the referenced class_name.
+		_ALLOW_DISCARD_ script->get_language()->get_global_class_name(script->get_path(), &class_name);
 		return class_name;
 	}
 
@@ -203,6 +204,11 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	load_enabled = p_load_enabled;
 
 	_language_changed(language_menu->get_selected());
+
+	if (_can_be_built_in()) {
+		built_in->set_pressed(EditorSettings::get_singleton()->get_project_metadata("script_setup", "create_built_in_script", false));
+		_built_in_pressed();
+	}
 }
 
 void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
@@ -343,6 +349,10 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 void ScriptCreateDialog::ok_pressed() {
 	if (is_new_script_created) {
 		_create_new();
+		if (_can_be_built_in()) {
+			// Only save state of built-in checkbox if it's enabled.
+			EditorSettings::get_singleton()->set_project_metadata("script_setup", "create_built_in_script", built_in->is_pressed());
+		}
 	} else {
 		_load_exist();
 	}
@@ -745,9 +755,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	int space_indent_size = 4;
 	// Get meta delimiter
 	String meta_delimiter;
-	List<String> comment_delimiters;
-	p_language->get_comment_delimiters(&comment_delimiters);
-	for (const String &script_delimiter : comment_delimiters) {
+	for (const String &script_delimiter : p_language->get_comment_delimiters()) {
 		if (!script_delimiter.contains_char(' ')) {
 			meta_delimiter = script_delimiter;
 			break;

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "node.h"
+#include "node.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
@@ -196,13 +197,6 @@ void Node::_notification(int p_notification) {
 			data.is_auto_translate_dirty = true;
 			data.is_translation_domain_dirty = true;
 
-#ifdef TOOLS_ENABLED
-			// Don't translate UI elements when they're being edited.
-			if (is_part_of_edited_scene()) {
-				set_message_translation(false);
-			}
-#endif
-
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -219,11 +213,6 @@ void Node::_notification(int p_notification) {
 			get_tree()->nodes_in_tree_count++;
 			orphan_node_count--;
 
-			// Allow physics interpolated nodes to automatically reset when added to the tree
-			// (this is to save the user from doing this manually each time).
-			if (get_tree()->is_physics_interpolation_enabled()) {
-				_set_physics_interpolation_reset_requested(true);
-			}
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
@@ -431,19 +420,7 @@ void Node::_propagate_enter_tree() {
 void Node::_propagate_after_exit_tree() {
 	// Clear owner if it was not part of the pruned branch
 	if (data.owner) {
-		bool found = false;
-		Node *parent = data.parent;
-
-		while (parent) {
-			if (parent == data.owner) {
-				found = true;
-				break;
-			}
-
-			parent = parent->data.parent;
-		}
-
-		if (!found) {
+		if (!data.owner->is_ancestor_of(this)) {
 			_clean_up_owner();
 		}
 	}
@@ -531,6 +508,8 @@ void Node::_propagate_physics_interpolated(bool p_interpolated) {
 
 	// Allow a call to the RenderingServer etc. in derived classes.
 	_physics_interpolated_changed();
+
+	update_configuration_warnings();
 
 	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
@@ -865,7 +844,7 @@ void Node::rpc_config(const StringName &p_method, const Variant &p_config) {
 	}
 }
 
-Variant Node::get_rpc_config() const {
+const Variant Node::get_node_rpc_config() const {
 	return data.rpc_config;
 }
 
@@ -1569,17 +1548,23 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
 }
 
-void Node::set_name(const String &p_name) {
+void Node::set_name(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
-	String name = p_name.validate_node_name();
-
-	ERR_FAIL_COND(name.is_empty());
+	const StringName old_name = data.name;
+	{
+		const String input_name_str = String(p_name);
+		ERR_FAIL_COND(input_name_str.is_empty());
+		const String validated_node_name_string = input_name_str.validate_node_name();
+		if (input_name_str == validated_node_name_string) {
+			data.name = p_name;
+		} else {
+			data.name = StringName(validated_node_name_string);
+		}
+	}
 
 	if (data.unique_name_in_owner && data.owner) {
 		_release_unique_name_in_owner();
 	}
-	String old_name = data.name;
-	data.name = name;
 
 	if (data.parent) {
 		data.parent->_validate_child_name(this, true);
@@ -1932,13 +1917,12 @@ void Node::_update_children_cache_impl() const {
 
 int Node::get_child_count(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(0);
-	_update_children_cache();
-
 	if (p_include_internal) {
-		return data.children_cache.size();
-	} else {
-		return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
+		return data.children.size();
 	}
+
+	_update_children_cache();
+	return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
 }
 
 Node *Node::get_child(int p_index, bool p_include_internal) const {
@@ -2364,17 +2348,7 @@ void Node::set_owner(Node *p_owner) {
 		return;
 	}
 
-	Node *check = get_parent();
-	bool owner_valid = false;
-
-	while (check) {
-		if (check == p_owner) {
-			owner_valid = true;
-			break;
-		}
-
-		check = check->data.parent;
-	}
+	bool owner_valid = p_owner->is_ancestor_of(this);
 
 	ERR_FAIL_COND_MSG(!owner_valid, "Invalid owner. Owner must be an ancestor in the tree.");
 
@@ -2886,7 +2860,9 @@ String Node::to_string() {
 		String ret;
 		GDExtensionBool is_valid;
 		_get_extension()->to_string(_get_extension_instance(), &is_valid, &ret);
-		return ret;
+		if (is_valid) {
+			return ret;
+		}
 	}
 	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
 }
@@ -3018,18 +2994,18 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	}
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		if (instantiated && get_child(i)->data.owner == this) {
+		if (instantiated && get_child(i, false)->data.owner == this) {
 			continue; //part of instance
 		}
 
-		Node *dup = get_child(i)->_duplicate(p_flags, r_duplimap);
+		Node *dup = get_child(i, false)->_duplicate(p_flags, r_duplimap);
 		if (!dup) {
 			memdelete(node);
 			return nullptr;
 		}
 
 		node->add_child(dup);
-		if (i < node->get_child_count() - 1) {
+		if (i < node->get_child_count(false) - 1) {
 			node->move_child(dup, i);
 		}
 	}
@@ -3048,9 +3024,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 
 		parent->add_child(dup);
-		int pos = E->get_index();
+		int pos = E->get_index(false);
 
-		if (pos < parent->get_child_count() - 1) {
+		if (pos < parent->get_child_count(false) - 1) {
 			parent->move_child(dup, pos);
 		}
 	}
@@ -3179,7 +3155,11 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 			continue;
 		}
 
-		Variant value = p_original->get(name).duplicate(true);
+		Variant value = p_original->get(name);
+		// To keep classic behavior, because, in contrast, nowadays a resource would be duplicated.
+		if (value.get_type() != Variant::OBJECT) {
+			value = value.duplicate(true);
+		}
 
 		if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
 			Resource *res = Object::cast_to<Resource>(value);
@@ -3502,9 +3482,17 @@ static void _print_orphan_nodes_routine(Object *p_obj) {
 		path = String(p->get_name()) + "/" + p->get_path_to(n);
 	}
 
+	String source;
+	Variant script = n->get_script();
+	if (!script.is_null()) {
+		Resource *obj = Object::cast_to<Resource>(script);
+		source = obj->get_path();
+	}
+
 	List<String> info_strings;
 	info_strings.push_back(path);
 	info_strings.push_back(n->get_class());
+	info_strings.push_back(source);
 
 	_print_orphan_nodes_map[p_obj->get_instance_id()] = info_strings;
 }
@@ -3519,12 +3507,30 @@ void Node::print_orphan_nodes() {
 	ObjectDB::debug_objects(_print_orphan_nodes_routine);
 
 	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
-		print_line(itos(E.key) + " - Stray Node: " + E.value.get(0) + " (Type: " + E.value.get(1) + ")");
+		print_line(itos(E.key) + " - Stray Node: " + E.value.get(0) + " (Type: " + E.value.get(1) + ") (Source:" + E.value.get(2) + ")");
 	}
 
 	// Flush it after use.
 	_print_orphan_nodes_map.clear();
 #endif
+}
+TypedArray<int> Node::get_orphan_node_ids() {
+	TypedArray<int> ret;
+#ifdef DEBUG_ENABLED
+	// Make sure it's empty.
+	_print_orphan_nodes_map.clear();
+
+	// Collect and return information about orphan nodes.
+	ObjectDB::debug_objects(_print_orphan_nodes_routine);
+
+	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
+		ret.push_back(E.key);
+	}
+
+	// Flush it after use.
+	_print_orphan_nodes_map.clear();
+#endif
+	return ret;
 }
 
 void Node::queue_free() {
@@ -3835,6 +3841,7 @@ void Node::_bind_methods() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case,kebab-case"), NAME_CASING_PASCAL_CASE);
 
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
+	ClassDB::bind_static_method("Node", D_METHOD("get_orphan_node_ids"), &Node::get_orphan_node_ids);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
@@ -3972,7 +3979,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "config"), &Node::rpc_config);
-	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Node::get_rpc_config);
+	ClassDB::bind_method(D_METHOD("get_node_rpc_config"), &Node::_get_node_rpc_config_bind);
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);

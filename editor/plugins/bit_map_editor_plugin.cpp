@@ -51,7 +51,6 @@ void BitMapEditor::setup(const Ref<BitMap> &p_bitmap) {
 
 void BitMapEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			cached_outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
 		} break;
@@ -85,6 +84,7 @@ BitMapEditor::BitMapEditor() {
 	centering_container->add_child(outline_overlay);
 
 	size_label = memnew(Label);
+	size_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	size_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	add_child(size_label);
 

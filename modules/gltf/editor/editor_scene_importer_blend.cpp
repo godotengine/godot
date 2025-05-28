@@ -43,11 +43,6 @@
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
 
-#ifdef MINGW_ENABLED
-#define near
-#define far
-#endif
-
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
 #endif
@@ -379,7 +374,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
-	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
+	bool blend_enabled = GLOBAL_GET_CACHED(bool, "filesystem/import/blender/enabled");
 
 	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender_path").operator String())) {
 		// Intending to import Blender, but blend not configured.
@@ -529,6 +524,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		vb->add_child(hb);
 
 		path_status = memnew(Label);
+		path_status->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		vb->add_child(path_status);
 
 		configure_blender_dialog->add_child(vb);

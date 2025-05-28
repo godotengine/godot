@@ -40,10 +40,11 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
+#include "servers/navigation_server_2d.h"
 
 #include <Obstacle2d.h>
 
-using namespace nav_2d;
+using namespace Nav2D;
 
 #ifdef DEBUG_ENABLED
 #define NAVMAP_ITERATION_ZERO_ERROR_MSG() \
@@ -70,7 +71,7 @@ void NavMap2D::set_cell_size(real_t p_cell_size) {
 	if (cell_size == p_cell_size) {
 		return;
 	}
-	cell_size = MAX(p_cell_size, NavigationDefaults2D::navmesh_cell_size_min);
+	cell_size = MAX(p_cell_size, NavigationDefaults2D::NAV_MESH_CELL_SIZE_MIN);
 	_update_merge_rasterizer_cell_dimensions();
 	map_settings_dirty = true;
 }
@@ -79,7 +80,7 @@ void NavMap2D::set_merge_rasterizer_cell_scale(float p_value) {
 	if (merge_rasterizer_cell_scale == p_value) {
 		return;
 	}
-	merge_rasterizer_cell_scale = MAX(p_value, NavigationDefaults2D::navmesh_cell_size_min);
+	merge_rasterizer_cell_scale = MAX(p_value, NavigationDefaults2D::NAV_MESH_CELL_SIZE_MIN);
 	_update_merge_rasterizer_cell_dimensions();
 	map_settings_dirty = true;
 }
@@ -418,6 +419,8 @@ void NavMap2D::sync() {
 	}
 	if (iteration_ready) {
 		_sync_iteration();
+
+		NavigationServer2D::get_singleton()->emit_signal(SNAME("map_changed"), get_self());
 	}
 
 	map_settings_dirty = false;

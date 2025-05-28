@@ -932,8 +932,9 @@
 			<param index="6" name="height" type="int" />
 			<param index="7" name="depth" type="int" />
 			<param index="8" name="layers" type="int" />
+			<param index="9" name="mipmaps" type="int" default="1" />
 			<description>
-				Returns an RID for an existing [param image] ([code]VkImage[/code]) with the given [param type], [param format], [param samples], [param usage_flags], [param width], [param height], [param depth], and [param layers]. This can be used to allow Godot to render onto foreign images.
+				Returns an RID for an existing [param image] ([code]VkImage[/code]) with the given [param type], [param format], [param samples], [param usage_flags], [param width], [param height], [param depth], [param layers], and [param mipmaps]. This can be used to allow Godot to render onto foreign images.
 			</description>
 		</method>
 		<method name="texture_create_shared">

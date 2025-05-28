@@ -252,6 +252,14 @@ private:
 		Color ol_color;
 		Rect2 dropcap_margins;
 		ItemDropcap() { type = ITEM_DROPCAP; }
+		~ItemDropcap() {
+			if (font.is_valid()) {
+				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
+				if (owner_rtl) {
+					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
+				}
+			}
+		}
 	};
 
 	struct ItemImage : public Item {
@@ -284,6 +292,14 @@ private:
 		bool def_size = false;
 		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
+		~ItemFont() {
+			if (font.is_valid()) {
+				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
+				if (owner_rtl) {
+					font->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_invalidate_fonts));
+				}
+			}
+		}
 	};
 
 	struct ItemFontSize : public Item {
@@ -438,8 +454,8 @@ private:
 	};
 
 	struct ItemRainbow : public ItemFX {
-		float saturation = 0.8f;
-		float value = 0.8f;
+		float saturation = 0.9f;
+		float value = 1.0f;
 		float frequency = 1.0f;
 		float speed = 1.0f;
 
@@ -658,6 +674,8 @@ private:
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
+	void _invalidate_fonts();
+
 	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
 
 	String _get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items);
@@ -831,6 +849,9 @@ public:
 	int get_content_height() const;
 	int get_content_width() const;
 
+	int get_line_height(int p_line) const;
+	int get_line_width(int p_line) const;
+
 	void scroll_to_selection();
 
 	VScrollBar *get_v_scroll_bar() { return vscroll; }
@@ -845,7 +866,6 @@ public:
 	float get_selection_line_offset() const;
 	String get_selected_text() const;
 	void select_all();
-	void selection_copy();
 
 	_FORCE_INLINE_ void set_selection_modifier(const Callable &p_modifier) {
 		selection_modifier = p_modifier;

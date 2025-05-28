@@ -1240,6 +1240,23 @@ void SpringBoneSimulator3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_AXIS_ALL);
 }
 
+void SpringBoneSimulator3D::_validate_bone_names() {
+	for (int i = 0; i < settings.size(); i++) {
+		// Prior bone name.
+		if (!settings[i]->root_bone_name.is_empty()) {
+			set_root_bone_name(i, settings[i]->root_bone_name);
+		} else if (settings[i]->root_bone != -1) {
+			set_root_bone(i, settings[i]->root_bone);
+		}
+		// Prior bone name.
+		if (!settings[i]->end_bone_name.is_empty()) {
+			set_end_bone_name(i, settings[i]->end_bone_name);
+		} else if (settings[i]->end_bone != -1) {
+			set_end_bone(i, settings[i]->end_bone);
+		}
+	}
+}
+
 void SpringBoneSimulator3D::_make_joints_dirty(int p_index) {
 	ERR_FAIL_INDEX(p_index, settings.size());
 	settings[p_index]->joints_dirty = true;
@@ -1298,7 +1315,7 @@ void SpringBoneSimulator3D::_validate_rotation_axis(Skeleton3D *p_skeleton, int 
 		}
 	}
 	fwd.normalize();
-	if (Math::is_equal_approx(Math::absf(rot.dot(fwd)), 1.0f)) {
+	if (Math::is_equal_approx(Math::abs(rot.dot(fwd)), 1)) {
 		WARN_PRINT_ED("Setting: " + itos(p_index) + " Joint: " + itos(p_joint) + ": Rotation axis and forward vectors are colinear. This is not advised as it may cause unwanted rotation.");
 	}
 }

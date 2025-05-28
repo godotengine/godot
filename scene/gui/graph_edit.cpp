@@ -689,6 +689,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
 			graph_node->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(graph_element));
+			graph_node->connect("slot_sizes_changed", callable_mp(this, &GraphEdit::_graph_node_rect_changed).bind(graph_node));
 			graph_node->connect(SceneStringName(item_rect_changed), callable_mp(this, &GraphEdit::_graph_node_rect_changed).bind(graph_node));
 			_ensure_node_order_from(graph_node);
 		}
@@ -744,6 +745,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
 			graph_node->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
+			graph_node->disconnect("slot_sizes_changed", callable_mp(this, &GraphEdit::_graph_node_rect_changed));
 			graph_node->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &GraphEdit::_graph_node_rect_changed));
 
 			// Invalidate all adjacent connections, so that they are removed before the next redraw.
@@ -1421,7 +1423,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 	control_rect.size *= zoom;
 	control_rect.position += p_offset;
 
-	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter_with_recursive() == MOUSE_FILTER_IGNORE) {
+	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter_with_override() == MOUSE_FILTER_IGNORE) {
 		// Test children.
 		for (int i = 0; i < p_control->get_child_count(); i++) {
 			Control *child_rect = Object::cast_to<Control>(p_control->get_child(i));
@@ -2261,6 +2263,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
+	key_input(p_ev);
+}
+
+void GraphEdit::key_input(const Ref<InputEvent> &p_ev) {
 	if (p_ev->is_pressed()) {
 		if (p_ev->is_action("ui_graph_duplicate", true)) {
 			emit_signal(SNAME("duplicate_nodes_request"));
@@ -2428,8 +2434,8 @@ float GraphEdit::get_zoom() const {
 }
 
 void GraphEdit::set_zoom_step(float p_zoom_step) {
-	p_zoom_step = abs(p_zoom_step);
-	ERR_FAIL_COND(!isfinite(p_zoom_step));
+	p_zoom_step = std::abs(p_zoom_step);
+	ERR_FAIL_COND(!std::isfinite(p_zoom_step));
 	if (zoom_step == p_zoom_step) {
 		return;
 	}

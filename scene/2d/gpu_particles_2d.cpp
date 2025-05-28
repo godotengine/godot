@@ -833,7 +833,7 @@ void GPUParticles2D::_draw_emission_gizmo() {
 				draw_circle(Vector2(), pm->get_emission_ring_radius(), emission_ring_color, false);
 			} else {
 				Vector2 a = Vector2(pm->get_emission_ring_height() / -2.0, pm->get_emission_ring_radius() / -1.0);
-				Vector2 b = Vector2(-a.x, MIN(a.y + tan((90.0 - pm->get_emission_ring_cone_angle()) * 0.01745329) * pm->get_emission_ring_height(), 0.0));
+				Vector2 b = Vector2(-a.x, MIN(a.y + std::tan((90.0 - pm->get_emission_ring_cone_angle()) * 0.01745329) * pm->get_emission_ring_height(), 0.0));
 				Vector2 c = Vector2(b.x, -b.y);
 				Vector2 d = Vector2(a.x, -a.y);
 				if (ring_axis.is_equal_approx(Vector3(1.0, 0.0, 0.0))) {
@@ -960,7 +960,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_GROUP("Trails", "trail_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");

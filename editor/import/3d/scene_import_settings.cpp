@@ -755,8 +755,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		config.instantiate();
 		Error err = config->load(p_path + ".import");
 		if (err == OK) {
-			List<String> keys;
-			config->get_section_keys("params", &keys);
+			Vector<String> keys = config->get_section_keys("params");
 			for (const String &E : keys) {
 				Variant value = config->get_value("params", E);
 				if (E == "_subresources") {
@@ -1951,6 +1950,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 	update_view_timer = memnew(Timer);
 	update_view_timer->set_wait_time(0.2);
+	update_view_timer->set_one_shot(true);
 	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
 }

@@ -44,6 +44,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/editor_translation_preview_button.h"
+#include "editor/gui/editor_translation_preview_menu.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/gizmos/audio_listener_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/audio_stream_player_3d_gizmo_plugin.h"
@@ -64,8 +66,6 @@
 #include "editor/plugins/gizmos/lightmap_probe_gizmo_plugin.h"
 #include "editor/plugins/gizmos/marker_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/mesh_instance_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/navigation_link_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/navigation_region_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/occluder_instance_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/particles_3d_emission_shape_gizmo_plugin.h"
 #include "editor/plugins/gizmos/physics_bone_3d_gizmo_plugin.h"
@@ -2910,6 +2910,23 @@ void Node3DEditorViewport::_project_settings_changed() {
 	viewport->set_anisotropic_filtering_level(anisotropic_filtering_level);
 }
 
+static void override_button_stylebox(Button *p_button, const Ref<StyleBox> p_stylebox) {
+	p_button->begin_bulk_theme_override();
+	p_button->add_theme_style_override(CoreStringName(normal), p_stylebox);
+	p_button->add_theme_style_override("normal_mirrored", p_stylebox);
+	p_button->add_theme_style_override(SceneStringName(hover), p_stylebox);
+	p_button->add_theme_style_override("hover_mirrored", p_stylebox);
+	p_button->add_theme_style_override("hover_pressed", p_stylebox);
+	p_button->add_theme_style_override("hover_pressed_mirrored", p_stylebox);
+	p_button->add_theme_style_override(SceneStringName(pressed), p_stylebox);
+	p_button->add_theme_style_override("pressed_mirrored", p_stylebox);
+	p_button->add_theme_style_override("focus", p_stylebox);
+	p_button->add_theme_style_override("focus_mirrored", p_stylebox);
+	p_button->add_theme_style_override("disabled", p_stylebox);
+	p_button->add_theme_style_override("disabled_mirrored", p_stylebox);
+	p_button->end_bulk_theme_override();
+}
+
 void Node3DEditorViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -2986,9 +3003,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			if (_camera_moved_externally()) {
 				// If camera moved after this plugin last set it, presumably a tool script has moved it, accept the new camera transform as the cursor position.
 				_apply_camera_transform_to_cursor();
+				_update_camera(0);
+			} else {
+				_update_camera(delta);
 			}
-
-			_update_camera(delta);
 
 			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
@@ -3251,35 +3269,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
 
-			view_display_menu->begin_bulk_theme_override();
-			view_display_menu->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
-			view_display_menu->add_theme_style_override("normal_mirrored", information_3d_stylebox);
-			view_display_menu->add_theme_style_override(SceneStringName(hover), information_3d_stylebox);
-			view_display_menu->add_theme_style_override("hover_mirrored", information_3d_stylebox);
-			view_display_menu->add_theme_style_override("hover_pressed", information_3d_stylebox);
-			view_display_menu->add_theme_style_override("hover_pressed_mirrored", information_3d_stylebox);
-			view_display_menu->add_theme_style_override(SceneStringName(pressed), information_3d_stylebox);
-			view_display_menu->add_theme_style_override("pressed_mirrored", information_3d_stylebox);
-			view_display_menu->add_theme_style_override("focus", information_3d_stylebox);
-			view_display_menu->add_theme_style_override("focus_mirrored", information_3d_stylebox);
-			view_display_menu->add_theme_style_override("disabled", information_3d_stylebox);
-			view_display_menu->add_theme_style_override("disabled_mirrored", information_3d_stylebox);
-			view_display_menu->end_bulk_theme_override();
-
-			preview_camera->begin_bulk_theme_override();
-			preview_camera->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
-			preview_camera->add_theme_style_override("normal_mirrored", information_3d_stylebox);
-			preview_camera->add_theme_style_override(SceneStringName(hover), information_3d_stylebox);
-			preview_camera->add_theme_style_override("hover_mirrored", information_3d_stylebox);
-			preview_camera->add_theme_style_override("hover_pressed", information_3d_stylebox);
-			preview_camera->add_theme_style_override("hover_pressed_mirrored", information_3d_stylebox);
-			preview_camera->add_theme_style_override(SceneStringName(pressed), information_3d_stylebox);
-			preview_camera->add_theme_style_override("pressed_mirrored", information_3d_stylebox);
-			preview_camera->add_theme_style_override("focus", information_3d_stylebox);
-			preview_camera->add_theme_style_override("focus_mirrored", information_3d_stylebox);
-			preview_camera->add_theme_style_override("disabled", information_3d_stylebox);
-			preview_camera->add_theme_style_override("disabled_mirrored", information_3d_stylebox);
-			preview_camera->end_bulk_theme_override();
+			override_button_stylebox(view_display_menu, information_3d_stylebox);
+			override_button_stylebox(translation_preview_button, information_3d_stylebox);
+			override_button_stylebox(preview_camera, information_3d_stylebox);
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -3494,8 +3486,18 @@ bool Node3DEditorViewport::_camera_moved_externally() {
 
 void Node3DEditorViewport::_apply_camera_transform_to_cursor() {
 	// Effectively the reverse of to_camera_transform, use camera transform to set cursor position and rotation.
-	Transform3D camera_transform = camera->get_camera_transform();
-	cursor.pos = camera_transform.origin;
+	const Transform3D camera_transform = camera->get_camera_transform();
+	const Basis basis = camera_transform.basis;
+
+	real_t distance;
+	if (orthogonal) {
+		distance = (get_zfar() - get_znear()) / 2.0;
+	} else {
+		distance = cursor.distance;
+	}
+
+	cursor.pos = camera_transform.origin - basis.get_column(2) * distance;
+
 	cursor.x_rot = -camera_transform.basis.get_euler().x;
 	cursor.y_rot = -camera_transform.basis.get_euler().y;
 }
@@ -5588,12 +5590,15 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	vbox->set_offset(SIDE_LEFT, 10 * EDSCALE);
 	vbox->set_offset(SIDE_TOP, 10 * EDSCALE);
 
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	vbox->add_child(hbox);
+
 	view_display_menu = memnew(MenuButton);
 	view_display_menu->set_flat(false);
 	view_display_menu->set_h_size_flags(0);
 	view_display_menu->set_shortcut_context(this);
 	view_display_menu->set_accessibility_name(TTRC("View"));
-	vbox->add_child(view_display_menu);
+	hbox->add_child(view_display_menu);
 
 	view_display_menu->get_popup()->set_hide_on_checkable_item_selection(false);
 
@@ -5736,6 +5741,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ED_SHORTCUT("spatial_editor/instant_scale", TTRC("Begin Scale Transformation"));
 	ED_SHORTCUT("spatial_editor/collision_reposition", TTRC("Reposition Using Collisions"), KeyModifierMask::SHIFT | Key::G);
 
+	translation_preview_button = memnew(EditorTranslationPreviewButton);
+	hbox->add_child(translation_preview_button);
+
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTR("Preview"));
 	// Using Control even on macOS to avoid conflict with Quick Open shortcut.
@@ -5769,6 +5777,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	info_panel->hide();
 
 	info_label = memnew(Label);
+	info_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	info_panel->add_child(info_label);
 
 	cinema_label = memnew(Label);
@@ -5805,6 +5814,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	surface->add_child(preview_material_label);
 
 	preview_material_label_desc = memnew(Label);
+	preview_material_label_desc->set_focus_mode(FOCUS_ACCESSIBILITY);
 	preview_material_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
 	preview_material_label_desc->set_offset(Side::SIDE_TOP, -50 * EDSCALE);
 	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
@@ -8719,8 +8729,6 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<CollisionObject3DGizmoPlugin>(memnew(CollisionObject3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionShape3DGizmoPlugin>(memnew(CollisionShape3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionPolygon3DGizmoPlugin>(memnew(CollisionPolygon3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<NavigationLink3DGizmoPlugin>(memnew(NavigationLink3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<NavigationRegion3DGizmoPlugin>(memnew(NavigationRegion3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
@@ -9347,6 +9355,9 @@ Node3DEditor::Node3DEditor() {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTRC("View Origin")), MENU_VIEW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTRC("View Grid"), Key::NUMBERSIGN), MENU_VIEW_GRID);
+
+	p->add_separator();
+	p->add_submenu_node_item(TTRC("Preview Translation"), memnew(EditorTranslationPreviewMenu));
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTRC("Settings...")), MENU_VIEW_CAMERA_SETTINGS);

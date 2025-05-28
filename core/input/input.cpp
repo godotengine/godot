@@ -73,8 +73,6 @@ static const char *_joy_axes[(size_t)JoyAxis::SDL_MAX] = {
 	"righttrigger",
 };
 
-Input *Input::singleton = nullptr;
-
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
 Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
 void (*Input::set_mouse_mode_override_func)(Input::MouseMode) = nullptr;

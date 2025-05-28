@@ -315,7 +315,7 @@ String OS_Android::get_version() const {
 	}
 
 	// Handles stock Android.
-	String sdk_version = get_system_property("ro.build.version.sdk_int");
+	String sdk_version = get_system_property("ro.build.version.sdk");
 	String build = get_system_property("ro.build.version.incremental");
 	if (!sdk_version.is_empty()) {
 		if (!build.is_empty()) {

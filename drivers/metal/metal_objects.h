@@ -355,7 +355,7 @@ public:
 			DIRTY_NONE     = 0b0000'0000,
 			DIRTY_PIPELINE = 0b0000'0001, //! pipeline state
 			DIRTY_UNIFORMS = 0b0000'0010, //! uniform sets
-			DIRTY_DEPTH    = 0b0000'0100, //! depth / stenci state
+			DIRTY_DEPTH    = 0b0000'0100, //! depth / stencil state
 			DIRTY_VERTEX   = 0b0000'1000, //! vertex buffers
 			DIRTY_VIEWPORT = 0b0001'0000, //! viewport rectangles
 			DIRTY_SCISSOR  = 0b0010'0000, //! scissor rectangles
@@ -625,8 +625,11 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformSet {
 struct ShaderCacheEntry;
 
 enum class ShaderLoadStrategy {
-	DEFAULT,
+	IMMEDIATE,
 	LAZY,
+
+	/// The default strategy is to load the shader immediately.
+	DEFAULT = IMMEDIATE,
 };
 
 /// A Metal shader library.
@@ -945,8 +948,7 @@ namespace rid {
 
 // Converts an Objective-C object to a pointer, and incrementing the
 // reference count.
-_FORCE_INLINE_
-void *owned(id p_id) {
+_FORCE_INLINE_ void *owned(id p_id) {
 	return (__bridge_retained void *)p_id;
 }
 
@@ -962,14 +964,12 @@ MAKE_ID(MTLVertexDescriptor *, RDD::VertexFormatID)
 MAKE_ID(id<MTLCommandQueue>, RDD::CommandPoolID)
 
 // Converts a pointer to an Objective-C object without changing the reference count.
-_FORCE_INLINE_
-auto get(RDD::ID p_id) {
+_FORCE_INLINE_ auto get(RDD::ID p_id) {
 	return (p_id.id) ? (__bridge ::id)(void *)p_id.id : nil;
 }
 
 // Converts a pointer to an Objective-C object, and decrements the reference count.
-_FORCE_INLINE_
-auto release(RDD::ID p_id) {
+_FORCE_INLINE_ auto release(RDD::ID p_id) {
 	return (__bridge_transfer ::id)(void *)p_id.id;
 }
 

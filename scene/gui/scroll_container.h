@@ -34,6 +34,8 @@
 
 #include "scroll_bar.h"
 
+class PanelContainer;
+
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
 
@@ -49,6 +51,7 @@ public:
 private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
+	PanelContainer *focus_panel = nullptr;
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 

@@ -71,6 +71,12 @@ public:
 				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(p_connection.callable.get_custom());
 				if (ccb) {
 					binds = ccb->get_binds();
+
+					// The source object may already be bound, ignore it to prevent display of the source object.
+					if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
+						binds.remove_at(0);
+					}
+
 					base_callable = ccb->get_callable();
 				}
 
@@ -130,6 +136,7 @@ private:
 	OptionButton *type_list = nullptr;
 	CheckBox *deferred = nullptr;
 	CheckBox *one_shot = nullptr;
+	CheckBox *append_source = nullptr;
 	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
@@ -177,6 +184,7 @@ public:
 
 	bool get_deferred() const;
 	bool get_one_shot() const;
+	bool get_append_source() const;
 	bool is_editing() const;
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;

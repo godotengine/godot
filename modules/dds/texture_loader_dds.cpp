@@ -140,7 +140,7 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 			WARN_PRINT(vformat("%s: DDS height '%d' is not divisible by %d. This is not allowed as per the DDS specification, attempting to load anyway.", p_file->get_path(), p_height, info.divisor));
 		}
 
-		uint32_t size = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
+		uint32_t size = MAX(1u, (w + 3) / 4) * MAX(1u, (h + 3) / 4) * info.block_size;
 
 		if (p_flags & DDSD_LINEARSIZE) {
 			ERR_FAIL_COND_V_MSG(size != p_pitch, Ref<Resource>(), "DDS header flags specify that a linear size of the top-level image is present, but the specified size does not match the expected value.");
@@ -152,7 +152,7 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 			w = MAX(1u, w >> 1);
 			h = MAX(1u, h >> 1);
 
-			uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
+			uint32_t bsize = MAX(1u, (w + 3) / 4) * MAX(1u, (h + 3) / 4) * info.block_size;
 			size += bsize;
 		}
 
@@ -359,6 +359,39 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 
 			} break;
 
+			case DDS_RGBX8: {
+				// To RGB8.
+				int colcount = size / 4;
+
+				for (int i = 0; i < colcount; i++) {
+					int src_ofs = i * 4;
+					int dst_ofs = i * 3;
+
+					wb[dst_ofs + 0] = wb[src_ofs + 0];
+					wb[dst_ofs + 1] = wb[src_ofs + 1];
+					wb[dst_ofs + 2] = wb[src_ofs + 2];
+				}
+
+				r_src_data.resize(size * 3 / 4);
+
+			} break;
+			case DDS_BGRX8: {
+				// To RGB8.
+				int colcount = size / 4;
+
+				for (int i = 0; i < colcount; i++) {
+					int src_ofs = i * 4;
+					int dst_ofs = i * 3;
+
+					wb[dst_ofs + 0] = wb[src_ofs + 2];
+					wb[dst_ofs + 1] = wb[src_ofs + 1];
+					wb[dst_ofs + 2] = wb[src_ofs + 0];
+				}
+
+				r_src_data.resize(size * 3 / 4);
+
+			} break;
+
 			// Grayscale.
 			case DDS_LUMINANCE_ALPHA_4: {
 				// To LA8.
@@ -392,12 +425,15 @@ static Vector<Ref<Image>> _dds_load_images(Ref<FileAccess> p_f, DDSFormat p_dds_
 
 	for (uint32_t i = 0; i < p_layer_count; i++) {
 		images.write[i] = _dds_load_layer(p_f, p_dds_format, p_width, p_height, p_mipmaps, p_pitch, p_flags, src_data);
+		ERR_FAIL_COND_V(images.write[i].is_null(), Vector<Ref<Image>>());
 	}
 
 	return images;
 }
 
 static Ref<Resource> _dds_create_texture(const Vector<Ref<Image>> &p_images, uint32_t p_dds_type, uint32_t p_width, uint32_t p_height, uint32_t p_layer_count, uint32_t p_mipmaps, Error *r_error) {
+	ERR_FAIL_COND_V(p_images.is_empty(), Ref<Resource>());
+
 	if ((p_dds_type & DDST_TYPE_MASK) == DDST_2D) {
 		if (p_dds_type & DDST_ARRAY) {
 			Ref<Texture2DArray> texture;
@@ -619,6 +655,10 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 				r_dds_format = DDS_BGR565;
 			} else if (format_rgb_bits == 8 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3) {
 				r_dds_format = DDS_B2GR3;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff) {
+				r_dds_format = DDS_BGRX8;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000) {
+				r_dds_format = DDS_RGBX8;
 			}
 		}
 

@@ -776,6 +776,16 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 				//colors must be set as black, with alpha as 1.0
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data);
+			} else if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED) {
+				//colors must be set as black, with alpha as 1.0
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT2) {
+				// mat uniforms are identity matrix by default.
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Transform2D(), data);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT3) {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Basis(), data);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT4) {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Projection(), data);
 			} else {
 				//else just zero it out
 				_fill_std140_ubo_empty(E.value.type, E.value.array_size, data);
@@ -1159,6 +1169,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["SPECULAR_SHININESS_TEXTURE"] = "specular_texture";
 		actions.renames["SPECULAR_SHININESS"] = "specular_shininess";
 		actions.renames["SCREEN_UV"] = "screen_uv";
+		actions.renames["REGION_RECT"] = "region_rect";
 		actions.renames["SCREEN_PIXEL_SIZE"] = "screen_pixel_size";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
@@ -1228,6 +1239,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["POINT_SIZE"] = "point_size";
 		actions.renames["INSTANCE_ID"] = "gl_InstanceID";
 		actions.renames["VERTEX_ID"] = "gl_VertexID";
+		actions.renames["Z_CLIP_SCALE"] = "z_clip_scale";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
 		actions.renames["ALPHA_HASH_SCALE"] = "alpha_hash_scale";
@@ -1243,12 +1255,14 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["E"] = String::num(Math::E);
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
+		actions.renames["IN_SHADOW_PASS"] = "IN_SHADOW_PASS";
 		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
+		actions.renames["BENT_NORMAL_MAP"] = "bent_normal_map";
 		actions.renames["ALBEDO"] = "albedo";
 		actions.renames["ALPHA"] = "alpha";
 		actions.renames["PREMUL_ALPHA_FACTOR"] = "premul_alpha";
@@ -1326,10 +1340,12 @@ MaterialStorage::MaterialStorage() {
 		actions.usage_defines["CUSTOM3"] = "#define CUSTOM3_USED\n";
 		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
 		actions.usage_defines["NORMAL_MAP_DEPTH"] = "@NORMAL_MAP";
+		actions.usage_defines["BENT_NORMAL_MAP"] = "#define BENT_NORMAL_MAP_USED\n";
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 		actions.usage_defines["LIGHT_VERTEX"] = "#define LIGHT_VERTEX_USED\n";
+		actions.usage_defines["Z_CLIP_SCALE"] = "#define Z_CLIP_SCALE_USED\n";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
@@ -1377,6 +1393,8 @@ MaterialStorage::MaterialStorage() {
 			actions.render_mode_defines["vertex_lighting"] = "#define USE_VERTEX_LIGHTING\n";
 		}
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
+
+		actions.render_mode_defines["specular_occlusion_disabled"] = "#define SPECULAR_OCCLUSION_DISABLED\n";
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
@@ -2898,6 +2916,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_screen_texture_mipmaps = false;
 	uses_depth_texture = false;
 	uses_normal_texture = false;
+	uses_bent_normal_texture = false;
 	uses_time = false;
 	uses_vertex_time = false;
 	uses_fragment_time = false;
@@ -2971,6 +2990,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
 	actions.usage_flag_pointers["NORMAL"] = &uses_normal;
 	actions.usage_flag_pointers["NORMAL_MAP"] = &uses_normal;
+	actions.usage_flag_pointers["BENT_NORMAL_MAP"] = &uses_bent_normal_texture;
 
 	actions.usage_flag_pointers["POINT_SIZE"] = &uses_point_size;
 	actions.usage_flag_pointers["POINT_COORD"] = &uses_point_size;

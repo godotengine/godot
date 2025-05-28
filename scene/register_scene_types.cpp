@@ -106,7 +106,6 @@
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
-#include "scene/resources/animated_texture.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/audio_stream_polyphonic.h"
@@ -148,6 +147,7 @@
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
@@ -160,6 +160,9 @@
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/theme/theme_db.h"
+#ifndef DISABLE_DEPRECATED
+#include "scene/resources/animated_texture.h"
+#endif
 
 // 2D
 #include "scene/2d/animated_sprite_2d.h"
@@ -178,14 +181,11 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/parallax_2d.h"
-#include "scene/2d/parallax_background.h"
-#include "scene/2d/parallax_layer.h"
 #include "scene/2d/path_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
-#include "scene/2d/tile_map.h"
 #include "scene/2d/tile_map_layer.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/resources/2d/polygon_path_finder.h"
@@ -198,6 +198,11 @@
 #include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
 #include "scene/resources/2d/tile_set.h"
 #include "scene/resources/world_2d.h"
+#ifndef DISABLE_DEPRECATED
+#include "scene/2d/parallax_background.h"
+#include "scene/2d/parallax_layer.h"
+#include "scene/2d/tile_map.h"
+#endif
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/2d/navigation/navigation_agent_2d.h"
@@ -234,7 +239,6 @@
 #include "scene/3d/remote_transform_3d.h"
 #include "scene/3d/retarget_modifier_3d.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/3d/skeleton_ik_3d.h"
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
@@ -261,6 +265,9 @@
 #include "scene/3d/xr/xr_hand_modifier_3d.h"
 #include "scene/3d/xr/xr_nodes.h"
 #endif // XR_DISABLED
+#ifndef DISABLE_DEPRECATED
+#include "scene/3d/skeleton_ik_3d.h"
+#endif
 #endif // _3D_DISABLED
 
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
@@ -638,16 +645,15 @@ void register_scene_types() {
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
-
-	OS::get_singleton()->yield(); // may take time to init
-
-#ifndef PHYSICS_3D_DISABLED
 	GDREGISTER_CLASS(SpringBoneSimulator3D);
 	GDREGISTER_VIRTUAL_CLASS(SpringBoneCollision3D);
 	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
 	GDREGISTER_CLASS(SpringBoneCollisionCapsule3D);
 	GDREGISTER_CLASS(SpringBoneCollisionPlane3D);
 
+	OS::get_singleton()->yield(); // may take time to init
+
+#ifndef PHYSICS_3D_DISABLED
 	GDREGISTER_ABSTRACT_CLASS(CollisionObject3D);
 	GDREGISTER_ABSTRACT_CLASS(PhysicsBody3D);
 	GDREGISTER_CLASS(StaticBody3D);
@@ -662,9 +668,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SoftBody3D);
 #endif // PHYSICS_3D_DISABLED
 
-	GDREGISTER_CLASS(SkeletonIK3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
 	GDREGISTER_CLASS(LookAtModifier3D);
+#ifndef DISABLE_DEPRECATED
+	GDREGISTER_CLASS(SkeletonIK3D);
+#endif
 
 #ifndef PHYSICS_3D_DISABLED
 	GDREGISTER_CLASS(VehicleBody3D);
@@ -893,12 +901,15 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TileSetScenesCollectionSource);
 	GDREGISTER_CLASS(TileMapPattern);
 	GDREGISTER_CLASS(TileData);
-	GDREGISTER_CLASS(TileMap);
 	GDREGISTER_CLASS(TileMapLayer);
 	GDREGISTER_CLASS(Parallax2D);
+	GDREGISTER_CLASS(RemoteTransform2D);
+
+#ifndef DISABLE_DEPRECATED
 	GDREGISTER_CLASS(ParallaxBackground);
 	GDREGISTER_CLASS(ParallaxLayer);
-	GDREGISTER_CLASS(RemoteTransform2D);
+	GDREGISTER_CLASS(TileMap);
+#endif
 
 	GDREGISTER_CLASS(SkeletonModificationStack2D);
 	GDREGISTER_CLASS(SkeletonModification2D);
@@ -998,7 +1009,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CurveXYZTexture);
 	GDREGISTER_CLASS(GradientTexture1D);
 	GDREGISTER_CLASS(GradientTexture2D);
-	GDREGISTER_CLASS(AnimatedTexture);
 	GDREGISTER_CLASS(CameraTexture);
 	GDREGISTER_CLASS(ExternalTexture);
 	GDREGISTER_VIRTUAL_CLASS(TextureLayered);
@@ -1019,6 +1029,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PlaceholderTexture2DArray);
 	GDREGISTER_CLASS(PlaceholderCubemap);
 	GDREGISTER_CLASS(PlaceholderCubemapArray);
+	GDREGISTER_CLASS(SVGTexture);
+#ifndef DISABLE_DEPRECATED
+	GDREGISTER_CLASS(AnimatedTexture);
+#endif
 
 	// These classes are part of renderer_rd
 	GDREGISTER_CLASS(Texture2DRD);
@@ -1104,7 +1118,9 @@ void register_scene_types() {
 	MultiMeshInstance2D::navmesh_parse_init();
 	NavigationObstacle2D::navmesh_parse_init();
 	Polygon2D::navmesh_parse_init();
+#ifndef DISABLE_DEPRECATED
 	TileMap::navmesh_parse_init();
+#endif
 	TileMapLayer::navmesh_parse_init();
 #ifndef PHYSICS_2D_DISABLED
 	StaticBody2D::navmesh_parse_init();

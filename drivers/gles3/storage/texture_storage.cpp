@@ -396,7 +396,6 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 				r_gl_format = GL_RED;
 				r_gl_type = GL_FLOAT;
 			} else {
-				ERR_PRINT("R32 float texture not supported, converting to R16.");
 				if (p_image.is_valid()) {
 					p_image->convert(Image::FORMAT_RH);
 				}
@@ -412,7 +411,6 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 				r_gl_format = GL_RG;
 				r_gl_type = GL_FLOAT;
 			} else {
-				ERR_PRINT("RG32 float texture not supported, converting to RG16.");
 				if (p_image.is_valid()) {
 					p_image->convert(Image::FORMAT_RGH);
 				}
@@ -428,7 +426,6 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 				r_gl_format = GL_RGB;
 				r_gl_type = GL_FLOAT;
 			} else {
-				ERR_PRINT("RGB32 float texture not supported, converting to RGB16.");
 				if (p_image.is_valid()) {
 					p_image->convert(Image::FORMAT_RGBH);
 				}
@@ -444,7 +441,6 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_FLOAT;
 			} else {
-				ERR_PRINT("RGBA32 float texture not supported, converting to RGBA16.");
 				if (p_image.is_valid()) {
 					p_image->convert(Image::FORMAT_RGBAH);
 				}
@@ -497,6 +493,11 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 	if (!Image::is_format_compressed(p_format)) {
 		Error err = _get_gl_uncompressed_format(p_image, p_format, r_real_format, r_gl_format, r_gl_internal_format, r_gl_type);
 		ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("The image format %d is not supported by the Compatibility renderer.", p_format));
+
+		if (p_format != r_real_format) {
+			WARN_PRINT(vformat("Image format %s not supported by hardware, converting to %s.", Image::get_format_name(p_format), Image::get_format_name(r_real_format)));
+		}
+
 		return p_image;
 	}
 
@@ -745,6 +746,10 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 
 			r_real_format = image->get_format();
 			r_compressed = false;
+
+			if (p_format != image->get_format()) {
+				WARN_PRINT(vformat("Image format %s not supported by hardware, converting to %s.", Image::get_format_name(p_format), Image::get_format_name(image->get_format())));
+			}
 		}
 
 		return image;
@@ -1465,10 +1470,7 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::Te
 }
 
 void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
-	List<RID> textures;
-	texture_owner.get_owned_list(&textures);
-
-	for (const RID &rid : textures) {
+	for (const RID &rid : texture_owner.get_owned_list()) {
 		Texture *t = texture_owner.get_or_null(rid);
 		if (!t) {
 			continue;
@@ -1479,6 +1481,7 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
 		tinfo.bytes = t->total_data_size;
+		tinfo.type = static_cast<RenderingServer::TextureType>(t->type);
 
 		switch (t->type) {
 			case Texture::TYPE_3D:

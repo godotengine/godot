@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Frozen;
 
 namespace Godot
 {
@@ -9,7 +10,7 @@ namespace Godot
     public static class Colors
     {
         // Color names and values are derived from core/math/color_names.inc
-        internal static readonly Dictionary<string, Color> NamedColors = new Dictionary<string, Color> {
+        internal static readonly FrozenDictionary<string, Color> NamedColors = new Dictionary<string, Color> {
             { "ALICE_BLUE", Colors.AliceBlue },
             { "ANTIQUE_WHITE", Colors.AntiqueWhite },
             { "AQUA", Colors.Aqua },
@@ -156,7 +157,7 @@ namespace Godot
             { "WHITE_SMOKE", Colors.WhiteSmoke },
             { "YELLOW", Colors.Yellow },
             { "YELLOW_GREEN", Colors.YellowGreen },
-        };
+        }.ToFrozenDictionary();
 
 #pragma warning disable CS1591 // Disable warning: "Missing XML comment for publicly visible type or member"
         public static Color AliceBlue => new Color(0xF0F8FFFF);

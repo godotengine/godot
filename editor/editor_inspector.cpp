@@ -1145,6 +1145,7 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	dp["value"] = object->get(property);
 
 	Label *drag_label = memnew(Label);
+	drag_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	drag_label->set_text(property);
 	drag_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate raw property name.
 	set_drag_preview(drag_label);
@@ -1731,6 +1732,20 @@ Ref<Texture2D> EditorInspectorSection::_get_arrow() {
 	return arrow;
 }
 
+Ref<Texture2D> EditorInspectorSection::_get_checkbox() {
+	Ref<Texture2D> checkbox;
+
+	if (checkable) {
+		if (checked) {
+			checkbox = get_editor_theme_icon(SNAME("GuiChecked"));
+		} else {
+			checkbox = get_editor_theme_icon(SNAME("GuiUnchecked"));
+		}
+	}
+
+	return checkbox;
+}
+
 int EditorInspectorSection::_get_header_height() {
 	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 	int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
@@ -1812,13 +1827,15 @@ void EditorInspectorSection::_notification(int p_what) {
 				header_offset_x += section_indent;
 			}
 
+			bool can_click_unfold = vbox->get_child_count(false) != 0 && !(checkable && !checked && hide_feature);
+
 			// Draw header area.
 			int header_height = _get_header_height();
 			Rect2 header_rect = Rect2(Vector2(header_offset_x, 0.0), Vector2(header_width, header_height));
 			Color c = bg_color;
 			c.a *= 0.4;
 			if (foldable && header_rect.has_point(get_local_mouse_position())) {
-				c = c.lightened(Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) ? -0.05 : 0.2);
+				c = c.lightened((can_click_unfold && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) ? -0.05 : 0.2);
 			}
 			draw_rect(header_rect, c);
 
@@ -1840,8 +1857,52 @@ void EditorInspectorSection::_notification(int p_what) {
 						arrow_position.x = margin_start;
 					}
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
-					draw_texture(arrow, arrow_position);
+					if (can_click_unfold) {
+						draw_texture(arrow, arrow_position);
+					}
 					margin_start += arrow->get_width() + separation;
+				}
+
+				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+				int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+				Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+
+				Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+				int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
+
+				// - Checkbox.
+				Ref<Texture2D> checkbox = _get_checkbox();
+				if (checkbox.is_valid()) {
+					const String checkbox_text = TTR("On");
+					Size2 label_size = light_font->get_string_size(checkbox_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size);
+					Point2 checkbox_position;
+					Point2 label_position;
+					if (rtl) {
+						label_position.x = margin_start;
+						checkbox_position.x = margin_start + label_size.width + 2 * EDSCALE;
+					} else {
+						label_position.x = get_size().width - (margin_end + label_size.width);
+						checkbox_position.x = label_position.x - checkbox->get_width() - 2 * EDSCALE;
+					}
+					checkbox_position.y = (header_height - checkbox->get_height()) / 2;
+					label_position.y = light_font->get_ascent(light_font_size) + (header_height - label_size.height) / 2.0;
+
+					check_rect = Rect2(checkbox_position.x, 0, checkbox->get_width() + label_size.width + 2 * EDSCALE, header_height);
+
+					Color check_font_color = font_color;
+					Color checkbox_color(1, 1, 1);
+					if (check_hover) {
+						checkbox_color.r *= 1.2;
+						checkbox_color.g *= 1.2;
+						checkbox_color.b *= 1.2;
+						check_font_color = checked ? get_theme_color(SNAME("font_hover_pressed_color"), EditorStringName(Editor)) : get_theme_color(SNAME("font_hover_color"), EditorStringName(Editor));
+					} else if (checked) {
+						check_font_color = get_theme_color(SNAME("font_pressed_color"), EditorStringName(Editor));
+					}
+
+					draw_texture(checkbox, checkbox_position, checkbox_color);
+					draw_string(light_font, label_position, checkbox_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, check_font_color, TextServer::JUSTIFICATION_NONE);
+					margin_end += label_size.width + checkbox->get_width() + 6 * EDSCALE;
 				}
 
 				int available = get_size().width - (margin_start + margin_end);
@@ -1850,17 +1911,10 @@ void EditorInspectorSection::_notification(int p_what) {
 				String num_revertable_str;
 				int num_revertable_width = 0;
 
-				bool folded = foldable && !object->editor_is_section_unfolded(section);
-
-				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-				int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
-				Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
-
+				bool folded = (foldable || hide_feature) && !object->editor_is_section_unfolded(section);
 				if (folded && revertable_properties.size()) {
 					int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
 
-					Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
-					int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
 					Color light_font_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 					// Can we fit the long version of the revertable count text?
@@ -1887,6 +1941,9 @@ void EditorInspectorSection::_notification(int p_what) {
 				Point2 text_offset = Point2(margin_start, text_offset_y).round();
 				if (rtl) {
 					text_offset.x = margin_end;
+				}
+				if (object->has_method("_get_property_warning") && !String(object->call("_get_property_warning", related_enable_property)).is_empty()) {
+					font_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 				}
 				HorizontalAlignment text_align = rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT;
 				draw_string(font, text_offset, label, text_align, available, font_size, font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
@@ -1956,6 +2013,53 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	return ms;
 }
 
+EditorInspector *EditorInspectorSection::_get_parent_inspector() const {
+	Node *parent = get_parent();
+	while (parent) {
+		EditorInspector *ei = Object::cast_to<EditorInspector>(parent);
+		if (ei) {
+			return ei;
+		}
+		parent = parent->get_parent();
+	}
+	return nullptr;
+}
+
+Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const {
+	if (!checkable) {
+		return Container::make_custom_tooltip(p_text);
+	}
+
+	String symbol;
+	String prologue;
+
+	if (object->has_method("_get_property_warning")) {
+		const String custom_warning = object->call("_get_property_warning", related_enable_property);
+		if (!custom_warning.is_empty()) {
+			prologue = "[b][color=" + get_theme_color(SNAME("warning_color"), EditorStringName(Editor)).to_html(false) + "]" + custom_warning + "[/color][/b]";
+		}
+	}
+
+	symbol = p_text;
+
+	const EditorInspector *inspector = _get_parent_inspector();
+	if (inspector) {
+		const String custom_description = inspector->get_custom_property_description(p_text);
+		if (!custom_description.is_empty()) {
+			if (!prologue.is_empty()) {
+				prologue += '\n';
+			}
+			prologue += custom_description;
+		}
+	}
+
+	if (!symbol.is_empty() || !prologue.is_empty()) {
+		return EditorHelpBitTooltip::show_tooltip(const_cast<EditorInspectorSection *>(this), symbol, prologue);
+	}
+
+	return nullptr;
+}
+
 void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
 	section = p_section;
 	label = p_label;
@@ -1965,14 +2069,9 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 	indent_depth = p_indent_depth;
 	level = p_level;
 
-	if (!foldable && !vbox_added) {
-		add_child(vbox);
-		move_child(vbox, 0);
-		vbox_added = true;
-	}
+	_test_unfold();
 
 	if (foldable) {
-		_test_unfold();
 		if (object->editor_is_section_unfolded(section)) {
 			vbox->show();
 		} else {
@@ -1983,14 +2082,20 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 
 void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	bool has_children_to_show = vbox->get_child_count(false) != 0;
 
-	if (!foldable) {
-		return;
+	Ref<InputEventMouse> me = p_event;
+	if (me.is_valid()) {
+		bool new_check_hover = check_rect.has_point(me->get_position());
+		if (new_check_hover != check_hover) {
+			check_hover = new_check_hover;
+			queue_redraw();
+		}
 	}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
-		if (k->is_action("ui_accept", true)) {
+		if (foldable && has_children_to_show && !(checkable && !checked && hide_feature) && k->is_action("ui_accept", true)) {
 			accept_event();
 
 			bool should_unfold = !object->editor_is_section_unfolded(section);
@@ -2014,11 +2119,21 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 		accept_event();
 
-		bool should_unfold = !object->editor_is_section_unfolded(section);
-		if (should_unfold) {
-			unfold();
-		} else {
-			fold();
+		if (checkable && check_rect.has_point(mb->get_position())) {
+			checked = !checked;
+			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
+			if (checked) {
+				unfold();
+			} else if (hide_feature) {
+				fold();
+			}
+		} else if (foldable) {
+			bool should_unfold = has_children_to_show && !(checkable && !checked && hide_feature) && !object->editor_is_section_unfolded(section);
+			if (should_unfold) {
+				unfold();
+			} else {
+				fold();
+			}
 		}
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
@@ -2028,7 +2143,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		int header_height = _get_header_height();
 		Vector2 previous = mm->get_position() - mm->get_relative();
-		if ((mm->get_position().y >= header_height) != (previous.y >= header_height)) {
+		if (has_children_to_show && ((mm->get_position().y >= header_height) != (previous.y >= header_height))) {
 			queue_redraw();
 		}
 	}
@@ -2051,7 +2166,7 @@ void EditorInspectorSection::_accessibility_action_expand(const Variant &p_data)
 }
 
 void EditorInspectorSection::unfold() {
-	if (!foldable) {
+	if (!foldable && !hide_feature) {
 		return;
 	}
 
@@ -2063,7 +2178,7 @@ void EditorInspectorSection::unfold() {
 }
 
 void EditorInspectorSection::fold() {
-	if (!foldable) {
+	if (!foldable && !hide_feature) {
 		return;
 	}
 
@@ -2087,6 +2202,34 @@ void EditorInspectorSection::reset_timer() {
 	}
 }
 
+void EditorInspectorSection::set_checkable(const String &p_related_check_property, bool p_hide_feature) {
+	if (checkable == !p_related_check_property.is_empty()) {
+		return;
+	}
+
+	hide_feature = p_hide_feature;
+	checkable = !p_related_check_property.is_empty();
+	related_enable_property = p_related_check_property;
+	queue_redraw();
+
+	if (InspectorDock::get_singleton()) {
+		if (checkable) {
+			InspectorDock::get_inspector_singleton()->connect("property_edited", callable_mp(this, &EditorInspectorSection::_property_edited));
+		} else {
+			InspectorDock::get_inspector_singleton()->disconnect("property_edited", callable_mp(this, &EditorInspectorSection::_property_edited));
+		}
+	}
+}
+
+void EditorInspectorSection::set_checked(bool p_checked) {
+	checked = p_checked;
+	if (hide_feature && !checked) {
+		fold();
+	} else {
+		unfold();
+	}
+}
+
 bool EditorInspectorSection::has_revertable_properties() const {
 	return !revertable_properties.is_empty();
 }
@@ -2103,11 +2246,24 @@ void EditorInspectorSection::property_can_revert_changed(const String &p_path, b
 	}
 }
 
+void EditorInspectorSection::_property_edited(const String &p_property) {
+	if (!related_enable_property.is_empty() && p_property == related_enable_property) {
+		bool valid = false;
+		Variant value_checked = object->get(related_enable_property, &valid);
+
+		if (valid) {
+			set_checked(value_checked.operator bool());
+		}
+	}
+}
+
 void EditorInspectorSection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("setup", "section", "label", "object", "bg_color", "foldable", "indent_depth", "level"), &EditorInspectorSection::setup, DEFVAL(0), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorInspectorSection::get_vbox);
 	ClassDB::bind_method(D_METHOD("unfold"), &EditorInspectorSection::unfold);
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);
+
+	ADD_SIGNAL(MethodInfo("section_toggled_by_user", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "value")));
 }
 
 EditorInspectorSection::EditorInspectorSection() {
@@ -2125,6 +2281,10 @@ EditorInspectorSection::EditorInspectorSection() {
 EditorInspectorSection::~EditorInspectorSection() {
 	if (!vbox_added) {
 		memdelete(vbox);
+	}
+
+	if (checkable && InspectorDock::get_singleton()) {
+		InspectorDock::get_inspector_singleton()->disconnect("property_edited", callable_mp(this, &EditorInspectorSection::_property_edited));
 	}
 }
 
@@ -2836,7 +2996,6 @@ void EditorInspectorArray::_notification(int p_what) {
 			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Array: %s"), get_label()));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Color color = get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor));
 			odd_style->set_bg_color(color.darkened(-0.08));
@@ -2866,7 +3025,6 @@ void EditorInspectorArray::_notification(int p_what) {
 			}
 
 			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			update_minimum_size();
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -3034,7 +3192,6 @@ void EditorPaginator::update(int p_page, int p_max_page) {
 
 void EditorPaginator::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			first_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageFirst")));
 			prev_page_button->set_button_icon(get_editor_theme_icon(SNAME("PagePrevious")));
@@ -3071,6 +3228,7 @@ EditorPaginator::EditorPaginator() {
 	add_child(page_line_edit);
 
 	page_count_label = memnew(Label);
+	page_count_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	add_child(page_count_label);
 
 	next_page_button = memnew(Button);
@@ -3342,8 +3500,10 @@ void EditorInspector::update_tree() {
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
+	EditorInspectorSection *group_togglable_property = nullptr;
 	String subgroup;
 	String subgroup_base;
+	EditorInspectorSection *subgroup_togglable_property = nullptr;
 	int section_depth = 0;
 	bool disable_favorite = false;
 	VBoxContainer *category_vbox = nullptr;
@@ -3354,6 +3514,7 @@ void EditorInspector::update_tree() {
 	HashMap<VBoxContainer *, HashMap<String, VBoxContainer *>> vbox_per_path;
 	HashMap<String, EditorInspectorArray *> editor_inspector_array_per_prefix;
 	HashMap<String, HashMap<String, LocalVector<EditorProperty *>>> favorites_to_add;
+	HashMap<String, EditorInspectorSection *> togglable_editor_inspector_sections;
 
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 	bool sub_inspectors_enabled = EDITOR_GET("interface/inspector/open_resources_in_current_inspector");
@@ -3377,6 +3538,7 @@ void EditorInspector::update_tree() {
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
 			subgroup = p.name;
+			subgroup_togglable_property = nullptr;
 
 			Vector<String> hint_parts = p.hint_string.split(",");
 			subgroup_base = hint_parts[0];
@@ -3391,6 +3553,7 @@ void EditorInspector::update_tree() {
 		} else if (p.usage & PROPERTY_USAGE_GROUP) {
 			// Setup a property group.
 			group = p.name;
+			group_togglable_property = nullptr;
 
 			Vector<String> hint_parts = p.hint_string.split(",");
 			group_base = hint_parts[0];
@@ -3402,6 +3565,7 @@ void EditorInspector::update_tree() {
 
 			subgroup = "";
 			subgroup_base = "";
+			subgroup_togglable_property = nullptr;
 
 			continue;
 
@@ -3409,8 +3573,10 @@ void EditorInspector::update_tree() {
 			// Setup a property category.
 			group = "";
 			group_base = "";
+			group_togglable_property = nullptr;
 			subgroup = "";
 			subgroup_base = "";
+			subgroup_togglable_property = nullptr;
 			section_depth = 0;
 			disable_favorite = false;
 
@@ -3591,6 +3757,7 @@ void EditorInspector::update_tree() {
 					// Keep it, this is used pretty often.
 				} else {
 					subgroup = ""; // The prefix changed, we are no longer in the subgroup.
+					subgroup_togglable_property = nullptr;
 				}
 			}
 
@@ -3602,7 +3769,9 @@ void EditorInspector::update_tree() {
 					// Keep it, this is used pretty often.
 				} else {
 					group = ""; // The prefix changed, we are no longer in the group.
+					group_togglable_property = nullptr;
 					subgroup = "";
+					subgroup_togglable_property = nullptr;
 				}
 			}
 
@@ -3728,6 +3897,8 @@ void EditorInspector::update_tree() {
 				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
 				section->set_tooltip_text(tooltip);
 
+				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 					ped->parse_group(object, path);
@@ -3828,6 +3999,7 @@ void EditorInspector::update_tree() {
 
 		String doc_path;
 		String theme_item_name;
+		String doc_tooltip_text;
 		StringName classname = doc_name;
 
 		// Build the doc hint, to use as tooltip.
@@ -3912,6 +4084,51 @@ void EditorInspector::update_tree() {
 					F = dd->class_list.find(F->value.inherits);
 				}
 			}
+
+			// `|` separators used in `EditorHelpBit`.
+			if (theme_item_name.is_empty()) {
+				if (p.name.contains("shader_parameter/")) {
+					ShaderMaterial *shader_material = Object::cast_to<ShaderMaterial>(object);
+					if (shader_material) {
+						doc_tooltip_text = "property|" + shader_material->get_shader()->get_path() + "|" + property_prefix + p.name;
+					}
+				} else if (p.usage & PROPERTY_USAGE_INTERNAL) {
+					doc_tooltip_text = "internal_property|" + classname + "|" + property_prefix + p.name;
+				} else {
+					doc_tooltip_text = "property|" + classname + "|" + property_prefix + p.name;
+				}
+			} else {
+				doc_tooltip_text = "theme_item|" + classname + "|" + theme_item_name;
+			}
+		}
+
+		// Only used for boolean types. Makes the section header a checkable group and adds tooltips.
+		if (p.hint == PROPERTY_HINT_GROUP_ENABLE) {
+			if (p.type == Variant::BOOL && (p.name.begins_with(group_base) || p.name.begins_with(subgroup_base))) {
+				EditorInspectorSection *last_created_section = Object::cast_to<EditorInspectorSection>(current_vbox->get_parent());
+				if (last_created_section) {
+					bool valid = false;
+					Variant value_checked = object->get(p.name, &valid);
+
+					if (valid) {
+						last_created_section->set_checkable(p.name, p.hint_string == "feature");
+						last_created_section->set_checked(value_checked.operator bool());
+
+						if (p.name.begins_with(group_base)) {
+							group_togglable_property = last_created_section;
+						} else {
+							subgroup_togglable_property = last_created_section;
+						}
+
+						if (use_doc_hints) {
+							last_created_section->set_tooltip_text(doc_tooltip_text);
+						}
+						continue;
+					}
+				}
+			} else {
+				ERR_PRINT("PROPERTY_HINT_GROUP_ENABLE can only be used on boolean types and must have the same prefix as the group.");
+			}
 		}
 
 		Vector<EditorInspectorPlugin::AddedEditor> editors;
@@ -3986,19 +4203,6 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				Node *section_search = current_vbox->get_parent();
-				while (section_search) {
-					EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
-					if (section) {
-						ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
-					}
-					section_search = section_search->get_parent();
-					if (Object::cast_to<EditorInspector>(section_search)) {
-						// Skip sub-resource inspectors.
-						break;
-					}
-				}
-
 				if (p.name.begins_with("metadata/")) {
 					Variant _default = Variant();
 					if (node != nullptr) {
@@ -4021,8 +4225,30 @@ void EditorInspector::update_tree() {
 			if (ep && ep->is_favoritable() && current_favorites.has(p.name)) {
 				ep->favorited = true;
 				favorites_to_add[group][subgroup].push_back(ep);
+
+				if (group_togglable_property) {
+					togglable_editor_inspector_sections[group] = group_togglable_property;
+				}
+				if (subgroup_togglable_property) {
+					togglable_editor_inspector_sections[group + "/" + subgroup] = subgroup_togglable_property;
+				}
 			} else {
 				current_vbox->add_child(editors[i].property_editor);
+
+				if (ep) {
+					Node *section_search = current_vbox->get_parent();
+					while (section_search) {
+						EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
+						if (section) {
+							ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+						}
+						section_search = section_search->get_parent();
+						if (Object::cast_to<EditorInspector>(section_search)) {
+							// Skip sub-resource inspectors.
+							break;
+						}
+					}
+				}
 			}
 
 			if (ep) {
@@ -4040,25 +4266,8 @@ void EditorInspector::update_tree() {
 				ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 
-				if (use_doc_hints) {
-					// `|` separators used in `EditorHelpBit`.
-					if (theme_item_name.is_empty()) {
-						if (p.name.contains("shader_parameter/")) {
-							ShaderMaterial *shader_material = Object::cast_to<ShaderMaterial>(object);
-							if (shader_material) {
-								ep->set_tooltip_text("property|" + shader_material->get_shader()->get_path() + "|" + property_prefix + p.name);
-							}
-						} else if (p.usage & PROPERTY_USAGE_INTERNAL) {
-							ep->set_tooltip_text("internal_property|" + classname + "|" + property_prefix + p.name);
-						} else {
-							ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name);
-						}
-					} else {
-						ep->set_tooltip_text("theme_item|" + classname + "|" + theme_item_name);
-					}
-					ep->has_doc_tooltip = true;
-				}
-
+				ep->set_tooltip_text(doc_tooltip_text);
+				ep->has_doc_tooltip = use_doc_hints;
 				ep->set_doc_path(doc_path);
 				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
 
@@ -4102,6 +4311,23 @@ void EditorInspector::update_tree() {
 				parent_vbox = section->get_vbox();
 				section->setup("", section_name, object, sscolor, false);
 				section->set_tooltip_text(tooltip);
+
+				if (togglable_editor_inspector_sections.has(section_name)) {
+					EditorInspectorSection *corresponding_section = togglable_editor_inspector_sections.get(section_name);
+
+					bool valid = false;
+					Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
+					if (valid) {
+						section->section = corresponding_section->section;
+						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->hide_feature);
+						section->set_checked(value_checked.operator bool());
+						if (use_doc_hints) {
+							section->set_tooltip_text(corresponding_section->get_tooltip_text());
+						}
+
+						section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+					}
+				}
 			}
 
 			for (const KeyValue<String, LocalVector<EditorProperty *>> &KV2 : KV.value) {
@@ -4122,10 +4348,40 @@ void EditorInspector::update_tree() {
 					vbox = section->get_vbox();
 					section->setup("", section_name, object, sscolor, false);
 					section->set_tooltip_text(tooltip);
+
+					if (togglable_editor_inspector_sections.has(KV.key + "/" + section_name)) {
+						EditorInspectorSection *corresponding_section = togglable_editor_inspector_sections.get(KV.key + "/" + section_name);
+
+						bool valid = false;
+						Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
+						if (valid) {
+							section->section = corresponding_section->section;
+							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->hide_feature);
+							section->set_checked(value_checked.operator bool());
+							if (use_doc_hints) {
+								section->set_tooltip_text(corresponding_section->get_tooltip_text());
+							}
+
+							section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+						}
+					}
 				}
 
 				for (EditorProperty *ep : KV2.value) {
 					vbox->add_child(ep);
+
+					Node *section_search = vbox->get_parent();
+					while (section_search) {
+						EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
+						if (section) {
+							ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+						}
+						section_search = section_search->get_parent();
+						if (Object::cast_to<EditorInspector>(section_search)) {
+							// Skip sub-resource inspectors.
+							break;
+						}
+					}
 
 					// Now that it's inside the tree, do the setup.
 					ep->update_property();
@@ -4454,6 +4710,10 @@ void EditorInspector::set_root_inspector(EditorInspector *p_root_inspector) {
 	set_follow_focus(false);
 }
 
+void EditorInspector::_section_toggled_by_user(const String &p_path, bool p_value) {
+	_property_changed(p_path, p_value);
+}
+
 void EditorInspector::set_use_deletable_properties(bool p_enabled) {
 	deletable_properties = p_enabled;
 }
@@ -4511,7 +4771,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else {
-		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS);
+		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS, nullptr, false, mark_unsaved);
 		undo_redo->add_do_property(object, p_name, p_value);
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
@@ -4956,12 +5216,6 @@ void EditorInspector::_clear_current_favorites() {
 	update_tree();
 }
 
-void EditorInspector::_update_theme() {
-	updating_theme = true;
-	add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-	updating_theme = false;
-}
-
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -4989,15 +5243,9 @@ void EditorInspector::_notification(int p_what) {
 			ERR_FAIL_NULL(EditorFeatureProfileManager::get_singleton());
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
-			get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspector::_update_theme));
-			_update_theme();
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorInspector::_update_theme));
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -5059,10 +5307,6 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!is_sub_inspector() && EditorThemeManager::is_generated_theme_outdated()) {
-				_update_theme();
-			}
-
 			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
 				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
 				if (property_name_style != style) {

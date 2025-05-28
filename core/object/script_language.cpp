@@ -172,7 +172,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
 	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
 
-	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::get_rpc_config);
+	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::_get_rpc_config_bind);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
@@ -535,12 +535,18 @@ void ScriptServer::save_global_classes() {
 	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
 }
 
-////////////////////
-
-ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
-ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
-	singleton = this;
+Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_include_variables) {
+	int language_count = ScriptServer::get_language_count();
+	Vector<Ref<ScriptBacktrace>> result;
+	result.resize(language_count);
+	for (int i = 0; i < language_count; i++) {
+		ScriptLanguage *language = ScriptServer::get_language(i);
+		result.write[i].instantiate(language, p_include_variables);
+	}
+	return result;
 }
+
+////////////////////
 
 void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const {
 	p_core_type_words->push_back("String");

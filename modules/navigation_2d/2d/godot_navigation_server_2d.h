@@ -84,7 +84,6 @@ class GodotNavigationServer2D : public NavigationServer2D {
 
 	bool active = true;
 	LocalVector<NavMap2D *> active_maps;
-	LocalVector<uint32_t> active_maps_iteration_id;
 
 #ifdef CLIPPER2_ENABLED
 	NavMeshGenerator2D *navmesh_generator_2d = nullptr;
@@ -145,6 +144,7 @@ public:
 	virtual Vector2 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
 	virtual RID region_create() override;
+	virtual uint32_t region_get_iteration_id(RID p_region) const override;
 
 	COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled);
 	virtual bool region_get_enabled(RID p_region) const override;
@@ -177,6 +177,7 @@ public:
 	virtual Rect2 region_get_bounds(RID p_region) const override;
 
 	virtual RID link_create() override;
+	virtual uint32_t link_get_iteration_id(RID p_link) const override;
 
 	/// Set the map of this link.
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);

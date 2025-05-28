@@ -1108,6 +1108,7 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 	// Create view.
 
 	Texture texture = *src_texture;
+	texture.slice_trackers = nullptr;
 	texture.shared_fallback = nullptr;
 
 	RDD::TextureView tv;
@@ -1166,8 +1167,6 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 
-	texture.slice_trackers.clear();
-
 	if (texture.draw_tracker != nullptr) {
 		texture.draw_tracker->reference_count++;
 	}
@@ -1182,7 +1181,7 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 	return id;
 }
 
-RID RenderingDevice::texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) {
+RID RenderingDevice::texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps) {
 	// This method creates a texture object using a VkImage created by an extension, module or other external source (OpenXR uses this).
 
 	Texture texture;
@@ -1193,7 +1192,7 @@ RID RenderingDevice::texture_create_from_extension(TextureType p_type, DataForma
 	texture.height = p_height;
 	texture.depth = p_depth;
 	texture.layers = p_layers;
-	texture.mipmaps = 1;
+	texture.mipmaps = p_mipmaps;
 	texture.usage_flags = p_usage;
 	texture.base_mipmap = 0;
 	texture.base_layer = 0;
@@ -1211,7 +1210,7 @@ RID RenderingDevice::texture_create_from_extension(TextureType p_type, DataForma
 		texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	}
 
-	texture.driver_id = driver->texture_create_from_extension(p_image, p_type, p_format, p_layers, (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT));
+	texture.driver_id = driver->texture_create_from_extension(p_image, p_type, p_format, p_layers, (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT), p_mipmaps);
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 
 	_texture_make_mutable(&texture, RID());
@@ -1262,6 +1261,7 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	}
 
 	Texture texture = *src_texture;
+	texture.slice_trackers = nullptr;
 	texture.shared_fallback = nullptr;
 
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
@@ -2761,6 +2761,10 @@ void RenderingDevice::_vrs_detect_method() {
 	}
 }
 
+RD::VRSMethod RenderingDevice::vrs_get_method() const {
+	return vrs_method;
+}
+
 RD::DataFormat RenderingDevice::vrs_get_format() const {
 	return vrs_format;
 }
@@ -3179,7 +3183,7 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 	VertexArray vertex_array;
 
 	if (p_offsets.is_empty()) {
-		vertex_array.offsets.resize_zeroed(p_src_buffers.size());
+		vertex_array.offsets.resize_initialized(p_src_buffers.size());
 	} else {
 		ERR_FAIL_COND_V(p_offsets.size() != p_src_buffers.size(), RID());
 		vertex_array.offsets = p_offsets;
@@ -4206,7 +4210,7 @@ bool RenderingDevice::compute_pipeline_is_valid(RID p_pipeline) {
 /****************/
 
 uint32_t RenderingDevice::_get_swap_chain_desired_count() const {
-	return MAX(2U, uint32_t(GLOBAL_GET("rendering/rendering_device/vsync/swapchain_image_count")));
+	return MAX(2U, uint32_t(GLOBAL_GET_CACHED(uint32_t, "rendering/rendering_device/vsync/swapchain_image_count")));
 }
 
 Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {
@@ -5869,9 +5873,12 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 					p_texture->draw_tracker->reference_count++;
 				} else {
 					// Slice texture.
-					HashMap<Rect2i, RDG::ResourceTracker *>::ConstIterator draw_tracker_iterator = owner_texture->slice_trackers.find(p_texture->slice_rect);
+					if (owner_texture->slice_trackers == nullptr) {
+						owner_texture->slice_trackers = memnew((HashMap<Rect2i, RDG::ResourceTracker *>));
+					}
+					HashMap<Rect2i, RDG::ResourceTracker *>::ConstIterator draw_tracker_iterator = owner_texture->slice_trackers->find(p_texture->slice_rect);
 					RDG::ResourceTracker *draw_tracker = nullptr;
-					if (draw_tracker_iterator != owner_texture->slice_trackers.end()) {
+					if (draw_tracker_iterator != owner_texture->slice_trackers->end()) {
 						// Reuse the tracker at the matching rectangle.
 						draw_tracker = draw_tracker_iterator->value;
 					} else {
@@ -5883,10 +5890,9 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 						draw_tracker->texture_subresources = p_texture->barrier_range();
 						draw_tracker->texture_usage = p_texture->usage_flags;
 						draw_tracker->texture_slice_or_dirty_rect = p_texture->slice_rect;
-						owner_texture->slice_trackers[p_texture->slice_rect] = draw_tracker;
+						(*owner_texture->slice_trackers)[p_texture->slice_rect] = draw_tracker;
 					}
 
-					p_texture->slice_trackers.clear();
 					p_texture->draw_tracker = draw_tracker;
 					p_texture->draw_tracker->reference_count++;
 				}
@@ -6045,8 +6051,13 @@ void RenderingDevice::_free_internal(RID p_id) {
 				if (texture->owner.is_valid() && (texture->slice_type != TEXTURE_SLICE_MAX)) {
 					// If this was a texture slice, erase the tracker from the map.
 					Texture *owner_texture = texture_owner.get_or_null(texture->owner);
-					if (owner_texture != nullptr) {
-						owner_texture->slice_trackers.erase(texture->slice_rect);
+					if (owner_texture != nullptr && owner_texture->slice_trackers != nullptr) {
+						owner_texture->slice_trackers->erase(texture->slice_rect);
+
+						if (owner_texture->slice_trackers->is_empty()) {
+							memdelete(owner_texture->slice_trackers);
+							owner_texture->slice_trackers = nullptr;
+						}
 					}
 				}
 			}
@@ -6189,7 +6200,11 @@ void RenderingDevice::set_resource_name(RID p_id, const String &p_name) {
 #endif
 }
 
-void RenderingDevice::draw_command_begin_label(String p_label_name, const Color &p_color) {
+void RenderingDevice::_draw_command_begin_label(String p_label_name, const Color &p_color) {
+	draw_command_begin_label(p_label_name.utf8().span(), p_color);
+}
+
+void RenderingDevice::draw_command_begin_label(const Span<char> p_label_name, const Color &p_color) {
 	ERR_RENDER_THREAD_GUARD();
 
 	if (!context->is_debug_utils_enabled()) {
@@ -6935,21 +6950,20 @@ void RenderingDevice::_save_pipeline_cache(void *p_data) {
 
 template <typename T>
 void RenderingDevice::_free_rids(T &p_owner, const char *p_type) {
-	List<RID> owned;
-	p_owner.get_owned_list(&owned);
+	LocalVector<RID> owned = p_owner.get_owned_list();
 	if (owned.size()) {
 		if (owned.size() == 1) {
 			WARN_PRINT(vformat("1 RID of type \"%s\" was leaked.", p_type));
 		} else {
 			WARN_PRINT(vformat("%d RIDs of type \"%s\" were leaked.", owned.size(), p_type));
 		}
-		for (const RID &E : owned) {
+		for (const RID &rid : owned) {
 #ifdef DEV_ENABLED
-			if (resource_names.has(E)) {
-				print_line(String(" - ") + resource_names[E]);
+			if (resource_names.has(rid)) {
+				print_line(String(" - ") + resource_names[rid]);
 			}
 #endif
-			free(E);
+			free(rid);
 		}
 	}
 }
@@ -7146,36 +7160,35 @@ void RenderingDevice::finalize() {
 	_free_rids(sampler_owner, "Sampler");
 	{
 		// For textures it's a bit more difficult because they may be shared.
-		List<RID> owned;
-		texture_owner.get_owned_list(&owned);
+		LocalVector<RID> owned = texture_owner.get_owned_list();
 		if (owned.size()) {
 			if (owned.size() == 1) {
 				WARN_PRINT("1 RID of type \"Texture\" was leaked.");
 			} else {
 				WARN_PRINT(vformat("%d RIDs of type \"Texture\" were leaked.", owned.size()));
 			}
+			LocalVector<RID> owned_non_shared;
 			// Free shared first.
-			for (List<RID>::Element *E = owned.front(); E;) {
-				List<RID>::Element *N = E->next();
-				if (texture_is_shared(E->get())) {
+			for (const RID &texture_rid : owned) {
+				if (texture_is_shared(texture_rid)) {
 #ifdef DEV_ENABLED
-					if (resource_names.has(E->get())) {
-						print_line(String(" - ") + resource_names[E->get()]);
+					if (resource_names.has(texture_rid)) {
+						print_line(String(" - ") + resource_names[texture_rid]);
 					}
 #endif
-					free(E->get());
-					owned.erase(E);
+					free(texture_rid);
+				} else {
+					owned_non_shared.push_back(texture_rid);
 				}
-				E = N;
 			}
 			// Free non shared second, this will avoid an error trying to free unexisting textures due to dependencies.
-			for (const RID &E : owned) {
+			for (const RID &texture_rid : owned_non_shared) {
 #ifdef DEV_ENABLED
-				if (resource_names.has(E)) {
-					print_line(String(" - ") + resource_names[E]);
+				if (resource_names.has(texture_rid)) {
+					print_line(String(" - ") + resource_names[texture_rid]);
 				}
 #endif
-				free(E);
+				free(texture_rid);
 			}
 		}
 	}
@@ -7278,7 +7291,10 @@ void RenderingDevice::_set_max_fps(int p_max_fps) {
 
 RenderingDevice *RenderingDevice::create_local_device() {
 	RenderingDevice *rd = memnew(RenderingDevice);
-	rd->initialize(context);
+	if (rd->initialize(context) != OK) {
+		memdelete(rd);
+		return nullptr;
+	}
 	return rd;
 }
 
@@ -7303,7 +7319,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
 	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "mipmaps", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(1), DEFVAL(TEXTURE_SLICE_2D));
-	ClassDB::bind_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers"), &RenderingDevice::texture_create_from_extension);
+	ClassDB::bind_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers", "mipmaps"), &RenderingDevice::texture_create_from_extension, DEFVAL(1));
 
 	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data"), &RenderingDevice::texture_update);
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
@@ -7438,7 +7454,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_resource_name", "id", "name"), &RenderingDevice::set_resource_name);
 
-	ClassDB::bind_method(D_METHOD("draw_command_begin_label", "name", "color"), &RenderingDevice::draw_command_begin_label);
+	ClassDB::bind_method(D_METHOD("draw_command_begin_label", "name", "color"), &RenderingDevice::_draw_command_begin_label);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("draw_command_insert_label", "name", "color"), &RenderingDevice::draw_command_insert_label);
 #endif

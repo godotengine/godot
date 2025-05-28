@@ -30,11 +30,31 @@
 
 #ifndef DISABLE_DEPRECATED
 
+void TextServer::_font_draw_glyph_bind_compat_104872(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
+	font_draw_glyph(p_font, p_canvas, p_size, p_pos, p_index, p_color, 0.0);
+}
+
+void TextServer::_font_draw_glyph_outline_bind_compat_104872(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
+	font_draw_glyph_outline(p_font, p_canvas, p_size, p_outline_size, p_pos, p_index, p_color, 0.0);
+}
+
+void TextServer::_shaped_text_draw_bind_compat_104872(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color) const {
+	shaped_text_draw(p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_color, 0.0);
+}
+
+void TextServer::_shaped_text_draw_outline_bind_compat_104872(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, int64_t p_outline_size, const Color &p_color) const {
+	shaped_text_draw_outline(p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color, 0.0);
+}
+
 PackedInt32Array TextServer::_shaped_text_get_word_breaks_bind_compat_90732(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags) const {
 	return shaped_text_get_word_breaks(p_shaped, p_grapheme_flags, 0);
 }
 
 void TextServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("font_draw_glyph", "font_rid", "canvas", "size", "pos", "index", "color"), &TextServer::_font_draw_glyph_bind_compat_104872, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_compatibility_method(D_METHOD("font_draw_glyph_outline", "font_rid", "canvas", "size", "outline_size", "pos", "index", "color"), &TextServer::_font_draw_glyph_outline_bind_compat_104872, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_draw", "shaped", "canvas", "pos", "clip_l", "clip_r", "color"), &TextServer::_shaped_text_draw_bind_compat_104872, DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_draw_outline", "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color"), &TextServer::_shaped_text_draw_outline_bind_compat_104872, DEFVAL(-1), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::_shaped_text_get_word_breaks_bind_compat_90732, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION));
 }
 

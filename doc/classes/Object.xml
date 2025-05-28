@@ -198,6 +198,7 @@
 			<param index="0" name="iter" type="Variant" />
 			<description>
 				Returns the current iterable value. [param iter] stores the iteration state, but unlike [method _iter_init] and [method _iter_next] the state is supposed to be read-only, so there is no [Array] wrapper.
+				[b]Tip:[/b] In GDScript, you can use a subtype of [Variant] as the return type for [method _iter_get]. The specified type will be used to set the type of the iterator variable in [code]for[/code] loops, enhancing type safety.
 			</description>
 		</method>
 		<method name="_iter_init" qualifiers="virtual">
@@ -521,6 +522,7 @@
 				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
 				[b]Note:[/b] If the [param callable]'s object is freed, the connection will be lost.
 				[b]Note:[/b] In GDScript, it is generally recommended to connect signals with [method Signal.connect] instead.
+				[b]Note:[/b] This operation (and all other signal related operations) is thread-safe.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -1036,6 +1038,9 @@
 		</constant>
 		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags">
 			Reference-counted connections can be assigned to the same [Callable] multiple times. Each disconnection decreases the internal counter. The signal fully disconnects only when the counter reaches 0.
+		</constant>
+		<constant name="CONNECT_APPEND_SOURCE_OBJECT" value="16" enum="ConnectFlags">
+			The source object is automatically bound when a [PackedScene] is instantiated. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
 		</constant>
 	</constants>
 </class>

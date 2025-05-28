@@ -1107,6 +1107,33 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	return p_parent->is_visible();
 }
 
+bool SceneTreeEditor::_node_matches_class_term(const Node *p_item_node, const String &p_term) {
+	if (p_term.is_empty()) {
+		// Defend against https://github.com/godotengine/godot/issues/82473
+		return true;
+	}
+	Ref<Script> item_script = p_item_node->get_script();
+	while (item_script.is_valid()) {
+		String global_name = item_script->get_global_name();
+		if (global_name.to_lower().contains(p_term)) {
+			return true;
+		}
+		item_script = item_script->get_base_script();
+	}
+
+	String type = p_item_node->get_class();
+	// Every Node is a Node, duh!
+	while (type != "Node") {
+		if (type.to_lower().contains(p_term)) {
+			return true;
+		}
+
+		type = ClassDB::get_parent_class(type);
+	}
+
+	return false;
+}
+
 bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStringArray &p_terms) {
 	if (p_terms.is_empty()) {
 		return true;
@@ -1122,18 +1149,8 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 
 			if (parameter == "type" || parameter == "t") {
 				// Filter by Type.
-				String type = get_node(p_item->get_metadata(0))->get_class();
-				bool term_in_inherited_class = false;
-				// Every Node is a Node, duh!
-				while (type != "Node") {
-					if (type.to_lower().contains(argument)) {
-						term_in_inherited_class = true;
-						break;
-					}
-
-					type = ClassDB::get_parent_class(type);
-				}
-				if (!term_in_inherited_class) {
+				Node *item_node = get_node(p_item->get_metadata(0));
+				if (!_node_matches_class_term(item_node, argument)) {
 					return false;
 				}
 			} else if (parameter == "group" || parameter == "g") {
@@ -1335,10 +1352,11 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
-
-			// When we change theme we need to re-do everything.
+			[[fallthrough]];
+		}
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// When we change theme or translation we need to re-do everything.
 			_reset();
-
 			_update_tree();
 		} break;
 
@@ -2158,6 +2176,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	VBoxContainer *vb = memnew(VBoxContainer);
 	revoke_dialog->add_child(vb);
 	revoke_dialog_label = memnew(Label);
+	revoke_dialog_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(revoke_dialog_label);
 	ask_before_revoke_checkbox = memnew(CheckBox(TTR("Don't Ask Again")));
 	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
@@ -2237,6 +2256,7 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 
 		Label *label = memnew(Label);
 		hb->add_child(label);
+		label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		label->set_text(name);
 		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	}

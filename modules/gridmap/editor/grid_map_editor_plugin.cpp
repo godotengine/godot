@@ -94,96 +94,45 @@ void GridMapEditor::_menu_option(int p_option) {
 			update_grid();
 
 		} break;
-		case MENU_OPTION_CURSOR_ROTATE_Y: {
-			Basis r;
-			if (input_action == INPUT_PASTE) {
-				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
-				r.rotate(Vector3(0, 1, 0), -Math::PI / 2.0);
-				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
-				_update_paste_indicator();
-				break;
-			}
 
-			r = node->get_basis_with_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0, 1, 0), -Math::PI / 2.0);
-			cursor_rot = node->get_orthogonal_index_from_basis(r);
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_ROTATE_X: {
-			Basis r;
-			if (input_action == INPUT_PASTE) {
-				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
-				r.rotate(Vector3(1, 0, 0), -Math::PI / 2.0);
-				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
-				_update_paste_indicator();
-				break;
-			}
-
-			r = node->get_basis_with_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(1, 0, 0), -Math::PI / 2.0);
-			cursor_rot = node->get_orthogonal_index_from_basis(r);
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_ROTATE_Z: {
-			Basis r;
-			if (input_action == INPUT_PASTE) {
-				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
-				r.rotate(Vector3(0, 0, 1), -Math::PI / 2.0);
-				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
-				_update_paste_indicator();
-				break;
-			}
-
-			r = node->get_basis_with_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0, 0, 1), -Math::PI / 2.0);
-			cursor_rot = node->get_orthogonal_index_from_basis(r);
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
-			Basis r;
-			if (input_action == INPUT_PASTE) {
-				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
-				r.rotate(Vector3(0, 1, 0), Math::PI / 2.0);
-				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
-				_update_paste_indicator();
-				break;
-			}
-
-			r = node->get_basis_with_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0, 1, 0), Math::PI / 2.0);
-			cursor_rot = node->get_orthogonal_index_from_basis(r);
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
-			Basis r;
-			if (input_action == INPUT_PASTE) {
-				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
-				r.rotate(Vector3(1, 0, 0), Math::PI / 2.0);
-				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
-				_update_paste_indicator();
-				break;
-			}
-
-			r = node->get_basis_with_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(1, 0, 0), Math::PI / 2.0);
-			cursor_rot = node->get_orthogonal_index_from_basis(r);
-			_update_cursor_transform();
-		} break;
+		case MENU_OPTION_CURSOR_ROTATE_X:
+		case MENU_OPTION_CURSOR_ROTATE_Y:
+		case MENU_OPTION_CURSOR_ROTATE_Z:
+		case MENU_OPTION_CURSOR_BACK_ROTATE_X:
+		case MENU_OPTION_CURSOR_BACK_ROTATE_Y:
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
+			Vector3 rotation_axis;
+			float rotation_angle = -Math::PI / 2.0;
+			if (p_option == MENU_OPTION_CURSOR_ROTATE_X || p_option == MENU_OPTION_CURSOR_BACK_ROTATE_X) {
+				rotation_axis.x = (p_option == MENU_OPTION_CURSOR_ROTATE_X) ? 1 : -1;
+			} else if (p_option == MENU_OPTION_CURSOR_ROTATE_Y || p_option == MENU_OPTION_CURSOR_BACK_ROTATE_Y) {
+				rotation_axis.y = (p_option == MENU_OPTION_CURSOR_ROTATE_Y) ? 1 : -1;
+			} else if (p_option == MENU_OPTION_CURSOR_ROTATE_Z || p_option == MENU_OPTION_CURSOR_BACK_ROTATE_Z) {
+				rotation_axis.z = (p_option == MENU_OPTION_CURSOR_ROTATE_Z) ? 1 : -1;
+			}
+
 			Basis r;
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
-				r.rotate(Vector3(0, 0, 1), Math::PI / 2.0);
+				r.rotate(rotation_axis, rotation_angle);
 				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
 				_update_paste_indicator();
-				break;
+			} else if (_has_selection()) {
+				Array cells = _get_selected_cells();
+				for (int i = 0; i < cells.size(); i++) {
+					Vector3i cell = cells[i];
+					r = node->get_basis_with_orthogonal_index(node->get_cell_item_orientation(cell));
+					r.rotate(rotation_axis, rotation_angle);
+					node->set_cell_item(cell, node->get_cell_item(cell), node->get_orthogonal_index_from_basis(r));
+				}
+			} else {
+				r = node->get_basis_with_orthogonal_index(cursor_rot);
+				r.rotate(rotation_axis, rotation_angle);
+				cursor_rot = node->get_orthogonal_index_from_basis(r);
+				_update_cursor_transform();
 			}
-
-			r = node->get_basis_with_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0, 0, 1), Math::PI / 2.0);
-			cursor_rot = node->get_orthogonal_index_from_basis(r);
-			_update_cursor_transform();
 		} break;
+
 		case MENU_OPTION_CURSOR_CLEAR_ROTATION: {
 			if (input_action == INPUT_PASTE) {
 				paste_indicator.orientation = 0;
@@ -249,6 +198,10 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = node->get_global_transform() * cursor_transform;
 
 	if (mode_buttons_group->get_pressed_button() == paint_mode_button) {
+		// Auto-deselect the selection when painting.
+		if (selection.active) {
+			_set_selection(false);
+		}
 		// Rotation is only applied in paint mode, we don't want the cursor box to rotate otherwise.
 		cursor_transform.basis = node->get_basis_with_orthogonal_index(cursor_rot);
 		if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
@@ -551,6 +504,9 @@ void GridMapEditor::_fill_selection() {
 
 void GridMapEditor::_clear_clipboard_data() {
 	for (const ClipboardItem &E : clipboard_items) {
+		if (E.instance.is_null()) {
+			continue;
+		}
 		RenderingServer::get_singleton()->free(E.instance);
 	}
 
@@ -561,6 +517,8 @@ void GridMapEditor::_set_clipboard_data() {
 	_clear_clipboard_data();
 
 	Ref<MeshLibrary> meshLibrary = node->get_mesh_library();
+
+	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
@@ -577,7 +535,11 @@ void GridMapEditor::_set_clipboard_data() {
 				item.cell_item = itm;
 				item.grid_offset = Vector3(selected) - selection.begin;
 				item.orientation = node->get_cell_item_orientation(selected);
-				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
+				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
+
+				if (mesh.is_valid()) {
+					item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
+				}
 
 				clipboard_items.push_back(item);
 			}
@@ -606,6 +568,9 @@ void GridMapEditor::_update_paste_indicator() {
 	RenderingServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
 
 	for (const ClipboardItem &item : clipboard_items) {
+		if (item.instance.is_null()) {
+			continue;
+		}
 		xf = Transform3D();
 		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 		xf.basis = rot * xf.basis;
@@ -813,8 +778,8 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					for (const SetItem &si : set_items) {
 						undo_redo->add_do_method(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
 					}
-					for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {
-						const SetItem &si = E->get();
+					for (uint32_t i = set_items.size(); i > 0; i--) {
+						const SetItem &si = set_items[i - 1];
 						undo_redo->add_undo_method(node, "set_cell_item", si.position, si.old_value, si.old_orientation);
 					}
 
@@ -1181,20 +1146,23 @@ void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
+
+			const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+
 			for (int i = 0; i < 3; i++) {
 				grid[i] = RS::get_singleton()->mesh_create();
-				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], scenario);
 				RenderingServer::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
-				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], scenario);
 				RenderingServer::get_singleton()->instance_set_layer_mask(selection_level_instance[i], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 			}
 
-			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(cursor_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 			RenderingServer::get_singleton()->instance_set_visible(cursor_instance, false);
-			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(selection_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
-			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(paste_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 
 			_update_selection_transform();
@@ -1271,11 +1239,13 @@ void GridMapEditor::_update_cursor_instance() {
 	}
 	cursor_instance = RID();
 
+	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+
 	if (mode_buttons_group->get_pressed_button() == paint_mode_button) {
 		if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
 			Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
 			if (mesh.is_valid() && mesh->get_rid().is_valid()) {
-				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
+				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 				RS::ShadowCastingSetting cast_shadows = (RS::ShadowCastingSetting)node->get_mesh_library()->get_item_mesh_cast_shadow(selected_palette);
 				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(cursor_instance, cast_shadows);
 			}
@@ -1283,15 +1253,15 @@ void GridMapEditor::_update_cursor_instance() {
 	} else if (mode_buttons_group->get_pressed_button() == select_mode_button) {
 		cursor_inner_mat->set_albedo(Color(default_color, 0.2));
 		cursor_outer_mat->set_albedo(Color(default_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	} else if (mode_buttons_group->get_pressed_button() == erase_mode_button) {
 		cursor_inner_mat->set_albedo(Color(erase_color, 0.2));
 		cursor_outer_mat->set_albedo(Color(erase_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	} else if (mode_buttons_group->get_pressed_button() == pick_mode_button) {
 		cursor_inner_mat->set_albedo(Color(pick_color, 0.2));
 		cursor_outer_mat->set_albedo(Color(pick_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	}
 
 	// Make the cursor translucent so that it can be distinguished from already-placed tiles.
@@ -1379,6 +1349,8 @@ GridMapEditor::GridMapEditor() {
 	HBoxContainer *mode_buttons = memnew(HBoxContainer);
 	toolbar->add_child(mode_buttons);
 	mode_buttons_group.instantiate();
+
+	viewport_shortcut_buttons.reserve(12);
 
 	transform_mode_button = memnew(Button);
 	transform_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1575,6 +1547,7 @@ GridMapEditor::GridMapEditor() {
 	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 
 	info_message = memnew(Label);
+	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -1880,6 +1853,7 @@ void GridMapEditorPlugin::set_selected_palette_item(int p_item) const {
 		}
 		if (p_item != grid_map_editor->selected_palette) {
 			grid_map_editor->selected_palette = p_item;
+			grid_map_editor->_update_cursor_instance();
 			grid_map_editor->update_palette();
 		}
 	}

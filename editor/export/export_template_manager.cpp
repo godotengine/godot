@@ -43,8 +43,10 @@
 #include "editor/progress_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
@@ -921,7 +923,6 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 void ExportTemplateManager::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			current_value->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			current_missing_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -990,6 +991,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_hb->add_child(current_label);
 
 	current_value = memnew(Label);
+	current_value->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	current_hb->add_child(current_value);
 
 	// Current version statuses.

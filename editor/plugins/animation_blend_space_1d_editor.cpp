@@ -571,7 +571,6 @@ void AnimationNodeBlendSpace1DEditor::_open_editor() {
 
 void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -805,6 +804,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	add_child(error_panel);
 
 	error_label = memnew(Label);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_panel->add_child(error_label);
 
 	menu = memnew(PopupMenu);

@@ -922,7 +922,7 @@ void GDScript::get_members(HashSet<StringName> *p_members) {
 	}
 }
 
-Variant GDScript::get_rpc_config() const {
+const Variant GDScript::get_rpc_config() const {
 	return rpc_config;
 }
 
@@ -2251,13 +2251,13 @@ void GDScriptLanguage::init() {
 	//populate global constants
 	int gcc = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < gcc; i++) {
-		_add_global(StaticCString::create(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
+		_add_global(StringName(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
 	}
 
-	_add_global(StaticCString::create("PI"), Math::PI);
-	_add_global(StaticCString::create("TAU"), Math::TAU);
-	_add_global(StaticCString::create("INF"), Math::INF);
-	_add_global(StaticCString::create("NAN"), Math::NaN);
+	_add_global(StringName("PI"), Math::PI);
+	_add_global(StringName("TAU"), Math::TAU);
+	_add_global(StringName("INF"), Math::INF);
+	_add_global(StringName("NAN"), Math::NaN);
 
 	//populate native classes
 
@@ -2731,9 +2731,9 @@ void GDScriptLanguage::frame() {
 }
 
 /* EDITOR FUNCTIONS */
-void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
+Vector<String> GDScriptLanguage::get_reserved_words() const {
 	// Please keep alphabetical order within categories.
-	static const char *_reserved_words[] = {
+	static const Vector<String> ret = {
 		// Control flow.
 		"break",
 		"continue",
@@ -2747,6 +2747,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"when",
 		"while",
 		// Declarations.
+		"abstract",
 		"class",
 		"class_name",
 		"const",
@@ -2785,15 +2786,9 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"preload",
 		// Types (highlighter uses type color instead).
 		"void",
-		nullptr,
 	};
 
-	const char **w = _reserved_words;
-
-	while (*w) {
-		p_words->push_back(*w);
-		w++;
-	}
+	return ret;
 }
 
 bool GDScriptLanguage::is_control_flow_keyword(const String &p_keyword) const {
@@ -2854,7 +2849,8 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 			if (subclass->extends_used) {
 				if (!subclass->extends_path.is_empty()) {
 					if (subclass->extends.is_empty()) {
-						get_global_class_name(subclass->extends_path, r_base_type);
+						// We only care about the referenced class_name.
+						_ALLOW_DISCARD_ get_global_class_name(subclass->extends_path, r_base_type);
 						subclass = nullptr;
 						break;
 					} else {
@@ -2930,16 +2926,16 @@ thread_local GDScriptLanguage::CallStack GDScriptLanguage::_call_stack;
 GDScriptLanguage::GDScriptLanguage() {
 	ERR_FAIL_COND(singleton);
 	singleton = this;
-	strings._init = StaticCString::create("_init");
-	strings._static_init = StaticCString::create("_static_init");
-	strings._notification = StaticCString::create("_notification");
-	strings._set = StaticCString::create("_set");
-	strings._get = StaticCString::create("_get");
-	strings._get_property_list = StaticCString::create("_get_property_list");
-	strings._validate_property = StaticCString::create("_validate_property");
-	strings._property_can_revert = StaticCString::create("_property_can_revert");
-	strings._property_get_revert = StaticCString::create("_property_get_revert");
-	strings._script_source = StaticCString::create("script/source");
+	strings._init = StringName("_init");
+	strings._static_init = StringName("_static_init");
+	strings._notification = StringName("_notification");
+	strings._set = StringName("_set");
+	strings._get = StringName("_get");
+	strings._get_property_list = StringName("_get_property_list");
+	strings._validate_property = StringName("_validate_property");
+	strings._property_can_revert = StringName("_property_can_revert");
+	strings._property_get_revert = StringName("_property_get_revert");
+	strings._script_source = StringName("script/source");
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
 
@@ -2949,17 +2945,14 @@ GDScriptLanguage::GDScriptLanguage() {
 	script_frame_time = 0;
 #endif
 
-	int dmcs = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "512," + itos(GDScriptFunction::MAX_CALL_DEPTH - 1) + ",1"), 1024);
-
-	if (EngineDebugger::is_active()) {
-		//debugging enabled!
-
-		_debug_max_call_stack = dmcs;
-	} else {
-		_debug_max_call_stack = 0;
-	}
+	_debug_max_call_stack = GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "512," + itos(GDScriptFunction::MAX_CALL_DEPTH - 1) + ",1"), 1024);
+	track_call_stack = GLOBAL_DEF_RST("debug/settings/gdscript/always_track_call_stacks", false);
+	track_locals = GLOBAL_DEF_RST("debug/settings/gdscript/always_track_local_variables", false);
 
 #ifdef DEBUG_ENABLED
+	track_call_stack = true;
+	track_locals = track_locals || EngineDebugger::is_active();
+
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
 	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
 	GLOBAL_DEF("debug/gdscript/warnings/renamed_in_godot_4_hint", true);

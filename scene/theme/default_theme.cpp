@@ -31,21 +31,20 @@
 #include "default_theme.h"
 
 #include "core/io/image.h"
-#include "default_font.gen.h"
-#include "default_theme_icons.gen.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
+#include "scene/theme/default_theme_icons.gen.h"
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
-#ifdef MODULE_SVG_ENABLED
-#include "modules/svg/image_loader_svg.h"
+#ifdef BROTLI_ENABLED
+#include "scene/theme/default_font.gen.h"
 #endif
 
 static const int default_font_size = 16;
@@ -80,26 +79,8 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 }
 
 // See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
-static Ref<ImageTexture> generate_icon(int p_index) {
-	Ref<Image> img = memnew(Image);
-
-#ifdef MODULE_SVG_ENABLED
-	// Upsample icon generation only if the scale isn't an integer multiplier.
-	// Generating upsampled icons is slower, and the benefit is hardly visible
-	// with integer scales.
-	const bool upsample = !Math::is_equal_approx(Math::round(scale), scale);
-
-	Error err = ImageLoaderSVG::create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
-
-	img->fix_alpha_edges();
-#else
-	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
-	// 16 pixels is used as it's the most common base size for Godot icons.
-	img = Image::create_empty(Math::round(16 * scale), Math::round(16 * scale), false, Image::FORMAT_RGBA8);
-#endif
-
-	return ImageTexture::create_from_image(img);
+static Ref<SVGTexture> generate_icon(int p_index) {
+	return SVGTexture::create_from_string(default_theme_icons_sources[p_index], scale);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
@@ -714,6 +695,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
 	theme->set_icon("create_folder", "FileDialog", icons["folder_create"]);
+	theme->set_icon("sort", "FileDialog", icons["sort"]);
+
 	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));
@@ -1077,6 +1060,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("bar_arrow", "ColorPicker", icons["color_picker_bar_arrow"]);
 	theme->set_icon("picker_cursor", "ColorPicker", icons["color_picker_cursor"]);
 	theme->set_icon("picker_cursor_bg", "ColorPicker", icons["color_picker_cursor_bg"]);
+	theme->set_icon("color_script", "ColorPicker", icons["script"]);
 
 	{
 		const int precision = 7;
@@ -1336,13 +1320,14 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		// embedded in both editor and export template binaries.
 		Ref<FontFile> dynamic_font;
 		dynamic_font.instantiate();
+#ifdef BROTLI_ENABLED
 		dynamic_font->set_data_ptr(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size);
 		dynamic_font->set_subpixel_positioning(p_font_subpixel);
 		dynamic_font->set_hinting(p_font_hinting);
 		dynamic_font->set_antialiasing(p_font_antialiasing);
 		dynamic_font->set_multichannel_signed_distance_field(p_font_msdf);
 		dynamic_font->set_generate_mipmaps(p_font_generate_mipmaps);
-
+#endif
 		default_font = dynamic_font;
 	}
 

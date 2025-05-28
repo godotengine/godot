@@ -122,6 +122,7 @@ private:
 
 	bool context_menu_enabled = true;
 	bool emoji_menu_enabled = true;
+	bool backspace_deletes_composite_character_enabled = false;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
@@ -147,6 +148,7 @@ private:
 	bool shortcut_keys_enabled = true;
 
 	bool virtual_keyboard_enabled = true;
+	bool virtual_keyboard_show_on_focus = true;
 	VirtualKeyboardType virtual_keyboard_type = KEYBOARD_TYPE_DEFAULT;
 
 	bool middle_mouse_paste_enabled = true;
@@ -261,6 +263,8 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _texture_changed();
 
+	void _edit(bool p_show_virtual_keyboard = true);
+
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
 
@@ -309,6 +313,9 @@ public:
 	void set_emoji_menu_enabled(bool p_enabled);
 	bool is_emoji_menu_enabled() const;
 
+	void set_backspace_deletes_composite_character_enabled(bool p_enabled);
+	bool is_backspace_deletes_composite_character_enabled() const;
+
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();
 	void selection_delete();
@@ -345,6 +352,8 @@ public:
 
 	void set_caret_column(int p_column);
 	int get_caret_column() const;
+	int get_next_composite_character_column(int p_column) const;
+	int get_previous_composite_character_column(int p_column) const;
 
 	void set_max_length(int p_max_length);
 	int get_max_length() const;
@@ -394,6 +403,9 @@ public:
 
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
+
+	void set_virtual_keyboard_show_on_focus(bool p_show_on_focus);
+	bool get_virtual_keyboard_show_on_focus() const;
 
 	void set_virtual_keyboard_type(VirtualKeyboardType p_type);
 	VirtualKeyboardType get_virtual_keyboard_type() const;

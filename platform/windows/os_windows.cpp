@@ -281,6 +281,7 @@ void OS_Windows::initialize() {
 	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	TIMECAPS time_caps;
@@ -292,6 +293,9 @@ void OS_Windows::initialize() {
 		delay_resolution = 1000;
 		timeBeginPeriod(1);
 	}
+#else
+	delay_resolution = 1000;
+#endif
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -374,7 +378,9 @@ void OS_Windows::finalize_core() {
 
 	FileAccessWindows::finalize();
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	timeEndPeriod(1);
+#endif
 
 	memdelete(process_map);
 	NetSocketWinSock::cleanup();
@@ -723,7 +729,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			BSTR object_name = SysAllocString(L"DriverName");
 			hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 			SysFreeString(object_name);
-			if (hr == S_OK) {
+			if (hr == S_OK && dn.vt == VT_BSTR) {
 				String d_name = String(V_BSTR(&dn));
 				if (d_name.is_empty()) {
 					object_name = SysAllocString(L"DriverProviderName");
@@ -739,8 +745,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 				object_name = SysAllocString(L"DriverProviderName");
 				hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 				SysFreeString(object_name);
-				if (hr == S_OK) {
+				if (hr == S_OK && dn.vt == VT_BSTR) {
 					driver_name = String(V_BSTR(&dn));
+				} else {
+					driver_name = "Unknown";
 				}
 			}
 
@@ -749,8 +757,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			object_name = SysAllocString(L"DriverVersion");
 			hr = pnpSDriverObject[0]->Get(object_name, 0, &dv, nullptr, nullptr);
 			SysFreeString(object_name);
-			if (hr == S_OK) {
+			if (hr == S_OK && dv.vt == VT_BSTR) {
 				driver_version = String(V_BSTR(&dv));
+			} else {
+				driver_version = "Unknown";
 			}
 			for (ULONG i = 0; i < resultCount; i++) {
 				SAFE_RELEASE(pnpSDriverObject[i])
@@ -2427,7 +2437,9 @@ String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
-	return String::ascii(Span((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN));
+
+	// Note: Windows API returns a GUID with null termination.
+	return String::ascii(Span<char>(HwProfInfo.szHwProfileGuid, strnlen(HwProfInfo.szHwProfileGuid, HW_PROFILE_GUIDLEN)));
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
@@ -2560,6 +2572,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 bool OS_Windows::_test_create_rendering_device(const String &p_display_driver) const {
 	// Tests Rendering Device creation.
 
@@ -2652,6 +2665,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
 	return ok;
 }
+#endif
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;

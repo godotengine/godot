@@ -423,10 +423,6 @@ void MenuBar::_draw_menu_item(int p_index) {
 	bool pressed = (active_menu == p_index);
 	bool rtl = is_layout_rtl();
 
-	if (has_focus() && focused_menu == -1 && p_index == 0) {
-		hovered = true;
-	}
-
 	if (menu_cache[p_index].hidden) {
 		return;
 	}
@@ -523,13 +519,14 @@ void MenuBar::_refresh_menu_names() {
 	bool is_global = !global_menu_tag.is_empty();
 	RID main_menu = is_global ? nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID) : RID();
 
+	bool dirty = false;
 	Vector<PopupMenu *> popups = _get_popups();
 	for (int i = 0; i < popups.size(); i++) {
 		String menu_name = popups[i]->get_title().is_empty() ? String(popups[i]->get_name()) : popups[i]->get_title();
 		if (!popups[i]->has_meta("_menu_name") && menu_name != get_menu_title(i)) {
 			menu_cache.write[i].name = menu_name;
 			shape(menu_cache.write[i]);
-			queue_redraw();
+			dirty = true;
 			if (is_global && menu_cache[i].submenu_rid.is_valid()) {
 				int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
 				if (item_idx >= 0) {
@@ -537,6 +534,11 @@ void MenuBar::_refresh_menu_names() {
 				}
 			}
 		}
+	}
+
+	if (dirty && !is_global) {
+		queue_redraw();
+		update_minimum_size();
 	}
 }
 
@@ -969,7 +971,7 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 }
 
 MenuBar::MenuBar() {
-	set_focus_mode(FOCUS_ALL);
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_process_shortcut_input(true);
 }
 

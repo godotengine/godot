@@ -410,7 +410,7 @@
 			<param index="8" name="count" type="int" default="-1" />
 			<description>
 				Draws a triangle array on the [CanvasItem] pointed to by the [param item] [RID]. This is internally used by [Line2D] and [StyleBoxFlat] for rendering. [method canvas_item_add_triangle_array] is highly flexible, but more complex to use than [method canvas_item_add_polygon].
-				[b]Note:[/b] [param count] is unused and can be left unspecified.
+				[b]Note:[/b] If [param count] is set to a non-negative value, only the first [code]count * 3[/code] indices (corresponding to [code skip-lint]count[/code] triangles) will be drawn. Otherwise, all indices are drawn.
 			</description>
 		</method>
 		<method name="canvas_item_attach_skeleton">
@@ -1931,14 +1931,6 @@
 				Sets the visibility range values for the given geometry instance. Equivalent to [member GeometryInstance3D.visibility_range_begin] and related properties.
 			</description>
 		</method>
-		<method name="instance_reset_physics_interpolation">
-			<return type="void" />
-			<param index="0" name="instance" type="RID" />
-			<description>
-				Prevents physics interpolation for the current physics tick.
-				This is useful when moving an instance to a new location, to give an instantaneous change rather than interpolation from the previous location.
-			</description>
-		</method>
 		<method name="instance_set_base">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
@@ -1978,14 +1970,6 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], ignores both frustum and occlusion culling on the specified 3D geometry instance. This is not the same as [member GeometryInstance3D.ignore_occlusion_culling], which only ignores occlusion culling and leaves frustum culling intact.
-			</description>
-		</method>
-		<method name="instance_set_interpolated">
-			<return type="void" />
-			<param index="0" name="instance" type="RID" />
-			<param index="1" name="interpolated" type="bool" />
-			<description>
-				Turns on and off physics interpolation for the instance.
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">
@@ -2044,6 +2028,13 @@
 			<param index="1" name="visible" type="bool" />
 			<description>
 				Sets whether an instance is drawn or not. Equivalent to [member Node3D.visible].
+			</description>
+		</method>
+		<method name="instance_teleport">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<description>
+				Resets motion vectors and other interpolated values. Use this [i]after[/i] teleporting a mesh from one position to another to avoid ghosting artifacts.
 			</description>
 		</method>
 		<method name="instances_cull_aabb" qualifiers="const">
@@ -5150,7 +5141,10 @@
 		<constant name="VIEWPORT_SCREEN_SPACE_AA_FXAA" value="1" enum="ViewportScreenSpaceAA">
 			Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
 		</constant>
-		<constant name="VIEWPORT_SCREEN_SPACE_AA_MAX" value="2" enum="ViewportScreenSpaceAA">
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_SMAA" value="2" enum="ViewportScreenSpaceAA">
+			Use subpixel morphological antialiasing. SMAA may produce clearer results than FXAA, but at a slightly higher performance cost.
+		</constant>
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_MAX" value="3" enum="ViewportScreenSpaceAA">
 			Represents the size of the [enum ViewportScreenSpaceAA] enum.
 		</constant>
 		<constant name="VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW" value="0" enum="ViewportOcclusionCullingBuildQuality">

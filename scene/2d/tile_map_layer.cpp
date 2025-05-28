@@ -1251,7 +1251,7 @@ void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 					// Create a dedicated map for each layer.
 					RID new_layer_map = ns->map_create();
 					// Set the default NavigationPolygon cell_size on the new map as a mismatch causes an error.
-					ns->map_set_cell_size(new_layer_map, NavigationDefaults2D::navmesh_cell_size);
+					ns->map_set_cell_size(new_layer_map, NavigationDefaults2D::NAV_MESH_CELL_SIZE);
 					ns->map_set_active(new_layer_map, true);
 					navigation_map_override = new_layer_map;
 				}
@@ -2188,8 +2188,8 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_quadrant_size"), "set_physics_quadrant_size", "get_physics_quadrant_size");
 #ifndef NAVIGATION_2D_DISABLED
-	ADD_GROUP("Navigation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_enabled"), "set_navigation_enabled", "is_navigation_enabled");
+	ADD_GROUP("Navigation", "navigation_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_navigation_enabled", "is_navigation_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 #endif // NAVIGATION_2D_DISABLED
 
@@ -2609,18 +2609,23 @@ void TileMapLayer::draw_tile(RID p_canvas_item, const Vector2 &p_position, const
 
 		bool transpose = tile_data->get_transpose() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
 		if (transpose) {
-			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
+			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2);
+			SWAP(tile_offset.x, tile_offset.y);
 		} else {
-			dest_rect.position = (p_position - dest_rect.size / 2 - tile_offset);
+			dest_rect.position = (p_position - dest_rect.size / 2);
 		}
 
 		if (tile_data->get_flip_h() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H)) {
 			dest_rect.size.x = -dest_rect.size.x;
+			tile_offset.x = -tile_offset.x;
 		}
 
 		if (tile_data->get_flip_v() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V)) {
 			dest_rect.size.y = -dest_rect.size.y;
+			tile_offset.y = -tile_offset.y;
 		}
+
+		dest_rect.position -= tile_offset;
 
 		// Draw the tile.
 		if (p_frame >= 0) {

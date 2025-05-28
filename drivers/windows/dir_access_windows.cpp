@@ -38,8 +38,8 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include <stdio.h>
-#include <wchar.h>
+#include <cstdio>
+#include <cwchar>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -362,7 +362,7 @@ String DirAccessWindows::get_filesystem_type() const {
 				&dwFileSystemFlags,
 				szFileSystemName,
 				sizeof(szFileSystemName)) == TRUE) {
-		return String::utf16((const char16_t *)szFileSystemName);
+		return String::utf16((const char16_t *)szFileSystemName).to_upper();
 	}
 
 	ERR_FAIL_V("");

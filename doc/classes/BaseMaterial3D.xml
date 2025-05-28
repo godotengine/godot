@@ -120,6 +120,15 @@
 		<member name="backlight_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to control the backlight effect per-pixel. Added to [member backlight].
 		</member>
+		<member name="bent_normal_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], the bent normal map is enabled. This allows for more accurate indirect lighting and specular occlusion.
+		</member>
+		<member name="bent_normal_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that specifies the average direction of incoming ambient light at a given pixel. The [member bent_normal_texture] only uses the red and green channels; the blue and alpha channels are ignored. The normal read from [member bent_normal_texture] is oriented around the surface normal provided by the [Mesh].
+			[b]Note:[/b] A bent normal map is different from a regular normal map. When baking a bent normal map make sure to use [b]a cosine distribution[/b] for the bent normal map to work correctly.
+			[b]Note:[/b] The mesh must have both normals and tangents defined in its vertex data. Otherwise, the shading produced by the bent normal map will not look correct. If creating geometry with [SurfaceTool], you can use [method SurfaceTool.generate_normals] and [method SurfaceTool.generate_tangents] to automatically generate normals and tangents respectively.
+			[b]Note:[/b] Godot expects the bent normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
+		</member>
 		<member name="billboard_keep_scale" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise, the scale is lost when billboarding. Only applies when [member billboard_mode] is not [constant BILLBOARD_DISABLED].
 		</member>
@@ -182,6 +191,9 @@
 		<member name="disable_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
 		</member>
+		<member name="disable_specular_occlusion" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], disables specular occlusion even if [member ProjectSettings.rendering/reflections/specular_occlusion/enabled] is [code]false[/code].
+		</member>
 		<member name="distance_fade_max_distance" type="float" setter="set_distance_fade_max_distance" getter="get_distance_fade_max_distance" default="10.0">
 			Distance at which the object appears fully opaque.
 			[b]Note:[/b] If [member distance_fade_max_distance] is less than [member distance_fade_min_distance], the behavior will be reversed. The object will start to fade away at [member distance_fade_max_distance] and will fully disappear once it reaches [member distance_fade_min_distance].
@@ -216,6 +228,10 @@
 		</member>
 		<member name="fixed_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object is rendered at the same size regardless of distance. The object's size on screen is the same as if the camera was [code]1.0[/code] units away from the object's origin, regardless of the actual distance from the camera. The [Camera3D]'s field of view (or [member Camera3D.size] when in orthogonal/frustum mode) still affects the size the object is drawn at.
+		</member>
+		<member name="fov_override" type="float" setter="set_fov_override" getter="get_fov_override" default="75.0">
+			Overrides the [Camera3D]'s field of view angle (in degrees).
+			[b]Note:[/b] This behaves as if the field of view is set on a [Camera3D] with [member Camera3D.keep_aspect] set to [constant Camera3D.KEEP_HEIGHT]. Additionally, it may not look correct on a non-perspective camera where the field of view setting is ignored.
 		</member>
 		<member name="grow" type="bool" setter="set_grow_enabled" getter="is_grow_enabled" default="false">
 			If [code]true[/code], enables the vertex grow setting. This can be used to create mesh-based outlines using a second material pass and its [member cull_mode] set to [constant CULL_FRONT]. See also [member grow_amount].
@@ -395,12 +411,18 @@
 		<member name="transparency" type="int" setter="set_transparency" getter="get_transparency" enum="BaseMaterial3D.Transparency" default="0">
 			The material's transparency mode. Some transparency modes will disable shadow casting. Any transparency mode other than [constant TRANSPARENCY_DISABLED] has a greater performance impact compared to opaque rendering. See also [member blend_mode].
 		</member>
+		<member name="use_fov_override" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code] use [member fov_override] to override the [Camera3D]'s field of view angle.
+		</member>
 		<member name="use_particle_trails" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering.
 		</member>
 		<member name="use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], render point size can be changed.
 			[b]Note:[/b] This is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].
+		</member>
+		<member name="use_z_clip_scale" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code] use [member z_clip_scale] to scale the object being rendered towards the camera to avoid clipping into things like walls.
 		</member>
 		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" default="Vector3(0, 0, 0)">
 			How much to offset the [code]UV[/code] coordinates. This amount will be added to [code]UV[/code] in the vertex function. This can be used to offset a texture. The Z component is used when [member uv1_triplanar] is enabled, but it is not used anywhere else.
@@ -441,6 +463,9 @@
 		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the vertex color is used as albedo color.
 		</member>
+		<member name="z_clip_scale" type="float" setter="set_z_clip_scale" getter="get_z_clip_scale" default="1.0">
+			Scales the object being rendered towards the camera to avoid clipping into things like walls. This is intended to be used for objects that are fixed with respect to the camera like player arms, tools, etc. Lighting and shadows will continue to work correctly when this setting is adjusted, but screen-space effects like SSAO and SSR may break with lower scales. Therefore, try to keep this setting as close to [code]1.0[/code] as possible.
+		</member>
 	</members>
 	<constants>
 		<constant name="TEXTURE_ALBEDO" value="0" enum="TextureParam">
@@ -457,6 +482,9 @@
 		</constant>
 		<constant name="TEXTURE_NORMAL" value="4" enum="TextureParam">
 			Texture specifying per-pixel normal vector.
+		</constant>
+		<constant name="TEXTURE_BENT_NORMAL" value="18" enum="TextureParam">
+			Texture specifying per-pixel bent normal vector.
 		</constant>
 		<constant name="TEXTURE_RIM" value="5" enum="TextureParam">
 			Texture specifying per-pixel rim value.
@@ -497,7 +525,7 @@
 		<constant name="TEXTURE_ORM" value="17" enum="TextureParam">
 			Texture holding ambient occlusion, roughness, and metallic.
 		</constant>
-		<constant name="TEXTURE_MAX" value="18" enum="TextureParam">
+		<constant name="TEXTURE_MAX" value="19" enum="TextureParam">
 			Represents the size of the [enum TextureParam] enum.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="0" enum="TextureFilter">
@@ -593,7 +621,10 @@
 		<constant name="FEATURE_DETAIL" value="11" enum="Feature">
 			Constant for setting [member detail_enabled].
 		</constant>
-		<constant name="FEATURE_MAX" value="12" enum="Feature">
+		<constant name="FEATURE_BENT_NORMAL_MAPPING" value="12" enum="Feature">
+			Constant for setting [member bent_normal_enabled].
+		</constant>
+		<constant name="FEATURE_MAX" value="13" enum="Feature">
 			Represents the size of the [enum Feature] enum.
 		</constant>
 		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
@@ -706,7 +737,16 @@
 		<constant name="FLAG_DISABLE_FOG" value="21" enum="Flags">
 			Disables receiving depth-based or volumetric fog.
 		</constant>
-		<constant name="FLAG_MAX" value="22" enum="Flags">
+		<constant name="FLAG_DISABLE_SPECULAR_OCCLUSION" value="22" enum="Flags">
+			Disables specular occlusion.
+		</constant>
+		<constant name="FLAG_USE_Z_CLIP_SCALE" value="23" enum="Flags">
+			Enables using [member z_clip_scale].
+		</constant>
+		<constant name="FLAG_USE_FOV_OVERRIDE" value="24" enum="Flags">
+			Enables using [member fov_override].
+		</constant>
+		<constant name="FLAG_MAX" value="25" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
@@ -723,6 +763,8 @@
 		</constant>
 		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
 			Default specular blob.
+			[b]Note:[/b] Forward+ uses multiscattering for more accurate reflections, although the impact of multiscattering is more noticeable on rough metallic surfaces than on smooth, non-metallic surfaces.
+			[b]Note:[/b] Mobile and Compatibility don't perform multiscattering for performance reasons. Instead, they perform single scattering, which means rough metallic surfaces may look slightly darker than intended.
 		</constant>
 		<constant name="SPECULAR_TOON" value="1" enum="SpecularMode">
 			Toon blob which changes size based on roughness.

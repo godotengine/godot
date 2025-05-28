@@ -261,6 +261,9 @@ public:
 	int get_previous_tab() const;
 	int get_hovered_tab() const;
 
+	int get_previous_available(int p_idx = -1) const;
+	int get_next_available(int p_idx = -1) const;
+
 	bool select_previous_available();
 	bool select_next_available();
 

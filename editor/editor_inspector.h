@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include "editor/add_metadata_dialog.h"
 #include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 
+class AddMetadataDialog;
 class AcceptDialog;
 class Button;
 class ConfirmationDialog;
@@ -333,22 +334,35 @@ public:
 class EditorInspectorSection : public Container {
 	GDCLASS(EditorInspectorSection, Container);
 
+	friend class EditorInspector;
+
 	String label;
 	String section;
-	bool vbox_added = false; // Optimization.
 	Color bg_color;
+	bool vbox_added = false; // Optimization.
 	bool foldable = false;
+	bool checkable = false;
+	bool checked = false;
 	int indent_depth = 0;
 	int level = 1;
+	String related_enable_property;
 
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping_for_unfold = false;
+
+	Rect2 check_rect;
+	bool check_hover = false;
+
+	bool hide_feature = false;
 
 	HashSet<StringName> revertable_properties;
 
 	void _test_unfold();
 	int _get_header_height();
 	Ref<Texture2D> _get_arrow();
+	Ref<Texture2D> _get_checkbox();
+
+	EditorInspector *_get_parent_inspector() const;
 
 protected:
 	Object *object = nullptr;
@@ -363,6 +377,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
 	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
 	String get_section() const;
@@ -372,9 +387,12 @@ public:
 	void fold();
 	void set_bg_color(const Color &p_bg_color);
 	void reset_timer();
+	void set_checkable(const String &p_related_check_property, bool p_hide_feature);
+	void set_checked(bool p_checked);
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
+	void _property_edited(const String &p_property);
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
@@ -591,6 +609,7 @@ class EditorInspector : public ScrollContainer {
 	bool keying = false;
 	bool wide_editors = false;
 	bool deletable_properties = false;
+	bool mark_unsaved = true;
 
 	float refresh_countdown;
 	bool update_tree_pending = false;
@@ -638,8 +657,6 @@ class EditorInspector : public ScrollContainer {
 	void _set_property_favorited(const String &p_path, bool p_favorited);
 	void _clear_current_favorites();
 
-	void _update_theme();
-
 	void _node_removed(Node *p_node);
 
 	HashMap<StringName, int> per_array_page;
@@ -657,6 +674,8 @@ class EditorInspector : public ScrollContainer {
 	void _feature_profile_changed();
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
+
+	void _section_toggled_by_user(const String &p_path, bool p_value);
 
 	AddMetadataDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
@@ -691,6 +710,7 @@ public:
 
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
+	void set_mark_unsaved(bool p_mark) { mark_unsaved = p_mark; }
 
 	EditorPropertyNameProcessor::Style get_property_name_style() const;
 	void set_property_name_style(EditorPropertyNameProcessor::Style p_style);

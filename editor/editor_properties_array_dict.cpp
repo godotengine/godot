@@ -749,8 +749,7 @@ Node *EditorPropertyArray::get_base_node() {
 
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			change_type->clear();
 			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
 			change_type->add_separator();
@@ -865,6 +864,14 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 
 			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
 			subtype = Variant::Type(subtype_string.to_int());
+		} else {
+			subtype = Variant::get_type_by_name(p_hint_string);
+
+			if (subtype == Variant::VARIANT_MAX) {
+				subtype = Variant::OBJECT;
+				subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				subtype_hint_string = p_hint_string;
+			}
 		}
 	}
 }
@@ -1155,12 +1162,21 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 
 			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1);
 			key_subtype = Variant::Type(key_subtype_string.to_int());
+		} else {
+			key_subtype = Variant::get_type_by_name(key);
 
-			Variant new_key = object->get_new_item_key();
-			VariantInternal::initialize(&new_key, key_subtype);
-			object->set_new_item_key(new_key);
+			if (key_subtype == Variant::VARIANT_MAX) {
+				key_subtype = Variant::OBJECT;
+				key_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				key_subtype_hint_string = key;
+			}
 		}
+
+		Variant new_key = object->get_new_item_key();
+		VariantInternal::initialize(&new_key, key_subtype);
+		object->set_new_item_key(new_key);
 	}
+
 	if (types.size() > 1 && !types[1].is_empty()) {
 		String value = types[1];
 		int hint_value_subtype_separator = value.find_char(':');
@@ -1174,11 +1190,19 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 
 			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1);
 			value_subtype = Variant::Type(value_subtype_string.to_int());
+		} else {
+			value_subtype = Variant::get_type_by_name(value);
 
-			Variant new_value = object->get_new_item_value();
-			VariantInternal::initialize(&new_value, value_subtype);
-			object->set_new_item_value(new_value);
+			if (value_subtype == Variant::VARIANT_MAX) {
+				value_subtype = Variant::OBJECT;
+				value_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				value_subtype_hint_string = value;
+			}
 		}
+
+		Variant new_value = object->get_new_item_value();
+		VariantInternal::initialize(&new_value, value_subtype);
+		object->set_new_item_value(new_value);
 	}
 }
 
@@ -1363,7 +1387,7 @@ void EditorPropertyDictionary::update_property() {
 
 			Variant::Type value_type;
 
-			if (dict.is_typed_value() && slot.prop_key) {
+			if (dict.is_typed_value() && value_subtype != Variant::NIL && slot.prop_key) {
 				value_type = value_subtype;
 			} else {
 				value_type = value.get_type();
@@ -1440,8 +1464,7 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			change_type->clear();
 			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
 			change_type->add_separator();
@@ -1688,8 +1711,7 @@ void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_pr
 
 void EditorPropertyLocalizableString::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			if (button_add_item) {
 				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			}

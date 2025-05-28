@@ -1379,7 +1379,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			particles->instance_motion_vectors_enabled = true;
 		}
 
-		data.resize_zeroed(particle_instance_buffer_size);
+		data.resize_initialized(particle_instance_buffer_size);
 
 		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data);
 
@@ -1850,6 +1850,13 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
+}
+
+uint32_t ParticlesStorage::particles_collision_get_cull_mask(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, 0);
+	return particles_collision->cull_mask;
 }
 
 uint32_t ParticlesStorage::particles_collision_get_height_field_mask(RID p_particles_collision) const {

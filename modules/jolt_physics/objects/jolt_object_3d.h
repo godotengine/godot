@@ -66,7 +66,7 @@ protected:
 	RID rid;
 	ObjectID instance_id;
 	JoltSpace3D *space = nullptr;
-	JPH::BodyID jolt_id;
+	JPH::Body *jolt_body = nullptr;
 
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
@@ -121,11 +121,12 @@ public:
 	void set_instance_id(ObjectID p_id) { instance_id = p_id; }
 	Object *get_instance() const;
 
-	JPH::BodyID get_jolt_id() const { return jolt_id; }
+	JPH::Body *get_jolt_body() const { return jolt_body; }
+	JPH::BodyID get_jolt_id() const { return jolt_body->GetID(); }
 
 	JoltSpace3D *get_space() const { return space; }
 	void set_space(JoltSpace3D *p_space);
-	bool in_space() const { return space != nullptr && !jolt_id.IsInvalid(); }
+	bool in_space() const { return space != nullptr && jolt_body != nullptr; }
 
 	uint32_t get_collision_layer() const { return collision_layer; }
 	void set_collision_layer(uint32_t p_layer);

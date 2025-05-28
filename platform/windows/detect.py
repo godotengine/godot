@@ -190,7 +190,7 @@ def get_opts():
             "Targeted Windows version, >= 0x0601 (Windows 7)",
             "0x0601",
         ),
-        EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
+        EnumVariable("windows_subsystem", "Windows subsystem", "gui", ["gui", "console"], ignorecase=2),
         ("msvc_version", "MSVC version to use. Handled automatically by SCons if omitted.", ""),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
@@ -241,7 +241,7 @@ def get_flags():
 
     return {
         "arch": arch,
-        "supported": ["d3d12", "mono", "xaudio2"],
+        "supported": ["d3d12", "dcomp", "mono", "xaudio2"],
     }
 
 
@@ -254,7 +254,9 @@ def build_def_file(target, source, env: "SConsEnvironment"):
     }
 
     cmdbase = "dlltool -m " + arch_aliases[env["arch"]]
-    if env["arch"] != "x86_32":
+    if env["arch"] == "x86_32":
+        cmdbase += " -k"
+    else:
         cmdbase += " --no-leading-underscore"
 
     mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
@@ -405,7 +407,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if int(env["target_win_version"], 16) < 0x0602:
-            print_info("AcceeKit enabled, targeted Windows version changed to Windows 8 (0x602).")
+            print_info("AccessKit enabled, targeted Windows version changed to Windows 8 (0x602).")
             env["target_win_version"] = "0x0602"  # Accessibility API require Windows 8+
 
     env.AppendUnique(
@@ -493,7 +495,7 @@ def configure_msvc(env: "SConsEnvironment"):
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
-        check_d3d12_installed(env)
+        check_d3d12_installed(env, env["arch"] + "-msvc")
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
@@ -513,7 +515,10 @@ def configure_msvc(env: "SConsEnvironment"):
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             LIBS += ["WinPixEventRuntime"]
 
-        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        if os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-msvc"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-msvc/bin"])
+        else:
+            env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         LIBS += ["libNIR.windows." + env["arch"] + prebuilt_lib_extra_suffix]
 
     if env["opengl3"]:
@@ -771,7 +776,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if int(env["target_win_version"], 16) < 0x0602:
-            print_info("AcceeKit enabled, targeted Windows version changed to Windows 8 (0x602).")
+            print_info("AccessKit enabled, targeted Windows version changed to Windows 8 (0x602).")
             env["target_win_version"] = "0x0602"  # Accessibility API require Windows 8+
 
     if not env["use_llvm"]:
@@ -817,6 +822,7 @@ def configure_mingw(env: "SConsEnvironment"):
             "winmm",
             "gdi32",
             "iphlpapi",
+            "shell32",
             "shlwapi",
             "wsock32",
             "ws2_32",
@@ -853,6 +859,7 @@ def configure_mingw(env: "SConsEnvironment"):
                     env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
                 elif env["arch"] == "x86_32":
                     env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
+            env.Append(LIBPATH=["#bin/obj/platform/windows"])
             env.Append(
                 LIBS=[
                     "accesskit",
@@ -879,7 +886,10 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
-        check_d3d12_installed(env)
+        if env["use_llvm"]:
+            check_d3d12_installed(env, env["arch"] + "-llvm")
+        else:
+            check_d3d12_installed(env, env["arch"] + "-gcc")
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["dxgi", "dxguid"])
@@ -894,7 +904,12 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             env.Append(LIBS=["WinPixEventRuntime"])
 
-        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        if env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-llvm"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-llvm/bin"])
+        elif not env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-gcc"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-gcc/bin"])
+        else:
+            env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         env.Append(LIBS=["libNIR.windows." + env["arch"]])
         env.Append(LIBS=["version"])  # Mesa dependency.
 
@@ -934,8 +949,8 @@ def configure(env: "SConsEnvironment"):
         configure_mingw(env)
 
 
-def check_d3d12_installed(env):
-    if not os.path.exists(env["mesa_libs"]):
+def check_d3d12_installed(env, suffix):
+    if not os.path.exists(env["mesa_libs"]) and not os.path.exists(env["mesa_libs"] + "-" + suffix):
         print_error(
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
             "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"

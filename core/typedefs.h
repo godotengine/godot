@@ -50,6 +50,7 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <utility>
 
 // IWYU pragma: end_exports
@@ -315,10 +316,6 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 
 // Limit the depth of recursive algorithms when dealing with Array/Dictionary
 #define MAX_RECURSION 100
-
-#ifdef DEBUG_ENABLED
-#define DEBUG_METHODS_ENABLED
-#endif
 
 // Macro GD_IS_DEFINED() allows to check if a macro is defined. It needs to be defined to anything (say 1) to work.
 #define __GDARG_PLACEHOLDER_1 false,

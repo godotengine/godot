@@ -646,10 +646,40 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 		return;
 	}
 
+	List<PropertyInfo> properties;
+	si->get_property_list(&properties);
+
 	for (const Pair<StringName, Variant> &E : stored_properties) {
 		Variant current_prop;
 		if (si->get(E.first, current_prop) && current_prop.get_type() == E.second.get_type()) {
 			si->set(E.first, E.second);
+		} else if (E.second.get_type() == Variant::OBJECT) {
+			for (const PropertyInfo &pi : properties) {
+				if (E.first != pi.name) {
+					continue;
+				}
+
+				if (pi.type != Variant::OBJECT) {
+					break;
+				}
+
+				Object *p_property_object = E.second;
+
+				if (p_property_object->is_class(pi.hint_string)) {
+					si->set(E.first, E.second);
+					break;
+				}
+
+				Ref<Script> base_script = p_property_object->get_script();
+				while (base_script.is_valid()) {
+					if (base_script->get_global_name() == pi.hint_string) {
+						si->set(E.first, E.second);
+						break;
+					}
+					base_script = base_script->get_base_script();
+				}
+				break;
+			}
 		}
 	}
 	stored_properties.clear();
@@ -811,6 +841,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	unique_resources_confirmation->add_child(container);
 
 	unique_resources_label = memnew(Label);
+	unique_resources_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	container->add_child(unique_resources_label);
 
 	unique_resources_list_tree = memnew(Tree);
@@ -821,6 +852,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	container->add_child(unique_resources_list_tree);
 
 	Label *bottom_label = memnew(Label);
+	bottom_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	bottom_label->set_text(TTRC("This cannot be undone. Are you sure?"));
 	container->add_child(bottom_label);
 

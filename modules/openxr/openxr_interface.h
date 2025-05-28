@@ -290,6 +290,7 @@ public:
 	Vector3 get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const;
 
 	virtual RID get_vrs_texture() override;
+	virtual VRSTextureFormat get_vrs_texture_format() override;
 
 	// Performance settings.
 	enum PerfSettingsLevel {

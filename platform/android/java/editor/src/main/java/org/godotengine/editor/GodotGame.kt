@@ -41,6 +41,7 @@ import androidx.core.view.isVisible
 import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.godot.utils.GameMenuUtils
 import org.godotengine.godot.utils.ProcessPhoenix
+import org.godotengine.godot.utils.isHorizonOSDevice
 import org.godotengine.godot.utils.isNativeXRDevice
 
 /**
@@ -82,7 +83,7 @@ open class GodotGame : BaseGodotGame() {
 	}
 
 	override fun enterPiPMode() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && hasPiPSystemFeature()) {
+		if (hasPiPSystemFeature()) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				val builder = PictureInPictureParams.Builder().setSourceRectHint(gameViewSourceRectHint)
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -100,8 +101,7 @@ open class GodotGame : BaseGodotGame() {
 	 * Returns true the if the device supports picture-in-picture (PiP).
 	 */
 	protected fun hasPiPSystemFeature(): Boolean {
-		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-			packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+		return packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 	}
 
 	override fun shouldShowGameMenuBar(): Boolean {
@@ -122,8 +122,7 @@ open class GodotGame : BaseGodotGame() {
 	override fun onStop() {
 		super.onStop()
 
-		val isInPiPMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode
-		if (isInPiPMode && !isFinishing) {
+		if (isInPictureInPictureMode && !isFinishing) {
 			// We get in this state when PiP is closed, so we terminate the activity.
 			finish()
 		}
@@ -228,7 +227,7 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun isMinimizedButtonEnabled() = isTaskRoot && !isNativeXRDevice(applicationContext)
 
-	override fun isCloseButtonEnabled() = !isNativeXRDevice(applicationContext)
+	override fun isCloseButtonEnabled() = !isHorizonOSDevice(applicationContext)
 
 	override fun isPiPButtonEnabled() = hasPiPSystemFeature()
 
