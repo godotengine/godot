@@ -380,6 +380,14 @@ uint32_t RenderForwardMobile::get_pipeline_compilations(RS::PipelineSource p_sou
 }
 
 void RenderForwardMobile::enable_features(BitField<FeatureBits> p_feature_bits) {
+	if (p_feature_bits.has_flag(FEATURE_FP32_BIT)) {
+		scene_shader.enable_fp32_shader_group();
+	}
+
+	if (p_feature_bits.has_flag(FEATURE_FP16_BIT)) {
+		scene_shader.enable_fp16_shader_group();
+	}
+
 	if (p_feature_bits.has_flag(FEATURE_MULTIVIEW_BIT)) {
 		scene_shader.enable_multiview_shader_group();
 	}
