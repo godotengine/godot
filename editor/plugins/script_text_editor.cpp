@@ -2410,7 +2410,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			}
 		}
 
-		String word_at_pos = tx->get_word_at_pos(local_pos);
+		String word_at_pos = tx->get_lookup_word(mouse_line, mouse_column);
 		if (word_at_pos.is_empty()) {
 			word_at_pos = tx->get_word_under_caret(selection_clicked);
 		}
