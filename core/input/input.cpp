@@ -587,9 +587,13 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
-		for (int i = 0; i < map_db.size(); i++) {
-			if (js.uid == map_db[i].uid) {
-				mapping = i;
+		// Bypass the mapping system if the joypad's mapping is already handled by its driver
+		// (for example, the SDL joypad driver).
+		if (!p_joypad_info.get("mapping_handled", false)) {
+			for (int i = 0; i < map_db.size(); i++) {
+				if (js.uid == map_db[i].uid) {
+					mapping = i;
+				}
 			}
 		}
 		_set_joypad_mapping(js, mapping);
