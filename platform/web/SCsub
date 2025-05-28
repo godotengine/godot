@@ -22,6 +22,7 @@ if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
 
 web_files = [
     "audio_driver_web.cpp",
+    "camera_driver_web.cpp",
     "webmidi_driver.cpp",
     "display_server_web.cpp",
     "http_client_web.cpp",
@@ -37,6 +38,7 @@ sys_env = env.Clone()
 sys_env.AddJSLibraries(
     [
         "js/libs/library_godot_audio.js",
+        "js/libs/library_godot_camera.js",
         "js/libs/library_godot_display.js",
         "js/libs/library_godot_emscripten.js",
         "js/libs/library_godot_fetch.js",
@@ -107,6 +109,9 @@ else:
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
     build = sys_env.add_program(build_targets, web_files + ["web_runtime.cpp"])
+
+sys_env.Append(LINKFLAGS=["-s", "ASYNCIFY=2"])
+sys_env.Append(LINKFLAGS=["-s", "ASYNCIFY_IMPORTS=['godot_js_camera_get_cameras', 'godot_js_camera_get_capabilities']"])
 
 sys_env.Depends(build[0], sys_env["JS_LIBS"])
 sys_env.Depends(build[0], sys_env["JS_PRE"])

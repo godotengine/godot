@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_driver_web.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
-#if defined(WEB_ENABLED)
-#include "camera_web.h"
-#endif
+#include "godot_camera.h"
+#include "godot_js.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-#if defined(WEB_ENABLED)
-	CameraServer::make_default<CameraWeb>();
-#endif
-}
+#define KEY_CAMERAS String("cameras")
+#define KEY_CAPABILITIES String("capabilities")
+#define KEY_ERROR String("error")
+#define KEY_HEIGHT String("height")
+#define KEY_ID String("id")
+#define KEY_INDEX String("index")
+#define KEY_LABEL String("label")
+#define KEY_MAX String("max")
+#define KEY_WIDTH String("width")
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+struct CameraInfo {
+	int index;
+	String device_id;
+	String label;
+};
+
+struct CapabilityInfo {
+	int width;
+	int height;
+};
+
+class CameraDriverWeb {
+private:
+	static CameraDriverWeb *singleton;
+	static Array _camera_info_key;
+	WASM_EXPORT static void _on_get_cameras_callback(void *context, const char *json_ptr);
+	WASM_EXPORT static void _on_get_capabilities_callback(void *context, const char *json_ptr);
+
+public:
+	static CameraDriverWeb *get_singleton();
+	void get_cameras(Vector<CameraInfo> *camera_info);
+	void get_capabilities(Vector<CapabilityInfo> *capabilities, const String &p_device_id);
+	void get_pixel_data(void *context, const String &p_device_id, const int width, const int height, CameraLibrary_OnGetPixelDataCallback p_callback, CameraLibrary_OnDeniedCallback p_denied_callback);
+	void stop_stream(const String &device_id = String());
+
+	CameraDriverWeb();
+	~CameraDriverWeb();
+};
