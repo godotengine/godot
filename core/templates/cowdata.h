@@ -282,6 +282,12 @@ void CowData<T>::_unref() {
 
 	// Free memory.
 	Memory::free_static((uint8_t *)prev_ptr - DATA_OFFSET, false);
+
+#ifdef DEBUG_ENABLED
+	// If any destructors access us through pointers, it is a bug.
+	// We can't really test for that, but we can at least check no items have been added.
+	ERR_FAIL_COND_MSG(_ptr != nullptr, "Internal bug, please report: CowData was modified during destruction.");
+#endif
 }
 
 template <typename T>
