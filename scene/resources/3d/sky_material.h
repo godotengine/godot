@@ -52,10 +52,11 @@ private:
 	float sun_angle_max = 0.0f;
 	float sun_curve = 0.0f;
 	bool use_debanding = true;
+	bool use_radiance_as_background = false;
 	float global_energy_multiplier = 1.0f;
 
 	static Mutex shader_mutex;
-	static RID shader_cache[4];
+	static RID shader_cache[8];
 	static void _update_shader();
 	mutable bool shader_set = false;
 
@@ -104,6 +105,9 @@ public:
 
 	void set_use_debanding(bool p_use_debanding);
 	bool get_use_debanding() const;
+
+	void set_use_radiance_as_background(bool p_use_radiance_as_background);
+	bool get_use_radiance_as_background() const;
 
 	void set_energy_multiplier(float p_multiplier);
 	float get_energy_multiplier() const;
@@ -166,7 +170,7 @@ class PhysicalSkyMaterial : public Material {
 
 private:
 	static Mutex shader_mutex;
-	static RID shader_cache[4];
+	static RID shader_cache[8];
 
 	RID get_shader_cache() const;
 
@@ -180,6 +184,7 @@ private:
 	Color ground_color;
 	float energy_multiplier = 1.0f;
 	bool use_debanding = true;
+	bool use_radiance_as_background = false;
 	Ref<Texture2D> night_sky;
 	static void _update_shader();
 	mutable bool shader_set = false;
@@ -221,6 +226,9 @@ public:
 
 	void set_use_debanding(bool p_use_debanding);
 	bool get_use_debanding() const;
+
+	void set_use_radiance_as_background(bool p_use_radiance_as_background);
+	bool get_use_radiance_as_background() const;
 
 	void set_night_sky(const Ref<Texture2D> &p_night_sky);
 	Ref<Texture2D> get_night_sky() const;

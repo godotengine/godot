@@ -6,6 +6,7 @@
 	<description>
 		The CryptoKey class represents a cryptographic key. Keys can be loaded and saved like any other [Resource].
 		They can be used to generate a self-signed [X509Certificate] via [method Crypto.generate_self_signed_certificate] and as private key in [method StreamPeerTLS.accept_stream] along with the appropriate certificate.
+		[b]Note:[/b] Godot uses [url=https://www.trustedfirmware.org/projects/mbed-tls/]Mbed TLS[/url] for cryptographic operations.
 	</description>
 	<tutorials>
 		<link title="SSL certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>

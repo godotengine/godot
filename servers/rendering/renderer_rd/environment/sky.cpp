@@ -812,6 +812,7 @@ void SkyRD::init() {
 		actions.usage_defines["QUARTER_RES_COLOR"] = "\n#define USES_QUARTER_RES_COLOR\n";
 		actions.render_mode_defines["disable_fog"] = "#define DISABLE_FOG\n";
 		actions.render_mode_defines["use_debanding"] = "#define USE_DEBANDING\n";
+		actions.render_mode_defines["use_radiance_as_background"] = "#define USE_RADIANCE_AS_BACKGROUND\n";
 
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = 1;

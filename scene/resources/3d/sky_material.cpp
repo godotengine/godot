@@ -34,7 +34,7 @@
 #include "core/version.h"
 
 Mutex ProceduralSkyMaterial::shader_mutex;
-RID ProceduralSkyMaterial::shader_cache[4];
+RID ProceduralSkyMaterial::shader_cache[8];
 
 void ProceduralSkyMaterial::set_sky_top_color(const Color &p_sky_top) {
 	sky_top_color = p_sky_top;
@@ -165,7 +165,7 @@ float ProceduralSkyMaterial::get_sun_curve() const {
 void ProceduralSkyMaterial::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
 	_update_shader();
-	// Only set if shader already compiled
+	// Only set if shader already compiled.
 	if (shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), get_shader_cache());
 	}
@@ -173,6 +173,19 @@ void ProceduralSkyMaterial::set_use_debanding(bool p_use_debanding) {
 
 bool ProceduralSkyMaterial::get_use_debanding() const {
 	return use_debanding;
+}
+
+void ProceduralSkyMaterial::set_use_radiance_as_background(bool p_use_radiance_as_background) {
+	use_radiance_as_background = p_use_radiance_as_background;
+	_update_shader();
+	// Only set if shader already compiled.
+	if (shader_set) {
+		RS::get_singleton()->material_set_shader(_get_material(), get_shader_cache());
+	}
+}
+
+bool ProceduralSkyMaterial::get_use_radiance_as_background() const {
+	return use_radiance_as_background;
 }
 
 void ProceduralSkyMaterial::set_energy_multiplier(float p_multiplier) {
@@ -191,7 +204,7 @@ Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
 // Internal function to grab the current shader RID.
 // Must only be called if the shader is initialized.
 RID ProceduralSkyMaterial::get_shader_cache() const {
-	return shader_cache[int(use_debanding) + (sky_cover.is_valid() ? 2 : 0)];
+	return shader_cache[int(use_debanding) + (use_radiance_as_background ? 2 : 0) + (sky_cover.is_valid() ? 4 : 0)];
 }
 
 RID ProceduralSkyMaterial::get_rid() const {
@@ -254,6 +267,9 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_debanding", "use_debanding"), &ProceduralSkyMaterial::set_use_debanding);
 	ClassDB::bind_method(D_METHOD("get_use_debanding"), &ProceduralSkyMaterial::get_use_debanding);
 
+	ClassDB::bind_method(D_METHOD("set_use_radiance_as_background", "use_radiance_as_background"), &ProceduralSkyMaterial::set_use_radiance_as_background);
+	ClassDB::bind_method(D_METHOD("get_use_radiance_as_background"), &ProceduralSkyMaterial::get_use_radiance_as_background);
+
 	ClassDB::bind_method(D_METHOD("set_energy_multiplier", "multiplier"), &ProceduralSkyMaterial::set_energy_multiplier);
 	ClassDB::bind_method(D_METHOD("get_energy_multiplier"), &ProceduralSkyMaterial::get_energy_multiplier);
 
@@ -277,30 +293,49 @@ void ProceduralSkyMaterial::_bind_methods() {
 
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "get_use_debanding");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_radiance_as_background"), "set_use_radiance_as_background", "get_use_radiance_as_background");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy_multiplier", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_energy_multiplier", "get_energy_multiplier");
 }
 
 void ProceduralSkyMaterial::cleanup_shader() {
 	if (shader_cache[0].is_valid()) {
-		RS::get_singleton()->free(shader_cache[0]);
-		RS::get_singleton()->free(shader_cache[1]);
-		RS::get_singleton()->free(shader_cache[2]);
-		RS::get_singleton()->free(shader_cache[3]);
+		for (int i = 0; i < 8; i++) {
+			RS::get_singleton()->free(shader_cache[i]);
+		}
 	}
 }
 
 void ProceduralSkyMaterial::_update_shader() {
 	MutexLock shader_lock(shader_mutex);
+
 	if (shader_cache[0].is_null()) {
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 8; i++) {
 			shader_cache[i] = RS::get_singleton()->shader_create();
 
-			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
-// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
+			const bool uses_debanding = i & (1 << 0);
+			const bool uses_radiance_as_background = i & (1 << 1);
+			const bool uses_sky_cover = i & (1 << 2);
 
-shader_type sky;
-%s
+			const String render_mode = uses_debanding ? "\nrender_mode use_debanding;" : "";
+			const String use_radiance_as_background = uses_radiance_as_background ? R"(
+	if (!AT_CUBEMAP_PASS) {
+		// Render background using the radiance map to improve performance, especially on low-end GPUs
+		// limited by fragment shading rate. The downside is that the background resolution is
+		// limited by the radiance map, which can make skies with high-frequency data look blurry.
+		// Additionally, the update rate of the background is decided by the radiance map's update mode.
+		COLOR = texture(RADIANCE, EYEDIR).rgb;
+	} else {)"
+																				  : "";
+			const String use_sky_cover = uses_sky_cover ? R"(
+	vec4 sky_cover_texture = texture(sky_cover, SKY_COORDS);
+	sky += (sky_cover_texture.rgb * sky_cover_modulate.rgb) * sky_cover_texture.a * sky_cover_modulate.a;
+)"
+														: "";
+
+			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
+
+shader_type sky;%s
 
 uniform vec4 sky_top_color : source_color = vec4(0.385, 0.454, 0.55, 1.0);
 uniform vec4 sky_horizon_color : source_color = vec4(0.646, 0.656, 0.67, 1.0);
@@ -315,7 +350,7 @@ uniform float exposure : hint_range(0, 128) = 1.0;
 uniform sampler2D sky_cover : filter_linear, source_color, hint_default_black;
 uniform vec4 sky_cover_modulate : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 
-void sky() {
+void sky() {%s
 	float v_angle = clamp(EYEDIR.y, -1.0, 1.0);
 	vec3 sky = mix(sky_top_color.rgb, sky_horizon_color.rgb, clamp(pow(1.0 - v_angle, inv_sky_curve), 0.0, 1.0));
 
@@ -362,15 +397,13 @@ void sky() {
 			sky = mix(sky, LIGHT3_COLOR * LIGHT3_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
-
-	%s
-	%s
+%s
 	vec3 ground = mix(ground_bottom_color.rgb, ground_horizon_color.rgb, clamp(pow(1.0 + v_angle, inv_ground_curve), 0.0, 1.0));
 
-	COLOR = mix(ground, sky, step(0.0, EYEDIR.y)) * exposure;
+	COLOR = mix(ground, sky, step(0.0, EYEDIR.y)) * exposure;%s
 }
 )",
-																		  (i % 2) ? "render_mode use_debanding;" : "", i > 1 ? "vec4 sky_cover_texture = texture(sky_cover, SKY_COORDS);" : "", i > 1 ? "sky += (sky_cover_texture.rgb * sky_cover_modulate.rgb) * sky_cover_texture.a * sky_cover_modulate.a;" : ""));
+																		  render_mode, use_radiance_as_background, use_sky_cover, uses_radiance_as_background ? "\n\t}" : ""));
 		}
 	}
 }
@@ -417,7 +450,7 @@ void PanoramaSkyMaterial::set_filtering_enabled(bool p_enabled) {
 	filter = p_enabled;
 	notify_property_list_changed();
 	_update_shader();
-	// Only set if shader already compiled
+	// Only set if shader already compiled.
 	if (shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(filter)]);
 	}
@@ -488,8 +521,7 @@ void PanoramaSkyMaterial::_update_shader() {
 			shader_cache[i] = RS::get_singleton()->shader_create();
 
 			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
-// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
+			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
 
 shader_type sky;
 
@@ -600,7 +632,7 @@ float PhysicalSkyMaterial::get_energy_multiplier() const {
 void PhysicalSkyMaterial::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
 	_update_shader();
-	// Only set if shader already compiled
+	// Only set if shader already compiled.
 	if (shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), get_shader_cache());
 	}
@@ -608,6 +640,19 @@ void PhysicalSkyMaterial::set_use_debanding(bool p_use_debanding) {
 
 bool PhysicalSkyMaterial::get_use_debanding() const {
 	return use_debanding;
+}
+
+void PhysicalSkyMaterial::set_use_radiance_as_background(bool p_use_radiance_as_background) {
+	use_radiance_as_background = p_use_radiance_as_background;
+	_update_shader();
+	// Only set if shader already compiled.
+	if (shader_set) {
+		RS::get_singleton()->material_set_shader(_get_material(), get_shader_cache());
+	}
+}
+
+bool PhysicalSkyMaterial::get_use_radiance_as_background() const {
+	return use_radiance_as_background;
 }
 
 void PhysicalSkyMaterial::set_night_sky(const Ref<Texture2D> &p_night_sky) {
@@ -634,7 +679,7 @@ Shader::Mode PhysicalSkyMaterial::get_shader_mode() const {
 // Internal function to grab the current shader RID.
 // Must only be called if the shader is initialized.
 RID PhysicalSkyMaterial::get_shader_cache() const {
-	return shader_cache[int(use_debanding) + (night_sky.is_valid() ? 2 : 0)];
+	return shader_cache[int(use_debanding) + (use_radiance_as_background ? 2 : 0) + (night_sky.is_valid() ? 4 : 0)];
 }
 
 RID PhysicalSkyMaterial::get_rid() const {
@@ -658,7 +703,7 @@ void PhysicalSkyMaterial::_validate_property(PropertyInfo &p_property) const {
 }
 
 Mutex PhysicalSkyMaterial::shader_mutex;
-RID PhysicalSkyMaterial::shader_cache[4];
+RID PhysicalSkyMaterial::shader_cache[8];
 
 void PhysicalSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rayleigh_coefficient", "rayleigh"), &PhysicalSkyMaterial::set_rayleigh_coefficient);
@@ -691,6 +736,9 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_debanding", "use_debanding"), &PhysicalSkyMaterial::set_use_debanding);
 	ClassDB::bind_method(D_METHOD("get_use_debanding"), &PhysicalSkyMaterial::get_use_debanding);
 
+	ClassDB::bind_method(D_METHOD("set_use_radiance_as_background", "use_radiance_as_background"), &PhysicalSkyMaterial::set_use_radiance_as_background);
+	ClassDB::bind_method(D_METHOD("get_use_radiance_as_background"), &PhysicalSkyMaterial::get_use_radiance_as_background);
+
 	ClassDB::bind_method(D_METHOD("set_night_sky", "night_sky"), &PhysicalSkyMaterial::set_night_sky);
 	ClassDB::bind_method(D_METHOD("get_night_sky"), &PhysicalSkyMaterial::get_night_sky);
 
@@ -708,30 +756,45 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ground_color", "get_ground_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy_multiplier", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_energy_multiplier", "get_energy_multiplier");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "get_use_debanding");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_radiance_as_background"), "set_use_radiance_as_background", "get_use_radiance_as_background");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "night_sky", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_night_sky", "get_night_sky");
 }
 
 void PhysicalSkyMaterial::cleanup_shader() {
 	if (shader_cache[0].is_valid()) {
-		RS::get_singleton()->free(shader_cache[0]);
-		RS::get_singleton()->free(shader_cache[1]);
-		RS::get_singleton()->free(shader_cache[2]);
-		RS::get_singleton()->free(shader_cache[3]);
+		for (int i = 0; i < 8; i++) {
+			RS::get_singleton()->free(shader_cache[i]);
+		}
 	}
 }
 
 void PhysicalSkyMaterial::_update_shader() {
 	MutexLock shader_lock(shader_mutex);
 	if (shader_cache[0].is_null()) {
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 8; i++) {
 			shader_cache[i] = RS::get_singleton()->shader_create();
 
-			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
-// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
+			const bool uses_debanding = i & (1 << 0);
+			const bool uses_radiance_as_background = i & (1 << 1);
+			const bool uses_sky_cover = i & (1 << 2);
 
-shader_type sky;
-%s
+			const String render_mode = uses_debanding ? "\nrender_mode use_debanding;" : "";
+			const String use_radiance_as_background = uses_radiance_as_background ? R"(
+	if (!AT_CUBEMAP_PASS) {
+		// Render background using the radiance map to improve performance, especially on low-end GPUs
+		// limited by fragment shading rate. The downside is that the background resolution is
+		// limited by the radiance map, which can make skies with high-frequency data look blurry.
+		// Additionally, the update rate of the background is decided by the radiance map's update mode.
+		COLOR = texture(RADIANCE, EYEDIR).rgb;
+	} else {)"
+																				  : "";
+			const String use_sky_cover_1 = uses_sky_cover ? "\n\t\tL0 += texture(night_sky, SKY_COORDS).xyz * extinction;" : "";
+			const String use_sky_cover_2 = uses_sky_cover ? "\n\t\tCOLOR = texture(night_sky, SKY_COORDS).xyz;" : "";
+
+			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
+
+shader_type sky;%s
 
 uniform float rayleigh : hint_range(0, 64) = 2.0;
 uniform vec4 rayleigh_color : source_color = vec4(0.3, 0.405, 0.6, 1.0);
@@ -757,7 +820,7 @@ float henyey_greenstein(float cos_theta, float g) {
 	return k * (1.0 - g * g) / (pow(1.0 + g * g - 2.0 * g * cos_theta, 1.5));
 }
 
-void sky() {
+void sky() {%s
 	if (LIGHT0_ENABLED) {
 		float zenith_angle = clamp( dot(UP, normalize(LIGHT0_DIRECTION)), -1.0, 1.0 );
 		float sun_energy = max(0.0, 0.757 * zenith_angle) * LIGHT0_ENERGY;
@@ -792,26 +855,24 @@ void sky() {
 		Lin *= mix(vec3(1.0), pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * extinction, vec3(0.5)), clamp(pow(1.0 - zenith_angle, 5.0), 0.0, 1.0));
 
 		// Hack in the ground color.
-		Lin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));
+		Lin *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));
 
 		// Solar disk and out-scattering.
 		float sunAngularDiameterCos = cos(LIGHT0_SIZE * sun_disk_scale);
 		float sunAngularDiameterCos2 = cos(LIGHT0_SIZE * sun_disk_scale * 0.5);
 		float sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos2, cos_theta);
-		vec3 L0 = (sun_energy * extinction) * sundisk * LIGHT0_COLOR;
-		%s
+		vec3 L0 = (sun_energy * extinction) * sundisk * LIGHT0_COLOR;%s
 
 		vec3 color = Lin + L0;
 		COLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));
 		COLOR *= exposure;
 	} else {
-		// There is no sun, so display night_sky and nothing else.
-		%s
+		// There is no sun, so display night_sky and nothing else.%s
 		COLOR *= exposure;
-	}
+	}%s
 }
 )",
-																		  (i % 2) ? "render_mode use_debanding;" : "", i > 1 ? "L0 += texture(night_sky, SKY_COORDS).xyz * extinction;" : "", i > 1 ? "COLOR = texture(night_sky, SKY_COORDS).xyz;" : ""));
+																		  render_mode, use_radiance_as_background, use_sky_cover_1, use_sky_cover_2, uses_radiance_as_background ? "\n\t}" : ""));
 		}
 	}
 }

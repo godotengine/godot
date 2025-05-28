@@ -489,6 +489,7 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("use_quarter_res_pass") });
 		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("disable_fog") });
 		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("use_debanding") });
+		shader_modes[RS::SHADER_SKY].modes.push_back({ PNAME("use_radiance_as_background") });
 	}
 
 	/************ FOG **************************/

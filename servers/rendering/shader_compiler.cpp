@@ -882,6 +882,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 			}
 
+			//print_line("variable: ", vnode->name);
+			if (vnode->name == "RADIANCE") {
+				print_line("RADIANCE");
+				code = "vec4(1.0,0.0,0.0,1.0)";
+				//code = "(" + code + " * vec4(vec3(sc_luminance_multiplier()), 1.0))";
+			}
+
 			if (p_assigning && p_actions.write_flag_pointers.has(vnode->name)) {
 				*p_actions.write_flag_pointers[vnode->name] = true;
 			}
@@ -1436,6 +1443,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			} else {
 				name = mnode->name;
 			}
+
 			code = _dump_node_code(mnode->owner, p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + "." + name;
 			if (mnode->index_expression != nullptr) {
 				code += "[";
