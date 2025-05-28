@@ -521,7 +521,7 @@ Vector<uint8_t> AudioStreamWAV::get_data() const {
 }
 
 // Helper functions to append to a Vector<uint8_t> following FileAccess::store_X
-inline void push_back_16(Vector<uint8_t> &r_v, uint16_t p_dest) {
+inline void push_back_16(TypedArray<uint8_t> &r_v, uint16_t p_dest) {
 #ifdef BIG_ENDIAN_ENABLED
 	p_dest = BSWAP16(p_dest);
 #endif
@@ -531,7 +531,7 @@ inline void push_back_16(Vector<uint8_t> &r_v, uint16_t p_dest) {
 	}
 }
 
-inline void push_back_32(Vector<uint8_t> &r_v, uint32_t p_dest) {
+inline void push_back_32(TypedArray<uint8_t> &r_v, uint32_t p_dest) {
 #ifdef BIG_ENDIAN_ENABLED
 	p_dest = BSWAP32(p_dest);
 #endif
@@ -541,7 +541,7 @@ inline void push_back_32(Vector<uint8_t> &r_v, uint32_t p_dest) {
 	}
 }
 
-inline void push_back_64(Vector<uint8_t> &r_v, uint64_t p_dest) {
+inline void push_back_64(TypedArray<uint8_t> &r_v, uint64_t p_dest) {
 #ifdef BIG_ENDIAN_ENABLED
 	p_dest = BSWAP64(p_dest);
 #endif
@@ -551,7 +551,16 @@ inline void push_back_64(Vector<uint8_t> &r_v, uint64_t p_dest) {
 	}
 }
 
-Error AudioStreamWAV::save_to_wav_buffer(Vector<uint8_t> &r_wav) {
+Dictionary AudioStreamWAV::save_to_wav_buffer_wrapper() {
+	Dictionary result;
+	TypedArray<uint8_t> wav;
+	Error err = save_to_wav_buffer(wav);
+	result["error"] = err;
+	result["wav"] = wav;
+	return result;
+}
+
+Error AudioStreamWAV::save_to_wav_buffer(TypedArray<uint8_t> &r_wav) {
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM || format == AudioStreamWAV::FORMAT_QOA) {
 		WARN_PRINT("Saving IMA_ADPCM and QOA samples is not supported yet");
 		return ERR_UNAVAILABLE;
@@ -1248,7 +1257,7 @@ void AudioStreamWAV::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamWAV::is_stereo);
 
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamWAV::save_to_wav);
-	ClassDB::bind_method(D_METHOD("save_to_wav_buffer", "buffer"), &AudioStreamWAV::save_to_wav_buffer);
+	ClassDB::bind_method(D_METHOD("save_to_wav_buffer"), &AudioStreamWAV::save_to_wav_buffer_wrapper);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA ADPCM,Quite OK Audio"), "set_format", "get_format");
