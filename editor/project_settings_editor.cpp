@@ -38,6 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
+#include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
@@ -132,7 +133,7 @@ void ProjectSettingsEditor::_add_setting() {
 	// Initialize the property with the default value for the given type.
 	Callable::CallError ce;
 	Variant value;
-	Variant::construct(Variant::Type(type_box->get_selected_id()), value, nullptr, 0, ce);
+	Variant::construct(type_box->get_selected_type(), value, nullptr, 0, ce);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Project Setting"));
@@ -605,16 +606,6 @@ void ProjectSettingsEditor::_update_theme() {
 	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
 	restart_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-
-	type_box->clear();
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
-			// These types can't be serialized properly, so skip them.
-			continue;
-		}
-		String type = Variant::get_type_name(Variant::Type(i));
-		type_box->add_icon_item(get_editor_theme_icon(type), type, i);
-	}
 }
 
 void ProjectSettingsEditor::_notification(int p_what) {
@@ -699,7 +690,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	feature_box->connect(SceneStringName(item_selected), callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 	custom_properties->add_child(feature_box);
 
-	type_box = memnew(OptionButton);
+	type_box = memnew(EditorVariantTypeOptionButton);
+	type_box->populate({ Variant::NIL, Variant::OBJECT });
 	type_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	type_box->set_accessibility_name(TTRC("Type"));
 	custom_properties->add_child(type_box);

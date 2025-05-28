@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  add_metadata_dialog.h                                                 */
+/*  editor_variant_type_selectors.h                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,29 +30,38 @@
 
 #pragma once
 
-#include "scene/gui/dialogs.h"
+#include "core/variant/variant.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 
-class EditorValidationPanel;
-class EditorVariantTypeOptionButton;
-class LineEdit;
+class EditorVariantTypeOptionButton : public OptionButton {
+	GDCLASS(EditorVariantTypeOptionButton, OptionButton);
 
-class AddMetadataDialog : public ConfirmationDialog {
-	GDCLASS(AddMetadataDialog, ConfirmationDialog);
+	void _update_menu_icons();
+
+protected:
+	void _notification(int p_what);
 
 public:
-	AddMetadataDialog();
-	void open(const StringName p_title, List<StringName> &p_existing_metas);
+	Variant::Type get_selected_type() const;
 
-	StringName get_meta_name();
-	Variant get_meta_defval();
+	void populate(const LocalVector<Variant::Type> &p_disabled_types, const HashMap<Variant::Type, String> &p_renames = {});
+};
 
-private:
-	List<StringName> _existing_metas;
+class EditorVariantTypePopupMenu : public PopupMenu {
+	GDCLASS(EditorVariantTypePopupMenu, PopupMenu);
 
-	void _check_meta_name();
-	void _complete_init(const StringName &p_label);
+	bool remove_item = false;
+	bool icons_dirty = true;
 
-	LineEdit *add_meta_name = nullptr;
-	EditorVariantTypeOptionButton *add_meta_type = nullptr;
-	EditorValidationPanel *validation_panel = nullptr;
+	void _populate();
+	void _update_menu_icons();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
+
+	EditorVariantTypePopupMenu(bool p_remove_item);
 };
