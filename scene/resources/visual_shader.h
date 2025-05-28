@@ -38,9 +38,6 @@
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
-template <typename T, typename V>
-class VMap;
-
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
 
