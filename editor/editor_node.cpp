@@ -8541,6 +8541,10 @@ EditorNode::EditorNode() {
 
 	EditorExport::get_singleton()->add_export_plugin(dedicated_server_export_plugin);
 
+	Ref<EditorExportVisualShader> visual_shader_export;
+	visual_shader_export.instantiate();
+	EditorExport::get_singleton()->add_export_plugin(visual_shader_export);
+
 	Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
 	packed_scene_translation_parser_plugin.instantiate();
 	EditorTranslationParser::get_singleton()->add_parser(packed_scene_translation_parser_plugin, EditorTranslationParser::STANDARD);
