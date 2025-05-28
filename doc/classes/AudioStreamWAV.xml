@@ -52,6 +52,13 @@
 				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [param path] if it is missing.
 			</description>
 		</method>
+		<method name="save_to_wav_buffer">
+			<return type="Dictionary" />
+			<description>
+				Stores the AudioStreamWAV as a WAV file to the wav field of the returned Dictionary. Samples with IMA ADPCM or Quite OK Audio formats can't be saved.
+				The error field of the returned Dictionary contains ERR_OK if the store was successful. ERR_UNAVAILABLE is returned if the format is not supported.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
