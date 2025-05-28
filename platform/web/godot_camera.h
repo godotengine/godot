@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  godot_camera.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
-#if defined(WEB_ENABLED)
-#include "camera_web.h"
+#include <emscripten.h>
+#include <cstdint>
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+using CameraLibrary_OnGetCamerasCallback = void (*)(void *, const char *);
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-#if defined(WEB_ENABLED)
-	CameraServer::make_default<CameraWeb>();
-#endif
+using CameraLibrary_OnGetCapabilitiesCallback = void (*)(void *, const char *);
+
+using CameraLibrary_OnGetPixelDataCallback = void (*)(void *, const uint8_t *, const int, const int, const int, const char *);
+
+using CameraLibrary_OnDeniedCallback = void (*)(void *);
+
+extern void godot_js_camera_get_pixel_data(
+		void *context,
+		const char *p_device_id_ptr,
+		const int width,
+		const int height,
+		CameraLibrary_OnGetPixelDataCallback p_callback_ptr,
+		CameraLibrary_OnDeniedCallback p_denied_callback_ptr);
+
+extern void godot_js_camera_stop_stream(const char *p_device_id_ptr = nullptr);
+
+#ifdef __cplusplus
 }
-
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+#endif
