@@ -557,7 +557,7 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 	return OK;
 }
 
-Error RenderingDevice::driver_callback_add(RDD::DriverCallback p_callback, void *p_userdata, VectorView<CallbackResource> p_resources) {
+Error RenderingDevice::driver_callback_add(RDD::DriverCallback p_callback, void *p_userdata, Span<CallbackResource> p_resources) {
 	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
 
 	ERR_FAIL_COND_V_MSG(draw_list.active, ERR_INVALID_PARAMETER,
@@ -2459,7 +2459,7 @@ bool RenderingDevice::texture_is_format_supported_for_usage(DataFormat p_format,
 /**** FRAMEBUFFER ****/
 /*********************/
 
-RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count, VRSMethod p_vrs_method, int32_t p_vrs_attachment, Size2i p_vrs_texel_size, Vector<TextureSamples> *r_samples) {
+RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, Span<RDD::AttachmentLoadOp> p_load_ops, Span<RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count, VRSMethod p_vrs_method, int32_t p_vrs_attachment, Size2i p_vrs_texel_size, Vector<TextureSamples> *r_samples) {
 	// NOTE:
 	// Before the refactor to RenderingDevice-RenderingDeviceDriver, there was commented out code to
 	// specify dependencies to external subpasses. Since it had been unused for a long timel it wasn't ported
@@ -2694,7 +2694,7 @@ RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_
 	return render_pass;
 }
 
-RDD::RenderPassID RenderingDevice::_render_pass_create_from_graph(RenderingDeviceDriver *p_driver, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, void *p_user_data) {
+RDD::RenderPassID RenderingDevice::_render_pass_create_from_graph(RenderingDeviceDriver *p_driver, Span<RDD::AttachmentLoadOp> p_load_ops, Span<RDD::AttachmentStoreOp> p_store_ops, void *p_user_data) {
 	DEV_ASSERT(p_driver != nullptr);
 	DEV_ASSERT(p_user_data != nullptr);
 
@@ -3532,7 +3532,7 @@ void RenderingDevice::_uniform_set_update_shared(UniformSet *p_uniform_set) {
 	}
 }
 
-RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool) {
+RID RenderingDevice::uniform_set_create(const Span<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_uniforms.size() == 0, RID());
@@ -4382,7 +4382,7 @@ RenderingDevice::DrawListID RenderingDevice::_draw_list_begin_bind(RID p_framebu
 	return draw_list_begin(p_framebuffer, p_draw_flags, p_clear_color_values, p_clear_depth_value, p_clear_stencil_value, p_region, p_breadcrumb);
 }
 
-RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags, VectorView<Color> p_clear_color_values, float p_clear_depth_value, uint32_t p_clear_stencil_value, const Rect2 &p_region, uint32_t p_breadcrumb) {
+RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags, Span<Color> p_clear_color_values, float p_clear_depth_value, uint32_t p_clear_stencil_value, const Rect2 &p_region, uint32_t p_breadcrumb) {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
 	ERR_FAIL_COND_V_MSG(draw_list.active, INVALID_ID, "Only one draw list can be active at the same time.");
@@ -5713,7 +5713,7 @@ void RenderingDevice::_end_transfer_worker(TransferWorker *p_transfer_worker) {
 	p_transfer_worker->recording = false;
 }
 
-void RenderingDevice::_submit_transfer_worker(TransferWorker *p_transfer_worker, VectorView<RDD::SemaphoreID> p_signal_semaphores) {
+void RenderingDevice::_submit_transfer_worker(TransferWorker *p_transfer_worker, Span<RDD::SemaphoreID> p_signal_semaphores) {
 	driver->command_queue_execute_and_present(transfer_queue, {}, p_transfer_worker->command_buffer, p_signal_semaphores, p_transfer_worker->command_fence, {});
 
 	for (uint32_t i = 0; i < p_signal_semaphores.size(); i++) {
@@ -5809,7 +5809,7 @@ void RenderingDevice::_submit_transfer_workers(RDD::CommandBufferID p_draw_comma
 		{
 			MutexLock lock(worker->thread_mutex);
 			if (worker->recording) {
-				VectorView<RDD::SemaphoreID> semaphores = p_draw_command_buffer ? frames[frame].transfer_worker_semaphores[i] : VectorView<RDD::SemaphoreID>();
+				Span<RDD::SemaphoreID> semaphores = p_draw_command_buffer ? frames[frame].transfer_worker_semaphores[i] : Span<RDD::SemaphoreID>();
 				_end_transfer_worker(worker);
 				_submit_transfer_worker(worker, semaphores);
 			}
@@ -6501,7 +6501,7 @@ void RenderingDevice::execute_chained_cmds(bool p_present_swap_chain, RenderingD
 		}
 
 		driver->command_queue_execute_and_present(main_queue, wait_semaphores, command_buffer,
-				signal_semaphore ? signal_semaphore : VectorView<RDD::SemaphoreID>(), signal_fence,
+				signal_semaphore ? signal_semaphore : Span<RDD::SemaphoreID>(), signal_fence,
 				swap_chains);
 
 		// Make the next command buffer wait on the semaphore signaled by this one.

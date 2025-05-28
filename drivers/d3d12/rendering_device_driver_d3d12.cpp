@@ -929,7 +929,7 @@ static const D3D12_UAV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_UAV
 	D3D12_UAV_DIMENSION_TEXTURE2DARRAY,
 };
 
-uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(VectorView<DXGI_FORMAT> p_formats) {
+uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Span<DXGI_FORMAT> p_formats) {
 	uint32_t common = UINT32_MAX;
 
 	MutexLock lock(format_sample_counts_mask_cache_mutex);
@@ -1836,7 +1836,7 @@ bool RenderingDeviceDriverD3D12::sampler_is_format_supported_for_filter(DataForm
 /**** VERTEX ARRAY ****/
 /**********************/
 
-RDD::VertexFormatID RenderingDeviceDriverD3D12::vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) {
+RDD::VertexFormatID RenderingDeviceDriverD3D12::vertex_format_create(Span<VertexAttribute> p_vertex_attribs) {
 	VertexFormatInfo *vf_info = VersatileResource::allocate<VertexFormatInfo>(resources_allocator);
 
 	vf_info->input_elem_descs.resize(p_vertex_attribs.size());
@@ -2123,9 +2123,9 @@ static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::Text
 void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_buffer,
 		BitField<PipelineStageBits> p_src_stages,
 		BitField<PipelineStageBits> p_dst_stages,
-		VectorView<RDD::MemoryBarrier> p_memory_barriers,
-		VectorView<RDD::BufferBarrier> p_buffer_barriers,
-		VectorView<RDD::TextureBarrier> p_texture_barriers) {
+		Span<RDD::MemoryBarrier> p_memory_barriers,
+		Span<RDD::BufferBarrier> p_buffer_barriers,
+		Span<RDD::TextureBarrier> p_texture_barriers) {
 	if (!barrier_capabilities.enhanced_barriers_supported) {
 		// Enhanced barriers are a requirement for this function.
 		return;
@@ -2327,7 +2327,7 @@ RDD::CommandQueueID RenderingDeviceDriverD3D12::command_queue_create(CommandQueu
 	return CommandQueueID(command_queue);
 }
 
-Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
+Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueueID p_cmd_queue, Span<SemaphoreID> p_wait_semaphores, Span<CommandBufferID> p_cmd_buffers, Span<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, Span<SwapChainID> p_swap_chains) {
 	CommandQueueInfo *command_queue = (CommandQueueInfo *)(p_cmd_queue.id);
 	for (uint32_t i = 0; i < p_wait_semaphores.size(); i++) {
 		const SemaphoreInfo *semaphore = (const SemaphoreInfo *)(p_wait_semaphores[i].id);
@@ -2484,7 +2484,7 @@ void RenderingDeviceDriverD3D12::command_buffer_end(CommandBufferID p_cmd_buffer
 	cmd_buf_info->descriptor_heaps_set = false;
 }
 
-void RenderingDeviceDriverD3D12::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) {
+void RenderingDeviceDriverD3D12::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, Span<CommandBufferID> p_secondary_cmd_buffers) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 	for (uint32_t i = 0; i < p_secondary_cmd_buffers.size(); i++) {
 		const CommandBufferInfo *secondary_cb_info = (const CommandBufferInfo *)p_secondary_cmd_buffers[i].id;
@@ -2882,7 +2882,7 @@ D3D12_DEPTH_STENCIL_VIEW_DESC RenderingDeviceDriverD3D12::_make_dsv_for_texture(
 	return dsv_desc;
 }
 
-RDD::FramebufferID RenderingDeviceDriverD3D12::_framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height, bool p_is_screen) {
+RDD::FramebufferID RenderingDeviceDriverD3D12::_framebuffer_create(RenderPassID p_render_pass, Span<TextureID> p_attachments, uint32_t p_width, uint32_t p_height, bool p_is_screen) {
 	// Pre-bookkeep.
 	FramebufferInfo *fb_info = VersatileResource::allocate<FramebufferInfo>(resources_allocator);
 	fb_info->is_screen = p_is_screen;
@@ -2969,7 +2969,7 @@ RDD::FramebufferID RenderingDeviceDriverD3D12::_framebuffer_create(RenderPassID 
 	return FramebufferID(fb_info);
 }
 
-RDD::FramebufferID RenderingDeviceDriverD3D12::framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {
+RDD::FramebufferID RenderingDeviceDriverD3D12::framebuffer_create(RenderPassID p_render_pass, Span<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {
 	return _framebuffer_create(p_render_pass, p_attachments, p_width, p_height, false);
 }
 
@@ -3087,7 +3087,7 @@ uint32_t RenderingDeviceDriverD3D12::_shader_patch_dxil_specialization_constant(
 
 bool RenderingDeviceDriverD3D12::_shader_apply_specialization_constants(
 		const ShaderInfo *p_shader_info,
-		VectorView<PipelineSpecializationConstant> p_specialization_constants,
+		Span<PipelineSpecializationConstant> p_specialization_constants,
 		HashMap<ShaderStage, Vector<uint8_t>> &r_final_stages_bytecode) {
 	// If something needs to be patched, COW will do the trick.
 	r_final_stages_bytecode = p_shader_info->stages_bytecode;
@@ -3128,7 +3128,7 @@ String RenderingDeviceDriverD3D12::shader_get_binary_cache_key() {
 	return "D3D12-SV" + uitos(ShaderBinary::VERSION) + "-" + itos(shader_capabilities.shader_model);
 }
 
-Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
+Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Span<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
 	ShaderReflection shader_refl;
 	if (_reflect_spirv(p_spirv, shader_refl) != OK) {
 		return Vector<uint8_t>();
@@ -3977,7 +3977,7 @@ static void _add_descriptor_count_for_uniform(RenderingDevice::UniformType p_typ
 	}
 }
 
-RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
+RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(Span<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
 	//p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
 
 	// Pre-bookkeep.
@@ -4703,7 +4703,7 @@ void RenderingDeviceDriverD3D12::command_clear_buffer(CommandBufferID p_cmd_buff
 	frames[frame_idx].desc_heap_walkers.aux.advance();
 }
 
-void RenderingDeviceDriverD3D12::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_buf_locfer, VectorView<BufferCopyRegion> p_regions) {
+void RenderingDeviceDriverD3D12::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_buf_locfer, Span<BufferCopyRegion> p_regions) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *src_buf_info = (BufferInfo *)p_src_buffer.id;
 	BufferInfo *buf_loc_info = (BufferInfo *)p_buf_locfer.id;
@@ -4719,7 +4719,7 @@ void RenderingDeviceDriverD3D12::command_copy_buffer(CommandBufferID p_cmd_buffe
 	}
 }
 
-void RenderingDeviceDriverD3D12::command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) {
+void RenderingDeviceDriverD3D12::command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, Span<TextureCopyRegion> p_regions) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	TextureInfo *src_tex_info = (TextureInfo *)p_src_texture.id;
 	TextureInfo *dst_tex_info = (TextureInfo *)p_dst_texture.id;
@@ -4895,7 +4895,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 	}
 }
 
-void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
+void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, Span<BufferTextureCopyRegion> p_regions) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *buf_info = (BufferInfo *)p_src_buffer.id;
 	TextureInfo *tex_info = (TextureInfo *)p_dst_texture.id;
@@ -4963,7 +4963,7 @@ void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID 
 	}
 }
 
-void RenderingDeviceDriverD3D12::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_buf_locfer, VectorView<BufferTextureCopyRegion> p_regions) {
+void RenderingDeviceDriverD3D12::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_buf_locfer, Span<BufferTextureCopyRegion> p_regions) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	TextureInfo *tex_info = (TextureInfo *)p_src_texture.id;
 	BufferInfo *buf_info = (BufferInfo *)p_buf_locfer.id;
@@ -5038,7 +5038,7 @@ void RenderingDeviceDriverD3D12::pipeline_free(PipelineID p_pipeline) {
 
 // ----- BINDING -----
 
-void RenderingDeviceDriverD3D12::command_bind_push_constants(CommandBufferID p_cmd_buffer, ShaderID p_shader, uint32_t p_dst_first_index, VectorView<uint32_t> p_data) {
+void RenderingDeviceDriverD3D12::command_bind_push_constants(CommandBufferID p_cmd_buffer, ShaderID p_shader, uint32_t p_dst_first_index, Span<uint32_t> p_data) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 	if (!shader_info_in->dxil_push_constant_size) {
@@ -5076,7 +5076,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::pipeline_cache_serialize() {
 
 // ----- SUBPASS -----
 
-RDD::RenderPassID RenderingDeviceDriverD3D12::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
+RDD::RenderPassID RenderingDeviceDriverD3D12::render_pass_create(Span<Attachment> p_attachments, Span<Subpass> p_subpasses, Span<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
 	ERR_FAIL_COND_V_MSG(p_fragment_density_map_attachment.attachment != AttachmentReference::UNUSED, RenderPassID(), "Fragment density maps are not supported in D3D12.");
 
 	// Pre-bookkeep.
@@ -5103,7 +5103,7 @@ RDD::RenderPassID RenderingDeviceDriverD3D12::render_pass_create(VectorView<Atta
 			formats[i] = format.general_format;
 		}
 	}
-	pass_info->max_supported_sample_count = _find_max_common_supported_sample_count(VectorView(formats, p_attachments.size()));
+	pass_info->max_supported_sample_count = _find_max_common_supported_sample_count(Span(formats, p_attachments.size()));
 
 	return RenderPassID(pass_info);
 }
@@ -5115,7 +5115,7 @@ void RenderingDeviceDriverD3D12::render_pass_free(RenderPassID p_render_pass) {
 
 // ----- COMMANDS -----
 
-void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RenderPassClearValue> p_attachment_clears) {
+void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, Span<RenderPassClearValue> p_attachment_clears) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	const RenderPassInfo *pass_info = (const RenderPassInfo *)p_render_pass.id;
 	const FramebufferInfo *fb_info = (const FramebufferInfo *)p_framebuffer.id;
@@ -5227,7 +5227,7 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 	}
 
 	if (num_clears) {
-		command_render_clear_attachments(p_cmd_buffer, VectorView(clears, num_clears), VectorView(clear_rects, num_clears));
+		command_render_clear_attachments(p_cmd_buffer, Span(clears, num_clears), Span(clear_rects, num_clears));
 	}
 }
 
@@ -5379,7 +5379,7 @@ void RenderingDeviceDriverD3D12::command_next_render_subpass(CommandBufferID p_c
 	cmd_buf_info->cmd_list->OMSetRenderTargets(subpass.color_references.size(), rtv_handles, false, dsv_handle.ptr ? &dsv_handle : nullptr);
 }
 
-void RenderingDeviceDriverD3D12::command_render_set_viewport(CommandBufferID p_cmd_buffer, VectorView<Rect2i> p_viewports) {
+void RenderingDeviceDriverD3D12::command_render_set_viewport(CommandBufferID p_cmd_buffer, Span<Rect2i> p_viewports) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 
 	D3D12_VIEWPORT *d3d12_viewports = ALLOCA_ARRAY(D3D12_VIEWPORT, p_viewports.size());
@@ -5394,7 +5394,7 @@ void RenderingDeviceDriverD3D12::command_render_set_viewport(CommandBufferID p_c
 	cmd_buf_info->cmd_list->RSSetViewports(p_viewports.size(), d3d12_viewports);
 }
 
-void RenderingDeviceDriverD3D12::command_render_set_scissor(CommandBufferID p_cmd_buffer, VectorView<Rect2i> p_scissors) {
+void RenderingDeviceDriverD3D12::command_render_set_scissor(CommandBufferID p_cmd_buffer, Span<Rect2i> p_scissors) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 
 	D3D12_RECT *d3d12_scissors = ALLOCA_ARRAY(D3D12_RECT, p_scissors.size());
@@ -5409,7 +5409,7 @@ void RenderingDeviceDriverD3D12::command_render_set_scissor(CommandBufferID p_cm
 	cmd_buf_info->cmd_list->RSSetScissorRects(p_scissors.size(), d3d12_scissors);
 }
 
-void RenderingDeviceDriverD3D12::command_render_clear_attachments(CommandBufferID p_cmd_buffer, VectorView<AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects) {
+void RenderingDeviceDriverD3D12::command_render_clear_attachments(CommandBufferID p_cmd_buffer, Span<AttachmentClear> p_attachment_clears, Span<Rect2i> p_rects) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 
 	DEV_ASSERT(cmd_buf_info->render_pass_state.current_subpass != UINT32_MAX);
@@ -5508,7 +5508,7 @@ void RenderingDeviceDriverD3D12::command_bind_render_uniform_set(CommandBufferID
 	_command_bind_uniform_set(p_cmd_buffer, p_uniform_set, p_shader, p_set_index, false);
 }
 
-void RenderingDeviceDriverD3D12::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverD3D12::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, Span<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	for (uint32_t i = 0u; i < p_set_count; ++i) {
 		// TODO: _command_bind_uniform_set() does WAAAAY too much stuff. A lot of it should be already cached in UniformSetID when uniform_set_create() was called. Binding is supposed to be a cheap operation, ideally a memcpy.
 		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, false);
@@ -5750,11 +5750,11 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		PipelineMultisampleState p_multisample_state,
 		PipelineDepthStencilState p_depth_stencil_state,
 		PipelineColorBlendState p_blend_state,
-		VectorView<int32_t> p_color_attachments,
+		Span<int32_t> p_color_attachments,
 		BitField<PipelineDynamicStateFlags> p_dynamic_state,
 		RenderPassID p_render_pass,
 		uint32_t p_render_subpass,
-		VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+		Span<PipelineSpecializationConstant> p_specialization_constants) {
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 
 	CD3DX12_PIPELINE_STATE_STREAM1 pipeline_desc = {};
@@ -6028,7 +6028,7 @@ void RenderingDeviceDriverD3D12::command_bind_compute_uniform_set(CommandBufferI
 	_command_bind_uniform_set(p_cmd_buffer, p_uniform_set, p_shader, p_set_index, true);
 }
 
-void RenderingDeviceDriverD3D12::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverD3D12::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, Span<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	for (uint32_t i = 0u; i < p_set_count; ++i) {
 		// TODO: _command_bind_uniform_set() does WAAAAY too much stuff. A lot of it should be already cached in UniformSetID when uniform_set_create() was called. Binding is supposed to be a cheap operation, ideally a memcpy.
 		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, true);
@@ -6057,7 +6057,7 @@ void RenderingDeviceDriverD3D12::command_compute_dispatch_indirect(CommandBuffer
 
 // ----- PIPELINE -----
 
-RDD::PipelineID RenderingDeviceDriverD3D12::compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+RDD::PipelineID RenderingDeviceDriverD3D12::compute_pipeline_create(ShaderID p_shader, Span<PipelineSpecializationConstant> p_specialization_constants) {
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 
 	CD3DX12_PIPELINE_STATE_STREAM pipeline_desc = {};

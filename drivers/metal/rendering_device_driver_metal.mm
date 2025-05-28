@@ -792,7 +792,7 @@ bool RenderingDeviceDriverMetal::sampler_is_format_supported_for_filter(DataForm
 
 #pragma mark - Vertex Array
 
-RDD::VertexFormatID RenderingDeviceDriverMetal::vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) {
+RDD::VertexFormatID RenderingDeviceDriverMetal::vertex_format_create(Span<VertexAttribute> p_vertex_attribs) {
 	MTLVertexDescriptor *desc = MTLVertexDescriptor.vertexDescriptor;
 
 	for (uint32_t i = 0; i < p_vertex_attribs.size(); i++) {
@@ -829,9 +829,9 @@ void RenderingDeviceDriverMetal::command_pipeline_barrier(
 		CommandBufferID p_cmd_buffer,
 		BitField<PipelineStageBits> p_src_stages,
 		BitField<PipelineStageBits> p_dst_stages,
-		VectorView<MemoryBarrier> p_memory_barriers,
-		VectorView<BufferBarrier> p_buffer_barriers,
-		VectorView<TextureBarrier> p_texture_barriers) {
+		Span<MemoryBarrier> p_memory_barriers,
+		Span<BufferBarrier> p_buffer_barriers,
+		Span<TextureBarrier> p_texture_barriers) {
 	WARN_PRINT_ONCE("not implemented");
 }
 
@@ -884,7 +884,7 @@ RDD::CommandQueueID RenderingDeviceDriverMetal::command_queue_create(CommandQueu
 	return CommandQueueID(1);
 }
 
-Error RenderingDeviceDriverMetal::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID>, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID>, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
+Error RenderingDeviceDriverMetal::command_queue_execute_and_present(CommandQueueID p_cmd_queue, Span<SemaphoreID>, Span<CommandBufferID> p_cmd_buffers, Span<SemaphoreID>, FenceID p_cmd_fence, Span<SwapChainID> p_swap_chains) {
 	uint32_t size = p_cmd_buffers.size();
 	if (size == 0) {
 		return OK;
@@ -965,7 +965,7 @@ void RenderingDeviceDriverMetal::command_buffer_end(CommandBufferID p_cmd_buffer
 	obj->end();
 }
 
-void RenderingDeviceDriverMetal::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) {
+void RenderingDeviceDriverMetal::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, Span<CommandBufferID> p_secondary_cmd_buffers) {
 	ERR_FAIL_MSG("not implemented");
 }
 
@@ -1058,7 +1058,7 @@ void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 
 #pragma mark - Frame buffer
 
-RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {
+RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p_render_pass, Span<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {
 	MDRenderPass *pass = (MDRenderPass *)(p_render_pass.id);
 
 	Vector<MTL::Texture> textures;
@@ -1176,7 +1176,7 @@ public:
 	}
 
 	template <typename T>
-	void write(VectorView<T> p_vector) {
+	void write(Span<T> p_vector) {
 		write(p_vector.size());
 		for (uint32_t i = 0; i < p_vector.size(); i++) {
 			T const &e = p_vector[i];
@@ -1184,7 +1184,7 @@ public:
 		}
 	}
 
-	void write(VectorView<uint8_t> p_vector) {
+	void write(Span<uint8_t> p_vector) {
 		write_buffer(p_vector.ptr(), p_vector.size());
 	}
 
@@ -1532,7 +1532,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformSetData {
 
 	void serialize(BufWriter &p_writer) const {
 		p_writer.write(index);
-		p_writer.write(VectorView(uniforms));
+		p_writer.write(uniforms.span());
 	}
 
 	void deserialize(BufReader &p_reader) {
@@ -1664,9 +1664,9 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) ShaderBinaryData {
 		p_writer.write(flags);
 		p_writer.write(compute_local_size);
 		p_writer.write(push_constant);
-		p_writer.write(VectorView(stages));
-		p_writer.write(VectorView(constants));
-		p_writer.write(VectorView(uniforms));
+		p_writer.write(stages.span());
+		p_writer.write(constants.span());
+		p_writer.write(uniforms.span());
 	}
 
 	void deserialize(BufReader &p_reader) {
@@ -1691,7 +1691,7 @@ String RenderingDeviceDriverMetal::shader_get_binary_cache_key() {
 	return cache_key;
 }
 
-Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection, ShaderMeta &r_shader_meta) {
+Error RenderingDeviceDriverMetal::_reflect_spirv16(Span<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection, ShaderMeta &r_shader_meta) {
 	using namespace spirv_cross;
 	using spirv_cross::Resource;
 
@@ -1998,7 +1998,7 @@ Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVDa
 	return OK;
 }
 
-Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
+Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Span<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
 	using Result = ::Vector<uint8_t>;
 	using namespace spirv_cross;
 	using spirv_cross::CompilerMSL;
@@ -2678,7 +2678,7 @@ void RenderingDeviceDriverMetal::shader_destroy_modules(ShaderID p_shader) {
 /**** UNIFORM SET ****/
 /*********************/
 
-RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
+RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(Span<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
 	//p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
 
 	MDUniformSet *set = memnew(MDUniformSet);
@@ -2713,7 +2713,7 @@ void RenderingDeviceDriverMetal::command_clear_buffer(CommandBufferID p_cmd_buff
 			   value:0];
 }
 
-void RenderingDeviceDriverMetal::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, VectorView<BufferCopyRegion> p_regions) {
+void RenderingDeviceDriverMetal::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, Span<BufferCopyRegion> p_regions) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
 	id<MTLBuffer> src = rid::get(p_src_buffer);
 	id<MTLBuffer> dst = rid::get(p_dst_buffer);
@@ -2747,7 +2747,7 @@ static inline MTLSize clampMTLSize(MTLSize p_size, MTLOrigin p_origin, MTLSize p
 	return clamped;
 }
 
-void RenderingDeviceDriverMetal::command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) {
+void RenderingDeviceDriverMetal::command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, Span<TextureCopyRegion> p_regions) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
 	id<MTLTexture> src = rid::get(p_src_texture);
 	id<MTLTexture> dst = rid::get(p_dst_texture);
@@ -2958,7 +2958,7 @@ void RenderingDeviceDriverMetal::_copy_texture_buffer(CommandBufferID p_cmd_buff
 		CopySource p_source,
 		TextureID p_texture,
 		BufferID p_buffer,
-		VectorView<BufferTextureCopyRegion> p_regions) {
+		Span<BufferTextureCopyRegion> p_regions) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
 	id<MTLBuffer> buffer = rid::get(p_buffer);
 	id<MTLTexture> texture = rid::get(p_texture);
@@ -3044,11 +3044,11 @@ void RenderingDeviceDriverMetal::_copy_texture_buffer(CommandBufferID p_cmd_buff
 	}
 }
 
-void RenderingDeviceDriverMetal::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
+void RenderingDeviceDriverMetal::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, Span<BufferTextureCopyRegion> p_regions) {
 	_copy_texture_buffer(p_cmd_buffer, CopySource::Buffer, p_dst_texture, p_src_buffer, p_regions);
 }
 
-void RenderingDeviceDriverMetal::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) {
+void RenderingDeviceDriverMetal::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, Span<BufferTextureCopyRegion> p_regions) {
 	_copy_texture_buffer(p_cmd_buffer, CopySource::Texture, p_src_texture, p_dst_buffer, p_regions);
 }
 
@@ -3061,7 +3061,7 @@ void RenderingDeviceDriverMetal::pipeline_free(PipelineID p_pipeline_id) {
 
 // ----- BINDING -----
 
-void RenderingDeviceDriverMetal::command_bind_push_constants(CommandBufferID p_cmd_buffer, ShaderID p_shader, uint32_t p_dst_first_index, VectorView<uint32_t> p_data) {
+void RenderingDeviceDriverMetal::command_bind_push_constants(CommandBufferID p_cmd_buffer, ShaderID p_shader, uint32_t p_dst_first_index, Span<uint32_t> p_data) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	MDShader *shader = (MDShader *)(p_shader.id);
 	shader->encode_push_constant_data(p_data, cb);
@@ -3129,7 +3129,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::pipeline_cache_serialize() {
 
 // ----- SUBPASS -----
 
-RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
+RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(Span<Attachment> p_attachments, Span<Subpass> p_subpasses, Span<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
 	PixelFormats &pf = *pixel_formats;
 
 	size_t subpass_count = p_subpasses.size();
@@ -3195,7 +3195,7 @@ void RenderingDeviceDriverMetal::render_pass_free(RenderPassID p_render_pass) {
 
 // ----- COMMANDS -----
 
-void RenderingDeviceDriverMetal::command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RenderPassClearValue> p_clear_values) {
+void RenderingDeviceDriverMetal::command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, Span<RenderPassClearValue> p_clear_values) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->render_begin_pass(p_render_pass, p_framebuffer, p_cmd_buffer_type, p_rect, p_clear_values);
 }
@@ -3210,17 +3210,17 @@ void RenderingDeviceDriverMetal::command_next_render_subpass(CommandBufferID p_c
 	cb->render_next_subpass();
 }
 
-void RenderingDeviceDriverMetal::command_render_set_viewport(CommandBufferID p_cmd_buffer, VectorView<Rect2i> p_viewports) {
+void RenderingDeviceDriverMetal::command_render_set_viewport(CommandBufferID p_cmd_buffer, Span<Rect2i> p_viewports) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->render_set_viewport(p_viewports);
 }
 
-void RenderingDeviceDriverMetal::command_render_set_scissor(CommandBufferID p_cmd_buffer, VectorView<Rect2i> p_scissors) {
+void RenderingDeviceDriverMetal::command_render_set_scissor(CommandBufferID p_cmd_buffer, Span<Rect2i> p_scissors) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->render_set_scissor(p_scissors);
 }
 
-void RenderingDeviceDriverMetal::command_render_clear_attachments(CommandBufferID p_cmd_buffer, VectorView<AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects) {
+void RenderingDeviceDriverMetal::command_render_clear_attachments(CommandBufferID p_cmd_buffer, Span<AttachmentClear> p_attachment_clears, Span<Rect2i> p_rects) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->render_clear_attachments(p_attachment_clears, p_rects);
 }
@@ -3235,7 +3235,7 @@ void RenderingDeviceDriverMetal::command_bind_render_uniform_set(CommandBufferID
 	cb->render_bind_uniform_set(p_uniform_set, p_shader, p_set_index);
 }
 
-void RenderingDeviceDriverMetal::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverMetal::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, Span<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->render_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
 }
@@ -3293,7 +3293,7 @@ void RenderingDeviceDriverMetal::command_render_set_line_width(CommandBufferID p
 
 // ----- PIPELINE -----
 
-RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::_create_function(MDLibrary *p_library, NSString *p_name, VectorView<PipelineSpecializationConstant> &p_specialization_constants) {
+RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::_create_function(MDLibrary *p_library, NSString *p_name, Span<PipelineSpecializationConstant> &p_specialization_constants) {
 	id<MTLLibrary> library = p_library.library;
 	if (!library) {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Failed to compile Metal library");
@@ -3415,11 +3415,11 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 		PipelineMultisampleState p_multisample_state,
 		PipelineDepthStencilState p_depth_stencil_state,
 		PipelineColorBlendState p_blend_state,
-		VectorView<int32_t> p_color_attachments,
+		Span<int32_t> p_color_attachments,
 		BitField<PipelineDynamicStateFlags> p_dynamic_state,
 		RenderPassID p_render_pass,
 		uint32_t p_render_subpass,
-		VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+		Span<PipelineSpecializationConstant> p_specialization_constants) {
 	MDRenderShader *shader = (MDRenderShader *)(p_shader.id);
 	MTLVertexDescriptor *vert_desc = rid::get(p_vertex_format);
 	MDRenderPass *pass = (MDRenderPass *)(p_render_pass.id);
@@ -3716,7 +3716,7 @@ void RenderingDeviceDriverMetal::command_bind_compute_uniform_set(CommandBufferI
 	cb->compute_bind_uniform_set(p_uniform_set, p_shader, p_set_index);
 }
 
-void RenderingDeviceDriverMetal::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverMetal::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, Span<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->compute_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
 }
@@ -3733,7 +3733,7 @@ void RenderingDeviceDriverMetal::command_compute_dispatch_indirect(CommandBuffer
 
 // ----- PIPELINE -----
 
-RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_shader, Span<PipelineSpecializationConstant> p_specialization_constants) {
 	MDComputeShader *shader = (MDComputeShader *)(p_shader.id);
 
 	os_signpost_id_t reflect_id = os_signpost_id_make_with_pointer(LOG_INTERVALS, shader);
