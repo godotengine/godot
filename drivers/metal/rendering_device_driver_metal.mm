@@ -1310,7 +1310,7 @@ public:
 		uint32_t len;
 		read(len);
 		CHECK(len);
-		p_val.resize(len + 1 /* NUL */);
+		p_val.resize_uninitialized(len + 1 /* NUL */);
 		memcpy(p_val.ptrw(), data + pos, len);
 		p_val.set(len, 0);
 		pos += len;
@@ -1324,7 +1324,7 @@ public:
 
 		CHECK(comp_size);
 
-		p_val.resize(len + 1 /* NUL */);
+		p_val.resize_uninitialized(len + 1 /* NUL */);
 		uint32_t bytes = (uint32_t)Compression::decompress(reinterpret_cast<uint8_t *>(p_val.ptrw()), len, data + pos, comp_size, Compression::MODE_ZSTD);
 		if (bytes != len) {
 			status = Status::BAD_COMPRESSION;
