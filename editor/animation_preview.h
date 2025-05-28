@@ -51,6 +51,7 @@ class AnimationPreview : public RefCounted {
 	Vector<float> key_times;
 	Vector<TrackKeyTime> track_key_times;
 	float length;
+	int track_count;
 
 	friend class AnimationPreviewGenerator;
 	uint64_t version = 1;
@@ -62,6 +63,8 @@ public:
 	float get_length() const { return length; }
 	Vector<float> get_key_times() const { return key_times; }
 	Vector<TrackKeyTime> get_key_times_with_tracks() const { return track_key_times; }
+
+	int get_track_count() const { return track_count; }
 
 	AnimationPreview();
 
