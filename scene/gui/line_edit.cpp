@@ -537,7 +537,6 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal(SNAME("editing_toggled"), true);
 				return;
 			}
-			queue_redraw();
 
 		} else {
 			if (selection.enabled && !pass && b->get_button_index() == MouseButton::LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
