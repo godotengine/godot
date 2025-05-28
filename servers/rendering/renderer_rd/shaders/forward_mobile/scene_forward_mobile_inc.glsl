@@ -207,8 +207,8 @@ bool sc_directional_light_blend_split(uint i) {
 	return ((sc_packed_1() >> (21 + i)) & 1U) != 0;
 }
 
-float sc_luminance_multiplier() {
-	return sc_packed_2();
+half sc_luminance_multiplier() {
+	return half(sc_packed_2());
 }
 
 /* Set 0: Base Pass (never changes) */
@@ -259,7 +259,7 @@ directional_lights;
 #define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
 
 struct Lightmap {
-	mediump mat3 normal_xform;
+	mat3 normal_xform;
 	vec2 light_texture_size;
 	float exposure_normalization;
 	uint flags;
@@ -271,7 +271,7 @@ layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
 lightmaps;
 
 struct LightmapCapture {
-	mediump vec4 sh[9];
+	vec4 sh[9];
 };
 
 layout(set = 0, binding = 8, std140) restrict readonly buffer LightmapCaptures {
@@ -279,8 +279,8 @@ layout(set = 0, binding = 8, std140) restrict readonly buffer LightmapCaptures {
 }
 lightmap_captures;
 
-layout(set = 0, binding = 9) uniform mediump texture2D decal_atlas;
-layout(set = 0, binding = 10) uniform mediump texture2D decal_atlas_srgb;
+layout(set = 0, binding = 9) uniform texture2D decal_atlas;
+layout(set = 0, binding = 10) uniform texture2D decal_atlas_srgb;
 
 layout(set = 0, binding = 11, std430) restrict readonly buffer Decals {
 	DecalData data[];
@@ -288,7 +288,7 @@ layout(set = 0, binding = 11, std430) restrict readonly buffer Decals {
 decals;
 
 layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalShaderUniformData {
-	highp vec4 data[];
+	vec4 data[];
 }
 global_shader_uniforms;
 
@@ -309,7 +309,7 @@ struct InstanceData {
 	uint instance_uniforms_ofs; // Base offset in global buffer for instance variables.	// 04 - 72
 	uint gi_offset; // GI information when using lightmapping (VCT or lightmap index).    // 04 - 76
 	uint layer_mask; // 04 - 80
-	highp vec4 lightmap_uv_scale; // 16 - 96 Doubles as uv_offset when needed.
+	vec4 lightmap_uv_scale; // 16 - 96 Doubles as uv_offset when needed.
 
 	uvec2 reflection_probes; // 08 - 104
 	uvec2 omni_lights; // 08 - 112
@@ -328,30 +328,30 @@ instances;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-layout(set = 1, binding = 2) uniform mediump textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 2) uniform textureCubeArray radiance_cubemap;
 
 #else
 
-layout(set = 1, binding = 2) uniform mediump textureCube radiance_cubemap;
+layout(set = 1, binding = 2) uniform textureCube radiance_cubemap;
 
 #endif
 
-layout(set = 1, binding = 3) uniform mediump textureCubeArray reflection_atlas;
+layout(set = 1, binding = 3) uniform textureCubeArray reflection_atlas;
 
-layout(set = 1, binding = 4) uniform highp texture2D shadow_atlas;
+layout(set = 1, binding = 4) uniform texture2D shadow_atlas;
 
-layout(set = 1, binding = 5) uniform highp texture2D directional_shadow_atlas;
+layout(set = 1, binding = 5) uniform texture2D directional_shadow_atlas;
 
 // this needs to change to providing just the lightmap we're using..
 layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES * 2];
 
 #ifdef USE_MULTIVIEW
-layout(set = 1, binding = 9) uniform highp texture2DArray depth_buffer;
-layout(set = 1, binding = 10) uniform mediump texture2DArray color_buffer;
+layout(set = 1, binding = 9) uniform texture2DArray depth_buffer;
+layout(set = 1, binding = 10) uniform texture2DArray color_buffer;
 #define multiviewSampler sampler2DArray
 #else
-layout(set = 1, binding = 9) uniform highp texture2D depth_buffer;
-layout(set = 1, binding = 10) uniform mediump texture2D color_buffer;
+layout(set = 1, binding = 9) uniform texture2D depth_buffer;
+layout(set = 1, binding = 10) uniform texture2D color_buffer;
 #define multiviewSampler sampler2D
 #endif // USE_MULTIVIEW
 
@@ -375,7 +375,7 @@ layout(set = 1, binding = 13 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_A
 /* Set 2 Skeleton & Instancing (can change per item) */
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
-	highp vec4 data[];
+	vec4 data[];
 }
 transforms;
 

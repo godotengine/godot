@@ -130,6 +130,10 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 		renderer_features.set_flag(RenderingShaderLibrary::FEATURE_VRS_BIT);
 	}
 
+	// Both FP16 and FP32 variants should be included.
+	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_FP16_BIT);
+	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_FP32_BIT);
+
 	RendererSceneRenderRD::get_singleton()->enable_features(renderer_features);
 
 	// Included all shaders created by renderers and effects.
