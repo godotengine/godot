@@ -47,6 +47,11 @@ public:
 	virtual void process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture) final;
 
 private:
+	enum FSRShaderVariant {
+		FSR_SHADER_VARIANT_NORMAL,
+		FSR_SHADER_VARIANT_FALLBACK,
+	};
+
 	enum FSRUpscalePass {
 		FSR_UPSCALE_PASS_EASU = 0,
 		FSR_UPSCALE_PASS_RCAS = 1

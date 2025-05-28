@@ -4,12 +4,6 @@
 
 #VERSION_DEFINES
 
-#define MAX_VIEWS 2
-
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
-
 layout(location = 0) out vec2 uv_interp;
 
 layout(push_constant, std430) uniform Params {
@@ -36,20 +30,11 @@ void main() {
 #VERSION_DEFINES
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-#endif //USE_MULTIVIEW
+#endif
 
 #define M_PI 3.14159265359
-#define MAX_VIEWS 2
 
 layout(location = 0) in vec2 uv_interp;
 
