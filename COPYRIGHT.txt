@@ -247,6 +247,11 @@ Comment: doctest
 Copyright: 2016-2023, Viktor Kirilov
 License: Expat
 
+Files: thirdparty/dr_libs/*
+Comment: dr_libs
+Copyright: 2020 David Reid
+License: public-domain or Unlicense or Expat
+
 Files: thirdparty/embree/*
 Comment: Embree
 Copyright: 2009-2021 Intel Corporation
@@ -408,11 +413,6 @@ Files: thirdparty/mingw-std-threads/*
 Comment: mingw-std-threads
 Copyright: 2016, Mega Limited
 License: BSD-2-clause
-
-Files: thirdparty/minimp3/*
-Comment: MiniMP3
-Copyright: lieff
-License: CC0-1.0
 
 Files: thirdparty/miniupnpc/*
 Comment: MiniUPnP Project
