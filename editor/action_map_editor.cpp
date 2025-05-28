@@ -85,7 +85,7 @@ String ActionMapEditor::_check_new_action_name(const String &p_name) {
 }
 
 void ActionMapEditor::_add_edit_text_changed(const String &p_name) {
-	String error = _check_new_action_name(p_name);
+	const String error = _check_new_action_name(p_name);
 	add_button->set_tooltip_text(error);
 	add_button->set_disabled(!error.is_empty());
 }
@@ -361,6 +361,15 @@ void ActionMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 
 void ActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (!actions_cache.is_empty()) {
+				update_action_list();
+			}
+			if (!add_button->get_tooltip_text().is_empty()) {
+				_add_edit_text_changed(add_edit->get_text());
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
@@ -455,10 +464,10 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			bool events_eq = Shortcut::is_event_array_equal(action_info.action_initial["events"], action_info.action["events"]);
 			bool action_eq = deadzone_eq && events_eq;
 			action_item->set_meta("__action_initial", action_info.action_initial);
-			action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("ReloadSmall")), BUTTON_REVERT_ACTION, action_eq, action_eq ? TTR("Cannot Revert - Action is same as initial") : TTR("Revert Action"));
+			action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("ReloadSmall")), BUTTON_REVERT_ACTION, action_eq, action_eq ? TTRC("Cannot Revert - Action is same as initial") : TTRC("Revert Action"));
 		}
-		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Add")), BUTTON_ADD_EVENT, false, TTR("Add Event"));
-		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTR("Remove Action") : TTR("Cannot Remove Action"));
+		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Add")), BUTTON_ADD_EVENT, false, TTRC("Add Event"));
+		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTRC("Remove Action") : TTRC("Cannot Remove Action"));
 
 		action_item->set_custom_bg_color(0, action_tree->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 		action_item->set_custom_bg_color(1, action_tree->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
@@ -506,8 +515,8 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			}
 
 			// Third Column - Buttons
-			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_EVENT, false, TTR("Edit Event"), TTR("Edit Event"));
-			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTR("Remove Event"), TTR("Remove Event"));
+			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_EVENT, false, TTRC("Edit Event"), TTRC("Edit Event"));
+			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTRC("Remove Event"), TTRC("Remove Event"));
 			event_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}
@@ -547,7 +556,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	action_list_search = memnew(LineEdit);
 	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list_search->set_placeholder(TTR("Filter by Name"));
+	action_list_search->set_placeholder(TTRC("Filter by Name"));
 	action_list_search->set_accessibility_name(TTRC("Filter by Name"));
 	action_list_search->set_clear_button_enabled(true);
 	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
@@ -563,8 +572,8 @@ ActionMapEditor::ActionMapEditor() {
 	top_hbox->add_child(action_list_search_by_event);
 
 	clear_all_search = memnew(Button);
-	clear_all_search->set_text(TTR("Clear All"));
-	clear_all_search->set_tooltip_text(TTR("Clear all search filters."));
+	clear_all_search->set_text(TTRC("Clear All"));
+	clear_all_search->set_tooltip_text(TTRC("Clear all search filters."));
 	clear_all_search->connect(SceneStringName(pressed), callable_mp(action_list_search_by_event, &EventListenerLineEdit::clear_event));
 	clear_all_search->connect(SceneStringName(pressed), callable_mp(action_list_search, &LineEdit::clear));
 	top_hbox->add_child(clear_all_search);
@@ -575,7 +584,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	add_edit = memnew(LineEdit);
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_edit->set_placeholder(TTR("Add New Action"));
+	add_edit->set_placeholder(TTRC("Add New Action"));
 	add_edit->set_accessibility_name(TTRC("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
 	add_edit->set_keep_editing_on_text_submit(true);
@@ -584,7 +593,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_hbox->add_child(add_edit);
 
 	add_button = memnew(Button);
-	add_button->set_text(TTR("Add"));
+	add_button->set_text(TTRC("Add"));
 	add_button->connect(SceneStringName(pressed), callable_mp(this, &ActionMapEditor::_add_action_pressed));
 	add_hbox->add_child(add_button);
 	// Disable the button and set its tooltip.
@@ -593,7 +602,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_hbox->add_child(memnew(VSeparator));
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
-	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
+	show_builtin_actions_checkbutton->set_text(TTRC("Show Built-in Actions"));
 	show_builtin_actions_checkbutton->connect(SceneStringName(toggled), callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
 
@@ -609,9 +618,9 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->set_columns(3);
 	action_tree->set_hide_root(true);
 	action_tree->set_column_titles_visible(true);
-	action_tree->set_column_title(0, TTR("Action"));
+	action_tree->set_column_title(0, TTRC("Action"));
 	action_tree->set_column_clip_content(0, true);
-	action_tree->set_column_title(1, TTR("Deadzone"));
+	action_tree->set_column_title(1, TTRC("Deadzone"));
 	action_tree->set_column_expand(1, false);
 	action_tree->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	action_tree->set_column_expand(2, false);
