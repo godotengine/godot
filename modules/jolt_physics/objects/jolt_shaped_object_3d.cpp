@@ -304,7 +304,10 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 		return;
 	}
 
-	previous_jolt_shape = jolt_shape;
+	if (previous_jolt_shape == nullptr) {
+		previous_jolt_shape = jolt_shape;
+	}
+
 	jolt_shape = new_shape;
 
 	space->get_body_iface().SetShape(jolt_body->GetID(), jolt_shape, false, JPH::EActivation::DontActivate);
