@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/worker_thread_pool.h"
+#include "core/templates/a_hash_map.h"
 #include "core/os/condition_variable.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/local_vector.h"
@@ -122,8 +123,8 @@ public:
 	};
 
 private:
-	HashMap<RID, HashSet<RID>> dependency_map; // IDs to IDs that depend on it.
-	HashMap<RID, HashSet<RID>> reverse_dependency_map; // Same as above, but in reverse.
+	AHashMap<RID, HashSet<RID>> dependency_map; // IDs to IDs that depend on it.
+	AHashMap<RID, HashSet<RID>> reverse_dependency_map; // Same as above, but in reverse.
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);

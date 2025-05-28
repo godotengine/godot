@@ -164,7 +164,7 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 
 	// Direct dependencies must be freed.
 
-	HashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
+	AHashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
 	if (E) {
 		while (E->value.size()) {
 			free(*E->value.begin());
@@ -177,7 +177,7 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 
 	if (E) {
 		for (const RID &F : E->value) {
-			HashMap<RID, HashSet<RID>>::Iterator G = dependency_map.find(F);
+			AHashMap<RID, HashSet<RID>>::Iterator G = dependency_map.find(F);
 			ERR_CONTINUE(!G);
 			ERR_CONTINUE(!G->value.has(p_id));
 			G->value.erase(p_id);
@@ -6002,7 +6002,7 @@ bool RenderingDevice::_dependency_make_mutable(RID p_id, RID p_resource_id, RDG:
 
 bool RenderingDevice::_dependencies_make_mutable_recursive(RID p_id, RDG::ResourceTracker *p_resource_tracker) {
 	bool made_mutable = false;
-	HashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
+	AHashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
 	if (E) {
 		for (RID rid : E->value) {
 			made_mutable = _dependency_make_mutable(rid, p_id, p_resource_tracker) || made_mutable;
