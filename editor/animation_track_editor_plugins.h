@@ -31,6 +31,8 @@
 #pragma once
 
 #include "editor/animation_track_editor.h"
+#include "editor/animation_preview.h"
+#include "editor/audio_stream_preview.h"
 
 class AnimationTrackEditBool : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditBool, AnimationTrackEdit);
@@ -68,6 +70,8 @@ public:
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
+	virtual void create_key_region(Vector<Vector2> &points, Ref<AudioStreamPreview> preview, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+
 	void set_node(Object *p_object);
 
 	AnimationTrackEditAudio();
@@ -100,14 +104,15 @@ public:
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
+	virtual void create_key_region(Vector<Vector2> &points, Ref<AnimationPreview> preview, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+
 	void set_node(Object *p_object);
 };
 
-class AnimationTrackEditTypeAudio : public AnimationTrackEdit {
-	GDCLASS(AnimationTrackEditTypeAudio, AnimationTrackEdit);
+class AnimationTrackEditClip : public AnimationTrackEdit {
+	GDCLASS(AnimationTrackEditClip, AnimationTrackEdit);
 
-	void _preview_changed(ObjectID p_which);
-
+protected:
 	bool len_resizing = false;
 	bool len_resizing_start = false;
 	int len_resizing_index = 0;
@@ -115,48 +120,65 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEdit {
 	float len_resizing_rel = 0.0f;
 	bool over_drag_position = false;
 
+	virtual void _preview_changed(ObjectID p_which) = 0;
+
+public:
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const; //X
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+
+	//virtual void draw_clip_key(float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
+
+public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) = 0;
+
+	virtual void handle_data(const float ofs, const Ref<Resource> resource) = 0;
+
+	virtual int get_key_height() const = 0;
+	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) = 0;
+	virtual bool is_key_selectable_by_distance() const = 0;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) = 0;
+};
+
+class AnimationTrackEditTypeAudio : public AnimationTrackEditClip {
+	GDCLASS(AnimationTrackEditTypeAudio, AnimationTrackEdit);
+
+	virtual void _preview_changed(ObjectID p_which) override;
+
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
+	virtual void handle_data(const float ofs, const Ref<Resource> resource) override;
 
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+	virtual void create_key_region(Vector<Vector2> &points, Ref<AudioStreamPreview> preview, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
 	AnimationTrackEditTypeAudio();
 };
 
-class AnimationTrackEditTypeAnimation : public AnimationTrackEdit {
+class AnimationTrackEditTypeAnimation : public AnimationTrackEditClip {
 	GDCLASS(AnimationTrackEditTypeAnimation, AnimationTrackEdit);
 
 	ObjectID id;
 
-	void _preview_changed(ObjectID p_which);
-
-	bool len_resizing = false;
-	bool len_resizing_start = false;
-	int len_resizing_index = 0;
-	float len_resizing_from_px = 0.0f;
-	float len_resizing_rel = 0.0f;
-	bool over_drag_position = false;
+	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
+	virtual void handle_data(const float ofs, const Ref<Resource> resource) override;
 
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+	virtual void create_key_region(Vector<Vector2> &points, Ref<AnimationPreview> preview, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
 	void set_node(Object *p_object);
 

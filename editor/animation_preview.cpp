@@ -53,13 +53,15 @@ void AnimationPreviewGenerator::_preview_thread(void *p_preview) {
 	Ref<AnimationPreview> anim_preview;
 	anim_preview.instantiate();
 
-	// Setze Länge
+	// set length
 	anim_preview->length = preview->base_anim->get_length();
 	if (anim_preview->length <= 0) {
 		anim_preview->length = 0.0001;
 	}
 
-	// Sammle Keyframe-Zeiten
+	anim_preview->track_count = preview->base_anim->get_track_count();
+
+	// collect key frames
 	Vector<float> key_times;
 	Vector<TrackKeyTime> track_key_times;
 
@@ -77,11 +79,11 @@ void AnimationPreviewGenerator::_preview_thread(void *p_preview) {
 		}
 	}
 
-	// Sortiere Keyframe-Zeiten
+	// sort keyframes
 	key_times.sort();
 	track_key_times.sort();
 
-	// Entferne Duplikate (optional)
+	// remove duplicated
 	if (!key_times.is_empty()) {
 		Vector<float> unique_times;
 		unique_times.push_back(key_times[0]);
@@ -94,13 +96,13 @@ void AnimationPreviewGenerator::_preview_thread(void *p_preview) {
 		key_times = unique_times;
 	}
 
-	// Aktualisiere Vorschau
+	// update preview
 	anim_preview->key_times = key_times;
 	anim_preview->track_key_times = track_key_times;
 	preview->preview = anim_preview;
 	anim_preview->version++;
 
-	// Signalisiere Abschluss
+	// fire finished
 	callable_mp(singleton, &AnimationPreviewGenerator::_update_emit).call_deferred(preview->id);
 
 	preview->generating.clear();
