@@ -70,7 +70,7 @@ public:
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
-	virtual void create_key_region(Vector<Vector2> &points, Ref<AudioStreamPreview> preview, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
 	void set_node(Object *p_object);
 
@@ -104,7 +104,7 @@ public:
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
-	virtual void create_key_region(Vector<Vector2> &points, Ref<AnimationPreview> preview, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
 	void set_node(Object *p_object);
 };
@@ -123,17 +123,18 @@ protected:
 	virtual void _preview_changed(ObjectID p_which) = 0;
 
 public:
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const; //X
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
 
-	//virtual void draw_clip_key(float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
+	virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) = 0;
 
 	virtual void handle_data(const float ofs, const Ref<Resource> resource) = 0;
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) = 0;
 
 	virtual int get_key_height() const = 0;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) = 0;
@@ -156,7 +157,7 @@ public:
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
-	virtual void create_key_region(Vector<Vector2> &points, Ref<AudioStreamPreview> preview, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
 	AnimationTrackEditTypeAudio();
 };
@@ -178,7 +179,7 @@ public:
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
-	virtual void create_key_region(Vector<Vector2> &points, Ref<AnimationPreview> preview, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
 	void set_node(Object *p_object);
 

@@ -187,20 +187,17 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->generating.set();
 	preview->id = p_stream->get_instance_id();
 
-	float len_s = preview->base_stream->get_length();
-	if (len_s == 0) {
-		len_s = 60 * 5; //five minutes
-	}
-
-	int frames = AudioServer::get_singleton()->get_mix_rate() * len_s;
-
 	Vector<uint8_t> maxmin;
-	int pw = frames / 20;
-	maxmin.resize(pw * 2);
-	{
-		uint8_t *ptr = maxmin.ptrw();
-		for (int i = 0; i < pw * 2; i++) {
-			ptr[i] = 127;
+	float len_s = preview->base_stream->get_length();
+	if (len_s != 0) {
+		int frames = AudioServer::get_singleton()->get_mix_rate() * len_s;
+		int pw = frames / 20;
+		maxmin.resize(pw * 2);
+		{
+			uint8_t *ptr = maxmin.ptrw();
+			for (int i = 0; i < pw * 2; i++) {
+				ptr[i] = 127;
+			}
 		}
 	}
 
