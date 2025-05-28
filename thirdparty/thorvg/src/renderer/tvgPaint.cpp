@@ -276,16 +276,19 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const Matrix& pm, Array<R
 
     /* 2. Clipping */
     if (this->clipper) {
-        P(this->clipper)->ctxFlag &= ~ContextFlag::FastTrack;   //reset
+        auto pclip = P(this->clipper);
+        if (pclip->renderFlag  | static_cast<Shape*>(this->clipper)->pImpl->rFlag) renderFlag |= RenderUpdateFlag::Clip;
+        pclip->ctxFlag &= ~ContextFlag::FastTrack;   //reset
         viewport = renderer->viewport();
         /* TODO: Intersect the clipper's clipper, if both are FastTrack.
            Update the subsequent clipper first and check its ctxFlag. */
-        if (!P(this->clipper)->clipper && (compFastTrack = _compFastTrack(renderer, this->clipper, pm, viewport)) == Result::Success) {
-            P(this->clipper)->ctxFlag |= ContextFlag::FastTrack;
-        }
-        if (compFastTrack == Result::InsufficientCondition) {
-            trd = P(this->clipper)->update(renderer, pm, clips, 255, pFlag, true);
+        if (!pclip->clipper && _compFastTrack(renderer, this->clipper, pm, viewport) == Result::Success) {
+            pclip->ctxFlag |= ContextFlag::FastTrack;
+            compFastTrack = Result::Success;
+        } else {
+            trd = pclip->update(renderer, pm, clips, 255, pFlag, true);
             clips.push(trd);
+            compFastTrack = Result::InsufficientCondition;
         }
     }
 

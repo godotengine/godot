@@ -3368,6 +3368,13 @@ static void _svgLoaderParserXmlClose(SvgLoaderData* loader, const char* content,
         }
     }
 
+    for (unsigned int i = 0; i < sizeof(gradientTags) / sizeof(gradientTags[0]); i++) {
+        if (!strncmp(tagName, gradientTags[i].tag, sz)) {
+            loader->gradientStack.pop();
+            break;
+        }
+    }
+
     for (unsigned int i = 0; i < sizeof(graphicsTags) / sizeof(graphicsTags[0]); i++) {
         if (!strncmp(tagName, graphicsTags[i].tag, sz)) {
             loader->currentGraphicsNode = nullptr;
@@ -3439,7 +3446,6 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
         if (node->type != SvgNodeType::Defs || !empty) {
             loader->stack.push(node);
         }
-        loader->latestGradient = nullptr;
     } else if ((method = _findGraphicsFactory(tagName))) {
         if (loader->stack.count > 0) parent = loader->stack.last();
         else parent = loader->doc;
@@ -3450,24 +3456,26 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
             loader->stack.push(defs);
             loader->currentGraphicsNode = node;
         }
-        loader->latestGradient = nullptr;
     } else if ((gradientMethod = _findGradientFactory(tagName))) {
         SvgStyleGradient* gradient;
         gradient = gradientMethod(loader, attrs, attrsLength);
-        //FIXME: The current parsing structure does not distinguish end tags.
-        //       There is no way to know if the currently parsed gradient is in defs.
-        //       If a gradient is declared outside of defs after defs is set, it is included in the gradients of defs.
-        //       But finally, the loader has a gradient style list regardless of defs.
-        //       This is only to support this when multiple gradients are declared, even if no defs are declared.
-        //       refer to: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs
-        if (loader->def && loader->doc->node.doc.defs) {
-            loader->def->node.defs.gradients.push(gradient);
-        } else {
-            loader->gradients.push(gradient);
+        //Gradients do not allow nested declarations, so only the earliest declared Gradient is valid.
+        if (loader->gradientStack.count == 0) {
+            //FIXME: The current parsing structure does not distinguish end tags.
+            //       There is no way to know if the currently parsed gradient is in defs.
+            //       If a gradient is declared outside of defs after defs is set, it is included in the gradients of defs.
+            //       But finally, the loader has a gradient style list regardless of defs.
+            //       This is only to support this when multiple gradients are declared, even if no defs are declared.
+            //       refer to: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs
+            if (loader->def && loader->doc->node.doc.defs) {
+                loader->def->node.defs.gradients.push(gradient);
+            } else {
+                loader->gradients.push(gradient);
+            }
         }
-        loader->latestGradient = gradient;
+        if (!empty) loader->gradientStack.push(gradient);
     } else if (!strcmp(tagName, "stop")) {
-        if (!loader->latestGradient) {
+        if (loader->gradientStack.count == 0) {
             TVGLOG("SVG", "Stop element is used outside of the Gradient element");
             return;
         }
@@ -3475,9 +3483,8 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
         loader->svgParse->gradStop = {0.0f, 0, 0, 0, 255};
         loader->svgParse->flags = SvgStopStyleFlags::StopDefault;
         simpleXmlParseAttributes(attrs, attrsLength, _attrParseStops, loader);
-        loader->latestGradient->stops.push(loader->svgParse->gradStop);
+        loader->gradientStack.last()->stops.push(loader->svgParse->gradStop);
     } else {
-        loader->latestGradient = nullptr;
         if (!isIgnoreUnsupportedLogElements(tagName)) TVGLOG("SVG", "Unsupported elements used [Elements: %s]", tagName);
     }
 }
