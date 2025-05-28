@@ -58,9 +58,78 @@
 #include <MaterialXFormat/File.h>
 #include <MaterialXFormat/Util.h>
 #include <MaterialXFormat/XmlIo.h>
+#include <MaterialXGenGlsl/GlslShaderGenerator.h>
+#include <MaterialXGenShader/Shader.h>
 
 Ref<Resource> ResourceFormatLoaderMtlx::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	*r_error = OK;
+
+	// Copy thirdparty/materialx/libraries into res://addons/materialx/libraries
+	// (you should probably also add a .gdignore to it)
+	// Otherwise this will fail much worse than usual
+	String materialx_path = ProjectSettings::get_singleton()->get_resource_path() + "/addons/materialx/";
+
+	mx::DocumentPtr stdlib = mx::createDocument();
+
+	mx::FilePathVec libraries;
+	libraries.push_back("bxdf");
+	libraries.push_back("stdlib");
+	libraries.push_back("pbrlib");
+	libraries.push_back("targets");
+
+	mx::FileSearchPath mtlx_path((materialx_path + "libraries/").utf8().get_data());
+
+	// Load node definitions, implementations and the surface shader node generator
+	mx::loadLibraries(libraries, mtlx_path, stdlib);
+
+	mx::DocumentPtr doc = mx::createDocument();
+	doc->importLibrary(stdlib);
+
+	String resource_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+	mx::FilePath mx_absolute_path(resource_path.utf8().get_data());
+
+	mx::readFromXmlFile(doc, mx_absolute_path);
+
+	std::string msg;
+	bool valid = doc->validate(&msg);
+	if (!valid) {
+		ERR_PRINT(msg.c_str());
+	}
+
+	mx::ShaderGeneratorPtr generator = mx::GlslShaderGenerator::create();
+	mx::GenContext context(generator);
+	context.registerSourceCodeSearchPath(materialx_path.utf8().get_data());
+
+	for (mx::NodePtr material : doc->getMaterialNodes()) {
+		try {
+			//TODO: this will generate invalid glsl for vulkan
+			// what can we do about it?
+			mx::ShaderPtr mx_shader = generator->generate("code", material, context);
+
+			String fragment_src = mx_shader->getSourceCode(mx::Stage::PIXEL).c_str();
+			Ref<FileAccess> fragment_file = FileAccess::open(resource_path + ".frag.glsl", FileAccess::WRITE);
+			fragment_file->store_string("#[fragment]\n");
+			fragment_file->store_string(fragment_src);
+
+			String vertex_src = mx_shader->getSourceCode(mx::Stage::VERTEX).c_str();
+			Ref<FileAccess> vertex_file = FileAccess::open(resource_path + ".vert.glsl", FileAccess::WRITE);
+			vertex_file->store_string("#[vertex]\n");
+			vertex_file->store_string(vertex_src);
+
+		} catch (mx::ExceptionShaderGenError &e) {
+			ERR_PRINT(e.what());
+		}
+	}
+
+	//String mx_err;
+	//Vector<uint8_t> bytecode = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_VERTEX, source, RD::SHADER_LANGUAGE_GLSL, &mx_err);
+	//WARN_PRINT(mx_err);
+
+	//RID shader_rid = RD::get_singleton()->shader_create_from_bytecode(bytecode);
+
+	Ref<ShaderMaterial> mat = memnew(ShaderMaterial);
+	//RS::get_singleton()->material_set_shader(mat->get_rid(), shader_rid);
+	return mat;
 
 	Ref<MaterialXShader> shader = memnew(MaterialXShader);
 	shader->set_path(p_original_path);
@@ -71,10 +140,7 @@ Ref<Resource> ResourceFormatLoaderMtlx::load(const String &p_path, const String 
 		return nullptr;
 	}
 
-	Ref<ShaderMaterial> mat = memnew(ShaderMaterial);
 	mat->set_shader(shader);
-
-	return mat;
 }
 
 void ResourceFormatLoaderMtlx::get_recognized_extensions(List<String> *p_extensions) const {

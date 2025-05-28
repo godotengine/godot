@@ -21,6 +21,10 @@ env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXCore/*.cpp")
 env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXFormat/*.cpp")
 env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXFormat/External/PugiXML/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXGenGlsl/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXGenGlsl/Nodes/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXGenShader/*.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/materialx/source/MaterialXGenShader/Nodes/*.cpp")
 env.modules_sources += thirdparty_obj
 
 if env["platform"] == "macos" or env["platform"] == "ios":

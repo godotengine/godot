@@ -8,9 +8,7 @@ Converting some materialx nodes and shaders into godot visual shaders
 
 ## TODO
 
-* Vendoring MaterialX
 * Implementing all the MaterialX nodes and shaders
-* Loading the standard library
 * Color Management
 * Unit Management
 * ResourceSaver and ResourceImporter
