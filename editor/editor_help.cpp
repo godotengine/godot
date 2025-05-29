@@ -3249,9 +3249,26 @@ void EditorHelp::_notification(int p_what) {
 			update_toggle_files_button();
 		} break;
 
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (update_pending && is_visible_in_tree()) {
+				_update_doc();
+			}
+			update_toggle_files_button();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (!is_ready()) {
+				break;
+			}
+
+			if (is_visible_in_tree()) {
+				_update_doc();
+			} else {
+				update_pending = true;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			update_toggle_files_button();
 		} break;
 	}
