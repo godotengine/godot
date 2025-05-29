@@ -10,4 +10,16 @@ GDTEST_OK
 ~~ WARNING at line 19: (SHADOWED_VARIABLE_BASE_CLASS) The local variable "base_variable_member" is shadowing an already-declared variable at line 4 in the base class "ShadowingBase".
 ~~ WARNING at line 20: (SHADOWED_VARIABLE_BASE_CLASS) The local constant "base_function_member" is shadowing an already-declared function at line 6 in the base class "ShadowingBase".
 ~~ WARNING at line 21: (SHADOWED_VARIABLE_BASE_CLASS) The local variable "base_const_member" is shadowing an already-declared constant at line 3 in the base class "ShadowingBase".
+~~ WARNING at line 25: (SHADOWED_GLOBAL_IDENTIFIER) The method "char" has the same name as a built-in function.
+~~ WARNING at line 28: (SHADOWED_GLOBAL_IDENTIFIER) The method "log" has the same name as a built-in function.
+~~ WARNING at line 38: (SHADOWED_GLOBAL_IDENTIFIER) The variable "sinh" has the same name as a built-in function.
+~~ WARNING at line 40: (SHADOWED_GLOBAL_IDENTIFIER) The "for" iterator variable "char" has the same name as a built-in function.
+~~ WARNING at line 45: (SHADOWED_GLOBAL_IDENTIFIER) The pattern bind "abs" has the same name as a built-in function.
+~~ WARNING at line 51: (SHADOWED_GLOBAL_IDENTIFIER) The class "floor" has the same name as a built-in function.
+~~ WARNING at line 54: (SHADOWED_GLOBAL_IDENTIFIER) The variable "sin" has the same name as a built-in function.
+~~ WARNING at line 56: (SHADOWED_GLOBAL_IDENTIFIER) The constant "cos" has the same name as a built-in function.
+~~ WARNING at line 58: (SHADOWED_GLOBAL_IDENTIFIER) The named enum "tan" has the same name as a built-in function.
+~~ WARNING at line 63: (SHADOWED_GLOBAL_IDENTIFIER) The enum value "clamp" has the same name as a built-in function.
+~~ WARNING at line 64: (SHADOWED_GLOBAL_IDENTIFIER) The enum value "clampi" has the same name as a built-in function.
+~~ WARNING at line 68: (SHADOWED_GLOBAL_IDENTIFIER) The signal "sqrt" has the same name as a built-in function.
 warn
