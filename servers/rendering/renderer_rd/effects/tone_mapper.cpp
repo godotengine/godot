@@ -147,6 +147,10 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	}
 
 	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
+	tonemap.push_constant.tonemapper_params[0] = p_settings.tonemapper_params[0];
+	tonemap.push_constant.tonemapper_params[1] = p_settings.tonemapper_params[1];
+	tonemap.push_constant.tonemapper_params[2] = p_settings.tonemapper_params[2];
+	tonemap.push_constant.tonemapper_params[3] = p_settings.tonemapper_params[3];
 	tonemap.push_constant.flags |= p_settings.use_auto_exposure ? TONEMAP_FLAG_USE_AUTO_EXPOSURE : 0;
 	tonemap.push_constant.exposure = p_settings.exposure;
 	tonemap.push_constant.white = p_settings.white;
@@ -237,6 +241,11 @@ void ToneMapper::tonemapper_mobile(RID p_source_color, RID p_dst_framebuffer, co
 	tonemap_mobile.push_constant.white = p_settings.white;
 	tonemap_mobile.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
+	tonemap_mobile.push_constant.tonemapper_params[0] = p_settings.tonemapper_params[0];
+	tonemap_mobile.push_constant.tonemapper_params[1] = p_settings.tonemapper_params[1];
+	tonemap_mobile.push_constant.tonemapper_params[2] = p_settings.tonemapper_params[2];
+	tonemap_mobile.push_constant.tonemapper_params[3] = p_settings.tonemapper_params[3];
+
 	uint32_t spec_constant = 0;
 	spec_constant |= p_settings.use_bcs ? TONEMAP_MOBILE_FLAG_USE_BCS : 0;
 	spec_constant |= p_settings.use_glow ? TONEMAP_MOBILE_FLAG_USE_GLOW : 0;
@@ -323,6 +332,11 @@ void ToneMapper::tonemapper_subpass(RD::DrawListID p_subpass_draw_list, RID p_so
 	tonemap_mobile.push_constant.exposure = p_settings.exposure;
 	tonemap_mobile.push_constant.white = p_settings.white;
 	tonemap_mobile.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
+
+	tonemap_mobile.push_constant.tonemapper_params[0] = p_settings.tonemapper_params[0];
+	tonemap_mobile.push_constant.tonemapper_params[1] = p_settings.tonemapper_params[1];
+	tonemap_mobile.push_constant.tonemapper_params[2] = p_settings.tonemapper_params[2];
+	tonemap_mobile.push_constant.tonemapper_params[3] = p_settings.tonemapper_params[3];
 
 	uint32_t spec_constant = TONEMAP_MOBILE_ADRENO_BUG;
 	spec_constant |= p_settings.use_bcs ? TONEMAP_MOBILE_FLAG_USE_BCS : 0;
