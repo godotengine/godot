@@ -4199,6 +4199,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					if (is_base && (!base.is_meta_type || member.variable->is_static)) {
 						p_identifier->set_datatype(member.get_datatype());
 						p_identifier->source = member.variable->is_static ? GDScriptParser::IdentifierNode::STATIC_VARIABLE : GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
+						p_identifier->is_base = is_base;
 						p_identifier->variable_source = member.variable;
 						member.variable->usages += 1;
 						return;
