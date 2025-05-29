@@ -258,3 +258,12 @@ GH-106848
 Validate extension JSON: API was removed: classes/Node/methods/get_rpc_config
 
 Change Node `get_rpc_config` to `get_node_rpc_config`. Compatibility method registered.
+
+
+GH-106926
+---------
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments/1': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/FontVariation/methods/get_variation_face_index/return_value': meta changed value in new API, from "int32" to "int64".
+Validate extension JSON: Error: Field 'classes/FontVariation/methods/set_variation_face_index/arguments/0': meta changed value in new API, from "int32" to "int64".
+
+No compatibility method needed.
