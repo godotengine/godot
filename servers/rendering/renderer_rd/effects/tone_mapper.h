@@ -75,18 +75,19 @@ private:
 		float pixel_size[2]; //  8 - 24
 		uint32_t tonemapper; //  4 - 28
 		uint32_t pad1; //  4 - 32
+		float tonemapper_params[4]; //  16 - 48
 
-		uint32_t glow_texture_size[2]; //  8 - 40
-		float glow_intensity; //  4 - 44
-		float glow_map_strength; //  4 - 48
+		uint32_t glow_texture_size[2]; //  8 - 56
+		float glow_intensity; //  4 - 60
+		float glow_map_strength; //  4 - 64
 
-		uint32_t glow_mode; //  4 - 52
-		float glow_levels[7]; // 28 - 80
+		uint32_t glow_mode; //  4 - 68
+		float glow_levels[7]; // 28 - 96
 
-		float exposure; //  4 - 84
-		float white; //  4 - 88
-		float auto_exposure_scale; //  4 - 92
-		float luminance_multiplier; //  4 - 96
+		float exposure; //  4 - 100
+		float white; //  4 - 104
+		float auto_exposure_scale; //  4 - 108
+		float luminance_multiplier; //  4 - 112
 
 		float output_max_value; //  4 - 100
 		uint32_t pad2[3]; //  12 - 112
@@ -127,6 +128,7 @@ public:
 		RID glow_map;
 
 		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
+		float tonemapper_params[4] = { 0.0, 0.0, 0.0, 0.0 };
 		float exposure = 1.0;
 		float white = 1.0;
 		float max_value = 1.0;
