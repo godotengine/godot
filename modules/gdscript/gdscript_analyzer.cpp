@@ -1925,6 +1925,27 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		}
 	}
 
+	if (p_function->must_call_super) {
+		if (p_is_lambda) {
+			push_error(R"(Cannot be used in lambda expressions)", p_function);
+		} else {
+			if (p_function->body->statements.size() == 0) {
+				push_error(R"(Must call the base class function)", p_function);
+				return;
+			}
+			GDScriptParser::Node *node = p_function->body->statements[0];
+			bool is_super = false;
+			if (node->type == GDScriptParser::Node::Type::CALL) {
+				GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(node);
+				if (!call_node->is_super) {
+					push_error(R"(Must call the base class function)", p_function);
+				}
+			} else {
+				push_error(R"(Must call the base class function)", p_function);
+			}
+		}
+	}
+
 	parser->current_function = previous_function;
 	static_context = previous_static_context;
 }
