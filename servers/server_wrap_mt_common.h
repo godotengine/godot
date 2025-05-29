@@ -64,6 +64,17 @@
 		return ret;                                                                 \
 	}
 
+#define FUNCRIDSPLIT2(m_type, m_arg1, m_arg2)                                               \
+	virtual RID m_type##_create(m_arg1 p1, m_arg2 p2) override {                            \
+		RID ret = server_name->m_type##_allocate();                                         \
+		if (Thread::get_caller_id() != server_thread) {                                     \
+			command_queue.push(server_name, &ServerName::m_type##_initialize, ret, p1, p2); \
+		} else {                                                                            \
+			server_name->m_type##_initialize(ret, p1, p2);                                  \
+		}                                                                                   \
+		return ret;                                                                         \
+	}
+
 //RID now returns directly, ensure thread safety yourself
 #define FUNCRID(m_type)                        \
 	virtual RID m_type##_create() override {   \

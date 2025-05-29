@@ -1992,6 +1992,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		new_type = SHADER_TYPE_SKY;
 	} else if (mode_string == "fog") {
 		new_type = SHADER_TYPE_FOG;
+	} else if (mode_string == "mesh_rasterizer") {
+		new_type = SHADER_TYPE_MESH_RASTERIZER;
 	} else {
 		new_type = SHADER_TYPE_MAX;
 	}
@@ -2305,6 +2307,10 @@ void MaterialStorage::material_set_param(RID p_material, const StringName &p_par
 		_material_queue_update(material, !is_texture, is_texture);
 	} else {
 		_material_queue_update(material, true, true);
+	}
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL_PARAM);
 	}
 }
 
