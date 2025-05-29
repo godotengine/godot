@@ -4475,6 +4475,18 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			} else {
 				push_error(vformat(R"*(Cannot access %s "%s" from a static variable initializer.)*", source_type, p_identifier->name), p_identifier);
 			}
+		} else if (!static_context && source_is_instance_variable) {
+			switch (p_identifier->variable_source->access_level) {
+				case GDScriptParser::Node::AccessLevel::PRIVATE: {
+					if (p_identifier->is_base || p_identifier->source != GDScriptParser::IdentifierNode::MEMBER_VARIABLE) {
+						push_error(R"(Access restricted.)", p_identifier);
+					}
+				} break;
+				case GDScriptParser::Node::AccessLevel::PROTECTED: {
+				} break;
+				default:
+					break;
+			}
 		}
 
 		if (current_lambda != nullptr) {
