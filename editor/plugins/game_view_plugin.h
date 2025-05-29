@@ -60,10 +60,25 @@ private:
 
 	void _feature_profile_changed();
 
+	struct ScreenshotCB {
+		Callable cb;
+		Rect2i rect;
+	};
+
+	int64_t scr_rq_id = 0;
+	HashMap<uint64_t, ScreenshotCB> screenshot_callbacks;
+
+	bool _msg_get_screenshot(const Array &p_args);
+
 protected:
 	static void _bind_methods();
 
 public:
+	virtual bool capture(const String &p_message, const Array &p_data, int p_session) override;
+	virtual bool has_capture(const String &p_capture) const override;
+
+	bool add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect);
+
 	void set_suspend(bool p_enabled);
 	void next_frame();
 
@@ -173,6 +188,8 @@ class GameView : public VBoxContainer {
 	void _play_pressed();
 	static void _instance_starting_static(int p_idx, List<String> &r_arguments);
 	void _instance_starting(int p_idx, List<String> &r_arguments);
+	static bool _instance_rq_screenshot_static(const Callable &p_callback);
+	bool _instance_rq_screenshot(const Callable &p_callback);
 	void _stop_pressed();
 	void _embedding_completed();
 	void _embedding_failed();

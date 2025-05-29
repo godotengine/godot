@@ -119,6 +119,7 @@ private:
 #ifndef _3D_DISABLED
 	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
 #endif
+	static Error _msg_rq_screenshot(const Array &p_args);
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
