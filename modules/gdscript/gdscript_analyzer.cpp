@@ -3657,6 +3657,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance instead.)*", p_call->function_name, base_type.to_string()), p_call);
 		} else if (is_self && !p_call->is_static) {
 			mark_lambda_use_self();
+		} else if (!is_self && access_level < GDScriptParser::Node::AccessLevel::PUBLIC) {
+			push_error(R"(Access restricted.)", p_call);
 		}
 
 		if (!p_is_root && !p_is_await && return_type.is_hard_type() && return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
