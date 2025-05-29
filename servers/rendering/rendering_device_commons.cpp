@@ -1210,7 +1210,7 @@ Error RenderingDeviceCommons::reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 				}
 			}
 
-			if (stage == SHADER_STAGE_VERTEX) {
+			if (stage == SHADER_STAGE_VERTEX || stage == SHADER_STAGE_FRAGMENT) {
 				uint32_t iv_count = 0;
 				result = spvReflectEnumerateInputVariables(&module, &iv_count, nullptr);
 				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
@@ -1228,10 +1228,12 @@ Error RenderingDeviceCommons::reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 						if (!v) {
 							continue;
 						}
-						if (v->decoration_flags == 0) { // Regular input.
-							r_reflection.vertex_input_mask |= (((uint64_t)1) << v->location);
+						if (stage == SHADER_STAGE_VERTEX) {
+							if (v->decoration_flags == 0) { // Regular input.
+								r_reflection.vertex_input_mask |= (((uint64_t)1) << v->location);
+							}
 						}
-						if (v->built_in == SpvBuiltInViewIndex || v->built_in == SpvBuiltInViewportIndex) {
+						if (v->built_in == SpvBuiltInViewIndex) {
 							r_reflection.has_multiview = true;
 						}
 					}
@@ -1258,9 +1260,6 @@ Error RenderingDeviceCommons::reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 						}
 						if (refvar->built_in != SpvBuiltInFragDepth) {
 							r_reflection.fragment_output_mask |= 1 << refvar->location;
-						}
-						if (refvar->built_in == SpvBuiltInViewIndex || refvar->built_in == SpvBuiltInViewportIndex) {
-							r_reflection.has_multiview = true;
 						}
 					}
 				}
