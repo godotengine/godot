@@ -4360,6 +4360,28 @@ bool GDScriptParser::must_call_super_annotation(AnnotationNode *p_annotation, No
 	return true;
 }
 
+bool GDScriptParser::protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION && p_target->type != Node::CLASS && p_target->type != Node::SIGNAL,
+			false, R"(@protected can only be applied to constants, variables, signals, functions, and classes.)");
+	if (p_target->access_level != GDScriptParser::Node::AccessLevel::PUBLIC) {
+		push_error(R"(Only one of @protected/@private is allowed, and it can be used only once.)", p_target);
+		return false;
+	}
+	p_target->access_level = GDScriptParser::Node::AccessLevel::PROTECTED;
+	return true;
+}
+
+bool GDScriptParser::private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION && p_target->type != Node::CLASS && p_target->type != Node::SIGNAL,
+			false, R"(@private can only be applied to constants, variables, signals, functions, and classes.)");
+	if (p_target->access_level != GDScriptParser::Node::AccessLevel::PUBLIC) {
+		push_error(R"(Only one of @protected/@private is allowed, and it can be used only once.)", p_target);
+		return false;
+	}
+	p_target->access_level = GDScriptParser::Node::AccessLevel::PRIVATE;
+	return true;
+}
+
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@onready" annotation can only be applied to class variables.)");
 
