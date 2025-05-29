@@ -4349,6 +4349,17 @@ bool GDScriptParser::static_unload_annotation(AnnotationNode *p_annotation, Node
 	return true;
 }
 
+bool GDScriptParser::must_call_super_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::FUNCTION, false, R"("@must_call_super" annotation can only be applied to functions.)");
+	FunctionNode *func_node = static_cast<FunctionNode *>(p_target);
+	if (func_node->must_call_super) {
+		push_error(vformat(R"("%s" annotation can only be used once per function.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	func_node->must_call_super = true;
+	return true;
+}
+
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@onready" annotation can only be applied to class variables.)");
 
