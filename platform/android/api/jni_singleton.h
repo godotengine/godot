@@ -46,8 +46,19 @@ class JNISingleton : public Object {
 	RBMap<StringName, MethodData> method_map;
 	Ref<JavaObject> wrapped_object;
 
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("has_java_method", "method"), &JNISingleton::has_java_method);
+	}
+
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+		// Godot methods take precedence.
+		Variant ret = Object::callp(p_method, p_args, p_argcount, r_error);
+		if (r_error.error == Callable::CallError::CALL_OK) {
+			return ret;
+		}
+
 		if (wrapped_object.is_valid()) {
 			RBMap<StringName, MethodData>::Element *E = method_map.find(p_method);
 
@@ -68,11 +79,19 @@ public:
 			}
 		}
 
-		return Object::callp(p_method, p_args, p_argcount, r_error);
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
 	}
 
 	Ref<JavaObject> get_wrapped_object() const {
 		return wrapped_object;
+	}
+
+	bool has_java_method(const StringName &p_method) const {
+		if (method_map.has(p_method)) {
+			return true;
+		}
+		return false;
 	}
 
 	void add_method(const StringName &p_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type) {
