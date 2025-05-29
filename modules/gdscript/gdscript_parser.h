@@ -336,7 +336,15 @@ public:
 			WHILE,
 		};
 
+		enum AccessLevel {
+			PRIVATE,
+			PROTECTED,
+			FRIEND,
+			PUBLIC
+		};
+
 		Type type = NONE;
+		AccessLevel access_level = PUBLIC;
 		int start_line = 0, end_line = 0;
 		int start_column = 0, end_column = 0;
 		int leftmost_column = 0, rightmost_column = 0;
