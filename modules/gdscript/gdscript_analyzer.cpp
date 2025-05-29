@@ -1806,7 +1806,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		BitField<MethodFlags> method_flags = {};
 		StringName native_base;
 		GDScriptParser::Node::AccessLevel acceess_level = GDScriptParser::Node::PUBLIC;
-		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
+		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, acceess_level, &native_base)) {
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
 
 			if (p_function->return_type != nullptr) {
@@ -4822,6 +4822,18 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					p_subscript->reduced_value = value;
 					result_type = type_from_variant(value, p_subscript);
 				}
+			}
+		}
+
+		for (GDScriptParser::ClassNode::Member member : base_type.class_type->members) {
+			if (member.get_name() == p_subscript->attribute->name) {
+				for (GDScriptParser::AnnotationNode *annotation : member.get_source_node()->annotations) {
+					if (annotation->name == "@protected" || annotation->name == "@protected") {
+						push_error(R"(Access restricted.)", p_subscript);
+						break;
+					}
+				}
+				break;
 			}
 		}
 
