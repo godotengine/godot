@@ -831,6 +831,7 @@ public:
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
 
 	FUNC4(environment_set_tonemap, RID, EnvironmentToneMapper, float, float)
+	FUNC2(environment_set_tonemap_agx_contrast, RID, float)
 
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
