@@ -9480,26 +9480,27 @@ Node3DEditor::Node3DEditor() {
 	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
 	snap_dialog->add_child(snap_dialog_vbc);
 
-	snap_translate = memnew(SpinBox);
+	snap_translate = memnew(EditorSpinSlider);
 	snap_translate->set_min(0.0);
 	snap_translate->set_step(0.01);
-	snap_translate->set_select_all_on_focus(true);
-	snap_translate->set_accessibility_name(TTRC("Translate Snap:"));
-	snap_dialog_vbc->add_margin_child(TTRC("Translate Snap:"), snap_translate);
+	snap_translate->set_max(10.0);
+	snap_translate->set_allow_greater(true);
+	snap_translate->set_accessibility_name(TTRC("Translate Snap"));
+	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
 
-	snap_rotate = memnew(SpinBox);
+	snap_rotate = memnew(EditorSpinSlider);
 	snap_rotate->set_min(0.0);
 	snap_rotate->set_step(0.1);
-	snap_rotate->set_allow_greater(true);
-	snap_rotate->set_select_all_on_focus(true);
-	snap_rotate->set_accessibility_name(TTRC("Rotate Snap (deg.):"));
-	snap_dialog_vbc->add_margin_child(TTRC("Rotate Snap (deg.):"), snap_rotate);
+	snap_rotate->set_max(360);
+	snap_rotate->set_accessibility_name(TTRC("Rotate Snap"));
+	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"), snap_rotate);
 
-	snap_scale = memnew(SpinBox);
+	snap_scale = memnew(EditorSpinSlider);
 	snap_scale->set_min(0.0);
-	snap_scale->set_select_all_on_focus(true);
-	snap_scale->set_accessibility_name(TTRC("Scale Snap (%):"));
-	snap_dialog_vbc->add_margin_child(TTRC("Scale Snap (%):"), snap_scale);
+	snap_scale->set_step(1.0);
+	snap_scale->set_max(100);
+	snap_scale->set_accessibility_name(TTRC("Scale Snap"));
+	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
 
 	/* SETTINGS DIALOG */
 
