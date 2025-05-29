@@ -36,6 +36,7 @@
 bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret) {
 	HashMap<StringName, List<MethodInfo>>::Iterator M = methods.find(p_method);
 	if (!M) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return false;
 	}
 
@@ -756,7 +757,11 @@ bool JavaClass::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 Variant JavaClass::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	Variant ret;
+	// Godot methods take precedence.
+	Variant ret = RefCounted::callp(p_method, p_args, p_argcount, r_error);
+	if (r_error.error == Callable::CallError::CALL_OK) {
+		return ret;
+	}
 
 	String method = (p_method == java_constructor_name) ? "<init>" : p_method;
 	bool found = _call_method(nullptr, method, p_args, p_argcount, r_error, ret);
@@ -764,7 +769,7 @@ Variant JavaClass::callp(const StringName &p_method, const Variant **p_args, int
 		return ret;
 	}
 
-	return RefCounted::callp(p_method, p_args, p_argcount, r_error);
+	return Variant();
 }
 
 String JavaClass::get_java_class_name() const {
@@ -858,6 +863,11 @@ String JavaClass::to_string() {
 	return "<JavaClass:" + java_class_name + ">";
 }
 
+bool JavaClass::has_java_method(const StringName &p_method) const {
+	String method = (p_method == java_constructor_name) ? "<init>" : p_method;
+	return methods.has(method);
+}
+
 JavaClass::JavaClass() {
 }
 
@@ -873,10 +883,15 @@ JavaClass::~JavaClass() {
 /////////////////////
 
 Variant JavaObject::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	// Godot methods take precedence.
+	Variant ret = RefCounted::callp(p_method, p_args, p_argcount, r_error);
+	if (r_error.error == Callable::CallError::CALL_OK) {
+		return ret;
+	}
+
 	if (instance) {
 		Ref<JavaClass> c = base_class;
 		while (c.is_valid()) {
-			Variant ret;
 			bool found = c->_call_method(this, p_method, p_args, p_argcount, r_error, ret);
 			if (found) {
 				return ret;
@@ -885,7 +900,7 @@ Variant JavaObject::callp(const StringName &p_method, const Variant **p_args, in
 		}
 	}
 
-	return RefCounted::callp(p_method, p_args, p_argcount, r_error);
+	return Variant();
 }
 
 Ref<JavaClass> JavaObject::get_java_class() const {
@@ -897,6 +912,19 @@ String JavaObject::to_string() {
 		return "<JavaObject:" + base_class->java_class_name + " \"" + (String)call("toString") + "\">";
 	}
 	return RefCounted::to_string();
+}
+
+bool JavaObject::has_java_method(const StringName &p_method) const {
+	if (instance) {
+		Ref<JavaClass> c = base_class;
+		while (c.is_valid()) {
+			if (c->has_java_method(p_method)) {
+				return true;
+			}
+			c = c->get_java_parent_class();
+		}
+	}
+	return false;
 }
 
 JavaObject::JavaObject() {
@@ -1461,7 +1489,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 	return false;
 }
 
-Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_private_methods_access) {
+Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_public_methods_access) {
 	String class_name_dots = p_class.replace_char('/', '.');
 	if (class_cache.has(class_name_dots)) {
 		return class_cache[class_name_dots];
@@ -1473,10 +1501,18 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 	jclass bclass = jni_find_class(env, class_name_dots.replace_char('.', '/').utf8().get_data());
 	ERR_FAIL_NULL_V_MSG(bclass, Ref<JavaClass>(), vformat("Java class '%s' not found.", p_class));
 
-	jobjectArray constructors = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredConstructors);
+	jobjectArray constructors = (jobjectArray)env->CallObjectMethod(bclass, Class_getConstructors);
+	if (env->ExceptionCheck()) {
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+	}
 	ERR_FAIL_NULL_V(constructors, Ref<JavaClass>());
 
 	jobjectArray methods = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredMethods);
+	if (env->ExceptionCheck()) {
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+	}
 	ERR_FAIL_NULL_V(methods, Ref<JavaClass>());
 
 	Ref<JavaClass> java_class = memnew(JavaClass);
@@ -1515,8 +1551,9 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 		Vector<String> params;
 
 		jint mods = env->CallIntMethod(obj, is_constructor ? Constructor_getModifiers : Method_getModifiers);
+		bool is_public = (mods & 0x0001) != 0; // java.lang.reflect.Modifier.PUBLIC
 
-		if (!(mods & 0x0001) && (is_constructor || !p_allow_private_methods_access)) {
+		if (!is_public && (is_constructor || !p_allow_non_public_methods_access)) {
 			env->DeleteLocalRef(obj);
 			continue; //not public bye
 		}
@@ -1627,6 +1664,13 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 				mi.method = env->GetMethodID(bclass, str_method.utf8().get_data(), signature.utf8().get_data());
 			}
 
+			if (env->ExceptionCheck()) {
+				// Exceptions may be thrown when trying to access hidden methods; write the exception to the logs and continue.
+				env->ExceptionDescribe();
+				env->ExceptionClear();
+				continue;
+			}
+
 			ERR_CONTINUE(!mi.method);
 
 			java_class->methods[str_method].push_back(mi);
@@ -1700,7 +1744,7 @@ JavaClassWrapper::JavaClassWrapper() {
 	ERR_FAIL_NULL(env);
 
 	jclass bclass = jni_find_class(env, "java/lang/Class");
-	Class_getDeclaredConstructors = env->GetMethodID(bclass, "getDeclaredConstructors", "()[Ljava/lang/reflect/Constructor;");
+	Class_getConstructors = env->GetMethodID(bclass, "getConstructors", "()[Ljava/lang/reflect/Constructor;");
 	Class_getDeclaredMethods = env->GetMethodID(bclass, "getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
 	Class_getFields = env->GetMethodID(bclass, "getFields", "()[Ljava/lang/reflect/Field;");
 	Class_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
