@@ -856,6 +856,7 @@ public:
 		SuiteNode *body = nullptr;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
 		bool is_coroutine = false;
+		bool must_call_super = false;
 		Variant rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
