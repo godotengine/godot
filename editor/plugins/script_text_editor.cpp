@@ -90,7 +90,7 @@ void ConnectionInfoDialog::popup_connections(const String &p_method, const Vecto
 }
 
 ConnectionInfoDialog::ConnectionInfoDialog() {
-	set_title(TTR("Connections to method:"));
+	set_title(TTRC("Connections to method:"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
@@ -101,6 +101,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 
 	method = memnew(Label);
 	method->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	method->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	method->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vbc->add_child(method);
 
@@ -109,9 +110,9 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	tree->set_columns(3);
 	tree->set_hide_root(true);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0, TTR("Source"));
-	tree->set_column_title(1, TTR("Signal"));
-	tree->set_column_title(2, TTR("Target"));
+	tree->set_column_title(0, TTRC("Source"));
+	tree->set_column_title(1, TTRC("Signal"));
+	tree->set_column_title(2, TTRC("Target"));
 	vbc->add_child(tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
@@ -1881,7 +1882,6 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case SEARCH_LOCATE_FUNCTION: {
 			quick_open->popup_dialog(get_functions());
-			quick_open->set_title(TTR("Go to Function"));
 		} break;
 		case SEARCH_GOTO_LINE: {
 			goto_line_popup->popup_find_line(code_editor);
@@ -2044,6 +2044,13 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready() && is_visible_in_tree()) {
+				_update_errors();
+				_update_warnings();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED:
 			if (!editor_enabled) {
 				break;
@@ -2537,7 +2544,7 @@ void ScriptTextEditor::_prepare_edit_menu() {
 void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos) {
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
-		context_menu->add_item(TTR("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
+		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}
 	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
@@ -2574,7 +2581,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
 		}
 		if (p_color) {
-			context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
+			context_menu->add_item(TTRC("Pick Color"), EDIT_PICK_COLOR);
 		}
 	}
 
@@ -2641,6 +2648,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	color_panel->add_child(color_picker);
 
 	quick_open = memnew(ScriptEditorQuickOpen);
+	quick_open->set_title(TTRC("Go to Function"));
 	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
 	add_child(quick_open);
 
@@ -2673,7 +2681,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_submenu_node_item(TTR("Line"), sub_menu);
+		edit_menu->get_popup()->add_submenu_node_item(TTRC("Line"), sub_menu);
 	}
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
@@ -2682,7 +2690,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_submenu_node_item(TTR("Folding"), sub_menu);
+		edit_menu->get_popup()->add_submenu_node_item(TTRC("Folding"), sub_menu);
 	}
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
@@ -2694,7 +2702,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_submenu_node_item(TTR("Indentation"), sub_menu);
+		edit_menu->get_popup()->add_submenu_node_item(TTRC("Indentation"), sub_menu);
 	}
 	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 	edit_menu->get_popup()->add_separator();
@@ -2704,9 +2712,9 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/capitalize"), EDIT_CAPITALIZE);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_submenu_node_item(TTR("Convert Case"), sub_menu);
+		edit_menu->get_popup()->add_submenu_node_item(TTRC("Convert Case"), sub_menu);
 	}
-	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
+	edit_menu->get_popup()->add_submenu_node_item(TTRC("Syntax Highlighter"), highlighter_menu);
 	highlighter_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
 
 	edit_hb->add_child(search_menu);
@@ -2729,12 +2737,12 @@ void ScriptTextEditor::_enable_code_editor() {
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
 	goto_menu->get_popup()->add_separator();
 
-	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
+	goto_menu->get_popup()->add_submenu_node_item(TTRC("Bookmarks"), bookmarks_menu);
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_bookmark_item_pressed));
 
-	goto_menu->get_popup()->add_submenu_node_item(TTR("Breakpoints"), breakpoints_menu);
+	goto_menu->get_popup()->add_submenu_node_item(TTRC("Breakpoints"), breakpoints_menu);
 	_update_breakpoint_list();
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_breakpoint_item_pressed));
@@ -2794,7 +2802,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_hb = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
-	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_text(TTRC("Edit"));
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->set_shortcut_context(this);
 
@@ -2810,12 +2818,12 @@ ScriptTextEditor::ScriptTextEditor() {
 	set_syntax_highlighter(highlighter);
 
 	search_menu = memnew(MenuButton);
-	search_menu->set_text(TTR("Search"));
+	search_menu->set_text(TTRC("Search"));
 	search_menu->set_switch_on_hover(true);
 	search_menu->set_shortcut_context(this);
 
 	goto_menu = memnew(MenuButton);
-	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_text(TTRC("Go To"));
 	goto_menu->set_switch_on_hover(true);
 	goto_menu->set_shortcut_context(this);
 

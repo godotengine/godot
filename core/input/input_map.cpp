@@ -419,7 +419,7 @@ String InputMap::get_builtin_display_name(const String &p_name) const {
 
 	for (int i = 0; i < len; i++) {
 		if (_builtin_action_display_names[i].name == p_name) {
-			return RTR(_builtin_action_display_names[i].display_name);
+			return _builtin_action_display_names[i].display_name;
 		}
 	}
 
