@@ -548,7 +548,8 @@ private:
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
-	void _save_screenshot(NodePath p_path);
+	void _save_screenshot(const String &p_path);
+	void _save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h, const String &p_emb_path, const Rect2i &p_rect, const String &p_path);
 
 	void _check_system_theme_changed();
 

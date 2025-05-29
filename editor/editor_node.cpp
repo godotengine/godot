@@ -96,6 +96,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
+#include "editor/editor_run.h"
 #include "editor/editor_script.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_settings_dialog.h"
@@ -3419,14 +3420,39 @@ void EditorNode::_request_screenshot() {
 
 void EditorNode::_screenshot(bool p_use_utc) {
 	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).remove_char(':') + ".png";
-	NodePath path = String("user://") + name;
-	_save_screenshot(path);
-	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
-		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(path), true);
+	String path = String("user://") + name;
+
+	if (!EditorRun::request_screenshot(callable_mp(this, &EditorNode::_save_screenshot_with_embedded_process).bind(path))) {
+		_save_screenshot(path);
 	}
 }
 
-void EditorNode::_save_screenshot(NodePath p_path) {
+void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h, const String &p_emb_path, const Rect2i &p_rect, const String &p_path) {
+	Control *main_screen_control = editor_main_screen->get_control();
+	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
+	Viewport *viewport = main_screen_control->get_viewport();
+	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the editor main screen.");
+	Ref<ViewportTexture> texture = viewport->get_texture();
+	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
+	Ref<Image> img = texture->get_image();
+	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
+	img->convert(Image::FORMAT_RGBA8);
+	ERR_FAIL_COND(p_emb_path.is_empty());
+	Ref<Image> overlay = Image::load_from_file(p_emb_path);
+	DirAccess::remove_absolute(p_emb_path);
+	ERR_FAIL_COND_MSG(overlay.is_null(), "Cannot get an image from a embedded process.");
+	overlay->convert(Image::FORMAT_RGBA8);
+	overlay->resize(p_rect.size.x, p_rect.size.y);
+	img->blend_rect(overlay, Rect2i(0, 0, p_w, p_h), p_rect.position);
+	Error error = img->save_png(p_path);
+	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
+
+	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
+		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(p_path), true);
+	}
+}
+
+void EditorNode::_save_screenshot(const String &p_path) {
 	Control *main_screen_control = editor_main_screen->get_control();
 	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
 	Viewport *viewport = main_screen_control->get_viewport();
@@ -3437,6 +3463,10 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
+
+	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
+		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(p_path), true);
+	}
 }
 
 void EditorNode::_check_system_theme_changed() {
