@@ -764,7 +764,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 					if (anim.is_valid()) {
 						anim_length = anim->get_length();
 					}
-				} 
+				}
 			}
 			String hint_string = vformat("0,%.4f,0.0001,or_greater", anim_length);
 			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("start_offset"), PROPERTY_HINT_RANGE, hint_string));

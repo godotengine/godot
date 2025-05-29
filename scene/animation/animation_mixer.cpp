@@ -394,14 +394,6 @@ void AnimationMixer::get_animation_list(List<StringName> *p_animations) const {
 }
 
 Ref<Animation> AnimationMixer::get_animation(const StringName &p_name) const {
-	if (p_name == "[stop]") {
-		int a = 0;
-	}
-
-	if (p_name.is_empty()) {
-		int a = 0;
-	}
-
 	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
 	const AnimationData &anim_data = animation_set[p_name];
 	return anim_data.animation;
@@ -1712,7 +1704,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					track_info.loop = a->get_loop_mode() != Animation::LOOP_NONE;
 					track_info.backward = backward;
 					track_info.use_blend = a->audio_track_is_use_blend(i);
-					AHashMap<int, PlayingAudioStreamInfo>& map = track_info.stream_info;
+					AHashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
 
 					// Main process to fire key is started from here.
 					if (p_update_only) {
@@ -1729,8 +1721,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							t->audio_stream_playback->stop_stream(map[idx].index);
 							map.erase(idx);
 						}
-					}
-					else {
+					} else {
 						List<int> to_play;
 						a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 						if (to_play.size()) {
@@ -1786,8 +1777,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						pasi.start = time;
 						if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
 							pasi.len = len - start_ofs - end_ofs;
-						}
-						else {
+						} else {
 							pasi.len = 0;
 						}
 						map[idx] = pasi;
@@ -1828,7 +1818,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						if (idx < 0 && a->track_get_key_count(i) > 0 && time < a->track_get_key_time(i, 0)) {
 							idx = 0;
 						}
-						
+
 						// Discard previous animation when seeking.
 						if (map.has(idx)) {
 							map.erase(idx);
@@ -1856,7 +1846,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						anim_name = a->animation_track_get_key_animation(i, idx);
 					}
 
-					while (String(anim_name) == "[stop]" && idx < a->track_get_key_count(i)-1) {
+					while (String(anim_name) == "[stop]" && idx < a->track_get_key_count(i) - 1) {
 						idx = idx + 1;
 						anim_name = a->animation_track_get_key_animation(i, idx);
 					}

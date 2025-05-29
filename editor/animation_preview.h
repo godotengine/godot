@@ -33,8 +33,8 @@
 #include "core/object/ref_counted.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
-#include "scene/resources/animation.h"
 #include "scene/main/node.h"
+#include "scene/resources/animation.h"
 
 struct TrackKeyTime {
 	int track_index;
@@ -56,8 +56,6 @@ class AnimationPreview : public RefCounted {
 	friend class AnimationPreviewGenerator;
 	uint64_t version = 1;
 
-	//static void _bind_methods();
-
 public:
 	uint64_t get_version() const { return version; }
 	float get_length() const { return length; }
@@ -69,7 +67,6 @@ public:
 	void create_key_region(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
 	AnimationPreview();
-
 };
 
 class AnimationPreviewGenerator : public Node {
@@ -100,10 +97,7 @@ public:
 			thread = p_rhs.thread;
 		}
 		Preview() {}
-		//Preview(const Ref<Animation> &p_animation) :
-		//		animation(p_animation), id(p_animation->get_instance_id()) {}
 	};
-
 
 private:
 	HashMap<ObjectID, Preview> previews;

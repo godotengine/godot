@@ -146,7 +146,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "use_blend") {
 			if (track_get_type(track) == TYPE_AUDIO) {
 				audio_track_set_use_blend(track, p_value);
-			} else if(track_get_type(track) == TYPE_ANIMATION) {
+			} else if (track_get_type(track) == TYPE_ANIMATION) {
 				animation_track_set_use_blend(track, p_value);
 			}
 		} else if (what == "interp") {
@@ -3951,7 +3951,6 @@ real_t Animation::animation_track_get_key_end_offset(int p_track, int p_key) con
 
 	return at->values[p_key].value.end_offset;
 }
-
 
 void Animation::animation_track_set_use_blend(int p_track, bool p_enable) {
 	ERR_FAIL_INDEX(p_track, tracks.size());

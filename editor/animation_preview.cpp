@@ -33,7 +33,6 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 
-
 AnimationPreview::AnimationPreview() {
 	length = 0;
 }
@@ -111,12 +110,9 @@ void AnimationPreviewGenerator::_preview_thread(void *p_preview) {
 Ref<AnimationPreview> AnimationPreviewGenerator::generate_preview(const Ref<Animation> &p_anim) {
 	ERR_FAIL_COND_V(p_anim.is_null(), Ref<AnimationPreview>());
 
-
 	if (previews.has(p_anim->get_instance_id())) {
 		return previews[p_anim->get_instance_id()].preview;
 	}
-
-	//no preview exists
 
 	previews[p_anim->get_instance_id()] = Preview();
 
@@ -126,13 +122,10 @@ Ref<AnimationPreview> AnimationPreviewGenerator::generate_preview(const Ref<Anim
 	preview->id = p_anim->get_instance_id();
 
 	float len_s = preview->base_anim->get_length();
-	if (len_s == 0) {
-		len_s = 0.0001;
-	}
 
 	preview->preview.instantiate();
 	preview->preview->length = len_s;
-	
+
 	preview->thread = memnew(Thread);
 	preview->thread->start(_preview_thread, preview);
 
@@ -171,22 +164,6 @@ void AnimationPreviewGenerator::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
 }
-
-/*
-void AnimationPreview::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_length"), &AnimationPreview::get_length);
-	ClassDB::bind_method(D_METHOD("get_key_times"), &AnimationPreview::get_key_times);
-	ClassDB::bind_method(D_METHOD("get_key_times_with_tracks"), &AnimationPreview::get_key_times_with_tracks);
-	ClassDB::bind_method(D_METHOD("get_version"), &AnimationPreview::get_version);
-}
-
-void AnimationPreviewGenerator::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("generate_preview", "animation"), &AnimationPreviewGenerator::generate_preview);
-	ClassDB::bind_method(D_METHOD("clear_cache"), &AnimationPreviewGenerator::clear_cache);
-	ClassDB::bind_method(D_METHOD("invalidate_cache", "animation"), &AnimationPreviewGenerator::invalidate_cache);
-	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
-}
-*/
 
 void AnimationPreviewGenerator::clear_cache() {
 	print_line("Clearing AnimationPreview cache, size was: ", previews.size());
