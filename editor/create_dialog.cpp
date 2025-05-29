@@ -890,10 +890,14 @@ CreateDialog::CreateDialog() {
 	recent->add_theme_constant_override("draw_guides", 1);
 	recent->set_theme_type_variation("ItemListSecondary");
 
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
-	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hsc->add_child(vbc);
+	VSplitContainer *right_vsc = memnew(VSplitContainer);
+	right_vsc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
+	right_vsc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hsc->add_child(right_vsc);
+
+	VBoxContainer *search_vbc = memnew(VBoxContainer);
+	search_vbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	right_vsc->add_child(search_vbc);
 
 	search_box = memnew(LineEdit);
 	search_box->set_accessibility_name(TTRC("Search"));
@@ -911,7 +915,7 @@ CreateDialog::CreateDialog() {
 	favorite->set_accessibility_name(TTRC("(Un)favorite"));
 	favorite->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_favorite_toggled));
 	search_hb->add_child(favorite);
-	vbc->add_margin_child(TTR("Search:"), search_hb);
+	search_vbc->add_margin_child(TTR("Search:"), search_hb);
 
 	search_options = memnew(Tree);
 	search_options->set_accessibility_name(TTRC("Matches"));
@@ -919,13 +923,18 @@ CreateDialog::CreateDialog() {
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
 	search_options->connect("button_clicked", callable_mp(this, &CreateDialog::_script_button_clicked));
-	vbc->add_margin_child(TTR("Matches:"), search_options, true);
+	search_vbc->add_margin_child(TTR("Matches:"), search_options, true);
+
+	VBoxContainer *description_vbc = memnew(VBoxContainer);
+	description_vbc->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
+	right_vsc->add_child(description_vbc);
 
 	help_bit = memnew(EditorHelpBit);
 	help_bit->set_accessibility_name(TTRC("Description"));
-	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &CreateDialog::_hide_requested));
-	vbc->add_margin_child(TTR("Description:"), help_bit);
+	help_bit->set_content_height_limits(80 * EDSCALE, 300 * EDSCALE);
+	help_bit->set_allow_resizing(true);
+	description_vbc->add_margin_child(TTR("Description:"), help_bit, true);
 
 	register_text_enter(search_box);
 	set_hide_on_ok(false);

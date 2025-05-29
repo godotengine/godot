@@ -4483,12 +4483,30 @@ void EditorHelpBit::set_content_height_limits(float p_min, float p_max) {
 }
 
 void EditorHelpBit::update_content_height() {
-	float content_height = content->get_content_height();
-	const Ref<StyleBox> style = content->get_theme_stylebox(CoreStringName(normal));
-	if (style.is_valid()) {
-		content_height += style->get_content_margin(SIDE_TOP) + style->get_content_margin(SIDE_BOTTOM);
+	if (allow_resizing) {
+		content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, content_min_height));
+	} else {
+		float content_height = content->get_content_height();
+		const Ref<StyleBox> style = content->get_theme_stylebox(CoreStringName(normal));
+		if (style.is_valid()) {
+			content_height += style->get_content_margin(SIDE_TOP) + style->get_content_margin(SIDE_BOTTOM);
+		}
+		content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, CLAMP(content_height, content_min_height, content_max_height)));
 	}
-	content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, CLAMP(content_height, content_min_height, content_max_height)));
+}
+
+void EditorHelpBit::set_allow_resizing(bool p_allow) {
+	if (allow_resizing != p_allow) {
+		allow_resizing = p_allow;
+		if (allow_resizing) {
+			content->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		} else {
+			content->set_v_size_flags(Control::SIZE_SHRINK_END);
+		}
+		if (is_inside_tree()) {
+			call_deferred("update_content_height");
+		}
+	}
 }
 
 EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_allow_selection) {
