@@ -586,11 +586,11 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 				angular_damp_new = 0;
 			}
 
-			linear_velocity *= damp;
-			angular_velocity *= angular_damp_new;
-
 			linear_velocity += _inv_mass * force * p_step;
 			angular_velocity += _inv_inertia * torque * p_step;
+
+			linear_velocity *= damp;
+			angular_velocity *= angular_damp_new;
 		}
 
 		if (continuous_cd_mode != PhysicsServer2D::CCD_MODE_DISABLED) {
