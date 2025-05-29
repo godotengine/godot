@@ -155,7 +155,7 @@ void main() {
 
 	color.rgb = srgb_to_linear(color.rgb);
 
-	color.rgb = apply_tonemapping(color.rgb, white);
+	color.rgb = apply_tonemapping(color.rgb);
 #ifdef USE_BCS
 	color.rgb = apply_bcs(color.rgb);
 #endif // USE_BCS
