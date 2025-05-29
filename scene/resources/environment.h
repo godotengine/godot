@@ -117,7 +117,7 @@ private:
 	float tonemap_exposure = 1.0;
 	float tonemap_black = 0.0;
 	float tonemap_white = 1.0;
-	float tonemap_contrast = 1.25652780401491; // Default to Blender's AgX contrast
+	float tonemap_contrast = 1.25; // Default to approximately Blender's AgX contrast
 	void _update_tonemap();
 
 	// SSR

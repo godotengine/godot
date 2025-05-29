@@ -1501,7 +1501,7 @@
 			<param index="2" name="exposure" type="float" />
 			<param index="3" name="white" type="float" />
 			<param index="4" name="black" type="float" />
-			<param index="5" name="contrast" type="float" />
+			<param index="5" name="contrast" type="float" default="1.25" />
 			<description>
 				Sets the variables to be used with the "tonemap" post-process effect. See [Environment] for more details.
 			</description>
@@ -5439,8 +5439,8 @@
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_AGX" value="4" enum="EnvironmentToneMapper">
-			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
-			[b]Note:[/b] [member Environment.tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant ENV_TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
+			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
+			[b]Note:[/b] When using [constant ENV_TONE_MAPPER_AGX], the minimum supported [member Environment.tonemap_white] is [code]2.0[/code] and a value of [code]16.0[/code] is recommended for use with the Compatibility and Forward+ rendering methods.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ADJUSTABLE" value="5" enum="EnvironmentToneMapper">
 			Uses a film-like tonemapping curve with an adjustable contrast. Slightly slower than [constant ENV_TONE_MAPPER_ACES] (That's my goal, anyway!).

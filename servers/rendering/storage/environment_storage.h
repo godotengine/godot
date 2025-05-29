@@ -63,7 +63,7 @@ private:
 		float exposure = 1.0;
 		float black = 0.0;
 		float white = 1.0;
-		float tonemap_contrast = 1.25652780401491; // Default to Blender's AgX contrast, fitted with Mathematica's NonlinearModelFit
+		float tonemap_contrast = 1.25; // Default to approximately Blender's AgX contrast
 		float max_value = 1.0;
 
 		// Fog

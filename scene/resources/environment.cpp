@@ -1140,7 +1140,7 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
-	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR)) {
+	if (p_property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
