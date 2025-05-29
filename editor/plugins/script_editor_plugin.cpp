@@ -446,12 +446,12 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 	search_box = memnew(LineEdit);
-	vbc->add_margin_child(TTR("Search:"), search_box);
+	vbc->add_margin_child(TTRC("Search:"), search_box);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditorQuickOpen::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &ScriptEditorQuickOpen::_sbox_input));
 	search_options = memnew(Tree);
-	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	set_ok_button_text(TTR("Open"));
+	vbc->add_margin_child(TTRC("Matches:"), search_options, true);
+	set_ok_button_text(TTRC("Open"));
 	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
@@ -1322,7 +1322,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			for (const String &E : textfile_extensions) {
 				file_dialog->add_filter("*." + E, E.to_upper());
 			}
-			file_dialog->set_title(TTR("New Text File..."));
+			file_dialog->set_title(TTRC("New Text File..."));
 			file_dialog->popup_file_dialog();
 			open_textfile_after_create = true;
 		} break;
@@ -1342,7 +1342,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				file_dialog->add_filter("*." + E, E.to_upper());
 			}
 
-			file_dialog->set_title(TTR("Open File"));
+			file_dialog->set_title(TTRC("Open File"));
 			file_dialog->popup_file_dialog();
 			return;
 		} break;
@@ -1485,7 +1485,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					file_dialog->clear_filters();
 					file_dialog->set_current_dir(text_file->get_path().get_base_dir());
 					file_dialog->set_current_file(text_file->get_path().get_file());
-					file_dialog->set_title(TTR("Save File As..."));
+					file_dialog->set_title(TTRC("Save File As..."));
 					file_dialog->popup_file_dialog();
 					break;
 				}
@@ -1634,7 +1634,7 @@ void ScriptEditor::_theme_option(int p_option) {
 			file_dialog_option = THEME_IMPORT;
 			file_dialog->clear_filters();
 			file_dialog->add_filter("*.tet");
-			file_dialog->set_title(TTR("Import Theme"));
+			file_dialog->set_title(TTRC("Import Theme"));
 			file_dialog->popup_file_dialog();
 		} break;
 		case THEME_RELOAD: {
@@ -1660,7 +1660,7 @@ void ScriptEditor::_show_save_theme_as_dialog() {
 	file_dialog->clear_filters();
 	file_dialog->add_filter("*.tet");
 	file_dialog->set_current_path(EditorPaths::get_singleton()->get_text_editor_themes_dir().path_join(EDITOR_GET("text_editor/theme/color_theme")));
-	file_dialog->set_title(TTR("Save Theme As..."));
+	file_dialog->set_title(TTRC("Save Theme As..."));
 	file_dialog->popup_file_dialog();
 }
 
@@ -1747,7 +1747,14 @@ void ScriptEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 
-		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_online_doc();
+			if (!make_floating->is_disabled()) {
+				// Override default ScreenSelect tooltip if multi-window support is available.
+				make_floating->set_tooltip_text(TTR("Make the script editor floating.") + "\n" + TTR("Right-click to open the screen selector."));
+			}
+			[[fallthrough]];
+		}
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			tab_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
@@ -2143,11 +2150,11 @@ void ScriptEditor::_update_online_doc() {
 	if (native_class_doc) {
 		String name = eh->get_class();
 		String tooltip = vformat(TTR("Open '%s' in Godot online documentation."), name);
-		site_search->set_text(TTR("Open in Online Docs"));
+		site_search->set_text(TTRC("Open in Online Docs"));
 		site_search->set_tooltip_text(tooltip);
 	} else {
-		site_search->set_text(TTR("Online Docs"));
-		site_search->set_tooltip_text(TTR("Open Godot online documentation."));
+		site_search->set_text(TTRC("Online Docs"));
+		site_search->set_tooltip_text(TTRC("Open Godot online documentation."));
 	}
 }
 
@@ -4180,7 +4187,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	list_split->add_child(scripts_vbox);
 
 	filter_scripts = memnew(LineEdit);
-	filter_scripts->set_placeholder(TTR("Filter Scripts"));
+	filter_scripts->set_placeholder(TTRC("Filter Scripts"));
 	filter_scripts->set_accessibility_name(TTRC("Filter Scripts"));
 	filter_scripts->set_clear_button_enabled(true);
 	filter_scripts->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
@@ -4223,7 +4230,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	members_overview_alphabeta_sort_button = memnew(Button);
 	members_overview_alphabeta_sort_button->set_flat(true);
 	members_overview_alphabeta_sort_button->set_accessibility_name(TTRC("Alphabetical Sorting"));
-	members_overview_alphabeta_sort_button->set_tooltip_text(TTR("Toggle alphabetical sorting of the method list."));
+	members_overview_alphabeta_sort_button->set_tooltip_text(TTRC("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
 	members_overview_alphabeta_sort_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
@@ -4231,7 +4238,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
 
 	filter_methods = memnew(LineEdit);
-	filter_methods->set_placeholder(TTR("Filter Methods"));
+	filter_methods->set_placeholder(TTRC("Filter Methods"));
 	filter_methods->set_accessibility_name(TTRC("Filter Methods"));
 	filter_methods->set_clear_button_enabled(true);
 	filter_methods->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
@@ -4279,7 +4286,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	set_process_shortcut_input(true);
 
 	file_menu = memnew(MenuButton);
-	file_menu->set_text(TTR("File"));
+	file_menu->set_text(TTRC("File"));
 	file_menu->set_switch_on_hover(true);
 	file_menu->set_shortcut_context(this);
 	menu_hb->add_child(file_menu);
@@ -4291,7 +4298,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	recent_scripts = memnew(PopupMenu);
 	recent_scripts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	file_menu->get_popup()->add_submenu_node_item(TTR("Open Recent"), recent_scripts, FILE_MENU_OPEN_RECENT);
+	file_menu->get_popup()->add_submenu_node_item(TTRC("Open Recent"), recent_scripts, FILE_MENU_OPEN_RECENT);
 	recent_scripts->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_open_recent_script));
 
 	_update_recent_scripts();
@@ -4324,7 +4331,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	theme_submenu = memnew(PopupMenu);
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTRC("Import Theme...")), THEME_IMPORT);
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTRC("Reload Theme")), THEME_RELOAD);
-	file_menu->get_popup()->add_submenu_node_item(TTR("Theme"), theme_submenu, FILE_MENU_THEME_SUBMENU);
+	file_menu->get_popup()->add_submenu_node_item(TTRC("Theme"), theme_submenu, FILE_MENU_THEME_SUBMENU);
 	theme_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_theme_option));
 
 	theme_submenu->add_separator();
@@ -4348,7 +4355,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
 
 	script_search_menu = memnew(MenuButton);
-	script_search_menu->set_text(TTR("Search"));
+	script_search_menu->set_text(TTRC("Search"));
 	script_search_menu->set_switch_on_hover(true);
 	script_search_menu->set_shortcut_context(this);
 	script_search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
@@ -4388,10 +4395,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	help_search = memnew(Button);
 	help_search->set_flat(true);
-	help_search->set_text(TTR("Search Help"));
+	help_search->set_text(TTRC("Search Help"));
 	help_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_HELP));
 	menu_hb->add_child(help_search);
-	help_search->set_tooltip_text(TTR("Search the reference documentation."));
+	help_search->set_tooltip_text(TTRC("Search the reference documentation."));
 
 	menu_hb->add_child(memnew(VSeparator));
 
@@ -4401,7 +4408,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
-	script_back->set_tooltip_text(TTR("Go to previous edited document."));
+	script_back->set_tooltip_text(TTRC("Go to previous edited document."));
 
 	script_forward = memnew(Button);
 	script_forward->set_accessibility_name(TTRC("Next"));
@@ -4409,17 +4416,14 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
-	script_forward->set_tooltip_text(TTR("Go to next edited document."));
+	script_forward->set_tooltip_text(TTRC("Go to next edited document."));
 
 	menu_hb->add_child(memnew(VSeparator));
 
 	make_floating = memnew(ScreenSelect);
 	make_floating->set_flat(true);
+	make_floating->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
-	if (!make_floating->is_disabled()) {
-		// Override default ScreenSelect tooltip if multi-window support is available.
-		make_floating->set_tooltip_text(TTR("Make the script editor floating.") + "\n" + TTR("Right-click to open the screen selector."));
-	}
 
 	menu_hb->add_child(make_floating);
 	p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
@@ -4427,14 +4431,14 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
 
 	erase_tab_confirm = memnew(ConfirmationDialog);
-	erase_tab_confirm->set_ok_button_text(TTR("Save"));
-	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
+	erase_tab_confirm->set_ok_button_text(TTRC("Save"));
+	erase_tab_confirm->add_button(TTRC("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	erase_tab_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ScriptEditor::_close_current_tab).bind(true, true));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
 
 	script_create_dialog = memnew(ScriptCreateDialog);
-	script_create_dialog->set_title(TTR("Create Script"));
+	script_create_dialog->set_title(TTRC("Create Script"));
 	add_child(script_create_dialog);
 	script_create_dialog->connect("script_created", callable_mp(this, &ScriptEditor::_script_created));
 
@@ -4448,13 +4452,13 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	disk_changed = memnew(ConfirmationDialog);
 	{
-		disk_changed->set_title(TTR("Files have been modified outside Godot"));
+		disk_changed->set_title(TTRC("Files have been modified outside Godot"));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		disk_changed->add_child(vbc);
 
 		Label *files_are_newer_label = memnew(Label);
-		files_are_newer_label->set_text(TTR("The following files are newer on disk:"));
+		files_are_newer_label->set_text(TTRC("The following files are newer on disk:"));
 		vbc->add_child(files_are_newer_label);
 
 		disk_changed_list = memnew(Tree);
@@ -4465,13 +4469,13 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 		vbc->add_child(disk_changed_list);
 
 		Label *what_action_label = memnew(Label);
-		what_action_label->set_text(TTR("What action should be taken?"));
+		what_action_label->set_text(TTRC("What action should be taken?"));
 		vbc->add_child(what_action_label);
 
 		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &ScriptEditor::reload_scripts).bind(false));
-		disk_changed->set_ok_button_text(TTR("Reload from disk"));
+		disk_changed->set_ok_button_text(TTRC("Reload from disk"));
 
-		disk_changed->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+		disk_changed->add_button(TTRC("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &ScriptEditor::_resave_scripts));
 	}
 
@@ -4496,7 +4500,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
 	add_child(find_in_files_dialog);
 	find_in_files = memnew(FindInFilesPanel);
-	find_in_files_button = EditorNode::get_bottom_panel()->add_item(TTR("Search Results"), find_in_files, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Search Results Bottom Panel")));
+	find_in_files_button = EditorNode::get_bottom_panel()->add_item(TTRC("Search Results"), find_in_files, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Search Results Bottom Panel")));
 	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
@@ -4552,6 +4556,9 @@ void ScriptEditorPlugin::_window_visibility_changed(bool p_visible) {
 
 void ScriptEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Script Editor")));
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			connect("main_screen_changed", callable_mp(this, &ScriptEditorPlugin::_save_last_editor));
 		} break;
@@ -4713,7 +4720,6 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	ED_SHORTCUT("script_text_editor/capitalize", TTRC("Capitalize"), KeyModifierMask::SHIFT | Key::F6);
 
 	window_wrapper = memnew(WindowWrapper);
-	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Script Editor")));
 	window_wrapper->set_margins_enabled(true);
 
 	script_editor = memnew(ScriptEditor(window_wrapper));
