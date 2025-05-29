@@ -3614,6 +3614,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		p_call->is_static = method_flags.has_flag(METHOD_FLAG_STATIC);
 		if (p_call->is_super && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
 			push_error(vformat(R"*(Cannot call the parent class' virtual function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
+		} else if (p_call->is_super && access_level < GDScriptParser::Node::AccessLevel::PROTECTED) {
+			push_error(R"(Access restricted.)", p_call);
 		}
 
 		// If the function requires typed arrays we must make literals be typed.
