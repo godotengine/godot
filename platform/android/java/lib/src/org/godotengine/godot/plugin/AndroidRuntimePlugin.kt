@@ -81,7 +81,7 @@ class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
 	 * Provides access to the host activity to GDScript
 	 */
 	@UsedByGodot
-	override fun getActivity() = super.getActivity()
+	public override fun getActivity() = super.getActivity()
 
 	/**
 	 * Utility method used to create [Runnable] from Godot [Callable].
