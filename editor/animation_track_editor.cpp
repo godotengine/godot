@@ -382,6 +382,22 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 			if (name == "start_offset") {
 				float value = p_value;
 
+				//StringName anim_name = animation->animation_track_get_key_animation(track, key);
+				//if (root_path && anim_name != StringName("[stop]")) {
+				//	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(track)));
+				//	if (ap && ap->has_animation(anim_name)) {
+				//		Ref<Animation> anim = ap->get_animation(anim_name);
+				//		if (anim.is_valid()) {
+				Ref<AudioStream> audio_stream = animation->audio_track_get_key_stream(track, key);
+				if (audio_stream.is_valid()) {
+					float end_ofs = animation->audio_track_get_key_end_offset(track, key);
+					float len = audio_stream->get_length();
+					float left = len - end_ofs;
+					value = MIN(value, left);
+				}
+				//}
+				//}
+
 				setting = true;
 				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 				float prev = animation->audio_track_get_key_start_offset(track, key);
@@ -397,6 +413,14 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 
 			if (name == "end_offset") {
 				float value = p_value;
+
+				Ref<AudioStream> audio_stream = animation->audio_track_get_key_stream(track, key);
+				if (audio_stream.is_valid()) {
+					float start_ofs = animation->audio_track_get_key_start_offset(track, key);
+					float len = audio_stream->get_length();
+					float left = len - start_ofs;
+					value = MIN(value, left);
+				}
 
 				setting = true;
 				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS);
@@ -425,10 +449,25 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				undo_redo->commit_action();
 
 				setting = false;
+				notify_change(); // To update limits for `start_offset`/`end_offset` sliders (they depend on the animation length).
 				return true;
 			}
 			if (name == "start_offset") {
 				float value = p_value;
+
+				StringName anim_name = animation->animation_track_get_key_animation(track, key);
+				if (root_path && anim_name != StringName("[stop]")) {
+					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(track)));
+					if (ap && ap->has_animation(anim_name)) {
+						Ref<Animation> anim = ap->get_animation(anim_name);
+						if (anim.is_valid()) {
+							float end_ofs = animation->animation_track_get_key_end_offset(track, key);
+							float len = anim->get_length();
+							float left = len - end_ofs;
+							value = MIN(value, left);
+						}
+					}
+				}
 
 				setting = true;
 				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS);
@@ -444,6 +483,20 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 			}
 			if (name == "end_offset") {
 				float value = p_value;
+
+				StringName anim_name = animation->animation_track_get_key_animation(track, key);
+				if (root_path && anim_name != StringName("[stop]")) {
+					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(track)));
+					if (ap && ap->has_animation(anim_name)) {
+						Ref<Animation> anim = ap->get_animation(anim_name);
+						if (anim.is_valid()) {
+							float start_ofs = animation->animation_track_get_key_start_offset(track, key);
+							float len = anim->get_length();
+							float left = len - start_ofs;
+							value = MIN(value, left);
+						}
+					}
+				}
 
 				setting = true;
 				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS);
@@ -702,6 +755,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("animation"), PROPERTY_HINT_ENUM, animations));
 
 			double anim_length = 3600.0;
+
 			StringName anim_name = animation->animation_track_get_key_animation(track, key);
 			if (root_path && anim_name != StringName("[stop]")) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(track)));
@@ -710,7 +764,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 					if (anim.is_valid()) {
 						anim_length = anim->get_length();
 					}
-				}
+				} 
 			}
 			String hint_string = vformat("0,%.4f,0.0001,or_greater", anim_length);
 			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("start_offset"), PROPERTY_HINT_RANGE, hint_string));
@@ -999,6 +1053,14 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 					} else if (name == "start_offset") {
 						float value = p_value;
 
+						Ref<AudioStream> audio_stream = animation->audio_track_get_key_stream(track, key);
+						if (audio_stream.is_valid()) {
+							float end_ofs = animation->audio_track_get_key_end_offset(track, key);
+							float len = audio_stream->get_length();
+							float left = len - end_ofs;
+							value = MIN(value, left);
+						}
+
 						if (!setting) {
 							setting = true;
 							undo_redo->create_action(TTR("Animation Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
@@ -1009,6 +1071,14 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 						update_obj = true;
 					} else if (name == "end_offset") {
 						float value = p_value;
+
+						Ref<AudioStream> audio_stream = animation->audio_track_get_key_stream(track, key);
+						if (audio_stream.is_valid()) {
+							float start_ofs = animation->audio_track_get_key_start_offset(track, key);
+							float len = audio_stream->get_length();
+							float left = len - start_ofs;
+							value = MIN(value, left);
+						}
 
 						if (!setting) {
 							setting = true;
@@ -1035,6 +1105,20 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 					} else if (name == "start_offset") {
 						float value = p_value;
 
+						StringName anim_name = animation->animation_track_get_key_animation(track, key);
+						if (root_path && anim_name != StringName("[stop]")) {
+							AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(track)));
+							if (ap && ap->has_animation(anim_name)) {
+								Ref<Animation> anim = ap->get_animation(anim_name);
+								if (anim.is_valid()) {
+									float end_ofs = animation->animation_track_get_key_end_offset(track, key);
+									float len = anim->get_length();
+									float left = len - end_ofs;
+									value = MIN(value, left);
+								}
+							}
+						}
+
 						if (!setting) {
 							setting = true;
 							undo_redo->create_action(TTR("Animation Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
@@ -1045,6 +1129,20 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 						update_obj = true;
 					} else if (name == "end_offset") {
 						float value = p_value;
+
+						StringName anim_name = animation->animation_track_get_key_animation(track, key);
+						if (root_path && anim_name != StringName("[stop]")) {
+							AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(track)));
+							if (ap && ap->has_animation(anim_name)) {
+								Ref<Animation> anim = ap->get_animation(anim_name);
+								if (anim.is_valid()) {
+									float start_ofs = animation->animation_track_get_key_start_offset(track, key);
+									float len = anim->get_length();
+									float left = len - start_ofs;
+									value = MIN(value, left);
+								}
+							}
+						}
 
 						if (!setting) {
 							setting = true;

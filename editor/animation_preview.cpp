@@ -139,6 +139,33 @@ Ref<AnimationPreview> AnimationPreviewGenerator::generate_preview(const Ref<Anim
 	return preview->preview;
 }
 
+void AnimationPreview::create_key_region(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+	Vector<TrackKeyTime> key_times = get_key_times_with_tracks();
+	int track_count = get_track_count();
+	float track_h = track_count > 0 ? (rect.size.height - 2) / track_count : rect.size.height;
+
+	float len = get_length();
+	float pixel_begin = rect.position.x;
+	float from_x = rect.position.x;
+	float to_x = from_x + rect.size.x;
+
+	for (const TrackKeyTime &kt : key_times) {
+		float ofs = kt.time - start_ofs;
+		if (ofs < 0 || ofs > len) {
+			continue;
+		}
+		int x = pixel_begin + ofs * p_pixels_sec;
+
+		if (x < from_x || x >= to_x) {
+			continue;
+		}
+
+		int y = rect.position.y + 2 + track_h * kt.track_index + track_h / 2;
+		points.push_back(Point2(x, y));
+		points.push_back(Point2(x + 1, y));
+	}
+}
+
 void AnimationPreviewGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_preview", "animation"), &AnimationPreviewGenerator::generate_preview);
 
