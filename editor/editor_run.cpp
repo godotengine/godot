@@ -189,6 +189,14 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	return OK;
 }
 
+bool EditorRun::request_screenshot(const Callable &p_callback) {
+	if (instance_rq_screenshot_callback) {
+		return instance_rq_screenshot_callback(p_callback);
+	} else {
+		return false;
+	}
+}
+
 bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
 	for (const OS::ProcessID &E : pids) {
 		if (E == p_pid) {

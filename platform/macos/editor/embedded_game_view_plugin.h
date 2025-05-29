@@ -60,7 +60,6 @@ class GameViewDebuggerMacOS : public GameViewDebugger {
 
 public:
 	virtual bool capture(const String &p_message, const Array &p_data, int p_session) override;
-	virtual bool has_capture(const String &p_capture) const override;
 
 	GameViewDebuggerMacOS(EmbeddedProcessMacOS *p_embedded_process);
 };
