@@ -775,9 +775,9 @@ private:
 
 	bool snap_enabled;
 	bool snap_key_enabled;
-	SpinBox *snap_translate = nullptr;
-	SpinBox *snap_rotate = nullptr;
-	SpinBox *snap_scale = nullptr;
+	EditorSpinSlider *snap_translate = nullptr;
+	EditorSpinSlider *snap_rotate = nullptr;
+	EditorSpinSlider *snap_scale = nullptr;
 
 	LineEdit *xform_translate[3];
 	LineEdit *xform_rotate[3];
