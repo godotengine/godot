@@ -1796,6 +1796,21 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		}
 
 #ifdef TOOLS_ENABLED
+		List<MethodInfo> gdscript_funcs;
+		GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
+
+		for (MethodInfo &info : gdscript_funcs) {
+			if (info.name == function_name) {
+				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, "@GDScript");
+				return;
+			}
+		}
+
+		if (Variant::has_utility_function(function_name)) {
+			parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, "@GlobalScope");
+			return;
+		}
+
 		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
 		// Not for the constructor which can vary in signature.
 		GDScriptParser::DataType base_type = parser->current_class->base_type;
