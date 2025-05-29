@@ -36,7 +36,7 @@ jobs:
     uses: ./.github/workflows/macos_builds.yml
 
   windows-build:
-    name: 🏁 Windows
+    name: 🪟 Windows
     needs: static-checks
     uses: ./.github/workflows/windows_builds.yml
 
