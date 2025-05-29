@@ -361,8 +361,8 @@ int RendererSceneRender::environment_get_camera_feed_id(RID p_env) const {
 
 // Tonemap
 
-void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
-	environment_storage.environment_set_tonemap(p_env, p_tone_mapper, p_exposure, p_white);
+void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, float p_contrast) {
+	environment_storage.environment_set_tonemap(p_env, p_tone_mapper, p_exposure, p_white, p_contrast);
 }
 
 void RendererSceneRender::environment_set_max_value(RID p_env, float p_max_value) {
@@ -383,6 +383,14 @@ float RendererSceneRender::environment_get_white(RID p_env) const {
 
 float RendererSceneRender::environment_get_max_value(RID p_env) const {
 	return environment_storage.environment_get_max_value(p_env);
+}
+
+float RendererSceneRender::environment_get_tonemap_contrast(RID p_env) const {
+	return environment_storage.environment_get_tonemap_contrast(p_env);
+}
+
+RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env) const {
+	return environment_storage.environment_get_tonemap_parameters(p_env);
 }
 
 // Fog
