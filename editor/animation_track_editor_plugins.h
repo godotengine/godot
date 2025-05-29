@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "editor/animation_track_editor.h"
 #include "editor/animation_preview.h"
+#include "editor/animation_track_editor.h"
 #include "editor/audio_stream_preview.h"
 
 class AnimationTrackEditBool : public AnimationTrackEdit {
@@ -107,7 +107,7 @@ public:
 
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 	virtual Rect2 get_key_rect_region(float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec);
-	
+
 	void set_node(Object *p_object);
 };
 

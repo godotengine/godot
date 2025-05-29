@@ -30,8 +30,8 @@
 
 #include "animation_track_editor_plugins.h"
 
-#include "editor/audio_stream_preview.h"
 #include "editor/animation_preview.h"
+#include "editor/audio_stream_preview.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -657,7 +657,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 	draw_rect(rect, bg);
 
 	Ref<Animation> anim = ap->get_animation(anim_name);
-		
+
 	Vector<Vector2> points;
 	Vector<Color> colors = { color };
 

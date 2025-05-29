@@ -177,8 +177,6 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 		return previews[p_stream->get_instance_id()].preview;
 	}
 
-	//no preview exists
-
 	previews[p_stream->get_instance_id()] = Preview();
 
 	Preview *preview = &previews[p_stream->get_instance_id()];
