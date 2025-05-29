@@ -71,6 +71,7 @@ public:
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+	virtual Rect2 get_key_rect_region(float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec);
 
 	void set_node(Object *p_object);
 
@@ -105,7 +106,8 @@ public:
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
-
+	virtual Rect2 get_key_rect_region(float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec);
+	
 	void set_node(Object *p_object);
 };
 
@@ -135,6 +137,7 @@ public:
 
 	virtual void handle_data(const float ofs, const Ref<Resource> resource) = 0;
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) = 0;
+	bool handle_track_over(Ref<InputEventMouseMotion> mm, float start_ofs, float end_ofs, float len, int i);
 
 	virtual int get_key_height() const = 0;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) = 0;
@@ -158,6 +161,7 @@ public:
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+	virtual Rect2 get_key_rect_region(float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec);
 
 	AnimationTrackEditTypeAudio();
 };
@@ -180,6 +184,7 @@ public:
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+	virtual Rect2 get_key_rect_region(float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec);
 
 	void set_node(Object *p_object);
 

@@ -66,6 +66,8 @@ public:
 
 	int get_track_count() const { return track_count; }
 
+	void create_key_region(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+
 	AnimationPreview();
 
 };
