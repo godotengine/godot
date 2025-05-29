@@ -1240,9 +1240,10 @@ public:
 
 	// Tonemap
 	PASS4(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float)
+	PASS2(environment_set_tonemap_agx_contrast, RID, float)
 	PASS1RC(RS::EnvironmentToneMapper, environment_get_tone_mapper, RID)
 	PASS1RC(float, environment_get_exposure, RID)
-	PASS1RC(float, environment_get_white, RID)
+	PASS2RC(float, environment_get_white, RID, bool)
 
 	// Fog
 	PASS11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, RS::EnvironmentFogMode)

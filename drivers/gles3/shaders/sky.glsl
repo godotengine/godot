@@ -265,7 +265,7 @@ void main() {
 
 	color *= exposure;
 #ifdef APPLY_TONEMAPPING
-	color = apply_tonemapping(color, white);
+	color = apply_tonemapping(color);
 #endif
 	color = linear_to_srgb(color);
 
