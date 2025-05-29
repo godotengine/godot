@@ -921,6 +921,7 @@ public:
 			FunctionNode *function_source;
 		};
 		bool function_source_is_static = false; // For non-GDScript scripts.
+		bool is_base = false;
 
 		FunctionNode *source_function = nullptr; // TODO: Rename to disambiguate `function_source`.
 
