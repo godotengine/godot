@@ -111,7 +111,8 @@ public:
 		Size2i size;
 		Vector2i wb_offset = Vector2i(14, 14);
 
-		NSRect last_frame_rect;
+		NSRect last_frame_rect = NSMakeRect(0, 0, 0, 0);
+		NSRect pre_zoom_rect = NSMakeRect(0, 0, 0, 0);
 
 		bool im_active = false;
 		Size2i im_position;
