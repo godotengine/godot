@@ -549,7 +549,6 @@ void AnimationPlayer::_capture(const StringName &p_name, bool p_from_end, double
 		double current_pos = playback.current.pos;
 		if (playback.assigned != name) {
 			current_pos = p_from_end ? anim->get_length() : 0;
-
 		}
 		for (int i = 0; i < anim->get_track_count(); i++) {
 			if (anim->track_get_type(i) != Animation::TYPE_VALUE) {
