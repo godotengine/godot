@@ -325,35 +325,37 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 }
 
 void AnimationTrackEditAudio::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	int pixel_len = len * p_pixels_sec;
-	int pixel_begin = p_x;
-	int pixel_end = p_x + pixel_len;
+	Vector2 region = calc_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
 
-	if (pixel_end < p_clip_left || pixel_begin > p_clip_right) {
+	int region_begin = region.x;
+	int region_end = region.y;
+	int region_width = region.y - region.x;
+
+	region_begin = MAX(region_begin, p_clip_left);
+	region_end = MIN(region_end, p_clip_right);
+	region_width = region_end - region_begin;
+
+	if (region_end < p_clip_left || region_begin > p_clip_right) {
 		return;
 	}
 
-	int from_x = MAX(pixel_begin, p_clip_left);
-	int to_x = MIN(pixel_end, p_clip_right);
-
 	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
 		float limit = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
-		int limit_x = pixel_begin + limit * p_pixels_sec;
-		to_x = MIN(limit_x, to_x);
+		region_begin = MIN(region_begin + limit * p_pixels_sec, region_begin);
 	}
 
-	if (to_x <= from_x) {
+	if (region_end <= region_begin) {
 		return;
 	}
 
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	float fh = int(font->get_height(font_size) * 1.5);
-	Rect2 rect = Rect2(from_x, (get_size().height - fh) / 2, to_x - from_x, fh);
+	Rect2 rect = Rect2(region_begin, (get_size().height - fh) / 2, region_width, fh);
 	draw_rect(rect, Color(0.25, 0.25, 0.25));
 
 	Vector<Vector2> points;
-	points.resize((to_x - from_x) * 2);
+	points.resize(region_width * 2);
 	Vector<Color> colors = { Color(0.75, 0.75, 0.75) };
 
 	create_key_region(resource, points, rect, p_pixels_sec, 0.0);
@@ -670,35 +672,26 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 	}
 
 	float len = anim->get_length();
-
-	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-		len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
-	}
-
 	draw_key_region(anim, 0.0, 0.0, len, p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
 }
 
 void AnimationTrackEditSubAnim::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	int pixel_len = len * p_pixels_sec;
-	int pixel_begin = p_x;
-	int pixel_end = p_x + pixel_len;
+	Vector2 region = calc_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
 
-	if (pixel_end < p_clip_left || pixel_begin > p_clip_right) {
-		return;
-	}
+	int region_begin = region.x;
+	int region_end = region.y;
+	int region_width = region.y - region.x;
 
-	int from_x = MAX(pixel_begin, p_clip_left);
-	int to_x = MIN(pixel_end, p_clip_right);
-
-	if (to_x <= from_x) {
+	if (region_end <= region_begin) {
 		return;
 	}
 
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	int fh = font->get_height(font_size) * 1.5;
 
-	Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
+	int h = get_size().height;
+	int fh = font->get_height(font_size) * 1.5;
+	Rect2 rect(region_begin, (h - fh) / 2, region_width, fh);
 
 	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 	Color bg = color;
@@ -716,10 +709,10 @@ void AnimationTrackEditSubAnim::draw_key_region(Ref<Resource> resource, float st
 		draw_multiline_colors(points, colors);
 	}
 
-	int limit = to_x - from_x - 4;
+	int limit = region_width - 4;
 	if (limit > 0) {
 		String anim_name = resource->get_name(); //TODO: check if works
-		draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
+		draw_string(font, Point2(region_width + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 	}
 
 	if (p_selected) {
@@ -740,18 +733,13 @@ void AnimationTrackEditSubAnim::_preview_changed(ObjectID p_which) {
 	}
 
 	StringName anim_name = object->call("get_animation");
-	if (anim_name == StringName("[stop]")) {
-		return;
-	}
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
-	if (!ap || !ap->has_animation(anim_name)) {
-		return;
-	}
+	if (ap && ap->has_animation(anim_name)) {
+		Ref<Animation> anim = ap->get_animation(anim_name);
 
-	Ref<Animation> anim = ap->get_animation(anim_name);
-
-	if (anim.is_valid() && anim->get_instance_id() == p_which) {
-		queue_redraw();
+		if (anim.is_valid() && anim->get_instance_id() == p_which) {
+			queue_redraw();
+		}
 	}
 }
 
@@ -841,21 +829,15 @@ bool AnimationTrackEditTypeAnimation::is_key_selectable_by_distance() const {
 }
 
 void AnimationTrackEditTypeAnimation::_preview_changed(ObjectID p_which) {
-	for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
-		StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), i);
-		if (anim_name == StringName("[stop]")) {
-			continue;
-		}
+	for (int p_index = 0; p_index < get_animation()->track_get_key_count(get_track()); p_index++) {
+		StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
-		if (!ap || !ap->has_animation(anim_name)) {
-			continue;
-		}
-
-		Ref<Animation> anim = ap->get_animation(anim_name);
-
-		if (anim.is_valid() && anim->get_instance_id() == p_which) {
-			queue_redraw();
-			return;
+		if (ap && ap->has_animation(anim_name)) {
+			Ref<Animation> anim = ap->get_animation(anim_name);
+			if (anim.is_valid() && anim->get_instance_id() == p_which) {
+				queue_redraw();
+				return;
+			}
 		}
 	}
 }
@@ -910,7 +892,7 @@ void AnimationTrackEditClip::drop_data(const Point2 &p_point, const Variant &p_d
 				ofs += 0.0001;
 			}
 
-			handle_data(ofs, resource);
+			apply_data(resource, ofs);
 
 			queue_redraw();
 			return;
@@ -920,7 +902,7 @@ void AnimationTrackEditClip::drop_data(const Point2 &p_point, const Variant &p_d
 	AnimationTrackEdit::drop_data(p_point, p_data);
 }
 
-void AnimationTrackEditTypeAnimation::handle_data(const float ofs, const Ref<Resource> resource) {
+void AnimationTrackEditTypeAnimation::apply_data(const Ref<Resource> resource, const float ofs) {
 	Ref<Animation> anim = resource;
 
 	StringName anim_name = anim->get_name();
@@ -1012,48 +994,59 @@ void AnimationTrackEditClip::draw_key_region(Ref<Resource> resource, float start
 	AnimationTrackEditBase::draw_key_region(resource, start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x + px_offset, p_selected, p_clip_left, p_clip_right);
 }
 
-void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	len -= end_ofs;
-	len -= start_ofs;
-
-	if (len <= 0) {
-		len = 0;
+Vector2 AnimationTrackEditBase::calc_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x) {
+	float anim_len = len - start_ofs - end_ofs;
+	if (anim_len < 0) {
+		WARN_PRINT("anim_len < 0");
+		anim_len = 0;
 	}
 
-	int pixel_len = len * p_pixels_sec;
-	int pixel_begin = p_x;
-	int pixel_end = p_x + pixel_len;
+	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+		anim_len = MIN(anim_len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+	}
 
-	if (pixel_end < p_clip_left || pixel_begin > p_clip_right) {
+	float pixel_len = anim_len * p_pixels_sec;
+	float pixel_begin = p_x;
+	float pixel_end = p_x + pixel_len;
+
+	return Vector2(pixel_begin, pixel_end);
+}
+
+float AnimationTrackEditBase::clip_region(Vector2 &region, int p_clip_left, int p_clip_right) {
+	float offset_x = region.x;
+
+	region.y = CLAMP(region.y, MAX(region.x, p_clip_left), p_clip_right);
+	region.x = CLAMP(region.x, p_clip_left, MIN(region.y, p_clip_right));
+
+	return region.x - offset_x;
+}
+
+void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
+	Vector2 region = calc_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
+	float region_shift = clip_region(region, p_clip_left, p_clip_right);
+
+	int region_begin = region.x;
+	int region_end = region.y;
+	int region_width = region.y - region.x;
+
+	if (region_width == 0) {
 		return;
 	}
 
-	int from_x = MAX(pixel_begin, p_clip_left);
-	int to_x = MIN(pixel_end, p_clip_right);
-
-	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-		float limit = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
-		int limit_x = pixel_begin + limit * p_pixels_sec;
-		to_x = MIN(limit_x, to_x);
-	}
-
-	if (to_x <= from_x) {
-		to_x = from_x + 1;
-	}
-
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label")); //X
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label")); //X
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 
 	int h = get_size().height;
-	float fh = int(font->get_height(font_size) * 1.5); //X
-	Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
+	float fh = int(font->get_height(font_size) * 1.5);
+	Rect2 rect = Rect2(region_begin, (h - fh) / 2, region_width, fh);
 	draw_rect(rect, Color(0.25, 0.25, 0.25));
 
 	Vector<Vector2> points;
-	points.resize((to_x - from_x) * 2); //X
-	Vector<Color> colors = { Color(0.75, 0.75, 0.75) }; //X
+	points.resize(region_width * 2);
+	Vector<Color> colors = { Color(0.75, 0.75, 0.75) };
 
-	create_key_region(resource, points, rect, p_pixels_sec, start_ofs);
+	float shift_ofs = region_shift / p_pixels_sec;
+	create_key_region(resource, points, rect, p_pixels_sec, start_ofs + shift_ofs);
 
 	if (!points.is_empty()) {
 		draw_multiline_colors(points, colors);
@@ -1061,11 +1054,11 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 
 	Color cut_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	cut_color.a = 0.7;
-	if (start_ofs > 0 && pixel_begin > p_clip_left) {
-		draw_rect(Rect2(pixel_begin, rect.position.y, 1, rect.size.y), cut_color);
+	if (start_ofs > 0 && region_begin > p_clip_left) {
+		draw_rect(Rect2(region_begin, rect.position.y, 1, rect.size.y), cut_color);
 	}
-	if (end_ofs > 0 && pixel_end < p_clip_right) {
-		draw_rect(Rect2(pixel_end, rect.position.y, 1, rect.size.y), cut_color);
+	if (end_ofs > 0 && region_end < p_clip_right) {
+		draw_rect(Rect2(region_end, rect.position.y, 1, rect.size.y), cut_color);
 	}
 
 	if (p_selected) {
@@ -1087,8 +1080,8 @@ bool AnimationTrackEditTypeAudio::is_key_selectable_by_distance() const {
 }
 
 void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
-	for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
-		Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), i);
+	for (int p_index = 0; p_index < get_animation()->track_get_key_count(get_track()); p_index++) {
+		Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), p_index);
 		if (stream.is_valid() && stream->get_instance_id() == p_which) {
 			queue_redraw();
 			return;
@@ -1096,7 +1089,7 @@ void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
 	}
 }
 
-void AnimationTrackEditTypeAudio::handle_data(const float ofs, const Ref<Resource> resource) {
+void AnimationTrackEditTypeAudio::apply_data(const Ref<Resource> resource, const float ofs) {
 	Ref<AudioStream> stream = resource;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -1106,30 +1099,22 @@ void AnimationTrackEditTypeAudio::handle_data(const float ofs, const Ref<Resourc
 	undo_redo->commit_action();
 }
 
-bool AnimationTrackEditClip::handle_track_over(Ref<InputEventMouseMotion> mm, float start_ofs, float end_ofs, float len, int i) {
-	float anim_len = len - start_ofs - end_ofs;
-	if (anim_len < 0) {
-		WARN_PRINT("anim_len < 0");
-		anim_len = 0;
-	}
+bool AnimationTrackEditClip::handle_mouse_over_track(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right) {
+	Vector2 region = calc_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
+	clip_region(region, p_clip_left, p_clip_right);
 
-	if (get_animation()->track_get_key_count(get_track()) > i + 1) {
-		anim_len = MIN(anim_len, get_animation()->track_get_key_time(get_track(), i + 1) - get_animation()->track_get_key_time(get_track(), i));
-	}
+	int region_begin = region.x;
+	int region_end = region.y;
+	int region_width = region.y - region.x;
 
-	float ofs = get_animation()->track_get_key_time(get_track(), i);
-	float scl_ofs = ((ofs - get_timeline()->get_value()) * get_timeline()->get_zoom_scale()) + get_timeline()->get_name_limit();
-	float scl_end = scl_ofs + anim_len * get_timeline()->get_zoom_scale();
-
-	float diff_left = scl_ofs - mm->get_position().x;
-	float diff_right = mm->get_position().x - scl_end;
-
-	float dir = (diff_right - diff_left);
-
-	if (scl_ofs >= get_timeline()->get_name_limit() && scl_ofs <= get_size().width - get_timeline()->get_buttons_width() &&
-			scl_end >= get_timeline()->get_name_limit() && scl_end <= get_size().width - get_timeline()->get_buttons_width()) {
+	if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= region_end) { //if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= p_clip_right && region_end >= p_clip_left) {
 		bool resize_start = false;
 		bool can_resize = false;
+
+		float diff_left = region_begin - mm->get_position().x;
+		float diff_right = mm->get_position().x - region_end;
+
+		float dir = (diff_right - diff_left);
 
 		if (diff_left > 0) { // left outside clip
 			if (Math::abs(diff_left) < 5 * EDSCALE) {
@@ -1156,7 +1141,7 @@ bool AnimationTrackEditClip::handle_track_over(Ref<InputEventMouseMotion> mm, fl
 
 		if (can_resize) {
 			len_resizing_start = resize_start;
-			len_resizing_index = i;
+			len_resizing_index = p_index;
 		}
 
 		return can_resize;
@@ -1171,8 +1156,8 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (!len_resizing && mm.is_valid()) {
 		bool use_hsize_cursor = false;
-		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
-			Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), i);
+		for (int p_index = 0; p_index < get_animation()->track_get_key_count(get_track()); p_index++) {
+			Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), p_index);
 
 			if (stream.is_null()) {
 				continue;
@@ -1183,10 +1168,14 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 				continue;
 			}
 
-			float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), i);
-			float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), i);
+			float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), p_index);
+			float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), p_index);
+			float p_x = ((get_animation()->track_get_key_time(get_track(), p_index) - get_timeline()->get_value()) * get_timeline()->get_zoom_scale()) + get_timeline()->get_name_limit();
+			float p_pixels_sec = get_timeline()->get_zoom_scale();
+			float p_clip_left = get_timeline()->get_name_limit();
+			float p_clip_right = get_size().width - get_timeline()->get_buttons_width();
 
-			bool can_resize = handle_track_over(mm, start_ofs, end_ofs, len, i);
+			bool can_resize = handle_mouse_over_track(mm, start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x, p_clip_left, p_clip_right);
 			if (can_resize) {
 				use_hsize_cursor = true;
 			}
@@ -1281,8 +1270,8 @@ void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (!len_resizing && mm.is_valid()) {
 		bool use_hsize_cursor = false;
-		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
-			StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), i);
+		for (int p_index = 0; p_index < get_animation()->track_get_key_count(get_track()); p_index++) {
+			StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
 			if (anim_name.is_empty()) {
 				continue;
 			}
@@ -1306,9 +1295,14 @@ void AnimationTrackEditTypeAnimation::gui_input(const Ref<InputEvent> &p_event) 
 				continue;
 			}
 
-			float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), i);
-			float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), i);
-			bool can_resize = handle_track_over(mm, start_ofs, end_ofs, len, i);
+			float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
+			float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
+			float p_x = ((get_animation()->track_get_key_time(get_track(), p_index) - get_timeline()->get_value()) * get_timeline()->get_zoom_scale()) + get_timeline()->get_name_limit();
+			float p_pixels_sec = get_timeline()->get_zoom_scale();
+			float p_clip_left = get_timeline()->get_name_limit();
+			float p_clip_right = get_size().width - get_timeline()->get_buttons_width();
+
+			bool can_resize = handle_mouse_over_track(mm, start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x, p_clip_left, p_clip_right);
 			if (can_resize) {
 				use_hsize_cursor = true;
 			}

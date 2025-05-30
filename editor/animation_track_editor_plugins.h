@@ -44,15 +44,17 @@ protected:
 	virtual void _preview_changed(ObjectID p_which) = 0;
 
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) = 0;
 	virtual int get_key_height() const = 0;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) = 0;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) = 0;
 	virtual bool is_key_selectable_by_distance() const = 0;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) = 0;
 
 protected:
-	Rect2 get_key_rect_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec);
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) = 0;
 	virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right); //B
+	Rect2 get_key_rect_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec);
+	virtual Vector2 calc_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x);
+	float clip_region(Vector2 &region, int p_clip_left, int p_clip_right);
 
 public:
 	void set_node(Object *p_object);
@@ -75,32 +77,32 @@ public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) = 0;
 
 protected:
-	virtual void handle_data(const float ofs, const Ref<Resource> resource) = 0;
-
-protected:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+	virtual void apply_data(const Ref<Resource> resource, const float ofs) = 0;
 
-	bool handle_track_over(Ref<InputEventMouseMotion> mm, float start_ofs, float end_ofs, float len, int i);
+protected:
+	bool handle_mouse_over_track(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right);
 };
 
 class AnimationTrackEditTypeAudio : public AnimationTrackEditClip {
 	GDCLASS(AnimationTrackEditTypeAudio, AnimationTrackEditClip);
 
-protected:
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
-	virtual int get_key_height() const override; //
-	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override; //
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+public:
+	virtual int get_key_height() const override;
+	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
 	virtual bool is_key_selectable_by_distance() const override;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 protected:
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual void handle_data(const float ofs, const Ref<Resource> resource) override;
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
+	virtual void apply_data(const Ref<Resource> resource, const float ofs) override;
 
 public:
 	AnimationTrackEditTypeAudio();
@@ -108,18 +110,20 @@ public:
 
 class AnimationTrackEditBool : public AnimationTrackEditBase {
 	GDCLASS(AnimationTrackEditBool, AnimationTrackEditBase);
+
+	virtual void _preview_changed(ObjectID p_which) override;
+
 	Ref<Texture2D> icon_checked;
 	Ref<Texture2D> icon_unchecked;
 
-protected:
-	virtual void _preview_changed(ObjectID p_which) override;
-
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 	virtual bool is_key_selectable_by_distance() const override;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+
+protected:
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 
 public:
 	AnimationTrackEditBool();
@@ -128,17 +132,16 @@ public:
 class AnimationTrackEditColor : public AnimationTrackEditBase {
 	GDCLASS(AnimationTrackEditColor, AnimationTrackEditBase);
 
-protected:
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 	virtual bool is_key_selectable_by_distance() const override;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 protected:
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) override;
 
 public:
@@ -148,17 +151,16 @@ public:
 class AnimationTrackEditAudio : public AnimationTrackEditBase {
 	GDCLASS(AnimationTrackEditAudio, AnimationTrackEditBase);
 
-protected:
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 	virtual bool is_key_selectable_by_distance() const override;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 protected:
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override; //C
 
 public:
@@ -168,18 +170,19 @@ public:
 class AnimationTrackEditSpriteFrame : public AnimationTrackEditBase {
 	GDCLASS(AnimationTrackEditSpriteFrame, AnimationTrackEdit);
 
+	virtual void _preview_changed(ObjectID p_which) override;
+
 private:
 	bool is_coords = false;
 
-protected:
-	virtual void _preview_changed(ObjectID p_which) override;
-
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 	virtual bool is_key_selectable_by_distance() const override;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+
+protected:
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 
 public:
 	void set_as_coords();
@@ -191,17 +194,16 @@ public:
 class AnimationTrackEditSubAnim : public AnimationTrackEditBase {
 	GDCLASS(AnimationTrackEditSubAnim, AnimationTrackEditBase);
 
-protected:
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 	virtual bool is_key_selectable_by_distance() const override;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 protected:
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override; //C
 
 public:
@@ -215,14 +217,16 @@ class AnimationTrackEditTypeAnimation : public AnimationTrackEditClip {
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual void handle_data(const float ofs, const Ref<Resource> resource) override;
 
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 	virtual bool is_key_selectable_by_distance() const override;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+
+protected:
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
+	virtual void apply_data(const Ref<Resource> resource, const float ofs) override;
 
 public:
 	AnimationTrackEditTypeAnimation();
@@ -231,17 +235,16 @@ public:
 class AnimationTrackEditVolumeDB : public AnimationTrackEditBase {
 	GDCLASS(AnimationTrackEditVolumeDB, AnimationTrackEdit);
 
-protected:
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 	virtual bool is_key_selectable_by_distance() const override;
+	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 protected:
+	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual void draw_bg(int p_clip_left, int p_clip_right) override;
 	virtual void draw_fg(int p_clip_left, int p_clip_right) override;
 	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) override;
