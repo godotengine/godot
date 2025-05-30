@@ -400,7 +400,14 @@ void vertex_shader(vec3 vertex_input,
 
 	float roughness = 1.0;
 
+#ifdef USE_DOUBLE_PRECISION
 	mat4 modelview = scene_data.view_matrix * model_matrix;
+	vec3 temp_precision; // Will be ignored.
+	modelview[3].xyz = double_add_vec3(model_matrix[3].xyz, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
+	modelview[3].xyz = mat3(scene_data.view_matrix) * modelview[3].xyz;
+#else
+	mat4 modelview = scene_data.view_matrix * model_matrix;
+#endif
 	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
@@ -422,7 +429,7 @@ void vertex_shader(vec3 vertex_input,
 		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
 	vertex = mat3(inv_view_matrix * modelview) * vertex;
-	vec3 temp_precision; // Will be ignored.
+	
 	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
 	vertex = mat3(scene_data.view_matrix) * vertex;
 #else
