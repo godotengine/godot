@@ -866,9 +866,6 @@ void main() {
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
-	if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
-		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-	}
 #ifndef SUBPASS
 	// Glow
 	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
@@ -879,13 +876,13 @@ void main() {
 
 		// high dynamic range -> SRGB
 		glow = apply_tonemapping(glow, params.white);
-		if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
-			glow = linear_to_srgb(glow);
-		}
-
 		color.rgb = apply_glow(color.rgb, glow);
 	}
 #endif
+
+	if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+		color.rgb = linear_to_srgb(color.rgb);
+	}
 
 	// Additional effects
 
