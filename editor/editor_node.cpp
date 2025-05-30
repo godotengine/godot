@@ -5221,9 +5221,11 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
+	const Pair<String, String> key(p_class, p_fallback);
+
 	// Take from the local cache, if available.
 	{
-		Ref<Texture2D> *icon = class_icon_cache.getptr(p_class);
+		Ref<Texture2D> *icon = class_icon_cache.getptr(key);
 		if (icon) {
 			return *icon;
 		}
@@ -5237,7 +5239,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 	}
 
 	Ref<Texture2D> icon = _get_class_or_script_icon(p_class, script_path, p_fallback, true);
-	class_icon_cache[p_class] = icon;
+	class_icon_cache[key] = icon;
 	return icon;
 }
 
