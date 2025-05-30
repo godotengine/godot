@@ -64,6 +64,7 @@
 #include <propkey.h>
 #include <propvarutil.h>
 #include <shellapi.h>
+#include <shellscalingapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <wbemcli.h>
@@ -1328,35 +1329,12 @@ typedef struct {
 	int dpi;
 } EnumDpiData;
 
-enum _MonitorDpiType {
-	MDT_Effective_DPI = 0,
-	MDT_Angular_DPI = 1,
-	MDT_Raw_DPI = 2,
-	MDT_Default = MDT_Effective_DPI
-};
-
-static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Default) {
+static int QueryDpiForMonitor(HMONITOR hmon, MONITOR_DPI_TYPE dpiType = MDT_DEFAULT) {
 	int dpiX = 96, dpiY = 96;
 
-	static HMODULE Shcore = nullptr;
-	typedef HRESULT(WINAPI * GetDPIForMonitor_t)(HMONITOR hmonitor, _MonitorDpiType dpiType, UINT * dpiX, UINT * dpiY);
-	static GetDPIForMonitor_t getDPIForMonitor = nullptr;
-
-	if (Shcore == nullptr) {
-		Shcore = LoadLibraryW(L"Shcore.dll");
-		getDPIForMonitor = Shcore ? (GetDPIForMonitor_t)(void *)GetProcAddress(Shcore, "GetDpiForMonitor") : nullptr;
-
-		if ((Shcore == nullptr) || (getDPIForMonitor == nullptr)) {
-			if (Shcore) {
-				FreeLibrary(Shcore);
-			}
-			Shcore = (HMODULE)INVALID_HANDLE_VALUE;
-		}
-	}
-
 	UINT x = 0, y = 0;
-	if (hmon && (Shcore != (HMODULE)INVALID_HANDLE_VALUE)) {
-		HRESULT hr = getDPIForMonitor(hmon, dpiType /*MDT_Effective_DPI*/, &x, &y);
+	if (hmon) {
+		HRESULT hr = GetDpiForMonitor(hmon, dpiType, &x, &y);
 		if (SUCCEEDED(hr) && (x > 0) && (y > 0)) {
 			dpiX = (int)x;
 			dpiY = (int)y;
@@ -1408,9 +1386,8 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 	POINT p;
 	p.x = pos.x;
 	p.y = pos.y;
-	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p);
-	}
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p);
+
 	HDC dc = GetDC(nullptr);
 	if (dc) {
 		COLORREF col = GetPixel(dc, p.x, p.y);
@@ -1439,10 +1416,8 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 	POINT p2;
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
-	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p2);
-	}
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p2);
 
 	Ref<Image> img;
 	HDC dc = GetDC(nullptr);
@@ -1495,10 +1470,8 @@ Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) con
 	POINT p2;
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
-	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
-	}
+	LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
+	LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
 
 	Ref<Image> img;
 	HDC dc = GetDC(0);
@@ -1960,10 +1933,8 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 			ClientToScreen(wd.hWnd, (POINT *)&rect.left);
 			ClientToScreen(wd.hWnd, (POINT *)&rect.right);
 
-			if (win81p_PhysicalToLogicalPointForPerMonitorDPI) {
-				win81p_PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.left);
-				win81p_PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.right);
-			}
+			PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.left);
+			PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.right);
 
 			size.x += (rect.right - rect.left);
 			size.y = MAX(size.y, rect.bottom - rect.top);
@@ -3702,10 +3673,8 @@ String DisplayServerWindows::_get_keyboard_layout_display_name(const String &p_k
 	WCHAR buffer[MAX_PATH] = {};
 	DWORD buffer_size = MAX_PATH;
 	if (RegGetValueW(key, (LPCWSTR)p_klid.utf16().get_data(), L"Layout Display Name", RRF_RT_REG_SZ, nullptr, buffer, &buffer_size) == ERROR_SUCCESS) {
-		if (load_indirect_string) {
-			if (load_indirect_string(buffer, buffer, buffer_size, nullptr) == S_OK) {
-				ret = String::utf16((const char16_t *)buffer, buffer_size);
-			}
+		if (SHLoadIndirectString(buffer, buffer, buffer_size, nullptr) == S_OK) {
+			ret = String::utf16((const char16_t *)buffer, buffer_size);
 		}
 	} else {
 		if (RegGetValueW(key, (LPCWSTR)p_klid.utf16().get_data(), L"Layout Text", RRF_RT_REG_SZ, nullptr, buffer, &buffer_size) == ERROR_SUCCESS) {
@@ -4317,12 +4286,6 @@ void DisplayServerWindows::set_context(Context p_context) {
 }
 
 bool DisplayServerWindows::is_window_transparency_available() const {
-	BOOL dwm_enabled = true;
-	if (DwmIsCompositionEnabled(&dwm_enabled) == S_OK) { // Note: Always enabled on Windows 8+, this check can be removed after Windows 7 support is dropped.
-		if (!dwm_enabled) {
-			return false;
-		}
-	}
 #if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
 		return false;
@@ -5099,13 +5062,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if ((tablet_get_current_driver() != "winink") || !winink_available) {
+			if (tablet_get_current_driver() != "winink") {
 				break;
 			}
 
 			uint32_t pointer_id = LOWORD(wParam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+			if (!GetPointerType(pointer_id, &pointer_type)) {
 				break;
 			}
 
@@ -5128,13 +5091,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if ((tablet_get_current_driver() != "winink") || !winink_available) {
+			if (tablet_get_current_driver() != "winink") {
 				break;
 			}
 
 			uint32_t pointer_id = LOWORD(wParam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+			if (!GetPointerType(pointer_id, &pointer_type)) {
 				break;
 			}
 
@@ -5240,13 +5203,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if ((tablet_get_current_driver() != "winink") || !winink_available) {
+			if (tablet_get_current_driver() != "winink") {
 				break;
 			}
 
 			uint32_t pointer_id = LOWORD(wParam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+			if (!GetPointerType(pointer_id, &pointer_type)) {
 				break;
 			}
 
@@ -5255,7 +5218,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			POINTER_PEN_INFO pen_info;
-			if (!win8p_GetPointerPenInfo(pointer_id, &pen_info)) {
+			if (!GetPointerPenInfo(pointer_id, &pen_info)) {
 				break;
 			}
 
@@ -6602,16 +6565,6 @@ GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromCo
 GetImmersiveColorTypeFromNamePtr DisplayServerWindows::GetImmersiveColorTypeFromName = nullptr;
 GetImmersiveUserColorSetPreferencePtr DisplayServerWindows::GetImmersiveUserColorSetPreference = nullptr;
 
-// Windows Ink API.
-bool DisplayServerWindows::winink_available = false;
-GetPointerTypePtr DisplayServerWindows::win8p_GetPointerType = nullptr;
-GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
-LogicalToPhysicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_LogicalToPhysicalPointForPerMonitorDPI = nullptr;
-PhysicalToLogicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_PhysicalToLogicalPointForPerMonitorDPI = nullptr;
-
-// Shell API,
-SHLoadIndirectStringPtr DisplayServerWindows::load_indirect_string = nullptr;
-
 Vector2i _get_device_ids(const String &p_device_name) {
 	if (p_device_name.is_empty()) {
 		return Vector2i();
@@ -6727,7 +6680,7 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 
 	String driver = p_driver;
 	if (driver == "auto") {
-		if (winink_available && !winink_disabled) {
+		if (!winink_disabled) {
 			driver = "winink";
 		} else if (wintab_available) {
 			driver = "wintab";
@@ -6805,14 +6758,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		FreeLibrary(nt_lib);
 	}
 
-	// Load Shell API.
-	HMODULE shellapi_lib = LoadLibraryW(L"shlwapi.dll");
-	if (shellapi_lib) {
-		load_indirect_string = (SHLoadIndirectStringPtr)(void *)GetProcAddress(shellapi_lib, "SHLoadIndirectString");
-	}
-
-	// Load UXTheme, available on Windows 10+ only.
-	if (os_ver.dwBuildNumber >= 10240) {
+	// Load UXTheme.
+	if (os_ver.dwBuildNumber >= 10240) { // Not available on Wine, use only if real Windows 10/11 detected.
 		HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
 		if (ux_theme_lib) {
 			ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
@@ -6857,22 +6804,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	tablet_drivers.push_back("auto");
-
-	// Note: Windows Ink API for pen input, available on Windows 8+ only.
-	// Note: DPI conversion API, available on Windows 8.1+ only.
-	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
-	if (user32_lib) {
-		win8p_GetPointerType = (GetPointerTypePtr)(void *)GetProcAddress(user32_lib, "GetPointerType");
-		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)(void *)GetProcAddress(user32_lib, "GetPointerPenInfo");
-		win81p_LogicalToPhysicalPointForPerMonitorDPI = (LogicalToPhysicalPointForPerMonitorDPIPtr)(void *)GetProcAddress(user32_lib, "LogicalToPhysicalPointForPerMonitorDPI");
-		win81p_PhysicalToLogicalPointForPerMonitorDPI = (PhysicalToLogicalPointForPerMonitorDPIPtr)(void *)GetProcAddress(user32_lib, "PhysicalToLogicalPointForPerMonitorDPI");
-
-		winink_available = win8p_GetPointerType && win8p_GetPointerPenInfo;
-	}
-
-	if (winink_available) {
-		tablet_drivers.push_back("winink");
-	}
+	tablet_drivers.push_back("winink");
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
@@ -6914,17 +6846,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	if (OS::get_singleton()->is_hidpi_allowed()) {
-		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
-
-		if (Shcore != nullptr) {
-			typedef HRESULT(WINAPI * SetProcessDpiAwareness_t)(SHC_PROCESS_DPI_AWARENESS);
-
-			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)(void *)GetProcAddress(Shcore, "SetProcessDpiAwareness");
-
-			if (SetProcessDpiAwareness) {
-				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
-			}
-		}
+		SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
 	}
 
 	HMODULE comctl32 = LoadLibraryW(L"comctl32.dll");
