@@ -1009,6 +1009,9 @@
 			Tells Godot which node it should give focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [member ProjectSettings.input/ui_focus_prev] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
+		<member name="autofocus" type="bool" setter="set_autofocus" getter="get_autofocus" default="false">
+			If enabled, this control grabs focus after initialization. Since only one control can be focused at once, the last control initialized with this setting enabled will receive focus. See also [method grab_focus].
+		</member>
 		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the [CanvasLayer]).
 		</member>
