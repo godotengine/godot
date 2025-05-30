@@ -1174,8 +1174,6 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	Vector<RenderingShaderContainer::Shader> &shaders = shader_container->shaders;
 	Vector<RSCM::StageData> &mtl_shaders = shader_container->mtl_shaders;
 
-	r_name = String(binary_data.shader_name.get_data());
-
 	// We need to regenerate the shader if the cache is moved to an incompatible device.
 	ERR_FAIL_COND_V_MSG(device_properties->features.argument_buffers_tier < MTLArgumentBuffersTier2 && mtl_reflection_data.uses_argument_buffers(),
 			RDD::ShaderID(),
