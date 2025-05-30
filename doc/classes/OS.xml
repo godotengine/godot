@@ -588,7 +588,7 @@
 			<return type="String" />
 			<description>
 				Returns the exact production and build version of the operating system. This is different from the branded version used in marketing. This helps to distinguish between different releases of operating systems, including minor versions, and insider and custom builds.
-				- For Windows, the major and minor version are returned, as well as the build number. For example, the returned string may look like [code]10.0.9926[/code] for a build of Windows 10, and it may look like [code]6.1.7601[/code] for a build of Windows 7 SP1.
+				- For Windows, the major and minor version are returned, as well as the build number. For example, the returned string may look like [code]10.0.9926[/code] for a build of Windows 10.
 				- For rolling distributions, such as Arch Linux, an empty string is returned.
 				- For macOS and iOS, the major and minor version are returned, as well as the patch number.
 				- For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
