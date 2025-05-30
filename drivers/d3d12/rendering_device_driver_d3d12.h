@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/a_hash_map.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
@@ -133,37 +134,106 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
 
-	class DescriptorsHeap {
+	class CPUDescriptorsHeapPool;
+
+	struct CPUDescriptorsHeapHandle {
+		ID3D12DescriptorHeap *heap = nullptr;
+		CPUDescriptorsHeapPool *pool = nullptr;
+		uint32_t offset = 0;
+		uint32_t base_offset = 0;
+		uint32_t count = 0;
+		uint32_t nonce = 0;
+
+		uint32_t global_offset() const { return offset + base_offset; }
+	};
+
+	class CPUDescriptorsHeapPool {
+		Mutex mutex;
+
+		struct FreeBlockInfo {
+			ID3D12DescriptorHeap *heap = nullptr;
+			uint32_t global_offset = 0; // Global offset in an address space shared by all the heaps.
+			uint32_t base_offset = 0; // The offset inside the space of this heap.
+			uint32_t size = 0;
+			uint32_t nonce = 0;
+		};
+
+		struct FreeBlockSortIndexSort {
+			_FORCE_INLINE_ bool operator()(const uint32_t &p_l, const uint32_t &p_r) const {
+				return p_l > p_r;
+			}
+		};
+
+		typedef RBMap<uint32_t, FreeBlockInfo> OffsetTableType;
+		typedef RBMap<uint32_t, List<uint32_t>, FreeBlockSortIndexSort> SizeTableType;
+
+		OffsetTableType free_blocks_by_offset;
+		SizeTableType free_blocks_by_size;
+		uint32_t current_offset = 0;
+		uint32_t current_nonce = 0;
+
+		void add_to_size_map(const FreeBlockInfo &p_block);
+		void remove_from_size_map(const FreeBlockInfo &p_block);
+		void verify();
+
+	public:
+		Error allocate(ID3D12Device *p_device, const D3D12_DESCRIPTOR_HEAP_DESC &p_desc, CPUDescriptorsHeapHandle &r_result);
+		Error release(const CPUDescriptorsHeapHandle &p_result);
+	};
+
+	class CPUDescriptorsHeapPools {
+		CPUDescriptorsHeapPool pools[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
+	public:
+		Error allocate(ID3D12Device *p_device, const D3D12_DESCRIPTOR_HEAP_DESC &p_desc, CPUDescriptorsHeapHandle &r_result);
+	};
+
+	struct CPUDescriptorsHeapWalker {
+		uint32_t handle_size = 0;
+		uint32_t handle_count = 0;
+		D3D12_CPU_DESCRIPTOR_HANDLE first_cpu_handle = {};
+		uint32_t handle_index = 0;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE get_curr_cpu_handle();
+		_FORCE_INLINE_ void rewind() { handle_index = 0; }
+		void advance(uint32_t p_count = 1);
+		uint32_t get_current_handle_index() const { return handle_index; }
+		uint32_t get_free_handles() { return handle_count - handle_index; }
+		bool is_at_eof() { return handle_index == handle_count; }
+	};
+
+	struct GPUDescriptorsHeapWalker : CPUDescriptorsHeapWalker {
+		D3D12_GPU_DESCRIPTOR_HANDLE first_gpu_handle = {};
+
+		D3D12_GPU_DESCRIPTOR_HANDLE get_curr_gpu_handle();
+	};
+
+	class CPUDescriptorsHeap {
+		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+		CPUDescriptorsHeapHandle handle;
+		uint32_t handle_size = 0;
+
+	public:
+		CPUDescriptorsHeap() = default;
+		Error allocate(RenderingDeviceDriverD3D12 *p_driver, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count);
+		uint32_t get_descriptor_count() const { return desc.NumDescriptors; }
+		~CPUDescriptorsHeap();
+		CPUDescriptorsHeapWalker make_walker() const;
+	};
+
+	class GPUDescriptorsHeap {
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		ComPtr<ID3D12DescriptorHeap> heap;
 		uint32_t handle_size = 0;
 
 	public:
-		class Walker { // Texas Ranger.
-			friend class DescriptorsHeap;
-
-			uint32_t handle_size = 0;
-			uint32_t handle_count = 0;
-			D3D12_CPU_DESCRIPTOR_HANDLE first_cpu_handle = {};
-			D3D12_GPU_DESCRIPTOR_HANDLE first_gpu_handle = {};
-			uint32_t handle_index = 0;
-
-		public:
-			D3D12_CPU_DESCRIPTOR_HANDLE get_curr_cpu_handle();
-			D3D12_GPU_DESCRIPTOR_HANDLE get_curr_gpu_handle();
-			_FORCE_INLINE_ void rewind() { handle_index = 0; }
-			void advance(uint32_t p_count = 1);
-			uint32_t get_current_handle_index() const { return handle_index; }
-			uint32_t get_free_handles() { return handle_count - handle_index; }
-			bool is_at_eof() { return handle_index == handle_count; }
-		};
-
-		Error allocate(ID3D12Device *m_device, D3D12_DESCRIPTOR_HEAP_TYPE m_type, uint32_t m_descriptor_count, bool p_for_gpu);
+		Error allocate(RenderingDeviceDriverD3D12 *p_device, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count);
 		uint32_t get_descriptor_count() const { return desc.NumDescriptors; }
 		ID3D12DescriptorHeap *get_heap() const { return heap.Get(); }
-
-		Walker make_walker() const;
+		GPUDescriptorsHeapWalker make_walker() const;
 	};
+
+	CPUDescriptorsHeapPools cpu_descriptor_pool;
 
 	struct {
 		ComPtr<ID3D12CommandSignature> draw;
@@ -498,8 +568,8 @@ private:
 		bool is_screen = false;
 		Size2i size;
 		TightLocalVector<uint32_t> attachments_handle_inds; // RTV heap index for color; DSV heap index for DSV.
-		DescriptorsHeap rtv_heap;
-		DescriptorsHeap dsv_heap; // Used only if not for screen and some depth-stencil attachments.
+		CPUDescriptorsHeap rtv_heap;
+		CPUDescriptorsHeap dsv_heap; // Used only for depth-stencil attachments.
 
 		TightLocalVector<TextureID> attachments; // Color and depth-stencil. Used if not screen.
 		TextureID vrs_attachment;
@@ -609,8 +679,8 @@ private:
 
 	struct UniformSetInfo {
 		struct {
-			DescriptorsHeap resources;
-			DescriptorsHeap samplers;
+			CPUDescriptorsHeap resources;
+			CPUDescriptorsHeap samplers;
 		} desc_heaps;
 
 		struct StateRequirement {
@@ -842,16 +912,16 @@ public:
 private:
 	struct FrameInfo {
 		struct {
-			DescriptorsHeap resources;
-			DescriptorsHeap samplers;
-			DescriptorsHeap aux;
-			DescriptorsHeap rtv;
+			GPUDescriptorsHeap resources;
+			GPUDescriptorsHeap samplers;
+			CPUDescriptorsHeap aux;
+			CPUDescriptorsHeap rtv;
 		} desc_heaps;
 		struct {
-			DescriptorsHeap::Walker resources;
-			DescriptorsHeap::Walker samplers;
-			DescriptorsHeap::Walker aux;
-			DescriptorsHeap::Walker rtv;
+			GPUDescriptorsHeapWalker resources;
+			GPUDescriptorsHeapWalker samplers;
+			CPUDescriptorsHeapWalker aux;
+			CPUDescriptorsHeapWalker rtv;
 		} desc_heap_walkers;
 		struct {
 			bool resources = false;
