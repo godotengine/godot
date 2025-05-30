@@ -392,10 +392,12 @@ void main() {
 	vec3 model_origin = model_matrix[3].xyz;
 	if (sc_multimesh()) {
 		modelview = modelview * matrix;
-		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
+		
+		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;
+		model_origin = double_add_vec3(model_origin, model_precision, instance_origin, vec3(0.0), model_precision);
 	}
 
-	// Overwrite the translation part of modelview with improved precision
+	// Overwrite the translation part of modelview with improved precision.
 	vec3 temp_precision; // Will be ignored.
 	modelview[3].xyz = double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
 	modelview[3].xyz = mat3(scene_data.view_matrix) * modelview[3].xyz;
