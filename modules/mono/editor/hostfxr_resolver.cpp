@@ -130,19 +130,11 @@ bool get_latest_fxr(const String &fxr_root, String &r_fxr_path) {
 }
 
 #ifdef WINDOWS_ENABLED
-typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
-
 BOOL is_wow64() {
 	BOOL wow64 = FALSE;
-
-	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-
-	if (fnIsWow64Process) {
-		if (!fnIsWow64Process(GetCurrentProcess(), &wow64)) {
-			wow64 = FALSE;
-		}
+	if (!IsWow64Process(GetCurrentProcess(), &wow64)) {
+		wow64 = FALSE;
 	}
-
 	return wow64;
 }
 #endif
