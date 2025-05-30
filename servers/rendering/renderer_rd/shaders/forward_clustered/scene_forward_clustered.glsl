@@ -402,8 +402,19 @@ void vertex_shader(vec3 vertex_input,
 
 #ifdef USE_DOUBLE_PRECISION
 	mat4 modelview = scene_data.view_matrix * model_matrix;
+
+	// We separate the basis from the origin because the basis is fine with single point precision.
+	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
+	// We add the result to the vertex and ignore the final lost precision.
+	vec3 model_origin = model_matrix[3].xyz;
+	if (sc_multimesh()) {
+		modelview = modelview * matrix;
+		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
+	}
+
+	// Overwrite the translation part of modelview with improved precision
 	vec3 temp_precision; // Will be ignored.
-	modelview[3].xyz = double_add_vec3(model_matrix[3].xyz, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
+	modelview[3].xyz = double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
 	modelview[3].xyz = mat3(scene_data.view_matrix) * modelview[3].xyz;
 #else
 	mat4 modelview = scene_data.view_matrix * model_matrix;
@@ -419,22 +430,8 @@ void vertex_shader(vec3 vertex_input,
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
-#ifdef USE_DOUBLE_PRECISION
-	// We separate the basis from the origin because the basis is fine with single point precision.
-	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
-	// We add the result to the vertex and ignore the final lost precision.
-	vec3 model_origin = model_matrix[3].xyz;
-	if (sc_multimesh()) {
-		vertex = mat3(matrix) * vertex;
-		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
-	}
-	vertex = mat3(inv_view_matrix * modelview) * vertex;
-	
-	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
-	vertex = mat3(scene_data.view_matrix) * vertex;
-#else
 	vertex = (modelview * vec4(vertex, 1.0)).xyz;
-#endif
+
 #ifdef NORMAL_USED
 	normal = modelview_normal * normal;
 #endif
