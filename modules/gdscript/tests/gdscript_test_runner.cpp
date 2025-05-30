@@ -655,6 +655,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.status = GDTEST_LOAD_ERROR;
 		result.output = "";
 		result.passed = false;
+		remove_print_handler(&_print_handler);
+		remove_error_handler(&_error_handler);
 		ERR_FAIL_V_MSG(result, "\nCould not reload script: '" + source_file + "'");
 	}
 
