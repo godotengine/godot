@@ -49,6 +49,7 @@
 #include "protocol/linux_dmabuf_v1.gen.h"
 #include "protocol/xdg_shell.gen.h"
 
+#include "protocol/cursor_shape.gen.h"
 #include "protocol/fractional_scale.gen.h"
 #include "protocol/godot_embedding_compositor.gen.h"
 #include "protocol/idle_inhibit.gen.h"
@@ -372,6 +373,9 @@ private:
 
 		// xdg-system-bell
 		&xdg_system_bell_v1_interface,
+
+		// wp-cursor-shape-v1
+		&wp_cursor_shape_manager_v1_interface,
 
 		// Our custom things.
 		&godot_embedding_compositor_interface,
