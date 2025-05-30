@@ -139,6 +139,7 @@ private:
 
 	Label *file_details_path = nullptr;
 	Button *display_mode_toggle = nullptr;
+	CheckButton *instant_preview_toggle = nullptr;
 	CheckButton *include_addons_toggle = nullptr;
 	CheckButton *fuzzy_search_toggle = nullptr;
 
@@ -168,6 +169,7 @@ private:
 	void _layout_result_item(QuickOpenResultItem *p_item);
 	void _set_display_mode(QuickOpenDisplayMode p_display_mode);
 	void _toggle_display_mode();
+	void _toggle_instant_preview(bool p_pressed);
 	void _toggle_include_addons(bool p_pressed);
 	void _toggle_fuzzy_search(bool p_pressed);
 	void _menu_option(int p_option);
@@ -257,6 +259,8 @@ public:
 protected:
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
+	void item_pressed(bool p_double_click);
+	void selection_changed();
 
 private:
 	static String get_dialog_title(const Vector<StringName> &p_base_types);
