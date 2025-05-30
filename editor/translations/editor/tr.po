@@ -113,13 +113,15 @@
 # Emre Kadir Karagöz <emrekadir197@gmail.com>, 2024.
 # ulk <ulk.info@gmail.com>, 2024, 2025.
 # Murateba <robloxmurat5@gmail.com>, 2025.
+# Mustafa Kara <denizkara3861@gmail.com>, 2025.
+# Deniz Kara <denizkara3861@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-20 06:01+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2025-05-28 15:01+0000\n"
+"Last-Translator: Deniz Kara <denizkara3861@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -127,7 +129,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "Ana İş Parçası"
@@ -452,7 +454,7 @@ msgid "Select Word Under Caret"
 msgstr "İmlecin Durduğu Kelimeyi Seç"
 
 msgid "Add Selection for Next Occurrence"
-msgstr "Bir Sonraki Tekrarlamayı Seçime Ekle"
+msgstr "Sonraki Tekrarlamayı Seçime Ekle"
 
 msgid "Skip Selection for Next Occurrence"
 msgstr "Bir Sonraki Tekrarlama için Seçimi Atla"
@@ -20451,8 +20453,8 @@ msgid ""
 "You are attempting to assign the VERTEX position in model space to the vertex "
 "POSITION in clip space. The definition of clip space changed in version 4.3, "
 "so if this code was written prior to 4.3, it will not continue to work. "
-"Consider specifying the clip space z-component directly i.e. use `vec4(VERTEX."
-"xy, 1.0, 1.0)`."
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
 msgstr ""
 "Model uzayındaki KÖŞENOKTA (vertex) konumunu parça uzayındaki köşenokta "
 "KONUMUNA atamaya çalışıyorsunuz. Parça uzayı tanımı 4.3 sürümünde "

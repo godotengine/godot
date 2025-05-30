@@ -57,13 +57,15 @@
 # Максим Горпиніч <maksimgorpinic2005a@gmail.com>, 2025.
 # Mister Ky <afanasievsergiy3524@gmail.com>, 2025.
 # Veydzher <Veydzher@users.noreply.hosted.weblate.org>, 2025.
+# Максим Горпиніч <maksimgorpinic4@gmail.com>, 2025.
+# Damglador <vse.stopchanskyi@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-19 17:59+0000\n"
-"Last-Translator: Максим Горпиніч <maksimgorpinic2005a@gmail.com>\n"
+"PO-Revision-Date: 2025-05-27 14:01+0000\n"
+"Last-Translator: Damglador <vse.stopchanskyi@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -72,7 +74,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "Головний потік"
@@ -2529,10 +2531,10 @@ msgid "RenderingDevice"
 msgstr "Пристрій рендерингу"
 
 msgid "OpenGL"
-msgstr "ОпенГЛ"
+msgstr "OpenGL"
 
 msgid "Vulkan"
-msgstr "Вулкан"
+msgstr "Vulkan"
 
 msgid "Text Server: Fallback"
 msgstr "Текстовий сервер: Запасний"
@@ -3012,7 +3014,7 @@ msgstr ""
 "прапорів."
 
 msgid "Deprecated"
-msgstr "Застаріле"
+msgstr "Застарілий"
 
 msgid "Experimental"
 msgstr "Експериментальне"
@@ -5845,7 +5847,7 @@ msgid "Green"
 msgstr "Зелений"
 
 msgid "Teal"
-msgstr "Чирок."
+msgstr "Бірюзовий"
 
 msgid "Blue"
 msgstr "Синій"
@@ -5854,10 +5856,10 @@ msgid "Purple"
 msgstr "Фіолетовий"
 
 msgid "Pink"
-msgstr "Рожевий."
+msgstr "Рожевий"
 
 msgid "Gray"
-msgstr "Грей."
+msgstr "Сірий"
 
 msgid "Go to previous selected folder/file."
 msgstr "Перейти до попередньої вибраної теки/файлу."
@@ -6012,7 +6014,7 @@ msgid "Create New Group"
 msgstr "Створити нову групу"
 
 msgid "Global"
-msgstr "Загально"
+msgstr "Глобальний"
 
 msgid "Delete group \"%s\" and all its references?"
 msgstr "Видалити групу \"%s\" і всі її посилання?"
@@ -6302,9 +6304,9 @@ msgid ""
 "help recover projects that crash the engine upon initialization. The "
 "following features have been temporarily disabled:"
 msgstr ""
-"Годо відкрив проект у режимі відновлення, який є спеціальним режимом, який "
-"може допомогти відновити проекти, у яких після ініціалізації відбувається "
-"збій двигуна. Наступні функції тимчасово вимкнено:"
+"Godot відкриває проєкт у режимі відновлення, який є спеціальним режимом, що "
+"може допомогти відновити проєкти, що призводять до збою рушія під час "
+"ініціалізації. Наступні функції тимчасово вимкнено:"
 
 msgid "Tool scripts"
 msgstr "Скрипти інструментів"
@@ -6795,7 +6797,7 @@ msgid "Audio Stream Importer: %s"
 msgstr "Імпортер аудіо-потоку: %s"
 
 msgid "Enable looping."
-msgstr "Зациклити."
+msgstr "Увімкнути цикл."
 
 msgid "Offset:"
 msgstr "Зсув:"
@@ -10860,7 +10862,7 @@ msgid "Create a Plugin"
 msgstr "Створити додаток"
 
 msgid "Update"
-msgstr "оновлення"
+msgstr "Оновлення"
 
 msgid "Plugin Name:"
 msgstr "Назва додатка:"
@@ -11320,10 +11322,10 @@ msgid "Clear Recent Scripts"
 msgstr "Спорожнити список нещодавніх скриптів"
 
 msgid "Uppercase"
-msgstr "ВЕРХНІЙ РЕГІСТР"
+msgstr "Верхній регістр"
 
 msgid "Lowercase"
-msgstr "нижній регістр"
+msgstr "Нижній регістр"
 
 msgid "Capitalize"
 msgstr "З Великої"
@@ -16119,7 +16121,7 @@ msgid "Paste Node(s) as Root"
 msgstr "Вставте вузол(и) як корінь"
 
 msgid "<Unnamed> at %s"
-msgstr "<Unnamed> at %s"
+msgstr "<Без назви> о %s"
 
 msgid "(used %d times)"
 msgstr "(використано %d разів)"
@@ -16131,7 +16133,7 @@ msgid "Add Child Node..."
 msgstr "Додати дочірній вузол..."
 
 msgid "Instantiate Child Scene..."
-msgstr "Миттєва дитяча сцена..."
+msgstr "Миттєва дочірня сцена..."
 
 msgid "Paste as Sibling"
 msgstr "Вставити як брата або сестру"
@@ -17598,8 +17600,8 @@ msgstr "Експорт на Android"
 
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
-"Некоректна назва файла! Пакет програми Android повинен мати суфікс назви *."
-"aab."
+"Некоректна назва файла! Пакет програми Android повинен мати суфікс назви "
+"*.aab."
 
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr "Розширення APK є несумісним із Android App Bundle."
@@ -20050,8 +20052,8 @@ msgstr "Індекс екземпляра не може бути від’ємн
 
 msgid "Allowed instance uniform indices must be within [0..%d] range."
 msgstr ""
-"Допустимі рівномірні індекси екземплярів повинні знаходитися в діапазоні [0.."
-"%d]."
+"Допустимі рівномірні індекси екземплярів повинні знаходитися в діапазоні "
+"[0..%d]."
 
 msgid ""
 "'hint_normal_roughness_texture' is only available when using the Forward+ "
@@ -20319,11 +20321,11 @@ msgid ""
 "You are attempting to assign the VERTEX position in model space to the vertex "
 "POSITION in clip space. The definition of clip space changed in version 4.3, "
 "so if this code was written prior to 4.3, it will not continue to work. "
-"Consider specifying the clip space z-component directly i.e. use `vec4(VERTEX."
-"xy, 1.0, 1.0)`."
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
 msgstr ""
 "Ви намагаєтеся призначити позицію VERTEX у просторі моделі позиції вершини "
 "POSITION у просторі кліпу. Визначення простору кліпу змінено у версії 4.3, "
 "тому, якщо цей код був написаний до версії 4.3, він не працюватиме. Спробуйте "
-"вказати z-компонент простору кліпу напряму, тобто використайте `vec4(VERTEX."
-"xy, 1.0, 1.0)`."
+"вказати z-компонент простору кліпу напряму, тобто використайте "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."

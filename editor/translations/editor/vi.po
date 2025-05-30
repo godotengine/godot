@@ -46,13 +46,14 @@
 # Nguyễn Minh Khôi <minhkhoiheovang2007@gmail.com>, 2024.
 # IoeCmcomc <IoeCmcomc@users.noreply.hosted.weblate.org>, 2025.
 # Đức Anh Nguyễn <ducnah2132k9@gmail.com>, 2025.
+# An <tdinhan999+hosted.weblate.org@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-24 00:22+0000\n"
-"Last-Translator: Đức Anh Nguyễn <ducnah2132k9@gmail.com>\n"
+"PO-Revision-Date: 2025-05-25 06:48+0000\n"
+"Last-Translator: An <tdinhan999+hosted.weblate.org@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -60,10 +61,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
-msgstr "Chủ đề chính"
+msgstr "Luồng chính"
 
 msgid "Unset"
 msgstr "Hủy bỏ"
@@ -81,25 +82,25 @@ msgid "Middle Mouse Button"
 msgstr "Nút Chuột Giữa"
 
 msgid "Mouse Wheel Up"
-msgstr "Lăn chuột Lên"
+msgstr "Lăn Chuột Lên"
 
 msgid "Mouse Wheel Down"
-msgstr "Lăn chuột Xuống"
+msgstr "Lăn Chuột Xuống"
 
 msgid "Mouse Wheel Left"
-msgstr "Con lăn trái"
+msgstr "Lăn Chuột Trái"
 
 msgid "Mouse Wheel Right"
-msgstr "Con lăn phải"
+msgstr "Lăn Chuột Phải"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Nút lật trang ngón cái 1"
+msgstr "Nút Lật Ngón Cái 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Nút lật trang ngón cái 2"
+msgstr "Nút Lật Ngón Cái 2"
 
 msgid "Button"
-msgstr "Button (nút, phím)"
+msgstr "Nút/Phím"
 
 msgid "Double Click"
 msgstr "Nháy Đúp"
@@ -1050,6 +1051,10 @@ msgctxt "Ease Type"
 msgid "Out"
 msgstr "Ra"
 
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "RaVào"
+
 msgid "FPS:"
 msgstr "Tốc độ khung hình/giây:"
 
@@ -1751,6 +1756,10 @@ msgstr "Lỗi mở tệp nội dung của \"%s\" (không phải định dạng Z
 msgid "%s (already exists)"
 msgstr "%s (đã tồn tại)"
 
+msgid "%d file conflicts with your project and won't be installed"
+msgid_plural "%d files conflict with your project and won't be installed"
+msgstr[0] "Tệp xung đột với dự án của bạn và sẽ không được cài đặt"
+
 msgid "This asset doesn't have a root directory, so it can't be ignored."
 msgstr "Tài sản này không có thư mục gốc nên không thể bỏ qua."
 
@@ -2300,6 +2309,27 @@ msgstr "Thực hiện các hoạt động sau khi nhập lại..."
 msgid "This method supports a variable number of arguments."
 msgstr "Phương pháp này hỗ trợ số lượng đối số khác nhau."
 
+msgid ""
+"This method is called by the engine.\n"
+"It can be overridden to customize built-in behavior."
+msgstr ""
+"Hàm được gọi bởi động cơ.\n"
+"Nó có thể ghi đè để chỉnh sửa hành vi được xây dựng sẵn."
+
+msgid ""
+"This method has no side effects.\n"
+"It does not modify the object in any way."
+msgstr ""
+"Hàm này không có tác dụng phụ.\n"
+"Nó không chỉnh sửa đối tượng được dùng."
+
+msgid ""
+"This method does not need an instance to be called.\n"
+"It can be called directly using the class name."
+msgstr ""
+"Hàm này không cần đối tượng để có thể gọi.\n"
+"Nó có thể gọi trực tiếp bằng tên của lớp."
+
 msgid "This value is an integer composed as a bitmask of the following flags."
 msgstr ""
 "Giá trị này là một số nguyên được tính như là bitmask của những flags sau."
@@ -2322,6 +2352,12 @@ msgstr "Các mô tả hàm tạo"
 msgid "Operator Descriptions"
 msgstr "Các mô tả toán tử"
 
+msgid "This method may be changed or removed in future versions."
+msgstr "Hàm này có thể chỉnh sữa hoặc loại bỏ khỏi phiên bản trong tương lai."
+
+msgid "This constructor may be changed or removed in future versions."
+msgstr "Hàm tạo này có thể thay đổi hoặc loại bỏ trong phiên bản tương lai."
+
 msgid "There is currently no description for this method."
 msgstr "Hiện tại không có mô tả cho hàm này."
 
@@ -2330,6 +2366,9 @@ msgstr "Trên đầu"
 
 msgid "Class:"
 msgstr "Lớp:"
+
+msgid "This class may be changed or removed in future versions."
+msgstr "Lớp này có thể thay đổi hoặc loại bỏ trong phiên bản tương lai."
 
 msgid "Inherits:"
 msgstr "Kế thừa:"
@@ -2342,6 +2381,16 @@ msgstr "Mô tả"
 
 msgid "There is currently no description for this class."
 msgstr "Hiện tại không có mô tả cho lớp này."
+
+msgid "Note:"
+msgstr "Ghi chú:"
+
+msgid ""
+"There are notable differences when using this API with C#. See [url=%s]C# API "
+"differences to GDScript[/url] for more information."
+msgstr ""
+"Có một số khác biệt cần nhớ khi sử dụng API này trong C#. Xem [url=%s]điểm "
+"khác biệt giữa C# API và GDScript[/url] để thêm thông tin."
 
 msgid "Online Tutorials"
 msgstr "Hướng dẫn trực tuyến"
@@ -2376,14 +2425,30 @@ msgstr "Biểu tượng"
 msgid "Styles"
 msgstr "Kiểu dáng"
 
+msgid "This signal may be changed or removed in future versions."
+msgstr "Tín hiệu này có thể bị thay đổi hoặc loại bỏ trong phiên bản tương lai."
+
 msgid "Enumerations"
 msgstr "Tập hợp hằng số"
+
+msgid "This enumeration may be changed or removed in future versions."
+msgstr ""
+"Cụm liệt kê này có thể bị thay đổi hoặc loại bỏ trong phiên bản tương lai."
+
+msgid "This constant may be changed or removed in future versions."
+msgstr "Hằng số này có thể bị thay đổi hoặc loại bỏ trong phiên bản tương lai."
+
+msgid "There is currently no description for this annotation."
+msgstr "Hiện tại không có mô tả cho chú thích này."
 
 msgid "Property Descriptions"
 msgstr "Các mô tả thuộc tính"
 
 msgid "(value)"
 msgstr "(giá trị)"
+
+msgid "This property may be changed or removed in future versions."
+msgstr "Giá trị này có thể bị thay đổi hoặc loại bỏ trong những phiên bản mới."
 
 msgid ""
 "There is currently no description for this property. Please help us by "

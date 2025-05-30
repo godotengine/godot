@@ -16,7 +16,7 @@
 # Roberto Pérez <djleizar@gmail.com>, 2021.
 # Joel Garcia Cascalló <jocsencat@gmail.com>, 2021.
 # DFC <damiafluixacanals28@gmail.com>, 2021.
-# Roger VC <rogervilarasau@gmail.com>, 2022.
+# Roger VC <rogervilarasau@gmail.com>, 2022, 2025.
 # Jordi Borràs <jborras@centrekepler.com>, 2023.
 # Marc GB <marc.giralt.butjosa@gmail.com>, 2023.
 # Ander Romero <anderromeroaldana@gmail.com>, 2023.
@@ -31,13 +31,15 @@
 # Alvaro <alvaro.garcia-bamala@epitech.eu>, 2025.
 # Joel Joan Castillo Ramos <joeljoancastilloramos5276@gmail.com>, 2025.
 # Quim Nuss Székely <lluna.nova@gmail.com>, 2025.
+# Iris Nose <iris.les.maduixes@gmail.com>, 2025.
+# Adrià Rodríguez Pujol <adria_r_p_@hotmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-15 15:39+0000\n"
-"Last-Translator: Quim Nuss Székely <lluna.nova@gmail.com>\n"
+"PO-Revision-Date: 2025-05-11 07:49+0000\n"
+"Last-Translator: Alberto Blanco Celdrán <flaberto.abc@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -45,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
@@ -63,7 +65,7 @@ msgid "Right Mouse Button"
 msgstr "Botó dret del ratolí"
 
 msgid "Middle Mouse Button"
-msgstr "Botó Central del Ratolí"
+msgstr "Botó central del ratolí"
 
 msgid "Mouse Wheel Up"
 msgstr "Roda del Ratolí cap Amunt"
@@ -472,10 +474,10 @@ msgid "Revert Action"
 msgstr "Reverteix l'acció"
 
 msgid "Add Event"
-msgstr "Afegeix un Esdeveniment"
+msgstr "Afegir esdeveniment"
 
 msgid "Remove Action"
-msgstr "Elimina l'acció"
+msgstr "Eliminar acció"
 
 msgid "Cannot Remove Action"
 msgstr "No es pot eliminar l'acció"
@@ -515,6 +517,12 @@ msgstr "Nom:"
 
 msgid "Type:"
 msgstr "Tipus:"
+
+msgid "Metadata name is valid."
+msgstr "El nom de les metadades és vàlid."
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Afegeix una Propietat de Metadades per a \"%s\""
 
 msgid "Metadata name can't be empty."
 msgstr "El nom de la metadada no pot estar buit."
@@ -634,6 +642,9 @@ msgstr "Canviar diverses escales 3D a l'animació"
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Modifica el valor de diversos fotogrames clau de l'animació"
 
+msgid "Animation Multi Change Call"
+msgstr "Canviar diverses crides d'animació"
+
 msgid "Change Animation Length"
 msgstr "Canvia la durada de l'Animació"
 
@@ -653,6 +664,27 @@ msgstr ""
 "Per canviar el mode de repetició d'aquesta animació, navega a la configuració "
 "avançada d'importació de l'escena i seleccciona la animació.\n"
 "Després podràs canviar el mode de repetició des del menú de l'inspector."
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"No es pot canviar el mode de repetició d'animacions instanciades des d'un "
+"recurs importat."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"No es pot canviar el mode de repetició d'animacions incrustades en una altra "
+"escena.\n"
+"\n"
+"Heu d'obrir aquesta escena i canviar el mode de repetició de l'animació des "
+"d'allà."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr ""
+"No es pot canviar el mode de repetició d'una animació incrustada en un altre "
+"recurs."
 
 msgid "Property Track..."
 msgstr "Pista de Propietats..."
@@ -879,6 +911,9 @@ msgstr ""
 msgid "property '%s'"
 msgstr "propietat '%s'"
 
+msgid "Nearest FPS: %d"
+msgstr "FPS més proper: %d"
+
 msgid "Change Animation Step"
 msgstr "Canvia el Pas d'Animació"
 
@@ -969,6 +1004,9 @@ msgstr "Enganxar pistes"
 msgid "Animation Scale Keys"
 msgstr "Claus d'Escala de l'Animació"
 
+msgid "Animation Set Start Offset"
+msgstr "Estableix Offset Inicial d'Animació"
+
 msgid "Animation Set End Offset"
 msgstr "Establir Offset Final d'Animació"
 
@@ -1050,6 +1088,9 @@ msgstr "Agrupa les pistes per node o mostra-les en una llista."
 msgid "Apply snapping to timeline cursor."
 msgstr "Aplicar ajustament al cursor de la línia de temps."
 
+msgid "Apply snapping to selected key(s)."
+msgstr "Aplicar l'ajustament a la(les) clau(s) seleccionada(es)."
+
 msgid "Apply snapping to the nearest integer FPS."
 msgstr "Aplicar ajustament al FPS enter més proper."
 
@@ -1085,6 +1126,12 @@ msgstr "Estableix l'offset d'inici (Áudio)"
 
 msgid "Set End Offset (Audio)"
 msgstr "Estableix l'offset de fi (Àudio)"
+
+msgid "Make Easing Selection..."
+msgstr "Selecciona el tipus de suavització..."
+
+msgid "Duplicate Selected Keys"
+msgstr "Duplica les claus Seleccionades"
 
 msgid "Cut Selected Keys"
 msgstr "Retallar les Claus seleccionades"
@@ -1174,6 +1221,10 @@ msgid "Select Transition and Easing"
 msgstr "Selecciona la transició i el suavitzat"
 
 msgctxt "Transition Type"
+msgid "Linear"
+msgstr "Lineal"
+
+msgctxt "Transition Type"
 msgid "Sine"
 msgstr "Sinus"
 
@@ -1188,6 +1239,10 @@ msgstr "Quart"
 msgctxt "Transition Type"
 msgid "Quad"
 msgstr "Quad"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Exponencial"
 
 msgctxt "Transition Type"
 msgid "Elastic"
@@ -1206,8 +1261,16 @@ msgid "Bounce"
 msgstr "Rebot"
 
 msgctxt "Transition Type"
+msgid "Back"
+msgstr "Enrere"
+
+msgctxt "Transition Type"
 msgid "Spring"
 msgstr "Spring"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "Entrada"
 
 msgctxt "Ease Type"
 msgid "Out"
@@ -1227,17 +1290,32 @@ msgstr "Tipus de Transició:"
 msgid "Ease Type:"
 msgstr "Tipus d'acceleració:"
 
+msgid "FPS:"
+msgstr "FPS:"
+
 msgid "Animation Baker"
 msgstr "Precalcular l'animació"
 
 msgid "3D Pos/Rot/Scl Track:"
 msgstr "Pista Pos/Rot/Esc 3D"
 
+msgid "Blendshape Track:"
+msgstr "Pista de barreja de formes:"
+
+msgid "Value Track:"
+msgstr "Pista de valor:"
+
 msgid "Select Tracks to Copy"
 msgstr "Seleccioneu les Pistes a Copiar"
 
 msgid "Select All/None"
 msgstr "(Des)selecciona-ho tot"
+
+msgid "Animation Change Keyframe Time"
+msgstr "Modificar el Temps del Fotograma Clau de l'Animació"
+
+msgid "Marker name is read-only in the inspector."
+msgstr "El nóm del marcador és de només lectura a l'inspector."
 
 msgid ""
 "A marker's name can only be changed by right-clicking it in the animation "
@@ -1248,8 +1326,44 @@ msgstr ""
 "editor d'animacions i seleccionant 'Reanomena marcador', per tal d'assegurar-"
 "se que els noms dels marcadors siguin únics."
 
+msgid "Insert Marker..."
+msgstr "Insereix Marcador…"
+
+msgid "Rename Marker"
+msgstr "Canviar el nom del Marcador"
+
+msgid "Delete Marker(s)"
+msgstr "Eliminar Marcador(s)"
+
+msgid "Show All Marker Names"
+msgstr "Mostrar tots els noms dels Marcadors"
+
 msgid "Marker:"
 msgstr "Marcador:"
+
+msgid "Animation Move Markers"
+msgstr "Mou els Marcadors de l'Animació"
+
+msgid "Animation Delete Markers"
+msgstr "Esborra els Marcadors de l'Animació"
+
+msgid "Marker '%s' already exists!"
+msgstr "El marcador '%s' ja existeix!"
+
+msgid "Add Marker Key"
+msgstr "Afegir Clau de Marcador"
+
+msgid "Empty marker names are not allowed."
+msgstr "No es permeten els noms de marcadors buits."
+
+msgid "Insert Marker"
+msgstr "Insereix un Marcador"
+
+msgid "Marker Name"
+msgstr "Nom del Marcador"
+
+msgid "Marker Color"
+msgstr "Color del Marcador"
 
 msgid "Close"
 msgstr "Tancar"
@@ -1257,8 +1371,17 @@ msgstr "Tancar"
 msgid "Error!"
 msgstr "Error !"
 
+msgid "Change Marker Name:"
+msgstr "Modifica el Nom del Marcador:"
+
+msgid "Edit Marker Color"
+msgstr "Edita el Color del Marcador"
+
 msgid "Multi Edit Marker Color"
 msgstr "Edició múltiple del color del marcador"
+
+msgid "Animation Change Marker Time"
+msgstr "Canvi del temps del Marcador de l'Animació"
 
 msgid "Add Audio Track Clip"
 msgstr "Afegir Clip de Pista d'Àudio"
@@ -1277,6 +1400,34 @@ msgstr "Línia:"
 
 msgid "%d replaced."
 msgstr "%d reemplaçat."
+
+msgid "No match"
+msgstr "Sense coincidències"
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d coincidència"
+msgstr[1] "%d coincidències"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d d'%d coincidència"
+msgstr[1] "%d de %d coincidències"
+
+msgid "Hide Replace"
+msgstr "Amagar Reemplaçar"
+
+msgid "Show Replace"
+msgstr "Mostrar Reemplaçar"
+
+msgid "Find"
+msgstr "Cercar"
+
+msgid "Previous Match"
+msgstr "Coincidència Anterior"
+
+msgid "Next Match"
+msgstr "Següent Coincidència"
 
 msgid "Match Case"
 msgstr "Distingeix entre majúscules i minúscules"
@@ -1322,6 +1473,9 @@ msgstr "Errors"
 msgid "Warnings"
 msgstr "Avisos"
 
+msgid "Zoom factor"
+msgstr "Factor de zoom"
+
 msgid ""
 "%sMouse wheel, %s/%s: Finetune\n"
 "%s: Reset"
@@ -1331,6 +1485,9 @@ msgstr ""
 
 msgid "Line and column numbers."
 msgstr "Números de línia i columna."
+
+msgid "Indentation"
+msgstr "Sagnat"
 
 msgid "Method in target node must be specified."
 msgstr "S'ha d'especificar el mètode al node de destinació."
@@ -1345,6 +1502,9 @@ msgstr ""
 "El mètode objectiu no s'ha trobat. Especifiqueu un mètode vàlid o adjunteu un "
 "script al node."
 
+msgid "Attached Script"
+msgstr "Script Adjuntat"
+
 msgid "%s: Callback code won't be generated, please add it manually."
 msgstr ""
 "%s: El codi de callback no es generarà, si us plau, afegeix-lo manualment."
@@ -1358,15 +1518,30 @@ msgstr "Connectar al Script:"
 msgid "From Signal:"
 msgstr "Des del Senyal:"
 
+msgid "Filter Nodes"
+msgstr "Filtrar Nodes"
+
+msgid "Go to Source"
+msgstr "Anar a la font"
+
 msgid "Scene does not contain any script."
 msgstr "L'escena no conté cap script."
 
 msgid "Select Method"
 msgstr "Selecciona un Mètode"
 
+msgid "Filter Methods"
+msgstr "Filtrar Mètodes"
+
 msgid "No method found matching given filters."
 msgstr ""
 "No s'ha trobat cap mètode que coincideixi amb els filtres proporcionats."
+
+msgid "Script Methods Only"
+msgstr "Només Mètodes de Script"
+
+msgid "Compatible Methods Only"
+msgstr "Només Mètodes Compatibles"
 
 msgid "Remove"
 msgstr "Treu"
@@ -1380,8 +1555,14 @@ msgstr "Arguments de Crida addicionals:"
 msgid "Allows to drop arguments sent by signal emitter."
 msgstr "Permet descartar els arguments enviats pel emissor del senyal."
 
+msgid "Unbind Signal Arguments:"
+msgstr "Deslliga Arguments del Señal:"
+
 msgid "Receiver Method:"
 msgstr "Mètode Receptor:"
+
+msgid "Pick"
+msgstr "Escollir"
 
 msgid "Advanced"
 msgstr "Avançat"
@@ -1394,6 +1575,9 @@ msgid ""
 msgstr ""
 "Difereix el senyal, emmagatzemant-lo en una cua i només disparant-lo en temps "
 "d'inactivitat."
+
+msgid "One Shot"
+msgstr "Un Sol Cop"
 
 msgid "Disconnects the signal after its first emission."
 msgstr "Desconnecta el senyal després de la seva primera emissió."
@@ -1422,12 +1606,18 @@ msgstr "Desconnectar"
 msgid "Connect a Signal to a Method"
 msgstr "Connectar un Senyal a un Mètode"
 
+msgid "Edit Connection: '%s'"
+msgstr "Editar connexió: '%s'"
+
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
 "Esteu segurs de que voleu eliminar totes les connexions del senyal \"%s\"?"
 
 msgid "Signals"
 msgstr "Senyals"
+
+msgid "Filter Signals"
+msgstr "Filtrar senyals"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Esteu segur que voleu eliminar totes les connexions d'aquest senyal?"
@@ -1438,11 +1628,17 @@ msgstr "Obrir documentació"
 msgid "Disconnect All"
 msgstr "Desconnecta-ho Tot"
 
+msgid "Copy Name"
+msgstr "Copiar Nom"
+
 msgid "Edit..."
 msgstr "Edita..."
 
 msgid "Go to Method"
 msgstr "Vés al Mètode"
+
+msgid "Change Type of \"%s\""
+msgstr "Canviar el Tipus de \"%s\""
 
 msgid "Change"
 msgstr "Modifica"
@@ -1453,6 +1649,9 @@ msgstr "Crea Nou %s"
 msgid "No results for \"%s\"."
 msgstr "No hi ha cap resultat per a «%s»."
 
+msgid "Script path: %s"
+msgstr "Ruta de l'script: %s"
+
 msgid "The script will run in the editor."
 msgstr "El script s'executarà a l'editor."
 
@@ -1462,11 +1661,17 @@ msgstr "Aquesta classe està marcada com a obsoleta."
 msgid "This class is marked as experimental."
 msgstr "Aquesta classe està marcada com a experimental."
 
+msgid "The selected class can't be instantiated."
+msgstr "La classe seleccionada no pot ser instanciada."
+
 msgid "Favorites:"
 msgstr "Favorits:"
 
 msgid "Recent:"
 msgstr "Recents:"
+
+msgid "(Un)favorite selected item."
+msgstr "Afegir/Treure l'element seleccionat com a preferit."
 
 msgid "Search:"
 msgstr "Cerca:"
@@ -1476,6 +1681,9 @@ msgstr "Coincidències:"
 
 msgid "Description:"
 msgstr "Descripció:"
+
+msgid "Remote %s:"
+msgstr "%s remot:"
 
 msgid "Session %d"
 msgstr "Sessió%d"
@@ -1491,6 +1699,9 @@ msgstr "Desa la Branca com un Escena"
 
 msgid "Copy Node Path"
 msgstr "Copia el Camí del Node"
+
+msgid "Expand/Collapse Branch"
+msgstr "Expandir/Col·lapsar Branca"
 
 msgid "Instance:"
 msgstr "Instància:"
@@ -1510,17 +1721,35 @@ msgstr "Visibilitat"
 msgid "Expression to evaluate"
 msgstr "Expressió a evaluar"
 
+msgid "Clear on Run"
+msgstr "Netejar a l'Executar"
+
+msgid "Evaluate"
+msgstr "Avaluar"
+
 msgid "Clear"
 msgstr "Neteja"
 
 msgid "Updating assets on target device:"
 msgstr "Actualitzant recursos al dispositiu de destinació:"
 
+msgid "Syncing headers"
+msgstr "Sincronitzant capçaleres"
+
 msgid "Getting remote file system"
 msgstr "Obtenint sistema d'arxius remot"
 
+msgid "Decompressing remote file system"
+msgstr "Descomprimint sistema d'arxius remot"
+
+msgid "Scanning for local changes"
+msgstr "Buscant canvis locals"
+
 msgid "Sending list of changed files:"
 msgstr "Enviant llista d'arxius canviats:"
+
+msgid "Sending file:"
+msgstr "Enviant arxiu:"
 
 msgid "ms"
 msgstr "ms"
@@ -1543,8 +1772,17 @@ msgstr "Atura"
 msgid "Start"
 msgstr "Inicia"
 
+msgid "Autostart"
+msgstr "Inici automàtic"
+
 msgid "Measure:"
 msgstr "Mesura:"
+
+msgid "Frame Time (ms)"
+msgstr "Duració del Fotograma (ms)"
+
+msgid "Average Time (ms)"
+msgstr "Temps Mitjà (ms)"
 
 msgid "Frame %"
 msgstr "% del Fotograma"
@@ -1574,6 +1812,9 @@ msgstr ""
 "fruncions cridades per aquesta funció.\n"
 "Utilitza això per trobar funcions individuals a optimitzar."
 
+msgid "Display internal functions"
+msgstr "Mostrar funcions internes"
+
 msgid "Frame #:"
 msgstr "Fotograma núm.:"
 
@@ -1586,6 +1827,15 @@ msgstr "Temps"
 msgid "Calls"
 msgstr "Crides"
 
+msgid "Fit to Frame"
+msgstr "Ajustar al Marc"
+
+msgid "Linked"
+msgstr "Enllaçat"
+
+msgid "CPU"
+msgstr "CPU"
+
 msgid "GPU"
 msgstr "GPU"
 
@@ -1595,17 +1845,56 @@ msgstr "S'ha reprès l'execució."
 msgid "Bytes:"
 msgstr "Bytes:"
 
+msgid "Warning:"
+msgstr "Avís:"
+
 msgid "Error:"
 msgstr "Error:"
 
+msgid "%s Error"
+msgstr "Error de %s"
+
+msgid "%s Error:"
+msgstr "Error de %s:"
+
+msgid "%s Source"
+msgstr "Font %s"
+
+msgid "%s Source:"
+msgstr "Font %s:"
+
+msgid "Debug session started."
+msgstr "Sessió de depuració iniciada."
+
 msgid "Debug session closed."
 msgstr "S'ha tancat la sessió de depuració."
+
+msgid "Line %d"
+msgstr "Línia %d"
+
+msgid "Delete Breakpoint"
+msgstr "Treu el punt d'interrupció"
+
+msgid "Delete All Breakpoints in:"
+msgstr "Elimina tots els punts d'interrupció a:"
+
+msgid "Delete All Breakpoints"
+msgstr "Elimina tots els punts d'interrupció"
 
 msgid "Copy Error"
 msgstr "Copia l'error"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Obre la font C++ a GitHub"
+
+msgid "C++ Source"
+msgstr "Font C++"
+
+msgid "Video RAM"
+msgstr "Memòria de vídeo"
+
+msgid "Skip Breakpoints"
+msgstr "Saltar els punts d'interrupció"
 
 msgid "Step Into"
 msgstr "Pas a Pas (per instruccions)"
@@ -1625,6 +1914,9 @@ msgstr "Fil:"
 msgid "Stack Frames"
 msgstr "Fotogrames de la Pila"
 
+msgid "Filter Stack Variables"
+msgstr "Filtrar variables de la pila"
+
 msgid "Breakpoints"
 msgstr "Punts d’interrupció"
 
@@ -1640,11 +1932,17 @@ msgstr "Avaluador"
 msgid "Profiler"
 msgstr "Perfilador"
 
+msgid "Visual Profiler"
+msgstr "Perfilador Visual"
+
 msgid "List of Video Memory Usage by Resource:"
 msgstr "Llista d'Ús de la Memòria de Vídeo per Recurs:"
 
 msgid "Total:"
 msgstr "Total:"
+
+msgid "Export list to a CSV file"
+msgstr "Exportar llista a un arxiu CSV"
 
 msgid "Resource Path"
 msgstr "Camí de Recursos"
@@ -1717,11 +2015,19 @@ msgstr "Editor de Dependències"
 msgid "Search Replacement Resource:"
 msgstr "Cerca Recurs Reemplaçant:"
 
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "Obre una Escena"
+msgstr[1] "Obre Escenes"
+
 msgid "Open"
 msgstr "Obre"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Propietaris de: %s (Total: %d)"
+
+msgid "Localization remap"
+msgstr "Reassignació de Localització"
 
 msgid "Localization remap for path '%s' and locale '%s'."
 msgstr "Reassignació de localització per a la ruta '%s' i la localització '%s'."
@@ -1750,6 +2056,9 @@ msgstr ""
 
 msgid "Cannot remove:"
 msgstr "No es pot eliminar:"
+
+msgid "Files to be deleted:"
+msgstr "Arxius a eliminar:"
 
 msgid "Dependencies of files to be deleted:"
 msgstr "Dependències dels fitxers a eliminar:"
@@ -1787,6 +2096,36 @@ msgstr "Posseeix"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Recursos Sense Propietat Explícita:"
 
+msgid "Name cannot be empty."
+msgstr "El nom no pot estar buit."
+
+msgid "File name can't end with /."
+msgstr "El nom de l'arxiu no pot acabar amb /."
+
+msgid "File name cannot be empty."
+msgstr "El nom de l'arxiu no pot ser buit."
+
+msgid "Folder name cannot be empty."
+msgstr "El nom de la carpeta no pot ser buit."
+
+msgid "File name contains invalid characters."
+msgstr "El nom de l'arxiu conté caràcters invàlids."
+
+msgid "Folder name contains invalid characters."
+msgstr "El nom de la carpeta conté caràcters invàlids."
+
+msgid "File name begins with a dot."
+msgstr "El nom de l'arxiu comença amb un punt."
+
+msgid "Folder name begins with a dot."
+msgstr "El nom de la carpeta comença amb un punt."
+
+msgid "File with that name already exists."
+msgstr "Ja existeix un arxiu amb aquest nom."
+
+msgid "Folder with that name already exists."
+msgstr "Ja existeix una carpeta amb aquest nom."
+
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "Utilitzant barres en els noms de les carpetes creará subcarpetes "
@@ -1798,6 +2137,15 @@ msgid ""
 msgstr ""
 "Fer servir barres obliques en la ruta crearà el fitxer en una subcarpeta, "
 "creant noves subcarpetes si és necessari."
+
+msgid "File name is valid."
+msgstr "El nom del fitxer és vàlid."
+
+msgid "Base path: %s"
+msgstr "Camí base: %s"
+
+msgid "Folder name is valid."
+msgstr "El nom de la carpeta és vàlid."
 
 msgid "Double-click to open in browser."
 msgstr "Fes doble clic per obrir-ho al navegador."
@@ -1841,6 +2189,12 @@ msgstr "Patrocinadors Diamant"
 
 msgid "Titanium Members"
 msgstr "Patrocinadors Titani"
+
+msgid "Platinum Members"
+msgstr "Membres Platí"
+
+msgid "Gold Members"
+msgstr "Membres Or"
 
 msgid "Donors"
 msgstr "Donants"
@@ -1892,6 +2246,9 @@ msgstr "Aquest recurs no té un directori arrel, per tant no es pot ignorar."
 msgid "Ignore the root directory when extracting files."
 msgstr "Ignorar el directori arrel quan s'extreguin arxius."
 
+msgid "Select Install Folder"
+msgstr "Seleccionar carpeta d'instal·lació"
+
 msgid "Uncompressing Assets"
 msgstr "Descomprimint Recursos"
 
@@ -1912,6 +2269,9 @@ msgstr ""
 "Obre la llista dels continguts del recurs i selecciona quins arxius "
 "instal·lar."
 
+msgid "Change Install Folder"
+msgstr "Canviar carpeta d'instal·lació"
+
 msgid ""
 "Change the folder where the contents of the asset are going to be installed."
 msgstr "Canvia la carpeta on s'instal·laran els continguts de l'actiu."
@@ -1919,11 +2279,17 @@ msgstr "Canvia la carpeta on s'instal·laran els continguts de l'actiu."
 msgid "Ignore asset root"
 msgstr "Ignorar arrel del recurs"
 
+msgid "No files conflict with your project"
+msgstr "No hi ha cap fitxer en conflicte amb el vostre projecte"
+
 msgid "Show contents of the asset and conflicting files."
 msgstr "Mostrar continguts del recurs i els arxius en conflicte."
 
 msgid "Contents of the asset:"
 msgstr "Continguts del recurs:"
+
+msgid "Installation preview:"
+msgstr "Previsualització de la instal·lació:"
 
 msgid "Configure Asset Before Installing"
 msgstr "Configurar el recurs abans d'instal·lar-ho"
@@ -1979,11 +2345,20 @@ msgstr "Derivació"
 msgid "Bus Options"
 msgstr "Opcions del Bus"
 
+msgid "Duplicate Bus"
+msgstr "Duplicar Bus"
+
+msgid "Delete Bus"
+msgstr "Eliminar Bus"
+
 msgid "Reset Volume"
 msgstr "Restableix el Volum"
 
 msgid "Delete Effect"
 msgstr "Elimina l'Efecte"
+
+msgid "Toggle Audio Bottom Panel"
+msgstr "Commuta el tauler inferior d'àudio"
 
 msgid "Add Audio Bus"
 msgstr "Afegeix un Bus d'Àudio"
@@ -2048,6 +2423,12 @@ msgstr "Crea un nou Disseny de Bus."
 msgid "Audio Bus Layout"
 msgstr "Disseny del bus d'àudio"
 
+msgid "Invalid name."
+msgstr "Nom invàlid."
+
+msgid "Must be a valid Unicode identifier."
+msgstr "Ha de ser un identificador Unicode vàlid."
+
 msgid "Must not collide with an existing engine class name."
 msgstr "No ha de coincidir amb un nom de classe d'engine existent."
 
@@ -2078,11 +2459,17 @@ msgstr "Activar"
 msgid "Rearrange Autoloads"
 msgstr "Reorganitza AutoCàrregues"
 
+msgid "Can't add Autoload:"
+msgstr "No es pot afegir l'Autocàrrega:"
+
 msgid "%s is an invalid path. File does not exist."
 msgstr "%s es un camí no vàlid. El fitxer no existeix."
 
 msgid "%s is an invalid path. Not in resource path (res://)."
 msgstr "%s no és un camí vàlid. No a la ruta del recurs (res://)."
+
+msgid "Add Autoload"
+msgstr "Afegeix Autocàrrega"
 
 msgid "Path:"
 msgstr "Camí:"
@@ -2096,8 +2483,23 @@ msgstr "Nom del node:"
 msgid "Global Variable"
 msgstr "Variable Global"
 
+msgid "3D Engine"
+msgstr "Motor 3D"
+
+msgid "2D Physics"
+msgstr "Físiques 2D"
+
+msgid "3D Physics"
+msgstr "Físiques 3D"
+
+msgid "Navigation"
+msgstr "Navegació"
+
 msgid "XR"
 msgstr "XR"
+
+msgid "RenderingDevice"
+msgstr "Dispositiu de renderització"
 
 msgid "OpenGL"
 msgstr "OpenGL"
@@ -2114,6 +2516,9 @@ msgstr "Servidor de text: Avançat"
 msgid "TTF, OTF, Type 1, WOFF1 Fonts"
 msgstr "Fonts TTF, OTF, Tipus 1, WOFF1"
 
+msgid "WOFF2 Fonts"
+msgstr "Fonts WOFF2"
+
 msgid "SIL Graphite Fonts"
 msgstr "Fonts SIL Graphite"
 
@@ -2128,6 +2533,9 @@ msgstr "Nodes de física 2D i PhysicsServer2D."
 
 msgid "3D Physics nodes and PhysicsServer3D."
 msgstr "Nodes de física 3D i PhysicsServer3D."
+
+msgid "Navigation, both 2D and 3D."
+msgstr "Navegació, per a 2D i 3D."
 
 msgid "XR (AR and VR)."
 msgstr "XR (RA i RV)."
@@ -2192,13 +2600,28 @@ msgstr ""
 "renderitzades es poden utilitzar encara que aquesta opció estigui "
 "desactivada)."
 
+msgid "General Features:"
+msgstr "Característiques Generals:"
+
 msgid "Text Rendering and Font Options:"
 msgstr "Renderització de text i opcions de fonts:"
+
+msgid "Reset the edited profile?"
+msgstr "Restablir el perfil editat?"
+
+msgid "File saving failed."
+msgstr "Error en desar l'arxiu."
+
+msgid "Create a new profile?"
+msgstr "Crear un nou perfil?"
 
 msgid "This will scan all files in the current project to detect used classes."
 msgstr ""
 "Això escanejarà tots els fitxers del projecte actual per detectar les classes "
 "utilitzades."
+
+msgid "Nodes and Classes:"
+msgstr "Nodes i Classes:"
 
 msgid "File '%s' format is invalid, import aborted."
 msgstr "El format del fitxer '%s' no és vàlid, s'ha anul·lat la importació."
@@ -2212,11 +2635,48 @@ msgstr "Nou"
 msgid "Save"
 msgstr "Desa"
 
+msgid "Profile:"
+msgstr "Perfil:"
+
+msgid "Reset to Defaults"
+msgstr "Restablir Valors Predeterminats"
+
+msgid "Detect from Project"
+msgstr "Detectar des del Projecte"
+
+msgid "Actions:"
+msgstr "Accions:"
+
+msgid "Configure Engine Compilation Profile:"
+msgstr "Configurar el perfil de compilació del motor:"
+
+msgid "Please Confirm:"
+msgstr "Confirmeu si us plau:"
+
+msgid "Engine Compilation Profile"
+msgstr "Perfil de compilació del motor"
+
+msgid "Load Profile"
+msgstr "Carregar Perfil"
+
 msgid "Export Profile"
 msgstr "Exportar Perfil"
 
 msgid "Forced Classes on Detect:"
 msgstr "Classes forçades en la detecció:"
+
+msgid "Edit Compilation Configuration Profile"
+msgstr "Editar el perfil de configuració de compilació"
+
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"No s'ha pogut executar l'ordre \"%s\":\n"
+"%s."
+
+msgid "Filter Commands"
+msgstr "Filtrar Comandes"
 
 msgid "Paste Params"
 msgstr "Enganxa els Paràmetres"
@@ -2236,8 +2696,20 @@ msgstr "[buit]"
 msgid "[unsaved]"
 msgstr "[no desat]"
 
+msgid "Open the %s dock."
+msgstr "Obre l'acoblador %s."
+
+msgid "Focus on the %s dock."
+msgstr "Enfocar l'acoblador %s."
+
 msgid "%s - Godot Engine"
 msgstr "%s - Motor Godot"
+
+msgid "Move this dock right one tab."
+msgstr "Mou aquest acoblador una pestanya cap a la dreta."
+
+msgid "Move this dock left one tab."
+msgstr "Mou aquest acoblador una pestanya cap a l'esquerra."
 
 msgid "Dock Position"
 msgstr "Posició de l'Acoblador"
@@ -3145,7 +3617,7 @@ msgid "Device"
 msgstr "Dispositiu"
 
 msgid "Failed."
-msgstr "Ha fallat:"
+msgstr "Ha fallat."
 
 msgid "Storing File:"
 msgstr "Emmagatzemant Fitxer:"
@@ -3529,6 +4001,9 @@ msgstr "Substitueix..."
 msgid "Searching..."
 msgstr "Cercant..."
 
+msgid "Delete group \"%s\"?"
+msgstr "Suprimir el node \"%s\"?"
+
 msgid "Add to Group"
 msgstr "Afegeix al Grup"
 
@@ -3624,6 +4099,9 @@ msgstr "Filtre"
 
 msgid "File:"
 msgstr "Fitxer:"
+
+msgid " (recently opened)"
+msgstr " (recentment obert)"
 
 msgid "Play the project."
 msgstr "Reprodueix el projecte."

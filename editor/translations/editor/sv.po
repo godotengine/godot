@@ -45,13 +45,15 @@
 # tygyh <jonis9898@hotmail.com>, 2024.
 # Muhammad <muhammadshamaeem@gmail.com>, 2025.
 # Aglo <wilmer.heltborg2008@gmail.com>, 2025.
+# Mathias Johansson <mathias9807@gmail.com>, 2025.
+# Christoffer <fusionpatcher@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-09 19:54+0000\n"
-"Last-Translator: Aglo <wilmer.heltborg2008@gmail.com>\n"
+"PO-Revision-Date: 2025-05-26 12:05+0000\n"
+"Last-Translator: Christoffer <fusionpatcher@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -59,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "Huvudtråd"
@@ -1300,6 +1302,27 @@ msgstr "Markera allt/inget"
 msgid "Animation Change Keyframe Time"
 msgstr "Animation, ändra nyckelrute-tid"
 
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"En markörs namn kan bara ändras genom att högerklicka på den i "
+"animationsredigeraren och välja \"Byt namn på markör\", för att säkerställa "
+"att alla markörnamn är unika."
+
+msgid "Insert Marker..."
+msgstr "Infoga markör…"
+
+msgid "Rename Marker"
+msgstr "Byt namn på markör"
+
+msgid "Marker:"
+msgstr "Markör:"
+
+msgid "Empty marker names are not allowed."
+msgstr "Tomma markörnamn är inte tillåtna."
+
 msgid "Close"
 msgstr "Stäng"
 
@@ -1589,6 +1612,9 @@ msgstr "Beskrivning:"
 msgid "Remote %s:"
 msgstr "Fjärr- %s:"
 
+msgid "Session %d"
+msgstr "Session %d"
+
 msgid "Debugger"
 msgstr "Avlusare"
 
@@ -1817,6 +1843,9 @@ msgstr "Expandera alla"
 
 msgid "Collapse All"
 msgstr "Stäng alla"
+
+msgid "Evaluator"
+msgstr "Utvärderare"
 
 msgid "Profiler"
 msgstr "Profilerare"
@@ -2628,6 +2657,9 @@ msgstr ""
 
 msgid "Provides an overview of the editor's and each scene's undo history."
 msgstr "Ger en översikt över redigerarens- och varje scens ångringshistorik."
+
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr "Tillhandahåller verktyg för att välja och felsöka noder vid körning."
 
 msgid "(current)"
 msgstr "(aktuell)"
@@ -5444,7 +5476,7 @@ msgid "Create New Group"
 msgstr "Skapa ny grupp"
 
 msgid "Global"
-msgstr "Gobal"
+msgstr "Global"
 
 msgid "Delete group \"%s\" and all its references?"
 msgstr "Ta bort gruppen \"%s\" och alla dess referenser?"
@@ -13668,8 +13700,8 @@ msgstr "Giltigt projekt hittat i sökväg."
 msgid ""
 "Please choose a \"project.godot\", a directory with one, or a \".zip\" file."
 msgstr ""
-"Var vänlig välj en \"project.godot\"-fil, en mapp där en finns eller en \"."
-"zip\"-fil."
+"Var vänlig välj en \"project.godot\"-fil, en mapp där en finns eller en "
+"\".zip\"-fil."
 
 msgid ""
 "Creating a project at the engine's working directory or executable directory "

@@ -17,13 +17,14 @@
 # Zayeed Bin Syed <zayeed.dev@gmail.com>, 2023.
 # Rakib Ryan <rakib.remon12@gmail.com>, 2024.
 # shahriarlabib000 <shahriarlabib000@gmail.com>, 2024, 2025.
+# "deboneil." <bhattacharjeedeboneil@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-02 17:03+0000\n"
-"Last-Translator: shahriarlabib000 <shahriarlabib000@gmail.com>\n"
+"PO-Revision-Date: 2025-04-13 13:30+0000\n"
+"Last-Translator: \"deboneil.\" <bhattacharjeedeboneil@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "প্রধান থ্রেড"
@@ -388,6 +389,9 @@ msgstr "লুকানো দেখুন"
 msgid "Swap Input Direction"
 msgstr "ইনপুটের দিক বদলান"
 
+msgid "Start Unicode Character Input"
+msgstr "ইউনিকোড ক্যারেক্টার ইনপুট শুরু করুন"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "অবৈধ ইনপুট %d(পাস করেনি) expression এ"
 
@@ -502,6 +506,9 @@ msgstr "মেটাডেটা নাম বৈধ।"
 
 msgid "Add Metadata Property for \"%s\""
 msgstr "\"%s\" এর জন্য মেটাডেটা প্রপার্টি যোগ করুন"
+
+msgid "Metadata name can't be empty."
+msgstr "মেটাডেটার নাম খালি রাখা যাবে না।"
 
 msgid "Metadata name must be a valid identifier."
 msgstr "মেটাডেটা নাম অবশ্যই একটি বৈধ শনাক্তকারী হতে হবে।"
@@ -6286,8 +6293,8 @@ msgid ""
 "You are attempting to assign the VERTEX position in model space to the vertex "
 "POSITION in clip space. The definition of clip space changed in version 4.3, "
 "so if this code was written prior to 4.3, it will not continue to work. "
-"Consider specifying the clip space z-component directly i.e. use `vec4(VERTEX."
-"xy, 1.0, 1.0)`."
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
 msgstr ""
 "আপনি ক্লিপ স্পেসে শীর্ষবিন্দু অবস্থানে মডেল স্পেসে ভার্টেক্স অবস্থানটি বরাদ্দ করার চেষ্টা "
 "করছ। ক্লিপ স্পেসের সংজ্ঞা 4.3 সংস্করণে পরিবর্তিত হয়েছে, সুতরাং যদি এই কোডটি 4.3 এর "

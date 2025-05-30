@@ -85,12 +85,13 @@
 # bas van den burg <basburgoss@gmail.com>, 2024.
 # Luka Verbrugghe <verbruggheluka0@gmail.com>, 2024.
 # tristanvong <tristan.vong@student.ehb.be>, 2025.
+# Cas Vankrunkelsven <cas.vankrunkelsven@protonmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-26 08:20+0000\n"
+"PO-Revision-Date: 2025-05-30 10:24+0000\n"
 "Last-Translator: pim wagemans <pimwagemans09@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -99,7 +100,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.2-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "Hoofd Thread"
@@ -703,10 +704,32 @@ msgstr "Animatielengte wijzigen"
 msgid "Change Animation Loop"
 msgstr "Animatielus wijzigen"
 
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Kan lusmodus niet aanpassen op een animatie die geïnstantieerd is van een "
+"geïmporteerde scène.\n"
+"\n"
+"Om de lusmodus van deze animatie aan te passen, ga je naar de scenè's "
+"geavanceerde importinstellingen en selecteer je de animatie.\n"
+"Je kan dan de lusmodus aanpassen in het inspecteur menu."
+
 msgid "Can't change loop mode on animation instanced from an imported resource."
 msgstr ""
 "Kan lusmodus niet wijzigen voor animatie die geïnstantieerd is vanuit een "
 "geïmporteerde bron."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Kan lusmodus niet wijzigen voor animatie die ingebed is in een andere scène.\n"
+"Open deze scenè en pas de animatielusmodus aan."
 
 msgid "Can't change loop mode on animation embedded in another resource."
 msgstr ""
@@ -937,6 +960,9 @@ msgstr "AnimationPlayer kan enkel andere spelers animeren, maar niet zichzelf."
 msgid "property '%s'"
 msgstr "eigenschap '%s'"
 
+msgid "Nearest FPS: %d"
+msgstr "Dichtstbijzijnde FPS: %d"
+
 msgid "Change Animation Step"
 msgstr "Animatiestap wijzigen"
 
@@ -1106,6 +1132,12 @@ msgstr "Alleen sporen van in boomstructuur geselecteerde knopen tonen."
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Sporen groeperen op knoop of als een normale lijst tonen."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Pas snapping to op geselecteerde sleutel(s)."
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "FPS afronden op het dichtstbijzijnde gehele getal."
 
 msgid "Animation step value."
 msgstr "Animatiestapwaarde."
@@ -1354,6 +1386,12 @@ msgstr "Laat alle markering namen zien"
 msgid "Marker:"
 msgstr "Markering:"
 
+msgid "Animation Move Markers"
+msgstr "Animatie verplaats markeringen"
+
+msgid "Animation Delete Markers"
+msgstr "Animatie verwijder markeringen"
+
 msgid "Marker '%s' already exists!"
 msgstr "Markering '%s' bestaat al!"
 
@@ -1383,6 +1421,9 @@ msgstr "Markering hernoemen:"
 
 msgid "Edit Marker Color"
 msgstr "Kleur van markering aanpassen"
+
+msgid "Multi Edit Marker Color"
+msgstr "Multi Edit Markeringen Kleur"
 
 msgid "Add Audio Track Clip"
 msgstr "Audiotrack-clip toevoegen"
@@ -1414,6 +1455,12 @@ msgid "%d of %d match"
 msgid_plural "%d of %d matches"
 msgstr[0] "%d van %d overeenkomst"
 msgstr[1] "%d van %d overeenkomsten"
+
+msgid "Hide Replace"
+msgstr "Verberg Vervangen"
+
+msgid "Show Replace"
+msgstr "Toon Vervangen"
 
 msgid "Find"
 msgstr "Zoeken"
@@ -1470,6 +1517,13 @@ msgstr "Waarschuwingen"
 
 msgid "Zoom factor"
 msgstr "Zoom­factor"
+
+msgid ""
+"%sMouse wheel, %s/%s: Finetune\n"
+"%s: Reset"
+msgstr ""
+"%sScrolwiel, %s/%s: Aanpassen\n"
+"%s: Resetten"
 
 msgid "Line and column numbers."
 msgstr "Regel- en kolom­nummers."
@@ -1636,6 +1690,12 @@ msgstr "Nieuwe %s aanmaken"
 msgid "No results for \"%s\"."
 msgstr "Geen resultaten voor “%s”."
 
+msgid "Script path: %s"
+msgstr "Scriptpad: %s"
+
+msgid "The script will run in the editor."
+msgstr "Dit script zal in de editor uitgevoerd worden."
+
 msgid "This class is marked as deprecated."
 msgstr "Deze klasse is gemarkeerd als verouderd."
 
@@ -1681,6 +1741,9 @@ msgstr "Tak als scène opslaan"
 msgid "Copy Node Path"
 msgstr "Knoop­pad kopiëren"
 
+msgid "Expand/Collapse Branch"
+msgstr "Tak in-/uitklappen"
+
 msgid "Instance:"
 msgstr "Instantie:"
 
@@ -1698,6 +1761,12 @@ msgstr "Zichtbaarheid omschakelen"
 
 msgid "Expression to evaluate"
 msgstr "Expressie om te evalueren"
+
+msgid "Clear on Run"
+msgstr "Wis bij uitvoeren"
+
+msgid "Evaluate"
+msgstr "Evalueren"
 
 msgid "Clear"
 msgstr "Wissen"
@@ -1743,6 +1812,9 @@ msgstr "Stoppen"
 
 msgid "Start"
 msgstr "Starten"
+
+msgid "Autostart"
+msgstr "Automatisch starten"
 
 msgid "Measure:"
 msgstr "Meten:"
@@ -1902,6 +1974,9 @@ msgstr "Alles uitklappen"
 msgid "Collapse All"
 msgstr "Alles inklappen"
 
+msgid "Evaluator"
+msgstr "Evaluator"
+
 msgid "Profiler"
 msgstr "Profiler"
 
@@ -2031,6 +2106,12 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Kan niet verwijderd worden:"
 
+msgid "Files to be deleted:"
+msgstr "Bestanden die worden verwijdered:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Dependencies van bestanden die worden verwijderd:"
+
 msgid "Error loading:"
 msgstr "Fout bij laden van:"
 
@@ -2064,11 +2145,29 @@ msgstr "In bezit"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Bronnen zonder expliciet bezit:"
 
+msgid "Name cannot be empty."
+msgstr "Naam kan niet leeg zijn."
+
+msgid "File name can't end with /."
+msgstr "Bestand kan niet eindigen met een /."
+
+msgid "File name cannot be empty."
+msgstr "Bestandsaam kan niet leeg zijn."
+
 msgid "Folder name cannot be empty."
 msgstr "Mapnaam kan niet leeg zijn."
 
+msgid "File name contains invalid characters."
+msgstr "Bestandsnaam bevat ongeldige tekens."
+
 msgid "Folder name contains invalid characters."
 msgstr "De opgegeven mapnaam bevat ongeldige tekens."
+
+msgid "File name begins with a dot."
+msgstr "Bestandsnaam kan niet beginnen met een punt."
+
+msgid "Folder name begins with a dot."
+msgstr "Mapnaam kan niet beginnen met een punt."
 
 msgid "File with that name already exists."
 msgstr "Deze bestandsnaam is reeds in gebruik."
@@ -2078,6 +2177,12 @@ msgstr "Deze mapnaam is reeds in gebruik."
 
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr "Het gebruik van slashes in mapnamen zal recursief submappen aanmaken."
+
+msgid "File name is valid."
+msgstr "Bestands­naam is geldig."
+
+msgid "Base path: %s"
+msgstr "Basispad: %s."
 
 msgid "Folder name is valid."
 msgstr "Mapnaam is ongeldig."
@@ -2362,6 +2467,9 @@ msgstr "Geluidsbuslay-out"
 msgid "Invalid name."
 msgstr "Ongeldige naam."
 
+msgid "Must be a valid Unicode identifier."
+msgstr "Moet een valide Unicode identificeerder zijn.."
+
 msgid "Must not collide with an existing engine class name."
 msgstr ""
 "Mag niet in conflict komen met een bestaande naam van een engine-klasse."
@@ -2590,6 +2698,9 @@ msgstr "Acties:"
 
 msgid "Configure Engine Compilation Profile:"
 msgstr "Engine-bouwprofiel configureren:"
+
+msgid "Please Confirm:"
+msgstr "Gelieve te bevestigen:"
 
 msgid "Engine Compilation Profile"
 msgstr "Engine-bouwprofiel"
@@ -9468,8 +9579,20 @@ msgstr "Ongeldige pakketnaam:"
 msgid "Select device from the list"
 msgstr "Selecteer apparaat uit de lijst"
 
+msgid "Exporting APK..."
+msgstr "APK aan het exporteren..."
+
 msgid "Uninstalling..."
 msgstr "Aan het deïnstalleren…"
+
+msgid "Could not install to device: %s"
+msgstr "Kon niet op het toestel: %s installeren"
+
+msgid "Running on device..."
+msgstr "Wordt uitgevoerd op toestel ..."
+
+msgid "Could not execute on device."
+msgstr "Kon niet uitgevoerd worden op toestel."
 
 msgid ""
 "Android build template not installed in the project. Install it from the "
@@ -9493,6 +9616,9 @@ msgstr "Ongeldig Android SDK-pad in Editorinstellingen."
 
 msgid "Missing 'platform-tools' directory!"
 msgstr "'platform-tools' map ontbreekt!"
+
+msgid "Unable to find Android SDK platform-tools' adb command."
+msgstr "Kon Android SDK platform-tools adb commando niet vinden."
 
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr "Controleer de opgegeven Android SDK map in de Editor instellingen."
@@ -9602,6 +9728,14 @@ msgstr ""
 
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Lege CollisionPolygon2D hebben geen botsingsfunctie."
+
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+"Ongeldige polygoon. Minimaal 3 punten zijn nodig in \"Solide\" bouwmodus."
+
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+"Ongeldige polygoon. Minimaal 2 punten zijn nodig in \"segmenten\" bouwmodus."
 
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
@@ -9731,8 +9865,42 @@ msgstr "Ongeldige vergelijkingsfunctie voor dat type."
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
 
+msgid ""
+"The '%s' qualifier cannot be used within a function parameter declared with "
+"'%s'."
+msgstr ""
+"De '%s' parameter kan niet gebruikt worden binnen een functie parameter die "
+"met '%s' gedeclareerd is."
+
+msgid "Expected a valid data type for argument."
+msgstr "Verwachte een geldig gegevens type voor argument."
+
+msgid "Void type not allowed as argument."
+msgstr "Void type niet toegestaan als argument."
+
+msgid "Expected an identifier for argument name."
+msgstr "Verwachte een identificator voor argumentnaam."
+
+msgid "Function '%s' expects no arguments."
+msgstr "De functie '%s' verwacht geen argumenten."
+
+msgid "Expected a '%s'."
+msgstr "Verwachte een '%s'."
+
+msgid "Invalid macro name."
+msgstr "Ongeldige macro naam."
+
+msgid "Macro redefinition."
+msgstr "Macro herdefinitie."
+
 msgid "Invalid argument name."
 msgstr "Ongeldige argument naam."
+
+msgid "Cannot use '%s' on built-in define."
+msgstr "Kan '%s' niet gebruiken op ingebouwde define."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Macro expansie limiet overschreden."
 
 msgid "Invalid macro argument list."
 msgstr "Ongeldige macro argumenten lijst."
@@ -9742,6 +9910,27 @@ msgstr "Ongeldig macro argument."
 
 msgid "Invalid macro argument count."
 msgstr "Ongeldige hoeveelheid macro argumenten."
+
+msgid ""
+"Direct floating-point comparison (this may not evaluate to `true` as you "
+"expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
+"predictable comparison."
+msgstr ""
+"Directe zwevendekommagetal vergelijking (dit zal niet altijd zoals je "
+"verwacht naar `true` evaluaren). Gebruik in plaats daarvan `abs(a - b) < "
+"0.0001` voor een benaderde maar voorspelbare vergelijking."
+
+msgid "The const '%s' is declared but never used."
+msgstr "De constante '%s' is gedeclareerd maar nooit gebruikt."
+
+msgid "The function '%s' is declared but never used."
+msgstr "De functie '%s' is gedeclareerd maar nooit gebruikt."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "De struct '%s' is gedeclareerd maar nooit gebruikt."
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "Het uniform '%s' is gedeclareerd maar nooit gebruikt."
 
 msgid "The local variable '%s' is declared but never used."
 msgstr "De lokale variabele '%s' wordt gedeclareerd maar nergens gebruikt."

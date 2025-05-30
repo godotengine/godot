@@ -36,12 +36,13 @@
 # Lucas García da Rosa <gdarlucas@gmail.com>, 2025.
 # Adrián Ricardo Iazbeck Scalia <adrian.r.scalia@gmail.com>, 2025.
 # zirzak <gdarlucas@gmail.com>, 2025.
+# Santiago Vazquez <santivaz232@yahoo.com.ar>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-06 10:31+0000\n"
+"PO-Revision-Date: 2025-04-23 23:56+0000\n"
 "Last-Translator: zirzak <gdarlucas@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
@@ -50,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo Principal"
@@ -663,7 +664,7 @@ msgid ""
 "You can then change the loop mode from the inspector menu."
 msgstr ""
 "No se puede cambiar el modo loop en una animación instanciada desde una "
-"escena importada. \n"
+"escena importada.\n"
 "\n"
 "Para cambiar el modo loop de esta animación, navegá hasta Advanced Import "
 "settings y seleccioná la animación.\n"
@@ -898,6 +899,9 @@ msgstr ""
 msgid "Create"
 msgstr "Crear"
 
+msgid "Animation Insert Key"
+msgstr "Insertar Clave de Animación"
+
 msgid "node '%s'"
 msgstr "nodo '%s'"
 
@@ -1032,6 +1036,9 @@ msgstr "El AnimationPlayer está inactivo. La reproducción no será procesada."
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Seleccioná un nodo AnimationPlayer para crear y editar animaciones."
 
+msgid "Imported Scene"
+msgstr "Escena Importada"
+
 msgid "Warning: Editing imported animation"
 msgstr "Advertencia: Se está editando una animación importada"
 
@@ -1074,6 +1081,12 @@ msgstr "Establecer Offset Inicial (Audio)"
 msgid "Set End Offset (Audio)"
 msgstr "Establecer Offset Final (Audio)"
 
+msgid "Duplicate Selected Keys"
+msgstr "Duplicar Clave(s) Seleccionada(s)"
+
+msgid "Copy Selected Keys"
+msgstr "Copiar Clave(s) Seleccionada(s)"
+
 msgid "Move First Selected Key to Cursor"
 msgstr "Mover Primera Clave Seleccionada hacia el Cursor"
 
@@ -1097,6 +1110,9 @@ msgstr "Usar Curvas Bezier"
 
 msgid "Create RESET Track(s)"
 msgstr "Crear RESET Track(s)"
+
+msgid "Max Velocity Error:"
+msgstr "Error de Velocidad Máxima:"
 
 msgid "Optimize"
 msgstr "Optimizar"
@@ -1547,7 +1563,7 @@ msgid "Debug session closed."
 msgstr "Sesión de depuración cerrada."
 
 msgid "Copy Error"
-msgstr "Copiar Error"
+msgstr "Copiar Error al portapapeles."
 
 msgid "Open C++ Source on GitHub"
 msgstr "Abrir Fuente C++ en GitHub"
@@ -8049,8 +8065,8 @@ msgstr "Sería buena idea darle un nombre a tu proyecto."
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
-"Archivo de projecto \".zip\" inválido; no contiene un archivo \"project."
-"godot\"."
+"Archivo de projecto \".zip\" inválido; no contiene un archivo "
+"\"project.godot\"."
 
 msgid "The path specified doesn't exist."
 msgstr "La ruta especificada no existe."
@@ -9108,6 +9124,9 @@ msgstr "Redefinición de: '%s'"
 msgid "Macro redefinition."
 msgstr "Redefinición de Macros."
 
+msgid "Invalid '%s' directive."
+msgstr "Directiva '%s' Invalida."
+
 msgid "Shader include file does not exist:"
 msgstr "El archivo de inclusión del Shader no existe:"
 
@@ -9189,8 +9208,8 @@ msgid ""
 "You are attempting to assign the VERTEX position in model space to the vertex "
 "POSITION in clip space. The definition of clip space changed in version 4.3, "
 "so if this code was written prior to 4.3, it will not continue to work. "
-"Consider specifying the clip space z-component directly i.e. use `vec4(VERTEX."
-"xy, 1.0, 1.0)`."
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
 msgstr ""
 "Estás intentando asignar la posición del VÉRTEX en el espacio modelo a la "
 "POSICIÓN del vértice en el espacio del clip. La definición de espacio de clip "

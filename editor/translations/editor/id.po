@@ -66,13 +66,14 @@
 # "Achmad Izzuddin (Adin)" <achmadizzuddin999@gmail.com>, 2024.
 # meghundul <meghundul@gmail.com>, 2025.
 # Fatih Faisal Faruk <honeylimecraft@gmail.com>, 2025.
+# gio <toktegar28@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-18 23:08+0000\n"
-"Last-Translator: Fatih Faisal Faruk <honeylimecraft@gmail.com>\n"
+"PO-Revision-Date: 2025-04-30 02:21+0000\n"
+"Last-Translator: gio <toktegar28@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -80,7 +81,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -10674,6 +10675,9 @@ msgstr "Lokasi Pemasangan Proyek:"
 
 msgid "Renderer:"
 msgstr "Perender:"
+
+msgid "Edit Now"
+msgstr "edit sekarang"
 
 msgid "Error: Project is missing on the filesystem."
 msgstr "Error: Proyek ini tidak ditemukan dalam berkas sistem."

@@ -39,13 +39,15 @@
 # TheFocusDev <thefocusdev@protonmail.com>, 2024.
 # Milán Had <hadobas.milan10@gmail.com>, 2024.
 # Dávid Groniewsky <gro.david.d@gmail.com>, 2024.
+# Zsolt Levente Deli <delizsoltlevente@gmail.com>, 2025.
+# Dfo <s.daneee@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-12-01 17:13+0000\n"
-"Last-Translator: TheFocusDev <thefocusdev@protonmail.com>\n"
+"PO-Revision-Date: 2025-05-01 03:14+0000\n"
+"Last-Translator: Dfo <s.daneee@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -53,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.9-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "Fő vonal"
@@ -197,13 +199,16 @@ msgid "Xbox Paddle 4"
 msgstr "Xbox pedál 4"
 
 msgid "PS4/5 Touchpad"
-msgstr "PS4/5 Touchpad"
+msgstr "PS4/5 Érintőpad"
 
 msgid "Joypad Button %d"
 msgstr "Joypad Gomb %d"
 
 msgid "Pressure:"
 msgstr "Nyomás:"
+
+msgid "canceled"
+msgstr "Mégse"
 
 msgid "touched"
 msgstr "megérintve"
@@ -357,6 +362,12 @@ msgstr "Kurzor a Dokumentum Elejére"
 msgid "Caret Document End"
 msgstr "Kurzor a Dokumentum Végére"
 
+msgid "Caret Add Below"
+msgstr "Hiányjelet Hozzáadni Alatta"
+
+msgid "Caret Add Above"
+msgstr "Hiányjelet Adj Felül"
+
 msgid "Scroll Up"
 msgstr "Görgő Fel"
 
@@ -401,6 +412,9 @@ msgstr "Rejtettek megjelenítése"
 
 msgid "Swap Input Direction"
 msgstr "Irányok Felcserélése"
+
+msgid "Start Unicode Character Input"
+msgstr "Unicode karakterbevitele indítása"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Érvénytelen bemenet '%d' (nem átadott) a kifejezésben"
@@ -469,6 +483,9 @@ msgstr "Művelet Visszavonása"
 msgid "Add Event"
 msgstr "Esemény hozzáadása"
 
+msgid "Remove Action"
+msgstr "Függvény eltávolítása"
+
 msgid "Cannot Remove Action"
 msgstr "Esemény Nem távolítható el"
 
@@ -480,6 +497,9 @@ msgstr "Esemény Eltávolítása"
 
 msgid "Filter by Name"
 msgstr "Szűrés név szerint"
+
+msgid "Clear All"
+msgstr "Mind Bezárása"
 
 msgid "Clear all search filters."
 msgstr "A keresési szűrök törlése."
@@ -504,6 +524,24 @@ msgstr "Név:"
 
 msgid "Type:"
 msgstr "Típus:"
+
+msgid "Metadata name is valid."
+msgstr "A szkript útvonala/neve érvényes."
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Metaadat Tulajdonság hozzádása a \"%s\"-hoz"
+
+msgid "Metadata name can't be empty."
+msgstr "Metaadat név nem lehet üres."
+
+msgid "Metadata name must be a valid identifier."
+msgstr "A metódusnévnek érvényes azonosítónak kell lennie."
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "Metaadat \"%s\" néven már létezik."
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr "Elnevezések amik _-al kezdődnek foglaltak a szerkesztő metaadatoknak."
 
 msgid "Time:"
 msgstr "Idő:"
@@ -1746,6 +1784,11 @@ msgstr "Csak tématulajdonságok"
 msgid "Member Type"
 msgstr "Tag típusa"
 
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "Bezárja és menti a változásokat?"
+msgstr[1] "Bezárja és menti a változásokat?"
+
 msgid "Move Up"
 msgstr "Mozgatás Felfelé"
 
@@ -2597,6 +2640,9 @@ msgstr "Hiba történt az importálás utána szkript futtatásakor:"
 
 msgid "Saving..."
 msgstr "Mentés..."
+
+msgid "Pre-render Configurations"
+msgstr "Elő-Renderelési beállítások"
 
 msgid "Importer:"
 msgstr "Importáló:"
@@ -3625,7 +3671,7 @@ msgid "Rotate (deg.):"
 msgstr "Forgatás (fok):"
 
 msgid "Tonemap"
-msgstr "Tonemap"
+msgstr "Tónustérkép"
 
 msgid "Generate Visibility Rect"
 msgstr "Láthatósági Téglalap Generálása"
@@ -4200,7 +4246,7 @@ msgid "Select SSH private key path"
 msgstr "privát SSH kulcsút kiválasztása"
 
 msgid "SSH Passphrase"
-msgstr "SSH Passphrase"
+msgstr "SSH jelszó"
 
 msgid "Detect new changes"
 msgstr "Új változások észlelése"
@@ -4499,6 +4545,9 @@ msgstr "Konfiguráció"
 msgid "Pose"
 msgstr "Póz"
 
+msgid "Error creating keystores directory:"
+msgstr "Hiba a kulcstárolók könyvtárának létrehozásakor"
+
 msgid "Invalid package name:"
 msgstr "Érvénytelen csomagnév:"
 
@@ -4507,6 +4556,9 @@ msgstr "Válasszon készüléket a listából"
 
 msgid "Invalid Identifier:"
 msgstr "Érvénytelen azonosító:"
+
+msgid "Creating probes"
+msgstr "Vizsgálók létrehozása"
 
 msgid "Animation not found: '%s'"
 msgstr "Az animáció nem található: '%s'"

@@ -96,13 +96,15 @@
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2023.
 # Ahmet <ahmet2006ozbay@gmail.com>, 2023.
 # ulk <ulk.info@gmail.com>, 2024, 2025.
+# Mustafa Kara <denizkara3861@gmail.com>, 2025.
+# Kerem Özdemir <keremozdemir8248@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-14 11:17+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2025-05-12 22:27+0000\n"
+"Last-Translator: Kerem Özdemir <keremozdemir8248@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -110,7 +112,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -1111,6 +1113,9 @@ msgstr "Sayfa Başına En Fazla Dizi Sözlüğü Öğesi"
 msgid "Show Low Level OpenType Features"
 msgstr "Düşük Seviye OpenType Özelliklerini Göster"
 
+msgid "Float Drag Speed"
+msgstr "Float Sürükleme Hızı"
+
 msgid "Nested Color Mode"
 msgstr "İç İçe Renk Modu"
 
@@ -1240,6 +1245,9 @@ msgstr "DosyaSistemi"
 msgid "External Programs"
 msgstr "Harici Uygulamalar"
 
+msgid "Raster Image Editor"
+msgstr "Raster Görüntü Düzenleyici"
+
 msgid "Vector Image Editor"
 msgstr "Vektör Görüntü Düzenleyici"
 
@@ -1248,6 +1256,9 @@ msgstr "Ses Düzenleyici"
 
 msgid "3D Model Editor"
 msgstr "3B Model Düzenleyici"
+
+msgid "Terminal Emulator"
+msgstr "Terminal Emülatörü"
 
 msgid "Terminal Emulator Flags"
 msgstr "Terminal Emülatörü Bayrakları"
@@ -1443,6 +1454,9 @@ msgstr "Satırlar"
 
 msgid "Code Folding"
 msgstr "Kod Katlama"
+
+msgid "Word Wrap"
+msgstr "Kelime Sarma"
 
 msgid "Autowrap Mode"
 msgstr "Otomatik Kaydırma Kipi"
@@ -1795,6 +1809,9 @@ msgstr "Y Eksenini Çevir"
 msgid "Navigation Scheme"
 msgstr "Gezinti Düzeni"
 
+msgid "Orbit Mouse Button"
+msgstr "Yörünge Fare Düğmesi"
+
 msgid "Pan Mouse Button"
 msgstr "Kaydırma Fare Düğmesi"
 
@@ -2037,6 +2054,12 @@ msgstr "Çalıştırmadan Önce Kaydet"
 
 msgid "Bottom Panel"
 msgstr "Alt Panel"
+
+msgid "Action on Play"
+msgstr "Oynatma Eylemi"
+
+msgid "Action on Stop"
+msgstr "Durdurma Eylemi"
 
 msgid "Output"
 msgstr "Çıktı"
@@ -4438,6 +4461,9 @@ msgstr "Hata Ayıklama Anahtar Deposu"
 
 msgid "Debug Keystore User"
 msgstr "Hata Ayıklama Anahtar Deposu Kullanıcısı"
+
+msgid "Debug Keystore Pass"
+msgstr "Hata Ayıklama Anahtar Deposu Şifresi"
 
 msgid "Install Exported APK"
 msgstr "Dışa Aktarılan APK'yı Kur"

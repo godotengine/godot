@@ -21,13 +21,14 @@
 # 100daysummer <bobbydochev@gmail.com>, 2023, 2024.
 # Филип Узунов <filkata@gmail.com>, 2024.
 # "П@₿€л" <pavel.veselinov.georgiev@gmail.com>, 2024.
+# Макар Разин <makarrazin14@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-10-02 07:34+0000\n"
-"Last-Translator: \"П@₿€л\" <pavel.veselinov.georgiev@gmail.com>\n"
+"PO-Revision-Date: 2025-05-27 14:01+0000\n"
+"Last-Translator: Макар Разин <makarrazin14@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "Главна нишка"
@@ -3925,6 +3926,19 @@ msgstr "Към следващата точка на прекъсване"
 msgid "Go to Previous Breakpoint"
 msgstr "Към предходната точка на прекъсване"
 
+msgid "Shader Editor"
+msgstr "Редактор на шейдъри"
+
+msgid ""
+"Make the shader editor floating.\n"
+"Right-click to open the screen selector."
+msgstr ""
+"Направете редактора на шейдърите плаващ.\n"
+"Щракнете с десния бутон, за да отворите селекцията на екрана."
+
+msgid "Toggle Shader Editor Bottom Panel"
+msgstr "Активиране или деактивиране на долния панел на редактора на шейдъри"
+
 msgid "Create Rest Pose from Bones"
 msgstr "Създаване на поза на покоя от костите"
 
@@ -4564,6 +4578,9 @@ msgstr "Сканиране за проекти"
 msgid "Loading, please wait..."
 msgstr "Зареждане. Моля, изчакайте…"
 
+msgid "Last Edited"
+msgstr "Последна промяна"
+
 msgid "Create New Project"
 msgstr "Създаване на нов проект"
 
@@ -4610,6 +4627,12 @@ msgstr "Път до проекта:"
 
 msgid "Project Installation Path:"
 msgstr "Път на инсталация на проекта:"
+
+msgid "This project was last edited in a different Godot version: "
+msgstr "Проектът е последно модифициран в друга версия на Godot: "
+
+msgid "Last edited timestamp"
+msgstr "Времева маркировка на последното редактиране"
 
 msgid "Missing Project"
 msgstr "Проектът липсва"
@@ -4828,6 +4851,11 @@ msgstr "Неправилен базов път."
 
 msgid "Wrong extension chosen."
 msgstr "Избрано е грешно разширение."
+
+msgid "Note: Built-in shaders can't be edited using an external editor."
+msgstr ""
+"Забележка: Вградените шейдъри не могат да бъдат редактирани с помощта на "
+"външен редактор."
 
 msgid "Previous Floor"
 msgstr "Предходен под"
@@ -5146,3 +5174,12 @@ msgstr ""
 
 msgid "Constants cannot be modified."
 msgstr "Константите не могат да бъдат променени."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Превишено е ограничението за разширяване на макроси."
+
+msgid "Invalid macro argument list."
+msgstr "Невалиден списък с аргументи на макроса."
+
+msgid "Invalid macro argument."
+msgstr "Невалиден аргумент на макроса."

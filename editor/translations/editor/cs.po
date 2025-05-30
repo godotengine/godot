@@ -53,13 +53,14 @@
 # MichaelCZE <michael.klein2005@seznam.cz>, 2024.
 # Pythom1234 <tom.fucik@email.cz>, 2025.
 # Vojtech Krajnansky <vojtech.krajnansky@gmail.com>, 2025.
+# Filip Jaruška <filip.jaruska@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-23 11:08+0000\n"
-"Last-Translator: Pythom1234 <tom.fucik@email.cz>\n"
+"PO-Revision-Date: 2025-04-03 15:24+0000\n"
+"Last-Translator: Filip Jaruška <filip.jaruska@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -919,6 +920,9 @@ msgstr "AnimationPlayer nemůže animovat sám sebe, pouze ostatní přehrávač
 
 msgid "property '%s'"
 msgstr "vlastnost '%s'"
+
+msgid "Nearest FPS: %d"
+msgstr "Nejbližší FPS: %d"
 
 msgid "Change Animation Step"
 msgstr "Změnit krok animace"
@@ -3560,6 +3564,15 @@ msgstr "Přepnout viditelnost zpráv editoru."
 msgid "Native Shader Source Inspector"
 msgstr "Inspektor zdrojového kódu nativních shaderů"
 
+msgid ""
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"%s\" directory manually before attempting this operation again."
+msgstr ""
+"Šablona buildu Android je již nainstalována v tomto projektu a nebude "
+"přepsána.\n"
+"Odeberte \"%s\" adresář ručně před pokusem o zopakování této operace."
+
 msgid "Unnamed Project"
 msgstr "Nepojmenovaný projekt"
 
@@ -5189,6 +5202,9 @@ msgstr "Instalovat ze souboru"
 
 msgid "Install templates from a local file."
 msgstr "Instalovat šablony z místního souboru."
+
+msgid "Online mode is needed to download the templates."
+msgstr "Online režim je potřeba pro stáhnutí šablony."
 
 msgid "Go Online"
 msgstr "Jít online"
@@ -16273,6 +16289,22 @@ msgstr "Restartovat a aktualizovat"
 msgid "Updating Script UIDs"
 msgstr "Aktualizace UID skriptů"
 
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
+"\n"
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
+msgstr ""
+"Od Godot 4.4, scény a zdroje používají UIDs pro referenci skript a shaderů. "
+"Upgrady se použijí při příštím uložení každé scény/prostředku.\n"
+"\n"
+"Chcete-li ušetřit čas, tento nástroj může otevřít a uložit každý z těchto "
+"souborů. V závislosti na velikosti projektu to může trvat až několik minut."
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "Znovu uložte všechny scény a prostředky, abyste mohli používat UIDs"
+
 msgid "Learn More"
 msgstr "Zjistit více"
 
@@ -20088,8 +20120,8 @@ msgid ""
 "You are attempting to assign the VERTEX position in model space to the vertex "
 "POSITION in clip space. The definition of clip space changed in version 4.3, "
 "so if this code was written prior to 4.3, it will not continue to work. "
-"Consider specifying the clip space z-component directly i.e. use `vec4(VERTEX."
-"xy, 1.0, 1.0)`."
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
 msgstr ""
 "Pokoušíte se přiřadit pozici VERTEX v modelovém prostoru k vrcholu POSITION v "
 "clip prostoru. Definice clip prostoru se ve verzi 4.3 změnila, takže pokud "

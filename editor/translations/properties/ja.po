@@ -56,13 +56,14 @@
 # Komaru Bomaru <ohmanhowwillithink@gmail.com>, 2023.
 # SonSui <sonsui37@gmail.com>, 2024.
 # Binnaga <polycharacter@gmail.com>, 2024.
+# rion <miyachikozin@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-12-22 21:02+0000\n"
-"Last-Translator: Binnaga <polycharacter@gmail.com>\n"
+"PO-Revision-Date: 2025-04-06 12:17+0000\n"
+"Last-Translator: rion <miyachikozin@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -70,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "アプリケーション"
@@ -239,6 +240,9 @@ msgstr "サブウィンドウを埋め込む"
 
 msgid "Android"
 msgstr "Android"
+
+msgid "Swappy Mode"
+msgstr "スワッピーモード"
 
 msgid "Physics"
 msgstr "物理"

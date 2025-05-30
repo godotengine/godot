@@ -103,13 +103,15 @@
 # J_aphasiac <japhasiac@163.com>, 2025.
 # BuddhaGrape <3248882725@qq.com>, 2025.
 # ChenLei <falsecollector@outlook.com>, 2025.
+# Myeongjin Lee <aranet100@gmail.com>, 2025.
+# Jianwen Xu <jianwen-xu@users.noreply.hosted.weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-03-20 00:24+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2025-05-23 05:05+0000\n"
+"Last-Translator: Jianwen Xu <jianwen-xu@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -117,7 +119,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "主线程"
@@ -2719,7 +2721,7 @@ msgid "Focus on the %s dock."
 msgstr "聚焦 %s 面板。"
 
 msgid "%s - Godot Engine"
-msgstr "%s - Godot Engine"
+msgstr "%s - Godot 引擎"
 
 msgid "Move this dock right one tab."
 msgstr "将该面板向右移一个选项卡。"
@@ -4855,7 +4857,7 @@ msgid "Storing File: %s"
 msgstr "保存文件：%s"
 
 msgid "Storing File:"
-msgstr "保存文件："
+msgstr "正在保存文件："
 
 msgid "No export template found at the expected path:"
 msgstr "指定路径不存在导出模板："
@@ -7905,7 +7907,7 @@ msgid "Preview"
 msgstr "预览"
 
 msgid "Configure Snap"
-msgstr "设置吸附"
+msgstr "配置吸附"
 
 msgid "Grid Offset:"
 msgstr "栅格偏移："
@@ -10836,7 +10838,7 @@ msgid "Open '%s' in Godot online documentation."
 msgstr "在 Godot 在线文档中打开“%s”。"
 
 msgid "Open in Online Docs"
-msgstr "打开在线文档"
+msgstr "在线文档中打开"
 
 msgid "Online Docs"
 msgstr "在线文档"
@@ -18135,8 +18137,8 @@ msgid ""
 "the Bake Occluders button at the top of the 3D editor viewport."
 msgstr ""
 "遮挡网格的顶点少于 3 个，所以使用这个 OccluderInstance3D 不会进行遮挡剔除。\n"
-"要生成正确的遮挡网格，请选择 OccluderInstance3D，然后使用 3D 编辑器视口顶部"
-"的“烘焙遮挡器”按钮。"
+"要生成正确的遮挡网格，请选择 OccluderInstance3D，然后使用 3D 编辑器视口顶部的"
+"“烘焙遮挡器”按钮。"
 
 msgid ""
 "The polygon occluder has less than 3 vertices, so no occlusion culling will "
@@ -18425,7 +18427,7 @@ msgid ""
 msgstr "ButtonGroup 的目的是只用于那些将 toggle_mode 设置为 true 的按钮。"
 
 msgid "Copy this constructor in a script."
-msgstr "复制这个脚本中的构造函数。"
+msgstr "复制脚本中的构造函数。"
 
 msgid "Load Color Palette"
 msgstr "加载调色板"
@@ -19334,8 +19336,8 @@ msgid ""
 "You are attempting to assign the VERTEX position in model space to the vertex "
 "POSITION in clip space. The definition of clip space changed in version 4.3, "
 "so if this code was written prior to 4.3, it will not continue to work. "
-"Consider specifying the clip space z-component directly i.e. use `vec4(VERTEX."
-"xy, 1.0, 1.0)`."
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
 msgstr ""
 "正在尝试将模型空间的顶点位置 VERTEX 赋值给裁剪空间的顶点位置 POSITION。4.3 版"
 "本修改了裁剪空间的定义，因此如果这段代码是在 4.3 之前编写的，就会无法继续工"
