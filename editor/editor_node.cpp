@@ -72,8 +72,8 @@
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 
-#include "editor/audio_stream_preview.h"
 #include "editor/animation_preview.h"
+#include "editor/audio_stream_preview.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/dependency_editor.h"
