@@ -83,6 +83,7 @@ class EditorResourcePicker : public HBoxContainer {
 	};
 
 	Object *resource_owner = nullptr;
+	StringName property_path;
 
 	PopupMenu *edit_menu = nullptr;
 
@@ -143,6 +144,7 @@ public:
 	bool is_toggle_pressed() const;
 
 	void set_resource_owner(Object *p_object);
+	void set_property_path(const StringName &p_path) { property_path = p_path; }
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;
