@@ -1311,7 +1311,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_tonemap_white", "get_tonemap_white");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_black", PROPERTY_HINT_RANGE, "0.0,0.15,0.001"), "set_tonemap_black", "get_tonemap_black");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_contrast", PROPERTY_HINT_RANGE, "0.01,5,0.01"), "set_tonemap_contrast", "get_tonemap_contrast");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_contrast", PROPERTY_HINT_RANGE, "1.0,5,0.01"), "set_tonemap_contrast", "get_tonemap_contrast");
 
 	// SSR
 

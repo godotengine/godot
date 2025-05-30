@@ -266,71 +266,99 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 
 	float white = env->white;
 	float hdr_enabled = env->max_value != 1.0; // TODO: env->max_value != 1.0 is a temp hack. This should read from whether HDR is enabled... for the window?
-	// Variable EDR (HDR) compatible tonemappers must have their white parameter constrained or adjusted
-	// to ensure reasonable behavior across all ranges of env->max_value (such as white == 3.0 and
-	// max_value == 5.0):
-	if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD && hdr_enabled) {
-		// For Reinhard to behave correctly in SDR and HDR, the white parameter can't
-		// be lower than max_val, but historically it was able to be set lower than max_val,
-		// so we only put this restriction in place when operating in HDR mode.
-		white = MAX(white, env->max_value);
-	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
-		// First match Adjustable tonemapper behavior to ensure that AgX behaves reasonably.
-		// Because white will also be scaling by max_value this is not stricktly necessary,
-		// but it makes for a better and more consistent user experience when comparing
-		// against the Adjustable tonemapper in SDR.
-		white = MAX(white, env->max_value);
-
-		// By scaling white based on maxVal, the Reinhard shoulder maintains a similar
-		// nonlinear scaling ratio between channels. This is important for AgX to
-		// give a similar appearance across different maxVal, but it means that
-		// input values must be higher to achieve the full maxVal output.
-		white = white * env->max_value;
-	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_ADJUSTABLE) {
-		// Unlike Reinhard, which historically could be set to less than 1.0 for SDR,
-		// the adjustable tonemapper was introduced with HDR support and behaves the
-		// same for SDR and HDR.
-		white = MAX(white, env->max_value);
-	}
-
-	white -= env->black;
-
+	float output_max_value = env->max_value;
 	params.tonemap_black = env->black;
 	if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD) {
-		params.tonemap_a = white;
+		if (hdr_enabled) {
+			// Variable EDR (HDR) compatible tonemappers must have their white parameter constrained or adjusted
+			// to ensure reasonable behavior across all ranges of output_max_value (such as white == 3.0 and
+			// max_value == 5.0):
+			// For Reinhard to behave correctly in SDR and HDR, the white parameter can't
+			// be lower than max_val, but historically it was able to be set lower than max_val,
+			// so we only put this restriction in place when operating in HDR mode.
+			white = MAX(white, output_max_value);
+		}
+		white -= env->black;
+		params.tonemap_a = (white * white) / output_max_value;
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_FILMIC) {
-		params.tonemap_a = white;
+		// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
+		// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values)
+		// has no effect on the curve's general shape or visual properties
+		// These constants must match those in the shader code.
+		const float exposure_bias = 2.0f;
+		const float A = 0.22f * exposure_bias * exposure_bias; // bias baked into constants for performance
+		const float B = 0.30f * exposure_bias;
+		const float C = 0.10f;
+		const float D = 0.20f;
+		const float E = 0.01f;
+		const float F = 0.30f;
+
+		white -= env->black;
+		float white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
+		params.tonemap_a = white_tonemapped;
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_ACES) {
-		params.tonemap_a = white;
+		// These constants must match those in the shader code.
+		const float exposure_bias = 1.8f;
+		const float A = 0.0245786f;
+		const float B = 0.000090537f;
+		const float C = 0.983729f;
+		const float D = 0.432951f;
+		const float E = 0.238081f;
+
+		white -= env->black;
+		white *= exposure_bias;
+		float white_tonemapped = (white * (white + A) - B) / (white * (C * white + D) + E);
+		params.tonemap_a = white_tonemapped;
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_AGX || env->tone_mapper == RS::ENV_TONE_MAPPER_ADJUSTABLE) {
-		// allenwp curve parameters should be computed on the CPU
-		const float crossover_point = 0.18; // 18% "middle gray" is perceptually 50% of the brightness of reference white
+		// Calculate allenwp tonemapping curve parameters on the CPU to improve shader performance.
+		// Source and details: https://allenwp.com/blog/2025/05/29/allenwp-tonemapping-curve/
+
+		// 18% "middle gray" is perceptually 50% of the brightness of reference white.
+		const float awp_crossover_point = 0.18;
 		// Brightness adjustments generally look better by simply adjusting exposure, so hardcode brightness to 0.0.
 		// Additionally, adjustments to exposure and contrast are more "scientifically" correct in the world of
 		// colour science for all but flair compensation, which is already mostly handled by the black parameter.
-		const float brightness = 0.0;
+		const float awp_brightness = 0.0;
 
-		float midIn = crossover_point - env->black;
-		float midOut = crossover_point + brightness;
+		float awp_mid_in = awp_crossover_point - env->black;
+		float awp_mid_out = awp_crossover_point + awp_brightness;
 
-		float allenwp_toe_a = -1.0 * ((pow(midIn, env->tonemap_contrast) * (midOut - 1.0)) / midOut);
-		// Slope formula is simply the derivative of the toe function with an input of midIn
-		float slope_denom = pow(midIn, env->tonemap_contrast) + allenwp_toe_a;
-		float slope = (env->tonemap_contrast * pow(midIn, env->tonemap_contrast - 1.0) * allenwp_toe_a) / (slope_denom * slope_denom);
+		float awp_high_clip = white;
+		if (env->tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
+			// Instead of constraining to output_max_value, constrain to 2.0 to ensure
+			// the desired non-uniform scaling behavior in the shoulder
+			// and maintain that behavior by multiplying by output_max_value.
+			// 2.0 is the minimum required for good behavior with Mobile rendering method.
+			awp_high_clip = MAX(awp_high_clip, 2.0);
+			awp_high_clip *= output_max_value;
+		} else { // env->tone_mapper == RS::ENV_TONE_MAPPER_ADJUSTABLE
+			// Variable EDR (HDR) compatible tonemappers must have their white parameter constrained or adjusted
+			// to ensure reasonable behavior across all ranges of env->max_value (such as white == 3.0 and
+			// max_value == 5.0):
+			awp_high_clip = MAX(awp_high_clip, output_max_value);
+		}
 
-		float shoulderMaxVal = env->max_value - midOut;
-		float w = white - midIn;
-		w = w * w;
-		w = w / shoulderMaxVal;
-		w = w * slope;
+		awp_high_clip -= env->black;
+
+		// awp_toe_a is a solution generated by Mathematica that ensures awp_mid_in input produces awp_mid_out output
+		float awp_toe_a = -1.0 * ((pow(awp_mid_in, env->tonemap_contrast) * (awp_mid_out - 1.0)) / awp_mid_out);
+		// Slope formula is simply the derivative of the toe function with an input of awp_mid_in
+		float awp_slope_denom = pow(awp_mid_in, env->tonemap_contrast) + awp_toe_a;
+		float awp_slope = (env->tonemap_contrast * pow(awp_mid_in, env->tonemap_contrast - 1.0) * awp_toe_a) / (awp_slope_denom * awp_slope_denom);
+
+		float awp_shoulder_max = output_max_value - awp_mid_out;
+		float awp_w = awp_high_clip - awp_mid_in;
+		awp_w = awp_w * awp_w;
+		awp_w = awp_w / awp_shoulder_max;
+		awp_w = awp_w * awp_slope;
 
 		params.tonemap_a = env->tonemap_contrast;
-		params.tonemap_b = midIn;
-		params.tonemap_c = midOut;
-		params.tonemap_d = slope;
-		params.tonemap_e = shoulderMaxVal;
-		params.tonemap_f = w;
-		params.tonemap_g = allenwp_toe_a;
+		params.tonemap_b = awp_toe_a;
+		params.tonemap_c = awp_slope;
+		params.tonemap_d = awp_w;
+		params.tonemap_e = awp_shoulder_max;
+		params.tonemap_f = awp_mid_in;
+		params.tonemap_g = awp_mid_out;
 	}
 
 	return params;
