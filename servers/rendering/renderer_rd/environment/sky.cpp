@@ -820,7 +820,7 @@ void SkyRD::init() {
 		sky_modes.push_back("\n#define USE_QUARTER_RES_PASS\n#define USE_MULTIVIEW\n"); // Quarter res multiview
 
 		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(0, 0)); // sky_scene_state.push_constant.
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(0, 0)); // sky_scene_state.push_constant.
 
 		sky_shader.shader.initialize(sky_modes, defines, Vector<RD::PipelineImmutableSampler>(), dynamic_buffers);
 

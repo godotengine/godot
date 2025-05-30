@@ -246,6 +246,12 @@ public:
 	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 	String version_get_cache_file_relative_path(RID p_version, int p_group, const String &p_api_name);
 
+	struct DynamicBuffer {
+		static uint64_t encode(uint32_t p_set_id, uint32_t p_binding) {
+			return uint64_t(p_set_id) << 32ul | uint64_t(p_binding);
+		}
+	};
+
 	// Dynamic Buffers specifies Which buffers will be persistent/dynamic when used.
 	// See DynamicBuffer::encode. We need this argument because SPIR-V does not distinguish between a
 	// uniform buffer and a dynamic uniform buffer. At shader level they're the same thing, but the PSO

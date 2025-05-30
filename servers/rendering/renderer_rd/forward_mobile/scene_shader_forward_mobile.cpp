@@ -511,8 +511,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		immutable_shadow_sampler.uniform_type = RenderingDeviceCommons::UNIFORM_TYPE_SAMPLER;
 		immutable_samplers.push_back(immutable_shadow_sampler);
 		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(RenderForwardMobile::RENDER_PASS_UNIFORM_SET, 0));
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(RenderForwardMobile::RENDER_PASS_UNIFORM_SET, 1));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(RenderForwardMobile::RENDER_PASS_UNIFORM_SET, 0));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(RenderForwardMobile::RENDER_PASS_UNIFORM_SET, 1));
 		shader.initialize(shader_versions, p_defines, immutable_samplers, dynamic_buffers);
 
 		if (RendererCompositorRD::get_singleton()->is_xr_enabled()) {

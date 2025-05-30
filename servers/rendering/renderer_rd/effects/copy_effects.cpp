@@ -61,7 +61,7 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		blur_modes.push_back("\n#define MODE_SET_COLOR\n"); // BLUR_MODE_SET_COLOR
 
 		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(blur_raster.push_constant.set_idx(), 0));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(blur_raster.push_constant.set_idx(), 0));
 
 		blur_raster.shader.initialize(blur_modes, "", Vector<RD::PipelineImmutableSampler>(), dynamic_buffers);
 		blur_raster.shader_version = blur_raster.shader.version_create();
@@ -103,7 +103,7 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		copy_modes.push_back("\n#define MODE_CUBEMAP_ARRAY_TO_PANORAMA\n" COPY_SHADER_SOURCE_PLUS_DEST);
 
 		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(copy.push_constant.set_idx(), 0));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(copy.push_constant.set_idx(), 0));
 
 		copy.shader.initialize(copy_modes, "", Vector<RD::PipelineImmutableSampler>(), dynamic_buffers);
 		copy.shader_version = copy.shader.version_create();
@@ -132,7 +132,7 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		copy_modes.push_back("\n#define USE_MULTIVIEW\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_MULTIVIEW_WITH_DEPTH
 
 		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(copy_to_fb.push_constant.set_idx(), 0));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(copy_to_fb.push_constant.set_idx(), 0));
 
 		copy_to_fb.shader.initialize(copy_modes, "", Vector<RD::PipelineImmutableSampler>(), dynamic_buffers);
 
@@ -167,7 +167,7 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		copy_modes.push_back("\n");
 
 		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(cube_to_dp.push_constant.set_idx(), 0));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(cube_to_dp.push_constant.set_idx(), 0));
 
 		cube_to_dp.shader.initialize(copy_modes, "", Vector<RD::PipelineImmutableSampler>(), dynamic_buffers);
 

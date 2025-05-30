@@ -482,12 +482,6 @@ public:
 		LocalVector<ID> ids;
 	};
 
-	struct DynamicBuffer {
-		static uint64_t encode(uint32_t p_set_id, uint32_t p_binding) {
-			return uint64_t(p_set_id) << 32ul | uint64_t(p_binding);
-		}
-	};
-
 	// Creates a Pipeline State Object (PSO) out of the shader and all the input data it needs.
 	// Immutable samplers can be embedded when creating the pipeline layout on the condition they remain valid and unchanged, so they don't need to be
 	// specified when creating uniform sets PSO resource for binding.

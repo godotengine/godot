@@ -55,7 +55,7 @@ ToneMapper::ToneMapper() {
 		tonemap_modes.push_back("\n#define USE_MULTIVIEW\n#define SUBPASS\n#define USE_1D_LUT\n");
 
 		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(tonemap.push_constant.set_idx(), 0));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(tonemap.push_constant.set_idx(), 0));
 
 		tonemap.shader.initialize(tonemap_modes, "", Vector<RD::PipelineImmutableSampler>(), dynamic_buffers);
 

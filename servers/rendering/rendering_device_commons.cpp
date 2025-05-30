@@ -30,6 +30,7 @@
 
 #include "rendering_device_commons.h"
 
+#include "servers/rendering/renderer_rd/shader_rd.h"
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
 /*****************/
@@ -1053,7 +1054,7 @@ Error RenderingDeviceCommons::reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 							may_be_writable = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
-							const uint64_t key = RDD::DynamicBuffer::encode(binding.set, binding.binding);
+							const uint64_t key = ShaderRD::DynamicBuffer::encode(binding.set, binding.binding);
 							if (dynamic_buffers.find(key) >= 0) {
 								uniform.type = UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC;
 							} else {
@@ -1062,7 +1063,7 @@ Error RenderingDeviceCommons::reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 							need_block_size = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
-							const uint64_t key = RDD::DynamicBuffer::encode(binding.set, binding.binding);
+							const uint64_t key = ShaderRD::DynamicBuffer::encode(binding.set, binding.binding);
 							if (dynamic_buffers.find(key) >= 0) {
 								uniform.type = UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC;
 							} else {

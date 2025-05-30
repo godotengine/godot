@@ -141,7 +141,7 @@ void RendererCompositorRD::initialize() {
 		blit_modes.push_back("\n");
 
 		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(RDD::DynamicBuffer::encode(blit.push_constant.set_idx(), 0));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(blit.push_constant.set_idx(), 0));
 
 		blit.shader.initialize(blit_modes, "", Vector<RD::PipelineImmutableSampler>(), dynamic_buffers);
 
