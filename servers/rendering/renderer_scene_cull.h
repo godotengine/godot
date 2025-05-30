@@ -473,6 +473,7 @@ public:
 		// sorting
 		float sorting_offset = 0.0;
 		bool use_aabb_center = true;
+		int16_t sorting_stacked_order = 0;
 
 		Vector<Color> lightmap_target_sh; //target is used for incrementally changing the SH over time, this avoids pops in some corner cases and when going interior <-> exterior
 
@@ -1023,7 +1024,7 @@ public:
 	virtual void instance_set_base(RID p_instance, RID p_base);
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
-	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center);
+	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center, int16_t p_sorting_stacked_order = 0);
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);

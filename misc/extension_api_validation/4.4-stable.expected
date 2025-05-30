@@ -112,7 +112,6 @@ Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/cre
 
 New argument added. Compatibility method registered.
 
-
 GH-98750
 --------
 Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ALICE_BLUE': value changed value in new API, from "Color(0.941176, 0.972549, 1, 1)" to "Color(0.9411765, 0.972549, 1, 1)".
@@ -258,3 +257,10 @@ GH-106848
 Validate extension JSON: API was removed: classes/Node/methods/get_rpc_config
 
 Change Node `get_rpc_config` to `get_node_rpc_config`. Compatibility method registered.
+
+GH-106593
+--------
+
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instance_set_pivot_data/arguments': size changed value in new API, from 3 to 4.
+
+Added a optional parameter with default value and Compatibility method was registered.
