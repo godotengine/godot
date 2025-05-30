@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/templates/span.h"
+
 /**
  * A high performance Vector of fixed capacity.
  * Especially useful if you need to create an array on the stack, to
