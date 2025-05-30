@@ -943,8 +943,18 @@ Vector3 Spatial::to_global(Vector3 p_local) const {
 	return get_global_transform().xform(p_local);
 }
 
+void Spatial::_physics_interpolated_changed() {
+	data.notify_transform = data.notify_transform_requested || (data.notify_transform_when_fti_off && !is_physics_interpolated_and_enabled());
+}
+
+void Spatial::_set_notify_transform_when_fti_off(bool p_enable) {
+	data.notify_transform_when_fti_off = p_enable;
+	data.notify_transform = data.notify_transform_requested || (data.notify_transform_when_fti_off && !is_physics_interpolated_and_enabled());
+}
+
 void Spatial::set_notify_transform(bool p_enable) {
-	data.notify_transform = p_enable;
+	data.notify_transform_requested = p_enable;
+	data.notify_transform = data.notify_transform_requested || (data.notify_transform_when_fti_off && !is_physics_interpolated_and_enabled());
 }
 
 bool Spatial::is_transform_notification_enabled() const {
@@ -1144,6 +1154,9 @@ Spatial::Spatial() :
 #endif
 	data.notify_local_transform = false;
 	data.notify_transform = false;
+	data.notify_transform_requested = false;
+	data.notify_transform_when_fti_off = false;
+
 	data.parent = nullptr;
 	data.C = nullptr;
 }
