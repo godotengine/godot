@@ -1462,7 +1462,7 @@ void Node::set_accessibility_name(const String &p_name) {
 }
 
 String Node::get_accessibility_name() const {
-	return atr(data.accessibility_name);
+	return tr(data.accessibility_name);
 }
 
 void Node::set_accessibility_description(const String &p_description) {
@@ -1474,7 +1474,7 @@ void Node::set_accessibility_description(const String &p_description) {
 }
 
 String Node::get_accessibility_description() const {
-	return atr(data.accessibility_description);
+	return tr(data.accessibility_description);
 }
 
 void Node::set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode) {
