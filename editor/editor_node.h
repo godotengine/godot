@@ -485,7 +485,7 @@ private:
 	PrintHandlerList print_handler;
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
-	HashMap<String, Ref<Texture2D>> class_icon_cache;
+	HashMap<Pair<String, String>, Ref<Texture2D>> class_icon_cache;
 
 	ProjectUpgradeTool *project_upgrade_tool = nullptr;
 	bool run_project_upgrade_tool = false;
