@@ -40,83 +40,143 @@
 #define ETCPAK_RGB_BLOCK_SIZE 8
 #define ETCPAK_RGBA_BLOCK_SIZE 16
 
+template <void (*decompress_func)(const void *, void *, size_t), int block_size, int pixel_size>
+static inline void _safe_decompress_mipmap(int width, int height, const uint8_t *src, uint8_t *dst) {
+	// A stack-allocated output buffer large enough to contain an entire uncompressed block.
+	uint8_t temp_buf[4 * 4 * pixel_size];
+
+	// The amount of misaligned pixels on each axis.
+	const int width_diff = width - (width & ~0x03);
+	const int height_diff = height - (height & ~0x03);
+
+	// The amount of uncompressed blocks on each axis.
+	const int width_blocks = (width & ~0x03) / 4;
+	const int height_blocks = (height & ~0x03) / 4;
+
+	// The pitch of the image in bytes.
+	const int image_pitch = width * pixel_size;
+	// The pitch of a block in bytes.
+	const int block_pitch = 4 * pixel_size;
+	// The pitch of the last block in bytes.
+	const int odd_pitch = width_diff * pixel_size;
+
+	size_t src_pos = 0;
+	size_t dst_pos = 0;
+
+	// Decompress the blocks, starting from the top.
+	for (int y = 0; y < height_blocks; y += 1) {
+		// Decompress the blocks, starting from the left.
+		for (int x = 0; x < width_blocks; x += 1) {
+			decompress_func(&src[src_pos], &dst[dst_pos], width);
+			src_pos += block_size;
+			dst_pos += block_pitch;
+		}
+
+		// Decompress the block on the right.
+		if (width_diff > 0) {
+			decompress_func(&src[src_pos], temp_buf, 4);
+
+			// Copy the data from the temporary buffer to the output.
+			for (int i = 0; i < 4; i++) {
+				memcpy(&dst[dst_pos + i * image_pitch], &temp_buf[i * block_pitch], odd_pitch);
+			}
+
+			src_pos += block_size;
+			dst_pos += odd_pitch;
+		}
+
+		// Skip to the next row of blocks, the current one has already been filled.
+		dst_pos += 3 * image_pitch;
+	}
+
+	// Decompress the blocks at the bottom of the image.
+	if (height_diff > 0) {
+		// Decompress the blocks at the bottom.
+		for (int x = 0; x < width_blocks; x += 1) {
+			decompress_func(&src[src_pos], temp_buf, 4);
+
+			// Copy the data from the temporary buffer to the output.
+			for (int i = 0; i < height_diff; i++) {
+				memcpy(&dst[dst_pos + i * image_pitch], &temp_buf[i * block_pitch], block_pitch);
+			}
+
+			src_pos += block_size;
+			dst_pos += block_pitch;
+		}
+
+		// Decompress the block in the lower-right corner.
+		if (width_diff > 0) {
+			decompress_func(&src[src_pos], temp_buf, 4);
+
+			// Copy the data from the temporary buffer to the output.
+			for (int i = 0; i < height_diff; i++) {
+				memcpy(&dst[dst_pos + i * image_pitch], &temp_buf[i * block_pitch], odd_pitch);
+			}
+
+			src_pos += block_size;
+			dst_pos += odd_pitch;
+		}
+	}
+}
+
+template <void (*decompress_func)(const void *, void *, size_t), int block_size, int pixel_size>
+static inline void _decompress_mipmap(int width, int height, const uint8_t *src, uint8_t *dst) {
+	size_t src_pos = 0;
+	size_t dst_pos = 0;
+
+	// The size of a single block in bytes.
+	const int block_pitch = 4 * pixel_size;
+
+	for (int y = 0; y < height; y += 4) {
+		for (int x = 0; x < width; x += 4) {
+			decompress_func(&src[src_pos], &dst[dst_pos], width);
+			src_pos += block_size;
+			dst_pos += block_pitch;
+		}
+
+		// Skip to the next row of blocks, the current one has already been filled.
+		dst_pos += 3 * width * pixel_size;
+	}
+}
+
 static void decompress_image(EtcpakFormat format, const void *src, void *dst, const uint64_t width, const uint64_t height) {
 	const uint8_t *src_blocks = reinterpret_cast<const uint8_t *>(src);
 	uint8_t *dec_blocks = reinterpret_cast<uint8_t *>(dst);
 
-#define DECOMPRESS_LOOP(m_func, m_block_size, m_color_bytesize)        \
-	for (uint64_t y = 0; y < height; y += 4) {                         \
-		for (uint64_t x = 0; x < width; x += 4) {                      \
-			m_func(&src_blocks[src_pos], &dec_blocks[dst_pos], width); \
-			src_pos += m_block_size;                                   \
-			dst_pos += 4 * m_color_bytesize;                           \
-		}                                                              \
-		dst_pos += 3 * width * m_color_bytesize;                       \
-	}
+	const uint64_t aligned_width = (width + 3) & ~0x03;
+	const uint64_t aligned_height = (height + 3) & ~0x03;
 
-#define DECOMPRESS_LOOP_SAFE(m_func, m_block_size, m_color_bytesize, m_output)                                                                                \
-	for (uint64_t y = 0; y < height; y += 4) {                                                                                                                \
-		for (uint64_t x = 0; x < width; x += 4) {                                                                                                             \
-			const uint32_t yblock = MIN(height - y, 4ul);                                                                                                     \
-			const uint32_t xblock = MIN(width - x, 4ul);                                                                                                      \
-                                                                                                                                                              \
-			const bool incomplete = yblock < 4 && xblock < 4;                                                                                                 \
-			uint8_t *dec_out = incomplete ? m_output : &dec_blocks[y * 4 * width + x * m_color_bytesize];                                                     \
-                                                                                                                                                              \
-			m_func(&src_blocks[src_pos], dec_out, incomplete ? 4 : width);                                                                                    \
-			src_pos += m_block_size;                                                                                                                          \
-                                                                                                                                                              \
-			if (incomplete) {                                                                                                                                 \
-				for (uint32_t cy = 0; cy < yblock; cy++) {                                                                                                    \
-					for (uint32_t cx = 0; cx < xblock; cx++) {                                                                                                \
-						memcpy(&dec_blocks[(y + cy) * 4 * width + (x + cx) * m_color_bytesize], &m_output[cy * 4 + cx * m_color_bytesize], m_color_bytesize); \
-					}                                                                                                                                         \
-				}                                                                                                                                             \
-			}                                                                                                                                                 \
-		}                                                                                                                                                     \
-	}
-
-	if (width % 4 != 0 || height % 4 != 0) {
-		uint64_t src_pos = 0;
-
-		uint8_t rgba8_output[4 * 4 * 4];
-
+	if (width != aligned_width || height != aligned_height) {
 		switch (format) {
 			case Etcpak_R: {
-				DECOMPRESS_LOOP_SAFE(DecodeRBlock, ETCPAK_R_BLOCK_SIZE, 4, rgba8_output)
+				_safe_decompress_mipmap<DecodeRBlock, ETCPAK_R_BLOCK_SIZE, 4>(width, height, src_blocks, dec_blocks);
 			} break;
 			case Etcpak_RG: {
-				DECOMPRESS_LOOP_SAFE(DecodeRGBlock, ETCPAK_RG_BLOCK_SIZE, 4, rgba8_output)
+				_safe_decompress_mipmap<DecodeRGBlock, ETCPAK_RG_BLOCK_SIZE, 4>(width, height, src_blocks, dec_blocks);
 			} break;
 			case Etcpak_RGB: {
-				DECOMPRESS_LOOP_SAFE(DecodeRGBBlock, ETCPAK_RGB_BLOCK_SIZE, 4, rgba8_output)
+				_safe_decompress_mipmap<DecodeRGBBlock, ETCPAK_RGB_BLOCK_SIZE, 4>(width, height, src_blocks, dec_blocks);
 			} break;
 			case Etcpak_RGBA: {
-				DECOMPRESS_LOOP_SAFE(DecodeRGBABlock, ETCPAK_RGBA_BLOCK_SIZE, 4, rgba8_output)
+				_safe_decompress_mipmap<DecodeRGBABlock, ETCPAK_RGBA_BLOCK_SIZE, 4>(width, height, src_blocks, dec_blocks);
 			} break;
 		}
-
 	} else {
-		uint64_t src_pos = 0, dst_pos = 0;
-
 		switch (format) {
 			case Etcpak_R: {
-				DECOMPRESS_LOOP(DecodeRBlock, ETCPAK_R_BLOCK_SIZE, 4)
+				_decompress_mipmap<DecodeRBlock, ETCPAK_R_BLOCK_SIZE, 4>(width, height, src_blocks, dec_blocks);
 			} break;
 			case Etcpak_RG: {
-				DECOMPRESS_LOOP(DecodeRGBlock, ETCPAK_RG_BLOCK_SIZE, 4)
+				_decompress_mipmap<DecodeRGBlock, ETCPAK_RG_BLOCK_SIZE, 4>(width, height, src_blocks, dec_blocks);
 			} break;
 			case Etcpak_RGB: {
-				DECOMPRESS_LOOP(DecodeRGBBlock, ETCPAK_RGB_BLOCK_SIZE, 4)
+				_decompress_mipmap<DecodeRGBBlock, ETCPAK_RGB_BLOCK_SIZE, 4>(width, height, src_blocks, dec_blocks);
 			} break;
 			case Etcpak_RGBA: {
-				DECOMPRESS_LOOP(DecodeRGBABlock, ETCPAK_RGBA_BLOCK_SIZE, 4)
+				_decompress_mipmap<DecodeRGBABlock, ETCPAK_RGBA_BLOCK_SIZE, 4>(width, height, src_blocks, dec_blocks);
 			} break;
 		}
 	}
-
-#undef DECOMPRESS_LOOP
-#undef DECOMPRESS_LOOP_SAFE
 }
 
 void _decompress_etc(Image *p_image) {
@@ -124,18 +184,6 @@ void _decompress_etc(Image *p_image) {
 
 	int width = p_image->get_width();
 	int height = p_image->get_height();
-
-	// Compressed images' dimensions should be padded to the upper multiple of 4.
-	// If they aren't, they need to be realigned (the actual data is correctly padded though).
-	if (width % 4 != 0 || height % 4 != 0) {
-		int new_width = width + (4 - (width % 4));
-		int new_height = height + (4 - (height % 4));
-
-		print_verbose(vformat("Compressed image (%s) has dimensions are not multiples of 4 (%dx%d), aligning to (%dx%d)", p_image->get_path(), width, height, new_width, new_height));
-
-		width = new_width;
-		height = new_height;
-	}
 
 	Image::Format source_format = p_image->get_format();
 	Image::Format target_format = Image::FORMAT_RGBA8;
@@ -180,8 +228,8 @@ void _decompress_etc(Image *p_image) {
 	// Decompress mipmaps.
 	for (int i = 0; i <= mm_count; i++) {
 		int mipmap_w = 0, mipmap_h = 0;
-		int64_t src_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, source_format, i, mipmap_w, mipmap_h);
-		int64_t dst_ofs = Image::get_image_mipmap_offset(width, height, target_format, i);
+		int64_t src_ofs = Image::get_image_mipmap_offset(width, height, source_format, i);
+		int64_t dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, mipmap_w, mipmap_h);
 		decompress_image(etcpak_format, rb + src_ofs, wb + dst_ofs, mipmap_w, mipmap_h);
 	}
 

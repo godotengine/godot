@@ -44,6 +44,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 
+class EditorVariantTypeOptionButton;
 class FileSystemDock;
 
 class ProjectSettingsEditor : public AcceptDialog {
@@ -76,7 +77,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	HBoxContainer *custom_properties = nullptr;
 	LineEdit *property_box = nullptr;
 	OptionButton *feature_box = nullptr;
-	OptionButton *type_box = nullptr;
+	EditorVariantTypeOptionButton *type_box = nullptr;
 	Button *add_button = nullptr;
 	Button *del_button = nullptr;
 

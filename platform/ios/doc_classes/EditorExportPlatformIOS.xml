@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlatformIOS" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlatformIOS" inherits="EditorExportPlatformAppleEmbedded" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exporter for iOS.
 	</brief_description>
@@ -24,10 +24,10 @@
 			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
 		</member>
 		<member name="application/code_sign_identity_debug" type="String" setter="" getter="">
-			The "Full Name", "Common Name" or SHA-1 hash of the signing identity used for debug export.
+			The "Full Name", "Common Name", or SHA-1 hash of the signing identity used for debug export.
 		</member>
 		<member name="application/code_sign_identity_release" type="String" setter="" getter="">
-			The "Full Name", "Common Name" or SHA-1 hash of the signing identity used for release export.
+			The "Full Name", "Common Name", or SHA-1 hash of the signing identity used for release export.
 		</member>
 		<member name="application/delete_old_export_files_unconditionally" type="bool" setter="" getter="">
 			If [code]true[/code], existing "project name" and "project name.xcodeproj" in the export destination directory will be unconditionally deleted during export.
@@ -48,20 +48,20 @@
 			Minimum version of iOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
 		<member name="application/provisioning_profile_specifier_debug" type="String" setter="" getter="">
-			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
-			Can be overridden with the environment variable [code]GODOT_IOS_PROFILE_SPECIFIER_DEBUG[/code].
+			Name of the provisioning profile. Sets Xcode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_DEBUG[/code].
 		</member>
 		<member name="application/provisioning_profile_specifier_release" type="String" setter="" getter="">
-			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
-			Can be overridden with the environment variable [code]GODOT_IOS_PROFILE_SPECIFIER_RELEASE[/code].
+			Name of the provisioning profile. Sets Xcode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_RELEASE[/code].
 		</member>
 		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">
 			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
-			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_DEBUG[/code].
+			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROVISIONING_PROFILE_UUID_DEBUG[/code].
 		</member>
 		<member name="application/provisioning_profile_uuid_release" type="String" setter="" getter="">
 			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
-			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_RELEASE[/code].
+			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROVISIONING_PROFILE_UUID_RELEASE[/code].
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
 			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
@@ -86,7 +86,7 @@
 		</member>
 		<member name="capabilities/performance_a12" type="bool" setter="" getter="">
 			Requires the graphics performance and features of the A12 Bionic and later chips (devices supporting all Vulkan renderer features).
-			Enabling this option limits supported devices to: iPhone XS, iPhone XR, iPad Mini (5th gen.), iPad Air (3rd gen.), iPad (8th gen) and newer.
+			Enabling this option limits supported devices to: iPhone XS, iPhone XR, iPad Mini (5th gen.), iPad Air (3rd gen.), iPad (8th gen), and newer.
 		</member>
 		<member name="capabilities/performance_gaming_tier" type="bool" setter="" getter="">
 			Requires the graphics performance and features of the A17 Pro and later chips.
@@ -725,6 +725,9 @@
 		</member>
 		<member name="privacy/user_defaults_access_reasons" type="int" setter="" getter="">
 			The reasons your app use user defaults API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
 		</member>
 		<member name="storyboard/custom_bg_color" type="Color" setter="" getter="">
 			A custom background color of the storyboard launch screen.

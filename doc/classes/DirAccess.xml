@@ -213,6 +213,13 @@
 				[b]Note:[/b] When used on a [code]res://[/code] path in an exported project, only the files included in the PCK at the given folder level are returned. In practice, this means that since imported resources are stored in a top-level [code].godot/[/code] folder, only paths to [code].gd[/code] and [code].import[/code] files are returned (plus a few other files, such as [code]project.godot[/code] or [code]project.binary[/code] and the project icon). In an exported project, the list of returned files will also vary depending on [member ProjectSettings.editor/export/convert_text_resources_to_binary].
 			</description>
 		</method>
+		<method name="get_filesystem_type" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns file system type name of the current directory's disk. Returned values are uppercase strings like [code]NTFS[/code], [code]FAT32[/code], [code]EXFAT[/code], [code]APFS[/code], [code]EXT4[/code], [code]BTRFS[/code], and so on.
+				[b]Note:[/b] This method is implemented on macOS, Linux, Windows and for PCK virtual file system.
+			</description>
+		</method>
 		<method name="get_next">
 			<return type="String" />
 			<description>

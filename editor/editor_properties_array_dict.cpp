@@ -39,6 +39,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/inspector_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
@@ -750,19 +751,6 @@ Node *EditorPropertyArray::get_base_node() {
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			change_type->clear();
-			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
-			change_type->add_separator();
-			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
-					// These types can't be constructed or serialized properly, so skip them.
-					continue;
-				}
-
-				String type = Variant::get_type_name(Variant::Type(i));
-				change_type->add_icon_item(get_editor_theme_icon(type), type, i);
-			}
-
 			if (button_add_item) {
 				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			}
@@ -977,7 +965,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	add_child(edit);
 	add_focusable(edit);
 
-	change_type = memnew(PopupMenu);
+	change_type = memnew(EditorVariantTypePopupMenu(true));
 	add_child(change_type);
 	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyArray::_change_type_menu));
 	changing_type_index = -1;
@@ -1465,19 +1453,6 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			change_type->clear();
-			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
-			change_type->add_separator();
-			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
-					// These types can't be constructed or serialized properly, so skip them.
-					continue;
-				}
-
-				String type = Variant::get_type_name(Variant::Type(i));
-				change_type->add_icon_item(get_editor_theme_icon(type), type, i);
-			}
-
 			if (button_add_item) {
 				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 				add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
@@ -1532,7 +1507,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	container = nullptr;
 	button_add_item = nullptr;
 	paginator = nullptr;
-	change_type = memnew(PopupMenu);
+	change_type = memnew(EditorVariantTypePopupMenu(true));
 	add_child(change_type);
 	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 	changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;

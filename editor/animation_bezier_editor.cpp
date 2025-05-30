@@ -743,6 +743,48 @@ Size2 AnimationBezierTrackEdit::get_minimum_size() const {
 	return Vector2(1, 1);
 }
 
+Control::CursorShape AnimationBezierTrackEdit::get_cursor_shape(const Point2 &p_pos) const {
+	// Box selecting or moving a handle
+	if (box_selecting || Math::abs(moving_handle) == 1) {
+		return get_default_cursor_shape();
+	}
+	// Hovering a handle
+	if (!read_only) {
+		for (const EditPoint &edit_point : edit_points) {
+			if (edit_point.in_rect.has_point(p_pos) || edit_point.out_rect.has_point(p_pos)) {
+				return get_default_cursor_shape();
+			}
+		}
+	}
+	// Currently box scaling
+	if (scaling_selection) {
+		if (scaling_selection_handles == Vector2i(1, 1) || scaling_selection_handles == Vector2i(-1, -1)) {
+			return CURSOR_FDIAGSIZE;
+		} else if (scaling_selection_handles == Vector2i(1, -1) || scaling_selection_handles == Vector2i(-1, 1)) {
+			return CURSOR_BDIAGSIZE;
+		} else if (abs(scaling_selection_handles.x) == 1) {
+			return CURSOR_HSIZE;
+		} else if (abs(scaling_selection_handles.y) == 1) {
+			return CURSOR_VSIZE;
+		}
+	}
+	// Hovering the scaling box
+	const Vector2i rel_pos = p_pos - selection_rect.position;
+	if (selection_handles_rect.has_point(p_pos)) {
+		if ((rel_pos.x < 0 && rel_pos.y < 0) || (rel_pos.x > selection_rect.size.width && rel_pos.y > selection_rect.size.height)) {
+			return CURSOR_FDIAGSIZE;
+		} else if ((rel_pos.x < 0 && rel_pos.y > selection_rect.size.height) || (rel_pos.x > selection_rect.size.width && rel_pos.y < 0)) {
+			return CURSOR_BDIAGSIZE;
+		} else if (rel_pos.x < 0 || rel_pos.x > selection_rect.size.width) {
+			return CURSOR_HSIZE;
+		} else if (rel_pos.y < 0 || rel_pos.y > selection_rect.size.height) {
+			return CURSOR_VSIZE;
+		}
+		return CURSOR_MOVE;
+	}
+	return get_default_cursor_shape();
+}
+
 void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->connect("zoom_changed", callable_mp(this, &AnimationBezierTrackEdit::_zoom_changed));
@@ -1141,6 +1183,13 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		Point2 pos = mb->get_position();
+		bool no_mod_key_pressed = !mb->is_alt_pressed() && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed();
+		if (mb->is_double_click() && !moving_selection && no_mod_key_pressed) {
+			int x = pos.x - timeline->get_name_limit();
+			float ofs = x / timeline->get_zoom_scale() + timeline->get_value();
+			emit_signal(SNAME("timeline_changed"), ofs, false);
+		}
 		for (const KeyValue<int, Rect2> &E : subtracks) {
 			if (E.value.has_point(mb->get_position())) {
 				if (!locked_tracks.has(E.key) && !hidden_tracks.has(E.key)) {
@@ -2301,6 +2350,7 @@ void AnimationBezierTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single"), PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("clear_selection"));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "timeline_only")));
 }
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {

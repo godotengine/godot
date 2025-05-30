@@ -160,6 +160,7 @@ public:
 
 		// Project menu.
 		PROJECT_OPEN_SETTINGS,
+		PROJECT_FIND_IN_FILES,
 		PROJECT_VERSION_CONTROL,
 		PROJECT_EXPORT,
 		PROJECT_PACK_AS_ZIP,
@@ -434,6 +435,8 @@ private:
 	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
+	LocalVector<String> disk_changed_scenes;
+	bool disk_changed_project = false;
 	ConfirmationDialog *disk_changed = nullptr;
 	ConfirmationDialog *project_data_missing = nullptr;
 
@@ -481,6 +484,7 @@ private:
 	PrintHandlerList print_handler;
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
+	HashMap<String, Ref<Texture2D>> class_icon_cache;
 
 	ProjectUpgradeTool *project_upgrade_tool = nullptr;
 	bool run_project_upgrade_tool = false;
@@ -612,6 +616,7 @@ private:
 	void _update_vsync_mode();
 	void _update_from_settings();
 	void _gdextensions_reloaded();
+	void _update_translations();
 
 	void _renderer_selected(int);
 	void _update_renderer_color();
@@ -674,7 +679,7 @@ private:
 	void _scan_external_changes();
 	void _reload_modified_scenes();
 	void _reload_project_settings();
-	void _resave_scenes(String p_str);
+	void _resave_externally_modified_scenes(String p_str);
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
@@ -815,6 +820,9 @@ public:
 	void set_edited_scene(Node *p_scene);
 	void set_edited_scene_root(Node *p_scene, bool p_auto_add);
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
+
+	String get_preview_locale() const;
+	void set_preview_locale(const String &p_locale);
 
 	void fix_dependencies(const String &p_for_file);
 	int new_scene();
@@ -991,6 +999,7 @@ public:
 
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
+	void run_editor_script(const Ref<Script> &p_script);
 };
 
 class EditorPluginList : public Object {

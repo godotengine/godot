@@ -88,6 +88,7 @@ void EditorResourcePicker::_update_resource() {
 	}
 
 	assign_button->set_disabled(!editable && edited_resource.is_null());
+	quick_load_button->set_visible(editable && edited_resource.is_null());
 }
 
 void EditorResourcePicker::_update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj) {
@@ -863,6 +864,7 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
+			quick_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -1004,6 +1006,7 @@ void EditorResourcePicker::set_resource_owner(Object *p_object) {
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
 	assign_button->set_disabled(!editable && edited_resource.is_null());
+	quick_load_button->set_visible(editable && edited_resource.is_null());
 	edit_button->set_visible(editable);
 }
 
@@ -1127,6 +1130,11 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 		preview_rect->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 		assign_button->add_child(preview_rect);
 	}
+
+	quick_load_button = memnew(Button);
+	quick_load_button->set_tooltip_text(TTRC("Quick Load"));
+	add_child(quick_load_button);
+	quick_load_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_QUICKLOAD));
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(false);

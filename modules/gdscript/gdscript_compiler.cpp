@@ -1903,10 +1903,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 	for (int i = 0; i < p_block->statements.size(); i++) {
 		const GDScriptParser::Node *s = p_block->statements[i];
 
-#ifdef DEBUG_ENABLED
-		// Add a newline before each statement, since the debugger needs those.
 		gen->write_newline(s->start_line);
-#endif
 
 		switch (s->type) {
 			case GDScriptParser::Node::MATCH: {
@@ -1955,10 +1952,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					// Add locals in block before patterns, so temporaries don't use the stack address for binds.
 					List<GDScriptCodeGenerator::Address> branch_locals = _add_block_locals(codegen, branch->block);
 
-#ifdef DEBUG_ENABLED
-					// Add a newline before each branch, since the debugger needs those.
 					gen->write_newline(branch->start_line);
-#endif
+
 					// For each pattern in branch.
 					GDScriptCodeGenerator::Address pattern_result = codegen.add_temporary();
 					for (int k = 0; k < branch->patterns.size(); k++) {
@@ -2367,7 +2362,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			}
 
 			if (field->initializer) {
-				// Emit proper line change.
 				codegen.generator->write_newline(field->initializer->start_line);
 
 				GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, r_error, field->initializer, false, true);
@@ -2562,7 +2556,6 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		}
 
 		if (field->initializer) {
-			// Emit proper line change.
 			codegen.generator->write_newline(field->initializer->start_line);
 
 			GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, r_error, field->initializer, false, true);

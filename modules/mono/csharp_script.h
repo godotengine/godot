@@ -289,7 +289,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	Variant get_rpc_config() const override;
+	const Variant get_rpc_config() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override {
@@ -499,11 +499,11 @@ public:
 	void finalize();
 
 	/* EDITOR FUNCTIONS */
-	void get_reserved_words(List<String> *p_words) const override;
+	Vector<String> get_reserved_words() const override;
 	bool is_control_flow_keyword(const String &p_keyword) const override;
-	void get_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_string_delimiters(List<String> *p_delimiters) const override;
+	Vector<String> get_comment_delimiters() const override;
+	Vector<String> get_doc_comment_delimiters() const override;
+	Vector<String> get_string_delimiters() const override;
 	bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;

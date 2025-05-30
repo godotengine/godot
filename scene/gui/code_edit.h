@@ -132,6 +132,8 @@ private:
 	String code_region_start_tag = "region";
 	String code_region_end_tag = "endregion";
 	void _update_code_region_tags();
+	bool _fold_line(int p_line);
+	bool _unfold_line(int p_line);
 
 	/* Delimiters */
 	enum DelimiterType {
@@ -426,6 +428,7 @@ public:
 	void toggle_foldable_line(int p_line);
 	void toggle_foldable_lines_at_carets();
 
+	int get_folded_line_header(int p_line) const;
 	bool is_line_folded(int p_line) const;
 	TypedArray<int> get_folded_lines() const;
 

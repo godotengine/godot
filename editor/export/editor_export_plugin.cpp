@@ -33,6 +33,14 @@
 #include "core/config/project_settings.h"
 #include "editor/export/editor_export_platform.h"
 
+void EditorExportPlugin::set_export_base_path(const String &p_export_base_path) {
+	export_base_path = p_export_base_path;
+}
+
+const String &EditorExportPlugin::get_export_base_path() const {
+	return export_base_path;
+}
+
 void EditorExportPlugin::set_export_preset(const Ref<EditorExportPreset> &p_preset) {
 	if (p_preset.is_valid()) {
 		export_preset = p_preset;
@@ -67,55 +75,55 @@ void EditorExportPlugin::_add_shared_object(const SharedObject &p_shared_object)
 	shared_objects.push_back(p_shared_object);
 }
 
-void EditorExportPlugin::add_ios_framework(const String &p_path) {
-	ios_frameworks.push_back(p_path);
+void EditorExportPlugin::add_apple_embedded_platform_framework(const String &p_path) {
+	apple_embedded_platform_frameworks.push_back(p_path);
 }
 
-void EditorExportPlugin::add_ios_embedded_framework(const String &p_path) {
-	ios_embedded_frameworks.push_back(p_path);
+void EditorExportPlugin::add_apple_embedded_platform_embedded_framework(const String &p_path) {
+	apple_embedded_platform_embedded_frameworks.push_back(p_path);
 }
 
-Vector<String> EditorExportPlugin::get_ios_frameworks() const {
-	return ios_frameworks;
+Vector<String> EditorExportPlugin::get_apple_embedded_platform_frameworks() const {
+	return apple_embedded_platform_frameworks;
 }
 
-Vector<String> EditorExportPlugin::get_ios_embedded_frameworks() const {
-	return ios_embedded_frameworks;
+Vector<String> EditorExportPlugin::get_apple_embedded_platform_embedded_frameworks() const {
+	return apple_embedded_platform_embedded_frameworks;
 }
 
-void EditorExportPlugin::add_ios_plist_content(const String &p_plist_content) {
-	ios_plist_content += p_plist_content + "\n";
+void EditorExportPlugin::add_apple_embedded_platform_plist_content(const String &p_plist_content) {
+	apple_embedded_platform_plist_content += p_plist_content + "\n";
 }
 
-String EditorExportPlugin::get_ios_plist_content() const {
-	return ios_plist_content;
+String EditorExportPlugin::get_apple_embedded_platform_plist_content() const {
+	return apple_embedded_platform_plist_content;
 }
 
-void EditorExportPlugin::add_ios_linker_flags(const String &p_flags) {
-	if (ios_linker_flags.length() > 0) {
-		ios_linker_flags += ' ';
+void EditorExportPlugin::add_apple_embedded_platform_linker_flags(const String &p_flags) {
+	if (apple_embedded_platform_linker_flags.length() > 0) {
+		apple_embedded_platform_linker_flags += ' ';
 	}
-	ios_linker_flags += p_flags;
+	apple_embedded_platform_linker_flags += p_flags;
 }
 
-String EditorExportPlugin::get_ios_linker_flags() const {
-	return ios_linker_flags;
+String EditorExportPlugin::get_apple_embedded_platform_linker_flags() const {
+	return apple_embedded_platform_linker_flags;
 }
 
-void EditorExportPlugin::add_ios_bundle_file(const String &p_path) {
-	ios_bundle_files.push_back(p_path);
+void EditorExportPlugin::add_apple_embedded_platform_bundle_file(const String &p_path) {
+	apple_embedded_platform_bundle_files.push_back(p_path);
 }
 
-Vector<String> EditorExportPlugin::get_ios_bundle_files() const {
-	return ios_bundle_files;
+Vector<String> EditorExportPlugin::get_apple_embedded_platform_bundle_files() const {
+	return apple_embedded_platform_bundle_files;
 }
 
-void EditorExportPlugin::add_ios_cpp_code(const String &p_code) {
-	ios_cpp_code += p_code;
+void EditorExportPlugin::add_apple_embedded_platform_cpp_code(const String &p_code) {
+	apple_embedded_platform_cpp_code += p_code;
 }
 
-String EditorExportPlugin::get_ios_cpp_code() const {
-	return ios_cpp_code;
+String EditorExportPlugin::get_apple_embedded_platform_cpp_code() const {
+	return apple_embedded_platform_cpp_code;
 }
 
 void EditorExportPlugin::add_macos_plugin_file(const String &p_path) {
@@ -126,12 +134,12 @@ const Vector<String> &EditorExportPlugin::get_macos_plugin_files() const {
 	return macos_plugin_files;
 }
 
-void EditorExportPlugin::add_ios_project_static_lib(const String &p_path) {
-	ios_project_static_libs.push_back(p_path);
+void EditorExportPlugin::add_apple_embedded_platform_project_static_lib(const String &p_path) {
+	apple_embedded_platform_project_static_libs.push_back(p_path);
 }
 
-Vector<String> EditorExportPlugin::get_ios_project_static_libs() const {
-	return ios_project_static_libs;
+Vector<String> EditorExportPlugin::get_apple_embedded_platform_project_static_libs() const {
+	return apple_embedded_platform_project_static_libs;
 }
 
 Variant EditorExportPlugin::get_option(const StringName &p_name) const {
@@ -328,14 +336,26 @@ void EditorExportPlugin::skip() {
 
 void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_shared_object", "path", "tags", "target"), &EditorExportPlugin::add_shared_object);
-	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_ios_project_static_lib);
 	ClassDB::bind_method(D_METHOD("add_file", "path", "file", "remap"), &EditorExportPlugin::add_file);
-	ClassDB::bind_method(D_METHOD("add_ios_framework", "path"), &EditorExportPlugin::add_ios_framework);
-	ClassDB::bind_method(D_METHOD("add_ios_embedded_framework", "path"), &EditorExportPlugin::add_ios_embedded_framework);
-	ClassDB::bind_method(D_METHOD("add_ios_plist_content", "plist_content"), &EditorExportPlugin::add_ios_plist_content);
-	ClassDB::bind_method(D_METHOD("add_ios_linker_flags", "flags"), &EditorExportPlugin::add_ios_linker_flags);
-	ClassDB::bind_method(D_METHOD("add_ios_bundle_file", "path"), &EditorExportPlugin::add_ios_bundle_file);
-	ClassDB::bind_method(D_METHOD("add_ios_cpp_code", "code"), &EditorExportPlugin::add_ios_cpp_code);
+
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_project_static_lib", "path"), &EditorExportPlugin::add_apple_embedded_platform_project_static_lib);
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_framework", "path"), &EditorExportPlugin::add_apple_embedded_platform_framework);
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_embedded_framework", "path"), &EditorExportPlugin::add_apple_embedded_platform_embedded_framework);
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_plist_content", "plist_content"), &EditorExportPlugin::add_apple_embedded_platform_plist_content);
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_linker_flags", "flags"), &EditorExportPlugin::add_apple_embedded_platform_linker_flags);
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_bundle_file", "path"), &EditorExportPlugin::add_apple_embedded_platform_bundle_file);
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_cpp_code", "code"), &EditorExportPlugin::add_apple_embedded_platform_cpp_code);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_apple_embedded_platform_project_static_lib);
+	ClassDB::bind_method(D_METHOD("add_ios_framework", "path"), &EditorExportPlugin::add_apple_embedded_platform_framework);
+	ClassDB::bind_method(D_METHOD("add_ios_embedded_framework", "path"), &EditorExportPlugin::add_apple_embedded_platform_embedded_framework);
+	ClassDB::bind_method(D_METHOD("add_ios_plist_content", "plist_content"), &EditorExportPlugin::add_apple_embedded_platform_plist_content);
+	ClassDB::bind_method(D_METHOD("add_ios_linker_flags", "flags"), &EditorExportPlugin::add_apple_embedded_platform_linker_flags);
+	ClassDB::bind_method(D_METHOD("add_ios_bundle_file", "path"), &EditorExportPlugin::add_apple_embedded_platform_bundle_file);
+	ClassDB::bind_method(D_METHOD("add_ios_cpp_code", "code"), &EditorExportPlugin::add_apple_embedded_platform_cpp_code);
+#endif
+
 	ClassDB::bind_method(D_METHOD("add_macos_plugin_file", "path"), &EditorExportPlugin::add_macos_plugin_file);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 	ClassDB::bind_method(D_METHOD("get_option", "name"), &EditorExportPlugin::get_option);

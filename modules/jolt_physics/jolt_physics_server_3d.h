@@ -322,6 +322,11 @@ public:
 
 	virtual void soft_body_set_transform(RID p_body, const Transform3D &p_transform) override;
 
+	virtual void soft_body_apply_point_impulse(RID p_body, int p_point_index, const Vector3 &p_impulse) override;
+	virtual void soft_body_apply_point_force(RID p_body, int p_point_index, const Vector3 &p_force) override;
+	virtual void soft_body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) override;
+	virtual void soft_body_apply_central_force(RID p_body, const Vector3 &p_force) override;
+
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_precision) override;
 	virtual int soft_body_get_simulation_precision(RID p_body) const override;
 
@@ -330,6 +335,9 @@ public:
 
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_coefficient) override;
 	virtual real_t soft_body_get_linear_stiffness(RID p_body) const override;
+
+	virtual void soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) override;
+	virtual real_t soft_body_get_shrinking_factor(RID p_body) const override;
 
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_coefficient) override;
 	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const override;

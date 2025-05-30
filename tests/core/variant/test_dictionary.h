@@ -34,26 +34,6 @@
 #include "tests/test_macros.h"
 
 namespace TestDictionary {
-
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-static inline Dictionary build_dictionary() {
-	return Dictionary();
-}
-template <typename... Targs>
-static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fargs) {
-	Dictionary d = build_dictionary(Fargs...);
-	d[key] = item;
-	return d;
-}
-
 TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 	Dictionary map;
 	map["Hello"] = 0;
@@ -202,9 +182,13 @@ TEST_CASE("[Dictionary] keys() and values()") {
 
 TEST_CASE("[Dictionary] Duplicate dictionary") {
 	// d = {1: {1: 1}, {2: 2}: [2], [3]: 3}
-	Dictionary k2 = build_dictionary(2, 2);
-	Array k3 = build_array(3);
-	Dictionary d = build_dictionary(1, build_dictionary(1, 1), k2, build_array(2), k3, 3);
+	Dictionary k2 = { { 2, 2 } };
+	Array k3 = { 3 };
+	Dictionary d = {
+		{ 1, Dictionary({ { 1, 1 } }) },
+		{ k2, Array({ 2 }) },
+		{ k3, 3 }
+	};
 
 	// Deep copy
 	Dictionary deep_d = d.duplicate(true);
@@ -322,9 +306,13 @@ TEST_CASE("[Dictionary] Duplicate recursive dictionary on keys") {
 
 TEST_CASE("[Dictionary] Hash dictionary") {
 	// d = {1: {1: 1}, {2: 2}: [2], [3]: 3}
-	Dictionary k2 = build_dictionary(2, 2);
-	Array k3 = build_array(3);
-	Dictionary d = build_dictionary(1, build_dictionary(1, 1), k2, build_array(2), k3, 3);
+	Dictionary k2 = { { 2, 2 } };
+	Array k3 = { 3 };
+	Dictionary d = {
+		{ 1, Dictionary({ { 1, 1 } }) },
+		{ k2, Array({ 2 }) },
+		{ k3, 3 }
+	};
 	uint32_t original_hash = d.hash();
 
 	// Modify dict change the hash
@@ -394,9 +382,9 @@ TEST_CASE("[Dictionary] Empty comparison") {
 }
 
 TEST_CASE("[Dictionary] Flat comparison") {
-	Dictionary d1 = build_dictionary(1, 1);
-	Dictionary d2 = build_dictionary(1, 1);
-	Dictionary other_d = build_dictionary(2, 1);
+	Dictionary d1 = { { 1, 1 } };
+	Dictionary d2 = { { 1, 1 } };
+	Dictionary other_d = { { 2, 1 } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -409,12 +397,12 @@ TEST_CASE("[Dictionary] Flat comparison") {
 
 TEST_CASE("[Dictionary] Nested dictionary comparison") {
 	// d1 = {1: {2: {3: 4}}}
-	Dictionary d1 = build_dictionary(1, build_dictionary(2, build_dictionary(3, 4)));
+	Dictionary d1 = { { 1, Dictionary({ { 2, Dictionary({ { 3, 4 } }) } }) } };
 
 	Dictionary d2 = d1.duplicate(true);
 
 	// other_d = {1: {2: {3: 0}}}
-	Dictionary other_d = build_dictionary(1, build_dictionary(2, build_dictionary(3, 0)));
+	Dictionary other_d = { { 1, Dictionary({ { 2, Dictionary({ { 3, 0 } }) } }) } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -427,12 +415,12 @@ TEST_CASE("[Dictionary] Nested dictionary comparison") {
 
 TEST_CASE("[Dictionary] Nested array comparison") {
 	// d1 = {1: [2, 3]}
-	Dictionary d1 = build_dictionary(1, build_array(2, 3));
+	Dictionary d1 = { { 1, { 2, 3 } } };
 
 	Dictionary d2 = d1.duplicate(true);
 
 	// other_d = {1: [2, 0]}
-	Dictionary other_d = build_dictionary(1, build_array(2, 0));
+	Dictionary other_d = { { 1, { 2, 0 } } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -589,8 +577,8 @@ TEST_CASE("[Dictionary] Typed copying") {
 }
 
 TEST_CASE("[Dictionary] Iteration") {
-	Dictionary a1 = build_dictionary(1, 2, 3, 4, 5, 6);
-	Dictionary a2 = build_dictionary(1, 2, 3, 4, 5, 6);
+	Dictionary a1 = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
+	Dictionary a2 = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
 
 	int idx = 0;
 

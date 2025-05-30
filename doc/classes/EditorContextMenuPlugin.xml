@@ -89,7 +89,7 @@
 			Context menu of Script editor's script tabs. [method _popup_menu] will be called with the path to the currently edited script, while option callback will receive reference to that script.
 		</constant>
 		<constant name="CONTEXT_SLOT_FILESYSTEM_CREATE" value="3" enum="ContextMenuSlot">
-			The "Create..." submenu of FileSystem dock's context menu. [method _popup_menu] and option callback will be called with list of paths of the currently selected files.
+			The "Create..." submenu of FileSystem dock's context menu, or the "New" section of the main context menu when empty space is clicked. [method _popup_menu] and option callback will be called with list of paths of the currently selected files. When clicking the empty space, the list of paths for popup method will be empty.
 		</constant>
 		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR_CODE" value="4" enum="ContextMenuSlot">
 			Context menu of Script editor's code editor. [method _popup_menu] will be called with the path to the [CodeEdit] node. You can fetch it using this code:

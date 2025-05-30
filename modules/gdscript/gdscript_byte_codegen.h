@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "gdscript.h"
 #include "gdscript_codegen.h"
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
@@ -74,7 +75,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	bool ended = false;
 	GDScriptFunction *function = nullptr;
-	bool debug_stack = false;
 
 	Vector<int> opcodes;
 	List<RBMap<StringName, int>> stack_id_stack;
@@ -162,7 +162,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			max_locals = locals.size();
 		}
 		stack_identifiers[p_id] = p_stackpos;
-		if (debug_stack) {
+		if (GDScriptLanguage::get_singleton()->should_track_locals()) {
 			block_identifiers[p_id] = p_stackpos;
 			GDScriptFunction::StackDebug sd;
 			sd.added = true;
@@ -176,7 +176,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	void push_stack_identifiers() {
 		stack_identifiers_counts.push_back(locals.size());
 		stack_id_stack.push_back(stack_identifiers);
-		if (debug_stack) {
+		if (GDScriptLanguage::get_singleton()->should_track_locals()) {
 			RBMap<StringName, int> block_ids(block_identifiers);
 			block_identifier_stack.push_back(block_ids);
 			block_identifiers.clear();
@@ -197,7 +197,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			dirty_locals.insert(i + GDScriptFunction::FIXED_ADDRESSES_MAX);
 		}
 		locals.resize(current_locals);
-		if (debug_stack) {
+		if (GDScriptLanguage::get_singleton()->should_track_locals()) {
 			for (const KeyValue<StringName, int> &E : block_identifiers) {
 				GDScriptFunction::StackDebug sd;
 				sd.added = false;

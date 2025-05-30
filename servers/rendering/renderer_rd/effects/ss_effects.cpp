@@ -985,7 +985,7 @@ void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_sl
 			continue;
 		}
 
-		RD::Uniform u_ao_slice(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ao_slices[i] }));
+		RD::Uniform u_ao_slice(RD::UNIFORM_TYPE_IMAGE, 0, p_ao_slices[i]);
 
 		ssao.gather_push_constant.pass_coord_offset[0] = i % 2;
 		ssao.gather_push_constant.pass_coord_offset[1] = i / 2;
@@ -1419,7 +1419,11 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 			blur_radius[1] = p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_BLUR_RADIUS, 1, 0);
 		}
 
-		RD::get_singleton()->draw_command_begin_label(String("SSR View ") + itos(v));
+		{
+			char label[16];
+			int len = snprintf(label, sizeof(label), "SSR View %d", v);
+			RD::get_singleton()->draw_command_begin_label(Span<char>(label, len));
+		}
 
 		{ //scale color and depth to half
 			RD::get_singleton()->draw_command_begin_label("SSR Scale");

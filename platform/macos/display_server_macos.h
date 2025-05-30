@@ -101,6 +101,8 @@ public:
 
 		Vector<Vector2> mpath;
 
+		CGDirectDisplayID display_id = -1;
+
 		Point2i mouse_pos;
 		WindowResizeEdge edge = WINDOW_EDGE_MAX;
 
@@ -253,10 +255,12 @@ private:
 	void initialize_tts() const;
 
 	struct EmbeddedProcessData {
-		const EmbeddedProcessMacOS *process;
+		EmbeddedProcessMacOS *process;
+		WindowData *wd = nullptr;
 		CALayer *layer_host = nil;
 	};
 	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
+	void _window_update_display_id(WindowData *p_wd);
 
 public:
 	void menu_callback(id p_sender);
@@ -294,6 +298,10 @@ public:
 
 	bool is_always_on_top_recursive(WindowID p_window) const;
 
+	/**
+	 * Get the display ID of a window.
+	 */
+	uint32_t window_get_display_id(WindowID p_window) const;
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
 	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
@@ -461,7 +469,7 @@ public:
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 #ifdef TOOLS_ENABLED
-	Error embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process);
+	Error embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process);
 #endif
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;

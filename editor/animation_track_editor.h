@@ -429,6 +429,7 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_PASTE,
 		MENU_KEY_ADD_RESET,
 		MENU_KEY_DELETE,
+		MENU_KEY_LOOKUP,
 		MENU_USE_BLEND_ENABLED,
 		MENU_USE_BLEND_DISABLED,
 	};
@@ -475,6 +476,9 @@ class AnimationTrackEdit : public Control {
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 
+	int lookup_key_idx = -1;
+	bool _lookup_key(int p_key_idx) const;
+
 	Ref<Texture2D> _get_key_type_icon() const;
 
 	mutable int dropping_at = 0;
@@ -485,6 +489,8 @@ class AnimationTrackEdit : public Control {
 	float moving_selection_mouse_begin_x = 0.0f;
 	int select_single_attempt = -1;
 	bool moving_selection = false;
+
+	bool command_or_control_pressed = false;
 
 	bool in_group = false;
 	AnimationTrackEditor *editor = nullptr;
@@ -500,6 +506,7 @@ public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	virtual int get_key_height() const;

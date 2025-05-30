@@ -450,7 +450,7 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 
 #if defined(WINDOWS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
-#elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#elif defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
 #elif defined(ANDROID_ENABLED)
 	String native_aot_so_path = "lib" + assembly_name + ".so";
@@ -585,7 +585,7 @@ static bool _on_core_api_assembly_loaded() {
 	debug = true;
 #else
 	debug = false;
-#endif
+#endif // DEBUG_ENABLED
 
 	GDMonoCache::managed_callbacks.GD_OnCoreApiAssemblyLoaded(debug);
 
@@ -599,7 +599,7 @@ void GDMono::initialize() {
 
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-#if !defined(IOS_ENABLED)
+#if !defined(APPLE_EMBEDDED_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
 		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
@@ -615,7 +615,8 @@ void GDMono::initialize() {
 		if (load_coreclr(coreclr_dll_handle)) {
 			godot_plugins_initialize = initialize_coreclr_and_godot_plugins(runtime_initialized);
 		} else {
-			godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
+			void *dll_handle = nullptr;
+			godot_plugins_initialize = try_load_native_aot_library(dll_handle);
 			if (godot_plugins_initialize != nullptr) {
 				runtime_initialized = true;
 			}
@@ -639,7 +640,7 @@ void GDMono::initialize() {
 
 	void *godot_dll_handle = nullptr;
 
-#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(IOS_ENABLED)
+#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 	// Managed code can access it on its own on other platforms
 	godot_dll_handle = dlopen(nullptr, RTLD_NOW);
 #endif
@@ -690,13 +691,13 @@ void GDMono::_try_load_project_assembly() {
 #endif
 
 void GDMono::_init_godot_api_hashes() {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	get_api_core_hash();
 
 #ifdef TOOLS_ENABLED
 	get_api_editor_hash();
 #endif // TOOLS_ENABLED
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED
 }
 
 #ifdef TOOLS_ENABLED

@@ -379,7 +379,7 @@ void ImportDock::_update_preset_menu() {
 	}
 	preset->show();
 
-	if (params->importer->get_preset_count() == 0) {
+	if (params->importer->get_preset_count() <= 0) {
 		preset->get_popup()->add_item(TTRC("Default"));
 	} else {
 		for (int i = 0; i < params->importer->get_preset_count(); i++) {

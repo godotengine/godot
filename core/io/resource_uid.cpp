@@ -364,6 +364,10 @@ void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id_path", "id"), &ResourceUID::get_id_path);
 	ClassDB::bind_method(D_METHOD("remove_id", "id"), &ResourceUID::remove_id);
 
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("uid_to_path", "uid"), &ResourceUID::uid_to_path);
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("path_to_uid", "path"), &ResourceUID::path_to_uid);
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("ensure_path", "path_or_uid"), &ResourceUID::ensure_path);
+
 	BIND_CONSTANT(INVALID_ID)
 }
 ResourceUID *ResourceUID::singleton = nullptr;

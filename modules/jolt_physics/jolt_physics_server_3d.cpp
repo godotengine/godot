@@ -288,6 +288,34 @@ void JoltPhysicsServer3D::area_set_space(RID p_area, RID p_space) {
 	area->set_space(space);
 }
 
+void JoltPhysicsServer3D::soft_body_apply_point_impulse(RID p_body, int p_point_index, const Vector3 &p_impulse) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_vertex_impulse(p_point_index, p_impulse);
+}
+
+void JoltPhysicsServer3D::soft_body_apply_point_force(RID p_body, int p_point_index, const Vector3 &p_force) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_vertex_force(p_point_index, p_force);
+}
+
+void JoltPhysicsServer3D::soft_body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_central_impulse(p_impulse);
+}
+
+void JoltPhysicsServer3D::soft_body_apply_central_force(RID p_body, const Vector3 &p_force) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_central_force(p_force);
+}
+
 RID JoltPhysicsServer3D::area_get_space(RID p_area) const {
 	const JoltArea3D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL_V(area, RID());
@@ -1124,6 +1152,20 @@ real_t JoltPhysicsServer3D::soft_body_get_linear_stiffness(RID p_body) const {
 	ERR_FAIL_NULL_V(body, 0.0);
 
 	return (real_t)body->get_stiffness_coefficient();
+}
+
+void JoltPhysicsServer3D::soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->set_shrinking_factor((float)p_shrinking_factor);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_shrinking_factor(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_shrinking_factor();
 }
 
 void JoltPhysicsServer3D::soft_body_set_pressure_coefficient(RID p_body, real_t p_coefficient) {

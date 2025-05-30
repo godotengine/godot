@@ -876,6 +876,9 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("soft_body_set_linear_stiffness", "body", "stiffness"), &PhysicsServer3D::soft_body_set_linear_stiffness);
 	ClassDB::bind_method(D_METHOD("soft_body_get_linear_stiffness", "body"), &PhysicsServer3D::soft_body_get_linear_stiffness);
 
+	ClassDB::bind_method(D_METHOD("soft_body_set_shrinking_factor", "body", "shrinking_factor"), &PhysicsServer3D::soft_body_set_shrinking_factor);
+	ClassDB::bind_method(D_METHOD("soft_body_get_shrinking_factor", "body"), &PhysicsServer3D::soft_body_get_shrinking_factor);
+
 	ClassDB::bind_method(D_METHOD("soft_body_set_pressure_coefficient", "body", "pressure_coefficient"), &PhysicsServer3D::soft_body_set_pressure_coefficient);
 	ClassDB::bind_method(D_METHOD("soft_body_get_pressure_coefficient", "body"), &PhysicsServer3D::soft_body_get_pressure_coefficient);
 
@@ -893,6 +896,11 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("soft_body_pin_point", "body", "point_index", "pin"), &PhysicsServer3D::soft_body_pin_point);
 
 	ClassDB::bind_method(D_METHOD("soft_body_is_point_pinned", "body", "point_index"), &PhysicsServer3D::soft_body_is_point_pinned);
+
+	ClassDB::bind_method(D_METHOD("soft_body_apply_point_impulse", "body", "point_index", "impulse"), &PhysicsServer3D::soft_body_apply_point_impulse);
+	ClassDB::bind_method(D_METHOD("soft_body_apply_point_force", "body", "point_index", "force"), &PhysicsServer3D::soft_body_apply_point_force);
+	ClassDB::bind_method(D_METHOD("soft_body_apply_central_impulse", "body", "impulse"), &PhysicsServer3D::soft_body_apply_central_impulse);
+	ClassDB::bind_method(D_METHOD("soft_body_apply_central_force", "body", "force"), &PhysicsServer3D::soft_body_apply_central_force);
 
 	/* JOINT API */
 

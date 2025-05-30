@@ -14,6 +14,7 @@ const unsigned char kIndexHeader = 0xe0;
 const unsigned char kSequenceHeader = 0xd0;
 
 static int gEncodeIndexVersion = 1;
+const int kDecodeIndexVersion = 1;
 
 typedef unsigned int VertexFifo[16];
 typedef unsigned int EdgeFifo[16][2];
@@ -354,9 +355,26 @@ size_t meshopt_encodeIndexBufferBound(size_t index_count, size_t vertex_count)
 
 void meshopt_encodeIndexVersion(int version)
 {
-	assert(unsigned(version) <= 1);
+	assert(unsigned(version) <= unsigned(meshopt::kDecodeIndexVersion));
 
 	meshopt::gEncodeIndexVersion = version;
+}
+
+int meshopt_decodeIndexVersion(const unsigned char* buffer, size_t buffer_size)
+{
+	if (buffer_size < 1)
+		return -1;
+
+	unsigned char header = buffer[0];
+
+	if ((header & 0xf0) != meshopt::kIndexHeader && (header & 0xf0) != meshopt::kSequenceHeader)
+		return -1;
+
+	int version = header & 0x0f;
+	if (version > meshopt::kDecodeIndexVersion)
+		return -1;
+
+	return version;
 }
 
 int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t index_size, const unsigned char* buffer, size_t buffer_size)
@@ -374,7 +392,7 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 		return -1;
 
 	int version = buffer[0] & 0x0f;
-	if (version > 1)
+	if (version > kDecodeIndexVersion)
 		return -1;
 
 	EdgeFifo edgefifo;
@@ -627,7 +645,7 @@ int meshopt_decodeIndexSequence(void* destination, size_t index_count, size_t in
 		return -1;
 
 	int version = buffer[0] & 0x0f;
-	if (version > 1)
+	if (version > kDecodeIndexVersion)
 		return -1;
 
 	const unsigned char* data = buffer + 1;

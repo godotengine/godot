@@ -1039,6 +1039,10 @@ void CodeEdit::convert_indent(int p_from_line, int p_to_line) {
 			continue;
 		}
 
+		if (is_in_string(i) != -1) {
+			continue;
+		}
+
 		// Check chars in the line.
 		int j = 0;
 		int space_count = 0;
@@ -1672,10 +1676,10 @@ bool CodeEdit::can_fold_line(int p_line) const {
 	return false;
 }
 
-void CodeEdit::fold_line(int p_line) {
-	ERR_FAIL_INDEX(p_line, get_line_count());
+bool CodeEdit::_fold_line(int p_line) {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
 	if (!is_line_folding_enabled() || !can_fold_line(p_line)) {
-		return;
+		return false;
 	}
 
 	/* Find the last line to be hidden. */
@@ -1741,12 +1745,14 @@ void CodeEdit::fold_line(int p_line) {
 
 	// Collapse any carets in the hidden area.
 	collapse_carets(p_line, get_line(p_line).length(), end_line, get_line(end_line).length(), true);
+
+	return true;
 }
 
-void CodeEdit::unfold_line(int p_line) {
-	ERR_FAIL_INDEX(p_line, get_line_count());
+bool CodeEdit::_unfold_line(int p_line) {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
 	if (!is_line_folded(p_line) && !_is_line_hidden(p_line)) {
-		return;
+		return false;
 	}
 
 	int fold_start = p_line;
@@ -1766,18 +1772,47 @@ void CodeEdit::unfold_line(int p_line) {
 			set_line_background_color(i - 1, Color(0.0, 0.0, 0.0, 0.0));
 		}
 	}
-	queue_redraw();
+	return true;
 }
 
 void CodeEdit::fold_all_lines() {
+	bool any_line_folded = false;
+
 	for (int i = 0; i < get_line_count(); i++) {
-		fold_line(i);
+		any_line_folded |= _fold_line(i);
 	}
-	queue_redraw();
+
+	if (any_line_folded) {
+		emit_signal(SNAME("_fold_line_updated"));
+	}
+}
+
+void CodeEdit::fold_line(int p_line) {
+	bool line_folded = _fold_line(p_line);
+
+	if (line_folded) {
+		emit_signal(SNAME("_fold_line_updated"));
+	}
 }
 
 void CodeEdit::unfold_all_lines() {
-	_unhide_all_lines();
+	bool any_line_unfolded = false;
+
+	for (int i = 0; i < get_line_count(); i++) {
+		any_line_unfolded |= _unfold_line(i);
+	}
+
+	if (any_line_unfolded) {
+		emit_signal(SNAME("_fold_line_updated"));
+	}
+}
+
+void CodeEdit::unfold_line(int p_line) {
+	bool line_unfolded = _unfold_line(p_line);
+
+	if (line_unfolded) {
+		emit_signal(SNAME("_fold_line_updated"));
+	}
 }
 
 void CodeEdit::toggle_foldable_line(int p_line) {
@@ -1804,6 +1839,18 @@ void CodeEdit::toggle_foldable_lines_at_carets() {
 		}
 	}
 	end_multicaret_edit();
+}
+
+int CodeEdit::get_folded_line_header(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), 0);
+	// Search for the first non hidden line.
+	while (p_line > 0) {
+		if (!_is_line_hidden(p_line)) {
+			break;
+		}
+		p_line--;
+	}
+	return p_line;
 }
 
 bool CodeEdit::is_line_folded(int p_line) const {
@@ -3819,6 +3866,9 @@ CodeEdit::CodeEdit() {
 	symbol_tooltip_timer->set_one_shot(true);
 	symbol_tooltip_timer->connect("timeout", callable_mp(this, &CodeEdit::_on_symbol_tooltip_timer_timeout));
 	add_child(symbol_tooltip_timer, false, INTERNAL_MODE_FRONT);
+
+	/* Fold Lines Private signal */
+	add_user_signal(MethodInfo("_fold_line_updated"));
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
 	connect("text_set", callable_mp(this, &CodeEdit::_text_set));

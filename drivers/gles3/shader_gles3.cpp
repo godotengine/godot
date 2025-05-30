@@ -129,12 +129,6 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	feedback_count = p_feedback_count;
 
 	StringBuilder tohash;
-	/*
-	tohash.append("[SpirvCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
-	tohash.append("[BinaryCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_binary_cache_key());
-	*/
 	tohash.append("[Vertex]");
 	tohash.append(p_vertex_code ? p_vertex_code : "");
 	tohash.append("[Fragment]");
@@ -341,8 +335,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 					iloglen = 4096; // buggy driver (Adreno 220+)
 				}
 
-				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				memset(ilogmem, 0, iloglen + 1);
+				char *ilogmem = (char *)Memory::alloc_static_zeroed(iloglen + 1);
 				glGetShaderInfoLog(spec.vert_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Vertex shader compilation failed:\n";
@@ -390,8 +383,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 					iloglen = 4096; // buggy driver (Adreno 220+)
 				}
 
-				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				memset(ilogmem, 0, iloglen + 1);
+				char *ilogmem = (char *)Memory::alloc_static_zeroed(iloglen + 1);
 				glGetShaderInfoLog(spec.frag_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Fragment shader compilation failed:\n";
