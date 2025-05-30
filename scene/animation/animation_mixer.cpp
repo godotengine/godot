@@ -1840,7 +1840,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 
 					// Handle stop keys
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
-					int curr_idx = idx;
 					while (String(anim_name) == "[stop]" && idx > 0) {
 						idx = idx - 1;
 						anim_name = a->animation_track_get_key_animation(i, idx);
