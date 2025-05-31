@@ -36,14 +36,15 @@ const Engine = (function () {
 	 *
 	 * @param {string} basePath Base path of the engine to load.
 	 * @param {number=} [size=0] The file size if known.
+	 * @param {boolean=} [gzip=false] Request gzipped version
 	 * @returns {Promise} A Promise that resolves once the engine is loaded.
 	 *
 	 * @function Engine.load
 	 */
-	Engine.load = function (basePath, size) {
+	Engine.load = function (basePath, size, gzip) {
 		if (loadPromise == null) {
 			loadPath = basePath;
-			loadPromise = preloader.loadPromise(`${loadPath}.wasm`, size, true);
+			loadPromise = preloader.loadPromise(`${loadPath}.wasm${gzip ? '.gzip' : ''}`, size, true);
 			requestAnimationFrame(preloader.animateProgress);
 		}
 		return loadPromise;
@@ -83,7 +84,7 @@ const Engine = (function () {
 						initPromise = Promise.reject(new Error('A base path must be provided when calling `init` and the engine is not loaded.'));
 						return initPromise;
 					}
-					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`]);
+					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm${this.config.gzip ? '.gzip' : ''}`], this.config.gzip);
 				}
 				const me = this;
 				function doInit(promise) {
@@ -197,7 +198,7 @@ const Engine = (function () {
 				this.config.update(override);
 				// Add main-pack argument.
 				const exe = this.config.executable;
-				const pack = this.config.mainPack || `${exe}.pck`;
+				const pack = this.config.mainPack || `${exe}.pck${this.config.gzip ? '.gzip' : ''}`;
 				this.config.args = ['--main-pack', pack].concat(this.config.args);
 				// Start and init with execName as loadPath if not inited.
 				const me = this;
