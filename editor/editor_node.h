@@ -218,6 +218,13 @@ public:
 		SETTINGS_PICK_MAIN_SCENE,
 	};
 
+	enum LoadSceneFlags {
+		FLAG_IGNORE_BROKEN_DEPS = 1 << 0,
+		FLAG_SET_INHERITED = 1 << 1,
+		FLAG_FORCE_OPEN_IMPORTED = 1 << 2,
+		FLAG_SILENT_CHANGE_TAB = 1 << 3,
+	};
+
 	struct ExecuteThreadArgs {
 		String path;
 		List<String> args;
@@ -826,7 +833,7 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 	int new_scene();
-	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_silent_change_tab = false);
+	Error load_scene(const String &p_scene, BitField<LoadSceneFlags> p_flags = 0);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 	Error load_scene_or_resource(const String &p_file, bool p_ignore_broken_deps = false, bool p_change_scene_tab_if_already_open = true);
 
@@ -1001,6 +1008,8 @@ public:
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
 };
+
+VARIANT_BITFIELD_CAST(EditorNode::LoadSceneFlags);
 
 class EditorPluginList : public Object {
 private:
