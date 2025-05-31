@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "gui/editor_bottom_panel.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
 
@@ -75,6 +76,7 @@ public:
 
 private:
 	friend class DockContextPopup;
+	friend class EditorBottomPanel; // Temporary until DOCK_SLOT_BOTTOM registered. Used to connect signals.
 
 	struct DockInfo {
 		String title;
@@ -108,7 +110,6 @@ private:
 
 	void _dock_split_dragged(int p_offset);
 	void _dock_container_gui_input(const Ref<InputEvent> &p_input, TabContainer *p_dock_container);
-	void _bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, Control *p_dock, Button *p_bottom_button);
 	void _dock_container_update_visibility(TabContainer *p_dock_container);
 	void _update_layout();
 
