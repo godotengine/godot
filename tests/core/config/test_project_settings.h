@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PROJECT_SETTINGS_H
-#define TEST_PROJECT_SETTINGS_H
+#pragma once
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -40,29 +39,29 @@ class TestProjectSettingsInternalsAccessor {
 public:
 	static String &resource_path() {
 		return ProjectSettings::get_singleton()->resource_path;
-	};
+	}
 };
 
 namespace TestProjectSettings {
 
 TEST_CASE("[ProjectSettings] Get existing setting") {
-	CHECK(ProjectSettings::get_singleton()->has_setting("application/config/name"));
+	CHECK(ProjectSettings::get_singleton()->has_setting("application/run/main_scene"));
 
-	Variant variant = ProjectSettings::get_singleton()->get_setting("application/config/name");
+	Variant variant = ProjectSettings::get_singleton()->get_setting("application/run/main_scene");
 	CHECK_EQ(variant.get_type(), Variant::STRING);
 
 	String name = variant;
-	CHECK_EQ(name, "GDScript Integration Test Suite");
+	CHECK_EQ(name, String());
 }
 
 TEST_CASE("[ProjectSettings] Default value is ignored if setting exists") {
-	CHECK(ProjectSettings::get_singleton()->has_setting("application/config/name"));
+	CHECK(ProjectSettings::get_singleton()->has_setting("application/run/main_scene"));
 
-	Variant variant = ProjectSettings::get_singleton()->get_setting("application/config/name", "SomeDefaultValue");
+	Variant variant = ProjectSettings::get_singleton()->get_setting("application/run/main_scene", "SomeDefaultValue");
 	CHECK_EQ(variant.get_type(), Variant::STRING);
 
 	String name = variant;
-	CHECK_EQ(name, "GDScript Integration Test Suite");
+	CHECK_EQ(name, String());
 }
 
 TEST_CASE("[ProjectSettings] Non existing setting is null") {
@@ -110,7 +109,7 @@ TEST_CASE("[ProjectSettings] localize_path") {
 	TestProjectSettingsInternalsAccessor::resource_path() = DirAccess::create(DirAccess::ACCESS_FILESYSTEM)->get_current_dir();
 	String root_path = ProjectSettings::get_singleton()->get_resource_path();
 #ifdef WINDOWS_ENABLED
-	String root_path_win = ProjectSettings::get_singleton()->get_resource_path().replace("/", "\\");
+	String root_path_win = ProjectSettings::get_singleton()->get_resource_path().replace_char('/', '\\');
 #endif
 
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("filename"), "res://filename");
@@ -123,10 +122,9 @@ TEST_CASE("[ProjectSettings] localize_path") {
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("path\\.\\filename"), "res://path/filename");
 #endif
 
-	// FIXME?: These checks pass, but that doesn't seems correct
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../filename"), "res://filename");
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../path/filename"), "res://path/filename");
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("..\\path\\filename"), "res://path/filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../filename"), "../filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../path/filename"), "../path/filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("..\\path\\filename"), "../path/filename");
 
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("/testroot/filename"), "/testroot/filename");
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("/testroot/path/filename"), "/testroot/path/filename");
@@ -158,5 +156,3 @@ TEST_CASE("[ProjectSettings] localize_path") {
 }
 
 } // namespace TestProjectSettings
-
-#endif // TEST_PROJECT_SETTINGS_H

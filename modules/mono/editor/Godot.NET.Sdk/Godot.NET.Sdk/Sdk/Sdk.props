@@ -2,6 +2,8 @@
   <Import Project="$(MSBuildThisFileDirectory)\SdkPackageVersions.props" />
 
   <PropertyGroup>
+    <UsingGodotNETSdk>true</UsingGodotNETSdk>
+
     <!-- Determines if we should import Microsoft.NET.Sdk, if it wasn't already imported. -->
     <GodotSdkImportsMicrosoftNetSdk Condition=" '$(UsingMicrosoftNETSdk)' != 'true' ">true</GodotSdkImportsMicrosoftNetSdk>
   </PropertyGroup>
@@ -69,7 +71,7 @@
     <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('osx')) ">macos</GodotTargetPlatform>
     <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('win')) ">windows</GodotTargetPlatform>
   </PropertyGroup>
-  
+
   <!-- Auto-detect the target Godot platform if it was not specified and there's no runtime identifier information. -->
   <PropertyGroup Condition=" '$(GodotTargetPlatform)' == '' ">
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(Linux))' ">linuxbsd</GodotTargetPlatform>
@@ -101,14 +103,6 @@
     <GodotDefineConstants>$(GodotDefineConstants);$(GodotPlatformConstants);$(GodotVersionConstants)</GodotDefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- ExportDebug also defines DEBUG like Debug does. -->
-    <DefineConstants Condition=" '$(Configuration)' == 'ExportDebug' ">$(DefineConstants);DEBUG</DefineConstants>
-    <!-- Debug defines TOOLS to differentiate between Debug and ExportDebug configurations. -->
-    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
-
-    <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
+  <Import Project="$(MSBuildThisFileDirectory)\Android.props" Condition=" '$(GodotTargetPlatform)' == 'android' " />
   <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.props" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
 </Project>

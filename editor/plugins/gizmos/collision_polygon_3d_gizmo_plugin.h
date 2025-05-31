@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_POLYGON_3D_GIZMO_PLUGIN_H
-#define COLLISION_POLYGON_3D_GIZMO_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
 class CollisionPolygon3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(CollisionPolygon3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+	void create_collision_material(const String &p_name, float p_alpha);
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -43,5 +44,3 @@ public:
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 	CollisionPolygon3DGizmoPlugin();
 };
-
-#endif // COLLISION_POLYGON_3D_GIZMO_PLUGIN_H

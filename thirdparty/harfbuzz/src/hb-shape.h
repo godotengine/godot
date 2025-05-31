@@ -53,6 +53,7 @@ hb_shape_full (hb_font_t          *font,
 	       unsigned int        num_features,
 	       const char * const *shaper_list);
 
+#ifdef HB_EXPERIMENTAL_API
 HB_EXTERN hb_bool_t
 hb_shape_justify (hb_font_t          *font,
 		  hb_buffer_t        *buffer,
@@ -64,6 +65,7 @@ hb_shape_justify (hb_font_t          *font,
 		  float              *advance, /* IN/OUT */
 		  hb_tag_t           *var_tag, /* OUT */
 		  float              *var_value /* OUT */);
+#endif
 
 HB_EXTERN const char **
 hb_shape_list_shapers (void);

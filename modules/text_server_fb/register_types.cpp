@@ -62,8 +62,8 @@ using namespace godot;
 
 extern "C" {
 
-GDExtensionBool GDE_EXPORT textserver_fallback_init(const GDExtensionInterface *p_interface, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
-	GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
+GDExtensionBool GDE_EXPORT textserver_fallback_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
+	GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
 	init_obj.register_initializer(&initialize_text_server_fb_module);
 	init_obj.register_terminator(&uninitialize_text_server_fb_module);

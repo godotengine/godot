@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace GodotTools.Build
 {
     public class BuildDiagnostic

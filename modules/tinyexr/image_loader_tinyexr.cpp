@@ -30,9 +30,6 @@
 
 #include "image_loader_tinyexr.h"
 
-#include "core/os/os.h"
-#include "core/string/print_string.h"
-
 #include <zlib.h> // Should come before including tinyexr.
 
 #include "thirdparty/tinyexr/tinyexr.h"
@@ -68,6 +65,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitF
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
 			ERR_PRINT(String(err));
+			FreeEXRErrorMessage(err);
 		}
 		return ERR_FILE_CORRUPT;
 	}
@@ -86,6 +84,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitF
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
 			ERR_PRINT(String(err));
+			FreeEXRErrorMessage(err);
 		}
 		return ERR_FILE_CORRUPT;
 	}

@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module implementation (body).
  *
- * Copyright (C) 2003-2023 by
+ * Copyright (C) 2003-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -438,7 +438,7 @@
     AF_Module  module = (AF_Module)module_;
 
     FT_Error   error  = FT_Err_Ok;
-    FT_Memory  memory = module->root.library->memory;
+    FT_Memory  memory = module->root.memory;
 
 #ifdef FT_DEBUG_AUTOFIT
 

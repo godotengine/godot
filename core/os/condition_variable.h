@@ -28,10 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONDITION_VARIABLE_H
-#define CONDITION_VARIABLE_H
+#pragma once
 
+#include "core/os/mutex.h"
+#include "core/os/safe_binary_mutex.h"
+
+#ifdef THREADS_ENABLED
+
+#ifdef MINGW_ENABLED
+#define MINGW_STDTHREAD_REDUNDANCY_WARNING
+#include "thirdparty/mingw-std-threads/mingw.condition_variable.h"
+#define THREADING_NAMESPACE mingw_stdthread
+#else
 #include <condition_variable>
+#define THREADING_NAMESPACE std
+#endif
 
 // An object one or multiple threads can wait on a be notified by some other.
 // Normally, you want to use a semaphore for such scenarios, but when the
@@ -40,12 +51,17 @@
 // own mutex to tie the wait-notify to some other behavior, you need to use this.
 
 class ConditionVariable {
-	mutable std::condition_variable condition;
+	mutable THREADING_NAMESPACE::condition_variable condition;
 
 public:
-	template <class BinaryMutexT>
+	template <typename BinaryMutexT>
 	_ALWAYS_INLINE_ void wait(const MutexLock<BinaryMutexT> &p_lock) const {
-		condition.wait(const_cast<std::unique_lock<std::mutex> &>(p_lock.lock));
+		condition.wait(p_lock._get_lock());
+	}
+
+	template <int Tag>
+	_ALWAYS_INLINE_ void wait(const MutexLock<SafeBinaryMutex<Tag>> &p_lock) const {
+		condition.wait(p_lock.mutex._get_lock());
 	}
 
 	_ALWAYS_INLINE_ void notify_one() const {
@@ -57,4 +73,14 @@ public:
 	}
 };
 
-#endif // CONDITION_VARIABLE_H
+#else // No threads.
+
+class ConditionVariable {
+public:
+	template <typename BinaryMutexT>
+	void wait(const MutexLock<BinaryMutexT> &p_lock) const {}
+	void notify_one() const {}
+	void notify_all() const {}
+};
+
+#endif // THREADS_ENABLED

@@ -28,15 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIDEO_STREAM_PLAYER_H
-#define VIDEO_STREAM_PLAYER_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio/audio_rb_resampler.h"
-#include "servers/audio_server.h"
-
-class ImageTexture;
 
 class VideoStreamPlayer : public Control {
 	GDCLASS(VideoStreamPlayer, Control);
@@ -54,7 +50,9 @@ class VideoStreamPlayer : public Control {
 
 	RID stream_rid;
 
-	Ref<ImageTexture> texture;
+	Ref<Texture2D> texture;
+	Size2 texture_size;
+	void texture_changed(const Ref<Texture2D> &p_texture);
 
 	AudioRBResampler resampler;
 	Vector<AudioFrame> mix_buffer;
@@ -65,9 +63,9 @@ class VideoStreamPlayer : public Control {
 	bool paused_from_tree = false;
 	bool autoplay = false;
 	float volume = 1.0;
-	double last_audio_time = 0.0;
 	bool expand = false;
 	bool loop = false;
+	bool first_frame = false;
 	int buffering_ms = 500;
 	int audio_track = 0;
 	int bus_index = 0;
@@ -126,8 +124,5 @@ public:
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 
-	VideoStreamPlayer();
 	~VideoStreamPlayer();
 };
-
-#endif // VIDEO_STREAM_PLAYER_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_EXPORT_H
-#define PROJECT_EXPORT_H
+#pragma once
 
 #include "editor/export/editor_export_preset.h"
 #include "scene/gui/dialogs.h"
@@ -70,7 +69,6 @@ public:
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
 
-private:
 	TabContainer *sections = nullptr;
 
 	MenuButton *add_preset = nullptr;
@@ -82,6 +80,7 @@ private:
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
+	CheckButton *advanced_options = nullptr;
 
 	Button *button_export = nullptr;
 	bool updating = false;
@@ -105,6 +104,13 @@ private:
 	AcceptDialog *export_all_dialog = nullptr;
 
 	RBSet<String> feature_set;
+
+	Tree *patches = nullptr;
+	int patch_index = -1;
+	EditorFileDialog *patch_dialog = nullptr;
+	ConfirmationDialog *patch_erase = nullptr;
+	Button *patch_add_btn = nullptr;
+
 	LineEdit *custom_features = nullptr;
 	RichTextLabel *custom_feature_display = nullptr;
 
@@ -118,6 +124,9 @@ private:
 
 	String default_filename;
 
+	bool exporting = false;
+
+	void _advanced_options_pressed();
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
@@ -135,6 +144,7 @@ private:
 
 	void _export_type_changed(int p_which);
 	void _filter_changed(const String &p_filter);
+	String _get_resource_export_header(EditorExportPreset::ExportFilter p_filter) const;
 	void _fill_resource_tree();
 	void _setup_item_for_file_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_mode);
 	bool _fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, EditorExportPreset::ExportFilter p_export_filter);
@@ -144,19 +154,26 @@ private:
 	void _tree_popup_edited(bool p_arrow_clicked);
 	void _set_file_export_mode(int p_id);
 
+	void _patch_tree_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index);
+	void _patch_tree_item_edited();
+	void _patch_file_selected(const String &p_path);
+	void _patch_delete_confirmed();
+	void _patch_add_pack_pressed();
+
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	EditorFileDialog *export_pck_zip = nullptr;
 	EditorFileDialog *export_project = nullptr;
-	CheckBox *export_debug = nullptr;
-	CheckBox *export_pck_zip_debug = nullptr;
 
 	CheckButton *enc_pck = nullptr;
 	CheckButton *enc_directory = nullptr;
 	LineEdit *enc_in_filters = nullptr;
 	LineEdit *enc_ex_filters = nullptr;
+	LineEdit *seed_input = nullptr;
+
+	OptionButton *script_mode = nullptr;
 
 	void _open_export_template_manager();
 
@@ -175,18 +192,21 @@ private:
 
 	bool updating_script_key = false;
 	bool updating_enc_filters = false;
+	bool updating_seed = false;
 	void _enc_pck_changed(bool p_pressed);
 	void _enc_directory_changed(bool p_pressed);
 	void _enc_filters_changed(const String &p_text);
+	void _seed_input_changed(const String &p_text);
 	void _script_encryption_key_changed(const String &p_key);
 	bool _validate_script_encryption_key(const String &p_key);
+
+	void _script_export_mode_changed(int p_mode);
 
 	void _open_key_help_link();
 
 	void _tab_changed(int);
 
 protected:
-	void _theme_changed();
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -198,8 +218,7 @@ public:
 
 	Ref<EditorExportPreset> get_current_preset() const;
 
-	ProjectExportDialog();
-	~ProjectExportDialog();
-};
+	bool is_exporting() const { return exporting; }
 
-#endif // PROJECT_EXPORT_H
+	ProjectExportDialog();
+};

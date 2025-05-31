@@ -32,8 +32,11 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/joint_3d.h"
+#include "scene/3d/physics/joints/cone_twist_joint_3d.h"
+#include "scene/3d/physics/joints/generic_6dof_joint_3d.h"
+#include "scene/3d/physics/joints/hinge_joint_3d.h"
+#include "scene/3d/physics/joints/pin_joint_3d.h"
+#include "scene/3d/physics/joints/slider_joint_3d.h"
 
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27
@@ -176,8 +179,8 @@ void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const
 
 	} else {
 		if (p_limit_lower > p_limit_upper) {
-			p_limit_lower = -Math_PI;
-			p_limit_upper = Math_PI;
+			p_limit_lower = -Math::PI;
+			p_limit_upper = Math::PI;
 		}
 
 		const int points = 32;
@@ -276,22 +279,28 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 
 Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 	create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
-	create_material("joint_body_a_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint_body_a", Color(0.6, 0.8, 1)));
-	create_material("joint_body_b_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint_body_b", Color(0.6, 0.9, 1)));
+	create_material("joint_body_a_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_a"));
+	create_material("joint_body_b_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_b"));
 
 	update_timer = memnew(Timer);
 	update_timer->set_name("JointGizmoUpdateTimer");
 	update_timer->set_wait_time(1.0 / 120.0);
 	update_timer->connect("timeout", callable_mp(this, &Joint3DGizmoPlugin::incremental_update_gizmos));
 	update_timer->set_autostart(true);
-	EditorNode::get_singleton()->call_deferred(SNAME("add_child"), update_timer);
+	callable_mp((Node *)EditorNode::get_singleton(), &Node::add_child).call_deferred(update_timer, false, Node::INTERNAL_MODE_DISABLED);
 }
 
 void Joint3DGizmoPlugin::incremental_update_gizmos() {
 	if (!current_gizmos.is_empty()) {
-		update_idx++;
-		update_idx = update_idx % current_gizmos.size();
-		redraw(current_gizmos[update_idx]);
+		HashSet<EditorNode3DGizmo *>::Iterator E = current_gizmos.find(last_drawn);
+		if (E) {
+			++E;
+		}
+		if (!E) {
+			E = current_gizmos.begin();
+		}
+		redraw(*E);
+		last_drawn = *E;
 	}
 }
 

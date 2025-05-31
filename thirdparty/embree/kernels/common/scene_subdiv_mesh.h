@@ -9,11 +9,13 @@
 #include "../subdiv/tessellation_cache.h"
 #include "../subdiv/catmullclark_coefficients.h"
 #include "../subdiv/patch.h"
-#include "../../common/algorithms/parallel_map.h"
-#include "../../common/algorithms/parallel_set.h"
 
 namespace embree
 {
+  struct HoleSet;
+  struct VertexCreaseMap;
+  struct EdgeCreaseMap;
+
   class SubdivMesh : public Geometry
   {
     ALIGNED_CLASS_(16);
@@ -49,6 +51,7 @@ namespace embree
 
     /*! subdiv mesh construction */
     SubdivMesh(Device* device);
+    ~SubdivMesh();
 
   public:
     void setMask (unsigned mask);
@@ -58,7 +61,7 @@ namespace embree
     void setVertexAttributeCount (unsigned int N);
     void setTopologyCount (unsigned int N);
     void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num);
-    void* getBuffer(RTCBufferType type, unsigned int slot);
+    void* getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType);
     void updateBuffer(RTCBufferType type, unsigned int slot);
     void setTessellationRate(float N);
     bool verify();
@@ -272,7 +275,7 @@ namespace embree
     mvector<uint32_t> halfEdgeFace;
 
     /*! set with all holes */
-    parallel_set<uint32_t> holeSet;
+    std::unique_ptr<HoleSet> holeSet;
 
     /*! fast lookup table to detect invalid faces */
     mvector<char> invalid_face;
@@ -299,10 +302,10 @@ namespace embree
   private:
 
     /*! map with all vertex creases */
-    parallel_map<uint32_t,float> vertexCreaseMap;
+    std::unique_ptr<VertexCreaseMap> vertexCreaseMap;
     
     /*! map with all edge creases */
-    parallel_map<uint64_t,float> edgeCreaseMap;
+    std::unique_ptr<EdgeCreaseMap> edgeCreaseMap;
 
   protected:
     

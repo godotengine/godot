@@ -56,7 +56,7 @@ HB_BEGIN_DECLS
 /**
  * HB_SCRIPT_CANADIAN_ABORIGINAL:
  *
- * Use #HB_SCRIPT_CANADIAN_SYLLABICS instead:
+ * Use #HB_SCRIPT_CANADIAN_SYLLABICS instead.
  *
  * Deprecated: 0.9.20
  */
@@ -300,6 +300,15 @@ hb_font_get_glyph_shape (hb_font_t *font,
 			 hb_codepoint_t glyph,
 			 hb_draw_funcs_t *dfuncs, void *draw_data);
 
+
+/**
+ * HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION:
+ *
+ * Use #HB_AAT_LAYOUT_FEATURE_TYPE_CURSIVE_CONNECTION instead.
+ *
+ * Deprecated: 8.3.0
+ */
+#define HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION HB_AAT_LAYOUT_FEATURE_TYPE_CURSIVE_CONNECTION
 
 #endif
 

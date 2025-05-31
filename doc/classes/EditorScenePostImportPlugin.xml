@@ -28,7 +28,7 @@
 			<param index="0" name="category" type="int" />
 			<param index="1" name="option" type="String" />
 			<description>
-				Return true whether updating the 3D view of the import dialog needs to be updated if an option has changed.
+				Should return [code]true[/code] if the 3D view of the import dialog needs to update when changing the given option.
 			</description>
 		</method>
 		<method name="_get_internal_option_visibility" qualifiers="virtual const">
@@ -37,7 +37,7 @@
 			<param index="1" name="for_animation" type="bool" />
 			<param index="2" name="option" type="String" />
 			<description>
-				Return true or false whether a given option should be visible. Return null to ignore.
+				Should return [code]true[/code] to show the given option, [code]false[/code] to hide the given option, or [code]null[/code] to ignore.
 			</description>
 		</method>
 		<method name="_get_option_visibility" qualifiers="virtual const">
@@ -46,7 +46,7 @@
 			<param index="1" name="for_animation" type="bool" />
 			<param index="2" name="option" type="String" />
 			<description>
-				Return true or false whether a given option should be visible. Return null to ignore.
+				Should return [code]true[/code] to show the given option, [code]false[/code] to hide the given option, or [code]null[/code] to ignore.
 			</description>
 		</method>
 		<method name="_internal_process" qualifiers="virtual">
@@ -71,6 +71,7 @@
 			<param index="0" name="scene" type="Node" />
 			<description>
 				Pre Process the scene. This function is called right after the scene format loader loaded the scene and no changes have been made.
+				Pre process may be used to adjust internal import options in the [code]"nodes"[/code], [code]"meshes"[/code], [code]"animations"[/code] or [code]"materials"[/code] keys inside [code]get_option_value("_subresources")[/code].
 			</description>
 		</method>
 		<method name="add_import_option">

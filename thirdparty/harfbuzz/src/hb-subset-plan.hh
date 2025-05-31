@@ -41,6 +41,13 @@ namespace OT {
 struct Feature;
 }
 
+struct os2_info_t {
+  hb_codepoint_t min_cmap_codepoint;
+  hb_codepoint_t max_cmap_codepoint;
+};
+
+typedef struct os2_info_t os2_info_t;
+
 struct head_maxp_info_t
 {
   head_maxp_info_t ()
@@ -66,6 +73,52 @@ struct head_maxp_info_t
 };
 
 typedef struct head_maxp_info_t head_maxp_info_t;
+
+struct contour_point_t
+{
+  void init (float x_ = 0.f, float y_ = 0.f, bool is_end_point_ = false)
+  { flag = 0; x = x_; y = y_; is_end_point = is_end_point_; }
+
+  void transform (const float (&matrix)[4])
+  {
+    float x_ = x * matrix[0] + y * matrix[2];
+	  y  = x * matrix[1] + y * matrix[3];
+    x  = x_;
+  }
+
+  void add_delta (float delta_x, float delta_y)
+  {
+    x += delta_x;
+    y += delta_y;
+  }
+
+  HB_ALWAYS_INLINE
+  void translate (const contour_point_t &p) { x += p.x; y += p.y; }
+
+  float x;
+  float y;
+  uint8_t flag;
+  bool is_end_point;
+};
+
+struct contour_point_vector_t : hb_vector_t<contour_point_t>
+{
+  bool add_deltas (hb_array_t<const float> deltas_x,
+                   hb_array_t<const float> deltas_y,
+                   hb_array_t<const bool> indices)
+  {
+    if (indices.length != deltas_x.length ||
+        indices.length != deltas_y.length)
+      return false;
+
+    for (unsigned i = 0; i < indices.length; i++)
+    {
+      if (!indices.arrayZ[i]) continue;
+      arrayZ[i].add_delta (deltas_x.arrayZ[i], deltas_y.arrayZ[i]);
+    }
+    return true;
+  }
+};
 
 namespace OT {
   struct cff1_subset_accelerator_t;
@@ -113,12 +166,17 @@ struct hb_subset_plan_t
   bool gsub_insert_catch_all_feature_variation_rec;
   bool gpos_insert_catch_all_feature_variation_rec;
 
+  // whether GDEF ItemVariationStore is retained
+  mutable bool has_gdef_varstore;
+
 #define HB_SUBSET_PLAN_MEMBER(Type, Name) Type Name;
 #include "hb-subset-plan-member-list.hh"
 #undef HB_SUBSET_PLAN_MEMBER
 
   //recalculated head/maxp table info after instancing
   mutable head_maxp_info_t head_maxp_info;
+
+  os2_info_t os2_info;
 
   const hb_subset_accelerator_t* accelerator;
   hb_subset_accelerator_t* inprogress_accelerator;

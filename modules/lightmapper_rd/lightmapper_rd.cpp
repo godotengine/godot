@@ -30,6 +30,7 @@
 
 #include "lightmapper_rd.h"
 
+#include "core/string/print_string.h"
 #include "lm_blendseams.glsl.gen.h"
 #include "lm_compute.glsl.gen.h"
 #include "lm_raster.glsl.gen.h"
@@ -40,6 +41,14 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/rendering_server_globals.h"
+
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 
 //uncomment this if you want to see textures from all the process saved
 //#define DEBUG_TEXTURES
@@ -49,13 +58,13 @@ void LightmapperRD::add_mesh(const MeshData &p_mesh) {
 	ERR_FAIL_COND(p_mesh.emission_on_uv2.is_null() || p_mesh.emission_on_uv2->is_empty());
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2->get_width() != p_mesh.emission_on_uv2->get_width());
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2->get_height() != p_mesh.emission_on_uv2->get_height());
-	ERR_FAIL_COND(p_mesh.points.size() == 0);
+	ERR_FAIL_COND(p_mesh.points.is_empty());
 	MeshInstance mi;
 	mi.data = p_mesh;
 	mesh_instances.push_back(mi);
 }
 
-void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_angular_distance, float p_shadow_blur) {
+void LightmapperRD::add_directional_light(const String &p_name, bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_angular_distance, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_DIRECTIONAL;
 	l.direction[0] = p_direction.x;
@@ -70,9 +79,10 @@ void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direct
 	l.size = Math::tan(Math::deg_to_rad(p_angular_distance));
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
+	light_names.push_back(p_name);
 }
 
-void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) {
+void LightmapperRD::add_omni_light(const String &p_name, bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_OMNI;
 	l.position[0] = p_position.x;
@@ -89,9 +99,10 @@ void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, con
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
+	light_names.push_back(p_name);
 }
 
-void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) {
+void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_SPOT;
 	l.position[0] = p_position.x;
@@ -113,6 +124,7 @@ void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, con
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
+	light_names.push_back(p_name);
 }
 
 void LightmapperRD::add_probe(const Vector3 &p_position) {
@@ -124,7 +136,7 @@ void LightmapperRD::add_probe(const Vector3 &p_position) {
 	probe_positions.push_back(probe);
 }
 
-void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[3], uint32_t p_triangle_index, LocalVector<TriangleSort> &triangles, uint32_t p_grid_size) {
+void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[3], uint32_t p_triangle_index, LocalVector<TriangleSort> &p_triangles_sort, uint32_t p_grid_size) {
 	int half_size = p_size / 2;
 
 	for (int i = 0; i < 8; i++) {
@@ -159,33 +171,90 @@ void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Ve
 			TriangleSort ts;
 			ts.cell_index = n.x + (n.y * p_grid_size) + (n.z * p_grid_size * p_grid_size);
 			ts.triangle_index = p_triangle_index;
-			triangles.push_back(ts);
+			ts.triangle_aabb.position = p_points[0];
+			ts.triangle_aabb.size = Vector3();
+			ts.triangle_aabb.expand_to(p_points[1]);
+			ts.triangle_aabb.expand_to(p_points[2]);
+			p_triangles_sort.push_back(ts);
 		} else {
-			_plot_triangle_into_triangle_index_list(half_size, n, aabb, p_points, p_triangle_index, triangles, p_grid_size);
+			_plot_triangle_into_triangle_index_list(half_size, n, aabb, p_points, p_triangle_index, p_triangles_sort, p_grid_size);
 		}
 	}
 }
 
-Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_size, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, BakeStepFunc p_step_function, void *p_bake_userdata) {
+void LightmapperRD::_sort_triangle_clusters(uint32_t p_cluster_size, uint32_t p_cluster_index, uint32_t p_index_start, uint32_t p_count, LocalVector<TriangleSort> &p_triangle_sort, LocalVector<ClusterAABB> &p_cluster_aabb) {
+	if (p_count == 0) {
+		return;
+	}
+
+	// Compute AABB for all triangles in the range.
+	SortArray<TriangleSort, TriangleSortAxis<0>> triangle_sorter_x;
+	SortArray<TriangleSort, TriangleSortAxis<1>> triangle_sorter_y;
+	SortArray<TriangleSort, TriangleSortAxis<2>> triangle_sorter_z;
+	AABB cluster_aabb = p_triangle_sort[p_index_start].triangle_aabb;
+	for (uint32_t i = 1; i < p_count; i++) {
+		cluster_aabb.merge_with(p_triangle_sort[p_index_start + i].triangle_aabb);
+	}
+
+	if (p_count > p_cluster_size) {
+		int longest_axis_index = cluster_aabb.get_longest_axis_index();
+		switch (longest_axis_index) {
+			case 0:
+				triangle_sorter_x.sort(&p_triangle_sort[p_index_start], p_count);
+				break;
+			case 1:
+				triangle_sorter_y.sort(&p_triangle_sort[p_index_start], p_count);
+				break;
+			case 2:
+				triangle_sorter_z.sort(&p_triangle_sort[p_index_start], p_count);
+				break;
+			default:
+				DEV_ASSERT(false && "Invalid axis returned by AABB.");
+				break;
+		}
+
+		uint32_t left_cluster_count = next_power_of_2(p_count / 2);
+		left_cluster_count = MAX(left_cluster_count, p_cluster_size);
+		left_cluster_count = MIN(left_cluster_count, p_count);
+		_sort_triangle_clusters(p_cluster_size, p_cluster_index, p_index_start, left_cluster_count, p_triangle_sort, p_cluster_aabb);
+
+		if (left_cluster_count < p_count) {
+			uint32_t cluster_index_right = p_cluster_index + (left_cluster_count / p_cluster_size);
+			_sort_triangle_clusters(p_cluster_size, cluster_index_right, p_index_start + left_cluster_count, p_count - left_cluster_count, p_triangle_sort, p_cluster_aabb);
+		}
+	} else {
+		ClusterAABB &aabb = p_cluster_aabb[p_cluster_index];
+		Vector3 aabb_end = cluster_aabb.get_end();
+		aabb.min_bounds[0] = cluster_aabb.position.x;
+		aabb.min_bounds[1] = cluster_aabb.position.y;
+		aabb.min_bounds[2] = cluster_aabb.position.z;
+		aabb.max_bounds[0] = aabb_end.x;
+		aabb.max_bounds[1] = aabb_end.y;
+		aabb.max_bounds[2] = aabb_end.z;
+	}
+}
+
+Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_size, int p_denoiser_range, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, float p_supersampling_factor, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	Vector<Size2i> sizes;
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
 		MeshInstance &mi = mesh_instances.write[m_i];
 		Size2i s = Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height());
 		sizes.push_back(s);
-		atlas_size.width = MAX(atlas_size.width, s.width + 2);
-		atlas_size.height = MAX(atlas_size.height, s.height + 2);
+		atlas_size = atlas_size.max(s + Size2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor);
 	}
 
 	int max = nearest_power_of_2_templated(atlas_size.width);
 	max = MAX(max, nearest_power_of_2_templated(atlas_size.height));
 
 	if (max > p_max_texture_size) {
-		return BAKE_ERROR_LIGHTMAP_TOO_SMALL;
+		return BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE;
 	}
 
 	if (p_step_function) {
-		p_step_function(0.1, RTR("Determining optimal atlas size"), p_bake_userdata, true);
+		if (p_step_function(0.1, RTR("Determining optimal atlas size"), p_bake_userdata, true)) {
+			return BAKE_ERROR_USER_ABORTED;
+		}
 	}
 
 	atlas_size = Size2i(max, max);
@@ -195,18 +264,29 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	int best_atlas_memory = 0x7FFFFFFF;
 	Vector<Vector3i> best_atlas_offsets;
 
-	//determine best texture array atlas size by bruteforce fitting
+	// Determine best texture array atlas size by bruteforce fitting.
 	while (atlas_size.x <= p_max_texture_size && atlas_size.y <= p_max_texture_size) {
 		Vector<Vector2i> source_sizes;
 		Vector<int> source_indices;
 		source_sizes.resize(sizes.size());
 		source_indices.resize(sizes.size());
 		for (int i = 0; i < source_indices.size(); i++) {
-			source_sizes.write[i] = sizes[i] + Vector2i(2, 2); // Add padding between lightmaps
+			// Add padding between lightmaps.
+			// Scale the padding if the lightmap will be downsampled at the end of the baking process
+			// Otherwise the padding would be insufficient.
+			source_sizes.write[i] = sizes[i] + Vector2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor;
 			source_indices.write[i] = i;
 		}
 		Vector<Vector3i> atlas_offsets;
 		atlas_offsets.resize(source_sizes.size());
+
+		// Ensure the sizes can all fit into a single atlas layer.
+		// This should always happen, and this check is only in place to prevent an infinite loop.
+		for (int i = 0; i < source_sizes.size(); i++) {
+			if (source_sizes[i] > atlas_size) {
+				return BAKE_ERROR_ATLAS_TOO_SMALL;
+			}
+		}
 
 		int slices = 0;
 
@@ -254,7 +334,9 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	emission_images.resize(atlas_slices);
 
 	if (p_step_function) {
-		p_step_function(0.2, RTR("Blitting albedo and emission"), p_bake_userdata, true);
+		if (p_step_function(0.2, RTR("Blitting albedo and emission"), p_bake_userdata, true)) {
+			return BAKE_ERROR_USER_ABORTED;
+		}
 	}
 
 	for (int i = 0; i < atlas_slices; i++) {
@@ -281,7 +363,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	return BAKE_OK;
 }
 
-void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &p_probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
+void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, uint32_t p_cluster_size, Vector<Probe> &p_probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &r_triangle_indices_buffer, RID &r_cluster_indices_buffer, RID &r_cluster_aabbs_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	HashMap<Vertex, uint32_t, VertexHash> vertex_map;
 
 	//fill triangles array and vertex array
@@ -301,7 +383,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
 		if (p_step_function) {
-			float p = float(m_i + 1) / mesh_instances.size() * 0.1;
+			float p = float(m_i + 1) / MAX(1, mesh_instances.size()) * 0.1;
 			p_step_function(0.3 + p, vformat(RTR("Plotting mesh into acceleration structure %d/%d"), m_i + 1, mesh_instances.size()), p_bake_userdata, false);
 		}
 
@@ -369,6 +451,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 					SWAP(edge.a, edge.b);
 					SWAP(edge.na, edge.nb);
 					SWAP(uv2.a, uv2.b);
+					SWAP(uv2.indices.x, uv2.indices.y);
 					SWAP(edge_indices.x, edge_indices.y);
 				}
 
@@ -399,7 +482,14 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			t.max_bounds[0] = taabb.position.x + MAX(taabb.size.x, 0.0001);
 			t.max_bounds[1] = taabb.position.y + MAX(taabb.size.y, 0.0001);
 			t.max_bounds[2] = taabb.position.z + MAX(taabb.size.z, 0.0001);
-			t.pad0 = t.pad1 = 0; //make valgrind not complain
+
+			t.cull_mode = RS::CULL_MODE_BACK;
+
+			RID material = mi.data.material[i];
+			if (material.is_valid()) {
+				t.cull_mode = RSG::material_storage->material_get_cull_mode(material);
+			}
+			t.pad1 = 0; //make valgrind not complain
 			triangles.push_back(t);
 			slice_triangle_count.write[t.slice]++;
 		}
@@ -433,30 +523,69 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	//sort it
 	triangle_sort.sort();
 
+	LocalVector<uint32_t> cluster_indices;
+	LocalVector<ClusterAABB> cluster_aabbs;
 	Vector<uint32_t> triangle_indices;
 	triangle_indices.resize(triangle_sort.size());
 	Vector<uint32_t> grid_indices;
 	grid_indices.resize(grid_size * grid_size * grid_size * 2);
 	memset(grid_indices.ptrw(), 0, grid_indices.size() * sizeof(uint32_t));
-	Vector<bool> solid;
-	solid.resize(grid_size * grid_size * grid_size);
-	memset(solid.ptrw(), 0, solid.size() * sizeof(bool));
 
 	{
-		uint32_t *tiw = triangle_indices.ptrw();
+		// Fill grid with cell indices.
 		uint32_t last_cell = 0xFFFFFFFF;
 		uint32_t *giw = grid_indices.ptrw();
-		bool *solidw = solid.ptrw();
+		uint32_t cluster_count = 0;
+		uint32_t solid_cell_count = 0;
 		for (uint32_t i = 0; i < triangle_sort.size(); i++) {
 			uint32_t cell = triangle_sort[i].cell_index;
 			if (cell != last_cell) {
-				//cell changed, update pointer to indices
-				giw[cell * 2 + 1] = i;
-				solidw[cell] = true;
+				giw[cell * 2 + 1] = solid_cell_count;
+				solid_cell_count++;
 			}
-			tiw[i] = triangle_sort[i].triangle_index;
-			giw[cell * 2]++; //update counter
+
+			if ((giw[cell * 2] % p_cluster_size) == 0) {
+				// Add an extra cluster every time the triangle counter reaches a multiple of the cluster size.
+				cluster_count++;
+			}
+
+			giw[cell * 2]++;
 			last_cell = cell;
+		}
+
+		// Build fixed-size triangle clusters for all the cells to speed up the traversal. A cell can hold multiple clusters that each contain a fixed
+		// amount of triangles and an AABB. The tracer will check against the AABBs first to know whether it needs to visit the cell's triangles.
+		//
+		// The building algorithm will divide the triangles recursively contained inside each cell, sorting by the longest axis of the AABB on each step.
+		//
+		// - If the amount of triangles is less or equal to the cluster size, the AABB will be stored and the algorithm stops.
+		//
+		// - The division by two is increased to the next power of two of half the amount of triangles (with cluster size as the minimum value) to
+		//   ensure the first half always fills the cluster.
+
+		cluster_indices.resize(solid_cell_count * 2);
+		cluster_aabbs.resize(cluster_count);
+
+		uint32_t i = 0;
+		uint32_t cluster_index = 0;
+		uint32_t solid_cell_index = 0;
+		uint32_t *tiw = triangle_indices.ptrw();
+		while (i < triangle_sort.size()) {
+			cluster_indices[solid_cell_index * 2] = cluster_index;
+			cluster_indices[solid_cell_index * 2 + 1] = i;
+
+			uint32_t cell = triangle_sort[i].cell_index;
+			uint32_t triangle_count = giw[cell * 2];
+			uint32_t cell_cluster_count = (triangle_count + p_cluster_size - 1) / p_cluster_size;
+			_sort_triangle_clusters(p_cluster_size, cluster_index, i, triangle_count, triangle_sort, cluster_aabbs);
+
+			for (uint32_t j = 0; j < triangle_count; j++) {
+				tiw[i + j] = triangle_sort[i + j].triangle_index;
+			}
+
+			i += triangle_count;
+			cluster_index += cell_cluster_count;
+			solid_cell_index++;
 		}
 	}
 #if 0
@@ -507,22 +636,28 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		triangle_buffer = rd->storage_buffer_create(tb.size(), tb);
 
 		Vector<uint8_t> tib = triangle_indices.to_byte_array();
-		triangle_cell_indices_buffer = rd->storage_buffer_create(tib.size(), tib);
+		r_triangle_indices_buffer = rd->storage_buffer_create(tib.size(), tib);
+
+		Vector<uint8_t> cib = cluster_indices.to_byte_array();
+		r_cluster_indices_buffer = rd->storage_buffer_create(cib.size(), cib);
+
+		Vector<uint8_t> cab = cluster_aabbs.to_byte_array();
+		r_cluster_aabbs_buffer = rd->storage_buffer_create(cab.size(), cab);
 
 		Vector<uint8_t> lb = lights.to_byte_array();
-		if (lb.size() == 0) {
+		if (lb.is_empty()) {
 			lb.resize(sizeof(Light)); //even if no lights, the buffer must exist
 		}
 		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
 
 		Vector<uint8_t> sb = seam_buffer_vec.to_byte_array();
-		if (sb.size() == 0) {
+		if (sb.is_empty()) {
 			sb.resize(sizeof(Vector2i) * 2); //even if no seams, the buffer must exist
 		}
 		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 
 		Vector<uint8_t> pb = p_probe_positions.to_byte_array();
-		if (pb.size() == 0) {
+		if (pb.is_empty()) {
 			pb.resize(sizeof(Probe));
 		}
 		probe_positions_buffer = rd->storage_buffer_create(pb.size(), pb);
@@ -602,7 +737,7 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 		raster_push_constant.uv_offset[0] = -0.5f / float(atlas_size.x);
 		raster_push_constant.uv_offset[1] = -0.5f / float(atlas_size.y);
 
-		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::DRAW_CLEAR_ALL, clear_colors, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS);
 		//draw opaque
 		rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline);
 		rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
@@ -655,7 +790,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	rd->compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1);
 	push_constant.region_ofs[0] = 0;
 	push_constant.region_ofs[1] = 0;
-	Vector3i group_size((atlas_size.x - 1) / 8 + 1, (atlas_size.y - 1) / 8 + 1, 1); //restore group size
+	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1); //restore group size
 
 	for (int i = 0; i < atlas_slices; i++) {
 		push_constant.atlas_slice = i;
@@ -668,7 +803,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 
 #ifdef DEBUG_TEXTURES
 	for (int i = 0; i < atlas_slices; i++) {
-		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+		Vector<uint8_t> s = rd->texture_get_data(source_light_tex, i);
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->convert(Image::FORMAT_RGBA8);
 		img->save_png("res://5_dilated_" + itos(i) + ".png");
@@ -677,9 +812,38 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	return BAKE_OK;
 }
 
-Error LightmapperRD::_store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_index, const Size2i &p_atlas_size, const String &p_name) {
+LightmapperRD::BakeError LightmapperRD::_pack_l1(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices) {
+	Vector<RD::Uniform> uniforms = dilate_or_denoise_common_uniforms(source_light_tex, dest_light_tex);
+
+	RID compute_shader_pack = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("pack_coeffs"));
+	ERR_FAIL_COND_V(compute_shader_pack.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
+	RID compute_shader_pack_pipeline = rd->compute_pipeline_create(compute_shader_pack);
+
+	RID dilate_uniform_set = rd->uniform_set_create(uniforms, compute_shader_pack, 1);
+
+	RD::ComputeListID compute_list = rd->compute_list_begin();
+	rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_pack_pipeline);
+	rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+	rd->compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1);
+	push_constant.region_ofs[0] = 0;
+	push_constant.region_ofs[1] = 0;
+	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1); //restore group size
+
+	for (int i = 0; i < atlas_slices; i++) {
+		push_constant.atlas_slice = i;
+		rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+		rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+		//no barrier, let them run all together
+	}
+	rd->compute_list_end();
+	rd->free(compute_shader_pack);
+
+	return BAKE_OK;
+}
+
+Error LightmapperRD::_store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_index, const Size2i &p_atlas_size, const String &p_name, bool p_shadowmask) {
 	Vector<uint8_t> data = p_rd->texture_get_data(p_atlas_tex, p_index);
-	Ref<Image> img = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, Image::FORMAT_RGBAH, data);
+	Ref<Image> img = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, p_shadowmask ? Image::FORMAT_RGBA8 : Image::FORMAT_RGBAH, data);
 	img->convert(Image::FORMAT_RGBF);
 	Vector<uint8_t> data_float = img->get_data();
 
@@ -699,7 +863,7 @@ Error LightmapperRD::_store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_in
 	return OK;
 }
 
-Ref<Image> LightmapperRD::_read_pfm(const String &p_name) {
+Ref<Image> LightmapperRD::_read_pfm(const String &p_name, bool p_shadowmask) {
 	Error err = OK;
 	Ref<FileAccess> file = FileAccess::open(p_name, FileAccess::READ, &err);
 	ERR_FAIL_COND_V_MSG(err, Ref<Image>(), vformat("Can't load PFM at path: '%s'.", p_name));
@@ -732,23 +896,23 @@ Ref<Image> LightmapperRD::_read_pfm(const String &p_name) {
 	}
 #endif
 	Ref<Image> img = Image::create_from_data(new_width, new_height, false, Image::FORMAT_RGBF, new_data);
-	img->convert(Image::FORMAT_RGBAH);
+	img->convert(p_shadowmask ? Image::FORMAT_RGBA8 : Image::FORMAT_RGBAH);
 	return img;
 }
 
-LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, const String &p_exe) {
+LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, bool p_shadowmask, const String &p_exe) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	for (int i = 0; i < p_atlas_slices; i++) {
 		String fname_norm_in = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_norm_%d.pfm", i));
-		_store_pfm(p_rd, p_source_normal_tex, i, p_atlas_size, fname_norm_in);
+		_store_pfm(p_rd, p_source_normal_tex, i, p_atlas_size, fname_norm_in, false);
 
 		for (int j = 0; j < (p_bake_sh ? 4 : 1); j++) {
 			int index = i * (p_bake_sh ? 4 : 1) + j;
 			String fname_light_in = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_light_%d.pfm", index));
 			String fname_out = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_denoised_%d.pfm", index));
 
-			_store_pfm(p_rd, p_source_light_tex, index, p_atlas_size, fname_light_in);
+			_store_pfm(p_rd, p_source_light_tex, index, p_atlas_size, fname_light_in, p_shadowmask);
 
 			List<String> args;
 			args.push_back("--device");
@@ -757,7 +921,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID
 			args.push_back("--filter");
 			args.push_back("RTLightmap");
 
-			args.push_back("--hdr");
+			args.push_back(p_shadowmask ? "--ldr" : "--hdr");
 			args.push_back(fname_light_in);
 
 			args.push_back("--nrm");
@@ -776,10 +940,10 @@ LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID
 			if (err != OK || exitcode != 0) {
 				da->remove(fname_out);
 				print_verbose(str);
-				ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, vformat(TTR("OIDN denoiser failed, return code: %d"), exitcode));
+				ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, vformat("OIDN denoiser failed, return code: %d", exitcode));
 			}
 
-			Ref<Image> img = _read_pfm(fname_out);
+			Ref<Image> img = _read_pfm(fname_out, p_shadowmask);
 			da->remove(fname_out);
 
 			ERR_FAIL_COND_V(img.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -802,7 +966,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID
 	return BAKE_OK;
 }
 
-LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function) {
+LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, int p_denoiser_range, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	RID denoise_params_buffer = p_rd->uniform_buffer_create(sizeof(DenoiseParams));
 	DenoiseParams denoise_params;
 	denoise_params.spatial_bandwidth = 5.0f;
@@ -810,6 +974,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	denoise_params.albedo_bandwidth = 1.0f;
 	denoise_params.normal_bandwidth = 0.1f;
 	denoise_params.filter_strength = 10.0f;
+	denoise_params.half_search_window = p_denoiser_range;
 	p_rd->buffer_update(denoise_params_buffer, 0, sizeof(DenoiseParams), &denoise_params);
 
 	Vector<RD::Uniform> uniforms = dilate_or_denoise_common_uniforms(p_source_light_tex, p_dest_light_tex);
@@ -837,9 +1002,10 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	// We denoise in fixed size regions and synchronize execution to avoid GPU timeouts.
 	// We use a region with 1/4 the amount of pixels if we're denoising SH lightmaps, as
 	// all four of them are denoised in the shader in one dispatch.
-	const int max_region_size = p_bake_sh ? 512 : 1024;
-	int x_regions = (p_atlas_size.width - 1) / max_region_size + 1;
-	int y_regions = (p_atlas_size.height - 1) / max_region_size + 1;
+	const int user_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int max_region_size = p_bake_sh ? user_region_size / 2 : user_region_size;
+	int x_regions = Math::division_round_up(p_atlas_size.width, max_region_size);
+	int y_regions = Math::division_round_up(p_atlas_size.height, max_region_size);
 	for (int s = 0; s < p_atlas_slices; s++) {
 		p_push_constant.atlas_slice = s;
 
@@ -857,11 +1023,18 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 				p_rd->compute_list_bind_uniform_set(compute_list, p_compute_base_uniform_set, 0);
 				p_rd->compute_list_bind_uniform_set(compute_list, denoise_uniform_set, 1);
 				p_rd->compute_list_set_push_constant(compute_list, &p_push_constant, sizeof(PushConstant));
-				p_rd->compute_list_dispatch(compute_list, (w - 1) / 8 + 1, (h - 1) / 8 + 1, 1);
+				p_rd->compute_list_dispatch(compute_list, Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
 				p_rd->compute_list_end();
 
 				p_rd->submit();
 				p_rd->sync();
+			}
+		}
+		if (p_step_function) {
+			int percent = (s + 1) * 100 / p_atlas_slices;
+			float p = float(s) / p_atlas_slices * 0.1;
+			if (p_step_function(0.8 + p, vformat(RTR("Denoising %d%%"), percent), p_bake_userdata, false)) {
+				return BAKE_ERROR_USER_ABORTED;
 			}
 		}
 	}
@@ -872,7 +1045,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	return BAKE_OK;
 }
 
-LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
+LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_bake_shadowmask, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization, float p_supersampling_factor) {
 	int denoiser = GLOBAL_GET("rendering/lightmapping/denoising/denoiser");
 	String oidn_path = EDITOR_GET("filesystem/tools/oidn/oidn_denoise_path");
 
@@ -887,13 +1060,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				oidn_path = oidn_path.path_join("oidnDenoise");
 			}
 		}
-		ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !da->file_exists(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, TTR("OIDN denoiser is selected in the project settings, but no or invalid OIDN executable path is configured in the editor settings."));
+		ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !da->file_exists(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, "OIDN denoiser is selected in the project settings, but no or invalid OIDN executable path is configured in the editor settings.");
 	}
 
 	if (p_step_function) {
 		p_step_function(0.0, RTR("Begin Bake"), p_bake_userdata, true);
 	}
-	bake_textures.clear();
+	lightmap_textures.clear();
+	shadowmask_textures.clear();
 	int grid_size = 128;
 
 	/* STEP 1: Fetch material textures and compute the bounds */
@@ -904,9 +1078,38 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	Vector<Ref<Image>> albedo_images;
 	Vector<Ref<Image>> emission_images;
 
-	BakeError bake_error = _blit_meshes_into_atlas(p_max_texture_size, albedo_images, emission_images, bounds, atlas_size, atlas_slices, p_step_function, p_bake_userdata);
+	BakeError bake_error = _blit_meshes_into_atlas(p_max_texture_size, p_denoiser_range, albedo_images, emission_images, bounds, atlas_size, atlas_slices, p_supersampling_factor, p_step_function, p_bake_userdata);
 	if (bake_error != BAKE_OK) {
 		return bake_error;
+	}
+
+	// The index of the directional light used for shadowmasking.
+	int shadowmask_light_idx = -1;
+
+	// If there are no valid directional lights for shadowmasking, the entire
+	// scene would be shadowed and this saves baking time.
+	if (p_bake_shadowmask) {
+		int shadowmask_lights_count = 0;
+
+		for (int i = 0; i < lights.size(); i++) {
+			if (lights[i].type == LightType::LIGHT_TYPE_DIRECTIONAL && !lights[i].static_bake) {
+				if (shadowmask_light_idx < 0) {
+					shadowmask_light_idx = i;
+				}
+
+				shadowmask_lights_count += 1;
+			}
+		}
+
+		if (shadowmask_light_idx < 0) {
+			p_bake_shadowmask = false;
+			WARN_PRINT("Shadowmask disabled: no directional light with their bake mode set to dynamic exists.");
+
+		} else if (shadowmask_lights_count > 1) {
+			WARN_PRINT(
+					vformat("%d directional lights detected for shadowmask baking. Only %s will be used.",
+							shadowmask_lights_count, light_names[shadowmask_light_idx]));
+		}
 	}
 
 #ifdef DEBUG_TEXTURES
@@ -916,7 +1119,41 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-	RenderingDevice *rd = RenderingDevice::get_singleton()->create_local_device();
+	// Attempt to create a local device by requesting it from rendering server first.
+	// If that fails because the current renderer is not implemented on top of RD, we fall back to creating
+	// a local rendering device manually depending on the current platform.
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
+	if (rd == nullptr) {
+#if defined(RD_ENABLED)
+#if defined(METAL_ENABLED)
+		rcd = memnew(RenderingContextDriverMetal);
+		rd = memnew(RenderingDevice);
+#endif
+#if defined(VULKAN_ENABLED)
+		if (rcd == nullptr) {
+			rcd = memnew(RenderingContextDriverVulkan);
+			rd = memnew(RenderingDevice);
+		}
+#endif
+#endif
+		if (rcd != nullptr && rd != nullptr) {
+			err = rcd->initialize();
+			if (err == OK) {
+				err = rd->initialize(rcd);
+			}
+
+			if (err != OK) {
+				memdelete(rd);
+				memdelete(rcd);
+				rd = nullptr;
+				rcd = nullptr;
+			}
+		}
+	}
+
+	ERR_FAIL_NULL_V(rd, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
 	RID albedo_array_tex;
 	RID emission_array_tex;
@@ -928,17 +1165,23 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID light_accum_tex;
 	RID light_accum_tex2;
 	RID light_environment_tex;
+	RID shadowmask_tex;
+	RID shadowmask_tex2;
 
-#define FREE_TEXTURES             \
-	rd->free(albedo_array_tex);   \
-	rd->free(emission_array_tex); \
-	rd->free(normal_tex);         \
-	rd->free(position_tex);       \
-	rd->free(unocclude_tex);      \
-	rd->free(light_source_tex);   \
-	rd->free(light_accum_tex2);   \
-	rd->free(light_accum_tex);    \
-	rd->free(light_environment_tex);
+#define FREE_TEXTURES                \
+	rd->free(albedo_array_tex);      \
+	rd->free(emission_array_tex);    \
+	rd->free(normal_tex);            \
+	rd->free(position_tex);          \
+	rd->free(unocclude_tex);         \
+	rd->free(light_source_tex);      \
+	rd->free(light_accum_tex2);      \
+	rd->free(light_accum_tex);       \
+	rd->free(light_environment_tex); \
+	if (p_bake_shadowmask) {         \
+		rd->free(shadowmask_tex);    \
+		rd->free(shadowmask_tex2);   \
+	}
 
 	{ // create all textures
 
@@ -970,8 +1213,21 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		position_tex = rd->texture_create(tf, RD::TextureView());
 		unocclude_tex = rd->texture_create(tf, RD::TextureView());
 
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+
+		// shadowmask
+		if (p_bake_shadowmask) {
+			tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+
+			shadowmask_tex = rd->texture_create(tf, RD::TextureView());
+			rd->texture_clear(shadowmask_tex, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
+
+			shadowmask_tex2 = rd->texture_create(tf, RD::TextureView());
+			rd->texture_clear(shadowmask_tex2, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
+		}
+
+		// lightmap
+		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 
 		light_source_tex = rd->texture_create(tf, RD::TextureView());
 		rd->texture_clear(light_source_tex, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
@@ -1020,24 +1276,29 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID vertex_buffer;
 	RID triangle_buffer;
 	RID lights_buffer;
-	RID triangle_cell_indices_buffer;
+	RID triangle_indices_buffer;
+	RID cluster_indices_buffer;
+	RID cluster_aabbs_buffer;
 	RID grid_texture;
 	RID seams_buffer;
 	RID probe_positions_buffer;
 
 	Vector<int> slice_seam_count;
 
-#define FREE_BUFFERS                        \
-	rd->free(bake_parameters_buffer);       \
-	rd->free(vertex_buffer);                \
-	rd->free(triangle_buffer);              \
-	rd->free(lights_buffer);                \
-	rd->free(triangle_cell_indices_buffer); \
-	rd->free(grid_texture);                 \
-	rd->free(seams_buffer);                 \
+#define FREE_BUFFERS                   \
+	rd->free(bake_parameters_buffer);  \
+	rd->free(vertex_buffer);           \
+	rd->free(triangle_buffer);         \
+	rd->free(lights_buffer);           \
+	rd->free(triangle_indices_buffer); \
+	rd->free(cluster_indices_buffer);  \
+	rd->free(cluster_aabbs_buffer);    \
+	rd->free(grid_texture);            \
+	rd->free(seams_buffer);            \
 	rd->free(probe_positions_buffer);
 
-	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_cell_indices_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
+	const uint32_t cluster_size = 16;
+	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, cluster_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_indices_buffer, cluster_indices_buffer, cluster_aabbs_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
 
 	// Create global bake parameters buffer.
 	BakeParameters bake_parameters;
@@ -1070,18 +1331,30 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	bake_parameters.exposure_normalization = p_exposure_normalization;
 	bake_parameters.bounces = p_bounces;
 	bake_parameters.bounce_indirect_energy = p_bounce_indirect_energy;
+	bake_parameters.shadowmask_light_idx = shadowmask_light_idx;
+	// Same number of rays for transparency regardless of quality (it's more of a retry rather than shooting new ones).
+	bake_parameters.transparency_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_transparency_rays");
+	bake_parameters.supersampling_factor = p_supersampling_factor;
 
 	bake_parameters_buffer = rd->uniform_buffer_create(sizeof(BakeParameters));
 	rd->buffer_update(bake_parameters_buffer, 0, sizeof(BakeParameters), &bake_parameters);
 
 	if (p_step_function) {
-		p_step_function(0.47, RTR("Preparing shaders"), p_bake_userdata, true);
+		if (p_step_function(0.47, RTR("Preparing shaders"), p_bake_userdata, true)) {
+			FREE_TEXTURES
+			FREE_BUFFERS
+			memdelete(rd);
+			if (rcd != nullptr) {
+				memdelete(rcd);
+			}
+			return BAKE_ERROR_USER_ABORTED;
+		}
 	}
 
 	//shaders
 	Ref<RDShaderFile> raster_shader;
 	raster_shader.instantiate();
-	Error err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
+	err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
 	if (err != OK) {
 		raster_shader->print_errors("raster_shader");
 
@@ -1089,6 +1362,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_BUFFERS
 
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
@@ -1133,7 +1410,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.append_id(triangle_cell_indices_buffer);
+			u.append_id(triangle_indices_buffer);
 			base_uniforms.push_back(u);
 		}
 		{
@@ -1185,6 +1462,20 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			u.append_id(sampler);
 			base_uniforms.push_back(u);
 		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 11;
+			u.append_id(cluster_indices_buffer);
+			base_uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 12;
+			u.append_id(cluster_aabbs_buffer);
+			base_uniforms.push_back(u);
+		}
 	}
 
 	RID raster_base_uniform = rd->uniform_set_create(base_uniforms, rasterize_shader, 0);
@@ -1197,6 +1488,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		tf.format = RD::DATA_FORMAT_D32_SFLOAT;
+		tf.is_discardable = true;
 
 		raster_depth_buffer = rd->texture_create(tf, RD::TextureView());
 	}
@@ -1230,12 +1522,18 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	Ref<RDShaderFile> compute_shader;
 	String defines = "";
+	defines += "\n#define CLUSTER_SIZE " + uitos(cluster_size) + "\n";
+
 	if (p_bake_sh) {
 		defines += "\n#define USE_SH_LIGHTMAPS\n";
 	}
 
 	if (p_texture_for_bounces) {
 		defines += "\n#define USE_LIGHT_TEXTURE_FOR_BOUNCES\n";
+	}
+
+	if (p_bake_shadowmask) {
+		defines += "\n#define USE_SHADOWMASK\n";
 	}
 
 	compute_shader.instantiate();
@@ -1245,6 +1543,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_BUFFERS
 		FREE_RASTER_RESOURCES
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
+
 		compute_shader->print_errors("compute_shader");
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1277,12 +1580,22 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free(compute_shader_secondary); \
 	rd->free(compute_shader_light_probes);
 
-	Vector3i group_size((atlas_size.x - 1) / 8 + 1, (atlas_size.y - 1) / 8 + 1, 1);
+	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1);
 	rd->submit();
 	rd->sync();
 
 	if (p_step_function) {
-		p_step_function(0.49, RTR("Un-occluding geometry"), p_bake_userdata, true);
+		if (p_step_function(0.49, RTR("Un-occluding geometry"), p_bake_userdata, true)) {
+			FREE_TEXTURES
+			FREE_BUFFERS
+			FREE_RASTER_RESOURCES
+			FREE_COMPUTE_RESOURCES
+			memdelete(rd);
+			if (rcd != nullptr) {
+				memdelete(rcd);
+			}
+			return BAKE_ERROR_USER_ABORTED;
+		}
 	}
 
 	PushConstant push_constant;
@@ -1324,8 +1637,22 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 
 	if (p_step_function) {
-		p_step_function(0.5, RTR("Plot direct lighting"), p_bake_userdata, true);
+		if (p_step_function(0.5, RTR("Plot direct lighting"), p_bake_userdata, true)) {
+			FREE_TEXTURES
+			FREE_BUFFERS
+			FREE_RASTER_RESOURCES
+			FREE_COMPUTE_RESOURCES
+			memdelete(rd);
+			if (rcd != nullptr) {
+				memdelete(rcd);
+			}
+			return BAKE_ERROR_USER_ABORTED;
+		}
 	}
+
+	const int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
+	const int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
 
 	// Set ray count to the quality used for direct light and bounces.
 	switch (p_quality) {
@@ -1384,22 +1711,64 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.append_id(light_accum_tex);
 				uniforms.push_back(u);
 			}
+
+			if (p_bake_shadowmask) {
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 5;
+				u.append_id(shadowmask_tex);
+				uniforms.push_back(u);
+			}
 		}
 
 		RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);
 
-		RD::ComputeListID compute_list = rd->compute_list_begin();
-		rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
-		rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
-		rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
+		int count = 0;
+		for (int s = 0; s < atlas_slices; s++) {
+			push_constant.atlas_slice = s;
 
-		for (int i = 0; i < atlas_slices; i++) {
-			push_constant.atlas_slice = i;
-			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
-			//no barrier, let them run all together
+			for (int i = 0; i < x_regions; i++) {
+				for (int j = 0; j < y_regions; j++) {
+					int x = i * max_region_size;
+					int y = j * max_region_size;
+					int w = MIN((i + 1) * max_region_size, atlas_size.width) - x;
+					int h = MIN((j + 1) * max_region_size, atlas_size.height) - y;
+
+					push_constant.region_ofs[0] = x;
+					push_constant.region_ofs[1] = y;
+
+					group_size = Vector3i(Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
+					RD::ComputeListID compute_list = rd->compute_list_begin();
+					rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
+					rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+					rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
+					rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+					rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+					rd->compute_list_end();
+
+					rd->submit();
+					rd->sync();
+
+					count++;
+					if (p_step_function) {
+						int total = (atlas_slices * x_regions * y_regions);
+						int percent = count * 100 / total;
+						float p = float(count) / total * 0.1;
+						if (p_step_function(0.5 + p, vformat(RTR("Plot direct lighting %d%%"), percent), p_bake_userdata, false)) {
+							FREE_TEXTURES
+							FREE_BUFFERS
+							FREE_RASTER_RESOURCES
+							FREE_COMPUTE_RESOURCES
+							memdelete(rd);
+							if (rcd != nullptr) {
+								memdelete(rcd);
+							}
+							return BAKE_ERROR_USER_ABORTED;
+						}
+					}
+				}
+			}
 		}
-		rd->compute_list_end(); //done
 	}
 
 #ifdef DEBUG_TEXTURES
@@ -1409,12 +1778,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://2_light_primary_" + itos(i) + ".exr", false);
 	}
+
+	if (p_bake_sh) {
+		for (int i = 0; i < atlas_slices * 4; i++) {
+			Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+			img->save_exr("res://2_light_primary_accum_" + itos(i) + ".exr", false);
+		}
+	}
 #endif
 
 	/* SECONDARY (indirect) LIGHT PASS(ES) */
-	if (p_step_function) {
-		p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true);
-	}
 
 	if (p_bounces > 0) {
 		Vector<RD::Uniform> uniforms;
@@ -1467,16 +1841,22 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		RID secondary_uniform_set;
 		secondary_uniform_set = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
 
-		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
-		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
+		const int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
+		int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
 
-		int x_regions = (atlas_size.width - 1) / max_region_size + 1;
-		int y_regions = (atlas_size.height - 1) / max_region_size + 1;
-
-		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;
-
-		rd->submit();
-		rd->sync();
+		if (p_step_function) {
+			if (p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true)) {
+				FREE_TEXTURES
+				FREE_BUFFERS
+				FREE_RASTER_RESOURCES
+				FREE_COMPUTE_RESOURCES
+				memdelete(rd);
+				if (rcd != nullptr) {
+					memdelete(rcd);
+				}
+				return BAKE_ERROR_USER_ABORTED;
+			}
+		}
 
 		int count = 0;
 		for (int s = 0; s < atlas_slices; s++) {
@@ -1492,7 +1872,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					push_constant.region_ofs[0] = x;
 					push_constant.region_ofs[1] = y;
 
-					group_size = Vector3i((w - 1) / 8 + 1, (h - 1) / 8 + 1, 1);
+					group_size = Vector3i(Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
 
 					for (int k = 0; k < ray_iterations; k++) {
 						RD::ComputeListID compute_list = rd->compute_list_begin();
@@ -1514,7 +1894,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 							int total = (atlas_slices * x_regions * y_regions * ray_iterations);
 							int percent = count * 100 / total;
 							float p = float(count) / total * 0.1;
-							p_step_function(0.6 + p, vformat(RTR("Integrate indirect lighting %d%%"), percent), p_bake_userdata, false);
+							if (p_step_function(0.6 + p, vformat(RTR("Integrate indirect lighting %d%%"), percent), p_bake_userdata, false)) {
+								FREE_TEXTURES
+								FREE_BUFFERS
+								FREE_RASTER_RESOURCES
+								FREE_COMPUTE_RESOURCES
+								memdelete(rd);
+								if (rcd != nullptr) {
+									memdelete(rcd);
+								}
+								return BAKE_ERROR_USER_ABORTED;
+							}
 						}
 					}
 				}
@@ -1530,7 +1920,20 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		light_probe_buffer = rd->storage_buffer_create(sizeof(float) * 4 * 9 * probe_positions.size());
 
 		if (p_step_function) {
-			p_step_function(0.7, RTR("Baking lightprobes"), p_bake_userdata, true);
+			if (p_step_function(0.7, RTR("Baking light probes"), p_bake_userdata, true)) {
+				FREE_TEXTURES
+				FREE_BUFFERS
+				FREE_RASTER_RESOURCES
+				FREE_COMPUTE_RESOURCES
+				if (probe_positions.size() > 0) {
+					rd->free(light_probe_buffer);
+				}
+				memdelete(rd);
+				if (rcd != nullptr) {
+					memdelete(rcd);
+				}
+				return BAKE_ERROR_USER_ABORTED;
+			}
 		}
 
 		Vector<RD::Uniform> uniforms;
@@ -1578,7 +1981,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		push_constant.probe_count = probe_positions.size();
 
 		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_probe_pass");
-		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;
+		int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
 
 		for (int i = 0; i < ray_iterations; i++) {
 			RD::ComputeListID compute_list = rd->compute_list_begin();
@@ -1589,7 +1992,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			push_constant.ray_from = i * max_rays;
 			push_constant.ray_to = MIN((i + 1) * max_rays, int32_t(push_constant.ray_count));
 			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, (probe_positions.size() - 1) / 64 + 1, 1, 1);
+			rd->compute_list_dispatch(compute_list, Math::division_round_up((int)probe_positions.size(), 64), 1, 1);
 
 			rd->compute_list_end(); //done
 			rd->submit();
@@ -1598,7 +2001,20 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			if (p_step_function) {
 				int percent = i * 100 / ray_iterations;
 				float p = float(i) / ray_iterations * 0.1;
-				p_step_function(0.7 + p, vformat(RTR("Integrating light probes %d%%"), percent), p_bake_userdata, false);
+				if (p_step_function(0.7 + p, vformat(RTR("Integrating light probes %d%%"), percent), p_bake_userdata, false)) {
+					FREE_TEXTURES
+					FREE_BUFFERS
+					FREE_RASTER_RESOURCES
+					FREE_COMPUTE_RESOURCES
+					if (probe_positions.size() > 0) {
+						rd->free(light_probe_buffer);
+					}
+					memdelete(rd);
+					if (rcd != nullptr) {
+						memdelete(rcd);
+					}
+					return BAKE_ERROR_USER_ABORTED;
+				}
 			}
 		}
 	}
@@ -1620,18 +2036,46 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	if (p_use_denoiser) {
 		if (p_step_function) {
-			p_step_function(0.8, RTR("Denoising"), p_bake_userdata, true);
+			if (p_step_function(0.8, RTR("Denoising"), p_bake_userdata, true)) {
+				FREE_TEXTURES
+				FREE_BUFFERS
+				FREE_RASTER_RESOURCES
+				FREE_COMPUTE_RESOURCES
+				if (probe_positions.size() > 0) {
+					rd->free(light_probe_buffer);
+				}
+				memdelete(rd);
+				if (rcd != nullptr) {
+					memdelete(rcd);
+				}
+				return BAKE_ERROR_USER_ABORTED;
+			}
 		}
 
 		{
 			BakeError error;
 			if (denoiser == 1) {
 				// OIDN (external).
-				error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, atlas_slices, p_bake_sh, oidn_path);
+				error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, atlas_slices, p_bake_sh, false, oidn_path);
 			} else {
 				// JNLM (built-in).
 				SWAP(light_accum_tex, light_accum_tex2);
-				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, atlas_size, atlas_slices, p_bake_sh, p_step_function);
+				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, p_denoiser_range, atlas_size, atlas_slices, p_bake_sh, p_step_function, p_bake_userdata);
+			}
+			if (unlikely(error != BAKE_OK)) {
+				return error;
+			}
+		}
+
+		if (p_bake_shadowmask) {
+			BakeError error;
+			if (denoiser == 1) {
+				// OIDN (external).
+				error = _denoise_oidn(rd, shadowmask_tex, normal_tex, shadowmask_tex, atlas_size, atlas_slices, false, true, oidn_path);
+			} else {
+				// JNLM (built-in).
+				SWAP(shadowmask_tex, shadowmask_tex2);
+				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, shadowmask_tex2, normal_tex, shadowmask_tex, p_denoiser_strength, p_denoiser_range, atlas_size, atlas_slices, false, p_step_function, p_bake_userdata);
 			}
 			if (unlikely(error != BAKE_OK)) {
 				return error;
@@ -1639,11 +2083,21 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 	}
 
+	/* DILATE */
+
 	{
 		SWAP(light_accum_tex, light_accum_tex2);
 		BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
 		if (unlikely(error != BAKE_OK)) {
 			return error;
+		}
+
+		if (p_bake_shadowmask) {
+			SWAP(shadowmask_tex, shadowmask_tex2);
+			error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, shadowmask_tex2, shadowmask_tex, atlas_size, atlas_slices);
+			if (unlikely(error != BAKE_OK)) {
+				return error;
+			}
 		}
 	}
 
@@ -1667,6 +2121,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_RASTER_RESOURCES
 		FREE_COMPUTE_RESOURCES
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
+
 		blendseams_shader->print_errors("blendseams_shader");
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1727,8 +2186,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		uint32_t seam_offset = 0;
 		uint32_t triangle_offset = 0;
 
-		Vector<Color> clear_colors;
-		clear_colors.push_back(Color(0, 0, 0, 1));
 		for (int i = 0; i < atlas_slices; i++) {
 			int subslices = (p_bake_sh ? 4 : 1);
 
@@ -1741,7 +2198,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				seams_push_constant.slice = uint32_t(i * subslices + k);
 				seams_push_constant.debug = debug;
 
-				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+				// Store the current subslice in the breadcrumb.
+				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i * subslices + k], RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS | seams_push_constant.slice);
 
 				rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
 				rd->draw_list_bind_uniform_set(draw_list, blendseams_raster_uniform, 1);
@@ -1801,6 +2259,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 	}
 
+	if (p_bake_sh) {
+		SWAP(light_accum_tex, light_accum_tex2);
+		BakeError error = _pack_l1(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices);
+		if (unlikely(error != BAKE_OK)) {
+			return error;
+		}
+	}
+
 #ifdef DEBUG_TEXTURES
 
 	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
@@ -1809,6 +2275,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		img->save_exr("res://5_blendseams" + itos(i) + ".exr", false);
 	}
 #endif
+
 	if (p_step_function) {
 		p_step_function(0.9, RTR("Retrieving textures"), p_bake_userdata, true);
 	}
@@ -1817,7 +2284,16 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->convert(Image::FORMAT_RGBH); //remove alpha
-		bake_textures.push_back(img);
+		lightmap_textures.push_back(img);
+	}
+
+	if (p_bake_shadowmask) {
+		for (int i = 0; i < atlas_slices; i++) {
+			Vector<uint8_t> s = rd->texture_get_data(shadowmask_tex, i);
+			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBA8, s);
+			img->convert(Image::FORMAT_R8);
+			shadowmask_textures.push_back(img);
+		}
 	}
 
 	if (probe_positions.size() > 0) {
@@ -1842,16 +2318,29 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	memdelete(rd);
 
+	if (rcd != nullptr) {
+		memdelete(rcd);
+	}
+
 	return BAKE_OK;
 }
 
 int LightmapperRD::get_bake_texture_count() const {
-	return bake_textures.size();
+	return lightmap_textures.size();
 }
 
 Ref<Image> LightmapperRD::get_bake_texture(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, bake_textures.size(), Ref<Image>());
-	return bake_textures[p_index];
+	ERR_FAIL_INDEX_V(p_index, lightmap_textures.size(), Ref<Image>());
+	return lightmap_textures[p_index];
+}
+
+int LightmapperRD::get_shadowmask_texture_count() const {
+	return shadowmask_textures.size();
+}
+
+Ref<Image> LightmapperRD::get_shadowmask_texture(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, shadowmask_textures.size(), Ref<Image>());
+	return shadowmask_textures[p_index];
 }
 
 int LightmapperRD::get_bake_mesh_count() const {
@@ -1864,9 +2353,9 @@ Variant LightmapperRD::get_bake_mesh_userdata(int p_index) const {
 }
 
 Rect2 LightmapperRD::get_bake_mesh_uv_scale(int p_index) const {
-	ERR_FAIL_COND_V(bake_textures.size() == 0, Rect2());
+	ERR_FAIL_COND_V(lightmap_textures.is_empty(), Rect2());
 	Rect2 uv_ofs;
-	Vector2 atlas_size = Vector2(bake_textures[0]->get_width(), bake_textures[0]->get_height());
+	Vector2 atlas_size = Vector2(lightmap_textures[0]->get_width(), lightmap_textures[0]->get_height());
 	uv_ofs.position = Vector2(mesh_instances[p_index].offset) / atlas_size;
 	uv_ofs.size = Vector2(mesh_instances[p_index].data.albedo_on_uv2->get_width(), mesh_instances[p_index].data.albedo_on_uv2->get_height()) / atlas_size;
 	return uv_ofs;

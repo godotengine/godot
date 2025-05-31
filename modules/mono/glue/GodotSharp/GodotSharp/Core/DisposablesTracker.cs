@@ -59,7 +59,6 @@ namespace Godot
                 GD.Print("Unloading: Finished disposing tracked instances.");
         }
 
-        // ReSharper disable once RedundantNameQualifier
         private static ConcurrentDictionary<WeakReference<GodotObject>, byte> GodotObjectInstances { get; } =
             new();
 

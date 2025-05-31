@@ -37,10 +37,15 @@
 #include "hb-draw.hh"
 #include "hb-font.hh"
 #include "hb-machinery.hh"
+#ifndef HB_NO_AAT
+#include "hb-aat-layout-trak-table.hh"
+#endif
 #include "hb-ot-os2-table.hh"
+#include "hb-ot-stat-table.hh"
 #include "hb-ot-shaper-arabic-pua.hh"
 #include "hb-paint.hh"
 
+#include FT_MODULE_H
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_OUTLINE_H
@@ -224,8 +229,8 @@ _hb_ft_hb_font_check_changed (hb_font_t *font,
  *
  * Sets the FT_Load_Glyph load flags for the specified #hb_font_t.
  *
- * For more information, see 
- * https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_load_xxx
+ * For more information, see
+ * <https://freetype.org/freetype2/docs/reference/ft2-glyph_retrieval.html#ft_load_xxx>
  *
  * This function works with #hb_font_t objects created by
  * hb_ft_font_create() or hb_ft_font_create_referenced().
@@ -252,8 +257,8 @@ hb_ft_font_set_load_flags (hb_font_t *font, int load_flags)
  *
  * Fetches the FT_Load_Glyph load flags of the specified #hb_font_t.
  *
- * For more information, see 
- * https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_load_xxx
+ * For more information, see
+ * <https://freetype.org/freetype2/docs/reference/ft2-glyph_retrieval.html#ft_load_xxx>
  *
  * This function works with #hb_font_t objects created by
  * hb_ft_font_create() or hb_ft_font_create_referenced().
@@ -274,6 +279,33 @@ hb_ft_font_get_load_flags (hb_font_t *font)
 }
 
 /**
+ * hb_ft_font_get_ft_face: (skip)
+ * @font: #hb_font_t to work upon
+ *
+ * Fetches the FT_Face associated with the specified #hb_font_t
+ * font object.
+ *
+ * This function works with #hb_font_t objects created by
+ * hb_ft_font_create() or hb_ft_font_create_referenced().
+ *
+ * Return value: (nullable): the FT_Face found or `NULL`
+ *
+ * Since: 10.4.0
+ **/
+FT_Face
+hb_ft_font_get_ft_face (hb_font_t *font)
+{
+  if (unlikely (font->destroy != (hb_destroy_func_t) _hb_ft_font_destroy))
+    return nullptr;
+
+  const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font->user_data;
+
+  return ft_font->ft_face;
+}
+
+#ifndef HB_DISABLE_DEPRECATED
+
+/**
  * hb_ft_font_get_face: (skip)
  * @font: #hb_font_t to work upon
  *
@@ -286,17 +318,15 @@ hb_ft_font_get_load_flags (hb_font_t *font)
  * Return value: (nullable): the FT_Face found or `NULL`
  *
  * Since: 0.9.2
+ * Deprecated: 10.4.0: Use hb_ft_font_get_ft_face() instead.
  **/
 FT_Face
 hb_ft_font_get_face (hb_font_t *font)
 {
-  if (unlikely (font->destroy != (hb_destroy_func_t) _hb_ft_font_destroy))
-    return nullptr;
-
-  const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font->user_data;
-
-  return ft_font->ft_face;
+  return hb_ft_font_get_ft_face (font);
 }
+
+#endif
 
 /**
  * hb_ft_font_lock_face: (skip)
@@ -501,6 +531,26 @@ hb_ft_get_glyph_h_advances (hb_font_t* font, void* font_data,
       first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
     }
   }
+
+#ifndef HB_NO_AAT
+  /* According to Ned, trak is applied by default for "modern fonts", as detected by presence of STAT table. */
+#ifndef HB_NO_STYLE
+  bool apply_trak = font->face->table.STAT->has_data () && font->face->table.trak->has_data ();
+#else
+  bool apply_trak = false;
+#endif
+  if (apply_trak)
+  {
+    hb_position_t tracking = font->face->table.trak->get_h_tracking (font);
+    first_advance = orig_first_advance;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      *first_advance += tracking;
+      first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+      first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
+    }
+  }
+#endif
 }
 
 #ifndef HB_NO_VERTICAL
@@ -537,7 +587,20 @@ hb_ft_get_glyph_v_advance (hb_font_t *font,
    * have a Y growing upward.  Hence the extra negation. */
 
   hb_position_t y_strength = font->y_scale >= 0 ? font->y_strength : -font->y_strength;
-  return ((-v + (1<<9)) >> 10) + (font->embolden_in_place ? 0 : y_strength);
+  v = ((-v + (1<<9)) >> 10) + (font->embolden_in_place ? 0 : y_strength);
+
+#ifndef HB_NO_AAT
+  /* According to Ned, trak is applied by default for "modern fonts", as detected by presence of STAT table. */
+#ifndef HB_NO_STYLE
+  bool apply_trak = font->face->table.STAT->has_data () && font->face->table.trak->has_data ();
+#else
+  bool apply_trak = false;
+#endif
+  if (apply_trak)
+    v += font->face->table.trak->get_v_tracking (font);
+#endif
+
+  return v;
 }
 #endif
 
@@ -930,11 +993,15 @@ hb_ft_paint_glyph (hb_font_t *font,
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
 
+  FT_Long load_flags = ft_font->load_flags | FT_LOAD_NO_BITMAP | FT_LOAD_COLOR;
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 21301
+  load_flags |= FT_LOAD_NO_SVG;
+#endif
+
   /* We release the lock before calling into glyph callbacks, such that
    * eg. draw API can call back into the face.*/
 
-  if (unlikely (FT_Load_Glyph (ft_face, gid,
-			       ft_font->load_flags | FT_LOAD_COLOR)))
+  if (unlikely (FT_Load_Glyph (ft_face, gid, load_flags)))
     return;
 
   if (ft_face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
@@ -1104,6 +1171,45 @@ _hb_ft_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data
 			 buffer, hb_free);
 }
 
+static unsigned
+_hb_ft_get_table_tags (const hb_face_t *face HB_UNUSED,
+		       unsigned int start_offset,
+		       unsigned int *table_count,
+		       hb_tag_t *table_tags,
+		       void *user_data)
+{
+  FT_Face ft_face = (FT_Face) user_data;
+
+  FT_ULong population = 0;
+  FT_Sfnt_Table_Info (ft_face,
+		      0, // table_index; ignored
+		      nullptr,
+                      &population);
+
+  if (!table_count)
+    return population;
+  else
+    *table_count = 0;
+
+  if (unlikely (start_offset >= population))
+    return population;
+
+  unsigned end_offset = hb_min (start_offset + *table_count, (unsigned) population);
+  if (unlikely (end_offset < start_offset))
+    return population;
+
+  *table_count = end_offset - start_offset;
+  for (unsigned i = start_offset; i < end_offset; i++)
+  {
+    FT_ULong tag = 0, length;
+    FT_Sfnt_Table_Info (ft_face, i, &tag, &length);
+    table_tags[i - start_offset] = tag;
+  }
+
+  return population;
+}
+
+
 /**
  * hb_ft_face_create:
  * @ft_face: (destroy destroy) (scope notified): FT_Face to work upon
@@ -1118,10 +1224,10 @@ _hb_ft_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data
  * This variant of the function does not provide any life-cycle management.
  *
  * Most client programs should use hb_ft_face_create_referenced()
- * (or, perhaps, hb_ft_face_create_cached()) instead. 
+ * (or, perhaps, hb_ft_face_create_cached()) instead.
  *
  * If you know you have valid reasons not to use hb_ft_face_create_referenced(),
- * then it is the client program's responsibility to destroy @ft_face 
+ * then it is the client program's responsibility to destroy @ft_face
  * after the #hb_face_t face object has been destroyed.
  *
  * Return value: (transfer full): the new #hb_face_t face object
@@ -1145,6 +1251,7 @@ hb_ft_face_create (FT_Face           ft_face,
     hb_blob_destroy (blob);
   } else {
     face = hb_face_create_for_tables (_hb_ft_reference_table, ft_face, destroy);
+    hb_face_set_get_table_tags_func (face, _hb_ft_get_table_tags, ft_face, nullptr);
   }
 
   hb_face_set_index (face, ft_face->face_index);
@@ -1215,7 +1322,7 @@ hb_ft_face_finalize (void *arg)
 hb_face_t *
 hb_ft_face_create_cached (FT_Face ft_face)
 {
-  if (unlikely (!ft_face->generic.data || ft_face->generic.finalizer != (FT_Generic_Finalizer) hb_ft_face_finalize))
+  if (unlikely (!ft_face->generic.data || ft_face->generic.finalizer != hb_ft_face_finalize))
   {
     if (ft_face->generic.finalizer)
       ft_face->generic.finalizer (ft_face);
@@ -1241,13 +1348,13 @@ hb_ft_face_create_cached (FT_Face ft_face)
  * This variant of the function does not provide any life-cycle management.
  *
  * Most client programs should use hb_ft_font_create_referenced()
- * instead. 
+ * instead.
  *
  * If you know you have valid reasons not to use hb_ft_font_create_referenced(),
- * then it is the client program's responsibility to destroy @ft_face 
- * after the #hb_font_t font object has been destroyed.
+ * then it is the client program's responsibility to destroy @ft_face
+ * only after the #hb_font_t font object has been destroyed.
  *
- * HarfBuzz will use the @destroy callback on the #hb_font_t font object 
+ * HarfBuzz will use the @destroy callback on the #hb_font_t font object
  * if it is supplied when you use this function. However, even if @destroy
  * is provided, it is the client program's responsibility to destroy @ft_face,
  * and it is the client program's responsibility to ensure that @ft_face is
@@ -1392,6 +1499,24 @@ hb_ft_font_create_referenced (FT_Face ft_face)
   return hb_ft_font_create (ft_face, _hb_ft_face_destroy);
 }
 
+
+static void * _hb_ft_alloc (FT_Memory memory, long size)
+{ return hb_malloc (size); }
+
+static void _hb_ft_free (FT_Memory memory, void *block)
+{ hb_free (block); }
+
+static void * _hb_ft_realloc (FT_Memory memory, long cur_size, long new_size, void *block)
+{ return hb_realloc (block, new_size); }
+
+static FT_MemoryRec_ m =
+{
+  nullptr,
+  _hb_ft_alloc,
+  _hb_ft_free,
+  _hb_ft_realloc
+};
+
 static inline void free_static_ft_library ();
 
 static struct hb_ft_library_lazy_loader_t : hb_lazy_loader_t<hb_remove_pointer<FT_Library>,
@@ -1400,8 +1525,11 @@ static struct hb_ft_library_lazy_loader_t : hb_lazy_loader_t<hb_remove_pointer<F
   static FT_Library create ()
   {
     FT_Library l;
-    if (FT_Init_FreeType (&l))
+    if (FT_New_Library (&m, &l))
       return nullptr;
+
+    FT_Add_Default_Modules (l);
+    FT_Set_Default_Properties (l);
 
     hb_atexit (free_static_ft_library);
 
@@ -1409,7 +1537,7 @@ static struct hb_ft_library_lazy_loader_t : hb_lazy_loader_t<hb_remove_pointer<F
   }
   static void destroy (FT_Library l)
   {
-    FT_Done_FreeType (l);
+    FT_Done_Library (l);
   }
   static FT_Library get_null ()
   {
@@ -1424,9 +1552,76 @@ void free_static_ft_library ()
 }
 
 static FT_Library
-get_ft_library ()
+reference_ft_library ()
 {
-  return static_ft_library.get_unconst ();
+  FT_Library l = static_ft_library.get_unconst ();
+  if (unlikely (FT_Reference_Library (l)))
+  {
+    DEBUG_MSG (FT, l, "FT_Reference_Library() failed");
+    return nullptr;
+  }
+  return l;
+}
+
+static hb_user_data_key_t ft_library_key = {0};
+
+static void
+finalize_ft_library (void *arg)
+{
+  FT_Face ft_face = (FT_Face) arg;
+  FT_Done_Library ((FT_Library) ft_face->generic.data);
+}
+
+static void
+destroy_ft_library (void *arg)
+{
+  FT_Done_Library ((FT_Library) arg);
+}
+
+/**
+ * hb_ft_face_create_from_file_or_fail:
+ * @file_name: A font filename
+ * @index: The index of the face within the file
+ *
+ * Creates an #hb_face_t face object from the specified
+ * font file and face index.
+ *
+ * This is similar in functionality to hb_face_create_from_file_or_fail(),
+ * but uses the FreeType library for loading the font file.
+ *
+ * Return value: (transfer full): The new face object, or `NULL` if
+ * no face is found at the specified index or the file cannot be read.
+ *
+ * Since: 10.1.0
+ */
+hb_face_t *
+hb_ft_face_create_from_file_or_fail (const char   *file_name,
+				     unsigned int  index)
+{
+  FT_Library ft_library = reference_ft_library ();
+  if (unlikely (!ft_library))
+  {
+    DEBUG_MSG (FT, ft_library, "reference_ft_library failed");
+    return nullptr;
+  }
+
+  FT_Face ft_face;
+  if (unlikely (FT_New_Face (ft_library,
+			     file_name,
+			     index,
+			     &ft_face)))
+    return nullptr;
+
+  hb_face_t *face = hb_ft_face_create_referenced (ft_face);
+  FT_Done_Face (ft_face);
+
+  ft_face->generic.data = ft_library;
+  ft_face->generic.finalizer = finalize_ft_library;
+
+  if (hb_face_is_immutable (face))
+    return nullptr;
+
+  return face;
 }
 
 static void
@@ -1465,31 +1660,46 @@ _release_blob (void *arg)
 void
 hb_ft_font_set_funcs (hb_font_t *font)
 {
+  // In case of failure...
+  hb_font_set_funcs (font,
+		     hb_font_funcs_get_empty (),
+		     nullptr, nullptr);
+
   hb_blob_t *blob = hb_face_reference_blob (font->face);
   unsigned int blob_length;
   const char *blob_data = hb_blob_get_data (blob, &blob_length);
   if (unlikely (!blob_length))
     DEBUG_MSG (FT, font, "Font face has empty blob");
 
-  FT_Face ft_face = nullptr;
-  FT_Error err = FT_New_Memory_Face (get_ft_library (),
-				     (const FT_Byte *) blob_data,
-				     blob_length,
-				     hb_face_get_index (font->face),
-				     &ft_face);
-
-  if (unlikely (err)) {
+  FT_Library ft_library = reference_ft_library ();
+  if (unlikely (!ft_library))
+  {
     hb_blob_destroy (blob);
-    DEBUG_MSG (FT, font, "Font face FT_New_Memory_Face() failed");
+    DEBUG_MSG (FT, font, "reference_ft_library failed");
+    return;
+  }
+
+  FT_Face ft_face = nullptr;
+  if (unlikely (FT_New_Memory_Face (ft_library,
+				    (const FT_Byte *) blob_data,
+				    blob_length,
+				    hb_face_get_index (font->face),
+				    &ft_face)))
+  {
+    hb_blob_destroy (blob);
+    DEBUG_MSG (FT, font, "FT_New_Memory_Face() failed");
     return;
   }
 
   if (FT_Select_Charmap (ft_face, FT_ENCODING_MS_SYMBOL))
     FT_Select_Charmap (ft_face, FT_ENCODING_UNICODE);
 
-
+  // Hook the blob to the FT_Face
   ft_face->generic.data = blob;
   ft_face->generic.finalizer = _release_blob;
+
+  // And the FT_Library to the blob
+  hb_blob_set_user_data (blob, &ft_library_key, ft_library, destroy_ft_library, true);
 
   _hb_ft_font_set_funcs (font, ft_face, true);
   hb_ft_font_set_load_flags (font, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);

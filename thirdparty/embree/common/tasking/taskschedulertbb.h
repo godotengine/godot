@@ -15,6 +15,12 @@
 #  define NOMINMAX
 #endif
 
+#if defined(__INTEL_LLVM_COMPILER)
+// prevents "'__thiscall' calling convention is not supported for this target" warning from TBB
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-attributes"
+#endif
+
 // We need to define these to avoid implicit linkage against
 // tbb_debug.lib under Windows. When removing these lines debug build
 // under Windows fails.
@@ -24,6 +30,18 @@
 #define TBB_PREVIEW_ISOLATED_TASK_GROUP 1
 #include "tbb/tbb.h"
 #include "tbb/parallel_sort.h"
+
+#if defined(TASKING_TBB) && (TBB_INTERFACE_VERSION_MAJOR >= 8)
+#  define USE_TASK_ARENA 1
+#else
+#  define USE_TASK_ARENA 0
+#endif
+
+#if defined(TASKING_TBB) && (TBB_INTERFACE_VERSION >= 11009) // TBB 2019 Update 9
+#  define TASKING_TBB_USE_TASK_ISOLATION 1
+#else
+#  define TASKING_TBB_USE_TASK_ISOLATION 0
+#endif
 
 namespace embree
 {
@@ -65,3 +83,7 @@ namespace embree
   };
 
 };
+
+#if defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic pop
+#endif

@@ -229,6 +229,7 @@ If there is an error, the function will return an error code, which can be teste
 
 #endif  /* FSE_H */
 
+
 #if defined(FSE_STATIC_LINKING_ONLY) && !defined(FSE_H_FSE_STATIC_LINKING_ONLY)
 #define FSE_H_FSE_STATIC_LINKING_ONLY
 
@@ -464,13 +465,13 @@ MEM_STATIC void FSE_encodeSymbol(BIT_CStream_t* bitC, FSE_CState_t* statePtr, un
     FSE_symbolCompressionTransform const symbolTT = ((const FSE_symbolCompressionTransform*)(statePtr->symbolTT))[symbol];
     const U16* const stateTable = (const U16*)(statePtr->stateTable);
     U32 const nbBitsOut  = (U32)((statePtr->value + symbolTT.deltaNbBits) >> 16);
-    BIT_addBits(bitC, statePtr->value, nbBitsOut);
+    BIT_addBits(bitC,  (size_t)statePtr->value, nbBitsOut);
     statePtr->value = stateTable[ (statePtr->value >> nbBitsOut) + symbolTT.deltaFindState];
 }
 
 MEM_STATIC void FSE_flushCState(BIT_CStream_t* bitC, const FSE_CState_t* statePtr)
 {
-    BIT_addBits(bitC, statePtr->value, statePtr->stateLog);
+    BIT_addBits(bitC, (size_t)statePtr->value, statePtr->stateLog);
     BIT_flushBits(bitC);
 }
 

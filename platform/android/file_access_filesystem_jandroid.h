@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_FILESYSTEM_JANDROID_H
-#define FILE_ACCESS_FILESYSTEM_JANDROID_H
+#pragma once
 
 #include "java_godot_lib_jni.h"
 
 #include "core/io/file_access.h"
 
 class FileAccessFilesystemJAndroid : public FileAccess {
+	GDSOFTCLASS(FileAccessFilesystemJAndroid, FileAccess);
 	static jobject file_access_handler;
 	static jclass cls;
 
@@ -52,6 +52,9 @@ class FileAccessFilesystemJAndroid : public FileAccess {
 	static jmethodID _file_close;
 	static jmethodID _file_exists;
 	static jmethodID _file_last_modified;
+	static jmethodID _file_last_accessed;
+	static jmethodID _file_resize;
+	static jmethodID _file_size;
 
 	int id;
 	String absolute_path;
@@ -76,23 +79,25 @@ public:
 
 	virtual bool eof_reached() const override; ///< reading passed EOF
 
-	virtual uint8_t get_8() const override; ///< get a byte
+	virtual Error resize(int64_t p_length) override;
 	virtual String get_line() const override; ///< get a line
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; ///< get last error
 
 	virtual void flush() override;
-	virtual void store_8(uint8_t p_dest) override; ///< store a byte
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override;
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
 	virtual bool file_exists(const String &p_path) override; ///< return true if a file exists
 
 	static void setup(jobject p_file_access_handler);
+	static void terminate();
 
 	virtual uint64_t _get_modified_time(const String &p_file) override;
+	virtual uint64_t _get_access_time(const String &p_file) override;
+	virtual int64_t _get_size(const String &p_file) override;
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
+	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return ERR_UNAVAILABLE; }
 
 	virtual bool _get_hidden_attribute(const String &p_file) override { return false; }
 	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override { return ERR_UNAVAILABLE; }
@@ -104,5 +109,3 @@ public:
 	FileAccessFilesystemJAndroid();
 	~FileAccessFilesystemJAndroid();
 };
-
-#endif // FILE_ACCESS_FILESYSTEM_JANDROID_H

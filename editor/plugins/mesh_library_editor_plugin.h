@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_LIBRARY_EDITOR_PLUGIN_H
-#define MESH_LIBRARY_EDITOR_PLUGIN_H
+#pragma once
 
-#include "editor/editor_plugin.h"
-#include "scene/resources/mesh_library.h"
+#include "editor/plugins/editor_plugin.h"
+#include "scene/resources/3d/mesh_library.h"
 
 class EditorFileDialog;
 class ConfirmationDialog;
 class MenuButton;
+class MeshInstance3D;
 
 class MeshLibraryEditor : public Control {
 	GDCLASS(MeshLibraryEditor, Control);
@@ -65,9 +65,7 @@ class MeshLibraryEditor : public Control {
 	void _menu_update_confirm(bool p_apply_xforms);
 
 	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
-
-protected:
-	static void _bind_methods();
+	static void _import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms);
 
 public:
 	MenuButton *get_menu_button() const { return menu; }
@@ -84,7 +82,7 @@ class MeshLibraryEditorPlugin : public EditorPlugin {
 	MeshLibraryEditor *mesh_library_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "MeshLibrary"; }
+	virtual String get_plugin_name() const override { return "MeshLibrary"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
@@ -92,5 +90,3 @@ public:
 
 	MeshLibraryEditorPlugin();
 };
-
-#endif // MESH_LIBRARY_EDITOR_PLUGIN_H

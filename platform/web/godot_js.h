@@ -28,17 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_JS_H
-#define GODOT_JS_H
+#pragma once
 
 #define WASM_EXPORT __attribute__((visibility("default")))
+
+#include <cstdint>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stddef.h>
-#include <stdint.h>
 
 // Config
 extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
@@ -63,6 +61,11 @@ extern void godot_js_input_mouse_wheel_cb(int (*p_callback)(double p_delta_x, do
 extern void godot_js_input_touch_cb(void (*p_callback)(int p_type, int p_count), uint32_t *r_identifiers, double *r_coords);
 extern void godot_js_input_key_cb(void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
 extern void godot_js_input_vibrate_handheld(int p_duration_ms);
+
+extern void godot_js_set_ime_active(int p_active);
+extern void godot_js_set_ime_position(int p_x, int p_y);
+extern void godot_js_set_ime_cb(void (*p_input)(int p_type, const char *p_text), void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
+extern int godot_js_is_ime_focused();
 
 // Input gamepad
 extern void godot_js_input_gamepad_cb(void (*p_on_change)(int p_index, int p_connected, const char *p_id, const char *p_guid));
@@ -131,5 +134,3 @@ extern void godot_js_display_vk_hide();
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_JS_H

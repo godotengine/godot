@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONNECTIONS_DIALOG_H
-#define CONNECTIONS_DIALOG_H
+#pragma once
 
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
 class Button;
 class CheckBox;
+class CheckButton;
 class ConnectDialogBinds;
 class EditorInspector;
+class EditorVariantTypeOptionButton;
 class Label;
 class LineEdit;
 class OptionButton;
@@ -72,6 +72,12 @@ public:
 				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(p_connection.callable.get_custom());
 				if (ccb) {
 					binds = ccb->get_binds();
+
+					// The source object may already be bound, ignore it to prevent display of the source object.
+					if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
+						binds.remove_at(0);
+					}
+
 					base_callable = ccb->get_callable();
 				}
 
@@ -128,18 +134,19 @@ private:
 
 	SpinBox *unbind_count = nullptr;
 	EditorInspector *bind_editor = nullptr;
-	OptionButton *type_list = nullptr;
+	EditorVariantTypeOptionButton *type_list = nullptr;
 	CheckBox *deferred = nullptr;
 	CheckBox *one_shot = nullptr;
+	CheckBox *append_source = nullptr;
 	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
+	Label *warning_label = nullptr;
 	Label *error_label = nullptr;
 
 	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
-	void _text_submitted(const String &p_text);
 	void _tree_node_selected();
 	void _focus_currently_connected();
 
@@ -155,13 +162,15 @@ private:
 	void _remove_bind();
 	void _advanced_pressed();
 	void _update_ok_enabled();
+	void _update_warning_label();
 
 protected:
+	virtual void _post_popup() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	static StringName generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target);
+	static StringName generate_method_callback_name(Node *p_source, const String &p_signal_name, Node *p_target);
 	Node *get_source() const;
 	ConnectionData get_source_connection_data() const;
 	StringName get_signal_name() const;
@@ -176,18 +185,21 @@ public:
 
 	bool get_deferred() const;
 	bool get_one_shot() const;
+	bool get_append_source() const;
 	bool is_editing() const;
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit = false);
 
-	void popup_dialog(const String p_for_signal);
+	void popup_dialog(const String &p_for_signal);
 	ConnectDialog();
 	~ConnectDialog();
 };
 
 //////////////////////////////////////////
 
-// Custom `Tree` needed to use `EditorHelpTooltip` to display signal documentation.
+// Custom `Tree` needed to use `EditorHelpBit` to display signal documentation.
 class ConnectionsDockTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };
@@ -252,7 +264,7 @@ class ConnectionsDock : public VBoxContainer {
 	void _signal_menu_about_to_popup();
 	void _handle_slot_menu_option(int p_option);
 	void _slot_menu_about_to_popup();
-	void _rmb_pressed(const Ref<InputEvent> &p_event);
+	void _tree_gui_input(const Ref<InputEvent> &p_event);
 	void _close();
 
 protected:
@@ -265,7 +277,4 @@ public:
 	void update_tree();
 
 	ConnectionsDock();
-	~ConnectionsDock();
 };
-
-#endif // CONNECTIONS_DIALOG_H

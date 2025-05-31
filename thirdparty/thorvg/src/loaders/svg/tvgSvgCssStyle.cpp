@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2022 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,22 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from)
         to->flags = (to->flags | SvgStyleFlags::Color);
         if (from->flagsImportance & SvgStyleFlags::Color) {
             to->flagsImportance = (to->flagsImportance | SvgStyleFlags::Color);
+        }
+    }
+    if (((from->flags & SvgStyleFlags::PaintOrder) && !(to->flags & SvgStyleFlags::PaintOrder)) ||
+        _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::PaintOrder)) {
+        to->paintOrder = from->paintOrder;
+        to->flags = (to->flags | SvgStyleFlags::PaintOrder);
+        if (from->flagsImportance & SvgStyleFlags::PaintOrder) {
+            to->flagsImportance = (to->flagsImportance | SvgStyleFlags::PaintOrder);
+        }
+    }
+    if (((from->flags & SvgStyleFlags::Display) && !(to->flags & SvgStyleFlags::Display)) ||
+        _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::Display)) {
+        to->display = from->display;
+        to->flags = (to->flags | SvgStyleFlags::Display);
+        if (from->flagsImportance & SvgStyleFlags::Display) {
+            to->flagsImportance = (to->flagsImportance | SvgStyleFlags::Display);
         }
     }
     //Fill

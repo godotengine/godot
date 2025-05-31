@@ -38,6 +38,10 @@ bool Rect2::is_equal_approx(const Rect2 &p_rect) const {
 	return position.is_equal_approx(p_rect.position) && size.is_equal_approx(p_rect.size);
 }
 
+bool Rect2::is_same(const Rect2 &p_rect) const {
+	return position.is_same(p_rect.position) && size.is_same(p_rect.size);
+}
+
 bool Rect2::is_finite() const {
 	return position.is_finite() && size.is_finite();
 }
@@ -283,7 +287,7 @@ next4:
 }
 
 Rect2::operator String() const {
-	return "[P: " + position.operator String() + ", S: " + size + "]";
+	return "[P: " + position.operator String() + ", S: " + size.operator String() + "]";
 }
 
 Rect2::operator Rect2i() const {

@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_PRELOADER_EDITOR_PLUGIN_H
-#define RESOURCE_PRELOADER_EDITOR_PLUGIN_H
+#pragma once
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tree.h"
@@ -88,14 +87,11 @@ class ResourcePreloaderEditorPlugin : public EditorPlugin {
 	Button *button = nullptr;
 
 public:
-	virtual String get_name() const override { return "ResourcePreloader"; }
+	virtual String get_plugin_name() const override { return "ResourcePreloader"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	ResourcePreloaderEditorPlugin();
-	~ResourcePreloaderEditorPlugin();
 };
-
-#endif // RESOURCE_PRELOADER_EDITOR_PLUGIN_H

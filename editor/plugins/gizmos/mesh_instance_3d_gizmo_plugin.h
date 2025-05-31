@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_INSTANCE_3D_GIZMO_PLUGIN_H
-#define MESH_INSTANCE_3D_GIZMO_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
@@ -42,8 +41,4 @@ public:
 	int get_priority() const override;
 	bool can_be_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	MeshInstance3DGizmoPlugin();
 };
-
-#endif // MESH_INSTANCE_3D_GIZMO_PLUGIN_H

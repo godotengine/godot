@@ -1,0 +1,112 @@
+# Tagalog translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2022-08-12 17:08+0000\n"
+"Last-Translator: Napstaguy04 <brokenscreen3@gmail.com>\n"
+"Language-Team: Tagalog <https://hosted.weblate.org/projects/godot-engine/"
+"godot/tl/>\n"
+"Language: tl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
+"|| n % 10 == 6 || n % 10 == 9);\n"
+"X-Generator: Weblate 4.14-dev\n"
+
+msgid "All Recognized"
+msgstr "Lahat na Kilalang Ekstensyon"
+
+msgid "Open"
+msgstr "Buksan"
+
+msgid "Select Current Folder"
+msgstr "Piliin Ang Tinututukang Folder"
+
+msgid "Save"
+msgstr "I-save"
+
+msgid "Select This Folder"
+msgstr "Piliin ang Folder na Ito"
+
+msgid "Open a File"
+msgstr "Buksan ang File"
+
+msgid "Open File(s)"
+msgstr "Buksan Ang (Mga) File"
+
+msgid "Open a Directory"
+msgstr "Bumukas ng Directory"
+
+msgid "Open a File or Directory"
+msgstr "Bumukas ng File o Directory"
+
+msgid "Save a File"
+msgstr "Magsave ng File"
+
+msgid "Go to previous folder."
+msgstr "Pumunta sa nakaraang Folder."
+
+msgid "Go to next folder."
+msgstr "Pumunta sa susunod na folder."
+
+msgid "Go to parent folder."
+msgstr "Pumunta sa ugat na folder."
+
+msgid "Path:"
+msgstr "Kinaroroonan:"
+
+msgid "Refresh files."
+msgstr "I-refresh ang mga file."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "I-toggle ang pagkakakita ng mga nakatagong file."
+
+msgid "Directories & Files:"
+msgstr "Mga Direktoryo at mga File:"
+
+msgid "File:"
+msgstr "File:"
+
+msgid "Create Folder"
+msgstr "Gumawa ng Folder"
+
+msgid "Name:"
+msgstr "Pangalan:"
+
+msgid "Could not create folder."
+msgstr "Nabigong lumikha ng folder."
+
+msgid "Zoom Out"
+msgstr "Paliitin Ang Tanaw"
+
+msgid "Zoom Reset"
+msgstr "Ibalik sa Dati ang Zoom"
+
+msgid "Zoom In"
+msgstr "Palakihin Ang Tanaw"
+
+msgid "Cut"
+msgstr "Gupitin"
+
+msgid "Copy"
+msgstr "Kopyahin"
+
+msgid "Paste"
+msgstr "I-pasta"
+
+msgid "Select All"
+msgstr "Piliin Lahat"
+
+msgid "Clear"
+msgstr "Linisin"
+
+msgid "Undo"
+msgstr "I-undo"
+
+msgid "Redo"
+msgstr "I-redo"

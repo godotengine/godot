@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_ATLAS_VIEW_H
-#define TILE_ATLAS_VIEW_H
+#pragma once
 
 #include "editor/gui/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
@@ -37,7 +36,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class ViewPanner;
 
@@ -45,8 +44,8 @@ class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);
 
 private:
-	TileSet *tile_set = nullptr;
-	TileSetAtlasSource *tile_set_atlas_source = nullptr;
+	Ref<TileSet> tile_set;
+	Ref<TileSetAtlasSource> tile_set_atlas_source;
 	int source_id = TileSet::INVALID_SOURCE;
 
 	enum DragType {
@@ -59,7 +58,7 @@ private:
 	Button *button_center_view = nullptr;
 	CenterContainer *center_container = nullptr;
 	Vector2 panning;
-	void _update_zoom_and_panning(bool p_zoom_on_mouse_pos = false);
+	void _update_zoom_and_panning(bool p_zoom_on_mouse_pos = false, const Vector2 &p_mouse_pos = Vector2());
 	void _zoom_widget_changed();
 	void _center_view();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -135,8 +134,8 @@ public:
 	void set_padding(Side p_side, int p_padding);
 
 	// Left side.
-	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); };
-	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); };
+	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); }
+	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); }
 
 	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p_clamp = false) const;
 
@@ -148,7 +147,7 @@ public:
 		}
 		p_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		p_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	};
+	}
 
 	// Right side.
 	Vector3i get_alternative_tile_at_pos(const Vector2 p_pos) const;
@@ -162,7 +161,7 @@ public:
 		}
 		p_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		p_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	};
+	}
 
 	// Redraw everything.
 	void queue_redraw();
@@ -170,5 +169,3 @@ public:
 	TileAtlasView();
 	~TileAtlasView();
 };
-
-#endif // TILE_ATLAS_VIEW_H

@@ -7,20 +7,21 @@
 		The AudioStreamOggVorbis class is a specialized [AudioStream] for handling Ogg Vorbis file formats. It offers functionality for loading and playing back Ogg Vorbis files, as well as managing looping and other playback properties. This class is part of the audio stream system, which also supports WAV files through the [AudioStreamWAV] class.
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="load_from_buffer" qualifiers="static">
 			<return type="AudioStreamOggVorbis" />
-			<param index="0" name="buffer" type="PackedByteArray" />
+			<param index="0" name="stream_data" type="PackedByteArray" />
 			<description>
-				Creates a new AudioStreamOggVorbis instance from the given buffer. The buffer must contain Ogg Vorbis data.
+				Creates a new [AudioStreamOggVorbis] instance from the given buffer. The buffer must contain Ogg Vorbis data.
 			</description>
 		</method>
 		<method name="load_from_file" qualifiers="static">
 			<return type="AudioStreamOggVorbis" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Creates a new AudioStreamOggVorbis instance from the given file path. The file must be in Ogg Vorbis format.
+				Creates a new [AudioStreamOggVorbis] instance from the given file path. The file must be in Ogg Vorbis format.
 			</description>
 		</method>
 	</methods>

@@ -31,8 +31,11 @@
 #include "shader_globals_editor.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "servers/rendering/shader_language.h"
 
 static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
@@ -64,6 +67,7 @@ static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
 	"sampler2DArray",
 	"sampler3D",
 	"samplerCube",
+	"samplerExternalOES",
 };
 
 class ShaderGlobalsEditorInterface : public Object {
@@ -105,7 +109,6 @@ class ShaderGlobalsEditorInterface : public Object {
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method("_set_var", &ShaderGlobalsEditorInterface::_set_var);
 		ClassDB::bind_method("_var_changed", &ShaderGlobalsEditorInterface::_var_changed);
 		ADD_SIGNAL(MethodInfo("var_changed"));
 	}
@@ -117,7 +120,7 @@ protected:
 			return false;
 		}
 
-		call_deferred("_set_var", p_name, p_value, existing);
+		callable_mp(this, &ShaderGlobalsEditorInterface::_set_var).call_deferred(p_name, p_value, existing);
 
 		return true;
 	}
@@ -220,7 +223,7 @@ protected:
 				case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					pinfo.hint_string = "Texture2DArray";
+					pinfo.hint_string = "Texture2DArray,CompressedTexture2DArray";
 				} break;
 				case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
 					pinfo.type = Variant::OBJECT;
@@ -230,7 +233,12 @@ protected:
 				case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					pinfo.hint_string = "Cubemap";
+					pinfo.hint_string = "Cubemap,CompressedCubemap";
+				} break;
+				case RS::GLOBAL_VAR_TYPE_SAMPLEREXT: {
+					pinfo.type = Variant::OBJECT;
+					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					pinfo.hint_string = "ExternalTexture";
 				} break;
 				default: {
 				} break;
@@ -339,21 +347,42 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 		case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
 			return "";
 		}
+		case RS::GLOBAL_VAR_TYPE_SAMPLEREXT: {
+			return "";
+		}
 		default: {
 			return Variant();
 		}
 	}
 }
 
-void ShaderGlobalsEditor::_variable_added() {
-	String var = variable_name->get_text().strip_edges();
-	if (var.is_empty() || !var.is_valid_identifier()) {
-		EditorNode::get_singleton()->show_warning(TTR("Please specify a valid shader uniform identifier name."));
-		return;
+String ShaderGlobalsEditor::_check_new_variable_name(const String &p_variable_name) {
+	if (p_variable_name.is_empty()) {
+		return TTRC("Name cannot be empty.");
 	}
 
+	if (!p_variable_name.is_valid_ascii_identifier()) {
+		return TTRC("Name must be a valid identifier.");
+	}
+
+	return "";
+}
+
+LineEdit *ShaderGlobalsEditor::get_name_box() const {
+	return variable_name;
+}
+
+void ShaderGlobalsEditor::_variable_name_text_changed(const String &p_variable_name) {
+	const String &warning = _check_new_variable_name(p_variable_name.strip_edges());
+	variable_add->set_tooltip_text(warning);
+	variable_add->set_disabled(!warning.is_empty());
+}
+
+void ShaderGlobalsEditor::_variable_added() {
+	String var = variable_name->get_text().strip_edges();
+
 	if (RenderingServer::get_singleton()->global_shader_parameter_get(var).get_type() != Variant::NIL) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader parameter '%s' already exists'"), var));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader parameter '%s' already exists."), var));
 		return;
 	}
 
@@ -381,6 +410,8 @@ void ShaderGlobalsEditor::_variable_added() {
 	undo_redo->add_do_method(this, "_changed");
 	undo_redo->add_undo_method(this, "_changed");
 	undo_redo->commit_action();
+
+	variable_name->clear();
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
@@ -417,6 +448,10 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			variable_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			inspector->edit(nullptr);
 		} break;
@@ -429,12 +464,16 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	HBoxContainer *add_menu_hb = memnew(HBoxContainer);
 	add_child(add_menu_hb);
 
-	add_menu_hb->add_child(memnew(Label(TTR("Name:"))));
+	add_menu_hb->add_child(memnew(Label(TTRC("Name:"))));
 	variable_name = memnew(LineEdit);
 	variable_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	variable_name->set_clear_button_enabled(true);
+	variable_name->connect(SceneStringName(text_changed), callable_mp(this, &ShaderGlobalsEditor::_variable_name_text_changed));
+	variable_name->connect(SceneStringName(text_submitted), callable_mp(this, &ShaderGlobalsEditor::_variable_added).unbind(1));
+
 	add_menu_hb->add_child(variable_name);
 
-	add_menu_hb->add_child(memnew(Label(TTR("Type:"))));
+	add_menu_hb->add_child(memnew(Label(TTRC("Type:"))));
 	variable_type = memnew(OptionButton);
 	variable_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_menu_hb->add_child(variable_type);
@@ -443,9 +482,10 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 		variable_type->add_item(global_var_type_names[i]);
 	}
 
-	variable_add = memnew(Button(TTR("Add")));
+	variable_add = memnew(Button(TTRC("Add")));
+	variable_add->set_disabled(true);
 	add_menu_hb->add_child(variable_add);
-	variable_add->connect("pressed", callable_mp(this, &ShaderGlobalsEditor::_variable_added));
+	variable_add->connect(SceneStringName(pressed), callable_mp(this, &ShaderGlobalsEditor::_variable_added));
 
 	inspector = memnew(EditorInspector);
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);

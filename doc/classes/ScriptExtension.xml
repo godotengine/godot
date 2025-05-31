@@ -32,6 +32,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_doc_class_name" qualifiers="virtual const">
+			<return type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_documentation" qualifiers="virtual const">
 			<return type="Dictionary[]" />
 			<description>
@@ -78,6 +83,13 @@
 		<method name="_get_rpc_config" qualifiers="virtual const">
 			<return type="Variant" />
 			<description>
+			</description>
+		</method>
+		<method name="_get_script_method_argument_count" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Return the expected argument count for the given [param method], or [code]null[/code] if it can't be determined (which will then fall back to the default behavior).
 			</description>
 		</method>
 		<method name="_get_script_method_list" qualifiers="virtual const">
@@ -150,7 +162,7 @@
 		<method name="_is_abstract" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the script is an abstract script. An abstract script does not have a constructor and cannot be instantiated.
+				Returns [code]true[/code] if the script is an abstract script. Abstract scripts cannot be instantiated directly, instead other scripts should inherit them. Abstract scripts will be either unselectable or hidden in the Create New Node dialog (unselectable if there are non-abstract classes inheriting it, otherwise hidden).
 			</description>
 		</method>
 		<method name="_is_placeholder_fallback_enabled" qualifiers="virtual const">

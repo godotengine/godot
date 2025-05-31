@@ -25,7 +25,7 @@ func test():
 	print("String in Array[StringName]: ", "abc" in stringname_array)
 
 	var packed_string_array: PackedStringArray = []
-	assert(!packed_string_array.push_back("abc"))
+	Utils.check(!packed_string_array.push_back("abc"))
 	print("StringName in PackedStringArray: ", &"abc" in packed_string_array)
 
 	string_array.push_back("abc")

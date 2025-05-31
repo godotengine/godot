@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATERIAL_H
-#define MATERIAL_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/self_list.h"
@@ -42,7 +41,7 @@ class Material : public Resource {
 	RES_BASE_EXTENSION("material")
 	OBJ_SAVE_TYPE(Material);
 
-	RID material;
+	mutable RID material;
 	Ref<Material> next_pass;
 	int render_priority;
 
@@ -55,6 +54,7 @@ class Material : public Resource {
 	void inspect_native_shader_code();
 
 protected:
+	_FORCE_INLINE_ void _set_material(RID p_material) const { material = p_material; }
 	_FORCE_INLINE_ RID _get_material() const { return material; }
 	static void _bind_methods();
 	virtual bool _can_do_next_pass() const;
@@ -62,11 +62,12 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
-	void _mark_initialized(const Callable &p_queue_shader_change_callable);
+	void _mark_ready();
+	void _mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader);
 	bool _is_initialized() { return init_state == INIT_STATE_READY; }
 
-	GDVIRTUAL0RC(RID, _get_shader_rid)
-	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
+	GDVIRTUAL0RC_REQUIRED(RID, _get_shader_rid)
+	GDVIRTUAL0RC_REQUIRED(Shader::Mode, _get_shader_mode)
 	GDVIRTUAL0RC(bool, _can_do_next_pass)
 	GDVIRTUAL0RC(bool, _can_use_render_priority)
 public:
@@ -96,6 +97,7 @@ class ShaderMaterial : public Material {
 
 	mutable HashMap<StringName, StringName> remap_cache;
 	mutable HashMap<StringName, Variant> param_cache;
+	mutable Mutex material_rid_mutex;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -106,12 +108,15 @@ protected:
 
 	static void _bind_methods();
 
+#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	virtual bool _can_do_next_pass() const override;
 	virtual bool _can_use_render_priority() const override;
 
 	void _shader_changed();
+	void _check_material_rid() const;
 
 public:
 	void set_shader(const Ref<Shader> &p_shader);
@@ -122,6 +127,7 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const override;
 
+	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;
 
 	ShaderMaterial();
@@ -132,6 +138,9 @@ class StandardMaterial3D;
 
 class BaseMaterial3D : public Material {
 	GDCLASS(BaseMaterial3D, Material);
+
+private:
+	mutable Mutex material_rid_mutex;
 
 public:
 	enum TextureParam {
@@ -153,8 +162,8 @@ public:
 		TEXTURE_DETAIL_ALBEDO,
 		TEXTURE_DETAIL_NORMAL,
 		TEXTURE_ORM,
+		TEXTURE_BENT_NORMAL,
 		TEXTURE_MAX
-
 	};
 
 	enum TextureFilter {
@@ -209,6 +218,7 @@ public:
 		FEATURE_BACKLIGHT,
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
+		FEATURE_BENT_NORMAL_MAPPING,
 		FEATURE_MAX
 	};
 
@@ -217,6 +227,7 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
+		BLEND_MODE_PREMULT_ALPHA,
 		BLEND_MODE_MAX
 	};
 
@@ -257,6 +268,9 @@ public:
 		FLAG_PARTICLE_TRAILS_MODE,
 		FLAG_ALBEDO_TEXTURE_MSDF,
 		FLAG_DISABLE_FOG,
+		FLAG_DISABLE_SPECULAR_OCCLUSION,
+		FLAG_USE_Z_CLIP_SCALE,
+		FLAG_USE_FOV_OVERRIDE,
 		FLAG_MAX
 	};
 
@@ -357,6 +371,7 @@ private:
 	};
 
 	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
+	static Mutex shader_map_mutex;
 
 	MaterialKey current_key;
 
@@ -453,6 +468,8 @@ private:
 
 		StringName alpha_antialiasing_edge;
 		StringName albedo_texture_size;
+		StringName z_clip_scale;
+		StringName fov_override;
 	};
 
 	static Mutex material_mutex;
@@ -463,9 +480,12 @@ private:
 
 	void _update_shader();
 	_FORCE_INLINE_ void _queue_shader_change();
-	_FORCE_INLINE_ bool _is_shader_dirty() const;
+	void _check_material_rid();
+	void _material_set_param(const StringName &p_name, const Variant &p_value);
 
 	bool orm;
+	RID shader_rid;
+	HashMap<StringName, Variant> pending_params;
 
 	Color albedo;
 	float specular = 0.0f;
@@ -547,11 +567,12 @@ private:
 
 	AlphaAntiAliasing alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 
+	float z_clip_scale = 1.0;
+	float fov_override = 75.0;
+
 	bool features[FEATURE_MAX] = {};
 
 	Ref<Texture2D> textures[TEXTURE_MAX];
-
-	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
 	static HashMap<uint64_t, Ref<StandardMaterial3D>> materials_for_2d; //used by Sprite3D, Label3D and other stuff
 
@@ -682,7 +703,7 @@ public:
 	void set_texture(TextureParam p_param, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture(TextureParam p_param) const;
 	// Used only for shader material conversion
-	Ref<Texture2D> get_texture_by_name(StringName p_name) const;
+	Ref<Texture2D> get_texture_by_name(const StringName &p_name) const;
 
 	void set_texture_filter(TextureFilter p_filter);
 	TextureFilter get_texture_filter() const;
@@ -766,12 +787,18 @@ public:
 	void set_refraction_texture_channel(TextureChannel p_channel);
 	TextureChannel get_refraction_texture_channel() const;
 
+	void set_z_clip_scale(float p_z_clip_scale);
+	float get_z_clip_scale() const;
+	void set_fov_override(float p_fov_override);
+	float get_fov_override() const;
+
 	static void init_shaders();
 	static void finish_shaders();
 	static void flush_changes();
 
 	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, RID *r_shader_rid = nullptr);
 
+	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;
 
 	virtual Shader::Mode get_shader_mode() const override;
@@ -826,5 +853,3 @@ public:
 };
 
 //////////////////////
-
-#endif // MATERIAL_H

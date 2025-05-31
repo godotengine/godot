@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EVENT_LISTENER_LINE_EDIT_H
-#define EVENT_LISTENER_LINE_EDIT_H
+#pragma once
 
 #include "scene/gui/line_edit.h"
 
@@ -42,6 +41,8 @@ enum InputType {
 
 class EventListenerLineEdit : public LineEdit {
 	GDCLASS(EventListenerLineEdit, LineEdit)
+
+	uint64_t hold_next = 0;
 
 	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 	bool ignore_next_event = true;
@@ -75,5 +76,3 @@ public:
 public:
 	EventListenerLineEdit();
 };
-
-#endif // EVENT_LISTENER_LINE_EDIT_H

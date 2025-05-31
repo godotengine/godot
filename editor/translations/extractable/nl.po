@@ -1,0 +1,122 @@
+# Dutch translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-26 06:02+0000\n"
+"Last-Translator: Luka van der Plas <lukavdplas@users.noreply.hosted.weblate."
+"org>\n"
+"Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
+"nl/>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "Alles Herkend"
+
+msgid "Add current color as a preset."
+msgstr "Huidige kleur als voorkeuze toevoegen."
+
+msgid "Network"
+msgstr "Netwerk"
+
+msgid "Open"
+msgstr "Openen"
+
+msgid "Select Current Folder"
+msgstr "Huidige Map Selecteren"
+
+msgid "Save"
+msgstr "Opslaan"
+
+msgid "Select This Folder"
+msgstr "Deze map selecteren"
+
+msgid "Open a File"
+msgstr "Open een Bestand"
+
+msgid "Open File(s)"
+msgstr "Open Bestand(en)"
+
+msgid "Open a Directory"
+msgstr "Map openen"
+
+msgid "Open a File or Directory"
+msgstr "Bestand of map openen"
+
+msgid "Save a File"
+msgstr "Sla een Bestand Op"
+
+msgid "Go to previous folder."
+msgstr "Ga naar vorige map."
+
+msgid "Go to next folder."
+msgstr "Ga naar de volgende map."
+
+msgid "Go to parent folder."
+msgstr "Ga naar de bovenliggende map."
+
+msgid "Path:"
+msgstr "Pad:"
+
+msgid "Refresh files."
+msgstr "Ververs bestandslijst."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Maak verborgen bestanden (on)zichtbaar."
+
+msgid "Directories & Files:"
+msgstr "Mappen & Bestanden:"
+
+msgid "File:"
+msgstr "Bestand:"
+
+msgid "Create Folder"
+msgstr "Map maken"
+
+msgid "Name:"
+msgstr "Naam:"
+
+msgid "Could not create folder."
+msgstr "Map kon niet gemaakt worden."
+
+msgid "Zoom Out"
+msgstr "Uitzoomen"
+
+msgid "Zoom Reset"
+msgstr "Zoom terugzetten"
+
+msgid "Zoom In"
+msgstr "Inzoomen"
+
+msgid "Cut"
+msgstr "Knippen"
+
+msgid "Copy"
+msgstr "Kopiëren"
+
+msgid "Paste"
+msgstr "Plakken"
+
+msgid "Select All"
+msgstr "Alles selecteren"
+
+msgid "Clear"
+msgstr "Wissen"
+
+msgid "Undo"
+msgstr "Ongedaan maken"
+
+msgid "Redo"
+msgstr "Opnieuw uitvoeren"
+
+msgid "(Other)"
+msgstr "(Andere)"

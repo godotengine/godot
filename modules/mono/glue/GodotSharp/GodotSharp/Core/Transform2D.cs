@@ -1,6 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -44,7 +47,7 @@ namespace Godot
         {
             get
             {
-                real_t detSign = Mathf.Sign(BasisDeterminant());
+                real_t detSign = Mathf.Sign(Determinant());
                 return new Vector2(X.Length(), detSign * Y.Length());
             }
         }
@@ -56,7 +59,7 @@ namespace Godot
         {
             get
             {
-                real_t detSign = Mathf.Sign(BasisDeterminant());
+                real_t detSign = Mathf.Sign(Determinant());
                 return Mathf.Acos(X.Normalized().Dot(detSign * Y.Normalized())) - Mathf.Pi * 0.5f;
             }
         }
@@ -132,7 +135,7 @@ namespace Godot
         /// <returns>The inverse transformation matrix.</returns>
         public readonly Transform2D AffineInverse()
         {
-            real_t det = BasisDeterminant();
+            real_t det = Determinant();
 
             if (det == 0)
                 throw new InvalidOperationException("Matrix determinant is zero and cannot be inverted.");
@@ -154,15 +157,16 @@ namespace Godot
 
         /// <summary>
         /// Returns the determinant of the basis matrix. If the basis is
-        /// uniformly scaled, its determinant is the square of the scale.
+        /// uniformly scaled, then its determinant equals the square of the
+        /// scale factor.
         ///
-        /// A negative determinant means the Y scale is negative.
-        /// A zero determinant means the basis isn't invertible,
-        /// and is usually considered invalid.
+        /// A negative determinant means the basis was flipped, so one part of
+        /// the scale is negative. A zero determinant means the basis isn't
+        /// invertible, and is usually considered invalid.
         /// </summary>
         /// <returns>The determinant of the basis matrix.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private readonly real_t BasisDeterminant()
+        public readonly real_t Determinant()
         {
             return (X.X * Y.Y) - (X.Y * Y.X);
         }
@@ -606,7 +610,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the transform and the object are exactly equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Transform2D other && Equals(other);
         }
@@ -647,16 +651,13 @@ namespace Godot
         /// Converts this <see cref="Transform2D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override readonly string ToString()
-        {
-            return $"[X: {X}, Y: {Y}, O: {Origin}]";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Transform2D"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
             return $"[X: {X.ToString(format)}, Y: {Y.ToString(format)}, O: {Origin.ToString(format)}]";
         }

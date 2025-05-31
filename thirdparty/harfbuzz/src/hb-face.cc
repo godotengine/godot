@@ -90,10 +90,6 @@ DEFINE_NULL_INSTANCE (hb_face_t) =
 {
   HB_OBJECT_HEADER_STATIC,
 
-  nullptr, /* reference_table_func */
-  nullptr, /* user_data */
-  nullptr, /* destroy */
-
   0,    /* index */
   1000, /* upem */
   0,    /* num_glyphs */
@@ -110,8 +106,9 @@ DEFINE_NULL_INSTANCE (hb_face_t) =
  *
  * Variant of hb_face_create(), built for those cases where it is more
  * convenient to provide data for individual tables instead of the whole font
- * data. With the caveat that hb_face_get_table_tags() does not currently work
- * with faces created this way.
+ * data. With the caveat that hb_face_get_table_tags() would not work
+ * with faces created this way. You can address that by calling the
+ * hb_face_set_get_table_tags_func() function and setting the appropriate callback.
  *
  * Creates a new face object from the specified @user_data and @reference_table_func,
  * with the @destroy callback.
@@ -194,6 +191,22 @@ _hb_face_for_data_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void
   return blob;
 }
 
+static unsigned
+_hb_face_for_data_get_table_tags (const hb_face_t *face HB_UNUSED,
+				  unsigned int start_offset,
+				  unsigned int *table_count,
+				  hb_tag_t *table_tags,
+				  void *user_data)
+{
+  hb_face_for_data_closure_t *data = (hb_face_for_data_closure_t *) user_data;
+
+  const OT::OpenTypeFontFile &ot_file = *data->blob->as<OT::OpenTypeFontFile> ();
+  const OT::OpenTypeFontFace &ot_face = ot_file.get_face (data->index);
+
+  return ot_face.get_table_tags (start_offset, table_count, table_tags);
+}
+
+
 /**
  * hb_face_create:
  * @blob: #hb_blob_t to work upon
@@ -240,11 +253,72 @@ hb_face_create (hb_blob_t    *blob,
   face = hb_face_create_for_tables (_hb_face_for_data_reference_table,
 				    closure,
 				    _hb_face_for_data_closure_destroy);
+  hb_face_set_get_table_tags_func (face,
+				   _hb_face_for_data_get_table_tags,
+				   closure,
+				   nullptr);
 
   face->index = index;
 
   return face;
 }
+
+/**
+ * hb_face_create_or_fail:
+ * @blob: #hb_blob_t to work upon
+ * @index: The index of the face within @blob
+ *
+ * Like hb_face_create(), but returns `NULL` if the blob data
+ * contains no usable font face at the specified index.
+ *
+ * Return value: (transfer full): The new face object, or `NULL` if
+ * no face is found at the specified index.
+ *
+ * Since: 10.1.0
+ **/
+hb_face_t *
+hb_face_create_or_fail (hb_blob_t    *blob,
+			unsigned int  index)
+{
+  unsigned num_faces = hb_face_count (blob);
+  if (index >= num_faces)
+    return nullptr;
+
+  hb_face_t *face = hb_face_create (blob, index);
+  if (hb_object_is_immutable (face))
+    return nullptr;
+
+  return face;
+}
+
+#ifndef HB_NO_OPEN
+/**
+ * hb_face_create_from_file_or_fail:
+ * @file_name: A font filename
+ * @index: The index of the face within the file
+ *
+ * A thin wrapper around hb_blob_create_from_file_or_fail()
+ * followed by hb_face_create_or_fail().
+ *
+ * Return value: (transfer full): The new face object, or `NULL` if
+ * no face is found at the specified index or the file cannot be read.
+ *
+ * Since: 10.1.0
+ **/
+HB_EXTERN hb_face_t *
+hb_face_create_from_file_or_fail (const char   *file_name,
+				  unsigned int  index)
+{
+  hb_blob_t *blob = hb_blob_create_from_file_or_fail (file_name);
+  if (unlikely (!blob))
+    return nullptr;
+
+  hb_face_t *face = hb_face_create_or_fail (blob, index);
+  hb_blob_destroy (blob);
+
+  return face;
+}
+#endif
 
 /**
  * hb_face_get_empty:
@@ -305,6 +379,9 @@ hb_face_destroy (hb_face_t *face)
 
   face->data.fini ();
   face->table.fini ();
+
+  if (face->get_table_tags_destroy)
+    face->get_table_tags_destroy (face->get_table_tags_user_data);
 
   if (face->destroy)
     face->destroy (face->user_data);
@@ -395,7 +472,8 @@ hb_face_is_immutable (const hb_face_t *face)
  * @tag: The #hb_tag_t of the table to query
  *
  * Fetches a reference to the specified table within
- * the specified face.
+ * the specified face. Returns an empty blob if referencing table data is not
+ * possible.
  *
  * Return value: (transfer full): A pointer to the @tag table within @face
  *
@@ -415,9 +493,10 @@ hb_face_reference_table (const hb_face_t *face,
  * hb_face_reference_blob:
  * @face: A face object
  *
- * Fetches a pointer to the binary blob that contains the
- * specified face. Returns an empty blob if referencing face data is not
- * possible.
+ * Fetches a pointer to the binary blob that contains the specified face.
+ * If referencing the face data is not possible, this function creates a blob
+ * out of individual table blobs if hb_face_get_table_tags() works with this
+ * face, otherwise it returns an empty blob.
  *
  * Return value: (transfer full): A pointer to the blob for @face
  *
@@ -426,7 +505,41 @@ hb_face_reference_table (const hb_face_t *face,
 hb_blob_t *
 hb_face_reference_blob (hb_face_t *face)
 {
-  return face->reference_table (HB_TAG_NONE);
+  hb_blob_t *blob = face->reference_table (HB_TAG_NONE);
+
+  if (blob == hb_blob_get_empty ())
+  {
+    // If referencing the face blob is not possible (e.g. not implemented by the
+    // font functions), use face builder to create a blob out of individual
+    // table blobs.
+    unsigned total_count = hb_face_get_table_tags (face, 0, nullptr, nullptr);
+    if (total_count)
+    {
+      hb_tag_t tags[64];
+      unsigned count = ARRAY_LENGTH (tags);
+      hb_face_t* builder = hb_face_builder_create ();
+
+      for (unsigned offset = 0; offset < total_count; offset += count)
+      {
+        hb_face_get_table_tags (face, offset, &count, tags);
+	if (unlikely (!count))
+	  break; // Allocation error
+        for (unsigned i = 0; i < count; i++)
+        {
+	  if (unlikely (!tags[i]))
+	    continue;
+	  hb_blob_t *table = hb_face_reference_table (face, tags[i]);
+	  hb_face_builder_add_table (builder, tags[i], table);
+	  hb_blob_destroy (table);
+        }
+      }
+
+      blob = hb_face_reference_blob (builder);
+      hb_face_destroy (builder);
+    }
+  }
+
+  return blob;
 }
 
 /**
@@ -548,6 +661,38 @@ hb_face_get_glyph_count (const hb_face_t *face)
 }
 
 /**
+ * hb_face_set_get_table_tags_func:
+ * @face: A face object
+ * @func: (closure user_data) (destroy destroy) (scope notified): The table-tag-fetching function
+ * @user_data: A pointer to the user data, to be destroyed by @destroy when not needed anymore
+ * @destroy: (nullable): A callback to call when @func is not needed anymore
+ *
+ * Sets the table-tag-fetching function for the specified face object.
+ *
+ * Since: 10.0.0
+ */
+HB_EXTERN void
+hb_face_set_get_table_tags_func (hb_face_t *face,
+				 hb_get_table_tags_func_t func,
+				 void                    *user_data,
+				 hb_destroy_func_t        destroy)
+{
+  if (hb_object_is_immutable (face))
+  {
+    if (destroy)
+      destroy (user_data);
+    return;
+  }
+
+  if (face->get_table_tags_destroy)
+    face->get_table_tags_destroy (face->get_table_tags_user_data);
+
+  face->get_table_tags_func = func;
+  face->get_table_tags_user_data = user_data;
+  face->get_table_tags_destroy = destroy;
+}
+
+/**
  * hb_face_get_table_tags:
  * @face: A face object
  * @start_offset: The index of first table tag to retrieve
@@ -568,19 +713,14 @@ hb_face_get_table_tags (const hb_face_t *face,
 			unsigned int *table_count, /* IN/OUT */
 			hb_tag_t     *table_tags /* OUT */)
 {
-  if (face->destroy != (hb_destroy_func_t) _hb_face_for_data_closure_destroy)
+  if (!face->get_table_tags_func)
   {
     if (table_count)
       *table_count = 0;
     return 0;
   }
 
-  hb_face_for_data_closure_t *data = (hb_face_for_data_closure_t *) face->user_data;
-
-  const OT::OpenTypeFontFile &ot_file = *data->blob->as<OT::OpenTypeFontFile> ();
-  const OT::OpenTypeFontFace &ot_face = ot_file.get_face (data->index);
-
-  return ot_face.get_table_tags (start_offset, table_count, table_tags);
+  return face->get_table_tags_func (face, start_offset, table_count, table_tags, face->get_table_tags_user_data);
 }
 
 

@@ -1,0 +1,226 @@
+# Arabic translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-03-02 14:19+0000\n"
+"Last-Translator: بسام العوفي <co-able@hotmail.com>\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
+"ar/>\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
+"n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "جميع الأنواع المعتمدة\"المعروفة\""
+
+msgid "New Code Region"
+msgstr "منطقة الكود الجديدة"
+
+msgid "Pick a color from the screen."
+msgstr "اختر لونًا من الشاشة."
+
+msgid "Pick a color from the application window."
+msgstr "اختر لونًا من نافذة التطبيق."
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"اللون: #%s\n"
+"الزر الأيسر للفأرة: تطبيق اللون\n"
+"الزر الأيمن للفأرة: إزالة اللون المعد مسبقا"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"اللون: #%s\n"
+"الزر الأيسر للفأرة (LMB): تطبيق اللون"
+
+msgid "Select a picker shape."
+msgstr "اختر شكل الملقاط."
+
+msgid "Select a picker mode."
+msgstr "اختر حالة الملقاط."
+
+msgid "Hex code or named color"
+msgstr "رمز سداسي عشري أو لون مسمى"
+
+msgid "Add current color as a preset."
+msgstr "أضف اللون الحالي كإعداد مسبق."
+
+msgid "Network"
+msgstr "الشبكة"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"الملف \"%s\" موجود سلفاً.\n"
+"هل ترغب بأستبدالهِ بهذا الملف؟"
+
+msgid "Open"
+msgstr "افتح"
+
+msgid "Select Current Folder"
+msgstr "تحديد المجلد الحالي"
+
+msgid "Save"
+msgstr "حفظ"
+
+msgid "Select This Folder"
+msgstr "حدد هذا المجلد"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "ليس لديك إذن للوصول إلى محتويات هذا المجلد."
+
+msgid "All Files"
+msgstr "كل الملفات"
+
+msgid "Open a File"
+msgstr "فتح ملف"
+
+msgid "Open File(s)"
+msgstr "فتح الملفات"
+
+msgid "Open a Directory"
+msgstr "افتح مجلدا"
+
+msgid "Open a File or Directory"
+msgstr "افتح ملفا أو مجلدا"
+
+msgid "Save a File"
+msgstr "حفظ ملف"
+
+msgid "Go to previous folder."
+msgstr "إرجع إلي المجلد السابق."
+
+msgid "Go to next folder."
+msgstr "إذهب إلي المجلد التالي."
+
+msgid "Go to parent folder."
+msgstr "إذهب إلي مجلد الأصل."
+
+msgid "Path:"
+msgstr "المسار:"
+
+msgid "Refresh files."
+msgstr "حَدِّث الملفات."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "إظهار/إخفاء الملفات المخفية."
+
+msgid "Directories & Files:"
+msgstr "المجلدات والملفات:"
+
+msgid "File:"
+msgstr "الملف:"
+
+msgid "Create Folder"
+msgstr "أنشئ مجلد"
+
+msgid "Name:"
+msgstr "الاسم:"
+
+msgid "Could not create folder."
+msgstr "لا يمكن إنشاء المجلد."
+
+msgid "Invalid extension, or empty filename."
+msgstr "ملحق غير صالح، أو اسم ملف فارغ."
+
+msgid "Zoom Out"
+msgstr "تصغير"
+
+msgid "Zoom Reset"
+msgstr "إعادة تعيين التكبير"
+
+msgid "Zoom In"
+msgstr "تكبير"
+
+msgid "Toggle the visual grid."
+msgstr "إظهار/إخفاء الشبكة المرئية."
+
+msgid "Toggle snapping to the grid."
+msgstr "تفعيل المحاذاة إلى الشبكة."
+
+msgid "Change the snapping distance."
+msgstr "تغيير مسافة الالتقاط."
+
+msgid "Toggle the graph minimap."
+msgstr "تبديل الخريطة المصغرة للرسم البياني."
+
+msgid "Automatically arrange selected nodes."
+msgstr "ترتيب العقد المحددة تلقائيًا."
+
+msgid "Same as Layout Direction"
+msgstr "نفس اتجاه التخطيط"
+
+msgid "Auto-Detect Direction"
+msgstr "الكشف التلقائي عن الاتجاه"
+
+msgid "Left-to-Right"
+msgstr "من اليسار إلى اليمين"
+
+msgid "Right-to-Left"
+msgstr "من اليمين إلى اليسار"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "العلامة من اليسار إلى اليمين (LRM)"
+
+msgid "Right-to-Left Mark (RLM)"
+msgstr "العلامة من اليمين إلى اليسار (RLM)"
+
+msgid "Arabic Letter Mark (ALM)"
+msgstr "علامة الحروف العربية (ALM)"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "عزل من اليسار إلى اليمين (LRI)"
+
+msgid "Right-to-Left Isolate (RLI)"
+msgstr "عزل من اليمين إلى اليسار (RLI)"
+
+msgid "First Strong Isolate (FSI)"
+msgstr "أول عزلة قوية (FSI)"
+
+msgid "Cut"
+msgstr "قص"
+
+msgid "Copy"
+msgstr "نسخ"
+
+msgid "Paste"
+msgstr "لصق"
+
+msgid "Select All"
+msgstr "تحديد الكل"
+
+msgid "Clear"
+msgstr "مسح"
+
+msgid "Undo"
+msgstr "تراجع"
+
+msgid "Redo"
+msgstr "إلغاء التراجع"
+
+msgid "Text Writing Direction"
+msgstr "اتجاه كتابة النص"
+
+msgid "Display Control Characters"
+msgstr "عرض أحرف التحكم"
+
+msgid "Insert Control Character"
+msgstr "إدراج حرف التحكم"
+
+msgid "(Other)"
+msgstr "(آخر)"

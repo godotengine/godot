@@ -30,15 +30,15 @@
 
 #include "gradient_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/popup.h"
@@ -57,7 +57,7 @@ int GradientEdit::_get_point_at(int p_xpos) const {
 			break;
 		}
 		// Check if we clicked at point.
-		float distance = ABS(p_xpos - gradient->get_offset(i) * total_w);
+		float distance = Math::abs(p_xpos - gradient->get_offset(i) * total_w);
 		if (distance < min_distance) {
 			result = i;
 			min_distance = distance;
@@ -102,7 +102,7 @@ void GradientEdit::_color_changed(const Color &p_color) {
 
 void GradientEdit::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
-	gradient->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	gradient->connect(CoreStringName(changed), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 const Ref<Gradient> &GradientEdit::get_gradient() const {
@@ -385,14 +385,14 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 			int nearest_idx = -1;
 			// Only check the two adjacent points to find which one is the nearest.
 			if (selected_index > 0) {
-				float temp_offset = ABS(gradient->get_offset(selected_index - 1) - new_offset);
+				float temp_offset = Math::abs(gradient->get_offset(selected_index - 1) - new_offset);
 				if (temp_offset < smallest_offset) {
 					smallest_offset = temp_offset;
 					nearest_idx = selected_index - 1;
 				}
 			}
 			if (selected_index < gradient->get_point_count() - 1) {
-				float temp_offset = ABS(gradient->get_offset(selected_index + 1) - new_offset);
+				float temp_offset = Math::abs(gradient->get_offset(selected_index + 1) - new_offset);
 				if (temp_offset < smallest_offset) {
 					smallest_offset = temp_offset;
 					nearest_idx = selected_index + 1;
@@ -544,6 +544,14 @@ void GradientEdit::_notification(int p_what) {
 			draw_spacing = BASE_SPACING * get_theme_default_base_scale();
 			handle_width = BASE_HANDLE_WIDTH * get_theme_default_base_scale();
 		} break;
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			//TODO
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Gradient editor")));
+		} break;
 		case NOTIFICATION_DRAW: {
 			_redraw();
 		} break;
@@ -604,8 +612,8 @@ void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 void GradientEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			reverse_button->set_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
-			snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			reverse_button->set_button_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
+			snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 		} break;
 		case NOTIFICATION_READY: {
 			Ref<Gradient> gradient = gradient_editor_rect->get_gradient();
@@ -630,21 +638,23 @@ GradientEditor::GradientEditor() {
 
 	snap_button = memnew(Button);
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
+	snap_button->set_accessibility_name(TTRC("Snap to Grid"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
-	snap_button->connect("toggled", callable_mp(this, &GradientEditor::_set_snap_enabled));
+	snap_button->connect(SceneStringName(toggled), callable_mp(this, &GradientEditor::_set_snap_enabled));
 
 	snap_count_edit = memnew(EditorSpinSlider);
 	snap_count_edit->set_min(2);
 	snap_count_edit->set_max(100);
+	snap_count_edit->set_accessibility_name(TTRC("Grid Step"));
 	snap_count_edit->set_value(DEFAULT_SNAP);
 	snap_count_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_count_edit);
-	snap_count_edit->connect("value_changed", callable_mp(this, &GradientEditor::_set_snap_count));
+	snap_count_edit->connect(SceneStringName(value_changed), callable_mp(this, &GradientEditor::_set_snap_count));
 
 	gradient_editor_rect = memnew(GradientEdit);
 	add_child(gradient_editor_rect);
-	reverse_button->connect("pressed", callable_mp(gradient_editor_rect, &GradientEdit::reverse_gradient));
+	reverse_button->connect(SceneStringName(pressed), callable_mp(gradient_editor_rect, &GradientEdit::reverse_gradient));
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	_set_snap_enabled(snap_button->is_pressed());

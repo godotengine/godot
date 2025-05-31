@@ -28,28 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_menu_delegate.h"
+#import "godot_menu_delegate.h"
 
-#include "display_server_macos.h"
-#include "godot_menu_item.h"
-#include "key_mapping_macos.h"
+#import "display_server_macos.h"
+#import "godot_menu_item.h"
+#import "key_mapping_macos.h"
+#import "native_menu_macos.h"
 
 @implementation GodotMenuDelegate
 
 - (void)doNothing:(id)sender {
 }
 
+- (void)menuWillOpen:(NSMenu *)menu {
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_menu_open(menu);
+	}
+}
+
 - (void)menuNeedsUpdate:(NSMenu *)menu {
-	if (DisplayServer::get_singleton()) {
-		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-		ds->menu_open(menu);
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_menu_need_update(menu);
 	}
 }
 
 - (void)menuDidClose:(NSMenu *)menu {
-	if (DisplayServer::get_singleton()) {
-		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-		ds->menu_close(menu);
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_menu_close(menu);
 	}
 }
 
@@ -64,7 +72,7 @@
 
 			value->hover_callback.callp(args, 1, ret, ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT(vformat(RTR("Failed to execute menu hover callback: %s."), Variant::get_callable_error_text(value->hover_callback, args, 1, ce)));
+				ERR_PRINT(vformat("Failed to execute menu hover callback: %s.", Variant::get_callable_error_text(value->hover_callback, args, 1, ce)));
 			}
 		}
 	}
@@ -89,12 +97,16 @@
 
 						value->key_callback.callp(args, 1, ret, ce);
 						if (ce.error != Callable::CallError::CALL_OK) {
-							ERR_PRINT(vformat(RTR("Failed to execute menu key callback: %s."), Variant::get_callable_error_text(value->key_callback, args, 1, ce)));
+							ERR_PRINT(vformat("Failed to execute menu key callback: %s.", Variant::get_callable_error_text(value->key_callback, args, 1, ce)));
 						}
 					} else {
 						// Otherwise redirect event to the engine.
 						if (DisplayServer::get_singleton()) {
-							[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+							if ([[NSApplication sharedApplication] keyWindow].sheet) {
+								[[[[NSApplication sharedApplication] keyWindow] sheetParent] sendEvent:event];
+							} else {
+								[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+							}
 						}
 					}
 

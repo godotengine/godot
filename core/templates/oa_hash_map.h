@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OA_HASH_MAP_H
-#define OA_HASH_MAP_H
+#pragma once
 
-#include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/pair.h"
 
 /**
  * A HashMap implementation that uses open addressing with Robin Hood hashing.
@@ -50,9 +49,9 @@
  *
  * The assignment operator copy the pairs from one map to the other.
  */
-template <class TKey, class TValue,
-		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey, typename TValue,
+		typename Hasher = HashMapHasherDefault,
+		typename Comparator = HashMapComparatorDefault<TKey>>
 class OAHashMap {
 private:
 	TValue *values = nullptr;
@@ -154,11 +153,8 @@ private:
 		num_elements = 0;
 		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));
-		hashes = static_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
-
-		for (uint32_t i = 0; i < capacity; i++) {
-			hashes[i] = 0;
-		}
+		static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
+		hashes = static_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
 
 		if (old_capacity == 0) {
 			// Nothing to do.
@@ -302,7 +298,10 @@ public:
 	 *  capacity.
 	 **/
 	void reserve(uint32_t p_new_capacity) {
-		ERR_FAIL_COND(p_new_capacity < capacity);
+		ERR_FAIL_COND_MSG(p_new_capacity < get_num_elements(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
+		if (p_new_capacity <= capacity) {
+			return;
+		}
 		_resize_and_rehash(p_new_capacity);
 	}
 
@@ -353,6 +352,13 @@ public:
 		return it;
 	}
 
+	OAHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			set(E.key, E.value);
+		}
+	}
+
 	OAHashMap(const OAHashMap &p_other) {
 		(*this) = p_other;
 	}
@@ -375,11 +381,8 @@ public:
 
 		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));
-		hashes = static_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
-
-		for (uint32_t i = 0; i < capacity; i++) {
-			hashes[i] = EMPTY_HASH;
-		}
+		static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
+		hashes = static_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
 	}
 
 	~OAHashMap() {
@@ -397,5 +400,3 @@ public:
 		Memory::free_static(hashes);
 	}
 };
-
-#endif // OA_HASH_MAP_H

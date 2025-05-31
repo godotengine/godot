@@ -231,7 +231,7 @@ hb_font_get_glyph_v_advance_nil (hb_font_t      *font,
 				 void           *user_data HB_UNUSED)
 {
   /* TODO use font_extents.ascender+descender */
-  return font->y_scale;
+  return -font->y_scale;
 }
 
 static hb_position_t
@@ -1066,7 +1066,7 @@ hb_font_get_nominal_glyph (hb_font_t      *font,
  * @glyph_stride: The stride between successive glyph IDs
  *
  * Fetches the nominal glyph IDs for a sequence of Unicode code points. Glyph
- * IDs must be returned in a #hb_codepoint_t output parameter. Stopes at the
+ * IDs must be returned in a #hb_codepoint_t output parameter. Stops at the
  * first unsupported glyph ID.
  *
  * Return value: the number of code points processed

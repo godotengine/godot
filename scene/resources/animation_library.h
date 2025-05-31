@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_LIBRARY_H
-#define ANIMATION_LIBRARY_H
+#pragma once
 
 #include "core/variant/typed_array.h"
 #include "scene/resources/animation.h"
@@ -61,8 +60,11 @@ public:
 	bool has_animation(const StringName &p_name) const;
 	Ref<Animation> get_animation(const StringName &p_name) const;
 	void get_animation_list(List<StringName> *p_animations) const;
+	int get_animation_list_size() const;
+
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	AnimationLibrary();
 };
-
-#endif // ANIMATION_LIBRARY_H

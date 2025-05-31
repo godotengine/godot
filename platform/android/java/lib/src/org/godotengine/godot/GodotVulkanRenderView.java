@@ -50,24 +50,23 @@ import androidx.annotation.Keep;
 
 import java.io.InputStream;
 
-public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
+class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final GodotHost host;
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
 	private final VkRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotVulkanRenderView(GodotHost host, Godot godot) {
+	public GodotVulkanRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler) {
 		super(host.getActivity());
 
 		this.host = host;
 		this.godot = godot;
-		mInputHandler = new GodotInputHandler(this);
+		mInputHandler = inputHandler;
 		mRenderer = new VkRenderer();
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
-		}
+		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		setFocusableInTouchMode(true);
+		setClickable(false);
 	}
 
 	@Override
@@ -81,28 +80,41 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	}
 
 	@Override
-	public void initInputDevices() {
-		mInputHandler.initInputDevices();
-	}
-
-	@Override
 	public void queueOnRenderThread(Runnable event) {
 		queueOnVkThread(event);
 	}
 
 	@Override
 	public void onActivityPaused() {
-		onPause();
+		queueOnVkThread(() -> {
+			GodotLib.focusout();
+			// Pause the renderer
+			mRenderer.onVkPause();
+		});
+	}
+
+	@Override
+	public void onActivityStopped() {
+		pauseRenderThread();
+	}
+
+	@Override
+	public void onActivityStarted() {
+		resumeRenderThread();
 	}
 
 	@Override
 	public void onActivityResumed() {
-		onResume();
+		queueOnVkThread(() -> {
+			// Resume the renderer
+			mRenderer.onVkResume();
+			GodotLib.focusin();
+		});
 	}
 
 	@Override
-	public void onBackPressed() {
-		godot.onBackPressed(host);
+	public void onActivityDestroyed() {
+		requestRenderThreadExitAndWait();
 	}
 
 	@Override
@@ -119,17 +131,17 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 
 	@Override
 	public boolean onKeyUp(final int keyCode, KeyEvent event) {
-		return mInputHandler.onKeyUp(keyCode, event);
+		return mInputHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event);
 	}
 
 	@Override
 	public boolean onKeyDown(final int keyCode, KeyEvent event) {
-		return mInputHandler.onKeyDown(keyCode, event);
+		return mInputHandler.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
-		return mInputHandler.onGenericMotionEvent(event);
+		return mInputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
 	}
 
 	@Override
@@ -165,27 +177,25 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	@Keep
 	@Override
 	public void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY) {
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-			try {
-				Bitmap bitmap = null;
-				if (!TextUtils.isEmpty(imagePath)) {
-					if (godot.getDirectoryAccessHandler().filesystemFileExists(imagePath)) {
-						// Try to load the bitmap from the file system
-						bitmap = BitmapFactory.decodeFile(imagePath);
-					} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
-						// Try to load the bitmap from the assets directory
-						AssetManager am = getContext().getAssets();
-						InputStream imageInputStream = am.open(imagePath);
-						bitmap = BitmapFactory.decodeStream(imageInputStream);
-					}
+		try {
+			Bitmap bitmap = null;
+			if (!TextUtils.isEmpty(imagePath)) {
+				if (godot.getDirectoryAccessHandler().filesystemFileExists(imagePath)) {
+					// Try to load the bitmap from the file system
+					bitmap = BitmapFactory.decodeFile(imagePath);
+				} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
+					// Try to load the bitmap from the assets directory
+					AssetManager am = getContext().getAssets();
+					InputStream imageInputStream = am.open(imagePath);
+					bitmap = BitmapFactory.decodeStream(imageInputStream);
 				}
-
-				PointerIcon customPointerIcon = PointerIcon.create(bitmap, hotSpotX, hotSpotY);
-				customPointerIcons.put(pointerType, customPointerIcon);
-			} catch (Exception e) {
-				// Reset the custom pointer icon
-				customPointerIcons.delete(pointerType);
 			}
+
+			PointerIcon customPointerIcon = PointerIcon.create(bitmap, hotSpotX, hotSpotY);
+			customPointerIcons.put(pointerType, customPointerIcon);
+		} catch (Exception e) {
+			// Reset the custom pointer icon
+			customPointerIcons.delete(pointerType);
 		}
 	}
 
@@ -195,42 +205,15 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	@Keep
 	@Override
 	public void setPointerIcon(int pointerType) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			PointerIcon pointerIcon = customPointerIcons.get(pointerType);
-			if (pointerIcon == null) {
-				pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
-			}
-			setPointerIcon(pointerIcon);
+		PointerIcon pointerIcon = customPointerIcons.get(pointerType);
+		if (pointerIcon == null) {
+			pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
 		}
+		setPointerIcon(pointerIcon);
 	}
 
 	@Override
 	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			return getPointerIcon();
-		}
-		return super.onResolvePointerIcon(me, pointerIndex);
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-
-		queueOnVkThread(() -> {
-			// Resume the renderer
-			mRenderer.onVkResume();
-			GodotLib.focusin();
-		});
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-
-		queueOnVkThread(() -> {
-			GodotLib.focusout();
-			// Pause the renderer
-			mRenderer.onVkPause();
-		});
+		return getPointerIcon();
 	}
 }

@@ -163,6 +163,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 
 	// { "_set_name", "get_tracker_name" }, // XRPositionalTracker -- CameraFeed uses this.
 	// { "_unhandled_input", "_unhandled_key_input" }, // BaseButton, ViewportContainer -- Breaks Node, FileDialog, SubViewportContainer.
+	// { "add_animation", "add_animation_library" }, // AnimationPlayer -- Breaks SpriteFrames (and isn't a correct conversion).
 	// { "create_gizmo", "_create_gizmo" }, // EditorNode3DGizmoPlugin -- May be used.
 	// { "get_dependencies", "_get_dependencies" }, // ResourceFormatLoader -- Breaks ResourceLoader.
 	// { "get_extents", "get_size" }, // BoxShape, RectangleShape -- Breaks Decal, VoxelGI, GPUParticlesCollisionBox, GPUParticlesCollisionSDF, GPUParticlesCollisionHeightField, GPUParticlesAttractorBox, GPUParticlesAttractorVectorField, FogVolume
@@ -214,8 +215,6 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "_set_current", "set_current" }, // Camera2D
 	{ "_set_editor_description", "set_editor_description" }, // Node
 	{ "_toplevel_raise_self", "_top_level_raise_self" }, // CanvasItem
-	{ "_update_wrap_at", "_update_wrap_at_column" }, // TextEdit
-	{ "add_animation", "add_animation_library" }, // AnimationPlayer
 	{ "add_cancel", "add_cancel_button" }, // AcceptDialog
 	{ "add_central_force", "apply_central_force" }, //RigidBody2D
 	{ "add_child_below_node", "add_sibling" }, // Node
@@ -643,8 +642,6 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "_SetEditorDescription", "SetEditorDescription" }, // Node
 	{ "_SetPlaying", "SetPlaying" }, // AnimatedSprite3D
 	{ "_ToplevelRaiseSelf", "_TopLevelRaiseSelf" }, // CanvasItem
-	{ "_UpdateWrapAt", "_UpdateWrapAtColumn" }, // TextEdit
-	{ "AddAnimation", "AddAnimationLibrary" }, // AnimationPlayer
 	{ "AddCancel", "AddCancelButton" }, // AcceptDialog
 	{ "AddCentralForce", "AddConstantCentralForce" }, //RigidBody2D
 	{ "AddChildBelowNode", "AddSibling" }, // Node
@@ -1049,7 +1046,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	// make sure to add it to the C# rename map too.
 
 	// Too common words, users may use these names for variables or in comments.
-	// { "bg", "panel" }, // Theme
+	// { "bg", SceneStringName(panel) }, // Theme
 	// { "alt", "alt_pressed" }, // InputEventWithModifiers
 	// { "command", "command_pressed" }, // InputEventWithModifiers
 	// { "control", "ctrl_pressed" }, // InputEventWithModifiers
@@ -1357,7 +1354,6 @@ const char *RenamesMap3To4::project_settings_renames[][2] = {
 	{ "rendering/quality/shading/force_lambert_over_burley", "rendering/shading/overrides/force_lambert_over_burley" },
 	{ "rendering/quality/shading/force_lambert_over_burley.mobile", "rendering/shading/overrides/force_lambert_over_burley.mobile" },
 	{ "rendering/quality/shading/force_vertex_shading", "rendering/shading/overrides/force_vertex_shading" },
-	{ "rendering/quality/shading/force_vertex_shading.mobile", "rendering/shading/overrides/force_vertex_shading.mobile" },
 	{ "rendering/quality/shadow_atlas/quadrant_0_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_0_subdiv" },
 	{ "rendering/quality/shadow_atlas/quadrant_1_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_1_subdiv" },
 	{ "rendering/quality/shadow_atlas/quadrant_2_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_2_subdiv" },
@@ -1403,7 +1399,6 @@ const char *RenamesMap3To4::project_godot_renames[][2] = {
 	{ "quality/shading/force_lambert_over_burley", "shading/overrides/force_lambert_over_burley" },
 	{ "quality/shading/force_lambert_over_burley.mobile", "shading/overrides/force_lambert_over_burley.mobile" },
 	{ "quality/shading/force_vertex_shading", "shading/overrides/force_vertex_shading" },
-	{ "quality/shading/force_vertex_shading.mobile", "shading/overrides/force_vertex_shading.mobile" },
 	{ "quality/shadow_atlas/quadrant_0_subdiv", "lights_and_shadows/shadow_atlas/quadrant_0_subdiv" },
 	{ "quality/shadow_atlas/quadrant_1_subdiv", "lights_and_shadows/shadow_atlas/quadrant_1_subdiv" },
 	{ "quality/shadow_atlas/quadrant_2_subdiv", "lights_and_shadows/shadow_atlas/quadrant_2_subdiv" },
@@ -1450,7 +1445,7 @@ const char *RenamesMap3To4::shaders_renames[][2] = {
 	{ "NORMALMAP_DEPTH", "NORMAL_MAP_DEPTH" },
 	{ "TRANSMISSION", "BACKLIGHT" },
 	{ "WORLD_MATRIX", "MODEL_MATRIX" },
-	{ "depth_draw_alpha_prepass", "depth_draw_opaque" },
+	{ "depth_draw_alpha_prepass", "depth_prepass_alpha" },
 	{ "hint_albedo", "source_color" },
 	{ "hint_aniso", "hint_anisotropy" },
 	{ "hint_black", "hint_default_black" },
@@ -1517,11 +1512,10 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "DynamicFontData", "FontFile" },
 	{ "EditorNavigationMeshGenerator", "NavigationMeshGenerator" },
 	{ "EditorSceneImporter", "EditorSceneFormatImporter" },
-	{ "EditorSceneImporterFBX", "EditorSceneFormatImporterFBX" },
+	{ "EditorSceneImporterFBX", "EditorSceneFormatImporterFBX2GLTF" },
 	{ "EditorSceneImporterGLTF", "EditorSceneFormatImporterGLTF" },
 	{ "EditorSpatialGizmo", "EditorNode3DGizmo" },
 	{ "EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin" },
-	{ "ExternalTexture", "ImageTexture" },
 	{ "GIProbe", "VoxelGI" },
 	{ "GIProbeData", "VoxelGIData" },
 	{ "Generic6DOFJoint", "Generic6DOFJoint3D" },
@@ -1529,7 +1523,6 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "GradientTexture", "GradientTexture2D" },
 	{ "HeightMapShape", "HeightMapShape3D" },
 	{ "HingeJoint", "HingeJoint3D" },
-	{ "IP_Unix", "IPUnix" },
 	{ "ImmediateGeometry", "ImmediateMesh" },
 	{ "ImmediateGeometry3D", "ImmediateMesh" },
 	{ "InterpolatedCamera", "Camera3D" },

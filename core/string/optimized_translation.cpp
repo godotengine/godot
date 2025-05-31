@@ -110,7 +110,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		const Vector<Pair<int, CharString>> &b = buckets[i];
 		HashMap<uint32_t, int> &t = table.write[i];
 
-		if (b.size() == 0) {
+		if (b.is_empty()) {
 			continue;
 		}
 
@@ -148,7 +148,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (int i = 0; i < size; i++) {
 		const HashMap<uint32_t, int> &t = table[i];
-		if (t.size() == 0) {
+		if (t.is_empty()) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;
 		}
@@ -253,17 +253,12 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 	}
 
 	if (bucket.elem[idx].comp_size == bucket.elem[idx].uncomp_size) {
-		String rstr;
-		rstr.parse_utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
-
-		return rstr;
+		return String::utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
 	} else {
 		CharString uncomp;
 		uncomp.resize(bucket.elem[idx].uncomp_size + 1);
 		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
-		String rstr;
-		rstr.parse_utf8(uncomp.get_data());
-		return rstr;
+		return String::utf8(uncomp.get_data());
 	}
 }
 
@@ -283,15 +278,13 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 			const Bucket &bucket = *(const Bucket *)&btptr[p];
 			for (int j = 0; j < bucket.size; j++) {
 				if (bucket.elem[j].comp_size == bucket.elem[j].uncomp_size) {
-					String rstr;
-					rstr.parse_utf8(&sptr[bucket.elem[j].str_offset], bucket.elem[j].uncomp_size);
+					String rstr = String::utf8(&sptr[bucket.elem[j].str_offset], bucket.elem[j].uncomp_size);
 					msgs.push_back(rstr);
 				} else {
 					CharString uncomp;
 					uncomp.resize(bucket.elem[j].uncomp_size + 1);
 					smaz_decompress(&sptr[bucket.elem[j].str_offset], bucket.elem[j].comp_size, uncomp.ptrw(), bucket.elem[j].uncomp_size);
-					String rstr;
-					rstr.parse_utf8(uncomp.get_data());
+					String rstr = String::utf8(uncomp.get_data());
 					msgs.push_back(rstr);
 				}
 			}

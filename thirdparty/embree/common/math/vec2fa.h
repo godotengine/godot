@@ -4,7 +4,12 @@
 #pragma once
 
 #include "../sys/alloc.h"
-#include "math.h"
+#include "emath.h"
+
+#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
+#  include "vec2fa_sycl.h"
+#else
+
 #include "../simd/sse.h"
 
 namespace embree
@@ -316,3 +321,5 @@ namespace embree
 
   typedef Vec2fa Vec2fa_t;
 }
+
+#endif

@@ -30,13 +30,13 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.error.Error;
 import org.godotengine.godot.input.GodotEditText;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -47,7 +47,9 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.DisplayCutout;
+import android.view.Surface;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 
 import androidx.core.content.FileProvider;
 
@@ -120,15 +122,27 @@ public class GodotIO {
 			}
 
 			activity.startActivity(intent);
-			return 0;
-		} catch (ActivityNotFoundException e) {
+			return Error.OK.toNativeValue();
+		} catch (Exception e) {
 			Log.e(TAG, "Unable to open uri " + uriString, e);
-			return 1;
+			return Error.FAILED.toNativeValue();
 		}
 	}
 
 	public String getCacheDir() {
 		return activity.getCacheDir().getAbsolutePath();
+	}
+
+	public String getTempDir() {
+		File tempDir = new File(getCacheDir() + "/tmp");
+
+		if (!tempDir.exists()) {
+			if (!tempDir.mkdirs()) {
+				Log.e(TAG, "Unable to create temp dir");
+			}
+		}
+
+		return tempDir.getAbsolutePath();
 	}
 
 	public String getDataDir() {
@@ -178,12 +192,10 @@ public class GodotIO {
 	}
 
 	public int[] getDisplaySafeArea() {
-		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
-		Display display = activity.getWindowManager().getDefaultDisplay();
-		Point size = new Point();
-		display.getRealSize(size);
+		Rect rect = new Rect();
+		activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
 
-		int[] result = { 0, 0, size.x, size.y };
+		int[] result = { rect.left, rect.top, rect.right, rect.bottom };
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
 			DisplayCutout cutout = insets.getDisplayCutout();
@@ -216,6 +228,14 @@ public class GodotIO {
 			result[index++] = rect.height();
 		}
 		return result;
+	}
+
+	public boolean hasHardwareKeyboard() {
+		if (edit != null) {
+			return edit.hasHardwareKeyboard();
+		} else {
+			return false;
+		}
 	}
 
 	public void showKeyboard(String p_existing_text, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
@@ -287,6 +307,19 @@ public class GodotIO {
 			default:
 				return -1;
 		}
+	}
+
+	public int getDisplayRotation() {
+		WindowManager windowManager = (WindowManager)activity.getSystemService(Context.WINDOW_SERVICE);
+		int rotation = windowManager.getDefaultDisplay().getRotation();
+		if (rotation == Surface.ROTATION_90) {
+			return 90;
+		} else if (rotation == Surface.ROTATION_180) {
+			return 180;
+		} else if (rotation == Surface.ROTATION_270) {
+			return 270;
+		}
+		return 0;
 	}
 
 	public void setEdit(GodotEditText _edit) {

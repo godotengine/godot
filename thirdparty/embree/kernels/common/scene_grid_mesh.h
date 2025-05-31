@@ -50,11 +50,18 @@ namespace embree
     void setNumTimeSteps (unsigned int numTimeSteps);
     void setVertexAttributeCount (unsigned int N);
     void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num);
-    void* getBuffer(RTCBufferType type, unsigned int slot);
+    void* getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType);
     void updateBuffer(RTCBufferType type, unsigned int slot);
     void commit();
     bool verify();
     void interpolate(const RTCInterpolateArguments* const args);
+
+#if defined(EMBREE_SYCL_SUPPORT)
+
+    size_t getGeometryDataDeviceByteSize() const;
+    void convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const;
+
+#endif
 
     template<int N>
     void interpolate_impl(const RTCInterpolateArguments* const args)
@@ -133,12 +140,26 @@ namespace embree
         }
       }
     }
-    
+
     void addElementsToCount (GeometryCounts & counts) const;
     
-    __forceinline unsigned int getNumSubGrids(const size_t gridID)
+    __forceinline unsigned int getNumTotalQuads() const
     {
-      const Grid &g = grid(gridID);
+      size_t quads = 0;
+      for (size_t primID=0; primID<numPrimitives; primID++)
+        quads += getNumQuads(primID);
+      return quads;
+    }
+
+    __forceinline unsigned int getNumQuads(const size_t gridID) const
+    {
+      const Grid& g = grid(gridID);
+      return (unsigned int) max((int)1,((int)g.resX-1) * ((int)g.resY-1));
+    }
+    
+    __forceinline unsigned int getNumSubGrids(const size_t gridID) const
+    {
+      const Grid& g = grid(gridID);
       return max((unsigned int)1,((unsigned int)g.resX >> 1) * ((unsigned int)g.resY >> 1));
     }
 
@@ -174,6 +195,18 @@ namespace embree
       return vertices[itime][i];
     }
 
+    /*! returns i'th vertex of for specified time */
+    __forceinline const Vec3fa vertex(size_t i, float time) const
+    {
+      float ftime;
+      const size_t itime = timeSegment(time, ftime);
+      const float t0 = 1.0f - ftime;
+      const float t1 = ftime;
+      Vec3fa v0 = vertex(i, itime+0);
+      Vec3fa v1 = vertex(i, itime+1);
+      return madd(Vec3fa(t0),v0,t1*v1);
+    }
+
     /*! returns i'th vertex of itime'th timestep */
     __forceinline const char* vertexPtr(size_t i, size_t itime) const {
       return vertices[itime].getPtr(i);
@@ -198,6 +231,56 @@ namespace embree
       return vertex(index,itime);
     }
 
+    /*! returns i'th vertex of the itime'th timestep */
+    __forceinline const Vec3fa grid_vertex(const Grid& g, size_t x, size_t y, float time) const {
+      const size_t index = grid_vertex_index(g,x,y);
+      return vertex(index,time);
+    }
+    
+    /*! gathers quad vertices */
+    __forceinline void gather_quad_vertices(Vec3fa& v0, Vec3fa& v1, Vec3fa& v2, Vec3fa& v3, const Grid& g, size_t x, size_t y) const
+    {
+      v0 = grid_vertex(g,x+0,y+0);
+      v1 = grid_vertex(g,x+1,y+0);
+      v2 = grid_vertex(g,x+1,y+1);
+      v3 = grid_vertex(g,x+0,y+1);
+    }
+    
+    /*! gathers quad vertices for specified time */
+    __forceinline void gather_quad_vertices(Vec3fa& v0, Vec3fa& v1, Vec3fa& v2, Vec3fa& v3, const Grid& g, size_t x, size_t y, float time) const
+    {
+      v0 = grid_vertex(g,x+0,y+0,time);
+      v1 = grid_vertex(g,x+1,y+0,time);
+      v2 = grid_vertex(g,x+1,y+1,time);
+      v3 = grid_vertex(g,x+0,y+1,time);
+    }
+
+    /*! gathers quad vertices for mblur and non-mblur meshes */
+    __forceinline void gather_quad_vertices_safe(Vec3fa& v0, Vec3fa& v1, Vec3fa& v2, Vec3fa& v3, const Grid& g, size_t x, size_t y, float time) const
+    {
+      if (hasMotionBlur()) gather_quad_vertices(v0,v1,v2,v3,g,x,y,time);
+      else                 gather_quad_vertices(v0,v1,v2,v3,g,x,y);
+    }
+
+    /*! calculates the build bounds of the i'th quad, if it's valid */
+    __forceinline bool buildBoundsQuad(const Grid& g, size_t sx, size_t sy, BBox3fa& bbox) const
+    {
+      BBox3fa b(empty);
+      for (size_t t=0; t<numTimeSteps; t++)
+      {
+        for (size_t y=sy;y<sy+2;y++)
+          for (size_t x=sx;x<sx+2;x++)
+          {
+            const Vec3fa v = grid_vertex(g,x,y,t);
+            if (unlikely(!isvalid(v))) return false;
+            b.extend(v);
+          }
+      }
+
+      bbox = b;
+      return true;
+    }
+    
     /*! calculates the build bounds of the i'th primitive, if it's valid */
     __forceinline bool buildBounds(const Grid& g, size_t sx, size_t sy, BBox3fa& bbox) const
     {
@@ -254,7 +337,6 @@ namespace embree
       return true;
     }
 
-
     __forceinline BBox3fa bounds(const Grid& g, size_t sx, size_t sy, size_t itime) const
     {
       BBox3fa box(empty);
@@ -274,11 +356,22 @@ namespace embree
       return LBBox3fa([&] (size_t itime) { return bounds(g,sx,sy,itime); }, dt, time_range, fnumTimeSegments);
     }
 
+    __forceinline float projectedPrimitiveArea(const size_t i) const {
+      return pos_inf;
+    }
+
   public:
     BufferView<Grid> grids;      //!< array of triangles
     BufferView<Vec3fa> vertices0;        //!< fast access to first vertex buffer
-    vector<BufferView<Vec3fa>> vertices; //!< vertex array for each timestep
-    vector<RawBufferView> vertexAttribs; //!< vertex attributes
+    Device::vector<BufferView<Vec3fa>> vertices = device; //!< vertex array for each timestep
+    Device::vector<RawBufferView> vertexAttribs = device; //!< vertex attributes
+
+#if defined(EMBREE_SYCL_SUPPORT)
+    
+  public:
+    struct PrimID_XY { uint32_t primID; uint16_t x,y; };
+    Device::vector<PrimID_XY> quadID_to_primID_xy = device;  //!< maps a quad to the primitive ID and grid coordinates
+#endif
   };
 
   namespace isa
@@ -287,6 +380,94 @@ namespace embree
     {
       GridMeshISA (Device* device)
         : GridMesh(device) {}
+
+      LBBox3fa vlinearBounds(size_t buildID, const BBox1f& time_range, const SubGridBuildData * const sgrids) const override {
+        const SubGridBuildData &subgrid = sgrids[buildID];                      
+        const unsigned int primID = subgrid.primID;
+        const size_t x = subgrid.x();
+        const size_t y = subgrid.y();
+        return linearBounds(grid(primID),x,y,time_range);
+      }
+
+#if defined(EMBREE_SYCL_SUPPORT)
+      PrimInfo createPrimRefArray(PrimRef* prims, const range<size_t>& r, size_t k, unsigned int geomID) const override
+      {
+        PrimInfo pinfo(empty);
+        for (size_t j=r.begin(); j<r.end(); j++)
+        {
+          BBox3fa bounds = empty;
+          const PrimID_XY& quad = quadID_to_primID_xy[j];
+          if (!buildBoundsQuad(grids[quad.primID],quad.x,quad.y,bounds)) continue;
+          const PrimRef prim(bounds,geomID,unsigned(j));
+          pinfo.add_center2(prim);
+          prims[k++] = prim;
+        }
+        return pinfo;
+      }
+#endif
+      
+      PrimInfo createPrimRefArray(mvector<PrimRef>& prims, mvector<SubGridBuildData>& sgrids, const range<size_t>& r, size_t k, unsigned int geomID) const override 
+      {
+        PrimInfo pinfo(empty);
+        for (size_t j=r.begin(); j<r.end(); j++)
+        {
+          if (!valid(j)) continue;
+          const GridMesh::Grid &g = grid(j);
+          
+          for (unsigned int y=0; y<g.resY-1u; y+=2)
+          {
+            for (unsigned int x=0; x<g.resX-1u; x+=2)
+            {
+              BBox3fa bounds = empty;
+              if (!buildBounds(g,x,y,bounds)) continue; // get bounds of subgrid
+              const PrimRef prim(bounds,(unsigned)geomID,(unsigned)k);
+              pinfo.add_center2(prim);
+              sgrids[k] = SubGridBuildData(x | g.get3x3FlagsX(x), y | g.get3x3FlagsY(y), unsigned(j));
+              prims[k++] = prim;                
+            }
+          }
+        }
+        return pinfo;
+      }
+
+#if defined(EMBREE_SYCL_SUPPORT)
+      PrimInfo createPrimRefArrayMB(PrimRef* prims, const BBox1f& time_range, const range<size_t>& r, size_t k, unsigned int geomID) const override
+      {
+        const BBox1f t0t1 = BBox1f::intersect(getTimeRange(), time_range);
+        PrimInfo pinfo(empty);
+        for (size_t j=r.begin(); j<r.end(); j++)
+        {
+          const PrimID_XY& quad = quadID_to_primID_xy[j];
+          const LBBox3fa lbounds = linearBounds(grids[quad.primID],quad.x,quad.y,t0t1);
+          const PrimRef prim(lbounds.bounds(), unsigned(geomID), unsigned(j));
+          pinfo.add_center2(prim);
+          prims[k++] = prim;
+        }
+        return pinfo;
+      }
+#endif
+
+      PrimInfoMB createPrimRefMBArray(mvector<PrimRefMB>& prims, mvector<SubGridBuildData>& sgrids, const BBox1f& t0t1, const range<size_t>& r, size_t k, unsigned int geomID) const override
+      {
+        PrimInfoMB pinfoMB(empty);
+        for (size_t j=r.begin(); j<r.end(); j++)
+        {
+          if (!valid(j, timeSegmentRange(t0t1))) continue;
+          const GridMesh::Grid &g = grid(j);
+          
+          for (unsigned int y=0; y<g.resY-1u; y+=2)
+          {
+            for (unsigned int x=0; x<g.resX-1u; x+=2)
+            {
+              const PrimRefMB prim(linearBounds(g,x,y,t0t1),numTimeSegments(),time_range,numTimeSegments(),unsigned(geomID),unsigned(k));
+              pinfoMB.add_primref(prim);
+              sgrids[k] = SubGridBuildData(x | g.get3x3FlagsX(x), y | g.get3x3FlagsY(y), unsigned(j));
+              prims[k++] = prim;
+            }
+          }
+        }
+        return pinfoMB;
+      }
     };
   }
 

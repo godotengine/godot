@@ -30,7 +30,6 @@
 
 #include "bit_map.h"
 
-#include "core/io/image_loader.h"
 #include "core/variant/typed_array.h"
 
 void BitMap::create(const Size2i &p_size) {
@@ -39,7 +38,7 @@ void BitMap::create(const Size2i &p_size) {
 
 	ERR_FAIL_COND(static_cast<int64_t>(p_size.width) * static_cast<int64_t>(p_size.height) > INT32_MAX);
 
-	Error err = bitmask.resize((((p_size.width * p_size.height) - 1) / 8) + 1);
+	Error err = bitmask.resize(Math::division_round_up(p_size.width * p_size.height, 8));
 	ERR_FAIL_COND(err != OK);
 
 	width = p_size.width;
@@ -371,13 +370,13 @@ static float perpendicular_distance(const Vector2 &i, const Vector2 &start, cons
 	float intercept;
 
 	if (start.x == end.x) {
-		res = Math::absf(i.x - end.x);
+		res = Math::abs(i.x - end.x);
 	} else if (start.y == end.y) {
-		res = Math::absf(i.y - end.y);
+		res = Math::abs(i.y - end.y);
 	} else {
 		slope = (end.y - start.y) / (end.x - start.x);
 		intercept = start.y - (slope * start.x);
-		res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		res = Math::abs(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
 	}
 	return res;
 }
@@ -524,7 +523,6 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon) const {
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
-	Point2i from;
 	Ref<BitMap> fill;
 	fill.instantiate();
 	fill->create(get_size());
@@ -559,6 +557,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 
 	bool bit_value = p_pixels > 0;
 	p_pixels = Math::abs(p_pixels);
+	const int pixels2 = p_pixels * p_pixels;
 
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
@@ -588,8 +587,8 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 						}
 					}
 
-					float d = Point2(j, i).distance_to(Point2(x, y)) - CMP_EPSILON;
-					if (d > p_pixels) {
+					float d = Point2(j, i).distance_squared_to(Point2(x, y)) - CMP_EPSILON2;
+					if (d > pixels2) {
 						continue;
 					}
 
@@ -728,5 +727,3 @@ void BitMap::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
-
-BitMap::BitMap() {}

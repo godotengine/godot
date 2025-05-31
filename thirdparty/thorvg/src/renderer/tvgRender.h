@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,11 @@
 #ifndef _TVG_RENDER_H_
 #define _TVG_RENDER_H_
 
+#include <math.h>
+#include <cstdarg>
 #include "tvgCommon.h"
 #include "tvgArray.h"
+#include "tvgLock.h"
 
 namespace tvg
 {
@@ -32,11 +35,18 @@ namespace tvg
 using RenderData = void*;
 using pixel_t = uint32_t;
 
-enum RenderUpdateFlag : uint8_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, All = 255};
+#define DASH_PATTERN_THRESHOLD 0.001f
 
-struct Surface;
+enum RenderUpdateFlag : uint16_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, Blend = 128, Clip = 256, All = 0xffff};
+enum CompositionFlag : uint8_t {Invalid = 0, Opacity = 1, Blending = 2, Masking = 4, PostProcessing = 8};  //Composition Purpose
 
-enum ColorSpace
+static inline void operator|=(RenderUpdateFlag& a, const RenderUpdateFlag b)
+{
+    a = RenderUpdateFlag(uint16_t(a) | uint16_t(b));
+}
+
+//TODO: Move this in public header unifying with SwCanvas::Colorspace
+enum ColorSpace : uint8_t
 {
     ABGR8888 = 0,      //The channels are joined in the order: alpha, blue, green, red. Colors are alpha-premultiplied.
     ARGB8888,          //The channels are joined in the order: alpha, red, green, blue. Colors are alpha-premultiplied.
@@ -46,88 +56,56 @@ enum ColorSpace
     Unsupported        //TODO: Change to the default, At the moment, we put it in the last to align with SwCanvas::Colorspace.
 };
 
-struct Surface
+struct RenderSurface
 {
     union {
-        pixel_t* data;       //system based data pointer
-        uint32_t* buf32;     //for explicit 32bits channels
-        uint8_t*  buf8;      //for explicit 8bits grayscale
+        pixel_t* data = nullptr;    //system based data pointer
+        uint32_t* buf32;            //for explicit 32bits channels
+        uint8_t*  buf8;             //for explicit 8bits grayscale
     };
-    uint32_t stride;
-    uint32_t w, h;
-    ColorSpace  cs;
-    uint8_t channelSize;
+    Key key;                        //a reserved lock for the thread safety
+    uint32_t stride = 0;
+    uint32_t w = 0, h = 0;
+    ColorSpace cs = ColorSpace::Unsupported;
+    uint8_t channelSize = 0;
+    bool premultiplied = false;         //Alpha-premultiplied
 
-    bool premultiplied;      //Alpha-premultiplied
-    bool owner;              //Only owner could modify the buffer
+    RenderSurface()
+    {
+    }
+
+    RenderSurface(const RenderSurface* rhs)
+    {
+        data = rhs->data;
+        stride = rhs->stride;
+        w = rhs->w;
+        h = rhs->h;
+        cs = rhs->cs;
+        channelSize = rhs->channelSize;
+        premultiplied = rhs->premultiplied;
+    }
+
+
 };
 
-struct Compositor
+struct RenderCompositor
 {
     CompositeMethod method;
-    uint8_t        opacity;
-};
-
-struct RenderMesh
-{
-    Polygon* triangles = nullptr;
-    uint32_t triangleCnt = 0;
-
-    ~RenderMesh()
-    {
-        free(triangles);
-    }
+    uint8_t opacity;
 };
 
 struct RenderRegion
 {
     int32_t x, y, w, h;
 
-    void intersect(const RenderRegion& rhs)
+    void intersect(const RenderRegion& rhs);
+    void add(const RenderRegion& rhs);
+
+    bool operator==(const RenderRegion& rhs) const
     {
-        auto x1 = x + w;
-        auto y1 = y + h;
-        auto x2 = rhs.x + rhs.w;
-        auto y2 = rhs.y + rhs.h;
-
-        x = (x > rhs.x) ? x : rhs.x;
-        y = (y > rhs.y) ? y : rhs.y;
-        w = ((x1 < x2) ? x1 : x2) - x;
-        h = ((y1 < y2) ? y1 : y2) - y;
-
-        if (w < 0) w = 0;
-        if (h < 0) h = 0;
+        if (x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h) return true;
+        return false;
     }
-
-    void add(const RenderRegion& rhs)
-    {
-        if (rhs.x < x) {
-            w += (x - rhs.x);
-            x = rhs.x;
-        }
-        if (rhs.y < y) {
-            h += (y - rhs.y);
-            y = rhs.y;
-        }
-        if (rhs.x + rhs.w > x + w) w = (rhs.x + rhs.w) - x;
-        if (rhs.y + rhs.h > y + h) h = (rhs.y + rhs.h) - y;
-    }
-};
-
-struct RenderTransform
-{
-    Matrix m;             //3x3 Matrix Elements
-    float x = 0.0f;
-    float y = 0.0f;
-    float degree = 0.0f;  //rotation degree
-    float scale = 1.0f;   //scale factor
-    bool overriding = false;  //user transform?
-
-    bool update();
-    void override(const Matrix& m);
-
-    RenderTransform();
-    RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs);
 };
 
 struct RenderStroke
@@ -146,7 +124,60 @@ struct RenderStroke
     struct {
         float begin = 0.0f;
         float end = 1.0f;
+        bool simultaneous = true;
     } trim;
+
+    void operator=(const RenderStroke& rhs)
+    {
+        width = rhs.width;
+
+        memcpy(color, rhs.color, sizeof(color));
+
+        delete(fill);
+        if (rhs.fill) fill = rhs.fill->duplicate();
+        else fill = nullptr;
+
+        free(dashPattern);
+        if (rhs.dashCnt > 0) {
+            dashPattern = static_cast<float*>(malloc(sizeof(float) * rhs.dashCnt));
+            memcpy(dashPattern, rhs.dashPattern, sizeof(float) * rhs.dashCnt);
+        } else {
+            dashPattern = nullptr;
+        }
+        dashCnt = rhs.dashCnt;
+        dashOffset = rhs.dashOffset;
+        miterlimit = rhs.miterlimit;
+        cap = rhs.cap;
+        join = rhs.join;
+        strokeFirst = rhs.strokeFirst;
+        trim = rhs.trim;
+    }
+
+    bool strokeTrim(float& begin, float& end) const
+    {
+        begin = trim.begin;
+        end = trim.end;
+
+        if (fabsf(end - begin) >= 1.0f) {
+            begin = 0.0f;
+            end = 1.0f;
+            return false;
+        }
+
+        auto loop = true;
+
+        if (begin > 1.0f && end > 1.0f) loop = false;
+        if (begin < 0.0f && end < 0.0f) loop = false;
+        if (begin >= 0.0f && begin <= 1.0f && end >= 0.0f  && end <= 1.0f) loop = false;
+
+        if (begin > 1.0f) begin -= 1.0f;
+        if (begin < 0.0f) begin += 1.0f;
+        if (end > 1.0f) end -= 1.0f;
+        if (end < 0.0f) end += 1.0f;
+
+        if ((loop && begin < end) || (!loop && begin > end)) std::swap(begin, end);
+        return true;
+    }
 
     ~RenderStroke()
     {
@@ -192,7 +223,7 @@ struct RenderShape
     {
         if (!stroke) return false;
         if (stroke->trim.begin == 0.0f && stroke->trim.end == 1.0f) return false;
-        if (stroke->trim.begin == 1.0f && stroke->trim.end == 0.0f) return false;
+        if (fabsf(stroke->trim.end - stroke->trim.begin) >= 1.0f) return false;
         return true;
     }
 
@@ -237,35 +268,161 @@ struct RenderShape
     float strokeMiterlimit() const
     {
         if (!stroke) return 4.0f;
-
         return stroke->miterlimit;;
+    }
+};
+
+struct RenderEffect
+{
+    RenderData rd = nullptr;
+    RenderRegion extend = {0, 0, 0, 0};
+    SceneEffect type;
+    bool valid = false;
+
+    virtual ~RenderEffect()
+    {
+        free(rd);
+    }
+};
+
+struct RenderEffectGaussianBlur : RenderEffect
+{
+    float sigma;
+    uint8_t direction; //0: both, 1: horizontal, 2: vertical
+    uint8_t border;    //0: duplicate, 1: wrap
+    uint8_t quality;   //0 ~ 100  (optional)
+
+    static RenderEffectGaussianBlur* gen(va_list& args)
+    {
+        auto inst = new RenderEffectGaussianBlur;
+        inst->sigma = std::max((float) va_arg(args, double), 0.0f);
+        inst->direction = std::min(va_arg(args, int), 2);
+        inst->border = std::min(va_arg(args, int), 1);
+        inst->quality = std::min(va_arg(args, int), 100);
+        inst->type = SceneEffect::GaussianBlur;
+        return inst;
+    }
+};
+
+struct RenderEffectDropShadow : RenderEffect
+{
+    uint8_t color[4];  //rgba
+    float angle;
+    float distance;
+    float sigma;
+    uint8_t quality;   //0 ~ 100  (optional)
+
+    static RenderEffectDropShadow* gen(va_list& args)
+    {
+        auto inst = new RenderEffectDropShadow;
+        inst->color[0] = va_arg(args, int);
+        inst->color[1] = va_arg(args, int);
+        inst->color[2] = va_arg(args, int);
+        inst->color[3] = va_arg(args, int);
+        inst->angle = (float) va_arg(args, double);
+        inst->distance = (float) va_arg(args, double);
+        inst->sigma = std::max((float) va_arg(args, double), 0.0f);
+        inst->quality = std::min(va_arg(args, int), 100);
+        inst->type = SceneEffect::DropShadow;
+        return inst;
+    }
+};
+
+struct RenderEffectFill : RenderEffect
+{
+    uint8_t color[4];  //rgba
+
+    static RenderEffectFill* gen(va_list& args)
+    {
+        auto inst = new RenderEffectFill;
+        inst->color[0] = va_arg(args, int);
+        inst->color[1] = va_arg(args, int);
+        inst->color[2] = va_arg(args, int);
+        inst->color[3] = va_arg(args, int);
+        inst->type = SceneEffect::Fill;
+        return inst;
+    }
+};
+
+struct RenderEffectTint : RenderEffect
+{
+    uint8_t black[3];  //rgb
+    uint8_t white[3];  //rgb
+    uint8_t intensity; //0 - 255
+
+    static RenderEffectTint* gen(va_list& args)
+    {
+        auto inst = new RenderEffectTint;
+        inst->black[0] = va_arg(args, int);
+        inst->black[1] = va_arg(args, int);
+        inst->black[2] = va_arg(args, int);
+        inst->white[0] = va_arg(args, int);
+        inst->white[1] = va_arg(args, int);
+        inst->white[2] = va_arg(args, int);
+        inst->intensity = (uint8_t)(va_arg(args, double) * 2.55);
+        inst->type = SceneEffect::Tint;
+        return inst;
+    }
+};
+
+struct RenderEffectTritone : RenderEffect
+{
+    uint8_t shadow[3];       //rgb
+    uint8_t midtone[3];      //rgb
+    uint8_t highlight[3];    //rgb
+
+    static RenderEffectTritone* gen(va_list& args)
+    {
+        auto inst = new RenderEffectTritone;
+        inst->shadow[0] = va_arg(args, int);
+        inst->shadow[1] = va_arg(args, int);
+        inst->shadow[2] = va_arg(args, int);
+        inst->midtone[0] = va_arg(args, int);
+        inst->midtone[1] = va_arg(args, int);
+        inst->midtone[2] = va_arg(args, int);
+        inst->highlight[0] = va_arg(args, int);
+        inst->highlight[1] = va_arg(args, int);
+        inst->highlight[2] = va_arg(args, int);
+        inst->type = SceneEffect::Tritone;
+        return inst;
     }
 };
 
 class RenderMethod
 {
+private:
+    uint32_t refCnt = 0;        //reference count
+    Key key;
+
 public:
+    uint32_t ref();
+    uint32_t unref();
+
     virtual ~RenderMethod() {}
-    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
-    virtual RenderData prepare(const Array<RenderData>& scene, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) = 0;
-    virtual RenderData prepare(Surface* surface, const RenderMesh* mesh, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) = 0;
+    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
+    virtual RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) = 0;
     virtual bool preRender() = 0;
     virtual bool renderShape(RenderData data) = 0;
     virtual bool renderImage(RenderData data) = 0;
     virtual bool postRender() = 0;
-    virtual bool dispose(RenderData data) = 0;
+    virtual void dispose(RenderData data) = 0;
     virtual RenderRegion region(RenderData data) = 0;
     virtual RenderRegion viewport() = 0;
     virtual bool viewport(const RenderRegion& vp) = 0;
     virtual bool blend(BlendMethod method) = 0;
     virtual ColorSpace colorSpace() = 0;
+    virtual const RenderSurface* mainSurface() = 0;
 
     virtual bool clear() = 0;
     virtual bool sync() = 0;
 
-    virtual Compositor* target(const RenderRegion& region, ColorSpace cs) = 0;
-    virtual bool beginComposite(Compositor* cmp, CompositeMethod method, uint8_t opacity) = 0;
-    virtual bool endComposite(Compositor* cmp) = 0;
+    virtual RenderCompositor* target(const RenderRegion& region, ColorSpace cs, CompositionFlag flags) = 0;
+    virtual bool beginComposite(RenderCompositor* cmp, CompositeMethod method, uint8_t opacity) = 0;
+    virtual bool endComposite(RenderCompositor* cmp) = 0;
+
+    virtual void prepare(RenderEffect* effect, const Matrix& transform) = 0;
+    virtual bool region(RenderEffect* effect) = 0;
+    virtual bool render(RenderCompositor* cmp, const RenderEffect* effect, bool direct) = 0;
 };
 
 static inline bool MASK_REGION_MERGING(CompositeMethod method)
@@ -281,6 +438,8 @@ static inline bool MASK_REGION_MERGING(CompositeMethod method)
         //these might expand the rendering region
         case CompositeMethod::AddMask:
         case CompositeMethod::DifferenceMask:
+        case CompositeMethod::LightenMask:
+        case CompositeMethod::DarkenMask:
             return true;
         default:
             TVGERR("RENDERER", "Unsupported Composite Method! = %d", (int)method);
@@ -305,7 +464,7 @@ static inline uint8_t CHANNEL_SIZE(ColorSpace cs)
     }
 }
 
-static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod& renderer, CompositeMethod method)
+static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod* renderer, CompositeMethod method)
 {
     switch(method) {
         case CompositeMethod::AlphaMask:
@@ -314,11 +473,13 @@ static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod& renderer, Composi
         case CompositeMethod::DifferenceMask:
         case CompositeMethod::SubtractMask:
         case CompositeMethod::IntersectMask:
+        case CompositeMethod::LightenMask:
+        case CompositeMethod::DarkenMask:
             return ColorSpace::Grayscale8;
         //TODO: Optimize Luma/InvLuma colorspace to Grayscale8
         case CompositeMethod::LumaMask:
         case CompositeMethod::InvLumaMask:
-            return renderer.colorSpace();
+            return renderer->colorSpace();
         default:
             TVGERR("RENDERER", "Unsupported Composite Size! = %d", (int)method);
             return ColorSpace::Unsupported;
@@ -329,7 +490,6 @@ static inline uint8_t MULTIPLY(uint8_t c, uint8_t a)
 {
     return (((c) * (a) + 0xff) >> 8);
 }
-
 
 }
 

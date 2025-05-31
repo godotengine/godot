@@ -107,6 +107,9 @@ protected:
     int dimMap[EsdNumDims];
 };
 
+// change this back to false if depending on textual spellings of texturing calls when consuming the AST
+// Using PureOperatorBuiltins=false is deprecated.
+constexpr bool PureOperatorBuiltins = true;
 } // end namespace glslang
 
 #endif // _INITIALIZE_INCLUDED_

@@ -32,6 +32,24 @@
 
 UniformSetCacheRD *UniformSetCacheRD::singleton = nullptr;
 
+void UniformSetCacheRD::_bind_methods() {
+	ClassDB::bind_static_method("UniformSetCacheRD", D_METHOD("get_cache", "shader", "set", "uniforms"), &UniformSetCacheRD::get_cache_array);
+}
+
+RID UniformSetCacheRD::get_cache_array(RID p_shader, uint32_t p_set, const TypedArray<RDUniform> &p_uniforms) {
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
+
+	for (int i = 0; i < p_uniforms.size(); i++) {
+		Ref<RDUniform> uniform = p_uniforms[i];
+		if (uniform.is_valid()) {
+			uniforms.push_back(uniform->base);
+		}
+	}
+
+	return UniformSetCacheRD::get_singleton()->get_cache_vec(p_shader, p_set, uniforms);
+}
+
 void UniformSetCacheRD::_invalidate(Cache *p_cache) {
 	if (p_cache->prev) {
 		p_cache->prev->next = p_cache->next;

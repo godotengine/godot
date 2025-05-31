@@ -84,7 +84,7 @@ int OpenXRActionSet::get_action_count() const {
 
 void OpenXRActionSet::clear_actions() {
 	// Actions held within our action set should be released and destroyed but just in case they are still used some where else
-	if (actions.size() == 0) {
+	if (actions.is_empty()) {
 		return;
 	}
 
@@ -124,7 +124,7 @@ Ref<OpenXRAction> OpenXRActionSet::get_action(const String p_name) const {
 void OpenXRActionSet::add_action(Ref<OpenXRAction> p_action) {
 	ERR_FAIL_COND(p_action.is_null());
 
-	if (actions.find(p_action) == -1) {
+	if (!actions.has(p_action)) {
 		if (p_action->action_set && p_action->action_set != this) {
 			// action should only relate to our action set
 			p_action->action_set->remove_action(p_action);
@@ -141,7 +141,7 @@ void OpenXRActionSet::remove_action(Ref<OpenXRAction> p_action) {
 	if (idx != -1) {
 		actions.remove_at(idx);
 
-		ERR_FAIL_COND_MSG(p_action->action_set != this, "Removing action that belongs to this action set but had incorrect action set pointer."); // this should never happen!
+		ERR_FAIL_COND_MSG(p_action->action_set != this, "Removing action that belongs to this action set but had incorrect action set pointer."); // This should never happen!
 		p_action->action_set = nullptr;
 
 		emit_changed();

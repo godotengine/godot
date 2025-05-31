@@ -192,6 +192,7 @@ MEM_STATIC void ZSTD_cwksp_assert_internal_consistency(ZSTD_cwksp* ws) {
     {
         intptr_t const offset = __msan_test_shadow(ws->initOnceStart,
             (U8*)ZSTD_cwksp_initialAllocStart(ws) - (U8*)ws->initOnceStart);
+        (void)offset;
 #if defined(ZSTD_MSAN_PRINT)
         if(offset!=-1) {
             __msan_print_shadow((U8*)ws->initOnceStart + offset - 8, 32);
@@ -433,7 +434,7 @@ MEM_STATIC void* ZSTD_cwksp_reserve_aligned(ZSTD_cwksp* ws, size_t bytes)
 
 /**
  * Aligned on 64 bytes. These buffers have the special property that
- * their values remain constrained, allowing us to re-use them without
+ * their values remain constrained, allowing us to reuse them without
  * memset()-ing them.
  */
 MEM_STATIC void* ZSTD_cwksp_reserve_table(ZSTD_cwksp* ws, size_t bytes)
@@ -525,7 +526,7 @@ MEM_STATIC void ZSTD_cwksp_mark_tables_dirty(ZSTD_cwksp* ws)
     DEBUGLOG(4, "cwksp: ZSTD_cwksp_mark_tables_dirty");
 
 #if ZSTD_MEMORY_SANITIZER && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
-    /* To validate that the table re-use logic is sound, and that we don't
+    /* To validate that the table reuse logic is sound, and that we don't
      * access table space that we haven't cleaned, we re-"poison" the table
      * space every time we mark it dirty.
      * Since tableValidEnd space and initOnce space may overlap we don't poison
@@ -602,9 +603,9 @@ MEM_STATIC void ZSTD_cwksp_clear(ZSTD_cwksp* ws) {
     DEBUGLOG(4, "cwksp: clearing!");
 
 #if ZSTD_MEMORY_SANITIZER && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
-    /* To validate that the context re-use logic is sound, and that we don't
+    /* To validate that the context reuse logic is sound, and that we don't
      * access stuff that this compression hasn't initialized, we re-"poison"
-     * the workspace except for the areas in which we expect memory re-use
+     * the workspace except for the areas in which we expect memory reuse
      * without initialization (objects, valid tables area and init once
      * memory). */
     {
@@ -633,6 +634,15 @@ MEM_STATIC void ZSTD_cwksp_clear(ZSTD_cwksp* ws) {
         ws->phase = ZSTD_cwksp_alloc_aligned_init_once;
     }
     ZSTD_cwksp_assert_internal_consistency(ws);
+}
+
+MEM_STATIC size_t ZSTD_cwksp_sizeof(const ZSTD_cwksp* ws) {
+    return (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->workspace);
+}
+
+MEM_STATIC size_t ZSTD_cwksp_used(const ZSTD_cwksp* ws) {
+    return (size_t)((BYTE*)ws->tableEnd - (BYTE*)ws->workspace)
+         + (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->allocStart);
 }
 
 /**
@@ -666,6 +676,11 @@ MEM_STATIC size_t ZSTD_cwksp_create(ZSTD_cwksp* ws, size_t size, ZSTD_customMem 
 MEM_STATIC void ZSTD_cwksp_free(ZSTD_cwksp* ws, ZSTD_customMem customMem) {
     void *ptr = ws->workspace;
     DEBUGLOG(4, "cwksp: freeing workspace");
+#if ZSTD_MEMORY_SANITIZER && !defined(ZSTD_MSAN_DONT_POISON_WORKSPACE)
+    if (ptr != NULL && customMem.customFree != NULL) {
+        __msan_unpoison(ptr, ZSTD_cwksp_sizeof(ws));
+    }
+#endif
     ZSTD_memset(ws, 0, sizeof(ZSTD_cwksp));
     ZSTD_customFree(ptr, customMem);
 }
@@ -677,15 +692,6 @@ MEM_STATIC void ZSTD_cwksp_free(ZSTD_cwksp* ws, ZSTD_customMem customMem) {
 MEM_STATIC void ZSTD_cwksp_move(ZSTD_cwksp* dst, ZSTD_cwksp* src) {
     *dst = *src;
     ZSTD_memset(src, 0, sizeof(ZSTD_cwksp));
-}
-
-MEM_STATIC size_t ZSTD_cwksp_sizeof(const ZSTD_cwksp* ws) {
-    return (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->workspace);
-}
-
-MEM_STATIC size_t ZSTD_cwksp_used(const ZSTD_cwksp* ws) {
-    return (size_t)((BYTE*)ws->tableEnd - (BYTE*)ws->workspace)
-         + (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->allocStart);
 }
 
 MEM_STATIC int ZSTD_cwksp_reserve_failed(const ZSTD_cwksp* ws) {

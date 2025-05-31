@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRBodyTracker" inherits="XRPositionalTracker" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A tracked body in XR.
+	</brief_description>
+	<description>
+		A body tracking system will create an instance of this object and add it to the [XRServer]. This tracking system will then obtain skeleton data, convert it to the Godot Humanoid skeleton and store this data on the [XRBodyTracker] object.
+		Use [XRBodyModifier3D] to animate a body mesh using body tracking data.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_joint_flags" qualifiers="const">
+			<return type="int" enum="XRBodyTracker.JointFlags" is_bitfield="true" />
+			<param index="0" name="joint" type="int" enum="XRBodyTracker.Joint" />
+			<description>
+				Returns flags about the validity of the tracking data for the given body joint (see [enum XRBodyTracker.JointFlags]).
+			</description>
+		</method>
+		<method name="get_joint_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="joint" type="int" enum="XRBodyTracker.Joint" />
+			<description>
+				Returns the transform for the given body joint.
+			</description>
+		</method>
+		<method name="set_joint_flags">
+			<return type="void" />
+			<param index="0" name="joint" type="int" enum="XRBodyTracker.Joint" />
+			<param index="1" name="flags" type="int" enum="XRBodyTracker.JointFlags" is_bitfield="true" />
+			<description>
+				Sets flags about the validity of the tracking data for the given body joint.
+			</description>
+		</method>
+		<method name="set_joint_transform">
+			<return type="void" />
+			<param index="0" name="joint" type="int" enum="XRBodyTracker.Joint" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+				Sets the transform for the given body joint.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="body_flags" type="int" setter="set_body_flags" getter="get_body_flags" enum="XRBodyTracker.BodyFlags" is_bitfield="true" default="0">
+			The type of body tracking data captured.
+		</member>
+		<member name="has_tracking_data" type="bool" setter="set_has_tracking_data" getter="get_has_tracking_data" default="false">
+			If [code]true[/code], the body tracking data is valid.
+		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="32" />
+	</members>
+	<constants>
+		<constant name="BODY_FLAG_UPPER_BODY_SUPPORTED" value="1" enum="BodyFlags" is_bitfield="true">
+			Upper body tracking supported.
+		</constant>
+		<constant name="BODY_FLAG_LOWER_BODY_SUPPORTED" value="2" enum="BodyFlags" is_bitfield="true">
+			Lower body tracking supported.
+		</constant>
+		<constant name="BODY_FLAG_HANDS_SUPPORTED" value="4" enum="BodyFlags" is_bitfield="true">
+			Hand tracking supported.
+		</constant>
+		<constant name="JOINT_ROOT" value="0" enum="Joint">
+			Root joint.
+		</constant>
+		<constant name="JOINT_HIPS" value="1" enum="Joint">
+			Hips joint.
+		</constant>
+		<constant name="JOINT_SPINE" value="2" enum="Joint">
+			Spine joint.
+		</constant>
+		<constant name="JOINT_CHEST" value="3" enum="Joint">
+			Chest joint.
+		</constant>
+		<constant name="JOINT_UPPER_CHEST" value="4" enum="Joint">
+			Upper chest joint.
+		</constant>
+		<constant name="JOINT_NECK" value="5" enum="Joint">
+			Neck joint.
+		</constant>
+		<constant name="JOINT_HEAD" value="6" enum="Joint">
+			Head joint.
+		</constant>
+		<constant name="JOINT_HEAD_TIP" value="7" enum="Joint">
+			Head tip joint.
+		</constant>
+		<constant name="JOINT_LEFT_SHOULDER" value="8" enum="Joint">
+			Left shoulder joint.
+		</constant>
+		<constant name="JOINT_LEFT_UPPER_ARM" value="9" enum="Joint">
+			Left upper arm joint.
+		</constant>
+		<constant name="JOINT_LEFT_LOWER_ARM" value="10" enum="Joint">
+			Left lower arm joint.
+		</constant>
+		<constant name="JOINT_RIGHT_SHOULDER" value="11" enum="Joint">
+			Right shoulder joint.
+		</constant>
+		<constant name="JOINT_RIGHT_UPPER_ARM" value="12" enum="Joint">
+			Right upper arm joint.
+		</constant>
+		<constant name="JOINT_RIGHT_LOWER_ARM" value="13" enum="Joint">
+			Right lower arm joint.
+		</constant>
+		<constant name="JOINT_LEFT_UPPER_LEG" value="14" enum="Joint">
+			Left upper leg joint.
+		</constant>
+		<constant name="JOINT_LEFT_LOWER_LEG" value="15" enum="Joint">
+			Left lower leg joint.
+		</constant>
+		<constant name="JOINT_LEFT_FOOT" value="16" enum="Joint">
+			Left foot joint.
+		</constant>
+		<constant name="JOINT_LEFT_TOES" value="17" enum="Joint">
+			Left toes joint.
+		</constant>
+		<constant name="JOINT_RIGHT_UPPER_LEG" value="18" enum="Joint">
+			Right upper leg joint.
+		</constant>
+		<constant name="JOINT_RIGHT_LOWER_LEG" value="19" enum="Joint">
+			Right lower leg joint.
+		</constant>
+		<constant name="JOINT_RIGHT_FOOT" value="20" enum="Joint">
+			Right foot joint.
+		</constant>
+		<constant name="JOINT_RIGHT_TOES" value="21" enum="Joint">
+			Right toes joint.
+		</constant>
+		<constant name="JOINT_LEFT_HAND" value="22" enum="Joint">
+			Left hand joint.
+		</constant>
+		<constant name="JOINT_LEFT_PALM" value="23" enum="Joint">
+			Left palm joint.
+		</constant>
+		<constant name="JOINT_LEFT_WRIST" value="24" enum="Joint">
+			Left wrist joint.
+		</constant>
+		<constant name="JOINT_LEFT_THUMB_METACARPAL" value="25" enum="Joint">
+			Left thumb metacarpal joint.
+		</constant>
+		<constant name="JOINT_LEFT_THUMB_PHALANX_PROXIMAL" value="26" enum="Joint">
+			Left thumb phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_LEFT_THUMB_PHALANX_DISTAL" value="27" enum="Joint">
+			Left thumb phalanx distal joint.
+		</constant>
+		<constant name="JOINT_LEFT_THUMB_TIP" value="28" enum="Joint">
+			Left thumb tip joint.
+		</constant>
+		<constant name="JOINT_LEFT_INDEX_FINGER_METACARPAL" value="29" enum="Joint">
+			Left index finger metacarpal joint.
+		</constant>
+		<constant name="JOINT_LEFT_INDEX_FINGER_PHALANX_PROXIMAL" value="30" enum="Joint">
+			Left index finger phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_LEFT_INDEX_FINGER_PHALANX_INTERMEDIATE" value="31" enum="Joint">
+			Left index finger phalanx intermediate joint.
+		</constant>
+		<constant name="JOINT_LEFT_INDEX_FINGER_PHALANX_DISTAL" value="32" enum="Joint">
+			Left index finger phalanx distal joint.
+		</constant>
+		<constant name="JOINT_LEFT_INDEX_FINGER_TIP" value="33" enum="Joint">
+			Left index finger tip joint.
+		</constant>
+		<constant name="JOINT_LEFT_MIDDLE_FINGER_METACARPAL" value="34" enum="Joint">
+			Left middle finger metacarpal joint.
+		</constant>
+		<constant name="JOINT_LEFT_MIDDLE_FINGER_PHALANX_PROXIMAL" value="35" enum="Joint">
+			Left middle finger phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_LEFT_MIDDLE_FINGER_PHALANX_INTERMEDIATE" value="36" enum="Joint">
+			Left middle finger phalanx intermediate joint.
+		</constant>
+		<constant name="JOINT_LEFT_MIDDLE_FINGER_PHALANX_DISTAL" value="37" enum="Joint">
+			Left middle finger phalanx distal joint.
+		</constant>
+		<constant name="JOINT_LEFT_MIDDLE_FINGER_TIP" value="38" enum="Joint">
+			Left middle finger tip joint.
+		</constant>
+		<constant name="JOINT_LEFT_RING_FINGER_METACARPAL" value="39" enum="Joint">
+			Left ring finger metacarpal joint.
+		</constant>
+		<constant name="JOINT_LEFT_RING_FINGER_PHALANX_PROXIMAL" value="40" enum="Joint">
+			Left ring finger phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_LEFT_RING_FINGER_PHALANX_INTERMEDIATE" value="41" enum="Joint">
+			Left ring finger phalanx intermediate joint.
+		</constant>
+		<constant name="JOINT_LEFT_RING_FINGER_PHALANX_DISTAL" value="42" enum="Joint">
+			Left ring finger phalanx distal joint.
+		</constant>
+		<constant name="JOINT_LEFT_RING_FINGER_TIP" value="43" enum="Joint">
+			Left ring finger tip joint.
+		</constant>
+		<constant name="JOINT_LEFT_PINKY_FINGER_METACARPAL" value="44" enum="Joint">
+			Left pinky finger metacarpal joint.
+		</constant>
+		<constant name="JOINT_LEFT_PINKY_FINGER_PHALANX_PROXIMAL" value="45" enum="Joint">
+			Left pinky finger phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_LEFT_PINKY_FINGER_PHALANX_INTERMEDIATE" value="46" enum="Joint">
+			Left pinky finger phalanx intermediate joint.
+		</constant>
+		<constant name="JOINT_LEFT_PINKY_FINGER_PHALANX_DISTAL" value="47" enum="Joint">
+			Left pinky finger phalanx distal joint.
+		</constant>
+		<constant name="JOINT_LEFT_PINKY_FINGER_TIP" value="48" enum="Joint">
+			Left pinky finger tip joint.
+		</constant>
+		<constant name="JOINT_RIGHT_HAND" value="49" enum="Joint">
+			Right hand joint.
+		</constant>
+		<constant name="JOINT_RIGHT_PALM" value="50" enum="Joint">
+			Right palm joint.
+		</constant>
+		<constant name="JOINT_RIGHT_WRIST" value="51" enum="Joint">
+			Right wrist joint.
+		</constant>
+		<constant name="JOINT_RIGHT_THUMB_METACARPAL" value="52" enum="Joint">
+			Right thumb metacarpal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_THUMB_PHALANX_PROXIMAL" value="53" enum="Joint">
+			Right thumb phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_THUMB_PHALANX_DISTAL" value="54" enum="Joint">
+			Right thumb phalanx distal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_THUMB_TIP" value="55" enum="Joint">
+			Right thumb tip joint.
+		</constant>
+		<constant name="JOINT_RIGHT_INDEX_FINGER_METACARPAL" value="56" enum="Joint">
+			Right index finger metacarpal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_INDEX_FINGER_PHALANX_PROXIMAL" value="57" enum="Joint">
+			Right index finger phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_INDEX_FINGER_PHALANX_INTERMEDIATE" value="58" enum="Joint">
+			Right index finger phalanx intermediate joint.
+		</constant>
+		<constant name="JOINT_RIGHT_INDEX_FINGER_PHALANX_DISTAL" value="59" enum="Joint">
+			Right index finger phalanx distal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_INDEX_FINGER_TIP" value="60" enum="Joint">
+			Right index finger tip joint.
+		</constant>
+		<constant name="JOINT_RIGHT_MIDDLE_FINGER_METACARPAL" value="61" enum="Joint">
+			Right middle finger metacarpal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_MIDDLE_FINGER_PHALANX_PROXIMAL" value="62" enum="Joint">
+			Right middle finger phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_MIDDLE_FINGER_PHALANX_INTERMEDIATE" value="63" enum="Joint">
+			Right middle finger phalanx intermediate joint.
+		</constant>
+		<constant name="JOINT_RIGHT_MIDDLE_FINGER_PHALANX_DISTAL" value="64" enum="Joint">
+			Right middle finger phalanx distal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_MIDDLE_FINGER_TIP" value="65" enum="Joint">
+			Right middle finger tip joint.
+		</constant>
+		<constant name="JOINT_RIGHT_RING_FINGER_METACARPAL" value="66" enum="Joint">
+			Right ring finger metacarpal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_RING_FINGER_PHALANX_PROXIMAL" value="67" enum="Joint">
+			Right ring finger phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_RING_FINGER_PHALANX_INTERMEDIATE" value="68" enum="Joint">
+			Right ring finger phalanx intermediate joint.
+		</constant>
+		<constant name="JOINT_RIGHT_RING_FINGER_PHALANX_DISTAL" value="69" enum="Joint">
+			Right ring finger phalanx distal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_RING_FINGER_TIP" value="70" enum="Joint">
+			Right ring finger tip joint.
+		</constant>
+		<constant name="JOINT_RIGHT_PINKY_FINGER_METACARPAL" value="71" enum="Joint">
+			Right pinky finger metacarpal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_PINKY_FINGER_PHALANX_PROXIMAL" value="72" enum="Joint">
+			Right pinky finger phalanx proximal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_PINKY_FINGER_PHALANX_INTERMEDIATE" value="73" enum="Joint">
+			Right pinky finger phalanx intermediate joint.
+		</constant>
+		<constant name="JOINT_RIGHT_PINKY_FINGER_PHALANX_DISTAL" value="74" enum="Joint">
+			Right pinky finger phalanx distal joint.
+		</constant>
+		<constant name="JOINT_RIGHT_PINKY_FINGER_TIP" value="75" enum="Joint">
+			Right pinky finger tip joint.
+		</constant>
+		<constant name="JOINT_MAX" value="76" enum="Joint">
+			Represents the size of the [enum Joint] enum.
+		</constant>
+		<constant name="JOINT_FLAG_ORIENTATION_VALID" value="1" enum="JointFlags" is_bitfield="true">
+			The joint's orientation data is valid.
+		</constant>
+		<constant name="JOINT_FLAG_ORIENTATION_TRACKED" value="2" enum="JointFlags" is_bitfield="true">
+			The joint's orientation is actively tracked. May not be set if tracking has been temporarily lost.
+		</constant>
+		<constant name="JOINT_FLAG_POSITION_VALID" value="4" enum="JointFlags" is_bitfield="true">
+			The joint's position data is valid.
+		</constant>
+		<constant name="JOINT_FLAG_POSITION_TRACKED" value="8" enum="JointFlags" is_bitfield="true">
+			The joint's position is actively tracked. May not be set if tracking has been temporarily lost.
+		</constant>
+	</constants>
+</class>

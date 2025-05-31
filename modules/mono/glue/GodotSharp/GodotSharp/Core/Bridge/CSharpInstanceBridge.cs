@@ -59,6 +59,11 @@ namespace Godot.Bridge
                     return godot_bool.True;
                 }
 
+                if (!godotObject.HasGodotClassMethod(GodotObject.MethodName._Set.NativeValue.DangerousSelfRef))
+                {
+                    return godot_bool.False;
+                }
+
                 var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
@@ -94,7 +99,7 @@ namespace Godot.Bridge
                 // Signals
                 if (godotObject.HasGodotClassSignal(CustomUnsafe.AsRef(name)))
                 {
-                    godot_signal signal = new godot_signal(*name, godotObject.GetInstanceId());
+                    godot_signal signal = new godot_signal(NativeFuncs.godotsharp_string_name_new_copy(*name), godotObject.GetInstanceId());
                     *outRet = VariantUtils.CreateFromSignalTakingOwnershipOfDisposableValue(signal);
                     return godot_bool.True;
                 }
@@ -102,9 +107,14 @@ namespace Godot.Bridge
                 // Methods
                 if (godotObject.HasGodotClassMethod(CustomUnsafe.AsRef(name)))
                 {
-                    godot_callable method = new godot_callable(*name, godotObject.GetInstanceId());
+                    godot_callable method = new godot_callable(NativeFuncs.godotsharp_string_name_new_copy(*name), godotObject.GetInstanceId());
                     *outRet = VariantUtils.CreateFromCallableTakingOwnershipOfDisposableValue(method);
                     return godot_bool.True;
+                }
+
+                if (!godotObject.HasGodotClassMethod(GodotObject.MethodName._Get.NativeValue.DangerousSelfRef))
+                {
+                    return godot_bool.False;
                 }
 
                 var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(

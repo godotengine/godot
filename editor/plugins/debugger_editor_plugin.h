@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUGGER_EDITOR_PLUGIN_H
-#define DEBUGGER_EDITOR_PLUGIN_H
+#pragma once
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class EditorFileServer;
 class MenuButton;
 class PopupMenu;
+class RunInstancesDialog;
 
 class DebuggerEditorPlugin : public EditorPlugin {
 	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
@@ -43,7 +43,7 @@ class DebuggerEditorPlugin : public EditorPlugin {
 private:
 	PopupMenu *debug_menu = nullptr;
 	EditorFileServer *file_server = nullptr;
-	PopupMenu *instances_menu = nullptr;
+	RunInstancesDialog *run_instances_dialog = nullptr;
 
 	enum MenuOptions {
 		RUN_FILE_SERVER,
@@ -56,19 +56,19 @@ private:
 		RUN_DEPLOY_REMOTE_DEBUG,
 		RUN_RELOAD_SCRIPTS,
 		SERVER_KEEP_OPEN,
+		RUN_MULTIPLE_INSTANCES,
 	};
+
+	bool initializing = true;
 
 	void _update_debug_options();
 	void _notification(int p_what);
-	void _select_run_count(int p_index);
 	void _menu_option(int p_option);
 
 public:
-	virtual String get_name() const override { return "Debugger"; }
+	virtual String get_plugin_name() const override { return "Debugger"; }
 	bool has_main_screen() const override { return false; }
 
 	DebuggerEditorPlugin(PopupMenu *p_menu);
 	~DebuggerEditorPlugin();
 };
-
-#endif // DEBUGGER_EDITOR_PLUGIN_H

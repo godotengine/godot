@@ -7,7 +7,7 @@
 #include "accel.h"
 
 namespace embree
-{
+{  
 #define MODE_HIGH_QUALITY (1<<8)
 
   /*! virtual interface for all hierarchy builders */

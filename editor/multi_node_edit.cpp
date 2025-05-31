@@ -186,25 +186,9 @@ bool MultiNodeEdit::_property_can_revert(const StringName &p_name) const {
 	}
 
 	if (ClassDB::has_property(get_edited_class_name(), p_name)) {
-		StringName class_name;
 		for (const NodePath &E : nodes) {
 			Node *node = es->get_node_or_null(E);
-			if (!node) {
-				continue;
-			}
-
-			class_name = node->get_class_name();
-		}
-
-		Variant default_value = ClassDB::class_get_default_property_value(class_name, p_name);
-		for (const NodePath &E : nodes) {
-			Node *node = es->get_node_or_null(E);
-			if (!node) {
-				continue;
-			}
-
-			if (node->get(p_name) != default_value) {
-				// A node that doesn't have the default value has been found, so show the revert button.
+			if (node) {
 				return true;
 			}
 		}
@@ -235,8 +219,29 @@ bool MultiNodeEdit::_property_get_revert(const StringName &p_name, Variant &r_pr
 	return false;
 }
 
+void MultiNodeEdit::_queue_notify_property_list_changed() {
+	if (notify_property_list_changed_pending) {
+		return;
+	}
+	notify_property_list_changed_pending = true;
+	callable_mp(this, &MultiNodeEdit::_notify_property_list_changed).call_deferred();
+}
+
+void MultiNodeEdit::_notify_property_list_changed() {
+	notify_property_list_changed_pending = false;
+	notify_property_list_changed();
+}
+
 void MultiNodeEdit::add_node(const NodePath &p_node) {
 	nodes.push_back(p_node);
+
+	Node *es = EditorNode::get_singleton()->get_edited_scene();
+	if (es) {
+		Node *node = es->get_node_or_null(p_node);
+		if (node) {
+			node->connect(CoreStringName(property_list_changed), callable_mp(this, &MultiNodeEdit::_queue_notify_property_list_changed));
+		}
+	}
 }
 
 int MultiNodeEdit::get_node_count() const {
@@ -244,7 +249,7 @@ int MultiNodeEdit::get_node_count() const {
 }
 
 NodePath MultiNodeEdit::get_node(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, nodes.size(), NodePath());
+	ERR_FAIL_INDEX_V(p_index, get_node_count(), NodePath());
 	return nodes[p_index];
 }
 
@@ -310,7 +315,4 @@ void MultiNodeEdit::_bind_methods() {
 	ClassDB::bind_method("_hide_script_from_inspector", &MultiNodeEdit::_hide_script_from_inspector);
 	ClassDB::bind_method("_hide_metadata_from_inspector", &MultiNodeEdit::_hide_metadata_from_inspector);
 	ClassDB::bind_method("_get_editor_name", &MultiNodeEdit::_get_editor_name);
-}
-
-MultiNodeEdit::MultiNodeEdit() {
 }

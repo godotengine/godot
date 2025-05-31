@@ -1,7 +1,7 @@
 //
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2013 LunarG, Inc.
-// Copyright (C) 2017 ARM Limited.
+// Copyright (C) 2017, 2022-2024 Arm Limited.
 // Copyright (C) 2015-2018 Google, Inc.
 // Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
@@ -171,6 +171,7 @@ const char* const E_GL_KHR_shader_subgroup_arithmetic       = "GL_KHR_shader_sub
 const char* const E_GL_KHR_shader_subgroup_ballot           = "GL_KHR_shader_subgroup_ballot";
 const char* const E_GL_KHR_shader_subgroup_shuffle          = "GL_KHR_shader_subgroup_shuffle";
 const char* const E_GL_KHR_shader_subgroup_shuffle_relative = "GL_KHR_shader_subgroup_shuffle_relative";
+const char* const E_GL_KHR_shader_subgroup_rotate           = "GL_KHR_shader_subgroup_rotate";
 const char* const E_GL_KHR_shader_subgroup_clustered        = "GL_KHR_shader_subgroup_clustered";
 const char* const E_GL_KHR_shader_subgroup_quad             = "GL_KHR_shader_subgroup_quad";
 const char* const E_GL_KHR_memory_scope_semantics           = "GL_KHR_memory_scope_semantics";
@@ -215,6 +216,12 @@ const char* const E_GL_EXT_spirv_intrinsics                 = "GL_EXT_spirv_intr
 const char* const E_GL_EXT_fragment_shader_barycentric      = "GL_EXT_fragment_shader_barycentric";
 const char* const E_GL_EXT_mesh_shader                      = "GL_EXT_mesh_shader";
 const char* const E_GL_EXT_opacity_micromap                 = "GL_EXT_opacity_micromap";
+const char* const E_GL_EXT_shader_quad_control              = "GL_EXT_shader_quad_control";
+const char* const E_GL_EXT_draw_instanced                   = "GL_EXT_draw_instanced";
+const char* const E_GL_EXT_texture_array                    = "GL_EXT_texture_array";
+const char* const E_GL_EXT_maximal_reconvergence            = "GL_EXT_maximal_reconvergence";
+const char* const E_GL_EXT_expect_assume                    = "GL_EXT_expect_assume";
+const char* const E_GL_EXT_control_flow_attributes2         = "GL_EXT_control_flow_attributes2";
 
 // Arrays of extensions for the above viewportEXTs duplications
 
@@ -235,6 +242,7 @@ const int Num_OVR_multiview_EXTs = sizeof(OVR_multiview_EXTs) / sizeof(OVR_multi
 // #line and #include
 const char* const E_GL_GOOGLE_cpp_style_line_directive          = "GL_GOOGLE_cpp_style_line_directive";
 const char* const E_GL_GOOGLE_include_directive                 = "GL_GOOGLE_include_directive";
+const char* const E_GL_ARB_shading_language_include             = "GL_ARB_shading_language_include";
 
 const char* const E_GL_AMD_shader_ballot                        = "GL_AMD_shader_ballot";
 const char* const E_GL_AMD_shader_trinary_minmax                = "GL_AMD_shader_trinary_minmax";
@@ -266,7 +274,13 @@ const char* const E_GL_NV_fragment_shader_barycentric           = "GL_NV_fragmen
 const char* const E_GL_NV_compute_shader_derivatives            = "GL_NV_compute_shader_derivatives";
 const char* const E_GL_NV_shader_texture_footprint              = "GL_NV_shader_texture_footprint";
 const char* const E_GL_NV_mesh_shader                           = "GL_NV_mesh_shader";
+const char* const E_GL_NV_cooperative_matrix                    = "GL_NV_cooperative_matrix";
+const char* const E_GL_NV_shader_sm_builtins                    = "GL_NV_shader_sm_builtins";
+const char* const E_GL_NV_integer_cooperative_matrix            = "GL_NV_integer_cooperative_matrix";
+const char* const E_GL_NV_shader_invocation_reorder             = "GL_NV_shader_invocation_reorder";
 const char* const E_GL_EXT_ray_tracing_position_fetch           = "GL_EXT_ray_tracing_position_fetch";
+const char* const E_GL_NV_displacement_micromap                 = "GL_NV_displacement_micromap";
+const char* const E_GL_NV_shader_atomic_fp16_vector             = "GL_NV_shader_atomic_fp16_vector";
 
 // ARM
 const char* const E_GL_ARM_shader_core_builtins                 = "GL_ARM_shader_core_builtins";
@@ -276,10 +290,9 @@ const char* const E_GL_ARM_shader_core_builtins                 = "GL_ARM_shader
 const char* const viewportEXTs[] = { E_GL_ARB_shader_viewport_layer_array, E_GL_NV_viewport_array2 };
 const int Num_viewportEXTs = sizeof(viewportEXTs) / sizeof(viewportEXTs[0]);
 
-const char* const E_GL_NV_cooperative_matrix                    = "GL_NV_cooperative_matrix";
-const char* const E_GL_NV_shader_sm_builtins                    = "GL_NV_shader_sm_builtins";
-const char* const E_GL_NV_integer_cooperative_matrix            = "GL_NV_integer_cooperative_matrix";
-const char* const E_GL_NV_shader_invocation_reorder             = "GL_NV_shader_invocation_reorder";
+
+const char* const E_GL_QCOM_image_processing                    = "GL_QCOM_image_processing";
+const char* const E_GL_QCOM_image_processing2                   = "GL_QCOM_image_processing2";
 
 // AEP
 const char* const E_GL_ANDROID_extension_pack_es31a             = "GL_ANDROID_extension_pack_es31a";
@@ -330,6 +343,8 @@ const char* const E_GL_EXT_shader_atomic_float = "GL_EXT_shader_atomic_float";
 const char* const E_GL_EXT_shader_atomic_float2 = "GL_EXT_shader_atomic_float2";
 
 const char* const E_GL_EXT_shader_tile_image = "GL_EXT_shader_tile_image";
+
+const char* const E_GL_EXT_texture_shadow_lod = "GL_EXT_texture_shadow_lod";
 
 // Arrays of extensions for the above AEP duplications
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,9 @@
 
 #include "tvgSvgLoaderCommon.h"
 
-#define NUMBER_OF_XML_ENTITIES 8
-const char* const xmlEntity[] = {"&quot;", "&nbsp;", "&apos;", "&amp;", "&lt;", "&gt;", "&#035;", "&#039;"};
-const int xmlEntityLength[] = {6, 6, 6, 5, 4, 4, 6, 6};
+#define NUMBER_OF_XML_ENTITIES 9
+const char* const xmlEntity[] = {"&#10;", "&quot;", "&nbsp;", "&apos;", "&amp;", "&lt;", "&gt;", "&#035;", "&#039;"};
+const int xmlEntityLength[] = {5, 6, 6, 6, 5, 4, 4, 6, 6};
 
 enum class SimpleXMLType
 {

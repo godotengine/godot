@@ -55,4 +55,7 @@
     <string name="kilobytes_per_second">%1$s KB/s</string>
     <string name="time_remaining">Time remaining: %1$s</string>
     <string name="time_remaining_notification">%1$s left</string>
+
+	<!-- Labels for the dialog action buttons -->
+	<string name="dialog_ok">OK</string>
 </resources>

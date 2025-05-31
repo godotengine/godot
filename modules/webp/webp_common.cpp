@@ -31,12 +31,9 @@
 #include "webp_common.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
 
 #include <webp/decode.h>
 #include <webp/encode.h>
-
-#include <string.h>
 
 namespace WebPCommon {
 Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
@@ -59,7 +56,11 @@ Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_
 	compression_method = CLAMP(compression_method, 0, 6);
 
 	Ref<Image> img = p_image->duplicate();
-	if (img->detect_alpha()) {
+	if (img->is_compressed()) {
+		Error error = img->decompress();
+		ERR_FAIL_COND_V_MSG(error != OK, Vector<uint8_t>(), "Couldn't decompress image.");
+	}
+	if (img->detect_alpha() != Image::ALPHA_NONE) {
 		img->convert(Image::FORMAT_RGBA8);
 	} else {
 		img->convert(Image::FORMAT_RGB8);
@@ -145,7 +146,7 @@ Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer) {
 
 	ERR_FAIL_COND_V_MSG(errdec, Ref<Image>(), "Failed decoding WebP image.");
 
-	Ref<Image> img = memnew(Image(features.width, features.height, 0, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image));
+	Ref<Image> img = memnew(Image(features.width, features.height, false, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image));
 	return img;
 }
 

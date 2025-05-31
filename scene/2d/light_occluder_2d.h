@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_OCCLUDER_2D_H
-#define LIGHT_OCCLUDER_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -56,11 +55,10 @@ protected:
 	static void _bind_methods();
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
-#endif
-
+#endif // DEBUG_ENABLED
 	void set_polygon(const Vector<Vector2> &p_polygon);
 	Vector<Vector2> get_polygon() const;
 
@@ -86,15 +84,17 @@ class LightOccluder2D : public Node2D {
 	bool sdf_collision = false;
 	void _poly_changed();
 
+	virtual void _physics_interpolated_changed() override;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
-#endif
+#endif // DEBUG_ENABLED
 
 	void set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon);
 	Ref<OccluderPolygon2D> get_occluder_polygon() const;
@@ -110,5 +110,3 @@ public:
 	LightOccluder2D();
 	~LightOccluder2D();
 };
-
-#endif // LIGHT_OCCLUDER_2D_H

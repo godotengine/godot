@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_SET_ATLAS_SOURCE_EDITOR_H
-#define TILE_SET_ATLAS_SOURCE_EDITOR_H
+#pragma once
 
 #include "tile_atlas_view.h"
 #include "tile_data_editors.h"
 
 #include "scene/gui/split_container.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class Popup;
 class TileSet;
@@ -80,7 +79,7 @@ public:
 		int get_id() const;
 
 		void edit(Ref<TileSet> p_tile_set, Ref<TileSetAtlasSource> p_tile_set_atlas_source, int p_source_id);
-		Ref<TileSetAtlasSource> get_edited() { return tile_set_atlas_source; };
+		Ref<TileSetAtlasSource> get_edited() { return tile_set_atlas_source; }
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
@@ -91,7 +90,7 @@ public:
 		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor = nullptr;
 
 		Ref<TileSetAtlasSource> tile_set_atlas_source;
-		RBSet<TileSelection> tiles = RBSet<TileSelection>();
+		RBSet<TileSelection> tiles;
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
@@ -101,11 +100,11 @@ public:
 		static void _bind_methods();
 
 	public:
-		Ref<TileSetAtlasSource> get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; };
-		RBSet<TileSelection> get_edited_tiles() const { return tiles; };
+		Ref<TileSetAtlasSource> get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; }
+		RBSet<TileSelection> get_edited_tiles() const { return tiles; }
 
-		// Update the proxyed object.
-		void edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, RBSet<TileSelection> p_tiles = RBSet<TileSelection>());
+		// Update the proxied object.
+		void edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles = RBSet<TileSelection>());
 
 		AtlasTileProxyObject(TileSetAtlasSourceEditor *p_tiles_set_atlas_source_editor) {
 			tiles_set_atlas_source_editor = p_tiles_set_atlas_source_editor;
@@ -153,14 +152,14 @@ private:
 	EditorInspector *tile_inspector = nullptr;
 	Label *tile_inspector_no_tile_selected_label = nullptr;
 	String selected_property;
-	void _inspector_property_selected(String p_property);
+	void _inspector_property_selected(const String &p_property);
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy_object = nullptr;
 	EditorInspector *atlas_source_inspector = nullptr;
 
 	// -- Atlas view --
 	TileAtlasView *tile_atlas_view = nullptr;
-	HBoxContainer *tile_create_help = nullptr;
+	Label *help_label = nullptr;
 
 	// Dragging
 	enum DragType {
@@ -177,7 +176,7 @@ private:
 
 		DRAG_TYPE_MAY_POPUP_MENU,
 
-		// Warning: keep in this order.
+		// WARNING: Keep in this order.
 		DRAG_TYPE_RESIZE_TOP_LEFT,
 		DRAG_TYPE_RESIZE_TOP,
 		DRAG_TYPE_RESIZE_TOP_RIGHT,
@@ -229,7 +228,7 @@ private:
 	// Selection.
 	RBSet<TileSelection> selection;
 
-	void _set_selection_from_array(Array p_selection);
+	void _set_selection_from_array(const Array &p_selection);
 	Array _get_selection_as_array();
 
 	// A control on the tile atlas to draw and handle input events.
@@ -253,6 +252,7 @@ private:
 	PopupMenu *alternative_tile_popup_menu = nullptr;
 	Control *alternative_tiles_control = nullptr;
 	Control *alternative_tiles_control_unscaled = nullptr;
+	void _tile_alternatives_create_button_pressed(const Vector2i &p_atlas_coords);
 	void _tile_alternatives_control_draw();
 	void _tile_alternatives_control_unscaled_draw();
 	void _tile_alternatives_control_mouse_exited();
@@ -269,6 +269,7 @@ private:
 	void _update_manage_tile_properties_button();
 	void _update_atlas_view();
 	void _update_toolbar();
+	void _update_buttons();
 
 	// -- Misc --
 	void _auto_create_tiles();
@@ -283,10 +284,10 @@ private:
 	void _cleanup_outside_tiles();
 
 	void _tile_set_changed();
-	void _tile_proxy_object_changed(String p_what);
-	void _atlas_source_proxy_object_changed(String p_what);
+	void _tile_proxy_object_changed(const String &p_what);
+	void _atlas_source_proxy_object_changed(const String &p_what);
 
-	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value);
 
 protected:
 	void _notification(int p_what);
@@ -332,5 +333,3 @@ public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };
-
-#endif // TILE_SET_ATLAS_SOURCE_EDITOR_H

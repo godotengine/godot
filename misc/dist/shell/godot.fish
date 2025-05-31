@@ -67,7 +67,8 @@ complete -c godot -l gpu-index -d "Use a specific GPU (run with --verbose to get
 complete -c godot -l text-driver -d "Set the text driver" -x
 complete -c godot -l tablet-driver -d "Set the pen tablet input driver" -x
 complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"
-complete -c godot -l write-movie -d "Writes a video to the specified path (usually with .avi or .png extension). --fixed-fps is forced when enabled" -x
+complete -c godot -l log-file -d "Write output/error log to the specified path instead of the default location defined by the project" -x
+complete -c godot -l write-movie -d "Write a video to the specified path (usually with .avi or .png extension). --fixed-fps is forced when enabled" -x
 
 # Display options:
 complete -c godot -s f -l fullscreen -d "Request fullscreen mode"

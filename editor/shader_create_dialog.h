@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_CREATE_DIALOG_H
-#define SHADER_CREATE_DIALOG_H
+#pragma once
 
 #include "editor/editor_settings.h"
 #include "scene/gui/check_box.h"
@@ -101,7 +100,6 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	void _update_dialog();
 
 protected:
-	void _update_theme();
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -109,5 +107,3 @@ public:
 	void config(const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true, int p_preferred_type = -1, int p_preferred_mode = -1);
 	ShaderCreateDialog();
 };
-
-#endif // SHADER_CREATE_DIALOG_H

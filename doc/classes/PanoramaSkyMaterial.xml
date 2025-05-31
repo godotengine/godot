@@ -11,6 +11,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="energy_multiplier" type="float" setter="set_energy_multiplier" getter="get_energy_multiplier" default="1.0">
+			The sky's overall brightness multiplier. Higher values result in a brighter sky.
+		</member>
 		<member name="filter" type="bool" setter="set_filtering_enabled" getter="is_filtering_enabled" default="true">
 			A boolean value to determine if the background texture should be filtered or not.
 		</member>

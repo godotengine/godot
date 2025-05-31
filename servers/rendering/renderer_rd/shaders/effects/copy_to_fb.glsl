@@ -4,14 +4,10 @@
 
 #VERSION_DEFINES
 
-#ifdef MULTIVIEW
-#ifdef has_VK_KHR_multiview
+#ifdef USE_MULTIVIEW
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#endif //MULTIVIEW
+#endif // USE_MULTIVIEW
 
 #define FLAG_FLIP_Y (1 << 0)
 #define FLAG_USE_SECTION (1 << 1)
@@ -20,8 +16,10 @@
 #define FLAG_SRGB (1 << 4)
 #define FLAG_ALPHA_TO_ONE (1 << 5)
 #define FLAG_LINEAR (1 << 6)
+#define FLAG_NORMAL (1 << 7)
+#define FLAG_USE_SRC_SECTION (1 << 8)
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 layout(location = 0) out vec3 uv_interp;
 #else
 layout(location = 0) out vec2 uv_interp;
@@ -40,7 +38,7 @@ params;
 void main() {
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv_interp.xy = base_arr[gl_VertexIndex];
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	uv_interp.z = ViewIndex;
 #endif
 	vec2 vpos = uv_interp.xy;
@@ -53,6 +51,10 @@ void main() {
 	if (bool(params.flags & FLAG_FLIP_Y)) {
 		uv_interp.y = 1.0 - uv_interp.y;
 	}
+
+	if (bool(params.flags & FLAG_USE_SRC_SECTION)) {
+		uv_interp.xy = params.section.xy + uv_interp.xy * params.section.zw;
+	}
 }
 
 #[fragment]
@@ -61,15 +63,6 @@ void main() {
 
 #VERSION_DEFINES
 
-#ifdef MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#extension GL_EXT_multiview : enable
-#define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#endif //MULTIVIEW
-
 #define FLAG_FLIP_Y (1 << 0)
 #define FLAG_USE_SECTION (1 << 1)
 #define FLAG_FORCE_LUMINANCE (1 << 2)
@@ -77,6 +70,7 @@ void main() {
 #define FLAG_SRGB (1 << 4)
 #define FLAG_ALPHA_TO_ONE (1 << 5)
 #define FLAG_LINEAR (1 << 6)
+#define FLAG_NORMAL (1 << 7)
 
 layout(push_constant, std430) uniform Params {
 	vec4 section;
@@ -89,24 +83,24 @@ layout(push_constant, std430) uniform Params {
 params;
 
 #ifndef MODE_SET_COLOR
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 layout(location = 0) in vec3 uv_interp;
 #else
 layout(location = 0) in vec2 uv_interp;
 #endif
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 #ifdef MODE_TWO_SOURCES
 layout(set = 1, binding = 0) uniform sampler2DArray source_depth;
 layout(location = 1) out float depth;
 #endif /* MODE_TWO_SOURCES */
-#else /* MULTIVIEW */
+#else /* USE_MULTIVIEW */
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #ifdef MODE_TWO_SOURCES
 layout(set = 1, binding = 0) uniform sampler2D source_color2;
 #endif /* MODE_TWO_SOURCES */
-#endif /* MULTIVIEW */
+#endif /* USE_MULTIVIEW */
 #endif /* !SET_COLOR */
 
 layout(location = 0) out vec4 frag_color;
@@ -127,7 +121,7 @@ void main() {
 	frag_color = params.color;
 #else
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	vec3 uv = uv_interp;
 #else
 	vec2 uv = uv_interp;
@@ -163,19 +157,19 @@ void main() {
 	}
 #endif /* MODE_PANORAMA_TO_DP */
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	vec4 color = textureLod(source_color, uv, 0.0);
 #ifdef MODE_TWO_SOURCES
 	// In multiview our 2nd input will be our depth map
 	depth = textureLod(source_depth, uv, 0.0).r;
 #endif /* MODE_TWO_SOURCES */
 
-#else /* MULTIVIEW */
+#else /* USE_MULTIVIEW */
 	vec4 color = textureLod(source_color, uv, 0.0);
 #ifdef MODE_TWO_SOURCES
 	color += textureLod(source_color2, uv, 0.0);
 #endif /* MODE_TWO_SOURCES */
-#endif /* MULTIVIEW */
+#endif /* USE_MULTIVIEW */
 
 	if (bool(params.flags & FLAG_FORCE_LUMINANCE)) {
 		color.rgb = vec3(max(max(color.r, color.g), color.b));
@@ -191,6 +185,9 @@ void main() {
 	}
 	if (bool(params.flags & FLAG_LINEAR)) {
 		color.rgb = srgb_to_linear(color.rgb);
+	}
+	if (bool(params.flags & FLAG_NORMAL)) {
+		color.rgb = normalize(color.rgb * 2.0 - 1.0) * 0.5 + 0.5;
 	}
 
 	frag_color = color / params.luminance_multiplier;

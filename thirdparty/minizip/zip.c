@@ -575,7 +575,7 @@ local ZPOS64_T zip64local_SearchCentralDir64(const zlib_filefunc64_32_def* pzlib
   if (zip64local_getLong(pzlib_filefunc_def,filestream,&uL)!=ZIP_OK)
     return 0;
 
-  /* number of the disk with the start of the zip64 end of  central directory */
+  /* number of the disk with the start of the zip64 end of central directory */
   if (zip64local_getLong(pzlib_filefunc_def,filestream,&uL)!=ZIP_OK)
     return 0;
   if (uL != 0)
@@ -614,9 +614,9 @@ local int LoadCentralDirectoryRecord(zip64_internal* pziinit) {
   ZPOS64_T central_pos;
   uLong uL;
 
-  uLong number_disk;          /* number of the current dist, used for
+  uLong number_disk;          /* number of the current disk, used for
                               spanning ZIP, unsupported, always 0*/
-  uLong number_disk_with_CD;  /* number the the disk with central dir, used
+  uLong number_disk_with_CD;  /* number of the disk with central dir, used
                               for spanning ZIP, unsupported, always 0*/
   ZPOS64_T number_entry;
   ZPOS64_T number_entry_CD;      /* total number of entries in
@@ -820,11 +820,9 @@ extern zipFile ZEXPORT zipOpen3(const void *pathname, int append, zipcharpc* glo
 
     ziinit.z_filefunc.zseek32_file = NULL;
     ziinit.z_filefunc.ztell32_file = NULL;
-    /* GODOT start */
     if (pzlib_filefunc64_32_def==NULL) {
         //fill_fopen64_filefunc(&ziinit.z_filefunc.zfile_func64);
     } else
-    /* GODOT end */
         ziinit.z_filefunc = *pzlib_filefunc64_32_def;
 
     ziinit.filestream = ZOPEN64(ziinit.z_filefunc,
@@ -1045,6 +1043,17 @@ extern int ZEXPORT zipOpenNewFileInZip4_64(zipFile file, const char* filename, c
       return ZIP_PARAMERROR;
 #endif
 
+    // The filename and comment length must fit in 16 bits.
+    if ((filename!=NULL) && (strlen(filename)>0xffff))
+        return ZIP_PARAMERROR;
+    if ((comment!=NULL) && (strlen(comment)>0xffff))
+        return ZIP_PARAMERROR;
+    // The extra field length must fit in 16 bits. If the member also requires
+    // a Zip64 extra block, that will also need to fit within that 16-bit
+    // length, but that will be checked for later.
+    if ((size_extrafield_local>0xffff) || (size_extrafield_global>0xffff))
+        return ZIP_PARAMERROR;
+
     zi = (zip64_internal*)file;
 
     if (zi->in_opened_file_inzip == 1)
@@ -1173,10 +1182,8 @@ extern int ZEXPORT zipOpenNewFileInZip4_64(zipFile file, const char* filename, c
     {
         if(zi->ci.method == Z_DEFLATED)
         {
-          /* GODOT start */
           zi->ci.stream.zalloc = zi->z_filefunc.zfile_func64.alloc_mem;
           zi->ci.stream.zfree = zi->z_filefunc.zfile_func64.free_mem;
-          /* GODOT end */
           zi->ci.stream.opaque = (voidpf)0;
 
           if (windowBits>0)
@@ -1601,7 +1608,7 @@ extern int ZEXPORT zipCloseFileInZipRaw64(zipFile file, ZPOS64_T uncompressed_si
 
       if((uLong)(datasize + 4) > zi->ci.size_centralExtraFree)
       {
-        // we can not write more data to the buffer that we have room for.
+        // we cannot write more data to the buffer that we have room for.
         return ZIP_BADZIPFILE;
       }
 
@@ -1865,7 +1872,7 @@ extern int ZEXPORT zipClose(zipFile file, const char* global_comment) {
     free_linkedlist(&(zi->central_dir));
 
     pos = centraldir_pos_inzip - zi->add_position_when_writing_offset;
-    if(pos >= 0xffffffff || zi->number_entry > 0xFFFF)
+    if(pos >= 0xffffffff || zi->number_entry >= 0xFFFF)
     {
       ZPOS64_T Zip64EOCDpos = ZTELL64(zi->z_filefunc,zi->filestream);
       Write_Zip64EndOfCentralDirectoryRecord(zi, size_centraldir, centraldir_pos_inzip);

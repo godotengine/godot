@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_VARIANT_H
-#define TEST_VARIANT_H
+#pragma once
 
 #include "core/variant/variant.h"
 #include "core/variant/variant_parser.h"
@@ -37,26 +36,6 @@
 #include "tests/test_macros.h"
 
 namespace TestVariant {
-
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-static inline Dictionary build_dictionary() {
-	return Dictionary();
-}
-template <typename... Targs>
-static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fargs) {
-	Dictionary d = build_dictionary(Fargs...);
-	d[key] = item;
-	return d;
-}
-
 TEST_CASE("[Variant] Writer and parser integer") {
 	int64_t a32 = 2147483648; // 2^31, so out of bounds for 32-bit signed int [-2^31, +2^31-1].
 	String a32_str;
@@ -102,7 +81,7 @@ TEST_CASE("[Variant] Writer and parser Variant::FLOAT") {
 	String a64_str;
 	VariantWriter::write_to_string(a64, a64_str);
 
-	CHECK_MESSAGE(a64_str == "1.79769e+308", "Writes in scientific notation.");
+	CHECK_MESSAGE(a64_str == "1.7976931348623157e+308", "Writes in scientific notation.");
 	CHECK_MESSAGE(a64_str != "inf", "Should not overflow.");
 	CHECK_MESSAGE(a64_str != "nan", "The result should be defined.");
 
@@ -116,7 +95,7 @@ TEST_CASE("[Variant] Writer and parser Variant::FLOAT") {
 	VariantParser::parse(&bss, variant_parsed, errs, line);
 	float_parsed = variant_parsed;
 	// Loses precision, but that's alright.
-	CHECK_MESSAGE(float_parsed == 1.79769e+308, "Should parse back.");
+	CHECK_MESSAGE(float_parsed == 1.797693134862315708145274237317e+308, "Should parse back.");
 
 	// Approximation of Googol with a double-precision float.
 	VariantParser::StreamString css;
@@ -980,45 +959,45 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(basis_v.get_type() == Variant::VECTOR2);
 
 	Variant aabb_v = AABB();
-	string_v = "Hello";
-	aabb_v = string_v;
-	CHECK(aabb_v == Variant("Hello"));
-	string_v = "Hello there";
-	aabb_v = string_v;
-	CHECK(aabb_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	aabb_v = vec2_v;
+	CHECK(aabb_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	aabb_v = vec2_v;
+	CHECK(aabb_v.get_type() == Variant::VECTOR2);
 
 	Variant quaternion_v = Quaternion();
-	string_v = "Hello";
-	quaternion_v = string_v;
-	CHECK(quaternion_v == Variant("Hello"));
-	string_v = "Hello there";
-	quaternion_v = string_v;
-	CHECK(quaternion_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	quaternion_v = vec2_v;
+	CHECK(quaternion_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	quaternion_v = vec2_v;
+	CHECK(quaternion_v.get_type() == Variant::VECTOR2);
 
 	Variant projection_v = Projection();
-	string_v = "Hello";
-	projection_v = string_v;
-	CHECK(projection_v == Variant("Hello"));
-	string_v = "Hello there";
-	projection_v = string_v;
-	CHECK(projection_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	projection_v = vec2_v;
+	CHECK(projection_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	projection_v = vec2_v;
+	CHECK(projection_v.get_type() == Variant::VECTOR2);
 
 	Variant rid_v = RID();
-	string_v = "Hello";
-	rid_v = string_v;
-	CHECK(rid_v == Variant("Hello"));
-	string_v = "Hello there";
-	rid_v = string_v;
-	CHECK(rid_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	rid_v = vec2_v;
+	CHECK(rid_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	rid_v = vec2_v;
+	CHECK(rid_v.get_type() == Variant::VECTOR2);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
-	string_v = "Hello";
-	object_v = string_v;
-	CHECK(object_v == Variant("Hello"));
-	string_v = "Hello there";
-	object_v = string_v;
-	CHECK(object_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	object_v = vec2_v;
+	CHECK(object_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	object_v = vec2_v;
+	CHECK(object_v.get_type() == Variant::VECTOR2);
 }
 
 TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -1737,8 +1716,58 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(object_v.get_type() == Variant::COLOR);
 }
 
+TEST_CASE("[Variant] array initializer list") {
+	Variant arr_v = { 0, 1, "test", true, { 0.0, 1.0 } };
+	CHECK(arr_v.get_type() == Variant::ARRAY);
+	Array arr = (Array)arr_v;
+	CHECK(arr.size() == 5);
+	CHECK(arr[0] == Variant(0));
+	CHECK(arr[1] == Variant(1));
+	CHECK(arr[2] == Variant("test"));
+	CHECK(arr[3] == Variant(true));
+	CHECK(arr[4] == Variant({ 0.0, 1.0 }));
+
+	PackedInt32Array packed_arr = { 2, 1, 0 };
+	CHECK(packed_arr.size() == 3);
+	CHECK(packed_arr[0] == 2);
+	CHECK(packed_arr[1] == 1);
+	CHECK(packed_arr[2] == 0);
+}
+
+TEST_CASE("[Variant] Writer and parser Vector2") {
+	Variant vec2_parsed;
+	String vec2_str;
+	String errs;
+	int line;
+	// Variant::VECTOR2 and Vector2 can be either 32-bit or 64-bit depending on the precision level of real_t.
+	{
+		Vector2 vec2 = Vector2(1.2, 3.4);
+		VariantWriter::write_to_string(vec2, vec2_str);
+		// Reminder: "1.2" and "3.4" are not exactly those decimal numbers. They are the closest float to them.
+		CHECK_MESSAGE(vec2_str == "Vector2(1.2, 3.4)", "Should write with enough digits to ensure parsing back is exact.");
+		VariantParser::StreamString stream;
+		stream.s = vec2_str;
+		VariantParser::parse(&stream, vec2_parsed, errs, line);
+		CHECK_MESSAGE(Vector2(vec2_parsed) == vec2, "Should parse back to the same Vector2.");
+	}
+	// Check with big numbers and small numbers.
+	{
+		Vector2 vec2 = Vector2(1.234567898765432123456789e30, 1.234567898765432123456789e-10);
+		VariantWriter::write_to_string(vec2, vec2_str);
+#ifdef REAL_T_IS_DOUBLE
+		CHECK_MESSAGE(vec2_str == "Vector2(1.2345678987654322e+30, 1.2345678987654322e-10)", "Should write with enough digits to ensure parsing back is exact.");
+#else
+		CHECK_MESSAGE(vec2_str == "Vector2(1.2345679e+30, 1.2345679e-10)", "Should write with enough digits to ensure parsing back is exact.");
+#endif
+		VariantParser::StreamString stream;
+		stream.s = vec2_str;
+		VariantParser::parse(&stream, vec2_parsed, errs, line);
+		CHECK_MESSAGE(Vector2(vec2_parsed) == vec2, "Should parse back to the same Vector2.");
+	}
+}
+
 TEST_CASE("[Variant] Writer and parser array") {
-	Array a = build_array(1, String("hello"), build_array(Variant()));
+	Array a = { 1, String("hello"), Array({ Variant() }) };
 	String a_str;
 	VariantWriter::write_to_string(a, a_str);
 
@@ -1789,7 +1818,7 @@ TEST_CASE("[Variant] Writer recursive array") {
 
 TEST_CASE("[Variant] Writer and parser dictionary") {
 	// d = {{1: 2}: 3, 4: "hello", 5: {null: []}}
-	Dictionary d = build_dictionary(build_dictionary(1, 2), 3, 4, String("hello"), 5, build_dictionary(Variant(), build_array()));
+	Dictionary d = { { Dictionary({ { 1, 2 } }), 3 }, { 4, String("hello") }, { 5, Dictionary({ { Variant(), Array() } }) } };
 	String d_str;
 	VariantWriter::write_to_string(d, d_str);
 
@@ -1804,6 +1833,14 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 	VariantParser::parse(&ss, d_parsed, errs, line);
 
 	CHECK_MESSAGE(d_parsed == Variant(d), "Should parse back.");
+}
+
+TEST_CASE("[Variant] Writer key sorting") {
+	Dictionary d = { { StringName("C"), 3 }, { "A", 1 }, { StringName("B"), 2 }, { "D", 4 } };
+	String d_str;
+	VariantWriter::write_to_string(d, d_str);
+
+	CHECK_EQ(d_str, "{\n\"A\": 1,\n&\"B\": 2,\n&\"C\": 3,\n\"D\": 4\n}");
 }
 
 TEST_CASE("[Variant] Writer recursive dictionary") {
@@ -2034,6 +2071,10 @@ TEST_CASE("[Variant] Identity comparison") {
 	CHECK(packed_color_array.identity_compare(packed_color_array));
 	CHECK_FALSE(packed_color_array.identity_compare(PackedColorArray()));
 
+	Variant packed_vector4_array = PackedVector4Array();
+	CHECK(packed_vector4_array.identity_compare(packed_vector4_array));
+	CHECK_FALSE(packed_vector4_array.identity_compare(PackedVector4Array()));
+
 	Variant packed_float32_array = PackedFloat32Array();
 	CHECK(packed_float32_array.identity_compare(packed_float32_array));
 	CHECK_FALSE(packed_float32_array.identity_compare(PackedFloat32Array()));
@@ -2084,9 +2125,9 @@ TEST_CASE("[Variant] Identity comparison") {
 }
 
 TEST_CASE("[Variant] Nested array comparison") {
-	Array a1 = build_array(1, build_array(2, 3));
-	Array a2 = build_array(1, build_array(2, 3));
-	Array a_other = build_array(1, build_array(2, 4));
+	Array a1 = { 1, { 2, 3 } };
+	Array a2 = { 1, { 2, 3 } };
+	Array a_other = { 1, { 2, 4 } };
 	Variant v_a1 = a1;
 	Variant v_a1_ref2 = a1;
 	Variant v_a2 = a2;
@@ -2104,10 +2145,10 @@ TEST_CASE("[Variant] Nested array comparison") {
 }
 
 TEST_CASE("[Variant] Nested dictionary comparison") {
-	Dictionary d1 = build_dictionary(build_dictionary(1, 2), build_dictionary(3, 4));
-	Dictionary d2 = build_dictionary(build_dictionary(1, 2), build_dictionary(3, 4));
-	Dictionary d_other_key = build_dictionary(build_dictionary(1, 0), build_dictionary(3, 4));
-	Dictionary d_other_val = build_dictionary(build_dictionary(1, 2), build_dictionary(3, 0));
+	Dictionary d1 = { { Dictionary({ { 1, 2 } }), Dictionary({ { 3, 4 } }) } };
+	Dictionary d2 = { { Dictionary({ { 1, 2 } }), Dictionary({ { 3, 4 } }) } };
+	Dictionary d_other_key = { { Dictionary({ { 1, 0 } }), Dictionary({ { 3, 4 } }) } };
+	Dictionary d_other_val = { { Dictionary({ { 1, 2 } }), Dictionary({ { 3, 0 } }) } };
 	Variant v_d1 = d1;
 	Variant v_d1_ref2 = d1;
 	Variant v_d2 = d2;
@@ -2205,5 +2246,3 @@ TEST_CASE("[Variant] Operator NOT") {
 }
 
 } // namespace TestVariant
-
-#endif // TEST_VARIANT_H

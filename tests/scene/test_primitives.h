@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PRIMITIVES_H
-#define TEST_PRIMITIVES_H
+#pragma once
 
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 #include "tests/test_macros.h"
 
@@ -68,8 +67,10 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Capsule] If set segments negative, default to at least 0") {
+		ERR_PRINT_OFF;
 		capsule->set_radial_segments(-5);
 		capsule->set_rings(-17);
+		ERR_PRINT_ON;
 
 		CHECK_MESSAGE(capsule->get_radial_segments() >= 0,
 				"Ensure number of radial segments is >= 0.");
@@ -102,8 +103,9 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 			float dist_to_yaxis = 0.f;
 			for (Vector3 point : points) {
 				float new_dist_to_y = point.x * point.x + point.z * point.z;
-				if (new_dist_to_y > dist_to_yaxis)
+				if (new_dist_to_y > dist_to_yaxis) {
 					dist_to_yaxis = new_dist_to_y;
+				}
 			}
 
 			CHECK(dist_to_yaxis <= radius * radius);
@@ -112,10 +114,12 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 			float max_y{ 0.f };
 			float min_y{ 0.f };
 			for (Vector3 point : points) {
-				if (point.y > max_y)
+				if (point.y > max_y) {
 					max_y = point.y;
-				if (point.y < min_y)
+				}
+				if (point.y < min_y) {
 					min_y = point.y;
+				}
 			}
 
 			CHECK(max_y - min_y <= height);
@@ -165,9 +169,11 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Box] Set subdivides to negative and ensure they are >= 0") {
+		ERR_PRINT_OFF;
 		box->set_subdivide_width(-2);
 		box->set_subdivide_height(-2);
 		box->set_subdivide_depth(-2);
+		ERR_PRINT_ON;
 
 		CHECK(box->get_subdivide_width() >= 0);
 		CHECK(box->get_subdivide_height() >= 0);
@@ -192,12 +198,14 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 			for (const Vector3 &normal : normals) {
 				bool add_normal{ true };
 				for (const Vector3 &vec : distinct_normals) {
-					if (vec.is_equal_approx(normal))
+					if (vec.is_equal_approx(normal)) {
 						add_normal = false;
+					}
 				}
 
-				if (add_normal)
+				if (add_normal) {
 					distinct_normals.push_back(normal);
+				}
 			}
 
 			CHECK_MESSAGE(distinct_normals.size() == 6,
@@ -214,8 +222,9 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 						break;
 					}
 				}
-				if (!normal_correct_direction)
+				if (!normal_correct_direction) {
 					break;
+				}
 			}
 
 			CHECK_MESSAGE(normal_correct_direction,
@@ -232,7 +241,7 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 		CHECK(cylinder->get_bottom_radius() > 0);
 		CHECK(cylinder->get_height() > 0);
 		CHECK(cylinder->get_radial_segments() > 0);
-		CHECK(cylinder->get_rings() > 0);
+		CHECK(cylinder->get_rings() >= 0);
 	}
 
 	SUBCASE("[SceneTree][Primitive][Cylinder] Set properties and get them") {
@@ -254,8 +263,10 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Cylinder] Ensure num segments is >= 0") {
+		ERR_PRINT_OFF;
 		cylinder->set_radial_segments(-12);
 		cylinder->set_rings(-16);
+		ERR_PRINT_ON;
 
 		CHECK(cylinder->get_radial_segments() >= 0);
 		CHECK(cylinder->get_rings() >= 0);
@@ -441,8 +452,10 @@ TEST_CASE("[SceneTree][Primitive][Plane] Plane Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Plane] Ensure number of segments is >= 0.") {
+		ERR_PRINT_OFF;
 		plane->set_subdivide_width(-15);
 		plane->set_subdivide_depth(-29);
+		ERR_PRINT_ON;
 
 		CHECK(plane->get_subdivide_width() >= 0);
 		CHECK(plane->get_subdivide_depth() >= 0);
@@ -486,9 +499,11 @@ TEST_CASE("[SceneTree][Primitive][Prism] Prism Primitive") {
 	}
 
 	SUBCASE("[Primitive][Prism] Ensure number of segments always >= 0") {
+		ERR_PRINT_OFF;
 		prism->set_subdivide_width(-36);
 		prism->set_subdivide_height(-5);
 		prism->set_subdivide_depth(-64);
+		ERR_PRINT_ON;
 
 		CHECK(prism->get_subdivide_width() >= 0);
 		CHECK(prism->get_subdivide_height() >= 0);
@@ -521,8 +536,10 @@ TEST_CASE("[SceneTree][Primitive][Sphere] Sphere Primitive") {
 	}
 
 	SUBCASE("[Primitive][Sphere] Ensure number of segments always >= 0") {
+		ERR_PRINT_OFF;
 		sphere->set_radial_segments(-36);
 		sphere->set_rings(-5);
+		ERR_PRINT_ON;
 
 		CHECK(sphere->get_radial_segments() >= 0);
 		CHECK(sphere->get_rings() >= 0);
@@ -597,7 +614,7 @@ TEST_CASE("[SceneTree][Primitive][TubeTrail] TubeTrail Primitive") {
 		CHECK(tube->get_sections() >= 0);
 		CHECK(tube->get_section_length() > 0);
 		CHECK(tube->get_section_rings() >= 0);
-		CHECK(tube->get_curve() == nullptr);
+		CHECK(tube->get_curve().is_null());
 		CHECK(tube->get_builtin_bind_pose_count() >= 0);
 	}
 
@@ -657,7 +674,7 @@ TEST_CASE("[SceneTree][Primitive][RibbonTrail] RibbonTrail Primitive") {
 		CHECK(ribbon->get_section_length() > 0);
 		CHECK(ribbon->get_section_segments() >= 0);
 		CHECK(ribbon->get_builtin_bind_pose_count() >= 0);
-		CHECK(ribbon->get_curve() == nullptr);
+		CHECK(ribbon->get_curve().is_null());
 		CHECK((ribbon->get_shape() == RibbonTrailMesh::SHAPE_CROSS ||
 				ribbon->get_shape() == RibbonTrailMesh::SHAPE_FLAT));
 	}
@@ -719,7 +736,7 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 				text->get_vertical_alignment() == VERTICAL_ALIGNMENT_TOP ||
 				text->get_vertical_alignment() == VERTICAL_ALIGNMENT_CENTER ||
 				text->get_vertical_alignment() == VERTICAL_ALIGNMENT_FILL));
-		CHECK(text->get_font() == nullptr);
+		CHECK(text->get_font().is_null());
 		CHECK(text->get_font_size() > 0);
 		CHECK(text->get_line_spacing() >= 0);
 		CHECK((text->get_autowrap_mode() == TextServer::AUTOWRAP_OFF ||
@@ -846,5 +863,3 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 }
 
 } // namespace TestPrimitives
-
-#endif // TEST_PRIMITIVES_H

@@ -29,6 +29,148 @@
 /**************************************************************************/
 
 /*
+ * IME API helper.
+ */
+
+const GodotIME = {
+	$GodotIME__deps: ['$GodotRuntime', '$GodotEventListeners'],
+	$GodotIME__postset: 'GodotOS.atexit(function(resolve, reject) { GodotIME.clear(); resolve(); });',
+	$GodotIME: {
+		ime: null,
+		active: false,
+		focusTimerIntervalId: -1,
+
+		getModifiers: function (evt) {
+			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
+		},
+
+		ime_active: function (active) {
+			function clearFocusTimerInterval() {
+				clearInterval(GodotIME.focusTimerIntervalId);
+				GodotIME.focusTimerIntervalId = -1;
+			}
+
+			function focusTimer() {
+				if (GodotIME.ime == null) {
+					clearFocusTimerInterval();
+					return;
+				}
+				GodotIME.ime.focus();
+			}
+
+			if (GodotIME.focusTimerIntervalId > -1) {
+				clearFocusTimerInterval();
+			}
+
+			if (GodotIME.ime == null) {
+				return;
+			}
+
+			GodotIME.active = active;
+			if (active) {
+				GodotIME.ime.style.display = 'block';
+				GodotIME.focusTimerIntervalId = setInterval(focusTimer, 100);
+			} else {
+				GodotIME.ime.style.display = 'none';
+				GodotConfig.canvas.focus();
+			}
+		},
+
+		ime_position: function (x, y) {
+			if (GodotIME.ime == null) {
+				return;
+			}
+			const canvas = GodotConfig.canvas;
+			const rect = canvas.getBoundingClientRect();
+			const rw = canvas.width / rect.width;
+			const rh = canvas.height / rect.height;
+			const clx = (x / rw) + rect.x;
+			const cly = (y / rh) + rect.y;
+
+			GodotIME.ime.style.left = `${clx}px`;
+			GodotIME.ime.style.top = `${cly}px`;
+		},
+
+		init: function (ime_cb, key_cb, code, key) {
+			function key_event_cb(pressed, evt) {
+				const modifiers = GodotIME.getModifiers(evt);
+				GodotRuntime.stringToHeap(evt.code, code, 32);
+				GodotRuntime.stringToHeap(evt.key, key, 32);
+				key_cb(pressed, evt.repeat, modifiers);
+				evt.preventDefault();
+			}
+			function ime_event_cb(event) {
+				if (GodotIME.ime == null) {
+					return;
+				}
+				switch (event.type) {
+				case 'compositionstart':
+					ime_cb(0, null);
+					GodotIME.ime.innerHTML = '';
+					break;
+				case 'compositionupdate': {
+					const ptr = GodotRuntime.allocString(event.data);
+					ime_cb(1, ptr);
+					GodotRuntime.free(ptr);
+				} break;
+				case 'compositionend': {
+					const ptr = GodotRuntime.allocString(event.data);
+					ime_cb(2, ptr);
+					GodotRuntime.free(ptr);
+					GodotIME.ime.innerHTML = '';
+				} break;
+				default:
+					// Do nothing.
+				}
+			}
+
+			const ime = document.createElement('div');
+			ime.className = 'ime';
+			ime.style.background = 'none';
+			ime.style.opacity = 0.0;
+			ime.style.position = 'fixed';
+			ime.style.textAlign = 'left';
+			ime.style.fontSize = '1px';
+			ime.style.left = '0px';
+			ime.style.top = '0px';
+			ime.style.width = '100%';
+			ime.style.height = '40px';
+			ime.style.pointerEvents = 'none';
+			ime.style.display = 'none';
+			ime.contentEditable = 'true';
+
+			GodotEventListeners.add(ime, 'compositionstart', ime_event_cb, false);
+			GodotEventListeners.add(ime, 'compositionupdate', ime_event_cb, false);
+			GodotEventListeners.add(ime, 'compositionend', ime_event_cb, false);
+			GodotEventListeners.add(ime, 'keydown', key_event_cb.bind(null, 1), false);
+			GodotEventListeners.add(ime, 'keyup', key_event_cb.bind(null, 0), false);
+
+			ime.onblur = function () {
+				this.style.display = 'none';
+				GodotConfig.canvas.focus();
+				GodotIME.active = false;
+			};
+
+			GodotConfig.canvas.parentElement.appendChild(ime);
+			GodotIME.ime = ime;
+		},
+
+		clear: function () {
+			if (GodotIME.ime == null) {
+				return;
+			}
+			if (GodotIME.focusTimerIntervalId > -1) {
+				clearInterval(GodotIME.focusTimerIntervalId);
+				GodotIME.focusTimerIntervalId = -1;
+			}
+			GodotIME.ime.remove();
+			GodotIME.ime = null;
+		},
+	},
+};
+mergeInto(LibraryManager.library, GodotIME);
+
+/*
  * Gamepad API helper.
  */
 const GodotInputGamepads = {
@@ -63,6 +205,7 @@ const GodotInputGamepads = {
 		sample: function () {
 			const pads = GodotInputGamepads.get_pads();
 			const samples = [];
+			let active = 0;
 			for (let i = 0; i < pads.length; i++) {
 				const pad = pads[i];
 				if (!pad) {
@@ -82,8 +225,10 @@ const GodotInputGamepads = {
 					s.axes.push(pad.axes[a]);
 				}
 				samples.push(s);
+				active++;
 			}
 			GodotInputGamepads.samples = samples;
+			return active;
 		},
 
 		init: function (onchange) {
@@ -135,9 +280,9 @@ const GodotInputGamepads = {
 			}
 
 			const id = pad.id;
-			// Chrom* style: NAME (Vendor: xxxx Product: xxxx)
+			// Chrom* style: NAME (Vendor: xxxx Product: xxxx).
 			const exp1 = /vendor: ([0-9a-f]{4}) product: ([0-9a-f]{4})/i;
-			// Firefox/Safari style (safari may remove leading zeores)
+			// Firefox/Safari style (Safari may remove leading zeroes).
 			const exp2 = /^([0-9a-f]+)-([0-9a-f]+)-/i;
 			let vendor = '';
 			let product = '';
@@ -338,7 +483,7 @@ mergeInto(LibraryManager.library, GodotInputDragDrop);
  * Godot exposed input functions.
  */
 const GodotInput = {
-	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop'],
+	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop', '$GodotIME'],
 	$GodotInput: {
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
@@ -462,6 +607,35 @@ const GodotInput = {
 	},
 
 	/*
+	 * IME API
+	 */
+	godot_js_set_ime_active__proxy: 'sync',
+	godot_js_set_ime_active__sig: 'vi',
+	godot_js_set_ime_active: function (p_active) {
+		GodotIME.ime_active(p_active);
+	},
+
+	godot_js_set_ime_position__proxy: 'sync',
+	godot_js_set_ime_position__sig: 'vii',
+	godot_js_set_ime_position: function (p_x, p_y) {
+		GodotIME.ime_position(p_x, p_y);
+	},
+
+	godot_js_set_ime_cb__proxy: 'sync',
+	godot_js_set_ime_cb__sig: 'viiii',
+	godot_js_set_ime_cb: function (p_ime_cb, p_key_cb, code, key) {
+		const ime_cb = GodotRuntime.get_func(p_ime_cb);
+		const key_cb = GodotRuntime.get_func(p_key_cb);
+		GodotIME.init(ime_cb, key_cb, code, key);
+	},
+
+	godot_js_is_ime_focused__proxy: 'sync',
+	godot_js_is_ime_focused__sig: 'i',
+	godot_js_is_ime_focused: function () {
+		return GodotIME.active;
+	},
+
+	/*
 	 * Gamepad API
 	 */
 	godot_js_input_gamepad_cb__proxy: 'sync',
@@ -480,8 +654,7 @@ const GodotInput = {
 	godot_js_input_gamepad_sample__proxy: 'sync',
 	godot_js_input_gamepad_sample__sig: 'i',
 	godot_js_input_gamepad_sample: function () {
-		GodotInputGamepads.sample();
-		return 0;
+		return GodotInputGamepads.sample();
 	},
 
 	godot_js_input_gamepad_sample_get__proxy: 'sync',

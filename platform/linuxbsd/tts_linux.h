@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TTS_LINUX_H
-#define TTS_LINUX_H
+#pragma once
 
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
@@ -59,8 +58,8 @@ class TTS_Linux : public Object {
 		String language;
 		String variant;
 	};
-	bool voices_loaded = false;
-	HashMap<String, VoiceInfo> voices;
+	mutable bool voices_loaded = false;
+	mutable HashMap<String, VoiceInfo> voices;
 
 	Thread init_thread;
 
@@ -71,9 +70,9 @@ class TTS_Linux : public Object {
 	static TTS_Linux *singleton;
 
 protected:
-	void _load_voices();
-	void _speech_event(size_t p_msg_id, size_t p_client_id, int p_type);
-	void _speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_type, const String &p_index_mark);
+	void _load_voices() const;
+	void _speech_event(int p_msg_id, int p_type);
+	void _speech_index_mark(int p_msg_id, int p_type, const String &p_index_mark);
 
 public:
 	static TTS_Linux *get_singleton();
@@ -90,5 +89,3 @@ public:
 	TTS_Linux();
 	~TTS_Linux();
 };
-
-#endif // TTS_LINUX_H

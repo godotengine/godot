@@ -1,0 +1,98 @@
+diff --git a/thirdparty/mbedtls/include/psa/crypto.h b/thirdparty/mbedtls/include/psa/crypto.h
+index 2bbcea3ee0..96baf8f3ed 100644
+--- a/thirdparty/mbedtls/include/psa/crypto.h
++++ b/thirdparty/mbedtls/include/psa/crypto.h
+@@ -107,7 +107,9 @@ psa_status_t psa_crypto_init(void);
+ 
+ /** Return an initial value for a key attributes structure.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_key_attributes_t psa_key_attributes_init(void);
++#endif
+ 
+ /** Declare a key as persistent and set its key identifier.
+  *
+@@ -336,7 +338,9 @@ static void psa_set_key_bits(psa_key_attributes_t *attributes,
+  *
+  * \return The key type stored in the attribute structure.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_key_type_t psa_get_key_type(const psa_key_attributes_t *attributes);
++#endif
+ 
+ /** Retrieve the key size from key attributes.
+  *
+@@ -939,7 +943,9 @@ typedef struct psa_hash_operation_s psa_hash_operation_t;
+ 
+ /** Return an initial value for a hash operation object.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_hash_operation_t psa_hash_operation_init(void);
++#endif
+ 
+ /** Set up a multipart hash operation.
+  *
+@@ -1298,7 +1304,9 @@ typedef struct psa_mac_operation_s psa_mac_operation_t;
+ 
+ /** Return an initial value for a MAC operation object.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_mac_operation_t psa_mac_operation_init(void);
++#endif
+ 
+ /** Set up a multipart MAC calculation operation.
+  *
+@@ -1711,7 +1719,9 @@ typedef struct psa_cipher_operation_s psa_cipher_operation_t;
+ 
+ /** Return an initial value for a cipher operation object.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_cipher_operation_t psa_cipher_operation_init(void);
++#endif
+ 
+ /** Set the key for a multipart symmetric encryption operation.
+  *
+@@ -2229,7 +2239,9 @@ typedef struct psa_aead_operation_s psa_aead_operation_t;
+ 
+ /** Return an initial value for an AEAD operation object.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_aead_operation_t psa_aead_operation_init(void);
++#endif
+ 
+ /** Set the key for a multipart authenticated encryption operation.
+  *
+@@ -3216,7 +3228,9 @@ typedef struct psa_key_derivation_s psa_key_derivation_operation_t;
+ 
+ /** Return an initial value for a key derivation operation object.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_key_derivation_operation_t psa_key_derivation_operation_init(void);
++#endif
+ 
+ /** Set up a key derivation operation.
+  *
+diff --git a/thirdparty/mbedtls/include/psa/crypto_extra.h b/thirdparty/mbedtls/include/psa/crypto_extra.h
+index 0cf42c6055..d276cd4c7f 100644
+--- a/thirdparty/mbedtls/include/psa/crypto_extra.h
++++ b/thirdparty/mbedtls/include/psa/crypto_extra.h
+@@ -923,7 +923,9 @@ typedef struct psa_pake_cipher_suite_s psa_pake_cipher_suite_t;
+ 
+ /** Return an initial value for a PAKE cipher suite object.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_pake_cipher_suite_t psa_pake_cipher_suite_init(void);
++#endif
+ 
+ /** Retrieve the PAKE algorithm from a PAKE cipher suite.
+  *
+@@ -1056,7 +1058,9 @@ typedef struct psa_jpake_computation_stage_s psa_jpake_computation_stage_t;
+ 
+ /** Return an initial value for a PAKE operation object.
+  */
++#if !(defined(__cplusplus) && defined(_MSC_VER))
+ static psa_pake_operation_t psa_pake_operation_init(void);
++#endif
+ 
+ /** Get the length of the password in bytes from given inputs.
+  *

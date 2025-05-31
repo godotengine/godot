@@ -72,8 +72,8 @@
  *
  * === The sanitize() contract ===
  *
- * The sanitize() method of each object type shall return true if it's safe to
- * call other methods of the object, and %false otherwise.
+ * The sanitize() method of each object type shall return `true` if it's safe to
+ * call other methods of the object, and `false` otherwise.
  *
  * Note that what sanitize() checks for might align with what the specification
  * describes as valid table data, but does not have to be.  In particular, we
@@ -134,7 +134,10 @@ struct hb_sanitize_context_t :
   const char *get_name () { return "SANITIZE"; }
   template <typename T, typename F>
   bool may_dispatch (const T *obj HB_UNUSED, const F *format)
-  { return format->sanitize (this); }
+  {
+    return format->sanitize (this) &&
+	   hb_barrier ();
+  }
   static return_t default_return_value () { return true; }
   static return_t no_dispatch_return_value () { return false; }
   bool stop_sublookup_iteration (const return_t r) const { return !r; }
@@ -453,7 +456,7 @@ struct hb_sanitize_context_t :
 	edit_count = 0;
 	sane = t->sanitize (this);
 	if (edit_count) {
-	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILLING", edit_count);
+	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILING", edit_count);
 	  sane = false;
 	}
       }

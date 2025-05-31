@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CANVAS_GROUP_H
-#define CANVAS_GROUP_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -52,8 +51,8 @@ public:
 	void set_use_mipmaps(bool p_use_mipmaps);
 	bool is_using_mipmaps() const;
 
+	virtual PackedStringArray get_configuration_warnings() const override;
+
 	CanvasGroup();
 	~CanvasGroup();
 };
-
-#endif // CANVAS_GROUP_H

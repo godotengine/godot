@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -16,10 +17,13 @@ thirdparty_sources = [
     "lib/filestream.c",
     "lib/hashlist.c",
     "lib/memstream.c",
+    "lib/miniz_wrapper.cpp",
     "lib/swap.c",
     "lib/texture.c",
     "lib/texture1.c",
     "lib/texture2.c",
+    "lib/vkformat_check.c",
+    "lib/vkformat_typesize.c",
     "lib/dfdutils/createdfd.c",
     "lib/dfdutils/colourspaces.c",
     "lib/dfdutils/interpretdfd.c",
@@ -29,14 +33,18 @@ thirdparty_sources = [
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_ktx.Prepend(CPPPATH=[thirdparty_dir + "include"])
-env_ktx.Prepend(CPPPATH=[thirdparty_dir + "utils"])
-env_ktx.Prepend(CPPPATH=[thirdparty_dir + "lib"])
-env_ktx.Prepend(CPPPATH=[thirdparty_dir + "other_include"])
-env_ktx.Prepend(CPPPATH=["#thirdparty/basis_universal"])
+env_ktx.Prepend(CPPEXTPATH=[thirdparty_dir + "include"])
+env_ktx.Prepend(CPPEXTPATH=[thirdparty_dir + "utils"])
+env_ktx.Prepend(CPPEXTPATH=[thirdparty_dir + "lib"])
+env_ktx.Prepend(CPPEXTPATH=[thirdparty_dir + "other_include"])
+
+env_ktx.Prepend(CPPEXTPATH=["#thirdparty/basis_universal"])
+if env.editor_build:
+    # We already build miniz in the basis_universal module (editor only).
+    env_ktx.Append(CPPDEFINES=["MINIZ_HEADER_FILE_ONLY"])
 
 if env["vulkan"]:
-    env_ktx.Prepend(CPPPATH=["#thirdparty/vulkan/include"])
+    env_ktx.Prepend(CPPEXTPATH=["#thirdparty/vulkan/include"])
 else:
     # Falls back on bundled `vkformat_enum.h`.
     env_ktx.Append(CPPDEFINES=["LIBKTX"])

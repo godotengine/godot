@@ -80,9 +80,9 @@
 			Modulates the color of the texture when this style box is drawn.
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
-			Species a sub-region of the texture to use.
-			This is equivalent to first wrapping the texture in an [AtlasTexture] with the same region.
-			If empty ([code]Rect2(0, 0, 0, 0)[/code]), the whole texture will be used.
+			The region to use from the [member texture].
+			This is equivalent to first wrapping the [member texture] in an [AtlasTexture] with the same region.
+			If empty ([code]Rect2(0, 0, 0, 0)[/code]), the whole [member texture] is used.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The texture to use when drawing this style box.

@@ -31,23 +31,26 @@
 #include "localization_editor.h"
 
 #include "core/config/project_settings.h"
-#include "core/string/translation.h"
-#include "editor/editor_scale.h"
+#include "core/string/translation_server.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/pot_generator.h"
 #include "scene/gui/control.h"
+#include "scene/gui/tab_container.h"
 
 void LocalizationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
 			translation_pot_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_delete));
+			translation_pot_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
+			tfn.erase("csv"); // CSV is recognized by the resource importer to generate translation files, but it's not a translation file itself.
 			for (const String &E : tfn) {
 				translation_file_open->add_filter("*." + E);
 			}
@@ -73,15 +76,20 @@ void LocalizationEditor::add_translation(const String &p_translation) {
 
 void LocalizationEditor::_translation_add(const PackedStringArray &p_paths) {
 	PackedStringArray translations = GLOBAL_GET("internationalization/locale/translations");
-	for (int i = 0; i < p_paths.size(); i++) {
-		if (!translations.has(p_paths[i])) {
+	int count = 0;
+	for (const String &path : p_paths) {
+		if (!translations.has(path)) {
 			// Don't add duplicate translation paths.
-			translations.push_back(p_paths[i]);
+			translations.push_back(path);
+			count += 1;
 		}
+	}
+	if (count == 0) {
+		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Add %d Translations"), p_paths.size()));
+	undo_redo->create_action(vformat(TTRN("Add %d Translation", "Add %d Translations", count), count));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", GLOBAL_GET("internationalization/locale/translations"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -135,15 +143,20 @@ void LocalizationEditor::_translation_res_add(const PackedStringArray &p_paths) 
 		prev = remaps;
 	}
 
-	for (int i = 0; i < p_paths.size(); i++) {
-		if (!remaps.has(p_paths[i])) {
+	int count = 0;
+	for (const String &path : p_paths) {
+		if (!remaps.has(path)) {
 			// Don't overwrite with an empty remap array if an array already exists for the given path.
-			remaps[p_paths[i]] = PackedStringArray();
+			remaps[path] = PackedStringArray();
+			count += 1;
 		}
+	}
+	if (count == 0) {
+		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Path(s)"), p_paths.size()));
+	undo_redo->create_action(vformat(TTRN("Translation Resource Remap: Add %d Path", "Translation Resource Remap: Add %d Paths", count), count));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", remaps);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", prev);
 	undo_redo->add_do_method(this, "update_translations");
@@ -175,7 +188,7 @@ void LocalizationEditor::_translation_res_option_add(const PackedStringArray &p_
 	remaps[key] = r;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Remap(s)"), p_paths.size()));
+	undo_redo->create_action(vformat(TTRN("Translation Resource Remap: Add %d Remap", "Translation Resource Remap: Add %d Remaps", p_paths.size()), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", remaps);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", GLOBAL_GET("internationalization/locale/translation_remaps"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -189,7 +202,7 @@ void LocalizationEditor::_translation_res_select() {
 	if (updating_translations) {
 		return;
 	}
-	call_deferred(SNAME("update_translations"));
+	callable_mp(this, &LocalizationEditor::update_translations).call_deferred();
 }
 
 void LocalizationEditor::_translation_res_option_popup(bool p_arrow_clicked) {
@@ -325,14 +338,19 @@ void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_co
 
 void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
-	for (int i = 0; i < p_paths.size(); i++) {
-		if (!pot_translations.has(p_paths[i])) {
-			pot_translations.push_back(p_paths[i]);
+	int count = 0;
+	for (const String &path : p_paths) {
+		if (!pot_translations.has(path)) {
+			pot_translations.push_back(path);
+			count += 1;
 		}
+	}
+	if (count == 0) {
+		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Add %d file(s) for POT generation"), p_paths.size()));
+	undo_redo->create_action(vformat(TTRN("Add %d file for POT generation", "Add %d files for POT generation", count), count));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", GLOBAL_GET("internationalization/locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -377,7 +395,13 @@ void LocalizationEditor::_pot_generate_open() {
 	pot_generate_dialog->popup_file_dialog();
 }
 
+void LocalizationEditor::_pot_add_builtin_toggled() {
+	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", translation_pot_add_builtin->is_pressed());
+	ProjectSettings::get_singleton()->save();
+}
+
 void LocalizationEditor::_pot_generate(const String &p_file) {
+	EditorSettings::get_singleton()->set_project_metadata("pot_generator", "last_pot_path", p_file);
 	POTGenerator::get_singleton()->generate_pot(p_file);
 }
 
@@ -415,12 +439,12 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 
 	// Check for the Array elements of the values.
 	Array remap_keys = remaps.keys();
-	for (int i = 0; i < remap_keys.size(); i++) {
-		PackedStringArray remapped_files = remaps[remap_keys[i]];
+	for (const Variant &remap_key : remap_keys) {
+		PackedStringArray remapped_files = remaps[remap_key];
 		bool remapped_files_updated = false;
 
 		for (int j = 0; j < remapped_files.size(); j++) {
-			int splitter_pos = remapped_files[j].rfind(":");
+			int splitter_pos = remapped_files[j].rfind_char(':');
 			String res_path = remapped_files[j].substr(0, splitter_pos);
 
 			if (res_path == p_old_file) {
@@ -430,12 +454,12 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 				remapped_files.remove_at(j + 1);
 				remaps_changed = true;
 				remapped_files_updated = true;
-				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_keys[i]));
+				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_key));
 			}
 		}
 
 		if (remapped_files_updated) {
-			remaps[remap_keys[i]] = remapped_files;
+			remaps[remap_key] = remapped_files;
 		}
 	}
 
@@ -461,7 +485,7 @@ void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
 		for (int i = 0; i < remap_keys.size() && !remaps_changed; i++) {
 			PackedStringArray remapped_files = remaps[remap_keys[i]];
 			for (int j = 0; j < remapped_files.size() && !remaps_changed; j++) {
-				int splitter_pos = remapped_files[j].rfind(":");
+				int splitter_pos = remapped_files[j].rfind_char(':');
 				String res_path = remapped_files[j].substr(0, splitter_pos);
 				remaps_changed = p_file == res_path;
 				if (remaps_changed) {
@@ -497,7 +521,7 @@ void LocalizationEditor::update_translations() {
 			t->set_text(0, translations[i].replace_first("res://", ""));
 			t->set_tooltip_text(0, translations[i]);
 			t->set_metadata(0, i);
-			t->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTR("Remove"));
+			t->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTRC("Remove"));
 		}
 	}
 
@@ -517,11 +541,9 @@ void LocalizationEditor::update_translations() {
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
 		Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
-		List<Variant> rk;
-		remaps.get_key_list(&rk);
 		Vector<String> keys;
-		for (const Variant &E : rk) {
-			keys.push_back(E);
+		for (const KeyValue<Variant, Variant> &kv : remaps) {
+			keys.push_back(kv.key);
 		}
 		keys.sort();
 
@@ -531,7 +553,7 @@ void LocalizationEditor::update_translations() {
 			t->set_text(0, keys[i].replace_first("res://", ""));
 			t->set_tooltip_text(0, keys[i]);
 			t->set_metadata(0, keys[i]);
-			t->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTR("Remove"));
+			t->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTRC("Remove"));
 
 			// Display that it has been removed if this is the case.
 			if (!FileAccess::exists(keys[i])) {
@@ -545,17 +567,17 @@ void LocalizationEditor::update_translations() {
 
 				PackedStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
-					String s2 = selected[j];
-					int qp = s2.rfind(":");
+					const String &s2 = selected[j];
+					int qp = s2.rfind_char(':');
 					String path = s2.substr(0, qp);
-					String locale = s2.substr(qp + 1, s2.length());
+					String locale = s2.substr(qp + 1);
 
 					TreeItem *t2 = translation_remap_options->create_item(root2);
 					t2->set_editable(0, false);
 					t2->set_text(0, path.replace_first("res://", ""));
 					t2->set_tooltip_text(0, path);
 					t2->set_metadata(0, j);
-					t2->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTR("Remove"));
+					t2->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTRC("Remove"));
 					t2->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
 					t2->set_text(1, TranslationServer::get_singleton()->get_locale_name(locale));
 					t2->set_editable(1, true);
@@ -583,7 +605,7 @@ void LocalizationEditor::update_translations() {
 		t->set_text(0, pot_translations[i].replace_first("res://", ""));
 		t->set_tooltip_text(0, pot_translations[i]);
 		t->set_metadata(0, i);
-		t->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTR("Remove"));
+		t->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTRC("Remove"));
 	}
 
 	// New translation parser plugin might extend possible file extensions in POT generation.
@@ -609,18 +631,18 @@ LocalizationEditor::LocalizationEditor() {
 
 	{
 		VBoxContainer *tvb = memnew(VBoxContainer);
-		tvb->set_name(TTR("Translations"));
+		tvb->set_name(TTRC("Translations"));
 		translations->add_child(tvb);
 
 		HBoxContainer *thb = memnew(HBoxContainer);
-		Label *l = memnew(Label(TTR("Translations:")));
+		Label *l = memnew(Label(TTRC("Translations:")));
 		l->set_theme_type_variation("HeaderSmall");
 		thb->add_child(l);
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_file_open));
+		Button *addtr = memnew(Button(TTRC("Add...")));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_file_open));
 		thb->add_child(addtr);
 
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -643,18 +665,18 @@ LocalizationEditor::LocalizationEditor() {
 
 	{
 		VBoxContainer *tvb = memnew(VBoxContainer);
-		tvb->set_name(TTR("Remaps"));
+		tvb->set_name(TTRC("Remaps"));
 		translations->add_child(tvb);
 
 		HBoxContainer *thb = memnew(HBoxContainer);
-		Label *l = memnew(Label(TTR("Resources:")));
+		Label *l = memnew(Label(TTRC("Resources:")));
 		l->set_theme_type_variation("HeaderSmall");
 		thb->add_child(l);
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_res_file_open));
+		Button *addtr = memnew(Button(TTRC("Add...")));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_file_open));
 		thb->add_child(addtr);
 
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -673,14 +695,14 @@ LocalizationEditor::LocalizationEditor() {
 		add_child(translation_res_file_open_dialog);
 
 		thb = memnew(HBoxContainer);
-		l = memnew(Label(TTR("Remaps by Locale:")));
+		l = memnew(Label(TTRC("Remaps by Locale:")));
 		l->set_theme_type_variation("HeaderSmall");
 		thb->add_child(l);
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_res_option_file_open));
+		addtr = memnew(Button(TTRC("Add...")));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_option_file_open));
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 
@@ -691,8 +713,8 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap_options = memnew(Tree);
 		translation_remap_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		translation_remap_options->set_columns(2);
-		translation_remap_options->set_column_title(0, TTR("Path"));
-		translation_remap_options->set_column_title(1, TTR("Locale"));
+		translation_remap_options->set_column_title(0, TTRC("Path"));
+		translation_remap_options->set_column_title(1, TTRC("Locale"));
 		translation_remap_options->set_column_titles_visible(true);
 		translation_remap_options->set_column_expand(0, true);
 		translation_remap_options->set_column_clip_content(0, true);
@@ -712,34 +734,36 @@ LocalizationEditor::LocalizationEditor() {
 
 	{
 		VBoxContainer *tvb = memnew(VBoxContainer);
-		tvb->set_name(TTR("POT Generation"));
+		tvb->set_name(TTRC("POT Generation"));
 		translations->add_child(tvb);
 
 		HBoxContainer *thb = memnew(HBoxContainer);
-		Label *l = memnew(Label(TTR("Files with translation strings:")));
+		Label *l = memnew(Label(TTRC("Files with translation strings:")));
 		l->set_theme_type_variation("HeaderSmall");
 		thb->add_child(l);
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_file_open));
+		Button *addtr = memnew(Button(TTRC("Add...")));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_file_open));
 		thb->add_child(addtr);
 
-		pot_generate_button = memnew(Button(TTR("Generate POT")));
-		pot_generate_button->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_generate_open));
+		pot_generate_button = memnew(Button(TTRC("Generate POT")));
+		pot_generate_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_generate_open));
 		thb->add_child(pot_generate_button);
-
-		VBoxContainer *tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
 
 		translation_pot_list = memnew(Tree);
 		translation_pot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tmc->add_child(translation_pot_list);
+		tvb->add_child(translation_pot_list);
+
+		translation_pot_add_builtin = memnew(CheckBox(TTRC("Add Built-in Strings to POT")));
+		translation_pot_add_builtin->set_tooltip_text(TTRC("Add strings from built-in components such as certain Control nodes."));
+		translation_pot_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_add_builtin_toggled));
+		tvb->add_child(translation_pot_add_builtin);
 
 		pot_generate_dialog = memnew(EditorFileDialog);
 		pot_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+		pot_generate_dialog->set_current_path(EditorSettings::get_singleton()->get_project_metadata("pot_generator", "last_pot_path", String()));
 		pot_generate_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_pot_generate));
 		add_child(pot_generate_dialog);
 

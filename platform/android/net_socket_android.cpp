@@ -49,6 +49,14 @@ void NetSocketAndroid::setup(jobject p_net_utils) {
 	_multicast_lock_release = env->GetMethodID(cls, "multicastLockRelease", "()V");
 }
 
+void NetSocketAndroid::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(net_utils);
+}
+
 void NetSocketAndroid::multicast_lock_acquire() {
 	if (_multicast_lock_acquire) {
 		JNIEnv *env = get_jni_env();
@@ -76,7 +84,7 @@ NetSocketAndroid::~NetSocketAndroid() {
 }
 
 void NetSocketAndroid::close() {
-	NetSocketPosix::close();
+	NetSocketUnix::close();
 	if (wants_broadcast) {
 		multicast_lock_release();
 	}
@@ -88,7 +96,7 @@ void NetSocketAndroid::close() {
 }
 
 Error NetSocketAndroid::set_broadcasting_enabled(bool p_enabled) {
-	Error err = NetSocketPosix::set_broadcasting_enabled(p_enabled);
+	Error err = NetSocketUnix::set_broadcasting_enabled(p_enabled);
 	if (err != OK) {
 		return err;
 	}
@@ -106,8 +114,8 @@ Error NetSocketAndroid::set_broadcasting_enabled(bool p_enabled) {
 	return OK;
 }
 
-Error NetSocketAndroid::join_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
-	Error err = NetSocketPosix::join_multicast_group(p_multi_address, p_if_name);
+Error NetSocketAndroid::join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
+	Error err = NetSocketUnix::join_multicast_group(p_multi_address, p_if_name);
 	if (err != OK) {
 		return err;
 	}
@@ -120,8 +128,8 @@ Error NetSocketAndroid::join_multicast_group(const IPAddress &p_multi_address, S
 	return OK;
 }
 
-Error NetSocketAndroid::leave_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
-	Error err = NetSocketPosix::leave_multicast_group(p_multi_address, p_if_name);
+Error NetSocketAndroid::leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
+	Error err = NetSocketUnix::leave_multicast_group(p_multi_address, p_if_name);
 	if (err != OK) {
 		return err;
 	}

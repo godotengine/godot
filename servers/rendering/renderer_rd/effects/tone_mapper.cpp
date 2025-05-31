@@ -47,12 +47,12 @@ ToneMapper::ToneMapper() {
 		tonemap_modes.push_back("\n#define SUBPASS\n#define USE_1D_LUT\n");
 
 		// multiview versions of our shaders
-		tonemap_modes.push_back("\n#define MULTIVIEW\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_GLOW_FILTER_BICUBIC\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_1D_LUT\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_GLOW_FILTER_BICUBIC\n#define USE_1D_LUT\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define SUBPASS\n");
-		tonemap_modes.push_back("\n#define MULTIVIEW\n#define SUBPASS\n#define USE_1D_LUT\n");
+		tonemap_modes.push_back("\n#define USE_MULTIVIEW\n");
+		tonemap_modes.push_back("\n#define USE_MULTIVIEW\n#define USE_GLOW_FILTER_BICUBIC\n");
+		tonemap_modes.push_back("\n#define USE_MULTIVIEW\n#define USE_1D_LUT\n");
+		tonemap_modes.push_back("\n#define USE_MULTIVIEW\n#define USE_GLOW_FILTER_BICUBIC\n#define USE_1D_LUT\n");
+		tonemap_modes.push_back("\n#define USE_MULTIVIEW\n#define SUBPASS\n");
+		tonemap_modes.push_back("\n#define USE_MULTIVIEW\n#define SUBPASS\n#define USE_1D_LUT\n");
 
 		tonemap.shader.initialize(tonemap_modes);
 
@@ -130,7 +130,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;
 
 	if (p_settings.view_count > 1) {
-		// Use MULTIVIEW versions
+		// Use USE_MULTIVIEW versions
 		mode += 6;
 	}
 
@@ -166,7 +166,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	RID shader = tonemap.shader.version_get_shader(tonemap.shader_version, mode);
 	ERR_FAIL_COND(shader.is_null());
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer), false, RD::get_singleton()->draw_list_get_current_pass()));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_color), 0);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_exposure_texture), 1);
@@ -196,7 +196,7 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 
 	int mode = p_settings.use_1d_color_correction ? TONEMAP_MODE_SUBPASS_1D_LUT : TONEMAP_MODE_SUBPASS;
 	if (p_settings.view_count > 1) {
-		// Use MULTIVIEW versions
+		// Use USE_MULTIVIEW versions
 		mode += 6;
 	}
 

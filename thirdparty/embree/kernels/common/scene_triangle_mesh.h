@@ -32,16 +32,18 @@ namespace embree
 
     /* geometry interface */
   public:
-    void setMask(unsigned mask);
-    void setNumTimeSteps (unsigned int numTimeSteps);
-    void setVertexAttributeCount (unsigned int N);
-    void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num);
-    void* getBuffer(RTCBufferType type, unsigned int slot);
-    void updateBuffer(RTCBufferType type, unsigned int slot);
-    void commit();
-    bool verify();
-    void interpolate(const RTCInterpolateArguments* const args);
-    void addElementsToCount (GeometryCounts & counts) const;
+    virtual void setMask(unsigned mask) override;
+    virtual void setNumTimeSteps (unsigned int numTimeSteps) override;
+    virtual void setVertexAttributeCount (unsigned int N) override;
+    virtual void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num) override;
+    virtual void* getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType) override;
+    virtual void updateBuffer(RTCBufferType type, unsigned int slot) override;
+    virtual void commit() override;
+    virtual bool verify() override;
+    virtual void interpolate(const RTCInterpolateArguments* const args) override;
+    virtual void addElementsToCount (GeometryCounts & counts) const override;
+    virtual size_t getGeometryDataDeviceByteSize() const override;
+    virtual void convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const override;
 
     template<int N>
     void interpolate_impl(const RTCInterpolateArguments* const args)
@@ -98,12 +100,12 @@ namespace embree
     }
     
   public:
-    
+
     /*! returns number of vertices */
     __forceinline size_t numVertices() const {
       return vertices[0].size();
     }
-    
+
     /*! returns i'th triangle*/
     __forceinline const Triangle& triangle(size_t i) const {
       return triangles[i];
@@ -127,6 +129,18 @@ namespace embree
     /*! returns i'th vertex of itime'th timestep */
     __forceinline const char* vertexPtr(size_t i, size_t itime) const {
       return vertices[itime].getPtr(i);
+    }
+
+    /*! returns i'th vertex of for specified time */
+    __forceinline Vec3fa vertex(size_t i, float time) const
+    {
+      float ftime;
+      const size_t itime = timeSegment(time, ftime);
+      const float t0 = 1.0f - ftime;
+      const float t1 = ftime;
+      Vec3fa v0 = vertex(i, itime+0);
+      Vec3fa v1 = vertex(i, itime+1);
+      return madd(Vec3fa(t0),v0,t1*v1);
     }
 
     /*! calculates the bounds of the i'th triangle */
@@ -234,7 +248,7 @@ namespace embree
     }
 
     /*! get fast access to first vertex buffer */
-    __forceinline float * getCompactVertexArray () const {
+    __forceinline float * getCompactVertexArray () const override {
       return (float*) vertices0.getPtr();
     }
 
@@ -260,8 +274,8 @@ namespace embree
   public:
     BufferView<Triangle> triangles;      //!< array of triangles
     BufferView<Vec3fa> vertices0;        //!< fast access to first vertex buffer
-    vector<BufferView<Vec3fa>> vertices; //!< vertex array for each timestep
-    vector<RawBufferView> vertexAttribs; //!< vertex attributes
+    Device::vector<BufferView<Vec3fa>> vertices = device; //!< vertex array for each timestep
+    Device::vector<RawBufferView> vertexAttribs = device; //!< vertex attributes
   };
 
   namespace isa
@@ -271,7 +285,12 @@ namespace embree
       TriangleMeshISA (Device* device)
         : TriangleMesh(device) {}
 
-      PrimInfo createPrimRefArray(mvector<PrimRef>& prims, const range<size_t>& r, size_t k, unsigned int geomID) const
+#if !defined(__SYCL_DEVICE_ONLY__)
+      LBBox3fa vlinearBounds(size_t primID, const BBox1f& time_range) const {
+        return linearBounds(primID,time_range);
+      }
+
+      PrimInfo createPrimRefArray(PrimRef* prims, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         PrimInfo pinfo(empty);
         for (size_t j=r.begin(); j<r.end(); j++)
@@ -298,7 +317,24 @@ namespace embree
         }
         return pinfo;
       }
-      
+
+      PrimInfo createPrimRefArrayMB(PrimRef* prims, const BBox1f& time_range, const range<size_t>& r, size_t k, unsigned int geomID) const
+      {
+        PrimInfo pinfo(empty);
+        const BBox1f t0t1 = BBox1f::intersect(getTimeRange(), time_range);
+        if (t0t1.empty()) return pinfo;
+        
+        for (size_t j = r.begin(); j < r.end(); j++) {
+          LBBox3fa lbounds = empty;
+          if (!linearBounds(j, t0t1, lbounds))
+            continue;
+          const PrimRef prim(lbounds.bounds(), geomID, unsigned(j));
+          pinfo.add_center2(prim);
+          prims[k++] = prim;
+        }
+        return pinfo;
+      }
+
       PrimInfoMB createPrimRefMBArray(mvector<PrimRefMB>& prims, const BBox1f& t0t1, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         PrimInfoMB pinfo(empty);
@@ -311,6 +347,7 @@ namespace embree
         }
         return pinfo;
       }
+#endif
     };
   }
 

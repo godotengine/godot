@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.godot.game"
     android:versionCode="1"
     android:versionName="1.0"
     android:installLocation="auto" >
@@ -25,21 +24,20 @@
         android:hasFragileUserData="false"
         android:requestLegacyExternalStorage="false"
         tools:ignore="GoogleAppIndexingWarning" >
-
-        <!-- Records the version of the Godot editor used for building -->
-        <meta-data
-            android:name="org.godotengine.editor.version"
-            android:value="${godotEditorVersion}" />
+        <profileable
+            android:shell="true"
+            android:enabled="true"
+            tools:targetApi="29" />
 
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
             android:theme="@style/GodotAppSplashTheme"
-            android:launchMode="singleInstance"
+            android:launchMode="singleInstancePerTask"
             android:excludeFromRecents="false"
             android:exported="true"
             android:screenOrientation="landscape"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
 

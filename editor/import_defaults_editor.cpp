@@ -33,12 +33,10 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_importer.h"
 #include "editor/action_map_editor.h"
-#include "editor/editor_autoload_settings.h"
-#include "editor/editor_plugin_settings.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_sectioned_inspector.h"
-#include "editor/localization_editor.h"
-#include "editor/shader_globals_editor.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/label.h"
 
 class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
@@ -109,6 +107,7 @@ void ImportDefaultsEditor::_save() {
 		} else {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
+		ProjectSettings::get_singleton()->save();
 	}
 }
 
@@ -202,15 +201,15 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	ProjectSettings::get_singleton()->add_hidden_prefix("importer_defaults/");
 
 	HBoxContainer *hb = memnew(HBoxContainer);
-	hb->add_child(memnew(Label(TTR("Importer:"))));
+	hb->add_child(memnew(Label(TTRC("Importer:"))));
 	importers = memnew(OptionButton);
 	hb->add_child(importers);
 	hb->add_spacer();
-	importers->connect("item_selected", callable_mp(this, &ImportDefaultsEditor::_importer_selected));
+	importers->connect(SceneStringName(item_selected), callable_mp(this, &ImportDefaultsEditor::_importer_selected));
 	reset_defaults = memnew(Button);
-	reset_defaults->set_text(TTR("Reset to Defaults"));
+	reset_defaults->set_text(TTRC("Reset to Defaults"));
 	reset_defaults->set_disabled(true);
-	reset_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_reset));
+	reset_defaults->connect(SceneStringName(pressed), callable_mp(this, &ImportDefaultsEditor::_reset));
 	hb->add_child(reset_defaults);
 	add_child(hb);
 
@@ -223,8 +222,8 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 
 	CenterContainer *cc = memnew(CenterContainer);
 	save_defaults = memnew(Button);
-	save_defaults->set_text(TTR("Save"));
-	save_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_save));
+	save_defaults->set_text(TTRC("Save"));
+	save_defaults->connect(SceneStringName(pressed), callable_mp(this, &ImportDefaultsEditor::_save));
 	cc->add_child(save_defaults);
 	add_child(cc);
 

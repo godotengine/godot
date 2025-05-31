@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SAFE_LIST_H
-#define SAFE_LIST_H
+#pragma once
 
 #include "core/os/memory.h"
 #include "core/typedefs.h"
 
 #include <atomic>
 #include <functional>
-#include <type_traits>
+#include <initializer_list>
 
 // Design goals for these classes:
 // - Accessing this list with an iterator will never result in a use-after free,
@@ -48,7 +47,7 @@
 
 // This is used in very specific areas of the engine where it's critical that these guarantees are held.
 
-template <class T, class A = DefaultAllocator>
+template <typename T, typename A = DefaultAllocator>
 class SafeList {
 	struct SafeListNode {
 		std::atomic<SafeListNode *> next = nullptr;
@@ -226,6 +225,13 @@ public:
 		return true;
 	}
 
+	_FORCE_INLINE_ SafeList() {}
+	_FORCE_INLINE_ SafeList(std::initializer_list<T> p_init) {
+		for (const T &E : p_init) {
+			insert(E);
+		}
+	}
+
 	~SafeList() {
 #ifdef DEBUG_ENABLED
 		if (!maybe_cleanup()) {
@@ -236,5 +242,3 @@ public:
 #endif
 	}
 };
-
-#endif // SAFE_LIST_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@ namespace tvg
 {
 
 float strToFloat(const char *nPtr, char **endPtr);  //convert to float
-int str2int(const char* str, size_t n);             //convert to integer
 char* strDuplicate(const char *str, size_t n);      //copy the string
+char* strAppend(char* lhs, const char* rhs, size_t n);  //append the rhs to the lhs
 char* strDirname(const char* path);                 //return the full directory name
 
 }

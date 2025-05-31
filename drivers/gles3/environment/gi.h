@@ -28,17 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GI_GLES3_H
-#define GI_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
-#include "core/templates/local_vector.h"
-#include "core/templates/rid_owner.h"
-#include "core/templates/self_list.h"
 #include "servers/rendering/environment/renderer_gi.h"
-
-#include "platform_gl.h"
 
 namespace GLES3 {
 
@@ -85,10 +79,10 @@ public:
 	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const override;
 
 	virtual uint32_t voxel_gi_get_version(RID p_voxel_gi) const override;
+
+	virtual void sdfgi_reset() override;
 };
 
 }; // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // GI_GLES3_H

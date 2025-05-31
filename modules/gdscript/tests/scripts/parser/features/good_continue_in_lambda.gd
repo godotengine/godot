@@ -9,5 +9,5 @@ func test():
 				j_string += str(j)
 			return j_string
 		i_string += lambda.call()
-	assert(i_string == '0202')
+	Utils.check(i_string == '0202')
 	print('ok')

@@ -1,6 +1,4 @@
 
-/* SET 0, static data that does not change between any call */
-
 layout(set = 0, binding = 0) uniform BakeParameters {
 	vec3 world_size;
 	float bias;
@@ -18,6 +16,9 @@ layout(set = 0, binding = 0) uniform BakeParameters {
 	uint bounces;
 
 	float bounce_indirect_energy;
+	int shadowmask_light_idx;
+	uint transparency_rays;
+	float supersampling_factor;
 }
 bake_params;
 
@@ -33,9 +34,20 @@ layout(set = 0, binding = 1, std430) restrict readonly buffer Vertices {
 }
 vertices;
 
+#define CULL_DISABLED 0
+#define CULL_FRONT 1
+#define CULL_BACK 2
+
 struct Triangle {
 	uvec3 indices;
 	uint slice;
+	vec3 min_bounds;
+	uint cull_mode;
+	vec3 max_bounds;
+	uint pad1;
+};
+
+struct ClusterAABB {
 	vec3 min_bounds;
 	uint pad0;
 	vec3 max_bounds;
@@ -47,10 +59,10 @@ layout(set = 0, binding = 2, std430) restrict readonly buffer Triangles {
 }
 triangles;
 
-layout(set = 0, binding = 3, std430) restrict readonly buffer GridIndices {
+layout(set = 0, binding = 3, std430) restrict readonly buffer TriangleIndices {
 	uint data[];
 }
-grid_indices;
+triangle_indices;
 
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_OMNI 1
@@ -103,6 +115,16 @@ layout(set = 0, binding = 8) uniform texture2DArray albedo_tex;
 layout(set = 0, binding = 9) uniform texture2DArray emission_tex;
 
 layout(set = 0, binding = 10) uniform sampler linear_sampler;
+
+layout(set = 0, binding = 11, std430) restrict readonly buffer ClusterIndices {
+	uint data[];
+}
+cluster_indices;
+
+layout(set = 0, binding = 12, std430) restrict readonly buffer ClusterAABBs {
+	ClusterAABB data[];
+}
+cluster_aabbs;
 
 // Fragment action constants
 const uint FA_NONE = 0;

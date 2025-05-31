@@ -57,45 +57,39 @@ void main() {
 		txform = transpose(mat4(xform_1, xform_2, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
 #endif
 
-		switch (align_mode) {
-			case TRANSFORM_ALIGN_DISABLED: {
-			} break; //nothing
-			case TRANSFORM_ALIGN_Z_BILLBOARD: {
-				mat3 local = mat3(normalize(cross(align_up, sort_direction)), align_up, sort_direction);
-				local = local * mat3(txform);
-				txform[0].xyz = local[0];
-				txform[1].xyz = local[1];
-				txform[2].xyz = local[2];
+		if (align_mode == TRANSFORM_ALIGN_DISABLED) {
+			// nothing
+		} else if (align_mode == TRANSFORM_ALIGN_Z_BILLBOARD) {
+			mat3 local = mat3(normalize(cross(align_up, sort_direction)), align_up, sort_direction);
+			local = local * mat3(txform);
+			txform[0].xyz = local[0];
+			txform[1].xyz = local[1];
+			txform[2].xyz = local[2];
+		} else if (align_mode == TRANSFORM_ALIGN_Y_TO_VELOCITY) {
+			vec3 v = velocity_flags.xyz;
+			float s = (length(txform[0]) + length(txform[1]) + length(txform[2])) / 3.0;
+			if (length(v) > 0.0) {
+				txform[1].xyz = normalize(v);
+			} else {
+				txform[1].xyz = normalize(txform[1].xyz);
+			}
 
-			} break;
-			case TRANSFORM_ALIGN_Y_TO_VELOCITY: {
-				vec3 v = velocity_flags.xyz;
-				float s = (length(txform[0]) + length(txform[1]) + length(txform[2])) / 3.0;
-				if (length(v) > 0.0) {
-					txform[1].xyz = normalize(v);
-				} else {
-					txform[1].xyz = normalize(txform[1].xyz);
-				}
+			txform[0].xyz = normalize(cross(txform[1].xyz, txform[2].xyz));
+			txform[2].xyz = vec3(0.0, 0.0, 1.0) * s;
+			txform[0].xyz *= s;
+			txform[1].xyz *= s;
+		} else if (align_mode == TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+			vec3 sv = velocity_flags.xyz - sort_direction * dot(sort_direction, velocity_flags.xyz); //screen velocity
 
-				txform[0].xyz = normalize(cross(txform[1].xyz, txform[2].xyz));
-				txform[2].xyz = vec3(0.0, 0.0, 1.0) * s;
-				txform[0].xyz *= s;
-				txform[1].xyz *= s;
-			} break;
-			case TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY: {
-				vec3 sv = velocity_flags.xyz - sort_direction * dot(sort_direction, velocity_flags.xyz); //screen velocity
+			if (length(sv) == 0.0) {
+				sv = align_up;
+			}
 
-				if (length(sv) == 0.0) {
-					sv = align_up;
-				}
+			sv = normalize(sv);
 
-				sv = normalize(sv);
-
-				txform[0].xyz = normalize(cross(sv, sort_direction)) * length(txform[0]);
-				txform[1].xyz = sv * length(txform[1]);
-				txform[2].xyz = sort_direction * length(txform[2]);
-
-			} break;
+			txform[0].xyz = normalize(cross(sv, sort_direction)) * length(txform[0]);
+			txform[1].xyz = sv * length(txform[1]);
+			txform[2].xyz = sort_direction * length(txform[2]);
 		}
 
 		txform[3].xyz += velocity_flags.xyz * frame_remainder;
@@ -108,7 +102,10 @@ void main() {
 	}
 	txform = transpose(txform);
 
-	instance_color_custom_data = uvec4(packHalf2x16(color.xy), packHalf2x16(color.zw), packHalf2x16(custom.xy), packHalf2x16(custom.zw));
+	instance_color_custom_data.x = packHalf2x16(color.xy);
+	instance_color_custom_data.y = packHalf2x16(color.zw);
+	instance_color_custom_data.z = packHalf2x16(custom.xy);
+	instance_color_custom_data.w = packHalf2x16(custom.zw);
 	out_xform_1 = txform[0];
 	out_xform_2 = txform[1];
 #ifdef MODE_3D

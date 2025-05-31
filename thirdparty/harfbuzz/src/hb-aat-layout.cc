@@ -34,8 +34,11 @@
 #include "hb-aat-layout-just-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-aat-layout-kerx-table.hh"
 #include "hb-aat-layout-morx-table.hh"
-#include "hb-aat-layout-trak-table.hh"
+#include "hb-aat-layout-trak-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-aat-ltag-table.hh"
+
+#include "hb-ot-layout-gsub-table.hh"
+#include "hb-ot-layout-gdef-table.hh"
 
 
 /*
@@ -207,18 +210,48 @@ hb_aat_layout_find_feature_mapping (hb_tag_t tag)
  */
 
 
+bool
+AAT::morx::is_blocklisted (hb_blob_t *blob,
+                           hb_face_t *face) const
+{
+#ifdef HB_NO_AAT_LAYOUT_BLOCKLIST
+  return false;
+#endif
+
+  switch HB_CODEPOINT_ENCODE3 (blob->length,
+                               face->table.GSUB->table.get_length (),
+                               face->table.GDEF->table.get_length ())
+  {
+    /* https://github.com/harfbuzz/harfbuzz/issues/4108
+       sha1sum:a71ca6813b7e56a772cffff7c24a5166b087197c  AALMAGHRIBI.ttf */
+    case HB_CODEPOINT_ENCODE3 (19892, 2794, 340):
+      return true;
+  }
+  return false;
+}
+
+bool
+AAT::mort::is_blocklisted (hb_blob_t *blob,
+                           hb_face_t *face) const
+{
+#ifdef HB_NO_AAT_LAYOUT_BLOCKLIST
+  return false;
+#endif
+  return false;
+}
+
 void
 hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
 			   hb_aat_map_t *map)
 {
-  const AAT::morx& morx = *mapper->face->table.morx;
+  const AAT::morx& morx = *mapper->face->table.morx->table;
   if (morx.has_data ())
   {
     morx.compile_flags (mapper, map);
     return;
   }
 
-  const AAT::mort& mort = *mapper->face->table.mort;
+  const AAT::mort& mort = *mapper->face->table.mort->table;
   if (mort.has_data ())
   {
     mort.compile_flags (mapper, map);
@@ -243,8 +276,8 @@ hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
 hb_bool_t
 hb_aat_layout_has_substitution (hb_face_t *face)
 {
-  return face->table.morx->has_data () ||
-	 face->table.mort->has_data ();
+  return face->table.morx->table->has_data () ||
+	 face->table.mort->table->has_data ();
 }
 
 void
@@ -260,26 +293,30 @@ hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
   hb_aat_map_t map;
   builder.compile (map);
 
-  hb_blob_t *morx_blob = font->face->table.morx.get_blob ();
-  const AAT::morx& morx = *morx_blob->as<AAT::morx> ();
-  if (morx.has_data ())
   {
-    AAT::hb_aat_apply_context_t c (plan, font, buffer, morx_blob);
-    if (!buffer->message (font, "start table morx")) return;
-    morx.apply (&c, map);
-    (void) buffer->message (font, "end table morx");
-    return;
+    auto &accel = *font->face->table.morx;
+    const AAT::morx& morx = *accel.table;
+    if (morx.has_data ())
+    {
+      AAT::hb_aat_apply_context_t c (plan, font, buffer, accel.get_blob ());
+      if (!buffer->message (font, "start table morx")) return;
+      morx.apply (&c, map, accel);
+      (void) buffer->message (font, "end table morx");
+      return;
+    }
   }
 
-  hb_blob_t *mort_blob = font->face->table.mort.get_blob ();
-  const AAT::mort& mort = *mort_blob->as<AAT::mort> ();
-  if (mort.has_data ())
   {
-    AAT::hb_aat_apply_context_t c (plan, font, buffer, mort_blob);
-    if (!buffer->message (font, "start table mort")) return;
-    mort.apply (&c, map);
-    (void) buffer->message (font, "end table mort");
-    return;
+    auto &accel = *font->face->table.mort;
+    const AAT::mort& mort = *accel.table;
+    if (mort.has_data ())
+    {
+      AAT::hb_aat_apply_context_t c (plan, font, buffer, accel.get_blob ());
+      if (!buffer->message (font, "start table mort")) return;
+      mort.apply (&c, map, accel);
+      (void) buffer->message (font, "end table mort");
+      return;
+    }
   }
 }
 
@@ -322,7 +359,7 @@ hb_aat_layout_remove_deleted_glyphs (hb_buffer_t *buffer)
 hb_bool_t
 hb_aat_layout_has_positioning (hb_face_t *face)
 {
-  return face->table.kerx->has_data ();
+  return face->table.kerx->table->has_data ();
 }
 
 void
@@ -330,13 +367,12 @@ hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
 			hb_font_t *font,
 			hb_buffer_t *buffer)
 {
-  hb_blob_t *kerx_blob = font->face->table.kerx.get_blob ();
-  const AAT::kerx& kerx = *kerx_blob->as<AAT::kerx> ();
+  auto &accel = *font->face->table.kerx;
 
-  AAT::hb_aat_apply_context_t c (plan, font, buffer, kerx_blob);
+  AAT::hb_aat_apply_context_t c (plan, font, buffer, accel.get_blob ());
   if (!buffer->message (font, "start table kerx")) return;
   c.set_ankr_table (font->face->table.ankr.get ());
-  kerx.apply (&c);
+  accel.apply (&c);
   (void) buffer->message (font, "end table kerx");
 }
 
@@ -356,17 +392,6 @@ hb_bool_t
 hb_aat_layout_has_tracking (hb_face_t *face)
 {
   return face->table.trak->has_data ();
-}
-
-void
-hb_aat_layout_track (const hb_ot_shape_plan_t *plan,
-		     hb_font_t *font,
-		     hb_buffer_t *buffer)
-{
-  const AAT::trak& trak = *font->face->table.trak;
-
-  AAT::hb_aat_apply_context_t c (plan, font, buffer);
-  trak.apply (&c);
 }
 
 /**

@@ -35,19 +35,25 @@
 
 #pragma once
 
-#if defined(_MSC_VER) && _MSC_VER >= 1900
-    #pragma warning(disable : 4464) // relative include path contains '..'
-#endif
-
-#include "SpvTools.h"
-#include "glslang/Include/intermediate.h"
-
 #include <string>
 #include <vector>
 
 #include "Logger.h"
 
 namespace glslang {
+class TIntermediate;
+
+struct SpvOptions {
+    bool generateDebugInfo {false};
+    bool stripDebugInfo {false};
+    bool disableOptimizer {true};
+    bool optimizeSize {false};
+    bool disassemble {false};
+    bool validate {false};
+    bool emitNonSemanticShaderDebugInfo {false};
+    bool emitNonSemanticShaderDebugSource{ false };
+    bool compileOnly{false};
+};
 
 void GetSpirvVersion(std::string&);
 int GetSpirvGeneratorVersion();

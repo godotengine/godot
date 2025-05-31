@@ -28,16 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_ANDROID_H
-#define FILE_ACCESS_ANDROID_H
+#pragma once
 
 #include "core/io/file_access.h"
 
 #include <android/asset_manager.h>
 #include <android/log.h>
-#include <stdio.h>
+#include <jni.h>
+#include <cstdio>
 
 class FileAccessAndroid : public FileAccess {
+	GDSOFTCLASS(FileAccessAndroid, FileAccess);
+	static AAssetManager *asset_manager;
+	static jobject j_asset_manager;
+
 	mutable AAsset *asset = nullptr;
 	mutable uint64_t len = 0;
 	mutable uint64_t pos = 0;
@@ -48,8 +52,6 @@ class FileAccessAndroid : public FileAccess {
 	void _close();
 
 public:
-	static AAssetManager *asset_manager;
-
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; // open a file
 	virtual bool is_open() const override; // true when file is open
 
@@ -65,19 +67,21 @@ public:
 
 	virtual bool eof_reached() const override; // reading passed EOF
 
-	virtual uint8_t get_8() const override; // get a byte
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; // get last error
 
 	virtual void flush() override;
-	virtual void store_8(uint8_t p_dest) override; // store a byte
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
 	virtual bool file_exists(const String &p_path) override; // return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override;
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
+	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return ERR_UNAVAILABLE; }
 
 	virtual bool _get_hidden_attribute(const String &p_file) override { return false; }
 	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override { return ERR_UNAVAILABLE; }
@@ -86,7 +90,9 @@ public:
 
 	virtual void close() override;
 
+	static void setup(jobject p_asset_manager);
+
+	static void terminate();
+
 	~FileAccessAndroid();
 };
-
-#endif // FILE_ACCESS_ANDROID_H

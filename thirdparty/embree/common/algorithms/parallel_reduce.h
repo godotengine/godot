@@ -43,7 +43,7 @@ namespace embree
   template<typename Index, typename Value, typename Func, typename Reduction>
     __forceinline Value parallel_reduce( const Index first, const Index last, const Index minStepSize, const Value& identity, const Func& func, const Reduction& reduction )
   {
-#if defined(TASKING_INTERNAL)
+#if defined(TASKING_INTERNAL) && !defined(TASKING_TBB)
 
     /* fast path for small number of iterations */
     Index taskCount = (last-first+minStepSize-1)/minStepSize;
@@ -58,19 +58,15 @@ namespace embree
     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
       reduction,context);
-    // -- GODOT start --
-    // if (context.is_group_execution_cancelled())
-    //   throw std::runtime_error("task cancelled");
-    // -- GODOT end --
+    //if (context.is_group_execution_cancelled())
+    //  throw std::runtime_error("task cancelled");
     return v;
   #else
     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
       reduction);
-    // -- GODOT start --
-    // if (tbb::task::self().is_cancelled())
-    //   throw std::runtime_error("task cancelled");
-    // -- GODOT end --
+    //if (tbb::task::self().is_cancelled())
+    //  throw std::runtime_error("task cancelled");
     return v;
   #endif
 #else // TASKING_PPL

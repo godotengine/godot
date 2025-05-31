@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRFaceTracker" inherits="XRTracker" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A tracked face.
+	</brief_description>
+	<description>
+		An instance of this object represents a tracked face and its corresponding blend shapes. The blend shapes come from the [url=https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/unified-blendshapes]Unified Expressions[/url] standard, and contain extended details and visuals for each blend shape. Additionally the [url=https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/compatibility/overview]Tracking Standard Comparison[/url] page documents the relationship between Unified Expressions and other standards.
+		As face trackers are turned on they are registered with the [XRServer].
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_blend_shape" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="blend_shape" type="int" enum="XRFaceTracker.BlendShapeEntry" />
+			<description>
+				Returns the requested face blend shape weight.
+			</description>
+		</method>
+		<method name="set_blend_shape">
+			<return type="void" />
+			<param index="0" name="blend_shape" type="int" enum="XRFaceTracker.BlendShapeEntry" />
+			<param index="1" name="weight" type="float" />
+			<description>
+				Sets a face blend shape weight.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="blend_shapes" type="PackedFloat32Array" setter="set_blend_shapes" getter="get_blend_shapes" default="PackedFloat32Array()">
+			The array of face blend shape weights with indices corresponding to the [enum BlendShapeEntry] enum.
+		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="64" />
+	</members>
+	<constants>
+		<constant name="FT_EYE_LOOK_OUT_RIGHT" value="0" enum="BlendShapeEntry">
+			Right eye looks outwards.
+		</constant>
+		<constant name="FT_EYE_LOOK_IN_RIGHT" value="1" enum="BlendShapeEntry">
+			Right eye looks inwards.
+		</constant>
+		<constant name="FT_EYE_LOOK_UP_RIGHT" value="2" enum="BlendShapeEntry">
+			Right eye looks upwards.
+		</constant>
+		<constant name="FT_EYE_LOOK_DOWN_RIGHT" value="3" enum="BlendShapeEntry">
+			Right eye looks downwards.
+		</constant>
+		<constant name="FT_EYE_LOOK_OUT_LEFT" value="4" enum="BlendShapeEntry">
+			Left eye looks outwards.
+		</constant>
+		<constant name="FT_EYE_LOOK_IN_LEFT" value="5" enum="BlendShapeEntry">
+			Left eye looks inwards.
+		</constant>
+		<constant name="FT_EYE_LOOK_UP_LEFT" value="6" enum="BlendShapeEntry">
+			Left eye looks upwards.
+		</constant>
+		<constant name="FT_EYE_LOOK_DOWN_LEFT" value="7" enum="BlendShapeEntry">
+			Left eye looks downwards.
+		</constant>
+		<constant name="FT_EYE_CLOSED_RIGHT" value="8" enum="BlendShapeEntry">
+			Closes the right eyelid.
+		</constant>
+		<constant name="FT_EYE_CLOSED_LEFT" value="9" enum="BlendShapeEntry">
+			Closes the left eyelid.
+		</constant>
+		<constant name="FT_EYE_SQUINT_RIGHT" value="10" enum="BlendShapeEntry">
+			Squeezes the right eye socket muscles.
+		</constant>
+		<constant name="FT_EYE_SQUINT_LEFT" value="11" enum="BlendShapeEntry">
+			Squeezes the left eye socket muscles.
+		</constant>
+		<constant name="FT_EYE_WIDE_RIGHT" value="12" enum="BlendShapeEntry">
+			Right eyelid widens beyond relaxed.
+		</constant>
+		<constant name="FT_EYE_WIDE_LEFT" value="13" enum="BlendShapeEntry">
+			Left eyelid widens beyond relaxed.
+		</constant>
+		<constant name="FT_EYE_DILATION_RIGHT" value="14" enum="BlendShapeEntry">
+			Dilates the right eye pupil.
+		</constant>
+		<constant name="FT_EYE_DILATION_LEFT" value="15" enum="BlendShapeEntry">
+			Dilates the left eye pupil.
+		</constant>
+		<constant name="FT_EYE_CONSTRICT_RIGHT" value="16" enum="BlendShapeEntry">
+			Constricts the right eye pupil.
+		</constant>
+		<constant name="FT_EYE_CONSTRICT_LEFT" value="17" enum="BlendShapeEntry">
+			Constricts the left eye pupil.
+		</constant>
+		<constant name="FT_BROW_PINCH_RIGHT" value="18" enum="BlendShapeEntry">
+			Right eyebrow pinches in.
+		</constant>
+		<constant name="FT_BROW_PINCH_LEFT" value="19" enum="BlendShapeEntry">
+			Left eyebrow pinches in.
+		</constant>
+		<constant name="FT_BROW_LOWERER_RIGHT" value="20" enum="BlendShapeEntry">
+			Outer right eyebrow pulls down.
+		</constant>
+		<constant name="FT_BROW_LOWERER_LEFT" value="21" enum="BlendShapeEntry">
+			Outer left eyebrow pulls down.
+		</constant>
+		<constant name="FT_BROW_INNER_UP_RIGHT" value="22" enum="BlendShapeEntry">
+			Inner right eyebrow pulls up.
+		</constant>
+		<constant name="FT_BROW_INNER_UP_LEFT" value="23" enum="BlendShapeEntry">
+			Inner left eyebrow pulls up.
+		</constant>
+		<constant name="FT_BROW_OUTER_UP_RIGHT" value="24" enum="BlendShapeEntry">
+			Outer right eyebrow pulls up.
+		</constant>
+		<constant name="FT_BROW_OUTER_UP_LEFT" value="25" enum="BlendShapeEntry">
+			Outer left eyebrow pulls up.
+		</constant>
+		<constant name="FT_NOSE_SNEER_RIGHT" value="26" enum="BlendShapeEntry">
+			Right side face sneers.
+		</constant>
+		<constant name="FT_NOSE_SNEER_LEFT" value="27" enum="BlendShapeEntry">
+			Left side face sneers.
+		</constant>
+		<constant name="FT_NASAL_DILATION_RIGHT" value="28" enum="BlendShapeEntry">
+			Right side nose canal dilates.
+		</constant>
+		<constant name="FT_NASAL_DILATION_LEFT" value="29" enum="BlendShapeEntry">
+			Left side nose canal dilates.
+		</constant>
+		<constant name="FT_NASAL_CONSTRICT_RIGHT" value="30" enum="BlendShapeEntry">
+			Right side nose canal constricts.
+		</constant>
+		<constant name="FT_NASAL_CONSTRICT_LEFT" value="31" enum="BlendShapeEntry">
+			Left side nose canal constricts.
+		</constant>
+		<constant name="FT_CHEEK_SQUINT_RIGHT" value="32" enum="BlendShapeEntry">
+			Raises the right side cheek.
+		</constant>
+		<constant name="FT_CHEEK_SQUINT_LEFT" value="33" enum="BlendShapeEntry">
+			Raises the left side cheek.
+		</constant>
+		<constant name="FT_CHEEK_PUFF_RIGHT" value="34" enum="BlendShapeEntry">
+			Puffs the right side cheek.
+		</constant>
+		<constant name="FT_CHEEK_PUFF_LEFT" value="35" enum="BlendShapeEntry">
+			Puffs the left side cheek.
+		</constant>
+		<constant name="FT_CHEEK_SUCK_RIGHT" value="36" enum="BlendShapeEntry">
+			Sucks in the right side cheek.
+		</constant>
+		<constant name="FT_CHEEK_SUCK_LEFT" value="37" enum="BlendShapeEntry">
+			Sucks in the left side cheek.
+		</constant>
+		<constant name="FT_JAW_OPEN" value="38" enum="BlendShapeEntry">
+			Opens jawbone.
+		</constant>
+		<constant name="FT_MOUTH_CLOSED" value="39" enum="BlendShapeEntry">
+			Closes the mouth.
+		</constant>
+		<constant name="FT_JAW_RIGHT" value="40" enum="BlendShapeEntry">
+			Pushes jawbone right.
+		</constant>
+		<constant name="FT_JAW_LEFT" value="41" enum="BlendShapeEntry">
+			Pushes jawbone left.
+		</constant>
+		<constant name="FT_JAW_FORWARD" value="42" enum="BlendShapeEntry">
+			Pushes jawbone forward.
+		</constant>
+		<constant name="FT_JAW_BACKWARD" value="43" enum="BlendShapeEntry">
+			Pushes jawbone backward.
+		</constant>
+		<constant name="FT_JAW_CLENCH" value="44" enum="BlendShapeEntry">
+			Flexes jaw muscles.
+		</constant>
+		<constant name="FT_JAW_MANDIBLE_RAISE" value="45" enum="BlendShapeEntry">
+			Raises the jawbone.
+		</constant>
+		<constant name="FT_LIP_SUCK_UPPER_RIGHT" value="46" enum="BlendShapeEntry">
+			Upper right lip part tucks in the mouth.
+		</constant>
+		<constant name="FT_LIP_SUCK_UPPER_LEFT" value="47" enum="BlendShapeEntry">
+			Upper left lip part tucks in the mouth.
+		</constant>
+		<constant name="FT_LIP_SUCK_LOWER_RIGHT" value="48" enum="BlendShapeEntry">
+			Lower right lip part tucks in the mouth.
+		</constant>
+		<constant name="FT_LIP_SUCK_LOWER_LEFT" value="49" enum="BlendShapeEntry">
+			Lower left lip part tucks in the mouth.
+		</constant>
+		<constant name="FT_LIP_SUCK_CORNER_RIGHT" value="50" enum="BlendShapeEntry">
+			Right lip corner folds into the mouth.
+		</constant>
+		<constant name="FT_LIP_SUCK_CORNER_LEFT" value="51" enum="BlendShapeEntry">
+			Left lip corner folds into the mouth.
+		</constant>
+		<constant name="FT_LIP_FUNNEL_UPPER_RIGHT" value="52" enum="BlendShapeEntry">
+			Upper right lip part pushes into a funnel.
+		</constant>
+		<constant name="FT_LIP_FUNNEL_UPPER_LEFT" value="53" enum="BlendShapeEntry">
+			Upper left lip part pushes into a funnel.
+		</constant>
+		<constant name="FT_LIP_FUNNEL_LOWER_RIGHT" value="54" enum="BlendShapeEntry">
+			Lower right lip part pushes into a funnel.
+		</constant>
+		<constant name="FT_LIP_FUNNEL_LOWER_LEFT" value="55" enum="BlendShapeEntry">
+			Lower left lip part pushes into a funnel.
+		</constant>
+		<constant name="FT_LIP_PUCKER_UPPER_RIGHT" value="56" enum="BlendShapeEntry">
+			Upper right lip part pushes outwards.
+		</constant>
+		<constant name="FT_LIP_PUCKER_UPPER_LEFT" value="57" enum="BlendShapeEntry">
+			Upper left lip part pushes outwards.
+		</constant>
+		<constant name="FT_LIP_PUCKER_LOWER_RIGHT" value="58" enum="BlendShapeEntry">
+			Lower right lip part pushes outwards.
+		</constant>
+		<constant name="FT_LIP_PUCKER_LOWER_LEFT" value="59" enum="BlendShapeEntry">
+			Lower left lip part pushes outwards.
+		</constant>
+		<constant name="FT_MOUTH_UPPER_UP_RIGHT" value="60" enum="BlendShapeEntry">
+			Upper right part of the lip pulls up.
+		</constant>
+		<constant name="FT_MOUTH_UPPER_UP_LEFT" value="61" enum="BlendShapeEntry">
+			Upper left part of the lip pulls up.
+		</constant>
+		<constant name="FT_MOUTH_LOWER_DOWN_RIGHT" value="62" enum="BlendShapeEntry">
+			Lower right part of the lip pulls up.
+		</constant>
+		<constant name="FT_MOUTH_LOWER_DOWN_LEFT" value="63" enum="BlendShapeEntry">
+			Lower left part of the lip pulls up.
+		</constant>
+		<constant name="FT_MOUTH_UPPER_DEEPEN_RIGHT" value="64" enum="BlendShapeEntry">
+			Upper right lip part pushes in the cheek.
+		</constant>
+		<constant name="FT_MOUTH_UPPER_DEEPEN_LEFT" value="65" enum="BlendShapeEntry">
+			Upper left lip part pushes in the cheek.
+		</constant>
+		<constant name="FT_MOUTH_UPPER_RIGHT" value="66" enum="BlendShapeEntry">
+			Moves upper lip right.
+		</constant>
+		<constant name="FT_MOUTH_UPPER_LEFT" value="67" enum="BlendShapeEntry">
+			Moves upper lip left.
+		</constant>
+		<constant name="FT_MOUTH_LOWER_RIGHT" value="68" enum="BlendShapeEntry">
+			Moves lower lip right.
+		</constant>
+		<constant name="FT_MOUTH_LOWER_LEFT" value="69" enum="BlendShapeEntry">
+			Moves lower lip left.
+		</constant>
+		<constant name="FT_MOUTH_CORNER_PULL_RIGHT" value="70" enum="BlendShapeEntry">
+			Right lip corner pulls diagonally up and out.
+		</constant>
+		<constant name="FT_MOUTH_CORNER_PULL_LEFT" value="71" enum="BlendShapeEntry">
+			Left lip corner pulls diagonally up and out.
+		</constant>
+		<constant name="FT_MOUTH_CORNER_SLANT_RIGHT" value="72" enum="BlendShapeEntry">
+			Right corner lip slants up.
+		</constant>
+		<constant name="FT_MOUTH_CORNER_SLANT_LEFT" value="73" enum="BlendShapeEntry">
+			Left corner lip slants up.
+		</constant>
+		<constant name="FT_MOUTH_FROWN_RIGHT" value="74" enum="BlendShapeEntry">
+			Right corner lip pulls down.
+		</constant>
+		<constant name="FT_MOUTH_FROWN_LEFT" value="75" enum="BlendShapeEntry">
+			Left corner lip pulls down.
+		</constant>
+		<constant name="FT_MOUTH_STRETCH_RIGHT" value="76" enum="BlendShapeEntry">
+			Mouth corner lip pulls out and down.
+		</constant>
+		<constant name="FT_MOUTH_STRETCH_LEFT" value="77" enum="BlendShapeEntry">
+			Mouth corner lip pulls out and down.
+		</constant>
+		<constant name="FT_MOUTH_DIMPLE_RIGHT" value="78" enum="BlendShapeEntry">
+			Right lip corner is pushed backwards.
+		</constant>
+		<constant name="FT_MOUTH_DIMPLE_LEFT" value="79" enum="BlendShapeEntry">
+			Left lip corner is pushed backwards.
+		</constant>
+		<constant name="FT_MOUTH_RAISER_UPPER" value="80" enum="BlendShapeEntry">
+			Raises and slightly pushes out the upper mouth.
+		</constant>
+		<constant name="FT_MOUTH_RAISER_LOWER" value="81" enum="BlendShapeEntry">
+			Raises and slightly pushes out the lower mouth.
+		</constant>
+		<constant name="FT_MOUTH_PRESS_RIGHT" value="82" enum="BlendShapeEntry">
+			Right side lips press and flatten together vertically.
+		</constant>
+		<constant name="FT_MOUTH_PRESS_LEFT" value="83" enum="BlendShapeEntry">
+			Left side lips press and flatten together vertically.
+		</constant>
+		<constant name="FT_MOUTH_TIGHTENER_RIGHT" value="84" enum="BlendShapeEntry">
+			Right side lips squeeze together horizontally.
+		</constant>
+		<constant name="FT_MOUTH_TIGHTENER_LEFT" value="85" enum="BlendShapeEntry">
+			Left side lips squeeze together horizontally.
+		</constant>
+		<constant name="FT_TONGUE_OUT" value="86" enum="BlendShapeEntry">
+			Tongue visibly sticks out of the mouth.
+		</constant>
+		<constant name="FT_TONGUE_UP" value="87" enum="BlendShapeEntry">
+			Tongue points upwards.
+		</constant>
+		<constant name="FT_TONGUE_DOWN" value="88" enum="BlendShapeEntry">
+			Tongue points downwards.
+		</constant>
+		<constant name="FT_TONGUE_RIGHT" value="89" enum="BlendShapeEntry">
+			Tongue points right.
+		</constant>
+		<constant name="FT_TONGUE_LEFT" value="90" enum="BlendShapeEntry">
+			Tongue points left.
+		</constant>
+		<constant name="FT_TONGUE_ROLL" value="91" enum="BlendShapeEntry">
+			Sides of the tongue funnel, creating a roll.
+		</constant>
+		<constant name="FT_TONGUE_BLEND_DOWN" value="92" enum="BlendShapeEntry">
+			Tongue arches up then down inside the mouth.
+		</constant>
+		<constant name="FT_TONGUE_CURL_UP" value="93" enum="BlendShapeEntry">
+			Tongue arches down then up inside the mouth.
+		</constant>
+		<constant name="FT_TONGUE_SQUISH" value="94" enum="BlendShapeEntry">
+			Tongue squishes together and thickens.
+		</constant>
+		<constant name="FT_TONGUE_FLAT" value="95" enum="BlendShapeEntry">
+			Tongue flattens and thins out.
+		</constant>
+		<constant name="FT_TONGUE_TWIST_RIGHT" value="96" enum="BlendShapeEntry">
+			Tongue tip rotates clockwise, with the rest following gradually.
+		</constant>
+		<constant name="FT_TONGUE_TWIST_LEFT" value="97" enum="BlendShapeEntry">
+			Tongue tip rotates counter-clockwise, with the rest following gradually.
+		</constant>
+		<constant name="FT_SOFT_PALATE_CLOSE" value="98" enum="BlendShapeEntry">
+			Inner mouth throat closes.
+		</constant>
+		<constant name="FT_THROAT_SWALLOW" value="99" enum="BlendShapeEntry">
+			The Adam's apple visibly swallows.
+		</constant>
+		<constant name="FT_NECK_FLEX_RIGHT" value="100" enum="BlendShapeEntry">
+			Right side neck visibly flexes.
+		</constant>
+		<constant name="FT_NECK_FLEX_LEFT" value="101" enum="BlendShapeEntry">
+			Left side neck visibly flexes.
+		</constant>
+		<constant name="FT_EYE_CLOSED" value="102" enum="BlendShapeEntry">
+			Closes both eye lids.
+		</constant>
+		<constant name="FT_EYE_WIDE" value="103" enum="BlendShapeEntry">
+			Widens both eye lids.
+		</constant>
+		<constant name="FT_EYE_SQUINT" value="104" enum="BlendShapeEntry">
+			Squints both eye lids.
+		</constant>
+		<constant name="FT_EYE_DILATION" value="105" enum="BlendShapeEntry">
+			Dilates both pupils.
+		</constant>
+		<constant name="FT_EYE_CONSTRICT" value="106" enum="BlendShapeEntry">
+			Constricts both pupils.
+		</constant>
+		<constant name="FT_BROW_DOWN_RIGHT" value="107" enum="BlendShapeEntry">
+			Pulls the right eyebrow down and in.
+		</constant>
+		<constant name="FT_BROW_DOWN_LEFT" value="108" enum="BlendShapeEntry">
+			Pulls the left eyebrow down and in.
+		</constant>
+		<constant name="FT_BROW_DOWN" value="109" enum="BlendShapeEntry">
+			Pulls both eyebrows down and in.
+		</constant>
+		<constant name="FT_BROW_UP_RIGHT" value="110" enum="BlendShapeEntry">
+			Right brow appears worried.
+		</constant>
+		<constant name="FT_BROW_UP_LEFT" value="111" enum="BlendShapeEntry">
+			Left brow appears worried.
+		</constant>
+		<constant name="FT_BROW_UP" value="112" enum="BlendShapeEntry">
+			Both brows appear worried.
+		</constant>
+		<constant name="FT_NOSE_SNEER" value="113" enum="BlendShapeEntry">
+			Entire face sneers.
+		</constant>
+		<constant name="FT_NASAL_DILATION" value="114" enum="BlendShapeEntry">
+			Both nose canals dilate.
+		</constant>
+		<constant name="FT_NASAL_CONSTRICT" value="115" enum="BlendShapeEntry">
+			Both nose canals constrict.
+		</constant>
+		<constant name="FT_CHEEK_PUFF" value="116" enum="BlendShapeEntry">
+			Puffs both cheeks.
+		</constant>
+		<constant name="FT_CHEEK_SUCK" value="117" enum="BlendShapeEntry">
+			Sucks in both cheeks.
+		</constant>
+		<constant name="FT_CHEEK_SQUINT" value="118" enum="BlendShapeEntry">
+			Raises both cheeks.
+		</constant>
+		<constant name="FT_LIP_SUCK_UPPER" value="119" enum="BlendShapeEntry">
+			Tucks in the upper lips.
+		</constant>
+		<constant name="FT_LIP_SUCK_LOWER" value="120" enum="BlendShapeEntry">
+			Tucks in the lower lips.
+		</constant>
+		<constant name="FT_LIP_SUCK" value="121" enum="BlendShapeEntry">
+			Tucks in both lips.
+		</constant>
+		<constant name="FT_LIP_FUNNEL_UPPER" value="122" enum="BlendShapeEntry">
+			Funnels in the upper lips.
+		</constant>
+		<constant name="FT_LIP_FUNNEL_LOWER" value="123" enum="BlendShapeEntry">
+			Funnels in the lower lips.
+		</constant>
+		<constant name="FT_LIP_FUNNEL" value="124" enum="BlendShapeEntry">
+			Funnels in both lips.
+		</constant>
+		<constant name="FT_LIP_PUCKER_UPPER" value="125" enum="BlendShapeEntry">
+			Upper lip part pushes outwards.
+		</constant>
+		<constant name="FT_LIP_PUCKER_LOWER" value="126" enum="BlendShapeEntry">
+			Lower lip part pushes outwards.
+		</constant>
+		<constant name="FT_LIP_PUCKER" value="127" enum="BlendShapeEntry">
+			Lips push outwards.
+		</constant>
+		<constant name="FT_MOUTH_UPPER_UP" value="128" enum="BlendShapeEntry">
+			Raises the upper lips.
+		</constant>
+		<constant name="FT_MOUTH_LOWER_DOWN" value="129" enum="BlendShapeEntry">
+			Lowers the lower lips.
+		</constant>
+		<constant name="FT_MOUTH_OPEN" value="130" enum="BlendShapeEntry">
+			Mouth opens, revealing teeth.
+		</constant>
+		<constant name="FT_MOUTH_RIGHT" value="131" enum="BlendShapeEntry">
+			Moves mouth right.
+		</constant>
+		<constant name="FT_MOUTH_LEFT" value="132" enum="BlendShapeEntry">
+			Moves mouth left.
+		</constant>
+		<constant name="FT_MOUTH_SMILE_RIGHT" value="133" enum="BlendShapeEntry">
+			Right side of the mouth smiles.
+		</constant>
+		<constant name="FT_MOUTH_SMILE_LEFT" value="134" enum="BlendShapeEntry">
+			Left side of the mouth smiles.
+		</constant>
+		<constant name="FT_MOUTH_SMILE" value="135" enum="BlendShapeEntry">
+			Mouth expresses a smile.
+		</constant>
+		<constant name="FT_MOUTH_SAD_RIGHT" value="136" enum="BlendShapeEntry">
+			Right side of the mouth expresses sadness.
+		</constant>
+		<constant name="FT_MOUTH_SAD_LEFT" value="137" enum="BlendShapeEntry">
+			Left side of the mouth expresses sadness.
+		</constant>
+		<constant name="FT_MOUTH_SAD" value="138" enum="BlendShapeEntry">
+			Mouth expresses sadness.
+		</constant>
+		<constant name="FT_MOUTH_STRETCH" value="139" enum="BlendShapeEntry">
+			Mouth stretches.
+		</constant>
+		<constant name="FT_MOUTH_DIMPLE" value="140" enum="BlendShapeEntry">
+			Lip corners dimple.
+		</constant>
+		<constant name="FT_MOUTH_TIGHTENER" value="141" enum="BlendShapeEntry">
+			Mouth tightens.
+		</constant>
+		<constant name="FT_MOUTH_PRESS" value="142" enum="BlendShapeEntry">
+			Mouth presses together.
+		</constant>
+		<constant name="FT_MAX" value="143" enum="BlendShapeEntry">
+			Represents the size of the [enum BlendShapeEntry] enum.
+		</constant>
+	</constants>
+</class>

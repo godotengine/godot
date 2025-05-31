@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2021 Arm Limited
+// Copyright 2011-2023 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -40,15 +40,7 @@ static ASTCENC_SIMD_INLINE vint4 uncontract_color(
 	return select(input, bc0, mask);
 }
 
-/**
- * @brief Unpack an LDR RGBA color that uses delta encoding.
- *
- * @param      input0    The packed endpoint 0 color.
- * @param      input1    The packed endpoint 1 color deltas.
- * @param[out] output0   The unpacked endpoint 0 color.
- * @param[out] output1   The unpacked endpoint 1 color.
- */
-static void rgba_delta_unpack(
+void rgba_delta_unpack(
 	vint4 input0,
 	vint4 input1,
 	vint4& output0,
@@ -92,15 +84,7 @@ static void rgb_delta_unpack(
 	output1.set_lane<3>(255);
 }
 
-/**
- * @brief Unpack an LDR RGBA color that uses direct encoding.
- *
- * @param      input0    The packed endpoint 0 color.
- * @param      input1    The packed endpoint 1 color.
- * @param[out] output0   The unpacked endpoint 0 color.
- * @param[out] output1   The unpacked endpoint 1 color.
- */
-static void rgba_unpack(
+void rgba_unpack(
 	vint4 input0,
 	vint4 input1,
 	vint4& output0,
@@ -910,32 +894,48 @@ void unpack_color_endpoints(
 		}
 	}
 
-	vint4 ldr_scale(257);
-	vint4 hdr_scale(1);
-	vint4 output_scale = ldr_scale;
+	// Handle endpoint errors and expansion
 
-	// An LDR profile image
-	if ((decode_mode == ASTCENC_PRF_LDR) ||
-	    (decode_mode == ASTCENC_PRF_LDR_SRGB))
+	// Linear LDR 8-bit endpoints are expanded to 16-bit by replication
+	if (decode_mode == ASTCENC_PRF_LDR)
 	{
-		// Also matches HDR alpha, as cannot have HDR alpha without HDR RGB
-		if (rgb_hdr == true)
+		// Error color - HDR endpoint in an LDR encoding
+		if (rgb_hdr || alpha_hdr)
 		{
-			output0 = vint4(0xFF00, 0x0000, 0xFF00, 0xFF00);
-			output1 = vint4(0xFF00, 0x0000, 0xFF00, 0xFF00);
-			output_scale = hdr_scale;
-
+			output0 = vint4(0xFF, 0x00, 0xFF, 0xFF);
+			output1 = vint4(0xFF, 0x00, 0xFF, 0xFF);
 			rgb_hdr = false;
 			alpha_hdr = false;
 		}
+
+		output0 = output0 * 257;
+		output1 = output1 * 257;
 	}
-	// An HDR profile image
+	// sRGB LDR 8-bit endpoints are expanded to 16 bit by:
+	//  - RGB = shift left by 8 bits and OR with 0x80
+	//  - A = replication
+	else if (decode_mode == ASTCENC_PRF_LDR_SRGB)
+	{
+		// Error color - HDR endpoint in an LDR encoding
+		if (rgb_hdr || alpha_hdr)
+		{
+			output0 = vint4(0xFF, 0x00, 0xFF, 0xFF);
+			output1 = vint4(0xFF, 0x00, 0xFF, 0xFF);
+			rgb_hdr = false;
+			alpha_hdr = false;
+		}
+
+		output0 = lsl<8>(output0) | vint4(0x80);
+		output1 = lsl<8>(output1) | vint4(0x80);
+	}
+	// An HDR profile decode, but may be using linear LDR endpoints
+	// Linear LDR 8-bit endpoints are expanded to 16-bit by replication
+	// HDR endpoints are already 16-bit
 	else
 	{
 		vmask4 hdr_lanes(rgb_hdr, rgb_hdr, rgb_hdr, alpha_hdr);
-		output_scale = select(ldr_scale, hdr_scale, hdr_lanes);
+		vint4 output_scale = select(vint4(257), vint4(1), hdr_lanes);
+		output0 = output0 * output_scale;
+		output1 = output1 * output_scale;
 	}
-
-	output0 = output0 * output_scale;
-	output1 = output1 * output_scale;
 }

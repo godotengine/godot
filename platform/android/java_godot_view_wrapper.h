@@ -28,17 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JAVA_GODOT_VIEW_WRAPPER_H
-#define JAVA_GODOT_VIEW_WRAPPER_H
+#pragma once
 
-#include "string_android.h"
+#include "jni_utils.h"
 
 #include "core/math/vector2.h"
 
 #include <android/log.h>
 #include <jni.h>
 
-// Class that makes functions in java/src/org/godotengine/godot/GodotView.java callable from C++
+// Class that makes functions in java/src/org/godotengine/godot/GodotRenderView.java callable from C++
 class GodotJavaViewWrapper {
 private:
 	jclass _cls;
@@ -66,5 +65,3 @@ public:
 
 	~GodotJavaViewWrapper();
 };
-
-#endif // JAVA_GODOT_VIEW_WRAPPER_H

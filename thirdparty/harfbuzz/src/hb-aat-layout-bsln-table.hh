@@ -123,6 +123,7 @@ struct bsln
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this) && defaultBaseline < 32)))
       return_trace (false);
+    hb_barrier ();
 
     switch (format)
     {

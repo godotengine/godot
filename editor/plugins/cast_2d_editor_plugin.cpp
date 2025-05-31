@@ -33,8 +33,9 @@
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/2d/ray_cast_2d.h"
-#include "scene/2d/shape_cast_2d.h"
+#include "scene/2d/physics/ray_cast_2d.h"
+#include "scene/2d/physics/shape_cast_2d.h"
+#include "scene/main/viewport.h"
 
 void Cast2DEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -59,16 +60,24 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
-	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
+		return false;
+	}
+
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		Vector2 target_position = node->get("target_position");
 
+		Vector2 gpoint = mb->get_position();
+
 		if (mb->is_pressed()) {
-			if (xform.xform(target_position).distance_to(mb->get_position()) < 8) {
+			if (xform.xform(target_position).distance_to(gpoint) < 8) {
 				pressed = true;
 				original_target_position = target_position;
+				original_mouse_pos = gpoint;
 
 				return true;
 			} else {
@@ -77,16 +86,17 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 				return false;
 			}
 		} else if (pressed) {
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Set Target Position"));
-			undo_redo->add_do_property(node, "target_position", target_position);
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_property(node, "target_position", original_target_position);
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-			undo_redo->commit_action();
+			if (original_mouse_pos != gpoint) {
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Set Target Position"));
+				undo_redo->add_do_property(node, "target_position", target_position);
+				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+				undo_redo->add_undo_property(node, "target_position", original_target_position);
+				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+				undo_redo->commit_action();
+			}
 
 			pressed = false;
-
 			return true;
 		}
 	}
@@ -94,11 +104,10 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && pressed) {
 		Vector2 point = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
-		point = node->get_global_transform().affine_inverse().xform(point);
+		point = node->get_screen_transform().affine_inverse().xform(point);
 
 		node->set("target_position", point);
 		canvas_item_editor->update_viewport();
-		node->notify_property_list_changed();
 
 		return true;
 	}
@@ -111,7 +120,12 @@ void Cast2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		return;
 	}
 
-	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
+		return;
+	}
+
+	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 
 	const Ref<Texture2D> handle = get_editor_theme_icon(SNAME("EditorHandle"));
 	p_overlay->draw_texture(handle, gt.xform((Vector2)node->get("target_position")) - handle->get_size() / 2);

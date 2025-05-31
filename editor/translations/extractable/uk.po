@@ -1,0 +1,239 @@
+# Ukrainian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Ukrainian (Godot Engine)\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-11 04:06+0000\n"
+"Last-Translator: Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/uk/>\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "All Recognized"
+msgstr "Усе розпізнано"
+
+msgid "Pick a color from the application window."
+msgstr "Вибрати колір з вікна програми."
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"Колір: #%s\n"
+"Ліва кнопка: застосувати колір\n"
+"Права кнопка: вилучити взірець"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"Колір: #%s\n"
+"Ліва кнопка: Застосувати колір"
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr ""
+"Введите шестнадцатеричный код (\"#ff0000\") или названный цвет (\"красный\")."
+
+msgid "Select a picker shape."
+msgstr "Виберіть фігуру вибору."
+
+msgid "Select a picker mode."
+msgstr "Виберіть режим вибору."
+
+msgid "Hex code or named color"
+msgstr "Шестнадцатеричный код или названный цвет"
+
+msgid "Add current color as a preset."
+msgstr "Додати поточний колір як шаблон."
+
+msgid "Network"
+msgstr "Мережа"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Файл \"%s\" вже існує.\n"
+"Хочете його перезаписати?"
+
+msgid "Open"
+msgstr "Відкрити"
+
+msgid "Select Current Folder"
+msgstr "Вибрати поточну теку"
+
+msgid "Save"
+msgstr "Зберегти"
+
+msgid "Select This Folder"
+msgstr "Вибрати цю теку"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "У вас немає дозволу на доступ до вмісту цієї папки."
+
+msgid "All Files"
+msgstr "Усі файли"
+
+msgid "Open a File"
+msgstr "Відкрити файл"
+
+msgid "Open File(s)"
+msgstr "Відкрити файл(и)"
+
+msgid "Open a Directory"
+msgstr "Відкрити каталог"
+
+msgid "Open a File or Directory"
+msgstr "Відкрити файл або каталог"
+
+msgid "Save a File"
+msgstr "Зберегти файл"
+
+msgid "Go to previous folder."
+msgstr "Перейти до попередньої теки."
+
+msgid "Go to next folder."
+msgstr "Перейти до наступної теки."
+
+msgid "Go to parent folder."
+msgstr "Перейти до батьківської теки."
+
+msgid "Path:"
+msgstr "Шлях:"
+
+msgid "Refresh files."
+msgstr "Освіжити файли."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Увімкнути або вимкнути видимість прихованих файлів."
+
+msgid "Directories & Files:"
+msgstr "Каталоги та файли:"
+
+msgid "File:"
+msgstr "Файл:"
+
+msgid "Create Folder"
+msgstr "Створити теку"
+
+msgid "Name:"
+msgstr "Ім'я:"
+
+msgid "Could not create folder."
+msgstr "Не вдалося створити теку."
+
+msgid "Invalid extension, or empty filename."
+msgstr "Некоректний суфікс, або порожня назва файлу."
+
+msgid "Zoom Out"
+msgstr "Зменшення"
+
+msgid "Zoom Reset"
+msgstr "Відновити початковий масштаб"
+
+msgid "Zoom In"
+msgstr "Збільшувати"
+
+msgid "Change the snapping distance."
+msgstr "Изменение расстояния привязки."
+
+msgid "Same as Layout Direction"
+msgstr "Те саме, що напрямок макета"
+
+msgid "Auto-Detect Direction"
+msgstr "Автоматичне визначення напрямку"
+
+msgid "Left-to-Right"
+msgstr "Зліва направо"
+
+msgid "Right-to-Left"
+msgstr "Справа наліво"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "Позначка зліва направо (LRM)"
+
+msgid "Right-to-Left Mark (RLM)"
+msgstr "Позначка справа наліво (ПЛП)"
+
+msgid "Start of Left-to-Right Embedding (LRE)"
+msgstr "Початок вбудовування зліва направо (ЛПВ)"
+
+msgid "Start of Right-to-Left Embedding (RLE)"
+msgstr "Початок вбудовування справа наліво (ПЛВ)"
+
+msgid "Start of Left-to-Right Override (LRO)"
+msgstr "Початок перевизначення зліва направо (ЛПЗ)"
+
+msgid "Start of Right-to-Left Override (RLO)"
+msgstr "Початок перевизначення справа наліво (ПЛЗ)"
+
+msgid "Arabic Letter Mark (ALM)"
+msgstr "Знак арабської літери (ЗАЛ)"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "Ізоляція зліва направо (ЛПІ)"
+
+msgid "Right-to-Left Isolate (RLI)"
+msgstr "Ізоляція справа наліво (ПЛІ)"
+
+msgid "First Strong Isolate (FSI)"
+msgstr "Первый сильный изолят (FSI)"
+
+msgid "Pop Direction Isolate (PDI)"
+msgstr "Поп-направление Изолировать (PDI)"
+
+msgid "Zero-Width Joiner (ZWJ)"
+msgstr "З'єднувач нульової ширини (ZWJ)"
+
+msgid "Zero-Width Non-Joiner (ZWNJ)"
+msgstr "Нез’єднувач нульової ширини (ZWNJ)"
+
+msgid "Word Joiner (WJ)"
+msgstr "З'єднувач слів (WJ)"
+
+msgid "Soft Hyphen (SHY)"
+msgstr "М'який дефіс (SHY)"
+
+msgid "Cut"
+msgstr "Вирізати"
+
+msgid "Copy"
+msgstr "Копіювати"
+
+msgid "Paste"
+msgstr "Вставити"
+
+msgid "Select All"
+msgstr "Виділити все"
+
+msgid "Clear"
+msgstr "Очистити"
+
+msgid "Undo"
+msgstr "Скасувати"
+
+msgid "Redo"
+msgstr "Повернути"
+
+msgid "Text Writing Direction"
+msgstr "Напрямок написання тексту"
+
+msgid "Display Control Characters"
+msgstr "Відображення контрольних символів"
+
+msgid "Insert Control Character"
+msgstr "Вставлення контрольного символу"
+
+msgid "(Other)"
+msgstr "(Інші)"

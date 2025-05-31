@@ -1,0 +1,6295 @@
+# Bengali translation of the Godot Engine editor interface.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# Abu Md. Maruf Sarker <maruf.webdev@gmail.com>, 2016-2017.
+# Abdullah Zubair <abdullahzubair109@gmail.com>, 2017.
+# Tahmid Karim <tahmidk15@gmail.com>, 2016.
+# Tawhid H. <Tawhidk757@yahoo.com>, 2019.
+# Hasibul Hasan <hasibeng78@gmail.com>, 2019.
+# Oymate <dhruboadittya96@gmail.com>, 2020, 2021.
+# Mokarrom Hossain <mhb2016.bzs@gmail.com>, 2020, 2021.
+# Sagen Soren <sagensoren03@gmail.com>, 2020.
+# Hasibul Hasan <d1hasib@yahoo.com>, 2020.
+# saitama <atik.wowspace@gmail.com>, 2022.
+# Joysankar Majumdar <joymajumdar15828@gmail.com>, 2022.
+# Safuan <safuanhossain12616@gmail.com>, 2023.
+# Zayeed Bin Syed <zayeed.dev@gmail.com>, 2023.
+# Rakib Ryan <rakib.remon12@gmail.com>, 2024.
+# shahriarlabib000 <shahriarlabib000@gmail.com>, 2024, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine editor interface\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2025-02-02 17:03+0000\n"
+"Last-Translator: shahriarlabib000 <shahriarlabib000@gmail.com>\n"
+"Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
+"godot/bn/>\n"
+"Language: bn\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Weblate 5.10-dev\n"
+
+msgid "Main Thread"
+msgstr "প্রধান থ্রেড"
+
+msgid "Unset"
+msgstr "সেট বাতিল"
+
+msgid "Physical"
+msgstr "শারীরিক"
+
+msgid "Left Mouse Button"
+msgstr "বাম মাউস বোতাম"
+
+msgid "Right Mouse Button"
+msgstr "ডান মাউস বোতাম"
+
+msgid "Middle Mouse Button"
+msgstr "মধ্য মাউস বোতাম"
+
+msgid "Mouse Wheel Up"
+msgstr "মাউসের চাকা উপরের দিকে চক্কর"
+
+msgid "Mouse Wheel Down"
+msgstr "মাউসের চাকা নিচের দিকে চক্কর"
+
+msgid "Mouse Wheel Left"
+msgstr "চাকা উপরে তোলার বোতাম"
+
+msgid "Mouse Wheel Right"
+msgstr "ডান বোতাম"
+
+msgid "Mouse Thumb Button 1"
+msgstr "মাউসের বৃদ্ধাঙ্গুল বোতাম ১"
+
+msgid "Mouse Thumb Button 2"
+msgstr "মাউসের বৃদ্ধাঙ্গুল বোতাম ২"
+
+msgid "Button"
+msgstr "বাটন"
+
+msgid "Double Click"
+msgstr "ডাবল ক্লিক"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "(%s) স্থানে (%s) বেগে মাউসের গতিবিধি"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "বাম স্টিক X-অক্ষ, জয়স্টিক ০ X-অক্ষ"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "বাম স্টিক Y-অক্ষ, জয়স্টিক ০ Y-অক্ষ"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "ডান স্টিক X-অক্ষ, জয়স্টিক ০ X-অক্ষ"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "ডান স্টিক Y-অক্ষ, জয়স্টিক ০ Y-অক্ষ"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "জয়স্টিক ২ X-অক্ষ, বাম ট্রিগার, সোনি L2, এক্সবক্স LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "জয়স্টিক ২ Y-অক্ষ, বাম ট্রিগার, সোনি R2, এক্সবক্স RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "জয়স্টিক ৩ X-অক্ষ"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "জয়স্টিক ৩ Y-অক্ষ"
+
+msgid "Joystick 4 X-Axis"
+msgstr "জয়স্টিক ৪ X-অক্ষ"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "জয়স্টিক ৪ Y-অক্ষ"
+
+msgid "Unknown Joypad Axis"
+msgstr "অজানা জয়প্যাড অক্ষ"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "%d (%s) অক্ষে জয়প্যাড গতিবিধি যার পরিমাণ %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "নিচের একশন,সোনি ক্রস,এক্সবক্স A, নিন্টেন্ডো B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "ডান একশন, সোনি বৃত্ত, এক্সবক্স B, নিন্টেন্ডো A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "বাম একশন, সোনি বর্গ, এক্সবক্স X, নিন্টেন্ডো Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "উপরের একশন, সোনি ত্রিভুজ, এক্সবক্স Y, নিন্টেন্ডো X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "ফেরত, সোনি Select, এক্সবক্স Back, নিন্টেন্ডো -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "গাইড, সোনি PS, এক্সবক্স হোম"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "শুরু, এক্সবক্স Menu, নিন্টেন্ডো +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "বাম স্টিক, সোনি L3, এক্সবক্স L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "ডান স্টিক, সোনি R3, এক্সবক্স R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "বাম শোল্ডার, সোনি L1, এক্সবক্স LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "ডান শোল্ডার, সোনি R1, এক্সবক্স RB"
+
+msgid "D-pad Up"
+msgstr "ডি-প্যাড উপর"
+
+msgid "D-pad Down"
+msgstr "ডি-প্যাড নিচ"
+
+msgid "D-pad Left"
+msgstr "ডি-প্যাড বাম"
+
+msgid "D-pad Right"
+msgstr "ডি-প্যাড ডান"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "এক্সবক্স share, পিএস৫ মাইক্রোফোন, নিন্টেন্ডো Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "এক্সবক্স প্যাডেল ১"
+
+msgid "Xbox Paddle 2"
+msgstr "এক্সবক্স প্যাডেল ২"
+
+msgid "Xbox Paddle 3"
+msgstr "এক্সবক্স প্যাডেল ৩"
+
+msgid "Xbox Paddle 4"
+msgstr "এক্সবক্স প্যাডেল ৪"
+
+msgid "PS4/5 Touchpad"
+msgstr "পিএস৪/৫ টাচপ্যাড"
+
+msgid "Joypad Button %d"
+msgstr "জয়স্টিক বোতাম %d"
+
+msgid "Pressure:"
+msgstr "চাপ:"
+
+msgid "canceled"
+msgstr "বাতিল করা হয়েছে"
+
+msgid "touched"
+msgstr "টাচ করা হয়েছে"
+
+msgid "released"
+msgstr "ছাড়া হয়েছে"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "স্ক্রীন %s যা (%s) স্থানে যার টাচ পয়েন্ট %s"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "স্ক্রেনকে %s টি টাচ পয়েন্টে (%s) স্থানে টানা হয়েছে যার বেগ (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "(%s) এ ম্যাগনিফাই গেশ্চার করা হয়েছে যার ফ্যাক্টর %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "প্যান গেশ্চর (%s) স্থানে যাতে delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "চ্যানেলে MIDI ইনপুট=%s বার্তা=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "শর্টকাট এর সাথে Input Event=%s"
+
+msgid "Accept"
+msgstr "মেনে নিন"
+
+msgid "Select"
+msgstr "নির্বাচন করুন"
+
+msgid "Cancel"
+msgstr "বাতিল"
+
+msgid "Focus Next"
+msgstr "পরবর্তী ফোকাস করুন"
+
+msgid "Focus Prev"
+msgstr "পূর্বে ফোকাস করুন"
+
+msgid "Left"
+msgstr "বাম"
+
+msgid "Right"
+msgstr "ডান"
+
+msgid "Up"
+msgstr "উপর"
+
+msgid "Down"
+msgstr "নিচ"
+
+msgid "Page Up"
+msgstr "পাতা উপর"
+
+msgid "Page Down"
+msgstr "পাতা নিচ"
+
+msgid "Home"
+msgstr "হোম"
+
+msgid "End"
+msgstr "সমাপ্তি"
+
+msgid "Cut"
+msgstr "কাট করুন"
+
+msgid "Copy"
+msgstr "কপি করুন"
+
+msgid "Paste"
+msgstr "পেষ্ট করুন"
+
+msgid "Undo"
+msgstr "আনডু করুন"
+
+msgid "Redo"
+msgstr "পুনরায় করুন"
+
+msgid "Completion Query"
+msgstr "Query সম্পন্ন"
+
+msgid "New Line"
+msgstr "নতুন লাইন"
+
+msgid "New Blank Line"
+msgstr "নতুন ফাঁকা লাইন"
+
+msgid "New Line Above"
+msgstr "উপরে নতুন লাইন"
+
+msgid "Indent"
+msgstr "Indent দিন"
+
+msgid "Dedent"
+msgstr "Dedent দিন"
+
+msgid "Backspace"
+msgstr "ব্যাকস্পেস"
+
+msgid "Backspace Word"
+msgstr "ব্যাকস্পেস শব্দ"
+
+msgid "Backspace all to Left"
+msgstr "ব্যাকস্পেস সম্পূর্ণ বামে"
+
+msgid "Delete"
+msgstr "অপসারণ করুন"
+
+msgid "Delete Word"
+msgstr "শব্দ অপসারণ করুন"
+
+msgid "Delete all to Right"
+msgstr "ডানের সবকিছু অপসারণ করুন"
+
+msgid "Caret Left"
+msgstr "বামে Caret"
+
+msgid "Caret Word Left"
+msgstr "শব্দ বাম caret"
+
+msgid "Caret Right"
+msgstr "ডানে caret"
+
+msgid "Caret Word Right"
+msgstr "শব্দ ডানে caret"
+
+msgid "Caret Up"
+msgstr "উপরে caret"
+
+msgid "Caret Down"
+msgstr "নিচে caret"
+
+msgid "Caret Line Start"
+msgstr "লাইনের শুরুতে caret"
+
+msgid "Caret Line End"
+msgstr "লাইনের শেষে caret"
+
+msgid "Caret Page Up"
+msgstr "পাতা উপরে caret"
+
+msgid "Caret Page Down"
+msgstr "পাতা নিচে caret"
+
+msgid "Caret Document Start"
+msgstr "ডকুমেন্ট শুরুতে caret"
+
+msgid "Caret Document End"
+msgstr "ডকুমেন্ট শেষে caret"
+
+msgid "Caret Add Below"
+msgstr "নিচে যুক্ত করুন caret"
+
+msgid "Caret Add Above"
+msgstr "উপরে যুক্ত করুন caret"
+
+msgid "Scroll Up"
+msgstr "উপরে স্ক্রোল করুন"
+
+msgid "Scroll Down"
+msgstr "নিচে স্ক্রোল করুন"
+
+msgid "Select All"
+msgstr "সবগুলি বাছাই করুন"
+
+msgid "Select Word Under Caret"
+msgstr "Caret এর নিচে শব্দ বাছাই"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "পরবর্তী ঘটন এর জন্য বাছাই যুক্ত করুন"
+
+msgid "Skip Selection for Next Occurrence"
+msgstr "পরবর্তী ঘটন এর জন্য বাছাই এড়িয়ে যান"
+
+msgid "Clear Carets and Selection"
+msgstr "Carets এবং বাছাই বাতিল করুন"
+
+msgid "Toggle Insert Mode"
+msgstr "Insert mode টগল"
+
+msgid "Submit Text"
+msgstr "টেক্সট সাবমিট করুন"
+
+msgid "Duplicate Nodes"
+msgstr "ডুপ্লিকেট নোডসমূহ"
+
+msgid "Delete Nodes"
+msgstr "নোডসমূহ অপসারণ"
+
+msgid "Go Up One Level"
+msgstr "এক লেভেল উপরে যান"
+
+msgid "Refresh"
+msgstr "রিফ্রেস করুন"
+
+msgid "Show Hidden"
+msgstr "লুকানো দেখুন"
+
+msgid "Swap Input Direction"
+msgstr "ইনপুটের দিক বদলান"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "অবৈধ ইনপুট %d(পাস করেনি) expression এ"
+
+msgid "self can't be used because instance is null (not passed)"
+msgstr "self ব্যবহার করা যাবে না কারণ instance যুক্তিযুক্ত নয় (not passed)"
+
+msgid "Invalid operands to operator %s, %s and %s."
+msgstr "%s ,%s এবং %s এ অগ্রহণযোগ্য operands থেকে operator।"
+
+msgid "Invalid index of type %s for base type %s"
+msgstr "টাইপ %s এর অবৈধ সূচক বেস টাইপ %s এর জন্য"
+
+msgid "Invalid named index '%s' for base type %s"
+msgstr "অবৈধ নামকরণ সূচক I '%s' for ভিত্তি type %s"
+
+msgid "Invalid arguments to construct '%s'"
+msgstr "'%s' নির্মাণে একাধিক অবৈধ আর্গুমেন্ট"
+
+msgid "On call to '%s':"
+msgstr "কল করুন '%s':"
+
+msgid "Built-in script"
+msgstr "পূর্বনির্মিত স্ক্রিপ্ট"
+
+msgid "Built-in"
+msgstr "পূর্বনির্মিত স্ক্রিপ্ট"
+
+msgid "B"
+msgstr "B"
+
+msgid "KiB"
+msgstr "কিবি"
+
+msgid "MiB"
+msgstr "এম বি"
+
+msgid "GiB"
+msgstr "জিবি"
+
+msgid "TiB"
+msgstr "টিবি"
+
+msgid "PiB"
+msgstr "পেটা বাইট"
+
+msgid "EiB"
+msgstr "এক্সি বাইট"
+
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"অগ্রহণযোগ্য action এর নাম। এটি ফাঁকা অথবা '/', ':', '=', '\\', '\"' যুক্ত হতে "
+"পারেনা"
+
+msgid "An action with the name '%s' already exists."
+msgstr "'%s' অ্যাকশন ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "প্রত্যাবর্তন করতে পারে না - action শুরুর মতো একই"
+
+msgid "Revert Action"
+msgstr "Action প্রত্যাবর্তন"
+
+msgid "Add Event"
+msgstr "Event যুক্ত করুন"
+
+msgid "Remove Action"
+msgstr "Action অপসারণ করুন"
+
+msgid "Cannot Remove Action"
+msgstr "Action অপসারণ সম্ভব নয়"
+
+msgid "Edit Event"
+msgstr "Event ইডিট করুন"
+
+msgid "Remove Event"
+msgstr "Event অপসারণ করুন"
+
+msgid "Filter by Name"
+msgstr "নাম দিয়ে ফিল্টার করুন"
+
+msgid "Clear All"
+msgstr "সবকিছু মুছে ফেলুন"
+
+msgid "Clear all search filters."
+msgstr "সকল সার্চ ফিল্টার মুছে ফেলুন।"
+
+msgid "Add New Action"
+msgstr "নতুন Action যোগ করুন"
+
+msgid "Add"
+msgstr "সংযোজন করুন"
+
+msgid "Show Built-in Actions"
+msgstr "পূর্বনির্মিত Actions দেখুন"
+
+msgid "Action"
+msgstr "Action"
+
+msgid "Deadzone"
+msgstr "মৃতস্থান"
+
+msgid "Name:"
+msgstr "নাম:"
+
+msgid "Type:"
+msgstr "ধরণ:"
+
+msgid "Metadata name is valid."
+msgstr "মেটাডেটা নাম বৈধ।"
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "\"%s\" এর জন্য মেটাডেটা প্রপার্টি যোগ করুন"
+
+msgid "Metadata name must be a valid identifier."
+msgstr "মেটাডেটা নাম অবশ্যই একটি বৈধ শনাক্তকারী হতে হবে।"
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "\"%s\" নামের মেটাডেটা ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Time:"
+msgstr "সময়:"
+
+msgid "Value:"
+msgstr "মান:"
+
+msgid "Update Selected Key Handles"
+msgstr "নির্বাচিত Key সমূহ হালনাগাদ করুন"
+
+msgid "Insert Key Here"
+msgstr "এখানে Key ইন্সার্ট করুন"
+
+msgid "Duplicate Selected Key(s)"
+msgstr "নির্বাচিত key সমূহ অনুলিপি করুন"
+
+msgid "Cut Selected Key(s)"
+msgstr "নির্বাচিত key সমূহ cut করুন"
+
+msgid "Copy Selected Key(s)"
+msgstr "নির্বাচিত key সমূহ copy করুন"
+
+msgid "Paste Key(s)"
+msgstr "key সমূহ পেষ্ট করুন"
+
+msgid "Delete Selected Key(s)"
+msgstr "নির্বাচিত key সমূহ অপসারণ করুন"
+
+msgid "Make Handles Free"
+msgstr "হ্যান্ডেলসমূহ মুক্ত করুন"
+
+msgid "Make Handles Linear"
+msgstr "হ্যান্ডলসমূহ সরলরৈখিক করুন"
+
+msgid "Make Handles Balanced"
+msgstr "হ্যান্ডেলসমূহ Balanced করুন"
+
+msgid "Make Handles Mirrored"
+msgstr "হ্যান্ডলসমূহ mirror করুন"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "হ্যান্ডেলসমূহ Balanced করুন (Auto Tangent)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "হ্যান্ডলসমূহ mirror করুন (Auto Tangent)"
+
+msgid "Add Bezier Point"
+msgstr "বেজিয়ার যুক্ত করুন"
+
+msgid "Move Bezier Points"
+msgstr "বেজিয়ার বিন্দু move করুন"
+
+msgid "Animation Duplicate Keys"
+msgstr "অ্যানিমেশন keys ডুপ্লিকেট করুন"
+
+msgid "Animation Cut Keys"
+msgstr "অ্যানিমেশনের keys cut করুন"
+
+msgid "Animation Paste Keys"
+msgstr "অ্যানিমেশনের keys paste করুন"
+
+msgid "Animation Delete Keys"
+msgstr "অ্যানিমেশনের keys অপসারণ করুন"
+
+msgid "Focus"
+msgstr "ফোকাস করুন"
+
+msgid "Select All Keys"
+msgstr "সবগুলি keys বাছাই করুন"
+
+msgid "Deselect All Keys"
+msgstr "সবগুলি keys বাছাই বাতিল করুন"
+
+msgid "Animation Change Transition"
+msgstr "অ্যানিমেশন বদল ট্রানজিশন"
+
+msgid "Animation Change Position3D"
+msgstr "অ্যানিমেশন 3D অবস্থান ক পরিবর্তন"
+
+msgid "Animation Change Rotation3D"
+msgstr "অ্যানিমেশন ঘূর্ণন পরিবর্তন"
+
+msgid "Animation Change Scale3D"
+msgstr "অ্যানিমেশন স্কেল পরিবর্তন"
+
+msgid "Animation Change Keyframe Value"
+msgstr "অ্যানিমেশন Keyframe ভ্যালু পরিবর্তন করুন"
+
+msgid "Animation Change Call"
+msgstr "অ্যানিমেশন কল পরিবর্তন করুন"
+
+msgid "Animation Multi Change Transition"
+msgstr "অ্যানিমেশন Muti change ট্র্যানজিশন"
+
+msgid "Animation Multi Change Position3D"
+msgstr "অ্যানিমেশন multi Change অবস্থান"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "একাধিক অ্যানিমেশন (Anim) Rotation3D পরিবর্তন করুন"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "একাধিক অ্যানিমেশন Scale3D পরিবর্তন করুন"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "একাধিক অ্যানিমেশন Keyframe ভ্যালু পরিবর্তন করুন"
+
+msgid "Animation Multi Change Call"
+msgstr "একাধিক অ্যানিমেশন কল পরিবর্তন করুন"
+
+msgid "Change Animation Length"
+msgstr "অ্যানিমেশনের ব্যাপ্তিকাল পরিবর্তন করুন"
+
+msgid "Change Animation Loop"
+msgstr "অ্যানিমেশনের লুপ পরিবর্তন করুন"
+
+msgid "Property Track..."
+msgstr "বৈশিষ্ট্য ট্র্যাক…"
+
+msgid "3D Position Track..."
+msgstr "3D অবস্থান ট্র্যাক…"
+
+msgid "3D Rotation Track..."
+msgstr "3D ঘূর্ণন ট্র্যাক…"
+
+msgid "3D Scale Track..."
+msgstr "3D Scale ট্র্যাক…"
+
+msgid "Blend Shape Track..."
+msgstr "ব্লেন্ড আকার ট্র্যাক…"
+
+msgid "Call Method Track..."
+msgstr "কল মেথড ট্র্যাক…"
+
+msgid "Bezier Curve Track..."
+msgstr "বেজিয়ার কার্ভ ট্র্যাক…"
+
+msgid "Audio Playback Track..."
+msgstr "অডিও প্লেব্যাক ট্র্যাক…"
+
+msgid "Animation Playback Track..."
+msgstr "অ্যানিমেশন প্লেব্যাক ট্র্যাক…"
+
+msgid "Animation length (frames)"
+msgstr "অ্যানিমেশনের দৈর্ঘ্য (ফ্রেমে)"
+
+msgid "Animation length (seconds)"
+msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (সেকেন্ডে)"
+
+msgid "Add Track"
+msgstr "ট্র্যাক যোগ করুন"
+
+msgid "Animation Looping"
+msgstr "অ্যানিমেশন (Animation) লুপিং"
+
+msgid "Functions:"
+msgstr "ফাংশনগুলি:"
+
+msgid "Audio Clips:"
+msgstr "অডিও ক্লিপস:"
+
+msgid "Animation Clips:"
+msgstr "অ্যানিমেশনসমূহ:"
+
+msgid "Change Track Path"
+msgstr "ট্র্যাক পাথ (পথ) পরিবর্তন করুন"
+
+msgid "Toggle this track on/off."
+msgstr "এই ট্র্যাকটি চালু / বন্ধ টগল করুন।"
+
+msgid "Use Blend"
+msgstr "ব্লেন্ড/মিশ্রণ ব্যাবহার করুন"
+
+msgid "Update Mode (How this property is set)"
+msgstr "আপডেট মোড (কীভাবে এই সম্পত্তি সেট করা আছে)"
+
+msgid "Interpolation Mode"
+msgstr "ইন্টারপোলেশন মোড"
+
+msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
+msgstr "লুপ Wrap মোড (লুপ দিয়ে শুরু দিয়ে ইন্টারপোলেট শেষ)"
+
+msgid "Remove this track."
+msgstr "নির্বাচিত ট্র্যাক/পথ অপসারণ করুন।"
+
+msgid "Time (s):"
+msgstr "সময় (s):"
+
+msgid "Position:"
+msgstr "অবস্থান:"
+
+msgid "Rotation:"
+msgstr "ঘূর্ণন:"
+
+msgid "Scale:"
+msgstr "স্কেল/মাপ:"
+
+msgid "Blend Shape:"
+msgstr "ব্লেন্ড/মিশ্রণ আকার:"
+
+msgid "(Invalid, expected type: %s)"
+msgstr "(অগ্রহণযোগ্য, প্রত্যাশিত type %s)"
+
+msgid "Easing:"
+msgstr "ইজিং:"
+
+msgid "In-Handle:"
+msgstr "ইন-হ্যান্ডেল:"
+
+msgid "Out-Handle:"
+msgstr "আউট-হ্যান্ডেল:"
+
+msgid "Handle mode: Free\n"
+msgstr "হ্যান্ডেল মোড: মুক্ত\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "হ্যান্ডেল মোড: সরলরৈখিক\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "হ্যান্ডেল মোড: Balanced\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "হ্যান্ডেল মোড: mirrored\n"
+
+msgid "Stream:"
+msgstr "স্ট্রিম:"
+
+msgid "Start (s):"
+msgstr "শুরু(s):"
+
+msgid "End (s):"
+msgstr "সমাপ্তি (s):"
+
+msgid "Animation Clip:"
+msgstr "অ্যানিমেশনসমূহ:"
+
+msgid "Toggle Track Enabled"
+msgstr "ট্র্যাক সক্রিয় করুন"
+
+msgid "Don't Use Blend"
+msgstr "ব্লেন্ড না ব্যাবহার করুন"
+
+msgid "Continuous"
+msgstr "অবিচ্ছিন্ন/নিরবচ্ছিন্ন"
+
+msgid "Discrete"
+msgstr "স্বতন্ত্র/পৃথক্"
+
+msgid "Capture"
+msgstr "ক্যাপচার"
+
+msgid "Nearest"
+msgstr "নিকটতম"
+
+msgid "Linear"
+msgstr "রৈখিক/লিনিয়ার"
+
+msgid "Cubic"
+msgstr "ঘন"
+
+msgid "Linear Angle"
+msgstr "সরলরৈখিক কোণ"
+
+msgid "Cubic Angle"
+msgstr "ঘন কোণ"
+
+msgid "Clamp Loop Interp"
+msgstr "ক্ল্যাম্প লুপ Interp"
+
+msgid "Wrap Loop Interp"
+msgstr "Wrap লুপ Interp"
+
+msgid "Insert Key..."
+msgstr "key ইন্সার্ট করুন…"
+
+msgid "Duplicate Key(s)"
+msgstr "কী (সমূহ) প্রতিলিপি করুন"
+
+msgid "Cut Key(s)"
+msgstr "keys কাট করুন"
+
+msgid "Copy Key(s)"
+msgstr "এক বা একাধিক key কপি করুন"
+
+msgid "Add RESET Value(s)"
+msgstr "রিসেট values যুক্ত করুন"
+
+msgid "Delete Key(s)"
+msgstr "কী (সমূহ) অপসারণ করুন"
+
+msgid "Change Animation Update Mode"
+msgstr "অ্যানিমেশন আপডেট মোড পরিবর্তন করুন"
+
+msgid "Change Animation Interpolation Mode"
+msgstr "অ্যানিমেশন ইন্টারপোলেশন মোড পরিবর্তন করুন"
+
+msgid "Change Animation Loop Mode"
+msgstr "অ্যানিমেশনের লুপ মোড পরিবর্তন করুন"
+
+msgid "Change Animation Use Blend"
+msgstr "অ্যানিমেশন চেঞ্জ ব্লেন্ড ব্যাবহার"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"সঙ্কুচিত ট্র্যাকগুলি সম্পাদনা বা অপসারণ করা যাবে না। সম্পাদনা করার জন্য সংক্ষেপণ অক্ষম "
+"করে অ্যানিমেশনটি পুনরায় আমদানি করুন।"
+
+msgid "Remove Anim Track"
+msgstr "অ্যানিমেশন (Anim) ট্র্যাক রিমুভ করুন"
+
+msgid "Create new track for %s and insert key?"
+msgstr "%s এর জন্য নতুন ট্র্যাক/পথ তৈরি করতে এবং চাবি প্রবেশ করাতে চান?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "%d এর জন্য নতুন ট্র্যাক/পথ-সমূহ তৈরি করতে এবং চাবিসমূহ প্রবেশ করাতে চান?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "এই ডায়ালগটি এড়াতে কী আইকনে ক্লিক করার সময় শিফটটি ধরে রাখুন।"
+
+msgid "Create"
+msgstr "তৈরি করুন"
+
+msgid "Animation Insert Key"
+msgstr "অ্যানিমেশনে (Anim) চাবি যোগ করুন"
+
+msgid "node '%s'"
+msgstr "নোড '%s'"
+
+msgid "animation"
+msgstr "অ্যানিমেশন"
+
+msgid "AnimationPlayer can't animate itself, only other players."
+msgstr "অ্যানিমেশনপ্লেয়ার নিজেই অ্যানিমেট করতে পারে না, কেবল অন্য প্লেয়ার।"
+
+msgid "property '%s'"
+msgstr "প্রপার্টি '%s'"
+
+msgid "Change Animation Step"
+msgstr "অ্যানিমেশনের ধাপ পরিবর্তন করুন"
+
+msgid "Rearrange Tracks"
+msgstr "ট্র্যাকগুলি পুনর্বিন্যস্ত করুন"
+
+msgid ""
+"Audio tracks can only point to nodes of type:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
+msgstr ""
+"রূপান্তর ট্র্যাকগুলি কেবল স্থানিক ভিত্তিক নোডগুলিতে প্রযোজ্য। অডিও ট্র্যাকগুলি কেবল "
+"প্রকারের নোডগুলিতে নির্দেশ করতে পারে:\n"
+"-অডিও স্ট্রিমপ্লেয়ার\n"
+"-অডিও স্ট্রিমপ্লেয়ার 2 ডি\n"
+"-অডিওস্ট্রিপপ্লেয়ার 3 ডি"
+
+msgid "Animation tracks can only point to AnimationPlayer nodes."
+msgstr "অ্যানিমেশন ট্র্যাকগুলি কেবল অ্যানিমেশনপ্লেয়ার নোডগুলিতে নির্দেশ করতে পারে।"
+
+msgid "Not possible to add a new track without a root"
+msgstr "মূল ছাড়া নতুন ট্র্যাক যুক্ত করা সম্ভব নয়"
+
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr "বেজিয়ারের জন্য অবৈধ ট্র্যাক (উপযুক্ত উপ-বৈশিষ্ট্য নেই)"
+
+msgid "Add Bezier Track"
+msgstr "বেজিয়ার ট্র্যাক যুক্ত করুন"
+
+msgid "Track path is invalid, so can't add a key."
+msgstr "ট্র্যাক পাথটি অবৈধ, সুতরাং কোনও কী যুক্ত করতে পারছে না।"
+
+msgid "Track path is invalid, so can't add a method key."
+msgstr "ট্র্যাক পাথটি অবৈধ, সুতরাং কোনও পদ্ধতি key যুক্ত করতে পারে না।"
+
+msgid "Add Method Track Key"
+msgstr "Method Track Key যুক্ত করুন"
+
+msgid "Method not found in object:"
+msgstr "Object এ Method পাওয়া যায় নি:"
+
+msgid "Animation Move Keys"
+msgstr "অ্যানিমেশনে (Anim) চাবি/কী-সমুহ সরান"
+
+msgid "Position"
+msgstr "অবস্থান"
+
+msgid "Rotation"
+msgstr "ঘূর্ণন"
+
+msgid "Scale"
+msgstr "স্কেল/মাপ"
+
+msgid "Methods"
+msgstr "মেথডের তালিকা"
+
+msgid "Bezier"
+msgstr "বেজিয়ার"
+
+msgid "Audio"
+msgstr "শব্দ"
+
+msgid "Paste Tracks"
+msgstr "মানসমূহ প্রতিলেপন/পেস্ট করুন"
+
+msgid "Animation Set End Offset"
+msgstr "অ্যানিমেশনের শেষ সমাপ্ত অফসেট"
+
+msgid "Make Easing Keys"
+msgstr "ঈজিং key বানান"
+
+msgid "Animation Add RESET Keys"
+msgstr "অ্যানিমেশনের রিসেট keys যুক্ত করুন"
+
+msgid "Bake Animation as Linear Keys"
+msgstr "সরলরৈখিকভাবে অ্যানিমেশনের চাবি বেক"
+
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr "অ্যানিমেশন তৈরি এবং সম্পাদনা করতে একটি অ্যানিমেশনপ্লেয়ার নোড নির্বাচন করুন।"
+
+msgid "Warning: Editing imported animation"
+msgstr "সতর্কতা: Imported অ্যানিমেশন সম্পাদনা করা হচ্ছে"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "সতর্কতা: এনিমেশনপ্লেয়ার অকার্যকর"
+
+msgid "Only show tracks from nodes selected in tree."
+msgstr "Tree মধ্যে নির্বাচিত নোডগুলি থেকে কেবল ট্র্যাকগুলি দেখান।"
+
+msgid "Group tracks by node or display them as plain list."
+msgstr "নোড দ্বারা গ্রুপ ট্র্যাক করুন বা তাদের সরল তালিকা হিসাবে প্রদর্শন করুন।"
+
+msgid "Animation step value."
+msgstr "অ্যানিমেশন পদক্ষেপের মান।"
+
+msgid "Seconds"
+msgstr "সেকেন্ড"
+
+msgid "FPS"
+msgstr "এফপিএস"
+
+msgid "Edit"
+msgstr "সম্পাদন করুন (Edit)"
+
+msgid "Animation properties."
+msgstr "অ্যানিমেশন বৈশিষ্ট্য।"
+
+msgid "Copy Tracks..."
+msgstr "ট্র্যাকগুলি অনুলিপি করুন…"
+
+msgid "Scale Selection..."
+msgstr "নির্বাচিত সমূহের আকার পরিবর্তন করুন…"
+
+msgid "Scale From Cursor..."
+msgstr "কার্সর হতে আকার পরিবর্তন করুন…"
+
+msgid "Make Easing Selection..."
+msgstr "ইজিইং নির্বাচিত করুন…"
+
+msgid "Delete Selection"
+msgstr "নির্বাচিত সমূহ Delete করুন"
+
+msgid "Go to Next Step"
+msgstr "পরবর্তী ধাপে যান"
+
+msgid "Go to Previous Step"
+msgstr "পূর্ববর্তী ধাপে যান"
+
+msgid "Bake Animation..."
+msgstr "অ্যানিমেশন বেক করুন…"
+
+msgid "Optimize Animation (no undo)..."
+msgstr "অ্যানিমেশন উন্নত/নিখুঁত করুন (আন্ডো করা যাবে না)…"
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "অ্যানিমেশন (Animation) পরিচ্ছন্ন করুন(আনডু করা যাবে না)…"
+
+msgid "Use Bezier Curves"
+msgstr "বেজিয়ার কার্ভ ব্যবহার করুন"
+
+msgid "Optimize"
+msgstr "পরিমার্জন করুন"
+
+msgid "Remove invalid keys"
+msgstr "অগ্রহনযোগ্য চাবিসমূহ অপসারণ করুন"
+
+msgid "Remove unresolved and empty tracks"
+msgstr "অমীমাংসিত এবং খালি/অসার ট্র্যাক/পথসমূহ অপসারণ করুন"
+
+msgid "Clean-up all animations"
+msgstr "সকল অ্যানিমেশনসমূহ পরিচ্ছন্ন করুন"
+
+msgid "Clean-Up Animation(s) (NO UNDO!)"
+msgstr "সকল অ্যানিমেশনসমূহ পরিচ্ছন্ন করুন (অফেরৎযোগ্য!)"
+
+msgid "Clean-Up"
+msgstr "পরিচ্ছন্ন করুন"
+
+msgid "Scale Ratio:"
+msgstr "স্কেল/মাপের অনুপাত:"
+
+msgid "Transition Type:"
+msgstr "ট্র্যানজিশন ধরণ:"
+
+msgid "Ease Type:"
+msgstr "ইজ টাইপ:"
+
+msgid "Animation Baker"
+msgstr "অ্যানিমেশন বেকার"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "3D স্থান/ঘূর্ণন/আকার ট্র্যাক:"
+
+msgid "Value Track:"
+msgstr "মান ট্র্যাক:"
+
+msgid "Select Tracks to Copy"
+msgstr "গুণাগুণ/বৈশিষ্ট্য copy করুন"
+
+msgid "Select All/None"
+msgstr "কোনোটাই নির্বাচন করবেন/না"
+
+msgid "Close"
+msgstr "বন্ধ করুন"
+
+msgid "Error!"
+msgstr "ভুল/সমস্যা!"
+
+msgid "Add Audio Track Clip"
+msgstr "অডিও ট্র্যাক ক্লিপ যুক্ত করুন"
+
+msgid "Change Audio Track Clip Start Offset"
+msgstr "অডিও ট্র্যাক ক্লিপ শুরু অফসেট পরিবর্তন করুন"
+
+msgid "Change Audio Track Clip End Offset"
+msgstr "অডিও ট্র্যাক ক্লিপ শেষ অফসেট পরিবর্তন করুন"
+
+msgid "Go to Line"
+msgstr "লাইন-এ যান"
+
+msgid "Line Number:"
+msgstr "লাইন নাম্বার:"
+
+msgid "%d replaced."
+msgstr "%d প্রতিস্থাপন করা হয়েছে।"
+
+msgid "No match"
+msgstr "কোনো মিল নেই"
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d টি মিল"
+msgstr[1] "%d গুলি মিল"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d মিল %d এর মধ্যে"
+msgstr[1] "%d গুলি মিল %d এর মধ্যে"
+
+msgid "Next Match"
+msgstr "পরবর্তী মিল"
+
+msgid "Match Case"
+msgstr "অক্ষরের মাত্রা (বড়/ছোট-হাতের) মিল করুন"
+
+msgid "Whole Words"
+msgstr "সম্পূর্ণ শব্দ"
+
+msgid "Replace"
+msgstr "প্রতিস্থাপন করুন"
+
+msgid "Replace All"
+msgstr "সমস্তগুলি প্রতিস্থাপন করুন"
+
+msgid "Selection Only"
+msgstr "শুধুমাত্র নির্বাচিতসমূহ"
+
+msgid "Toggle Scripts Panel"
+msgstr "স্ক্রিপ্টস প্যানেল টগল করুন"
+
+msgid "Zoom In"
+msgstr "সম্প্রসারিত করুন (জুম্ ইন)"
+
+msgid "Zoom Out"
+msgstr "সংকুচিত করুন (জুম্ আউট)"
+
+msgid "Reset Zoom"
+msgstr "সম্প্রসারন/সংকোচন অপসারণ করুন (রিসেট জুম্)"
+
+msgid "Errors"
+msgstr "সমস্যাসমূহ"
+
+msgid "Warnings"
+msgstr "সতর্কতা"
+
+msgid "Line and column numbers."
+msgstr "রেখা ও স্তম্ভ সংখ্যা।"
+
+msgid "Indentation"
+msgstr "ইন্ডেন্টেশন"
+
+msgid "Method in target node must be specified."
+msgstr "টার্গেট নোডার মেথড নির্দিষ্ট করতে হবে।"
+
+msgid "Method name must be a valid identifier."
+msgstr "মেথডের নামটি গ্রহণযোগ্য identifier নয়।"
+
+msgid "Go to Source"
+msgstr "উৎসে যান"
+
+msgid "Select Method"
+msgstr "মেথড/পদ্ধতি বাছাই করুন"
+
+msgid "Script Methods Only"
+msgstr "শুধুমাত্র স্ক্রীপ্ট মেথড"
+
+msgid "Compatible Methods Only"
+msgstr "শুধু compatible মেথড"
+
+msgid "Remove"
+msgstr "অপসারণ করুন"
+
+msgid "Add Extra Call Argument:"
+msgstr "ডাকযোগ্য অতিরিক্ত মান/আর্গুমেন্ট সংযুক্ত করুন:"
+
+msgid "Extra Call Arguments:"
+msgstr "ডাকযোগ্য অতিরিক্ত মান/আর্গুমেন্ট-সমূহ:"
+
+msgid "Receiver Method:"
+msgstr "মেথড/পদ্ধতি বাছাই করুন:"
+
+msgid "Deferred"
+msgstr "বিলম্বিত"
+
+msgid "Cannot connect signal"
+msgstr "সিগন্যাল কানেক্ট করা যায়নি"
+
+msgid "Connect"
+msgstr "সংযোগ"
+
+msgid "Connect '%s' to '%s'"
+msgstr "'%s' এর সাথে '%s' সংযুক্ত করুন"
+
+msgid "Disconnect all from signal: '%s'"
+msgstr "'%s' সিগন্যাল থেকে সবকিছু বিচ্ছিন্ন করুন"
+
+msgid "Connect..."
+msgstr "সংযোগ..."
+
+msgid "Disconnect"
+msgstr "সংযোগ বিচ্ছিন্ন করুন"
+
+msgid "Connect a Signal to a Method"
+msgstr "মেথডের সাথে একটি সিগন্যাল যুক্ত করুন"
+
+msgid "Edit Connection: '%s'"
+msgstr "সংযোগ ইডিট: '%s'"
+
+msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
+msgstr "আপনি কি নিশ্চিত আপনি \"%s\" সিগন্যাল থেকে সকল সংযোগ সরিয়ে ফেলতে চান?"
+
+msgid "Signals"
+msgstr "সংকেতসমূহ"
+
+msgid "Filter Signals"
+msgstr "সিগন্যাল ফিল্টার"
+
+msgid "Open Documentation"
+msgstr "ডকুমেন্টেশন খুলুন"
+
+msgid "Copy Name"
+msgstr "নাম কপি করুন"
+
+msgid "Edit..."
+msgstr "সম্পাদন করুন (Edit)…"
+
+msgid "Go to Method"
+msgstr "মেথডে যান"
+
+msgid "Change Type of \"%s\""
+msgstr "ধরণ পরিবর্তন করুন \"%s\" এর"
+
+msgid "Change"
+msgstr "পরিবর্তন করুন"
+
+msgid "Create New %s"
+msgstr "নতুন %s তৈরি করুন"
+
+msgid "Favorites:"
+msgstr "ফেবরিট/প্রিয়-সমূহ:"
+
+msgid "Recent:"
+msgstr "সাম্প্রতিক:"
+
+msgid "Search:"
+msgstr "অনুসন্ধান করুন:"
+
+msgid "Matches:"
+msgstr "মিলসমূহ:"
+
+msgid "Description:"
+msgstr "বর্ণনা:"
+
+msgid "Remote %s:"
+msgstr "রিমোট %s:"
+
+msgid "Debugger"
+msgstr "ডিবাগার"
+
+msgid "Debug"
+msgstr "ডিবাগ"
+
+msgid "Save Branch as Scene"
+msgstr "প্রশাখাকে দৃশ্য হিসেবে সংরক্ষণ করুন"
+
+msgid "Instance:"
+msgstr "ইন্সট্যান্স:"
+
+msgid "Clear"
+msgstr "পরিস্কার করুন/ক্লীয়ার"
+
+msgid "Scanning for local changes"
+msgstr "স্থানীয় পরিবর্তন-সমূহ খোঁজা হচ্ছে"
+
+msgid "Sending file:"
+msgstr "ফাইল পাঠানো হচ্ছে:"
+
+msgid "Monitors"
+msgstr "মনিটরস"
+
+msgid "Monitor"
+msgstr "মনিটর"
+
+msgid "Value"
+msgstr "মান"
+
+msgid "Pick one or more items from the list to display the graph."
+msgstr "গ্রাফ প্রদর্শন করতে তালিকা থেকে এক বা একাধিক আইটেম বাছাই করুন।"
+
+msgid "Stop"
+msgstr "থামো"
+
+msgid "Start"
+msgstr "শুরু"
+
+msgid "Measure:"
+msgstr "মাপ:"
+
+msgid "Frame %"
+msgstr "ফ্রেম %"
+
+msgid "Inclusive"
+msgstr "অন্তর্ভুক্ত"
+
+msgid "Self"
+msgstr "স্বীয়"
+
+msgid "Display internal functions"
+msgstr "ভিতরের ফাংশন দেখুন"
+
+msgid "Frame #:"
+msgstr "ফ্রেম #:"
+
+msgid "Name"
+msgstr "নাম"
+
+msgid "Time"
+msgstr "সময়"
+
+msgid "Linked"
+msgstr "লিংকড"
+
+msgid "Bytes:"
+msgstr "বাইটস:"
+
+msgid "Warning:"
+msgstr "সতর্কতা:"
+
+msgid "Error:"
+msgstr "সমস্যা:"
+
+msgid "%s Error"
+msgstr "সমস্যা %s"
+
+msgid "%s Error:"
+msgstr "সমস্যা %s:"
+
+msgid "%s Source"
+msgstr "%s উৎস"
+
+msgid "%s Source:"
+msgstr "%s উৎস:"
+
+msgid "Stack Trace:"
+msgstr "স্ট্যাক ট্রেস:"
+
+msgid "Debug session started."
+msgstr "ডিবাগ সেশন শুরু হয়েছে।"
+
+msgid "Line %d"
+msgstr "লাইন %d"
+
+msgid "Delete All Breakpoints in:"
+msgstr "সকল বিরতি-বিন্দু-সমূহ অপসারণ করুন:"
+
+msgid "C++ Source"
+msgstr "C++ উৎস"
+
+msgid "Step Into"
+msgstr "পদার্পণ করুন"
+
+msgid "Step Over"
+msgstr "ধাপ লাফিয়ে যান"
+
+msgid "Break"
+msgstr "বিরতি/ভাঙ্গন"
+
+msgid "Continue"
+msgstr "সচল"
+
+msgid "Stack Frames"
+msgstr "ফ্রেমসমূহ স্তূপ করুন"
+
+msgid "Filter Stack Variables"
+msgstr "স্ট্যাক ভারিয়েবল ফিল্টার"
+
+msgid "Profiler"
+msgstr "প্রোফাইলার"
+
+msgid "List of Video Memory Usage by Resource:"
+msgstr "রিসোর্স অনুসারে ভিডিও মেমোরির ব্যবহারের তালিকা করুন:"
+
+msgid "Total:"
+msgstr "সর্বমোট:"
+
+msgid "Resource Path"
+msgstr "রিসোর্স-এর পথ"
+
+msgid "Type"
+msgstr "ধরণ"
+
+msgid "Format"
+msgstr "ফরম্যাট"
+
+msgid "Usage"
+msgstr "ব্যবহার"
+
+msgid "Misc"
+msgstr "বিবিধ"
+
+msgid "Clicked Control:"
+msgstr "ক্লিক-কৃত কন্ট্রোল:"
+
+msgid "Clicked Control Type:"
+msgstr "ক্লিক-কৃত কন্ট্রোলের ধরণ:"
+
+msgid "Live Edit Root:"
+msgstr "সক্রিয়ভাবে মূল সম্পাদন করুন:"
+
+msgid "Set From Tree"
+msgstr "শাখা হতে স্থাপন করুন"
+
+msgid "Search Replacement For:"
+msgstr "এর জন্য প্রতিস্থাপকের অনুসন্ধান করুন:"
+
+msgid "Dependencies For:"
+msgstr "এর জন্য নির্ভরতা-সমূহ:"
+
+msgid "Dependencies"
+msgstr "নির্ভরতা-সমূহ"
+
+msgid "Resource"
+msgstr "রিসোর্স"
+
+msgid "Path"
+msgstr "পথ"
+
+msgid "Dependencies:"
+msgstr "নির্ভরতা-সমূহ:"
+
+msgid "Fix Broken"
+msgstr "ত্রুটিপূর্ণ/ভগ্ন-অংশসমূহ ঠিক করুন"
+
+msgid "Dependency Editor"
+msgstr "নির্ভরতা-সমূহের এডিটর"
+
+msgid "Search Replacement Resource:"
+msgstr "প্রতিস্থাপক রিসোর্স-এর অনুসন্ধান করুন:"
+
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "দৃশ্য খুলুন"
+msgstr[1] "দৃশ্যসমূহ খুলুন"
+
+msgid "Open"
+msgstr "খুলুন"
+
+msgid ""
+"Remove the selected files from the project? (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"নির্বাচিত ফাইলসমূহ প্রকল্প হতে অপসারণ করবেন? (অফেরৎযোগ্য)\n"
+"আপনার ফাইলসিস্টেম কনফিগারেশন এর ওপর ভিত্তি করে, ফাইলগুলো হয়তো সিস্টেম ট্রাশে যাবে "
+"নাহলে স্থায়ীভাবে অপসারিত হবে।"
+
+msgid ""
+"The files being removed are required by other resources in order for them to "
+"work.\n"
+"Remove them anyway? (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"যেসব ফাইল অপসারিত হচ্ছে তারা অন্যান্য রিসোর্স ফাইলের কার্যকররুপে কাজ করার জন্য "
+"দরকারি।\n"
+"তবুও তাদের অপসারণ করবেন? (অফেরৎযোগ্য)\n"
+"আপনার ফাইলসিস্টেম কনফিগারেশন এর ওপর ভিত্তি করে, ফাইলগুলো হয়তো সিস্টেম ট্রাশে যাবে "
+"নাহলে স্থায়ীভাবে অপসারিত হবে।"
+
+msgid "Cannot remove:"
+msgstr "অপসারণ সম্ভব নয় :"
+
+msgid "Error loading:"
+msgstr "লোডে সমস্যা হয়েছে:"
+
+msgid "Load failed due to missing dependencies:"
+msgstr "নির্ভরতা-সমূহের অনুপস্থিতিতে দৃশ্যের লোড ব্যর্থ হয়েছে:"
+
+msgid "Open Anyway"
+msgstr "যেকোনো উপায়েই খুলুন"
+
+msgid "Which action should be taken?"
+msgstr "কোন সিধান্তটি নেয়া উচিত হবে?"
+
+msgid "Fix Dependencies"
+msgstr "নির্ভরতা-সমূহ ঠিক করুন"
+
+msgid "Errors loading!"
+msgstr "লোডে একাধিক সমস্যা হয়েছে!"
+
+msgid "Permanently delete %d item(s)? (No undo!)"
+msgstr "%d -টি বস্তু(সমূহ) স্থায়ীভাবে মুছে ফেলবেন? (অফেরৎযোগ্য!)"
+
+msgid "Orphan Resource Explorer"
+msgstr "মালিকবিহীন রিসোর্সের অনুসন্ধানকারী"
+
+msgid "Owns"
+msgstr "আয়ত্তে"
+
+msgid "Resources Without Explicit Ownership:"
+msgstr "স্পষ্ট মালিকানা বিহীন রিসোর্সসমূহ:"
+
+msgid "Name cannot be empty."
+msgstr "নাম খালি রাখা যাবে না।"
+
+msgid "Folder name cannot be empty."
+msgstr "ফোল্ডার নাম ফাঁকা হতে পারে না।"
+
+msgid "Folder name contains invalid characters."
+msgstr "ব্যবহৃত নামে অগ্রহণযোগ্য অক্ষর বিদ্যমান।"
+
+msgid "File name begins with a dot."
+msgstr "ফাইলের নাম একটি বিন্দু দিয়ে শুরু হয়।"
+
+msgid "File with that name already exists."
+msgstr "একই নামের ফাইল রয়েছে।"
+
+msgid "Folder with that name already exists."
+msgstr "একই নামের ফোল্ডার রয়েছে।"
+
+msgid "Folder name is valid."
+msgstr "ফোল্ডার নামটি গ্রহণযোগ্য।"
+
+msgid "Thanks from the Godot community!"
+msgstr "Godot কমিউনিটি হতে আপনাকে ধন্যবাদ!"
+
+msgid "Godot Engine contributors"
+msgstr "Godot Engine কন্ট্রিবিউটরস"
+
+msgid "Project Founders"
+msgstr "প্রজেক্ট ফাউন্ডার"
+
+msgid "Lead Developer"
+msgstr "মূল ডেভেলপার"
+
+msgid "Developers"
+msgstr "ডেভেলপার"
+
+msgid "Authors"
+msgstr "লেখক"
+
+msgid "Platinum Sponsors"
+msgstr "প্ল্যাটিনাম বিজ্ঞাপক"
+
+msgid "Gold Sponsors"
+msgstr "সোনালি বিজ্ঞাপক"
+
+msgid "Donors"
+msgstr "ডোনার"
+
+msgid "License"
+msgstr "লাইসেন্স"
+
+msgid "All Components"
+msgstr "কম্পনেন্টস"
+
+msgid "Components"
+msgstr "কম্পনেন্টস"
+
+msgid "Licenses"
+msgstr "লাইসেন্স"
+
+msgid "Error opening asset file for \"%s\" (not in ZIP format)."
+msgstr "অ্যাসেট ফাইল \"%s\" এর জন্য খোলা সম্ভব হয় নি (ZIP ফরম্যাটে নেই)।"
+
+msgid "%s (already exists)"
+msgstr "%s (ইতোমধ্যে আছে)"
+
+msgid "Uncompressing Assets"
+msgstr "আনকম্প্রেস্ড অ্যাসেটস"
+
+msgid "The following files failed extraction from asset \"%s\":"
+msgstr "\"%s\" প্যাকেজ হতে নীম্নোক্ত ফাইলসমূহ এক্সট্রাক্ট করা অসফল হয়েছে:"
+
+msgid "(and %s more files)"
+msgstr "(এবং %s টি আরো ফাইল)"
+
+msgid "Success!"
+msgstr "সম্পন্ন হয়েছে!"
+
+msgid "Installation preview:"
+msgstr "ইনস্টলেশন প্রিভিউ:"
+
+msgid "Install"
+msgstr "ইন্সটল"
+
+msgid "Speakers"
+msgstr "স্পিকারস"
+
+msgid "Add Effect"
+msgstr "ইফেক্ট যোগ করুন"
+
+msgid "Rename Audio Bus"
+msgstr "অডিও বাস পুনরায় নামকরণ করুন"
+
+msgid "Toggle Audio Bus Solo"
+msgstr "অডিও বাস সলো টগল করুন"
+
+msgid "Toggle Audio Bus Mute"
+msgstr "অডিও বাস মিউট টগল করুন"
+
+msgid "Toggle Audio Bus Bypass Effects"
+msgstr "অডিও বাস বাইপাস ইফেক্ট টগল করুন"
+
+msgid "Select Audio Bus Send"
+msgstr "অডিও বাস সেন্ড সিলেক্ট করুন"
+
+msgid "Add Audio Bus Effect"
+msgstr "অডিও বাস ইফেক্ট প্রয়োগ করুন"
+
+msgid "Move Bus Effect"
+msgstr "বাস ইফেক্ট মুভ করুন"
+
+msgid "Delete Bus Effect"
+msgstr "বাস ইফেক্ট ডিলিট করুন"
+
+msgid "Solo"
+msgstr "সলো"
+
+msgid "Mute"
+msgstr "মিউট"
+
+msgid "Bypass"
+msgstr "বাইপাস"
+
+msgid "Reset Volume"
+msgstr "রিসেট ভলিউম"
+
+msgid "Delete Effect"
+msgstr "ইফেক্ট ডিলিট করুন"
+
+msgid "Add Audio Bus"
+msgstr "অডিও বাস যোগ করুন"
+
+msgid "Master bus can't be deleted!"
+msgstr "মাস্টার বাস ডিলিট করা সম্ভব নয়!"
+
+msgid "Delete Audio Bus"
+msgstr "অডিও বাস ডিলিট করুন"
+
+msgid "Duplicate Audio Bus"
+msgstr "অডিও বাস ডুপ্লিকেট করুন"
+
+msgid "Reset Bus Volume"
+msgstr "বাস ভলিউম রিসেট করুন"
+
+msgid "Move Audio Bus"
+msgstr "অডিও বাস মুভ করুন"
+
+msgid "Save Audio Bus Layout As..."
+msgstr "অডিও বাস লেআউট সেভ করুন..."
+
+msgid "Location for New Layout..."
+msgstr "নতুন লেআউট লোকেশন..."
+
+msgid "Open Audio Bus Layout"
+msgstr "অডিও বাস লেআউট ওপেন করুন"
+
+msgid "Error saving file: %s"
+msgstr "ফাইল সংরক্ষণে সমস্যা: %s"
+
+msgid "Layout:"
+msgstr "লেআউট/নকশা সংরক্ষণ করুন:"
+
+msgid "Add Bus"
+msgstr "বাস যোগ করুন"
+
+msgid "Load"
+msgstr "লোড"
+
+msgid "Load an existing Bus Layout."
+msgstr "বাস লেআউট লোড করুন।"
+
+msgid "Save As"
+msgstr "এইরূপে সংরক্ষণ করুন"
+
+msgid "Save this Bus Layout to a file."
+msgstr "বাস লেআউট ফাইল হিসেবে সেভ করুন।"
+
+msgid "Load Default"
+msgstr "লোড ডিফল্ট"
+
+msgid "Load the default Bus Layout."
+msgstr "ডিফল্ট বাস লেআউট লোড করুন।"
+
+msgid "Create a new Bus Layout."
+msgstr "নতুন বাস লেআউট তৈরি করুন।"
+
+msgid "Autoload '%s' already exists!"
+msgstr "'%s' এর AutoLoad ইতিমধ্যেই বিদ্যমান!"
+
+msgid "Rename Autoload"
+msgstr "Autoload পুনঃনামকরণ করুন"
+
+msgid "Move Autoload"
+msgstr "Autoload স্থানান্তর করুন"
+
+msgid "Remove Autoload"
+msgstr "Autoload অপসারণ করুন"
+
+msgid "Enable"
+msgstr "সক্রিয় করুন"
+
+msgid "Rearrange Autoloads"
+msgstr "Autoload সমূহ পুনর্বিন্যস্ত করুন"
+
+msgid "Can't add Autoload:"
+msgstr "Autoload সংযুক্ত করা যাচ্ছে না:"
+
+msgid "%s is an invalid path. File does not exist."
+msgstr "%s হল ভুল পথ। ফাইলটি বিদ্যমান নয়।"
+
+msgid "Path:"
+msgstr "পথ:"
+
+msgid "Node Name:"
+msgstr "নোডের নাম:"
+
+msgid "3D Engine"
+msgstr "3D ইঞ্জিন"
+
+msgid "2D Physics"
+msgstr "2D পদার্থবিজ্ঞান"
+
+msgid "3D Physics"
+msgstr "3D পদার্থবিজ্ঞান"
+
+msgid "Navigation, both 2D and 3D."
+msgstr "নেভিগেশন, উভয় 2D এবং 3D।"
+
+msgid "General Features:"
+msgstr "সাধারণ বৈশিষ্ট্য:"
+
+msgid "Reset the edited profile?"
+msgstr "ইডিটকৃত প্রোফাইল রিসেট?"
+
+msgid "File saving failed."
+msgstr "ফাইল সংরক্ষণ করা যায়নি।"
+
+msgid "Create a new profile?"
+msgstr "নতুন প্রোফাইল তৈরী করুন?"
+
+msgid "Error saving profile to path: '%s'."
+msgstr "পথে প্রোফাইল সংরক্ষণ সম্ভব হয়নি:'%s'।"
+
+msgid "New"
+msgstr "নতুন"
+
+msgid "Save"
+msgstr "সংরক্ষন করুন"
+
+msgid "Profile:"
+msgstr "প্রোফাইল:"
+
+msgid "Detect from Project"
+msgstr "প্রজেক্ট থেকে শনাক্ত করুন"
+
+msgid "Configure Engine Compilation Profile:"
+msgstr "ইঞ্জিন কম্পাইলেশন প্রোফাইল কনফিগার:"
+
+msgid "Please Confirm:"
+msgstr "অনুগ্রহ করে নিশ্চিত করুন:"
+
+msgid "Engine Compilation Profile"
+msgstr "ইঞ্জিন কম্পাইলেশন প্রোফাইল"
+
+msgid "Edit Compilation Configuration Profile"
+msgstr "ইডিট কম্পাইলেশন কনফিগার প্রোফাইল"
+
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"কমান্ড এক্সিকিউট করা যায়নি \"%s\" :\n"
+"%s।"
+
+msgid "Paste Params"
+msgstr "মানসমূহ প্রতিলেপন/পেস্ট করুন"
+
+msgid "Updating Scene"
+msgstr "দৃশ্য হাল নাগাদ হচ্ছে"
+
+msgid "Storing local changes..."
+msgstr "স্থানীয় পরিবর্তন-সমূহ সংরক্ষিত হচ্ছে..."
+
+msgid "Updating scene..."
+msgstr "দৃশ্য হাল নাগাদ হচ্ছে..."
+
+msgid "[unsaved]"
+msgstr "[অসংরক্ষিত]"
+
+msgid "Move this dock right one tab."
+msgstr "এই ডকটি ডানদিকে একটি ট্যাবে সরান।"
+
+msgid "Move this dock left one tab."
+msgstr "এই ডকটিকে একটি ট্যাব বামে সরান।"
+
+msgid "Dock Position"
+msgstr "ড্ক পজিশন"
+
+msgid "Make this dock floating."
+msgstr "এই ডক ভাসমান করুন।"
+
+msgid "Scene Tree Editing"
+msgstr "সিন ট্রী ইডিটিং"
+
+msgid "(current)"
+msgstr "(বর্তমান)"
+
+msgid "Profile with this name already exists."
+msgstr "এই নামের প্রোফাইল ইতিমধ্যেই বিদ্যমান।"
+
+msgid "(Properties Disabled)"
+msgstr "(প্রোপার্টি-সমূহ ডিসেবল)"
+
+msgid "Main Features:"
+msgstr "প্রধান বৈশিষ্ট্য:"
+
+msgid "Current Profile:"
+msgstr "বর্তমান প্রোফাইল:"
+
+msgid "Make Current"
+msgstr "বর্তমান বানান"
+
+msgid "Import"
+msgstr "ইম্পোর্ট"
+
+msgid "Export"
+msgstr "এক্সপোর্ট"
+
+msgid "Configure Selected Profile:"
+msgstr "নির্বাচিত প্রোফাইল কনফিগার করুন:"
+
+msgid "Extra Options:"
+msgstr "অতিরিক্ত অপশন:"
+
+msgid "Restart"
+msgstr "পুনরারম্ভ"
+
+msgid "ScanSources"
+msgstr "উৎসসমূহ স্ক্যান করুন"
+
+msgid "Import resources of type: %s"
+msgstr "প্রকারের সম্পদ আমদানি করুন: %s"
+
+msgid "No return value."
+msgstr "রিটার্ন মান নেই।"
+
+msgid "Deprecated:"
+msgstr "অপ্রচলিত:"
+
+msgid "Constructors"
+msgstr "কনস্ট্রাকটরস"
+
+msgid "Method Descriptions"
+msgstr "মেথডের বর্ণনা"
+
+msgid "Constructor Descriptions"
+msgstr "কনস্ট্রাক্টরের বর্ণনা"
+
+msgid "Operator Descriptions"
+msgstr "অপারেটর বর্ণনা"
+
+msgid "Error codes returned:"
+msgstr "ভুল কোড এসেছে:"
+
+msgid "Top"
+msgstr "শীর্ষ"
+
+msgid "Class:"
+msgstr "ক্লাস:"
+
+msgid "Inherits:"
+msgstr "গ্রহণ করে:"
+
+msgid "Inherited by:"
+msgstr "গৃহীত হয়েছে:"
+
+msgid "Description"
+msgstr "বর্ণনা"
+
+msgid "Properties"
+msgstr "প্রোপার্টি-সমূহ"
+
+msgid "overrides %s:"
+msgstr "ওভাররাইড %s:"
+
+msgid "default:"
+msgstr "ডিফল্ট:"
+
+msgid "Theme Properties"
+msgstr "থিম প্রোপার্টি-সমূহ"
+
+msgid "Constants"
+msgstr "ধ্রুবকসমূহ"
+
+msgid "Property Descriptions"
+msgstr "মান/প্রোপার্টির বর্ণনা"
+
+msgid ""
+"There is currently no description for this property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"এই প্রপার্টি সম্পর্কে বিস্তারিত তথ্য লিপিবদ্ধ করা হয়নি। অনুগ্রহ করে তথ্য প্রদানের মাধ্যমে "
+"সহায়তা করুন। তথ্য প্রদানের জন্য [color=$color][url=$url], [/url][/color] ফরম্যাট "
+"ব্যাবহার করুন !"
+
+msgid "No description available."
+msgstr "বর্ণনা নেই।"
+
+msgid "Class"
+msgstr "ক্লাস"
+
+msgid "Constant"
+msgstr "ধ্রুবক/কন্সট্যান্ট"
+
+msgid "Property"
+msgstr "প্রপার্টি"
+
+msgid "Theme Property"
+msgstr "থিম প্রোপার্টি-সমূহ"
+
+msgid "Method"
+msgstr "মেথড"
+
+msgid "Annotation"
+msgstr "টীকা"
+
+msgid "File"
+msgstr "ফাইল"
+
+msgid "%d match."
+msgstr "%d মিল।"
+
+msgid "%d matches."
+msgstr "%d টি মিলছে।"
+
+msgid "Constructor"
+msgstr "কনস্ট্রাক্টর"
+
+msgid "Search Help"
+msgstr "সাহায্য অনুসন্ধান করুন"
+
+msgid "Case Sensitive"
+msgstr "অক্ষরের মাত্রা (বড়/ছোট-হাতের) সংবেদনশীল"
+
+msgid "Constructors Only"
+msgstr "শুধু কনস্ট্রাক্টর"
+
+msgid "Methods Only"
+msgstr "শুধু মেথডস"
+
+msgid "Annotations Only"
+msgstr "শুধুমাত্র টীকা"
+
+msgid "Constants Only"
+msgstr "শুধু ধ্রুবকসমূহ"
+
+msgid "Properties Only"
+msgstr "শুধু প্রোপার্টি-সমূহ"
+
+msgid "Theme Properties Only"
+msgstr "শুধু থিম প্রোপার্টি-সমূহ"
+
+msgid "Member Type"
+msgstr "সদস্য টাইপ"
+
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "(%d টি পরিবর্তন)"
+msgstr[1] "(%d গুলি পরিবর্তন)"
+
+msgid "Move Up"
+msgstr "উপরে যান"
+
+msgid "Move Down"
+msgstr "নীচে যান"
+
+msgid "Resize Array..."
+msgstr "অ্যারে রিসাইজ…"
+
+msgid "Resize Array"
+msgstr "শ্রেণীবিন্যাস/সারি পুনর্মাপন করুন"
+
+msgid "Element %s"
+msgstr "উপাদান %s"
+
+msgid "Set Multiple: %s"
+msgstr "একাধিক পরিবর্তন:%s"
+
+msgid "Remove metadata %s"
+msgstr "মেটাডেটা %s সরান"
+
+msgid "Favorites"
+msgstr "ফেবরিট"
+
+msgid "Thumbnail..."
+msgstr "থাম্বনেইল..."
+
+msgid "Select existing layout:"
+msgstr "বিদ্যমান লেআউট নির্বাচন করুন:"
+
+msgid "Changed Locale Filter Mode"
+msgstr "লোকাল ফিল্টার মোড পরিবর্তিত হয়েছে"
+
+msgid "Language:"
+msgstr "ভাষা:"
+
+msgctxt "Locale"
+msgid "Script:"
+msgstr "স্ক্রিপ্ট:"
+
+msgid "Country"
+msgstr "দেশ"
+
+msgid "Variant"
+msgstr "ভ্যারিয়েন্ট"
+
+msgid "Toggle visibility of standard output messages."
+msgstr "স্ট্যান্ডার্ড আউটপুট বার্তাগুলির দৃশ্যমানতা টগল করুন।"
+
+msgid "Toggle visibility of errors."
+msgstr "ত্রুটির দৃশ্যমানতা টগল করুন।"
+
+msgid "Toggle visibility of warnings."
+msgstr "সতর্কতার দৃশ্যমানতা টগল করুন।"
+
+msgid "Toggle visibility of editor messages."
+msgstr "সম্পাদক বার্তাগুলির দৃশ্যমানতা টগল করুন।"
+
+msgid "Unnamed Project"
+msgstr "নামহীন প্রকল্প"
+
+msgid "Spins when the editor window redraws."
+msgstr "এডিটরের পুন-অঙ্কনে এটি ঘূর্ণন করে।"
+
+msgid "OK"
+msgstr "সঠিক"
+
+msgid "Error saving resource!"
+msgstr "সম্পদ সংরক্ষণে ত্রুটি!"
+
+msgid "Save Resource As..."
+msgstr "রিসোর্স এইরূপে সংরক্ষণ করুন..."
+
+msgid "Error while saving."
+msgstr "সংরক্ষণে সময় সমস্যা হয়েছে।"
+
+msgid "Error while parsing file '%s'."
+msgstr "'%s' ফাইল পার্স করার সময় ত্রুটি।"
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "অনুপস্থিত ফাইল '%s' বা এর একটি নির্ভরতা।"
+
+msgid "Error while loading file '%s'."
+msgstr "'%s' ফাইল লোড করার সময় ত্রুটি।"
+
+msgid "Saving Scene"
+msgstr "দৃশ্য সংরক্ষিত হচ্ছে"
+
+msgid "Analyzing"
+msgstr "বিশ্লেষণ হচ্ছে"
+
+msgid "Creating Thumbnail"
+msgstr "থাম্বনেইল তৈরি হচ্ছে"
+
+msgid "Merge With Existing"
+msgstr "বিদ্যমানের সাথে একত্রিত করুন"
+
+msgid "Error saving MeshLibrary!"
+msgstr "মেশলাইব্রেরি সংরক্ষণে ত্রুটি!"
+
+msgid "Layout name not found!"
+msgstr "লেআউট/নকশার নাম পাওয়া যায়নি!"
+
+msgid ""
+"This resource belongs to a scene that was imported, so it's not editable.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+"এই রিসোর্সটি ইম্পোর্টেড সিন এর অংশ, পরিবর্তনযোগ্য নয়।\n"
+"বিস্তারিত জানতে ডকুমেন্টেশনের সাহায্য নিন।"
+
+msgid ""
+"This resource was imported, so it's not editable. Change its settings in the "
+"import panel and then re-import."
+msgstr ""
+"এই রিসোর্সটি ইম্পোর্টেড এবং অপরিবর্তনযোগ্য।প্রয়োজনে ইম্পোর্ট প্যানেলে সেটিংস পরিবর্তন "
+"করুন এবং পুনরায় ইম্পোর্ট করুন।"
+
+msgid "Changes may be lost!"
+msgstr "পরিবর্তন হারিয়ে যেতে পারে!"
+
+msgid "Open Base Scene"
+msgstr "গোড়ার দৃশ্য খুলুন"
+
+msgid "Save Scene As..."
+msgstr "দৃশ্য এইরূপে সংরক্ষণ করুন..."
+
+msgid "Global Undo: %s"
+msgstr "বিশ্বব্যাপী পূর্বাবস্থায় ফেরান: %s"
+
+msgid "Remote Undo: %s"
+msgstr "রিমোট পূর্বাবস্থায় ফেরান: %s"
+
+msgid "Scene Undo: %s"
+msgstr "দৃশ্য পূর্বাবস্থায় ফেরান: %s"
+
+msgid "Global Redo: %s"
+msgstr "গ্লোবাল রিডো: %s"
+
+msgid "Remote Redo: %s"
+msgstr "রিমোট রিডো: %s"
+
+msgid "Scene Redo: %s"
+msgstr "দৃশ্য পুনরায় করুন: %s"
+
+msgid "Can't reload a scene that was never saved."
+msgstr "পূর্বে কখনোই সংরক্ষিত হয়নি এমন দৃশ্য পুনরায়-লোড (রিলোড) করা অসম্ভব।"
+
+msgid "Save modified resources before reloading?"
+msgstr "পুনরায় লোড করার আগে সংশোধিত সংস্থানগুলি সংরক্ষণ করবেন?"
+
+msgid "Save modified resources before closing?"
+msgstr "বন্ধ করার আগে পরিবর্তিত সম্পদ সংরক্ষণ করবেন?"
+
+msgid "Save changes to the following scene(s) before opening Project Manager?"
+msgstr "প্রজেক্ট ম্যানেজার ওপেন করার পূর্বে পরিবর্তনসমূহ (সিন) সংরক্ষণ করবেন?"
+
+msgid "Pick a Main Scene"
+msgstr "একটি মুখ্য দৃশ্য মনোনীত করুন"
+
+msgid "Export Mesh Library"
+msgstr "Mesh Library এক্সপোর্ট করুন"
+
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
+msgstr "অ্যাড-অন প্লাগইন এনাবল করা সম্ভব হয় নি। কনফিগার পার্সিং ('%s') ব্যর্থ হয়েছে।"
+
+msgid "Unable to load addon script from path: '%s'."
+msgstr "পাথ থেকে অ্যাডঅন স্ক্রিপ্ট লোড করতে অক্ষম: '%s'।"
+
+msgid ""
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
+msgstr ""
+"'%s' পাথ ব্যাবহার করে অ্যাড-অন স্ক্রিপ্ট লোড করা সম্ভব হয়নি। এটি স্ক্রিপ্টে ত্রুটি থাকার "
+"কারণে হতে পারে।\n"
+"আরো ত্রুটি এড়াতে '%s' অ্যাড-অন ডিসেবল করা হচ্ছে ।"
+
+msgid ""
+"Scene '%s' was automatically imported, so it can't be modified.\n"
+"To make changes to it, a new inherited scene can be created."
+msgstr ""
+"'%s' সিনটি সয়ংক্রিয়ভাবে ইম্পোর্টেড হয়েছে এবং অপরিবর্তনীয়।\n"
+"পরিবর্তনের জন্য দয়া করে একটি নতুন ইনহেরিটেড সিন তৈরি করুন।"
+
+msgid "Scene '%s' has broken dependencies:"
+msgstr "'%s' দৃশ্যটির অসংলগ্ন নির্ভরতা রয়েছে:"
+
+msgid "Save Layout..."
+msgstr "লেআউট সংরক্ষণ করুন…"
+
+msgid "Delete Layout..."
+msgstr "লেআউট অপসারণ করুন…"
+
+msgid "Default"
+msgstr "সাধারণ/ডিফল্ট"
+
+msgid "Save Layout"
+msgstr "লেআউট/নকশা সংরক্ষণ করুন"
+
+msgid "Delete Layout"
+msgstr "লেআউট/নকশা অপসারণ করুন"
+
+msgid "Save before closing?"
+msgstr "বন্ধ করার পূর্বে পরিবর্তনসমূহ সংরক্ষণ করবেন?"
+
+msgid "Analyzing scene %s"
+msgstr "%s সিন বিশ্লেষণ হচ্ছে"
+
+msgid "Preparation done."
+msgstr "প্রস্তুতি সম্পন্ন।"
+
+msgid "Scenes reloading"
+msgstr "দৃশ্য পুনরায় লোড হচ্ছে"
+
+msgid "Reloading..."
+msgstr "পুনরায় লোড হচ্ছে..।"
+
+msgid "Reloading done."
+msgstr "পুনরায় লোড করা হয়েছে।"
+
+msgid "(Overridden)"
+msgstr "(ওভাররিডেন)"
+
+msgid "Distraction Free Mode"
+msgstr "বিক্ষেপ-হীন মোড"
+
+msgid "Toggle distraction-free mode."
+msgstr "বিভ্রান্তি-মুক্ত মোড টগল করুন।"
+
+msgid "Scene"
+msgstr "দৃশ্য"
+
+msgid "Operations with scene files."
+msgstr "দৃশ্যের ফাইলের সাথে কার্যকলাপসমূহ।"
+
+msgid "Focus FileSystem Filter"
+msgstr "ফোকাস ফাইলসিস্টেম ফিল্টার"
+
+msgid "New Scene"
+msgstr "নতুন দৃশ্য"
+
+msgid "New Inherited Scene..."
+msgstr "নতুন উত্তরাধিকারী দৃশ্য..."
+
+msgid "Open Scene..."
+msgstr "দৃশ্য খুলুন..."
+
+msgid "Open Recent"
+msgstr "সাম্প্রতিকসমূহ খুলুন"
+
+msgid "Save Scene"
+msgstr "দৃশ্য সংরক্ষণ করুন"
+
+msgid "Quick Open Scene..."
+msgstr "দ্রুত দৃশ্য খুলুন..."
+
+msgid "Quick Open Script..."
+msgstr "দ্রুত স্ক্রিপ্ট খুলুন..."
+
+msgid "Export As..."
+msgstr "রপ্তানি করুন…"
+
+msgid "MeshLibrary..."
+msgstr "MeshLibrary (মেস-লাইব্রেরি)..."
+
+msgid "Close Scene"
+msgstr "দৃশ্য বন্ধ করুন"
+
+msgid "Quit"
+msgstr "প্রস্থান করুন"
+
+msgid "Editor Settings..."
+msgstr "এডিটরের সেটিংস…"
+
+msgid "Project"
+msgstr "প্রজেক্ট"
+
+msgid "Project Settings..."
+msgstr "প্রকল্পের সেটিংস…"
+
+msgid "Project Settings"
+msgstr "প্রজেক্ট সেটিংস"
+
+msgid "Version Control"
+msgstr "ভার্সন কন্ট্রোল"
+
+msgid "Export..."
+msgstr "এক্সপোর্ট…"
+
+msgid "Tools"
+msgstr "সরঞ্জাম-সমূহ"
+
+msgid "Orphan Resource Explorer..."
+msgstr "মালিকবিহীন রিসোর্সের অনুসন্ধানকারী…"
+
+msgid "Reload Current Project"
+msgstr "বর্তমানের প্রজেক্ট রিলোড করুন"
+
+msgid "Quit to Project List"
+msgstr "প্রকল্পের তালিকায় প্রস্থান করুন"
+
+msgid "Command Palette..."
+msgstr "কমান্ড প্যালেট…"
+
+msgid "Editor Layout"
+msgstr "এডিটরের লেআউট/নকশা"
+
+msgid "Take Screenshot"
+msgstr "স্ক্রিনশট নিন"
+
+msgid "Screenshots are stored in the user data folder (\"user://\")."
+msgstr "স্ক্রিনশটগুলি ব্যবহারকারীর ডেটা ফোল্ডারে (\"user://\") সংরক্ষণ করা হয়।"
+
+msgid "Toggle Fullscreen"
+msgstr "পূর্ণ-পর্দা অদলবদল/টগল করুন"
+
+msgid "Manage Editor Features..."
+msgstr "সম্পাদকের বৈশিষ্ট্যগুলি পরিচালনা করুন..।"
+
+msgid "Manage Export Templates..."
+msgstr "রপ্তানি টেমপ্লেট ম্যানেজ করুন..।"
+
+msgid "Help"
+msgstr "হেল্প"
+
+msgid "Search Help..."
+msgstr "সাহায্য অনুসন্ধান করুন…"
+
+msgid "Online Documentation"
+msgstr "অনলাইন ডকুমেন্টেশন"
+
+msgid "About Godot..."
+msgstr "Godot সম্পর্কে…"
+
+msgid "Inspector"
+msgstr "পরিদর্শক/পরীক্ষক"
+
+msgid "Node"
+msgstr "শাখা"
+
+msgid "Don't Save"
+msgstr "সংরক্ষণ করবেন না"
+
+msgid "Install from file"
+msgstr "ফাইল থেকে ইন্সটল করুন"
+
+msgid "Select Android sources file"
+msgstr "অ্যান্ড্রয়েড সোর্স ফাইল নির্বাচন করুন"
+
+msgid "Import Templates From ZIP File"
+msgstr "ZIP ফাইল হতে টেমপ্লেট-সমূহ ইম্পোর্ট করুন"
+
+msgid "Export Library"
+msgstr "লাইব্রেরি এক্সপোর্ট করুন"
+
+msgid "Open & Run a Script"
+msgstr "একটি স্ক্রিপ্ট খুলুন এবং চালান"
+
+msgid "Create/Override Version Control Metadata..."
+msgstr "সংস্করণ নিয়ন্ত্রণ মেটাডেটা তৈরি/ওভাররাইড করুন..।"
+
+msgid "Version Control Settings..."
+msgstr "সংস্করণ নিয়ন্ত্রণ সেটিংস..।"
+
+msgid "New Inherited"
+msgstr "নতুন উত্তরাধিকারী দৃশ্য"
+
+msgid "Load Errors"
+msgstr "ভুল/সমস্যা-সমূহ লোড করুন"
+
+msgid "Warning!"
+msgstr "সতর্কতা!"
+
+msgid "Edit Text:"
+msgstr "টেক্সট এডিট করুন:"
+
+msgid "On"
+msgstr "চালু"
+
+msgid "Renaming layer %d:"
+msgstr "স্তর পুনঃনামকরণ %d:"
+
+msgid "Name contains invalid characters."
+msgstr "নামে অবৈধ অক্ষর রয়েছে।"
+
+msgid "Bit %d, value %d"
+msgstr "বিট %d, মান %d"
+
+msgid "Rename"
+msgstr "পুনঃনামকরণ করুন"
+
+msgid "Layer %d"
+msgstr "স্তর %d"
+
+msgid "Assign..."
+msgstr "নিযুক্ত…"
+
+msgid "Invalid RID"
+msgstr "অকার্যকর RID"
+
+msgid "Selected node is not a Viewport!"
+msgstr "বাছাইকৃত নোড ভিউপোর্ট নয়!"
+
+msgid "Remove Item"
+msgstr "বস্তু অপসারণ করুন"
+
+msgid "Localizable String (size %d)"
+msgstr "স্থানীয়করণযোগ্য স্ট্রিং (আকার %d)"
+
+msgid "Quick Load..."
+msgstr "দ্রুত লোড…"
+
+msgid "Load..."
+msgstr "লোড…"
+
+msgid "Save As..."
+msgstr "এইরূপে সংরক্ষণ করুন..."
+
+msgid "Convert to %s"
+msgstr "%s এ রূপান্তর করুন"
+
+msgid "New Script..."
+msgstr "নতুন স্ক্রিপ্ট…"
+
+msgid "Extend Script..."
+msgstr "স্ক্রীপ্ট বাড়ান…"
+
+msgid "New Shader..."
+msgstr "নতুন শেডার…"
+
+msgid "Project Run"
+msgstr "প্রজেক্ট রান করুন"
+
+msgid "Write your logic in the _run() method."
+msgstr "আপনার লজিক/যুক্তি-সমূহ _run() মেথডে লিখুন।"
+
+msgid "Edit Built-in Action: %s"
+msgstr "বিল্ট-ইন অ্যাকশন সম্পাদনা করুন: %s"
+
+msgid "Edit Shortcut: %s"
+msgstr "শর্টকাট সম্পাদনা করুন: %s"
+
+msgid "Editor Settings"
+msgstr "এডিটরের সেটিংস"
+
+msgid "General"
+msgstr "সাধারণ"
+
+msgid "Shortcuts"
+msgstr "শর্টকাটসমূহ"
+
+msgid "Update checks disabled."
+msgstr "হাল -নাগাদ চেক বন্ধ।"
+
+msgid "or"
+msgstr "অথবা"
+
+msgid "Joypad Axis %d %s (%s)"
+msgstr "জয়প্যাড অক্ষ %d %s (%s)"
+
+msgid "Device"
+msgstr "ডিভাইস/যন্ত্র"
+
+msgid "Filter by Event"
+msgstr "ইভেন্ট দ্বারা ফিল্টার"
+
+msgid "Invalid Info.plist, no exe name."
+msgstr "অবৈধ Info.plist, exe নাম নেই।"
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "\"%s\" সাবফোল্ডার তৈরি করতে ব্যর্থ হয়েছে।"
+
+msgid "Invalid binary format."
+msgstr "অগ্রহণযোগ্য বাইনারি ফরম্যাট।"
+
+msgid "Invalid entitlements file."
+msgstr "অবৈধ এনটাইটেলমেন্ট ফাইল।"
+
+msgid "Invalid executable file."
+msgstr "অবৈধ এক্সিকিউটেবল ফাইল।"
+
+msgid "Project export for platform:"
+msgstr "প্লাটফর্মসমূহের জন্য প্রজেক্ট এক্সপোর্ট:"
+
+msgid "Completed with warnings."
+msgstr "সতর্কবাণীসহ সম্পন্ন হয়েছে।"
+
+msgid "Completed successfully."
+msgstr "সফলভাবে সম্পন্ন হয়েছে।"
+
+msgid "Failed."
+msgstr "ব্যর্থ হয়েছে।"
+
+msgid "Storing File: %s"
+msgstr "ফাইল সংরক্ষণ করা হচ্ছে: %s"
+
+msgid "Storing File:"
+msgstr "সংরক্ষিত ফাইল:"
+
+msgid "No export template found at the expected path:"
+msgstr "এক্সপোর্ট এর জন্য প্রয়োজণীয় টেমপ্লেট পাওয়া যায়নি পথে:"
+
+msgid "Could not open file to read from path \"%s\"."
+msgstr "\"%s\" পাথ থেকে পড়ার জন্য ফাইল খোলা যায়নি।"
+
+msgid "Packing"
+msgstr "প্যাক/গুচ্ছিত করা"
+
+msgid "Cannot create file \"%s\"."
+msgstr "ফাইল \"%s\" তৈরি করা যাবে না।"
+
+msgid "Failed to export project files."
+msgstr "প্রকল্প ফাইল রপ্তানি করতে ব্যর্থ হয়েছে।"
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "\"%s\" পাথে লেখার জন্য ফাইল খোলা যাবে না।"
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "\"%s\" পাথে রিডিং-রাইটিং এর জন্য ফাইল খোলা যাবে না।"
+
+msgid "Can't create encrypted file."
+msgstr "এনক্রিপ্ট করা ফাইল তৈরি করা যাচ্ছে না।"
+
+msgid "Can't open encrypted file to write."
+msgstr "লেখার জন্য এনক্রিপ্ট করা ফাইল খোলা যায় না।"
+
+msgid "Can't open file to read from path \"%s\"."
+msgstr "\"%s\" পাথ থেকে পড়ার জন্য ফাইল খোলা যাবে না।"
+
+msgid "Template file not found: \"%s\"."
+msgstr "টেমপ্লেট ফাইল পাওয়া যায়নি: \"%s\"।"
+
+msgid "Failed to copy export template."
+msgstr "এক্সপোর্ট টেমপ্লেট কপি করতে ব্যর্থ হয়েছে।"
+
+msgid "Can't resolve the requested address."
+msgstr "অনুরোধ করা ঠিকানা সমাধান করা যাচ্ছে না ।"
+
+msgid "Can't connect to the mirror."
+msgstr "mirror এর সাথে সংযোগ করা যাচ্ছে না।"
+
+msgid "No response from the mirror."
+msgstr "mirror থেকে কোন প্রতিক্রিয়া নেই।"
+
+msgid "Request ended up in a redirect loop."
+msgstr "অনুরোধ একটি রিডাইরেক্ট লুপে শেষ হয়েছে।"
+
+msgid "Request failed:"
+msgstr "রিকুয়েস্ট ব্যর্থ হয়েছে:"
+
+msgid ""
+"No download links found for this version. Direct download is only available "
+"for official releases."
+msgstr ""
+"এই ভার্সনের জন্য কোন ডাউনলোড লিঙ্ক পাওয়া যায় নি। সরাসরি ডাউনলোড অফিসিয়াল রিলিজের "
+"জন্য প্রযোজ্য।"
+
+msgid "Resolving"
+msgstr "সমাধান করা হচ্ছে"
+
+msgid "Can't Resolve"
+msgstr "সমস্যা সমাধানে ব্যর্থ"
+
+msgid "Can't Connect"
+msgstr "সংযোগ স্থাপন করা যাচ্ছেনা"
+
+msgid "Requesting..."
+msgstr "অনুরোধ করা হচ্ছে…"
+
+msgid "Connection Error"
+msgstr "সংযোগে সমস্যা"
+
+msgid "Invalid version.txt format inside the export templates file: %s."
+msgstr "এক্সপোর্ট টেমপ্লেট ফাইলের ভিতরে অবৈধ version.txt ফরম্যাট: %s।"
+
+msgid "Importing:"
+msgstr "ইম্পোর্ট হচ্ছে:"
+
+msgid "Export templates are missing. Install them from a file."
+msgstr "রপ্তানি টেমপ্লেট অনুপস্থিত । একটি ফাইল থেকে তাদের ইনস্টল করুন।"
+
+msgid "Current Version:"
+msgstr "বর্তমান ভার্সন:"
+
+msgid "Download from:"
+msgstr "ডাউনলোড সোর্স:"
+
+msgid "Install from File"
+msgstr "ফাইল থেকে ইন্সটল করুন"
+
+msgid "Install templates from a local file."
+msgstr "ZIP ফাইল হতে টেমপ্লেট-সমূহ ইনস্টল করুন।"
+
+msgid "Select Template File"
+msgstr "টেমপ্লেট ফাইল নির্বাচন করুন"
+
+msgid "Delete preset '%s'?"
+msgstr "প্রিসেট '%s' মুছবেন?"
+
+msgid "(Inherited)"
+msgstr "(উত্তরাধিকারসূত্রে প্রাপ্ত)"
+
+msgid "%s Export"
+msgstr "%s এক্সপোর্ট"
+
+msgid "Exporting All"
+msgstr "সবকিছু রপ্তানি"
+
+msgid "Presets"
+msgstr "প্রিসেটসমূহ"
+
+msgid "Add..."
+msgstr "সংযোগ..."
+
+msgid "Duplicate"
+msgstr "ডুপ্লিকেট"
+
+msgid "Export Path"
+msgstr "এক্সপোর্টের পথ"
+
+msgid "Options"
+msgstr "সিদ্ধান্তসমূহ"
+
+msgid "Resources"
+msgstr "রিসোর্সসমূহ"
+
+msgid "Export all resources in the project"
+msgstr "প্রকল্পের সকল রিসোর্স এক্সপোর্ট করুন"
+
+msgid "Export selected scenes (and dependencies)"
+msgstr "নির্বাচিত দৃশসমূহ এক্সপোর্ট করুন (ডিপেন্ডেন্সী সহ)"
+
+msgid "Export selected resources (and dependencies)"
+msgstr "নির্বাচিত রিসোর্সসমূহ এক্সপোর্ট করুন (ডিপেন্ডেন্সী সহ)"
+
+msgid "Export all resources in the project except resources checked below"
+msgstr "নীচে চেক করা রিসোর্স ছাড়া প্রকল্পের সমস্ত রিসোর্স রপ্তানি করুন"
+
+msgid "Export Mode:"
+msgstr "এক্সপোর্ট মোড:"
+
+msgid "Keep"
+msgstr "রাখুন"
+
+msgid ""
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
+msgstr ""
+"রিসোর্স-নয় এমন ফাইল এক্সপোর্ট করার ফিল্টারসমূহ \n"
+"(কমা-বিভক্ত, যেমন: *.json, *.txt)"
+
+msgid ""
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
+msgstr ""
+"এক্সপোর্ট (export) হতে বর্জনকৃত ফিল্টারসমূহ (filter)\n"
+" (কমা-বিভক্ত, যেমন: *.json, *.txt,doc/*)"
+
+msgid "Custom (comma-separated):"
+msgstr "কাস্টম (কমা দ্বারা পৃথক করা):"
+
+msgid "Encryption"
+msgstr "এনক্রিপশন"
+
+msgid ""
+"Filters to include files/folders\n"
+"(comma-separated, e.g: *.tscn, *.tres, scenes/*)"
+msgstr ""
+"ফাইল/ফোল্ডার অন্তর্ভুক্ত করার জন্য ফিল্টার\n"
+"(কমা দ্বারা পৃথক করা, যেমন: *.tscn, *.tres, দৃশ্য/*)"
+
+msgid ""
+"Filters to exclude files/folders\n"
+"(comma-separated, e.g: *.ctex, *.import, music/*)"
+msgstr ""
+"ফাইল/ফোল্ডার বাদ দিতে ফিল্টার\n"
+"(কমা দিয়ে আলাদা করা, যেমন: *.ctex, *.import, music/*)"
+
+msgid "Export PCK/ZIP..."
+msgstr "এক্সপোর্ট PCK/ZIP…"
+
+msgid "Export Project..."
+msgstr "প্রকল্প এক্সপোর্ট করুন…"
+
+msgid "Choose an export mode:"
+msgstr "একটি রপ্তানি মোড চয়ন করুন:"
+
+msgid "Export All..."
+msgstr "সবকিছু এক্সপোর্ট…"
+
+msgid "Export templates for this platform are missing:"
+msgstr "এই প্ল্যাটফর্মের জন্য দরকারি এক্সপোর্ট টেমপ্লেটগুলি খুঁজে পাওয়া যাচ্ছে না:"
+
+msgid "FBX2glTF executable is valid."
+msgstr "FBX2glTF এক্সিকিউটেবল বৈধ।"
+
+msgid "Browse"
+msgstr "ব্রাউস"
+
+msgid "View items as a grid of thumbnails."
+msgstr "থাম্বনেইল গ্রিড হিসাবে আইটেম দেখুন।"
+
+msgid "View items as a list."
+msgstr "লিস্ট হিসেবে আইটেম দেখুন।"
+
+msgid "Status: Import of file failed. Please fix file and reimport manually."
+msgstr ""
+"স্ট্যাটাস: ফাইল ইম্পোর্ট ব্যর্থ হয়েছে। অনুগ্রহ করে ফাইলটি ঠিক করুন এবং ম্যানুয়ালি পুনরায় "
+"ইম্পোর্ট করুন।"
+
+msgid "Cannot move a folder into itself."
+msgstr "ফাইলকে তার নিজের ভেতরেই সরানো যায় না।"
+
+msgid "Unable to update dependencies for:"
+msgstr "এর জন্য নির্ভরতা আপডেট করতে অক্ষম:"
+
+msgid "A file or folder with this name already exists."
+msgstr "এই নামের একটি ফাইল বা ফোল্ডার ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Duplicating file:"
+msgstr "ডুপ্লিকেট করা হচ্ছে ফাইল:"
+
+msgid "Duplicating folder:"
+msgstr "ফোল্ডার ডুপ্লিকেট করা হচ্ছে:"
+
+msgid "Create Folder"
+msgstr "ফোল্ডার তৈরি করুন"
+
+msgid "New Inherited Scene"
+msgstr "নতুন উত্তরাধিকারী দৃশ্য"
+
+msgid "Edit Dependencies..."
+msgstr "নির্ভরতাসমূহ সম্পাদন করুন..."
+
+msgid "View Owners..."
+msgstr "স্বত্বাধিকারীদের দেখুন..."
+
+msgid "Folder..."
+msgstr "ফোল্ডার…"
+
+msgid "Scene..."
+msgstr "দৃশ্য…"
+
+msgid "Script..."
+msgstr "স্ক্রিপ্ট…"
+
+msgid "TextFile..."
+msgstr "টেক্সটফাইল…"
+
+msgid "Set Folder Color..."
+msgstr "ফোল্ডারের রঙ সেট করুন..।"
+
+msgid "Move/Duplicate To..."
+msgstr "সরান/প্রতিলিপি করুন..।"
+
+msgid "Add to Favorites"
+msgstr "ফেভারিটে যোগ করুন"
+
+msgid "New Folder..."
+msgstr "নতুন ফোল্ডার…"
+
+msgid "New Scene..."
+msgstr "নতুন দৃশ্য…"
+
+msgid "New TextFile..."
+msgstr "নতুন টেক্সটফাইল…"
+
+msgid "Copy Path"
+msgstr "পথ প্রতিলিপি/কপি করুন"
+
+msgid "Duplicate..."
+msgstr "ডুপ্লিকেট…"
+
+msgid "Rename..."
+msgstr "পুনঃনামকরণ…"
+
+msgid "Re-Scan Filesystem"
+msgstr "ফাইলসিস্টেম পুন-স্ক্যান করুন"
+
+msgid "Filter Files"
+msgstr "ফাইল ফিল্টার করুন"
+
+msgid ""
+"Scanning Files,\n"
+"Please Wait..."
+msgstr ""
+"ফাইল স্ক্যান করা হচ্ছে,\n"
+"অনুগ্রহপূর্বক অপেক্ষা করুন..."
+
+msgid "Overwrite"
+msgstr "প্রতিস্থাপন"
+
+msgid "Create Script"
+msgstr "স্ক্রিপ্ট তৈরি করুন"
+
+msgid "Find:"
+msgstr "সন্ধান করুন:"
+
+msgid "Replace:"
+msgstr "প্রতিস্থাপন করুন:"
+
+msgid "Folder:"
+msgstr "ফোল্ডার:"
+
+msgid "Filters:"
+msgstr "ফিল্টারসমূহ:"
+
+msgid "Find..."
+msgstr "খুঁজুন..."
+
+msgid "Replace..."
+msgstr "প্রতিস্থাপন..."
+
+msgid "%d match in %d file"
+msgstr "%d ফাইলে %d মিল"
+
+msgid "%d matches in %d file"
+msgstr "%d ফাইলে %d মিল"
+
+msgid "%d matches in %d files"
+msgstr "%d ফাইলে %d মিল"
+
+msgid "Set Group Description"
+msgstr "গ্রুপের বর্ণনা সেট করুন"
+
+msgid "Invalid group name. It cannot be empty."
+msgstr "অবৈধ গোষ্ঠীর নাম৷ এটা খালি হতে পারে না।"
+
+msgid "A group with the name '%s' already exists."
+msgstr "'%s' নামের একটি গ্রুপ ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Group can't be empty."
+msgstr "গ্রুপ খালি হতে পারে না।"
+
+msgid "Group already exists."
+msgstr "গ্রুপ ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Delete group \"%s\"?"
+msgstr "\"%s\" গ্রুপ মুছবেন?"
+
+msgid "Group name is valid."
+msgstr "গ্রুপের নাম বৈধ।"
+
+msgid "Copy group name to clipboard."
+msgstr "ক্লিপবোর্ডে গ্রুপের নাম কপি করুন।"
+
+msgid "Add to Group"
+msgstr "গ্রুপ/দলে যোগ করুন"
+
+msgid "Remove from Group"
+msgstr "গ্রুপ/দল হতে অপসারণ করুন"
+
+msgid "Convert to Scene Group"
+msgstr "সিন গ্রুপে রুপান্তর করুন"
+
+msgid "Global"
+msgstr "গ্লোবাল"
+
+msgid "Move/Duplicate: %s"
+msgstr "সরান/ডুপ্লিকেট: %s"
+
+msgid "Move/Duplicate %d Item"
+msgid_plural "Move/Duplicate %d Items"
+msgstr[0] "%d আইটেম সরান/ডুপ্লিকেট করুন"
+msgstr[1] "%dটি আইটেম সরান/ডুপ্লিকেট করুন"
+
+msgid "Choose target directory:"
+msgstr "টার্গেট ডিরেক্টরি নির্বাচন করুন:"
+
+msgid "Move"
+msgstr "সরান"
+
+msgid "Open a File"
+msgstr "একটি ফাইল খুলুন"
+
+msgid "Open File(s)"
+msgstr "এক বা একাধিক ফাইল খুলুন"
+
+msgid "Open a Directory"
+msgstr "পথ/ডিরেক্টরি খুলুন"
+
+msgid "Open a File or Directory"
+msgstr "ফাইল বা পথ/ডিরেক্টরি খুলুন"
+
+msgid "Save a File"
+msgstr "ফাইল সংরক্ষন করুন"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "ফোল্ডার তৈরি করা যায়নি। সেই নামের ফাইলটি আগে থেকেই আছে।"
+
+msgid "Could not create folder."
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
+
+msgid "Go Back"
+msgstr "পিছনের দিকে যান"
+
+msgid "Go Forward"
+msgstr "সামনের দিকে যান"
+
+msgid "Go Up"
+msgstr "উপরের দিকে যান"
+
+msgid "Toggle Hidden Files"
+msgstr "অদৃশ্য ফাইলসমূহ অদলবদল/টগল করুন"
+
+msgid "Toggle Favorite"
+msgstr "ফেবরিট/প্রিয়-সমূহ অদলবদল/টগল করুন"
+
+msgid "Toggle Mode"
+msgstr "মোড অদলবদল/টগল করুন"
+
+msgid "Focus Path"
+msgstr "পথের উপর ফোকাস করুন"
+
+msgid "Move Favorite Up"
+msgstr "ফেবরিট/প্রিয়কে উপরের দিকে তুলুন"
+
+msgid "Move Favorite Down"
+msgstr "ফেবরিট/প্রিয়কে নিচের দিকে নামান"
+
+msgid "Refresh files."
+msgstr "ফাইল রিফ্রেশ করুন।"
+
+msgid "Create a new folder."
+msgstr "নতুন একটি ফোল্ডার তৈরি করুন।"
+
+msgid "Directories & Files:"
+msgstr "পথ এবং ফাইল:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "লুকানো ফাইলের দৃশ্যমানতা টগল করুন।"
+
+msgid "Preview:"
+msgstr "প্রিভিউ:"
+
+msgid "File:"
+msgstr "ফাইল:"
+
+msgid ""
+"Remove the selected files? For safety only files and empty directories can be "
+"deleted from here. (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"নির্বাচিত ফাইলগুলি সরান? নিরাপত্তার জন্য এখান থেকে শুধুমাত্র ফাইল এবং খালি ডিরেক্টরি "
+"মুছে ফেলা যাবে। (পূর্বাবস্থায় ফেরানো যাবে না।)\n"
+"আপনার ফাইল সিস্টেম কনফিগারেশনের উপর নির্ভর করে, ফাইলগুলি হয় s এ সরানো হবে।"
+
+msgid "Play the project."
+msgstr "প্রকল্পটি চালান।"
+
+msgid "Play the edited scene."
+msgstr "সম্পাদিত দৃশ্যটি চালান।"
+
+msgid "Play a custom scene."
+msgstr "একটি কাস্টম দৃশ্য প্লে করুন।"
+
+msgid "Reload the played scene."
+msgstr "পূর্বে প্লে করা দৃশ্য পুনরায় লোড করুন।"
+
+msgid "Close Other Tabs"
+msgstr "অন্য ট্যাবগুলি বন্ধ করুন"
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"%s ধরে পূর্ণসংখ্যা থেকে রাউন্ড করুন।\n"
+"আরও সুনির্দিষ্ট পরিবর্তনের জন্য Shift ধরে রাখুন।"
+
+msgid "No notifications."
+msgstr "কোনো নোটিফিকেশন নেই।"
+
+msgid "Show notifications."
+msgstr "নোটিফিকেশন দেখুন।"
+
+msgid "Silence the notifications."
+msgstr "বিজ্ঞপ্তিগুলি নীরব করুন।"
+
+msgid "Disable Scene Unique Name"
+msgstr "দৃশ্যের অনন্য নাম অক্ষম করুন"
+
+msgid "(Connecting From)"
+msgstr "(এর থেকে সংযোগ করা হচ্ছে)"
+
+msgid "Node configuration warning:"
+msgstr "নোড কনফিগারেশন সতর্কবার্তা:"
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "নোডের একটি সংযোগ আছে।"
+msgstr[1] "নোডের {num} সংযোগ আছে।"
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "নোড এই গ্রুপে আছে:"
+msgstr[1] "নোড নিম্নলিখিত গ্রুপে রয়েছে:"
+
+msgid "Click to show signals dock."
+msgstr "সংকেত ডক দেখাতে ক্লিক করুন।"
+
+msgid "Open Script:"
+msgstr "স্ক্রিপ্ট খুলুন:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"নোডটি লকড।\n"
+"আনলক করতে ক্লিক করুন।"
+
+msgid ""
+"Children are not selectable.\n"
+"Click to make them selectable."
+msgstr ""
+"সন্তান নির্বাচনযোগ্য নয়।\n"
+"তাদের নির্বাচনযোগ্য করতে ক্লিক করুন।"
+
+msgid "Open in Editor"
+msgstr "এডিটরে খুলুন"
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "অগ্রহণযোগ্য নোডের নাম, নীম্নোক্ত অক্ষরসমূহ গ্রহণযোগ্য নয়:"
+
+msgid "A node with the unique name %s already exists in this scene."
+msgstr "এই দৃশ্যে %s নামের অনন্য একটি নোড ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Enable Scene Unique Name(s)"
+msgstr "দৃশ্যের অনন্য নাম(গুলি) সক্ষম করুন"
+
+msgid "Scene Tree (Nodes):"
+msgstr "দৃশ্যের শাখা (নোডসমূহ):"
+
+msgid "Node Configuration Warning!"
+msgstr "নোড কনফিগারেশন ওয়ার্নিং!"
+
+msgid "Select a Node"
+msgstr "একটি নোড নির্বাচন করুন"
+
+msgid "Show All"
+msgstr "সব দেখুন"
+
+msgid "Importing Scene..."
+msgstr "দৃশ্য ইম্পোর্ট করা হচ্ছে..."
+
+msgid "Import Scene"
+msgstr "দৃশ্য ইম্পোর্ট করুন"
+
+msgid "Running Custom Script..."
+msgstr "স্বনির্মিত স্ক্রিপ্ট চালানো হচ্ছে..."
+
+msgid "Couldn't load post-import script:"
+msgstr "ইম্পোর্ট-পরবর্তী স্ক্রিপ্ট লোড করা সম্ভব হয়নি:"
+
+msgid "Invalid/broken script for post-import (check console):"
+msgstr "ইম্পোর্ট-পরবর্তী স্ক্রিপ্ট অকার্যকর/ত্রুটিপূর্ণ (কনসোল দেখুন):"
+
+msgid "Error running post-import script:"
+msgstr "ইম্পোর্ট-পরবর্তী স্ক্রিপ্ট চালানোয় সমস্যা হয়েছে:"
+
+msgid "Saving..."
+msgstr "সংরক্ষিত হচ্ছে..."
+
+msgid "Import ID: %s"
+msgstr "আমদানি আইডি:%s"
+
+msgid "Error opening scene"
+msgstr "দৃশ্য খুলতে সমস্যা হয়েছে"
+
+msgid "Warning: File exists"
+msgstr "সতর্কতা: ফাইল বিদ্যমান"
+
+msgid "Set paths to save animations as resource files on Reimport"
+msgstr "Reimport এ রিসোর্স ফাইল হিসাবে অ্যানিমেশন সংরক্ষণ করার জন্য পাথ সেট করুন"
+
+msgid "Actions..."
+msgstr "একশন…"
+
+msgid "Status"
+msgstr "অবস্থা"
+
+msgid "Save Extension:"
+msgstr "এক্সটেনশন সংরক্ষণ:"
+
+msgid "Audio Stream Importer: %s"
+msgstr "অডিও স্ট্রিম আমদানিকারক: %s"
+
+msgid "Enable looping."
+msgstr "লুপিং সক্ষম করুন।"
+
+msgid "Offset:"
+msgstr "অফসেট/ভারসাম্য:"
+
+msgid "Loop:"
+msgstr "লুপ:"
+
+msgid "Beat Count:"
+msgstr "বিট সংখ্যা:"
+
+msgid "Music Playback:"
+msgstr "সঙ্গীত প্লেব্যাক:"
+
+msgid "Pre-render Configurations"
+msgstr "প্রি-রেন্ডার কনফিগারেশন"
+
+msgid "Configuration:"
+msgstr "কনফিগারেশন:"
+
+msgid "Importer:"
+msgstr "আমদানিকারক:"
+
+msgid "%d Files"
+msgstr "%d ফাইলসমূহ"
+
+msgid "Set as Default for '%s'"
+msgstr "'%s' এর জন্য ডিফল্ট হিসাবে সেট করুন"
+
+msgid "Clear Default for '%s'"
+msgstr "'%s' এর জন্য ডিফল্ট ক্লিয়ার করুন"
+
+msgid "Import As:"
+msgstr "এই হিসাবে আমদানি করুন:"
+
+msgid "Preset"
+msgstr "প্রিসেট"
+
+msgid "Advanced..."
+msgstr "এডভান্সড…"
+
+msgid "Joypad Axes"
+msgstr "জয়স্টিক অক্ষ"
+
+msgid "Event Configuration for \"%s\""
+msgstr "\"%s\" এর জন্য ইভেন্ট কনফিগারেশন"
+
+msgid "Device:"
+msgstr "ডিভাইস:"
+
+msgid "Physical location"
+msgstr "শারীরিক অবস্থান"
+
+msgid "Failed to load resource."
+msgstr "রিসোর্স লোড ব্যর্থ হয়েছে।"
+
+msgid "(Current)"
+msgstr "(বর্তমান)"
+
+msgid "Property Name Style"
+msgstr "প্রকল্পের নামের স্টাইল"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "ক্যাপিটালাইজড (যেমন \"%s\")"
+
+msgid "Copy Properties"
+msgstr "প্রোপার্টি-সমূহ কপি করুন"
+
+msgid "Paste Properties"
+msgstr "বৈশিষ্ট্যগুলি পেস্ট করুন"
+
+msgid "Make Sub-Resources Unique"
+msgstr "উপ-রিসোর্সকে অনন্য হিসেবে তৈরি করুন"
+
+msgid "Create a new resource in memory and edit it."
+msgstr "মেমোরিতে নতুন একটি রিসোর্স তৈরি করুন এবং সম্পাদন করুন।"
+
+msgid "Load an existing resource from disk and edit it."
+msgstr "ডিস্ক হতে একটি বিদ্যমান রিসোর্স লোড করুন এবং সম্পাদন করুন।"
+
+msgid "Save the currently edited resource."
+msgstr "এই-মুহূর্তে সম্পাদিত রিসোর্সটি সংরক্ষণ করুন।"
+
+msgid "Edit Resource from Clipboard"
+msgstr "ক্লিপবোর্ড থেকে সম্পদ সম্পাদনা করুন"
+
+msgid "Copy Resource"
+msgstr "রিসোর্স প্রতিলিপি/কপি করুন"
+
+msgid "History of recently edited objects."
+msgstr "সাম্প্রতিক সময়ে সম্পাদিত বস্তুর স্মৃতি।"
+
+msgid "Remove Translation"
+msgstr "অনুবাদ অপসারণ করুন"
+
+msgid "Change Resource Remap Language"
+msgstr "রিসোর্স পুনঃ-নকশার ভাষা পরিবর্তন করুন"
+
+msgid "Remove Resource Remap"
+msgstr "রিসোর্সের পুনঃ-নকশা অপসারণ করুন"
+
+msgid "Remove Resource Remap Option"
+msgstr "রিসোর্সের পুনঃ-নকশার সিদ্ধান্ত অপসারণ করুন"
+
+msgid "%s cannot be found."
+msgstr "%s পাওয়া যায়নি।"
+
+msgid "Translations"
+msgstr "অনুবাদসমূহ"
+
+msgid "Translations:"
+msgstr "অনুবাদসমূহ:"
+
+msgid "Remaps"
+msgstr "পুনঃনকশাসমূহ"
+
+msgid "Resources:"
+msgstr "রিসোর্সসমূহ:"
+
+msgid "Remaps by Locale:"
+msgstr "ঘটনাস্থল দ্বারা পুনঃনকশা:"
+
+msgid "Locale"
+msgstr "ঘটনাস্থল"
+
+msgid "Set %s on %d nodes"
+msgstr "%s সেট করুন %d নোডে"
+
+msgid "%s (%d Selected)"
+msgstr "%s (%dটি নির্বাচিত)"
+
+msgid "Groups"
+msgstr "দলসমূহ"
+
+msgid "Create points."
+msgstr "বিন্দু তৈরি করুন।"
+
+msgid ""
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
+msgstr ""
+"পয়েন্ট সম্পাদনা করুন।\n"
+"LMB: মুভ পয়েন্ট\n"
+"RMB: ইরেজ পয়েন্ট"
+
+msgid "Add Animation"
+msgstr "অ্যানিমেশন যুক্ত করুন"
+
+msgid "Add %s"
+msgstr "%s সংযুক্ত করুন"
+
+msgid "Sync:"
+msgstr "সিঙ্ক:"
+
+msgid "Blend:"
+msgstr "ব্লেন্ড/মিশ্রণ:"
+
+msgid "Triangle already exists."
+msgstr "ত্রিভুজ ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Erase points and triangles."
+msgstr "বিন্দু এবং ত্রিভুজ মুছুন।"
+
+msgid "Parameter Changed: %s"
+msgstr "প্যারামিটার পরিবর্তন করা হয়েছে: %s"
+
+msgid "Inspect Filters"
+msgstr "ফিল্টার পরিদর্শন করুন"
+
+msgid "Delete Node(s)"
+msgstr "নোড(সমূহ) অপসারণ করুন"
+
+msgid "Functions"
+msgstr "ফাংশনগুলি"
+
+msgid "Inspect Filtered Tracks:"
+msgstr "ফিল্টার করা ট্র্যাকগুলি পরিদর্শন করুন:"
+
+msgid "Edit Filtered Tracks:"
+msgstr "ফিল্টার করা ট্র্যাক সম্পাদনা করুন:"
+
+msgid "Node Renamed"
+msgstr "নোডের নাম পরিবর্তন করা হয়েছে"
+
+msgid "Add Node..."
+msgstr "নোড সংযোজন করুন…"
+
+msgid "Library Name:"
+msgstr "লাইব্রেরির নাম:"
+
+msgid "Animation name can't be empty."
+msgstr "অ্যানিমেশনের নাম খালি থাকতে পারে না।"
+
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr "অ্যানিমেশন নামের অবৈধ অক্ষর রয়েছে: '/', ':', ',' বা '['।"
+
+msgid "Animation with the same name already exists."
+msgstr "একই নামের অ্যানিমেশন আগে থেকেই আছে।"
+
+msgid "Library name contains invalid characters: '/', ':', ',' or '['."
+msgstr "লাইব্রেরির নামে অবৈধ অক্ষর রয়েছে: '/', ':', ',' বা '['।"
+
+msgid "Library with the same name already exists."
+msgstr "একই নামের লাইব্রেরি আগে থেকেই আছে।"
+
+msgid "Library name is valid."
+msgstr "লাইব্রেরির নাম বৈধ।"
+
+msgid "Add Animation to Library: %s"
+msgstr "লাইব্রেরিতে অ্যানিমেশন যোগ করুন: %s"
+
+msgid "Add Animation Library: %s"
+msgstr "অ্যানিমেশন লাইব্রেরি যোগ করুন: %s"
+
+msgid "Load Animation"
+msgstr "অ্যানিমেশন লোড করুন"
+
+msgid "Save Library"
+msgstr "লাইব্রেরি সংরক্ষণ করুন"
+
+msgid "Make Animation Unique: %s"
+msgstr "অ্যানিমেশনকে অনন্য করুন: %s"
+
+msgid "Save Animation to File: %s"
+msgstr "ফাইলে অ্যানিমেশন সংরক্ষণ করুন: %s"
+
+msgid "Load Animation into Library: %s"
+msgstr "লাইব্রেরিতে অ্যানিমেশন লোড করুন: %s"
+
+msgid "Rename Animation Library: %s"
+msgstr "অ্যানিমেশন লাইব্রেরির নাম পরিবর্তন করুন: %s"
+
+msgid "[Global]"
+msgstr "[গ্লোবাল]"
+
+msgid "Rename Animation: %s"
+msgstr "অ্যানিমেশন পুনঃনামকরণ: %s"
+
+msgid "Animation Name:"
+msgstr "অ্যানিমেশনের নাম:"
+
+msgid "Pasted Animation"
+msgstr "প্রতিলিপিত অ্যানিমেশন"
+
+msgid "Remove Animation Library: %s"
+msgstr "অ্যানিমেশন লাইব্রেরি সরান: %s"
+
+msgid "Remove Animation from Library: %s"
+msgstr "লাইব্রেরি থেকে অ্যানিমেশন সরান: %s"
+
+msgid "Add animation to library."
+msgstr "লাইব্রেরিতে অ্যানিমেশন যোগ করুন।"
+
+msgid "Load animation from file and add to library."
+msgstr "ফাইল থেকে অ্যানিমেশন লোড করুন এবং লাইব্রেরিতে যোগ করুন।"
+
+msgid "Paste animation to library from clipboard."
+msgstr "ক্লিপবোর্ড থেকে লাইব্রেরিতে অ্যানিমেশন আটকান।"
+
+msgid "Save animation library to resource on disk."
+msgstr "ডিস্কে রিসোর্সে অ্যানিমেশন লাইব্রেরি সংরক্ষণ করুন।"
+
+msgid "Remove animation library."
+msgstr "অ্যানিমেশন লাইব্রেরি সরান।"
+
+msgid "Copy animation to clipboard."
+msgstr "ক্লিপবোর্ডে অ্যানিমেশন কপি করুন।"
+
+msgid "Save animation to resource on disk."
+msgstr "ডিস্কে রিসোর্সে অ্যানিমেশন সংরক্ষণ করুন।"
+
+msgid "Remove animation from Library."
+msgstr "লাইব্রেরি থেকে অ্যানিমেশন সরান।"
+
+msgid "New Library"
+msgstr "নতুন লাইব্রেরী"
+
+msgid "Create new empty animation library."
+msgstr "নতুন খালি অ্যানিমেশন লাইব্রেরি তৈরি করুন।"
+
+msgid "Load Library"
+msgstr "লাইব্রেরী লোড করুন"
+
+msgid "Load animation library from disk."
+msgstr "ডিস্ক থেকে অ্যানিমেশন লাইব্রেরি লোড করুন।"
+
+msgid "Storage"
+msgstr "স্টোরেজ"
+
+msgid "Toggle Autoplay"
+msgstr "স্বয়ংক্রিয়ভাবে চালানো টগল করুন"
+
+msgid "Create New Animation"
+msgstr "নতুন অ্যানিমেশন তৈরি করুন"
+
+msgid "New Animation Name:"
+msgstr "নতুন অ্যানিমেশনের নাম:"
+
+msgid "Rename Animation"
+msgstr "অ্যানিমেশন পুনঃনামকরণ করুন"
+
+msgid "Change Animation Name:"
+msgstr "অ্যানিমেশনের নাম পরিবর্তন করুন:"
+
+msgid "Delete Animation '%s'?"
+msgstr "অ্যানিমেশন '%s' মুছবেন?"
+
+msgid "Remove Animation"
+msgstr "অ্যানিমেশন অপসারণ করুন"
+
+msgid "Animation '%s' already exists!"
+msgstr "অ্যানিমেশন '%s' ইতিমধ্যেই বিদ্যমান!"
+
+msgid "Duplicate Animation"
+msgstr "অ্যানিমেশন প্রতিলিপি করুন"
+
+msgid "Blend Next Changed"
+msgstr "পরবর্তী পরিবর্তনের সাথে ব্লেন্ড করুন"
+
+msgid "Change Blend Time"
+msgstr "ব্লেন্ড-এর সময় পরিবর্তন করুন"
+
+msgid "[Global] (create)"
+msgstr "[গ্লোবাল](তৈরি)"
+
+msgid "Duplicated Animation Name:"
+msgstr "অ্যানিমেশন প্রতিলিপির নাম:"
+
+msgid "Animation position (in seconds)."
+msgstr "অ্যানিমেশনের স্থান (সেকেন্ডে)।"
+
+msgid "Scale animation playback globally for the node."
+msgstr "নোডের অ্যানিমেশন চালনার স্কেল/মাপ সার্বজনীনভাবে পরিবর্তন করুন।"
+
+msgid "Animation Tools"
+msgstr "অ্যানিমেশনের সরঞ্জামসমূহ"
+
+msgid "Animation"
+msgstr "অ্যানিমেশন"
+
+msgid "Manage Animations..."
+msgstr "অ্যানিমেশন ম্যানেজ করুন…"
+
+msgid "Edit Transitions..."
+msgstr "ট্রানজিশান ইডিট…"
+
+msgid "Display list of animations in player."
+msgstr "প্লেয়ারে অ্যানিমেশনসমূহের তালিকা দেখান।"
+
+msgid "Autoplay on Load"
+msgstr "লোডের পরেই স্বয়ংক্রিয়ভাবে চালান্‌"
+
+msgid "Directions"
+msgstr "দিকনির্দেশ"
+
+msgid "Depth"
+msgstr "গভীরতা"
+
+msgid "Cross-Animation Blend Times"
+msgstr "আন্ত-অ্যানিমেশন ব্লেন্ড সময়"
+
+msgid "Blend Times:"
+msgstr "ব্লেন্ড-এর সময়সমূহ:"
+
+msgid "Next (Auto Queue):"
+msgstr "পরবর্তী (স্বয়ংক্রিয়ভাবে সারিবদ্ধ করুন):"
+
+msgid "Transition exists!"
+msgstr "স্থানান্তর বিদ্যমান!"
+
+msgid "Edit %s"
+msgstr "সম্পাদন করুন (Edit) %s"
+
+msgid "Immediate"
+msgstr "তাৎক্ষণিক"
+
+msgid "Sync"
+msgstr "সিঙ্ক"
+
+msgid "Travel"
+msgstr "ভ্রমণ"
+
+msgid "No playback resource set at path: %s."
+msgstr "পাথে কোন প্লেব্যাক রিসোর্স সেট করা নেই: %s।"
+
+msgid "Node Removed"
+msgstr "নোড অপসারিত"
+
+msgid "Create new nodes."
+msgstr "নতুন নোড তৈরি করুন।"
+
+msgid "Connect nodes."
+msgstr "নোড সংযুক্ত করুন।"
+
+msgid "Transition:"
+msgstr "ট্র্যানজিশন/স্থানান্তরণ:"
+
+msgid "Play Mode:"
+msgstr "প্লে মোড:"
+
+msgid "Delete Selected"
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
+
+msgid "Version:"
+msgstr "সংস্করণ:"
+
+msgid "Connection error, please try again."
+msgstr "সংযোগ ত্রুটি, আবার চেষ্টা করুন।"
+
+msgid "No response from host:"
+msgstr "হোস্ট থেকে কোন প্রতিক্রিয়া নেই:"
+
+msgid "No response."
+msgstr "কোন প্রতিক্রিয়া নেই।"
+
+msgid "Can't resolve hostname:"
+msgstr "হোস্টনাম রিসলভ করা যায়নি:"
+
+msgid "Can't resolve."
+msgstr "সমস্যা সমাধানে ব্যর্থ।"
+
+msgid "Request failed, too many redirects"
+msgstr "অনুরোধ ব্যর্থ হয়েছে, অধিক সংখ্যক রিডাইরেক্ট এর কারণে"
+
+msgid "Request failed, timeout"
+msgstr "অনুরোধ ব্যর্থ হয়েছে, টাইমআউট"
+
+msgid "Timeout."
+msgstr "টাইমআউট।"
+
+msgid "Failed:"
+msgstr "ব্যর্থ:"
+
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr "ডাউনলোড হ্যাশ ত্রুটিযুক্ত, কাংখিত ফাইলটি ক্ষতিগ্রস্ত হয়েছে।"
+
+msgid "Expected:"
+msgstr "প্রত্যাশিত:"
+
+msgid "Got:"
+msgstr "প্রাপ্ত:"
+
+msgid "Asset Download Error:"
+msgstr "অ্যাসেট ডাউনলোড ত্রুটি:"
+
+msgid "Downloading (%s / %s)..."
+msgstr "ডাউনলোড হচ্ছে (%s / %s)..।"
+
+msgid "Downloading..."
+msgstr "ডাউনলোড হচ্ছে…"
+
+msgid "Error making request"
+msgstr "অনুরোধ করার সময় ত্রুটি"
+
+msgid "Idle"
+msgstr "অনিয়োজিত"
+
+msgid "Install..."
+msgstr "ইন্সটল…"
+
+msgid "Retry"
+msgstr "পুনরায় চেষ্টা করুন"
+
+msgid "Testing"
+msgstr "পরীক্ষামূলক উৎস"
+
+msgid "Loading..."
+msgstr "লোড হচ্ছে…"
+
+msgid "All"
+msgstr "সকল"
+
+msgid "Plugins..."
+msgstr "প্লাগইন-সমূহ…"
+
+msgid "Sort:"
+msgstr "সাজান:"
+
+msgid "Category:"
+msgstr "বিভাগ:"
+
+msgid "Site:"
+msgstr "ওয়েবসাইট:"
+
+msgid "Support"
+msgstr "সাপোর্ট"
+
+msgid "Assets ZIP File"
+msgstr "প্রয়োজনীয় উপকরণসমূহের ZIP ফাইল"
+
+msgid "Preview"
+msgstr "প্রিভিউ"
+
+msgid "Configure Snap"
+msgstr "স্ন্যাপ কনফিগার করুন"
+
+msgid "Grid Offset:"
+msgstr "গ্রিডের অফসেট/ভারসাম্য:"
+
+msgid "Grid Step:"
+msgstr "গ্রিডের পদক্ষেপ:"
+
+msgid "Rotation Offset:"
+msgstr "ঘূর্ণায়নের অফসেট/ভারসাম্য:"
+
+msgid "Rotation Step:"
+msgstr "ঘূর্ণায়নের পদক্ষেপ:"
+
+msgid "Rotate %d CanvasItems"
+msgstr "%d ক্যানভাস আইটেম ঘোরান"
+
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "ক্যানভাস আইটেম \"%s\" থেকে %d ডিগ্রি ঘোরান"
+
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "ক্যানভাস আইটেম \"%s\" অ্যাঙ্কর সরান"
+
+msgid "Scale %d CanvasItems"
+msgstr "স্কেল %d ক্যানভাস আইটেম"
+
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "ক্যানভাস আইটেম \"%s\" থেকে (%s, %s) স্কেল করুন"
+
+msgid "Move %d CanvasItems"
+msgstr "%d ক্যানভাস আইটেম সরান"
+
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
+msgstr "ক্যানভাস আইটেম \"%s\" এ সরান (%d, %d)"
+
+msgid "Add Node Here..."
+msgstr "এখানে নোড সংযোজন করুন…"
+
+msgid "Instantiate Scene Here..."
+msgstr "এখানে দৃশ্য ইন্সট্যান্স করুন…"
+
+msgid "Moving:"
+msgstr "সরানো হচ্ছে:"
+
+msgid "Paste Pose"
+msgstr "ভঙ্গি প্রতিলেপন করুন"
+
+msgid "Zoom to 25%"
+msgstr "২৫% পর্যন্ত জুম করুন"
+
+msgid "Zoom to 50%"
+msgstr "৫০% পর্যন্ত জুম করুন"
+
+msgid "Zoom to 100%"
+msgstr "১০০% পর্যন্ত জুম করুন"
+
+msgid "Zoom to 200%"
+msgstr "২০০% পর্যন্ত জুম করুন"
+
+msgid "Zoom to 400%"
+msgstr "৪০০% পর্যন্ত জুম"
+
+msgid "Zoom to 800%"
+msgstr "৮০০% পর্যন্ত জুম"
+
+msgid "Select Mode"
+msgstr "মোড (Mode) বাছাই করুন"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr "Alt+RMB: লক করা সহ ক্লিক করা অবস্থানে সমস্ত নোডের তালিকা দেখান।"
+
+msgid "Move Mode"
+msgstr "মোড (Mode) সরান"
+
+msgid "Rotate Mode"
+msgstr "ঘূর্ণায়ন মোড"
+
+msgid "Show list of selectable nodes at position clicked."
+msgstr "ক্লিক করা অবস্থানে নির্বাচনযোগ্য নোডের তালিকা দেখান।"
+
+msgid "Pan Mode"
+msgstr "প্যান মোড"
+
+msgid "Ruler Mode"
+msgstr "রুলার মোড"
+
+msgid "Toggle smart snapping."
+msgstr "স্মার্ট স্ন্যাপিং টগল করুন।"
+
+msgid "Toggle grid snapping."
+msgstr "গ্রিড স্ন্যাপিং টগল করুন।"
+
+msgid "Use Rotation Snap"
+msgstr "ঘূর্ণন স্ন্যাপ ব্যবহার করুন"
+
+msgid "Snap Relative"
+msgstr "আপেক্ষিক স্ন্যাপ"
+
+msgid "Use Pixel Snap"
+msgstr "পিক্সেল স্ন্যাপ ব্যবহার করুন"
+
+msgid "Snap to Guides"
+msgstr "গাইডে স্ন্যাপ করুন"
+
+msgid "Skeleton Options"
+msgstr "স্কেলেটন অপশন"
+
+msgid "Show Bones"
+msgstr "বোন্‌/হাড় দেখান"
+
+msgid "View"
+msgstr "দৃশ্য/পরিদর্শন"
+
+msgid "Grid"
+msgstr "গ্রিড"
+
+msgid "Center Selection"
+msgstr "নির্বাচনকে কেন্দ্রীভূত করুন"
+
+msgid "Frame Selection"
+msgstr "নির্বাচনকে ফ্রেমভূক্ত করুন"
+
+msgid "Project theme"
+msgstr "প্রকল্পের থিম"
+
+msgid "Editor theme"
+msgstr "থিম ইডিটর"
+
+msgid "Insert keys (based on mask)."
+msgstr "key insert করুন (মাস্কের উপর ভিত্তি করে)।"
+
+msgid "Insert Key"
+msgstr "চাবি ইন্সার্ট করুন"
+
+msgid "Animation Key and Pose Options"
+msgstr "অ্যানিমেশন কী এবং পোজ অপশন"
+
+msgid "Insert Key (Existing Tracks)"
+msgstr "চাবি সন্নিবেশ করুন (বিদ্যমান ট্র্যাক/পথসমূহ)"
+
+msgid "Copy Pose"
+msgstr "ভঙ্গি প্রতিলিপি করুন"
+
+msgid "Clear Pose"
+msgstr "ভঙ্গি পরিষ্কার করুন"
+
+msgid "Multiply grid step by 2"
+msgstr "গ্রিড স্টেপ দ্বিগুণ সংখ্যক বৃদ্ধি করুন"
+
+msgid "Divide grid step by 2"
+msgstr "গ্রিড স্টেপ দ্বিগুণ সংখ্যায় হ্রাস করুন"
+
+msgid "Adding %s..."
+msgstr "%s সংযুক্ত হচ্ছে..."
+
+msgid "Error instantiating scene from %s."
+msgstr "%s হতে দৃশ্য ইনস্ট্যান্স করাতে সমস্যা হয়েছে।"
+
+msgid "Create Node"
+msgstr "নোড তৈরি করুন"
+
+msgid "Can't instantiate: %s"
+msgstr "ইনস্ট্যান্ট করা যাবে না: %s"
+
+msgid "Creating inherited scene from: %s"
+msgstr "থেকে উত্তরাধিকারসূত্রে প্রাপ্ত দৃশ্য তৈরি করা হচ্ছে: %s"
+
+msgid "Instantiating: "
+msgstr "ইনস্টেন্টিয়েটিং: "
+
+msgid "Adding %s and %s..."
+msgstr "%s এবং %s যোগ করা হচ্ছে..।"
+
+msgid "Set Handle"
+msgstr "হ্যান্ডেল স্থাপন করুন"
+
+msgid "Vertical alignment"
+msgstr "উল্লম্ব প্রান্তিককরণ"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "ট্যানজেন্টগুলি আলাদা ভাবে সম্পাদনা করার জন্য Shift ধরে রাখুন্"
+
+msgid "Ease In"
+msgstr "আন্ত-সহজাগমন"
+
+msgid "Ease Out"
+msgstr "বহিঃ-সহজাগমন"
+
+msgid "Smoothstep"
+msgstr "স্মুথ স্টেপ"
+
+msgid "Deploy with Remote Debug"
+msgstr "দূরবর্তী ডিবাগের সহিত ডিপ্লয় করুন"
+
+msgid "Visible Collision Shapes"
+msgstr "দৃশ্যমান সাংঘর্ষিক আকারসমূহ (Collision Shapes)"
+
+msgid "Visible Paths"
+msgstr "দৃশ্যমান পথ"
+
+msgid "Visible Navigation"
+msgstr "দৃশ্যমান নেভিগেশন (Navigation)"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"যখন এই বিকল্পটি সক্রিয় থাকে, তখন চলমান প্রকল্পে 2D বস্তুর পুনরায় আঁকার অনুরোধ দৃশ্যমান "
+"হবে (একটি ছোট ফ্ল্যাশ হিসাবে)।\n"
+"কম প্রসেসর মোডের সমস্যা সমাধানের জন্য এটি কার্যকর।"
+
+msgid "Installed Plugins:"
+msgstr "ইন্সটল-কৃত প্লাগইন-সমূহ:"
+
+msgid "Version"
+msgstr "ভার্সন"
+
+msgid "Size: %s"
+msgstr "আকার: %s"
+
+msgid "Type: %s"
+msgstr "প্রকার: %s"
+
+msgid "Overrides (%d)"
+msgstr "ওভাররাইড (%d)"
+
+msgid "Variation Coordinates (%d)"
+msgstr "ভেরিএশন স্থানাঙ্ক (%d)"
+
+msgid "Numeral Alignment"
+msgstr "সংখ্যাগত প্রান্তিককরণ"
+
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "অডিওস্ট্রিম প্লেয়ার 3 ডি ইমিশন এঙ্গেল পরিবর্তন করুন"
+
+msgid "Change Camera FOV"
+msgstr "Camera এর ভিউ (FOV) পরিবর্তন করুন"
+
+msgid "Change Camera Size"
+msgstr "Camera এর আকার পরিবর্তন করুন"
+
+msgid "Change Sphere Shape Radius"
+msgstr "Sphere Shape এর ব্যাসার্ধ পরিবর্তন করুন"
+
+msgid "Change Capsule Shape Radius"
+msgstr "Capsule Shape এর ব্যাসার্ধ পরিবর্তন করুন"
+
+msgid "Change Capsule Shape Height"
+msgstr "Capsule Shape এর উচ্চতা পরিবর্তন করুন"
+
+msgid "Change Light Radius"
+msgstr "Light এর ব্যাসার্ধ পরিবর্তন করুন"
+
+msgid "Create Occluder Polygon"
+msgstr "অকলুডার (occluder) পলিগন তৈরি করুন"
+
+msgid "No editor scene root found."
+msgstr "কোনো সম্পাদক দৃশ্য রুট পাওয়া যায়নি।"
+
+msgid "Bake Lightmaps"
+msgstr "বেক লাইটম্যাপ"
+
+msgid "Select lightmap bake file:"
+msgstr "লাইটম্যাপ বেক ফাইলটি নির্বাচন করুন:"
+
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "ট্রাইমেস কলিশ়ন আকৃতি তৈরি করা সম্ভব হয়নি।"
+
+msgid "Couldn't create a simplified collision shape."
+msgstr "একটি সরলীকৃত সংঘর্ষের আকৃতি তৈরি করা যায়নি।"
+
+msgid "Mesh is empty!"
+msgstr "মেসটি খালি!"
+
+msgid "Create Debug Tangents"
+msgstr "ডিবাগ স্পর্শক তৈরি করুন"
+
+msgid "Can't unwrap mesh with blend shapes."
+msgstr "মিশ্রিত আকার দিয়ে জাল খুলতে পারবেন না।"
+
+msgid "Create Navigation Mesh"
+msgstr "Navigation Mesh তৈরি করুন"
+
+msgid "MeshInstance3D lacks a Mesh."
+msgstr "MeshInstance3D-এ Mesh নেই।"
+
+msgid "Mesh has no surface to create outlines from."
+msgstr "প্রান্তরেখা তৈরি করার জন্য প্রয়োজনীয় Mesh এর কোনো পৃষ্ঠতল নেই।"
+
+msgid "Could not create outline."
+msgstr "প্রান্তরেখা তৈরি করা সম্ভব হয়নি।"
+
+msgid "Create Outline"
+msgstr "প্রান্তরেখা তৈরি করুন"
+
+msgid "Mesh"
+msgstr "মেস"
+
+msgid "Create Collision Shape..."
+msgstr "সংঘর্ষের আকৃতি তৈরি করুন..।"
+
+msgid "Create Outline Mesh..."
+msgstr "প্রান্তরেখা মেস তৈরি করুন..."
+
+msgid "Create Outline Mesh"
+msgstr "প্রান্তরেখা মেস তৈরি করুন"
+
+msgid "Outline Size:"
+msgstr "প্রান্তরেখার আকার:"
+
+msgid "Sibling"
+msgstr "সহোদর"
+
+msgid "Creates collision shapes as Sibling."
+msgstr "সহোদর হিসাবে সংঘর্ষের আকার তৈরি করে।"
+
+msgid "Remove item %d?"
+msgstr "%d টি বস্তু অপসারণ করবেন?"
+
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr ""
+"বিদ্যমান দৃশ্য থেকে আপডেট?:\n"
+"%s"
+
+msgid "MeshLibrary"
+msgstr "MeshLibrary (মেস-লাইব্রেরি)"
+
+msgid "Add Item"
+msgstr "বস্তু যোগ করুন"
+
+msgid "Remove Selected Item"
+msgstr "নির্বাচিত বস্তুটি অপসারণ করুন"
+
+msgid "Update from Scene"
+msgstr "দৃশ্য হতে হালনাগাদ করুন"
+
+msgid "No mesh source specified (and no MultiMesh set in node)."
+msgstr "মেসের কোনো উৎস নির্দিষ্ট করা নেই (এবং নোডে কোনো মাল্টিমেস স্থাপন করা নেই)।"
+
+msgid "No mesh source specified (and MultiMesh contains no Mesh)."
+msgstr "মেসের কোনো উৎস নির্দিষ্ট করা নেই (এবং মাল্টিমেসে কোনো মেস নেই)।"
+
+msgid "Mesh source is invalid (invalid path)."
+msgstr "মেসের উৎস আকার্যকর (আকার্যকর পথ)।"
+
+msgid "Mesh source is invalid (contains no Mesh resource)."
+msgstr "Mesh-এর উৎস অগ্রহণযোগ্য (কোনো Mesh রিসোর্স নেই)।"
+
+msgid "No surface source specified."
+msgstr "কোনো পৃষ্ঠতলের উৎস নির্দিষ্ট করা নেই।"
+
+msgid "Surface source is invalid (invalid path)."
+msgstr "পৃষ্ঠতলের উৎস অকার্যকর (অকার্যকর পথ)।"
+
+msgid "Surface source is invalid (no geometry)."
+msgstr "পৃষ্ঠতলের উৎস অকার্যকর (কোনো জ্যামিতিক আকার নেই)।"
+
+msgid "Surface source is invalid (no faces)."
+msgstr "পৃষ্ঠতলের উৎস অকার্যকর (কোনো ফোকাস নেই)।"
+
+msgid "Select a Source Mesh:"
+msgstr "Mesh-এর একটি উৎস নির্বাচন করুন:"
+
+msgid "Select a Target Surface:"
+msgstr "একটি উদ্দেশ্যিত পৃষ্ঠতল নির্বাচন করুন:"
+
+msgid "Populate Surface"
+msgstr "পৃষ্ঠতল পপুলেট করুন"
+
+msgid "Populate MultiMesh"
+msgstr "MultiMesh পপুলেট করুন"
+
+msgid "Target Surface:"
+msgstr "উদ্দেশ্যিত পৃষ্ঠতল:"
+
+msgid "Source Mesh:"
+msgstr "উৎস Mesh:"
+
+msgid "X-Axis"
+msgstr "X-অক্ষ"
+
+msgid "Y-Axis"
+msgstr "Y-অক্ষ"
+
+msgid "Z-Axis"
+msgstr "Z-অক্ষ"
+
+msgid "Mesh Up Axis:"
+msgstr "অক্ষতে Mesh দিন:"
+
+msgid "Random Rotation:"
+msgstr "যথেচ্ছ ঘূর্ণায়ন:"
+
+msgid "Random Tilt:"
+msgstr "যথেচ্ছ ঢাল:"
+
+msgid "Random Scale:"
+msgstr "যথেচ্ছ মাপ:"
+
+msgid "Amount:"
+msgstr "পরিমাণ:"
+
+msgid "Populate"
+msgstr "পপুলেট"
+
+msgid "Please Confirm..."
+msgstr "অনুগ্রহ করে নিশ্চিত করুন..."
+
+msgid "Create Navigation Polygon"
+msgstr "Navigation Polygon তৈরি করুন"
+
+msgid "Transform Aborted."
+msgstr "রুপান্তর নিষ্ফলা করা হয়েছে।"
+
+msgid "Orthogonal"
+msgstr "সমকোণীয় (Orthogonal)"
+
+msgid "Perspective"
+msgstr "পরিপ্রেক্ষিত (Perspective)"
+
+msgid "X-Axis Transform."
+msgstr "X-অক্ষ রুপান্তর।"
+
+msgid "Y-Axis Transform."
+msgstr "Y-অক্ষ রুপান্তর।"
+
+msgid "Z-Axis Transform."
+msgstr "Z-অক্ষ রুপান্তর।"
+
+msgid "View Plane Transform."
+msgstr "প্লেন-এর রুপান্তর দেখুন।"
+
+msgid "Keying is disabled (no key inserted)."
+msgstr "চাবিসংযোক নিষ্ক্রিয় আছে (কোনো চাবি সংযুক্ত হয়নি)।"
+
+msgid "Animation Key Inserted."
+msgstr "অ্যানিমেশনের চাবি সন্নিবেশিত হয়েছে।"
+
+msgid "Objects: %d\n"
+msgstr "অবজেক্ট: %d\n"
+
+msgid "Draw Calls: %d"
+msgstr "ড্র কলস:%d"
+
+msgid "Instantiating:"
+msgstr "তাত্ক্ষণিককরণ:"
+
+msgid "Top View."
+msgstr "শীর্ষ দর্শন।"
+
+msgid "Bottom View."
+msgstr "নিম্ন দর্শন।"
+
+msgid "Left View."
+msgstr "বাম দর্শন।"
+
+msgid "Right View."
+msgstr "ডান দর্শন।"
+
+msgid "Front View."
+msgstr "সন্মুখ দর্শন।"
+
+msgid "Rear View."
+msgstr "পশ্চাৎ দর্শন।"
+
+msgid "Set Material Override"
+msgstr "ওভাররাইড মেটেরিয়াল সেট করুন"
+
+msgid "Can't instantiate: %s."
+msgstr "ইনস্ট্যান্ট করা যাচ্ছে না: %s।"
+
+msgid "Translate"
+msgstr "ট্রান্সলেট"
+
+msgid "Rotating %s degrees."
+msgstr "%s ডিগ্রি ঘূর্ণিত হচ্ছে।"
+
+msgid "Translating %s."
+msgstr "%s অনুবাদ করা হচ্ছে।"
+
+msgid "Rotating %f degrees."
+msgstr "%f ডিগ্রি ঘোরানো হচ্ছে।"
+
+msgid "Scaling %s."
+msgstr "স্কেলিং %s।"
+
+msgid "Display Normal"
+msgstr "Normal প্রদর্শন"
+
+msgid "Display Wireframe"
+msgstr "Wireframe প্রদর্শন"
+
+msgid "Display Overdraw"
+msgstr "Overdraw প্রদর্শন"
+
+msgid "Directional Shadow Splits"
+msgstr "দিকনির্দেশক ছায়া বিভক্ত"
+
+msgid "Normal Buffer"
+msgstr "নরমাল বাফার"
+
+msgid "Shadow Atlas"
+msgstr "ছায়া আটলাস"
+
+msgid "Directional Shadow Map"
+msgstr "ডিরেকশনাল ছায়া মানচিত্র"
+
+msgid "Decal Atlas"
+msgstr "ডেকাল অ্যাটলাস"
+
+msgid "VoxelGI Lighting"
+msgstr "ভক্সেলজিআই লাইটিং"
+
+msgid "Scene Luminance"
+msgstr "দৃশ্য আলোকিত"
+
+msgid "Internal Buffer"
+msgstr "ইন্টারনাল বাফার"
+
+msgid "Display Advanced..."
+msgstr "এডভান্সেড দেখুন…"
+
+msgid "View Grid"
+msgstr "গ্রিড দেখুন"
+
+msgid "View Information"
+msgstr "তথ্য দেখুন"
+
+msgid "Audio Listener"
+msgstr "অডিও শ্রোতা"
+
+msgid "Freelook Left"
+msgstr "বাম দিকে ফ্রিলুক করুন"
+
+msgid "Freelook Right"
+msgstr "ডান দিকে ফ্রিলুক করুন"
+
+msgid "Freelook Up"
+msgstr "উপরে ফ্রিলুক করুন"
+
+msgid "Freelook Down"
+msgstr "ফ্রিলুক ডাউন"
+
+msgid "Freelook Speed Modifier"
+msgstr "ফ্রি লুক স্পিড মডিফায়ার"
+
+msgid "XForm Dialog"
+msgstr "XForm এর সংলাপ"
+
+msgid "Snap Nodes to Floor"
+msgstr "ফ্লোর স্ন্যাপ নোড"
+
+msgid "Preview disabled."
+msgstr "প্রিভিউ ডিসেবল করা।"
+
+msgid "Drag: Use snap."
+msgstr "ড্র্যাগ: স্ন্যাপ ব্যবহার করুন।"
+
+msgid "Use Snap"
+msgstr "স্ন্যাপ ব্যবহার করুন"
+
+msgid "Bottom View"
+msgstr "নিম্ন দর্শন"
+
+msgid "Top View"
+msgstr "শীর্ষ দর্শন"
+
+msgid "Rear View"
+msgstr "পশ্চাৎ দর্শন"
+
+msgid "Front View"
+msgstr "সন্মুখ দর্শন"
+
+msgid "Left View"
+msgstr "বাম দর্শন"
+
+msgid "Right View"
+msgstr "ডান দর্শন"
+
+msgid "Insert Animation Key"
+msgstr "অ্যানিমেশনের চাবি সন্নিবেশ করুন"
+
+msgid "Focus Origin"
+msgstr "অরিজিনে ফোকাস করুন"
+
+msgid "Focus Selection"
+msgstr "নির্বাচনে ফোকাস করুন"
+
+msgid "Transform"
+msgstr "রুপান্তর"
+
+msgid "Snap Object to Floor"
+msgstr "ফ্লোর স্ন্যাপ অবজেক্ট"
+
+msgid "Transform Dialog..."
+msgstr "রুপান্তরের এর সংলাপ..."
+
+msgid "1 Viewport"
+msgstr "১ টি Viewport"
+
+msgid "2 Viewports"
+msgstr "২ টি Viewports"
+
+msgid "2 Viewports (Alt)"
+msgstr "২ টি Viewports (অল্টার)"
+
+msgid "3 Viewports"
+msgstr "৩ টি Viewports"
+
+msgid "3 Viewports (Alt)"
+msgstr "৩ টি Viewports (অল্টার)"
+
+msgid "4 Viewports"
+msgstr "৪ টি Viewports"
+
+msgid "View Origin"
+msgstr "অরিজিন দেখুন"
+
+msgid "Settings..."
+msgstr "সেটিংস…"
+
+msgid "Snap Settings"
+msgstr "স্ন্যাপ সেটিংস"
+
+msgid "Translate Snap:"
+msgstr "স্ন্যাপ-এর স্থানান্তর:"
+
+msgid "Rotate Snap (deg.):"
+msgstr "স্ন্যাপ-এর ঘূর্ণন (ডিগ্রি):"
+
+msgid "Scale Snap (%):"
+msgstr "স্ন্যাপ-এর মাপন (%):"
+
+msgid "Viewport Settings"
+msgstr "Viewport সেটিংস"
+
+msgid "View Z-Near:"
+msgstr "Z-Near দেখুন:"
+
+msgid "View Z-Far:"
+msgstr "Z-Far দেখুন:"
+
+msgid "Transform Change"
+msgstr "রুপান্তরের পরিবর্তন"
+
+msgid "Translate:"
+msgstr "স্থানান্তর (Translate):"
+
+msgid "Rotate (deg.):"
+msgstr "ঘূর্ণন (ডিগ্রি):"
+
+msgid "Scale (ratio):"
+msgstr "মাপন (অনুপাত):"
+
+msgid "Transform Type"
+msgstr "রুপান্তরের ধরণ"
+
+msgid "Pre"
+msgstr "পূর্ব (Pre)"
+
+msgid "Post"
+msgstr "পরবর্তী (Post)"
+
+msgid "Sun Direction"
+msgstr "সূর্যের দিক"
+
+msgid "Angular Altitude"
+msgstr "কৌণিক উচ্চতা"
+
+msgid "Sun Color"
+msgstr "সূর্যের রঙ"
+
+msgid "Shadow Max Distance"
+msgstr "ছায়া সর্বোচ্চ দূরত্ব"
+
+msgid "Sky Color"
+msgstr "আকাশের রং"
+
+msgid "Ground Color"
+msgstr "ভূমি রং"
+
+msgid "Post Process"
+msgstr "পোষ্ট প্রসেস"
+
+msgid "Could not save the new occluder at the specified path:"
+msgstr "নির্দিষ্ট পাথে নতুন অক্লুডার সংরক্ষণ করা যায়নি:"
+
+msgid "Convert to Parallax2D"
+msgstr "Parallax2D তে রূপান্তর করুন"
+
+msgid "Restart Emission"
+msgstr "নির্গমন পুনরায় চালু করুন"
+
+msgid "Generate Visibility Rect"
+msgstr "ভিজিবিলিটি রেক্ট তৈরি করুন"
+
+msgid "Load Emission Mask"
+msgstr "Emission Mask লোড করুন"
+
+msgid "Solid Pixels"
+msgstr "সলিড পিক্সেল"
+
+msgid "Directed Border Pixels"
+msgstr "নির্দেশিত বর্ডার পিক্সেল"
+
+msgid "Convert to CPUParticles2D"
+msgstr "CPUParticles2D এ রূপান্তর করুন"
+
+msgid "Generation Time (sec):"
+msgstr "তৈরিতে সময় (সেকেন্ড):"
+
+msgid "Convert to GPUParticles2D"
+msgstr "GPUParticles2D তে রূপান্তর করুন"
+
+msgid "\"%s\" doesn't inherit from Node3D."
+msgstr "\"%s\" Node3D থেকে উত্তরাধিকারসূত্রে পাওয়া যায় না।"
+
+msgid "\"%s\" doesn't contain geometry."
+msgstr "\"%s\"-এ জ্যামিতি নেই।"
+
+msgid "\"%s\" doesn't contain face geometry."
+msgstr "\"%s\"-এ মুখের জ্যামিতি নেই।"
+
+msgid "Create Emitter"
+msgstr "Emitter তৈরি করুন"
+
+msgid "Surface Points"
+msgstr "সারফেস পয়েন্ট"
+
+msgid "Surface Points+Normal (Directed)"
+msgstr "সারফেস পয়েন্ট + নরমাল (নির্দেশিত)"
+
+msgid "Volume"
+msgstr "আয়তন"
+
+msgid "Convert to CPUParticles3D"
+msgstr "CPUParticles3D এ রূপান্তর করুন"
+
+msgid "Convert to GPUParticles3D"
+msgstr "GPUParticles3D তে রূপান্তর করুন"
+
+msgid "Remove Point from Curve"
+msgstr "বক্ররেখা হতে বিন্দু অপসারণ করুন"
+
+msgid "Move Point in Curve"
+msgstr "বক্ররেখায় বিন্দু সরান"
+
+msgid "Add Point to Curve"
+msgstr "বক্ররেখায় বিন্দু যোগ করুন"
+
+msgid "Move In-Control in Curve"
+msgstr "বক্ররেখা আন্ত-নিয়ন্ত্রণে সরান"
+
+msgid "Move Out-Control in Curve"
+msgstr "বক্ররেখা বহিঃ-নিয়ন্ত্রণে সরান"
+
+msgid "Right Click: Delete Point"
+msgstr "ডান ক্লিক: বিন্দু অপসারণ করুন"
+
+msgid "Select Control Points (Shift+Drag)"
+msgstr "নিয়ন্ত্রণ বিন্দুসমূহ নির্বাচন করুন (শিফট + টান)"
+
+msgid "Delete Point"
+msgstr "বিন্দু অপসারণ করুন"
+
+msgid "Close Curve"
+msgstr "বক্ররেখা বন্ধ করুন"
+
+msgid "Remove all curve points?"
+msgstr "সব কার্ভ পয়েন্ট সরান?"
+
+msgid "Curve Point #"
+msgstr "বক্ররেখার বিন্দু #"
+
+msgid "Handle Tilt #"
+msgstr "টিল্ট হ্যান্ডেল #"
+
+msgid "Split Path"
+msgstr "পথ বিভক্ত করুন"
+
+msgid "Remove Path Point"
+msgstr "পথের বিন্দু অপসারণ করুন"
+
+msgid "Split Segment (in curve)"
+msgstr "অংশ বিভক্ত করুন (বক্ররেখায়)"
+
+msgid "Subfolder name is not a valid folder name."
+msgstr "সাবফোল্ডারের নাম একটি বৈধ ফোল্ডারের নাম নয়।"
+
+msgid "Subfolder cannot be one which already exists."
+msgstr "সাবফোল্ডার এমন হতে পারে না যা ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Plugin Name:"
+msgstr "প্লাগইন নাম:"
+
+msgid "Subfolder:"
+msgstr "উপফোল্ডার:"
+
+msgid "Author:"
+msgstr "লেখক:"
+
+msgid "Script Name:"
+msgstr "স্ক্রিপ্ট নাম:"
+
+msgid "Plugin name is valid."
+msgstr "প্লাগইন নাম বৈধ।"
+
+msgid "Script extension is valid."
+msgstr "স্ক্রিপ্ট এক্সটেনশন বৈধ।"
+
+msgid "Subfolder name is valid."
+msgstr "সাবফোল্ডারের নাম বৈধ।"
+
+msgid "Create UV Map"
+msgstr "UV Map তৈরি করুন"
+
+msgid "Transform UV Map"
+msgstr "UV Map রুপান্তর করুন"
+
+msgid "UV"
+msgstr "অতিবেগুনী"
+
+msgid "Move Polygon"
+msgstr "পলিগন সরান"
+
+msgid "Rotate Polygon"
+msgstr "পলিগন ঘুরান"
+
+msgid "Scale Polygon"
+msgstr "পলিগন মাপ করুন"
+
+msgid "Radius:"
+msgstr "ব্যাসার্ধ:"
+
+msgid "Clear UV"
+msgstr "UV পরিস্কার করুন"
+
+msgid "Snap"
+msgstr "স্ন্যাপ"
+
+msgid "Enable Snap"
+msgstr "স্ন্যাপ সক্রিয় করুন"
+
+msgid "Show Grid"
+msgstr "গ্রিড দেখান"
+
+msgid "Configure Grid:"
+msgstr "গ্রিড কনফিগার:"
+
+msgid "Edit Poly"
+msgstr "Poly সম্পাদন করুন"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Poly সম্পাদন করুন (বিন্দু অপসারণ করুন)"
+
+msgid "ERROR: Couldn't load resource!"
+msgstr "সমস্যা: রিসোর্স লোড করা সম্ভব হয়নি!"
+
+msgid "Add Resource"
+msgstr "রিসোর্স যোগ করুন"
+
+msgid "Rename Resource"
+msgstr "রিসোর্স পুনঃনামকরণ করুন"
+
+msgid "Delete Resource"
+msgstr "রিসোর্স অপসারণ করুন"
+
+msgid "Resource clipboard is empty!"
+msgstr "রিসোর্সের ক্লীপবোর্ড খালি!"
+
+msgid "Paste Resource"
+msgstr "রিসোর্স প্রতিলেপন/পেস্ট করুন"
+
+msgid "Load Resource"
+msgstr "রিসোর্স লোড করুন"
+
+msgid "Path to AnimationMixer is invalid"
+msgstr "AnimationMixer পাথ অবৈধ"
+
+msgid "Close and save changes?"
+msgstr "বন্ধ এবং পরিবর্তন সংরক্ষণ করবেন?"
+
+msgid "Error writing TextFile:"
+msgstr "টেক্সটফাইল লিখতে ত্রুটি:"
+
+msgid "Error importing theme."
+msgstr "থিম ইম্পোর্টে সমস্যা হয়েছে।"
+
+msgid "New Text File..."
+msgstr "নতুন টেক্সট ফাইল..।"
+
+msgid "Import Theme"
+msgstr "থিম ইম্পোর্ট করুন"
+
+msgid "Error while saving theme"
+msgstr "থিম সংরক্ষণ করার সময় ত্রুটি"
+
+msgid "Error saving"
+msgstr "সংরক্ষণে সমস্যা হয়েছে"
+
+msgid "Save Theme As..."
+msgstr "থিম এইরূপে সংরক্ষণ করুন..."
+
+msgid "Open '%s' in Godot online documentation."
+msgstr "Godot অনলাইন ডকুমেন্টেশনে '%s' খুলুন।"
+
+msgid "%s Class Reference"
+msgstr "%s ক্লাস রেফারেন্স"
+
+msgid "Find Next"
+msgstr "পরবর্তী খুঁজুন"
+
+msgid "Find Previous"
+msgstr "পূর্বে খুঁজুন"
+
+msgid "Sort"
+msgstr "সাজান"
+
+msgid "Open..."
+msgstr "খুলুন…"
+
+msgid "Save All"
+msgstr "সকল্গুলি সংরক্ষণ করুন"
+
+msgid "History Next"
+msgstr "পরের ইতিহাস"
+
+msgid "Import Theme..."
+msgstr "থিম ইম্পোর্ট করুন…"
+
+msgid "Reload Theme"
+msgstr "থিম রিলোড করুন"
+
+msgid "Theme"
+msgstr "থিম"
+
+msgid "Save Theme"
+msgstr "থিম সংরক্ষণ করুন"
+
+msgid "Close All"
+msgstr "সবগুলি বন্ধ করুন"
+
+msgid "Close Docs"
+msgstr "ডকুমেন্টসমূহ বন্ধ করুন"
+
+msgid "Run"
+msgstr "চালান"
+
+msgid "Search"
+msgstr "অনুসন্ধান করুন"
+
+msgid "Search the reference documentation."
+msgstr "রেফারেন্সের ডকুমেন্টেশনে খুঁজুন।"
+
+msgid "Go to previous edited document."
+msgstr "পূর্বের সম্পাদিত ডকুমেন্টে যান।"
+
+msgid "Go to next edited document."
+msgstr "পরের সম্পাদিত ডকুমেন্টে যান।"
+
+msgid "Uppercase"
+msgstr "বড় হাতের অক্ষর"
+
+msgid "Lowercase"
+msgstr "ছোট হাতের অক্ষর"
+
+msgid "Capitalize"
+msgstr "বড় হাতের অক্ষরে পরিবর্তনে করুন"
+
+msgid "Standard"
+msgstr "আদর্শ"
+
+msgid "Source"
+msgstr "উৎস"
+
+msgid "Target"
+msgstr "টার্গেট"
+
+msgid ""
+"Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
+msgstr ""
+"নোড '%s' থেকে নোড '%s' পর্যন্ত সংকেত '%s'-এর জন্য সংযুক্ত পদ্ধতি '%s' অনুপস্থিত।"
+
+msgid "Line %d (%s):"
+msgstr "লাইন %d (%s):"
+
+msgid "Line %d:"
+msgstr "লাইন %d:"
+
+msgid "Go to Function"
+msgstr "ফাংশনে যান"
+
+msgid "Can't drop nodes without an open scene."
+msgstr "খোলা দৃশ্য ছাড়া নোড ড্রপ করা যাবে না।"
+
+msgid "Pick Color"
+msgstr "রঙ পছন্দ করুন"
+
+msgid "Line"
+msgstr "লাইন"
+
+msgid "Toggle Comment"
+msgstr "কমেন্ট টগল করুন"
+
+msgid "Fold All Lines"
+msgstr "সবগুলি লাইন ফোল্ড করুন"
+
+msgid "Unfold All Lines"
+msgstr "সবগুলি লাইন আনফোল্ড করুন"
+
+msgid "Duplicate Selection"
+msgstr "নির্বাচিত সমূহ অনুলিপি করুন"
+
+msgid "Trim Trailing Whitespace"
+msgstr "শেষের হোয়াইটস্পেস ছেঁটে ফেলুন"
+
+msgid "Convert Indent to Spaces"
+msgstr "স্পেসগুলি ইন্ডেন্টে রূপান্তর করুন"
+
+msgid "Auto Indent"
+msgstr "স্বয়ংক্রিয়ভাবে মাত্রা দিন"
+
+msgid "Contextual Help"
+msgstr "প্রাসঙ্গিক সাহায্য"
+
+msgid "Toggle Breakpoint"
+msgstr "ছেদবিন্দু অদলবদল করুন (টগল ব্রেকপয়েন্ট)"
+
+msgid "Remove All Breakpoints"
+msgstr "সকল বিরতি-বিন্দু-সমূহ অপসারণ করুন"
+
+msgid "There are unsaved changes in the following built-in shaders(s):"
+msgstr "নিম্নলিখিত অন্তর্নির্মিত শেডারগুলিতে অসংরক্ষিত পরিবর্তন রয়েছে:"
+
+msgid "New Shader Include..."
+msgstr "নতুন শেডর include…"
+
+msgid "Load Shader File..."
+msgstr "শেডার ফাইল লোড করুন..।"
+
+msgid "Load Shader Include File..."
+msgstr "শেডর include ফাইল লোড করুন…"
+
+msgid "Skeleton2D"
+msgstr "স্কেলেটন2D"
+
+msgid "Export Skeleton Profile As..."
+msgstr "এই হিসাবে কঙ্কাল প্রোফাইল রপ্তানি করুন..।"
+
+msgid "Skeleton3D"
+msgstr "স্কেলেটন3D"
+
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr "বিদ্যমান ট্র্যাকের সাথে হাড়ের জন্য কী (মাস্কের উপর ভিত্তি করে) সন্নিবেশ করান।"
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "সমস্ত হাড়ের জন্য কী (মাস্কের উপর ভিত্তি করে) সন্নিবেশ করান।"
+
+msgid "Create MeshInstance2D"
+msgstr "MeshInstance2D তৈরি করুন"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "একটি বহিরাগত দৃশ্য থেকে একটি স্প্রাইট রূপান্তর করতে পারবেন না।"
+
+msgid "Convert to MeshInstance2D"
+msgstr "MeshInstance2D এ রূপান্তর করুন"
+
+msgid "Simplification:"
+msgstr "সরলীকরণ:"
+
+msgid "Settings:"
+msgstr "সেটিংস:"
+
+msgid "Add %d Frame(s)"
+msgstr "%d ফ্রেম যোগ করুন"
+
+msgid "Add Frame"
+msgstr "ফ্রেম যোগ করুন"
+
+msgid "Unable to load images"
+msgstr "ছবি লোড করা সম্ভব হচ্ছে না"
+
+msgid "ERROR: Couldn't load frame resource!"
+msgstr "সমস্যা: ফ্রেম রিসোর্স লোড করা সম্ভব হয়নি!"
+
+msgid "Add Empty"
+msgstr "খালি বস্তু যোগ করুন"
+
+msgid "Delete Animation?"
+msgstr "Delete অ্যানিমেশন?"
+
+msgid "Change Animation FPS"
+msgstr "অ্যানিমেশনের FPS পরিবর্তন করুন"
+
+msgid "(empty)"
+msgstr "(খালি/শূন্য)"
+
+msgid "Animations:"
+msgstr "অ্যানিমেশনসমূহ:"
+
+msgid "Delete Animation"
+msgstr "Delete অ্যানিমেশন"
+
+msgid "Animation Frames:"
+msgstr "অ্যানিমেশনের ফ্রেমসমূহ:"
+
+msgid "Play selected animation backwards from current pos. (A)"
+msgstr "নির্বাচিত অ্যানিমেশনটি বর্তমান স্থান হতে পিছনের দিকে চালান। (A)"
+
+msgid "Play selected animation backwards from end. (Shift+A)"
+msgstr "নির্বাচিত অ্যানিমেশনটি শেষ হতে পিছনের দিকে চালান। (Shift+A)"
+
+msgid "Play selected animation from start. (Shift+D)"
+msgstr "নির্বাচিত অ্যানিমেশনটি শুরু হতে চালান। (Shift+D)"
+
+msgid "Play selected animation from current pos. (D)"
+msgstr "নির্বাচিত অ্যানিমেশনটি বর্তমান স্থান হতে চালান। (D)"
+
+msgid "Frame Duration:"
+msgstr "ফ্রেমের সময়কাল:"
+
+msgid "Frame Order"
+msgstr "ফ্রেম অর্ডার"
+
+msgid "Size"
+msgstr "আকার"
+
+msgid "Separation"
+msgstr "বিচ্ছেদ"
+
+msgid "Offset"
+msgstr "অফসেট"
+
+msgid "Auto Slice"
+msgstr "স্বয়ংক্রিয় টুকরো"
+
+msgid "Reload"
+msgstr "রিলোড"
+
+msgid "Resave"
+msgstr "পুনঃসংরক্ষণ"
+
+msgid "Memory: %s"
+msgstr "মেমরি: %s"
+
+msgid "Snap Mode:"
+msgstr "স্ন্যাপ মোড:"
+
+msgid "Pixel Snap"
+msgstr "পিক্সেল স্ন্যাপ"
+
+msgid "Grid Snap"
+msgstr "গ্রিড স্ন্যাপ"
+
+msgid "Step:"
+msgstr "পদক্ষেপ:"
+
+msgid "Separation:"
+msgstr "বিচ্ছেদ:"
+
+msgid "1 color"
+msgid_plural "{num} colors"
+msgstr[0] "একটি রং"
+msgstr[1] "{num} গুলি রং"
+
+msgid "1 constant"
+msgid_plural "{num} constants"
+msgstr[0] "১টি ধ্রুবক"
+msgstr[1] "{num} গুলি ধ্রুবক"
+
+msgid "No constants found."
+msgstr "কোনো ধ্রুবক পাওয়া যায়নি।"
+
+msgid "No fonts found."
+msgstr "কোনো ফন্ট পাওয়া যায়নি।"
+
+msgid "1 font size"
+msgid_plural "{num} font sizes"
+msgstr[0] "১ ফন্ট সাইজ"
+msgstr[1] "{num} ফন্ট সাইজ"
+
+msgid "No font sizes found."
+msgstr "ফন্ট সাইজ খুঁজে পাওয়া যায়নি।"
+
+msgid "No icons found."
+msgstr "কোনো আইকন খুঁজে পাওয়া যায়নি।"
+
+msgid "1 stylebox"
+msgid_plural "{num} styleboxes"
+msgstr[0] "১টি স্টাইলবক্স"
+msgstr[1] "{num} গুলি ষ্টাইলবক্স"
+
+msgid "Updating the editor"
+msgstr "সম্পাদক আপডেট করা হচ্ছে"
+
+msgid "Filter Items"
+msgstr "ফিল্টার আইটেম"
+
+msgid "Select by data type:"
+msgstr "ডাটা টাইপ দ্বারা নির্বাচন:"
+
+msgid "Select all visible color items."
+msgstr "সমস্ত দৃশ্যমান রঙ আইটেম নির্বাচন করুন।"
+
+msgid "Select all visible constant items."
+msgstr "সকল দৃশ্যমান ধ্রুবক বাছাই করুন।"
+
+msgid "Select all visible font items."
+msgstr "সমস্ত দৃশ্যমান ফন্ট আইটেম নির্বাচন করুন।"
+
+msgid "Select all visible font size items."
+msgstr "সমস্ত দৃশ্যমান ফন্ট সাইজ আইটেম নির্বাচন করুন।"
+
+msgid "Select all visible font size items and their data."
+msgstr "সমস্ত দৃশ্যমান ফন্ট সাইজ আইটেম এবং তাদের ডেটা নির্বাচন করুন।"
+
+msgid "Deselect all visible font size items."
+msgstr "সমস্ত দৃশ্যমান ফন্ট সাইজ আইটেম অনির্বাচন করুন।"
+
+msgid "Select all visible icon items."
+msgstr "সমস্ত দৃশ্যমান আইকন আইটেম নির্বাচন করুন।"
+
+msgid "Select all visible icon items and their data."
+msgstr "সমস্ত দৃশ্যমান আইকন আইটেম এবং তাদের ডেটা নির্বাচন করুন।"
+
+msgid "Deselect all visible icon items."
+msgstr "সমস্ত দৃশ্যমান আইকন আইটেমগুলি অনির্বাচন করুন।"
+
+msgid "Collapse types."
+msgstr "কলাপ্স ধরন।"
+
+msgid "Expand types."
+msgstr "টাইপ বিস্তৃত করুন।"
+
+msgid "Select all Theme items."
+msgstr "সমস্ত থিম আইটেম নির্বাচন করুন।"
+
+msgid "Add Item:"
+msgstr "আইটেম যোগ করুন:"
+
+msgid "Remove Items:"
+msgstr "আইটেম অপসারণ করুন:"
+
+msgid "Remove Class Items"
+msgstr "ক্লাসের আইটেম অপসারণ করুন"
+
+msgid "Add Theme Item"
+msgstr "থিম আইটেম যোগ করুন"
+
+msgid "Editor Theme"
+msgstr "সম্পাদক থিম"
+
+msgid "Select Another Theme Resource:"
+msgstr "অন্য থিম রিসোর্স নির্বাচন করুন:"
+
+msgid "Override Item"
+msgstr "ওভাররাইড আইটেম"
+
+msgid "Override Theme Item"
+msgstr "থিম আইটেম ওভাররাইড করুন"
+
+msgid "Set Color Item in Theme"
+msgstr "থিমে রঙ আইটেম সেট করুন"
+
+msgid "Set Theme Type Variation"
+msgstr "থিম টাইপ প্রকরণ সেট করুন"
+
+msgid "Set Variation Base Type"
+msgstr "প্রকরণ বেস টাইপ সেট করুন"
+
+msgid "Override All"
+msgstr "সবকিছু ওভাররাইড"
+
+msgid "Theme:"
+msgstr "থিম:"
+
+msgid "Manage Items..."
+msgstr "আইটেমগুলি পরিচালনা করুন..।"
+
+msgid "Item"
+msgstr "বস্তু/আইটেম"
+
+msgid "Check Item"
+msgstr "আইটেম চিহ্নিত করুন"
+
+msgid "Checked Item"
+msgstr "চিহ্নিত আইটেম"
+
+msgid "Named Separator"
+msgstr "নাম বিভাজক"
+
+msgid "Has"
+msgstr "আছে"
+
+msgid "Many"
+msgstr "অনেক"
+
+msgid "Tab 1"
+msgstr "ট্যাব ১"
+
+msgid "Tab 2"
+msgstr "ট্যাব ২"
+
+msgid "Tab 3"
+msgstr "ট্যাব ৩"
+
+msgid "Has,Many,Options"
+msgstr "আছে,অনেক,অপশন"
+
+msgid "Painting Tiles Property"
+msgstr "পেন্টিং টাইলস সম্পত্তি"
+
+msgid "Painting:"
+msgstr "পেইন্টিং:"
+
+msgid "Can't transform scene tiles."
+msgstr "দৃশ্য টাইলস রূপান্তর করতে পারবেন না।"
+
+msgid "Index: %d"
+msgstr "সূচক: %d"
+
+msgid "Shift: Draw line."
+msgstr "Shift: লাইন আঁকুন।"
+
+msgid "Shift: Draw rectangle."
+msgstr "Shift: আয়তক্ষেত্র আঁকুন।"
+
+msgid "Place Random Tile"
+msgstr "দৈব টাইল বসান"
+
+msgid "Invalid source selected."
+msgstr "অকার্যকর উৎস নির্বাচিত।"
+
+msgid "Matches Corners Only"
+msgstr "শুধুমাত্র কোণে মেলান"
+
+msgid "Matches Sides Only"
+msgstr "শুধুমাত্র সাইড মেলান"
+
+msgid "Toggle grid visibility."
+msgstr "গ্রিড দৃশ্যমানতা টগল করুন।"
+
+msgid "From Source"
+msgstr "উৎস থেকে"
+
+msgid "From Coords"
+msgstr "Coords থেকে"
+
+msgid "To Source"
+msgstr "উৎসতে"
+
+msgid "Global actions:"
+msgstr "গ্লোবাল একশন:"
+
+msgid "Atlas"
+msgstr "এটলাস"
+
+msgid "Occlusion Layer %d"
+msgstr "অক্লুশন লেয়ার %d"
+
+msgid "Physics"
+msgstr "পদার্থবিজ্ঞান"
+
+msgid "Physics Layer %d"
+msgstr "পদার্থবিদ্যা স্তর %d"
+
+msgid "No physics layers"
+msgstr "কোন পদার্থবিদ্যা স্তর"
+
+msgid "Navigation Layer %d"
+msgstr "নেভিগেশন স্তর %d"
+
+msgid "Custom Data %d"
+msgstr "কাস্টম ডেটা %d"
+
+msgid "Select tiles."
+msgstr "টাইলস নির্বাচন করুন।"
+
+msgid "Hold Ctrl to create multiple tiles."
+msgstr "একাধিক টাইলস তৈরি করতে Ctrl ধরে রাখুন।"
+
+msgid "Hold Shift to create big tiles."
+msgstr "বড় টাইলস তৈরি করতে Shift ধরে রাখুন।"
+
+msgid "Yes"
+msgstr "হ্যাঁ"
+
+msgid "Invalid texture selected."
+msgstr "অবৈধ টেক্সচার নির্বাচন করা হয়েছে।"
+
+msgid "Add a new atlas source"
+msgstr "একটি নতুন অ্যাটলাস উৎস যোগ করুন"
+
+msgid "Add a Scene Tile"
+msgstr "একটি দৃশ্য টাইল যোগ করুন"
+
+msgid "Scenes collection properties:"
+msgstr "দৃশ্য সংগ্রহ বৈশিষ্ট্য:"
+
+msgid "Tile properties:"
+msgstr "টাইল বৈশিষ্ট্য:"
+
+msgid "Error"
+msgstr "সমস্যা/ভুল"
+
+msgid "Discard changes"
+msgstr "পরিবর্তন বাতিল করুন"
+
+msgid "Commit:"
+msgstr "কমিটি:"
+
+msgid "Do you want to remove the %s remote?"
+msgstr "আপনি কি %s রিমোট সরাতে চান?"
+
+msgid "Toggle Version Control Bottom Panel"
+msgstr "ভার্সন কন্ট্রোল বটম প্যানেল টগল করুন"
+
+msgid "Create Version Control Metadata"
+msgstr "ভার্সন কন্ট্রোল মেটাডেটা তৈরি করুন"
+
+msgid "Create VCS metadata files for:"
+msgstr "এর জন্য VCS মেটাডেটা ফাইল তৈরি করুন:"
+
+msgid "Connect to VCS"
+msgstr "VCS এর সাথে সংযোগ করুন"
+
+msgid "Discard all changes"
+msgstr "সকল পরিবর্তন বাতিল করুন"
+
+msgid "Permanentally delete my changes"
+msgstr "স্থায়ীভাবে আমার পরিবর্তন মুছে দিন"
+
+msgid "Stage all changes"
+msgstr "সব পরিবর্তন সাজান"
+
+msgid "Branches"
+msgstr "শাখাসমূহ"
+
+msgid "Force Push"
+msgstr "ফোর্স পুশ"
+
+msgid "View:"
+msgstr "দেখুন:"
+
+msgid "Add Input"
+msgstr "ইনপুট যোগ করুন"
+
+msgid "Set Tint Color"
+msgstr "টিন্ট কালার সেট করুন"
+
+msgid "Set Input Default Port"
+msgstr "ইনপুট ডিফল্ট পোর্ট সেট করুন"
+
+msgid "Set Custom Node Option"
+msgstr "কাস্টম নোড অপশন সেট করুন"
+
+msgid "Add Varying to Visual Shader: %s"
+msgstr "ভিজ্যুয়াল শেডারে ভিন্নতা যুক্ত করুন: %s"
+
+msgid "Convert Constant(s) to Parameter(s)"
+msgstr "ধ্রুবক(গুলি) কে প্যারামিটার(গুলি) এ রূপান্তর করুন"
+
+msgid "Set Constant: %s"
+msgstr "ধ্রুবক সেট করুন: %s"
+
+msgid "Varying with that name is already exist."
+msgstr "এই নামের সাথে ভিন্নতা ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Fragment"
+msgstr "ফ্রাগমেন্ট"
+
+msgid "Process"
+msgstr "প্রক্রিয়া"
+
+msgid "Show generated shader code."
+msgstr "জেনারেটেড শেডার কোড দেখান।"
+
+msgid "Add Node"
+msgstr "নোড সংযোজন করুন"
+
+msgid "Grayscale function."
+msgstr "গ্রেস্কেল ফাংশন।"
+
+msgid "Sepia function."
+msgstr "সেপিয়া ফাংশন।"
+
+msgid "HardLight operator."
+msgstr "হার্ডলাইট অপারেটর।"
+
+msgid "Color constant."
+msgstr "রং ধ্রুবক।"
+
+msgid "Color parameter."
+msgstr "রং প্যারামিটার।"
+
+msgid "Boolean constant."
+msgstr "বুলিয়ান ধ্রুবক।"
+
+msgid "Boolean parameter."
+msgstr "বুলিয়ান প্যারামিটার।"
+
+msgid "Input parameter."
+msgstr "ইনপুট প্যারামিটার।"
+
+msgid "Float operator."
+msgstr "ফ্লোট অপারেটর।"
+
+msgid "Integer operator."
+msgstr "ইন্টেজার অপারেটর।"
+
+msgid "Unsigned integer operator."
+msgstr "আনসাইন্ড ইন্টেজার অপারেটর।"
+
+msgid "Scalar floating-point constant."
+msgstr "স্কেলার ফ্লোটিং-পয়েন্ট ধ্রুবক।"
+
+msgid "Scalar integer constant."
+msgstr "স্কেলার ইনটেজার ধ্রুবক।"
+
+msgid "Scalar unsigned integer constant."
+msgstr "স্কেলার আনসাইনড ইন্টিজার ধ্রুবক।"
+
+msgid "Scalar integer parameter."
+msgstr "স্কেলের ইন্টেজার প্যারামিটার।"
+
+msgid "Converts screen UV to a SDF."
+msgstr "স্ক্রীন UV কে SDF এ রুপান্তর।"
+
+msgid "Performs a SDF texture lookup."
+msgstr "একটি SDF টেক্সচার লুকআপ সম্পাদন করুন।"
+
+msgid "Perform the 2D texture lookup."
+msgstr "2D টেক্সচার লুকআপ সম্পাদন করুন।"
+
+msgid "Perform the 3D texture lookup."
+msgstr "3D টেক্সচার লুকআপ সম্পাদন করুন।"
+
+msgid "Cubic texture parameter lookup."
+msgstr "কিউবিক টেক্সচার প্যারামিটার লুকআপ।"
+
+msgid "2D texture parameter lookup."
+msgstr "2D টেক্সচার প্যারামিটার লুকআপ।"
+
+msgid "2D texture parameter lookup with triplanar."
+msgstr "ট্রিপ্ল্যানার সহ 2D টেক্সচার প্যারামিটার লুকআপ।"
+
+msgid "2D array of textures parameter lookup."
+msgstr "টেক্সচার প্যারামিটার লুকআপের 2D অ্যারে।"
+
+msgid "3D texture parameter lookup."
+msgstr "3D টেক্সচার প্যারামিটার লুকআপ।"
+
+msgid "Sums two transforms."
+msgstr "দুটি ট্রান্সফর্ম যোগ করে।"
+
+msgid "Divides two transforms."
+msgstr "দুটি ট্রান্সফর্ম ভাগ করে।"
+
+msgid "Multiplies two transforms."
+msgstr "দুটি ট্রান্সফর্ম গুণ করে।"
+
+msgid "Subtracts two transforms."
+msgstr "দুটি ট্রান্সফর্ম বিয়োগ করে।"
+
+msgid "Vector operator."
+msgstr "ভেক্টর অপারেটর।"
+
+msgid "2D vector constant."
+msgstr "2D ভেক্টর ধ্রুবক।"
+
+msgid "2D vector parameter."
+msgstr "2D ভেক্টর প্যারামিটার।"
+
+msgid "3D vector constant."
+msgstr "3D ভেক্টর ধ্রুবক।"
+
+msgid "3D vector parameter."
+msgstr "3D ভেক্টর প্যারামিটার।"
+
+msgid "4D vector constant."
+msgstr "4D ভেক্টর ধ্রুবক।"
+
+msgid "4D vector parameter."
+msgstr "4D ভেক্টর প্যারামিটার।"
+
+msgid "Get varying parameter."
+msgstr "বিভিন্ন প্যারামিটার পান।"
+
+msgid "Set varying parameter."
+msgstr "বিভিন্ন প্যারামিটার সেট করুন।"
+
+msgid "Edit Visual Property: %s"
+msgstr "ভিজ্যুয়াল প্রপার্টি সম্পাদনা করুন: %s"
+
+msgid "Are you sure to run %d projects at once?"
+msgstr "আপনি কি একবারে %d প্রকল্প চালানোর ব্যাপারে নিশ্চিত?"
+
+msgid ""
+"Can't open project at '%s'.\n"
+"Failed to start the editor."
+msgstr ""
+"'%s' এ প্রজেক্ট খোলা যাবে না।\n"
+"সম্পাদক শুরু করতে ব্যর্থ হয়েছে।"
+
+msgid "Remove %d projects from the list?"
+msgstr "তালিকা থেকে %d প্রকল্প সরাতে চান?"
+
+msgid "Remove this project from the list?"
+msgstr "তালিকা থেকে এই প্রকল্প সরান?"
+
+msgid ""
+"Remove all missing projects from the list?\n"
+"The project folders' contents won't be modified."
+msgstr ""
+"তালিকা থেকে সব অনুপস্থিত প্রকল্প সরান?\n"
+"প্রকল্প ফোল্ডারের বিষয়বস্তু পরিবর্তন করা হবে না।"
+
+msgid "Couldn't load project at '%s'. It may be missing or corrupted."
+msgstr "'%s' এ প্রকল্প লোড করা যায়নি। এটা অনুপস্থিত বা নষ্ট হতে পারে।"
+
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "'%s' এ প্রকল্প সংরক্ষণ করা যায়নি (ত্রুটি %d)।"
+
+msgid "Tag name can't be empty."
+msgstr "ট্যাগ নাম খালি হতে পারে না।"
+
+msgid "These characters are not allowed in tags: %s."
+msgstr "এই অক্ষরগুলি ট্যাগগুলিতে অনুমোদিত নয়: %s।"
+
+msgid "New Project"
+msgstr "নতুন প্রকল্প"
+
+msgid "Scan"
+msgstr "স্ক্যান"
+
+msgid "Create New Project"
+msgstr "নতুন প্রকল্প তৈরি করুন"
+
+msgid "Import Existing Project"
+msgstr "বিদ্যমান প্রকল্প ইম্পোর্ট করুন"
+
+msgid "Select a Folder to Scan"
+msgstr "স্ক্যান করার জন্য ফোল্ডার নির্বাচন করুন"
+
+msgid "It would be a good idea to name your project."
+msgstr "আপনার প্রজেক্টটির জন্য একটি নাম নির্দিষ্ট করুন।"
+
+msgid "Valid project found at path."
+msgstr "পাথ এ বৈধ প্রকল্প পাওয়া গেছে।"
+
+msgid ""
+"Please choose a \"project.godot\", a directory with one, or a \".zip\" file."
+msgstr ""
+"অনুগ্রহ করে একটি \"project.godot\", একটি সহ একটি ডিরেক্টরি বা একটি \".zip\" ফাইল "
+"চয়ন করুন।"
+
+msgid ""
+"The directory name specified contains invalid characters or trailing "
+"whitespace."
+msgstr "নির্দেশিত ডিরেক্টরির নামটিতে অবৈধ অক্ষর বা ট্রেলিং হোয়াইটস্পেস রয়েছে।"
+
+msgid "The project folder already exists and is empty."
+msgstr "প্রকল্প ফোল্ডারটি ইতিমধ্যেই বিদ্যমান এবং খালি।"
+
+msgid "New Game Project"
+msgstr "নতুন গেম প্রকল্প"
+
+msgid "The following files failed extraction from package:"
+msgstr "প্যাকেজ হতে নীম্নোক্ত ফাইলসমূহ এক্সট্রাক্ট করা অসফল হয়েছে:"
+
+msgid ""
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
+msgstr "'%s' এ প্রকল্প লোড করা যায়নি (ত্রুটি %d)। এটা অনুপস্থিত বা দূষিত হতে পারে।"
+
+msgid "Install Project:"
+msgstr "প্রকল্প ইন্সটল করুন:"
+
+msgid "Project Name:"
+msgstr "প্রকল্পের নাম:"
+
+msgid "Project Path:"
+msgstr "প্রকল্পের পথ:"
+
+msgid "Restart Now"
+msgstr "এখন রিস্টার্ট করুন"
+
+msgid "Add Input Action"
+msgstr "ইনপুট অ্যাকশন যোগ করুন"
+
+msgid "Change Action deadzone"
+msgstr "অ্যাকশন ডেডজোন পরিবর্তন করুন"
+
+msgid "Select a Setting or Type its Name"
+msgstr "একটি সেটিং নির্বাচন করুন বা এর নাম টাইপ করুন"
+
+msgid "Input Map"
+msgstr "ইনপুট ম্যাপ/নকশা"
+
+msgid "Localization"
+msgstr "স্থানীয়করণ"
+
+msgid "Globals"
+msgstr "গ্লোবালস"
+
+msgid "Plugins"
+msgstr "প্লাগইন-সমূহ"
+
+msgid "Select Property"
+msgstr "গুণাগুণ/বৈশিষ্ট্য বাছাই করুন"
+
+msgid "Substitute"
+msgstr "প্রতিস্থাপন"
+
+msgid "Node name."
+msgstr "নোডের নাম।"
+
+msgid "Node type."
+msgstr "নোডের ধরণ।"
+
+msgid "Current scene name."
+msgstr "বর্তমান দৃশ্যের নাম।"
+
+msgid "Root node name."
+msgstr "মূল নোডের নাম।"
+
+msgid "Step"
+msgstr "ধাপ"
+
+msgid "Post-Process"
+msgstr "পোষ্ট-প্রসেস"
+
+msgid "Style"
+msgstr "স্টাইল"
+
+msgid "Regular Expression Error:"
+msgstr "রেগুলার এক্সপ্রেশন ত্রুটি:"
+
+msgid "At character %s"
+msgstr "%s অক্ষরে"
+
+msgid "Reparent Node"
+msgstr "নোডের নতুন অভিভাবক দান করুন"
+
+msgid "Select new parent:"
+msgstr "নতুন অভিভাবক নির্বাচন করুন:"
+
+msgid "Keep Global Transform"
+msgstr "সার্বজনীন রূপান্তর রাখুন"
+
+msgid "Reparent"
+msgstr "নতুন অভিভাবক দান করুন"
+
+msgid "Main Run Args:"
+msgstr "প্রধান args রান:"
+
+msgid "Main Feature Tags:"
+msgstr "প্রধান বৈশিষ্ট্য ট্যাগস:"
+
+msgid "Override Main Tags"
+msgstr "প্রধান ট্যাগ ওভাররাইড করুন"
+
+msgid "Scene name is empty."
+msgstr "দৃশ্যের নাম খালি।"
+
+msgid "File name invalid."
+msgstr "ফাইলের নাম অবৈধ।"
+
+msgid "File already exists."
+msgstr "ফাইল আগে থেকেই আছে।"
+
+msgid "Invalid root node name."
+msgstr "অবৈধ রুট নোড নাম।"
+
+msgid "Invalid root node name characters have been replaced."
+msgstr "অবৈধ রুট নোড নামের অক্ষর প্রতিস্থাপন করা হয়েছে।"
+
+msgid "Root Name:"
+msgstr "রুটের নাম:"
+
+msgid "Scene name is valid."
+msgstr "দৃশ্যের নাম বৈধ।"
+
+msgid "Root node valid."
+msgstr "রুট নোড বৈধ।"
+
+msgid "Error loading scene from %s"
+msgstr "%s হতে দৃশ্য লোড করতে সমস্যা হয়েছে"
+
+msgid "Instantiate Scene"
+msgid_plural "Instantiate Scenes"
+msgstr[0] "দৃশ্য ইন্সট্যান্স করুন"
+msgstr[1] "দৃশ্যসমূহ ইন্সট্যান্স করুন"
+
+msgid "Create AudioStreamPlayer"
+msgid_plural "Create AudioStreamPlayers"
+msgstr[0] "অডিওস্ট্রিমপ্লেয়ার তৈরী করুন"
+msgstr[1] "অডিওস্ট্রিমপ্লেয়ারগুলি তৈরী করুন"
+
+msgid "This operation can't be done on the tree root."
+msgstr "শাখার মূলে এটি করা সম্ভব হবে না।"
+
+msgid "Duplicate Node(s)"
+msgstr "নোড(সমূহ) প্রতিলিপি করুন"
+
+msgid "Make node as Root"
+msgstr "নোডকে রুট হিসাবে তৈরি করুন"
+
+msgid "Delete %d nodes and any children?"
+msgstr "%d নোড এবং কোনো শিশু মুছবেন?"
+
+msgid "Delete %d nodes?"
+msgstr "%d নোড মুছবেন?"
+
+msgid "Delete the root node \"%s\"?"
+msgstr "রুট নোড \"%s\" মুছবেন?"
+
+msgid "Delete node \"%s\"?"
+msgstr "নোড \"%s\" মুছবেন?"
+
+msgid "Save New Scene As..."
+msgstr "নতুন দৃশ্য এইরূপে সংরক্ষণ করুন..."
+
+msgid "Make Local"
+msgstr "স্থানীয় করুন"
+
+msgid "Disable Scene Unique Name(s)"
+msgstr "দৃশ্যের অনন্য নাম(গুলি) অক্ষম করুন"
+
+msgid "New Scene Root"
+msgstr "নতুন দৃশ্য রুট"
+
+msgid "Create Root Node:"
+msgstr "রুট নোড তৈরি করুন:"
+
+msgid "Toggle the display of favorite nodes."
+msgstr "প্রিয় নোডের প্রদর্শন টগল করুন।"
+
+msgid "Paste From Clipboard"
+msgstr "ক্লিপবোর্ড থেকে পেস্ট করুন"
+
+msgid "Can't operate on nodes from a foreign scene!"
+msgstr "বাহিরের দৃশ্যের নোডে এটি করা সম্ভব হবে না!"
+
+msgid "Can't operate on nodes the current scene inherits from!"
+msgstr "বর্তমান দৃশ্য যার হতে উৎপত্তি হয় তার নোডে এটি করা সম্ভব হবে না!"
+
+msgid "Attach Script"
+msgstr "স্ক্রিপ্ট সংযুক্ত করুন"
+
+msgid "Remove Node(s)"
+msgstr "নোড(সমূহ) অপসারণ করুন"
+
+msgid "This operation requires a single selected node."
+msgstr "এই কাজটি করার জন্য একটি একক নির্বাচিত নোড প্রয়োজন।"
+
+msgid ""
+"Couldn't save new scene. Likely dependencies (instances) couldn't be "
+"satisfied."
+msgstr ""
+"নতুন দৃশ্যটি সংরক্ষণ করা সম্ভব হচ্ছে না। সম্ভবত যেসবের (ইন্সট্যান্স) উপর নির্ভর করছে "
+"তাদের সন্তুষ্ট করা সম্ভব হচ্ছে না।"
+
+msgid "Error saving scene."
+msgstr "দৃশ্য সংরক্ষণে সমস্যা হয়েছে।"
+
+msgid "Error duplicating scene to save it."
+msgstr "দৃশ্য প্রতিলিপি করে সংরক্ষণে সমস্যা হয়েছে।"
+
+msgid "Sub-Resources"
+msgstr "সাব-রিসোর্সসমূহ"
+
+msgid "Revoke Unique Name"
+msgstr "অনন্য নাম প্রত্যাহার করুন"
+
+msgid "Access as Unique Name"
+msgstr "অনন্য নাম হিসাবে অ্যাক্সেস"
+
+msgid "Clear Inheritance"
+msgstr "উত্তরাধিকারত্ব পরিস্কার করুন"
+
+msgid "Editable Children"
+msgstr "সম্পাদনযোগ্য অংশীদারীসমূহ"
+
+msgid "All Scene Sub-Resources"
+msgstr "সমস্ত দৃশ্য সাব-রিসোর্সেস"
+
+msgid "Selects all Nodes of the given type."
+msgstr "প্রদত্ত ধরণের সমস্ত নোড নির্বাচন করে।"
+
+msgid "Can't paste root node into the same scene."
+msgstr "একই দৃশ্যে রুট নোড পেস্ট করা যাবে না।"
+
+msgid "Paste Node(s) as Sibling of %s"
+msgstr "%s এর সহোদর হিসাবে নোড(গুলি) পেষ্ট করুন"
+
+msgid "Paste Node(s) as Child of %s"
+msgstr "%s এর চাইল্ড হিসাবে নোড(গুলি) পেষ্ট করুন"
+
+msgid "<Unnamed> at %s"
+msgstr "%s এ <নামহীন>"
+
+msgid "(used %d times)"
+msgstr "(%d বার ব্যবহার করা হয়েছে)"
+
+msgid "Batch Rename..."
+msgstr "ব্যাচের নাম পরিবর্তন করুন..।"
+
+msgid "Add Child Node..."
+msgstr "চাইল্ড নোড যোগ করুন..।"
+
+msgid "Instantiate Child Scene..."
+msgstr "তাত্ক্ষণিক শিশুর দৃশ্য..।"
+
+msgid "Change Type..."
+msgstr "ধরণ পরিবর্তন করুন…"
+
+msgid "Attach Script..."
+msgstr "স্ক্রিপ্ট সংযুক্ত করুন…"
+
+msgid "Reparent..."
+msgstr "অভিভাবক পরিবর্তন…"
+
+msgid "Reparent to New Node..."
+msgstr "নতুন নোডে অবিভাবক পরিবর্তন…"
+
+msgid "Make Scene Root"
+msgstr "দৃশ্যটিকে রুট করুন"
+
+msgid "Save Branch as Scene..."
+msgstr "দৃশ্য হিসাবে শাখা সংরক্ষণ করুন..।"
+
+msgid "Toggle Access as Unique Name"
+msgstr "অনন্য নাম হিসাবে অ্যাক্সেস টগল করুন"
+
+msgid "Delete (No Confirm)"
+msgstr "অপসারণ করুন (নিশ্চয়তাকরণ নেই)"
+
+msgid "Add/Create a New Node."
+msgstr "একটি নতুন নোড যোগ/তৈরি করুন।"
+
+msgid "Delete Related Animation Tracks"
+msgstr "সম্পর্কিত অ্যানিমেশন ট্র্যাক মুছুন"
+
+msgid "Clear Inheritance? (No Undo!)"
+msgstr "উত্তরাধিকারত্ব পরিস্কার করবেন? (ফেরৎ পাবেন না!)"
+
+msgid "Path is empty."
+msgstr "পথটি খালি।"
+
+msgid "Filename is empty."
+msgstr "ফাইলের নাম খালি।"
+
+msgid "Filename is invalid."
+msgstr "ফাইলের নাম অবৈধ।"
+
+msgid "Path is not local."
+msgstr "পথটি স্থানীয় নয়।"
+
+msgid "A directory with the same name exists."
+msgstr "একই নামের ডিরেক্টরি বিদ্যমান।"
+
+msgid "File does not exist."
+msgstr "ফাইলটি বিদ্যমান নয়।"
+
+msgid "Invalid extension."
+msgstr "অগ্রহণযোগ্য এক্সটেনশন।"
+
+msgid "Template:"
+msgstr "টেমপ্লেট:"
+
+msgid "Error loading script from %s"
+msgstr "%s হতে স্ক্রিপ্ট তুলতে/লোডে সমস্যা হয়েছে"
+
+msgid "Inherit %s"
+msgstr "উত্তরাধিকারী %s"
+
+msgid "Inherit"
+msgstr "উত্তরাধিকার"
+
+msgid "File exists, it will be reused."
+msgstr "ফাইল বিদ্যমান, এটি পুনরায় ব্যবহার করা হবে।"
+
+msgid "Built-in script (into scene file)."
+msgstr "বিল্ট ইন স্ক্রিপ্ট (সিন ফাইলে)।"
+
+msgid "Using existing script file."
+msgstr "বিদ্যমান স্ক্রিপ্ট লোড করুন।"
+
+msgid "Will load an existing script file."
+msgstr "বিদ্যমান স্ক্রিপ্ট লোড করা হবে।"
+
+msgid "Script file already exists."
+msgstr "স্ক্রিপ্ট ফাইল ইতিমধ্যেই বিদ্যমান।"
+
+msgid "No suitable template."
+msgstr "কোন উপযুক্ত টেমপ্লেট নেই।"
+
+msgid "Script path/name is valid."
+msgstr "স্ক্রিপ্ট পাথ/নাম বৈধ।"
+
+msgid "Will create a new script file."
+msgstr "নতুন স্ক্রিপ্ট তৈরি করা হবে।"
+
+msgid "Built-in Script:"
+msgstr "পূর্বনির্মিত স্ক্রিপ্ট:"
+
+msgid "Attach Node Script"
+msgstr "নোড স্ক্রিপ্ট সংযুক্ত করুন"
+
+msgid "N/A"
+msgstr "না/আ"
+
+msgid "Invalid base path."
+msgstr "বেস পথ অগ্রহণযোগ্য।"
+
+msgid "Wrong extension chosen."
+msgstr "ভুল এক্সটেনশন নির্বাচিত।"
+
+msgid "Built-in shader (into scene file)."
+msgstr "বিল্ট ইন স্ক্রিপ্ট (সিন ফাইলে)।"
+
+msgid "Will load an existing shader file."
+msgstr "বিদ্যমান শেডার ফাইল লোড করা হবে।"
+
+msgid "Shader file already exists."
+msgstr "Shader ফাইল ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Shader path/name is valid."
+msgstr "শেডার পাথ/নাম বৈধ।"
+
+msgid "Will create a new shader file."
+msgstr "নতুন শেডার ফাইল তৈরি করবে।"
+
+msgid "Mode:"
+msgstr "মোড:"
+
+msgid "Built-in Shader:"
+msgstr "পূর্বনির্মিত শেডার:"
+
+msgid "Name must be a valid identifier."
+msgstr "নাম অবশ্যই একটি বৈধ শনাক্তকারী হতে হবে।"
+
+msgid "Global shader parameter '%s' already exists."
+msgstr "গ্লোবাল শেডার প্যারামিটার '%s' ইতিমধ্যেই বিদ্যমান।"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "প্রোজেক্টে সমস্ত মেশ আপগ্রেড করা হচ্ছে"
+
+msgid "Select Screen"
+msgstr "স্ক্রীন নির্বাচন করুন"
+
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr "কনভার্ট করার জন্য অবৈধ টাইপ আর্গুমেন্ট, TYPE_* ধ্রুবক ব্যবহার করুন।"
+
+msgid "Cannot resize array."
+msgstr "অ্যারের আকার পরিবর্তন করা যায়নি।"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "GDScript ক্লাস ইনস্ট্যান্ট করা যাচ্ছে না।"
+
+msgid "Export Settings:"
+msgstr "রপ্তানি সেটিংস:"
+
+msgid "glTF 2.0 Scene..."
+msgstr "glTF ২.০ দৃশ্য…"
+
+msgid "Couldn't run Blender executable."
+msgstr "ব্লেন্ডার এক্সিকিউটেবল চালানো যায়নি।"
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr "ব্লেন্ডার থেকে এক্সিকিউটেবল সংস্করণ তথ্য বের করা যায়নি: %s।"
+
+msgid "No transition available."
+msgstr "কোনো ট্রানজিশন নেই।"
+
+msgid "From / To"
+msgstr "উৎস/গন্তব্য"
+
+msgid "Use Transition:"
+msgstr "ট্র্যানজিশন ব্যাবহার করুন:"
+
+msgid "Transition From:"
+msgstr "এ থেকে ট্র্যানজিশন করুন:"
+
+msgid "Transition To:"
+msgstr "তে ট্র্যানজিশন করুন:"
+
+msgid "Fade Mode:"
+msgstr "ফেইড মোড:"
+
+msgid "Hold Previous:"
+msgstr "পূর্ববর্তী হোল্ড:"
+
+msgid "Integrate indirect lighting %d%%"
+msgstr "পরোক্ষ আলো একত্রিত করুন %d%%"
+
+msgid "Integrating light probes %d%%"
+msgstr "হালকা প্রোবগুলিকে একীভূত করা হচ্ছে %d%%"
+
+msgid "Class name must be a valid identifier"
+msgstr "ক্লাসের নাম অবশ্যই একটি বৈধ শনাক্তকারী হতে হবে"
+
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr "ডিকোডিং বাইট, বা অবৈধ বিন্যাসের জন্য পর্যাপ্ত পরিমাণে বাইট নেই।"
+
+msgid "Failed to load .NET runtime"
+msgstr ".NET রানটাইম লোড করতে ব্যর্থ হয়েছে"
+
+msgid ".NET assemblies not found"
+msgstr ".NET সমাবেশ পাওয়া যায়নি"
+
+msgid "%s/s"
+msgstr "%s/সে"
+
+msgid "Count"
+msgstr "গণনা"
+
+msgid "Not possible to add a new property to synchronize without a root."
+msgstr "রুট ছাড়া সিঙ্ক্রোনাইজ করার জন্য একটি নতুন সম্পত্তি যোগ করা সম্ভব নয়।"
+
+msgid "Property/path must not be empty."
+msgstr "সম্পত্তি/পথ খালি হওয়া উচিত নয়।"
+
+msgid "Invalid property path: '%s'"
+msgstr "অবৈধ সম্পত্তি পথ: '%s'"
+
+msgid "Delete Property?"
+msgstr "সম্পত্তি মুছে ফেলবেন?"
+
+msgid "Remove Property"
+msgstr "প্রোপার্টি-সমূহ অপসারণ"
+
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"এই নোডটি সফল্ভাবে কাজ করার জন্য একটি NavigationMesh রিসোর্স নির্ধারন বা তৈরি করতে "
+"হবে।"
+
+msgid "Error loading %s: %s."
+msgstr "লোড করার সময় ত্রুটি %s: %s।"
+
+msgid "Error saving file %s: %s"
+msgstr "ফাইল সংরক্ষণে ত্রুটি%s: %s"
+
+msgid "OpenXR Action map:"
+msgstr "OpenXR একশন মানচিত্র:"
+
+msgid "Add an action set."
+msgstr "নতুন ইনপুট অ্যাকশন ইভেন্ট সেট করুন।"
+
+msgid "Add action."
+msgstr "একশন যোগ করুন।"
+
+msgid "Remove action set."
+msgstr "একশন সেট অপসারণ করুন।"
+
+msgid "Select an interaction profile"
+msgstr "ইন্টারেকশন প্রোফাইল নির্বাচন করুন"
+
+msgid "Choose an XR runtime."
+msgstr "একটি XR রানটাইম চয়ন করুন।"
+
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr "অ্যান্ড্রয়েড অ্যাপ্লিকেশন প্যাকেজ নামগুলিতে '%s' অক্ষরটি অনুমোদিত নয়।"
+
+msgid "Error creating keystores directory:"
+msgstr "কীস্টোর ডিরেক্টরি তৈরিতে ত্রুটি:"
+
+msgid "Invalid package name:"
+msgstr "অগ্রহণযোগ্য প্যাকেজ নাম:"
+
+msgid "Select device from the list"
+msgstr "লিস্ট থেকে ডিভাইস সিলেক্ট করুন"
+
+msgid "Exporting APK..."
+msgstr "APK রপ্তানি হচ্ছে..।"
+
+msgid "Uninstalling..."
+msgstr "আনইনস্টল হচ্ছে..।"
+
+msgid "Could not install to device: %s"
+msgstr "ডিভাইসে ইনস্টল করা যায়নি: %s"
+
+msgid "Missing 'bin' directory!"
+msgstr "অনুপস্থিত 'বিন' ডিরেক্টরি!"
+
+msgid "Could not start apksigner executable."
+msgstr "apksigner এক্সিকিউটেবল শুরু করা যায়নি।"
+
+msgid ""
+"output: \n"
+"%s"
+msgstr ""
+"আউটপুট: \n"
+"%s"
+
+msgid "Exporting for Android"
+msgstr "অ্যান্ড্রয়েডের জন্য রপ্তানি করা হচ্ছে"
+
+msgid "Could not write expansion package file!"
+msgstr "সম্প্রসারণ প্যাকেজ ফাইল লিখতে পারিনি!"
+
+msgid "Creating APK..."
+msgstr "APK তৈরি করা হচ্ছে..।"
+
+msgid "Could not find template APK to export: \"%s\"."
+msgstr "এক্সপোর্ট করার জন্য টেমপ্লেট APK খুঁজে পাওয়া যায়নি: \"%s\"।"
+
+msgid "Adding files..."
+msgstr "ফাইল যোগ করা হচ্ছে..।"
+
+msgid "Could not export project files."
+msgstr "প্রকল্প ফাইল রপ্তানি করা যায়নি।"
+
+msgid "Could not open a directory at path \"%s\"."
+msgstr "\"%s\" পাথে একটি ডিরেক্টরি খোলা যায়নি।"
+
+msgid "Could not write to a file at path \"%s\"."
+msgstr "\"%s\" পাথের একটি ফাইলে লেখা যাবে না।"
+
+msgid "Exporting for iOS (Project Files Only)"
+msgstr "iOS এর জন্য রপ্তানি করা হচ্ছে (শুধুমাত্র প্রকল্প ফাইল)"
+
+msgid "Exporting for iOS"
+msgstr "iOS এর জন্য রপ্তানি করা হচ্ছে"
+
+msgid "Failed to create the directory: \"%s\""
+msgstr "ডিরেক্টরি তৈরি করতে ব্যর্থ হয়েছে: \"%s\""
+
+msgid "Could not create and open the directory: \"%s\""
+msgstr "ডিরেক্টরি তৈরি এবং খুলতে পারেনি: \"%s\""
+
+msgid "Could not create a directory at path \"%s\"."
+msgstr "\"%s\" পাথে একটি ডিরেক্টরি তৈরি করা যায়নি।"
+
+msgid "Could not copy a file at path \"%s\" to \"%s\"."
+msgstr "\"%s\" থেকে \"%s\" পাথে একটি ফাইল কপি করা যায়নি।"
+
+msgid "Failed to create a file at path \"%s\" with code %d."
+msgstr "\"%s\" পাথে একটি ফাইল তৈরি করতে ব্যর্থ হয়েছে %d কোড সহ।"
+
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "আইডেন্টিফায়ারে '%s' অক্ষরটি অনুমোদিত নয়।"
+
+msgid "Could not start ios-deploy executable."
+msgstr "ios-deploy executable শুরু করা যায়নি।"
+
+msgid "Could not start device executable."
+msgstr "এক্সিকিউটেবল ডিভাইস শুরু করা যায়নি।"
+
+msgid "Could not start devicectl executable."
+msgstr "devicectl এক্সিকিউটেবল শুরু করা যায়নি।"
+
+msgid "Debug Script Export"
+msgstr "ডিবাগ স্ক্রিপ্ট এক্সপোর্ট"
+
+msgid "Could not open file \"%s\"."
+msgstr "ফাইল \"%s\" খুলতে পারেনি।"
+
+msgid "Failed to open executable file \"%s\"."
+msgstr "এক্সিকিউটেবল ফাইল \"%s\" খুলতে ব্যর্থ হয়েছে।"
+
+msgid "Could not create temp directory:"
+msgstr "অস্থায়ী(temp) ডিরেক্টরি তৈরি করা যায়নি:"
+
+msgid "Exporting project..."
+msgstr "প্রকল্প রপ্তানি করা হচ্ছে..।"
+
+msgid "Creating temporary directory..."
+msgstr "অস্থায়ী ডিরেক্টরি তৈরি করা হচ্ছে..।"
+
+msgid "Starting project..."
+msgstr "প্রকল্প শুরু হচ্ছে…"
+
+msgid "Could not start rcodesign executable."
+msgstr "rcodesign এক্সিকিউটেবল শুরু করা যায়নি।"
+
+msgid "Could not start xcrun executable."
+msgstr "xcrun এক্সিকিউটেবল শুরু করা যায়নি।"
+
+msgid "Cannot sign directory %s."
+msgstr "ডিরেক্টরি %s সাইন করা যাবে না।"
+
+msgid "Cannot sign file %s."
+msgstr "ফাইল %s সাইন করা যাবে না।"
+
+msgid "Could not start productbuild executable."
+msgstr "এক্সিকিউটেবল productbuild শুরু করা যায়নি।"
+
+msgid "DMG Creation"
+msgstr "DMG তৈরি"
+
+msgid "Could not start hdiutil executable."
+msgstr "hdiutil এক্সিকিউটেবল শুরু করা যায়নি।"
+
+msgid "Exporting for macOS"
+msgstr "macOS এর জন্য রপ্তানি করা হচ্ছে"
+
+msgid "Could not find template app to export: \"%s\"."
+msgstr "এক্সপোর্ট করার জন্য টেমপ্লেট অ্যাপ খুঁজে পাওয়া যায়নি: \"%s\"।"
+
+msgid "Invalid export format."
+msgstr "অবৈধ রপ্তানি বিন্যাস।"
+
+msgid "Could not create directory: \"%s\"."
+msgstr "ডিরেক্টরি তৈরি করা যায়নি: \"%s\"।"
+
+msgid "Could not create directory \"%s\"."
+msgstr "\"%s\" ডিরেক্টরি তৈরি করা যায়নি।"
+
+msgid "Could not created symlink \"%s\" -> \"%s\"."
+msgstr "সিমলিঙ্ক \"%s\" -> \"%s\" তৈরি করা যায়নি।"
+
+msgid "Could not open \"%s\"."
+msgstr "\"%s\" খুলতে পারেনি।"
+
+msgid "Could not create helper entitlements file."
+msgstr "সহায়ক এনটাইটেলমেন্ট ফাইল তৈরি করা যায়নি।"
+
+msgid "Could not open template for export: \"%s\"."
+msgstr "রপ্তানির জন্য টেমপ্লেট খোলা যায়নি: \"%s\"।"
+
+msgid "Invalid export template: \"%s\"."
+msgstr "অবৈধ এক্সপোর্ট টেমপ্লেট: \"%s\"।"
+
+msgid "Could not write file: \"%s\"."
+msgstr "ফাইল লেখা যায়নি: \"%s\"।"
+
+msgid "Icon Creation"
+msgstr "আইকন তৈরি"
+
+msgid "Could not read file: \"%s\"."
+msgstr "ফাইল পড়া যায়নি: \"%s\"।"
+
+msgid "Could not read HTML shell: \"%s\"."
+msgstr "HTML শেল পড়া যায়নি: \"%s\"।"
+
+msgid "Start HTTP Server"
+msgstr "HTTP সার্ভার শুরু করুন"
+
+msgid "Could not create HTTP server directory: %s."
+msgstr "HTTP সার্ভার ডিরেক্টরি তৈরি করা যায়নি: %s।"
+
+msgid "Error starting HTTP server: %d."
+msgstr "HTTP সার্ভার শুরু করতে ত্রুটি: %d।"
+
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "অস্থায়ী ফাইল \"%s\" পুনঃনামকরণ করতে ব্যর্থ হয়েছে।"
+
+msgid "Invalid file version."
+msgstr "অগ্রহণযোগ্য ফাইল ভার্সন।"
+
+msgid "Could not find rcedit executable at \"%s\"."
+msgstr "\"%s\" এ নির্বাহযোগ্য rcedit খুঁজে পাওয়া যায়নি।"
+
+msgid "Could not find wine executable at \"%s\"."
+msgstr "\"%s\" এ কার্যকরীযোগ্য ওয়াইন খুঁজে পাওয়া যায়নি।"
+
+msgid "Invalid icon file \"%s\"."
+msgstr "অবৈধ আইকন ফাইল \"%s\"।"
+
+msgid "rcedit failed to modify executable: %s."
+msgstr "rcedit এক্সিকিউটেবল পরিবর্তন করতে ব্যর্থ হয়েছে: %s।"
+
+msgid "Could not find signtool executable at \"%s\"."
+msgstr "\"%s\" এ নির্বাহযোগ্য সাইনটুল খুঁজে পাওয়া যায়নি।"
+
+msgid "Could not find osslsigncode executable at \"%s\"."
+msgstr "\"%s\" এ এক্সিকিউটেবল osslsigncode খুঁজে পাওয়া যায়নি।"
+
+msgid "No identity found."
+msgstr "কোনো পরিচয় পাওয়া যায়নি।"
+
+msgid "Invalid identity type."
+msgstr "অবৈধ আইডেন্টিটি টাইপ।"
+
+msgid "Signtool failed to sign executable: %s."
+msgstr "Signtool এক্সিকিউটেবল সাইন করতে ব্যর্থ হয়েছে: %s।"
+
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "অস্থায়ী ফাইল \"%s\" সরাতে ব্যর্থ হয়েছে।"
+
+msgid ""
+"Only one visible CanvasModulate is allowed per canvas.\n"
+"When there are more than one, only one of them will be active. Which one is "
+"undefined."
+msgstr ""
+"প্রতি ক্যানভাসে শুধুমাত্র একটি দৃশ্যমান CanvasModulate অনুমোদিত।\n"
+"যখন একাধিক থাকে, তাদের মধ্যে শুধুমাত্র একটি সক্রিয় হবে। কোনটি অনির্ধারিত।"
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr "Occluder এর প্রভাব ফেলতে একটি occluder বহুভুজ নির্ধারণ করা (বা, আঁকা) আবশ্যক।"
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "এই occluder এর জন্য occluder পলিগনটি খালি। অনুগ্রহ করে একটি পলিগন আঁকুন।"
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"ParallaxLayer একমাত্র ParallaxBackground এর অংশ হিসেবে নির্ধারন করলেই কাজ করে।"
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D একমাত্র Path2D এর অংশ হিসেবে নির্ধারন করালেই কাজ করে।"
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "সংঘর্ষে ফাঁকা/শুন্য CollisionPolygon2D-এর কোনো প্রভাব নেই।"
+
+msgid ""
+"CollisionShape2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node.\n"
+"Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, "
+"CharacterBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
+"করে।\n"
+" Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকার দিতে অনুগ্রহ "
+"করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"সফল্ভাবে কাজ করতে CollisionShape2D এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য একটি "
+"আকৃতি তৈরি করুন!"
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "Path এর দিক অবশ্যই একটি কার্যকর Node2D এর দিকে নির্দেশ করাতে হবে।"
+
+msgid "Preparing geometry %d/%d"
+msgstr "জ্যামিতি %d/%d প্রস্তুত করা হচ্ছে"
+
+msgid "Creating probes"
+msgstr "প্রোব তৈরি করা হচ্ছে"
+
+msgid "Preparing Lightmapper"
+msgstr "লাইটম্যাপার প্রস্তুত হচ্ছে"
+
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
+"করে। \n"
+"Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকার দিতে অনুগ্রহ "
+"করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
+"করে।\n"
+" Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকার দিতে অনুগ্রহ "
+"করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
+
+msgid ""
+"A shape must be provided for CollisionShape3D to function. Please create a "
+"shape resource for it."
+msgstr ""
+"সফলভাবে কাজ করতে CollisionShape এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য একটি "
+"আকৃতি তৈরি করুন।"
+
+msgid "No pose is set."
+msgstr "কোনো পোজ সেট করা নেই।"
+
+msgid "Animation not found: '%s'"
+msgstr "অ্যানিমেশন পাওয়া যায়নি: '%s'"
+
+msgid "Nothing connected to input '%s' of node '%s'."
+msgstr "'%s' নোডের '%s' ইনপুট এর সাথে কিছু সংযুক্ত নেই।"
+
+msgid "Copy this constructor in a script."
+msgstr "একটি স্ক্রিপ্টে এই কনস্ট্রাক্টরটি অনুলিপি করুন।"
+
+msgid "Invalid source for preview."
+msgstr "প্রিভিউ এর জন্য অকার্যকর উৎস।"
+
+msgid "Invalid source for shader."
+msgstr "shader এর জন্য অকার্যকর উৎস।"
+
+msgid "Invalid operator for that type."
+msgstr "এই টাইপের জন্য অবৈধ অপারেটর।"
+
+msgid "Invalid comparison function for that type."
+msgstr "এই ধরনের জন্য অবৈধ তুলনা ফাংশন।"
+
+msgid "Surface Index"
+msgstr "সারফেস ইনডেক্স"
+
+msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
+msgstr "অন্তর্নির্মিত ফাংশনের জন্য অবৈধ আর্গুমেন্ট: \"%s(%s)\"।"
+
+msgid "Invalid assignment of '%s' to '%s'."
+msgstr "'%s' থেকে '%s'-এর অবৈধ অ্যাসাইনমেন্ট।"
+
+msgid "Expected constant expression."
+msgstr "প্রত্যাশিত ধ্রুবক অভিব্যক্তি।"
+
+msgid "Invalid data type for the array."
+msgstr "অ্যারের জন্য অবৈধ ডেটা টাইপ।"
+
+msgid "Cannot convert from '%s' to '%s'."
+msgstr "'%s' থেকে '%s'-এ রূপান্তর করা যাবে না।"
+
+msgid "Expected ')' in expression."
+msgstr "অভিব্যক্তিতে ')' প্রত্যাশিত।"
+
+msgid "Void value not allowed in expression."
+msgstr "অভিব্যক্তিতে void মান অনুমোদিত নয়।"
+
+msgid "No matching constructor found for: '%s'."
+msgstr "'%s'-এর জন্য কোনো মিলিত কনস্ট্রাক্টর পাওয়া যায়নি।"
+
+msgid "Expected a function name."
+msgstr "একটি ফাংশন নাম প্রত্যাশিত।"
+
+msgid "No matching function found for: '%s'."
+msgstr "এর জন্য কোনো মিল ফাংশন পাওয়া যায়নি: '%s'।"
+
+msgid "Invalid token for the operator: '%s'."
+msgstr "অপারেটরের জন্য অবৈধ টোকেন: '%s'।"
+
+msgid "Unexpected end of expression."
+msgstr "অভিব্যক্তির অপ্রত্যাশিত সমাপ্তি।"
+
+msgid "Invalid arguments to unary operator '%s': %s."
+msgstr "ইউনারি অপারেটর এর কাছে অবৈধ আর্গুমেন্ট: '%s':%s।"
+
+msgid "Invalid argument to ternary operator: '%s'."
+msgstr "টার্নারি অপারেটরের কাছে অবৈধ যুক্তি: '%s'।"
+
+msgid "Invalid arguments to operator '%s': '%s'."
+msgstr "অপারেটর এর কাছে অবৈধ আর্গুমেন্ট'%s': '%s'।"
+
+msgid "Invalid variable type (samplers are not allowed)."
+msgstr "অবৈধ পরিবর্তনশীল প্রকার (স্যাম্পলার অনুমোদিত নয়)।"
+
+msgid "Expected an integer constant."
+msgstr "একটি পূর্ণসংখ্যা ধ্রুবক প্রত্যাশিত।"
+
+msgid "Duplicated case label: %d."
+msgstr "ডুপ্লিকেট কেস লেবেল: %d।"
+
+msgid "Invalid shader type. Valid types are: %s"
+msgstr "অবৈধ শেডার প্রকার। বৈধ প্রকারগুলি হল: %s"
+
+msgid "Duplicated render mode: '%s'."
+msgstr "সদৃশ রেন্ডার মোড: '%s'।"
+
+msgid "Invalid render mode: '%s'."
+msgstr "অবৈধ রেন্ডার মোড: '%s'।"
+
+msgid "Expected data type."
+msgstr "ডাটা টাইপ প্রত্যাশিত।"
+
+msgid "The '%s' data type is not allowed here."
+msgstr "'%s' ডেটা টাইপ এখানে অনুমোদিত নয়।"
+
+msgid "Invalid data type for varying."
+msgstr "ভ্যারিয়িইং এর জন্য অবৈধ ডাটা টাইপ।"
+
+msgid "Duplicated hint: '%s'."
+msgstr "ডুপ্লিকেট হিন্ট: '%s'।"
+
+msgid "Duplicated filter mode: '%s'."
+msgstr "ডুপ্লিকেট ফিল্টার মোড: '%s'।"
+
+msgid "Duplicated repeat mode: '%s'."
+msgstr "ডুপ্লিকেটকৃত রিপিট মোড: '%s'।"
+
+msgid "Expected constant expression after '='."
+msgstr "'=' এর পরে constant expression প্রত্যাশিত।"
+
+msgid "Can't convert constant to '%s'."
+msgstr "constant কে '%s' এ রুপান্তর করা যায়না।"
+
+msgid "Expected an uniform subgroup identifier."
+msgstr "একটি uniform subgroup identifier প্রত্যাশিত।"
+
+msgid "Expected an uniform group identifier."
+msgstr "একটি uniform group identifier প্রত্যাশিত।"
+
+msgid "Expected an uniform group identifier or `;`."
+msgstr "একটি uniform group identifier অথবা `;` প্রত্যাশিত।"
+
+msgid "Group needs to be opened before."
+msgstr "প্রথমে Group খুলতে হবে।"
+
+msgid "Shader type is already defined."
+msgstr "Shader type ইতোমধ্যে সংজ্ঞায়িত করা হয়েছে।"
+
+msgid "Expected constant, function, uniform or varying."
+msgstr "ফাংশন, constant অথবা varying প্রত্যাশিত।"
+
+msgid "Invalid constant type (samplers are not allowed)."
+msgstr "অগ্রহণযোগ্য constant টাইপ (samplers গ্রহণযোগ্য নয়)।"
+
+msgid "Invalid function type (samplers are not allowed)."
+msgstr "অগ্রহণযোগ্য ফাংশনের টাইপ (samplers গ্রহণযোগ্য নয়)।"
+
+msgid "Expected a function name after type."
+msgstr "type এর পরে ফাংশনের নাম প্রত্যাশিত।"
+
+msgid "Expected '(' after function identifier."
+msgstr "ফাংশন identefier এর পরে '(' প্রত্যাশিত।"
+
+msgid ""
+"Global non-constant variables are not supported. Expected '%s' keyword before "
+"constant definition."
+msgstr ""
+"গ্লোবাল non-constant ভেরিএবলসমূহ সাপোর্টেড নয়। constant সংজ্ঞায়ন এরপূর্বে '%s' "
+"কীওয়ার্ড প্রত্যাশিত।"
+
+msgid "Expected an identifier after type."
+msgstr "type এর পরে একটি identifier প্রত্যাশিত।"
+
+msgid ""
+"The '%s' qualifier cannot be used within a function parameter declared with "
+"'%s'."
+msgstr ""
+"'%s' qualifier টিকে একটি ফাংশনের পরমেটারের ভিতরে ব্যাবহার করা যাবে না যা '%s' "
+"দ্বারা সংজ্ঞায়িত।"
+
+msgid "Expected a valid data type for argument."
+msgstr "অরুগমেন্টটির জন্য একটি গ্রহণযোগ্য data type প্রত্যাশিত।"
+
+msgid "Opaque types cannot be output parameters."
+msgstr "অস্বচ্ছ প্রকারগুলি আউটপুট parameters হতে পারে না।"
+
+msgid "Void type not allowed as argument."
+msgstr "Void type আর্গুমেন্ট হিসাবে অনুমোদিত নয়।"
+
+msgid "Expected an identifier for argument name."
+msgstr "আর্গুমেন্ট নামের জন্য একটি identifier প্রত্যাশিত।"
+
+msgid "Function '%s' expects no arguments."
+msgstr "'%s' ফাংশনটি কোনো argument প্রত্যাশা করে না।"
+
+msgid "Function '%s' must be of '%s' return type."
+msgstr "ফাংশন '%s' কে '%s' type return করতে হবে।"
+
+msgid "Expected a '{' to begin function."
+msgstr "একটি ফাংশনের শুরুতে '{' প্রত্যাশিত।"
+
+msgid "Expected at least one '%s' statement in a non-void function."
+msgstr "Non-void ফাংশনে কমপক্ষে একটি '%s' statement প্রত্যাশিত।"
+
+msgid "uniform buffer"
+msgstr "uniform বাফার"
+
+msgid "Expected a '%s'."
+msgstr "একটি '%s' প্রত্যাশিত।"
+
+msgid "Expected a '%s' or '%s'."
+msgstr "একটি '%s' বা '%s' প্রত্যাশিত।"
+
+msgid "Expected a '%s' after '%s'."
+msgstr "'%s'-এর পরে একটি '%s' প্রত্যাশিত।"
+
+msgid "Redefinition of '%s'."
+msgstr "'%s'-এর পুনঃসংজ্ঞায়ন।"
+
+msgid "Unknown directive."
+msgstr "অজানা ডিরেক্টিভ।"
+
+msgid "Invalid macro name."
+msgstr "অগ্রহনযোগ্য ম্যাক্রো নাম।"
+
+msgid "Macro redefinition."
+msgstr "ম্যাক্রো পুনঃসংজ্ঞায়ন।"
+
+msgid "Invalid argument name."
+msgstr "অগ্রহনযোগ্য আর্গুমেন্ট নাম।"
+
+msgid "Expected a comma in the macro argument list."
+msgstr "ম্যাক্রো আর্গুমেন্ট তালিকায় একটি কমা প্রত্যাশিত ।"
+
+msgid "'##' must not appear at beginning of macro expansion."
+msgstr "ম্যাক্রো সম্প্রসারণের শুরুতে '##' থাকা উচিত নয়।"
+
+msgid "'##' must not appear at end of macro expansion."
+msgstr "ম্যাক্রো সম্প্রসারণের শেষে '##' থাকা উচিত নয়।"
+
+msgid "Missing condition."
+msgstr "Condition অনুপস্থিত।"
+
+msgid "Condition evaluation error."
+msgstr "Condition মূল্যায়নে ত্রুটি।"
+
+msgid "Shader include file does not exist:"
+msgstr "shader include ফাইলটি বিদ্যমান নয়:"
+
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr ""
+"Shader include লোড ব্যর্থ হয়েছে। shader include আছে? কোনো চক্রীয় নির্ভরতা আছে?"
+
+msgid "Shader include resource type is wrong."
+msgstr "Shader include এর resource type ভুল।"
+
+msgid "Cyclic include found"
+msgstr "Cycilic include পাওয়া গেছে"
+
+msgid "Shader max include depth exceeded."
+msgstr "Shader max include depth অতিক্রম করেছে।"
+
+msgid "Macro expansion limit exceeded."
+msgstr "Macro expansion সীমা অতিক্রান্ত হয়েছে।"
+
+msgid "Invalid macro argument list."
+msgstr "অগ্রহনযোগ্য ম্যাক্রো আর্গুমেন্ট তালিকা।"
+
+msgid "Invalid macro argument."
+msgstr "অগ্রহনযোগ্য ম্যাক্রো আর্গুমেন্ট।"
+
+msgid "Invalid macro argument count."
+msgstr "অগ্রহনযোগ্য ম্যাক্রো আর্গুমেন্ট সংখ্যা।"
+
+msgid "Can't find matching branch directive."
+msgstr "উপযুক্ত ব্রাঞ্চ ডিরেক্টিভ খুঁজে পাওয়া যায়নি।"
+
+msgid "Invalid symbols placed before directive."
+msgstr "ডিরেক্টিভের পূর্বে অকার্যকর চিহ্ন বসানো হয়েছে।"
+
+msgid "Unmatched conditional statement."
+msgstr "অতুলনীয় কন্ডিশনাল স্টেটমেন্ট।"
+
+msgid ""
+"Direct floating-point comparison (this may not evaluate to `true` as you "
+"expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
+"predictable comparison."
+msgstr ""
+"সরাসরি floating-point তুলনা (এটি আপনার প্রত্যাশা অনুসারে 'true' মূল্যায়ন নাও করতে "
+"পারে)। পরিবর্তে, আনুমানিক তবে অনুমানযোগ্য তুলনার জন্য 'abs(a-b) < 0.0001' ব্যবহার "
+"করুন।"
+
+msgid "The const '%s' is declared but never used."
+msgstr "Const '%s' সংজ্ঞায়িত হয়েছে কিন্তু কখনও ব্যবহৃত হয়নি।"
+
+msgid "The function '%s' is declared but never used."
+msgstr "'%s' ফাংশনটি সংজ্ঞায়িত কিন্তু কখনও ব্যবহৃত হয়নি।"
+
+msgid "The struct '%s' is declared but never used."
+msgstr "'%s' struct টি সংজ্ঞায়িত কিন্তু কখনও ব্যবহৃত হয়নি।"
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "'%s' uniform টি সংজ্ঞায়িত কিন্তু কখনও ব্যবহৃত হয়নি।"
+
+msgid "The varying '%s' is declared but never used."
+msgstr "'%s' varying টি সংজ্ঞায়িত কিন্তু কখনও ব্যবহৃত হয়নি।"
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "'%s' local variable টি সংজ্ঞায়িত কিন্তু কখনও ব্যবহৃত হয়নি।"
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded (%d/"
+"%d). The shader may not work correctly."
+msgstr ""
+"এই ডিভাইসে এই shader এর জন্য %s-এর মোট আকার (%d/%d) অতিক্রম করেছে। shader টি "
+"সঠিকভাবে কাজ নাও করতে পারে।"
+
+msgid ""
+"You are attempting to assign the VERTEX position in model space to the vertex "
+"POSITION in clip space. The definition of clip space changed in version 4.3, "
+"so if this code was written prior to 4.3, it will not continue to work. "
+"Consider specifying the clip space z-component directly i.e. use `vec4(VERTEX."
+"xy, 1.0, 1.0)`."
+msgstr ""
+"আপনি ক্লিপ স্পেসে শীর্ষবিন্দু অবস্থানে মডেল স্পেসে ভার্টেক্স অবস্থানটি বরাদ্দ করার চেষ্টা "
+"করছ। ক্লিপ স্পেসের সংজ্ঞা 4.3 সংস্করণে পরিবর্তিত হয়েছে, সুতরাং যদি এই কোডটি 4.3 এর "
+"আগে লেখা হয় তবে এটি কাজ চালিয়ে যাবে না। ক্লিপ স্পেস জেড-উপাদানটি সরাসরি নির্দিষ্ট "
+"করার বিষয়টি বিবেচনা করুন অর্থাৎ `vec4(VERTEX.xy, 1.0, 1.0)` ব্যবহার করুন।"
