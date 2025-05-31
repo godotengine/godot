@@ -184,7 +184,7 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	if (p_origin == nullptr) {
 		errors.push_back({ p_message, previous.start_line, previous.start_column });
 	} else {
-		errors.push_back({ p_message, p_origin->start_line, p_origin->leftmost_column });
+		errors.push_back({ p_message, p_origin->start_line, p_origin->start_column });
 	}
 }
 
@@ -227,8 +227,6 @@ void GDScriptParser::apply_pending_warnings() {
 		warning.symbols = pw.symbols;
 		warning.start_line = pw.source->start_line;
 		warning.end_line = pw.source->end_line;
-		warning.leftmost_column = pw.source->leftmost_column;
-		warning.rightmost_column = pw.source->rightmost_column;
 
 		if (pw.treated_as_error) {
 			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.source);
@@ -412,8 +410,6 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		nd->start_line = 1;
 		nd->start_column = 0;
 		nd->end_line = 1;
-		nd->leftmost_column = 0;
-		nd->rightmost_column = 0;
 		push_warning(nd, GDScriptWarning::EMPTY_FILE);
 	}
 #endif
@@ -761,8 +757,6 @@ void GDScriptParser::parse_program() {
 
 	head->end_line = current.end_line;
 	head->end_column = current.end_column;
-	head->leftmost_column = MIN(head->leftmost_column, current.leftmost_column);
-	head->rightmost_column = MAX(head->rightmost_column, current.rightmost_column);
 
 	complete_extents(head);
 
@@ -1550,8 +1544,8 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_abstract, bool p_
 			item.identifier = identifier;
 			item.parent_enum = enum_node;
 			item.line = previous.start_line;
-			item.leftmost_column = previous.leftmost_column;
-			item.rightmost_column = previous.rightmost_column;
+			item.start_column = previous.start_column;
+			item.end_column = previous.end_column;
 
 			if (elements.has(item.identifier->name)) {
 				push_error(vformat(R"(Name "%s" was already in this enum (at line %d).)", item.identifier->name, elements[item.identifier->name]), item.identifier);
@@ -5471,8 +5465,6 @@ void GDScriptParser::complete_extents(Node *p_node) {
 void GDScriptParser::update_extents(Node *p_node) {
 	p_node->end_line = previous.end_line;
 	p_node->end_column = previous.end_column;
-	p_node->leftmost_column = MIN(p_node->leftmost_column, previous.leftmost_column);
-	p_node->rightmost_column = MAX(p_node->rightmost_column, previous.rightmost_column);
 }
 
 void GDScriptParser::reset_extents(Node *p_node, GDScriptTokenizer::Token p_token) {
@@ -5480,8 +5472,6 @@ void GDScriptParser::reset_extents(Node *p_node, GDScriptTokenizer::Token p_toke
 	p_node->end_line = p_token.end_line;
 	p_node->start_column = p_token.start_column;
 	p_node->end_column = p_token.end_column;
-	p_node->leftmost_column = p_token.leftmost_column;
-	p_node->rightmost_column = p_token.rightmost_column;
 }
 
 void GDScriptParser::reset_extents(Node *p_node, Node *p_from) {
@@ -5492,8 +5482,6 @@ void GDScriptParser::reset_extents(Node *p_node, Node *p_from) {
 	p_node->end_line = p_from->end_line;
 	p_node->start_column = p_from->start_column;
 	p_node->end_column = p_from->end_column;
-	p_node->leftmost_column = p_from->leftmost_column;
-	p_node->rightmost_column = p_from->rightmost_column;
 }
 
 /*---------- PRETTY PRINT FOR DEBUG ----------*/

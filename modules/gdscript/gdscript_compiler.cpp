@@ -79,7 +79,7 @@ void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::N
 	error = p_error;
 	if (p_node) {
 		err_line = p_node->start_line;
-		err_column = p_node->leftmost_column;
+		err_column = p_node->start_column;
 	} else {
 		err_line = 0;
 		err_column = 0;
