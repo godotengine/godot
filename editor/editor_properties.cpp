@@ -568,7 +568,7 @@ void EditorPropertyPath::_set_read_only(bool p_read_only) {
 void EditorPropertyPath::_path_selected(const String &p_path) {
 	String full_path = p_path;
 
-	if (!global) {
+	if (enable_uid) {
 		const ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
 		if (id != ResourceUID::INVALID_ID) {
 			full_path = ResourceUID::get_singleton()->id_to_text(id);
@@ -629,10 +629,11 @@ void EditorPropertyPath::update_property() {
 	path->set_tooltip_text(full_path);
 }
 
-void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder, bool p_global) {
+void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder, bool p_global, bool p_enable_uid) {
 	extensions = p_extensions;
 	folder = p_folder;
 	global = p_global;
+	enable_uid = p_enable_uid;
 }
 
 void EditorPropertyPath::set_save_mode() {
@@ -3801,13 +3802,14 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyLocale *editor = memnew(EditorPropertyLocale);
 				editor->setup(p_hint_text);
 				return editor;
-			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
+			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE || p_hint == PROPERTY_HINT_FILE_PATH) {
 				Vector<String> extensions = p_hint_text.split(",");
 				bool global = p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE;
 				bool folder = p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_GLOBAL_DIR;
 				bool save = p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE;
+				bool enable_uid = p_hint == PROPERTY_HINT_FILE;
 				EditorPropertyPath *editor = memnew(EditorPropertyPath);
-				editor->setup(extensions, folder, global);
+				editor->setup(extensions, folder, global, enable_uid);
 				if (save) {
 					editor->set_save_mode();
 				}
