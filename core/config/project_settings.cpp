@@ -1673,6 +1673,13 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/disable_scroll_deadzone", false);
+	GLOBAL_DEF_BASIC("input_devices/virtual_controller/ios/enable_controller", false);
+	GLOBAL_DEF_BASIC("input_devices/virtual_controller/ios/enable_left_thumbstick", true);
+	GLOBAL_DEF_BASIC("input_devices/virtual_controller/ios/enable_right_thumbstick", true);
+	GLOBAL_DEF_BASIC("input_devices/virtual_controller/ios/enable_button_a", true);
+	GLOBAL_DEF_BASIC("input_devices/virtual_controller/ios/enable_button_b", true);
+	GLOBAL_DEF_BASIC("input_devices/virtual_controller/ios/enable_button_x", true);
+	GLOBAL_DEF_BASIC("input_devices/virtual_controller/ios/enable_button_y", true);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

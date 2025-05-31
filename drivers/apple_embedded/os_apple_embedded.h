@@ -64,8 +64,6 @@ private:
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 
-	virtual void initialize_joypads() override;
-
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual MainLoop *get_main_loop() const override;
 
@@ -81,7 +79,9 @@ private:
 
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
 
-	void deinitialize_modules();
+protected:
+	virtual void initialize_joypads() override;
+	virtual void deinitialize_modules() = 0;
 
 public:
 	static OS_AppleEmbedded *get_singleton();
@@ -93,7 +93,7 @@ public:
 
 	bool iterate();
 
-	void start();
+	virtual void start() = 0;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 

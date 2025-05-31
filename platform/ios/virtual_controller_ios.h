@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  os_ios.mm                                                             */
+/*  virtual_controller_ios.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_ios.h"
+#pragma once
 
-#import "display_server_ios.h"
-#include <iostream>
+#import "core/input/virtual_controller.h"
 
-#ifdef IOS_ENABLED
+#import <GameController/GameController.h>
 
-OS_IOS *OS_IOS::get_singleton() {
-	return (OS_IOS *)OS_AppleEmbedded::get_singleton();
-}
+class IOSVirtualController : public VirtualController {
+private:
+#if defined(__IPHONE_15_0)
+	API_AVAILABLE(ios(15.0))
+	GCVirtualController *gcv_controller;
+#endif
 
-OS_IOS::OS_IOS() :
-		OS_AppleEmbedded() {
-	DisplayServerIOS::register_ios_driver();
-}
+public:
+	IOSVirtualController();
+	~IOSVirtualController();
 
-OS_IOS::~OS_IOS() {}
+	virtual void enable() override;
+	virtual void disable() override;
+	virtual bool is_enabled() override;
+	virtual void set_enabled_left_thumbstick(bool p_enabled) override;
+	virtual bool is_enabled_left_thumbstick() override;
+	virtual void set_enabled_right_thumbstick(bool p_enabled) override;
+	virtual bool is_enabled_right_thumbstick() override;
+	virtual void set_enabled_button_a(bool p_enabled) override;
+	virtual bool is_enabled_button_a() override;
+	virtual void set_enabled_button_b(bool p_enabled) override;
+	virtual bool is_enabled_button_b() override;
+	virtual void set_enabled_button_x(bool p_enabled) override;
+	virtual bool is_enabled_button_x() override;
+	virtual void set_enabled_button_y(bool p_enabled) override;
+	virtual bool is_enabled_button_y() override;
 
-String OS_IOS::get_name() const {
-	return "iOS";
-}
+	void controller_connected();
+	void controller_disconnected();
+	void update_state();
 
-void OS_IOS::start() {
-	OS_AppleEmbedded::start();
+private:
+	void connect_controller();
+	void disconnect_controller();
+	void initialize();
+	void elements_changed(GCInputElementName p_name, bool p_hidden);
+	void read_project_settings();
 
-	if (virtual_controller) {
-		virtual_controller->update_state();
-		std::cout << "SHOW VIRTUAL CONTROLLER\n";
-	}
-}
-
-void OS_IOS::deinitialize_modules() {
-	if (virtual_controller) {
-		memdelete(virtual_controller);
-	}
-	OS_AppleEmbedded::deinitialize_modules();
-}
-
-void OS_IOS::initialize_joypads() {
-	OS_AppleEmbedded::initialize_joypads();
-
-	std::cout << "CREATE VIRTUAL CONTROLLER\n";
-
-	virtual_controller = memnew(IOSVirtualController);
-}
-
-VirtualController *OS_IOS::get_virtual_controller() const {
-	return virtual_controller;
-}
-
-void OS_IOS::controller_connected() const {
-	if (virtual_controller) {
-		virtual_controller->controller_connected();
-	}
-}
-
-void OS_IOS::controller_disconnected() const {
-	if (virtual_controller) {
-		virtual_controller->controller_disconnected();
-	}
-}
-
-#endif // IOS_ENABLED
+private:
+	bool enabled = false;
+	bool enabled_left_thumbstick = true;
+	bool enabled_right_thumbstick = true;
+	bool enabled_button_a = true;
+	bool enabled_button_b = true;
+	bool enabled_button_x = true;
+	bool enabled_button_y = true;
+};
