@@ -40,10 +40,8 @@ class AudioEffectCompressorInstance : public AudioEffectInstance {
 	Ref<AudioEffectCompressor> base;
 
 	float rundb, averatio, runratio, runmax, maxover, gr_meter;
-	int current_channel;
 
 public:
-	void set_current_channel(int p_channel) { current_channel = p_channel; }
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
