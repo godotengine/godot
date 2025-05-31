@@ -392,6 +392,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	enc_in_filters->set_editable(enc_pck_mode);
 	enc_ex_filters->set_editable(enc_pck_mode);
 	script_key->set_editable(enc_pck_mode);
+	show_script_key->set_disabled(!enc_pck_mode);
 	seed_input->set_editable(enc_pck_mode);
 
 	bool enc_directory_mode = current->get_enc_directory();
@@ -594,6 +595,11 @@ void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
 	enc_in_filters->set_editable(p_pressed);
 	enc_ex_filters->set_editable(p_pressed);
 	script_key->set_editable(p_pressed);
+	show_script_key->set_disabled(!p_pressed);
+	if (!p_pressed) {
+		show_script_key->set_pressed_no_signal(false);
+		script_key->set_secret(true);
+	}
 
 	_update_current_preset();
 }
@@ -639,6 +645,10 @@ void ProjectExportDialog::_script_encryption_key_changed(const String &p_key) {
 	updating_script_key = true;
 	_update_current_preset();
 	updating_script_key = false;
+}
+
+void ProjectExportDialog::_script_encryption_key_visibility_changed(const bool &p_visible) {
+	script_key->set_secret(!p_visible);
 }
 
 bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
@@ -1697,11 +1707,18 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_key = memnew(LineEdit);
 	script_key->set_accessibility_name(TTRC("Encryption Key"));
 	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
+	script_key->set_secret(true);
+
+	show_script_key = memnew(CheckButton);
+	show_script_key->set_text("Show Encryption Key");
+	show_script_key->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_script_encryption_key_visibility_changed));
+
 	script_key_error = memnew(Label);
 	script_key_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
 	script_key_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
+	sec_vb->add_child(show_script_key);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_scroll_container);
 
