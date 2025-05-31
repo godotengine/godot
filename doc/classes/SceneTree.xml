@@ -109,7 +109,7 @@
 		<method name="get_frame" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns how many frames have been processed, since the application started. This is [i]not[/i] a measurement of elapsed time.
+				Returns how many physics process steps have been processed, since the application started. This is [i]not[/i] a measurement of elapsed time. See also [signal physics_frame]. For the number of frames rendered, see [method Engine.get_process_frames].
 			</description>
 		</method>
 		<method name="get_multiplayer" qualifiers="const">
