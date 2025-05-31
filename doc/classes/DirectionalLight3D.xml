@@ -36,7 +36,7 @@
 			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS].
 		</member>
 		<member name="sky_mode" type="int" setter="set_sky_mode" getter="get_sky_mode" enum="DirectionalLight3D.SkyMode" default="0">
-			Set whether this [DirectionalLight3D] is visible in the sky, in the scene, or both in the sky and in the scene.
+			Whether this [DirectionalLight3D] is visible in the sky, in the scene, or both in the sky and in the scene.
 		</member>
 	</members>
 	<constants>

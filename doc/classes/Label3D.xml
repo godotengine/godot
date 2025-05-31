@@ -28,7 +28,7 @@
 			<param index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], the specified flag will be enabled.
+				If [code]true[/code], the specified [param flag] will be enabled.
 			</description>
 		</method>
 	</methods>
@@ -134,7 +134,7 @@
 			If [code]true[/code], all the text displays as UPPERCASE.
 		</member>
 		<member name="vertical_alignment" type="int" setter="set_vertical_alignment" getter="get_vertical_alignment" enum="VerticalAlignment" default="1">
-			Controls the text's vertical alignment. Supports top, center, bottom.
+			Controls the text's vertical alignment. Supports top, center, and bottom.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="500.0">
 			Text width (in pixels), used for autowrap and fill alignment.

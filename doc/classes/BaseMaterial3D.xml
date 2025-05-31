@@ -21,7 +21,7 @@
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
 			<description>
-				Returns [code]true[/code], if the specified flag is enabled.
+				Returns [code]true[/code] if the specified flag is enabled.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">

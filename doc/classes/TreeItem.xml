@@ -822,7 +822,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="text_alignment" type="int" enum="HorizontalAlignment" />
 			<description>
-				Sets the given column's text alignment.
+				Sets the given column's text alignment to [param text_alignment].
 			</description>
 		</method>
 		<method name="set_text_direction">

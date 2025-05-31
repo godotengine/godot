@@ -407,7 +407,7 @@
 			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
 			<description>
 				Adds a plugin to the context menu. [param slot] is the context menu where the plugin will be added.
-				A plugin instance can belong only to a single context menu slot.
+				[b]Note:[/b] A plugin instance can belong only to a single context menu slot.
 			</description>
 		</method>
 		<method name="add_control_to_bottom_panel">
@@ -425,7 +425,7 @@
 			<param index="0" name="container" type="int" enum="EditorPlugin.CustomControlContainer" />
 			<param index="1" name="control" type="Control" />
 			<description>
-				Adds a custom control to a container. There are many locations where custom controls can be added in the editor UI.
+				Adds a custom control to a container in the editor UI.
 				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_container] and free it with [method Node.queue_free].
 			</description>

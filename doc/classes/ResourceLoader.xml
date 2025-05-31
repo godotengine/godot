@@ -130,7 +130,7 @@
 			<param index="3" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
 			<description>
 				Loads the resource using threads. If [param use_sub_threads] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
-				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource.
+				The [param cache_mode] parameter defines whether and how the cache should be used or updated when loading the resource.
 			</description>
 		</method>
 		<method name="remove_resource_format_loader">

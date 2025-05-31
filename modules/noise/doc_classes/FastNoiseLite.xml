@@ -42,7 +42,7 @@
 			Frequency of the noise which warps the space. Low frequency results in smooth noise while high frequency results in rougher, more granular noise.
 		</member>
 		<member name="domain_warp_type" type="int" setter="set_domain_warp_type" getter="get_domain_warp_type" enum="FastNoiseLite.DomainWarpType" default="0">
-			Sets the warp algorithm.
+			The warp algorithm.
 		</member>
 		<member name="fractal_gain" type="float" setter="set_fractal_gain" getter="get_fractal_gain" default="0.5">
 			Determines the strength of each subsequent layer of noise in fractal noise.

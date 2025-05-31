@@ -128,7 +128,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="shadow_casting_setting" type="int" enum="RenderingServer.ShadowCastingSetting" />
 			<description>
-				Sets the item's shadow casting mode.
+				Sets the item's shadow casting mode to [param shadow_casting_setting].
 			</description>
 		</method>
 		<method name="set_item_mesh_transform">

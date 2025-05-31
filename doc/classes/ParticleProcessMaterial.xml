@@ -83,7 +83,7 @@
 			<param index="0" name="particle_flag" type="int" enum="ParticleProcessMaterial.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified particle flag.
+				Sets the [param particle_flag] to [param enable].
 			</description>
 		</method>
 	</methods>

@@ -97,7 +97,7 @@
 			Base text writing direction.
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
-			Sets the clipping behavior when the text exceeds the node's bounding rectangle.
+			The clipping behavior when the text exceeds the node's bounding rectangle.
 		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
@@ -110,7 +110,7 @@
 			[b]Note:[/b] Setting this property updates [member visible_ratio] accordingly.
 		</member>
 		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="TextServer.VisibleCharactersBehavior" default="0">
-			Sets the clipping behavior when [member visible_characters] or [member visible_ratio] is set.
+			The clipping behavior when [member visible_characters] or [member visible_ratio] is set.
 		</member>
 		<member name="visible_ratio" type="float" setter="set_visible_ratio" getter="get_visible_ratio" default="1.0">
 			The fraction of characters to display, relative to the total number of characters (see [method get_total_character_count]). If set to [code]1.0[/code], all characters are displayed. If set to [code]0.5[/code], only half of the characters will be displayed. This can be useful when animating the text appearing in a dialog box.

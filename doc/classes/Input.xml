@@ -114,7 +114,7 @@
 			<param index="0" name="device" type="int" />
 			<param index="1" name="axis" type="int" enum="JoyAxis" />
 			<description>
-				Returns the current value of the joypad axis at given index.
+				Returns the current value of the joypad axis at index [param axis].
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -247,7 +247,7 @@
 			<param index="0" name="device" type="int" />
 			<param index="1" name="button" type="int" enum="JoyButton" />
 			<description>
-				Returns [code]true[/code] if you are pressing the joypad button.
+				Returns [code]true[/code] if you are pressing the joypad button at index [param button].
 			</description>
 		</method>
 		<method name="is_joy_known" keywords="is_gamepad_known, is_controller_known">
@@ -333,7 +333,7 @@
 			<param index="1" name="shape" type="int" enum="Input.CursorShape" default="0" />
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor.
+				Sets a custom mouse cursor image, which is only visible inside the game window, for the given mouse [param shape]. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor.
 				[param image] can be either [Texture2D] or [Image] and its size must be lower than or equal to 256×256. To avoid rendering issues, sizes lower than or equal to 128×128 are recommended.
 				[param hotspot] must be within [param image]'s size.
 				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.

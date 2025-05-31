@@ -72,7 +72,7 @@
 			<return type="void" />
 			<param index="0" name="shape" type="int" enum="RenderingServer.DOFBokehShape" />
 			<description>
-				Sets the shape of the DOF bokeh pattern. Different shapes may be used to achieve artistic effect, or to meet performance targets.
+				Sets the shape of the DOF bokeh pattern to [param shape]. Different shapes may be used to achieve artistic effect, or to meet performance targets.
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur_quality">
@@ -80,7 +80,7 @@
 			<param index="0" name="quality" type="int" enum="RenderingServer.DOFBlurQuality" />
 			<param index="1" name="use_jitter" type="bool" />
 			<description>
-				Sets the quality level of the DOF blur effect. [param use_jitter] can be used to jitter samples taken during the blur pass to hide artifacts at the cost of looking more fuzzy.
+				Sets the quality level of the DOF blur effect to [param quality]. [param use_jitter] can be used to jitter samples taken during the blur pass to hide artifacts at the cost of looking more fuzzy.
 			</description>
 		</method>
 		<method name="camera_attributes_set_exposure">
@@ -791,7 +791,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.CanvasLightBlendMode" />
 			<description>
-				Sets the blend mode for the given canvas light. Equivalent to [member Light2D.blend_mode].
+				Sets the blend mode for the given canvas light to [param mode]. Equivalent to [member Light2D.blend_mode].
 			</description>
 		</method>
 		<method name="canvas_light_set_color">
@@ -864,7 +864,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.CanvasLightMode" />
 			<description>
-				The mode of the light.
+				Sets the mode of the canvas light.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_color">
@@ -962,7 +962,7 @@
 			<param index="0" name="occluder_polygon" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.CanvasOccluderPolygonCullMode" />
 			<description>
-				Sets an occluder polygons cull mode.
+				Sets an occluder polygon's cull mode.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_set_shape">
@@ -1862,7 +1862,7 @@
 			<param index="1" name="flag" type="int" enum="RenderingServer.InstanceFlags" />
 			<param index="2" name="enabled" type="bool" />
 			<description>
-				Sets the flag for a given [enum InstanceFlags].
+				Sets the [param flag] for a given [param instance] to [param enabled].
 			</description>
 		</method>
 		<method name="instance_geometry_set_lightmap">
