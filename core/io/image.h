@@ -234,11 +234,11 @@ public:
 	// External packer function pointers.
 
 	static Vector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality);
-	static Vector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image, Format p_format);
+	static Vector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image);
 	static Vector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
 	static Vector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels, const BasisUniversalPackerParams &p_basisu_params);
 
-	static Ref<Image> (*webp_unpacker)(const Vector<uint8_t> &p_buffer);
+	static Ref<Image> (*webp_unpacker)(const Vector<uint8_t> &p_buffer, Format p_format);
 	static Ref<Image> (*png_unpacker)(const Vector<uint8_t> &p_buffer);
 	static Ref<Image> (*basis_universal_unpacker)(const Vector<uint8_t> &p_buffer);
 	static Ref<Image> (*basis_universal_unpacker_ptr)(const uint8_t *p_data, int p_size);

@@ -147,7 +147,7 @@ Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer, Image::Format p_format)
 
 	ERR_FAIL_COND_V_MSG(errdec, Ref<Image>(), "Failed decoding WebP image.");
 
-	Ref<Image> img = memnew(Image(features.width, features.height, false, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image));
+	Ref<Image> img = memnew(Image(features.width, features.height, false, p_format, dst_image));
 	return img;
 }
 
@@ -160,12 +160,12 @@ Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	}
 
 	Vector<uint8_t> dst_image;
-	int datasize = features.width * features.height * (features.has_alpha ? 4 : 3);
+	int datasize = features.width * features.height * (p_image->get_format() == Image::FORMAT_RGBA8 ? 4 : 3);
 	dst_image.resize(datasize);
 	uint8_t *dst_w = dst_image.ptrw();
 
 	bool errdec = false;
-	if (features.has_alpha) {
+	if (p_image->get_format() == Image::FORMAT_RGBA8) {
 		errdec = WebPDecodeRGBAInto(p_buffer, p_buffer_len, dst_w, datasize, 4 * features.width) == nullptr;
 	} else {
 		errdec = WebPDecodeRGBInto(p_buffer, p_buffer_len, dst_w, datasize, 3 * features.width) == nullptr;
@@ -173,7 +173,7 @@ Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 
 	ERR_FAIL_COND_V_MSG(errdec, ERR_FILE_CORRUPT, "Failed decoding WebP image.");
 
-	p_image->set_data(features.width, features.height, false, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image);
+	p_image->set_data(features.width, features.height, false, p_image->get_format(), dst_image);
 
 	return OK;
 }
