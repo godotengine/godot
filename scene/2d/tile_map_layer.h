@@ -528,6 +528,7 @@ public:
 	TileMapCell get_cell(const Vector2i &p_coords) const;
 
 	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
+	uint32_t get_z_render();
 
 	////////////// Exposed functions //////////////
 

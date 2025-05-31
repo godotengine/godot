@@ -511,6 +511,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 	r_sdf_used = false;
 	int item_count = 0;
+	uint32_t z_count = 0;
 
 	//setup canvas state uniforms if needed
 
@@ -908,6 +909,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			item_count = 0;
 		}
 
+		ci->z_render = z_count++;
 		ci = ci->next;
 	}
 
