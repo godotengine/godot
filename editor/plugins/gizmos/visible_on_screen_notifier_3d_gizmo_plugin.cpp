@@ -58,17 +58,17 @@ int VisibleOnScreenNotifier3DGizmoPlugin::get_priority() const {
 String VisibleOnScreenNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	switch (p_id) {
 		case 0:
-			return "Size X";
+			return TTR("Size X");
 		case 1:
-			return "Size Y";
+			return TTR("Size Y");
 		case 2:
-			return "Size Z";
+			return TTR("Size Z");
 		case 3:
-			return "Pos X";
+			return TTR("Position X");
 		case 4:
-			return "Pos Y";
+			return TTR("Position Y");
 		case 5:
-			return "Pos Z";
+			return TTR("Position Z");
 	}
 
 	return "";

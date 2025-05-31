@@ -70,6 +70,7 @@
 			<param index="2" name="secondary" type="bool" />
 			<description>
 				Override this method to provide gizmo's handle names. The [param secondary] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information). Called for this plugin's active gizmos.
+				[b]Note:[/b] By convention, the first word of the name should be capitalized, while the rest should be in lowercase. For example, [code]"Inner radius"[/code].
 			</description>
 		</method>
 		<method name="_get_handle_value" qualifiers="virtual const">

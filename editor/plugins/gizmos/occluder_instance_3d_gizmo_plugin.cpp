@@ -61,11 +61,11 @@ String OccluderInstance3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p
 	}
 
 	if (Object::cast_to<SphereOccluder3D>(*o)) {
-		return "Radius";
+		return TTR("Radius");
 	}
 
 	if (Object::cast_to<BoxOccluder3D>(*o) || Object::cast_to<QuadOccluder3D>(*o)) {
-		return "Size";
+		return TTR("Size");
 	}
 
 	return "";

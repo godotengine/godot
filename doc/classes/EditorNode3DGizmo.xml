@@ -45,6 +45,7 @@
 			<description>
 				Override this method to return the name of an edited handle (handles must have been previously added by [method add_handles]). Handles can be named for reference to the user when editing.
 				The [param secondary] argument is [code]true[/code] when the requested handle is secondary (see [method add_handles] for more information).
+				[b]Note:[/b] By convention, the first word of the name should be capitalized, while the rest should be in lowercase. For example, [code]"Inner radius"[/code].
 			</description>
 		</method>
 		<method name="_get_handle_value" qualifiers="virtual const">

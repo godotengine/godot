@@ -64,9 +64,9 @@ int Light3DGizmoPlugin::get_priority() const {
 
 String Light3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	if (p_id == 0) {
-		return "Radius";
+		return TTR("Radius");
 	} else {
-		return "Aperture";
+		return TTR("Aperture");
 	}
 }
 

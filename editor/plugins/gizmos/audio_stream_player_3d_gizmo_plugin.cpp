@@ -61,7 +61,7 @@ int AudioStreamPlayer3DGizmoPlugin::get_priority() const {
 }
 
 String AudioStreamPlayer3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	return "Emission Radius";
+	return TTR("Emission radius");
 }
 
 Variant AudioStreamPlayer3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {

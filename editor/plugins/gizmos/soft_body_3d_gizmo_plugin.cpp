@@ -92,7 +92,7 @@ void SoftBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 String SoftBody3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	return "SoftBody3D pin point";
+	return TTR("SoftBody3D pin point");
 }
 
 Variant SoftBody3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
