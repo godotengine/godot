@@ -324,6 +324,15 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
+#define GODOT_DEPRECATED_BEGIN                                       \
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") \
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")   \
+	GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4996)
+#define GODOT_DEPRECATED_END \
+	GODOT_CLANG_WARNING_POP  \
+	GODOT_GCC_WARNING_POP    \
+	GODOT_MSVC_WARNING_POP
+
 // Whether the default value of a type is just all-0 bytes.
 // This can most commonly be exploited by using memset for these types instead of loop-construct.
 // Trivially constructible types are also zero-constructible.
