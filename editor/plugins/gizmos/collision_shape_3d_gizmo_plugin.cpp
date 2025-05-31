@@ -107,7 +107,7 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 	}
 
 	if (Object::cast_to<SphereShape3D>(*s)) {
-		return "Radius";
+		return TTR("Radius");
 	}
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
@@ -123,7 +123,7 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
-		return "Length";
+		return TTR("Length");
 	}
 
 	return "";

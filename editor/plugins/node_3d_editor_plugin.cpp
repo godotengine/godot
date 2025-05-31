@@ -692,7 +692,7 @@ void Node3DEditorViewport::cancel_transform() {
 
 	collision_reposition = false;
 	finish_transform();
-	set_message(TTR("Transform Aborted."), 3);
+	set_message(TTR("Transform aborted"), 3);
 }
 
 void Node3DEditorViewport::_update_shrink() {
@@ -1796,24 +1796,24 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					switch (_edit.plane) {
 						case TRANSFORM_VIEW: {
 							_edit.plane = TRANSFORM_X_AXIS;
-							set_message(TTR("X-Axis Transform."), 2);
+							set_message(TTR("X axis transform"), 2);
 							view_type = VIEW_TYPE_USER;
 							_update_name();
 						} break;
 						case TRANSFORM_X_AXIS: {
 							_edit.plane = TRANSFORM_Y_AXIS;
-							set_message(TTR("Y-Axis Transform."), 2);
+							set_message(TTR("Y axis transform"), 2);
 
 						} break;
 						case TRANSFORM_Y_AXIS: {
 							_edit.plane = TRANSFORM_Z_AXIS;
-							set_message(TTR("Z-Axis Transform."), 2);
+							set_message(TTR("Z axis transform"), 2);
 
 						} break;
 						case TRANSFORM_Z_AXIS: {
 							_edit.plane = TRANSFORM_VIEW;
 							// TRANSLATORS: This refers to the transform of the view plane.
-							set_message(TTR("View Plane Transform."), 2);
+							set_message(TTR("View plane transform"), 2);
 
 						} break;
 						case TRANSFORM_YZ:
@@ -2114,7 +2114,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, m->get_position());
 			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
-			set_message(n + ": " + String(v));
+			if (v.get_type() == Variant::VECTOR3 || v.get_type() == Variant::VECTOR3I) {
+				v = _get_coordinates_string(v, "m");
+			}
+			set_message(n + " " + String(v));
 
 		} else if (m->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			NavigationMode change_nav_from_shortcut = _get_nav_mode_from_shortcut_check(NAVIGATION_LEFT_MOUSE, shortcut_check_sets, false);
@@ -2432,7 +2435,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 
 			if (!AnimationPlayerEditor::get_singleton()->get_track_editor()->has_keying()) {
-				set_message(TTR("Keying is disabled (no key inserted)."));
+				set_message(TTR("Keying is disabled (no key inserted)"));
 				return;
 			}
 
@@ -2447,7 +2450,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				spatial_editor->emit_signal(SNAME("transform_key_request"), sp, "", sp->get_transform());
 			}
 
-			set_message(TTR("Animation Key Inserted."));
+			set_message(TTR("Animation key inserted"));
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
@@ -2843,6 +2846,16 @@ void Node3DEditorViewport::set_message(const String &p_message, float p_time) {
 	message_time = p_time;
 }
 
+// Returns a string designed for fixed-width fonts (more readable than
+// `vformat()`'s `%v` for this purpose, with no parentheses surrounding the coordinates).
+String Node3DEditorViewport::_get_coordinates_string(Vector3 p_coords, String p_suffix, int p_digits) const {
+	// Add a space of additional padding for positive numbers, so that the `-`
+	// sign can display without reflowing numbers.
+	return "X: " + String(p_coords.x >= 0.0 ? " " : "") + rtos(p_coords.x).pad_decimals(p_digits) + " " + p_suffix +
+			"\t\t Y: " + String(p_coords.y >= 0.0 ? " " : "") + rtos(p_coords.y).pad_decimals(p_digits) + " " + p_suffix +
+			"\t\t Z: " + String(p_coords.z >= 0.0 ? " " : "") + rtos(p_coords.z).pad_decimals(p_digits) + " " + p_suffix;
+}
+
 void Node3DEditorPlugin::edited_scene_changed() {
 	for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
 		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
@@ -3207,8 +3220,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 					if (!ruler->is_inside_tree()) {
 						double snap = EDITOR_GET("interface/inspector/default_float_step");
 						int snap_step_decimals = Math::range_step_decimals(snap);
-						set_message(TTR("Translating:") + " (" + String::num(selected_node->get_global_position().x, snap_step_decimals) + ", " +
-								String::num(selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(selected_node->get_global_position().z, snap_step_decimals) + ")");
+						set_message(TTR("Translating") + " " + _get_coordinates_string(selected_node->get_global_position(), "m", snap_step_decimals));
 					}
 
 					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
@@ -3229,8 +3241,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
 				double snap = EDITOR_GET("interface/inspector/default_float_step");
 				int snap_step_decimals = Math::range_step_decimals(snap);
-				set_message(TTR("Instantiating:") + " (" + String::num(preview_node_pos.x, snap_step_decimals) + ", " +
-						String::num(preview_node_pos.y, snap_step_decimals) + ", " + String::num(preview_node_pos.z, snap_step_decimals) + ")");
+				set_message(TTR("Instantiating") + " " + _get_coordinates_string(preview_node_pos, "m", snap_step_decimals));
 				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
 				preview_node->set_global_transform(preview_gl_transform);
 				if (!preview_node->is_visible()) {
@@ -3367,12 +3378,11 @@ void Node3DEditorViewport::_draw() {
 	RID ci = surface->get_canvas_item();
 
 	if (message_time > 0) {
-		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		Point2 msgpos = Point2(10 * EDSCALE, get_size().y - 14 * EDSCALE);
-		font->draw_string(ci, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
+		const Ref<Font> &font = get_theme_font("expression", EditorStringName(EditorFonts));
+		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+		const Point2 msgpos = Point2(10 * EDSCALE, get_size().y - 14 * EDSCALE);
+		font->draw_string_outline(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Math::round(6 * EDSCALE), Color(0, 0, 0, 0.5));
+		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1));
 	}
 
 	if (_edit.mode == TRANSFORM_ROTATE && _edit.show_rotation_line) {
@@ -3508,7 +3518,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_TOP: {
 			cursor.y_rot = 0;
 			cursor.x_rot = Math::PI / 2.0;
-			set_message(TTR("Top View."), 2);
+			set_message(TTR("Top view"), 2);
 			view_type = VIEW_TYPE_TOP;
 			_set_auto_orthogonal();
 			_update_name();
@@ -3517,7 +3527,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_BOTTOM: {
 			cursor.y_rot = 0;
 			cursor.x_rot = -Math::PI / 2.0;
-			set_message(TTR("Bottom View."), 2);
+			set_message(TTR("Bottom view"), 2);
 			view_type = VIEW_TYPE_BOTTOM;
 			_set_auto_orthogonal();
 			_update_name();
@@ -3526,7 +3536,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_LEFT: {
 			cursor.x_rot = 0;
 			cursor.y_rot = Math::PI / 2.0;
-			set_message(TTR("Left View."), 2);
+			set_message(TTR("Left view"), 2);
 			view_type = VIEW_TYPE_LEFT;
 			_set_auto_orthogonal();
 			_update_name();
@@ -3535,7 +3545,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_RIGHT: {
 			cursor.x_rot = 0;
 			cursor.y_rot = -Math::PI / 2.0;
-			set_message(TTR("Right View."), 2);
+			set_message(TTR("Right view"), 2);
 			view_type = VIEW_TYPE_RIGHT;
 			_set_auto_orthogonal();
 			_update_name();
@@ -3544,7 +3554,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_FRONT: {
 			cursor.x_rot = 0;
 			cursor.y_rot = 0;
-			set_message(TTR("Front View."), 2);
+			set_message(TTR("Front view"), 2);
 			view_type = VIEW_TYPE_FRONT;
 			_set_auto_orthogonal();
 			_update_name();
@@ -3553,7 +3563,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_REAR: {
 			cursor.x_rot = 0;
 			cursor.y_rot = Math::PI;
-			set_message(TTR("Rear View."), 2);
+			set_message(TTR("Rear view"), 2);
 			view_type = VIEW_TYPE_REAR;
 			_set_auto_orthogonal();
 			_update_name();
@@ -5004,7 +5014,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	}
 
 	if (is_cyclical_dep) {
-		set_message(vformat(TTR("Can't instantiate: %s."), vformat(TTR("Circular dependency found at %s"), error_file)));
+		set_message(vformat(TTR("Can't instantiate: %s"), vformat(TTR("Circular dependency found at %s"), error_file)));
 		return false;
 	}
 
@@ -5240,8 +5250,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			motion_snapped.snapf(snap);
 			// This might not be necessary anymore after issue #288 is solved (in 4.0?).
 			// TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
-			set_message(TTR("Scaling:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
-					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+			set_message(TTR("Scaling") + " " + _get_coordinates_string(motion_snapped, "", snap_step_decimals));
 			if (local_coords) {
 				// TODO: needed?
 				motion = _edit.original.basis.inverse().xform(motion);
@@ -5311,8 +5320,8 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			Vector3 motion_snapped = motion;
 			motion_snapped.snapf(snap);
 			// TRANSLATORS: Refers to changing the position of a node in the 3D editor.
-			set_message(TTR("Translating:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
-					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+			set_message(TTR("Translating") + " " + _get_coordinates_string(motion_snapped, "m", snap_step_decimals) +
+					"\t\t (" + rtos(motion_snapped.length()).pad_decimals(snap_step_decimals) + " m)");
 			if (local_coords) {
 				motion = spatial_editor->get_gizmo_transform().basis.inverse().xform(motion);
 			}
@@ -5390,7 +5399,9 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				snap = spatial_editor->get_rotate_snap();
 			}
 			angle = Math::snapped(Math::rad_to_deg(angle), snap);
-			set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
+			// Add a space of additional padding for positive numbers, so that
+			// the `-` sign can display without reflowing numbers.
+			set_message(vformat(TTR(U"Rotating %s%.2f°"), angle >= 0.0 ? " " : "", angle));
 			angle = Math::deg_to_rad(angle);
 
 			bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
@@ -5447,17 +5458,19 @@ void Node3DEditorViewport::update_transform_numeric() {
 	switch (_edit.mode) {
 		case TRANSFORM_TRANSLATE:
 			motion *= value;
-			set_message(vformat(TTR("Translating %s."), motion));
+			set_message(vformat(TTR("Translating %s (%.3f m)"), _get_coordinates_string(motion, "m"), motion.length()));
 			break;
 		case TRANSFORM_ROTATE:
 			extra = Math::deg_to_rad(value);
-			set_message(vformat(TTR("Rotating %f degrees."), value));
+			// Add a space of additional padding for positive numbers, so that
+			// the `-` sign can display without reflowing numbers.
+			set_message(vformat(TTR(U"Rotating %s%.2f°"), value >= 0.0 ? " " : "", value));
 			break;
 		case TRANSFORM_SCALE:
 			// To halve the size of an object in Blender, you scale it by 0.5.
 			// Doing the same in Godot is considered scaling it by -0.5.
 			motion *= (value - 1.0);
-			set_message(vformat(TTR("Scaling %s."), motion));
+			set_message(vformat(TTR("Scaling %s"), _get_coordinates_string(motion)));
 			break;
 		case TRANSFORM_NONE:
 			ERR_FAIL_MSG("_edit.mode cannot be TRANSFORM_NONE in update_transform_numeric.");

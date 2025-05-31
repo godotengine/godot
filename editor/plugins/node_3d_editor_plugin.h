@@ -452,6 +452,7 @@ private:
 	double message_time;
 
 	void set_message(const String &p_message, float p_time = 5);
+	String _get_coordinates_string(Vector3 p_coords, String p_suffix = "", int p_digits = 3) const;
 
 	void _view_settings_confirmed(real_t p_interp_delta);
 	void _update_camera(real_t p_interp_delta);
