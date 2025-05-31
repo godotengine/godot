@@ -55,6 +55,24 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 
 // IWYU pragma: end_exports
 
+#ifdef SANITIZERS_ENABLED
+#ifdef __has_feature
+#if __has_feature(thread_sanitizer)
+#define TSAN_ENABLED
+#endif
+#elif defined(__SANITIZE_THREAD__)
+#define TSAN_ENABLED
+#endif
+
+#ifdef __has_feature
+#if __has_feature(address_sanitizer)
+#define ASAN_ENABLED
+#endif
+#elif defined(__SANITIZE_ADDRESS__)
+#define ASAN_ENABLED
+#endif
+#endif
+
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
 #ifndef _STR
