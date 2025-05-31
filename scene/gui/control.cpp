@@ -3682,7 +3682,6 @@ void Control::_notification(int p_notification) {
 			data.is_rtl_dirty = true;
 			update_minimum_size();
 			_size_changed();
-			attempt_autofocus();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -3816,6 +3815,7 @@ void Control::_notification(int p_notification) {
 			} else {
 				update_minimum_size();
 				_size_changed();
+				attempt_autofocus();
 			}
 		} break;
 

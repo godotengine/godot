@@ -1010,7 +1010,7 @@
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
 		<member name="autofocus" type="bool" setter="set_autofocus" getter="get_autofocus" default="false">
-			When enabled, the control will automatically grab focus when it enters the scene tree (when it receives [constant Node.NOTIFICATION_ENTER_TREE]). Since only one control can be focused at a time, the last control entering the scene tree with autofocus enabled will receive focus.
+			When enabled, the control will automatically grab focus when it becomes visible (when it receives [constant CanvasItem.NOTIFICATION_VISIBILITY_CHANGED]). Since only one control can be focused at a time, the last control to became visible with autofocus enabled will receive focus.
 			See also [method grab_focus].
 		</member>
 		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
