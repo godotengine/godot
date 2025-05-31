@@ -36,6 +36,30 @@
 
 namespace TestFixedVector {
 
+struct MoveOnly {
+	bool is_alive = true;
+
+	MoveOnly() = default;
+	MoveOnly(const MoveOnly &p) = delete;
+	MoveOnly &operator=(const MoveOnly &p) = delete;
+
+	MoveOnly(MoveOnly &&p) {
+		is_alive = p.is_alive;
+		p.is_alive = false;
+	}
+	MoveOnly &operator=(MoveOnly &&p) {
+		if (&p == this) {
+			return *this;
+		}
+		is_alive = p.is_alive;
+		p.is_alive = false;
+		return *this;
+	}
+};
+
+static_assert(!std::is_trivially_copyable_v<MoveOnly>);
+static_assert(!std::is_trivially_constructible_v<MoveOnly>);
+
 TEST_CASE("[FixedVector] Basic Checks") {
 	FixedVector<uint16_t, 1> vector;
 	CHECK_EQ(vector.capacity(), 1);
@@ -62,12 +86,6 @@ TEST_CASE("[FixedVector] Basic Checks") {
 	CHECK_EQ(vector1[0], 1);
 	CHECK_EQ(vector1[1], 2);
 
-	FixedVector<uint16_t, 3> vector2(vector1);
-	CHECK_EQ(vector2.capacity(), 3);
-	CHECK_EQ(vector2.size(), 2);
-	CHECK_EQ(vector2[0], 1);
-	CHECK_EQ(vector2[1], 2);
-
 	FixedVector<Variant, 3> vector_variant;
 	CHECK_EQ(vector_variant.size(), 0);
 	CHECK_EQ(vector_variant.capacity(), 3);
@@ -79,6 +97,17 @@ TEST_CASE("[FixedVector] Basic Checks") {
 	CHECK_EQ(vector_variant[0], "Test");
 	CHECK_EQ(vector_variant[1], Variant(1));
 	CHECK_EQ(vector_variant[2].get_type(), Variant::NIL);
+
+	// Test that move-only types are transferred.
+	FixedVector<MoveOnly, 1> a;
+	a.push_back(MoveOnly());
+	CHECK_EQ(a.size(), 1);
+	FixedVector<MoveOnly, 1> b(std::move(a));
+	CHECK_EQ(a.size(), 0);
+	CHECK_EQ(b.size(), 1);
+	a = std::move(b);
+	CHECK_EQ(a.size(), 1);
+	CHECK_EQ(b.size(), 0);
 }
 
 TEST_CASE("[FixedVector] Alignment Checks") {
