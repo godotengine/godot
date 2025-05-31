@@ -1092,6 +1092,7 @@ ProjectDialog::ProjectDialog() {
 	rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	rshc->add_child(rvb);
 	renderer_info = memnew(Label);
+	renderer_info->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	renderer_info->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	renderer_info->set_modulate(Color(1, 1, 1, 0.7));
 	rvb->add_child(renderer_info);

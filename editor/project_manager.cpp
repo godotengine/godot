@@ -1504,6 +1504,7 @@ ProjectManager::ProjectManager() {
 				project_list_panel->add_child(empty_list_placeholder);
 
 				empty_list_message = memnew(RichTextLabel);
+				empty_list_message->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				empty_list_message->set_use_bbcode(true);
 				empty_list_message->set_fit_content(true);
 				empty_list_message->set_h_size_flags(SIZE_EXPAND_FILL);
