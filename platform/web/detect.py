@@ -244,7 +244,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
-        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=8"])
+        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE='Module[\"emscriptenPoolSize\"]||8'"])
         env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
         if not env["dlink_enabled"]:
             # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
