@@ -337,7 +337,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 			if (data_format == DATA_FORMAT_PNG && Image::png_unpacker) {
 				img = Image::png_unpacker(pv);
 			} else if (data_format == DATA_FORMAT_WEBP && Image::webp_unpacker) {
-				img = Image::webp_unpacker(pv);
+				img = Image::webp_unpacker(pv, format);
 			}
 
 			if (img.is_null() || img->is_empty()) {
