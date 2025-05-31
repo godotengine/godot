@@ -167,6 +167,17 @@ struct PtrToArg<const T *> {
 	}
 };
 
+template <typename T>
+struct PtrToArg<RequiredBind<T>> {
+	_FORCE_INLINE_ static RequiredBind<T> convert(const void *p_ptr) {
+		return RequiredBind<T>(*reinterpret_cast<T *const *>(p_ptr));
+	}
+	typedef RequiredBind<T> EncodeT;
+	_FORCE_INLINE_ static void encode(RequiredBind<T> p_val, const void *p_ptr) {
+		*(const_cast<RequiredBind<T> *>(reinterpret_cast<const RequiredBind<T> *>(p_ptr))) = p_val;
+	}
+};
+
 // This is for ObjectID.
 
 template <>
