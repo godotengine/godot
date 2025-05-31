@@ -42,16 +42,23 @@ class AudioStreamPlayer : public Node {
 	GDCLASS(AudioStreamPlayer, Node);
 
 public:
-	enum MixTarget {
-		MIX_TARGET_STEREO,
-		MIX_TARGET_SURROUND,
-		MIX_TARGET_CENTER
+	enum ChannelFlags {
+		AUDIO_CHANNEL_LEFT = 1 << 0,
+		AUDIO_CHANNEL_RIGHT = 1 << 1,
+		AUDIO_CHANNEL_CENTER = 1 << 2,
+		AUDIO_CHANNEL_LFE = 1 << 3,
+		AUDIO_CHANNEL_REAR_LEFT = 1 << 4,
+		AUDIO_CHANNEL_REAR_RIGHT = 1 << 5,
+		AUDIO_CHANNEL_SIDE_LEFT = 1 << 6,
+		AUDIO_CHANNEL_SIDE_RIGHT = 1 << 7,
 	};
 
 private:
 	AudioStreamPlayerInternal *internal = nullptr;
 
-	MixTarget mix_target = MIX_TARGET_STEREO;
+	BitField<ChannelFlags> output_channels = AUDIO_CHANNEL_LEFT | AUDIO_CHANNEL_RIGHT; // Default to stereo
+
+	bool downmix = true;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -100,8 +107,11 @@ public:
 	void set_autoplay(bool p_enable);
 	bool is_autoplay_enabled() const;
 
-	void set_mix_target(MixTarget p_target);
-	MixTarget get_mix_target() const;
+	void set_output_channels(BitField<ChannelFlags> p_channels);
+	BitField<ChannelFlags> get_output_channels() const;
+
+	void set_downmix(bool p_enable);
+	bool is_downmix_enabled() const;
 
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
@@ -116,4 +126,4 @@ public:
 	~AudioStreamPlayer();
 };
 
-VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
+VARIANT_BITFIELD_CAST(AudioStreamPlayer::ChannelFlags);
