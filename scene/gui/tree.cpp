@@ -297,7 +297,8 @@ String TreeItem::atr(int p_column, const String &p_text) const {
 		case Node::AUTO_TRANSLATE_MODE_ALWAYS: {
 			return tree->tr(p_text);
 		} break;
-		case Node::AUTO_TRANSLATE_MODE_DISABLED: {
+		case Node::AUTO_TRANSLATE_MODE_DISABLED:
+		case Node::AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY: {
 			return p_text;
 		} break;
 	}

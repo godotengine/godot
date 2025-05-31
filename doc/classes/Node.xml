@@ -1414,7 +1414,11 @@
 			Always automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_DISABLED], and the default for the root node.
 		</constant>
 		<constant name="AUTO_TRANSLATE_MODE_DISABLED" value="2" enum="AutoTranslateMode">
-			Never automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
+			Never automatically translate node content. [member accessibility_name] and [member accessibility_description] are still translated. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
+			String parsing for POT generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
+		</constant>
+		<constant name="AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY" value="3" enum="AutoTranslateMode">
+			Never automatically translate node content, [member accessibility_name], and [member accessibility_description].
 			String parsing for POT generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
 		</constant>
 	</constants>

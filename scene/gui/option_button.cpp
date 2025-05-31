@@ -472,7 +472,8 @@ String OptionButton::_get_translated_text(const String &p_text) const {
 			case AUTO_TRANSLATE_MODE_ALWAYS: {
 				return tr(p_text);
 			} break;
-			case AUTO_TRANSLATE_MODE_DISABLED: {
+			case AUTO_TRANSLATE_MODE_DISABLED:
+			case AUTO_TRANSLATE_MODE_DISABLED_INCLUDING_ACCESSIBILITY: {
 				return p_text;
 			} break;
 		}
