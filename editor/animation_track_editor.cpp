@@ -2475,7 +2475,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 							limit_string = int(MAX(limit_end, offset_last));
 						}
 						draw_key_link(i, scale, int(offset), int(offset_n), limit, limit_end);
-						draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_string);
+						draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, MIN(limit_string, limit_end));
 						continue;
 					}
 
