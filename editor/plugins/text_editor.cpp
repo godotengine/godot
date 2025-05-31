@@ -693,7 +693,7 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/replace_in_files"), REPLACE_IN_FILES);
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
