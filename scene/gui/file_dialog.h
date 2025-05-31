@@ -43,6 +43,7 @@ class MenuButton;
 class OptionButton;
 class PopupMenu;
 class VBoxContainer;
+class VSeparator;
 
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
@@ -127,6 +128,17 @@ public:
 		ITEM_MENU_SHOW_BUNDLE_CONTENT,
 	};
 
+	enum Feature {
+		FEATURE_HIDDEN_FILES,
+		FEATURE_CREATE_FOLDER,
+		FEATURE_FILE_FILTER,
+		FEATURE_FILE_SORT,
+		FEATURE_FAVORITES,
+		FEATURE_RECENT,
+		FEATURE_LAYOUT,
+		FEATURE_MAX
+	};
+
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(FileDialog *);
 
@@ -141,6 +153,7 @@ private:
 	inline static bool default_show_hidden_files = false;
 	bool show_hidden_files = false;
 	bool use_native_dialog = false;
+	bool features[FEATURE_MAX]; // Initialized to true in the constructor.
 
 	Access access = ACCESS_RESOURCES;
 	FileMode mode = FILE_MODE_SAVE_FILE;
@@ -179,8 +192,10 @@ private:
 	HBoxContainer *shortcuts_container = nullptr;
 
 	Button *refresh_button = nullptr;
+	HBoxContainer *make_dir_container = nullptr;
 	Button *make_dir_button = nullptr;
 	Button *show_hidden = nullptr;
+	VSeparator *show_hidden_separator = nullptr;
 	Button *show_filename_filter_button = nullptr;
 	MenuButton *file_sort_button = nullptr;
 
@@ -232,6 +247,7 @@ private:
 	void update_filename_filter();
 	void update_filename_filter_gui();
 	void update_filters();
+	void update_features();
 
 	void _item_menu_id_pressed(int p_option);
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
@@ -267,6 +283,7 @@ private:
 
 	void _invalidate();
 	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
+	void _update_make_dir_visible();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
@@ -343,6 +360,9 @@ public:
 	void set_file_mode(FileMode p_mode);
 	FileMode get_file_mode() const;
 
+	void set_feature_enabled(Feature p_feature, bool p_enabled);
+	bool is_feature_enabled(Feature p_feature) const;
+
 	VBoxContainer *get_vbox() { return main_vbox; }
 	LineEdit *get_line_edit() { return filename_edit; }
 
@@ -366,3 +386,4 @@ public:
 
 VARIANT_ENUM_CAST(FileDialog::FileMode);
 VARIANT_ENUM_CAST(FileDialog::Access);
+VARIANT_ENUM_CAST(FileDialog::Feature);
