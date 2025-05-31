@@ -5962,6 +5962,9 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 	} else if (Object::cast_to<AnimationPlayer>(p_current)) {
 		AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_current);
 		p_state->animation_players.push_back(animation_player);
+		if (animation_player->get_child_count() == 0) {
+			gltf_node->set_parent(-2); // Don't export AnimationPlayer nodes as glTF nodes (unless they have children).
+		}
 	}
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
