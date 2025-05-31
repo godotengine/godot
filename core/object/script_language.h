@@ -140,6 +140,26 @@ protected:
 	}
 
 public:
+	struct ThemedPropertyInfo {
+		/*
+			NOTE: This is just a mirror of Theme::DataType
+		*/
+		enum DataType {
+			DATA_TYPE_COLOR,
+			DATA_TYPE_CONSTANT,
+			DATA_TYPE_FONT,
+			DATA_TYPE_FONT_SIZE,
+			DATA_TYPE_ICON,
+			DATA_TYPE_STYLEBOX,
+			DATA_TYPE_MAX
+		};
+
+		StringName property_name = StringName();
+		DataType theme_item_type = DATA_TYPE_MAX;
+		StringName theme_item_name = StringName();
+		StringName theme_type = StringName();
+	};
+
 	virtual void reload_from_file() override;
 
 	virtual bool can_instantiate() const = 0;
@@ -168,6 +188,8 @@ public:
 	// TODO: In the next compat breakage rename to `*_script_*` to disambiguate from `Object::has_method()`.
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual bool has_static_method(const StringName &p_method) const { return false; }
+	virtual bool has_themed_property(const StringName &p_property) const { return false; }
+	virtual ThemedPropertyInfo get_themed_property(const StringName &p_method) const { return ThemedPropertyInfo(); }
 
 	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 
