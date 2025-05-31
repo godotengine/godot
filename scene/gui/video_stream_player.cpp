@@ -157,9 +157,9 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			double delta = first_frame ? 0 : get_process_delta_time();
 			first_frame = false;
 
-			resampler.set_playback_speed(Engine::get_singleton()->get_time_scale());
+			resampler.set_playback_speed(Engine::get_singleton()->get_time_scale() * speed_scale);
 
-			playback->update(delta); // playback->is_playing() returns false in the last video frame
+			playback->update(delta * speed_scale); // playback->is_playing() returns false in the last video frame
 
 			if (!playback->is_playing()) {
 				resampler.flush();
@@ -433,6 +433,15 @@ float VideoStreamPlayer::get_volume_db() const {
 	}
 }
 
+void VideoStreamPlayer::set_speed_scale(float p_speed_scale) {
+	ERR_FAIL_COND(p_speed_scale < 0.0);
+	speed_scale = p_speed_scale;
+}
+
+float VideoStreamPlayer::get_speed_scale() const {
+	return speed_scale;
+}
+
 String VideoStreamPlayer::get_stream_name() const {
 	if (stream.is_null()) {
 		return "<No Stream>";
@@ -530,6 +539,9 @@ void VideoStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_db", "db"), &VideoStreamPlayer::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &VideoStreamPlayer::get_volume_db);
 
+	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &VideoStreamPlayer::set_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_speed_scale"), &VideoStreamPlayer::get_speed_scale);
+
 	ClassDB::bind_method(D_METHOD("set_audio_track", "track"), &VideoStreamPlayer::set_audio_track);
 	ClassDB::bind_method(D_METHOD("get_audio_track"), &VideoStreamPlayer::get_audio_track);
 
@@ -559,6 +571,7 @@ void VideoStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_RANGE, "0,15,0.01,exp", PROPERTY_USAGE_NONE), "set_volume", "get_volume");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,4,0.001,or_greater"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
