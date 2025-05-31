@@ -97,6 +97,12 @@ public:
 	virtual int64_t font_get_face_count(const RID &p_font_rid) const override;
 	GDVIRTUAL1RC(int64_t, _font_get_face_count, RID);
 
+	virtual PackedStringArray font_get_named_instances(const RID &p_font_rid) const override;
+	GDVIRTUAL1RC(PackedStringArray, _font_get_named_instances, RID);
+
+	virtual Dictionary font_get_named_instance_variations(const RID &p_font_rid, int64_t p_index) const override;
+	GDVIRTUAL2RC(Dictionary, _font_get_named_instance_variations, RID, int64_t);
+
 	virtual void font_set_style(const RID &p_font_rid, BitField<FontStyle> p_style) override;
 	virtual BitField<FontStyle> font_get_style(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_style, RID, BitField<FontStyle>);

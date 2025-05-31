@@ -633,6 +633,8 @@ public:
 	MODBIND1RC(int64_t, font_get_face_index, const RID &);
 
 	MODBIND1RC(int64_t, font_get_face_count, const RID &);
+	MODBIND1RC(PackedStringArray, font_get_named_instances, const RID &);
+	MODBIND2RC(Dictionary, font_get_named_instance_variations, const RID &, int64_t);
 
 	MODBIND2(font_set_style, const RID &, BitField<FontStyle>);
 	MODBIND1RC(BitField<FontStyle>, font_get_style, const RID &);

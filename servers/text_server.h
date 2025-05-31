@@ -276,6 +276,8 @@ public:
 	virtual int64_t font_get_face_index(const RID &p_font_rid) const = 0;
 
 	virtual int64_t font_get_face_count(const RID &p_font_rid) const = 0;
+	virtual PackedStringArray font_get_named_instances(const RID &p_font_rid) const = 0;
+	virtual Dictionary font_get_named_instance_variations(const RID &p_font_rid, int64_t p_index) const = 0;
 
 	virtual void font_set_style(const RID &p_font_rid, BitField<FontStyle> p_style) = 0;
 	virtual BitField<FontStyle> font_get_style(const RID &p_font_rid) const = 0;

@@ -406,6 +406,23 @@
 				Returns font family name.
 			</description>
 		</method>
+		<method name="_font_get_named_instance_variations" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns the dictionary of the supported OpenType variation coordinates for the named instance with index [param index].
+			</description>
+		</method>
+		<method name="_font_get_named_instances" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				[b]Optional.[/b]
+				Returns list of variable font named instances.
+			</description>
+		</method>
 		<method name="_font_get_opentype_feature_overrides" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<param index="0" name="font_rid" type="RID" />

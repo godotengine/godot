@@ -1828,6 +1828,25 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 			if (fd->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
 				FT_MM_Var *amaster;
 				FT_Get_MM_Var(fd->face, &amaster);
+
+				p_font_data->named_instances.clear();
+#if HB_VERSION_ATLEAST(2, 1, 0)
+				for (FT_UInt ni = 0; ni < amaster->num_namedstyles; ni++) {
+					FontAdvanced::NamedInstance instance;
+
+					PackedInt32Array lbl;
+					unsigned int text_size = hb_ot_name_get_utf32(hb_face, amaster->namedstyle[ni].strid, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), nullptr, nullptr) + 1;
+					lbl.resize(text_size);
+					memset((uint32_t *)lbl.ptrw(), 0, sizeof(uint32_t) * text_size);
+					hb_ot_name_get_utf32(hb_face, amaster->namedstyle[ni].strid, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
+					instance.name = String((const char32_t *)lbl.ptr());
+
+					for (FT_UInt i = 0; i < amaster->num_axis; i++) {
+						instance.supported_varaitions[(int32_t)amaster->axis[i].tag] = Vector3i(amaster->axis[i].minimum / 65536, amaster->axis[i].maximum / 65536, amaster->namedstyle[ni].coords[i] / 65536);
+					}
+					p_font_data->named_instances.push_back(instance);
+				}
+#endif
 				for (FT_UInt i = 0; i < amaster->num_axis; i++) {
 					p_font_data->supported_varaitions[(int32_t)amaster->axis[i].tag] = Vector3i(amaster->axis[i].minimum / 65536, amaster->axis[i].maximum / 65536, amaster->axis[i].def / 65536);
 				}
@@ -2034,7 +2053,7 @@ void TextServerAdvanced::_font_set_data_ptr(const RID &p_font_rid, const uint8_t
 
 void TextServerAdvanced::_font_set_face_index(const RID &p_font_rid, int64_t p_face_index) {
 	ERR_FAIL_COND(p_face_index < 0);
-	ERR_FAIL_COND(p_face_index >= 0x7FFF);
+	ERR_FAIL_COND(p_face_index > 0x7FFFFFFF);
 
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -2052,6 +2071,36 @@ int64_t TextServerAdvanced::_font_get_face_index(const RID &p_font_rid) const {
 
 	MutexLock lock(fd->mutex);
 	return fd->face_index;
+}
+
+PackedStringArray TextServerAdvanced::_font_get_named_instances(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, PackedStringArray());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	FontForSizeAdvanced *ffsd = nullptr;
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), PackedStringArray());
+	PackedStringArray ret;
+	for (const FontAdvanced::NamedInstance &ni : fd->named_instances) {
+		ret.push_back(ni.name);
+	}
+	return ret;
+}
+
+Dictionary TextServerAdvanced::_font_get_named_instance_variations(const RID &p_font_rid, int64_t p_index) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	FontForSizeAdvanced *ffsd = nullptr;
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), Dictionary());
+	if (p_index == 0) {
+		return fd->supported_varaitions;
+	}
+	ERR_FAIL_INDEX_V(p_index - 1, fd->named_instances.size(), Dictionary());
+	return fd->named_instances[p_index - 1].supported_varaitions;
 }
 
 int64_t TextServerAdvanced::_font_get_face_count(const RID &p_font_rid) const {

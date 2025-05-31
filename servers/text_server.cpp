@@ -217,6 +217,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_get_face_index", "font_rid"), &TextServer::font_get_face_index);
 
 	ClassDB::bind_method(D_METHOD("font_get_face_count", "font_rid"), &TextServer::font_get_face_count);
+	ClassDB::bind_method(D_METHOD("font_get_named_instances", "font_rid"), &TextServer::font_get_named_instances);
+	ClassDB::bind_method(D_METHOD("font_get_named_instance_variations", "font_rid", "index"), &TextServer::font_get_named_instance_variations);
 
 	ClassDB::bind_method(D_METHOD("font_set_style", "font_rid", "style"), &TextServer::font_set_style);
 	ClassDB::bind_method(D_METHOD("font_get_style", "font_rid"), &TextServer::font_get_style);
