@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROGRESS_DIALOG_H
-#define PROGRESS_DIALOG_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/popup.h"
 #include "scene/gui/progress_bar.h"
 
 class BackgroundProgress : public HBoxContainer {
@@ -60,12 +59,12 @@ public:
 	void add_task(const String &p_task, const String &p_label, int p_steps);
 	void task_step(const String &p_task, int p_step = -1);
 	void end_task(const String &p_task);
-
-	BackgroundProgress() {}
 };
 
-class ProgressDialog : public PopupPanel {
-	GDCLASS(ProgressDialog, PopupPanel);
+class PanelContainer;
+
+class ProgressDialog : public CenterContainer {
+	GDCLASS(ProgressDialog, CenterContainer);
 	struct Task {
 		String task;
 		VBoxContainer *vb = nullptr;
@@ -77,9 +76,12 @@ class ProgressDialog : public PopupPanel {
 	Button *cancel = nullptr;
 
 	HashMap<String, Task> tasks;
+	PanelContainer *center_panel = nullptr;
 	VBoxContainer *main = nullptr;
 
 	LocalVector<Window *> host_windows;
+
+	Size2 main_border_size;
 
 	static ProgressDialog *singleton;
 	void _popup();
@@ -89,6 +91,9 @@ class ProgressDialog : public PopupPanel {
 	void _update_ui();
 	bool canceled = false;
 
+protected:
+	void _notification(int p_what);
+
 public:
 	static ProgressDialog *get_singleton() { return singleton; }
 	void add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
@@ -96,8 +101,7 @@ public:
 	void end_task(const String &p_task);
 
 	void add_host_window(Window *p_window);
+	void remove_host_window(Window *p_window);
 
 	ProgressDialog();
 };
-
-#endif // PROGRESS_DIALOG_H

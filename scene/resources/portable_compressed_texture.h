@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PORTABLE_COMPRESSED_TEXTURE_H
-#define PORTABLE_COMPRESSED_TEXTURE_H
+#pragma once
 
 #include "scene/resources/texture.h"
 
@@ -54,6 +53,7 @@ public:
 		COMPRESSION_MODE_S3TC,
 		COMPRESSION_MODE_ETC2,
 		COMPRESSION_MODE_BPTC,
+		COMPRESSION_MODE_ASTC,
 	};
 
 private:
@@ -70,6 +70,8 @@ private:
 	mutable Ref<BitMap> alpha_cache;
 
 	bool image_stored = false;
+
+	Image::BasisUniversalPackerParams basisu_params;
 
 protected:
 	Vector<uint8_t> _get_data() const;
@@ -106,13 +108,12 @@ public:
 	void set_keep_compressed_buffer(bool p_keep);
 	bool is_keeping_compressed_buffer() const;
 
+	void set_basisu_compressor_params(int p_uastc_level, float p_rdo_quality_loss);
+
 	static void set_keep_all_compressed_buffers(bool p_keep);
 	static bool is_keeping_all_compressed_buffers();
 
-	PortableCompressedTexture2D();
 	~PortableCompressedTexture2D();
 };
 
 VARIANT_ENUM_CAST(PortableCompressedTexture2D::CompressionMode)
-
-#endif // PORTABLE_COMPRESSED_TEXTURE_H

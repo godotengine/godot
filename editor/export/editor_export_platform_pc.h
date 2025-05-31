@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_PLATFORM_PC_H
-#define EDITOR_EXPORT_PLATFORM_PC_H
+#pragma once
 
 #include "editor_export_platform.h"
 
@@ -45,8 +44,8 @@ private:
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
-
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
 	virtual String get_name() const override;
 	virtual String get_os_name() const override;
@@ -78,5 +77,3 @@ public:
 		return Error::OK;
 	}
 };
-
-#endif // EDITOR_EXPORT_PLATFORM_PC_H

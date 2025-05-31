@@ -5,7 +5,7 @@
  *   Support for the FT_Outline type used to store glyph shapes of
  *   most scalable font formats (specification).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -112,7 +112,7 @@ FT_BEGIN_HEADER
    *   Degenerate contours, segments, and Bezier arcs may be reported.  In
    *   most cases, it is best to filter these out before using the outline
    *   for stroking or other path modification purposes (which may cause
-   *   degenerate segments to become non-degenrate and visible, like when
+   *   degenerate segments to become non-degenerate and visible, like when
    *   stroke caps are used or the path is otherwise outset).  Some glyph
    *   outlines may contain deliberate degenerate single points for mark
    *   attachement.

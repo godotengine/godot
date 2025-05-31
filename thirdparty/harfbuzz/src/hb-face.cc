@@ -264,6 +264,63 @@ hb_face_create (hb_blob_t    *blob,
 }
 
 /**
+ * hb_face_create_or_fail:
+ * @blob: #hb_blob_t to work upon
+ * @index: The index of the face within @blob
+ *
+ * Like hb_face_create(), but returns `NULL` if the blob data
+ * contains no usable font face at the specified index.
+ *
+ * Return value: (transfer full): The new face object, or `NULL` if
+ * no face is found at the specified index.
+ *
+ * Since: 10.1.0
+ **/
+hb_face_t *
+hb_face_create_or_fail (hb_blob_t    *blob,
+			unsigned int  index)
+{
+  unsigned num_faces = hb_face_count (blob);
+  if (index >= num_faces)
+    return nullptr;
+
+  hb_face_t *face = hb_face_create (blob, index);
+  if (hb_object_is_immutable (face))
+    return nullptr;
+
+  return face;
+}
+
+#ifndef HB_NO_OPEN
+/**
+ * hb_face_create_from_file_or_fail:
+ * @file_name: A font filename
+ * @index: The index of the face within the file
+ *
+ * A thin wrapper around hb_blob_create_from_file_or_fail()
+ * followed by hb_face_create_or_fail().
+ *
+ * Return value: (transfer full): The new face object, or `NULL` if
+ * no face is found at the specified index or the file cannot be read.
+ *
+ * Since: 10.1.0
+ **/
+HB_EXTERN hb_face_t *
+hb_face_create_from_file_or_fail (const char   *file_name,
+				  unsigned int  index)
+{
+  hb_blob_t *blob = hb_blob_create_from_file_or_fail (file_name);
+  if (unlikely (!blob))
+    return nullptr;
+
+  hb_face_t *face = hb_face_create_or_fail (blob, index);
+  hb_blob_destroy (blob);
+
+  return face;
+}
+#endif
+
+/**
  * hb_face_get_empty:
  *
  * Fetches the singleton empty face object.
@@ -415,7 +472,8 @@ hb_face_is_immutable (const hb_face_t *face)
  * @tag: The #hb_tag_t of the table to query
  *
  * Fetches a reference to the specified table within
- * the specified face.
+ * the specified face. Returns an empty blob if referencing table data is not
+ * possible.
  *
  * Return value: (transfer full): A pointer to the @tag table within @face
  *
@@ -435,9 +493,10 @@ hb_face_reference_table (const hb_face_t *face,
  * hb_face_reference_blob:
  * @face: A face object
  *
- * Fetches a pointer to the binary blob that contains the
- * specified face. Returns an empty blob if referencing face data is not
- * possible.
+ * Fetches a pointer to the binary blob that contains the specified face.
+ * If referencing the face data is not possible, this function creates a blob
+ * out of individual table blobs if hb_face_get_table_tags() works with this
+ * face, otherwise it returns an empty blob.
  *
  * Return value: (transfer full): A pointer to the blob for @face
  *
@@ -446,7 +505,41 @@ hb_face_reference_table (const hb_face_t *face,
 hb_blob_t *
 hb_face_reference_blob (hb_face_t *face)
 {
-  return face->reference_table (HB_TAG_NONE);
+  hb_blob_t *blob = face->reference_table (HB_TAG_NONE);
+
+  if (blob == hb_blob_get_empty ())
+  {
+    // If referencing the face blob is not possible (e.g. not implemented by the
+    // font functions), use face builder to create a blob out of individual
+    // table blobs.
+    unsigned total_count = hb_face_get_table_tags (face, 0, nullptr, nullptr);
+    if (total_count)
+    {
+      hb_tag_t tags[64];
+      unsigned count = ARRAY_LENGTH (tags);
+      hb_face_t* builder = hb_face_builder_create ();
+
+      for (unsigned offset = 0; offset < total_count; offset += count)
+      {
+        hb_face_get_table_tags (face, offset, &count, tags);
+	if (unlikely (!count))
+	  break; // Allocation error
+        for (unsigned i = 0; i < count; i++)
+        {
+	  if (unlikely (!tags[i]))
+	    continue;
+	  hb_blob_t *table = hb_face_reference_table (face, tags[i]);
+	  hb_face_builder_add_table (builder, tags[i], table);
+	  hb_blob_destroy (table);
+        }
+      }
+
+      blob = hb_face_reference_blob (builder);
+      hb_face_destroy (builder);
+    }
+  }
+
+  return blob;
 }
 
 /**
@@ -588,6 +681,7 @@ hb_face_set_get_table_tags_func (hb_face_t *face,
   {
     if (destroy)
       destroy (user_data);
+    return;
   }
 
   if (face->get_table_tags_destroy)

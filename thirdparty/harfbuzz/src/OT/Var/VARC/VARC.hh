@@ -1,6 +1,8 @@
 #ifndef OT_VAR_VARC_VARC_HH
 #define OT_VAR_VARC_VARC_HH
 
+#include "../../../hb-decycler.hh"
+#include "../../../hb-geometry.hh"
 #include "../../../hb-ot-layout-common.hh"
 #include "../../../hb-ot-glyf-table.hh"
 #include "../../../hb-ot-cff2-table.hh"
@@ -46,10 +48,12 @@ struct VarComponent
 	       hb_codepoint_t parent_gid,
 	       hb_draw_session_t &draw_session,
 	       hb_array_t<const int> coords,
+	       hb_transform_t transform,
 	       hb_ubytes_t record,
-	       hb_set_t *visited,
+	       hb_decycler_t *decycler,
 	       signed *edges_left,
 	       signed depth_left,
+	       hb_glyf_scratch_t &scratch,
 	       VarRegionList::cache_t *cache = nullptr) const;
 };
 
@@ -60,19 +64,21 @@ struct VarCompositeGlyph
 	       hb_codepoint_t glyph,
 	       hb_draw_session_t &draw_session,
 	       hb_array_t<const int> coords,
+	       hb_transform_t transform,
 	       hb_ubytes_t record,
-	       hb_set_t *visited,
+	       hb_decycler_t *decycler,
 	       signed *edges_left,
 	       signed depth_left,
+	       hb_glyf_scratch_t &scratch,
 	       VarRegionList::cache_t *cache = nullptr)
   {
     while (record)
     {
       const VarComponent &comp = * (const VarComponent *) (record.arrayZ);
       record = comp.get_path_at (font, glyph,
-				 draw_session, coords,
+				 draw_session, coords, transform,
 				 record,
-				 visited, edges_left, depth_left, cache);
+				 decycler, edges_left, depth_left, scratch, cache);
     }
   }
 };
@@ -85,79 +91,37 @@ struct VARC
 
   static constexpr hb_tag_t tableTag = HB_TAG ('V', 'A', 'R', 'C');
 
-  bool
+  HB_INTERNAL bool
   get_path_at (hb_font_t *font,
 	       hb_codepoint_t glyph,
 	       hb_draw_session_t &draw_session,
 	       hb_array_t<const int> coords,
-	       hb_codepoint_t parent_glyph = HB_CODEPOINT_INVALID,
-	       hb_set_t *visited = nullptr,
-	       signed *edges_left = nullptr,
-	       signed depth_left = HB_MAX_NESTING_LEVEL) const
-  {
-    hb_set_t stack_set;
-    if (visited == nullptr)
-      visited = &stack_set;
-    signed stack_edges = HB_MAX_GRAPH_EDGE_COUNT;
-    if (edges_left == nullptr)
-      edges_left = &stack_edges;
-
-    // Don't recurse on the same glyph.
-    unsigned idx = glyph == parent_glyph ?
-		   NOT_COVERED :
-		   (this+coverage).get_coverage (glyph);
-    if (idx == NOT_COVERED)
-    {
-      if (!font->face->table.glyf->get_path_at (font, glyph, draw_session, coords))
-#ifndef HB_NO_CFF
-      if (!font->face->table.cff2->get_path_at (font, glyph, draw_session, coords))
-      if (!font->face->table.cff1->get_path (font, glyph, draw_session)) // Doesn't have variations
-#endif
-	return false;
-      return true;
-    }
-
-    if (depth_left <= 0)
-      return true;
-
-    if (*edges_left <= 0)
-      return true;
-    (*edges_left)--;
-
-    if (visited->has (glyph) || visited->in_error ())
-      return true;
-    visited->add (glyph);
-
-    hb_ubytes_t record = (this+glyphRecords)[idx];
-
-    VarRegionList::cache_t *cache = record.length >= 64 ? // Heuristic
-				   (this+varStore).create_cache ()
-				   : nullptr;
-
-    VarCompositeGlyph::get_path_at (font, glyph,
-				    draw_session, coords,
-				    record,
-				    visited, edges_left, depth_left,
-				    cache);
-
-    (this+varStore).destroy_cache (cache);
-
-    visited->del (glyph);
-
-    return true;
-  }
+	       hb_transform_t transform,
+	       hb_codepoint_t parent_glyph,
+	       hb_decycler_t *decycler,
+	       signed *edges_left,
+	       signed depth_left,
+	       hb_glyf_scratch_t &scratch) const;
 
   bool
-  get_path (hb_font_t *font, hb_codepoint_t gid, hb_draw_session_t &draw_session) const
-  { return get_path_at (font, gid, draw_session, hb_array (font->coords, font->num_coords)); }
-
-  bool paint_glyph (hb_font_t *font, hb_codepoint_t gid, hb_paint_funcs_t *funcs, void *data, hb_color_t foreground) const
+  get_path (hb_font_t *font,
+	    hb_codepoint_t gid,
+	    hb_draw_session_t &draw_session,
+	    hb_glyf_scratch_t &scratch) const
   {
-    funcs->push_clip_glyph (data, gid, font);
-    funcs->color (data, true, foreground);
-    funcs->pop_clip (data);
+    hb_decycler_t decycler;
+    signed edges = HB_MAX_GRAPH_EDGE_COUNT;
 
-    return true;
+    return get_path_at (font,
+			gid,
+			draw_session,
+			hb_array (font->coords, font->num_coords),
+			HB_TRANSFORM_IDENTITY,
+			HB_CODEPOINT_INVALID,
+			&decycler,
+			&edges,
+			HB_MAX_NESTING_LEVEL,
+			scratch);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -173,6 +137,63 @@ struct VARC
 		  glyphRecords.sanitize (c, this));
   }
 
+  struct accelerator_t
+  {
+    friend struct VarComponent;
+
+    accelerator_t (hb_face_t *face)
+    {
+      table = hb_sanitize_context_t ().reference_table<VARC> (face);
+    }
+    ~accelerator_t ()
+    {
+      auto *scratch = cached_scratch.get_relaxed ();
+      if (scratch)
+      {
+	scratch->~hb_glyf_scratch_t ();
+	hb_free (scratch);
+      }
+
+      table.destroy ();
+    }
+
+    bool
+    get_path (hb_font_t *font, hb_codepoint_t gid, hb_draw_session_t &draw_session) const
+    {
+      if (!table->has_data ()) return false;
+
+      hb_glyf_scratch_t *scratch;
+
+      // Borrow the cached strach buffer.
+      {
+	scratch = cached_scratch.get_acquire ();
+	if (!scratch || unlikely (!cached_scratch.cmpexch (scratch, nullptr)))
+	{
+	  scratch = (hb_glyf_scratch_t *) hb_calloc (1, sizeof (hb_glyf_scratch_t));
+	  if (unlikely (!scratch))
+	    return true;
+	}
+      }
+
+      bool ret = table->get_path (font, gid, draw_session, *scratch);
+
+      // Put it back.
+      if (!cached_scratch.cmpexch (nullptr, scratch))
+      {
+        scratch->~hb_glyf_scratch_t ();
+	hb_free (scratch);
+      }
+
+      return ret;
+    }
+
+    private:
+    hb_blob_ptr_t<VARC> table;
+    hb_atomic_ptr_t<hb_glyf_scratch_t> cached_scratch;
+  };
+
+  bool has_data () const { return version.major != 0; }
+
   protected:
   FixedVersion<> version; /* Version identifier */
   Offset32To<Coverage> coverage;
@@ -182,6 +203,10 @@ struct VARC
   Offset32To<CFF2Index/*Of<VarCompositeGlyph>*/> glyphRecords;
   public:
   DEFINE_SIZE_STATIC (24);
+};
+
+struct VARC_accelerator_t : VARC::accelerator_t {
+  VARC_accelerator_t (hb_face_t *face) : VARC::accelerator_t (face) {}
 };
 
 #endif

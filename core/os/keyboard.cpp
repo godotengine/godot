@@ -387,6 +387,10 @@ String keycode_get_string(Key p_code) {
 	}
 
 	p_code &= KeyModifierMask::CODE_MASK;
+	if ((char32_t)p_code == 0) {
+		// The key was just a modifier without any code.
+		return codestr;
+	}
 
 	const _KeyCodeText *kct = &_keycodes[0];
 
@@ -406,7 +410,7 @@ String keycode_get_string(Key p_code) {
 Key find_keycode(const String &p_codestr) {
 	Key keycode = Key::NONE;
 	Vector<String> code_parts = p_codestr.split("+");
-	if (code_parts.size() < 1) {
+	if (code_parts.is_empty()) {
 		return keycode;
 	}
 

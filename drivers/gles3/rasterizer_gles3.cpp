@@ -55,6 +55,7 @@
 #define _EXT_DEBUG_TYPE_PORTABILITY_ARB 0x824F
 #define _EXT_DEBUG_TYPE_PERFORMANCE_ARB 0x8250
 #define _EXT_DEBUG_TYPE_OTHER_ARB 0x8251
+#define _EXT_DEBUG_TYPE_MARKER_ARB 0x8268
 #define _EXT_MAX_DEBUG_MESSAGE_LENGTH_ARB 0x9143
 #define _EXT_MAX_DEBUG_LOGGED_MESSAGES_ARB 0x9144
 #define _EXT_DEBUG_LOGGED_MESSAGES_ARB 0x9145
@@ -99,7 +100,7 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 
 	time_total += frame_step;
 
-	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	double time_roll_over = GLOBAL_GET_CACHED(double, "rendering/limits/time/time_rollover_secs");
 	time_total = Math::fmod(time_total, time_roll_over);
 
 	canvas->set_time(time_total);
@@ -140,7 +141,7 @@ void RasterizerGLES3::clear_depth(float p_depth) {
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	// These are ultimately annoying, so removing for now.
-	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
+	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB || type == _EXT_DEBUG_TYPE_MARKER_ARB) {
 		return;
 	}
 
@@ -402,17 +403,6 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	}
 #endif
 
-	GLuint read_fbo = 0;
-	glGenFramebuffers(1, &read_fbo);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, read_fbo);
-
-	if (rt->view_count > 1) {
-		glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, p_layer);
-	} else {
-		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
-	}
-
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	if (p_first) {
@@ -427,7 +417,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 		}
 	}
 
-	Vector2i screen_rect_end = p_screen_rect.get_end();
+	Vector2 screen_rect_end = p_screen_rect.get_end();
 
 	// Adreno (TM) 3xx devices have a bug that create wrong Landscape rotation of 180 degree
 	// Reversing both the X and Y axis is equivalent to rotating 180 degrees
@@ -437,15 +427,26 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 		flip_x = !flip_x;
 	}
 
-	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
-			flip_x ? screen_rect_end.x : p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y,
-			flip_x ? p_screen_rect.position.x : screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y,
-			GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	Vector2 p1 = Vector2(flip_x ? screen_rect_end.x : p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y);
+	Vector2 p2 = Vector2(flip_x ? p_screen_rect.position.x : screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y);
+	Vector2 size = p2 - p1;
 
-	if (read_fbo != 0) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-		glDeleteFramebuffers(1, &read_fbo);
+	Rect2 screenrect = Rect2(Vector2(flip_x ? 1.0 : 0.0, flip_y ? 1.0 : 0.0), Vector2(flip_x ? -1.0 : 1.0, flip_y ? -1.0 : 1.0));
+
+	glViewport(int(MIN(p1.x, p2.x)), int(MIN(p1.y, p2.y)), Math::abs(size.x), Math::abs(size.y));
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, rt->color);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ZERO);
+
+	if (rt->view_count > 1) {
+		copy_effects->copy_to_rect_3d(screenrect, p_layer, GLES3::Texture::TYPE_LAYERED);
+	} else {
+		copy_effects->copy_to_rect(screenrect);
 	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 // is this p_screen useless in a multi window environment?
@@ -470,9 +471,9 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glViewport(0, 0, win_size.width, win_size.height);
 	glEnable(GL_BLEND);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 	glDepthMask(GL_FALSE);
-	glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	glClearColor(p_color.r, p_color.g, p_color.b, OS::get_singleton()->is_layered_allowed() ? p_color.a : 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	RID texture = texture_storage->texture_allocate();

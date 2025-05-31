@@ -34,8 +34,6 @@
 
 #include "core/io/file_access.h"
 
-ZipArchive *ZipArchive::instance = nullptr;
-
 extern "C" {
 
 struct ZipData {
@@ -322,8 +320,8 @@ void FileAccessZip::flush() {
 	ERR_FAIL();
 }
 
-void FileAccessZip::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL();
+bool FileAccessZip::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_V(false);
 }
 
 bool FileAccessZip::file_exists(const String &p_name) {

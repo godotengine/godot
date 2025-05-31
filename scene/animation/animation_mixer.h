@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_MIXER_H
-#define ANIMATION_MIXER_H
+#pragma once
 
 #include "core/templates/a_hash_map.h"
 #include "scene/animation/tween.h"
@@ -199,7 +198,6 @@ protected:
 		TrackCacheTransform() {
 			type = Animation::TYPE_POSITION_3D;
 		}
-		~TrackCacheTransform() {}
 	};
 
 	struct RootMotionCache {
@@ -220,7 +218,6 @@ protected:
 				shape_index(p_other.shape_index) {}
 
 		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
-		~TrackCacheBlendShape() {}
 	};
 
 	struct TrackCacheValue : public TrackCache {
@@ -259,7 +256,6 @@ protected:
 
 	struct TrackCacheMethod : public TrackCache {
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
-		~TrackCacheMethod() {}
 	};
 
 	// Audio stream information for each audio stream placed on the track.
@@ -297,7 +293,6 @@ protected:
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
 		}
-		~TrackCacheAudio() {}
 	};
 
 	struct TrackCacheAnimation : public TrackCache {
@@ -306,12 +301,11 @@ protected:
 		TrackCacheAnimation() {
 			type = Animation::TYPE_ANIMATION;
 		}
-		~TrackCacheAnimation() {}
 	};
 
 	RootMotionCache root_motion_cache;
 	AHashMap<Animation::TypeHash, TrackCache *, HashHasher> track_cache;
-	AHashMap<Ref<Animation>, LocalVector<TrackCache *>> animation_track_num_to_track_cashe;
+	AHashMap<Ref<Animation>, LocalVector<TrackCache *>> animation_track_num_to_track_cache;
 	HashSet<TrackCache *> playing_caches;
 	Vector<Node *> playing_audio_stream_players;
 
@@ -321,7 +315,7 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
-	void _create_track_num_to_track_cashe_for_animation(Ref<Animation> &p_animation);
+	void _create_track_num_to_track_cache_for_animation(Ref<Animation> &p_animation);
 
 	/* ---- Audio ---- */
 	AudioServer::PlaybackType playback_type;
@@ -334,6 +328,7 @@ protected:
 
 	/* ---- Root motion accumulator for Skeleton3D ---- */
 	NodePath root_motion_track;
+	bool root_motion_local = false;
 	Vector3 root_motion_position = Vector3(0, 0, 0);
 	Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
 	Vector3 root_motion_scale = Vector3(0, 0, 0);
@@ -370,7 +365,7 @@ protected:
 	void _blend_init();
 	virtual bool _blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map);
 	virtual void _blend_capture(double p_delta);
-	void _blend_calc_total_weight(); // For undeterministic blending.
+	void _blend_calc_total_weight(); // For indeterministic blending.
 	void _blend_process(double p_delta, bool p_update_only = false);
 	void _blend_apply();
 	virtual void _blend_post_process();
@@ -390,7 +385,6 @@ protected:
 			step = 0.0;
 		}
 
-		CaptureCache() {}
 		~CaptureCache() {
 			clear();
 		}
@@ -409,6 +403,7 @@ public:
 	void get_animation_library_list(List<StringName> *p_animations) const;
 	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
 	bool has_animation_library(const StringName &p_name) const;
+	StringName get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const;
 	StringName find_animation_library(const Ref<Animation> &p_animation) const;
 	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
 	void remove_animation_library(const StringName &p_name);
@@ -445,6 +440,9 @@ public:
 	/* ---- Root motion accumulator for Skeleton3D ---- */
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
+
+	void set_root_motion_local(bool p_enabled);
+	bool is_root_motion_local() const;
 
 	Vector3 get_root_motion_position() const;
 	Quaternion get_root_motion_rotation() const;
@@ -504,5 +502,3 @@ public:
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeProcess);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeMethod);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeDiscrete);
-
-#endif // ANIMATION_MIXER_H

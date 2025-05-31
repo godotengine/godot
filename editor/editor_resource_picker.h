@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RESOURCE_PICKER_H
-#define EDITOR_RESOURCE_PICKER_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 
@@ -57,6 +56,7 @@ class EditorResourcePicker : public HBoxContainer {
 	Button *assign_button = nullptr;
 	TextureRect *preview_rect = nullptr;
 	Button *edit_button = nullptr;
+	Button *quick_load_button = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
 
 	ConfirmationDialog *duplicate_resources_dialog = nullptr;
@@ -170,8 +170,6 @@ public:
 
 	void set_script_owner(Node *p_owner);
 	Node *get_script_owner() const;
-
-	EditorScriptPicker();
 };
 
 class EditorShaderPicker : public EditorResourcePicker {
@@ -191,8 +189,6 @@ public:
 	void set_edited_material(ShaderMaterial *p_material);
 	ShaderMaterial *get_edited_material() const;
 	void set_preferred_mode(int p_preferred_mode);
-
-	EditorShaderPicker();
 };
 
 class EditorAudioStreamPicker : public EditorResourcePicker {
@@ -216,5 +212,3 @@ protected:
 public:
 	EditorAudioStreamPicker();
 };
-
-#endif // EDITOR_RESOURCE_PICKER_H

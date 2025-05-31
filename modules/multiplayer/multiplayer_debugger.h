@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MULTIPLAYER_DEBUGGER_H
-#define MULTIPLAYER_DEBUGGER_H
+#pragma once
 
 #include "core/debugger/engine_profiler.h"
-#include "core/os/os.h"
 
 class MultiplayerSynchronizer;
 
@@ -129,5 +127,3 @@ public:
 	static void initialize();
 	static void deinitialize();
 };
-
-#endif // MULTIPLAYER_DEBUGGER_H

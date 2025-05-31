@@ -30,11 +30,8 @@
 
 #include "editor_debugger_server_websocket.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../remote_debugger_peer_websocket.h"
 
-#include "core/config/project_settings.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -136,5 +133,3 @@ EditorDebuggerServer *EditorDebuggerServerWebSocket::create(const String &p_prot
 	ERR_FAIL_COND_V(p_protocol != "ws://", nullptr);
 	return memnew(EditorDebuggerServerWebSocket);
 }
-
-#endif // TOOLS_ENABLED

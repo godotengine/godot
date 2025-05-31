@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIST_H
-#define LIST_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
+
+#include <initializer_list>
 
 /**
  * Generic Templatized Linked List Implementation.
@@ -522,6 +523,15 @@ public:
 			it = it->next();
 		}
 	}
+	void operator=(List &&p_list) {
+		if (unlikely(this == &p_list)) {
+			return;
+		}
+
+		clear();
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
 
 	// Random access to elements, use with care,
 	// do not use for iteration.
@@ -760,8 +770,18 @@ public:
 			it = it->next();
 		}
 	}
+	List(List &&p_list) {
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
 
 	List() {}
+
+	List(std::initializer_list<T> p_init) {
+		for (const T &E : p_init) {
+			push_back(E);
+		}
+	}
 
 	~List() {
 		clear();
@@ -808,5 +828,3 @@ void List<T, A>::Element::transfer_to_back(List<T, A> *p_dst_list) {
 	data = p_dst_list->_data;
 	p_dst_list->_data->size_cache++;
 }
-
-#endif // LIST_H

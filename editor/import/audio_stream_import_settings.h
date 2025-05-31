@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_IMPORT_SETTINGS_H
-#define AUDIO_STREAM_IMPORT_SETTINGS_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
@@ -60,6 +59,7 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	Label *_duration_label = nullptr;
 
 	HScrollBar *zoom_bar = nullptr;
+	Control *zoom_spacer = nullptr;
 	Button *zoom_in = nullptr;
 	Button *zoom_reset = nullptr;
 	Button *zoom_out = nullptr;
@@ -113,5 +113,3 @@ public:
 
 	AudioStreamImportSettingsDialog();
 };
-
-#endif // AUDIO_STREAM_IMPORT_SETTINGS_H

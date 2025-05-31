@@ -30,13 +30,13 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.error.Error;
 import org.godotengine.godot.input.GodotEditText;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -49,6 +49,7 @@ import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.Surface;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 
 import androidx.core.content.FileProvider;
 
@@ -121,15 +122,27 @@ public class GodotIO {
 			}
 
 			activity.startActivity(intent);
-			return 0;
+			return Error.OK.toNativeValue();
 		} catch (Exception e) {
 			Log.e(TAG, "Unable to open uri " + uriString, e);
-			return 1;
+			return Error.FAILED.toNativeValue();
 		}
 	}
 
 	public String getCacheDir() {
 		return activity.getCacheDir().getAbsolutePath();
+	}
+
+	public String getTempDir() {
+		File tempDir = new File(getCacheDir() + "/tmp");
+
+		if (!tempDir.exists()) {
+			if (!tempDir.mkdirs()) {
+				Log.e(TAG, "Unable to create temp dir");
+			}
+		}
+
+		return tempDir.getAbsolutePath();
 	}
 
 	public String getDataDir() {
@@ -294,6 +307,19 @@ public class GodotIO {
 			default:
 				return -1;
 		}
+	}
+
+	public int getDisplayRotation() {
+		WindowManager windowManager = (WindowManager)activity.getSystemService(Context.WINDOW_SERVICE);
+		int rotation = windowManager.getDefaultDisplay().getRotation();
+		if (rotation == Surface.ROTATION_90) {
+			return 90;
+		} else if (rotation == Surface.ROTATION_180) {
+			return 180;
+		} else if (rotation == Surface.ROTATION_270) {
+			return 270;
+		}
+		return 0;
 	}
 
 	public void setEdit(GodotEditText _edit) {

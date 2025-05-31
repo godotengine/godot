@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_2D_H
-#define AUDIO_STREAM_PLAYER_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "servers/audio_server.h"
@@ -104,6 +103,9 @@ public:
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
 
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
+
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
@@ -146,5 +148,3 @@ public:
 	AudioStreamPlayer2D();
 	~AudioStreamPlayer2D();
 };
-
-#endif // AUDIO_STREAM_PLAYER_2D_H

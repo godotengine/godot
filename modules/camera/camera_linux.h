@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_LINUX_H
-#define CAMERA_LINUX_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -53,8 +52,8 @@ private:
 	bool _can_query_format(int p_file_descriptor, int p_type);
 
 public:
-	CameraLinux();
+	CameraLinux() = default;
 	~CameraLinux();
-};
 
-#endif // CAMERA_LINUX_H
+	void set_monitoring_feeds(bool p_monitoring_feeds) override;
+};

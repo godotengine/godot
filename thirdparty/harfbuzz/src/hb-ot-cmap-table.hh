@@ -1397,6 +1397,9 @@ struct CmapSubtableFormat14
     hb_vector_t<hb_pair_t<unsigned, unsigned>> obj_indices;
     for (int i = src_tbl->record.len - 1; i >= 0; i--)
     {
+      if (!unicodes->has(src_tbl->record[i].varSelector))
+        continue;
+
       hb_pair_t<unsigned, unsigned> result = src_tbl->record[i].copy (c, unicodes, glyphs_requested, glyph_map, base);
       if (result.first || result.second)
 	obj_indices.push (result);
@@ -1453,6 +1456,7 @@ struct CmapSubtableFormat14
   {
     + hb_iter (record)
     | hb_filter (hb_bool, &VariationSelectorRecord::nonDefaultUVS)
+    | hb_filter (unicodes, &VariationSelectorRecord::varSelector)
     | hb_map (&VariationSelectorRecord::nonDefaultUVS)
     | hb_map (hb_add (this))
     | hb_apply ([=] (const NonDefaultUVS& _) { _.closure_glyphs (unicodes, glyphset); })

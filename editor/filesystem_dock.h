@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILESYSTEM_DOCK_H
-#define FILESYSTEM_DOCK_H
+#pragma once
 
 #include "editor/dependency_editor.h"
 #include "editor/editor_file_system.h"
@@ -60,7 +59,7 @@ class FileSystemTree : public Tree {
 class FileSystemList : public ItemList {
 	GDCLASS(FileSystemList, ItemList);
 
-	bool popup_edit_commited = true;
+	bool popup_edit_committed = true;
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
@@ -102,37 +101,44 @@ public:
 
 private:
 	enum FileMenu {
-		FILE_OPEN,
-		FILE_INHERIT,
-		FILE_MAIN_SCENE,
-		FILE_INSTANTIATE,
-		FILE_ADD_FAVORITE,
-		FILE_REMOVE_FAVORITE,
-		FILE_SHOW_IN_FILESYSTEM,
-		FILE_DEPENDENCIES,
-		FILE_OWNERS,
-		FILE_MOVE,
-		FILE_RENAME,
-		FILE_REMOVE,
-		FILE_DUPLICATE,
-		FILE_REIMPORT,
-		FILE_NEW,
-		FILE_SHOW_IN_EXPLORER,
-		FILE_OPEN_EXTERNAL,
-		FILE_OPEN_IN_TERMINAL,
-		FILE_COPY_PATH,
-		FILE_COPY_ABSOLUTE_PATH,
-		FILE_COPY_UID,
-		FOLDER_EXPAND_ALL,
-		FOLDER_COLLAPSE_ALL,
-		FILE_NEW_RESOURCE,
-		FILE_NEW_TEXTFILE,
-		FILE_NEW_FOLDER,
-		FILE_NEW_SCRIPT,
-		FILE_NEW_SCENE,
+		FILE_MENU_OPEN,
+		FILE_MENU_INHERIT,
+		FILE_MENU_MAIN_SCENE,
+		FILE_MENU_INSTANTIATE,
+		FILE_MENU_ADD_FAVORITE,
+		FILE_MENU_REMOVE_FAVORITE,
+		FILE_MENU_SHOW_IN_FILESYSTEM,
+		FILE_MENU_DEPENDENCIES,
+		FILE_MENU_OWNERS,
+		FILE_MENU_MOVE,
+		FILE_MENU_RENAME,
+		FILE_MENU_REMOVE,
+		FILE_MENU_DUPLICATE,
+		FILE_MENU_REIMPORT,
+		FILE_MENU_NEW,
+		FILE_MENU_SHOW_IN_EXPLORER,
+		FILE_MENU_OPEN_EXTERNAL,
+		FILE_MENU_OPEN_IN_TERMINAL,
+		FILE_MENU_COPY_PATH,
+		FILE_MENU_COPY_ABSOLUTE_PATH,
+		FILE_MENU_COPY_UID,
+		FILE_MENU_EXPAND_ALL,
+		FILE_MENU_COLLAPSE_ALL,
+		FILE_MENU_NEW_RESOURCE,
+		FILE_MENU_NEW_TEXTFILE,
+		FILE_MENU_NEW_FOLDER,
+		FILE_MENU_NEW_SCRIPT,
+		FILE_MENU_NEW_SCENE,
+		FILE_MENU_RUN_SCRIPT,
+		FILE_MENU_MAX,
+		// Extra shortcuts that don't exist in the menu.
+		EXTRA_FOCUS_PATH,
+		EXTRA_FOCUS_FILTER,
+
 		CONVERT_BASE_ID = 1000,
 	};
 
+	HashMap<String, TreeItem *> folder_map;
 	HashMap<String, Color> folder_colors;
 	Dictionary assigned_folder_colors;
 
@@ -151,7 +157,6 @@ private:
 	Button *button_dock_placement = nullptr;
 
 	Button *button_toggle_display_mode = nullptr;
-	Button *button_reload = nullptr;
 	Button *button_file_list_display_mode = nullptr;
 	Button *button_hist_next = nullptr;
 	Button *button_hist_prev = nullptr;
@@ -234,6 +239,7 @@ private:
 	bool import_dock_needs_update = false;
 	TreeItem *resources_item = nullptr;
 	TreeItem *favorites_item = nullptr;
+	Control *had_focus = nullptr;
 
 	bool holding_branch = false;
 	Vector<TreeItem *> tree_items_selected_on_drag_begin;
@@ -248,8 +254,8 @@ private:
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
 	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
-	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
-	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
+	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true);
+	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false, bool p_grab_focus = false);
 	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
@@ -262,7 +268,7 @@ private:
 	void _set_file_display(bool p_active);
 	void _fs_changed();
 
-	void _select_file(const String &p_path, bool p_select_in_favorites = false);
+	void _select_file(const String &p_path, bool p_select_in_favorites = false, bool p_navigate = true);
 	void _tree_activate_file();
 	void _file_list_activate_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
@@ -301,6 +307,7 @@ private:
 	void _file_list_rmb_option(int p_option);
 	void _generic_rmb_option_selected(int p_option);
 	void _file_option(int p_option, const Vector<String> &p_selected);
+	int _get_menu_option_from_key(const Ref<InputEventKey> &p_key);
 
 	void _fw_history();
 	void _bw_history();
@@ -356,8 +363,11 @@ private:
 	bool _can_dock_horizontal() const;
 	void _set_dock_horizontal(bool p_enable);
 
+	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
+	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+
 private:
-	static FileSystemDock *singleton;
+	inline static FileSystemDock *singleton = nullptr;
 
 public:
 	static FileSystemDock *get_singleton() { return singleton; }
@@ -380,6 +390,7 @@ public:
 
 	String get_current_path() const;
 	String get_current_directory() const;
+	String get_folder_path_at_mouse_position() const;
 
 	void navigate_to_path(const String &p_path);
 	void focus_on_path();
@@ -412,13 +423,8 @@ public:
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	Control *create_tooltip_for_path(const String &p_path) const;
 
-	void save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
-
 	FileSystemDock();
 	~FileSystemDock();
 };
 
 VARIANT_ENUM_CAST(FileSystemDock::Overwrite);
-
-#endif // FILESYSTEM_DOCK_H

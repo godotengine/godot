@@ -46,7 +46,7 @@ struct CVTTCompressionJobParams {
 };
 
 struct CVTTCompressionRowTask {
-	const uint8_t *in_mm_bytes = nullptr;
+	Vector<uint8_t> in_mm;
 	uint8_t *out_mm_bytes = nullptr;
 	int y_start = 0;
 	int width = 0;
@@ -61,7 +61,7 @@ struct CVTTCompressionJobQueue {
 };
 
 static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const CVTTCompressionRowTask &p_row_task) {
-	const uint8_t *in_bytes = p_row_task.in_mm_bytes;
+	const uint8_t *in_bytes = p_row_task.in_mm.ptr();
 	uint8_t *out_bytes = p_row_task.out_mm_bytes;
 	int w = p_row_task.width;
 	int h = p_row_task.height;
@@ -151,6 +151,11 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
+	if (w % 4 != 0 || h % 4 != 0) {
+		w = w <= 2 ? w : (w + 3) & ~3;
+		h = h <= 2 ? h : (h + 3) & ~3;
+	}
+
 	bool is_ldr = (p_image->get_format() <= Image::FORMAT_RGBA8);
 	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RF) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
 
@@ -180,8 +185,6 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
 	}
 
-	const uint8_t *rb = p_image->get_data().ptr();
-
 	Vector<uint8_t> data;
 	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
@@ -209,20 +212,59 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	Vector<CVTTCompressionRowTask> tasks;
 
 	for (int i = 0; i <= mm_count; i++) {
-		int bw = w % 4 != 0 ? w + (4 - w % 4) : w;
-		int bh = h % 4 != 0 ? h + (4 - h % 4) : h;
+		Vector<uint8_t> in_data;
+		int width, height;
+		Image::get_image_mipmap_offset_and_dimensions(w, h, target_format, i, width, height);
 
-		int64_t src_ofs = p_image->get_mipmap_offset(i);
+		int bw = width % 4 != 0 ? width + (4 - width % 4) : width;
+		int bh = height % 4 != 0 ? height + (4 - height % 4) : height;
 
-		const uint8_t *in_bytes = &rb[src_ofs];
+		int64_t src_mip_ofs, src_mip_size;
+		int src_mip_w, src_mip_h;
+		p_image->get_mipmap_offset_size_and_dimensions(i, src_mip_ofs, src_mip_size, src_mip_w, src_mip_h);
+
+		// Pad textures to nearest block by smearing.
+		if (width != src_mip_w || height != src_mip_h) {
+			const uint8_t *src_mip_read = p_image->ptr() + src_mip_ofs;
+
+			// Reserve the buffer for padded image data.
+			int px_size = Image::get_format_pixel_size(p_image->get_format());
+			in_data.resize(width * height * px_size);
+			uint8_t *ptrw = in_data.ptrw();
+
+			int x = 0, y = 0;
+			for (y = 0; y < src_mip_h; y++) {
+				for (x = 0; x < src_mip_w; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
+				}
+
+				// First, smear in x.
+				for (; x < width; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
+				}
+			}
+
+			// Then, smear in y.
+			for (; y < height; y++) {
+				for (x = 0; x < width; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
+				}
+			}
+		} else {
+			// Create a buffer filled with the source mip layer data.
+			in_data.resize(src_mip_size);
+			memcpy(in_data.ptrw(), p_image->ptr() + src_mip_ofs, src_mip_size);
+		}
+
+		//const uint8_t *in_bytes = &rb[src_ofs];
 		uint8_t *out_bytes = &wb[dst_ofs];
 
-		for (int y_start = 0; y_start < h; y_start += 4) {
+		for (int y_start = 0; y_start < height; y_start += 4) {
 			CVTTCompressionRowTask row_task;
-			row_task.width = w;
-			row_task.height = h;
+			row_task.width = width;
+			row_task.height = height;
 			row_task.y_start = y_start;
-			row_task.in_mm_bytes = in_bytes;
+			row_task.in_mm = in_data;
 			row_task.out_mm_bytes = out_bytes;
 
 			tasks.push_back(row_task);
@@ -231,8 +273,6 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 		}
 
 		dst_ofs += (MAX(4, bw) * MAX(4, bh)) >> shift;
-		w = MAX(w / 2, 1);
-		h = MAX(h / 2, 1);
 	}
 
 	const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
@@ -242,7 +282,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&_digest_job_queue, &job_queue, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true, SNAME("CVTT Compress"));
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data(w, h, p_image->has_mipmaps(), target_format, data);
 
 	print_verbose(vformat("CVTT: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }

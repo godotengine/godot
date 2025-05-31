@@ -28,24 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LOGGER_H
-#define LOGGER_H
+#pragma once
 
 #include "core/io/file_access.h"
+#include "core/object/script_backtrace.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif // MODULE_REGEX_ENABLED
 
-#include <stdarg.h>
+#include <cstdarg>
+
+class RegEx;
 
 class Logger {
 protected:
 	bool should_log(bool p_err);
 
-	static bool _flush_stdout_on_print;
+	static inline bool _flush_stdout_on_print = true;
 
 public:
 	enum ErrorType {
@@ -58,7 +56,7 @@ public:
 	static void set_flush_stdout_on_print(bool value);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0 = 0;
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR);
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {});
 
 	void logf(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void logf_error(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -90,9 +88,7 @@ class RotatedFileLogger : public Logger {
 	void clear_old_backups();
 	void rotate_file();
 
-#ifdef MODULE_REGEX_ENABLED
 	Ref<RegEx> strip_ansi_regex;
-#endif // MODULE_REGEX_ENABLED
 
 public:
 	explicit RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
@@ -107,11 +103,9 @@ public:
 	explicit CompositeLogger(const Vector<Logger *> &p_loggers);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR) override;
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
 
 	void add_logger(Logger *p_logger);
 
 	virtual ~CompositeLogger();
 };
-
-#endif // LOGGER_H

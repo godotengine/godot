@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATED_SPRITE_2D_H
-#define ANIMATED_SPRITE_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/sprite_frames.h"
@@ -41,7 +40,7 @@ class AnimatedSprite2D : public Node2D {
 	String autoplay;
 
 	bool playing = false;
-	StringName animation = "default";
+	StringName animation = SceneStringName(default_);
 	int frame = 0;
 	float speed_scale = 1.0;
 	float custom_speed_scale = 1.0;
@@ -136,5 +135,3 @@ public:
 
 	AnimatedSprite2D();
 };
-
-#endif // ANIMATED_SPRITE_2D_H

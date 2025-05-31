@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_IMPORT_SETTINGS_H
-#define SCENE_IMPORT_SETTINGS_H
+#pragma once
 
 #include "editor/import/3d/resource_importer_scene.h"
 #include "scene/3d/camera_3d.h"
@@ -37,13 +36,11 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/split_container.h"
-#include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/3d/primitive_meshes.h"
@@ -131,8 +128,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		TreeItem *mesh_node = nullptr;
 		TreeItem *material_node = nullptr;
 
-		float cam_rot_x = -Math_PI / 4;
-		float cam_rot_y = -Math_PI / 4;
+		float cam_rot_x = -Math::PI / 4;
+		float cam_rot_y = -Math::PI / 4;
 		float cam_zoom = 1;
 
 		HashMap<StringName, Variant> settings;
@@ -146,8 +143,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		TreeItem *scene_node = nullptr;
 		TreeItem *mesh_node = nullptr;
 
-		float cam_rot_x = -Math_PI / 4;
-		float cam_rot_y = -Math_PI / 4;
+		float cam_rot_x = -Math::PI / 4;
+		float cam_rot_y = -Math::PI / 4;
 		float cam_zoom = 1;
 		HashMap<StringName, Variant> settings;
 	};
@@ -253,5 +250,3 @@ public:
 	SceneImportSettingsDialog();
 	~SceneImportSettingsDialog();
 };
-
-#endif // SCENE_IMPORT_SETTINGS_H

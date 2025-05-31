@@ -28,26 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONTROL_EDITOR_PLUGIN_H
-#define CONTROL_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/texture_rect.h"
 
+class CheckBox;
 class CheckButton;
 class EditorSelection;
 class GridContainer;
+class Label;
+class OptionButton;
+class PanelContainer;
+class PopupPanel;
+class Separator;
+class TextureRect;
 
 // Inspector controls.
 class ControlPositioningWarning : public MarginContainer {
@@ -85,6 +83,7 @@ class EditorPropertyAnchorsPreset : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	void setup(const Vector<String> &p_options);
@@ -171,9 +170,6 @@ protected:
 
 	void _add_row_button(HBoxContainer *p_row, const int p_preset, const String &p_name);
 	void _add_separator(BoxContainer *p_box, Separator *p_separator);
-
-public:
-	ControlEditorPresetPicker() {}
 };
 
 class AnchorPresetPicker : public ControlEditorPresetPicker {
@@ -255,9 +251,7 @@ class ControlEditorPlugin : public EditorPlugin {
 	ControlEditorToolbar *toolbar = nullptr;
 
 public:
-	virtual String get_name() const override { return "Control"; }
+	virtual String get_plugin_name() const override { return "Control"; }
 
 	ControlEditorPlugin();
 };
-
-#endif // CONTROL_EDITOR_PLUGIN_H

@@ -19,6 +19,9 @@ msgstr ""
 "% 10 == 0) ? 2 : 3));\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "כל המוכרים"
+
 msgid "Add current color as a preset."
 msgstr "הוספת הצבע הנוכחי לערכת הצבעים."
 
@@ -31,8 +34,8 @@ msgstr "פתיחה"
 msgid "Select Current Folder"
 msgstr "נא לבחור את התיקייה הנוכחית"
 
-msgid "All Recognized"
-msgstr "כל המוכרים"
+msgid "Save"
+msgstr "שמירה"
 
 msgid "Open a File"
 msgstr "פתיחת קובץ"
@@ -45,9 +48,6 @@ msgstr "פתיחת תיקייה"
 
 msgid "Open a File or Directory"
 msgstr "פתיחת קובץ או תיקייה"
-
-msgid "Save"
-msgstr "שמירה"
 
 msgid "Save a File"
 msgstr "שמירת קובץ"

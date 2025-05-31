@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATERIAL_H
-#define MATERIAL_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/self_list.h"
@@ -163,8 +162,8 @@ public:
 		TEXTURE_DETAIL_ALBEDO,
 		TEXTURE_DETAIL_NORMAL,
 		TEXTURE_ORM,
+		TEXTURE_BENT_NORMAL,
 		TEXTURE_MAX
-
 	};
 
 	enum TextureFilter {
@@ -219,6 +218,7 @@ public:
 		FEATURE_BACKLIGHT,
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
+		FEATURE_BENT_NORMAL_MAPPING,
 		FEATURE_MAX
 	};
 
@@ -268,6 +268,9 @@ public:
 		FLAG_PARTICLE_TRAILS_MODE,
 		FLAG_ALBEDO_TEXTURE_MSDF,
 		FLAG_DISABLE_FOG,
+		FLAG_DISABLE_SPECULAR_OCCLUSION,
+		FLAG_USE_Z_CLIP_SCALE,
+		FLAG_USE_FOV_OVERRIDE,
 		FLAG_MAX
 	};
 
@@ -465,17 +468,22 @@ private:
 
 		StringName alpha_antialiasing_edge;
 		StringName albedo_texture_size;
+		StringName z_clip_scale;
+		StringName fov_override;
 	};
 
+	static Mutex material_mutex;
+	static SelfList<BaseMaterial3D>::List dirty_materials;
 	static ShaderNames *shader_names;
 
-	void _mark_dirty();
+	SelfList<BaseMaterial3D> element;
+
 	void _update_shader();
+	_FORCE_INLINE_ void _queue_shader_change();
 	void _check_material_rid();
 	void _material_set_param(const StringName &p_name, const Variant &p_value);
 
 	bool orm;
-	bool dirty = true;
 	RID shader_rid;
 	HashMap<StringName, Variant> pending_params;
 
@@ -559,11 +567,12 @@ private:
 
 	AlphaAntiAliasing alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 
+	float z_clip_scale = 1.0;
+	float fov_override = 75.0;
+
 	bool features[FEATURE_MAX] = {};
 
 	Ref<Texture2D> textures[TEXTURE_MAX];
-
-	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
 	static HashMap<uint64_t, Ref<StandardMaterial3D>> materials_for_2d; //used by Sprite3D, Label3D and other stuff
 
@@ -778,8 +787,14 @@ public:
 	void set_refraction_texture_channel(TextureChannel p_channel);
 	TextureChannel get_refraction_texture_channel() const;
 
+	void set_z_clip_scale(float p_z_clip_scale);
+	float get_z_clip_scale() const;
+	void set_fov_override(float p_fov_override);
+	float get_fov_override() const;
+
 	static void init_shaders();
 	static void finish_shaders();
+	static void flush_changes();
 
 	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, RID *r_shader_rid = nullptr);
 
@@ -838,5 +853,3 @@ public:
 };
 
 //////////////////////
-
-#endif // MATERIAL_H

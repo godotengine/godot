@@ -38,6 +38,9 @@ void LabelSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_line_spacing", "spacing"), &LabelSettings::set_line_spacing);
 	ClassDB::bind_method(D_METHOD("get_line_spacing"), &LabelSettings::get_line_spacing);
 
+	ClassDB::bind_method(D_METHOD("set_paragraph_spacing", "spacing"), &LabelSettings::set_paragraph_spacing);
+	ClassDB::bind_method(D_METHOD("get_paragraph_spacing"), &LabelSettings::get_paragraph_spacing);
+
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &LabelSettings::set_font);
 	ClassDB::bind_method(D_METHOD("get_font"), &LabelSettings::get_font);
 
@@ -62,7 +65,32 @@ void LabelSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_offset", "offset"), &LabelSettings::set_shadow_offset);
 	ClassDB::bind_method(D_METHOD("get_shadow_offset"), &LabelSettings::get_shadow_offset);
 
+	// Stacked outlines
+	ClassDB::bind_method(D_METHOD("get_stacked_outline_count"), &LabelSettings::get_stacked_outline_count);
+	ClassDB::bind_method(D_METHOD("set_stacked_outline_count", "count"), &LabelSettings::set_stacked_outline_count);
+	ClassDB::bind_method(D_METHOD("add_stacked_outline", "index"), &LabelSettings::add_stacked_outline, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("move_stacked_outline", "from_index", "to_position"), &LabelSettings::move_stacked_outline);
+	ClassDB::bind_method(D_METHOD("remove_stacked_outline", "index"), &LabelSettings::remove_stacked_outline);
+	ClassDB::bind_method(D_METHOD("set_stacked_outline_size", "index", "size"), &LabelSettings::set_stacked_outline_size);
+	ClassDB::bind_method(D_METHOD("get_stacked_outline_size", "index"), &LabelSettings::get_stacked_outline_size);
+	ClassDB::bind_method(D_METHOD("set_stacked_outline_color", "index", "color"), &LabelSettings::set_stacked_outline_color);
+	ClassDB::bind_method(D_METHOD("get_stacked_outline_color", "index"), &LabelSettings::get_stacked_outline_color);
+
+	// Stacked shadows
+	ClassDB::bind_method(D_METHOD("get_stacked_shadow_count"), &LabelSettings::get_stacked_shadow_count);
+	ClassDB::bind_method(D_METHOD("set_stacked_shadow_count", "count"), &LabelSettings::set_stacked_shadow_count);
+	ClassDB::bind_method(D_METHOD("add_stacked_shadow", "index"), &LabelSettings::add_stacked_shadow, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("move_stacked_shadow", "from_index", "to_position"), &LabelSettings::move_stacked_shadow);
+	ClassDB::bind_method(D_METHOD("remove_stacked_shadow", "index"), &LabelSettings::remove_stacked_shadow);
+	ClassDB::bind_method(D_METHOD("set_stacked_shadow_offset", "index", "offset"), &LabelSettings::set_stacked_shadow_offset);
+	ClassDB::bind_method(D_METHOD("get_stacked_shadow_offset", "index"), &LabelSettings::get_stacked_shadow_offset);
+	ClassDB::bind_method(D_METHOD("set_stacked_shadow_color", "index", "color"), &LabelSettings::set_stacked_shadow_color);
+	ClassDB::bind_method(D_METHOD("get_stacked_shadow_color", "index"), &LabelSettings::get_stacked_shadow_color);
+	ClassDB::bind_method(D_METHOD("set_stacked_shadow_outline_size", "index", "size"), &LabelSettings::set_stacked_shadow_outline_size);
+	ClassDB::bind_method(D_METHOD("get_stacked_shadow_outline_size", "index"), &LabelSettings::get_stacked_shadow_outline_size);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "paragraph_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_paragraph_spacing", "get_paragraph_spacing");
 
 	ADD_GROUP("Font", "font_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
@@ -77,6 +105,27 @@ void LabelSettings::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
+
+	ADD_GROUP("Stacked Effects", "");
+	ADD_ARRAY_COUNT("Stacked Outlines", "stacked_outline_count", "set_stacked_outline_count", "get_stacked_outline_count", "stacked_outline_");
+	ADD_ARRAY_COUNT("Stacked Shadows", "stacked_shadow_count", "set_stacked_shadow_count", "get_stacked_shadow_count", "stacked_shadow_");
+
+	constexpr StackedOutlineData stacked_outline_defaults;
+
+	stacked_outline_base_property_helper.set_prefix("stacked_outline_");
+	stacked_outline_base_property_helper.set_array_length_getter(&LabelSettings::get_stacked_outline_count);
+	stacked_outline_base_property_helper.register_property(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_NONE, "0,127,1,or_greater,suffix:px"), stacked_outline_defaults.size, &LabelSettings::set_stacked_outline_size, &LabelSettings::get_stacked_outline_size);
+	stacked_outline_base_property_helper.register_property(PropertyInfo(Variant::COLOR, "color"), stacked_outline_defaults.color, &LabelSettings::set_stacked_outline_color, &LabelSettings::get_stacked_outline_color);
+	PropertyListHelper::register_base_helper(&stacked_outline_base_property_helper);
+
+	constexpr StackedShadowData stacked_shadow_defaults;
+
+	stacked_shadow_base_property_helper.set_prefix("stacked_shadow_");
+	stacked_shadow_base_property_helper.set_array_length_getter(&LabelSettings::get_stacked_shadow_count);
+	stacked_shadow_base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), stacked_shadow_defaults.offset, &LabelSettings::set_stacked_shadow_offset, &LabelSettings::get_stacked_shadow_offset);
+	stacked_shadow_base_property_helper.register_property(PropertyInfo(Variant::COLOR, "color"), stacked_shadow_defaults.color, &LabelSettings::set_stacked_shadow_color, &LabelSettings::get_stacked_shadow_color);
+	stacked_shadow_base_property_helper.register_property(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_NONE, "0,127,1,or_greater,suffix:px"), stacked_shadow_defaults.outline_size, &LabelSettings::set_stacked_shadow_outline_size, &LabelSettings::get_stacked_shadow_outline_size);
+	PropertyListHelper::register_base_helper(&stacked_shadow_base_property_helper);
 }
 
 void LabelSettings::set_line_spacing(real_t p_spacing) {
@@ -88,6 +137,17 @@ void LabelSettings::set_line_spacing(real_t p_spacing) {
 
 real_t LabelSettings::get_line_spacing() const {
 	return line_spacing;
+}
+
+void LabelSettings::set_paragraph_spacing(real_t p_spacing) {
+	if (paragraph_spacing != p_spacing) {
+		paragraph_spacing = p_spacing;
+		emit_changed();
+	}
+}
+
+real_t LabelSettings::get_paragraph_spacing() const {
+	return paragraph_spacing;
 }
 
 void LabelSettings::set_font(const Ref<Font> &p_font) {
@@ -182,4 +242,155 @@ void LabelSettings::set_shadow_offset(const Vector2 &p_offset) {
 
 Vector2 LabelSettings::get_shadow_offset() const {
 	return shadow_offset;
+}
+
+Vector<LabelSettings::StackedOutlineData> LabelSettings::get_stacked_outline_data() const {
+	return stacked_outline_data;
+}
+
+int LabelSettings::get_stacked_outline_count() const {
+	return stacked_outline_data.size();
+}
+
+void LabelSettings::set_stacked_outline_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	if (stacked_outline_data.size() != p_count) {
+		stacked_outline_data.resize(p_count);
+		notify_property_list_changed();
+		emit_changed();
+	}
+}
+
+void LabelSettings::add_stacked_outline(int p_index) {
+	if (p_index < 0) {
+		p_index = stacked_outline_data.size();
+	}
+	ERR_FAIL_INDEX(p_index, stacked_outline_data.size() + 1);
+	stacked_outline_data.insert(p_index, StackedOutlineData());
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void LabelSettings::move_stacked_outline(int p_from_index, int p_to_position) {
+	ERR_FAIL_INDEX(p_from_index, stacked_outline_data.size());
+	ERR_FAIL_INDEX(p_to_position, stacked_outline_data.size() + 1);
+	stacked_outline_data.insert(p_to_position, stacked_outline_data[p_from_index]);
+	stacked_outline_data.remove_at(p_to_position < p_from_index ? p_from_index + 1 : p_from_index);
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void LabelSettings::remove_stacked_outline(int p_index) {
+	ERR_FAIL_INDEX(p_index, stacked_outline_data.size());
+	stacked_outline_data.remove_at(p_index);
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void LabelSettings::set_stacked_outline_size(int p_index, int p_size) {
+	ERR_FAIL_INDEX(p_index, stacked_outline_data.size());
+	if (stacked_outline_data[p_index].size != p_size) {
+		stacked_outline_data.write[p_index].size = p_size;
+		emit_changed();
+	}
+}
+
+int LabelSettings::get_stacked_outline_size(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stacked_outline_data.size(), 0);
+	return stacked_outline_data[p_index].size;
+}
+
+void LabelSettings::set_stacked_outline_color(int p_index, const Color &p_color) {
+	ERR_FAIL_INDEX(p_index, stacked_outline_data.size());
+	if (stacked_outline_data[p_index].color != p_color) {
+		stacked_outline_data.write[p_index].color = p_color;
+		emit_changed();
+	}
+}
+
+Color LabelSettings::get_stacked_outline_color(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stacked_outline_data.size(), Color());
+	return stacked_outline_data[p_index].color;
+}
+
+Vector<LabelSettings::StackedShadowData> LabelSettings::get_stacked_shadow_data() const {
+	return stacked_shadow_data;
+}
+
+int LabelSettings::get_stacked_shadow_count() const {
+	return stacked_shadow_data.size();
+}
+
+void LabelSettings::set_stacked_shadow_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	if (stacked_shadow_data.size() != p_count) {
+		stacked_shadow_data.resize(p_count);
+		notify_property_list_changed();
+		emit_changed();
+	}
+}
+
+void LabelSettings::add_stacked_shadow(int p_index) {
+	if (p_index < 0) {
+		p_index = stacked_shadow_data.size();
+	}
+	ERR_FAIL_INDEX(p_index, stacked_shadow_data.size() + 1);
+	stacked_shadow_data.insert(p_index, StackedShadowData());
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void LabelSettings::move_stacked_shadow(int p_from_index, int p_to_position) {
+	ERR_FAIL_INDEX(p_from_index, stacked_shadow_data.size());
+	ERR_FAIL_INDEX(p_to_position, stacked_shadow_data.size() + 1);
+	stacked_shadow_data.insert(p_to_position, stacked_shadow_data[p_from_index]);
+	stacked_shadow_data.remove_at(p_to_position < p_from_index ? p_from_index + 1 : p_from_index);
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void LabelSettings::remove_stacked_shadow(int p_index) {
+	ERR_FAIL_INDEX(p_index, stacked_shadow_data.size());
+	stacked_shadow_data.remove_at(p_index);
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void LabelSettings::set_stacked_shadow_offset(int p_index, const Vector2 &p_offset) {
+	ERR_FAIL_INDEX(p_index, stacked_shadow_data.size());
+	if (stacked_shadow_data[p_index].offset != p_offset) {
+		stacked_shadow_data.write[p_index].offset = p_offset;
+		emit_changed();
+	}
+}
+
+Vector2 LabelSettings::get_stacked_shadow_offset(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stacked_shadow_data.size(), Vector2());
+	return stacked_shadow_data[p_index].offset;
+}
+
+void LabelSettings::set_stacked_shadow_color(int p_index, const Color &p_color) {
+	ERR_FAIL_INDEX(p_index, stacked_shadow_data.size());
+	if (stacked_shadow_data[p_index].color != p_color) {
+		stacked_shadow_data.write[p_index].color = p_color;
+		emit_changed();
+	}
+}
+
+Color LabelSettings::get_stacked_shadow_color(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stacked_shadow_data.size(), Color());
+	return stacked_shadow_data[p_index].color;
+}
+
+void LabelSettings::set_stacked_shadow_outline_size(int p_index, int p_size) {
+	ERR_FAIL_INDEX(p_index, stacked_shadow_data.size());
+	if (stacked_shadow_data[p_index].outline_size != p_size) {
+		stacked_shadow_data.write[p_index].outline_size = p_size;
+		emit_changed();
+	}
+}
+
+int LabelSettings::get_stacked_shadow_outline_size(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, stacked_shadow_data.size(), 0);
+	return stacked_shadow_data[p_index].outline_size;
 }

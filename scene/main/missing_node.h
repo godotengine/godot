@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MISSING_NODE_H
-#define MISSING_NODE_H
+#pragma once
 
-#include "core/io/missing_resource.h"
 #include "scene/main/node.h"
 
 class MissingNode : public Node {
@@ -63,5 +61,3 @@ public:
 
 	MissingNode();
 };
-
-#endif // MISSING_NODE_H

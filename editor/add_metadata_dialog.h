@@ -28,20 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ADD_METADATA_DIALOG_H
-#define ADD_METADATA_DIALOG_H
+#pragma once
 
-#include "core/object/callable_method_pointer.h"
-#include "editor/editor_help.h"
-#include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_validation_panel.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/tree.h"
+
+class EditorValidationPanel;
+class EditorVariantTypeOptionButton;
+class LineEdit;
 
 class AddMetadataDialog : public ConfirmationDialog {
 	GDCLASS(AddMetadataDialog, ConfirmationDialog);
@@ -60,7 +53,6 @@ private:
 	void _complete_init(const StringName &p_label);
 
 	LineEdit *add_meta_name = nullptr;
-	OptionButton *add_meta_type = nullptr;
+	EditorVariantTypeOptionButton *add_meta_type = nullptr;
 	EditorValidationPanel *validation_panel = nullptr;
 };
-#endif // ADD_METADATA_DIALOG_H

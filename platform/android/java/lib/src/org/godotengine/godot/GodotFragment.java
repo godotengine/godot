@@ -221,14 +221,8 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			Intent notifierIntent = new Intent(activity, activity.getClass());
 			notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-			PendingIntent pendingIntent;
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				pendingIntent = PendingIntent.getActivity(activity, 0,
-						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-			} else {
-				pendingIntent = PendingIntent.getActivity(activity, 0,
-						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-			}
+			PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0,
+					notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 			int startResult;
 			try {
@@ -474,7 +468,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		if (parentHost != null) {
 			return parentHost.onNewGodotInstanceRequested(args);
 		}
-		return 0;
+		return -1;
 	}
 
 	@Override
@@ -508,5 +502,12 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			return parentHost.supportsFeature(featureTag);
 		}
 		return false;
+	}
+
+	@Override
+	public void onEditorWorkspaceSelected(String workspace) {
+		if (parentHost != null) {
+			parentHost.onEditorWorkspaceSelected(workspace);
+		}
 	}
 }

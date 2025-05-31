@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_EXPORT_PLUGIN_H
-#define GDEXTENSION_EXPORT_PLUGIN_H
+#pragma once
 
 #include "core/extension/gdextension_library_loader.h"
 #include "editor/export/editor_export.h"
@@ -70,9 +69,9 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 	all_archs.insert("arm32");
 	all_archs.insert("arm64");
 	all_archs.insert("rv64");
-	all_archs.insert("ppc32");
 	all_archs.insert("ppc64");
 	all_archs.insert("wasm32");
+	all_archs.insert("loongarch64");
 	all_archs.insert("universal");
 
 	HashSet<String> archs;
@@ -115,9 +114,9 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 			libs_added.insert(library_path);
 			add_shared_object(library_path, tags);
 
-			if (p_features.has("ios") && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
+			if (p_features.has("apple_embedded") && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
 				String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
-										 "extern void add_ios_init_callback(void (*cb)());\n"
+										 "extern void add_apple_embedded_platform_init_callback(void (*cb)());\n"
 										 "\n"
 										 "extern \"C\" void $ENTRY();\n"
 										 "void $ENTRY_init() {\n"
@@ -125,15 +124,15 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 										 "}\n"
 										 "struct $ENTRY_struct {\n"
 										 "  $ENTRY_struct() {\n"
-										 "    add_ios_init_callback($ENTRY_init);\n"
+										 "    add_apple_embedded_platform_init_callback($ENTRY_init);\n"
 										 "  }\n"
 										 "};\n"
 										 "$ENTRY_struct $ENTRY_struct_instance;\n\n";
 				additional_code = additional_code.replace("$ENTRY", entry_symbol);
-				add_ios_cpp_code(additional_code);
+				add_apple_embedded_platform_cpp_code(additional_code);
 
 				String linker_flags = "-Wl,-U,_" + entry_symbol;
-				add_ios_linker_flags(linker_flags);
+				add_apple_embedded_platform_linker_flags(linker_flags);
 			}
 
 			// Update found library info.
@@ -168,5 +167,3 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		}
 	}
 }
-
-#endif // GDEXTENSION_EXPORT_PLUGIN_H

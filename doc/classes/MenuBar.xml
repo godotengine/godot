@@ -4,7 +4,7 @@
 		A horizontal menu bar that creates a menu for each [PopupMenu] child.
 	</brief_description>
 	<description>
-		A horizontal menu bar that creates a menu for each [PopupMenu] child. New items are created by adding [PopupMenu]s to this node.
+		A horizontal menu bar that creates a menu for each [PopupMenu] child. New items are created by adding [PopupMenu]s to this node. Item title is determined by [member Window.title], or node name if [member Window.title] is empty. Item title can be overridden using [method set_menu_title].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -100,6 +100,7 @@
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			Flat [MenuBar] don't display item decoration.
 		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>

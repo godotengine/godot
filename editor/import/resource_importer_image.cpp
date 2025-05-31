@@ -32,8 +32,6 @@
 
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
-#include "core/io/resource_saver.h"
-#include "scene/resources/texture.h"
 
 String ResourceImporterImage::get_importer_name() const {
 	return "image";
@@ -93,7 +91,4 @@ Error ResourceImporterImage::import(ResourceUID::ID p_source_id, const String &p
 	f->store_buffer(data.ptr(), len);
 
 	return OK;
-}
-
-ResourceImporterImage::ResourceImporterImage() {
 }

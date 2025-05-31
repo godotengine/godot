@@ -183,7 +183,7 @@ namespace Godot.SourceGenerators
 
         public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
         {
-            return symbol.IsGenericType ?
+            return symbol.IsGenericType && symbol.TypeParameters.Length > 0 ?
                 string.Concat(symbol.Name, "<", string.Join(", ", symbol.TypeParameters), ">") :
                 symbol.Name;
         }
@@ -286,6 +286,12 @@ namespace Godot.SourceGenerators
 
         public static bool IsGodotGlobalClassAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.GlobalClassAttr;
+
+        public static bool IsGodotExportToolButtonAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportToolButtonAttr;
+
+        public static bool IsGodotToolAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ToolAttr;
 
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SystemFlagsAttr;

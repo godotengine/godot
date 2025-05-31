@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef REGEX_H
-#define REGEX_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
@@ -78,6 +77,8 @@ class RegEx : public RefCounted {
 
 	void _pattern_info(uint32_t what, void *where) const;
 
+	int _sub(const String &p_subject, const String &p_replacement, int p_offset, int p_end, uint32_t p_flags, String &r_output) const;
+
 protected:
 	static void _bind_methods();
 
@@ -106,5 +107,3 @@ public:
 	RegEx(const String &p_pattern);
 	~RegEx();
 };
-
-#endif // REGEX_H

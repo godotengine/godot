@@ -1,0 +1,42 @@
+diff --git a/thirdparty/clipper2/include/clipper2/clipper.core.h b/thirdparty/clipper2/include/clipper2/clipper.core.h
+index ab71aeb072..110bee4c10 100644
+--- a/thirdparty/clipper2/include/clipper2/clipper.core.h
++++ b/thirdparty/clipper2/include/clipper2/clipper.core.h
+@@ -19,6 +19,8 @@
+ #include <numeric>
+ #include <cmath>
+ 
++#define CLIPPER2_THROW(exception) std::abort()
++
+ namespace Clipper2Lib
+ {
+ 
+@@ -76,21 +78,21 @@ namespace Clipper2Lib
+     switch (error_code)
+     {
+     case precision_error_i:
+-      throw Clipper2Exception(precision_error);
++      CLIPPER2_THROW(Clipper2Exception(precision_error));
+     case scale_error_i:
+-      throw Clipper2Exception(scale_error);
++      CLIPPER2_THROW(Clipper2Exception(scale_error));
+     case non_pair_error_i:
+-      throw Clipper2Exception(non_pair_error);
++      CLIPPER2_THROW(Clipper2Exception(non_pair_error));
+     case undefined_error_i:
+-      throw Clipper2Exception(undefined_error);
++      CLIPPER2_THROW(Clipper2Exception(undefined_error));
+     case range_error_i:
+-      throw Clipper2Exception(range_error);
++      CLIPPER2_THROW(Clipper2Exception(range_error));
+     // Should never happen, but adding this to stop a compiler warning
+     default:
+-      throw Clipper2Exception("Unknown error");
++      CLIPPER2_THROW(Clipper2Exception("Unknown error"));
+     }
+ #else
+-    ++error_code; // only to stop compiler warning
++    if(error_code) {}; // only to stop compiler 'parameter not used' warning
+ #endif
+   }
+ 

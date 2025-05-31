@@ -161,7 +161,6 @@ int Light2D::get_item_shadow_cull_mask() const {
 void Light2D::set_shadow_enabled(bool p_enabled) {
 	shadow = p_enabled;
 	RS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
-	notify_property_list_changed();
 }
 
 bool Light2D::is_shadow_enabled() const {
@@ -244,10 +243,6 @@ real_t Light2D::get_shadow_smooth() const {
 }
 
 void Light2D::_validate_property(PropertyInfo &p_property) const {
-	if (!shadow && (p_property.name == "shadow_color" || p_property.name == "shadow_filter" || p_property.name == "shadow_filter_smooth" || p_property.name == "shadow_item_cull_mask")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
 	if (shadow && p_property.name == "shadow_filter_smooth" && shadow_filter == SHADOW_FILTER_NONE) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -315,7 +310,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_cull_mask", "get_item_cull_mask");
 
 	ADD_GROUP("Shadow", "shadow_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled"), "set_shadow_enabled", "is_shadow_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_shadow_enabled", "is_shadow_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_filter", PROPERTY_HINT_ENUM, "None (Fast),PCF5 (Average),PCF13 (Slow)"), "set_shadow_filter", "get_shadow_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shadow_filter_smooth", PROPERTY_HINT_RANGE, "0,64,0.1"), "set_shadow_smooth", "get_shadow_smooth");
@@ -379,7 +374,7 @@ Rect2 PointLight2D::_edit_get_rect() const {
 }
 
 bool PointLight2D::_edit_use_rect() const {
-	return !texture.is_null();
+	return texture.is_valid();
 }
 #endif // DEBUG_ENABLED
 
@@ -395,6 +390,19 @@ Rect2 PointLight2D::get_anchorable_rect() const {
 void PointLight2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	if (texture.is_valid()) {
+#ifdef DEBUG_ENABLED
+		if (
+				p_texture->is_class("AnimatedTexture") ||
+				p_texture->is_class("AtlasTexture") ||
+				p_texture->is_class("CameraTexture") ||
+				p_texture->is_class("CanvasTexture") ||
+				p_texture->is_class("MeshTexture") ||
+				p_texture->is_class("Texture2DRD") ||
+				p_texture->is_class("ViewportTexture")) {
+			WARN_PRINT(vformat("%s cannot be used as a PointLight2D texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
+		}
+#endif
+
 		RS::get_singleton()->canvas_light_set_texture(_get_light(), texture->get_rid());
 	} else {
 		RS::get_singleton()->canvas_light_set_texture(_get_light(), RID());
@@ -420,7 +428,7 @@ Vector2 PointLight2D::get_texture_offset() const {
 PackedStringArray PointLight2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Light2D::get_configuration_warnings();
 
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
 		warnings.push_back(RTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
 	}
 
@@ -462,7 +470,8 @@ void PointLight2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &PointLight2D::set_texture_scale);
 	ClassDB::bind_method(D_METHOD("get_texture_scale"), &PointLight2D::get_texture_scale);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	// Only allow texture types that display correctly.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_scale", PROPERTY_HINT_RANGE, "0.01,50,0.01"), "set_texture_scale", "get_texture_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1024,1,or_greater,suffix:px"), "set_height", "get_height");

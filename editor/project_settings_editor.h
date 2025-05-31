@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_SETTINGS_EDITOR_H
-#define PROJECT_SETTINGS_EDITOR_H
+#pragma once
 
 #include "core/config/project_settings.h"
 #include "editor/action_map_editor.h"
@@ -41,14 +40,24 @@
 #include "editor/localization_editor.h"
 #include "editor/plugins/editor_plugin_settings.h"
 #include "editor/shader_globals_editor.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
 
+class EditorVariantTypeOptionButton;
 class FileSystemDock;
 
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
-	static ProjectSettingsEditor *singleton;
+	inline static ProjectSettingsEditor *singleton = nullptr;
+
+	enum {
+		FEATURE_ALL,
+		FEATURE_CUSTOM,
+		FEATURE_FIRST,
+	};
+
 	ProjectSettings *ps = nullptr;
 	Timer *timer = nullptr;
 
@@ -68,7 +77,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	HBoxContainer *custom_properties = nullptr;
 	LineEdit *property_box = nullptr;
 	OptionButton *feature_box = nullptr;
-	OptionButton *type_box = nullptr;
+	EditorVariantTypeOptionButton *type_box = nullptr;
 	Button *add_button = nullptr;
 	Button *del_button = nullptr;
 
@@ -79,6 +88,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	ImportDefaultsEditor *import_defaults_editor = nullptr;
 	EditorData *data = nullptr;
+
+	bool settings_changed = false;
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);
@@ -112,6 +123,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
 	void _update_action_map_editor();
 	void _update_theme();
+	void _save();
 
 protected:
 	void _notification(int p_what);
@@ -134,5 +146,3 @@ public:
 
 	ProjectSettingsEditor(EditorData *p_data);
 };
-
-#endif // PROJECT_SETTINGS_EDITOR_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STYLE_BOX_EDITOR_PLUGIN_H
-#define STYLE_BOX_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
@@ -70,9 +69,7 @@ class StyleBoxEditorPlugin : public EditorPlugin {
 	GDCLASS(StyleBoxEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "StyleBox"; }
+	virtual String get_plugin_name() const override { return "StyleBox"; }
 
 	StyleBoxEditorPlugin();
 };
-
-#endif // STYLE_BOX_EDITOR_PLUGIN_H

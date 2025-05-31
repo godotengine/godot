@@ -35,8 +35,7 @@
 #include "servers/rendering_server.h"
 
 bool SegmentShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	Vector2 l[2] = { a, b };
-	Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, l);
+	Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, a, b);
 	return p_point.distance_to(closest) < p_tolerance;
 }
 
@@ -49,6 +48,9 @@ void SegmentShape2D::_update_shape() {
 }
 
 void SegmentShape2D::set_a(const Vector2 &p_a) {
+	if (a == p_a) {
+		return;
+	}
 	a = p_a;
 	_update_shape();
 }
@@ -58,6 +60,9 @@ Vector2 SegmentShape2D::get_a() const {
 }
 
 void SegmentShape2D::set_b(const Vector2 &p_b) {
+	if (b == p_b) {
+		return;
+	}
 	b = p_b;
 	_update_shape();
 }

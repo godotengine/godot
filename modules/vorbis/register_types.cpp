@@ -33,36 +33,30 @@
 #include "audio_stream_ogg_vorbis.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
 #include "resource_importer_ogg_vorbis.h"
+
+static void _editor_init() {
+	Ref<ResourceImporterOggVorbis> ogg_vorbis_importer;
+	ogg_vorbis_importer.instantiate();
+	ResourceFormatImporter::get_singleton()->add_importer(ogg_vorbis_importer);
+}
 #endif
 
 void initialize_vorbis_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(AudioStreamOggVorbis);
+		GDREGISTER_CLASS(AudioStreamPlaybackOggVorbis);
 	}
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		Ref<ResourceImporterOggVorbis> ogg_vorbis_importer;
-		ogg_vorbis_importer.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(ogg_vorbis_importer);
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		GDREGISTER_CLASS(ResourceImporterOggVorbis);
+
+		EditorNode::add_init_callback(_editor_init);
 	}
-
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-
-	// Required to document import options in the class reference.
-	GDREGISTER_CLASS(ResourceImporterOggVorbis);
-
-	ClassDB::set_current_api(prev_api);
 #endif
-
-	GDREGISTER_CLASS(AudioStreamOggVorbis);
-	GDREGISTER_CLASS(AudioStreamPlaybackOggVorbis);
 }
 
 void uninitialize_vorbis_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
 }

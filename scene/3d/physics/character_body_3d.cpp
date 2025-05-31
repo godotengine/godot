@@ -219,7 +219,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					// Avoid to move forward on a wall if floor_block_on_wall is true.
 					// Applies only when the motion angle is under 90 degrees,
 					// in order to avoid blocking lateral motion along a wall.
-					if (motion_angle < .5 * Math_PI) {
+					if (motion_angle < .5 * Math::PI) {
 						apply_default_sliding = false;
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.
@@ -469,14 +469,14 @@ void CharacterBody3D::apply_floor_snap() {
 		_set_collision_direction(result, result_state, CollisionState(true, false, false));
 
 		if (result_state.floor) {
-			if (floor_stop_on_slope) {
-				// move and collide may stray the object a bit because of pre un-stucking,
-				// so only ensure that motion happens on floor direction in this case.
-				if (result.travel.length() > margin) {
-					result.travel = up_direction * up_direction.dot(result.travel);
-				} else {
-					result.travel = Vector3();
-				}
+			// Ensure that we only move the body along the up axis, because
+			// move_and_collide may stray the object a bit when getting it unstuck.
+			// Canceling this motion should not affect move_and_slide, as previous
+			// calls to move_and_collide already took care of freeing the body.
+			if (result.travel.length() > margin) {
+				result.travel = up_direction * up_direction.dot(result.travel);
+			} else {
+				result.travel = Vector3();
 			}
 
 			parameters.from.origin += result.travel;
@@ -569,7 +569,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 			wall_normal = collision.normal;
 
 			// Don't apply wall velocity when the collider is a CharacterBody3D.
-			if (Object::cast_to<CharacterBody3D>(ObjectDB::get_instance(collision.collider_id)) == nullptr) {
+			if (ObjectDB::get_instance<CharacterBody3D>(collision.collider_id) == nullptr) {
 				_set_platform_data(collision);
 			}
 		}
@@ -717,7 +717,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision3D> CharacterBody3D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision3D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);

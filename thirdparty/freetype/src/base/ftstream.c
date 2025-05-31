@@ -4,7 +4,7 @@
  *
  *   I/O stream support (body).
  *
- * Copyright (C) 2000-2023 by
+ * Copyright (C) 2000-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -763,10 +763,10 @@
       case ft_frame_bytes:  /* read a byte sequence */
       case ft_frame_skip:   /* skip some bytes      */
         {
-          FT_UInt  len = fields->size;
+          FT_Offset  len = fields->size;
 
 
-          if ( cursor + len > stream->limit )
+          if ( len > (FT_Offset)( stream->limit - cursor ) )
           {
             error = FT_THROW( Invalid_Stream_Operation );
             goto Exit;
@@ -830,7 +830,7 @@
         goto Exit;
       }
 
-      /* now, compute the signed value is necessary */
+      /* now, compute the signed value if necessary */
       if ( fields->value & FT_FRAME_OP_SIGNED )
         value = (FT_ULong)( (FT_Int32)( value << sign_shift ) >> sign_shift );
 

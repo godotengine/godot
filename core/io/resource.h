@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_H
-#define RESOURCE_H
+#pragma once
 
 #include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
@@ -40,11 +39,15 @@
 
 class Node;
 
-#define RES_BASE_EXTENSION(m_ext)                                                                                   \
-public:                                                                                                             \
-	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
-	virtual String get_base_extension() const override { return m_ext; }                                            \
-                                                                                                                    \
+#define RES_BASE_EXTENSION(m_ext)                                        \
+public:                                                                  \
+	static void register_custom_data_to_otdb() {                         \
+		ClassDB::add_resource_base_extension(m_ext, get_class_static()); \
+	}                                                                    \
+	virtual String get_base_extension() const override {                 \
+		return m_ext;                                                    \
+	}                                                                    \
+                                                                         \
 private:
 
 class Resource : public RefCounted {
@@ -53,6 +56,13 @@ class Resource : public RefCounted {
 public:
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }
 	virtual String get_base_extension() const { return "res"; }
+
+protected:
+	struct DuplicateParams {
+		bool deep = false;
+		ResourceDeepDuplicateMode subres_mode = RESOURCE_DEEP_DUPLICATE_MAX;
+		Node *local_scene = nullptr;
+	};
 
 private:
 	friend class ResBase;
@@ -68,18 +78,30 @@ private:
 	String import_path;
 #endif
 
+	enum EmitChangedState {
+		EMIT_CHANGED_UNBLOCKED,
+		EMIT_CHANGED_BLOCKED,
+		EMIT_CHANGED_BLOCKED_PENDING_EMIT,
+	};
+	EmitChangedState emit_changed_state = EMIT_CHANGED_UNBLOCKED;
 	bool local_to_scene = false;
 	friend class SceneState;
 	Node *local_scene = nullptr;
 
 	SelfList<Resource> remapped_list;
 
-	void _dupe_sub_resources(Variant &r_variant, Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
+	using DuplicateRemapCacheT = HashMap<Ref<Resource>, Ref<Resource>>;
+	static thread_local inline DuplicateRemapCacheT *thread_duplicate_remap_cache = nullptr;
+
+	Variant _duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage = 0) const;
 	void _find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);
 
 protected:
 	virtual void _resource_path_changed();
 	static void _bind_methods();
+
+	void _block_emit_changed();
+	void _unblock_emit_changed();
 
 	void _set_path(const String &p_path);
 	void _take_over_path(const String &p_path);
@@ -91,6 +113,8 @@ protected:
 
 	GDVIRTUAL1C(_set_path_cache, String);
 	GDVIRTUAL0(_reset_state);
+
+	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const;
 
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
@@ -119,8 +143,11 @@ public:
 	void set_scene_unique_id(const String &p_id);
 	String get_scene_unique_id() const;
 
-	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
-	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
+	Ref<Resource> duplicate(bool p_deep = false) const;
+	Ref<Resource> duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Ref<Resource> _duplicate_from_variant(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const;
+	static void _teardown_duplicate_from_variant();
+	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) const;
 	void configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
 
 	void set_local_to_scene(bool p_enable);
@@ -156,6 +183,8 @@ public:
 	~Resource();
 };
 
+VARIANT_ENUM_CAST(ResourceDeepDuplicateMode);
+
 class ResourceCache {
 	friend class Resource;
 	friend class ResourceLoader; //need the lock
@@ -175,5 +204,3 @@ public:
 	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();
 };
-
-#endif // RESOURCE_H

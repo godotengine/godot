@@ -28,13 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_H
-#define AUDIO_STREAM_H
+#pragma once
 
-#include "core/io/image.h"
 #include "core/io/resource.h"
 #include "scene/property_list_helper.h"
-#include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"
 
 #include "core/object/gdvirtual.gen.inc"
@@ -375,5 +372,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(AudioStreamRandomizer::PlaybackMode);
-
-#endif // AUDIO_STREAM_H

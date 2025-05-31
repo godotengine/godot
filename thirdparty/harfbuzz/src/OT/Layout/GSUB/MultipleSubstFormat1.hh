@@ -66,7 +66,7 @@ struct MultipleSubstFormat1_2
     TRACE_APPLY (this);
 
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+    if (index == NOT_COVERED) return_trace (false);
 
     return_trace ((this+sequence[index]).apply (c));
   }

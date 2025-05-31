@@ -78,12 +78,49 @@ struct LigatureSubstFormat1_2
     return lig_set.would_apply (c);
   }
 
-  bool apply (hb_ot_apply_context_t *c) const
+  unsigned cache_cost () const
+  {
+    return (this+coverage).cost ();
+  }
+  static void * cache_func (void *p, hb_ot_lookup_cache_op_t op)
+  {
+    switch (op)
+    {
+      case hb_ot_lookup_cache_op_t::CREATE:
+      {
+	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) hb_malloc (sizeof (hb_ot_lookup_cache_t));
+	if (likely (cache))
+	  cache->clear ();
+	return cache;
+      }
+      case hb_ot_lookup_cache_op_t::ENTER:
+	return (void *) true;
+      case hb_ot_lookup_cache_op_t::LEAVE:
+	return nullptr;
+      case hb_ot_lookup_cache_op_t::DESTROY:
+      {
+	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) p;
+	hb_free (cache);
+	return nullptr;
+      }
+    }
+    return nullptr;
+  }
+
+  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
+  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
+  bool _apply (hb_ot_apply_context_t *c, bool cached) const
   {
     TRACE_APPLY (this);
+    hb_buffer_t *buffer = c->buffer;
 
-    unsigned int index = (this+coverage).get_coverage (c->buffer->cur ().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    hb_ot_lookup_cache_t *cache = cached ? (hb_ot_lookup_cache_t *) c->lookup_accel->cache : nullptr;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache);
+#else
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+#endif
+    if (index == NOT_COVERED) return_trace (false);
 
     const auto &lig_set = this+ligatureSet[index];
     return_trace (lig_set.apply (c));

@@ -30,9 +30,6 @@
 
 #include "image_loader_hdr.h"
 
-#include "core/os/os.h"
-#include "core/string/print_string.h"
-
 Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	String header = f->get_token();
 
@@ -132,7 +129,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 			int e = ptr[3] - 128;
 
 			if (force_linear || (e < -15 || e > 15)) {
-				float exp = pow(2.0f, e);
+				float exp = std::pow(2.0f, e);
 				Color c(ptr[0] * exp / 255.0, ptr[1] * exp / 255.0, ptr[2] * exp / 255.0);
 
 				if (force_linear) {

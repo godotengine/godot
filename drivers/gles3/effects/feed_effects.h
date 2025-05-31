@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FEED_EFFECTS_GLES3_H
-#define FEED_EFFECTS_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
+#include "drivers/gles3/shader_gles3.h"
 #include "drivers/gles3/shaders/feed.glsl.gen.h"
 
 namespace GLES3 {
@@ -64,5 +64,3 @@ private:
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // FEED_EFFECTS_GLES3_H

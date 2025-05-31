@@ -4,7 +4,7 @@
  *
  *   The FreeType private base classes (body).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -2302,7 +2302,10 @@
                                       face_index_internal, aface );
       FT_FREE( data_offsets );
       if ( !error )
-        (*aface)->num_faces = count;
+      {
+        (*aface)->num_faces  = count;
+        (*aface)->face_index = face_index_internal;
+      }
     }
 
     return error;
@@ -5791,7 +5794,7 @@
     ttface = (TT_Face)face;
     sfnt   = (SFNT_Service)ttface->sfnt;
 
-    if ( sfnt->get_colr_layer )
+    if ( sfnt->get_colr_glyph_paint )
       return sfnt->get_colr_glyph_paint( ttface,
                                          base_glyph,
                                          root_transform,

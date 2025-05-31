@@ -678,7 +678,8 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
                               hb_subset_plan_t *plan)
 {
   OT::cmap::accelerator_t cmap (plan->source);
-  unsigned size_threshold = plan->source->get_num_glyphs ();
+  unsigned size_threshold = plan->source->get_num_glyphs ();  
+
   if (glyphs->is_empty () && unicodes->get_population () < size_threshold)
   {
 
@@ -797,6 +798,21 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
     plan->unicodes.add_sorted_array (&arr.arrayZ->first, arr.length, sizeof (*arr.arrayZ));
     plan->_glyphset_gsub.add_array (&arr.arrayZ->second, arr.length, sizeof (*arr.arrayZ));
   }
+
+  // Variation selectors don't have glyphs associated with them in the cmap so they will have been filtered out above
+  // but should still be retained. Add them back here.
+
+  // However, the min and max codepoints for OS/2 should be calculated without considering variation selectors,
+  // so record those first.
+  plan->os2_info.min_cmap_codepoint = plan->unicodes.get_min();
+  plan->os2_info.max_cmap_codepoint = plan->unicodes.get_max();
+  
+  hb_set_t variation_selectors_to_retain;
+  cmap.collect_variation_selectors(&variation_selectors_to_retain);
+  + variation_selectors_to_retain.iter()
+  | hb_filter(unicodes)
+  | hb_sink(&plan->unicodes)
+  ;
 }
 
 static unsigned

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GEOMETRY_INSTANCE_3D_GIZMO_PLUGIN_H
-#define GEOMETRY_INSTANCE_3D_GIZMO_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
@@ -42,8 +41,4 @@ public:
 	virtual int get_priority() const override;
 
 	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	GeometryInstance3DGizmoPlugin();
 };
-
-#endif // GEOMETRY_INSTANCE_3D_GIZMO_PLUGIN_H

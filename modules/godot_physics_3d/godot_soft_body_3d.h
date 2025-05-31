@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_SOFT_BODY_3D_H
-#define GODOT_SOFT_BODY_3D_H
+#pragma once
 
 #include "godot_area_3d.h"
 #include "godot_collision_object_3d.h"
@@ -96,6 +95,7 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	int iteration_count = 5;
 	real_t linear_stiffness = 0.5; // [0,1]
+	real_t shrinking_factor = 0.0; // [-1,1]
 	real_t pressure_coefficient = 0.0; // [-inf,+inf]
 	real_t damping_coefficient = 0.01; // [0,1]
 	real_t drag_coefficient = 0.0; // [0,1]
@@ -173,6 +173,9 @@ public:
 	Vector3 get_node_velocity(uint32_t p_node_index) const;
 	Vector3 get_node_biased_velocity(uint32_t p_node_index) const;
 	void apply_node_impulse(uint32_t p_node_index, const Vector3 &p_impulse);
+	void apply_node_force(uint32_t p_node_index, const Vector3 &p_force);
+	void apply_central_impulse(const Vector3 &p_impulse);
+	void apply_central_force(const Vector3 &p_force);
 	void apply_node_bias_impulse(uint32_t p_node_index, const Vector3 &p_impulse);
 
 	uint32_t get_face_count() const;
@@ -191,6 +194,9 @@ public:
 
 	void set_linear_stiffness(real_t p_val);
 	_FORCE_INLINE_ real_t get_linear_stiffness() const { return linear_stiffness; }
+
+	void set_shrinking_factor(real_t p_val);
+	_FORCE_INLINE_ real_t get_shrinking_factor() const { return shrinking_factor; }
 
 	void set_pressure_coefficient(real_t p_val);
 	_FORCE_INLINE_ real_t get_pressure_coefficient() const { return pressure_coefficient; }
@@ -272,5 +278,3 @@ public:
 	GodotSoftBodyShape3D(GodotSoftBody3D *p_soft_body);
 	~GodotSoftBodyShape3D() {}
 };
-
-#endif // GODOT_SOFT_BODY_3D_H

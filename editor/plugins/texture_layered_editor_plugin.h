@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
-#define TEXTURE_LAYERED_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
@@ -37,8 +36,14 @@
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
+class ColorChannelSelector;
+
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);
+
+	struct ThemeCache {
+		Color outline_color;
+	} theme_cache;
 
 	SpinBox *layer = nullptr;
 	Label *info = nullptr;
@@ -52,6 +57,10 @@ class TextureLayeredEditor : public Control {
 	Control *texture_rect = nullptr;
 
 	bool setting = false;
+
+	ColorChannelSelector *channel_selector = nullptr;
+
+	void _draw_outline();
 
 	void _make_shaders();
 	void _update_material(bool p_texture_changed);
@@ -69,6 +78,8 @@ class TextureLayeredEditor : public Control {
 
 	void _update_gui();
 
+	void on_selected_channels_changed();
+
 protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -77,7 +88,6 @@ public:
 	void edit(Ref<TextureLayered> p_texture);
 
 	TextureLayeredEditor();
-	~TextureLayeredEditor();
 };
 
 class EditorInspectorPluginLayeredTexture : public EditorInspectorPlugin {
@@ -92,9 +102,7 @@ class TextureLayeredEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureLayeredEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "TextureLayered"; }
+	virtual String get_plugin_name() const override { return "TextureLayered"; }
 
 	TextureLayeredEditorPlugin();
 };
-
-#endif // TEXTURE_LAYERED_EDITOR_PLUGIN_H

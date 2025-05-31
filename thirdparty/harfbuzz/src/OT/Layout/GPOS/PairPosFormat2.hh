@@ -123,12 +123,61 @@ struct PairPosFormat2_4 : ValueBase
 
   const Coverage &get_coverage () const { return this+coverage; }
 
-  bool apply (hb_ot_apply_context_t *c) const
+  struct pair_pos_cache_t
+  {
+    hb_ot_lookup_cache_t coverage;
+    hb_ot_lookup_cache_t first;
+    hb_ot_lookup_cache_t second;
+  };
+
+  unsigned cache_cost () const
+  {
+    return (this+coverage).cost () + (this+classDef1).cost () + (this+classDef2).cost ();
+  }
+  static void * cache_func (void *p, hb_ot_lookup_cache_op_t op)
+  {
+    switch (op)
+    {
+      case hb_ot_lookup_cache_op_t::CREATE:
+      {
+	pair_pos_cache_t *cache = (pair_pos_cache_t *) hb_malloc (sizeof (pair_pos_cache_t));
+	if (likely (cache))
+	{
+	  cache->coverage.clear ();
+	  cache->first.clear ();
+	  cache->second.clear ();
+	}
+	return cache;
+      }
+      case hb_ot_lookup_cache_op_t::ENTER:
+	return (void *) true;
+      case hb_ot_lookup_cache_op_t::LEAVE:
+	return nullptr;
+      case hb_ot_lookup_cache_op_t::DESTROY:
+	{
+	  pair_pos_cache_t *cache = (pair_pos_cache_t *) p;
+	  hb_free (cache);
+	  return nullptr;
+	}
+    }
+    return nullptr;
+  }
+
+  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
+  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
+  bool _apply (hb_ot_apply_context_t *c, bool cached) const
   {
     TRACE_APPLY (this);
+
     hb_buffer_t *buffer = c->buffer;
+
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    pair_pos_cache_t *cache = cached ? (pair_pos_cache_t *) c->lookup_accel->cache : nullptr;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+#else
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+#endif
+    if (index == NOT_COVERED) return_trace (false);
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
@@ -139,8 +188,13 @@ struct PairPosFormat2_4 : ValueBase
       return_trace (false);
     }
 
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint, cache ? &cache->first : nullptr);
+    unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint, cache ? &cache->second : nullptr);
+#else
     unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint);
     unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint);
+#endif
     if (unlikely (klass1 >= class1Count || klass2 >= class2Count))
     {
       buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);

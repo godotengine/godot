@@ -4,7 +4,7 @@
  *
  *   FreeType API for error code handling.
  *
- * Copyright (C) 2018-2023 by
+ * Copyright (C) 2018-2024 by
  * Armin Hasitzka, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

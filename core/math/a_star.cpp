@@ -32,7 +32,6 @@
 #include "a_star.compat.inc"
 
 #include "core/math/geometry_3d.h"
-#include "core/object/script_language.h"
 
 int64_t AStar3D::get_available_point_id() const {
 	if (points.has(last_free_id)) {
@@ -40,7 +39,7 @@ int64_t AStar3D::get_available_point_id() const {
 		while (points.has(cur_new_id)) {
 			cur_new_id++;
 		}
-		const_cast<int64_t &>(last_free_id) = cur_new_id;
+		last_free_id = cur_new_id;
 	}
 
 	return last_free_id;
@@ -261,7 +260,6 @@ int64_t AStar3D::get_point_capacity() const {
 
 void AStar3D::reserve_space(int64_t p_num_nodes) {
 	ERR_FAIL_COND_MSG(p_num_nodes <= 0, vformat("New capacity must be greater than 0, new was: %d.", p_num_nodes));
-	ERR_FAIL_COND_MSG((uint32_t)p_num_nodes < points.get_capacity(), vformat("New capacity must be greater than current capacity: %d, new was: %d.", points.get_capacity(), p_num_nodes));
 	points.reserve(p_num_nodes);
 }
 
@@ -303,12 +301,7 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 			continue;
 		}
 
-		Vector3 segment[2] = {
-			from_point->pos,
-			to_point->pos,
-		};
-
-		Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, segment);
+		Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, from_point->pos, to_point->pos);
 		real_t d = p_point.distance_squared_to(p);
 		if (d < closest_dist) {
 			closest_point = p;

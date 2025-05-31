@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_MANAGER_H
-#define PROJECT_MANAGER_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/scroll_container.h"
@@ -44,6 +43,7 @@ class LineEdit;
 class MarginContainer;
 class OptionButton;
 class PanelContainer;
+class PopupMenu;
 class ProjectDialog;
 class ProjectList;
 class QuickSettingsDialog;
@@ -64,6 +64,14 @@ class ProjectManager : public Control {
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 
 	void _build_icon_type_cache(Ref<Theme> p_theme);
+
+	enum PostDuplicateAction {
+		POST_DUPLICATE_ACTION_NONE,
+		POST_DUPLICATE_ACTION_OPEN,
+		POST_DUPLICATE_ACTION_FULL_CONVERSION,
+	};
+
+	PostDuplicateAction post_duplicate_action = POST_DUPLICATE_ACTION_NONE;
 
 	// Main layout.
 
@@ -126,6 +134,7 @@ class ProjectManager : public Control {
 	// Project list.
 
 	VBoxContainer *empty_list_placeholder = nullptr;
+	RichTextLabel *empty_list_message = nullptr;
 	Button *empty_list_create_project = nullptr;
 	Button *empty_list_import_project = nullptr;
 	Button *empty_list_open_assetlib = nullptr;
@@ -138,6 +147,7 @@ class ProjectManager : public Control {
 
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
+	Label *sort_label = nullptr;
 	OptionButton *filter_option = nullptr;
 	PanelContainer *project_list_panel = nullptr;
 
@@ -145,11 +155,16 @@ class ProjectManager : public Control {
 	Button *import_btn = nullptr;
 	Button *scan_btn = nullptr;
 	Button *open_btn = nullptr;
+	Button *open_options_btn = nullptr;
 	Button *run_btn = nullptr;
 	Button *rename_btn = nullptr;
+	Button *duplicate_btn = nullptr;
 	Button *manage_tags_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
+
+	HBoxContainer *open_btn_container = nullptr;
+	PopupMenu *open_options_popup = nullptr;
 
 	EditorFileDialog *scan_dir = nullptr;
 
@@ -161,6 +176,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *erase_missing_ask = nullptr;
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
+	ConfirmationDialog *open_recovery_mode_ask = nullptr;
 
 	ProjectDialog *project_dialog = nullptr;
 
@@ -168,21 +184,30 @@ class ProjectManager : public Control {
 	void _run_project();
 	void _run_project_confirm();
 	void _open_selected_projects();
-	void _open_selected_projects_ask();
 	void _open_selected_projects_with_migration();
+	void _open_selected_projects_check_warnings();
+	void _open_selected_projects_check_recovery_mode();
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 	void _import_project();
 	void _new_project();
 	void _rename_project();
+	void _duplicate_project();
+	void _duplicate_project_with_action(PostDuplicateAction p_action);
 	void _erase_project();
 	void _erase_missing_projects();
 	void _erase_project_confirm();
 	void _erase_missing_projects_confirm();
 	void _update_project_buttons();
+	void _open_options_popup();
+	void _open_recovery_mode_ask(bool manual = false);
 
-	void _on_project_created(const String &dir);
+	void _on_project_created(const String &dir, bool edit);
+	void _on_project_duplicated(const String &p_original_path, const String &p_duplicate_path, bool p_edit);
 	void _on_projects_updated();
+	void _on_open_options_selected(int p_option);
+	void _on_recovery_mode_popup_open_normal();
+	void _on_recovery_mode_popup_open_recovery();
 
 	void _on_order_option_changed(int p_idx);
 	void _on_search_term_changed(const String &p_term);
@@ -215,9 +240,14 @@ class ProjectManager : public Control {
 
 	ConfirmationDialog *ask_full_convert_dialog = nullptr;
 	ConfirmationDialog *ask_update_settings = nullptr;
+	VBoxContainer *ask_update_vb = nullptr;
+	Label *ask_update_label = nullptr;
+	CheckBox *ask_update_backup = nullptr;
 	Button *full_convert_button = nullptr;
 
 	String version_convert_feature;
+	bool open_in_recovery_mode = false;
+	bool open_in_verbose_mode = false;
 
 #ifndef DISABLE_DEPRECATED
 	void _minor_project_migrate();
@@ -237,6 +267,9 @@ protected:
 public:
 	static ProjectManager *get_singleton() { return singleton; }
 
+	static constexpr int DEFAULT_WINDOW_WIDTH = 1152;
+	static constexpr int DEFAULT_WINDOW_HEIGHT = 800;
+
 	// Project list.
 
 	bool is_initialized() const { return initialized; }
@@ -249,5 +282,3 @@ public:
 	ProjectManager();
 	~ProjectManager();
 };
-
-#endif // PROJECT_MANAGER_H

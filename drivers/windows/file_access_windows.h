@@ -28,20 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_WINDOWS_H
-#define FILE_ACCESS_WINDOWS_H
+#pragma once
 
 #ifdef WINDOWS_ENABLED
 
 #include "core/io/file_access.h"
 #include "core/os/memory.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 class FileAccessWindows : public FileAccess {
+	GDSOFTCLASS(FileAccessWindows, FileAccess);
 	FILE *f = nullptr;
 	int flags = 0;
-	void check_errors() const;
+	void check_errors(bool p_write = false) const;
 	mutable int prev_op = 0;
 	mutable Error last_error = OK;
 	String path;
@@ -75,11 +75,13 @@ public:
 
 	virtual Error resize(int64_t p_length) override;
 	virtual void flush() override;
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
 	uint64_t _get_modified_time(const String &p_file) override;
+	uint64_t _get_access_time(const String &p_file) override;
+	int64_t _get_size(const String &p_file) override;
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override;
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override;
 
@@ -98,5 +100,3 @@ public:
 };
 
 #endif // WINDOWS_ENABLED
-
-#endif // FILE_ACCESS_WINDOWS_H

@@ -286,9 +286,10 @@ namespace GodotTools
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;
                 case ExternalEditorId.Rider:
+                case ExternalEditorId.Fleet:
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
-                    RiderPathManager.OpenFile(GodotSharpDirs.ProjectSlnPath, scriptPath, line + 1, col);
+                    RiderPathManager.OpenFile(editorId, GodotSharpDirs.ProjectSlnPath, scriptPath, line + 1, col);
                     return Error.Ok;
                 }
                 case ExternalEditorId.MonoDevelop:
@@ -439,12 +440,7 @@ namespace GodotTools
                 var msbuildProject = ProjectUtils.Open(GodotSharpDirs.ProjectCsProjPath)
                                      ?? throw new InvalidOperationException("Cannot open C# project.");
 
-                // NOTE: The order in which changes are made to the project is important
-
-                // Migrate to MSBuild project Sdks style if using the old style
-                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, GodotSharpDirs.ProjectAssemblyName);
-
-                ProjectUtils.EnsureGodotSdkIsUpToDate(msbuildProject);
+                ProjectUtils.UpgradeProjectIfNeeded(msbuildProject, GodotSharpDirs.ProjectAssemblyName);
 
                 if (msbuildProject.HasUnsavedChanges)
                 {
@@ -573,7 +569,8 @@ namespace GodotTools
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudio}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
             else if (OS.IsMacOS)
@@ -581,14 +578,16 @@ namespace GodotTools
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
             else if (OS.IsUnixLike)
             {
                 settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
 
@@ -645,7 +644,6 @@ namespace GodotTools
             _inspectorPluginWeak = WeakRef(inspectorPlugin);
 
             BuildManager.Initialize();
-            RiderPathManager.Initialize();
 
             GodotIdeManager = new GodotIdeManager();
             AddChild(GodotIdeManager);
@@ -669,13 +667,28 @@ namespace GodotTools
 
         private void OnSettingsChanged()
         {
-            // We want to force NoConsoleLogging to true when the VerbosityLevel is at Detailed or above.
-            // At that point, there's so much info logged that it doesn't make sense to display it in
-            // the tiny editor window, and it'd make the editor hang or crash anyway.
-            var verbosityLevel = _editorSettings.GetSetting(Settings.VerbosityLevel).As<VerbosityLevelId>();
-            var hideConsoleLog = (bool)_editorSettings.GetSetting(Settings.NoConsoleLogging);
-            if (verbosityLevel >= VerbosityLevelId.Detailed && !hideConsoleLog)
-                _editorSettings.SetSetting(Settings.NoConsoleLogging, Variant.From(true));
+            var changedSettings = _editorSettings.GetChangedSettings();
+            if (changedSettings.Contains(Settings.VerbosityLevel))
+            {
+                // We want to force NoConsoleLogging to true when the VerbosityLevel is at Detailed or above.
+                // At that point, there's so much info logged that it doesn't make sense to display it in
+                // the tiny editor window, and it'd make the editor hang or crash anyway.
+                var verbosityLevel = _editorSettings.GetSetting(Settings.VerbosityLevel).As<VerbosityLevelId>();
+                var hideConsoleLog = (bool)_editorSettings.GetSetting(Settings.NoConsoleLogging);
+                if (verbosityLevel >= VerbosityLevelId.Detailed && !hideConsoleLog)
+                    _editorSettings.SetSetting(Settings.NoConsoleLogging, Variant.From(true));
+            }
+
+            if (changedSettings.Contains(Settings.ExternalEditor) && !changedSettings.Contains(RiderPathManager.EditorPathSettingName))
+            {
+                var editor = _editorSettings.GetSetting(Settings.ExternalEditor).As<ExternalEditorId>();
+                if (editor != ExternalEditorId.Fleet && editor != ExternalEditorId.Rider)
+                {
+                    return;
+                }
+
+                RiderPathManager.InitializeIfNeeded(editor);
+            }
         }
 
         protected override void Dispose(bool disposing)

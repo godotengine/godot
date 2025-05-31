@@ -30,18 +30,16 @@
 
 #include "tile_atlas_view.h"
 
-#include "core/input/input.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/2d/tile_map.h"
+#include "scene/2d/tile_map_layer.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
-	if (panner->gui_input(p_event)) {
+	if (panner->gui_input(p_event, get_global_rect())) {
 		accept_event();
 	}
 }
@@ -54,7 +52,7 @@ void TileAtlasView::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event)
 
 void TileAtlasView::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	zoom_widget->set_zoom(zoom_widget->get_zoom() * p_zoom_factor);
-	_update_zoom_and_panning(true);
+	_update_zoom_and_panning(true, p_origin);
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
@@ -94,7 +92,7 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 	return size;
 }
 
-void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
+void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos, const Vector2 &p_mouse_pos) {
 	if (tile_set_atlas_source.is_null()) {
 		return;
 	}
@@ -134,8 +132,7 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
 
 	// Zoom on the position.
 	if (p_zoom_on_mouse_pos) {
-		// Offset the panning relative to the center of panel.
-		Vector2 relative_mpos = get_local_mouse_position() - get_size() / 2;
+		Vector2 relative_mpos = p_mouse_pos - get_size() / 2;
 		panning = (panning - relative_mpos) * zoom / previous_zoom + relative_mpos;
 	} else {
 		// Center of panel.
@@ -515,7 +512,7 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 	}
 
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
 		return TileSetSource::INVALID_ATLAS_COORDS;
 	}
 
@@ -615,6 +612,7 @@ void TileAtlasView::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -651,6 +649,7 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
 	button_center_view->set_tooltip_text(TTR("Center View"));
+	button_center_view->set_accessibility_name(TTRC("Center View"));
 	add_child(button_center_view);
 
 	panner.instantiate();
@@ -666,6 +665,7 @@ TileAtlasView::TileAtlasView() {
 	panel->add_child(center_container);
 
 	missing_source_label = memnew(Label);
+	missing_source_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	missing_source_label->set_text(TTR("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
 	center_container->add_child(missing_source_label);
 

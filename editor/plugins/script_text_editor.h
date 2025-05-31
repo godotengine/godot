@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_TEXT_EDITOR_H
-#define SCRIPT_TEXT_EDITOR_H
+#pragma once
 
 #include "script_editor_plugin.h"
 
 #include "editor/code_editor.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
 
 class RichTextLabel;
@@ -85,7 +85,15 @@ class ScriptTextEditor : public ScriptEditorBase {
 	PopupMenu *highlighter_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 
-	GotoLineDialog *goto_line_dialog = nullptr;
+	int inline_color_line = -1;
+	int inline_color_start = -1;
+	int inline_color_end = -1;
+	PopupPanel *inline_color_popup = nullptr;
+	ColorPicker *inline_color_picker = nullptr;
+	OptionButton *inline_color_options = nullptr;
+	Ref<Texture2D> color_alpha_texture;
+
+	GotoLinePopup *goto_line_popup = nullptr;
 	ScriptEditorQuickOpen *quick_open = nullptr;
 	ConnectionInfoDialog *connection_info_dialog = nullptr;
 
@@ -98,6 +106,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color safe_line_number_color = Color(1, 1, 1);
 
 	Color marked_line_color = Color(1, 1, 1);
+	Color warning_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
 	int previous_line = 0;
 
@@ -157,6 +166,17 @@ class ScriptTextEditor : public ScriptEditorBase {
 		DEBUG_GOTO_PREV_BREAKPOINT,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		EDIT_EMOJI_AND_SYMBOL,
+	};
+
+	enum COLOR_MODE {
+		MODE_RGB,
+		MODE_STRING,
+		MODE_HSV,
+		MODE_OKHSL,
+		MODE_RGB8,
+		MODE_HEX,
+		MODE_MAX
 	};
 
 	void _enable_code_editor();
@@ -184,6 +204,16 @@ protected:
 	void _error_clicked(const Variant &p_line);
 	void _warning_clicked(const Variant &p_line);
 
+	bool _is_valid_color_info(const Dictionary &p_info);
+	Array _inline_object_parse(const String &p_text, int p_line);
+	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
+	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
+	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);
+	void _picker_color_changed(const Color &p_color);
+	void _update_color_constructor_options();
+	void _update_background_color();
+	void _update_color_text();
+
 	void _notification(int p_what);
 
 	HashMap<String, Ref<EditorSyntaxHighlighter>> highlighters;
@@ -200,6 +230,8 @@ protected:
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
 
+	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column);
+
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
@@ -213,7 +245,7 @@ public:
 
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
-	void update_toggle_scripts_button() override;
+	void update_toggle_files_button() override;
 
 	virtual void apply_code() override;
 	virtual Ref<Resource> get_edited_resource() const override;
@@ -271,5 +303,3 @@ public:
 	ScriptTextEditor();
 	~ScriptTextEditor();
 };
-
-#endif // SCRIPT_TEXT_EDITOR_H

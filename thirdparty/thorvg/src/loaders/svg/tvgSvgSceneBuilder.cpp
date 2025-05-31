@@ -153,7 +153,7 @@ static unique_ptr<RadialGradient> _applyRadialGradientProperty(SvgStyleGradient*
     if (isTransform) finalTransform = *g->transform;
 
     if (g->userSpace) {
-        //The radius scalling is done according to the Units section:
+        //The radius scaling is done according to the Units section:
         //https://www.w3.org/TR/2015/WD-SVG2-20150915/coords.html
         g->radial->cx = g->radial->cx * vBox.w;
         g->radial->cy = g->radial->cy * vBox.h;
@@ -213,9 +213,9 @@ static bool _appendClipUseNode(SvgLoaderData& loaderData, SvgNode* node, Shape* 
         Matrix m = {1, 0, node->node.use.x, 0, 1, node->node.use.y, 0, 0, 1};
         finalTransform *= m;
     }
-    if (child->transform) finalTransform = *child->transform * finalTransform;
+    if (child->transform) finalTransform *= *child->transform;
 
-    return _appendClipShape(loaderData, child, shape, vBox, svgPath, mathIdentity((const Matrix*)(&finalTransform)) ? nullptr : &finalTransform);
+    return _appendClipShape(loaderData, child, shape, vBox, svgPath, identity((const Matrix*)(&finalTransform)) ? nullptr : &finalTransform);
 }
 
 
@@ -272,8 +272,7 @@ static void _applyComposition(SvgLoaderData& loaderData, Paint* paint, const Svg
             if (valid) {
                 Matrix finalTransform = _compositionTransform(paint, node, compNode, SvgNodeType::ClipPath);
                 comp->transform(finalTransform);
-
-                paint->composite(std::move(comp), CompositeMethod::ClipPath);
+                paint->clip(std::move(comp));
             }
 
             node->style->clipPath.applying = false;
@@ -574,8 +573,6 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
     if (!node->node.image.href || !strlen(node->node.image.href)) return nullptr;
     auto picture = Picture::gen();
 
-    TaskScheduler::async(false);    //force to load a picture on the same thread
-
     const char* href = node->node.image.href;
     if (!strncmp(href, "data:", sizeof("data:") - 1)) {
         href += sizeof("data:") - 1;
@@ -587,14 +584,12 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
             auto size = b64Decode(href, strlen(href), &decoded);
             if (picture->load(decoded, size, mimetype, false) != Result::Success) {
                 free(decoded);
-                TaskScheduler::async(true);
                 return nullptr;
             }
         } else {
             auto size = svgUtilURLDecode(href, &decoded);
             if (picture->load(decoded, size, mimetype, false) != Result::Success) {
                 free(decoded);
-                TaskScheduler::async(true);
                 return nullptr;
             }
         }
@@ -606,7 +601,6 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
         const char *dot = strrchr(href, '.');
         if (dot && !strcmp(dot, ".svg")) {
             TVGLOG("SVG", "Embedded svg file is disabled.");
-            TaskScheduler::async(true);
             return nullptr;
         }
         string imagePath = href;
@@ -615,12 +609,9 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
             imagePath = svgPath.substr(0, (last == string::npos ? 0 : last + 1)) + imagePath;
         }
         if (picture->load(imagePath) != Result::Success) {
-            TaskScheduler::async(true);
             return nullptr;
         }
     }
-
-    TaskScheduler::async(true);
 
     float w, h;
     Matrix m = {1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -714,7 +705,6 @@ static Matrix _calculateAspectRatioMatrix(AspectRatioAlign align, AspectRatioMee
 
 static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNode* node, const Box& vBox, const string& svgPath, int depth, bool* isMaskWhite)
 {
-    unique_ptr<Scene> finalScene;
     auto scene = _sceneBuildHelper(loaderData, node, vBox, svgPath, false, depth + 1, isMaskWhite);
 
     // mUseTransform = mUseTransform * mTranslate
@@ -736,10 +726,10 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
         auto vh = (symbol.hasViewBox ? symbol.vh : height);
 
         Matrix mViewBox = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-        if ((!mathEqual(width, vw) || !mathEqual(height, vh)) && vw > 0 && vh > 0) {
+        if ((!tvg::equal(width, vw) || !tvg::equal(height, vh)) && vw > 0 && vh > 0) {
             Box box = {symbol.vx, symbol.vy, vw, vh};
             mViewBox = _calculateAspectRatioMatrix(symbol.align, symbol.meetOrSlice, width, height, box);
-        } else if (!mathZero(symbol.vx) || !mathZero(symbol.vy)) {
+        } else if (!tvg::zero(symbol.vx) || !tvg::zero(symbol.vy)) {
             mViewBox = {1, 0, -symbol.vx, 0, 1, -symbol.vy, 0, 0, 1};
         }
 
@@ -751,9 +741,7 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
         mSceneTransform = mUseTransform * mSceneTransform;
         scene->transform(mSceneTransform);
 
-        if (node->node.use.symbol->node.symbol.overflowVisible) {
-            finalScene = std::move(scene);
-        } else {
+        if (!node->node.use.symbol->node.symbol.overflowVisible) {
             auto viewBoxClip = Shape::gen();
             viewBoxClip->appendRect(0, 0, width, height, 0, 0);
 
@@ -764,21 +752,23 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
             }
             viewBoxClip->transform(mClipTransform);
 
-            auto compositeLayer = Scene::gen();
-            compositeLayer->composite(std::move(viewBoxClip), CompositeMethod::ClipPath);
-            compositeLayer->push(std::move(scene));
-
-            auto root = Scene::gen();
-            root->push(std::move(compositeLayer));
-
-            finalScene = std::move(root);
+            auto clippingLayer = Scene::gen();
+            clippingLayer->clip(std::move(viewBoxClip));
+            clippingLayer->push(std::move(scene));
+            return clippingLayer;
         }
-    } else {
-        scene->transform(mUseTransform);
-        finalScene = std::move(scene);
+        return scene;
     }
 
-    return finalScene;
+    if (auto clipper = scene->Paint::pImpl->clipper) {
+        auto clipTransform = clipper->transform();
+        Matrix inv;
+        if (node->transform && inverse(node->transform, &inv)) clipTransform = inv * clipTransform;
+        clipper->transform(mUseTransform * clipTransform);
+    }
+
+    scene->transform(mUseTransform);
+    return scene;
 }
 
 
@@ -821,7 +811,7 @@ static unique_ptr<Text> _textBuildHelper(SvgLoaderData& loaderData, const SvgNod
 
     Matrix textTransform = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     if (node->transform) textTransform = *node->transform;
-    mathTranslateR(&textTransform, node->node.text.x, node->node.text.y - textNode->fontSize);
+    translateR(&textTransform, node->node.text.x, node->node.text.y - textNode->fontSize);
     text->transform(textTransform);
 
     //TODO: handle def values of font and size as used in a system?
@@ -912,6 +902,41 @@ static void _updateInvalidViewSize(const Scene* scene, Box& vBox, float& w, floa
     if (!validHeight) h *= vBox.h;
 }
 
+
+static void _loadFonts(Array<FontFace>& fonts)
+{
+    if (fonts.empty()) return;
+
+    static constexpr struct {
+        const char* prefix;
+        size_t len;
+    } prefixes[] = {
+        {"data:font/ttf;base64,", sizeof("data:font/ttf;base64,") - 1},
+        {"data:application/font-ttf;base64,", sizeof("data:application/font-ttf;base64,") - 1}
+    };
+
+    for (uint32_t i = 0; i < fonts.count; ++i) {
+        auto p = &fonts[i];
+        if (!p->name) continue;
+
+        size_t shift = 0;
+        for (const auto& prefix : prefixes) {
+            if (p->srcLen > prefix.len && !memcmp(p->src, prefix.prefix, prefix.len)) {
+                shift = prefix.len;
+                break;
+            }
+        }
+        if (shift == 0) {
+            TVGLOG("SVG", "The embedded font \"%s\" data not loaded properly.", p->name);
+            continue;
+        }
+
+        auto size = b64Decode(p->src + shift, p->srcLen - shift, &p->decoded);
+
+        if (Text::load(p->name, p->decoded, size) != Result::Success) TVGERR("SVG", "Error while loading the ttf font named \"%s\".", p->name);
+    }
+}
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
@@ -922,14 +947,16 @@ Scene* svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, float h, Aspe
 
     if (!loaderData.doc || (loaderData.doc->type != SvgNodeType::Doc)) return nullptr;
 
+    _loadFonts(loaderData.fonts);
+
     auto docNode = _sceneBuildHelper(loaderData, loaderData.doc, vBox, svgPath, false, 0);
 
     if (!(viewFlag & SvgViewFlag::Viewbox)) _updateInvalidViewSize(docNode.get(), vBox, w, h, viewFlag);
 
-    if (!mathEqual(w, vBox.w) || !mathEqual(h, vBox.h)) {
+    if (!tvg::equal(w, vBox.w) || !tvg::equal(h, vBox.h)) {
         Matrix m = _calculateAspectRatioMatrix(align, meetOrSlice, w, h, vBox);
         docNode->transform(m);
-    } else if (!mathZero(vBox.x) || !mathZero(vBox.y)) {
+    } else if (!tvg::zero(vBox.x) || !tvg::zero(vBox.y)) {
         docNode->translate(-vBox.x, -vBox.y);
     }
 
@@ -937,7 +964,7 @@ Scene* svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, float h, Aspe
     viewBoxClip->appendRect(0, 0, w, h);
 
     auto compositeLayer = Scene::gen();
-    compositeLayer->composite(std::move(viewBoxClip), CompositeMethod::ClipPath);
+    compositeLayer->clip(std::move(viewBoxClip));
     compositeLayer->push(std::move(docNode));
 
     auto root = Scene::gen();

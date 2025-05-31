@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_H
-#define GDSCRIPT_H
+#pragma once
 
 #include "gdscript_function.h"
 
@@ -63,6 +62,7 @@ class GDScript : public Script {
 	bool tool = false;
 	bool valid = false;
 	bool reloading = false;
+	bool _is_abstract = false;
 
 	struct MemberInfo {
 		int index = 0;
@@ -110,11 +110,13 @@ class GDScript : public Script {
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
+public:
 	struct LambdaInfo {
 		int capture_count;
 		bool use_self;
 	};
 
+private:
 	HashMap<GDScriptFunction *, LambdaInfo> lambda_info;
 
 public:
@@ -157,16 +159,18 @@ private:
 	bool placeholder_fallback_enabled = false;
 	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
+	StringName doc_class_name;
 	DocData::ClassDoc doc;
 	Vector<DocData::ClassDoc> docs;
+	void _add_doc(const DocData::ClassDoc &p_doc);
 	void _clear_doc();
-	void _add_doc(const DocData::ClassDoc &p_inner_class);
 #endif
 
-	GDScriptFunction *implicit_initializer = nullptr;
-	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
-	GDScriptFunction *implicit_ready = nullptr;
-	GDScriptFunction *static_initializer = nullptr;
+	GDScriptFunction *initializer = nullptr; // Direct pointer to `new()`/`_init()` member function, faster to locate.
+
+	GDScriptFunction *implicit_initializer = nullptr; // `@implicit_new()` special function.
+	GDScriptFunction *implicit_ready = nullptr; // `@implicit_ready()` special function.
+	GDScriptFunction *static_initializer = nullptr; // `@static_initializer()` special function.
 
 	Error _static_init();
 	void _static_default_init(); // Initialize static variables with default values based on their types.
@@ -240,8 +244,10 @@ public:
 
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
+	// Cancels all functions of the script that are are waiting to be resumed after using await.
+	void cancel_pending_functions(bool warn);
+
 	virtual bool is_valid() const override { return valid; }
-	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -257,8 +263,14 @@ public:
 		CRASH_COND(!member_indices.has(p_member));
 		return member_indices[p_member].data_type;
 	}
-	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
+
+	_FORCE_INLINE_ const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
+	_FORCE_INLINE_ const HashMap<GDScriptFunction *, LambdaInfo> &get_lambda_info() const { return lambda_info; }
+
+	_FORCE_INLINE_ const GDScriptFunction *get_implicit_initializer() const { return implicit_initializer; }
+	_FORCE_INLINE_ const GDScriptFunction *get_implicit_ready() const { return implicit_ready; }
+	_FORCE_INLINE_ const GDScriptFunction *get_static_initializer() const { return static_initializer; }
 
 	RBSet<GDScript *> get_dependencies();
 	HashMap<GDScript *, RBSet<GDScript *>> get_all_dependencies();
@@ -268,6 +280,7 @@ public:
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
 	bool is_tool() const override { return tool; }
+	bool is_abstract() const override { return _is_abstract; }
 	Ref<GDScript> get_base() const;
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
@@ -292,15 +305,13 @@ public:
 	virtual void update_exports() override;
 
 #ifdef TOOLS_ENABLED
-	virtual Vector<DocData::ClassDoc> get_documentation() const override {
-		return docs;
-	}
+	virtual StringName get_doc_class_name() const override { return doc_class_name; }
+	virtual Vector<DocData::ClassDoc> get_documentation() const override { return docs; }
 	virtual String get_class_icon_path() const override;
 #endif // TOOLS_ENABLED
 
 	virtual Error reload(bool p_keep_state = false) override;
 
-	virtual void set_path_cache(const String &p_path) override;
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
@@ -335,7 +346,7 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
-	virtual Variant get_rpc_config() const override;
+	virtual const Variant get_rpc_config() const override;
 
 	void unload_static() const;
 
@@ -437,7 +448,7 @@ class GDScriptLanguage : public ScriptLanguage {
 
 		void free() {
 			if (levels) {
-				memdelete(levels);
+				memdelete_arr(levels);
 				levels = nullptr;
 			}
 		}
@@ -448,6 +459,8 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	static thread_local CallStack _call_stack;
 	int _debug_max_call_stack = 0;
+	bool track_call_stack = false;
+	bool track_locals = false;
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 	void _remove_global(const StringName &p_name);
@@ -476,43 +489,67 @@ class GDScriptLanguage : public ScriptLanguage {
 #endif
 
 public:
-	int calls;
-
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
+		if (!track_call_stack) {
+			return;
+		}
+
 		if (unlikely(_call_stack.levels == nullptr)) {
 			_call_stack.levels = memnew_arr(CallLevel, _debug_max_call_stack + 1);
 		}
 
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
-			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
+#ifdef DEBUG_ENABLED
+		ScriptDebugger *script_debugger = EngineDebugger::get_script_debugger();
+		if (script_debugger != nullptr && script_debugger->get_lines_left() > 0 && script_debugger->get_depth() >= 0) {
+			script_debugger->set_depth(script_debugger->get_depth() + 1);
 		}
+#endif
 
-		if (_call_stack.stack_pos >= _debug_max_call_stack) {
-			//stack overflow
+		if (unlikely(_call_stack.stack_pos >= _debug_max_call_stack)) {
 			_debug_error = vformat("Stack overflow (stack size: %s). Check for infinite recursion in your script.", _debug_max_call_stack);
-			EngineDebugger::get_script_debugger()->debug(this);
+
+#ifdef DEBUG_ENABLED
+			if (script_debugger != nullptr) {
+				script_debugger->debug(this);
+			}
+#endif
+
 			return;
 		}
 
-		_call_stack.levels[_call_stack.stack_pos].stack = p_stack;
-		_call_stack.levels[_call_stack.stack_pos].instance = p_instance;
-		_call_stack.levels[_call_stack.stack_pos].function = p_function;
-		_call_stack.levels[_call_stack.stack_pos].ip = p_ip;
-		_call_stack.levels[_call_stack.stack_pos].line = p_line;
+		CallLevel &call_level = _call_stack.levels[_call_stack.stack_pos];
+		call_level.stack = p_stack;
+		call_level.instance = p_instance;
+		call_level.function = p_function;
+		call_level.ip = p_ip;
+		call_level.line = p_line;
 		_call_stack.stack_pos++;
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
-			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
+		if (!track_call_stack) {
+			return;
 		}
 
-		if (_call_stack.stack_pos == 0) {
+#ifdef DEBUG_ENABLED
+		ScriptDebugger *script_debugger = EngineDebugger::get_script_debugger();
+		if (script_debugger != nullptr && script_debugger->get_lines_left() > 0 && script_debugger->get_depth() >= 0) {
+			script_debugger->set_depth(script_debugger->get_depth() - 1);
+		}
+#endif
+
+		if (unlikely(_call_stack.stack_pos == 0)) {
 			_debug_error = "Stack Underflow (Engine Bug)";
-			EngineDebugger::get_script_debugger()->debug(this);
+
+#ifdef DEBUG_ENABLED
+			if (script_debugger != nullptr) {
+				script_debugger->debug(this);
+			}
+#endif
+
 			return;
 		}
 
@@ -546,6 +583,8 @@ public:
 
 	} strings;
 
+	_FORCE_INLINE_ bool should_track_call_stack() const { return track_call_stack; }
+	_FORCE_INLINE_ bool should_track_locals() const { return track_locals; }
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
 	_FORCE_INLINE_ const HashMap<StringName, int> &get_global_map() const { return globals; }
@@ -565,11 +604,11 @@ public:
 	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
-	virtual void get_reserved_words(List<String> *p_words) const override;
+	virtual Vector<String> get_reserved_words() const override;
 	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
-	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
+	virtual Vector<String> get_comment_delimiters() const override;
+	virtual Vector<String> get_doc_comment_delimiters() const override;
+	virtual Vector<String> get_string_delimiters() const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
@@ -631,7 +670,7 @@ public:
 	/* GLOBAL CLASSES */
 
 	virtual bool handles_global_class_type(const String &p_type) const override;
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override;
 
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
@@ -649,6 +688,7 @@ public:
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
+	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {
@@ -657,5 +697,3 @@ public:
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // GDSCRIPT_H

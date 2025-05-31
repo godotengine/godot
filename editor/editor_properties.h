@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PROPERTIES_H
-#define EDITOR_PROPERTIES_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 
@@ -40,6 +39,7 @@ class EditorFileDialog;
 class EditorLocaleDialog;
 class EditorResourcePicker;
 class EditorSpinSlider;
+class EditorVariantTypePopupMenu;
 class MenuButton;
 class PropertySelector;
 class SceneTreeDialog;
@@ -53,6 +53,29 @@ class EditorPropertyNil : public EditorProperty {
 public:
 	virtual void update_property() override;
 	EditorPropertyNil();
+};
+
+class EditorPropertyVariant : public EditorProperty {
+	GDCLASS(EditorPropertyVariant, EditorProperty);
+
+	HBoxContainer *content = nullptr;
+	EditorProperty *sub_property = nullptr;
+	Button *edit_button = nullptr;
+	EditorVariantTypePopupMenu *change_type = nullptr;
+
+	Variant::Type current_type = Variant::VARIANT_MAX;
+	Variant::Type new_type = Variant::VARIANT_MAX;
+
+	void _change_type(int p_to_type);
+	void _popup_edit_menu();
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+
+public:
+	virtual void update_property() override;
+	EditorPropertyVariant();
 };
 
 class EditorPropertyText : public EditorProperty {
@@ -593,8 +616,9 @@ class EditorPropertyColor : public EditorProperty {
 	GDCLASS(EditorPropertyColor, EditorProperty);
 	ColorPickerButton *picker = nullptr;
 	void _color_changed(const Color &p_color);
+	void _picker_created();
+	void _popup_opening();
 	void _popup_closed();
-	void _picker_opening();
 
 	Color last_color;
 	bool live_changes_enabled = true;
@@ -628,10 +652,12 @@ class EditorPropertyNodePath : public EditorProperty {
 	SceneTreeDialog *scene_tree = nullptr;
 	bool use_path_from_scene_root = false;
 	bool editing_node = false;
+	bool dropping = false;
 
 	Vector<StringName> valid_types;
 	void _node_selected(const NodePath &p_path, bool p_absolute = true);
 	void _node_assign();
+	void _assign_draw();
 	Node *get_base_node();
 	void _update_menu();
 	void _menu_option(int p_idx);
@@ -673,6 +699,7 @@ class EditorPropertyResource : public EditorProperty {
 	bool use_sub_inspector = false;
 	EditorInspector *sub_inspector = nullptr;
 	bool opened_editor = false;
+	bool use_filter = false;
 
 	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);
@@ -701,6 +728,7 @@ public:
 	void expand_revertable() override;
 
 	void set_use_sub_inspector(bool p_enable);
+	void set_use_filter(bool p_use);
 	void fold_resource();
 
 	virtual bool is_colored(ColorationMode p_mode) override;
@@ -720,5 +748,3 @@ public:
 
 	static EditorProperty *get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false);
 };
-
-#endif // EDITOR_PROPERTIES_H

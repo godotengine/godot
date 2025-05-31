@@ -28,14 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_LOADER_H
-#define RESOURCE_LOADER_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/worker_thread_pool.h"
-#include "core/os/semaphore.h"
 #include "core/os/thread.h"
+
+namespace CoreBind {
+class ResourceLoader;
+}
 
 class ConditionVariable;
 
@@ -102,6 +104,7 @@ typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p
 
 class ResourceLoader {
 	friend class LoadToken;
+	friend class CoreBind::ResourceLoader;
 
 	enum {
 		MAX_LOADERS = 64
@@ -156,7 +159,6 @@ private:
 	static bool abort_on_missing_resource;
 	static bool create_missing_resources_if_class_unavailable;
 	static HashMap<String, Vector<String>> translation_remaps;
-	static HashMap<String, String> path_remaps;
 
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
@@ -201,6 +203,7 @@ private:
 
 	static void _run_load_task(void *p_userdata);
 
+	static thread_local bool import_thread;
 	static thread_local int load_nesting;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
 	static thread_local Vector<String> load_paths_stack;
@@ -217,6 +220,8 @@ private:
 	static float _dependency_get_progress(const String &p_path);
 
 	static bool _ensure_load_progress();
+
+	static String _validate_local_path(const String &p_path);
 
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
@@ -240,12 +245,15 @@ public:
 	static String get_resource_script_class(const String &p_path);
 	static ResourceUID::ID get_resource_uid(const String &p_path);
 	static bool has_custom_uid_support(const String &p_path);
+	static bool should_create_uid_file(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);
 	static String get_import_group_file(const String &p_path);
 	static bool is_imported(const String &p_path);
 	static int get_import_order(const String &p_path);
+
+	static void set_is_import_thread(bool p_import_thread);
 
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load = p_timestamp; }
 	static bool get_timestamp_on_load() { return timestamp_on_load; }
@@ -280,9 +288,6 @@ public:
 	static String path_remap(const String &p_path);
 	static String import_remap(const String &p_path);
 
-	static void load_path_remaps();
-	static void clear_path_remaps();
-
 	static void reload_translation_remaps();
 	static void load_translation_remaps();
 	static void clear_translation_remaps();
@@ -309,5 +314,3 @@ public:
 	static void initialize();
 	static void finalize();
 };
-
-#endif // RESOURCE_LOADER_H

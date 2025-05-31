@@ -28,18 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_SPACE_2D_H
-#define GODOT_SPACE_2D_H
+#pragma once
 
 #include "godot_area_2d.h"
-#include "godot_area_pair_2d.h"
 #include "godot_body_2d.h"
-#include "godot_body_pair_2d.h"
 #include "godot_broad_phase_2d.h"
 #include "godot_collision_object_2d.h"
 
-#include "core/config/project_settings.h"
-#include "core/templates/hash_map.h"
 #include "core/typedefs.h"
 
 class GodotPhysicsDirectSpaceState2D : public PhysicsDirectSpaceState2D {
@@ -210,5 +205,3 @@ public:
 	GodotSpace2D();
 	~GodotSpace2D();
 };
-
-#endif // GODOT_SPACE_2D_H

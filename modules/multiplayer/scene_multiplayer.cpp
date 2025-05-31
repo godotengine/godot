@@ -37,15 +37,14 @@
 #include "core/os/os.h"
 #endif
 
-#include <stdint.h>
-
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneMultiplayer::_profile_bandwidth(const String &p_what, int p_value) {
 	if (EngineDebugger::is_profiling("multiplayer:bandwidth")) {
-		Array values;
-		values.push_back(p_what);
-		values.push_back(OS::get_singleton()->get_ticks_msec());
-		values.push_back(p_value);
+		Array values = {
+			p_what,
+			OS::get_singleton()->get_ticks_msec(),
+			p_value
+		};
 		EngineDebugger::profiler_add_frame_data("multiplayer:bandwidth", values);
 	}
 }
@@ -440,7 +439,7 @@ void SceneMultiplayer::disconnect_peer(int p_id) {
 
 Error SceneMultiplayer::send_bytes(Vector<uint8_t> p_data, int p_to, MultiplayerPeer::TransferMode p_mode, int p_channel) {
 	ERR_FAIL_COND_V_MSG(p_data.is_empty(), ERR_INVALID_DATA, "Trying to send an empty raw packet.");
-	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no multiplayer peer is active.");
+	ERR_FAIL_COND_V_MSG(multiplayer_peer.is_null(), ERR_UNCONFIGURED, "Trying to send a raw packet while no multiplayer peer is active.");
 	ERR_FAIL_COND_V_MSG(multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a multiplayer peer which is not connected.");
 
 	if (packet_cache.size() < p_data.size() + 1) {
@@ -530,22 +529,22 @@ void SceneMultiplayer::_process_raw(int p_from, const uint8_t *p_packet, int p_p
 }
 
 int SceneMultiplayer::get_unique_id() {
-	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), 0, "No multiplayer peer is assigned. Unable to get unique ID.");
+	ERR_FAIL_COND_V_MSG(multiplayer_peer.is_null(), 0, "No multiplayer peer is assigned. Unable to get unique ID.");
 	return multiplayer_peer->get_unique_id();
 }
 
 void SceneMultiplayer::set_refuse_new_connections(bool p_refuse) {
-	ERR_FAIL_COND_MSG(!multiplayer_peer.is_valid(), "No multiplayer peer is assigned. Unable to set 'refuse_new_connections'.");
+	ERR_FAIL_COND_MSG(multiplayer_peer.is_null(), "No multiplayer peer is assigned. Unable to set 'refuse_new_connections'.");
 	multiplayer_peer->set_refuse_new_connections(p_refuse);
 }
 
 bool SceneMultiplayer::is_refusing_new_connections() const {
-	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), false, "No multiplayer peer is assigned. Unable to get 'refuse_new_connections'.");
+	ERR_FAIL_COND_V_MSG(multiplayer_peer.is_null(), false, "No multiplayer peer is assigned. Unable to get 'refuse_new_connections'.");
 	return multiplayer_peer->is_refusing_new_connections();
 }
 
 Vector<int> SceneMultiplayer::get_peer_ids() {
-	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), Vector<int>(), "No multiplayer peer is assigned. Assume no peers are connected.");
+	ERR_FAIL_COND_V_MSG(multiplayer_peer.is_null(), Vector<int>(), "No multiplayer peer is assigned. Assume no peers are connected.");
 
 	Vector<int> ret;
 	for (const int &E : connected_peers) {

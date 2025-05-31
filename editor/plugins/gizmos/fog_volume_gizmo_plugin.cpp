@@ -33,9 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/fog_volume.h"
 
 FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
@@ -48,9 +46,6 @@ FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
 	create_icon_material("fog_volume_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoFogVolume"), EditorStringName(EditorIcons)));
 
 	create_handle_material("handles");
-}
-
-FogVolumeGizmoPlugin::~FogVolumeGizmoPlugin() {
 }
 
 bool FogVolumeGizmoPlugin::has_gizmo(Node3D *p_spatial) {

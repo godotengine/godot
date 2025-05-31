@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "支援的型別"
+
 msgid "New Code Region"
 msgstr "新建程式碼區域"
 
@@ -74,14 +77,14 @@ msgstr "開啟"
 msgid "Select Current Folder"
 msgstr "選擇目前資料夾"
 
+msgid "Save"
+msgstr "儲存"
+
 msgid "Select This Folder"
 msgstr "選擇此資料夾"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "你無權存取此資料夾的內容。"
-
-msgid "All Recognized"
-msgstr "支援的型別"
 
 msgid "All Files"
 msgstr "所有檔案"
@@ -97,9 +100,6 @@ msgstr "開啟資料夾"
 
 msgid "Open a File or Directory"
 msgstr "開啟檔案或資料夾"
-
-msgid "Save"
-msgstr "儲存"
 
 msgid "Save a File"
 msgstr "儲存檔案"

@@ -28,12 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_LOCAL_FLOOR_EXTENSION_H
-#define OPENXR_LOCAL_FLOOR_EXTENSION_H
+#pragma once
 
 #include "openxr_extension_wrapper.h"
 
 class OpenXRLocalFloorExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRLocalFloorExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRLocalFloorExtension *get_singleton();
 
@@ -49,5 +53,3 @@ private:
 
 	bool available = false;
 };
-
-#endif // OPENXR_LOCAL_FLOOR_EXTENSION_H

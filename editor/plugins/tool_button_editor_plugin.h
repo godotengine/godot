@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TOOL_BUTTON_EDITOR_PLUGIN_H
-#define TOOL_BUTTON_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
@@ -49,9 +48,7 @@ class ToolButtonEditorPlugin : public EditorPlugin {
 	GDCLASS(ToolButtonEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "ToolButtonEditorPlugin"; }
+	virtual String get_plugin_name() const override { return "ToolButtonEditorPlugin"; }
 
 	ToolButtonEditorPlugin();
 };
-
-#endif // TOOL_BUTTON_EDITOR_PLUGIN_H

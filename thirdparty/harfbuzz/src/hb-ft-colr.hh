@@ -27,6 +27,7 @@
 
 #include "hb.hh"
 
+#include "hb-decycler.hh"
 #include "hb-paint-extents.hh"
 
 #include FT_COLOR_H
@@ -105,8 +106,8 @@ struct hb_ft_paint_context_t
   FT_Color *palette;
   unsigned palette_index;
   hb_color_t foreground;
-  hb_map_t current_glyphs;
-  hb_map_t current_layers;
+  hb_decycler_t glyphs_decycler;
+  hb_decycler_t layers_decycler;
   int depth_left = HB_MAX_NESTING_LEVEL;
   int edge_count = HB_MAX_GRAPH_EDGE_COUNT;
 };
@@ -218,22 +219,19 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
     case FT_COLR_PAINTFORMAT_COLR_LAYERS:
     {
       FT_OpaquePaint other_paint = {0};
+      hb_decycler_node_t node (c->layers_decycler);
       while (FT_Get_Paint_Layers (ft_face,
 				  &paint.u.colr_layers.layer_iterator,
 				  &other_paint))
       {
-        unsigned i = paint.u.colr_layers.layer_iterator.layer;
-
-	if (unlikely (c->current_layers.has (i)))
+	// FreeType doesn't provide a way to get the layer index, so we use the pointer
+	// for cycle detection.
+	if (unlikely (!node.visit ((uintptr_t) other_paint.p)))
 	  continue;
-
-	c->current_layers.add (i);
 
 	c->funcs->push_group (c->data);
 	c->recurse (other_paint);
 	c->funcs->pop_group (c->data, HB_PAINT_COMPOSITE_MODE_SRC_OVER);
-
-	c->current_layers.del (i);
       }
     }
     break;
@@ -333,10 +331,9 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
     {
       hb_codepoint_t gid = paint.u.colr_glyph.glyphID;
 
-      if (unlikely (c->current_glyphs.has (gid)))
+      hb_decycler_node_t node (c->glyphs_decycler);
+      if (unlikely (!node.visit (gid)))
 	return;
-
-      c->current_glyphs.add (gid);
 
       c->funcs->push_inverse_root_transform (c->data, c->font);
       c->ft_font->lock.unlock ();
@@ -344,7 +341,6 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
       {
 	c->ft_font->lock.lock ();
 	c->funcs->pop_transform (c->data);
-	c->current_glyphs.del (gid);
 	return;
       }
       c->ft_font->lock.lock ();
@@ -380,8 +376,6 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
 
         if (has_clip_box)
           c->funcs->pop_clip (c->data);
-
-	c->current_glyphs.del (gid);
       }
     }
     break;
@@ -506,7 +500,8 @@ hb_ft_paint_glyph_colr (hb_font_t *font,
     hb_ft_paint_context_t c (ft_font, font,
 			     paint_funcs, paint_data,
 			     palette, palette_index, foreground);
-    c.current_glyphs.add (gid);
+    hb_decycler_node_t node (c.glyphs_decycler);
+    node.visit (gid);
 
     bool is_bounded = true;
     FT_ClipBox clip_box;
@@ -530,7 +525,8 @@ hb_ft_paint_glyph_colr (hb_font_t *font,
       hb_ft_paint_context_t ce (ft_font, font,
 			        extents_funcs, &extents_data,
 			        palette, palette_index, foreground);
-      ce.current_glyphs.add (gid);
+      hb_decycler_node_t node2 (ce.glyphs_decycler);
+      node2.visit (gid);
       ce.funcs->push_root_transform (ce.data, font);
       ce.recurse (paint);
       ce.funcs->pop_transform (ce.data);
@@ -547,7 +543,9 @@ hb_ft_paint_glyph_colr (hb_font_t *font,
     c.funcs->push_root_transform (c.data, font);
 
     if (is_bounded)
+     {
       c.recurse (paint);
+     }
 
     c.funcs->pop_transform (c.data);
     c.funcs->pop_clip (c.data);

@@ -6,25 +6,22 @@ unsigned = "#define QUALITY"; // The "Quality" preset causes artifacting on sign
 #[compute]
 #version 450
 
-#include "CrossPlatformSettings_piece_all.glsl"
-#include "UavCrossPlatform_piece_all.glsl"
-
 #VERSION_DEFINES
 
-float3 f32tof16(float3 value) {
-	return float3(packHalf2x16(float2(value.x, 0.0)),
-			packHalf2x16(float2(value.y, 0.0)),
-			packHalf2x16(float2(value.z, 0.0)));
+vec3 f32tof16(vec3 value) {
+	return vec3(packHalf2x16(vec2(value.x, 0.0)),
+			packHalf2x16(vec2(value.y, 0.0)),
+			packHalf2x16(vec2(value.z, 0.0)));
 }
 
-float3 f16tof32(uint3 value) {
-	return float3(unpackHalf2x16(value.x).x,
+vec3 f16tof32(uvec3 value) {
+	return vec3(unpackHalf2x16(value.x).x,
 			unpackHalf2x16(value.y).x,
 			unpackHalf2x16(value.z).x);
 }
 
 float f32tof16(float value) {
-	return packHalf2x16(float2(value.x, 0.0));
+	return packHalf2x16(vec2(value.x, 0.0));
 }
 
 float f16tof32(uint value) {
@@ -35,7 +32,7 @@ layout(binding = 0) uniform sampler2D srcTexture;
 layout(binding = 1, rgba32ui) uniform restrict writeonly uimage2D dstTexture;
 
 layout(push_constant, std430) uniform Params {
-	float2 p_textureSizeRcp;
+	vec2 p_textureSizeRcp;
 	uint padding0;
 	uint padding1;
 }
@@ -70,7 +67,7 @@ float CrossCalcMSLE(float a, float b) {
 	return result;
 }
 
-float CalcMSLE(float3 a, float3 b) {
+float CalcMSLE(vec3 a, vec3 b) {
 	float result = 0.0f;
 	if (isNegative(a.x) != isNegative(b.x)) {
 		result += CrossCalcMSLE(a.x, b.x);
@@ -90,11 +87,35 @@ float CalcMSLE(float3 a, float3 b) {
 
 	return result;
 }
+
+// Adapt the log function to make sense when a < 0
+vec3 customLog2(vec3 a) {
+	return vec3(
+			a.x >= 0 ? log2(a.x + 1.0f) : -log2(-a.x + 1.0f),
+			a.y >= 0 ? log2(a.y + 1.0f) : -log2(-a.y + 1.0f),
+			a.z >= 0 ? log2(a.z + 1.0f) : -log2(-a.z + 1.0f));
+}
+
+// Inverse of customLog2()
+vec3 customExp2(vec3 a) {
+	return vec3(
+			a.x >= 0 ? exp2(a.x) - 1.0f : -(exp2(-a.x) - 1.0f),
+			a.y >= 0 ? exp2(a.y) - 1.0f : -(exp2(-a.y) - 1.0f),
+			a.z >= 0 ? exp2(a.z) - 1.0f : -(exp2(-a.z) - 1.0f));
+}
 #else
-float CalcMSLE(float3 a, float3 b) {
-	float3 err = log2((b + 1.0f) / (a + 1.0f));
+float CalcMSLE(vec3 a, vec3 b) {
+	vec3 err = log2((b + 1.0f) / (a + 1.0f));
 	err = err * err;
 	return err.x + err.y + err.z;
+}
+
+vec3 customLog2(vec3 a) {
+	return log2(a + 1.0f);
+}
+
+vec3 customExp2(vec3 a) {
+	return exp2(a) - 1.0f;
 }
 #endif
 
@@ -134,98 +155,98 @@ uint Pattern(uint p, uint i) {
 
 #ifndef SIGNED
 //UF
-float3 Quantize7(float3 x) {
+vec3 Quantize7(vec3 x) {
 	return (f32tof16(x) * 128.0f) / (0x7bff + 1.0f);
 }
 
-float3 Quantize9(float3 x) {
+vec3 Quantize9(vec3 x) {
 	return (f32tof16(x) * 512.0f) / (0x7bff + 1.0f);
 }
 
-float3 Quantize10(float3 x) {
+vec3 Quantize10(vec3 x) {
 	return (f32tof16(x) * 1024.0f) / (0x7bff + 1.0f);
 }
 
-float3 Unquantize7(float3 x) {
+vec3 Unquantize7(vec3 x) {
 	return (x * 65536.0f + 0x8000) / 128.0f;
 }
 
-float3 Unquantize9(float3 x) {
+vec3 Unquantize9(vec3 x) {
 	return (x * 65536.0f + 0x8000) / 512.0f;
 }
 
-float3 Unquantize10(float3 x) {
+vec3 Unquantize10(vec3 x) {
 	return (x * 65536.0f + 0x8000) / 1024.0f;
 }
 
-float3 FinishUnquantize(float3 endpoint0Unq, float3 endpoint1Unq, float weight) {
-	float3 comp = (endpoint0Unq * (64.0f - weight) + endpoint1Unq * weight + 32.0f) * (31.0f / 4096.0f);
-	return f16tof32(uint3(comp));
+vec3 FinishUnquantize(vec3 endpoint0Unq, vec3 endpoint1Unq, float weight) {
+	vec3 comp = (endpoint0Unq * (64.0f - weight) + endpoint1Unq * weight + 32.0f) * (31.0f / 4096.0f);
+	return f16tof32(uvec3(comp));
 }
 #else
 //SF
 
-float3 cmpSign(float3 value) {
-	float3 signVal;
+vec3 cmpSign(vec3 value) {
+	vec3 signVal;
 	signVal.x = value.x >= 0.0f ? 1.0f : -1.0f;
 	signVal.y = value.y >= 0.0f ? 1.0f : -1.0f;
 	signVal.z = value.z >= 0.0f ? 1.0f : -1.0f;
 	return signVal;
 }
 
-float3 Quantize7(float3 x) {
-	float3 signVal = cmpSign(x);
+vec3 Quantize7(vec3 x) {
+	vec3 signVal = cmpSign(x);
 	return signVal * (f32tof16(abs(x)) * 64.0f) / (0x7bff + 1.0f);
 }
 
-float3 Quantize9(float3 x) {
-	float3 signVal = cmpSign(x);
+vec3 Quantize9(vec3 x) {
+	vec3 signVal = cmpSign(x);
 	return signVal * (f32tof16(abs(x)) * 256.0f) / (0x7bff + 1.0f);
 }
 
-float3 Quantize10(float3 x) {
-	float3 signVal = cmpSign(x);
+vec3 Quantize10(vec3 x) {
+	vec3 signVal = cmpSign(x);
 	return signVal * (f32tof16(abs(x)) * 512.0f) / (0x7bff + 1.0f);
 }
 
-float3 Unquantize7(float3 x) {
-	float3 signVal = sign(x);
+vec3 Unquantize7(vec3 x) {
+	vec3 signVal = sign(x);
 	x = abs(x);
-	float3 finalVal = signVal * (x * 32768.0f + 0x4000) / 64.0f;
+	vec3 finalVal = signVal * (x * 32768.0f + 0x4000) / 64.0f;
 	finalVal.x = x.x >= 64.0f ? 32767.0 : finalVal.x;
 	finalVal.y = x.y >= 64.0f ? 32767.0 : finalVal.y;
 	finalVal.z = x.z >= 64.0f ? 32767.0 : finalVal.z;
 	return finalVal;
 }
 
-float3 Unquantize9(float3 x) {
-	float3 signVal = sign(x);
+vec3 Unquantize9(vec3 x) {
+	vec3 signVal = sign(x);
 	x = abs(x);
-	float3 finalVal = signVal * (x * 32768.0f + 0x4000) / 256.0f;
+	vec3 finalVal = signVal * (x * 32768.0f + 0x4000) / 256.0f;
 	finalVal.x = x.x >= 256.0f ? 32767.0 : finalVal.x;
 	finalVal.y = x.y >= 256.0f ? 32767.0 : finalVal.y;
 	finalVal.z = x.z >= 256.0f ? 32767.0 : finalVal.z;
 	return finalVal;
 }
 
-float3 Unquantize10(float3 x) {
-	float3 signVal = sign(x);
+vec3 Unquantize10(vec3 x) {
+	vec3 signVal = sign(x);
 	x = abs(x);
-	float3 finalVal = signVal * (x * 32768.0f + 0x4000) / 512.0f;
+	vec3 finalVal = signVal * (x * 32768.0f + 0x4000) / 512.0f;
 	finalVal.x = x.x >= 512.0f ? 32767.0 : finalVal.x;
 	finalVal.y = x.y >= 512.0f ? 32767.0 : finalVal.y;
 	finalVal.z = x.z >= 512.0f ? 32767.0 : finalVal.z;
 	return finalVal;
 }
 
-float3 FinishUnquantize(float3 endpoint0Unq, float3 endpoint1Unq, float weight) {
-	float3 comp = (endpoint0Unq * (64.0f - weight) + endpoint1Unq * weight + 32.0f) * (31.0f / 2048.0f);
-	return f16tof32(uint3(comp));
+vec3 FinishUnquantize(vec3 endpoint0Unq, vec3 endpoint1Unq, float weight) {
+	vec3 comp = (endpoint0Unq * (64.0f - weight) + endpoint1Unq * weight + 32.0f) * (31.0f / 2048.0f);
+	return f16tof32(uvec3(comp));
 }
 #endif
 
-void Swap(inout float3 a, inout float3 b) {
-	float3 tmp = a;
+void Swap(inout vec3 a, inout vec3 b) {
+	vec3 tmp = a;
 	a = b;
 	b = tmp;
 }
@@ -247,8 +268,8 @@ uint ComputeIndex4(float texelPos, float endPoint0Pos, float endPoint1Pos) {
 }
 
 // This adds a bitflag to quantized values that signifies whether they are negative.
-void SignExtend(inout float3 v1, uint mask, uint signFlag) {
-	int3 v = int3(v1);
+void SignExtend(inout vec3 v1, uint mask, uint signFlag) {
+	ivec3 v = ivec3(v1);
 	v.x = (v.x & int(mask)) | (v.x < 0 ? int(signFlag) : 0);
 	v.y = (v.y & int(mask)) | (v.y < 0 ? int(signFlag) : 0);
 	v.z = (v.z & int(mask)) | (v.z < 0 ? int(signFlag) : 0);
@@ -256,38 +277,39 @@ void SignExtend(inout float3 v1, uint mask, uint signFlag) {
 }
 
 // Encodes a block with mode 11 (2x 10-bit endpoints).
-void EncodeP1(inout uint4 block, inout float blockMSLE, float3 texels[16]) {
+void EncodeP1(inout uvec4 block, inout float blockMSLE, vec3 texels[16]) {
 	// compute endpoints (min/max RGB bbox)
-	float3 blockMin = texels[0];
-	float3 blockMax = texels[0];
+	vec3 blockMin = texels[0];
+	vec3 blockMax = texels[0];
 	for (uint i = 1u; i < 16u; ++i) {
 		blockMin = min(blockMin, texels[i]);
 		blockMax = max(blockMax, texels[i]);
 	}
 
 	// refine endpoints in log2 RGB space
-	float3 refinedBlockMin = blockMax;
-	float3 refinedBlockMax = blockMin;
+	vec3 refinedBlockMin = blockMax;
+	vec3 refinedBlockMax = blockMin;
 	for (uint i = 0u; i < 16u; ++i) {
 		refinedBlockMin = min(refinedBlockMin, texels[i] == blockMin ? refinedBlockMin : texels[i]);
 		refinedBlockMax = max(refinedBlockMax, texels[i] == blockMax ? refinedBlockMax : texels[i]);
 	}
 
-	float3 logBlockMax = log2(blockMax + 1.0f);
-	float3 logBlockMin = log2(blockMin + 1.0f);
-	float3 logRefinedBlockMax = log2(refinedBlockMax + 1.0f);
-	float3 logRefinedBlockMin = log2(refinedBlockMin + 1.0f);
-	float3 logBlockMaxExt = (logBlockMax - logBlockMin) * (1.0f / 32.0f);
+	vec3 logBlockMax = customLog2(blockMax);
+	vec3 logBlockMin = customLog2(blockMin);
+	vec3 logRefinedBlockMax = customLog2(refinedBlockMax);
+	vec3 logRefinedBlockMin = customLog2(refinedBlockMin);
+	vec3 logBlockMaxExt = (logBlockMax - logBlockMin) * (1.0f / 32.0f);
+
 	logBlockMin += min(logRefinedBlockMin - logBlockMin, logBlockMaxExt);
 	logBlockMax -= min(logBlockMax - logRefinedBlockMax, logBlockMaxExt);
-	blockMin = exp2(logBlockMin) - 1.0f;
-	blockMax = exp2(logBlockMax) - 1.0f;
+	blockMin = customExp2(logBlockMin);
+	blockMax = customExp2(logBlockMax);
 
-	float3 blockDir = blockMax - blockMin;
+	vec3 blockDir = blockMax - blockMin;
 	blockDir = blockDir / (blockDir.x + blockDir.y + blockDir.z);
 
-	float3 endpoint0 = Quantize10(blockMin);
-	float3 endpoint1 = Quantize10(blockMax);
+	vec3 endpoint0 = Quantize10(blockMin);
+	vec3 endpoint1 = Quantize10(blockMax);
 	float endPoint0Pos = f32tof16(dot(blockMin, blockDir));
 	float endPoint1Pos = f32tof16(dot(blockMax, blockDir));
 
@@ -313,12 +335,12 @@ void EncodeP1(inout uint4 block, inout float blockMSLE, float3 texels[16]) {
 	}
 
 	// compute compression error (MSLE)
-	float3 endpoint0Unq = Unquantize10(endpoint0);
-	float3 endpoint1Unq = Unquantize10(endpoint1);
+	vec3 endpoint0Unq = Unquantize10(endpoint0);
+	vec3 endpoint1Unq = Unquantize10(endpoint1);
 	float msle = 0.0f;
 	for (uint i = 0u; i < 16u; ++i) {
 		float weight = floor((indices[i] * 64.0f) / 15.0f + 0.5f);
-		float3 texelUnc = FinishUnquantize(endpoint0Unq, endpoint1Unq, weight);
+		vec3 texelUnc = FinishUnquantize(endpoint0Unq, endpoint1Unq, weight);
 
 		msle += CalcMSLE(texels[i], texelUnc);
 	}
@@ -361,19 +383,19 @@ void EncodeP1(inout uint4 block, inout float blockMSLE, float3 texels[16]) {
 	block.w |= indices[15] << 28u;
 }
 
-float DistToLineSq(float3 PointOnLine, float3 LineDirection, float3 Point) {
-	float3 w = Point - PointOnLine;
-	float3 x = w - dot(w, LineDirection) * LineDirection;
+float DistToLineSq(vec3 PointOnLine, vec3 LineDirection, vec3 Point) {
+	vec3 w = Point - PointOnLine;
+	vec3 x = w - dot(w, LineDirection) * LineDirection;
 
 	return dot(x, x);
 }
 
 // Gets the deviation from the source data of a particular pattern (smaller is better).
-float EvaluateP2Pattern(uint pattern, float3 texels[16]) {
-	float3 p0BlockMin = float3(HALF_MAX, HALF_MAX, HALF_MAX);
-	float3 p0BlockMax = float3(HALF_MIN, HALF_MIN, HALF_MIN);
-	float3 p1BlockMin = float3(HALF_MAX, HALF_MAX, HALF_MAX);
-	float3 p1BlockMax = float3(HALF_MIN, HALF_MIN, HALF_MIN);
+float EvaluateP2Pattern(uint pattern, vec3 texels[16]) {
+	vec3 p0BlockMin = vec3(HALF_MAX, HALF_MAX, HALF_MAX);
+	vec3 p0BlockMax = vec3(HALF_MIN, HALF_MIN, HALF_MIN);
+	vec3 p1BlockMin = vec3(HALF_MAX, HALF_MAX, HALF_MAX);
+	vec3 p1BlockMax = vec3(HALF_MIN, HALF_MIN, HALF_MIN);
 
 	for (uint i = 0; i < 16; ++i) {
 		uint paletteID = Pattern(pattern, i);
@@ -386,8 +408,8 @@ float EvaluateP2Pattern(uint pattern, float3 texels[16]) {
 		}
 	}
 
-	float3 p0BlockDir = normalize(p0BlockMax - p0BlockMin);
-	float3 p1BlockDir = normalize(p1BlockMax - p1BlockMin);
+	vec3 p0BlockDir = normalize(p0BlockMax - p0BlockMin);
+	vec3 p1BlockDir = normalize(p1BlockMax - p1BlockMin);
 
 	float sqDistanceFromLine = 0.0f;
 
@@ -404,11 +426,11 @@ float EvaluateP2Pattern(uint pattern, float3 texels[16]) {
 }
 
 // Encodes a block with either mode 2 (7-bit base, 3x 6-bit delta), or mode 6 (9-bit base, 3x 5-bit delta). Both use pattern encoding.
-void EncodeP2Pattern(inout uint4 block, inout float blockMSLE, uint pattern, float3 texels[16]) {
-	float3 p0BlockMin = float3(HALF_MAX, HALF_MAX, HALF_MAX);
-	float3 p0BlockMax = float3(HALF_MIN, HALF_MIN, HALF_MIN);
-	float3 p1BlockMin = float3(HALF_MAX, HALF_MAX, HALF_MAX);
-	float3 p1BlockMax = float3(HALF_MIN, HALF_MIN, HALF_MIN);
+void EncodeP2Pattern(inout uvec4 block, inout float blockMSLE, uint pattern, vec3 texels[16]) {
+	vec3 p0BlockMin = vec3(HALF_MAX, HALF_MAX, HALF_MAX);
+	vec3 p0BlockMax = vec3(HALF_MIN, HALF_MIN, HALF_MIN);
+	vec3 p1BlockMin = vec3(HALF_MAX, HALF_MAX, HALF_MAX);
+	vec3 p1BlockMax = vec3(HALF_MIN, HALF_MIN, HALF_MIN);
 
 	for (uint i = 0u; i < 16u; ++i) {
 		uint paletteID = Pattern(pattern, i);
@@ -421,8 +443,8 @@ void EncodeP2Pattern(inout uint4 block, inout float blockMSLE, uint pattern, flo
 		}
 	}
 
-	float3 p0BlockDir = p0BlockMax - p0BlockMin;
-	float3 p1BlockDir = p1BlockMax - p1BlockMin;
+	vec3 p0BlockDir = p0BlockMax - p0BlockMin;
+	vec3 p1BlockDir = p1BlockMax - p1BlockMin;
 	p0BlockDir = p0BlockDir / (p0BlockDir.x + p0BlockDir.y + p0BlockDir.z);
 	p1BlockDir = p1BlockDir / (p1BlockDir.x + p1BlockDir.y + p1BlockDir.z);
 
@@ -456,15 +478,15 @@ void EncodeP2Pattern(inout uint4 block, inout float blockMSLE, uint pattern, flo
 		indices[i] = paletteID == 0u ? p0Index : p1Index;
 	}
 
-	float3 endpoint760 = floor(Quantize7(p0BlockMin));
-	float3 endpoint761 = floor(Quantize7(p0BlockMax));
-	float3 endpoint762 = floor(Quantize7(p1BlockMin));
-	float3 endpoint763 = floor(Quantize7(p1BlockMax));
+	vec3 endpoint760 = floor(Quantize7(p0BlockMin));
+	vec3 endpoint761 = floor(Quantize7(p0BlockMax));
+	vec3 endpoint762 = floor(Quantize7(p1BlockMin));
+	vec3 endpoint763 = floor(Quantize7(p1BlockMax));
 
-	float3 endpoint950 = floor(Quantize9(p0BlockMin));
-	float3 endpoint951 = floor(Quantize9(p0BlockMax));
-	float3 endpoint952 = floor(Quantize9(p1BlockMin));
-	float3 endpoint953 = floor(Quantize9(p1BlockMax));
+	vec3 endpoint950 = floor(Quantize9(p0BlockMin));
+	vec3 endpoint951 = floor(Quantize9(p0BlockMax));
+	vec3 endpoint952 = floor(Quantize9(p1BlockMin));
+	vec3 endpoint953 = floor(Quantize9(p1BlockMax));
 
 	endpoint761 = endpoint761 - endpoint760;
 	endpoint762 = endpoint762 - endpoint760;
@@ -491,28 +513,28 @@ void EncodeP2Pattern(inout uint4 block, inout float blockMSLE, uint pattern, flo
 	endpoint950 = clamp(endpoint950, -maxVal9, maxVal9);
 #endif
 
-	float3 endpoint760Unq = Unquantize7(endpoint760);
-	float3 endpoint761Unq = Unquantize7(endpoint760 + endpoint761);
-	float3 endpoint762Unq = Unquantize7(endpoint760 + endpoint762);
-	float3 endpoint763Unq = Unquantize7(endpoint760 + endpoint763);
-	float3 endpoint950Unq = Unquantize9(endpoint950);
-	float3 endpoint951Unq = Unquantize9(endpoint950 + endpoint951);
-	float3 endpoint952Unq = Unquantize9(endpoint950 + endpoint952);
-	float3 endpoint953Unq = Unquantize9(endpoint950 + endpoint953);
+	vec3 endpoint760Unq = Unquantize7(endpoint760);
+	vec3 endpoint761Unq = Unquantize7(endpoint760 + endpoint761);
+	vec3 endpoint762Unq = Unquantize7(endpoint760 + endpoint762);
+	vec3 endpoint763Unq = Unquantize7(endpoint760 + endpoint763);
+	vec3 endpoint950Unq = Unquantize9(endpoint950);
+	vec3 endpoint951Unq = Unquantize9(endpoint950 + endpoint951);
+	vec3 endpoint952Unq = Unquantize9(endpoint950 + endpoint952);
+	vec3 endpoint953Unq = Unquantize9(endpoint950 + endpoint953);
 
 	float msle76 = 0.0f;
 	float msle95 = 0.0f;
 	for (uint i = 0u; i < 16u; ++i) {
 		uint paletteID = Pattern(pattern, i);
 
-		float3 tmp760Unq = paletteID == 0u ? endpoint760Unq : endpoint762Unq;
-		float3 tmp761Unq = paletteID == 0u ? endpoint761Unq : endpoint763Unq;
-		float3 tmp950Unq = paletteID == 0u ? endpoint950Unq : endpoint952Unq;
-		float3 tmp951Unq = paletteID == 0u ? endpoint951Unq : endpoint953Unq;
+		vec3 tmp760Unq = paletteID == 0u ? endpoint760Unq : endpoint762Unq;
+		vec3 tmp761Unq = paletteID == 0u ? endpoint761Unq : endpoint763Unq;
+		vec3 tmp950Unq = paletteID == 0u ? endpoint950Unq : endpoint952Unq;
+		vec3 tmp951Unq = paletteID == 0u ? endpoint951Unq : endpoint953Unq;
 
 		float weight = floor((indices[i] * 64.0f) / 7.0f + 0.5f);
-		float3 texelUnc76 = FinishUnquantize(tmp760Unq, tmp761Unq, weight);
-		float3 texelUnc95 = FinishUnquantize(tmp950Unq, tmp951Unq, weight);
+		vec3 texelUnc76 = FinishUnquantize(tmp760Unq, tmp761Unq, weight);
+		vec3 texelUnc95 = FinishUnquantize(tmp950Unq, tmp951Unq, weight);
 
 		msle76 += CalcMSLE(texels[i], texelUnc76);
 		msle95 += CalcMSLE(texels[i], texelUnc95);
@@ -535,7 +557,7 @@ void EncodeP2Pattern(inout uint4 block, inout float blockMSLE, uint pattern, flo
 	float p2MSLE = min(msle76, msle95);
 	if (p2MSLE < blockMSLE) {
 		blockMSLE = p2MSLE;
-		block = uint4(0u, 0u, 0u, 0u);
+		block = uvec4(0u, 0u, 0u, 0u);
 
 		if (p2MSLE == msle76) {
 			// 7.6
@@ -658,43 +680,43 @@ void main() {
 	// 4 5 6 7
 	// 8 9 10 11
 	// 12 13 14 15
-	float2 uv = gl_GlobalInvocationID.xy * params.p_textureSizeRcp * 4.0f + params.p_textureSizeRcp;
-	float2 block0UV = uv;
-	float2 block1UV = uv + float2(2.0f * params.p_textureSizeRcp.x, 0.0f);
-	float2 block2UV = uv + float2(0.0f, 2.0f * params.p_textureSizeRcp.y);
-	float2 block3UV = uv + float2(2.0f * params.p_textureSizeRcp.x, 2.0f * params.p_textureSizeRcp.y);
-	float4 block0X = OGRE_GatherRed(srcTexture, pointSampler, block0UV);
-	float4 block1X = OGRE_GatherRed(srcTexture, pointSampler, block1UV);
-	float4 block2X = OGRE_GatherRed(srcTexture, pointSampler, block2UV);
-	float4 block3X = OGRE_GatherRed(srcTexture, pointSampler, block3UV);
-	float4 block0Y = OGRE_GatherGreen(srcTexture, pointSampler, block0UV);
-	float4 block1Y = OGRE_GatherGreen(srcTexture, pointSampler, block1UV);
-	float4 block2Y = OGRE_GatherGreen(srcTexture, pointSampler, block2UV);
-	float4 block3Y = OGRE_GatherGreen(srcTexture, pointSampler, block3UV);
-	float4 block0Z = OGRE_GatherBlue(srcTexture, pointSampler, block0UV);
-	float4 block1Z = OGRE_GatherBlue(srcTexture, pointSampler, block1UV);
-	float4 block2Z = OGRE_GatherBlue(srcTexture, pointSampler, block2UV);
-	float4 block3Z = OGRE_GatherBlue(srcTexture, pointSampler, block3UV);
+	vec2 uv = gl_GlobalInvocationID.xy * params.p_textureSizeRcp * 4.0f + params.p_textureSizeRcp;
+	vec2 block0UV = uv;
+	vec2 block1UV = uv + vec2(2.0f * params.p_textureSizeRcp.x, 0.0f);
+	vec2 block2UV = uv + vec2(0.0f, 2.0f * params.p_textureSizeRcp.y);
+	vec2 block3UV = uv + vec2(2.0f * params.p_textureSizeRcp.x, 2.0f * params.p_textureSizeRcp.y);
+	vec4 block0X = textureGather(srcTexture, block0UV, 0);
+	vec4 block1X = textureGather(srcTexture, block1UV, 0);
+	vec4 block2X = textureGather(srcTexture, block2UV, 0);
+	vec4 block3X = textureGather(srcTexture, block3UV, 0);
+	vec4 block0Y = textureGather(srcTexture, block0UV, 1);
+	vec4 block1Y = textureGather(srcTexture, block1UV, 1);
+	vec4 block2Y = textureGather(srcTexture, block2UV, 1);
+	vec4 block3Y = textureGather(srcTexture, block3UV, 1);
+	vec4 block0Z = textureGather(srcTexture, block0UV, 2);
+	vec4 block1Z = textureGather(srcTexture, block1UV, 2);
+	vec4 block2Z = textureGather(srcTexture, block2UV, 2);
+	vec4 block3Z = textureGather(srcTexture, block3UV, 2);
 
-	float3 texels[16];
-	texels[0] = float3(block0X.w, block0Y.w, block0Z.w);
-	texels[1] = float3(block0X.z, block0Y.z, block0Z.z);
-	texels[2] = float3(block1X.w, block1Y.w, block1Z.w);
-	texels[3] = float3(block1X.z, block1Y.z, block1Z.z);
-	texels[4] = float3(block0X.x, block0Y.x, block0Z.x);
-	texels[5] = float3(block0X.y, block0Y.y, block0Z.y);
-	texels[6] = float3(block1X.x, block1Y.x, block1Z.x);
-	texels[7] = float3(block1X.y, block1Y.y, block1Z.y);
-	texels[8] = float3(block2X.w, block2Y.w, block2Z.w);
-	texels[9] = float3(block2X.z, block2Y.z, block2Z.z);
-	texels[10] = float3(block3X.w, block3Y.w, block3Z.w);
-	texels[11] = float3(block3X.z, block3Y.z, block3Z.z);
-	texels[12] = float3(block2X.x, block2Y.x, block2Z.x);
-	texels[13] = float3(block2X.y, block2Y.y, block2Z.y);
-	texels[14] = float3(block3X.x, block3Y.x, block3Z.x);
-	texels[15] = float3(block3X.y, block3Y.y, block3Z.y);
+	vec3 texels[16];
+	texels[0] = vec3(block0X.w, block0Y.w, block0Z.w);
+	texels[1] = vec3(block0X.z, block0Y.z, block0Z.z);
+	texels[2] = vec3(block1X.w, block1Y.w, block1Z.w);
+	texels[3] = vec3(block1X.z, block1Y.z, block1Z.z);
+	texels[4] = vec3(block0X.x, block0Y.x, block0Z.x);
+	texels[5] = vec3(block0X.y, block0Y.y, block0Z.y);
+	texels[6] = vec3(block1X.x, block1Y.x, block1Z.x);
+	texels[7] = vec3(block1X.y, block1Y.y, block1Z.y);
+	texels[8] = vec3(block2X.w, block2Y.w, block2Z.w);
+	texels[9] = vec3(block2X.z, block2Y.z, block2Z.z);
+	texels[10] = vec3(block3X.w, block3Y.w, block3Z.w);
+	texels[11] = vec3(block3X.z, block3Y.z, block3Z.z);
+	texels[12] = vec3(block2X.x, block2Y.x, block2Z.x);
+	texels[13] = vec3(block2X.y, block2Y.y, block2Z.y);
+	texels[14] = vec3(block3X.x, block3Y.x, block3Z.x);
+	texels[15] = vec3(block3X.y, block3Y.y, block3Z.y);
 
-	uint4 block = uint4(0u, 0u, 0u, 0u);
+	uvec4 block = uvec4(0u, 0u, 0u, 0u);
 	float blockMSLE = 0.0f;
 
 	EncodeP1(block, blockMSLE, texels);
@@ -715,5 +737,5 @@ void main() {
 	EncodeP2Pattern(block, blockMSLE, bestPattern, texels);
 #endif
 
-	imageStore(dstTexture, int2(gl_GlobalInvocationID.xy), block);
+	imageStore(dstTexture, ivec2(gl_GlobalInvocationID.xy), block);
 }

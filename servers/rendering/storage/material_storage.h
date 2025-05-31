@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATERIAL_STORAGE_H
-#define MATERIAL_STORAGE_H
+#pragma once
 
 #include "servers/rendering_server.h"
 #include "utilities.h"
@@ -57,7 +56,7 @@ public:
 
 	/* SHADER API */
 	virtual RID shader_allocate() = 0;
-	virtual void shader_initialize(RID p_rid) = 0;
+	virtual void shader_initialize(RID p_rid, bool p_embedded = true) = 0;
 	virtual void shader_free(RID p_rid) = 0;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
@@ -70,6 +69,9 @@ public:
 	virtual Variant shader_get_parameter_default(RID p_material, const StringName &p_param) const = 0;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
+	virtual void shader_embedded_set_lock() = 0;
+	virtual const HashSet<RID> &shader_embedded_set_get() const = 0;
+	virtual void shader_embedded_set_unlock() = 0;
 
 	/* MATERIAL API */
 
@@ -87,6 +89,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
+	virtual RS::CullMode material_get_cull_mode(RID p_material) const = 0;
 
 	struct InstanceShaderParam {
 		PropertyInfo info;
@@ -98,5 +101,3 @@ public:
 
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
 };
-
-#endif // MATERIAL_STORAGE_H

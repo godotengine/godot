@@ -28,10 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPIN_LOCK_H
-#define SPIN_LOCK_H
+#pragma once
 
+#include "core/os/thread.h"
 #include "core/typedefs.h"
+
+#ifdef THREADS_ENABLED
+
+// Note the implementations below avoid false sharing by ensuring their
+// sizes match the assumed cache line. We can't use align attributes
+// because these objects may end up unaligned in semi-tightly packed arrays.
 
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -42,7 +48,10 @@
 #include <os/lock.h>
 
 class SpinLock {
-	mutable os_unfair_lock _lock = OS_UNFAIR_LOCK_INIT;
+	union {
+		mutable os_unfair_lock _lock = OS_UNFAIR_LOCK_INIT;
+		char aligner[Thread::CACHE_LINE_BYTES];
+	};
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
@@ -54,9 +63,7 @@ public:
 	}
 };
 
-#else
-
-#include "core/os/thread.h"
+#else // __APPLE__
 
 #include <atomic>
 
@@ -74,7 +81,7 @@ _ALWAYS_INLINE_ static void _cpu_pause() {
 	__builtin_ia32_pause();
 #elif defined(__arm__) || defined(__aarch64__) // ARM.
 	asm volatile("yield");
-#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__) // PowerPC.
+#elif defined(__powerpc__) // PowerPC.
 	asm volatile("or 27,27,27");
 #elif defined(__riscv) // RISC-V.
 	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
@@ -84,8 +91,11 @@ _ALWAYS_INLINE_ static void _cpu_pause() {
 
 static_assert(std::atomic_bool::is_always_lock_free);
 
-class alignas(Thread::CACHE_LINE_BYTES) SpinLock {
-	mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
+class SpinLock {
+	union {
+		mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
+		char aligner[Thread::CACHE_LINE_BYTES];
+	};
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
@@ -107,4 +117,12 @@ public:
 
 #endif // __APPLE__
 
-#endif // SPIN_LOCK_H
+#else // THREADS_ENABLED
+
+class SpinLock {
+public:
+	void lock() const {}
+	void unlock() const {}
+};
+
+#endif // THREADS_ENABLED

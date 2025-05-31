@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_LOADER_H
-#define IMAGE_LOADER_H
+#pragma once
 
 #include "core/core_bind.h"
 #include "core/io/file_access.h"
@@ -86,7 +85,7 @@ public:
 };
 
 class ImageLoader {
-	static Vector<Ref<ImageFormatLoader>> loader;
+	static inline Vector<Ref<ImageFormatLoader>> loader;
 	friend class ResourceFormatLoaderImage;
 
 protected:
@@ -108,5 +107,3 @@ public:
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 };
-
-#endif // IMAGE_LOADER_H

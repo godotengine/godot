@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_PLAYER_H
-#define ANIMATION_PLAYER_H
+#pragma once
 
 #include "animation_mixer.h"
-#include "scene/2d/node_2d.h"
 #include "scene/resources/animation.h"
 
 class AnimationPlayer : public AnimationMixer {
@@ -70,6 +68,18 @@ private:
 		float speed_scale = 1.0;
 		double start_time = 0.0;
 		double end_time = 0.0;
+		double get_start_time() const {
+			if (from && (Animation::is_less_approx(start_time, 0) || Animation::is_greater_approx(start_time, from->animation->get_length()))) {
+				return 0;
+			}
+			return start_time;
+		}
+		double get_end_time() const {
+			if (from && (Animation::is_less_approx(end_time, 0) || Animation::is_greater_approx(end_time, from->animation->get_length()))) {
+				return from->animation->get_length();
+			}
+			return end_time;
+		}
 	};
 
 	struct Blend {
@@ -235,5 +245,3 @@ public:
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessCallback);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 #endif // DISABLE_DEPRECATED
-
-#endif // ANIMATION_PLAYER_H

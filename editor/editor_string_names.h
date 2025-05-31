@@ -28,15 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_STRING_NAMES_H
-#define EDITOR_STRING_NAMES_H
+#pragma once
 
 #include "core/string/string_name.h"
 
 class EditorStringNames {
-	static EditorStringNames *singleton;
-
-	EditorStringNames();
+	inline static EditorStringNames *singleton = nullptr;
 
 public:
 	static void create() { singleton = memnew(EditorStringNames); }
@@ -47,12 +44,10 @@ public:
 
 	_FORCE_INLINE_ static EditorStringNames *get_singleton() { return singleton; }
 
-	StringName Editor;
-	StringName EditorFonts;
-	StringName EditorIcons;
-	StringName EditorStyles;
+	const StringName Editor = StringName("Editor");
+	const StringName EditorFonts = StringName("EditorFonts");
+	const StringName EditorIcons = StringName("EditorIcons");
+	const StringName EditorStyles = StringName("EditorStyles");
 };
 
 #define EditorStringName(m_name) EditorStringNames::get_singleton()->m_name
-
-#endif // EDITOR_STRING_NAMES_H

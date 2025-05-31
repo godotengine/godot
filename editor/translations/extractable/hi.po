@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
 
+msgid "All Recognized"
+msgstr "सभी स्वीकृत"
+
 msgid "Network"
 msgstr "संजाल"
 
@@ -27,11 +30,11 @@ msgstr "खोलो इसे"
 msgid "Select Current Folder"
 msgstr "वर्तमान फ़ोल्डर सिलेक्ट कीजिये"
 
+msgid "Save"
+msgstr "सेव कीजिये"
+
 msgid "Select This Folder"
 msgstr "यह फ़ोल्डर सिलेक्ट कीजिये"
-
-msgid "All Recognized"
-msgstr "सभी स्वीकृत"
 
 msgid "Open a File"
 msgstr "फ़ाइल खोलिये"
@@ -44,9 +47,6 @@ msgstr "डायरेक्टरी खोलिये"
 
 msgid "Open a File or Directory"
 msgstr "फ़ाइल या डायरेक्टरी खोलिये"
-
-msgid "Save"
-msgstr "सेव कीजिये"
 
 msgid "Save a File"
 msgstr "फ़ाइल सेव कीजिये"

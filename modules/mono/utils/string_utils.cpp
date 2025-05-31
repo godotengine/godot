@@ -32,8 +32,8 @@
 
 #include "core/io/file_access.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 namespace {
 
@@ -110,7 +110,7 @@ String sformat(const String &p_text, const String &p1, const String &p2,
 		search_from = result + 2;
 	}
 
-	new_string += p_text.substr(search_from, p_text.length() - search_from);
+	new_string += p_text.substr(search_from);
 
 	return new_string;
 }
@@ -159,7 +159,7 @@ Error read_all_file_utf8(const String &p_path, String &r_content) {
 	w[len] = 0;
 
 	String source;
-	if (source.parse_utf8((const char *)w) != OK) {
+	if (source.append_utf8((const char *)w, len) != OK) {
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
 
