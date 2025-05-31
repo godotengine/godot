@@ -3932,7 +3932,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 	marker_edit->set_animation(p_anim, read_only);
 	marker_edit->set_play_position(timeline->get_play_position());
 
-	_cancel_bezier_edit();
+	_check_bezier_exist();
 	_update_tracks();
 
 	if (animation.is_valid()) {
@@ -3960,7 +3960,14 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 			}
 		}
 
-		_check_bezier_exist();
+		if (bezier_edit->is_visible()) {
+			for (int i = 0; i < animation->get_track_count(); ++i) {
+				if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
+					_bezier_edit(i);
+					break;
+				}
+			}
+		}
 	} else {
 		hscroll->hide();
 		edit->set_disabled(true);
@@ -3980,10 +3987,12 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 
 void AnimationTrackEditor::_check_bezier_exist() {
 	bool is_exist = false;
-	for (int i = 0; i < animation->get_track_count(); i++) {
-		if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
-			is_exist = true;
-			break;
+	if (animation.is_valid()) {
+		for (int i = 0; i < animation->get_track_count(); i++) {
+			if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
+				is_exist = true;
+				break;
+			}
 		}
 	}
 	if (is_exist) {
