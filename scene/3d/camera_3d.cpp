@@ -30,6 +30,7 @@
 
 #include "camera_3d.h"
 
+#include "core/math/frustum.h"
 #include "core/math/projection.h"
 #include "core/math/transform_interpolator.h"
 #include "scene/main/viewport.h"
@@ -284,6 +285,25 @@ Projection Camera3D::_get_camera_projection(real_t p_near) const {
 	return cm;
 }
 
+Frustum Camera3D::_get_camera_frustum() const {
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+	Frustum fm;
+
+	switch (mode) {
+		case PROJECTION_PERSPECTIVE: {
+			fm.set_perspective(fov, viewport_size.aspect(), _near, _far, keep_aspect == KEEP_WIDTH);
+		} break;
+		case PROJECTION_ORTHOGONAL: {
+			fm.set_orthogonal(size, viewport_size.aspect(), _near, _far, keep_aspect == KEEP_WIDTH);
+		} break;
+		case PROJECTION_FRUSTUM: {
+			fm.set_frustum(size, viewport_size.aspect(), frustum_offset, _near, _far);
+		} break;
+	}
+
+	return fm;
+}
+
 Projection Camera3D::get_camera_projection() const {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Projection(), "Camera is not inside the scene tree.");
 	return _get_camera_projection(_near);
@@ -405,8 +425,8 @@ Vector3 Camera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	if (mode == PROJECTION_ORTHOGONAL) {
 		ray = Vector3(0, 0, -1);
 	} else {
-		Projection cm = _get_camera_projection(_near);
-		Vector2 screen_he = cm.get_viewport_half_extents();
+		Frustum fm = _get_camera_frustum();
+		Vector2 screen_he = fm.get_viewport_half_extents();
 		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -_near).normalized();
 	}
 
@@ -451,10 +471,10 @@ bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
 Vector<Vector3> Camera3D::get_near_plane_points() const {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector<Vector3>(), "Camera is not inside scene.");
 
-	Projection cm = _get_camera_projection(_near);
+	Frustum fm = _get_camera_frustum();
 
 	Vector3 endpoints[8];
-	cm.get_endpoints(Transform3D(), endpoints);
+	fm.get_endpoints(Transform3D(), endpoints);
 
 	Vector<Vector3> points = {
 		Vector3(),
@@ -498,11 +518,11 @@ Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) cons
 	}
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	Projection cm = _get_camera_projection(_near);
+	Frustum fm = _get_camera_frustum();
 
 	Plane z_slice(Vector3(0, 0, 1), -p_z_depth);
 	Vector3 res;
-	z_slice.intersect_3(cm.get_projection_plane(Projection::Planes::PLANE_RIGHT), cm.get_projection_plane(Projection::Planes::PLANE_TOP), &res);
+	z_slice.intersect_3(fm.planes[Projection::Planes::PLANE_RIGHT], fm.planes[Projection::Planes::PLANE_TOP], &res);
 	Vector2 vp_he(res.x, res.y);
 
 	Vector2 point;
@@ -778,10 +798,8 @@ bool Camera3D::get_cull_mask_value(int p_layer_number) const {
 
 Vector<Plane> Camera3D::get_frustum() const {
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
-
-	Projection cm = _get_camera_projection(_near);
-
-	return cm.get_projection_planes(get_camera_transform());
+	Frustum fm = _get_camera_frustum();
+	return fm.get_projection_planes(get_camera_transform());
 }
 
 TypedArray<Plane> Camera3D::_get_frustum() const {
