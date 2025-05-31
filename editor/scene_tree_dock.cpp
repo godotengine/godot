@@ -75,6 +75,65 @@ void SceneTreeDock::_quick_open(const String &p_file_path) {
 	instantiate_scenes({ p_file_path }, scene_tree->get_selected());
 }
 
+void SceneTreeDock::_quick_open_scene_change(const String &p_new_scene_path) {
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	ERR_FAIL_COND(selection.size() <= 0);
+
+	HashMap<Node *, Node *> nodes_to_replace;
+	bool error = false;
+
+	for (Node *n : selection) {
+		if (!n || n == edited_scene || n->get_scene_file_path().is_empty()) {
+			continue;
+		}
+
+		Node *newnode = _instantiate_scene(p_new_scene_path);
+		if (!newnode) {
+			error = true;
+			break;
+		}
+		newnode->set_name(n->get_name());
+
+		List<PropertyInfo> pinfo;
+		n->get_property_list(&pinfo);
+		Vector<SceneState::PackState> states_stack = PropertyUtils::get_node_states_stack(n, edited_scene);
+
+		for (const PropertyInfo &E : pinfo) {
+			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+				continue;
+			}
+
+			bool default_valid = true;
+			const Variant defval = PropertyUtils::get_property_default_value(n, E.name, &default_valid, &states_stack);
+			const Variant current_value = n->get(E.name);
+
+			if (!default_valid || PropertyUtils::is_property_value_different(n, current_value, defval)) {
+				newnode->set(E.name, current_value);
+			}
+		}
+		nodes_to_replace.insert(n, newnode);
+	}
+
+	if (error || nodes_to_replace.is_empty()) {
+		for (KeyValue<Node *, Node *> &pair : nodes_to_replace) {
+			memdelete(pair.value);
+		}
+		ERR_FAIL_MSG("Failed to change instance scenes.");
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Change scene of instance(s)"), UndoRedo::MERGE_DISABLE, edited_scene);
+
+	for (const KeyValue<Node *, Node *> &pair : nodes_to_replace) {
+		ur->add_do_method(this, "_replace_with_instance", pair.value, pair.key);
+		ur->add_do_reference(pair.value);
+		ur->add_undo_method(this, "_replace_with_instance", pair.key, pair.value);
+		ur->add_undo_reference(pair.key);
+	}
+
+	ur->commit_action();
+}
+
 static void _restore_treeitem_custom_color(TreeItem *p_item) {
 	if (!p_item) {
 		return;
@@ -286,6 +345,34 @@ void SceneTreeDock::instantiate_scenes(const Vector<String> &p_files, Node *p_pa
 	};
 
 	_perform_instantiate_scenes(p_files, parent, -1);
+}
+
+Node *SceneTreeDock::_instantiate_scene(const String &p_path) {
+	Ref<PackedScene> sdata = ResourceLoader::load(p_path);
+	if (!sdata.is_valid()) {
+		accept->set_text(vformat(TTR("Error loading scene from %s"), p_path));
+		accept->popup_centered();
+		return nullptr;
+	}
+
+	Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+	if (!instantiated_scene) {
+		accept->set_text(vformat(TTR("Error instancing scene from %s"), p_path));
+		accept->popup_centered();
+		return nullptr;
+	}
+
+	if (!edited_scene->get_scene_file_path().is_empty()) {
+		if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
+			accept->set_text(vformat(TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes."), p_path));
+			accept->popup_centered();
+			memdelete(instantiated_scene);
+			return nullptr;
+		}
+	}
+
+	instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(p_path));
+	return instantiated_scene;
 }
 
 void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, Node *p_parent, int p_pos) {
@@ -500,6 +587,19 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	undo_redo->add_do_reference(instantiated_scene);
 	undo_redo->add_undo_reference(base);
 	undo_redo->commit_action();
+}
+
+void SceneTreeDock::_replace_with_instance(Node *p_instance, Node *p_base) {
+	Node *parent = p_base->get_parent();
+	int pos = p_base->get_index();
+	parent->remove_child(p_base);
+	parent->add_child(p_instance, true);
+	parent->move_child(p_instance, pos);
+
+	p_instance->set_owner(edited_scene);
+	editor_selection->clear();
+	editor_selection->add_node(p_instance);
+	scene_tree->set_selected(p_instance);
 }
 
 bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
@@ -728,7 +828,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_instance()) {
+			bool instance_replace;
+			if (!_can_replace_nodes(instance_replace)) {
 				break;
 			}
 
@@ -744,7 +845,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			if (selected) {
-				create_dialog->popup_create(false, true, selected->get_class(), selected->get_name());
+				if (instance_replace) {
+					EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &SceneTreeDock::_quick_open_scene_change));
+				} else {
+					create_dialog->popup_create(false, true, selected->get_class(), selected->get_name());
+				}
 			}
 		} break;
 		case TOOL_EXTEND_SCRIPT: {
@@ -2897,6 +3002,33 @@ void SceneTreeDock::_update_script_button() {
 	button_extend_script->set_visible(can_extend_script);
 }
 
+bool SceneTreeDock::_can_replace_nodes(bool &r_instance_replace) const {
+	bool can_replace = true;
+	bool has_instances = false;
+	bool has_only_instances = true;
+
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	for (Node *E : selection) {
+		bool is_instance = E != edited_scene && !E->get_scene_file_path().is_empty();
+		has_instances = has_instances || is_instance;
+		has_only_instances = has_only_instances && is_instance;
+
+		if (E != edited_scene && E->get_owner() != edited_scene) {
+			can_replace = false;
+			break;
+		}
+
+		if (edited_scene->get_scene_inherited_state().is_valid()) {
+			if (E == edited_scene || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) > -1) {
+				can_replace = false;
+				break;
+			}
+		}
+	}
+	r_instance_replace = has_instances;
+	return can_replace && (!has_instances || has_only_instances); // Only allow replace if all nodes are instances or all aren't.
+}
+
 void SceneTreeDock::_selection_changed() {
 	int selection_size = editor_selection->get_selection().size();
 	if (selection_size > 1) {
@@ -3851,23 +3983,13 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (profile_allow_editing) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
 
-		bool can_replace = true;
-		for (Node *E : selection) {
-			if (E != edited_scene && (E->get_owner() != edited_scene || !E->get_scene_file_path().is_empty())) {
-				can_replace = false;
-				break;
-			}
-
-			if (edited_scene->get_scene_inherited_state().is_valid()) {
-				if (E == edited_scene || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
-					can_replace = false;
-					break;
-				}
-			}
-		}
-
+		bool instance_replace;
+		bool can_replace = _can_replace_nodes(instance_replace);
 		if (can_replace) {
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+			if (instance_replace) {
+				menu->set_item_text(-1, TTRC("Change Scene"));
+			}
 		}
 
 		if (scene_tree->get_selected() != edited_scene) {
@@ -4624,6 +4746,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_root"), &SceneTreeDock::_reparent_nodes_to_root);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_paths_with_transform_and_name"), &SceneTreeDock::_reparent_nodes_to_paths_with_transform_and_name);
+	ClassDB::bind_method(D_METHOD("_replace_with_instance"), &SceneTreeDock::_replace_with_instance);
 
 	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
 
