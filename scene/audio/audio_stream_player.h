@@ -58,6 +58,8 @@ private:
 
 	Vector<AudioFrame> _get_volume_vector();
 
+	void _play_internal(double p_from_pos = 0.0);
+
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
@@ -89,6 +91,7 @@ public:
 	int get_max_polyphony() const;
 
 	void play(float p_from_pos = 0.0);
+	void play_scheduled(double p_abs_time, double p_from_pos = 0.0);
 	void seek(float p_seconds);
 	void stop();
 	bool is_playing() const;
