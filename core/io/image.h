@@ -426,6 +426,7 @@ public:
 	void convert_rg_to_ra_rgba8();
 	void convert_ra_rgba8_to_rg();
 	void convert_rgba8_to_bgra8();
+	void convert_rgb565_to_bgr565();
 
 	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC) const;
 	void optimize_channels();
