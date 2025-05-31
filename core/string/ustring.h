@@ -177,7 +177,11 @@ class [[nodiscard]] CharStringT {
 public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ const T *get_data() const { return ptr() ? ptr() : &_null; }
+
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<T> span() const { return Span(ptr(), length()); }
@@ -224,14 +228,6 @@ public:
 		dst[lhs_len + 1] = _null;
 
 		return *this;
-	}
-
-	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
-	_FORCE_INLINE_ const T *get_data() const {
-		if (size()) {
-			return &operator[](0);
-		}
-		return &_null;
 	}
 
 protected:
@@ -313,7 +309,11 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ const char32_t *get_data() const { return ptr() ? ptr() : &_null; }
+
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<char32_t> span() const { return Span(ptr(), length()); }
@@ -376,14 +376,6 @@ public:
 	// Special sorting for file names. Names starting with `_` are put before all others except those starting with `.`, otherwise natural comparison is used.
 	signed char filecasecmp_to(const String &p_str) const;
 	signed char filenocasecmp_to(const String &p_str) const;
-
-	const char32_t *get_data() const;
-	/* standard size stuff */
-
-	_FORCE_INLINE_ int length() const {
-		int s = size();
-		return s ? (s - 1) : 0; // length does not include zero
-	}
 
 	bool is_valid_string() const;
 
@@ -587,7 +579,6 @@ public:
 	Vector<uint8_t> sha1_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
 
-	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains_char(char32_t p_chr) const { return find_char(p_chr) != -1; }
