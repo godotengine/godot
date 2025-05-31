@@ -683,6 +683,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// File Dialog
 
+	theme->set_constant("thumbnail_size", "FileDialog", 64);
 	theme->set_icon("load", "FileDialog", icons["load"]);
 	theme->set_icon("save", "FileDialog", icons["save"]);
 	theme->set_icon("clear", "FileDialog", icons["clear"]);
@@ -694,9 +695,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("toggle_filename_filter", "FileDialog", icons["toggle_filename_filter"]);
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
+	theme->set_icon("thumbnail_mode", "FileDialog", icons["file_mode_thumbnail"]);
+	theme->set_icon("list_mode", "FileDialog", icons["file_mode_list"]);
 	theme->set_icon("create_folder", "FileDialog", icons["folder_create"]);
 	theme->set_icon("sort", "FileDialog", icons["sort"]);
 
+	theme->set_icon("file_thumbnail", "FileDialog", icons["file_thumbnail"]);
+	theme->set_icon("folder_thumbnail", "FileDialog", icons["folder_thumbnail"]);
 	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));
