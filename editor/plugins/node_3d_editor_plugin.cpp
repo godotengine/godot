@@ -1559,6 +1559,35 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 	}
 }
 
+void Node3DEditorViewport::_reset_transform(TransformType type) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Reset Transform"));
+	const List<Node *> &selection = editor_selection->get_selected_node_list();
+
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
+		if (!sp) {
+			continue;
+		}
+
+		switch (type) {
+			case TransformType::POSITION:
+				undo_redo->add_undo_method(sp, "set_position", sp->get_position());
+				sp->set_position(Vector3(0, 0, 0));
+				break;
+			case TransformType::ROTATION:
+				undo_redo->add_undo_method(sp, "set_rotation", sp->get_rotation());
+				sp->set_rotation(Vector3(0, 0, 0));
+				break;
+			case TransformType::SCALE:
+				undo_redo->add_undo_method(sp, "set_scale", sp->get_scale());
+				sp->set_scale(Vector3(1, 1, 1));
+				break;
+		}
+	}
+	undo_redo->commit_action();
+}
+
 void Node3DEditorViewport::_surface_mouse_enter() {
 	if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return;
@@ -2451,6 +2480,17 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
+		}
+		if (!is_freelook_active()) {
+			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_position", p_event)) {
+				_reset_transform(TransformType::POSITION);
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_rotation", p_event)) {
+				_reset_transform(TransformType::ROTATION);
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_scale", p_event)) {
+				_reset_transform(TransformType::SCALE);
+			}
 		}
 		if (!is_freelook_active() && !k->is_echo()) {
 			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event) && (_edit.mode != TRANSFORM_TRANSLATE || collision_reposition)) {
@@ -5740,6 +5780,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ED_SHORTCUT("spatial_editor/instant_rotate", TTRC("Begin Rotate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_scale", TTRC("Begin Scale Transformation"));
 	ED_SHORTCUT("spatial_editor/collision_reposition", TTRC("Reposition Using Collisions"), KeyModifierMask::SHIFT | Key::G);
+	ED_SHORTCUT("spatial_editor/reset_transform_position", TTRC("Reset Position"), KeyModifierMask::ALT + Key::W);
+	ED_SHORTCUT("spatial_editor/reset_transform_rotation", TTRC("Reset Rotation"), KeyModifierMask::ALT + Key::E);
+	ED_SHORTCUT("spatial_editor/reset_transform_scale", TTRC("Reset Scale"), KeyModifierMask::ALT + Key::R);
 
 	translation_preview_button = memnew(EditorTranslationPreviewButton);
 	hbox->add_child(translation_preview_button);
