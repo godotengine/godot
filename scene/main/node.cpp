@@ -1835,12 +1835,20 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 
 void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
+	ERR_THREAD_GUARD
+
 	ERR_FAIL_NULL(p_sibling);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
+	ERR_FAIL_COND_MSG(p_sibling->data.parent, vformat("Can't add sibling '%s' to '%s', already has a parent '%s'.", p_sibling->get_name(), get_name(), p_sibling->data.parent->get_name()));
 	ERR_FAIL_NULL(data.parent);
+	ERR_FAIL_COND_MSG(p_sibling == data.parent, vformat("Can't add sibling '%s' to '%s', the sibling '%s' is the parent of '%s'. ", p_sibling->get_name(), get_name(), p_sibling->get_name(), get_name()));
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_sibling->is_ancestor_of(data.parent), vformat("Can't add sibling '%s' to '%s' as it would result in a cyclic dependency since the sibling '%s' is already a parent of '%s'.", p_sibling->get_name(), get_name(), p_sibling->get_name(), get_name())); // Slow check so inside DEBUG_ENABLED
+#endif
 	ERR_FAIL_COND_MSG(data.parent->data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
 
-	data.parent->add_child(p_sibling, p_force_readable_name, data.internal_mode);
+	data.parent->_validate_child_name(p_sibling, p_force_readable_name);
+	data.parent->_add_child_nocheck(p_sibling, p_sibling->data.name, data.internal_mode);
 	data.parent->_update_children_cache();
 	data.parent->_move_child(p_sibling, get_index() + 1);
 }
