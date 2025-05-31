@@ -34,13 +34,6 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 
-Ref<ResourceFormatSaver> ResourceSaver::saver[MAX_SAVERS];
-
-int ResourceSaver::saver_count = 0;
-bool ResourceSaver::timestamp_on_save = false;
-ResourceSavedCallback ResourceSaver::save_callback = nullptr;
-ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
-
 Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Error err = ERR_METHOD_NOT_FOUND;
 	GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, err);

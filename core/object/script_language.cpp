@@ -35,16 +35,6 @@
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
 
-ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
-int ScriptServer::_language_count = 0;
-bool ScriptServer::languages_ready = false;
-Mutex ScriptServer::languages_mutex;
-thread_local bool ScriptServer::thread_entered = false;
-
-bool ScriptServer::scripting_enabled = true;
-bool ScriptServer::reload_scripts_on_save = false;
-ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
-
 void Script::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -380,10 +370,6 @@ void ScriptServer::thread_exit() {
 
 	thread_entered = false;
 }
-
-HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
-HashMap<StringName, Vector<StringName>> ScriptServer::inheriters_cache;
-bool ScriptServer::inheriters_cache_dirty = true;
 
 void ScriptServer::global_classes_clear() {
 	global_classes.clear();
