@@ -85,6 +85,12 @@
 				If handtracking is enabled and motion range is supported, gets the currently configured motion range for [param hand].
 			</description>
 		</method>
+		<method name="get_overlay_session_layers_placement" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns where in the stack the OpenXR runtime composites the overlay. The larger the value the closer to the front the overlay appears.
+			</description>
+		</method>
 		<method name="is_action_set_active" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -148,6 +154,14 @@
 			<param index="1" name="motion_range" type="int" enum="OpenXRInterface.HandMotionRange" />
 			<description>
 				If handtracking is enabled and motion range is supported, sets the currently configured motion range for [param hand] to [param motion_range].
+			</description>
+		</method>
+		<method name="set_overlay_session_layers_placement">
+			<return type="void" />
+			<param index="0" name="placement" type="int" />
+			<description>
+				Specifies where in the stack the OpenXR runtime composites the overlay. The larger the value the closer to the front the overlay appears.
+				[b]Note:[/b] This only takes effect when OpenXR is initialized.
 			</description>
 		</method>
 	</methods>

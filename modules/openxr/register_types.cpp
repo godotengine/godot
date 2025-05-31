@@ -66,6 +66,7 @@
 #include "extensions/openxr_meta_controller_extension.h"
 #include "extensions/openxr_ml2_controller_extension.h"
 #include "extensions/openxr_mxink_extension.h"
+#include "extensions/openxr_overlay_extension.h"
 #include "extensions/openxr_palm_pose_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
@@ -173,6 +174,9 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			}
 			if (GLOBAL_GET("xr/openxr/binding_modifiers/dpad_binding")) {
 				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDPadBindingExtension));
+			}
+			if (GLOBAL_GET("xr/openxr/extensions/overlay/enabled")) {
+				OpenXRAPI::register_extension_wrapper(memnew(OpenXROverlayExtension));
 			}
 		}
 

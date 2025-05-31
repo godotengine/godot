@@ -63,6 +63,7 @@
 #include "extensions/openxr_fb_foveation_extension.h"
 #include "extensions/openxr_fb_update_swapchain_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
+#include "extensions/openxr_overlay_extension.h"
 
 #ifndef DISABLE_DEPRECATED
 #include "extensions/openxr_extension_wrapper_extension.h"
@@ -2538,7 +2539,7 @@ void OpenXRAPI::end_frame() {
 	}
 
 	XrCompositionLayerFlags layer_flags = XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
-	if (!projection_layer_is_first || environment_blend_mode != XR_ENVIRONMENT_BLEND_MODE_OPAQUE) {
+	if (!projection_layer_is_first || environment_blend_mode != XR_ENVIRONMENT_BLEND_MODE_OPAQUE || (OpenXROverlayExtension::get_singleton() != nullptr && OpenXROverlayExtension::get_singleton()->is_available())) {
 		layer_flags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 	}
 
