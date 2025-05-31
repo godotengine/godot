@@ -215,7 +215,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	Vector<uint8_t> file_cache_buffer;
 	if (file_cache.size()) {
 		StringBuilder sbuild;
-		for (int i = 0; i < file_cache.size(); i++) {
+		for (int64_t i = 0; i < file_cache.size(); i++) {
 			sbuild.append(file_cache[i].path);
 			sbuild.append("::");
 			sbuild.append(itos(file_cache[i].server_modified_time));
@@ -224,7 +224,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 		String s = sbuild.as_string();
 		CharString cs = s.utf8();
 		file_cache_buffer.resize(Compression::get_max_compressed_buffer_size(cs.length(), Compression::MODE_ZSTD));
-		int res_len = Compression::compress(file_cache_buffer.ptrw(), (const uint8_t *)cs.ptr(), cs.length(), Compression::MODE_ZSTD);
+		const int64_t res_len = Compression::compress(file_cache_buffer.ptrw(), (const uint8_t *)cs.ptr(), cs.length(), Compression::MODE_ZSTD);
 		file_cache_buffer.resize(res_len);
 
 		tcp_client->put_32(cs.length()); // Size of buffer uncompressed

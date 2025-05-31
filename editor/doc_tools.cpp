@@ -1798,10 +1798,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 	return OK;
 }
 
-Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size) {
+Error DocTools::load_compressed(const uint8_t *p_data, int64_t p_compressed_size, int64_t p_uncompressed_size) {
 	Vector<uint8_t> data;
 	data.resize(p_uncompressed_size);
-	int ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
+	const int64_t ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
 	ERR_FAIL_COND_V_MSG(ret == -1, ERR_FILE_CORRUPT, "Compressed file is corrupt.");
 	class_list.clear();
 
@@ -1816,7 +1816,7 @@ Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, in
 	return OK;
 }
 
-Error DocTools::load_xml(const uint8_t *p_data, int p_size) {
+Error DocTools::load_xml(const uint8_t *p_data, int64_t p_size) {
 	Ref<XMLParser> parser = memnew(XMLParser);
 	Error err = parser->_open_buffer(p_data, p_size);
 	if (err) {
