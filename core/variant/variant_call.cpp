@@ -2525,7 +2525,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
 	bind_method(PackedByteArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedByteArray, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedByteArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedByteArray, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedByteArray, count, sarray("value"), varray());
 	bind_method(PackedByteArray, erase, sarray("value"), varray());
 
@@ -2597,7 +2599,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt32Array, duplicate, sarray(), varray());
 	bind_method(PackedInt32Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedInt32Array, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedInt32Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedInt32Array, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedInt32Array, count, sarray("value"), varray());
 	bind_method(PackedInt32Array, erase, sarray("value"), varray());
 
@@ -2621,7 +2625,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt64Array, duplicate, sarray(), varray());
 	bind_method(PackedInt64Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedInt64Array, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedInt64Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedInt64Array, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedInt64Array, count, sarray("value"), varray());
 	bind_method(PackedInt64Array, erase, sarray("value"), varray());
 
@@ -2645,7 +2651,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
 	bind_method(PackedFloat32Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedFloat32Array, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedFloat32Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedFloat32Array, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedFloat32Array, count, sarray("value"), varray());
 	bind_method(PackedFloat32Array, erase, sarray("value"), varray());
 
@@ -2669,7 +2677,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
 	bind_method(PackedFloat64Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedFloat64Array, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedFloat64Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedFloat64Array, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedFloat64Array, count, sarray("value"), varray());
 	bind_method(PackedFloat64Array, erase, sarray("value"), varray());
 
@@ -2693,7 +2703,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());
 	bind_method(PackedStringArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedStringArray, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedStringArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedStringArray, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedStringArray, count, sarray("value"), varray());
 	bind_method(PackedStringArray, erase, sarray("value"), varray());
 
@@ -2717,7 +2729,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector2Array, duplicate, sarray(), varray());
 	bind_method(PackedVector2Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector2Array, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedVector2Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector2Array, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedVector2Array, count, sarray("value"), varray());
 	bind_method(PackedVector2Array, erase, sarray("value"), varray());
 
@@ -2741,7 +2755,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector3Array, duplicate, sarray(), varray());
 	bind_method(PackedVector3Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector3Array, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedVector3Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector3Array, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedVector3Array, count, sarray("value"), varray());
 	bind_method(PackedVector3Array, erase, sarray("value"), varray());
 
@@ -2765,7 +2781,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedColorArray, duplicate, sarray(), varray());
 	bind_method(PackedColorArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedColorArray, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedColorArray, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedColorArray, count, sarray("value"), varray());
 	bind_method(PackedColorArray, erase, sarray("value"), varray());
 
@@ -2789,7 +2807,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector4Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector4Array, duplicate, sarray(), varray());
 	bind_method(PackedVector4Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector4Array, find_sequence, sarray("sequence", "from"), varray(0));
 	bind_method(PackedVector4Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector4Array, rfind_sequence, sarray("sequence", "from"), varray(-1));
 	bind_method(PackedVector4Array, count, sarray("value"), varray());
 	bind_method(PackedVector4Array, erase, sarray("value"), varray());
 }
