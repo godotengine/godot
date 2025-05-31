@@ -32,6 +32,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
 #include "core/object/script_language.h"
 #include "core/string/string_buffer.h"
 
@@ -1123,6 +1124,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type == TK_STRING) {
 					String path = token.value;
+					if (p_res_parser != nullptr) {
+						String *uid = p_res_parser->path_to_uid.getptr(path);
+						if (uid != nullptr && uid->begins_with("uid://")) {
+							const ResourceUID *resource_uid = ResourceUID::get_singleton();
+							ResourceUID::ID id = resource_uid->text_to_id(*uid);
+							if (resource_uid->has_id(id)) {
+								path = resource_uid->get_id_path(id);
+							}
+						}
+					}
 					Ref<Resource> res = ResourceLoader::load(path);
 					if (res.is_null()) {
 						r_err_str = "Can't load resource at path: " + path;

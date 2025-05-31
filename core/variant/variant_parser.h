@@ -95,6 +95,7 @@ public:
 		ParseResourceFunc func = nullptr;
 		ParseResourceFunc ext_func = nullptr;
 		ParseResourceFunc sub_func = nullptr;
+		HashMap<String, String> path_to_uid;
 	};
 
 	enum TokenType {
