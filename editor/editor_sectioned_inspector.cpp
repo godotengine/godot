@@ -30,6 +30,7 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_string_names.h"
@@ -69,8 +70,18 @@ class SectionedInspectorFilter : public Object {
 			name = section + "/" + name;
 		}
 
+		ProjectSettings *ps = ProjectSettings::get_singleton();
+		if (ps) {
+			// Small hack to block emitting of "settings_changed" signal unnecessarily.
+			// It's handled by ProjectSettingsEditor.
+			ps->set_block_changed(true);
+		}
+
 		bool valid;
 		edited->set(name, p_value, &valid);
+		if (ps) {
+			ps->set_block_changed(false);
+		}
 		return valid;
 	}
 

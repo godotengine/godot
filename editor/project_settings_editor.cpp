@@ -83,6 +83,7 @@ void ProjectSettingsEditor::_save() {
 	settings_changed = false;
 	if (ps) {
 		ps->save();
+		ps->queue_changed();
 	}
 }
 
@@ -787,7 +788,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(plugin_settings);
 
 	timer = memnew(Timer);
-	timer->set_wait_time(1.5);
+	timer->set_wait_time(1.0);
 	timer->connect("timeout", callable_mp(this, &ProjectSettingsEditor::_save));
 	timer->set_one_shot(true);
 	add_child(timer);

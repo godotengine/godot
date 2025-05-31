@@ -298,7 +298,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			_version++;
-			_queue_changed();
+			queue_changed();
 			return true;
 		}
 
@@ -344,7 +344,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	_version++;
-	_queue_changed();
+	queue_changed();
 	return true;
 }
 
@@ -501,8 +501,8 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void ProjectSettings::_queue_changed() {
-	if (is_changed || !MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
+void ProjectSettings::queue_changed() {
+	if (block_changed || is_changed || !MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
 		return;
 	}
 	is_changed = true;
@@ -1119,7 +1119,9 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 	project_features = _trim_to_supported_features(project_features);
+	block_changed = true;
 	set_setting("application/config/features", project_features);
+	block_changed = false;
 #endif // TOOLS_ENABLED
 
 	RBSet<_VCSort> vclist;
@@ -1199,18 +1201,22 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 }
 
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic, bool p_internal) {
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+
 	Variant ret;
-	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
-		ProjectSettings::get_singleton()->set(p_var, p_default);
+	if (!ps->has_setting(p_var)) {
+		ps->set_block_changed(true); // Prevents emitting change during initialization.
+		ps->set(p_var, p_default);
+		ps->set_block_changed(false);
 	}
 	ret = GLOBAL_GET(p_var);
 
-	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
-	ProjectSettings::get_singleton()->set_builtin_order(p_var);
-	ProjectSettings::get_singleton()->set_as_basic(p_var, p_basic);
-	ProjectSettings::get_singleton()->set_restart_if_changed(p_var, p_restart_if_changed);
-	ProjectSettings::get_singleton()->set_ignore_value_in_docs(p_var, p_ignore_value_in_docs);
-	ProjectSettings::get_singleton()->set_as_internal(p_var, p_internal);
+	ps->set_initial_value(p_var, p_default);
+	ps->set_builtin_order(p_var);
+	ps->set_as_basic(p_var, p_basic);
+	ps->set_restart_if_changed(p_var, p_restart_if_changed);
+	ps->set_ignore_value_in_docs(p_var, p_ignore_value_in_docs);
+	ps->set_as_internal(p_var, p_internal);
 	return ret;
 }
 
