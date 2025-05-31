@@ -60,7 +60,7 @@ Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_
 		Error error = img->decompress();
 		ERR_FAIL_COND_V_MSG(error != OK, Vector<uint8_t>(), "Couldn't decompress image.");
 	}
-	if (img->detect_alpha() != Image::ALPHA_NONE) {
+	if (img->detect_alpha() != Image::ALPHA_NONE || img->get_format() == Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	} else {
 		img->convert(Image::FORMAT_RGB8);
@@ -119,7 +119,8 @@ Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_
 	return dst;
 }
 
-Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer) {
+Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer, Image::Format p_format) {
+	ERR_FAIL_COND_V_MSG(p_format != Image::FORMAT_RGBA8 && p_format != Image::FORMAT_RGB8, Ref<Image>(), "Unsupported image format for WebP unpacking.");
 	int size = p_buffer.size();
 	ERR_FAIL_COND_V(size <= 0, Ref<Image>());
 	const uint8_t *r = p_buffer.ptr();
@@ -132,13 +133,13 @@ Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer) {
 	}
 
 	Vector<uint8_t> dst_image;
-	int datasize = features.width * features.height * (features.has_alpha ? 4 : 3);
+	int datasize = features.width * features.height * (p_format == Image::FORMAT_RGBA8 ? 4 : 3);
 	dst_image.resize(datasize);
 
 	uint8_t *dst_w = dst_image.ptrw();
 
 	bool errdec = false;
-	if (features.has_alpha) {
+	if (p_format == Image::FORMAT_RGBA8) {
 		errdec = WebPDecodeRGBAInto(r, size, dst_w, datasize, 4 * features.width) == nullptr;
 	} else {
 		errdec = WebPDecodeRGBInto(r, size, dst_w, datasize, 3 * features.width) == nullptr;
