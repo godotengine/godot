@@ -188,7 +188,7 @@ private:
 		uint32_t cell_offset;
 		uint32_t cell_count;
 		float aniso_strength;
-		uint32_t pad;
+		float cell_size;
 	};
 
 	struct VoxelGIDynamicPushConstant {
@@ -209,7 +209,8 @@ private:
 		float dynamic_range;
 		uint32_t on_mipmap;
 		float propagation;
-		float pad[3];
+		float cell_size;
+		float pad[2];
 	};
 
 	VoxelGILight *voxel_gi_lights = nullptr;
