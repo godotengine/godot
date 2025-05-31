@@ -167,6 +167,17 @@ struct PtrToArg<const T *> {
 	}
 };
 
+template <typename T, bool Fatal>
+struct PtrToArg<NotNull<T *, Fatal>> {
+	_FORCE_INLINE_ static NotNull<T *, Fatal> convert(const void *p_ptr) {
+		return NotNull<T *, Fatal>(*reinterpret_cast<T *const *>(p_ptr));
+	}
+	typedef NotNull<T *, Fatal> EncodeT;
+	_FORCE_INLINE_ static void encode(NotNull<T *, Fatal> p_val, const void *p_ptr) {
+		*(const_cast<NotNull<T *, Fatal> *>(reinterpret_cast<const NotNull<T *, Fatal> *>(p_ptr))) = p_val;
+	}
+};
+
 // This is for ObjectID.
 
 template <>

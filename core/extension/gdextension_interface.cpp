@@ -1362,7 +1362,7 @@ static void gdextension_object_free_instance_binding(GDExtensionObjectPtr p_obje
 
 static void gdextension_object_set_instance(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
-	Object *o = (Object *)p_object;
+	NeverNull<Object *> o = NeverNull<Object *>((Object *)p_object);
 	ClassDB::set_object_extension_instance(o, classname, p_instance);
 }
 
