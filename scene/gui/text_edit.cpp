@@ -714,6 +714,19 @@ void TextEdit::_accessibility_action_scroll_into_view(const Variant &p_data, int
 	}
 }
 
+PackedStringArray TextEdit::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
+
+	String ac_name = get_accessibility_name();
+	if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
+		ac_name = placeholder_text;
+	}
+	_accessibility_configuration_check_name(String(), ac_name, RTR("Placeholder"), warnings);
+
+	return warnings;
+}
+
 void TextEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE:

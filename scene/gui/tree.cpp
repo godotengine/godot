@@ -4539,11 +4539,11 @@ void Tree::_check_item_accessibility(TreeItem *p_item, PackedStringArray &r_warn
 	for (int i = 0; i < p_item->cells.size(); i++) {
 		const TreeItem::Cell &cell = p_item->cells[i];
 		if (cell.alt_text.strip_edges().is_empty() && cell.text.strip_edges().is_empty()) {
-			r_warnings.push_back(vformat(RTR("Cell %d x %d: either text or alternative text must not be empty."), r_row, i));
+			r_warnings.push_back(vformat(RTR("Cell %d x %d: text and alternative text are empty, or contain only spaces."), r_row, i));
 		}
 		for (int j = 0; j < cell.buttons.size(); j++) {
 			if (cell.buttons[j].alt_text.strip_edges().is_empty()) {
-				r_warnings.push_back(vformat(RTR("Button %d in %d x %d: alternative text must not be empty."), j, r_row, i));
+				r_warnings.push_back(vformat(RTR("Button %d in %d x %d: alternative text is empty, or contain only spaces."), j, r_row, i));
 			}
 		}
 	}
