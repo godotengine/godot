@@ -97,6 +97,11 @@ public:
 	static Vector3 get_vector_from_axis(Vector3::Axis p_axis);
 	static Vector3::Axis get_axis_from_bone_axis(BoneAxis p_axis);
 
+	static Vector3 limit_length(const Vector3 &p_origin, const Vector3 &p_destination, float p_length);
+	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);
+	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot);
+	static Vector3 snap_vector_to_plane(const Vector3 &p_plane_normal, const Vector3 &p_vector);
+
 #ifdef TOOLS_ENABLED
 	virtual bool is_processed_on_saving() const { return false; }
 #endif
