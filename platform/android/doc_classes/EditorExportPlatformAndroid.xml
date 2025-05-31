@@ -61,6 +61,11 @@
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Application export format (*.apk or *.aab).
 		</member>
+		<member name="gradle_build/google_play_instant" type="bool" setter="" getter="">
+			If [code]true[/code], configures the exported project for Play Instant Build.
+			Use this option when targeting Play Instant to allow users to launch the app without installation. See [url=https://developer.android.com/topic/google-play-instant/overview]Google Play Instant[/url].
+			[b]Note:[/b] Instant play games also need to be optimized for size. See [url=https://docs.godotengine.org/en/stable/contributing/development/compiling/optimizing_for_size.html]Optimizing a build for size[/url].
+		</member>
 		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
 			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.
 		</member>
