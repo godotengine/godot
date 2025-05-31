@@ -409,7 +409,7 @@ void vertex_shader(vec3 vertex_input,
 	vec3 model_origin = model_matrix[3].xyz;
 	if (sc_multimesh()) {
 		modelview = modelview * matrix;
-		
+
 		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;
 		model_origin = double_add_vec3(model_origin, model_precision, instance_origin, vec3(0.0), model_precision);
 	}
