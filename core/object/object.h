@@ -312,6 +312,22 @@ struct MethodInfo {
 class MethodBind;
 class GDExtension;
 
+class GDType {
+	const GDType *super_type;
+
+	StringName name;
+	/// Contains all the class names in order:
+	/// `name` is the first element and `Object` is the last.
+	Vector<StringName> name_hierarchy;
+
+public:
+	GDType(const GDType *p_super_type, StringName p_name);
+
+	const GDType *get_super_type() const { return super_type; }
+	const StringName &get_name() const { return name; }
+	const Vector<StringName> &get_name_hierarchy() const { return name_hierarchy; }
+};
+
 struct ObjectGDExtension {
 	GDExtension *library = nullptr;
 	ObjectGDExtension *parent = nullptr;
@@ -492,21 +508,18 @@ private:                                                                        
                                                                                                                                             \
 public:                                                                                                                                     \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;             \
-	virtual const StringName *_get_class_namev() const override {                                                                           \
-		return &get_class_static();                                                                                                         \
+	virtual const GDType &_get_typev() const override {                                                                                     \
+		return get_gdtype_static();                                                                                                         \
+	}                                                                                                                                       \
+	static const GDType &get_gdtype_static() {                                                                                              \
+		static GDType *_class_static;                                                                                                       \
+		if (unlikely(!_class_static)) {                                                                                                     \
+			assign_type_static(&_class_static, #m_class, &super_type::get_gdtype_static());                                                 \
+		}                                                                                                                                   \
+		return *_class_static;                                                                                                              \
 	}                                                                                                                                       \
 	static const StringName &get_class_static() {                                                                                           \
-		static StringName _class_name_static;                                                                                               \
-		if (unlikely(!_class_name_static)) {                                                                                                \
-			assign_class_name_static(#m_class, _class_name_static);                                                                         \
-		}                                                                                                                                   \
-		return _class_name_static;                                                                                                          \
-	}                                                                                                                                       \
-	virtual bool is_class(const String &p_class) const override {                                                                           \
-		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
-			return true;                                                                                                                    \
-		}                                                                                                                                   \
-		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                              \
+		return get_gdtype_static().get_name();                                                                                              \
 	}                                                                                                                                       \
                                                                                                                                             \
 protected:                                                                                                                                  \
@@ -638,7 +651,7 @@ private:
 	Variant script; // Reference does not exist yet, store it in a Variant.
 	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
-	mutable const StringName *_class_name_ptr = nullptr;
+	mutable const GDType *_gdtype_ptr = nullptr;
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
@@ -745,9 +758,7 @@ protected:
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	virtual const StringName *_get_class_namev() const {
-		return &get_class_static();
-	}
+	virtual const GDType &_get_typev() const { return get_gdtype_static(); }
 
 	TypedArray<StringName> _get_meta_list_bind() const;
 	TypedArray<Dictionary> _get_property_list_bind() const;
@@ -816,26 +827,25 @@ public:
 	};
 
 	/* TYPE API */
-	static void assign_class_name_static(const Span<char> &p_name, StringName &r_target);
+	static void assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type);
 
-	static const StringName &get_class_static() {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			assign_class_name_static("Object", _class_name_static);
+	static const GDType &get_gdtype_static() {
+		static GDType *_class_static;
+		if (unlikely(!_class_static)) {
+			assign_type_static(&_class_static, "Object", nullptr);
 		}
-		return _class_name_static;
+		return *_class_static;
 	}
+
+	const GDType &get_gdtype() const;
+
+	static const StringName &get_class_static() { return get_gdtype_static().get_name(); }
 
 	_FORCE_INLINE_ String get_class() const { return get_class_name(); }
 
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
-	virtual bool is_class(const String &p_class) const {
-		if (_extension && _extension->is_class(p_class)) {
-			return true;
-		}
-		return (p_class == "Object");
-	}
+	bool is_class(const String &p_class) const;
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
 	const StringName &get_class_name() const;
