@@ -40,6 +40,29 @@
 				Returns the IDs of the peers currently trying to authenticate with this [MultiplayerAPI].
 			</description>
 		</method>
+		<method name="get_network_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="object" type="Object" />
+			<description>
+				Returns the network ID associated to [param object]. Returns [code]-1[/code] if there is no ID associated.[br]
+				Note that the associated ID is [i]local[/i] - other peers may use different IDs.
+			</description>
+		</method>
+		<method name="has_peer_confirmed_network_id" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="peer_id" type="int" />
+			<description>
+				Returns true if the remote peer identified by [param peer_id] has confirmed the local ID for [param object]. If not, the local ID can't be used when sending messages to the remote peer.
+			</description>
+		</method>
+		<method name="instance_from_network_id" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the object associated with the specified network ID. Returns [code]null[/code] if [param id] is unknown.
+			</description>
+		</method>
 		<method name="send_auth">
 			<return type="int" enum="Error" />
 			<param index="0" name="id" type="int" />
