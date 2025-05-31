@@ -55,6 +55,9 @@ public:
 		SHADOW_INVALID = 0xFFFFFFFF
 	};
 
+	// Maximum number of shadow cubemaps we'll allocate to prevent VRAM exhaustion
+	static const int MAX_CUBE_SHADOWS = 16;
+
 private:
 	static LightStorage *singleton;
 	uint32_t max_cluster_elements = 512;
