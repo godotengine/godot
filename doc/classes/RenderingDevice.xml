@@ -2624,30 +2624,43 @@
 			Returned by functions that return a format ID if a value is invalid.
 		</constant>
 		<constant name="NONE" value="0" enum="BreadcrumbMarker">
+			No breadcrumb marker will be added.
 		</constant>
 		<constant name="REFLECTION_PROBES" value="65536" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "REFLECTION_PROBES" for added context as to when the crash occurred.
 		</constant>
 		<constant name="SKY_PASS" value="131072" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "SKY_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="LIGHTMAPPER_PASS" value="196608" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "LIGHTMAPPER_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="SHADOW_PASS_DIRECTIONAL" value="262144" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "SHADOW_PASS_DIRECTIONAL" for added context as to when the crash occurred.
 		</constant>
 		<constant name="SHADOW_PASS_CUBE" value="327680" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "SHADOW_PASS_CUBE" for added context as to when the crash occurred.
 		</constant>
 		<constant name="OPAQUE_PASS" value="393216" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "OPAQUE_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="ALPHA_PASS" value="458752" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "ALPHA_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="TRANSPARENT_PASS" value="524288" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "TRANSPARENT_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="POST_PROCESSING_PASS" value="589824" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "POST_PROCESSING_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="BLIT_PASS" value="655360" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "BLIT_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="UI_PASS" value="720896" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "UI_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="DEBUG_PASS" value="786432" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include "DEBUG_PASS" for added context as to when the crash occurred.
 		</constant>
 		<constant name="DRAW_DEFAULT_ALL" value="0" enum="DrawFlags" is_bitfield="true">
 			Do not clear or ignore any attachments.
