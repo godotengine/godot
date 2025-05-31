@@ -1075,6 +1075,8 @@ void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd) {
 	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
+
+	ScriptEditor::get_singleton()->update_connected_methods();
 }
 
 /*
@@ -1095,6 +1097,7 @@ void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd) {
 	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
+	ScriptEditor::get_singleton()->update_connected_methods();
 }
 
 /*
@@ -1128,6 +1131,8 @@ void ConnectionsDock::_disconnect_all() {
 	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
+
+	ScriptEditor::get_singleton()->update_connected_methods();
 }
 
 void ConnectionsDock::_tree_item_selected() {
