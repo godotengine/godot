@@ -466,6 +466,8 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	}
 #endif
 
+	extension->gdextension.create_gdtype();
+
 	ClassDB::register_extension_class(&extension->gdextension);
 
 	if (p_extension_funcs->icon_path != nullptr) {
