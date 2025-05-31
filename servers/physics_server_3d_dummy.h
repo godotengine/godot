@@ -435,6 +435,7 @@ public:
 		memdelete(space_state_dummy);
 	}
 
+	virtual bool is_active() const override { return false; }
 	virtual bool is_flushing_queries() const override { return false; }
 
 	virtual int get_process_info(ProcessInfo p_info) override { return 0; }

@@ -987,13 +987,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_active">
-			<return type="void" />
-			<param index="0" name="active" type="bool" />
-			<description>
-				Activates or deactivates the 3D physics engine.
-			</description>
-		</method>
 		<method name="shape_get_data" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="shape" type="RID" />
@@ -1415,6 +1408,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="active" type="bool" setter="set_active" getter="is_active">
+			If [code]true[/code], the server can be accessed and will update on each physics frame.
+		</member>
+	</members>
 	<constants>
 		<constant name="JOINT_TYPE_PIN" value="0" enum="JointType">
 			The [Joint3D] is a [PinJoint3D].

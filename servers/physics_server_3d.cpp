@@ -1040,8 +1040,11 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &PhysicsServer3D::free);
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &PhysicsServer3D::set_active);
+	ClassDB::bind_method(D_METHOD("is_active"), &PhysicsServer3D::is_active);
 
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &PhysicsServer3D::get_process_info);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 
 	BIND_ENUM_CONSTANT(SHAPE_WORLD_BOUNDARY);
 	BIND_ENUM_CONSTANT(SHAPE_SEPARATION_RAY);
