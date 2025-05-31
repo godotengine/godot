@@ -1045,6 +1045,12 @@ struct VariantInternalAccessor<Object *> {
 	static _FORCE_INLINE_ void set(Variant *v, const Object *p_value) { VariantInternal::object_assign(v, p_value); }
 };
 
+template <typename T, bool Fatal>
+struct VariantInternalAccessor<NotNull<T *, Fatal>> {
+	static _FORCE_INLINE_ NotNull<T *, Fatal> get(const Variant *v) { return NotNull<T *, Fatal>(const_cast<T *>(static_cast<const T *>(*VariantInternal::get_object(v)))); }
+	static _FORCE_INLINE_ void set(Variant *v, const NotNull<T *, Fatal> p_value) { VariantInternal::object_assign(v, p_value); }
+};
+
 template <>
 struct VariantInternalAccessor<Variant> {
 	static _FORCE_INLINE_ Variant &get(Variant *v) { return *v; }

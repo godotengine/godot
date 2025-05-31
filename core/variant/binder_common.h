@@ -123,6 +123,13 @@ VARIANT_ENUM_CAST(Key);
 VARIANT_BITFIELD_CAST(KeyModifierMask);
 VARIANT_ENUM_CAST(KeyLocation);
 
+template <typename T, bool Fatal>
+struct VariantCaster<NotNull<T *, Fatal>> {
+	static _FORCE_INLINE_ NotNull<T *, Fatal> cast(const Variant &p_variant) {
+		return NotNull<T *, Fatal>(const_cast<T *>(Object::cast_to<T>(p_variant)));
+	}
+};
+
 template <>
 struct VariantCaster<char32_t> {
 	static _FORCE_INLINE_ char32_t cast(const Variant &p_variant) {
