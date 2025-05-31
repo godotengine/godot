@@ -970,7 +970,7 @@ Array CSGShape3D::get_meshes() const {
 }
 
 PackedStringArray CSGShape3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 	const CSGShape3D *current_shape = this;
 	while (current_shape) {
 		if (!current_shape->brush || current_shape->brush->faces.is_empty()) {
