@@ -285,4 +285,16 @@
 			The texture format is the same as expected by the Vulkan [code]VK_EXT_fragment_density_map[/code] extension.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="Capabilities">
+		</enum>
+		<enum name="EnvironmentBlendMode">
+		</enum>
+		<enum name="PlayAreaMode">
+		</enum>
+		<enum name="TrackingStatus">
+		</enum>
+		<enum name="VRSTextureFormat">
+		</enum>
+	</enums>
 </class>
