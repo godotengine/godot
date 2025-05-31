@@ -803,18 +803,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 
 void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	const TileMapLayer *edited_layer = _get_edited_layer();
-	if (!edited_layer) {
-		return;
-	}
-
 	Ref<TileSet> tile_set = edited_layer->get_tile_set();
-	if (tile_set.is_null()) {
-		return;
-	}
-
-	if (!edited_layer->is_visible_in_tree()) {
-		return;
-	}
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
 	Vector2 mpos = edited_layer->get_local_mouse_position();
@@ -3181,18 +3170,7 @@ bool TileMapLayerEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputE
 
 void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	const TileMapLayer *edited_layer = _get_edited_layer();
-	if (!edited_layer) {
-		return;
-	}
-
 	Ref<TileSet> tile_set = edited_layer->get_tile_set();
-	if (tile_set.is_null()) {
-		return;
-	}
-
-	if (!edited_layer->is_visible_in_tree()) {
-		return;
-	}
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
 	Vector2 mpos = edited_layer->get_local_mouse_position();
@@ -3749,6 +3727,12 @@ void TileMapLayerEditor::_notification(int p_what) {
 				_update_bottom_panel();
 				_update_layers_selector();
 				tabs_plugins[tabs_bar->get_current_tab()]->tile_set_changed();
+
+				const TileMapLayer *edited_layer = _get_edited_layer();
+				if (edited_layer && custom_overlay) {
+					custom_overlay->set_texture_filter(edited_layer->get_texture_filter_in_tree());
+				}
+
 				CanvasItemEditor::get_singleton()->update_viewport();
 				tile_map_layer_changed_needs_update = false;
 			}
@@ -4280,17 +4264,26 @@ bool TileMapLayerEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event
 }
 
 void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
+	if (!custom_overlay) {
+		custom_overlay = memnew(Control);
+		custom_overlay->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+		custom_overlay->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+		custom_overlay->set_clip_contents(true);
+		custom_overlay->set_draw_behind_parent(true);
+		p_overlay->add_child(custom_overlay);
+		custom_overlay->connect(SceneStringName(draw), callable_mp(this, &TileMapLayerEditor::_draw_overlay));
+	}
+	custom_overlay->queue_redraw();
+}
+
+void TileMapLayerEditor::_draw_overlay() {
 	const TileMapLayer *edited_layer = _get_edited_layer();
-	if (!edited_layer) {
+	if (!edited_layer || !edited_layer->is_visible_in_tree()) {
 		return;
 	}
 
 	Ref<TileSet> tile_set = edited_layer->get_tile_set();
 	if (tile_set.is_null()) {
-		return;
-	}
-
-	if (!edited_layer->is_visible_in_tree()) {
 		return;
 	}
 
@@ -4328,7 +4321,7 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				Transform2D tile_xform;
 				tile_xform.set_origin(tile_set->map_to_local(coords));
 				tile_xform.set_scale(tile_shape_size);
-				tile_set->draw_tile_shape(p_overlay, xform * tile_xform, color, true, warning_pattern_texture);
+				tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
 
 				// Draw the warning icon.
 				Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
@@ -4336,7 +4329,7 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
 				icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
 				Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
-				p_overlay->draw_texture_rect(missing_tile_texture, rect);
+				custom_overlay->draw_texture_rect(missing_tile_texture, rect);
 			}
 		}
 	}
@@ -4345,7 +4338,7 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	const int fading = 5;
 
 	// Determine the drawn area.
-	Size2 screen_size = p_overlay->get_size();
+	Size2 screen_size = custom_overlay->get_size();
 	Rect2i screen_rect;
 	screen_rect.position = tile_set->local_to_map(xform_inv.xform(Vector2()));
 	screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
@@ -4387,7 +4380,7 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				tile_xform.set_scale(tile_shape_size);
 				Color color = grid_color;
 				color.a = color.a * opacity;
-				tile_set->draw_tile_shape(p_overlay, xform * tile_xform, color, false);
+				tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, false);
 			}
 		}
 	}
@@ -4396,12 +4389,12 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	/*Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-			p_overlay->draw_string(font, xform.xform(tile_set->map_to_local(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
+			custom_overlay->draw_string(font, xform.xform(tile_set->map_to_local(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
 		}
 	}*/
 
 	// Draw the plugins.
-	tabs_plugins[tabs_bar->get_current_tab()]->forward_canvas_draw_over_viewport(p_overlay);
+	tabs_plugins[tabs_bar->get_current_tab()]->forward_canvas_draw_over_viewport(custom_overlay);
 }
 
 void TileMapLayerEditor::edit(Object *p_edited) {
