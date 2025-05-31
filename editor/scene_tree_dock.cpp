@@ -178,6 +178,10 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	if (edit_remote->is_pressed()) {
+		return;
+	}
+
 	if (ED_IS_SHORTCUT("scene_tree/rename", p_event)) {
 		// Prevent renaming if a button or a range is focused
 		// to avoid conflict with Enter shortcut on macOS.
