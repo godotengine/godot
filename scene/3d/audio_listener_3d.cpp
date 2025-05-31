@@ -86,7 +86,7 @@ void AudioListener3D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			_request_listener_update();
 		} break;
 
@@ -148,7 +148,7 @@ void AudioListener3D::_bind_methods() {
 }
 
 AudioListener3D::AudioListener3D() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 }
 
 AudioListener3D::~AudioListener3D() {
