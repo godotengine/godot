@@ -32,9 +32,6 @@
 
 #include "core/io/compression.h"
 
-const uint32_t RenderingShaderContainer::MAGIC_NUMBER = 0x43535247;
-const uint32_t RenderingShaderContainer::VERSION = 2;
-
 static inline uint32_t aligned_to(uint32_t p_size, uint32_t p_alignment) {
 	if (p_size % p_alignment) {
 		return p_size + (p_alignment - (p_size % p_alignment));
@@ -228,8 +225,8 @@ bool RenderingShaderContainer::from_bytes(const PackedByteArray &p_bytes) {
 	bytes_offset += sizeof(ContainerHeader);
 	bytes_offset += _from_bytes_header_extra_data(&bytes_ptr[bytes_offset]);
 
-	ERR_FAIL_COND_V_MSG(container_header.magic_number != MAGIC_NUMBER, false, "Incorrect magic number in shader container.");
-	ERR_FAIL_COND_V_MSG(container_header.version > VERSION, false, "Unsupported version in shader container.");
+	ERR_FAIL_COND_V_MSG(container_header.magic_number != CONTAINER_MAGIC_NUMBER, false, "Incorrect magic number in shader container.");
+	ERR_FAIL_COND_V_MSG(container_header.version > CONTAINER_VERSION, false, "Unsupported version in shader container.");
 	ERR_FAIL_COND_V_MSG(container_header.format != _format(), false, "Incorrect format in shader container.");
 	ERR_FAIL_COND_V_MSG(container_header.format_version > _format_version(), false, "Unsupported format version in shader container.");
 
@@ -354,8 +351,8 @@ PackedByteArray RenderingShaderContainer::to_bytes() const {
 	uint64_t bytes_offset = 0;
 	uint8_t *bytes_ptr = bytes.ptrw();
 	ContainerHeader &container_header = *(ContainerHeader *)(&bytes_ptr[bytes_offset]);
-	container_header.magic_number = MAGIC_NUMBER;
-	container_header.version = VERSION;
+	container_header.magic_number = CONTAINER_MAGIC_NUMBER;
+	container_header.version = CONTAINER_VERSION;
 	container_header.format = _format();
 	container_header.format_version = _format_version();
 	container_header.shader_count = shaders.size();
