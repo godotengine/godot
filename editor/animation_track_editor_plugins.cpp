@@ -335,16 +335,11 @@ void AnimationTrackEditAudio::draw_key_region(Ref<Resource> resource, float star
 	region_end = MIN(region_end, p_clip_right);
 	region_width = region_end - region_begin;
 
-	if (region_end < p_clip_left || region_begin > p_clip_right) {
+	if (region_width == 0) {
 		return;
 	}
 
-	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-		float limit = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
-		region_begin = MIN(region_begin + limit * p_pixels_sec, region_begin);
-	}
-
-	if (region_end <= region_begin) {
+	if (region_end < p_clip_left || region_begin > p_clip_right) {
 		return;
 	}
 
@@ -943,16 +938,8 @@ void AnimationTrackEditBase::set_node(Object *p_object) {
 }
 
 Rect2 AnimationTrackEditBase::get_key_rect_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec) {
-	float length = len - start_ofs - end_ofs;
-	if (length < 0) {
-		length = 0;
-	}
-
-	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-		length = MIN(length, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
-	}
-
-	return Rect2(0, 0, length * p_pixels_sec, get_size().height);
+	Vector2 region = calc_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, 0);
+	return Rect2(region.x, 0, region.y, get_size().height);
 }
 
 void AnimationTrackEditTypeAudio::create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
@@ -980,18 +967,18 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 }
 
 void AnimationTrackEditClip::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	int px_offset = 0;
+	float diff_start_ofs = 0;
+	float diff_end_ofs = 0;
 	if (len_resizing && p_index == len_resizing_index) {
 		float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
 		if (len_resizing_start) {
-			start_ofs += ofs_local;
-			px_offset = ofs_local * p_pixels_sec;
+			diff_start_ofs = ofs_local;
 		} else {
-			end_ofs -= ofs_local;
+			diff_end_ofs = -ofs_local;
 		}
 	}
 
-	AnimationTrackEditBase::draw_key_region(resource, start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x + px_offset, p_selected, p_clip_left, p_clip_right);
+	AnimationTrackEditBase::draw_key_region(resource, start_ofs + diff_start_ofs, end_ofs + diff_end_ofs, len, p_index, p_pixels_sec, p_x + (diff_start_ofs * p_pixels_sec), p_selected, p_clip_left, p_clip_right);
 }
 
 Vector2 AnimationTrackEditBase::calc_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x) {
@@ -1028,6 +1015,10 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 	int region_begin = region.x;
 	int region_end = region.y;
 	int region_width = region.y - region.x;
+
+	if (region_end < p_clip_left || region_begin > p_clip_right) {
+		return;
+	}
 
 	if (region_width == 0) {
 		return;
@@ -1452,14 +1443,22 @@ void AnimationTrackEditTypeAnimation::create_key_region(Ref<Resource> resource, 
 }
 
 void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
-	if (anim_name == StringName("[stop]")) {
-		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
+	Object *object = ObjectDB::get_instance(id);
+
+	if (!object) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
 		return;
 	}
 
-	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(ObjectDB::get_instance(id));
-	if (!ap || !ap->has_animation(anim_name)) {
+	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(object);
+
+	if (!ap) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
+		return;
+	}
+
+	StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
+	if (anim_name == StringName("[stop]")) {
 		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
 		return;
 	}
