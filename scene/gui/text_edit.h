@@ -919,6 +919,7 @@ public:
 	Point2 get_local_mouse_pos() const;
 
 	String get_word_at_pos(const Vector2 &p_pos) const;
+	String get_word(int p_line, int p_column) const;
 
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;

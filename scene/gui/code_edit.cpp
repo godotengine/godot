@@ -443,7 +443,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (symbol_lookup_on_click_enabled) {
 			if (mm->is_command_or_control_pressed() && mm->get_button_mask().is_empty()) {
 				symbol_lookup_pos = get_line_column_at_pos(mpos, false, false);
-				symbol_lookup_new_word = get_word_at_pos(mpos);
+				symbol_lookup_new_word = get_lookup_word(symbol_lookup_pos.y, symbol_lookup_pos.x);
 				if (symbol_lookup_new_word != symbol_lookup_word) {
 					emit_signal(SNAME("symbol_validate"), symbol_lookup_new_word);
 				}
@@ -454,7 +454,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		if (symbol_tooltip_on_hover_enabled) {
 			symbol_tooltip_pos = get_line_column_at_pos(mpos, false, false);
-			symbol_tooltip_word = get_word_at_pos(mpos);
+			symbol_tooltip_word = get_lookup_word(symbol_tooltip_pos.y, symbol_tooltip_pos.x);
 			symbol_tooltip_timer->start();
 		}
 
@@ -499,7 +499,8 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	if ((mac_keys && k->get_keycode() == Key::META) || (!mac_keys && k->get_keycode() == Key::CTRL)) {
 		if (symbol_lookup_on_click_enabled) {
 			if (k->is_pressed() && !is_dragging_cursor()) {
-				symbol_lookup_new_word = get_word_at_pos(get_local_mouse_pos());
+				Point2i lookup_pos = get_line_column_at_pos(get_local_mouse_pos(), false, false);
+				symbol_lookup_new_word = get_lookup_word(lookup_pos.y, lookup_pos.x);
 				if (symbol_lookup_new_word != symbol_lookup_word) {
 					emit_signal(SNAME("symbol_validate"), symbol_lookup_new_word);
 				}
@@ -2483,6 +2484,25 @@ String CodeEdit::get_text_with_cursor_char(int p_line, int p_column) const {
 	return result.as_string();
 }
 
+String CodeEdit::get_lookup_word(int p_line, int p_column) const {
+	if (p_line < 0 || p_column < 0) {
+		return String();
+	}
+	if (is_in_string(p_line, p_column) != -1) {
+		// Return the string in case it is a path.
+		Point2 start_pos = get_delimiter_start_position(p_line, p_column);
+		Point2 end_pos = get_delimiter_end_position(p_line, p_column);
+		int start_line = start_pos.y;
+		int start_column = start_pos.x;
+		int end_line = end_pos.y;
+		int end_column = end_pos.x;
+		if (start_line == end_line && start_column >= 0 && end_column >= 0) {
+			return get_line(start_line).substr(start_column, end_column - start_column - 1);
+		}
+	}
+	return get_word(p_line, p_column);
+}
+
 void CodeEdit::set_symbol_lookup_word_as_valid(bool p_valid) {
 	symbol_lookup_word = p_valid ? symbol_lookup_new_word : "";
 	symbol_lookup_new_word = "";
@@ -2506,7 +2526,7 @@ bool CodeEdit::is_symbol_tooltip_on_hover_enabled() const {
 void CodeEdit::_on_symbol_tooltip_timer_timeout() {
 	const int line = symbol_tooltip_pos.y;
 	const int column = symbol_tooltip_pos.x;
-	if (line >= 0 && column >= 0 && !symbol_tooltip_word.is_empty() && !has_selection() && !Input::get_singleton()->is_anything_pressed()) {
+	if (line >= 0 && column >= 0 && !symbol_tooltip_word.is_empty() && !Input::get_singleton()->is_anything_pressed()) {
 		emit_signal(SNAME("symbol_hovered"), symbol_tooltip_word, line, column);
 	}
 }
