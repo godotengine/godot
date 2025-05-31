@@ -70,6 +70,7 @@ public:
 		DOCK_SLOT_RIGHT_BL,
 		DOCK_SLOT_RIGHT_UR,
 		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_BOTTOM,
 		DOCK_SLOT_MAX
 	};
 
@@ -80,9 +81,7 @@ private:
 		String title;
 		bool open = false;
 		bool enabled = true;
-		bool at_bottom = false;
 		int previous_tab_index = -1;
-		bool previous_at_bottom = false;
 		WindowWrapper *dock_window = nullptr;
 		int dock_slot_index = DOCK_SLOT_NONE;
 		Ref<Shortcut> shortcut;
@@ -108,7 +107,6 @@ private:
 
 	void _dock_split_dragged(int p_offset);
 	void _dock_container_gui_input(const Ref<InputEvent> &p_input, TabContainer *p_dock_container);
-	void _bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, Control *p_dock, Button *p_bottom_button);
 	void _dock_container_update_visibility(TabContainer *p_dock_container);
 	void _update_layout();
 
@@ -118,10 +116,6 @@ private:
 	Control *_close_window(WindowWrapper *p_wrapper);
 	void _open_dock_in_window(Control *p_dock, bool p_show_window = true, bool p_reset_size = false);
 	void _restore_dock_to_saved_window(Control *p_dock, const Dictionary &p_window_dump);
-
-	void _dock_move_to_bottom(Control *p_dock, bool p_visible);
-	void _dock_remove_from_bottom(Control *p_dock);
-	bool _is_dock_at_bottom(Control *p_dock);
 
 	void _move_dock_tab_index(Control *p_dock, int p_tab_index, bool p_set_current);
 	void _move_dock(Control *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
@@ -173,7 +167,6 @@ class DockContextPopup : public PopupPanel {
 	Button *tab_move_left_button = nullptr;
 	Button *tab_move_right_button = nullptr;
 	Button *close_button = nullptr;
-	Button *dock_to_bottom_button = nullptr;
 
 	Control *dock_select = nullptr;
 	Rect2 dock_select_rects[EditorDockManager::DOCK_SLOT_MAX];
@@ -187,7 +180,6 @@ class DockContextPopup : public PopupPanel {
 	void _tab_move_right();
 	void _close_dock();
 	void _float_dock();
-	void _move_dock_to_bottom();
 
 	void _dock_select_input(const Ref<InputEvent> &p_input);
 	void _dock_select_mouse_exited();
