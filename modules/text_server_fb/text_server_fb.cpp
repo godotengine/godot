@@ -1226,6 +1226,14 @@ int64_t TextServerFallback::_font_get_face_count(const RID &p_font_rid) const {
 	return face_count;
 }
 
+PackedStringArray TextServerFallback::_font_get_named_instances(const RID &p_font_rid) const {
+	return PackedStringArray();
+}
+
+Dictionary TextServerFallback::_font_get_named_instance_variations(const RID &p_font_rid, int64_t p_index) const {
+	return Dictionary();
+}
+
 BitField<TextServer::FontStyle> TextServerFallback::_font_get_style(const RID &p_font_rid) const {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL_V(fd, 0);

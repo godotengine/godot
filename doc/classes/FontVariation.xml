@@ -71,6 +71,10 @@
 		<member name="variation_face_index" type="int" setter="set_variation_face_index" getter="get_variation_face_index" default="0">
 			Active face index in the TrueType / OpenType collection file.
 		</member>
+		<member name="variation_instance_index" type="int" setter="set_variation_instance_index" getter="get_variation_instance_index" default="0">
+			Index of variable font named instance. [code]0[/code] is font default instance, named instances start with index [code]1[/code]. See [method Font.get_named_instances].
+			[b]Note:[/b] This property is set to [code]-1[/code] when custom variation coordinates are set.
+		</member>
 		<member name="variation_opentype" type="Dictionary" setter="set_variation_opentype" getter="get_variation_opentype" default="{}">
 			Font OpenType variation coordinates. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]OpenType variation tags[/url].
 			[b]Note:[/b] This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags ([int], e.g. [code]0x77678674[/code]) and names ([String], e.g. [code]wght[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].

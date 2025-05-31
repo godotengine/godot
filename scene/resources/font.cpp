@@ -96,6 +96,8 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_feature_list"), &Font::get_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &Font::get_supported_variation_list);
 	ClassDB::bind_method(D_METHOD("get_face_count"), &Font::get_face_count);
+	ClassDB::bind_method(D_METHOD("get_named_instances"), &Font::get_named_instances);
+	ClassDB::bind_method(D_METHOD("get_supported_named_instance_variation_list", "index"), &Font::get_supported_named_instance_variation_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
@@ -560,6 +562,14 @@ Dictionary Font::get_supported_variation_list() const {
 
 int64_t Font::get_face_count() const {
 	return TS->font_get_face_count(_get_rid());
+}
+
+PackedStringArray Font::get_named_instances() const {
+	return TS->font_get_named_instances(_get_rid());
+}
+
+Dictionary Font::get_supported_named_instance_variation_list(int64_t p_index) const {
+	return TS->font_get_named_instance_variations(_get_rid(), p_index);
 }
 
 Font::Font() {
@@ -1359,7 +1369,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 		String prefix = "cache/" + itos(i) + "/";
 		TypedArray<Vector2i> sizes = get_size_cache_list(i);
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, prefix + "variation_coordinates", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + "face_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "face_index", PROPERTY_HINT_RANGE, "0,2147483647,1", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM2D, prefix + "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_top", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -2336,7 +2346,7 @@ bool FontFile::get_keep_rounding_remainders() const {
 	return keep_rounding_remainders;
 }
 
-RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int64_t p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
 	int make_linked_from = -1;
@@ -2517,7 +2527,7 @@ void FontFile::set_extra_baseline_offset(int p_cache_index, float p_baseline_off
 void FontFile::set_face_index(int p_cache_index, int64_t p_index) {
 	ERR_FAIL_COND(p_cache_index < 0);
 	ERR_FAIL_COND(p_index < 0);
-	ERR_FAIL_COND(p_index >= 0x7FFF);
+	ERR_FAIL_COND(p_index > 0x7FFFFFFF);
 
 	_ensure_rid(p_cache_index);
 	TS->font_set_face_index(cache[p_cache_index], p_index);
@@ -2835,6 +2845,9 @@ void FontVariation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_variation_face_index", "face_index"), &FontVariation::set_variation_face_index);
 	ClassDB::bind_method(D_METHOD("get_variation_face_index"), &FontVariation::get_variation_face_index);
 
+	ClassDB::bind_method(D_METHOD("set_variation_instance_index", "instance_index"), &FontVariation::set_variation_instance_index);
+	ClassDB::bind_method(D_METHOD("get_variation_instance_index"), &FontVariation::get_variation_instance_index);
+
 	ClassDB::bind_method(D_METHOD("set_variation_transform", "transform"), &FontVariation::set_variation_transform);
 	ClassDB::bind_method(D_METHOD("get_variation_transform"), &FontVariation::get_variation_transform);
 
@@ -2849,7 +2862,8 @@ void FontVariation::_bind_methods() {
 
 	ADD_GROUP("Variation", "variation_");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "variation_opentype"), "set_variation_opentype", "get_variation_opentype");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "variation_face_index"), "set_variation_face_index", "get_variation_face_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "variation_face_index", PROPERTY_HINT_RANGE, "0,0,1"), "set_variation_face_index", "get_variation_face_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "variation_instance_index", PROPERTY_HINT_ENUM, "Custom:-1,Default"), "set_variation_instance_index", "get_variation_instance_index");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "variation_embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), "set_variation_embolden", "get_variation_embolden");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "variation_transform", PROPERTY_HINT_NONE, "suffix:px"), "set_variation_transform", "get_variation_transform");
 
@@ -2864,6 +2878,28 @@ void FontVariation::_bind_methods() {
 
 	ADD_GROUP("Baseline", "baseline_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "baseline_offset", PROPERTY_HINT_RANGE, "-2,2,0.005"), "set_baseline_offset", "get_baseline_offset");
+}
+
+void FontVariation::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "variation_face_index") {
+		Ref<Font> f = _get_base_font_or_default();
+
+		if (f.is_valid() && f->get_face_count() > 0) {
+			p_property.hint_string = vformat("0,%d,1", f->get_face_count() - 1);
+		} else {
+			p_property.hint_string = "0,0,1";
+		}
+	} else if (p_property.name == "variation_instance_index") {
+		Ref<Font> f = _get_base_font_or_default();
+
+		String inst_hint = "Custom:-1,Default";
+		if (f.is_valid()) {
+			for (const String &E : f->get_named_instances()) {
+				inst_hint += "," + E;
+			}
+		}
+		p_property.hint_string = inst_hint;
+	}
 }
 
 void FontVariation::_update_rids() const {
@@ -2984,6 +3020,25 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 void FontVariation::set_variation_opentype(const Dictionary &p_coords) {
 	if (!variation.opentype.recursive_equal(p_coords, 1)) {
 		variation.opentype = p_coords.duplicate();
+		variation.instance_index = -1;
+		Ref<Font> f = _get_base_font_or_default();
+		if (f.is_valid()) {
+			for (int i = 0; i <= f->get_named_instances().size(); i++) {
+				bool match = true;
+				Dictionary supported = f->get_supported_named_instance_variation_list(i);
+				for (const KeyValue<Variant, Variant> &kv : supported) {
+					const int &name_tag = kv.key;
+					const Vector3i &range = kv.value;
+					if (variation.opentype.has(name_tag)) {
+						match = match && (variation.opentype[name_tag].operator int32_t() == range.z);
+					}
+				}
+				if (match) {
+					variation.instance_index = i;
+					break;
+				}
+			}
+		}
 		_invalidate_rids();
 	}
 }
@@ -3014,15 +3069,37 @@ Transform2D FontVariation::get_variation_transform() const {
 	return variation.transform;
 }
 
-void FontVariation::set_variation_face_index(int p_face_index) {
+void FontVariation::set_variation_face_index(int64_t p_face_index) {
 	if (variation.face_index != p_face_index) {
 		variation.face_index = p_face_index;
 		_invalidate_rids();
 	}
 }
 
-int FontVariation::get_variation_face_index() const {
+int64_t FontVariation::get_variation_face_index() const {
 	return variation.face_index;
+}
+
+void FontVariation::set_variation_instance_index(int64_t p_instance_index) {
+	if (variation.instance_index != p_instance_index) {
+		variation.instance_index = p_instance_index;
+		if (variation.instance_index != -1) {
+			Ref<Font> f = _get_base_font_or_default();
+			if (f.is_valid()) {
+				Dictionary supported = f->get_supported_named_instance_variation_list(variation.instance_index);
+				for (const KeyValue<Variant, Variant> &kv : supported) {
+					const int &name_tag = kv.key;
+					const Vector3i &range = kv.value;
+					variation.opentype[name_tag] = range.z;
+				}
+			}
+		}
+		_invalidate_rids();
+	}
+}
+
+int64_t FontVariation::get_variation_instance_index() const {
+	return variation.instance_index;
 }
 
 void FontVariation::set_opentype_features(const Dictionary &p_features) {
@@ -3060,7 +3137,7 @@ float FontVariation::get_baseline_offset() const {
 	return baseline_offset;
 }
 
-RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int64_t p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
@@ -3071,7 +3148,11 @@ RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int
 RID FontVariation::_get_rid() const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH], baseline_offset);
+		int64_t idx = variation.face_index;
+		if (variation.instance_index > 0) {
+			idx += variation.instance_index << 16;
+		}
+		return f->find_variation(variation.opentype, idx, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH], baseline_offset);
 	}
 	return RID();
 }
@@ -3208,7 +3289,7 @@ void SystemFont::_update_base_font() {
 
 		// If it's a font collection check all faces to match requested style and name.
 		int best_score = 0;
-		for (int i = 0; i < file->get_face_count(); i++) {
+		for (int64_t i = 0; i < file->get_face_count(); i++) {
 			int score = 0;
 			file->set_face_index(0, i);
 			const String n = file->get_font_name();
@@ -3578,7 +3659,7 @@ int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
 	}
 }
 
-RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int64_t p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		Dictionary var = p_variation_coordinates;
@@ -3593,7 +3674,7 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 		}
 
 		if (!face_indices.is_empty()) {
-			int face_index = CLAMP(p_face_index, 0, face_indices.size() - 1);
+			int64_t face_index = CLAMP(p_face_index, 0, face_indices.size() - 1);
 			return f->find_variation(var, face_indices[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
 		} else {
 			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);

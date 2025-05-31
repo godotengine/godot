@@ -214,6 +214,12 @@
 				See also [method draw_multiline_string].
 			</description>
 		</method>
+		<method name="get_named_instances" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns list of variable font named instances.
+			</description>
+		</method>
 		<method name="get_opentype_features" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
@@ -275,6 +281,13 @@
 			<return type="Dictionary" />
 			<description>
 				Returns list of OpenType features supported by font.
+			</description>
+		</method>
+		<method name="get_supported_named_instance_variation_list" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the dictionary of the supported OpenType variation coordinates for the named instance with index [param index].
 			</description>
 		</method>
 		<method name="get_supported_variation_list" qualifiers="const">

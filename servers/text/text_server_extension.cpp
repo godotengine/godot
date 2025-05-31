@@ -61,6 +61,8 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_get_face_index, "font_rid");
 
 	GDVIRTUAL_BIND(_font_get_face_count, "font_rid");
+	GDVIRTUAL_BIND(_font_get_named_instances, "font_rid");
+	GDVIRTUAL_BIND(_font_get_named_instance_variations, "font_rid", "index");
 
 	GDVIRTUAL_BIND(_font_set_style, "font_rid", "style");
 	GDVIRTUAL_BIND(_font_get_style, "font_rid");
@@ -503,6 +505,18 @@ int64_t TextServerExtension::font_get_face_index(const RID &p_font_rid) const {
 int64_t TextServerExtension::font_get_face_count(const RID &p_font_rid) const {
 	int64_t ret = 1;
 	GDVIRTUAL_CALL(_font_get_face_count, p_font_rid, ret);
+	return ret;
+}
+
+PackedStringArray TextServerExtension::font_get_named_instances(const RID &p_font_rid) const {
+	PackedStringArray ret;
+	GDVIRTUAL_CALL(_font_get_named_instances, p_font_rid, ret);
+	return ret;
+}
+
+Dictionary TextServerExtension::font_get_named_instance_variations(const RID &p_font_rid, int64_t p_index) const {
+	Dictionary ret;
+	GDVIRTUAL_CALL(_font_get_named_instance_variations, p_font_rid, p_index, ret);
 	return ret;
 }
 
