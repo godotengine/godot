@@ -44,7 +44,7 @@
 				var damage = 0
 
 				func _setup_local_to_scene():
-				    damage = randi_range(10, 40)
+					damage = randi_range(10, 40)
 				[/codeblock]
 			</description>
 		</method>
@@ -77,10 +77,10 @@
 				[b]Note:[/b] For custom resources, it's recommended to call this method whenever a meaningful change occurs, such as a modified property. This ensures that custom [Object]s depending on the resource are properly updated.
 				[codeblock]
 				var damage:
-				    set(new_value):
-				        if damage != new_value:
-				            damage = new_value
-				            emit_changed()
+					set(new_value):
+						if damage != new_value:
+							damage = new_value
+							emit_changed()
 				[/codeblock]
 			</description>
 		</method>

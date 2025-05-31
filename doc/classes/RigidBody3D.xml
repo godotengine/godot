@@ -190,19 +190,19 @@
 			@onready var ball = $Ball
 
 			func get_ball_inertia():
-			    return PhysicsServer3D.body_get_direct_state(ball.get_rid()).inverse_inertia.inverse()
+				return PhysicsServer3D.body_get_direct_state(ball.get_rid()).inverse_inertia.inverse()
 			[/gdscript]
 			[csharp]
 			private RigidBody3D _ball;
 
 			public override void _Ready()
 			{
-			    _ball = GetNode&lt;RigidBody3D&gt;("Ball");
+				_ball = GetNode&lt;RigidBody3D&gt;("Ball");
 			}
 
 			private Vector3 GetBallInertia()
 			{
-			    return PhysicsServer3D.BodyGetDirectState(_ball.GetRid()).InverseInertia.Inverse();
+				return PhysicsServer3D.BodyGetDirectState(_ball.GetRid()).InverseInertia.Inverse();
 			}
 			[/csharp]
 			[/codeblocks]
