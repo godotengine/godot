@@ -411,6 +411,11 @@
 				Emitted when the value of [member show_rest_only] changes.
 			</description>
 		</signal>
+		<signal name="skeleton_update_started">
+			<description>
+				Emitted when the update process started. This means that the dirty poses by the scene process has brern solved and before processing the [SkeletonModifier3D]s.
+			</description>
+		</signal>
 		<signal name="skeleton_updated">
 			<description>
 				Emitted when the final pose has been calculated will be applied to the skin in the update process.

@@ -337,6 +337,8 @@ void Skeleton3D::_notification(int p_what) {
 			// Update bone transforms to apply unprocessed poses.
 			force_update_all_dirty_bones();
 
+			emit_signal(SceneStringName(skeleton_update_started));
+
 			updating = true;
 
 			Bone *bonesptr = bones.ptr();
@@ -1323,6 +1325,7 @@ void Skeleton3D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("rest_updated"));
 	ADD_SIGNAL(MethodInfo("pose_updated"));
+	ADD_SIGNAL(MethodInfo("skeleton_update_started"));
 	ADD_SIGNAL(MethodInfo("skeleton_updated"));
 	ADD_SIGNAL(MethodInfo("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("bone_list_changed"));
