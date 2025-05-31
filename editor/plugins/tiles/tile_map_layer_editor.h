@@ -348,6 +348,9 @@ private:
 	void _update_tile_map_layers_in_scene_list_cache();
 	void _node_change(Node *p_node);
 
+	Control *custom_overlay = nullptr;
+	void _draw_overlay();
+
 	// Vector to keep plugins.
 	Vector<TileMapLayerSubEditorPlugin *> tile_map_editor_plugins;
 
