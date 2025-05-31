@@ -275,6 +275,7 @@ TypedArray<Dictionary> IP::_get_local_interfaces() const {
 		rc["name"] = c.name;
 		rc["friendly"] = c.name_friendly;
 		rc["index"] = c.index;
+		rc["netmask"] = String(c.netmask);
 
 		Array ips;
 		for (const IPAddress &F : c.ip_addresses) {

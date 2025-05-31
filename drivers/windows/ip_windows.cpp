@@ -136,6 +136,11 @@ void IPWindows::get_local_interfaces(HashMap<String, Interface_Info> *r_interfac
 				continue;
 			}
 			info.ip_addresses.push_front(_sockaddr2ip(address->Address.lpSockaddr));
+			if (family == AF_INET) {
+				ULONG netmask_bytes = 0;
+				ConvertLengthToIpv4Mask(address->OnLinkPrefixLength, &netmask_bytes);
+				info.netmask.set_ipv4(reinterpret_cast<uint8_t *>(&netmask_bytes));
+			}
 			address = address->Next;
 		}
 		adapter = adapter->Next;

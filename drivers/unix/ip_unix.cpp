@@ -139,6 +139,7 @@ void IPUnix::get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces)
 			info.name = ifa->ifa_name;
 			info.name_friendly = ifa->ifa_name;
 			info.index = String::num_uint64(if_nametoindex(ifa->ifa_name));
+			info.netmask = _sockaddr2ip(ifa->ifa_netmask);
 			E = r_interfaces->insert(ifa->ifa_name, info);
 			ERR_CONTINUE(!E);
 		}
