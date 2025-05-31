@@ -84,6 +84,9 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationAgent3D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationAgent3D::get_navigation_layer_value);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_layers_cost_map", "costs_map"), &NavigationAgent3D::set_navigation_layers_cost_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers_cost_map"), &NavigationAgent3D::get_navigation_layers_cost_map);
+
 	ClassDB::bind_method(D_METHOD("set_pathfinding_algorithm", "pathfinding_algorithm"), &NavigationAgent3D::set_pathfinding_algorithm);
 	ClassDB::bind_method(D_METHOD("get_pathfinding_algorithm"), &NavigationAgent3D::get_pathfinding_algorithm);
 
@@ -143,6 +146,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_height_offset", PROPERTY_HINT_RANGE, "-100.0,100,0.01,or_greater,suffix:m"), "set_path_height_offset", "get_path_height_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "0.01,100,0.1,or_greater,suffix:m"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_layers_cost_map", PROPERTY_HINT_RESOURCE_TYPE, "NavigationLayersCostMap3D"), "set_navigation_layers_cost_map", "get_navigation_layers_cost_map");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pathfinding_algorithm", PROPERTY_HINT_ENUM, "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered,None"), "set_path_postprocessing", "get_path_postprocessing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_path_metadata_flags", "get_path_metadata_flags");
@@ -496,6 +500,28 @@ void NavigationAgent3D::set_simplify_epsilon(real_t p_epsilon) {
 
 real_t NavigationAgent3D::get_simplify_epsilon() const {
 	return simplify_epsilon;
+}
+
+void NavigationAgent3D::_navigation_layers_cost_map_changed() {
+	navigation_query->set_navigation_layers_cost_map(navigation_layers_cost_map);
+}
+
+void NavigationAgent3D::set_navigation_layers_cost_map(const Ref<NavigationLayersCostMap3D> &p_costs_map) {
+	if (navigation_layers_cost_map.is_valid()) {
+		navigation_layers_cost_map->disconnect_changed(callable_mp(this, &NavigationAgent3D::_navigation_layers_cost_map_changed));
+	}
+
+	navigation_layers_cost_map = p_costs_map;
+
+	if (navigation_layers_cost_map.is_valid()) {
+		navigation_layers_cost_map->connect_changed(callable_mp(this, &NavigationAgent3D::_navigation_layers_cost_map_changed));
+	}
+
+	navigation_query->set_navigation_layers_cost_map(navigation_layers_cost_map);
+}
+
+Ref<NavigationLayersCostMap3D> NavigationAgent3D::get_navigation_layers_cost_map() const {
+	return navigation_layers_cost_map;
 }
 
 void NavigationAgent3D::set_path_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_path_metadata_flags) {

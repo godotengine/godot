@@ -110,9 +110,10 @@ void NavRegion3D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 
 	pending_navmesh_vertices.clear();
 	pending_navmesh_polygons.clear();
+	pending_navmesh_polygons_meta.clear();
 
 	if (p_navigation_mesh.is_valid()) {
-		p_navigation_mesh->get_data(pending_navmesh_vertices, pending_navmesh_polygons);
+		p_navigation_mesh->get_data(pending_navmesh_vertices, pending_navmesh_polygons, pending_navmesh_polygons_meta);
 	}
 
 	polygons_dirty = true;
@@ -235,8 +236,14 @@ void NavRegion3D::update_polygons() {
 	bool first_vertex = true;
 	int navigation_mesh_polygon_index = 0;
 
+	bool use_polygon_meta = pending_navmesh_polygons_meta.size() > 0 && navmesh_polygons.size() == pending_navmesh_polygons_meta.size();
+
 	for (Polygon &polygon : navmesh_polygons) {
 		polygon.surface_area = 0.0;
+		polygon.navigation_layers = navigation_layers;
+		if (use_polygon_meta) {
+			polygon.navigation_layers = pending_navmesh_polygons_meta[navigation_mesh_polygon_index];
+		}
 
 		Vector<int> navigation_mesh_polygon = pending_navmesh_polygons[navigation_mesh_polygon_index];
 		navigation_mesh_polygon_index += 1;
@@ -312,6 +319,7 @@ void NavRegion3D::get_iteration_update(NavRegionIteration3D &r_iteration) {
 	for (uint32_t i = 0; i < navmesh_polygons.size(); i++) {
 		Polygon &navmesh_polygon = navmesh_polygons[i];
 		navmesh_polygon.owner = &r_iteration;
+		navmesh_polygon.navigation_layers = navmesh_polygons[i].navigation_layers;
 		r_iteration.navmesh_polygons[i] = navmesh_polygon;
 	}
 }
