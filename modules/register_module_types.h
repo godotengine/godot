@@ -39,5 +39,8 @@ enum ModuleInitializationLevel {
 	MODULE_INITIALIZATION_LEVEL_EDITOR = GDEXTENSION_INITIALIZATION_EDITOR
 };
 
+void initialize_ai_chat_interface_module(ModuleInitializationLevel p_level);
+void uninitialize_ai_chat_interface_module(ModuleInitializationLevel p_level);
+
 void initialize_modules(ModuleInitializationLevel p_level);
 void uninitialize_modules(ModuleInitializationLevel p_level);

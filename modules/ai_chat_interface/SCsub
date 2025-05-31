@@ -1,0 +1,24 @@
+# modules/ai_chat_interface/SCsub
+# Yes, this is Python code.
+Import('env')
+
+module_env = env.Clone()
+module_env.Append(CPPPATH=['#editor']) # Include editor headers
+
+# List of source files for your module
+src_files = [
+    'ai_chat_interface.cpp',
+    'register_types.cpp',
+]
+
+# Create a library for your module
+# The first argument is the library name, typically 'your_module_name'.
+# The second argument is a list of source files.
+# The third argument is a list of dependencies (other modules).
+module_env.add_library('ai_chat_interface', src_files)
+
+# Register your module with Godot's build system.
+# The first argument is the module name.
+# The second argument is the module's SCons environment.
+# The third argument is a list of dependencies (optional).
+module_env.register_module('ai_chat_interface', module_env)
