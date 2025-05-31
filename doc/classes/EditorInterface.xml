@@ -19,6 +19,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="close_scene">
+			<return type="int" enum="Error" />
+			<description>
+				Closes the currently active scene, discarding any pending changes in the process. Returns [constant OK] on success or [constant ERR_DOES_NOT_EXIST] if there is no scene to close.
+			</description>
+		</method>
 		<method name="edit_node">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
