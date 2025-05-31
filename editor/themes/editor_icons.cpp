@@ -34,6 +34,7 @@
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_icons.gen.h"
 #include "editor/themes/editor_scale.h"
+#include "editor_color_map.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/svg_texture.h"
 
@@ -103,6 +104,33 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 
 	Dictionary color_conversion_map = p_dark_theme ? color_conversion_map_dark : color_conversion_map_light;
 
+	// Color conversion map to 2D and 3D color schemes.
+	Dictionary color_conversion_map_mono;
+	Dictionary color_conversion_map_3d;
+
+	if (p_dark_theme) {
+		color_conversion_map_mono[Color::html("#8da5f3")] = Color::html("#e0e0e0"); // Mono Node
+		color_conversion_map_mono[Color::html("#7582a8")] = Color::html("#b0b0b0"); // Mono Node Abstract
+		color_conversion_map_mono[Color::html("#99c4ff")] = Color::html("#ededed"); // Mono Non-Node
+		color_conversion_map_mono[Color::html("#869ebf")] = Color::html("#c4c4c4"); // Mono Non-Node Abstract
+		color_conversion_map_3d[Color::html("#8da5f3")] = Color::html("#fc7f7f"); // 3D Node
+		color_conversion_map_3d[Color::html("#7582a8")] = Color::html("#b56d6d"); // 3D Node Abstract
+		color_conversion_map_3d[Color::html("#99c4ff")] = Color::html("#ffa6bd"); // 3D Non-Node
+		color_conversion_map_3d[Color::html("#869ebf")] = Color::html("#bf909c"); // 3D Non-Node Abstract
+	} else {
+		color_conversion_map_mono[Color::html("#8da5f3")] = Color::html("#5a5a5a"); // Mono Node Light Mode
+		color_conversion_map_mono[Color::html("#7582a8")] = Color::html("#8a8a8a"); // Mono Node Abstract Light Mode
+		color_conversion_map_mono[Color::html("#99c4ff")] = Color::html("#c7c7c7"); // Mono Non-Node Light Mode
+		color_conversion_map_mono[Color::html("#869ebf")] = Color::html("#8d8d8d"); // Mono Non-Node Abstract Light Mode
+		color_conversion_map_3d[Color::html("#8da5f3")] = Color::html("#cd3838"); // 3D Node Light Mode
+		color_conversion_map_3d[Color::html("#7582a8")] = Color::html("#be6a6a"); // 3D Node Abstract Light Mode
+		color_conversion_map_3d[Color::html("#99c4ff")] = Color::html("#e65c7f"); // 3D Non-Node Light Mode
+		color_conversion_map_3d[Color::html("#869ebf")] = Color::html("#cd8b9c"); // 3D Non-Node Abstract Light Mode
+	}
+
+	// The names of the icons to automatically convert to a color scheme.
+	HashMap<StringName, BitField<EditorColorMap::EditorColorMode>> color_conversion_modes = EditorColorMap::get_color_conversion_modes();
+
 	// The names of the icons used in native menus.
 	HashSet<StringName> native_menu_icons;
 	native_menu_icons.insert("HelpSearch");
@@ -159,6 +187,23 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 				p_theme->set_icon(editor_icon_name + "Dark", EditorStringName(EditorIcons), icon_dark);
 				p_theme->set_icon(editor_icon_name + "Light", EditorStringName(EditorIcons), icon_light);
 				p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), p_dark_theme ? icon_dark : icon_light);
+			} else if (color_conversion_modes.has(editor_icon_name)) {
+				BitField<EditorColorMap::EditorColorMode> mode = color_conversion_modes[editor_icon_name];
+
+				if (mode.has_flag(EditorColorMap::COLOR_MODE_MONO)) {
+					Ref<SVGTexture> icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), p_icon_saturation, color_conversion_map_mono);
+					p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), icon);
+				}
+
+				if (mode.has_flag(EditorColorMap::COLOR_MODE_2D)) {
+					Ref<SVGTexture> icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), p_icon_saturation, color_conversion_map);
+					p_theme->set_icon(editor_icon_name + "2D", EditorStringName(EditorIcons), icon);
+				}
+
+				if (mode.has_flag(EditorColorMap::COLOR_MODE_3D)) {
+					Ref<SVGTexture> icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), p_icon_saturation, color_conversion_map_3d);
+					p_theme->set_icon(editor_icon_name + "3D", EditorStringName(EditorIcons), icon);
+				}
 			} else {
 				Ref<SVGTexture> icon;
 				if (accent_color_icons.has(editor_icon_name)) {
