@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
