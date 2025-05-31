@@ -43,6 +43,7 @@ RendererFog *RenderingServerGlobals::fog = nullptr;
 RendererCameraAttributes *RenderingServerGlobals::camera_attributes = nullptr;
 RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
 RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;
+MeshRasterizer *RenderingServerGlobals::mesh_rasterizer = nullptr;
 
 RendererCanvasCull *RenderingServerGlobals::canvas = nullptr;
 RendererViewport *RenderingServerGlobals::viewport = nullptr;

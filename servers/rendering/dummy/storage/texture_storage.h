@@ -159,6 +159,11 @@ public:
 	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override {}
 	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) override {}
 
+	/* TEXTURE DRAWABLE API */
+
+	void texture_drawable_initialize(RID p_rid, int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps = false) override {}
+	void texture_drawable_generate_mipmaps(RID p_texture_drawable) override {}
+
 	/* RENDER TARGET */
 
 	virtual RID render_target_create() override { return RID(); }
