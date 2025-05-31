@@ -1,3 +1,5 @@
+@warning_ignore_start("shadowed_global_identifier")
+
 func test():
 	# The following keywords are allowed as identifiers:
 	var match = "match"

@@ -54,7 +54,7 @@ public:
 		UNUSED_SIGNAL, // Signal is defined but never explicitly used in the class.
 		SHADOWED_VARIABLE, // A local variable/constant shadows a current class member.
 		SHADOWED_VARIABLE_BASE_CLASS, // A local variable/constant shadows a base class member.
-		SHADOWED_GLOBAL_IDENTIFIER, // A global class or function has the same name as variable.
+		SHADOWED_GLOBAL_IDENTIFIER, // A local variable/constant/enum/function shadows a global type, class, function, enum, or constant.
 		UNREACHABLE_CODE, // Code after a return statement.
 		UNREACHABLE_PATTERN, // Pattern in a match statement after a catch all pattern (wildcard or bind).
 		STANDALONE_EXPRESSION, // Expression not assigned to a variable.
