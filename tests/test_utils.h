@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "scene/resources/audio_stream_wav.h"
+
 class String;
 
 namespace TestUtils {
@@ -37,4 +39,9 @@ namespace TestUtils {
 String get_data_path(const String &p_file);
 String get_executable_dir();
 String get_temp_path(const String &p_suffix);
+float gen_wav(float frequency, float wav_rate, int wav_number);
+Vector<uint8_t> gen_pcm8(float wav_rate, int wav_count, bool stereo);
+Vector<uint8_t> gen_pcm16(float wav_rate, int wav_count, bool stereo);
+Ref<AudioStreamWAV> gen_audio_stream_wav(AudioStreamWAV::Format data_format, bool stereo, double length = 1, float wav_rate = 44100);
+
 } // namespace TestUtils
