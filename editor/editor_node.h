@@ -90,6 +90,7 @@ class EditorSettingsDialog;
 class EditorTitleBar;
 class ExportTemplateManager;
 class EditorQuickOpenDialog;
+class EditorPopupMenuDialog;
 class FBXImporterManager;
 class FileSystemDock;
 class HistoryDock;
@@ -254,6 +255,7 @@ private:
 
 	EditorCommandPalette *command_palette = nullptr;
 	EditorQuickOpenDialog *quick_open_dialog = nullptr;
+	EditorPopupMenuDialog *popup_menu_dialog = nullptr;
 	EditorExport *editor_export = nullptr;
 	EditorLog *log = nullptr;
 	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer = nullptr;
@@ -962,6 +964,7 @@ public:
 	Dictionary drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
 
 	EditorQuickOpenDialog *get_quick_open_dialog() { return quick_open_dialog; }
+	EditorPopupMenuDialog *get_popup_menu_dialog() { return popup_menu_dialog; }
 
 	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
