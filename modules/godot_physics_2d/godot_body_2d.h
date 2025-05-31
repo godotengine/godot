@@ -75,6 +75,9 @@ class GodotBody2D : public GodotCollisionObject2D {
 	real_t inertia = 0.0;
 	real_t _inv_inertia = 0.0;
 
+	LocalVector<real_t> shape_frictions;
+	LocalVector<real_t> shape_bounces;
+
 	Vector2 center_of_mass_local;
 	Vector2 center_of_mass;
 
@@ -305,6 +308,9 @@ public:
 
 	void set_space(GodotSpace2D *p_space) override;
 
+	void remove_shape(GodotShape2D *p_shape) override;
+	void remove_shape(int p_index) override;
+
 	void update_mass_properties();
 	void reset_mass_properties();
 
@@ -330,6 +336,12 @@ public:
 		}
 		return Vector2();
 	}
+
+	void set_shape_friction(int p_index, real_t p_friction);
+	void set_shape_bounce(int p_index, real_t p_bounce);
+
+	real_t get_shape_friction(int p_index) const;
+	real_t get_shape_bounce(int p_index) const;
 
 	void call_queries();
 	void wakeup_neighbours();

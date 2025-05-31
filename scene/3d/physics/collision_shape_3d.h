@@ -32,12 +32,14 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/shape_3d.h"
+#include "scene/resources/physics_material.h"
 
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
 	GDCLASS(CollisionShape3D, Node3D);
 
 	Ref<Shape3D> shape;
+	Ref<PhysicsMaterial> physics_material;
 
 	uint32_t owner_id = 0;
 	CollisionObject3D *collision_object = nullptr;
@@ -50,6 +52,8 @@ class CollisionShape3D : public Node3D {
 #ifdef DEBUG_ENABLED
 	void _shape_changed();
 #endif // DEBUG_ENABLED
+
+	void _material_changed() const;
 
 #ifndef DISABLE_DEPRECATED
 	void resource_changed(Ref<Resource> res);
@@ -74,6 +78,9 @@ public:
 
 	void set_shape(const Ref<Shape3D> &p_shape);
 	Ref<Shape3D> get_shape() const;
+
+	void set_physics_material(const Ref<PhysicsMaterial> &p_material);
+	Ref<PhysicsMaterial> get_physics_material() const;
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
