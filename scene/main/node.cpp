@@ -1809,7 +1809,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 	emit_signal(SNAME("child_order_changed"));
 }
 
-void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_internal) {
+void Node::add_child(const RequiredBind<Node> &p_child, bool p_force_readable_name, InternalMode p_internal) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Adding children to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_child\",node).");
 
 	ERR_THREAD_GUARD
@@ -1833,7 +1833,7 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 	_add_child_nocheck(p_child, p_child->data.name, p_internal);
 }
 
-void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
+void Node::add_sibling(const RequiredBind<Node> &p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
 	ERR_FAIL_NULL(p_sibling);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
@@ -1845,7 +1845,7 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	data.parent->_move_child(p_sibling, get_index() + 1);
 }
 
-void Node::remove_child(Node *p_child) {
+void Node::remove_child(const RequiredBind<Node> &p_child) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Removing children from a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"remove_child\",node).");
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `remove_child()` can't be called at this time. Consider using `remove_child.call_deferred(child)` instead.");
@@ -2028,7 +2028,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 	return current;
 }
 
-Node *Node::get_node(const NodePath &p_path) const {
+RequiredBind<Node> Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 
 	if (unlikely(!node)) {

@@ -490,15 +490,15 @@ public:
 
 	InternalMode get_internal_mode() const;
 
-	void add_child(Node *p_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
-	void add_sibling(Node *p_sibling, bool p_force_readable_name = false);
-	void remove_child(Node *p_child);
+	void add_child(const RequiredBind<Node> &p_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
+	void add_sibling(const RequiredBind<Node> &p_sibling, bool p_force_readable_name = false);
+	void remove_child(const RequiredBind<Node> &p_child);
 
 	int get_child_count(bool p_include_internal = true) const;
 	Node *get_child(int p_index, bool p_include_internal = true) const;
 	TypedArray<Node> get_children(bool p_include_internal = true) const;
 	bool has_node(const NodePath &p_path) const;
-	Node *get_node(const NodePath &p_path) const;
+	RequiredBind<Node> get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
 	Node *find_child(const String &p_pattern, bool p_recursive = true, bool p_owned = true) const;
 	TypedArray<Node> find_children(const String &p_pattern, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;

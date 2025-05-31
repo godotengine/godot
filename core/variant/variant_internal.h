@@ -1045,6 +1045,14 @@ struct VariantInternalAccessor<Object *> {
 	static _FORCE_INLINE_ void set(Variant *v, const Object *p_value) { VariantInternal::object_assign(v, p_value); }
 };
 
+template <typename T>
+struct VariantInternalAccessor<RequiredBind<T>> {
+	static _FORCE_INLINE_ RequiredBind<T> get(const Variant *v) { return RequiredBind<T>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredBind<T> &p_required) {
+		VariantInternal::object_assign(v, static_cast<T *>(p_required));
+	}
+};
+
 template <>
 struct VariantInternalAccessor<Variant> {
 	static _FORCE_INLINE_ Variant &get(Variant *v) { return *v; }
