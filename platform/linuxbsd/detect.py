@@ -251,6 +251,9 @@ def configure(env: "SConsEnvironment"):
     if env["brotli"] and not env["builtin_brotli"]:
         env.ParseConfig("pkg-config libbrotlicommon libbrotlidec --cflags --libs")
 
+    if env["builtin_sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+
     # Sound and video libraries
     # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
 

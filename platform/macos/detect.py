@@ -36,6 +36,7 @@ def get_opts():
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
+        BoolVariable("use_lld", "Use the LLVM linker", False),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         (
             "bundle_sign_identity",
@@ -75,6 +76,7 @@ def configure(env: "SConsEnvironment"):
     # Save this in environment for use by other modules
     if "OSXCROSS_ROOT" in os.environ:
         env["osxcross"] = True
+        env["use_lld"] = True
 
     # CPU architecture.
     if env["arch"] == "arm64":
@@ -98,6 +100,11 @@ def configure(env: "SConsEnvironment"):
     # Workaround for Xcode 15 linker bug.
     if is_apple_clang(env) and cc_version_major == 1500 and cc_version_minor == 0:
         env.Prepend(LINKFLAGS=["-ld_classic"])
+
+    # Fixes "/usr/bin/ld: unrecognized emulation mode: llvm"
+    if env["use_lld"]:
+        env.Prepend(LINKFLAGS=["-fuse-ld=lld"])
+        print("Using LLVM linker (-fuse-ld=lld)")
 
     if env.dev_build:
         env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
@@ -196,6 +203,10 @@ def configure(env: "SConsEnvironment"):
 
     if env["builtin_libtheora"] and env["arch"] == "x86_64":
         env["x86_libtheora_opt_gcc"] = True
+
+    if env["builtin_sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+        env.Append(LINKFLAGS=["-framework", "ForceFeedback"])
 
     ## Flags
 

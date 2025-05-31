@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+env_sdl = env.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+
+def AllSources(node=".", pattern="*"):
+    result = [AllSources(dir, pattern) for dir in Glob(str(node) + "/*") if dir.isdir()]
+    result += [source for source in Glob(str(node) + "/" + pattern) if source.isfile()]
+    return result
+
+
+def add_sources_from_folders(thirdparty_dir, thirdparty_sources, folders, objc=False):
+    for dir in folders:
+        thirdparty_sources.extend(AllSources(thirdparty_dir + "/" + dir + "/", "*.c"))
+        if objc:
+            thirdparty_sources.extend(AllSources(thirdparty_dir + "/" + dir + "/", "*.m"))
+
+
+# Other platforms are not supported (for now), so we just disable compiling SDL altogether
+# TODO: support for Android, iOS and maybe Web
+if env["platform"] not in ["linuxbsd", "server", "windows", "macos"]:
+    env["builtin_sdl"] = False
+
+if env["builtin_sdl"]:
+    thirdparty_dir = "#thirdparty/sdl/"
+    thirdparty_sources = []
+
+    env_sdl.Prepend(CPPPATH="#drivers/sdl", CPPDEFINES="SDL_PLATFORM_PRIVATE")
+
+    if env["platform"] == "linuxbsd" or env["platform"] == "server":
+        # TODO: check the code for BSD systems
+        add_sources_from_folders(
+            thirdparty_dir,
+            thirdparty_sources,
+            [
+                "core/linux",
+                "core/unix",
+                "haptic/linux",
+                "joystick/linux",
+                "thread/pthread",
+                "timer/unix",
+                "loadso/dlopen",
+            ],
+        )
+
+        env_sdl.Prepend(CPPPATH=thirdparty_dir + "hidapi/linux")
+        env_sdl.Append(CPPDEFINES="SDL_PLATFORM_LINUX")
+
+    elif env["platform"] == "windows":
+        add_sources_from_folders(
+            thirdparty_dir,
+            thirdparty_sources,
+            [
+                "core/windows",
+                "haptic/windows",
+                "joystick/windows",
+                "thread/windows",
+                "timer/windows",
+            ],
+        )
+
+        env_sdl.Prepend(CPPPATH=thirdparty_dir + "hidapi/windows")
+        env_sdl.Append(CPPDEFINES="SDL_PLATFORM_WINDOWS")
+
+        # Fixes thirdparty\sdl\joystick\hidapi\SDL_hidapi_ps4.c(1006): error C2099: initializer is not a constant
+        # and other similar errors. The line in question is:
+        #   static const float TOUCHPAD_SCALEX = 1.0f / 1920;
+        if "/fp:strict" in env_sdl["CCFLAGS"]:
+            env_sdl["CCFLAGS"].remove("/fp:strict")
+
+    elif env["platform"] == "macos":
+        add_sources_from_folders(
+            thirdparty_dir,
+            thirdparty_sources,
+            [
+                "core/unix",
+                "haptic/darwin",
+                "joystick/darwin",
+                "joystick/apple",
+                "thread/pthread",
+                "timer/unix",
+            ],
+            objc=True,
+        )
+
+        env_sdl.Prepend(CPPPATH=thirdparty_dir + "hidapi/mac")
+        env_sdl.Append(CPPDEFINES="SDL_PLATFORM_MACOS")
+
+    for dir in [
+        str(dir) + "/" for dir in Glob(thirdparty_dir + "/*") if dir.isdir() and not str(dir).endswith("hidapi")
+    ]:
+        thirdparty_sources += Glob(dir + "/*.c")
+
+    thirdparty_sources += Glob(thirdparty_dir + "/*.c")
+    add_sources_from_folders(
+        thirdparty_dir,
+        thirdparty_sources,
+        [
+            "sensor/dummy",
+            "joystick/hidapi",
+        ],
+    )
+
+    thirdparty_sources += Glob(thirdparty_dir + "hidapi/*.c")
+
+    thirdparty_sources += [
+        thirdparty_dir + "/thread/generic/SDL_sysrwlock.c",
+        thirdparty_dir + "/thread/generic/SDL_syscond.c",
+    ]
+
+    env_sdl.Prepend(CPPPATH=[thirdparty_dir + "include"])
+    env_sdl.Prepend(CPPPATH=[thirdparty_dir + "include/build_config"])
+    env_sdl.Prepend(CPPPATH=[thirdparty_dir + "include/SDL3"])
+    env_sdl.Prepend(CPPPATH=[thirdparty_dir + "hidapi/hidapi"])
+    env_sdl.Prepend(CPPPATH=[thirdparty_dir])
+
+    env_thirdparty = env_sdl.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+
+# Godot source files
+
+driver_obj = []
+
+env_sdl.add_source_files(driver_obj, "*.cpp")
+env.drivers_sources += thirdparty_obj
+env.drivers_sources += driver_obj
+
+# Needed to force rebuilding the driver files when the thirdparty library is updated.
+env.Depends(driver_obj, thirdparty_obj)
