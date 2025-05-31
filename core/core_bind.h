@@ -493,6 +493,8 @@ public:
 	bool is_started() const;
 	bool is_alive() const;
 	Variant wait_to_finish();
+	static bool is_main_thread();
+	static Variant suspend(Signal p_resume_signal, bool p_connect_on_main_thread = true);
 
 	static void set_thread_safety_checks_enabled(bool p_enabled);
 };
