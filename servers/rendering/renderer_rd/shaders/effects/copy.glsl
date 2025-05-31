@@ -16,7 +16,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #define FLAG_COPY_ALL_SOURCE (1 << 7)
 #define FLAG_ALPHA_TO_ONE (1 << 8)
 
-layout(push_constant, std430) uniform Params {
+layout(set = 1, binding = 0, std140) uniform Params {
 	ivec4 section;
 	ivec2 target;
 	uint flags;
@@ -34,30 +34,30 @@ layout(push_constant, std430) uniform Params {
 	// DOF.
 	float camera_z_far;
 	float camera_z_near;
-	uint pad2[2];
+	ivec2 pad2;
 
 	vec4 set_color;
 }
 params;
 
 #ifdef MODE_CUBEMAP_ARRAY_TO_PANORAMA
-layout(set = 0, binding = 0) uniform samplerCubeArray source_color;
+layout(set = 0, binding = SOURCE_COLOR_SLOT) uniform samplerCubeArray source_color;
 #elif defined(MODE_CUBEMAP_TO_PANORAMA)
-layout(set = 0, binding = 0) uniform samplerCube source_color;
+layout(set = 0, binding = SOURCE_COLOR_SLOT) uniform samplerCube source_color;
 #elif !defined(MODE_SET_COLOR)
-layout(set = 0, binding = 0) uniform sampler2D source_color;
-#endif
-
-#ifdef GLOW_USE_AUTO_EXPOSURE
-layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
+layout(set = 0, binding = SOURCE_COLOR_SLOT) uniform sampler2D source_color;
 #endif
 
 #if defined(MODE_LINEARIZE_DEPTH_COPY) || defined(MODE_SIMPLE_COPY_DEPTH)
-layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
+layout(r32f, set = 0, binding = DEST_BUFFER) uniform restrict writeonly image2D dest_buffer;
 #elif defined(DST_IMAGE_8BIT)
-layout(rgba8, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
+layout(rgba8, set = 0, binding = DEST_BUFFER) uniform restrict writeonly image2D dest_buffer;
 #else
-layout(rgba16f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
+layout(rgba16f, set = 0, binding = DEST_BUFFER) uniform restrict writeonly image2D dest_buffer;
+#endif
+
+#ifdef GLOW_USE_AUTO_EXPOSURE
+layout(set = 0, binding = SOURCE_AUTO_EXPOSURE) uniform sampler2D source_auto_exposure;
 #endif
 
 #ifdef MODE_GAUSSIAN_BLUR

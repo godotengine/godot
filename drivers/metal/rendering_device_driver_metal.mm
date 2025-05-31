@@ -78,6 +78,8 @@ __attribute__((constructor)) static void InitializeLogging(void) {
 	LOG_INTERVALS = os_log_create("org.godotengine.godot.metal", "events");
 }
 
+static const uint32_t MAX_DYNAMIC_BUFFERS = 8u; // Minimum guaranteed by Vulkan.
+
 /*****************/
 /**** GENERIC ****/
 /*****************/
@@ -120,20 +122,44 @@ _FORCE_INLINE_ static bool operator==(MTLSize p_a, MTLSize p_b) {
 /**** BUFFERS ****/
 /*****************/
 
-RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) {
-	MTLResourceOptions options = MTLResourceHazardTrackingModeTracked;
+RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) {
+	const uint64_t original_size = p_size;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		p_size = round_up_to_alignment(p_size, 16u) * frame_count;
+	}
+
+	MTLResourceOptions options = 0;
 	switch (p_allocation_type) {
 		case MEMORY_ALLOCATION_TYPE_CPU:
-			options |= MTLResourceStorageModeShared;
+			options = MTLResourceHazardTrackingModeTracked | MTLResourceStorageModeShared;
 			break;
 		case MEMORY_ALLOCATION_TYPE_GPU:
-			options |= MTLResourceStorageModePrivate;
+			if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+				options = MTLResourceHazardTrackingModeUntracked | MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined;
+			} else {
+				options = MTLResourceHazardTrackingModeTracked | MTLResourceStorageModePrivate;
+			}
 			break;
 	}
 
 	id<MTLBuffer> obj = [device newBufferWithLength:p_size options:options];
 	ERR_FAIL_NULL_V_MSG(obj, BufferID(), "Can't create buffer of size: " + itos(p_size));
-	return rid::make(obj);
+
+	BufferInfo *buf_info;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		MetalBufferDynamicInfo *dyn_buffer = memnew(MetalBufferDynamicInfo);
+		buf_info = dyn_buffer;
+#ifdef DEBUG_ENABLED
+		dyn_buffer->last_frame_mapped = p_frames_drawn - 1ul;
+#endif
+		dyn_buffer->frame_idx = 0u;
+		dyn_buffer->size_bytes = round_up_to_alignment(original_size, 16u);
+	} else {
+		buf_info = memnew(BufferInfo);
+	}
+	buf_info->metal_buffer = obj;
+
+	return BufferID(buf_info);
 }
 
 bool RenderingDeviceDriverMetal::buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) {
@@ -142,28 +168,50 @@ bool RenderingDeviceDriverMetal::buffer_set_texel_format(BufferID p_buffer, Data
 }
 
 void RenderingDeviceDriverMetal::buffer_free(BufferID p_buffer) {
-	rid::release(p_buffer);
+	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
+	buf_info->metal_buffer = nil; // Tell ARC to release.
+
+	if (buf_info->is_dynamic()) {
+		memdelete((MetalBufferDynamicInfo *)buf_info);
+	} else {
+		memdelete(buf_info);
+	}
 }
 
 uint64_t RenderingDeviceDriverMetal::buffer_get_allocation_size(BufferID p_buffer) {
-	id<MTLBuffer> obj = rid::get(p_buffer);
-	return obj.allocatedSize;
+	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	return buf_info->metal_buffer.allocatedSize;
 }
 
 uint8_t *RenderingDeviceDriverMetal::buffer_map(BufferID p_buffer) {
-	id<MTLBuffer> obj = rid::get(p_buffer);
-	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, nullptr, "Unable to map private buffers");
-	return (uint8_t *)obj.contents;
+	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(buf_info->metal_buffer.storageMode != MTLStorageModeShared, nullptr, "Unable to map private buffers");
+	return (uint8_t *)buf_info->metal_buffer.contents;
 }
 
 void RenderingDeviceDriverMetal::buffer_unmap(BufferID p_buffer) {
 	// Nothing to do.
 }
 
+uint8_t *RenderingDeviceDriverMetal::buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) {
+	MetalBufferDynamicInfo *buf_info = (MetalBufferDynamicInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), nullptr, "Buffer must have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_map() instead.");
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer or remove the bit.");
+	buf_info->last_frame_mapped = p_frames_drawn;
+#endif
+	buf_info->frame_idx = (buf_info->frame_idx + 1u) % frame_count;
+	return (uint8_t *)buf_info->metal_buffer.contents + buf_info->frame_idx * buf_info->size_bytes;
+}
+
+void RenderingDeviceDriverMetal::buffer_flush(BufferID p_buffer) {
+	// Nothing to do.
+}
+
 uint64_t RenderingDeviceDriverMetal::buffer_get_device_address(BufferID p_buffer) {
 	if (@available(iOS 16.0, macOS 13.0, *)) {
-		id<MTLBuffer> obj = rid::get(p_buffer);
-		return obj.gpuAddress;
+		const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+		return buf_info->metal_buffer.gpuAddress;
 	} else {
 #if DEV_ENABLED
 		WARN_PRINT_ONCE("buffer_get_device_address is not supported on this OS version.");
@@ -1348,14 +1396,51 @@ void RenderingDeviceDriverMetal::shader_destroy_modules(ShaderID p_shader) {
 RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
 	//p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
 
+	// We first gather dynamic arrays in a local array because TightLocalVector's
+	// growth is not efficient when the number of elements is unknown.
+	MetalBufferDynamicInfo const *dynamic_buffers[MAX_DYNAMIC_BUFFERS];
+	uint32_t num_dynamic_buffers = 0u;
+
 	MDUniformSet *set = memnew(MDUniformSet);
 	Vector<BoundUniform> bound_uniforms;
-	bound_uniforms.resize(p_uniforms.size());
-	for (uint32_t i = 0; i < p_uniforms.size(); i += 1) {
-		bound_uniforms.write[i] = p_uniforms[i];
+	const uint32_t uniform_count = p_uniforms.size();
+	bound_uniforms.resize(uniform_count);
+	for (uint32_t i = 0; i < uniform_count; i += 1) {
+		const BoundUniform &uniform = p_uniforms[i];
+
+		switch (p_uniforms[i].type) {
+			case UNIFORM_TYPE_UNIFORM_BUFFER:
+			case UNIFORM_TYPE_STORAGE_BUFFER: {
+				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER instead of UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC.");
+				bound_uniforms.write[i] = uniform;
+				// We're baking the sets, so get rid of one indirection. Only *_DYNAMIC needs the indirection.
+				bound_uniforms.write[i].ids[0] = rid::make(buf_info->metal_buffer);
+
+			} break;
+			case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
+			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC instead of UNIFORM_TYPE_UNIFORM_BUFFER.");
+				ERR_FAIL_COND_V_MSG(num_dynamic_buffers >= MAX_DYNAMIC_BUFFERS, UniformSetID(),
+						"Uniform set exceeded the limit of dynamic/persistent buffers. (" + itos(MAX_DYNAMIC_BUFFERS) + ").");
+				bound_uniforms.write[i] = uniform;
+				dynamic_buffers[num_dynamic_buffers++] = (const MetalBufferDynamicInfo *)buf_info;
+			} break;
+			default: {
+				bound_uniforms.write[i] = uniform;
+				break;
+			}
+		}
 	}
 	set->uniforms = bound_uniforms;
 	set->index = p_set_index;
+	set->dynamic_buffers.resize(num_dynamic_buffers);
+	for (size_t i = 0u; i < num_dynamic_buffers; ++i) {
+		set->dynamic_buffers[i] = dynamic_buffers[i];
+	}
 
 	return UniformSetID(set);
 }
@@ -1365,6 +1450,31 @@ void RenderingDeviceDriverMetal::uniform_set_free(UniformSetID p_uniform_set) {
 	memdelete(obj);
 }
 
+uint32_t RenderingDeviceDriverMetal::uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, uint32_t p_set_count) const {
+	uint32_t mask = 0u;
+	uint32_t shift = 0u;
+#ifdef DEV_ENABLED
+	uint32_t curr_dynamic_offset = 0u;
+#endif
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		const MDUniformSet *usi = (const MDUniformSet *)p_uniform_sets[i].id;
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		for (const MetalBufferDynamicInfo *dynamic_buffer : usi->dynamic_buffers) {
+			DEV_ASSERT(dynamic_buffer->frame_idx < 16u);
+			mask |= dynamic_buffer->frame_idx << shift;
+			shift += 4u;
+		}
+#ifdef DEV_ENABLED
+		curr_dynamic_offset += usi->dynamic_buffers.size();
+#endif
+	}
+
+	return mask;
+}
+
 void RenderingDeviceDriverMetal::command_uniform_set_prepare_for_use(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
 }
 
@@ -1372,26 +1482,25 @@ void RenderingDeviceDriverMetal::command_uniform_set_prepare_for_use(CommandBuff
 
 void RenderingDeviceDriverMetal::command_clear_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, uint64_t p_offset, uint64_t p_size) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
-	id<MTLBuffer> buffer = rid::get(p_buffer);
 
 	id<MTLBlitCommandEncoder> blit = cmd->blit_command_encoder();
-	[blit fillBuffer:buffer
+	[blit fillBuffer:((const BufferInfo *)p_buffer.id)->metal_buffer
 			   range:NSMakeRange(p_offset, p_size)
 			   value:0];
 }
 
 void RenderingDeviceDriverMetal::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, VectorView<BufferCopyRegion> p_regions) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
-	id<MTLBuffer> src = rid::get(p_src_buffer);
-	id<MTLBuffer> dst = rid::get(p_dst_buffer);
+	const BufferInfo *src = (const BufferInfo *)p_src_buffer.id;
+	const BufferInfo *dst = (const BufferInfo *)p_dst_buffer.id;
 
 	id<MTLBlitCommandEncoder> blit = cmd->blit_command_encoder();
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		BufferCopyRegion region = p_regions[i];
-		[blit copyFromBuffer:src
+		[blit copyFromBuffer:src->metal_buffer
 					 sourceOffset:region.src_offset
-						 toBuffer:dst
+						 toBuffer:dst->metal_buffer
 				destinationOffset:region.dst_offset
 							 size:region.size];
 	}
@@ -1627,7 +1736,7 @@ void RenderingDeviceDriverMetal::_copy_texture_buffer(CommandBufferID p_cmd_buff
 		BufferID p_buffer,
 		VectorView<BufferTextureCopyRegion> p_regions) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
-	id<MTLBuffer> buffer = rid::get(p_buffer);
+	const BufferInfo *buffer = (const BufferInfo *)p_buffer.id;
 	id<MTLTexture> texture = rid::get(p_texture);
 
 	id<MTLBlitCommandEncoder> enc = cmd->blit_command_encoder();
@@ -1683,7 +1792,7 @@ void RenderingDeviceDriverMetal::_copy_texture_buffer(CommandBufferID p_cmd_buff
 
 		if (p_source == CopySource::Buffer) {
 			for (uint32_t lyrIdx = 0; lyrIdx < region.texture_subresources.layer_count; lyrIdx++) {
-				[enc copyFromBuffer:buffer
+				[enc copyFromBuffer:buffer->metal_buffer
 							   sourceOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
 						  sourceBytesPerRow:bytesPerRow
 						sourceBytesPerImage:bytesPerImg
@@ -1701,7 +1810,7 @@ void RenderingDeviceDriverMetal::_copy_texture_buffer(CommandBufferID p_cmd_buff
 									 sourceLevel:mip_level
 									sourceOrigin:txt_origin
 									  sourceSize:txt_size
-										toBuffer:buffer
+										toBuffer:buffer->metal_buffer
 							   destinationOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
 						  destinationBytesPerRow:bytesPerRow
 						destinationBytesPerImage:bytesPerImg
@@ -1897,14 +2006,9 @@ void RenderingDeviceDriverMetal::command_bind_render_pipeline(CommandBufferID p_
 	cb->bind_pipeline(p_pipeline);
 }
 
-void RenderingDeviceDriverMetal::command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+void RenderingDeviceDriverMetal::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->render_bind_uniform_set(p_uniform_set, p_shader, p_set_index);
-}
-
-void RenderingDeviceDriverMetal::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
-	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->render_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
+	cb->render_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count, p_dynamic_offsets);
 }
 
 void RenderingDeviceDriverMetal::command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) {
@@ -2378,14 +2482,9 @@ void RenderingDeviceDriverMetal::command_bind_compute_pipeline(CommandBufferID p
 	cb->bind_pipeline(p_pipeline);
 }
 
-void RenderingDeviceDriverMetal::command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+void RenderingDeviceDriverMetal::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->compute_bind_uniform_set(p_uniform_set, p_shader, p_set_index);
-}
-
-void RenderingDeviceDriverMetal::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
-	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->compute_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
+	cb->compute_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count, p_dynamic_offsets);
 }
 
 void RenderingDeviceDriverMetal::command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
@@ -2508,8 +2607,8 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 			// Can't set label after creation.
 		} break;
 		case OBJECT_TYPE_BUFFER: {
-			id<MTLBuffer> buffer = rid::get(p_driver_id);
-			buffer.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
+			const BufferInfo *buf_info = (const BufferInfo *)p_driver_id.id;
+			buf_info->metal_buffer.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
 		} break;
 		case OBJECT_TYPE_SHADER: {
 			NSString *label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
@@ -2525,7 +2624,7 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 		} break;
 		case OBJECT_TYPE_UNIFORM_SET: {
 			MDUniformSet *set = (MDUniformSet *)(p_driver_id.id);
-			for (KeyValue<MDShader *, BoundUniformSet> &keyval : set->bound_uniforms) {
+			for (KeyValue<MDUniformSet::CacheKey, BoundUniformSet> &keyval : set->bound_uniforms) {
 				keyval.value.buffer.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
 			}
 		} break;
@@ -2907,6 +3006,8 @@ Error RenderingDeviceDriverMetal::initialize(uint32_t p_device_index, uint32_t p
 	shader_container_format = memnew(RenderingShaderContainerFormatMetal(&device_profile));
 
 	_check_capabilities();
+
+	frame_count = p_frame_count;
 
 	// Set the pipeline cache ID based on the Metal version.
 	pipeline_cache_id = "metal-driver-" + get_api_version();
