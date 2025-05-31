@@ -97,7 +97,9 @@ void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewp
 	Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
 
 	if (EditorResourcePreview::get_singleton()->is_threaded()) {
-		RS::get_singleton()->connect(SNAME("frame_pre_draw"), request_vp_update_once, Object::CONNECT_ONE_SHOT);
+		if (!RS::get_singleton()->is_connected(SNAME("frame_pre_draw"), request_vp_update_once)) {
+			RS::get_singleton()->connect(SNAME("frame_pre_draw"), request_vp_update_once, Object::CONNECT_ONE_SHOT);
+		}
 		RS::get_singleton()->request_frame_drawn_callback(callable_mp(this, &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
 
 		semaphore.wait();
@@ -127,8 +129,12 @@ Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() {
 	return Variant(); // Needed because of how the callback is used.
 }
 
-bool EditorResourcePreview::is_threaded() const {
+bool EditorResourcePreview::can_run_on_thread() const {
 	return RSG::rasterizer->can_create_resources_async();
+}
+
+bool EditorResourcePreview::is_threaded() const {
+	return thread.is_started();
 }
 
 void EditorResourcePreview::_thread_func(void *ud) {
@@ -269,11 +275,14 @@ void EditorResourcePreview::_iterate() {
 
 	QueueItem item = queue.front()->get();
 	queue.pop_front();
+	singleton->processing_item = item;
+	singleton->last_process_msec = OS::get_singleton()->get_ticks_msec();
 
 	if (cache.has(item.path)) {
 		Item cached_item = cache[item.path];
 		// Already has it because someone loaded it, just let it know it's ready.
 		_preview_ready(item.path, cached_item.last_hash, cached_item.preview, cached_item.small_preview, item.id, item.function, item.userdata, cached_item.preview_metadata);
+		singleton->processing_item = QueueItem();
 		preview_mutex.unlock();
 		return;
 	}
@@ -289,6 +298,9 @@ void EditorResourcePreview::_iterate() {
 		Dictionary preview_metadata;
 		_generate_preview(texture, small_texture, item, String(), preview_metadata);
 		_preview_ready(item.path, item.resource->hash_edited_version_for_preview(), texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
+		preview_mutex.lock();
+		singleton->processing_item = QueueItem();
+		preview_mutex.unlock();
 		return;
 	}
 
@@ -327,7 +339,7 @@ void EditorResourcePreview::_iterate() {
 			cache_valid = false;
 			f.unref();
 		} else if (last_modtime != modtime) {
-			String last_md5 = f->get_line();
+			String last_md5 = hash;
 			String md5 = FileAccess::get_md5(item.path);
 			f.unref();
 
@@ -377,6 +389,9 @@ void EditorResourcePreview::_iterate() {
 		}
 	}
 	_preview_ready(item.path, 0, texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
+	preview_mutex.lock();
+	singleton->processing_item = QueueItem();
+	preview_mutex.unlock();
 }
 
 void EditorResourcePreview::_write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, const String &p_hash, const Dictionary &p_metadata) {
@@ -413,11 +428,57 @@ void EditorResourcePreview::_idle_callback() {
 		return;
 	}
 
-	// Process preview tasks, trying to leave a little bit of responsiveness worst case.
-	uint64_t start = OS::get_singleton()->get_ticks_msec();
-	while (!singleton->queue.is_empty() && OS::get_singleton()->get_ticks_msec() - start < 100) {
-		singleton->_iterate();
+	singleton->_update_progress_bar();
+
+	// Ensure to process one item at a time
+	singleton->preview_mutex.lock();
+	bool processing = singleton->processing_item.path != "";
+	singleton->preview_mutex.unlock();
+	if (processing) {
+		return;
 	}
+
+	singleton->_iterate();
+}
+
+EditorProgress *EditorResourcePreview::thumbnail_progress = nullptr; // it's static
+
+void EditorResourcePreview::_update_progress_bar() {
+	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id()); // Progress bar can only be updated in main thread
+
+	// Return if nothing is happening
+	if (singleton->queue.is_empty() && thumbnail_progress == nullptr) {
+		singleton->progress_total_steps = -1;
+		return;
+	}
+
+	// Create progress bar if not present
+	if (!singleton->queue.is_empty() && thumbnail_progress == nullptr && singleton->progress_total_steps == -1) {
+		singleton->progress_total_steps = singleton->queue.size();
+		thumbnail_progress = memnew(EditorProgress("generate_thumbnails", "Generate Thumbnails", singleton->progress_total_steps));
+	}
+
+	// Update progress bar
+	if (!singleton->queue.is_empty() && thumbnail_progress != nullptr) {
+		// The full path could be too long to display, show only the file name
+		String queue_file;
+		if (singleton->queue.front()->get().path.count("/") > 1) {
+			queue_file = singleton->queue.front()->get().path.rsplit("/", true, 1)[1];
+		}
+		int queue_steps = singleton->progress_total_steps - singleton->queue.size();
+		int queue_total = singleton->progress_total_steps;
+		String msg = vformat("%s (%d/%d)", queue_file, queue_steps, queue_total);
+
+		// Don't force update or will stuck in infinite loop at _idle_callback(), since ProgressDialog::task_step() iterates the main loop
+		thumbnail_progress->step(msg, queue_steps, false);
+	}
+
+	// Destroy progress bar when queue empty
+	if (singleton->queue.is_empty() && thumbnail_progress != nullptr) {
+		memdelete(thumbnail_progress);
+		thumbnail_progress = nullptr;
+	}
+	return;
 }
 
 void EditorResourcePreview::_update_thumbnail_sizes() {
@@ -556,7 +617,7 @@ void EditorResourcePreview::start() {
 		return;
 	}
 
-	if (is_threaded()) {
+	if (can_run_on_thread()) {
 		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
 		thread.start(_thread_func, this);
 	} else {
@@ -568,23 +629,21 @@ void EditorResourcePreview::start() {
 
 void EditorResourcePreview::stop() {
 	if (is_threaded()) {
-		if (thread.is_started()) {
-			exiting.set();
-			preview_sem.post();
+		exiting.set();
+		preview_sem.post();
 
-			for (int i = 0; i < preview_generators.size(); i++) {
-				preview_generators.write[i]->abort();
-			}
-
-			while (!exited.is_set()) {
-				// Sync pending work.
-				OS::get_singleton()->delay_usec(10000);
-				RenderingServer::get_singleton()->sync();
-				MessageQueue::get_singleton()->flush();
-			}
-
-			thread.wait_to_finish();
+		for (int i = 0; i < preview_generators.size(); i++) {
+			preview_generators.write[i]->abort();
 		}
+
+		while (!exited.is_set()) {
+			// Sync pending work.
+			OS::get_singleton()->delay_usec(10000);
+			RenderingServer::get_singleton()->sync();
+			MessageQueue::get_singleton()->flush();
+		}
+
+		thread.wait_to_finish();
 	}
 }
 
