@@ -67,10 +67,10 @@ void ThemeItemImportTree::_update_items_tree() {
 
 	String filter_text = import_items_filter->get_text();
 
-	List<StringName> types;
+	LocalVector<StringName> types;
 	List<StringName> names;
 	List<StringName> filtered_names;
-	base_theme->get_type_list(&types);
+	base_theme->get_type_list(types);
 	types.sort_custom<StringName::AlphCompare>();
 
 	int color_amount = 0;
@@ -1226,8 +1226,8 @@ void ThemeItemEditorDialog::_dialog_about_to_show() {
 void ThemeItemEditorDialog::_update_edit_types() {
 	Ref<Theme> base_theme = ThemeDB::get_singleton()->get_default_theme();
 
-	List<StringName> theme_types;
-	edited_theme->get_type_list(&theme_types);
+	LocalVector<StringName> theme_types;
+	edited_theme->get_type_list(theme_types);
 	theme_types.sort_custom<StringName::AlphCompare>();
 
 	bool item_reselected = false;
@@ -1258,10 +1258,6 @@ void ThemeItemEditorDialog::_update_edit_types() {
 			list_root->get_child(0)->select(0);
 		}
 	}
-
-	List<StringName> default_types;
-	base_theme->get_type_list(&default_types);
-	default_types.sort_custom<StringName::AlphCompare>();
 
 	String selected_type = "";
 	TreeItem *selected_item = edit_type_list->get_selected();
@@ -2140,10 +2136,10 @@ void ThemeTypeDialog::ok_pressed() {
 void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 	add_type_options->clear();
 
-	List<StringName> names;
-	ThemeDB::get_singleton()->get_default_theme()->get_type_list(&names);
+	LocalVector<StringName> names;
+	ThemeDB::get_singleton()->get_default_theme()->get_type_list(names);
 	if (include_own_types) {
-		edited_theme->get_type_list(&names);
+		edited_theme->get_type_list(names);
 	}
 	names.sort_custom<StringName::AlphCompare>();
 
@@ -2344,8 +2340,8 @@ void ThemeTypeEditor::_update_type_list() {
 		}
 	}
 
-	List<StringName> theme_types;
-	edited_theme->get_type_list(&theme_types);
+	LocalVector<StringName> theme_types;
+	edited_theme->get_type_list(theme_types);
 	theme_types.sort_custom<StringName::AlphCompare>();
 
 	theme_type_list->clear();
