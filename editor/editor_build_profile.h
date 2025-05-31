@@ -179,6 +179,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	Error generate_build_profile_from_project(const String &p_path);
 	Ref<EditorBuildProfile> get_current_profile();
 
 	static EditorBuildProfileManager *get_singleton() { return singleton; }
