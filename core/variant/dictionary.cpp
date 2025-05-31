@@ -304,9 +304,21 @@ void Dictionary::clear() {
 	_p->variant_map.clear();
 }
 
+struct VariantComparatorDictionary {
+	bool operator()(const Variant &p_left, const Variant &p_right) {
+		bool valid = false;
+		Variant res;
+		Variant::evaluate(Variant::OP_LESS, p_left, p_right, res, valid);
+		if (!valid) {
+			res = false;
+		}
+		return res;
+	}
+};
+
 void Dictionary::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
-	_p->variant_map.sort();
+	_p->variant_map.sort<VariantComparatorDictionary>();
 }
 
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
