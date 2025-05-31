@@ -934,6 +934,7 @@ void EditorNode::_notification(int p_what) {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				_update_theme();
 				_build_icon_type_cache();
+				class_icon_cache.clear();
 				recent_scenes->reset_size();
 			}
 
