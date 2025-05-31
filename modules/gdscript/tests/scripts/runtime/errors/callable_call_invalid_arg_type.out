@@ -1,0 +1,2 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/callable_call_invalid_arg_type.gd:3 on test(): Invalid type in function '@GDScript::load (Callable)'. Cannot convert argument 1 from Array to String.
