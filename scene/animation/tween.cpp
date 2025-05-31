@@ -75,20 +75,6 @@ void Tweener::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
 }
 
-bool Tween::_validate_type_match(const Variant &p_from, Variant &r_to) {
-	if (p_from.get_type() != r_to.get_type()) {
-		// Cast r_to between double and int to avoid minor annoyances.
-		if (p_from.get_type() == Variant::FLOAT && r_to.get_type() == Variant::INT) {
-			r_to = double(r_to);
-		} else if (p_from.get_type() == Variant::INT && r_to.get_type() == Variant::FLOAT) {
-			r_to = int(r_to);
-		} else {
-			ERR_FAIL_V_MSG(false, "Type mismatch between initial and final value: " + Variant::get_type_name(p_from.get_type()) + " and " + Variant::get_type_name(r_to.get_type()));
-		}
-	}
-	return true;
-}
-
 void Tween::_start_tweeners() {
 	if (tweeners.is_empty()) {
 		dead = true;
@@ -122,7 +108,7 @@ Ref<PropertyTweener> Tween::tween_property(const Object *p_target, const NodePat
 	const Variant &prop_value = p_target->get_indexed(property_subnames);
 #endif
 
-	if (!_validate_type_match(prop_value, p_to)) {
+	if (!Animation::validate_type_match(prop_value, p_to)) {
 		return nullptr;
 	}
 
@@ -153,7 +139,7 @@ Ref<CallbackTweener> Tween::tween_callback(const Callable &p_callback) {
 Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant p_from, Variant p_to, double p_duration) {
 	CHECK_VALID();
 
-	if (!_validate_type_match(p_from, p_to)) {
+	if (!Animation::validate_type_match(p_from, p_to)) {
 		return nullptr;
 	}
 
@@ -562,7 +548,7 @@ Ref<PropertyTweener> PropertyTweener::from(const Variant &p_value) {
 	ERR_FAIL_COND_V(tween.is_null(), nullptr);
 
 	Variant from_value = p_value;
-	if (!tween->_validate_type_match(final_val, from_value)) {
+	if (!Animation::validate_type_match(final_val, from_value)) {
 		return nullptr;
 	}
 
