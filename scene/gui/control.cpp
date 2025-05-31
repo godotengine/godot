@@ -2736,6 +2736,10 @@ bool Control::get_autofocus() const {
 }
 
 void Control::attempt_autofocus() {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	
 	if (get_autofocus() && _is_focus_mode_enabled()) {
 		grab_focus();
 	}
