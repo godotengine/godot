@@ -1,7 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
 
-partial class ScriptBoilerplate
+partial class @ScriptBoilerplate
 {
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
