@@ -3222,7 +3222,12 @@ void EditorHelp::_notification(int p_what) {
 			_class_desc_resized(false);
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (is_inside_tree()) {
+				_class_desc_resized(true);
+			}
+			update_toggle_files_button();
+
 			bool need_update = false;
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help")) {
 				need_update = true;
@@ -3240,13 +3245,6 @@ void EditorHelp::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			_wait_for_thread();
 			_update_doc();
-		} break;
-
-		case NOTIFICATION_THEME_CHANGED: {
-			if (is_inside_tree()) {
-				_class_desc_resized(true);
-			}
-			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
