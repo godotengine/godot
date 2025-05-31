@@ -475,7 +475,7 @@ void QuickOpenResultContainer::set_query_and_update(const String &p_query) {
 
 Vector<QuickOpenResultCandidate> *QuickOpenResultContainer::_get_history() {
 	if (base_types.size() == 1) {
-		return selected_history.lookup_ptr(base_types[0]);
+		return selected_history.getptr(base_types[0]);
 	}
 	return nullptr;
 }
@@ -485,7 +485,7 @@ void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_cand
 	p_candidate.result = nullptr;
 	StringName actual_type;
 	{
-		StringName *actual_type_ptr = filetypes.lookup_ptr(p_filepath);
+		StringName *actual_type_ptr = filetypes.getptr(p_filepath);
 		if (actual_type_ptr) {
 			actual_type = *actual_type_ptr;
 		} else {
@@ -496,12 +496,12 @@ void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_cand
 	if (item.preview.is_valid()) {
 		p_candidate.thumbnail = item.preview;
 	} else if (file_type_icons.has(actual_type)) {
-		p_candidate.thumbnail = *file_type_icons.lookup_ptr(actual_type);
+		p_candidate.thumbnail = *file_type_icons.getptr(actual_type);
 	} else if (has_theme_icon(actual_type, EditorStringName(EditorIcons))) {
 		p_candidate.thumbnail = get_editor_theme_icon(actual_type);
 		file_type_icons.insert(actual_type, p_candidate.thumbnail);
 	} else {
-		p_candidate.thumbnail = *file_type_icons.lookup_ptr(SNAME("__default_icon"));
+		p_candidate.thumbnail = *file_type_icons.getptr(SNAME("__default_icon"));
 	}
 }
 
@@ -820,11 +820,11 @@ void QuickOpenResultContainer::save_selected_item() {
 
 	const StringName &base_type = base_types[0];
 	QuickOpenResultCandidate &selected = candidates.write[selection_index];
-	Vector<QuickOpenResultCandidate> *type_history = selected_history.lookup_ptr(base_type);
+	Vector<QuickOpenResultCandidate> *type_history = selected_history.getptr(base_type);
 
 	if (!type_history) {
 		selected_history.insert(base_type, Vector<QuickOpenResultCandidate>());
-		type_history = selected_history.lookup_ptr(base_type);
+		type_history = selected_history.getptr(base_type);
 	} else {
 		for (int i = 0; i < type_history->size(); i++) {
 			if (selected.file_path == type_history->get(i).file_path) {
