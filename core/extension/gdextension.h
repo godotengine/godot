@@ -94,6 +94,7 @@ class GDExtension : public Resource {
 	static void _unregister_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name);
 	static void _get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionStringPtr r_path);
 	static void _register_get_classes_used_callback(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
+	static void _register_main_loop_callbacks(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks);
 
 	GDExtensionInitialization initialization;
 	int32_t level_initialized = -1;
@@ -114,6 +115,10 @@ class GDExtension : public Resource {
 	void finish_reload();
 	void clear_instance_bindings();
 #endif
+
+	GDExtensionMainLoopStartupCallback startup_callback = nullptr;
+	GDExtensionMainLoopShutdownCallback shutdown_callback = nullptr;
+	GDExtensionMainLoopFrameCallback frame_callback = nullptr;
 
 	static inline HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
 
