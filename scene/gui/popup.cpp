@@ -387,6 +387,7 @@ void PopupPanel::_notification(int p_what) {
 #endif
 		} break;
 
+		case Control::NOTIFICATION_TRANSLATION_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_visible()) {
 				_update_shadow_offsets();
