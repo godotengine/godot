@@ -36,6 +36,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "editor/group_settings_editor.h"
+#include "editor/gui/editor_accept_dialog.h"
 #include "editor/import_defaults_editor.h"
 #include "editor/localization_editor.h"
 #include "editor/plugins/editor_plugin_settings.h"
@@ -47,8 +48,8 @@
 class EditorVariantTypeOptionButton;
 class FileSystemDock;
 
-class ProjectSettingsEditor : public AcceptDialog {
-	GDCLASS(ProjectSettingsEditor, AcceptDialog);
+class ProjectSettingsEditor : public EditorAcceptDialog {
+	GDCLASS(ProjectSettingsEditor, EditorAcceptDialog);
 
 	inline static ProjectSettingsEditor *singleton = nullptr;
 
