@@ -4113,13 +4113,6 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		return OK;
 	}
 
-	if (p_symbol == "PI" || p_symbol == "TAU" || p_symbol == "INF" || p_symbol == "NAN") {
-		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-		r_result.class_name = "@GDScript";
-		r_result.class_member = p_symbol;
-		return OK;
-	}
-
 	GDScriptParser parser;
 	parser.parse(p_code, p_path, true);
 
@@ -4422,6 +4415,14 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		} break;
 		default: {
 		}
+	}
+
+	// Allow local variables to shadow global constants
+	if (p_symbol == "PI" || p_symbol == "TAU" || p_symbol == "INF" || p_symbol == "NAN") {
+		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
+		r_result.class_name = "@GDScript";
+		r_result.class_member = p_symbol;
+		return OK;
 	}
 
 	return ERR_CANT_RESOLVE;
