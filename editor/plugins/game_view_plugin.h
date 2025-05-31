@@ -95,6 +95,7 @@ class GameView : public VBoxContainer {
 		CAMERA_MODE_EDITORS,
 		EMBED_RUN_GAME_EMBEDDED,
 		EMBED_MAKE_FLOATING_ON_PLAY,
+		EMBED_MAKE_FLOATING_TRANSPARENT,
 	};
 
 	enum EmbedSizeMode {
@@ -123,8 +124,12 @@ class GameView : public VBoxContainer {
 	int screen_index_before_start = -1;
 	ScriptEditorDebugger *embedded_script_debugger = nullptr;
 
+	MarginContainer *toolbar_margin = nullptr;
+	Ref<StyleBox> toolbar_panel_style;
+
 	bool embed_on_play = true;
 	bool make_floating_on_play = true;
+	bool make_floating_transp = false;
 	EmbedSizeMode embed_size_mode = SIZE_MODE_FIXED;
 	bool paused = false;
 	Size2 size_paused;

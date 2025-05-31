@@ -48,6 +48,7 @@ protected:
 	Window *window = nullptr;
 
 	bool transp_enabled = false;
+	bool floating_transp = false;
 	Color clear_color;
 	Ref<Texture2D> checkerboard;
 
@@ -68,6 +69,7 @@ public:
 	virtual void request_close() = 0;
 	virtual void queue_update_embedded_process() = 0;
 
+	void set_floating_transp(bool p_enabled) { floating_transp = p_enabled; }
 	void set_window_size(const Size2i &p_window_size);
 	void set_keep_aspect(bool p_keep_aspect);
 	virtual Rect2i get_adjusted_embedded_window_rect(const Rect2i &p_rect) const = 0;
