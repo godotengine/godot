@@ -391,7 +391,7 @@ License: BSD-3-clause
 
 Files: thirdparty/manifold/*
 Comment: Manifold
-Copyright: 2020-2024, The Manifold Authors
+Copyright: 2020-2025, The Manifold Authors
 License: Apache-2.0
 
 Files: thirdparty/mbedtls/*
