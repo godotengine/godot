@@ -848,23 +848,21 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 				Dictionary d;
 
 				Vector<real_t> key_times;
-				Array clips; //Vector<String> clips;
+				Array clips;
 
 				int kk = an->values.size();
 
 				key_times.resize(kk);
-				//clips.resize(kk);
 
 				real_t *wti = key_times.ptrw();
-				//String *wcl = clips.ptrw();
 
 				int idx = 0;
 
 				const TKey<AnimationKey> *vls = an->values.ptr();
 
 				for (int i = 0; i < kk; i++) {
-					wti[i] = vls[i].time;
-					Dictionary clip; //wcl[i] = vls[i].value;
+					wti[idx] = vls[i].time;
+					Dictionary clip;
 					clip["start_offset"] = vls[i].value.start_offset;
 					clip["end_offset"] = vls[i].value.end_offset;
 					clip["animation"] = vls[i].value.animation;

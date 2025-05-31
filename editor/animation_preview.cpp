@@ -37,6 +37,8 @@ AnimationPreview::AnimationPreview() {
 	length = 0;
 }
 
+////
+
 void AnimationPreviewGenerator::_update_emit(ObjectID p_id) {
 	emit_signal(SNAME("preview_updated"), p_id);
 }
@@ -159,12 +161,6 @@ void AnimationPreview::create_key_region(Vector<Vector2> &points, const Rect2 &r
 	}
 }
 
-void AnimationPreviewGenerator::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("generate_preview", "animation"), &AnimationPreviewGenerator::generate_preview);
-
-	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
-}
-
 void AnimationPreviewGenerator::clear_cache() {
 	print_line("Clearing AnimationPreview cache, size was: ", previews.size());
 	for (KeyValue<ObjectID, Preview> &E : previews) {
@@ -190,6 +186,12 @@ void AnimationPreviewGenerator::invalidate_cache(const Ref<Animation> &p_anim) {
 			previews.erase(id);
 		}
 	}
+}
+
+void AnimationPreviewGenerator::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("generate_preview", "animation"), &AnimationPreviewGenerator::generate_preview);
+
+	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
 }
 
 AnimationPreviewGenerator *AnimationPreviewGenerator::singleton = nullptr;
