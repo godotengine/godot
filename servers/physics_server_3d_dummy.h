@@ -417,6 +417,10 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override {}
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const override { return false; }
 
+	virtual void joint_make_distance(RID p_joint, RID p_body_a, const Vector3 &p_local_a, RID p_body_b, const Vector3 &p_local_b) override {}
+
+	virtual void distance_joint_set_param(RID p_joint, DistanceJointParam p_param, real_t p_value) override {}
+
 	/* MISC */
 
 	virtual void free(RID p_rid) override {}
