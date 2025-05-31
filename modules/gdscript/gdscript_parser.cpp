@@ -96,6 +96,9 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
+		register_annotation(MethodInfo("@must_call_super"), AnnotationInfo::FUNCTION, &GDScriptParser::must_call_super_annotation);
+		register_annotation(MethodInfo("@protected"), AnnotationInfo::CLASS_LEVEL, &GDScriptParser::protected_annotation);
+		register_annotation(MethodInfo("@private"), AnnotationInfo::CLASS_LEVEL, &GDScriptParser::private_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
@@ -4346,6 +4349,39 @@ bool GDScriptParser::static_unload_annotation(AnnotationNode *p_annotation, Node
 		return false;
 	}
 	class_node->annotated_static_unload = true;
+	return true;
+}
+
+bool GDScriptParser::must_call_super_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::FUNCTION, false, R"("@must_call_super" annotation can only be applied to functions.)");
+	FunctionNode *func_node = static_cast<FunctionNode *>(p_target);
+	if (func_node->must_call_super) {
+		push_error(vformat(R"("%s" annotation can only be used once per function.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	func_node->must_call_super = true;
+	return true;
+}
+
+bool GDScriptParser::protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION && p_target->type != Node::CLASS && p_target->type != Node::SIGNAL,
+			false, R"(@protected can only be applied to constants, variables, signals, functions, and classes.)");
+	if (p_target->access_level != GDScriptParser::Node::AccessLevel::PUBLIC) {
+		push_error(R"(Only one of @protected/@private is allowed, and it can be used only once.)", p_target);
+		return false;
+	}
+	p_target->access_level = GDScriptParser::Node::AccessLevel::PROTECTED;
+	return true;
+}
+
+bool GDScriptParser::private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION && p_target->type != Node::CLASS && p_target->type != Node::SIGNAL,
+			false, R"(@private can only be applied to constants, variables, signals, functions, and classes.)");
+	if (p_target->access_level != GDScriptParser::Node::AccessLevel::PUBLIC) {
+		push_error(R"(Only one of @protected/@private is allowed, and it can be used only once.)", p_target);
+		return false;
+	}
+	p_target->access_level = GDScriptParser::Node::AccessLevel::PRIVATE;
 	return true;
 }
 
