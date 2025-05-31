@@ -257,6 +257,8 @@ public:
 protected:
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
+	void item_pressed(bool p_double_click);
+	void selection_changed();
 
 private:
 	static String get_dialog_title(const Vector<StringName> &p_base_types);

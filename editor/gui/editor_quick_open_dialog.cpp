@@ -123,7 +123,8 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 
 	{
 		container = memnew(QuickOpenResultContainer);
-		container->connect("result_clicked", callable_mp(this, &EditorQuickOpenDialog::ok_pressed));
+		container->connect("selection_changed", callable_mp(this, &EditorQuickOpenDialog::selection_changed));
+		container->connect("result_clicked", callable_mp(this, &EditorQuickOpenDialog::item_pressed));
 		vbc->add_child(container);
 	}
 
@@ -160,12 +161,20 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 }
 
 void EditorQuickOpenDialog::ok_pressed() {
-	item_selected_callback.call(container->get_selected());
-
-	container->save_selected_item();
 	container->cleanup();
 	search_box->clear();
 	hide();
+}
+
+void EditorQuickOpenDialog::selection_changed() {
+	item_selected_callback.call(container->get_selected());
+	container->save_selected_item();
+}
+
+void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
+	if (p_double_click) {
+		ok_pressed();
+	}
 }
 
 void EditorQuickOpenDialog::cancel_pressed() {
@@ -680,6 +689,8 @@ void QuickOpenResultContainer::_select_item(int p_index) {
 	bool in_history = history_set.has(candidates[selection_index].file_path);
 	file_details_path->set_text(get_selected() + (in_history ? TTR(" (recently opened)") : ""));
 
+	emit_signal(SNAME("selection_changed"));
+
 	const QuickOpenResultItem *item = result_items[selection_index];
 
 	// Copied from Tree.
@@ -701,7 +712,7 @@ void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_in
 	if (mb.is_valid() && mb->is_pressed()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			_select_item(p_index);
-			emit_signal(SNAME("result_clicked"));
+			emit_signal(SNAME("result_clicked"), mb->is_double_click());
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			_select_item(p_index);
 			file_context_menu->set_position(result_items[p_index]->get_screen_position() + mb->get_position());
@@ -886,7 +897,8 @@ void QuickOpenResultContainer::_notification(int p_what) {
 }
 
 void QuickOpenResultContainer::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("result_clicked"));
+	ADD_SIGNAL(MethodInfo("selection_changed"));
+	ADD_SIGNAL(MethodInfo("result_clicked", PropertyInfo(Variant::BOOL, "double_click")));
 }
 
 //------------------------- Result Item
