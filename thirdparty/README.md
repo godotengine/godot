@@ -197,6 +197,20 @@ Files extracted from upstream source:
 - `LICENSE.txt`
 
 
+# dr_libs
+
+- Upstream> https://github.com/mackron/dr_libs
+- Version: git (9cb7092ac8c75a82b5c6ea72652ca8d0091d7ffa, 2025)
+- License: Public Domain or Unlicense or MIT-0
+
+Files extracted from upstream source:
+
+- `dr_mp3.h`
+- `LICENSE`
+
+`dr_alloc_calls.h` is a Godot file and should be preserved on updates.
+
+
 ## embree
 
 - Upstream: https://github.com/embree/embree
@@ -690,24 +704,6 @@ Patches:
 
 - `0001-disable-exceptions.patch` (GH-85039)
 - `0002-clang-std-replacements-leak.patch` (GH-85208)
-
-
-## minimp3
-
-- Upstream: https://github.com/lieff/minimp3
-- Version: git (afb604c06bc8beb145fecd42c0ceb5bda8795144, 2021)
-- License: CC0 1.0
-
-Files extracted from upstream repository:
-
-- `minimp3.h`
-- `minimp3_ex.h`
-- `LICENSE`
-
-Patches:
-
-- `0001-msvc-arm.patch` (GH-64921)
-- `0002-msvc-warnings.patch` (GH-66545)
 
 
 ## miniupnpc

@@ -46,7 +46,7 @@ String ResourceImporterMP3::get_visible_name() const {
 }
 
 void ResourceImporterMP3::get_recognized_extensions(List<String> *p_extensions) const {
-#ifndef MINIMP3_ONLY_MP3
+#ifndef DR_MP3_ONLY_MP3
 	p_extensions->push_back("mp1");
 	p_extensions->push_back("mp2");
 #endif
