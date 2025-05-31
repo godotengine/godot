@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/string/distributed_string_view.h"
 #include "core/string/ustring.h"
 #include "core/templates/safe_refcount.h"
 
@@ -137,7 +138,27 @@ public:
 	static StringName search(const char *p_name);
 	static StringName search(const char32_t *p_name);
 	static StringName search(const String &p_name);
+	template <typename... Parts>
+	static StringName search(Parts... parts) {
+		const uint32_t hash = DistributedStringView::hash(parts...);
+		_Data *_data = get_data_by_hash(hash);
 
+		while (_data) {
+			// compare hash first
+			if (_data->hash == hash && DistributedStringView::equal(_data->name, parts...)) {
+				break;
+			}
+			_data = _data->next;
+		}
+
+		return check_data(_data);
+	}
+
+private:
+	static _Data *get_data_by_hash(const uint32_t p_hash);
+	static StringName check_data(_Data *p_data);
+
+public:
 	struct AlphCompare {
 		template <typename LT, typename RT>
 		_FORCE_INLINE_ bool operator()(const LT &l, const RT &r) const {
