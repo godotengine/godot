@@ -325,6 +325,10 @@ typedef struct tagPOINTER_PEN_INFO {
 #define WM_POINTERUP 0x0247
 #endif
 
+#ifndef WM_SPAWN_WORKER
+#define WM_SPAWN_WORKER 0x052C
+#endif
+
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 typedef BOOL(WINAPI *LogicalToPhysicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
@@ -490,6 +494,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool first_activation_done = false;
 		bool was_maximized = false;
 		bool always_on_top = false;
+		bool wallpaper = false;
 		bool no_focus = false;
 		bool exclusive = false;
 		bool context_created = false;
@@ -692,6 +697,9 @@ class DisplayServerWindows : public DisplayServer {
 	HWND _find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd);
 
 	void initialize_tts() const;
+
+	HWND get_wp_host_hwnd();
+	static BOOL CALLBACK find_iconview(HWND p_hwnd, LPARAM p_lparam);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -202,6 +202,8 @@
 	// Restore on-top state.
 	if (ds->is_always_on_top_recursive(window_id)) {
 		[wd.window_object setLevel:NSFloatingWindowLevel];
+	} else if (wd.wallpaper) {
+		[wd.window_object setLevel:kCGDesktopWindowLevel];
 	}
 
 	// Force window resize event and redraw.
