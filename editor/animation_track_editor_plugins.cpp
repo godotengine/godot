@@ -91,7 +91,26 @@ Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
 	return Rect2(-fh / 2, 0, fh, h);
 }
 
-/// VOLUME DB ///
+void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
+	Color color = get_animation()->track_get_key_value(get_track(), p_index);
+
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	int fh = font->get_height(font_size) * font_scl;
+
+	Rect2 rect(Vector2(p_x - fh / 2, int(get_size().height - fh) / 2), Size2(fh, fh));
+
+	draw_rect_clipped(Rect2(rect.position, rect.size / 2), Color(0.4, 0.4, 0.4));
+	draw_rect_clipped(Rect2(rect.position + rect.size / 2, rect.size / 2), Color(0.4, 0.4, 0.4));
+	draw_rect_clipped(Rect2(rect.position + Vector2(rect.size.x / 2, 0), rect.size / 2), Color(0.6, 0.6, 0.6));
+	draw_rect_clipped(Rect2(rect.position + Vector2(0, rect.size.y / 2), rect.size / 2), Color(0.6, 0.6, 0.6));
+	draw_rect_clipped(rect, color);
+
+	if (p_selected) {
+		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		draw_rect_clipped(rect, accent, false);
+	}
+}
 
 void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
@@ -160,27 +179,6 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 	}
 }
 
-void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	Color color = get_animation()->track_get_key_value(get_track(), p_index);
-
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	int fh = font->get_height(font_size) * font_scl;
-
-	Rect2 rect(Vector2(p_x - fh / 2, int(get_size().height - fh) / 2), Size2(fh, fh));
-
-	draw_rect_clipped(Rect2(rect.position, rect.size / 2), Color(0.4, 0.4, 0.4));
-	draw_rect_clipped(Rect2(rect.position + rect.size / 2, rect.size / 2), Color(0.4, 0.4, 0.4));
-	draw_rect_clipped(Rect2(rect.position + Vector2(rect.size.x / 2, 0), rect.size / 2), Color(0.6, 0.6, 0.6));
-	draw_rect_clipped(Rect2(rect.position + Vector2(0, rect.size.y / 2), rect.size / 2), Color(0.6, 0.6, 0.6));
-	draw_rect_clipped(rect, color);
-
-	if (p_selected) {
-		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-		draw_rect_clipped(rect, accent, false);
-	}
-}
-
 /// SPRITE FRAME / FRAME_COORDS ///
 
 AnimationTrackEditSpriteFrame::AnimationTrackEditSpriteFrame() {
@@ -188,7 +186,7 @@ AnimationTrackEditSpriteFrame::AnimationTrackEditSpriteFrame() {
 }
 
 Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_sec) {
-	Object *object = ObjectDB::get_instance(id);
+	Object *object = ObjectDB::get_instance(get_node_id());
 
 	if (!object) {
 		return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
@@ -259,7 +257,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 }
 
 void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	Object *object = ObjectDB::get_instance(id);
+	Object *object = ObjectDB::get_instance(get_node_id());
 
 	if (!object) {
 		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
@@ -382,7 +380,7 @@ void AnimationTrackEditSubAnim::create_key_region(Ref<Resource> resource, Vector
 }
 
 void AnimationTrackEditSubAnim::_preview_changed(ObjectID p_which) {
-	Object *object = ObjectDB::get_instance(id);
+	Object *object = ObjectDB::get_instance(get_node_id());
 
 	if (!object) {
 		return;
@@ -526,6 +524,11 @@ void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
 	AnimationTrackEditBase::_preview_changed(p_which);
 }
 
+void AnimationTrackEditTypeAudio::create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(resource);
+	preview->create_key_region(points, rect, p_pixels_sec, start_ofs);
+}
+
 void AnimationTrackEditTypeAudio::apply_data(const Ref<Resource> resource, const float ofs) {
 	Ref<AudioStream> stream = resource;
 
@@ -560,14 +563,14 @@ float AnimationTrackEditTypeAudio::get_length(const int p_index) {
 
 void AnimationTrackEditTypeAudio::set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(get_animation().ptr(), "audio_track_set_key_start_offset", get_track(), len_resizing_index, new_ofs);
-	undo_redo->add_undo_method(get_animation().ptr(), "audio_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs);
+	undo_redo->add_do_method(get_animation().ptr(), "audio_track_set_key_start_offset", get_track(), p_index, new_ofs);
+	undo_redo->add_undo_method(get_animation().ptr(), "audio_track_set_key_start_offset", get_track(), p_index, prev_ofs);
 }
 
 void AnimationTrackEditTypeAudio::set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), len_resizing_index, new_ofs);
-	undo_redo->add_undo_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs);
+	undo_redo->add_do_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), p_index, new_ofs);
+	undo_redo->add_undo_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), p_index, prev_ofs);
 }
 
 /// AUDIO ///
@@ -578,7 +581,7 @@ AnimationTrackEditAudio::AnimationTrackEditAudio() {
 }
 
 void AnimationTrackEditAudio::_preview_changed(ObjectID p_which) {
-	Object *object = ObjectDB::get_instance(id);
+	Object *object = ObjectDB::get_instance(get_node_id());
 
 	if (!object) {
 		return;
@@ -682,14 +685,14 @@ float AnimationTrackEditTypeAnimation::get_length(const int p_index) {
 
 void AnimationTrackEditTypeAnimation::set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), len_resizing_index, new_ofs);
-	undo_redo->add_undo_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs);
+	undo_redo->add_do_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), p_index, new_ofs);
+	undo_redo->add_undo_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), p_index, prev_ofs);
 }
 
 void AnimationTrackEditTypeAnimation::set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), len_resizing_index, new_ofs);
-	undo_redo->add_undo_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs);
+	undo_redo->add_do_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), p_index, new_ofs);
+	undo_redo->add_undo_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), p_index, prev_ofs);
 }
 
 StringName AnimationTrackEditTypeAnimation::get_edit_name(const int p_index) {
@@ -705,11 +708,10 @@ StringName AnimationTrackEditTypeAnimation::get_edit_name(const int p_index) {
 
 bool AnimationTrackEditBase::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right) {
 	Vector2 region = calc_key_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
-	clip_key_region(region, p_clip_left, p_clip_right);
+	region = clip_key_region(region, p_clip_left, p_clip_right);
 
 	int region_begin = region.x;
 	int region_end = region.y;
-	int region_width = region.y - region.x;
 
 	if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= region_end) { //if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= p_clip_right && region_end >= p_clip_left) {
 		bool resize_start = false;
@@ -976,11 +978,6 @@ void AnimationTrackEditBase::set_node(Object *p_object) {
 	id = p_object->get_instance_id();
 }
 
-void AnimationTrackEditTypeAudio::create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
-	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(resource);
-	preview->create_key_region(points, rect, p_pixels_sec, start_ofs);
-}
-
 StringName AnimationTrackEditBase::get_edit_name(const int p_index) {
 	String resource_name = "null";
 	Ref<Resource> resource = get_resource(p_index);
@@ -1016,14 +1013,15 @@ Vector2 AnimationTrackEditBase::calc_key_region(const float start_ofs, const flo
 	return Vector2(pixel_begin, pixel_end);
 }
 
-Vector2 AnimationTrackEditBase::clip_key_region(Vector2 &region, int p_clip_left, int p_clip_right) {
-	float offset_x = region.x;
-	float offset_y = region.y;
-
+Vector2 AnimationTrackEditBase::clip_key_region(Vector2 region, int p_clip_left, int p_clip_right) {
 	region.y = CLAMP(region.y, MAX(region.x, p_clip_left), p_clip_right);
 	region.x = CLAMP(region.x, p_clip_left, MIN(region.y, p_clip_right));
+	ERR_FAIL_COND_V_MSG(region.x > region.y, region, "Clipped region is invalid (x > y).");
+	return region;
+}
 
-	return Vector2(region.x - offset_x, region.y - offset_y);
+Vector2 AnimationTrackEditBase::calc_key_region_shift(Vector2 &orig_region, Vector2 &region) {
+	return Vector2(region.x - orig_region.x, region.y - orig_region.y);
 }
 
 bool AnimationTrackEditBase::is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right) {
@@ -1031,15 +1029,14 @@ bool AnimationTrackEditBase::is_key_region_outside(const Vector2 &region, int p_
 }
 
 void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	Vector2 region = calc_key_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
-	int orig_region_width = region.y - region.x;
+	Vector2 orig_region = calc_key_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
 
-	bool is_outside = is_key_region_outside(region, p_clip_left, p_clip_right);
+	bool is_outside = is_key_region_outside(orig_region, p_clip_left, p_clip_right);
 	if (is_outside) {
 		return;
 	}
 
-	Vector2 region_shift = clip_key_region(region, p_clip_left, p_clip_right);
+	Vector2 region = clip_key_region(orig_region, p_clip_left, p_clip_right);
 
 	int region_begin = region.x;
 	int region_end = region.y;
@@ -1051,10 +1048,8 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 
 	Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
-	float region_max_width = REGION_MAX_WIDTH;
-	if (orig_region_width <= region_max_width) {
-		float thick_region_width = MAX(region_max_width, region_width);
-		Rect2 rect2 = Rect2(region_begin, fy, thick_region_width, fh);
+	if (orig_region.y - orig_region.x <= REGION_MAX_WIDTH) {
+		Rect2 rect2 = Rect2(region_begin, fy, REGION_MAX_WIDTH, fh);
 		draw_rect(rect2, accent_color);
 
 		if (p_selected) {
@@ -1078,8 +1073,8 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 		colors = { bg_color.lightened(0.2) };
 	}
 
-	float shift_ofs = region_shift.x / p_pixels_sec;
-	create_key_region(resource, points, rect, p_pixels_sec, start_ofs + shift_ofs);
+	Vector2 region_shift = calc_key_region_shift(orig_region, region);
+	create_key_region(resource, points, rect, p_pixels_sec, start_ofs + region_shift.x / p_pixels_sec);
 
 	if (!points.is_empty()) {
 		draw_multiline_colors(points, colors);
