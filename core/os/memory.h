@@ -54,7 +54,9 @@ public:
 	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
 	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
 
+	template <bool p_ensure_zero = false>
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
+	_FORCE_INLINE_ static void *alloc_static_zeroed(size_t p_bytes, bool p_pad_align = false) { return alloc_static<true>(p_bytes, p_pad_align); }
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
 
@@ -107,6 +109,7 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #endif
 
 #define memalloc(m_size) Memory::alloc_static(m_size)
+#define memalloc_zeroed(m_size) Memory::alloc_static_zeroed(m_size)
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
 #define memfree(m_mem) Memory::free_static(m_mem)
 
@@ -193,19 +196,15 @@ T *memnew_arr_template(size_t p_elements) {
 }
 
 // Fast alternative to a loop constructor pattern.
-template <bool p_ensure_zero = false, typename T>
+template <typename T>
 _FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
-	if constexpr (std::is_trivially_constructible_v<T> && !p_ensure_zero) {
-		// Don't need to do anything :)
-		(void)p_start;
-		(void)p_num;
-	} else if constexpr (is_zero_constructible_v<T>) {
+	if constexpr (is_zero_constructible_v<T>) {
 		// Can optimize with memset.
 		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
 	} else {
 		// Need to use a for loop.
 		for (size_t i = 0; i < p_num; i++) {
-			memnew_placement(p_start + i, T);
+			memnew_placement(p_start + i, T());
 		}
 	}
 }

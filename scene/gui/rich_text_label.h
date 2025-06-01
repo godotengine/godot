@@ -454,8 +454,8 @@ private:
 	};
 
 	struct ItemRainbow : public ItemFX {
-		float saturation = 0.8f;
-		float value = 0.8f;
+		float saturation = 0.9f;
+		float value = 1.0f;
 		float frequency = 1.0f;
 		float speed = 1.0f;
 
@@ -866,7 +866,6 @@ public:
 	float get_selection_line_offset() const;
 	String get_selected_text() const;
 	void select_all();
-	void selection_copy();
 
 	_FORCE_INLINE_ void set_selection_modifier(const Callable &p_modifier) {
 		selection_modifier = p_modifier;

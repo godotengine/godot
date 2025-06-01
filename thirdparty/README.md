@@ -62,7 +62,7 @@ Files extracted from upstream source:
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
-- Version: 4.8.0 (0d6c9047c5ad19640e2d60fdb8f11a16675e7938, 2024)
+- Version: 5.3.0 (bf32abd05eccaf3042170b2a85cebdf0bfee5873, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -89,6 +89,8 @@ Patches:
 - `0002-external-tinyexr.patch` (GH-97582)
 - `0003-remove-tinydds-qoi.patch` (GH-97582)
 - `0004-ambiguous-calls.patch` (GH-103968)
+- `0005-msvc-include-ctype.patch` (GH-106155)
+
 
 ## brotli
 
@@ -106,8 +108,8 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (4d3fe6683f651d96be1bbef316b201e9b33b274d, 2024),
-  generated from mozilla-release changeset b8ea2342548b8571e58f9176d9555ccdb5ec199f
+- Version: git (bcc414c5b5282f9321651bf71dc1e254ae87e3f8, 2025),
+  generated from mozilla-release changeset 60d4997d339bb7ac6d033819ac50dcad4b9be09d
 - License: MPL 2.0
 
 Files extracted from upstream source:
@@ -413,6 +415,21 @@ Files extracted from upstream source:
 - `COPYING`
 
 
+## grisu2
+
+- Upstream: https://github.com/simdjson/simdjson/blob/master/src/to_chars.cpp
+- Version: git (4f4e81668ecb9d4d37fd5f59a1556d492507421d, 2023)
+- License: Apache and MIT
+
+Files extracted from upstream source:
+
+- The `src/to_chars.cpp` file renamed to `grisu2.h` and slightly modified.
+
+Patches:
+
+- `0001-godot-changes.patch` (GH-98750)
+
+
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
@@ -634,8 +651,8 @@ File extracted from upstream release tarball:
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
-- Added the file `godot_module_mbedtls_config.h` to customize the build
-  configuration when bundling the full library
+- Added 2 files `godot_module_mbedtls_config.h` and `threading_alt.h`
+  to customize the build configuration when bundling the full library
 
 Patches:
 
@@ -645,17 +662,13 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.22 (4affad044571506a5724c9a6f15424f43e86f731, 2024)
+- Version: 0.23 (3e9d1ff3135794f519f3237515277c8d9a3fd3f2, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
 
 - All files in `src/`
 - `LICENSE.md`
-
-Patches:
-
-- `0001-simplifier-distance-only-error.patch` (GH-98529)
 
 
 ## mingw-std-threads
@@ -790,7 +803,7 @@ Collection of single-file libraries used in Godot components.
     - `polypartition-0002-shadow-warning.patch` (GH-66808)
 - `qoa.{c,h}`
   * Upstream: https://github.com/phoboslab/qoa
-  * Version: git (a2d927f8ce78a85e903676a33e0f956e53b89f7d, 2024)
+  * Version: git (ae07b57deb98127a5b40916cb57775823d7437d2, 2025)
   * License: MIT
   * Modifications: Added implementation through `qoa.c`.
 - `r128.{c,h}`
@@ -957,7 +970,7 @@ Patches:
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.15.12 (91bd6f35b94e92abfc1a320632e66cd124943524, 2025)
+- Version: 0.15.13 (c597365b99f27cb46e2a5ac2942da45bb73d5a55, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -968,13 +981,12 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
-- `0002-png-explicit-variable-scope.patch` (GH-105093)
 
 
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.9 (5fcb4dcb6e3abf96214b67e5c54db1ceec6a455c, 2024)
+- Version: 1.0.12 (735ff73ce5959cf005eb99ce517c9bcecab89dfb, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -989,7 +1001,7 @@ Patches:
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.18.0 (729ab835444f5f229e5f7cff332692ce6c00415d, 2025)
+- Version: 0.18.2 (5b5494b9b6c2cdb0fc0ae873bdbf8718cdeb85af, 2025)
 - License: MIT
 
 Files extracted from upstream source:

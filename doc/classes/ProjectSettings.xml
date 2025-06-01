@@ -51,6 +51,7 @@
 				ProjectSettings.AddPropertyInfo(propertyInfo);
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Setting [code]"usage"[/code] for the property is not supported. Use [method set_as_basic], [method set_restart_if_changed], and [method set_as_internal] to modify usage flags.
 			</description>
 		</method>
 		<method name="clear">
@@ -898,6 +899,9 @@
 		</member>
 		<member name="display/display_server/driver.macos" type="String" setter="" getter="">
 			MacOS override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.visionos" type="String" setter="" getter="">
+			visionOS override for [member display/display_server/driver].
 		</member>
 		<member name="display/display_server/driver.windows" type="String" setter="" getter="">
 			Windows override for [member display/display_server/driver].
@@ -2399,7 +2403,7 @@
 		<member name="physics/2d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 2D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 2D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
-		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
+		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.13962634">
 			Threshold angular velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
 		<member name="physics/2d/sleep_threshold_linear" type="float" setter="" getter="" default="2.0">
@@ -2478,11 +2482,17 @@
 			[b]Dummy[/b] is a 3D physics server that does nothing and returns only dummy values, effectively disabling all 3D physics functionality.
 			Third-party extensions and modules can add other physics engines to select with this setting.
 		</member>
+		<member name="physics/3d/physics_interpolation/scene_traversal" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			The approach used for 3D scene traversal when physics interpolation is enabled.
+			- [code]DEFAULT[/code]: The default optimized method.
+			- [code]Legacy[/code]: The previous reference method used for scene tree traversal, which is slower.
+			- [code]Debug[/code]: Swaps between [code]DEFAULT[/code] and [code]Legacy[/code] methods on alternating frames, and provides logging information (which in turn makes it slower). Intended for debugging only; you should use the [code]DEFAULT[/code] method in most cases.
+		</member>
 		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 			[b]Note:[/b] When [member physics/3d/physics_engine] is set to [code]Jolt Physics[/code], enabling this setting will prevent the 3D physics server from being able to provide any context when reporting errors and warnings, and will instead always refer to nodes as [code]&lt;unknown&gt;[/code].
 		</member>
-		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
+		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.13962634">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
 		<member name="physics/3d/sleep_threshold_linear" type="float" setter="" getter="" default="0.1">
@@ -2531,7 +2541,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
 		</member>
-		<member name="physics/jolt_physics_3d/collisions/active_edge_threshold" type="float" setter="" getter="" default="0.872665">
+		<member name="physics/jolt_physics_3d/collisions/active_edge_threshold" type="float" setter="" getter="" default="0.87266463">
 			The maximum angle, in radians, between two adjacent triangles in a [ConcavePolygonShape3D] or [HeightMapShape3D] for which the edge between those triangles is considered inactive.
 			Collisions against an inactive edge will have its normal overridden to instead be the surface normal of the triangle. This can help alleviate ghost collisions.
 			[b]Note:[/b] Setting this too high can result in objects not depenetrating properly.
@@ -2547,7 +2557,7 @@
 			Which of the two nodes bound by a joint should represent the world when one of the two is omitted, as either [member Joint3D.node_a] or [member Joint3D.node_b]. This can be thought of as having the omitted node be a [StaticBody3D] at the joint's position. Joint limits are more easily expressed when [member Joint3D.node_a] represents the world.
 			[b]Note:[/b] In Godot Physics, only [member Joint3D.node_b] can represent the world.
 		</member>
-		<member name="physics/jolt_physics_3d/limits/max_angular_velocity" type="float" setter="" getter="" default="47.1239">
+		<member name="physics/jolt_physics_3d/limits/max_angular_velocity" type="float" setter="" getter="" default="47.12389">
 			The maximum angular velocity that a [RigidBody3D] can reach, in radians per second.
 			This is mainly used as a fail-safe, to prevent the simulation from exploding, as fast-moving objects colliding with complex physics structures can otherwise cause them to go out of control. Fast-moving objects can also cause a lot of stress on the collision detection system, which can slow down the simulation considerably.
 		</member>
@@ -2607,7 +2617,7 @@
 			How much of the position error of a [RigidBody3D] to fix during a physics step, where [code]0.0[/code] is none and [code]1.0[/code] is the full amount. This affects things like how quickly bodies depenetrate.
 			[b]Note:[/b] Setting this value too high can make [RigidBody3D] nodes unstable.
 		</member>
-		<member name="physics/jolt_physics_3d/simulation/body_pair_contact_cache_angle_threshold" type="float" setter="" getter="" default="0.0349066">
+		<member name="physics/jolt_physics_3d/simulation/body_pair_contact_cache_angle_threshold" type="float" setter="" getter="" default="0.034906585">
 			The maximum relative angle by which a body pair can move and still reuse the collision results from the previous physics step, in radians.
 		</member>
 		<member name="physics/jolt_physics_3d/simulation/body_pair_contact_cache_distance_threshold" type="float" setter="" getter="" default="0.001">
@@ -2701,6 +2711,10 @@
 			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
 			[b]Note:[/b] Screen-space antialiasing is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			[b]Note:[/b] This property is only read when the project starts. To set the screen-space antialiasing mode at runtime, set [member Viewport.screen_space_aa] on the root [Viewport] instead, or use [method RenderingServer.viewport_set_screen_space_aa].
+		</member>
+		<member name="rendering/anti_aliasing/quality/smaa_edge_detection_threshold" type="float" setter="" getter="" default="0.05">
+			Sets the sensitivity to edges when using SMAA for antialiasing. Lower values will catch more edges, at a potentially higher performance cost.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
@@ -3095,6 +3109,9 @@
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/reflections/specular_occlusion/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], reduces reflections based on ambient light.
+		</member>
 		<member name="rendering/renderer/rendering_method" type="String" setter="" getter="" default="&quot;forward_plus&quot;">
 			Sets the renderer that will be used by the project. Options are:
 			[b]forward_plus[/b] (Forward+): High-end renderer designed for desktop devices. Has a higher base overhead, but scales well with complex scenes. Not suitable for older devices or mobile.
@@ -3158,6 +3175,11 @@
 			Two options are supported:
 			- [code]metal[/code] (default), Metal from native drivers, only supported on Apple Silicon Macs. On Intel Macs, it will automatically fall back to [code]vulkan[/code] as Metal support is not implemented.
 			- [code]vulkan[/code], Vulkan over Metal via MoltenVK, supported on both Apple Silicon and Intel Macs.
+		</member>
+		<member name="rendering/rendering_device/driver.visionos" type="String" setter="" getter="" default="&quot;metal&quot;">
+			visionOS override for [member rendering/rendering_device/driver].
+			Only one option is supported:
+			- [code]metal[/code] (default), Metal from native drivers.
 		</member>
 		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Windows override for [member rendering/rendering_device/driver].

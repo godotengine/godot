@@ -1296,7 +1296,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						} else if (item_fx->type == ITEM_RAINBOW) {
 							ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
 
-							font_color = font_color.from_hsv(MAX(item_rainbow->frequency, 0) * Math::abs(item_rainbow->elapsed_time * item_rainbow->speed + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+							font_color = font_color.from_ok_hsv(MAX(item_rainbow->frequency, 0) * Math::abs(item_rainbow->elapsed_time * item_rainbow->speed + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
 						} else if (item_fx->type == ITEM_PULSE) {
 							ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
 
@@ -1708,7 +1708,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 						} else if (!(glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_VIRTUAL)) {
 							// Hex code box.
 							Vector2 gl_size = TS->get_hex_code_box_size(glyphs[glyph_idx].font_size, glyphs[glyph_idx].index);
-							if (p_click.y >= baseline_y - gl_size.y * 0.9 && p_click.y <= baseline_y + gl_size.y * 0.2) {
+							if (p_click.y >= baseline_y - gl_size.y * 0.85 && p_click.y <= baseline_y + gl_size.y * 0.15) {
 								char_pos = glyphs[glyph_idx].start;
 								char_clicked = true;
 							}
@@ -2821,7 +2821,10 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					handled = true;
 				}
 				if (k->is_action("ui_copy", true)) {
-					selection_copy();
+					const String txt = get_selected_text();
+					if (!txt.is_empty()) {
+						DisplayServer::get_singleton()->clipboard_set(txt);
+					}
 					handled = true;
 				}
 			}
@@ -6634,14 +6637,6 @@ void RichTextLabel::deselect() {
 	queue_redraw();
 }
 
-void RichTextLabel::selection_copy() {
-	String txt = get_selected_text();
-
-	if (!txt.is_empty()) {
-		DisplayServer::get_singleton()->clipboard_set(txt);
-	}
-}
-
 void RichTextLabel::select_all() {
 	_validate_line_caches();
 
@@ -7618,7 +7613,14 @@ Key RichTextLabel::_get_menu_action_accelerator(const String &p_action) {
 void RichTextLabel::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY: {
-			selection_copy();
+			String txt = get_selected_text();
+			if (txt.is_empty()) {
+				txt = get_parsed_text();
+			}
+
+			if (!txt.is_empty()) {
+				DisplayServer::get_singleton()->clipboard_set(txt);
+			}
 		} break;
 		case MENU_SELECT_ALL: {
 			select_all();

@@ -1813,9 +1813,6 @@ void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 
 	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
 
-	if (text_editor->has_theme_font_size_override(SceneStringName(font_size))) {
-		text_editor->remove_theme_font_size_override(SceneStringName(font_size));
-	}
 	text_editor->add_theme_font_size_override(SceneStringName(font_size), new_font_size);
 }
 

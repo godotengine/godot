@@ -324,8 +324,12 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
-	ERR_FAIL_COND(!p_info.has("name"));
-	ERR_FAIL_COND(!p_info.has("type"));
+	ERR_FAIL_COND_MSG(!p_info.has("name"), "Property info is missing \"name\" field.");
+	ERR_FAIL_COND_MSG(!p_info.has("type"), "Property info is missing \"type\" field.");
+
+	if (p_info.has("usage")) {
+		WARN_PRINT("\"usage\" is not supported in add_property_info().");
+	}
 
 	PropertyInfo pinfo;
 	pinfo.name = p_info["name"];
@@ -529,6 +533,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/update_continuously", false, "")
 
+	bool is_android_editor = false;
+#ifdef ANDROID_ENABLED
+	if (!OS::get_singleton()->has_feature("xr_editor")) {
+		is_android_editor = true;
+	}
+#endif
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/collapse_main_menu", is_android_editor, "")
+
 	_initial_set("interface/editors/show_scene_tree_root_selection", true);
 	_initial_set("interface/editors/derive_script_globals_by_name", true);
 	_initial_set("docks/scene_tree/ask_before_revoking_unique_name", true);
@@ -558,6 +570,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_mode", (int32_t)ColorPicker::MODE_RGB, "RGB,HSV,RAW,OKHSL")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle")
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/color_picker_show_intensity", true, "");
 
 	// Theme
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_ENUM, "interface/theme/follow_system_theme", false, "")
@@ -676,13 +689,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Text editor */
 
 	// Theme
-	_initial_set("text_editor/theme/line_spacing", 6);
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "text_editor/theme/color_theme", "Default", "Default,Godot 2,Custom")
 
 	// Theme: Highlighting
 	_load_godot2_text_editor_theme();
 
 	// Appearance
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "text_editor/appearance/enable_inline_color_picker", true, "");
+
 	// Appearance: Caret
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/caret/type", 0, "Line,Block")
 	_initial_set("text_editor/appearance/caret/caret_blink", true, true);
@@ -1220,6 +1234,7 @@ void EditorSettings::_remove_deprecated_settings() {
 	erase("network/connection/engine_version_update_mode");
 	erase("run/output/always_open_output_on_play");
 	erase("run/output/always_close_output_on_stop");
+	erase("text_editor/theme/line_spacing"); // See GH-106137.
 }
 #endif
 
@@ -2154,7 +2169,7 @@ void EditorSettings::get_argument_options(const StringName &p_function, int p_id
 				r_options->push_back(section.quote());
 			}
 		} else if (pf == "set_builtin_action_override") {
-			for (const StringName &action : InputMap::get_singleton()->get_actions()) {
+			for (const Variant &action : InputMap::get_singleton()->get_actions()) {
 				r_options->push_back(String(action).quote());
 			}
 		}

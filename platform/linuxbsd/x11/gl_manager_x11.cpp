@@ -137,6 +137,10 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 		ERR_FAIL_NULL_V(fbc, ERR_UNCONFIGURED);
 
 		for (int i = 0; i < fbcount; i++) {
+			if (vi) {
+				XFree(vi);
+				vi = nullptr;
+			}
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
 			if (!vi) {
 				continue;

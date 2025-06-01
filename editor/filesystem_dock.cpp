@@ -107,7 +107,7 @@ bool FileSystemList::edit_selected() {
 	Rect2 popup_rect;
 	Vector2 ofs;
 
-	Vector2 icon_size = get_item_icon(s)->get_size();
+	Vector2 icon_size = get_fixed_icon_size() * get_icon_scale();
 
 	// Handles the different icon modes (TOP/LEFT).
 	switch (get_icon_mode()) {
@@ -120,12 +120,12 @@ bool FileSystemList::edit_selected() {
 				rect.position.x -= get_h_scroll_bar()->get_value();
 			}
 			ofs = Vector2(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height) - rect.size.height) / 2));
-			popup_rect.position = get_screen_position() + rect.position - ofs;
+			popup_rect.position = rect.position - ofs;
 			popup_rect.size = rect.size;
 
 			// Adjust for icon position and size.
-			popup_rect.size.x -= icon_size.x;
-			popup_rect.position.x += icon_size.x;
+			popup_rect.size.x -= MAX(theme_cache.h_separation, 0) / 2 + icon_size.x;
+			popup_rect.position.x += MAX(theme_cache.h_separation, 0) / 2 + icon_size.x;
 			break;
 		case ItemList::ICON_MODE_TOP:
 			rect = get_item_rect(s, false);
@@ -135,14 +135,18 @@ bool FileSystemList::edit_selected() {
 			if (get_h_scroll_bar()->is_visible()) {
 				rect.position.x -= get_h_scroll_bar()->get_value();
 			}
-			popup_rect.position = get_screen_position() + rect.position;
+			popup_rect.position = rect.position;
 			popup_rect.size = rect.size;
 
 			// Adjust for icon position and size.
-			popup_rect.size.y -= icon_size.y;
-			popup_rect.position.y += icon_size.y;
+			popup_rect.size.y -= MAX(theme_cache.v_separation, 0) / 2 + theme_cache.icon_margin + icon_size.y;
+			popup_rect.position.y += MAX(theme_cache.v_separation, 0) / 2 + theme_cache.icon_margin + icon_size.y;
 			break;
 	}
+	if (is_layout_rtl()) {
+		popup_rect.position.x = get_size().width - popup_rect.position.x - popup_rect.size.x;
+	}
+	popup_rect.position += get_screen_position();
 
 	popup_editor->set_position(popup_rect.position);
 	popup_editor->set_size(popup_rect.size);
@@ -710,7 +714,7 @@ void FileSystemDock::_set_current_path_line_edit_text(const String &p_path) {
 	}
 }
 
-void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites) {
+void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites, bool p_grab_focus) {
 	String target_path = p_path;
 	bool is_directory = false;
 
@@ -763,9 +767,15 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 			}
 			item = item->get_next();
 		}
+		if (p_grab_focus) {
+			tree->grab_focus();
+		}
 	} else {
 		(*directory_ptr)->select(0);
 		_update_file_list(false);
+		if (p_grab_focus) {
+			files->grab_focus();
+		}
 	}
 	tree->ensure_cursor_is_visible();
 }
@@ -802,10 +812,10 @@ bool FileSystemDock::_update_filtered_items(TreeItem *p_tree_item) {
 
 void FileSystemDock::navigate_to_path(const String &p_path) {
 	file_list_search_box->clear();
-	_navigate_to_path(p_path);
-
-	// Ensure that the FileSystem dock is visible.
+	// Try to set the FileSystem dock visible.
 	EditorDockManager::get_singleton()->focus_dock(this);
+	_navigate_to_path(p_path, false, is_visible_in_tree());
+
 	import_dock_needs_update = true;
 	_update_import_dock();
 }
@@ -2584,6 +2594,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			ScriptEditor::get_singleton()->open_text_file_create_dialog(dir);
 		} break;
+		case FILE_MENU_RUN_SCRIPT: {
+			if (p_selected.size() == 1) {
+				const String &fpath = p_selected[0];
+				Ref<Script> scr = ResourceLoader::load(fpath);
+				ERR_FAIL_COND(scr.is_null());
+				EditorNode::get_singleton()->run_editor_script(scr);
+			}
+		} break;
 
 		case EXTRA_FOCUS_PATH: {
 			focus_on_filter();
@@ -3269,6 +3287,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open"), FILE_MENU_OPEN);
+
+			String type = EditorFileSystem::get_singleton()->get_file_type(filenames[0]);
+			if (ClassDB::is_parent_class(type, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(filenames[0]);
+				if (scr.is_valid()) {
+					if (ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
+						p_popup->add_icon_item(get_editor_theme_icon(SNAME("MainPlay")), TTRC("Run"), FILE_MENU_RUN_SCRIPT);
+					}
+				}
+			}
 			p_popup->add_separator();
 		}
 
@@ -3514,6 +3542,8 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(tree_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
@@ -3584,6 +3614,8 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(file_list_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);

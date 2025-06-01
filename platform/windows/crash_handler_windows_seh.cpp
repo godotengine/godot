@@ -134,9 +134,8 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	}
 
 	String msg;
-	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
-	if (proj_settings) {
-		msg = proj_settings->get("debug/settings/crash_handler/message");
+	if (ProjectSettings::get_singleton()) {
+		msg = GLOBAL_GET("debug/settings/crash_handler/message");
 	}
 
 	// Tell MainLoop about the crash. This can be handled by users too in Node.
@@ -226,23 +225,20 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		}
 	} while (frame.AddrReturn.Offset != 0 && n < 256);
 
-	print_error("-- END OF BACKTRACE --");
+	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
 
 	SymCleanup(process);
 
-	Vector<Ref<ScriptBacktrace>> script_backtraces;
 	if (ScriptServer::are_languages_initialized()) {
-		script_backtraces = ScriptServer::capture_script_backtraces(false);
-	}
-	if (!script_backtraces.is_empty()) {
+		Vector<Ref<ScriptBacktrace>> script_backtraces = ScriptServer::capture_script_backtraces(false);
 		for (const Ref<ScriptBacktrace> &backtrace : script_backtraces) {
 			if (!backtrace->is_empty()) {
 				print_error(backtrace->format());
+				print_error(vformat("-- END OF %s BACKTRACE --", backtrace->get_language_name().to_upper()));
+				print_error("================================================================");
 			}
 		}
-		print_error("-- END OF SCRIPT BACKTRACE --");
-		print_error("================================================================");
 	}
 
 	// Pass the exception to the OS

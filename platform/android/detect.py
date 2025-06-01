@@ -35,7 +35,7 @@ def get_opts():
         ),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
         BoolVariable(
-            "generate_android_binaries",
+            ("generate_android_binaries", "generate_apk"),
             "Generate APK, AAB & AAR binaries after building Android library by calling Gradle",
             False,
         ),
@@ -68,12 +68,12 @@ def get_android_ndk_root(env: "SConsEnvironment"):
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
-    return "27.2.12479018"
+    return "28.1.13356709"
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_min_target_api():
-    return 21
+    return 24
 
 
 def get_flags():

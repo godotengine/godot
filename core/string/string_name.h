@@ -37,7 +37,7 @@
 
 class Main;
 
-class StringName {
+class [[nodiscard]] StringName {
 	struct Table;
 
 	struct _Data {

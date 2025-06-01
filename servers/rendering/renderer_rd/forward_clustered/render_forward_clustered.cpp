@@ -88,7 +88,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_fsr2(Rende
 	}
 }
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 bool RenderForwardClustered::RenderBufferDataForwardClustered::ensure_mfx_temporal(RendererRD::MFXTemporalEffect *p_effect) {
 	if (mfx_temporal_context == nullptr) {
 		RendererRD::MFXTemporalEffect::CreateParams params;
@@ -127,7 +127,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 		fsr2_context = nullptr;
 	}
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	if (mfx_temporal_context) {
 		memdelete(mfx_temporal_context);
 		mfx_temporal_context = nullptr;
@@ -1730,7 +1730,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			scale_type = SCALE_FSR2;
 			break;
 		case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 			scale_type = SCALE_MFX;
 #else
 			scale_type = SCALE_NONE;
@@ -2444,7 +2444,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 			RD::get_singleton()->draw_command_end_label();
 		} else if (scale_type == SCALE_MFX) {
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 			bool reset = rb_data->ensure_mfx_temporal(mfx_temporal_effect);
 
 			RID exposure;
@@ -2744,6 +2744,7 @@ void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const Page
 	scene_data.time = time;
 	scene_data.time_step = time_step;
 	scene_data.main_cam_transform = p_main_cam_transform;
+	scene_data.shadow_pass = true;
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
@@ -2836,6 +2837,7 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 	scene_data.time = time;
 	scene_data.time_step = time_step;
 	scene_data.main_cam_transform = p_cam_transform;
+	scene_data.shadow_pass = true; // Not a shadow pass, but should be treated like one.
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
@@ -3202,6 +3204,14 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 			u.binding = 15;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.append_id(best_fit_normal.texture);
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.binding = 16;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.append_id(dfg_lut.texture);
 			uniforms.push_back(u);
 		}
 
@@ -4811,6 +4821,24 @@ uint32_t RenderForwardClustered::get_pipeline_compilations(RS::PipelineSource p_
 	return scene_shader.get_pipeline_compilations(p_source);
 }
 
+void RenderForwardClustered::enable_features(BitField<FeatureBits> p_feature_bits) {
+	if (p_feature_bits.has_flag(FEATURE_MULTIVIEW_BIT)) {
+		scene_shader.enable_multiview_shader_group();
+	}
+
+	if (p_feature_bits.has_flag(FEATURE_ADVANCED_BIT)) {
+		scene_shader.enable_advanced_shader_group(p_feature_bits.has_flag(FEATURE_MULTIVIEW_BIT));
+	}
+
+	if (p_feature_bits.has_flag(FEATURE_VRS_BIT)) {
+		gi.enable_vrs_shader_group();
+	}
+}
+
+String RenderForwardClustered::get_name() const {
+	return "forward_clustered";
+}
+
 void RenderForwardClustered::GeometryInstanceForwardClustered::pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) {
 	if (p_voxel_gi_instance_count > 0) {
 		voxel_gi_instances[0] = p_voxel_gi_instances[0];
@@ -4870,6 +4898,11 @@ RenderForwardClustered::RenderForwardClustered() {
 		bool force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
 		if (force_vertex_shading) {
 			defines += "\n#define USE_VERTEX_LIGHTING\n";
+		}
+
+		bool specular_occlusion = GLOBAL_GET("rendering/reflections/specular_occlusion/enabled");
+		if (!specular_occlusion) {
+			defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
 		}
 
 		{
@@ -4942,8 +4975,43 @@ RenderForwardClustered::RenderForwardClustered() {
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, tformat.width, tformat.height, 1);
 		RD::get_singleton()->compute_list_end();
+	}
 
-		best_fit_normal.shader.version_free(best_fit_normal.shader_version);
+	/* DFG LUT */
+	{
+		Vector<String> modes;
+		modes.push_back("\n");
+		dfg_lut.shader.initialize(modes);
+		dfg_lut.shader_version = dfg_lut.shader.version_create();
+		dfg_lut.pipeline = RD::get_singleton()->compute_pipeline_create(dfg_lut.shader.version_get_shader(dfg_lut.shader_version, 0));
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tformat.width = 128;
+		tformat.height = 128;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+		dfg_lut.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+		RID shader = dfg_lut.shader.version_get_shader(dfg_lut.shader_version, 0);
+		ERR_FAIL_COND(shader.is_null());
+
+		Vector<RD::Uniform> uniforms;
+
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.append_id(dfg_lut.texture);
+			uniforms.push_back(u);
+		}
+		RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader, 0);
+
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, dfg_lut.pipeline);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, tformat.width, tformat.height, 1);
+		RD::get_singleton()->compute_list_end();
 	}
 
 	_update_shader_quality_settings();
@@ -4953,7 +5021,7 @@ RenderForwardClustered::RenderForwardClustered() {
 	taa = memnew(RendererRD::TAA);
 	fsr2_effect = memnew(RendererRD::FSR2Effect);
 	ss_effects = memnew(RendererRD::SSEffects);
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	motion_vectors_store = memnew(RendererRD::MotionVectorsStore);
 	mfx_temporal_effect = memnew(RendererRD::MFXTemporalEffect);
 #endif
@@ -4975,7 +5043,7 @@ RenderForwardClustered::~RenderForwardClustered() {
 		fsr2_effect = nullptr;
 	}
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	if (mfx_temporal_effect) {
 		memdelete(mfx_temporal_effect);
 		mfx_temporal_effect = nullptr;
@@ -4994,7 +5062,14 @@ RenderForwardClustered::~RenderForwardClustered() {
 
 	RD::get_singleton()->free(shadow_sampler);
 	RSG::light_storage->directional_shadow_atlas_set_size(0);
+
+	RD::get_singleton()->free(best_fit_normal.pipeline);
 	RD::get_singleton()->free(best_fit_normal.texture);
+	best_fit_normal.shader.version_free(best_fit_normal.shader_version);
+
+	RD::get_singleton()->free(dfg_lut.pipeline);
+	RD::get_singleton()->free(dfg_lut.texture);
+	dfg_lut.shader.version_free(dfg_lut.shader_version);
 
 	{
 		for (const RID &rid : scene_state.uniform_buffers) {

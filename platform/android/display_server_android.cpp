@@ -279,6 +279,13 @@ DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(in
 	return (ScreenOrientation)orientation;
 }
 
+int DisplayServerAndroid::get_display_rotation() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 0);
+
+	return godot_io_java->get_display_rotation();
+}
+
 int DisplayServerAndroid::get_screen_count() const {
 	return 1;
 }

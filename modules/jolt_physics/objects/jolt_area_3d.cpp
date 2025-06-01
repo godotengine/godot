@@ -42,11 +42,11 @@
 
 namespace {
 
-constexpr double DEFAULT_WIND_FORCE_MAGNITUDE = 0.0;
-constexpr double DEFAULT_WIND_ATTENUATION_FACTOR = 0.0;
+constexpr double AREA_DEFAULT_WIND_MAGNITUDE = 0.0;
+constexpr double AREA_DEFAULT_WIND_ATTENUATION = 0.0;
 
-const Vector3 DEFAULT_WIND_SOURCE = Vector3();
-const Vector3 DEFAULT_WIND_DIRECTION = Vector3();
+const Vector3 AREA_DEFAULT_WIND_SOURCE = Vector3();
+const Vector3 AREA_DEFAULT_WIND_DIRECTION = Vector3();
 
 } // namespace
 
@@ -83,7 +83,7 @@ void JoltArea3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings);
+	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings, _should_sleep());
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -197,81 +197,24 @@ void JoltArea3D::_notify_body_exited(const JPH::BodyID &p_body_id) {
 	}
 }
 
-void JoltArea3D::_force_bodies_entered() {
+void JoltArea3D::_remove_all_overlaps() {
 	for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
-		Overlap &body = E.value;
-
-		if (unlikely(body.shape_pairs.is_empty())) {
-			continue;
-		}
-
-		for (const KeyValue<ShapeIDPair, ShapeIndexPair> &P : body.shape_pairs) {
-			body.pending_removed.erase(P.value);
-			body.pending_added.push_back(P.value);
-		}
-
-		_events_changed();
+		_notify_body_exited(E.key);
 	}
+
+	bodies_by_id.clear();
+	areas_by_id.clear();
 }
 
-void JoltArea3D::_force_bodies_exited(bool p_remove) {
-	for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
-		const JPH::BodyID &id = E.key;
-		Overlap &body = E.value;
-
-		if (unlikely(body.shape_pairs.is_empty())) {
-			continue;
-		}
-
-		for (const KeyValue<ShapeIDPair, ShapeIndexPair> &P : body.shape_pairs) {
-			body.pending_added.erase(P.value);
-			body.pending_removed.push_back(P.value);
-		}
-
-		_events_changed();
-
-		if (p_remove) {
-			body.shape_pairs.clear();
-			_notify_body_exited(id);
-		}
+void JoltArea3D::_update_sleeping() {
+	if (space == nullptr) {
+		return;
 	}
-}
 
-void JoltArea3D::_force_areas_entered() {
-	for (KeyValue<JPH::BodyID, Overlap> &E : areas_by_id) {
-		Overlap &area = E.value;
-
-		if (unlikely(area.shape_pairs.is_empty())) {
-			continue;
-		}
-
-		for (const KeyValue<ShapeIDPair, ShapeIndexPair> &P : area.shape_pairs) {
-			area.pending_removed.erase(P.value);
-			area.pending_added.push_back(P.value);
-		}
-
-		_events_changed();
-	}
-}
-
-void JoltArea3D::_force_areas_exited(bool p_remove) {
-	for (KeyValue<JPH::BodyID, Overlap> &E : areas_by_id) {
-		Overlap &area = E.value;
-
-		if (unlikely(area.shape_pairs.is_empty())) {
-			continue;
-		}
-
-		for (const KeyValue<ShapeIDPair, ShapeIndexPair> &P : area.shape_pairs) {
-			area.pending_added.erase(P.value);
-			area.pending_removed.push_back(P.value);
-		}
-
-		_events_changed();
-
-		if (p_remove) {
-			area.shape_pairs.clear();
-		}
+	if (_should_sleep()) {
+		space->get_body_iface().DeactivateBody(jolt_body->GetID());
+	} else {
+		space->get_body_iface().ActivateBody(jolt_body->GetID());
 	}
 }
 
@@ -292,15 +235,7 @@ void JoltArea3D::_update_default_gravity() {
 void JoltArea3D::_space_changing() {
 	JoltShapedObject3D::_space_changing();
 
-	if (space != nullptr) {
-		// Ideally we would rely on our contact listener to report all the exits when we move
-		// between (or out of) spaces, but because our Jolt body is going to be destroyed when we
-		// leave this space the contact listener won't be able to retrieve the corresponding area
-		// and as such cannot report any exits, so we're forced to do it manually instead.
-		_force_bodies_exited(true);
-		_force_areas_exited(true);
-	}
-
+	_remove_all_overlaps();
 	_dequeue_call_queries();
 }
 
@@ -316,19 +251,11 @@ void JoltArea3D::_events_changed() {
 }
 
 void JoltArea3D::_body_monitoring_changed() {
-	if (has_body_monitor_callback()) {
-		_force_bodies_entered();
-	} else {
-		_force_bodies_exited(false);
-	}
+	_update_sleeping();
 }
 
 void JoltArea3D::_area_monitoring_changed() {
-	if (has_area_monitor_callback()) {
-		_force_areas_entered();
-	} else {
-		_force_areas_exited(false);
-	}
+	_update_sleeping();
 }
 
 void JoltArea3D::_monitorable_changed() {
@@ -407,16 +334,16 @@ Variant JoltArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return get_priority();
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
-			return DEFAULT_WIND_FORCE_MAGNITUDE;
+			return AREA_DEFAULT_WIND_MAGNITUDE;
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
-			return DEFAULT_WIND_SOURCE;
+			return AREA_DEFAULT_WIND_SOURCE;
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
-			return DEFAULT_WIND_DIRECTION;
+			return AREA_DEFAULT_WIND_DIRECTION;
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
-			return DEFAULT_WIND_ATTENUATION_FACTOR;
+			return AREA_DEFAULT_WIND_ATTENUATION;
 		}
 		default: {
 			ERR_FAIL_V_MSG(Variant(), vformat("Unhandled area parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -457,22 +384,22 @@ void JoltArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Variant
 			set_priority(p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
-			if (!Math::is_equal_approx((double)p_value, DEFAULT_WIND_FORCE_MAGNITUDE)) {
+			if (!Math::is_equal_approx((double)p_value, AREA_DEFAULT_WIND_MAGNITUDE)) {
 				WARN_PRINT(vformat("Invalid wind force magnitude for '%s'. Area wind force magnitude is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
 			}
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
-			if (!((Vector3)p_value).is_equal_approx(DEFAULT_WIND_SOURCE)) {
+			if (!((Vector3)p_value).is_equal_approx(AREA_DEFAULT_WIND_SOURCE)) {
 				WARN_PRINT(vformat("Invalid wind source for '%s'. Area wind source is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
 			}
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
-			if (!((Vector3)p_value).is_equal_approx(DEFAULT_WIND_DIRECTION)) {
+			if (!((Vector3)p_value).is_equal_approx(AREA_DEFAULT_WIND_DIRECTION)) {
 				WARN_PRINT(vformat("Invalid wind direction for '%s'. Area wind direction is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
 			}
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
-			if (!Math::is_equal_approx((double)p_value, DEFAULT_WIND_ATTENUATION_FACTOR)) {
+			if (!Math::is_equal_approx((double)p_value, AREA_DEFAULT_WIND_ATTENUATION)) {
 				WARN_PRINT(vformat("Invalid wind attenuation for '%s'. Area wind attenuation is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
 			}
 		} break;
@@ -513,7 +440,7 @@ void JoltArea3D::set_monitorable(bool p_monitorable) {
 }
 
 bool JoltArea3D::can_monitor(const JoltBody3D &p_other) const {
-	return (collision_mask & p_other.get_collision_layer()) != 0;
+	return is_monitoring_bodies() && (collision_mask & p_other.get_collision_layer()) != 0;
 }
 
 bool JoltArea3D::can_monitor(const JoltSoftBody3D &p_other) const {
@@ -521,7 +448,7 @@ bool JoltArea3D::can_monitor(const JoltSoftBody3D &p_other) const {
 }
 
 bool JoltArea3D::can_monitor(const JoltArea3D &p_other) const {
-	return p_other.is_monitorable() && (collision_mask & p_other.get_collision_layer()) != 0;
+	return is_monitoring_areas() && p_other.is_monitorable() && (collision_mask & p_other.get_collision_layer()) != 0;
 }
 
 bool JoltArea3D::can_interact_with(const JoltBody3D &p_other) const {
@@ -621,7 +548,6 @@ void JoltArea3D::body_shape_entered(const JPH::BodyID &p_body_id, const JPH::Sub
 
 bool JoltArea3D::body_shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id) {
 	Overlap *overlap = bodies_by_id.getptr(p_body_id);
-
 	if (overlap == nullptr) {
 		return false;
 	}
@@ -643,7 +569,6 @@ void JoltArea3D::area_shape_entered(const JPH::BodyID &p_body_id, const JPH::Sub
 
 bool JoltArea3D::area_shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id) {
 	Overlap *overlap = areas_by_id.getptr(p_body_id);
-
 	if (overlap == nullptr) {
 		return false;
 	}

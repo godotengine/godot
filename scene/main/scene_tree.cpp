@@ -186,14 +186,6 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	}
 }
 
-void SceneTree::make_group_changed(const StringName &p_group) {
-	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (E) {
-		E->value.changed = true;
-	}
-}
-
 void SceneTree::flush_transform_notifications() {
 	_THREAD_SAFE_METHOD_
 
@@ -213,8 +205,8 @@ bool SceneTree::is_accessibility_enabled() const {
 	}
 
 	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
-	int screen_reader_acvite = DisplayServer::get_singleton()->accessibility_screen_reader_active();
-	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_acvite == 0))) {
+	int screen_reader_active = DisplayServer::get_singleton()->accessibility_screen_reader_active();
+	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_active != 1))) {
 		return false;
 	}
 	return true;
@@ -2068,7 +2060,7 @@ SceneTree::SceneTree() {
 	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	root->set_use_hdr_2d(use_hdr_2d);
 
-	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), 0);
+	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast),SMAA (Average)"), 0);
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
 	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);

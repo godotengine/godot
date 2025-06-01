@@ -3337,13 +3337,13 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 				const int *indices_w = indices.ptrw();
 				Vector<bool> used_indices;
-				used_indices.resize_zeroed(orig_vertex_num);
+				used_indices.resize_initialized(orig_vertex_num);
 				bool *used_w = used_indices.ptrw();
 				for (int idx_i = 0; idx_i < is; idx_i++) {
 					ERR_FAIL_INDEX_V(indices_w[idx_i], orig_vertex_num, ERR_INVALID_DATA);
 					used_w[indices_w[idx_i]] = true;
 				}
-				indices_rev_mapping.resize_zeroed(orig_vertex_num);
+				indices_rev_mapping.resize_initialized(orig_vertex_num);
 				int *rev_w = indices_rev_mapping.ptrw();
 				vertex_num = 0;
 				for (int vert_i = 0; vert_i < orig_vertex_num; vert_i++) {

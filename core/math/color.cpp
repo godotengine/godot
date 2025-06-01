@@ -246,6 +246,19 @@ void Color::set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	a = c.a;
 }
 
+void Color::set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	ok_color::HSV hsv;
+	hsv.h = p_h;
+	hsv.s = p_s;
+	hsv.v = p_v;
+	ok_color::RGB rgb = ok_color::okhsv_to_srgb(hsv);
+	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha).clamp();
+	r = c.r;
+	g = c.g;
+	b = c.b;
+	a = c.a;
+}
+
 bool Color::is_equal_approx(const Color &p_color) const {
 	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
 }
@@ -473,6 +486,12 @@ Color::operator String() const {
 Color Color::from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	Color c;
 	c.set_ok_hsl(p_h, p_s, p_l, p_alpha);
+	return c;
+}
+
+Color Color::from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha) {
+	Color c;
+	c.set_ok_hsv(p_h, p_s, p_l, p_alpha);
 	return c;
 }
 

@@ -205,6 +205,7 @@ const GodotInputGamepads = {
 		sample: function () {
 			const pads = GodotInputGamepads.get_pads();
 			const samples = [];
+			let active = 0;
 			for (let i = 0; i < pads.length; i++) {
 				const pad = pads[i];
 				if (!pad) {
@@ -224,8 +225,10 @@ const GodotInputGamepads = {
 					s.axes.push(pad.axes[a]);
 				}
 				samples.push(s);
+				active++;
 			}
 			GodotInputGamepads.samples = samples;
+			return active;
 		},
 
 		init: function (onchange) {
@@ -651,8 +654,7 @@ const GodotInput = {
 	godot_js_input_gamepad_sample__proxy: 'sync',
 	godot_js_input_gamepad_sample__sig: 'i',
 	godot_js_input_gamepad_sample: function () {
-		GodotInputGamepads.sample();
-		return 0;
+		return GodotInputGamepads.sample();
 	},
 
 	godot_js_input_gamepad_sample_get__proxy: 'sync',

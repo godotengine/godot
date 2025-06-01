@@ -40,10 +40,10 @@ String GDScriptWarning::get_message() const {
 	switch (code) {
 		case UNASSIGNED_VARIABLE:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The variable "%s" was used before being assigned a value.)", symbols[0]);
+			return vformat(R"(The variable "%s" is used before being assigned a value.)", symbols[0]);
 		case UNASSIGNED_VARIABLE_OP_ASSIGN:
-			CHECK_SYMBOLS(1);
-			return vformat(R"(Using assignment with operation but the variable "%s" was not previously assigned a value.)", symbols[0]);
+			CHECK_SYMBOLS(2);
+			return vformat(R"(The variable "%s" is modified with the compound-assignment operator "%s=" but was not previously initialized.)", symbols[0], symbols[1]);
 		case UNUSED_VARIABLE:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The local variable "%s" is declared but never used in the block. If this is intended, prefix it with an underscore: "_%s".)", symbols[0], symbols[0]);
@@ -79,7 +79,7 @@ String GDScriptWarning::get_message() const {
 		case STANDALONE_EXPRESSION:
 			return "Standalone expression (the line may have no effect).";
 		case STANDALONE_TERNARY:
-			return "Standalone ternary operator: the return value is being discarded.";
+			return "Standalone ternary operator (the return value is being discarded).";
 		case INCOMPATIBLE_TERNARY:
 			return "Values of the ternary operator are not mutually compatible.";
 		case UNTYPED_DECLARATION:
@@ -117,17 +117,17 @@ String GDScriptWarning::get_message() const {
 		case REDUNDANT_STATIC_UNLOAD:
 			return R"(The "@static_unload" annotation is redundant because the file does not have a class with static variables.)";
 		case REDUNDANT_AWAIT:
-			return R"("await" keyword not needed in this case, because the expression isn't a coroutine nor a signal.)";
+			return R"("await" keyword is unnecessary because the expression isn't a coroutine nor a signal.)";
 		case ASSERT_ALWAYS_TRUE:
 			return "Assert statement is redundant because the expression is always true.";
 		case ASSERT_ALWAYS_FALSE:
 			return "Assert statement will raise an error because the expression is always false.";
 		case INTEGER_DIVISION:
-			return "Integer division, decimal part will be discarded.";
+			return "Integer division. Decimal part will be discarded.";
 		case NARROWING_CONVERSION:
 			return "Narrowing conversion (float is converted to int and loses precision).";
 		case INT_AS_ENUM_WITHOUT_CAST:
-			return "Integer used when an enum value is expected. If this is intended cast the integer to the enum type.";
+			return "Integer used when an enum value is expected. If this is intended, cast the integer to the enum type using the \"as\" keyword.";
 		case INT_AS_ENUM_WITHOUT_MATCH:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(Cannot %s %s as Enum "%s": no enum member has matching value.)", symbols[0], symbols[1], symbols[2]);
@@ -138,7 +138,7 @@ String GDScriptWarning::get_message() const {
 			return "Empty script file.";
 		case DEPRECATED_KEYWORD:
 			CHECK_SYMBOLS(2);
-			return vformat(R"(The "%s" keyword is deprecated and will be removed in a future release, please replace its uses by "%s".)", symbols[0], symbols[1]);
+			return vformat(R"(The "%s" keyword is deprecated and will be removed in a future release. Please replace it with "%s".)", symbols[0], symbols[1]);
 		case CONFUSABLE_IDENTIFIER:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
@@ -159,7 +159,7 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The method "%s()" overrides a method from native class "%s". This won't be called by the engine and may not work as expected.)*", symbols[0], symbols[1]);
 		case GET_NODE_DEFAULT_WITHOUT_ONREADY:
 			CHECK_SYMBOLS(1);
-			return vformat(R"*(The default value is using "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
+			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 #ifndef DISABLE_DEPRECATED

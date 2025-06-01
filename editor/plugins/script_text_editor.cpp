@@ -45,6 +45,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/split_container.h"
 
 void ConnectionInfoDialog::ok_pressed() {
@@ -232,8 +233,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 	text_edit->get_syntax_highlighter()->update_cache();
 
-	List<String> strings;
-	script->get_language()->get_string_delimiters(&strings);
+	Vector<String> strings = script->get_language()->get_string_delimiters();
 	text_edit->clear_string_delimiters();
 	for (const String &string : strings) {
 		String beg = string.get_slicec(' ', 0);
@@ -249,9 +249,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 
 	text_edit->clear_comment_delimiters();
 
-	List<String> comments;
-	script->get_language()->get_comment_delimiters(&comments);
-	for (const String &comment : comments) {
+	for (const String &comment : script->get_language()->get_comment_delimiters()) {
 		String beg = comment.get_slicec(' ', 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
@@ -261,9 +259,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		}
 	}
 
-	List<String> doc_comments;
-	script->get_language()->get_doc_comment_delimiters(&doc_comments);
-	for (const String &doc_comment : doc_comments) {
+	for (const String &doc_comment : script->get_language()->get_doc_comment_delimiters()) {
 		String beg = doc_comment.get_slicec(' ', 0);
 		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
@@ -396,8 +392,281 @@ bool ScriptTextEditor::show_members_overview() {
 	return true;
 }
 
+bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
+	if (p_info.get_valid("color").get_type() != Variant::COLOR) {
+		return false;
+	}
+	if (!p_info.get_valid("color_end").is_num() || !p_info.get_valid("color_mode").is_num()) {
+		return false;
+	}
+	return true;
+}
+
+Array ScriptTextEditor::_inline_object_parse(const String &p_text, int p_line) {
+	Array result;
+	int i_end_previous = 0;
+	int i_start = p_text.find("Color");
+
+	while (i_start != -1) {
+		// Ignore words that just have "Color" in them.
+		if (i_start == 0 || !("_" + p_text.substr(i_start - 1, 1)).is_valid_ascii_identifier()) {
+			int i_par_start = p_text.find_char('(', i_start + 5);
+			if (i_par_start != -1) {
+				int i_par_end = p_text.find_char(')', i_start + 5);
+				if (i_par_end != -1) {
+					Dictionary color_info;
+					color_info["line"] = p_line;
+					color_info["column"] = i_start;
+					color_info["width_ratio"] = 1.0;
+					color_info["color_end"] = i_par_end;
+
+					String fn_name = p_text.substr(i_start + 5, i_par_start - i_start - 5);
+					String s_params = p_text.substr(i_par_start + 1, i_par_end - i_par_start - 1);
+					bool has_added_color = false;
+
+					if (fn_name.is_empty()) {
+						String stripped = s_params.strip_edges(true, true);
+						// String constructor.
+						if (stripped.length() > 0 && (stripped[0] == '\"')) {
+							String color_string = stripped.substr(1, stripped.length() - 2);
+							color_info["color"] = Color(color_string);
+							color_info["color_mode"] = MODE_STRING;
+							has_added_color = true;
+						}
+						// Hex constructor.
+						else if (stripped.length() == 10 && stripped.substr(0, 2) == "0x") {
+							color_info["color"] = Color(stripped.substr(2, stripped.length() - 2));
+							color_info["color_mode"] = MODE_HEX;
+							has_added_color = true;
+						}
+						// Empty Color() constructor.
+						else if (stripped.is_empty()) {
+							color_info["color"] = Color();
+							color_info["color_mode"] = MODE_RGB;
+							has_added_color = true;
+						}
+					}
+					// Float & int parameters.
+					if (!has_added_color && s_params.size() > 0) {
+						PackedFloat64Array params = s_params.split_floats(",", false);
+						if (params.size() == 3) {
+							params.resize(4);
+							params.set(3, 1.0);
+						}
+						if (params.size() == 4) {
+							has_added_color = true;
+							if (fn_name == ".from_ok_hsl") {
+								color_info["color"] = Color::from_ok_hsl(params[0], params[1], params[2], params[3]);
+								color_info["color_mode"] = MODE_OKHSL;
+							} else if (fn_name == ".from_hsv") {
+								color_info["color"] = Color::from_hsv(params[0], params[1], params[2], params[3]);
+								color_info["color_mode"] = MODE_HSV;
+							} else if (fn_name == ".from_rgba8") {
+								color_info["color"] = Color::from_rgba8(int(params[0]), int(params[1]), int(params[2]), int(params[3]));
+								color_info["color_mode"] = MODE_RGB8;
+							} else if (fn_name.is_empty()) {
+								color_info["color"] = Color(params[0], params[1], params[2], params[3]);
+								color_info["color_mode"] = MODE_RGB;
+							} else {
+								has_added_color = false;
+							}
+						}
+					}
+
+					if (has_added_color) {
+						result.push_back(color_info);
+						i_end_previous = i_par_end + 1;
+					}
+				}
+			}
+		}
+		i_end_previous = MAX(i_end_previous, i_start);
+		i_start = p_text.find("Color", i_start + 1);
+	}
+	return result;
+}
+
+void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect) {
+	if (_is_valid_color_info(p_info)) {
+		Rect2 col_rect = p_rect.grow(-4);
+		if (color_alpha_texture.is_null()) {
+			color_alpha_texture = inline_color_picker->get_theme_icon("sample_bg", "ColorPicker");
+		}
+		code_editor->get_text_editor()->draw_texture_rect(color_alpha_texture, col_rect, false);
+		code_editor->get_text_editor()->draw_rect(col_rect, Color(p_info["color"]));
+		code_editor->get_text_editor()->draw_rect(col_rect, Color(1, 1, 1), false, 1);
+	}
+}
+
+void ScriptTextEditor::_inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect) {
+	if (_is_valid_color_info(p_info)) {
+		inline_color_picker->set_pick_color(p_info["color"]);
+		inline_color_line = p_info["line"];
+		inline_color_start = p_info["column"];
+		inline_color_end = p_info["color_end"];
+
+		// Reset tooltip hover timer.
+		code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(false);
+		code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(true);
+
+		_update_color_constructor_options();
+		inline_color_options->select(p_info["color_mode"]);
+		EditorNode::get_singleton()->setup_color_picker(inline_color_picker);
+
+		// Move popup above the line if it's too low.
+		float_t view_h = get_viewport_rect().size.y;
+		float_t pop_h = inline_color_popup->get_contents_minimum_size().y;
+		float_t pop_y = p_rect.get_end().y;
+		float_t pop_x = p_rect.position.x;
+		if (pop_y + pop_h > view_h) {
+			pop_y = p_rect.position.y - pop_h;
+		}
+		// Move popup to the right if it's too high.
+		if (pop_y < 0) {
+			pop_x = p_rect.get_end().x;
+		}
+
+		inline_color_popup->popup(Rect2(pop_x, pop_y, 0, 0));
+	}
+}
+
+String ScriptTextEditor::_picker_color_stringify(const Color &p_color, COLOR_MODE p_mode) {
+	String result;
+	String fname;
+	Vector<String> str_params;
+	switch (p_mode) {
+		case ScriptTextEditor::MODE_STRING: {
+			str_params.push_back("\"" + p_color.to_html() + "\"");
+		} break;
+		case ScriptTextEditor::MODE_HEX: {
+			str_params.push_back("0x" + p_color.to_html());
+		} break;
+		case ScriptTextEditor::MODE_RGB: {
+			str_params = {
+				String::num(p_color.r, 3),
+				String::num(p_color.g, 3),
+				String::num(p_color.b, 3),
+				String::num(p_color.a, 3)
+			};
+		} break;
+		case ScriptTextEditor::MODE_HSV: {
+			str_params = {
+				String::num(p_color.get_h(), 3),
+				String::num(p_color.get_s(), 3),
+				String::num(p_color.get_v(), 3),
+				String::num(p_color.a, 3)
+			};
+			fname = ".from_hsv";
+		} break;
+		case ScriptTextEditor::MODE_OKHSL: {
+			str_params = {
+				String::num(p_color.get_ok_hsl_h(), 3),
+				String::num(p_color.get_ok_hsl_s(), 3),
+				String::num(p_color.get_ok_hsl_l(), 3),
+				String::num(p_color.a, 3)
+			};
+			fname = ".from_ok_hsl";
+		} break;
+		case ScriptTextEditor::MODE_RGB8: {
+			str_params = {
+				itos(p_color.get_r8()),
+				itos(p_color.get_g8()),
+				itos(p_color.get_b8()),
+				itos(p_color.get_a8())
+			};
+			fname = ".from_rgba8";
+		} break;
+		default: {
+		} break;
+	}
+	result = "Color" + fname + "(" + String(", ").join(str_params) + ")";
+	return result;
+}
+
+void ScriptTextEditor::_picker_color_changed(const Color &p_color) {
+	_update_color_constructor_options();
+	_update_color_text();
+}
+
+void ScriptTextEditor::_update_color_constructor_options() {
+	int item_count = inline_color_options->get_item_count();
+	// Update or add each constructor as an option.
+	for (int i = 0; i < MODE_MAX; i++) {
+		String option_text = _picker_color_stringify(inline_color_picker->get_pick_color(), (COLOR_MODE)i);
+		if (i >= item_count) {
+			inline_color_options->add_item(option_text);
+		} else {
+			inline_color_options->set_item_text(i, option_text);
+		}
+	}
+}
+
+void ScriptTextEditor::_update_background_color() {
+	// Clear background lines.
+	CodeEdit *te = code_editor->get_text_editor();
+	for (int i = 0; i < te->get_line_count(); i++) {
+		bool is_folded_code_region = te->is_line_code_region_start(i) && te->is_line_folded(i);
+		te->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
+	}
+
+	// Set the warning background.
+	if (warning_line_color.a != 0.0) {
+		for (const ScriptLanguage::Warning &warning : warnings) {
+			int folder_line_header = te->get_folded_line_header(warning.end_line - 2);
+			bool is_folded = folder_line_header != (warning.end_line - 2);
+
+			if (is_folded) {
+				te->set_line_background_color(folder_line_header, warning_line_color);
+			} else if (warning.end_line - warning.start_line > 0 && warning.end_line - warning.start_line < 20) {
+				// If the warning spans below 20 lines (arbitrary), set the background color for all lines.
+				// (W.end_line - W.start_line > 0) ensures that we set the background for single line warnings.
+				for (int i = warning.start_line - 1; i < warning.end_line - 1; i++) {
+					te->set_line_background_color(i, warning_line_color);
+				}
+			} else {
+				// Otherwise, just set the background color for the start line of the warning.
+				te->set_line_background_color(warning.start_line - 1, warning_line_color);
+			}
+		}
+	}
+
+	// Set the error background.
+	if (marked_line_color.a != 0.0) {
+		for (const ScriptLanguage::ScriptError &error : errors) {
+			int folder_line_header = te->get_folded_line_header(error.line - 1);
+			bool is_folded_code = folder_line_header != (error.line - 1);
+
+			if (is_folded_code) {
+				te->set_line_background_color(folder_line_header, marked_line_color);
+			} else {
+				te->set_line_background_color(error.line - 1, marked_line_color);
+			}
+		}
+	}
+}
+
+void ScriptTextEditor::_update_color_text() {
+	if (inline_color_line < 0) {
+		return;
+	}
+	String result = inline_color_options->get_item_text(inline_color_options->get_selected_id());
+	code_editor->get_text_editor()->begin_complex_operation();
+	code_editor->get_text_editor()->remove_text(inline_color_line, inline_color_start, inline_color_line, inline_color_end + 1);
+	inline_color_end = inline_color_start + result.size() - 2;
+	code_editor->get_text_editor()->insert_text(result, inline_color_line, inline_color_start);
+	code_editor->get_text_editor()->end_complex_operation();
+}
+
 void ScriptTextEditor::update_settings() {
 	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EDITOR_GET("text_editor/appearance/gutters/show_info_gutter"));
+	if (EDITOR_GET("text_editor/appearance/enable_inline_color_picker")) {
+		code_editor->get_text_editor()->set_inline_object_handlers(
+				callable_mp(this, &ScriptTextEditor::_inline_object_parse),
+				callable_mp(this, &ScriptTextEditor::_inline_object_draw),
+				callable_mp(this, &ScriptTextEditor::_inline_object_handle_click));
+	} else {
+		code_editor->get_text_editor()->set_inline_object_handlers(Callable(), Callable(), Callable());
+	}
 	code_editor->update_editor_settings();
 }
 
@@ -575,8 +844,9 @@ void ScriptTextEditor::_validate_script() {
 		script_is_valid = true;
 	}
 	_update_connected_methods();
-	_update_errors();
 	_update_warnings();
+	_update_errors();
+	_update_background_color();
 
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
@@ -645,17 +915,6 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->pop(); // Cell.
 	}
 	warnings_panel->pop(); // Table.
-	if (warning_line_color.a != 0.0) {
-		CodeEdit *te = code_editor->get_text_editor();
-		for (int i = 0; i < te->get_line_count(); i++) {
-			for (const ScriptLanguage::Warning &W : warnings) {
-				if (i >= W.start_line - 1 && i < W.end_line) {
-					te->set_line_background_color(i, warning_line_color);
-					break;
-				}
-			}
-		}
-	}
 }
 
 void ScriptTextEditor::_update_errors() {
@@ -718,23 +977,11 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->pop(); // Indent.
 	}
 
-	CodeEdit *te = code_editor->get_text_editor();
 	bool highlight_safe = EDITOR_GET("text_editor/appearance/gutters/highlight_type_safe_lines");
 	bool last_is_safe = false;
-	for (int i = 0; i < te->get_line_count(); i++) {
-		if (errors.is_empty()) {
-			bool is_folded_code_region = te->is_line_code_region_start(i) && te->is_line_folded(i);
-			te->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
-		} else if (marked_line_color.a != 0) {
-			for (const ScriptLanguage::ScriptError &E : errors) {
-				bool error_line = i == E.line - 1;
-				te->set_line_background_color(i, error_line ? marked_line_color : Color(0, 0, 0, 0));
-				if (error_line) {
-					break;
-				}
-			}
-		}
+	CodeEdit *te = code_editor->get_text_editor();
 
+	for (int i = 0; i < te->get_line_count(); i++) {
 		if (highlight_safe) {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
@@ -1502,11 +1749,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
 			tx->fold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_UNFOLD_ALL_LINES: {
 			tx->unfold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_CREATE_CODE_REGION: {
 			tx->create_code_region();
@@ -1760,10 +2005,8 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	}
 
 	String delimiter = "#";
-	List<String> comment_delimiters;
-	script->get_language()->get_comment_delimiters(&comment_delimiters);
 
-	for (const String &script_delimiter : comment_delimiters) {
+	for (const String &script_delimiter : script->get_language()->get_comment_delimiters()) {
 		if (!script_delimiter.contains_char(' ')) {
 			delimiter = script_delimiter;
 			break;
@@ -1806,12 +2049,16 @@ void ScriptTextEditor::_notification(int p_what) {
 				break;
 			}
 			if (is_visible_in_tree()) {
-				_update_errors();
 				_update_warnings();
+				_update_errors();
+				_update_background_color();
 			}
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
+			Ref<Font> code_font = get_theme_font("font", "CodeEdit");
+			inline_color_options->add_theme_font_override("font", code_font);
+			inline_color_options->get_popup()->add_theme_font_override("font", code_font);
 		} break;
 	}
 }
@@ -1889,20 +2136,13 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	return false;
 }
 
-static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
-	// Check scripts only for the nodes belonging to the edited scene.
-	if (p_current_node == p_edited_scene || p_current_node->get_owner() == p_edited_scene) {
-		Ref<Script> scr = p_current_node->get_script();
-		if (scr.is_valid() && scr == script) {
-			return p_current_node;
-		}
+static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
+	if (p_current_node->get_script() == script) {
+		return p_current_node;
 	}
 
-	// Traverse all children, even the ones not owned by the edited scene as they
-	// can still have child nodes added within the edited scene and thus owned by
-	// it (e.g. nodes added to subscene's root or to its editable children).
 	for (int i = 0; i < p_current_node->get_child_count(); i++) {
-		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
+		Node *n = _find_script_node(p_current_node->get_child(i), script);
 		if (n) {
 			return n;
 		}
@@ -2037,7 +2277,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		Node *sn = _find_script_node(scene_root, scene_root, script);
+		Node *sn = _find_script_node(scene_root, script);
 		if (!sn) {
 			sn = scene_root;
 		}
@@ -2054,14 +2294,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
+				bool is_unique = node->is_unique_name_in_owner() && (node->get_owner() == sn || node->get_owner() == sn->get_owner());
+				String path = is_unique ? String(node->get_name()) : String(sn->get_path_to(node));
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_unicode_identifier()) {
 						path = _quote_drop_data(path);
@@ -2096,15 +2330,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
-
+				bool is_unique = node->is_unique_name_in_owner() && (node->get_owner() == sn || node->get_owner() == sn->get_owner());
+				String path = is_unique ? String(node->get_name()) : String(sn->get_path_to(node));
 				for (const String &segment : path.split("/")) {
 					if (!segment.is_valid_ascii_identifier()) {
 						path = _quote_drop_data(path);
@@ -2382,6 +2609,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
+	code_editor->get_text_editor()->connect("_fold_line_updated", callable_mp(this, &ScriptTextEditor::_update_background_color));
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
 	code_editor->show_toggle_files_button();
 	_update_gutter_indexes();
@@ -2487,7 +2715,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/contextual_help"), HELP_CONTEXTUAL);
@@ -2594,6 +2822,23 @@ ScriptTextEditor::ScriptTextEditor() {
 	bookmarks_menu = memnew(PopupMenu);
 	breakpoints_menu = memnew(PopupMenu);
 
+	inline_color_popup = memnew(PopupPanel);
+	add_child(inline_color_popup);
+
+	inline_color_picker = memnew(ColorPicker);
+	inline_color_picker->set_mouse_filter(MOUSE_FILTER_STOP);
+	inline_color_picker->set_deferred_mode(true);
+	inline_color_picker->set_hex_visible(false);
+	inline_color_picker->connect("color_changed", callable_mp(this, &ScriptTextEditor::_picker_color_changed));
+	inline_color_popup->add_child(inline_color_picker);
+
+	inline_color_options = memnew(OptionButton);
+	inline_color_options->set_h_size_flags(SIZE_FILL);
+	inline_color_options->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	inline_color_options->set_fit_to_longest_item(false);
+	inline_color_options->connect("item_selected", callable_mp(this, &ScriptTextEditor::_update_color_text).unbind(1));
+	inline_color_picker->get_slider(ColorPicker::SLIDER_COUNT)->get_parent()->add_sibling(inline_color_options);
+
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
@@ -2665,7 +2910,6 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT_AND_COMMAND("script_text_editor/replace", TTRC("Replace..."), KeyModifierMask::CTRL | Key::R);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/replace", "macos", KeyModifierMask::ALT | KeyModifierMask::META | Key::F);
 
-	ED_SHORTCUT("script_text_editor/find_in_files", TTRC("Find in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
 	ED_SHORTCUT("script_text_editor/replace_in_files", TTRC("Replace in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
 	ED_SHORTCUT("script_text_editor/contextual_help", TTRC("Contextual Help"), KeyModifierMask::ALT | Key::F1);

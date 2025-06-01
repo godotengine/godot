@@ -40,7 +40,9 @@
 
 static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
-GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wplacement-new") // Silence a false positive warning (see GH-52119).
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wplacement-new") // Silence a false positive warning (see GH-52119).
+GODOT_GCC_WARNING_IGNORE("-Wmaybe-uninitialized") // False positive raised when using constexpr.
 
 template <typename T>
 class CowData {
@@ -206,7 +208,7 @@ public:
 		return _ptr[p_index];
 	}
 
-	template <bool p_ensure_zero = false>
+	template <bool p_initialize = true>
 	Error resize(Size p_size);
 
 	_FORCE_INLINE_ void remove_at(Size p_index) {
@@ -280,6 +282,12 @@ void CowData<T>::_unref() {
 
 	// Free memory.
 	Memory::free_static((uint8_t *)prev_ptr - DATA_OFFSET, false);
+
+#ifdef DEBUG_ENABLED
+	// If any destructors access us through pointers, it is a bug.
+	// We can't really test for that, but we can at least check no items have been added.
+	ERR_FAIL_COND_MSG(_ptr != nullptr, "Internal bug, please report: CowData was modified during destruction.");
+#endif
 }
 
 template <typename T>
@@ -364,7 +372,7 @@ Error CowData<T>::_fork_allocate(USize p_size) {
 }
 
 template <typename T>
-template <bool p_ensure_zero>
+template <bool p_initialize>
 Error CowData<T>::resize(Size p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
@@ -378,8 +386,12 @@ Error CowData<T>::resize(Size p_size) {
 		return error;
 	}
 
-	if (p_size > prev_size) {
-		memnew_arr_placement<p_ensure_zero>(_ptr + prev_size, p_size - prev_size);
+	if constexpr (p_initialize) {
+		if (p_size > prev_size) {
+			memnew_arr_placement(_ptr + prev_size, p_size - prev_size);
+		}
+	} else {
+		static_assert(std::is_trivially_destructible_v<T>);
 	}
 
 	return OK;

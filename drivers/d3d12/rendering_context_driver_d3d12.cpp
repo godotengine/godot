@@ -78,9 +78,11 @@ RenderingContextDriverD3D12::~RenderingContextDriverD3D12() {
 	if (lib_dxgi) {
 		FreeLibrary(lib_dxgi);
 	}
+#ifdef DCOMP_ENABLED
 	if (lib_dcomp) {
 		FreeLibrary(lib_dcomp);
 	}
+#endif
 }
 
 Error RenderingContextDriverD3D12::_init_device_factory() {
@@ -93,8 +95,10 @@ Error RenderingContextDriverD3D12::_init_device_factory() {
 	lib_dxgi = LoadLibraryW(L"DXGI.dll");
 	ERR_FAIL_NULL_V(lib_dxgi, ERR_CANT_CREATE);
 
+#ifdef DCOMP_ENABLED
 	lib_dcomp = LoadLibraryW(L"Dcomp.dll");
 	ERR_FAIL_NULL_V(lib_dcomp, ERR_CANT_CREATE);
+#endif
 
 	// Note: symbol is not available in MinGW import library.
 	PFN_D3D12_GET_INTERFACE d3d_D3D12GetInterface = (PFN_D3D12_GET_INTERFACE)(void *)GetProcAddress(lib_d3d12, "D3D12GetInterface");

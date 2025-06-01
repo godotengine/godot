@@ -32,11 +32,13 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/fuzzy_search.h"
 #include "core/version.h"
 #include "editor/code_editor.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -164,13 +166,11 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Reserved words. */
 		const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 		const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
-		List<String> keywords;
-		scr_lang->get_reserved_words(&keywords);
-		for (const String &E : keywords) {
-			if (scr_lang->is_control_flow_keyword(E)) {
-				highlighter->add_keyword_color(E, control_flow_keyword_color);
+		for (const String &keyword : scr_lang->get_reserved_words()) {
+			if (scr_lang->is_control_flow_keyword(keyword)) {
+				highlighter->add_keyword_color(keyword, control_flow_keyword_color);
 			} else {
-				highlighter->add_keyword_color(E, keyword_color);
+				highlighter->add_keyword_color(keyword, keyword_color);
 			}
 		}
 
@@ -199,9 +199,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 		/* Comments */
 		const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
-		List<String> comments;
-		scr_lang->get_comment_delimiters(&comments);
-		for (const String &comment : comments) {
+		for (const String &comment : scr_lang->get_comment_delimiters()) {
 			String beg = comment.get_slicec(' ', 0);
 			String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, comment_color, end.is_empty());
@@ -209,9 +207,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 		/* Doc comments */
 		const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
-		List<String> doc_comments;
-		scr_lang->get_doc_comment_delimiters(&doc_comments);
-		for (const String &doc_comment : doc_comments) {
+		for (const String &doc_comment : scr_lang->get_doc_comment_delimiters()) {
 			String beg = doc_comment.get_slicec(' ', 0);
 			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, doc_comment_color, end.is_empty());
@@ -219,9 +215,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 		/* Strings */
 		const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
-		List<String> strings;
-		scr_lang->get_string_delimiters(&strings);
-		for (const String &string : strings) {
+		for (const String &string : scr_lang->get_string_delimiters()) {
 			String beg = string.get_slicec(' ', 0);
 			String end = string.get_slice_count(" ") > 1 ? string.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, string_color, end.is_empty());
@@ -306,6 +300,46 @@ void EditorMarkdownSyntaxHighlighter::_update_cache() {
 
 Ref<EditorSyntaxHighlighter> EditorMarkdownSyntaxHighlighter::_create() const {
 	Ref<EditorMarkdownSyntaxHighlighter> syntax_highlighter;
+	syntax_highlighter.instantiate();
+	return syntax_highlighter;
+}
+
+///
+
+void EditorConfigFileSyntaxHighlighter::_update_cache() {
+	highlighter->set_text_edit(text_edit);
+	highlighter->clear_keyword_colors();
+	highlighter->clear_member_keyword_colors();
+	highlighter->clear_color_regions();
+
+	highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+	// Assume that all function-style syntax is for types such as `Vector2()` and `PackedStringArray()`.
+	highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/base_type_color"));
+
+	// Disable member variable highlighting as it's not relevant for ConfigFile.
+	highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/text_color"));
+
+	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	highlighter->add_color_region("\"", "\"", string_color);
+
+	// FIXME: Sections in ConfigFile must be at the beginning of a line. Otherwise, it can be an array within a line.
+	const Color function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
+	highlighter->add_color_region("[", "]", function_color);
+
+	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	highlighter->add_keyword_color("true", keyword_color);
+	highlighter->add_keyword_color("false", keyword_color);
+	highlighter->add_keyword_color("null", keyword_color);
+	highlighter->add_keyword_color("ExtResource", keyword_color);
+	highlighter->add_keyword_color("SubResource", keyword_color);
+
+	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+	highlighter->add_color_region(";", "", comment_color);
+}
+
+Ref<EditorSyntaxHighlighter> EditorConfigFileSyntaxHighlighter::_create() const {
+	Ref<EditorConfigFileSyntaxHighlighter> syntax_highlighter;
 	syntax_highlighter.instantiate();
 	return syntax_highlighter;
 }
@@ -1099,6 +1133,17 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 
 void ScriptEditor::trigger_live_script_reload(const String &p_script_path) {
 	if (!script_paths_to_reload.has(p_script_path)) {
+		Ref<Script> reloaded_script = ResourceCache::get_ref(p_script_path);
+		if (reloaded_script.is_null()) {
+			reloaded_script = ResourceLoader::load(p_script_path);
+		}
+		if (reloaded_script.is_valid()) {
+			if (!reloaded_script->get_language()->validate(reloaded_script->get_source_code(), p_script_path)) {
+				// Script has errors, don't live reload.
+				return;
+			}
+		}
+
 		script_paths_to_reload.append(p_script_path);
 	}
 	if (!pending_auto_reload && auto_reload_running_scripts) {
@@ -1350,7 +1395,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			save_all_scripts();
 		} break;
 		case SEARCH_IN_FILES: {
-			_on_find_in_files_requested("");
+			open_find_in_files_dialog("");
 		} break;
 		case REPLACE_IN_FILES: {
 			_on_replace_in_files_requested("");
@@ -1480,36 +1525,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				current->apply_code();
 
-				Error err = scr->reload(true); // Always hard reload the script before running.
-				if (err != OK || !scr->is_valid()) {
-					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it contains errors, check the output log."), EditorToaster::SEVERITY_WARNING);
-					return;
-				}
-
-				// Perform additional checks on the script to evaluate if it's runnable.
-
-				bool is_runnable = true;
-				if (!ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
-					is_runnable = false;
-
-					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it doesn't extend EditorScript."), EditorToaster::SEVERITY_WARNING);
-				}
-				if (!scr->is_tool()) {
-					is_runnable = false;
-
-					if (scr->get_class() == "GDScript") {
-						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the @tool annotation at the top)."), EditorToaster::SEVERITY_WARNING);
-					} else {
-						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script."), EditorToaster::SEVERITY_WARNING);
-					}
-				}
-				if (!is_runnable) {
-					return;
-				}
-
-				Ref<EditorScript> es = memnew(EditorScript);
-				es->set_script(scr);
-				es->run();
+				EditorNode::get_singleton()->run_editor_script(scr);
 			} break;
 
 			case FILE_MENU_CLOSE: {
@@ -1799,15 +1815,6 @@ void ScriptEditor::_notification(int p_what) {
 	}
 }
 
-bool ScriptEditor::can_take_away_focus() const {
-	ScriptEditorBase *current = _get_current_editor();
-	if (current) {
-		return current->can_lose_focus_on_node_selection();
-	} else {
-		return true;
-	}
-}
-
 void ScriptEditor::_close_builtin_scripts_from_scene(const String &p_scene) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -2048,12 +2055,29 @@ void ScriptEditor::_update_members_overview() {
 		functions.sort();
 	}
 
-	for (int i = 0; i < functions.size(); i++) {
-		String filter = filter_methods->get_text();
-		String name = functions[i].get_slicec(':', 0);
-		if (filter.is_empty() || filter.is_subsequence_ofn(name)) {
+	String filter = filter_methods->get_text();
+	if (filter.is_empty()) {
+		for (int i = 0; i < functions.size(); i++) {
+			String name = functions[i].get_slicec(':', 0);
 			members_overview->add_item(name);
 			members_overview->set_item_metadata(-1, functions[i].get_slicec(':', 1).to_int() - 1);
+		}
+	} else {
+		PackedStringArray search_names;
+		for (int i = 0; i < functions.size(); i++) {
+			search_names.append(functions[i].get_slicec(':', 0));
+		}
+
+		Vector<FuzzySearchResult> results;
+		FuzzySearch fuzzy;
+		fuzzy.set_query(filter, false);
+		fuzzy.search_all(search_names, results);
+
+		for (const FuzzySearchResult &res : results) {
+			String name = functions[res.original_index].get_slicec(':', 0);
+			int line = functions[res.original_index].get_slicec(':', 1).to_int() - 1;
+			members_overview->add_item(name);
+			members_overview->set_item_metadata(-1, line);
 		}
 	}
 
@@ -2316,10 +2340,24 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	Vector<_ScriptEditorItemData> sedata_filtered;
-	for (int i = 0; i < sedata.size(); i++) {
-		String filter = filter_scripts->get_text();
-		if (filter.is_empty() || filter.is_subsequence_ofn(sedata[i].name)) {
-			sedata_filtered.push_back(sedata[i]);
+
+	String filter = filter_scripts->get_text();
+
+	if (filter.is_empty()) {
+		sedata_filtered = sedata;
+	} else {
+		PackedStringArray search_names;
+		for (int i = 0; i < sedata.size(); i++) {
+			search_names.append(sedata[i].name);
+		}
+
+		Vector<FuzzySearchResult> results;
+		FuzzySearch fuzzy;
+		fuzzy.set_query(filter, false);
+		fuzzy.search_all(search_names, results);
+
+		for (const FuzzySearchResult &res : results) {
+			sedata_filtered.push_back(sedata[res.original_index]);
 		}
 	}
 
@@ -2618,14 +2656,15 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	se->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
 	se->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state));
-	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::_on_find_in_files_requested));
+	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog));
 	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
 	se->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
 
 	CodeTextEditor *cte = se->get_code_editor();
 	if (cte) {
 		cte->set_zoom_factor(zoom_factor);
-		cte->connect("zoomed", callable_mp(this, &ScriptEditor::_set_zoom_factor));
+		cte->connect("zoomed", callable_mp(this, &ScriptEditor::_set_script_zoom_factor));
+		cte->connect(SceneStringName(visibility_changed), callable_mp(this, &ScriptEditor::_update_code_editor_zoom_factor).bind(cte));
 	}
 
 	//test for modification, maybe the script was not edited but was loaded
@@ -2834,6 +2873,12 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 
 	disk_changed->hide();
 	_update_script_names();
+}
+
+void ScriptEditor::open_find_in_files_dialog(const String &text) {
+	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
+	find_in_files_dialog->set_search_text(text);
+	find_in_files_dialog->popup_centered();
 }
 
 void ScriptEditor::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
@@ -3558,7 +3603,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		}
 	}
 
-	_set_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
+	_set_script_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
 
 	restoring_layout = false;
 
@@ -3730,12 +3775,12 @@ void ScriptEditor::_update_selected_editor_menu() {
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTRC("Find Next"), Key::F3), HELP_SEARCH_FIND_NEXT);
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTRC("Find Previous"), KeyModifierMask::SHIFT | Key::F3), HELP_SEARCH_FIND_PREVIOUS);
 		script_search_menu->get_popup()->add_separator();
-		script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/find_in_files"), SEARCH_IN_FILES);
+		script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
 		script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/replace_in_files"), REPLACE_IN_FILES);
 		script_search_menu->show();
 	} else {
 		if (tab_container->get_tab_count() == 0) {
-			script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/find_in_files"), SEARCH_IN_FILES);
+			script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
 			script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/replace_in_files"), REPLACE_IN_FILES);
 			script_search_menu->show();
 		} else {
@@ -3903,12 +3948,6 @@ void ScriptEditor::_script_changed() {
 	NodeDock::get_singleton()->update_lists();
 }
 
-void ScriptEditor::_on_find_in_files_requested(const String &text) {
-	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
-	find_in_files_dialog->set_search_text(text);
-	find_in_files_dialog->popup_centered();
-}
-
 void ScriptEditor::_on_replace_in_files_requested(const String &text) {
 	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::REPLACE_MODE);
 	find_in_files_dialog->set_search_text(text);
@@ -4057,21 +4096,17 @@ void ScriptEditor::_on_find_in_files_modified_files(const PackedStringArray &pat
 	_update_modified_scripts_for_external_editor();
 }
 
-void ScriptEditor::_set_zoom_factor(float p_zoom_factor) {
+void ScriptEditor::_set_script_zoom_factor(float p_zoom_factor) {
 	if (zoom_factor == p_zoom_factor) {
 		return;
 	}
+
 	zoom_factor = p_zoom_factor;
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
-		if (se) {
-			CodeTextEditor *cte = se->get_code_editor();
-			if (cte) {
-				if (zoom_factor != cte->get_zoom_factor()) {
-					cte->set_zoom_factor(zoom_factor);
-				}
-			}
-		}
+}
+
+void ScriptEditor::_update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor) {
+	if (p_code_text_editor && p_code_text_editor->is_visible_in_tree() && zoom_factor != p_code_text_editor->get_zoom_factor()) {
+		p_code_text_editor->set_zoom_factor(zoom_factor);
 	}
 }
 
@@ -4488,6 +4523,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	markdown_syntax_highlighter.instantiate();
 	register_syntax_highlighter(markdown_syntax_highlighter);
 
+	Ref<EditorConfigFileSyntaxHighlighter> config_file_syntax_highlighter;
+	config_file_syntax_highlighter.instantiate();
+	register_syntax_highlighter(config_file_syntax_highlighter);
+
 	_update_online_doc();
 }
 
@@ -4669,7 +4708,6 @@ void ScriptEditorPlugin::edited_scene_changed() {
 ScriptEditorPlugin::ScriptEditorPlugin() {
 	ED_SHORTCUT("script_editor/reopen_closed_script", TTRC("Reopen Closed Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::T);
 	ED_SHORTCUT("script_editor/clear_recent", TTRC("Clear Recent Scripts"));
-	ED_SHORTCUT("script_editor/find_in_files", TTRC("Find in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
 	ED_SHORTCUT("script_editor/replace_in_files", TTRC("Replace in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
 	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTRC("Uppercase"), KeyModifierMask::SHIFT | Key::F4);

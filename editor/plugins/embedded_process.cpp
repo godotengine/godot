@@ -30,6 +30,7 @@
 
 #include "embedded_process.h"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_string_names.h"
 #include "scene/main/window.h"
 #include "scene/resources/style_box_flat.h"
@@ -37,13 +38,19 @@
 
 void EmbeddedProcessBase::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EmbeddedProcessBase::_project_settings_changed));
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			window = get_window();
+			transp_enabled = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
+			clear_color = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
 		} break;
 		case NOTIFICATION_DRAW: {
 			_draw();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
+			checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 			focus_style_box = get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles));
 			Ref<StyleBoxFlat> focus_style_box_flat = focus_style_box;
 			if (focus_style_box_flat.is_valid()) {
@@ -60,6 +67,12 @@ void EmbeddedProcessBase::_notification(int p_what) {
 	}
 }
 
+void EmbeddedProcessBase::_project_settings_changed() {
+	transp_enabled = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
+	clear_color = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
+	queue_redraw();
+}
+
 void EmbeddedProcessBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("embedding_completed"));
 	ADD_SIGNAL(MethodInfo("embedding_failed"));
@@ -68,6 +81,17 @@ void EmbeddedProcessBase::_bind_methods() {
 }
 
 void EmbeddedProcessBase::_draw() {
+	if (is_embedding_completed()) {
+		Rect2 r = get_adjusted_embedded_window_rect(get_rect());
+#ifndef MACOS_ENABLED
+		r.position -= get_window()->get_position();
+#endif
+		if (transp_enabled) {
+			draw_texture_rect(checkerboard, r, true);
+		} else {
+			draw_rect(r, clear_color, true);
+		}
+	}
 	if (is_process_focused() && focus_style_box.is_valid()) {
 		Size2 size = get_size();
 		Rect2 r = Rect2(Point2(), size);
@@ -79,6 +103,7 @@ void EmbeddedProcessBase::set_window_size(const Size2i &p_window_size) {
 	if (window_size != p_window_size) {
 		window_size = p_window_size;
 		queue_update_embedded_process();
+		queue_redraw();
 	}
 }
 
@@ -86,6 +111,7 @@ void EmbeddedProcessBase::set_keep_aspect(bool p_keep_aspect) {
 	if (keep_aspect != p_keep_aspect) {
 		keep_aspect = p_keep_aspect;
 		queue_update_embedded_process();
+		queue_redraw();
 	}
 }
 

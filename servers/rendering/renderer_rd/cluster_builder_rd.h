@@ -73,6 +73,11 @@ class ClusterBuilderSharedDataRD {
 		RID shader_version;
 		RID shader;
 
+		enum ShaderVariant {
+			SHADER_NORMAL,
+			SHADER_USE_ATTACHMENT,
+		};
+
 		enum PipelineVersion {
 			PIPELINE_NORMAL,
 			PIPELINE_MSAA,
@@ -184,8 +189,8 @@ private:
 	};
 
 	uint32_t cluster_size = 32;
-#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
-	// Results in visual artifacts on macOS and iOS when using MSAA and subgroups.
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	// Results in visual artifacts on macOS and iOS/visionOS when using MSAA and subgroups.
 	// Using subgroups and disabling MSAA is the optimal solution for now and also works
 	// with MoltenVK.
 	bool use_msaa = false;

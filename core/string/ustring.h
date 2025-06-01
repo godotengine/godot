@@ -127,7 +127,7 @@ constexpr int64_t str_compare(const L *l_ptr, const R *r_ptr) {
 /*************************************************************************/
 
 template <typename T>
-class CharProxy {
+class [[nodiscard]] CharProxy {
 	friend String;
 	friend CharStringT<T>;
 
@@ -170,7 +170,7 @@ public:
 /*************************************************************************/
 
 template <typename T>
-class CharStringT {
+class [[nodiscard]] CharStringT {
 	CowData<T> _cowdata;
 	static constexpr T _null = 0;
 
@@ -182,7 +182,7 @@ public:
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<T> span() const { return Span(ptr(), length()); }
 
-	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.resize(p_size); }
+	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.template resize<false>(p_size); }
 
 	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
@@ -265,7 +265,7 @@ using Char16String = CharStringT<char16_t>;
 /*  String                                                               */
 /*************************************************************************/
 
-class String {
+class [[nodiscard]] String {
 	CowData<char32_t> _cowdata;
 	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
@@ -324,7 +324,7 @@ public:
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	Error resize(int p_size) { return _cowdata.resize<false>(p_size); }
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
@@ -446,6 +446,7 @@ public:
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
+	static String num_scientific(float p_num);
 	static String num_real(double p_num, bool p_trailing = true);
 	static String num_real(float p_num, bool p_trailing = true);
 	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
@@ -520,7 +521,7 @@ public:
 	String rstrip(const String &p_chars) const;
 	String get_extension() const;
 	String get_basename() const;
-	String path_join(const String &p_file) const;
+	String path_join(const String &p_path) const;
 	char32_t unicode_at(int p_idx) const;
 
 	CharString ascii(bool p_allow_extended = false) const;
@@ -545,7 +546,11 @@ public:
 	Error append_utf8(const Span<char> &p_range, bool p_skip_cr = false) {
 		return append_utf8(p_range.ptr(), p_range.size(), p_skip_cr);
 	}
-	static String utf8(const char *p_utf8, int p_len = -1);
+	static String utf8(const char *p_utf8, int p_len = -1) {
+		String ret;
+		ret.append_utf8(p_utf8, p_len);
+		return ret;
+	}
 	static String utf8(const Span<char> &p_range) { return utf8(p_range.ptr(), p_range.size()); }
 
 	Char16String utf16() const;
@@ -553,7 +558,11 @@ public:
 	Error append_utf16(const Span<char16_t> p_range, bool p_skip_cr = false) {
 		return append_utf16(p_range.ptr(), p_range.size(), p_skip_cr);
 	}
-	static String utf16(const char16_t *p_utf16, int p_len = -1);
+	static String utf16(const char16_t *p_utf16, int p_len = -1) {
+		String ret;
+		ret.append_utf16(p_utf16, p_len);
+		return ret;
+	}
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
 	void append_utf32(const Span<char32_t> &p_cstr);
@@ -784,22 +793,7 @@ _FORCE_INLINE_ String ETRN(const String &p_text, const String &p_text_plural, in
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
-}
-
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str) {
-	arr.push_back(p_str);
-}
-
-template <typename... P>
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str, P... p_args) {
-	arr.push_back(p_str);
-	sarray_add_str(arr, p_args...);
-}
-
 template <typename... P>
 _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
-	Vector<String> arr;
-	sarray_add_str(arr, p_args...);
-	return arr;
+	return Vector<String>({ String(p_args)... });
 }

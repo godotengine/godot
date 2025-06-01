@@ -185,6 +185,7 @@ private:
 		String custom_word_separators;
 		bool use_default_word_separators = true;
 		bool use_custom_word_separators = false;
+		Callable inline_object_parser;
 
 		mutable bool max_line_width_dirty = true;
 		mutable bool max_line_height_dirty = true;
@@ -207,6 +208,7 @@ private:
 		void set_font_size(int p_font_size);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
+		void set_inline_object_parser(const Callable &p_parser);
 
 		int get_line_height() const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
@@ -256,7 +258,7 @@ private:
 		void invalidate_all();
 		void invalidate_all_lines();
 
-		_FORCE_INLINE_ String operator[](int p_line) const;
+		_FORCE_INLINE_ const String &operator[](int p_line) const;
 		_FORCE_INLINE_ const String &get_text_with_ime(int p_line) const;
 
 		/* Gutters. */
@@ -354,6 +356,9 @@ private:
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
+
+	Callable inline_object_drawer;
+	Callable inline_object_click_handler;
 
 	Key _get_menu_action_accelerator(const String &p_action);
 	void _generate_context_menu();
@@ -866,6 +871,8 @@ public:
 	int get_last_unhidden_line() const;
 	int get_next_visible_line_offset_from(int p_line_from, int p_visible_amount) const;
 	Point2i get_next_visible_line_index_offset_from(int p_line_from, int p_wrap_index_from, int p_visible_amount) const;
+
+	void set_inline_object_handlers(const Callable &p_parser, const Callable &p_drawer, const Callable &p_click_handler);
 
 	// Overridable actions
 	void handle_unicode_input(const uint32_t p_unicode, int p_caret = -1);

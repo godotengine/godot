@@ -46,6 +46,12 @@ LIGHTMAP_BICUBIC_FILTER = false
 #define SHADER_IS_SRGB true
 #define SHADER_SPACE_FAR -1.0
 
+#if defined(RENDER_SHADOWS) || defined(RENDER_SHADOWS_LINEAR)
+#define IN_SHADOW_PASS true
+#else
+#define IN_SHADOW_PASS false
+#endif
+
 #include "stdlib_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) ||defined(LIGHT_CLEARCOAT_USED)
@@ -607,6 +613,10 @@ void main() {
 #endif
 #endif
 
+#ifdef Z_CLIP_SCALE_USED
+	float z_clip_scale = 1.0;
+#endif
+
 	float roughness = 1.0;
 
 	highp mat4 modelview = scene_data.view_matrix * model_matrix;
@@ -710,6 +720,12 @@ void main() {
 	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
+#endif
+
+#if !defined(RENDER_SHADOWS) && !defined(RENDER_SHADOWS_LINEAR)
+#ifdef Z_CLIP_SCALE_USED
+	gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
+#endif
 #endif
 
 #ifdef RENDER_MATERIAL
@@ -832,6 +848,12 @@ void main() {
 
 #define SHADER_IS_SRGB true
 #define SHADER_SPACE_FAR -1.0
+
+#if defined(RENDER_SHADOWS) || defined(RENDER_SHADOWS_LINEAR)
+#define IN_SHADOW_PASS true
+#else
+#define IN_SHADOW_PASS false
+#endif
 
 #define FLAGS_NON_UNIFORM_SCALE (1 << 4)
 
@@ -1842,6 +1864,10 @@ void main() {
 	vec3 normal_map = vec3(0.5);
 #endif
 
+#if defined(BENT_NORMAL_MAP_USED)
+	vec3 bent_normal_map = vec3(0.5);
+#endif
+
 	float normal_map_depth = 1.0;
 
 	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size;
@@ -2030,7 +2056,7 @@ void main() {
 	specular_light = mix(specular_light, custom_radiance.rgb, custom_radiance.a);
 #endif // CUSTOM_RADIANCE_USED
 
-#ifndef USE_LIGHTMAP
+#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
 	//lightmap overrides everything
 	if (scene_data.use_ambient_light) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
@@ -2050,7 +2076,7 @@ void main() {
 		}
 #endif // DISABLE_REFLECTION_PROBE
 	}
-#endif // USE_LIGHTMAP
+#endif // !USE_LIGHTMAP && !USE_LIGHTMAP_CAPTURE
 
 #if defined(CUSTOM_IRRADIANCE_USED)
 	ambient_light = mix(ambient_light, custom_irradiance.rgb, custom_irradiance.a);
@@ -2120,8 +2146,18 @@ void main() {
 #endif // USE_LIGHTMAP_CAPTURE
 #endif // !DISABLE_LIGHTMAP
 
-	ambient_light *= albedo.rgb;
 	ambient_light *= ao;
+#ifndef SPECULAR_OCCLUSION_DISABLED
+	float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
+	specular_occlusion = min(specular_occlusion * 4.0, 1.0); // This multiplication preserves speculars on bright areas.
+
+	float reflective_f = (1.0 - roughness) * metallic;
+	// 10.0 is a magic number, it gives the intended effect in most scenarios.
+	// Low enough for occlusion, high enough for reaction to lights and shadows.
+	specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+	specular_light *= specular_occlusion;
+#endif // !SPECULAR_OCCLUSION_DISABLED
+	ambient_light *= albedo.rgb;
 
 #endif // !AMBIENT_LIGHT_DISABLED
 

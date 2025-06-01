@@ -2266,7 +2266,7 @@ void Image::initialize_data(const char **p_xpm) {
 		switch (status) {
 			case READING_HEADER: {
 				String line_str = line_ptr;
-				line_str.replace_char('\t', ' ');
+				line_str = line_str.replace_char('\t', ' ');
 
 				size_width = line_str.get_slicec(' ', 0).to_int();
 				size_height = line_str.get_slicec(' ', 1).to_int();
@@ -3464,18 +3464,24 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 
 	UsedChannels used_channels;
 
-	if (!c && !a) {
-		used_channels = USED_CHANNELS_L;
-	} else if (!c && a) {
-		used_channels = USED_CHANNELS_LA;
-	} else if (r && !g && !b && !a) {
-		used_channels = USED_CHANNELS_R;
-	} else if (r && g && !b && !a) {
-		used_channels = USED_CHANNELS_RG;
-	} else if (r && g && b && !a) {
-		used_channels = USED_CHANNELS_RGB;
+	if (!c) {
+		// Uniform RGB (grayscale).
+		if (a) {
+			used_channels = USED_CHANNELS_LA;
+		} else {
+			used_channels = USED_CHANNELS_L;
+		}
 	} else {
-		used_channels = USED_CHANNELS_RGBA;
+		// Colored image.
+		if (a) {
+			used_channels = USED_CHANNELS_RGBA;
+		} else if (b) {
+			used_channels = USED_CHANNELS_RGB;
+		} else if (g) {
+			used_channels = USED_CHANNELS_RG;
+		} else {
+			used_channels = USED_CHANNELS_R;
+		}
 	}
 
 	if (p_source == COMPRESS_SOURCE_SRGB && (used_channels == USED_CHANNELS_R || used_channels == USED_CHANNELS_RG)) {
@@ -4262,7 +4268,7 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	}
 }
 
-Ref<Resource> Image::duplicate(bool p_subresources) const {
+Ref<Resource> Image::_duplicate(const DuplicateParams &p_params) const {
 	Ref<Image> copy;
 	copy.instantiate();
 	copy->_copy_internals_from(*this);

@@ -37,6 +37,10 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -809,6 +813,14 @@ void TreeItem::set_visible(bool p_visible) {
 	}
 	visible = p_visible;
 	if (tree) {
+		if (!visible) {
+			for (int i = 0; i < tree->columns.size(); i++) {
+				if (cells[i].selected) {
+					deselect(i);
+				}
+			}
+		}
+
 		tree->queue_accessibility_update();
 		tree->queue_redraw();
 		_changed_notify();
@@ -2391,9 +2403,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (i == 0) {
 					r.position.x = p_draw_ofs.x;
 					r.size.x = item_width + ofs;
-				} else {
-					r.position.x -= theme_cache.h_separation;
-					r.size.x += theme_cache.h_separation;
 				}
 				if (rtl) {
 					r.position.x = get_size().width - r.position.x - r.size.x;
@@ -3196,12 +3205,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			} break;
 			case TreeItem::CELL_MODE_RANGE: {
 				if (!c.text.is_empty()) {
-					popup_menu->clear();
-					for (int i = 0; i < c.text.get_slice_count(","); i++) {
-						String s = c.text.get_slicec(',', i);
-						popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).is_empty() ? i : s.get_slicec(':', 1).to_int());
-					}
-
+					_update_popup_menu(c);
 					popup_menu->set_size(Size2(col_width, 0));
 					popup_menu->set_position(get_screen_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - theme_cache.offset);
 					popup_menu->popup();
@@ -3331,7 +3335,7 @@ void Tree::_text_editor_popup_modal_close() {
 		return; // ESC pressed, app focus lost, or forced close from code.
 	}
 
-	if (value_editor->has_point(value_editor->get_local_mouse_position())) {
+	if (value_editor && value_editor->has_point(value_editor->get_local_mouse_position())) {
 		return;
 	}
 
@@ -3446,6 +3450,37 @@ void Tree::value_editor_changed(double p_value) {
 	line_editor->set_text(String::num(p_value, Math::range_step_decimals(c.step)));
 
 	queue_redraw();
+}
+
+void Tree::_update_popup_menu(const TreeItem::Cell &p_cell) {
+	if (popup_menu == nullptr) {
+		popup_menu = memnew(PopupMenu);
+		popup_menu->hide();
+		add_child(popup_menu, false, INTERNAL_MODE_FRONT);
+		popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Tree::popup_select));
+	}
+	popup_menu->clear();
+	for (int i = 0; i < p_cell.text.get_slice_count(","); i++) {
+		String s = p_cell.text.get_slicec(',', i);
+		popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).is_empty() ? i : s.get_slicec(':', 1).to_int());
+	}
+}
+
+void Tree::_update_value_editor(const TreeItem::Cell &p_cell) {
+	if (value_editor == nullptr) {
+		value_editor = memnew(HSlider);
+		value_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+		value_editor->hide();
+		popup_editor_vb->add_child(value_editor);
+		value_editor->connect(SceneStringName(value_changed), callable_mp(this, &Tree::value_editor_changed));
+	}
+	updating_value_editor = true;
+	value_editor->set_min(p_cell.min);
+	value_editor->set_max(p_cell.max);
+	value_editor->set_step(p_cell.step);
+	value_editor->set_value(p_cell.val);
+	value_editor->set_exp_ratio(p_cell.expr);
+	updating_value_editor = false;
 }
 
 void Tree::popup_select(int p_option) {
@@ -4186,6 +4221,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void Tree::_determine_hovered_item() {
+	hovered_update_queued = false;
+
 	Ref<StyleBox> bg = theme_cache.panel_style;
 	bool rtl = is_layout_rtl();
 
@@ -4273,6 +4310,14 @@ void Tree::_determine_hovered_item() {
 	}
 }
 
+void Tree::_queue_update_hovered_item() {
+	if (hovered_update_queued) {
+		return;
+	}
+	hovered_update_queued = true;
+	callable_mp(this, &Tree::_determine_hovered_item).call_deferred();
+}
+
 bool Tree::edit_selected(bool p_force_edit) {
 	TreeItem *s = get_selected();
 	ERR_FAIL_NULL_V_MSG(s, false, "No item selected.");
@@ -4307,12 +4352,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 
 		return true;
 	} else if (c.mode == TreeItem::CELL_MODE_RANGE && !c.text.is_empty()) {
-		popup_menu->clear();
-		for (int i = 0; i < c.text.get_slice_count(","); i++) {
-			String s2 = c.text.get_slicec(',', i);
-			popup_menu->add_item(s2.get_slicec(':', 0), s2.get_slicec(':', 1).is_empty() ? i : s2.get_slicec(':', 1).to_int());
-		}
-
+		_update_popup_menu(c);
 		popup_menu->set_size(Size2(rect.size.width, 0));
 		popup_menu->set_position(get_screen_position() + rect.position + Point2i(0, rect.size.height));
 		popup_menu->popup();
@@ -4321,9 +4361,16 @@ bool Tree::edit_selected(bool p_force_edit) {
 
 		return true;
 	} else if ((c.mode == TreeItem::CELL_MODE_STRING && !c.edit_multiline) || c.mode == TreeItem::CELL_MODE_RANGE) {
-		Rect2 popup_rect;
+		int value_editor_height = 0;
+		if (c.mode == TreeItem::CELL_MODE_RANGE) {
+			_update_value_editor(c);
+			value_editor_height = value_editor->get_minimum_size().height;
+			value_editor->show();
+		} else if (value_editor) {
+			value_editor->hide();
+		}
 
-		int value_editor_height = c.mode == TreeItem::CELL_MODE_RANGE ? value_editor->get_minimum_size().height : 0;
+		Rect2 popup_rect;
 		// `floor()` centers vertically.
 		Vector2 ofs(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height - value_editor_height) - rect.size.height) / 2));
 
@@ -4333,8 +4380,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 			icon_ofs = _get_cell_icon_size(c).x * popup_scale + theme_cache.h_separation;
 		}
 
-		popup_rect.size = rect.size;
-		popup_rect.size.x -= icon_ofs;
+		popup_rect.size = rect.size + Vector2(-icon_ofs, value_editor_height);
 
 		popup_rect.position = rect.position - ofs;
 		popup_rect.position.x += icon_ofs;
@@ -4349,21 +4395,6 @@ bool Tree::edit_selected(bool p_force_edit) {
 		line_editor->show();
 
 		text_editor->hide();
-
-		if (c.mode == TreeItem::CELL_MODE_RANGE) {
-			popup_rect.size.y += value_editor_height;
-
-			value_editor->show();
-			updating_value_editor = true;
-			value_editor->set_min(c.min);
-			value_editor->set_max(c.max);
-			value_editor->set_step(c.step);
-			value_editor->set_value(c.val);
-			value_editor->set_exp_ratio(c.expr);
-			updating_value_editor = false;
-		} else {
-			value_editor->hide();
-		}
 
 		popup_editor->set_position(popup_rect.position);
 		popup_editor->set_size(popup_rect.size * popup_scale);
@@ -5107,9 +5138,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
 			ti = create_item(root, p_index);
 		}
 	}
-
-	_determine_hovered_item();
-
+	_queue_update_hovered_item();
 	queue_accessibility_update();
 	return ti;
 }
@@ -6633,10 +6662,6 @@ Tree::Tree() {
 
 	set_focus_mode(FOCUS_ALL);
 
-	popup_menu = memnew(PopupMenu);
-	popup_menu->hide();
-	add_child(popup_menu, false, INTERNAL_MODE_FRONT);
-
 	popup_editor = memnew(Popup);
 	add_child(popup_editor, false, INTERNAL_MODE_FRONT);
 
@@ -6655,11 +6680,6 @@ Tree::Tree() {
 	text_editor->hide();
 	popup_editor_vb->add_child(text_editor);
 
-	value_editor = memnew(HSlider);
-	value_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	value_editor->hide();
-	popup_editor_vb->add_child(value_editor);
-
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
@@ -6675,8 +6695,6 @@ Tree::Tree() {
 	line_editor->connect(SceneStringName(text_submitted), callable_mp(this, &Tree::_line_editor_submit));
 	text_editor->connect(SceneStringName(gui_input), callable_mp(this, &Tree::_text_editor_gui_input));
 	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_popup_modal_close));
-	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Tree::popup_select));
-	value_editor->connect(SceneStringName(value_changed), callable_mp(this, &Tree::value_editor_changed));
 
 	set_notify_transform(true);
 

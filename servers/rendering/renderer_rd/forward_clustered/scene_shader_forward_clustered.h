@@ -228,6 +228,7 @@ public:
 		bool uses_tangent = false;
 		bool uses_particle_trails = false;
 		bool uses_normal_map = false;
+		bool uses_bent_normal_map = false;
 		bool wireframe = false;
 
 		bool unshaded = false;
@@ -244,6 +245,7 @@ public:
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
 		bool uses_screen_texture_mipmaps = false;
+		bool uses_z_clip_scale = false;
 		RS::CullMode cull_mode = RS::CULL_MODE_DISABLED;
 
 		uint64_t last_pass = 0;
@@ -267,7 +269,7 @@ public:
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
 			bool backface_culling = cull_mode == RS::CULL_MODE_BACK;
-			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe;
+			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe && !uses_z_clip_scale;
 		}
 
 		virtual void set_code(const String &p_Code);
@@ -275,6 +277,7 @@ public:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		uint16_t _get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
 		RID _get_shader_variant(uint16_t p_shader_version) const;
 		void _clear_vertex_input_mask_cache();
@@ -348,6 +351,7 @@ public:
 
 	void init(const String p_defines);
 	void set_default_specialization(const ShaderSpecialization &p_specialization);
+	void enable_multiview_shader_group();
 	void enable_advanced_shader_group(bool p_needs_multiview = false);
 	bool is_multiview_shader_group_enabled() const;
 	bool is_advanced_shader_group_enabled(bool p_multiview) const;

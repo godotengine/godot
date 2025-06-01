@@ -47,6 +47,12 @@ protected:
 	Point2i margin_bottom_right;
 	Window *window = nullptr;
 
+	bool transp_enabled = false;
+	Color clear_color;
+	Ref<Texture2D> checkerboard;
+
+	void _project_settings_changed();
+
 	static void _bind_methods();
 	void _notification(int p_what);
 

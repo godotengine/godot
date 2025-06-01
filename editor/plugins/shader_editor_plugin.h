@@ -32,6 +32,7 @@
 
 #include "editor/plugins/editor_plugin.h"
 
+class CodeTextEditor;
 class HSplitContainer;
 class ItemList;
 class MenuButton;
@@ -125,6 +126,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _window_changed(bool p_visible);
 
 	void _set_text_shader_zoom_factor(float p_zoom_factor);
+	void _update_shader_editor_zoom_factor(CodeTextEditor *p_shader_editor) const;
+
 	void _switch_to_editor(ShaderEditor *p_editor);
 
 protected:

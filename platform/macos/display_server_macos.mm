@@ -30,9 +30,6 @@
 
 #import "display_server_macos.h"
 
-#ifdef DEBUG_ENABLED
-#import "editor/embedded_process_macos.h"
-#endif
 #import "godot_application.h"
 #import "godot_application_delegate.h"
 #import "godot_button_view.h"
@@ -55,6 +52,11 @@
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
+
+#ifdef TOOLS_ENABLED
+#import "display_server_embedded.h"
+#import "editor/embedded_process_macos.h"
+#endif
 
 #include <AppKit/AppKit.h>
 
@@ -86,7 +88,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 	{
 		WindowData &wd = windows[id];
 
-		wd.window_delegate = [[GodotWindowDelegate alloc] init];
+		wd.window_delegate = [[GodotWindowDelegate alloc] initWithDisplayServer:this];
 		ERR_FAIL_NULL_V_MSG(wd.window_delegate, INVALID_WINDOW_ID, "Can't create a window delegate");
 		[wd.window_delegate setWindowID:id];
 
@@ -1929,7 +1931,7 @@ Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const
 			NSUInteger height = CGImageGetHeight(image);
 
 			Vector<uint8_t> img_data;
-			img_data.resize_zeroed(height * width * 4);
+			img_data.resize_initialized(height * width * 4);
 			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, (uint32_t)kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
 			if (context) {
 				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
@@ -2194,6 +2196,8 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	NSScreen *screen = [wd.window_object screen];
+
+	_window_update_display_id(&wd);
 
 	if (wd.transient_parent != INVALID_WINDOW_ID) {
 		WindowData &wd_parent = windows[wd.transient_parent];
@@ -2533,7 +2537,13 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
-				[wd.window_object zoom:nil];
+				if (wd.borderless) {
+					if (wd.pre_zoom_rect.size.width > 0 && wd.pre_zoom_rect.size.height > 0) {
+						[wd.window_object setFrame:wd.pre_zoom_rect display:NO animate:YES];
+					}
+				} else {
+					[wd.window_object zoom:nil];
+				}
 			}
 		} break;
 	}
@@ -2566,7 +2576,12 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (!NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
-				[wd.window_object zoom:nil];
+				wd.pre_zoom_rect = [wd.window_object frame];
+				if (wd.borderless) {
+					[wd.window_object setFrame:[[wd.window_object screen] visibleFrame] display:NO animate:YES];
+				} else {
+					[wd.window_object zoom:nil];
+				}
 			}
 		} break;
 	}
@@ -2681,6 +2696,7 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 
 		float window_buttons_spacing = (is_rtl) ? (cb_frame - mb_frame) : (mb_frame - cb_frame);
 
+		[p_wd.window_object setTitlebarAppearsTransparent:YES];
 		[p_wd.window_object setTitleVisibility:NSWindowTitleHidden];
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:YES];
 		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
@@ -2694,9 +2710,10 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
 	} else {
 		[p_wd.window_object setTitleVisibility:NSWindowTitleVisible];
-		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:NO];
+		[p_wd.window_object setTitlebarAppearsTransparent:NO];
 		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
+		[[p_wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:NO];
 	}
 }
 
@@ -2738,14 +2755,12 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			NSRect rect = [wd.window_object frame];
 			wd.extend_to_title = p_enabled;
 			if (p_enabled) {
-				[wd.window_object setTitlebarAppearsTransparent:YES];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskFullSizeContentView];
 
 				if (!wd.fullscreen) {
 					window_set_custom_window_buttons(wd, true);
 				}
 			} else {
-				[wd.window_object setTitlebarAppearsTransparent:NO];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskFullSizeContentView];
 
 				if (!wd.fullscreen) {
@@ -2766,6 +2781,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[wd.window_object orderOut:nil];
 			}
 			wd.borderless = p_enabled;
+			bool was_maximized = (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame]));
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
 				[wd.window_object setHasShadow:NO];
@@ -2795,6 +2811,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];
 				}
+			}
+			if (was_maximized) {
+				[wd.window_object setFrame:[[wd.window_object screen] visibleFrame] display:NO];
 			}
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
@@ -3283,9 +3302,34 @@ void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
 		ERR_FAIL_V(m_retval);                        \
 	}
 
-#ifdef DEBUG_ENABLED
+uint32_t DisplayServerMacOS::window_get_display_id(WindowID p_window) const {
+	const WindowData *wd;
+	GET_OR_FAIL_V(wd, windows, p_window, -1);
+	return wd->display_id;
+}
 
-Error DisplayServerMacOS::embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process) {
+void DisplayServerMacOS::_window_update_display_id(WindowData *p_wd) {
+	NSScreen *screen = [p_wd->window_object screen];
+	CGDirectDisplayID display_id = [[screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
+	if (p_wd->display_id == display_id) {
+		return;
+	}
+
+	p_wd->display_id = display_id;
+
+#ifdef TOOLS_ENABLED
+	// Notify any embedded processes of the new display ID, so that they can potentially update their vsync.
+	for (KeyValue<OS::ProcessID, EmbeddedProcessData> &E : embedded_processes) {
+		if (E.value.wd == p_wd) {
+			E.value.process->display_state_changed();
+		}
+	}
+#endif
+}
+
+#ifdef TOOLS_ENABLED
+
+Error DisplayServerMacOS::embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process) {
 	_THREAD_SAFE_METHOD_
 
 	WindowData *wd;
@@ -3297,15 +3341,17 @@ Error DisplayServerMacOS::embed_process_update(WindowID p_window, const Embedded
 	[CATransaction setDisableActions:YES];
 
 	EmbeddedProcessData *ed = embedded_processes.getptr(p_pid);
+	CGFloat scale = screen_get_max_scale();
 	if (ed == nil) {
 		ed = &embedded_processes.insert(p_pid, EmbeddedProcessData())->value;
 
 		ed->process = p_process;
+		ed->wd = wd;
 
 		CALayerHost *host = [CALayerHost new];
 		uint32_t p_context_id = p_process->get_context_id();
 		host.contextId = static_cast<CAContextID>(p_context_id);
-		host.contentsScale = wd->window_object.backingScaleFactor;
+		host.contentsScale = scale;
 		host.contentsGravity = kCAGravityCenter;
 		ed->layer_host = host;
 		[wd->window_view.layer addSublayer:host];
@@ -3313,7 +3359,7 @@ Error DisplayServerMacOS::embed_process_update(WindowID p_window, const Embedded
 
 	Rect2i p_rect = p_process->get_screen_embedded_window_rect();
 	CGRect rect = CGRectMake(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y);
-	rect = CGRectApplyAffineTransform(rect, CGAffineTransformMakeScale(0.5, 0.5));
+	rect = CGRectApplyAffineTransform(rect, CGAffineTransformInvert(CGAffineTransformMakeScale(scale, scale)));
 
 	CGFloat height = wd->window_view.frame.size.height;
 	CGFloat x = rect.origin.x;

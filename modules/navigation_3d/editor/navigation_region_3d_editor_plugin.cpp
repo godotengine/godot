@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -173,4 +174,7 @@ NavigationRegion3DEditorPlugin::NavigationRegion3DEditorPlugin() {
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, navigation_region_editor->bake_hbox);
 	navigation_region_editor->hide();
 	navigation_region_editor->bake_hbox->hide();
+
+	gizmo_plugin.instantiate();
+	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 }

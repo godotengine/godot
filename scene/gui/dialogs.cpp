@@ -261,7 +261,7 @@ void AcceptDialog::_update_child_rects() {
 
 void AcceptDialog::_update_ok_text() {
 	String prev_text = ok_button->get_text();
-	String new_text = internal_ok_text;
+	String new_text = default_ok_text;
 
 	if (!ok_text.is_empty()) {
 		new_text = ok_text;
@@ -315,9 +315,13 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	return content_minsize;
 }
 
-void AcceptDialog::set_internal_ok_text(const String &p_text) {
-	internal_ok_text = p_text;
+void AcceptDialog::set_default_ok_text(const String &p_text) {
+	if (default_ok_text == p_text) {
+		return;
+	}
+	default_ok_text = p_text;
 	_update_ok_text();
+	notify_property_list_changed();
 }
 
 void AcceptDialog::_custom_action(const String &p_action) {
@@ -441,7 +445,13 @@ void AcceptDialog::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_min_height);
 }
 
-bool AcceptDialog::swap_cancel_ok = false;
+void AcceptDialog::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "ok_button_text") {
+		p_property.hint = PROPERTY_HINT_PLACEHOLDER_TEXT;
+		p_property.hint_string = default_ok_text;
+	}
+}
+
 void AcceptDialog::set_swap_cancel_ok(bool p_swap) {
 	swap_cancel_ok = p_swap;
 }
@@ -472,7 +482,7 @@ AcceptDialog::AcceptDialog() {
 
 	buttons_hbox->add_spacer();
 	ok_button = memnew(Button);
-	set_internal_ok_text(ETR("OK"));
+	set_default_ok_text(ETR("OK"));
 	buttons_hbox->add_child(ok_button);
 	buttons_hbox->add_spacer();
 

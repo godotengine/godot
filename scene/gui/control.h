@@ -307,7 +307,6 @@ private:
 
 	void _compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]);
 	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
-	void _compute_edge_positions(Rect2 p_rect, real_t (&r_edge_positions)[4]);
 
 	void _set_layout_mode(LayoutMode p_mode);
 	void _update_layout_mode();

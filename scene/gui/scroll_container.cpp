@@ -364,12 +364,13 @@ void ScrollContainer::_reposition_children() {
 	}
 
 	bool rtl = is_layout_rtl();
+	bool reserve_vscroll = _is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE;
 
 	if (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE) {
 		size.y -= h_scroll->get_minimum_size().y;
 	}
 
-	if (_is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE) {
+	if (reserve_vscroll) {
 		size.x -= v_scroll->get_minimum_size().x;
 	}
 
@@ -391,7 +392,7 @@ void ScrollContainer::_reposition_children() {
 			r.size.height = MAX(size.height, minsize.height);
 		}
 		r.position += ofs;
-		if (rtl && _is_v_scroll_visible()) {
+		if (rtl && reserve_vscroll) {
 			r.position.x += v_scroll->get_minimum_size().x;
 		}
 		r.position = r.position.floor();
@@ -442,7 +443,6 @@ void ScrollContainer::_notification(int p_what) {
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_set));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {

@@ -66,7 +66,7 @@ String EditorImportPlugin::get_preset_name(int p_idx) const {
 	if (GDVIRTUAL_CALL(_get_preset_name, p_idx, ret)) {
 		return ret;
 	}
-	ERR_FAIL_V_MSG(String(), "Unimplemented _get_preset_name in add-on.");
+	ERR_FAIL_V_MSG(itos(p_idx), "Unimplemented _get_preset_name in add-on.");
 }
 
 int EditorImportPlugin::get_preset_count() const {
@@ -74,7 +74,7 @@ int EditorImportPlugin::get_preset_count() const {
 	if (GDVIRTUAL_CALL(_get_preset_count, ret)) {
 		return ret;
 	}
-	ERR_FAIL_V_MSG(-1, "Unimplemented _get_preset_count in add-on.");
+	return 0;
 }
 
 String EditorImportPlugin::get_save_extension() const {
@@ -98,7 +98,7 @@ float EditorImportPlugin::get_priority() const {
 	if (GDVIRTUAL_CALL(_get_priority, ret)) {
 		return ret;
 	}
-	ERR_FAIL_V_MSG(-1, "Unimplemented _get_priority in add-on.");
+	return 1.0;
 }
 
 int EditorImportPlugin::get_import_order() const {
@@ -106,7 +106,7 @@ int EditorImportPlugin::get_import_order() const {
 	if (GDVIRTUAL_CALL(_get_import_order, ret)) {
 		return ret;
 	}
-	ERR_FAIL_V_MSG(-1, "Unimplemented _get_import_order in add-on.");
+	return IMPORT_ORDER_DEFAULT;
 }
 
 int EditorImportPlugin::get_format_version() const {
@@ -162,8 +162,7 @@ bool EditorImportPlugin::get_option_visibility(const String &p_path, const Strin
 	if (GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, d, visible)) {
 		return visible;
 	}
-
-	ERR_FAIL_V_MSG(false, "Unimplemented _get_option_visibility in add-on.");
+	return true;
 }
 
 Error EditorImportPlugin::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {

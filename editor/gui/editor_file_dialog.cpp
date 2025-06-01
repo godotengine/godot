@@ -45,6 +45,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
@@ -1418,9 +1419,9 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	_focus_file_text();
 
 	if (is_visible()) {
+		_focus_file_text();
 		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 	}
 }

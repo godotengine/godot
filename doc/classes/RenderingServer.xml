@@ -410,7 +410,7 @@
 			<param index="8" name="count" type="int" default="-1" />
 			<description>
 				Draws a triangle array on the [CanvasItem] pointed to by the [param item] [RID]. This is internally used by [Line2D] and [StyleBoxFlat] for rendering. [method canvas_item_add_triangle_array] is highly flexible, but more complex to use than [method canvas_item_add_polygon].
-				[b]Note:[/b] [param count] is unused and can be left unspecified.
+				[b]Note:[/b] If [param count] is set to a non-negative value, only the first [code]count * 3[/code] indices (corresponding to [code skip-lint]count[/code] triangles) will be drawn. Otherwise, all indices are drawn.
 			</description>
 		</method>
 		<method name="canvas_item_attach_skeleton">
@@ -5141,7 +5141,10 @@
 		<constant name="VIEWPORT_SCREEN_SPACE_AA_FXAA" value="1" enum="ViewportScreenSpaceAA">
 			Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
 		</constant>
-		<constant name="VIEWPORT_SCREEN_SPACE_AA_MAX" value="2" enum="ViewportScreenSpaceAA">
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_SMAA" value="2" enum="ViewportScreenSpaceAA">
+			Use subpixel morphological antialiasing. SMAA may produce clearer results than FXAA, but at a slightly higher performance cost.
+		</constant>
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_MAX" value="3" enum="ViewportScreenSpaceAA">
 			Represents the size of the [enum ViewportScreenSpaceAA] enum.
 		</constant>
 		<constant name="VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW" value="0" enum="ViewportOcclusionCullingBuildQuality">

@@ -137,6 +137,28 @@ public:
 	EditorMarkdownSyntaxHighlighter() { highlighter.instantiate(); }
 };
 
+class EditorConfigFileSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(EditorConfigFileSyntaxHighlighter, EditorSyntaxHighlighter)
+
+private:
+	Ref<CodeHighlighter> highlighter;
+
+public:
+	virtual void _update_cache() override;
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
+
+	// While not explicitly designed for those formats, this highlighter happens
+	// to handle TSCN, TRES, `project.godot` well. We can expose it in case the
+	// user opens one of these using the script editor (which can be done using
+	// the All Files filter).
+	virtual PackedStringArray _get_supported_languages() const override { return PackedStringArray{ "ini", "cfg", "tscn", "tres", "godot" }; }
+	virtual String _get_name() const override { return TTR("ConfigFile"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+
+	EditorConfigFileSyntaxHighlighter() { highlighter.instantiate(); }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
@@ -208,7 +230,6 @@ public:
 	virtual void add_callback(const String &p_function, const PackedStringArray &p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
-	virtual bool can_lose_focus_on_node_selection() { return true; }
 	virtual void update_toggle_files_button() {}
 
 	virtual bool show_members_overview() = 0;
@@ -530,14 +551,14 @@ class ScriptEditor : public PanelContainer {
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
-	void _on_find_in_files_requested(const String &text);
 	void _on_replace_in_files_requested(const String &text);
 	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(const PackedStringArray &paths);
 	void _on_find_in_files_close_button_clicked();
 
-	void _set_zoom_factor(float p_zoom_factor);
+	void _set_script_zoom_factor(float p_zoom_factor);
+	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);
 
 	void _window_changed(bool p_visible);
 
@@ -557,6 +578,7 @@ public:
 	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
+	void open_find_in_files_dialog(const String &text);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
@@ -596,8 +618,6 @@ public:
 
 	void trigger_live_script_reload(const String &p_script_path);
 	void trigger_live_script_reload_all();
-
-	bool can_take_away_focus() const;
 
 	VSplitContainer *get_left_list_split() { return list_split; }
 

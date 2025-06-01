@@ -62,6 +62,7 @@ class GDScript : public Script {
 	bool tool = false;
 	bool valid = false;
 	bool reloading = false;
+	bool _is_abstract = false;
 
 	struct MemberInfo {
 		int index = 0;
@@ -247,7 +248,6 @@ public:
 	void cancel_pending_functions(bool warn);
 
 	virtual bool is_valid() const override { return valid; }
-	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -280,6 +280,7 @@ public:
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
 	bool is_tool() const override { return tool; }
+	bool is_abstract() const override { return _is_abstract; }
 	Ref<GDScript> get_base() const;
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
@@ -345,7 +346,7 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
-	virtual Variant get_rpc_config() const override;
+	virtual const Variant get_rpc_config() const override;
 
 	void unload_static() const;
 
@@ -447,7 +448,7 @@ class GDScriptLanguage : public ScriptLanguage {
 
 		void free() {
 			if (levels) {
-				memdelete(levels);
+				memdelete_arr(levels);
 				levels = nullptr;
 			}
 		}
@@ -582,6 +583,7 @@ public:
 
 	} strings;
 
+	_FORCE_INLINE_ bool should_track_call_stack() const { return track_call_stack; }
 	_FORCE_INLINE_ bool should_track_locals() const { return track_locals; }
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
@@ -602,11 +604,11 @@ public:
 	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
-	virtual void get_reserved_words(List<String> *p_words) const override;
+	virtual Vector<String> get_reserved_words() const override;
 	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
-	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
+	virtual Vector<String> get_comment_delimiters() const override;
+	virtual Vector<String> get_doc_comment_delimiters() const override;
+	virtual Vector<String> get_string_delimiters() const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;

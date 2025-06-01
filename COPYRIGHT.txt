@@ -174,6 +174,18 @@ Comment: AccessKit
 Copyright: 2023, The AccessKit Authors.
 License: Expat
 
+Files: servers/rendering/renderer_rd/shaders/smaa_blending.glsl
+ servers/rendering/renderer_rd/shaders/smaa_weight_calculation.glsl
+ servers/rendering/renderer_rd/shaders/smaa_edge_detection.glsl
+ thirdparty/smaa/*
+Comment: Subpixel Morphological Antialiasing
+Copyright: 2013 Jorge Jimenez (jorge@iryoku.com)
+ 2013 Jose I. Echevarria (joseignacioechevarria@gmail.com)
+ 2013 Belen Masia (bmasia@unizar.es)
+ 2013 Fernando Navarro (fernandn@microsoft.com)
+ 2013 Diego Gutierrez (diegog@unizar.es)
+License: Expat
+
 Files: thirdparty/amd-fsr/*
 Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
@@ -191,7 +203,7 @@ License: BSD-3-clause
 
 Files: thirdparty/astcenc/*
 Comment: Arm ASTC Encoder
-Copyright: 2011-2024, Arm Limited
+Copyright: 2011-2025, Arm Limited
 License: Apache-2.0
 
 Files: thirdparty/basis_universal/*
@@ -292,6 +304,12 @@ Files: thirdparty/graphite/*
 Comment: Graphite engine
 Copyright: 2010, SIL International
 License: Expat
+
+Files: thirdparty/grisu2/grisu2.h
+Comment: Grisu2 float serialization algorithm
+Copyright: 2009, Florian Loitsch
+ 2018-2023, The simdjson authors
+License: Expat and Apache
 
 Files: thirdparty/harfbuzz/*
 Comment: HarfBuzz text shaping library

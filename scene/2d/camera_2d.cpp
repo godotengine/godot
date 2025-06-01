@@ -219,20 +219,28 @@ Transform2D Camera2D::get_camera_transform() {
 		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom_scale);
 
 		if (limit_enabled && limit_smoothing_enabled) {
-			if (screen_rect.position.x < limit[SIDE_LEFT]) {
+			// Apply horizontal limiting.
+			if (screen_rect.size.x > limit[SIDE_RIGHT] - limit[SIDE_LEFT]) {
+				// Split the limit difference horizontally.
+				camera_pos.x -= screen_rect.position.x + (screen_rect.size.x - limit[SIDE_RIGHT] - limit[SIDE_LEFT]) / 2;
+			} else if (screen_rect.position.x < limit[SIDE_LEFT]) {
+				// Only apply left limit.
 				camera_pos.x -= screen_rect.position.x - limit[SIDE_LEFT];
-			}
-
-			if (screen_rect.position.x + screen_rect.size.x > limit[SIDE_RIGHT]) {
+			} else if (screen_rect.position.x + screen_rect.size.x > limit[SIDE_RIGHT]) {
+				// Only apply the right limit.
 				camera_pos.x -= screen_rect.position.x + screen_rect.size.x - limit[SIDE_RIGHT];
 			}
 
-			if (screen_rect.position.y + screen_rect.size.y > limit[SIDE_BOTTOM]) {
-				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - limit[SIDE_BOTTOM];
-			}
-
-			if (screen_rect.position.y < limit[SIDE_TOP]) {
+			// Apply vertical limiting.
+			if (screen_rect.size.y > limit[SIDE_BOTTOM] - limit[SIDE_TOP]) {
+				// Split the limit difference vertically.
+				camera_pos.y -= screen_rect.position.y + (screen_rect.size.y - limit[SIDE_BOTTOM] - limit[SIDE_TOP]) / 2;
+			} else if (screen_rect.position.y < limit[SIDE_TOP]) {
+				// Only apply the top limit.
 				camera_pos.y -= screen_rect.position.y - limit[SIDE_TOP];
+			} else if (screen_rect.position.y + screen_rect.size.y > limit[SIDE_BOTTOM]) {
+				// Only apply the bottom limit.
+				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - limit[SIDE_BOTTOM];
 			}
 		}
 
@@ -272,20 +280,29 @@ Transform2D Camera2D::get_camera_transform() {
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
 	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
-		if (screen_rect.position.x < limit[SIDE_LEFT]) {
+		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (camera_pos - screen_rect.position));
+		// Apply horizontal limiting.
+		if (bottom_right_corner.x - screen_rect.position.x > limit[SIDE_RIGHT] - limit[SIDE_LEFT]) {
+			// Split the difference horizontally (center it).
+			screen_rect.position.x = (limit[SIDE_LEFT] + limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) / 2;
+		} else if (screen_rect.position.x < limit[SIDE_LEFT]) {
+			// Only apply left limit.
 			screen_rect.position.x = limit[SIDE_LEFT];
+		} else if (bottom_right_corner.x > limit[SIDE_RIGHT]) {
+			// Only apply right limit.
+			screen_rect.position.x = limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x);
 		}
 
-		if (screen_rect.position.x + screen_rect.size.x > limit[SIDE_RIGHT]) {
-			screen_rect.position.x = limit[SIDE_RIGHT] - screen_rect.size.x;
-		}
-
-		if (screen_rect.position.y + screen_rect.size.y > limit[SIDE_BOTTOM]) {
-			screen_rect.position.y = limit[SIDE_BOTTOM] - screen_rect.size.y;
-		}
-
-		if (screen_rect.position.y < limit[SIDE_TOP]) {
+		// Apply vertical limiting.
+		if (bottom_right_corner.y - screen_rect.position.y > limit[SIDE_BOTTOM] - limit[SIDE_TOP]) {
+			// Split the limit difference vertically.
+			screen_rect.position.y = (limit[SIDE_TOP] + limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y)) / 2;
+		} else if (screen_rect.position.y < limit[SIDE_TOP]) {
+			// Only apply the top limit.
 			screen_rect.position.y = limit[SIDE_TOP];
+		} else if (bottom_right_corner.y > limit[SIDE_BOTTOM]) {
+			// Only apply the bottom limit.
+			screen_rect.position.y = limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y);
 		}
 	}
 
@@ -550,7 +567,6 @@ void Camera2D::set_limit_enabled(bool p_limit_enabled) {
 #ifdef TOOLS_ENABLED
 	emit_signal("_camera_limit_enabled_updated"); // Used for Camera2DEditorPlugin.
 #endif
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_limit_enabled() const {
@@ -772,7 +788,6 @@ void Camera2D::set_rotation_smoothing_enabled(bool p_enabled) {
 		return;
 	}
 	rotation_smoothing_enabled = p_enabled;
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_rotation_smoothing_enabled() const {
@@ -841,7 +856,6 @@ void Camera2D::set_position_smoothing_enabled(bool p_enabled) {
 		return;
 	}
 	position_smoothing_enabled = p_enabled;
-	notify_property_list_changed();
 }
 
 bool Camera2D::is_position_smoothing_enabled() const {
@@ -917,18 +931,6 @@ void Camera2D::set_margin_drawing_enabled(bool p_enabled) {
 
 bool Camera2D::is_margin_drawing_enabled() const {
 	return margin_drawing_enabled;
-}
-
-void Camera2D::_validate_property(PropertyInfo &p_property) const {
-	if (!limit_enabled && (p_property.name == "limit_smoothed" || p_property.name == "limit_left" || p_property.name == "limit_top" || p_property.name == "limit_right" || p_property.name == "limit_bottom")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (!position_smoothing_enabled && p_property.name == "position_smoothing_speed") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (!rotation_smoothing_enabled && p_property.name == "rotation_smoothing_speed") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
 }
 
 void Camera2D::_bind_methods() {
@@ -1020,7 +1022,7 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
 
 	ADD_GROUP("Limit", "limit_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_limit_enabled", "is_limit_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_limit_enabled", "is_limit_enabled");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_left", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_top", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_right", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_RIGHT);
@@ -1028,11 +1030,11 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothed"), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
 
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
 
 	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_smoothing_speed"), "set_rotation_smoothing_speed", "get_rotation_smoothing_speed");
 
 	ADD_GROUP("Drag", "drag_");

@@ -109,6 +109,13 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 }
 
 ResourceUID::ID ResourceUID::create_id() {
+	// mbedTLS may not be fully initialized when the ResourceUID is created, so we
+	// need to lazily instantiate the random number generator.
+	if (crypto == nullptr) {
+		crypto = memnew(CryptoCore::RandomGenerator);
+		((CryptoCore::RandomGenerator *)crypto)->init();
+	}
+
 	while (true) {
 		ID id = INVALID_ID;
 		MutexLock lock(mutex);
@@ -357,15 +364,19 @@ void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id_path", "id"), &ResourceUID::get_id_path);
 	ClassDB::bind_method(D_METHOD("remove_id", "id"), &ResourceUID::remove_id);
 
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("uid_to_path", "uid"), &ResourceUID::uid_to_path);
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("path_to_uid", "path"), &ResourceUID::path_to_uid);
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("ensure_path", "path_or_uid"), &ResourceUID::ensure_path);
+
 	BIND_CONSTANT(INVALID_ID)
 }
 ResourceUID *ResourceUID::singleton = nullptr;
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
-	crypto = memnew(CryptoCore::RandomGenerator);
-	((CryptoCore::RandomGenerator *)crypto)->init();
 }
 ResourceUID::~ResourceUID() {
-	memdelete((CryptoCore::RandomGenerator *)crypto);
+	if (crypto != nullptr) {
+		memdelete((CryptoCore::RandomGenerator *)crypto);
+	}
 }

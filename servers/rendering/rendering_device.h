@@ -65,25 +65,12 @@ private:
 	Thread::ID render_thread_id;
 
 public:
-	enum ShaderLanguage {
-		SHADER_LANGUAGE_GLSL,
-		SHADER_LANGUAGE_HLSL
-	};
-
 	typedef int64_t DrawListID;
 	typedef int64_t ComputeListID;
-
-	typedef String (*ShaderSPIRVGetCacheKeyFunction)(const RenderingDevice *p_render_device);
-	typedef Vector<uint8_t> (*ShaderCompileToSPIRVFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const RenderingDevice *p_render_device);
-	typedef Vector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
 
 	typedef void (*InvalidationCallback)(void *);
 
 private:
-	static ShaderCompileToSPIRVFunction compile_to_spirv_function;
-	static ShaderCacheFunction cache_function;
-	static ShaderSPIRVGetCacheKeyFunction get_spirv_cache_key_function;
-
 	static RenderingDevice *singleton;
 
 	RenderingContextDriver *context = nullptr;
@@ -98,6 +85,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	RID _shader_create_from_bytecode_bind_compat_79606(const Vector<uint8_t> &p_shader_binary);
+	RID _texture_create_from_extension_compat_105570(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -407,7 +395,7 @@ public:
 
 	RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
-	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
+	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps = 1);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
@@ -870,7 +858,7 @@ private:
 	// to do quick validation and ensuring the user
 	// does not submit something invalid.
 
-	struct Shader : public ShaderDescription {
+	struct Shader : public ShaderReflection {
 		String name; // Used for debug.
 		RDD::ShaderID driver_id;
 		uint32_t layout_hash = 0;
@@ -962,13 +950,6 @@ public:
 	bool has_feature(const Features p_feature) const;
 
 	Vector<uint8_t> shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
-	String shader_get_spirv_cache_key() const;
-
-	static void shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function);
-	static void shader_set_spirv_cache_function(ShaderCacheFunction p_function);
-	static void shader_set_get_cache_key_function(ShaderSPIRVGetCacheKeyFunction p_function);
-
-	String shader_get_binary_cache_key() const;
 	Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 
 	RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
@@ -1642,7 +1623,8 @@ public:
 
 	void set_resource_name(RID p_id, const String &p_name);
 
-	void draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	void _draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	void draw_command_begin_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1));
 	void draw_command_end_label();
 
 	String get_device_vendor_name() const;

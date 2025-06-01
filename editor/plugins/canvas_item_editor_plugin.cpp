@@ -41,6 +41,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/gui/editor_translation_preview_button.h"
+#include "editor/gui/editor_translation_preview_menu.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/editor_context_menu_plugin.h"
@@ -5395,6 +5397,13 @@ CanvasItemEditor::CanvasItemEditor() {
 	controls_hb->add_child(zoom_widget);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
+	EditorTranslationPreviewButton *translation_preview_button = memnew(EditorTranslationPreviewButton);
+	translation_preview_button->set_flat(true);
+	translation_preview_button->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
+	translation_preview_button->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+	translation_preview_button->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+	controls_hb->add_child(translation_preview_button);
+
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
 
@@ -5426,7 +5435,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	select_button->set_toggle_mode(true);
 	select_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SELECT));
 	select_button->set_pressed(true);
-	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTRC("Select Mode"), Key::Q));
+	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTRC("Select Mode"), Key::Q, true));
 	select_button->set_shortcut_context(this);
 	select_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+Drag: Move selected node.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+Drag: Scale selected node.") + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)") + "\n" + TTR("RMB: Add node at position clicked."));
 	select_button->set_accessibility_name(TTRC("Select Mode"));
@@ -5438,7 +5447,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(move_button);
 	move_button->set_toggle_mode(true);
 	move_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_MOVE));
-	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTRC("Move Mode"), Key::W));
+	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTRC("Move Mode"), Key::W, true));
 	move_button->set_shortcut_context(this);
 	move_button->set_tooltip_text(TTRC("Move Mode"));
 	move_button->set_accessibility_name(TTRC("Move Mode"));
@@ -5448,7 +5457,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(rotate_button);
 	rotate_button->set_toggle_mode(true);
 	rotate_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_ROTATE));
-	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTRC("Rotate Mode"), Key::E));
+	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTRC("Rotate Mode"), Key::E, true));
 	rotate_button->set_shortcut_context(this);
 	rotate_button->set_tooltip_text(TTRC("Rotate Mode"));
 	rotate_button->set_accessibility_name(TTRC("Rotate Mode"));
@@ -5458,7 +5467,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(scale_button);
 	scale_button->set_toggle_mode(true);
 	scale_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SCALE));
-	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTRC("Scale Mode"), Key::S));
+	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTRC("Scale Mode"), Key::R, true));
 	scale_button->set_shortcut_context(this);
 	scale_button->set_tooltip_text(TTRC("Shift: Scale proportionally."));
 	scale_button->set_accessibility_name(TTRC("Scale Mode"));
@@ -5496,7 +5505,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(ruler_button);
 	ruler_button->set_toggle_mode(true);
 	ruler_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_RULER));
-	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTRC("Ruler Mode"), Key::R));
+	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTRC("Ruler Mode"), Key::M));
 	ruler_button->set_shortcut_context(this);
 	ruler_button->set_tooltip_text(TTRC("Ruler Mode"));
 	ruler_button->set_accessibility_name(TTRC("Ruler Mode"));
@@ -5674,6 +5683,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
 		theme_menu->set_item_checked(i, i == theme_preview);
 	}
+
+	p->add_submenu_node_item(TTRC("Preview Translation"), memnew(EditorTranslationPreviewMenu));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 

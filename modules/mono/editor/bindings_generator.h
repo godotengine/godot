@@ -30,14 +30,13 @@
 
 #pragma once
 
-#include "core/typedefs.h" // DEBUG_METHODS_ENABLED
-
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "core/doc_data.h"
 #include "core/object/class_db.h"
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
+#include "core/typedefs.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 
@@ -873,4 +872,4 @@ public:
 	}
 };
 
-#endif
+#endif // DEBUG_ENABLED

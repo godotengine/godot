@@ -41,6 +41,13 @@ if env["use_pix"]:
     env_d3d12_rdd.Append(CPPEXTPATH=[env["pix_path"] + "/Include"])
 
 
+# Direct composition.
+
+if "dcomp" in env.get("supported", []):
+    env_d3d12_rdd.Append(CPPDEFINES=["DCOMP_ENABLED"])
+    env.Append(CPPDEFINES=["DCOMP_ENABLED"])  # Used in header included in platform.
+
+
 # Mesa (SPIR-V to DXIL functionality).
 
 mesa_libs = env["mesa_libs"]

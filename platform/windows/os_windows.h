@@ -257,8 +257,10 @@ public:
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
 
+#ifdef TOOLS_ENABLED
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;
 	virtual bool _test_create_rendering_device(const String &p_display_driver) const override;
+#endif
 
 	HINSTANCE get_hinstance() { return hInstance; }
 	OS_Windows(HINSTANCE _hInstance);

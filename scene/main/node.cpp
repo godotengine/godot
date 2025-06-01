@@ -197,13 +197,6 @@ void Node::_notification(int p_notification) {
 			data.is_auto_translate_dirty = true;
 			data.is_translation_domain_dirty = true;
 
-#ifdef TOOLS_ENABLED
-			// Don't translate UI elements when they're being edited.
-			if (is_part_of_edited_scene()) {
-				set_message_translation(false);
-			}
-#endif
-
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -515,6 +508,8 @@ void Node::_propagate_physics_interpolated(bool p_interpolated) {
 
 	// Allow a call to the RenderingServer etc. in derived classes.
 	_physics_interpolated_changed();
+
+	update_configuration_warnings();
 
 	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
@@ -849,7 +844,7 @@ void Node::rpc_config(const StringName &p_method, const Variant &p_config) {
 	}
 }
 
-Variant Node::get_rpc_config() const {
+const Variant Node::get_node_rpc_config() const {
 	return data.rpc_config;
 }
 
@@ -1922,13 +1917,12 @@ void Node::_update_children_cache_impl() const {
 
 int Node::get_child_count(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(0);
-	_update_children_cache();
-
 	if (p_include_internal) {
-		return data.children_cache.size();
-	} else {
-		return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
+		return data.children.size();
 	}
+
+	_update_children_cache();
+	return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
 }
 
 Node *Node::get_child(int p_index, bool p_include_internal) const {
@@ -3000,18 +2994,18 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	}
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		if (instantiated && get_child(i)->data.owner == this) {
+		if (instantiated && get_child(i, false)->data.owner == this) {
 			continue; //part of instance
 		}
 
-		Node *dup = get_child(i)->_duplicate(p_flags, r_duplimap);
+		Node *dup = get_child(i, false)->_duplicate(p_flags, r_duplimap);
 		if (!dup) {
 			memdelete(node);
 			return nullptr;
 		}
 
 		node->add_child(dup);
-		if (i < node->get_child_count() - 1) {
+		if (i < node->get_child_count(false) - 1) {
 			node->move_child(dup, i);
 		}
 	}
@@ -3030,9 +3024,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 
 		parent->add_child(dup);
-		int pos = E->get_index();
+		int pos = E->get_index(false);
 
-		if (pos < parent->get_child_count() - 1) {
+		if (pos < parent->get_child_count(false) - 1) {
 			parent->move_child(dup, pos);
 		}
 	}
@@ -3161,7 +3155,11 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 			continue;
 		}
 
-		Variant value = p_original->get(name).duplicate(true);
+		Variant value = p_original->get(name);
+		// To keep classic behavior, because, in contrast, nowadays a resource would be duplicated.
+		if (value.get_type() != Variant::OBJECT) {
+			value = value.duplicate(true);
+		}
 
 		if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
 			Resource *res = Object::cast_to<Resource>(value);
@@ -3981,7 +3979,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "config"), &Node::rpc_config);
-	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Node::get_rpc_config);
+	ClassDB::bind_method(D_METHOD("get_node_rpc_config"), &Node::_get_node_rpc_config_bind);
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
