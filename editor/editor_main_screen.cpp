@@ -375,8 +375,6 @@ void EditorMainScreen::resize_combine_editor() {
 	Control *_2d_editor_container = cast_to<Control>(main_screen_vbox->get_child(0));
 	Control *_3d_editor_container = cast_to<Control>(main_screen_vbox->get_child(1));
 	Control *script_editor_container = cast_to<Control>(main_screen_vbox->get_child(2));
-	Control *game_view_container = cast_to<Control>(main_screen_vbox->get_child(3));
-	Control *asset_library_container = cast_to<Control>(main_screen_vbox->get_child(4));
 	ScriptEditor *script_editor = EditorInterface::get_singleton()->get_script_editor();
 
 	int selected_editor_index = get_selected_index();
