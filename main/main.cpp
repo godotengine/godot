@@ -2081,6 +2081,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
 	}
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/ui/show_system_font_fallback_warnings", PROPERTY_HINT_ENUM, "Never,When Running From Editor,Always"), 1);
 
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);

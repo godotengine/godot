@@ -596,6 +596,11 @@ class TextServerFallback : public TextServerExtension {
 
 	Mutex ft_mutex;
 
+#ifdef DEBUG_ENABLED
+	int sys_fb_warn = 0;
+	HashSet<String> sys_fb_warn_list;
+#endif
+
 protected:
 	static void _bind_methods() {}
 
