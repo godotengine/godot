@@ -328,8 +328,8 @@ EditorMainScreen::EditorMainScreen() {
 
 	// avoid crash on headless mode
 	if (DisplayServer::get_singleton()->window_can_draw() || DisplayServer::get_singleton()->get_name() != "headless") {
-		main_screen_vbox->connect("ready", callable_mp(this, &EditorMainScreen::on_main_screen_vbox_ready));
-		main_screen_vbox->connect("sort_children", callable_mp(this, &EditorMainScreen::resize_combine_editor));
+		main_screen_vbox->connect(SceneStringName(ready), callable_mp(this, &EditorMainScreen::on_main_screen_vbox_ready));
+		main_screen_vbox->connect(SceneStringName(sort_children), callable_mp(this, &EditorMainScreen::resize_combine_editor));
 	}
 
 	EditorSettings *editor_settings = EditorSettings::get_singleton();
