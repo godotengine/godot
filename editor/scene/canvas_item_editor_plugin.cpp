@@ -1999,7 +1999,13 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 
 				Transform2D xform = transform * ci->get_screen_transform();
 				Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * edit_transform).orthonormalized();
-				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+				Transform2D simple_xform;
+				if (use_local_space) {
+					simple_xform = viewport->get_transform() * unscaled_transform;
+				} else {
+					Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+					simple_xform = viewport->get_transform() * translation;
+				}
 
 				drag_type = DRAG_SCALE_BOTH;
 
@@ -2057,7 +2063,14 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			for (CanvasItem *ci : drag_selection) {
 				Transform2D parent_xform = ci->get_screen_transform() * ci->get_transform().affine_inverse();
 				Transform2D unscaled_transform = (transform * parent_xform * edit_transform).orthonormalized();
-				Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
+				Transform2D simple_xform;
+
+				if (use_local_space || drag_type == DRAG_SCALE_BOTH) {
+					simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
+				} else {
+					Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+					simple_xform = (viewport->get_transform() * translation).affine_inverse() * transform;
+				}
 
 				bool uniform = m->is_shift_pressed();
 				bool is_ctrl = m->is_command_or_control_pressed();
@@ -2065,6 +2078,11 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				Point2 drag_from_local = simple_xform.xform(drag_from);
 				Point2 drag_to_local = simple_xform.xform(drag_to);
 				Point2 offset = drag_to_local - drag_from_local;
+
+				Transform2D object_transform = ci->_edit_get_transform();
+				if (ci->is_class("Node2D")) {
+					object_transform.set_skew(ci->get("skew"));
+				}
 
 				Size2 scale = ci->_edit_get_scale();
 				Size2 original_scale = scale;
@@ -2083,12 +2101,24 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 					scale_factor *= Vector2(1.0 / parent_scale.x, 1.0 / parent_scale.y) / (scale_max / original_scale);
 
 					if (drag_type == DRAG_SCALE_X) {
-						scale.x += scale_factor.x;
+						if (!use_local_space && !uniform) {
+							object_transform.set_origin(Vector2(0.0, 0.0));
+							object_transform.scale(Size2(scale_factor.x + 1.0, 1.0));
+							scale *= object_transform.get_scale();
+						} else {
+							scale.x += scale_factor.x;
+						}
 						if (uniform) {
 							scale.y = scale.x * ratio;
 						}
 					} else if (drag_type == DRAG_SCALE_Y) {
-						scale.y -= scale_factor.y;
+						if (!use_local_space && !uniform) {
+							object_transform.set_origin(Vector2(0.0, 0.0));
+							object_transform.scale(Size2(1.0, -scale_factor.y + 1.0));
+							scale *= object_transform.get_scale();
+						} else {
+							scale.y -= scale_factor.y;
+						}
 						if (uniform) {
 							scale.x = scale.y / ratio;
 						}
@@ -2106,6 +2136,13 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				}
 
 				ci->_edit_set_scale(scale);
+				if (!use_local_space && !uniform) {
+					Node2D *n2d = Object::cast_to<Node2D>(ci);
+					if (n2d) {
+						n2d->_edit_set_rotation(object_transform.get_rotation());
+						n2d->set_skew(object_transform.get_skew());
+					}
+				}
 
 				if (using_temp_pivot) {
 					Point2 ci_origin = ci->_edit_get_transform().get_origin();
@@ -2177,7 +2214,13 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 					CanvasItem *ci = selection.front()->get();
 					Transform2D parent_xform = ci->get_screen_transform() * ci->get_transform().affine_inverse();
 					Transform2D unscaled_transform = (transform * parent_xform * ci->_edit_get_transform()).orthonormalized();
-					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+					Transform2D simple_xform;
+					if (use_local_space) {
+						simple_xform = viewport->get_transform() * unscaled_transform;
+					} else {
+						Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+						simple_xform = viewport->get_transform() * translation;
+					}
 
 					if (show_transformation_gizmos) {
 						Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
@@ -2224,7 +2267,12 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				const CanvasItem *selected = drag_selection.front()->get();
 				Transform2D parent_xform = selected->get_screen_transform() * selected->get_transform().affine_inverse();
 				Transform2D unscaled_transform = (transform * parent_xform * selected->_edit_get_transform()).orthonormalized();
-				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+				Transform2D simple_xform;
+				if (use_local_space) {
+					simple_xform = viewport->get_transform() * unscaled_transform;
+				} else {
+					simple_xform = viewport->get_transform();
+				}
 
 				drag_delta = simple_xform.affine_inverse().basis_xform(drag_delta);
 				if (drag_type == DRAG_MOVE_X) {
@@ -3637,7 +3685,14 @@ void CanvasItemEditor::_draw_selection() {
 			}
 		} else {
 			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
-			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+			Transform2D simple_xform;
+			if (use_local_space) {
+				simple_xform = viewport->get_transform() * unscaled_transform;
+			} else {
+				Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+				simple_xform = viewport->get_transform() * translation;
+			}
+
 			viewport->draw_set_transform_matrix(simple_xform);
 			viewport->draw_texture(position_icon, -(position_icon->get_size() / 2));
 			viewport->draw_set_transform_matrix(viewport->get_transform());
@@ -3648,7 +3703,13 @@ void CanvasItemEditor::_draw_selection() {
 			if (ci->_edit_use_pivot()) {
 				// Draw the node's pivot
 				Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
-				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+				Transform2D simple_xform;
+				if (use_local_space) {
+					simple_xform = viewport->get_transform() * unscaled_transform;
+				} else {
+					Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+					simple_xform = viewport->get_transform() * translation;
+				}
 
 				viewport->draw_set_transform_matrix(simple_xform);
 				viewport->draw_texture(pivot_icon, -(pivot_icon->get_size() / 2).floor());
@@ -3708,7 +3769,13 @@ void CanvasItemEditor::_draw_selection() {
 		// Draw the move handles.
 		if ((tool == TOOL_SELECT && is_alt && !is_ctrl) || tool == TOOL_MOVE) {
 			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
-			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+			Transform2D simple_xform;
+			if (use_local_space) {
+				simple_xform = viewport->get_transform() * unscaled_transform;
+			} else {
+				Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+				simple_xform = viewport->get_transform() * translation;
+			}
 
 			Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
 			viewport->draw_set_transform_matrix(simple_xform);
@@ -3742,7 +3809,13 @@ void CanvasItemEditor::_draw_selection() {
 				edit_transform = ci->_edit_get_transform();
 			}
 			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * edit_transform).orthonormalized();
-			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+			Transform2D simple_xform;
+			if (use_local_space) {
+				simple_xform = viewport->get_transform() * unscaled_transform;
+			} else {
+				Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+				simple_xform = viewport->get_transform() * translation;
+			}
 
 			Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
 			bool uniform = Input::get_singleton()->is_key_pressed(Key::SHIFT);
@@ -3908,7 +3981,14 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		// Draw the node's position
 		Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPositionUnselected"));
 		Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
-		Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+		Transform2D simple_xform;
+		if (use_local_space) {
+			simple_xform = viewport->get_transform() * unscaled_transform;
+		} else {
+			Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+			simple_xform = viewport->get_transform() * translation;
+		}
+
 		viewport->draw_set_transform_matrix(simple_xform);
 		viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));
 		viewport->draw_set_transform_matrix(viewport->get_transform());
@@ -3959,7 +4039,7 @@ void CanvasItemEditor::_draw_message() {
 			case DRAG_MOVE_X:
 			case DRAG_MOVE_Y: {
 				Vector2 delta = current_transform.get_origin() - original_transform.get_origin();
-				if (drag_type == DRAG_MOVE) {
+				if (drag_type == DRAG_MOVE || use_local_space) {
 					message = TTR("Moving:") + " (" + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ") px";
 				} else if (drag_type == DRAG_MOVE_X) {
 					message = TTR("Moving:") + " " + FORMAT(delta.x) + " px";
@@ -3978,7 +4058,7 @@ void CanvasItemEditor::_draw_message() {
 			case DRAG_SCALE_BOTH: {
 				Vector2 original_scale = (Math::is_zero_approx(original_transform.get_scale().x) || Math::is_zero_approx(original_transform.get_scale().y)) ? Vector2(CMP_EPSILON, CMP_EPSILON) : original_transform.get_scale();
 				Vector2 delta = current_transform.get_scale() / original_scale;
-				if (drag_type == DRAG_SCALE_BOTH) {
+				if (drag_type == DRAG_SCALE_BOTH || !use_local_space) {
 					message = TTR("Scaling:") + String::utf8(" ×(") + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ")";
 				} else if (drag_type == DRAG_SCALE_X) {
 					message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.x);
@@ -4112,6 +4192,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	move_button->set_button_icon(get_editor_theme_icon(SNAME("ToolMove")));
 	scale_button->set_button_icon(get_editor_theme_icon(SNAME("ToolScale")));
 	rotate_button->set_button_icon(get_editor_theme_icon(SNAME("ToolRotate")));
+	local_space_button->set_button_icon(get_editor_theme_icon(SNAME("Object")));
 	smart_snap_button->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
 	grid_snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 	snap_config_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
@@ -4419,6 +4500,11 @@ void CanvasItemEditor::_update_zoom(real_t p_zoom) {
 
 void CanvasItemEditor::_shortcut_zoom_set(real_t p_zoom) {
 	_zoom_on_position(p_zoom * MAX(1, EDSCALE), viewport->get_local_mouse_position());
+}
+
+void CanvasItemEditor::_button_toggle_local_space(bool p_status) {
+	use_local_space = p_status;
+	viewport->queue_redraw();
 }
 
 void CanvasItemEditor::_button_toggle_smart_snap(bool p_status) {
@@ -5530,6 +5616,16 @@ CanvasItemEditor::CanvasItemEditor() {
 	ruler_button->set_tooltip_text(TTRC("Ruler Mode"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
+
+	local_space_button = memnew(Button);
+	local_space_button->set_theme_type_variation(SceneStringName(FlatButton));
+	main_menu_hbox->add_child(local_space_button);
+	local_space_button->set_toggle_mode(true);
+	local_space_button->set_pressed_no_signal(true);
+	local_space_button->connect(SceneStringName(toggled), callable_mp(this, &CanvasItemEditor::_button_toggle_local_space));
+	local_space_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_local_space", TTRC("Use Local Space"), Key::T));
+	local_space_button->set_shortcut_context(this);
+	local_space_button->set_accessibility_name(TTRC("Use Local Space"));
 
 	smart_snap_button = memnew(Button);
 	smart_snap_button->set_theme_type_variation(SceneStringName(FlatButton));
