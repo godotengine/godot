@@ -31,10 +31,11 @@
 #include "editor_main_screen.h"
 
 #include "core/io/config_file.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/plugins/editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
@@ -97,7 +98,7 @@ void EditorMainScreen::save_layout_to_config(Ref<ConfigFile> p_config_file, cons
 void EditorMainScreen::load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section) {
 	int selected_main_editor_idx = p_config_file->get_value(p_section, "selected_main_editor_idx", -1);
 	if (selected_main_editor_idx >= 0 && selected_main_editor_idx < buttons.size()) {
-		callable_mp(this, &EditorMainScreen::select).call_deferred(selected_main_editor_idx);
+		callable_mp(this, &EditorMainScreen::select).call_deferred(selected_main_editor_idx, false);
 	}
 }
 
@@ -165,7 +166,11 @@ void EditorMainScreen::select_by_name(const String &p_name) {
 	ERR_FAIL_MSG("The editor name '" + p_name + "' was not found.");
 }
 
-void EditorMainScreen::select(int p_index) {
+void EditorMainScreen::select(int p_index, bool force) {
+	if (!force && cast_to<Control>(main_screen_vbox->get_child(p_index))->is_visible()) {
+		return;
+	}
+
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
@@ -202,6 +207,12 @@ void EditorMainScreen::select(int p_index) {
 	}
 
 	EditorNode::get_singleton()->update_distraction_free_mode();
+
+	bool is_combine_scene_and_script_editor = EditorSettings::get_singleton()->get_setting("interface/editor/combine_scene_and_script_editor");
+	Control *script_editor_container = cast_to<Control>(main_screen_vbox->get_child(2));
+	ScriptEditor *script_editor = EditorInterface::get_singleton()->get_script_editor();
+	script_editor_container->set_visible(is_combine_scene_and_script_editor && p_index < 3);
+	script_editor->set_resize_handle_visible(is_combine_scene_and_script_editor && p_index < 2);
 }
 
 int EditorMainScreen::get_selected_index() const {
@@ -273,7 +284,7 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 		icon->connect_changed(callable_mp((Control *)tb, &Control::update_minimum_size));
 	}
 
-	tb->connect(SceneStringName(pressed), callable_mp(this, &EditorMainScreen::select).bind(buttons.size()));
+	tb->connect(SceneStringName(pressed), callable_mp(this, &EditorMainScreen::select).bind(buttons.size(), true));
 
 	buttons.push_back(tb);
 	button_hb->add_child(tb);
@@ -296,7 +307,7 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 			break;
 		} else {
 			buttons[i]->disconnect(SceneStringName(pressed), callable_mp(this, &EditorMainScreen::select));
-			buttons[i]->connect(SceneStringName(pressed), callable_mp(this, &EditorMainScreen::select).bind(i - 1));
+			buttons[i]->connect(SceneStringName(pressed), callable_mp(this, &EditorMainScreen::select).bind(i - 1, true));
 		}
 	}
 
@@ -314,4 +325,88 @@ EditorMainScreen::EditorMainScreen() {
 	main_screen_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_screen_vbox->add_theme_constant_override("separation", 0);
 	add_child(main_screen_vbox);
+
+	// avoid crash on headless mode
+	if (DisplayServer::get_singleton()->window_can_draw() || DisplayServer::get_singleton()->get_name() != "headless") {
+		main_screen_vbox->connect("ready", callable_mp(this, &EditorMainScreen::on_main_screen_vbox_ready));
+		main_screen_vbox->connect("sort_children", callable_mp(this, &EditorMainScreen::resize_combine_editor));
+	}
+
+	EditorSettings *editor_settings = EditorSettings::get_singleton();
+	if (!editor_settings->has_setting("interface/editor/combine_scene_and_script_editor")) {
+		editor_settings->set_setting("interface/editor/combine_scene_and_script_editor", false);
+	}
+	editor_settings->set_initial_value("interface/editor/combine_scene_and_script_editor", false);
+	editor_settings->connect("settings_changed", callable_mp(this, &EditorMainScreen::resize_combine_editor));
+
+	script_editor_size = EditorSettings::get_singleton()->get_project_metadata("combined_script_editor", "script_editor_size", Vector2(0, 0));
+}
+
+void EditorMainScreen::on_main_screen_vbox_ready() {
+	EditorInterface::get_singleton()->get_script_editor()->connect("resize_handle_gui_input", callable_mp(this, &EditorMainScreen::on_resize_handle_gui_input));
+}
+
+void EditorMainScreen::on_resize_handle_gui_input(InputEvent *event) {
+	ScriptEditor *script_editor = EditorInterface::get_singleton()->get_script_editor();
+	if (InputEventMouseButton *event_button = cast_to<InputEventMouseButton>(event)) {
+		if (event->is_pressed()) {
+			script_editor->set_meta("dragging", true);
+			script_editor->set_meta("drag_start_position", event_button->get_global_position());
+		} else if (event->is_released()) {
+			script_editor->set_meta("dragging", false);
+			Control *script_editor_container = cast_to<Control>(main_screen_vbox->get_child(2));
+			script_editor_size = script_editor_container->get_size();
+			EditorSettings::get_singleton()->set_project_metadata("combined_script_editor", "script_editor_size", script_editor_size);
+		}
+	} else if (InputEventMouseMotion *event_motion = cast_to<InputEventMouseMotion>(event)) {
+		if (script_editor->get_meta("dragging", false)) {
+			script_editor_size -= event_motion->get_relative();
+			resize_combine_editor();
+		}
+	}
+}
+
+void EditorMainScreen::resize_combine_editor() {
+	bool is_combine_scene_and_script_editor = EditorSettings::get_singleton()->get_setting("interface/editor/combine_scene_and_script_editor");
+	if (!is_combine_scene_and_script_editor) {
+		return;
+	}
+
+	Control *_2d_editor_container = cast_to<Control>(main_screen_vbox->get_child(0));
+	Control *_3d_editor_container = cast_to<Control>(main_screen_vbox->get_child(1));
+	Control *script_editor_container = cast_to<Control>(main_screen_vbox->get_child(2));
+	Control *game_view_container = cast_to<Control>(main_screen_vbox->get_child(3));
+	Control *asset_library_container = cast_to<Control>(main_screen_vbox->get_child(4));
+	ScriptEditor *script_editor = EditorInterface::get_singleton()->get_script_editor();
+
+	int selected_editor_index = get_selected_index();
+	Control *scene_editor_container;
+	if (selected_editor_index == 0) {
+		scene_editor_container = _2d_editor_container;
+	} else if (selected_editor_index == 1) {
+		scene_editor_container = _3d_editor_container;
+	} else {
+		return;
+	}
+
+	if (script_editor_size.x == 0) {
+		script_editor_size = main_screen_vbox->get_size();
+		script_editor_size.x /= 2;
+	}
+
+	Vector2 editor_container_size = main_screen_vbox->get_size();
+
+	float script_editor_width = CLAMP(
+			script_editor_size.x,
+			script_editor_container->get_minimum_size().x,
+			editor_container_size.x - scene_editor_container->get_minimum_size().x);
+
+	scene_editor_container->set_size(Vector2(editor_container_size.x - script_editor_width, editor_container_size.y));
+
+	Vector2 scene_editor_container_size = scene_editor_container->get_size();
+	script_editor_container->set_position(Vector2(scene_editor_container_size.x, scene_editor_container->get_position().y));
+	script_editor_container->set_size(Vector2(editor_container_size.x - scene_editor_container_size.x, scene_editor_container_size.y));
+
+	script_editor_container->set_visible(true);
+	script_editor->set_resize_handle_visible(true);
 }

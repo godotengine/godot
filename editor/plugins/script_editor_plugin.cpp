@@ -854,6 +854,10 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	_show_error_dialog(path);
 }
 
+void ScriptEditor::_on_resize_handle_gui_input(InputEvent *event) {
+	emit_signal(SNAME("resize_handle_gui_input"), event);
+}
+
 void ScriptEditor::_show_error_dialog(const String &p_path) {
 	error_dialog->set_text(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_path));
 	error_dialog->popup_centered();
@@ -1755,6 +1759,7 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tab_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
 
+			resize_handle->set_button_icon(get_editor_theme_icon(SNAME("Hsize")));
 			help_search->set_button_icon(get_editor_theme_icon(SNAME("HelpSearch")));
 			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
 
@@ -2630,7 +2635,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	if (se->get_edit_menu()) {
 		se->get_edit_menu()->hide();
 		menu_hb->add_child(se->get_edit_menu());
-		menu_hb->move_child(se->get_edit_menu(), 1);
+		menu_hb->move_child(se->get_edit_menu(), 2);
 	}
 
 	if (p_grab_focus) {
@@ -4147,6 +4152,7 @@ void ScriptEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
+	ADD_SIGNAL(MethodInfo("resize_handle_gui_input", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 }
 
 ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
@@ -4280,6 +4286,13 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	ED_SHORTCUT("script_editor/prev_script", TTRC("Previous Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::COMMA);
 	set_process_input(true);
 	set_process_shortcut_input(true);
+
+	resize_handle = memnew(Button);
+	resize_handle->set_flat(true);
+	resize_handle->set_focus_mode(Control::FocusMode::FOCUS_NONE);
+	resize_handle->set_default_cursor_shape(Control::CursorShape::CURSOR_HSIZE);
+	resize_handle->connect("gui_input", callable_mp(this, &ScriptEditor::_on_resize_handle_gui_input));
+	menu_hb->add_child(resize_handle);
 
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
