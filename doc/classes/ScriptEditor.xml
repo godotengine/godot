@@ -115,15 +115,15 @@
 				Emitted when user changed active script. Argument is a freshly activated [Script].
 			</description>
 		</signal>
-		<signal name="script_editor_resize">
-			<description>
-				Emitted when Script editor resize.
-			</description>
-		</signal>
 		<signal name="script_close">
 			<param index="0" name="script" type="Script" />
 			<description>
 				Emitted when editor is about to close the active script. Argument is a [Script] that is going to be closed.
+			</description>
+		</signal>
+		<signal name="script_editor_resize">
+			<description>
+				Emitted when Script editor resize.
 			</description>
 		</signal>
 	</signals>
