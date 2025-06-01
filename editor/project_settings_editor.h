@@ -144,6 +144,8 @@ public:
 	void update_plugins();
 	void init_autoloads();
 
+	void set_filter(const String &p_filter);
+
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
 	GroupSettingsEditor *get_group_settings() { return group_settings; }
 	TabContainer *get_tabs() { return tab_container; }

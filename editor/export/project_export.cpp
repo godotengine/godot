@@ -40,6 +40,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/item_list.h"
@@ -55,14 +56,14 @@
 #include "scene/gui/tree.h"
 
 void ProjectExportTextureFormatError::_on_fix_texture_format_pressed() {
-	ProjectSettings::get_singleton()->set_setting(setting_identifier, true);
-	ProjectSettings::get_singleton()->save();
-	EditorFileSystem::get_singleton()->scan_changes();
-	emit_signal("texture_format_enabled");
+	export_dialog->hide();
+	ProjectSettingsEditor *project_settings = EditorNode::get_singleton()->get_project_settings();
+	project_settings->set_general_page("rendering/textures");
+	project_settings->set_filter(setting_identifier);
+	project_settings->popup_project_settings(false);
 }
 
 void ProjectExportTextureFormatError::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("texture_format_enabled"));
 }
 
 void ProjectExportTextureFormatError::_notification(int p_what) {
@@ -79,7 +80,8 @@ void ProjectExportTextureFormatError::show_for_texture_format(const String &p_fr
 	show();
 }
 
-ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
+ProjectExportTextureFormatError::ProjectExportTextureFormatError(ProjectExportDialog *p_export_dialog) {
+	export_dialog = p_export_dialog;
 	// Set up the label.
 	texture_format_error_label = memnew(Label);
 	texture_format_error_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -87,7 +89,7 @@ ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
 	// Set up the fix button.
 	fix_texture_format_button = memnew(LinkButton);
 	fix_texture_format_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	fix_texture_format_button->set_text(TTR("Fix Import"));
+	fix_texture_format_button->set_text(TTR("Show Project Setting"));
 	add_child(fix_texture_format_button);
 	fix_texture_format_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportTextureFormatError::_on_fix_texture_format_pressed));
 }
@@ -1791,10 +1793,9 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Export warnings and errors bottom section.
 
-	export_texture_format_error = memnew(ProjectExportTextureFormatError);
+	export_texture_format_error = memnew(ProjectExportTextureFormatError(this));
 	main_vb->add_child(export_texture_format_error);
 	export_texture_format_error->hide();
-	export_texture_format_error->connect("texture_format_enabled", callable_mp(this, &ProjectExportDialog::_update_current_preset));
 
 	export_error = memnew(Label);
 	export_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
