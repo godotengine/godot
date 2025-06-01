@@ -113,6 +113,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<ImageTexture> autoplay_reset_icon;
 
 	bool last_active = false;
+	float last_playing_speed = 1;
 	float timeline_position = 0;
 
 	EditorFileDialog *file = nullptr;
