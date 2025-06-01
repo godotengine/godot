@@ -53,6 +53,9 @@
 		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" default="0">
 			The initial offset of the splitting between the two [Control]s, with [code]0[/code] being at the end of the first [Control].
 		</member>
+		<member name="touch_dragger_enabled" type="bool" setter="set_touch_dragger_enabled" getter="is_touch_dragger_enabled" default="false">
+			If [code]true[/code], a touch-friendly drag handle will be enabled for better usability on smaller screens. Unlike the standard grabber, this drag handle overlaps the [SplitContainer]'s children and does not affect their minimum separation. The standard grabber will no longer be drawn when this option is enabled.
+		</member>
 		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" default="false">
 			If [code]true[/code], the [SplitContainer] will arrange its children vertically, rather than horizontally.
 			Can't be changed when using [HSplitContainer] and [VSplitContainer].
@@ -102,13 +105,22 @@
 			[b]Note:[/b] To obtain [theme_item separation] values less than the size of the grabber icon, for example a [code]1 px[/code] hairline, set [theme_item h_grabber] or [theme_item v_grabber] to a new [ImageTexture], which effectively sets the grabber icon size to [code]0 px[/code].
 		</theme_item>
 		<theme_item name="grabber" data_type="icon" type="Texture2D">
-			The icon used for the grabber drawn in the middle area.
+			The icon used for the grabber drawn in the middle area. This is only used in [HSplitContainer] and [VSplitContainer]. For [SplitContainer], see [theme_item h_grabber] and [theme_item v_grabber] instead.
 		</theme_item>
 		<theme_item name="h_grabber" data_type="icon" type="Texture2D">
 			The icon used for the grabber drawn in the middle area when [member vertical] is [code]false[/code].
 		</theme_item>
+		<theme_item name="h_touch_dragger" data_type="icon" type="Texture2D">
+			The icon used for the drag handle when [member touch_dragger_enabled] is [code]true[/code] and [member vertical] is [code]false[/code].
+		</theme_item>
+		<theme_item name="touch_dragger" data_type="icon" type="Texture2D">
+			The icon used for the drag handle when [member touch_dragger_enabled] is [code]true[/code]. This is only used in [HSplitContainer] and [VSplitContainer]. For [SplitContainer], see [theme_item h_touch_dragger] and [theme_item v_touch_dragger] instead.
+		</theme_item>
 		<theme_item name="v_grabber" data_type="icon" type="Texture2D">
 			The icon used for the grabber drawn in the middle area when [member vertical] is [code]true[/code].
+		</theme_item>
+		<theme_item name="v_touch_dragger" data_type="icon" type="Texture2D">
+			The icon used for the drag handle when [member touch_dragger_enabled] is [code]true[/code] and [member vertical] is [code]true[/code].
 		</theme_item>
 		<theme_item name="split_bar_background" data_type="style" type="StyleBox">
 			Determines the background of the split bar if its thickness is greater than zero.
