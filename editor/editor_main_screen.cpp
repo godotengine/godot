@@ -343,10 +343,10 @@ EditorMainScreen::EditorMainScreen() {
 }
 
 void EditorMainScreen::on_main_screen_vbox_ready() {
-	EditorInterface::get_singleton()->get_script_editor()->connect("resize_handle_gui_input", callable_mp(this, &EditorMainScreen::on_resize_handle_gui_input));
+	EditorInterface::get_singleton()->get_script_editor()->connect("script_editor_resize", callable_mp(this, &EditorMainScreen::on_script_editor_resize));
 }
 
-void EditorMainScreen::on_resize_handle_gui_input(InputEvent *event) {
+void EditorMainScreen::on_script_editor_resize(InputEvent *event) {
 	ScriptEditor *script_editor = EditorInterface::get_singleton()->get_script_editor();
 	if (InputEventMouseButton *event_button = cast_to<InputEventMouseButton>(event)) {
 		if (event->is_pressed()) {

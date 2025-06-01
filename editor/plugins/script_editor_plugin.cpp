@@ -855,7 +855,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 }
 
 void ScriptEditor::_on_resize_handle_gui_input(InputEvent *event) {
-	emit_signal(SNAME("resize_handle_gui_input"), event);
+	emit_signal(SNAME("script_editor_resize"), event);
 }
 
 void ScriptEditor::_show_error_dialog(const String &p_path) {
@@ -4152,7 +4152,7 @@ void ScriptEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
-	ADD_SIGNAL(MethodInfo("resize_handle_gui_input"));
+	ADD_SIGNAL(MethodInfo("script_editor_resize"));
 }
 
 ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {

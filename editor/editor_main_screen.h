@@ -93,6 +93,6 @@ public:
 private:
 	Vector2 script_editor_size;
 	void on_main_screen_vbox_ready();
-	void on_resize_handle_gui_input(InputEvent *event);
+	void on_script_editor_resize(InputEvent *event);
 	void resize_combine_editor();
 };
