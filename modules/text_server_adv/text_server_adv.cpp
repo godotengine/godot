@@ -1762,6 +1762,33 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 				}
 			}
 
+			// Validate script sample strings.
+			{
+				LocalVector<uint32_t> failed_scripts;
+
+				Vector<UChar> sample_buf;
+				sample_buf.resize(255);
+				for (const uint32_t &scr_tag : p_font_data->supported_scripts) {
+					if ((hb_script_t)scr_tag == HB_SCRIPT_COMMON) {
+						continue;
+					}
+					UErrorCode icu_err = U_ZERO_ERROR;
+					int32_t len = uscript_getSampleString(hb_icu_script_from_script((hb_script_t)scr_tag), sample_buf.ptrw(), 255, &icu_err);
+					if (U_SUCCESS(icu_err) && len > 0) {
+						String sample = String::utf16(sample_buf.ptr(), len);
+						for (int ch = 0; ch < sample.length(); ch++) {
+							if (FT_Get_Char_Index(fd->face, sample[ch]) == 0) {
+								failed_scripts.push_back(scr_tag);
+								break;
+							}
+						}
+					}
+				}
+				for (const uint32_t &scr_tag : failed_scripts) {
+					p_font_data->supported_scripts.erase(scr_tag);
+				}
+			}
+
 			// Read OpenType feature tags.
 			p_font_data->supported_features.clear();
 			count = hb_ot_layout_table_get_feature_tags(hb_face, HB_OT_TAG_GSUB, 0, nullptr, nullptr);
