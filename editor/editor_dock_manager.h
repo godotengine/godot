@@ -52,6 +52,9 @@ protected:
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+
+public:
+	DockSplitContainer();
 };
 
 class DockContextPopup;

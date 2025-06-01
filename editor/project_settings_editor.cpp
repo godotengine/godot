@@ -765,6 +765,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
 	general_editor->add_child(general_settings_inspector);
 
+	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
+		general_settings_inspector->set_touch_dragger_enabled(true);
+	}
+
 	restart_container = memnew(PanelContainer);
 	general_editor->add_child(restart_container);
 
