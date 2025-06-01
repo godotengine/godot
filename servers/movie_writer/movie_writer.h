@@ -45,7 +45,6 @@ class MovieWriter : public Object {
 	float gpu_time = 0.0f;
 
 	String project_name;
-	String base_path;
 
 	LocalVector<int32_t> audio_mix_buffer;
 
@@ -56,6 +55,7 @@ class MovieWriter : public Object {
 	static uint32_t writer_count;
 
 protected:
+	String base_path;
 	virtual uint32_t get_audio_mix_rate() const;
 	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const;
 
