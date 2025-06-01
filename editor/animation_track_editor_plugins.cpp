@@ -87,7 +87,8 @@ AnimationTrackEditColor::AnimationTrackEditColor() {
 
 Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
 	int fh = get_key_height();
-	return Rect2(-fh / 2, 0, fh, get_size().height);
+	int h = get_size().height;
+	return Rect2(-fh / 2, 0, fh, h);
 }
 
 /// VOLUME DB ///
@@ -124,7 +125,7 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 			Color color_next = get_animation()->value_track_interpolate(get_track(), end_time);
 
 			if (!color_samples[0].is_equal_approx(color_next)) {
-				color_samples.resize(1 + (x_to - x_from) / 64); // Make a color sample every 64 px.
+				color_samples.resize(1 + (x_to - x_from) / COLOR_EDIT_SAMPLE_INTERVAL); // Make a color sample every 64 px.
 				for (int i = 1; i < color_samples.size(); i++) {
 					float j = i;
 					color_samples.write[i] = get_animation()->value_track_interpolate(
@@ -717,26 +718,26 @@ bool AnimationTrackEditBase::handle_track_resizing(const Ref<InputEventMouseMoti
 		float diff_left = region_begin - mm->get_position().x;
 		float diff_right = mm->get_position().x - region_end;
 
-		float dir = (diff_right - diff_left);
+		float resize_threshold = REGION_RESIZE_THRESHOLD;
 
 		if (diff_left > 0) { // left outside clip
-			if (Math::abs(diff_left) < 5 * EDSCALE) {
+			if (Math::abs(diff_left) < resize_threshold) {
 				resize_start = true;
 				can_resize = true;
 			}
 		} else if (diff_right > 0) { // right outside clip
-			if (Math::abs(diff_right) < 5 * EDSCALE) {
+			if (Math::abs(diff_right) < resize_threshold) {
 				resize_start = false;
 				can_resize = true;
 			}
 		} else { // inside clip
-			if (Math::abs(diff_left) < 5 * EDSCALE && Math::abs(diff_right) < 5 * EDSCALE) { // closest inside clip
+			if (Math::abs(diff_left) < resize_threshold && Math::abs(diff_right) < resize_threshold) { // closest inside clip
 				resize_start = Math::abs(diff_left) < Math::abs(diff_right);
 				can_resize = true;
-			} else if (Math::abs(diff_left) < 5 * EDSCALE) { // left inside clip
+			} else if (Math::abs(diff_left) < resize_threshold) { // left inside clip
 				resize_start = true;
 				can_resize = true;
-			} else if (Math::abs(diff_right) < 5 * EDSCALE) { // right inside clip
+			} else if (Math::abs(diff_right) < resize_threshold) { // right inside clip
 				resize_start = false;
 				can_resize = true;
 			}
@@ -760,14 +761,13 @@ void AnimationTrackEditBase::gui_input(const Ref<InputEvent> &p_event) {
 	if (!len_resizing && mm.is_valid()) {
 		bool use_hsize_cursor = false;
 		for (int p_index = 0; p_index < get_animation()->track_get_key_count(get_track()); p_index++) {
-			Ref<Resource> resource = get_resource(p_index);
-			if (!resource.is_valid()) {
+			float len = get_length(p_index);
+			if (len == 0) {
 				continue;
 			}
 
 			float start_ofs = get_start_offset(p_index);
 			float end_ofs = get_end_offset(p_index);
-			float len = get_length(p_index);
 			float p_x = ((get_animation()->track_get_key_time(get_track(), p_index) - get_timeline()->get_value()) * get_timeline()->get_zoom_scale()) + get_timeline()->get_name_limit();
 			float p_pixels_sec = get_timeline()->get_zoom_scale();
 			float p_clip_left = get_timeline()->get_name_limit();
@@ -968,7 +968,8 @@ Rect2 AnimationTrackEditBase::get_key_rect(int p_index, float p_pixels_sec) {
 	float len = get_length(p_index);
 
 	Vector2 region = calc_key_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, 0);
-	return Rect2(region.x, 0, region.y, get_size().height);
+	int h = get_size().height;
+	return Rect2(region.x, 0, region.y, h);
 }
 
 void AnimationTrackEditBase::set_node(Object *p_object) {
@@ -1002,8 +1003,10 @@ Vector2 AnimationTrackEditBase::calc_key_region(const float start_ofs, const flo
 		anim_len = 0;
 	}
 
-	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-		anim_len = MIN(anim_len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+	if (!len_resizing) {
+		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+			anim_len = MIN(anim_len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+		}
 	}
 
 	float pixel_len = anim_len * p_pixels_sec;
@@ -1043,14 +1046,15 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 	int region_width = region.y - region.x;
 
 	int fh = get_key_height();
-	int h = get_size().height;
+	float h = get_size().height;
+	float fy = (h - fh) / 2;
 
 	Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
-	float thickness = 4;
-	if (orig_region_width <= thickness) {
-		float thick_region_width = MAX(thickness, region_width);
-		Rect2 rect2 = Rect2(region_begin, (h - fh) / 2, thick_region_width, fh);
+	float region_max_width = REGION_MAX_WIDTH;
+	if (orig_region_width <= region_max_width) {
+		float thick_region_width = MAX(region_max_width, region_width);
+		Rect2 rect2 = Rect2(region_begin, fy, thick_region_width, fh);
 		draw_rect(rect2, accent_color);
 
 		if (p_selected) {
@@ -1060,8 +1064,8 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 		return;
 	}
 
-	Color bg_color = Color(0.25, 0.25, 0.25);
-	Rect2 rect = Rect2(region_begin, (h - fh) / 2, region_width, fh);
+	Color bg_color = REGION_BG_COLOR;
+	Rect2 rect = Rect2(region_begin, fy, region_width, fh);
 	draw_rect(rect, bg_color);
 
 	Vector<Vector2> points;
@@ -1069,7 +1073,7 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 
 	Vector<Color> colors;
 	if (p_selected) {
-		colors = { Color(0.75, 0.75, 0.75) };
+		colors = { bg_color.lightened(0.8) };
 	} else {
 		colors = { bg_color.lightened(0.2) };
 	}
@@ -1082,7 +1086,7 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 	}
 
 	Color edge_color = Color(accent_color);
-	edge_color.a = 0.7;
+	edge_color.a = REGION_EDGE_ALPHA;
 	if (start_ofs > 0 && region_begin > p_clip_left) {
 		draw_rect(Rect2(region_begin, rect.position.y, 1, rect.size.y), edge_color);
 	}
@@ -1090,7 +1094,7 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 		draw_rect(Rect2(region_end, rect.position.y, 1, rect.size.y), edge_color);
 	}
 
-	if (region_width > thickness) {
+	if (region_width > REGION_MAX_WIDTH) {
 		StringName edit_name = get_edit_name(p_index);
 		if (!edit_name.is_empty()) {
 			Color name_color;
@@ -1102,21 +1106,13 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 				name_color = font_color;
 			}
 
-			float max_width = region_width - 2;
+			float max_width = region_width - REGION_FONT_MARGIN;
 
 			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 
-			String clipped_edit_name = edit_name;
-			if (font->get_string_size(String(clipped_edit_name), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
-				while (!clipped_edit_name.is_empty() && font->get_string_size(String(clipped_edit_name + "..."), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
-					clipped_edit_name = clipped_edit_name.substr(0, clipped_edit_name.length() - 1);
-				}
-				clipped_edit_name += "...";
-			}
-
 			int f_h = int(h - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
-			draw_string(font, Point2(region_begin + 2, f_h), clipped_edit_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
+			draw_string(font, Point2(region_begin + REGION_FONT_MARGIN, f_h), make_text_clipped(edit_name, font, font_size, max_width), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
 		}
 	}
 
