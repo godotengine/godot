@@ -1,8 +1,8 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  12 May 2024                                                     *
+* Date      :  24 March 2025                                                   *
 * Website   :  https://www.angusj.com                                          *
-* Copyright :  Angus Johnson 2010-2024                                         *
+* Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  Core Clipper Library structures and functions                   *
 * License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
@@ -249,6 +249,20 @@ namespace Clipper2Lib
   using Path = std::vector<Point<T>>;
   template <typename T>
   using Paths = std::vector<Path<T>>;
+
+  template <typename T, typename T2=T>
+  Path<T>& operator<<(Path<T>& poly, const Point<T2>& p)
+  {
+    poly.emplace_back(p);
+    return poly;
+  }
+
+  template <typename T>
+  Paths<T>& operator<<(Paths<T>& polys, const Path<T>& p)
+  {
+    polys.emplace_back(p);
+    return polys;
+  }
 
   using Path64 = Path<int64_t>;
   using PathD = Path<double>;
@@ -687,56 +701,97 @@ namespace Clipper2Lib
     return (x > 0) - (x < 0); 
   }
 
-  struct MultiplyUInt64Result
+  struct UInt128Struct
   {
-    const uint64_t result = 0;
-    const uint64_t carry = 0;
+    const uint64_t lo = 0;
+    const uint64_t hi = 0;
 
-    bool operator==(const MultiplyUInt64Result& other) const
+    bool operator==(const UInt128Struct& other) const
     {
-      return result == other.result && carry == other.carry;
+      return lo == other.lo && hi == other.hi;
     };
   };
 
-  inline MultiplyUInt64Result Multiply(uint64_t a, uint64_t b) // #834, #835
+  inline UInt128Struct Multiply(uint64_t a, uint64_t b) // #834, #835
   {
+    // note to self - lamba expressions follow
     const auto lo = [](uint64_t x) { return x & 0xFFFFFFFF; };
     const auto hi = [](uint64_t x) { return x >> 32; };
 
     const uint64_t x1 = lo(a) * lo(b);
     const uint64_t x2 = hi(a) * lo(b) + hi(x1);
     const uint64_t x3 = lo(a) * hi(b) + lo(x2);
-    const uint64_t result = lo(x3) << 32 | lo(x1);
-    const uint64_t carry = hi(a) * hi(b) + hi(x2) + hi(x3);
+    const uint64_t lobits = lo(x3) << 32 | lo(x1);
+    const uint64_t hibits = hi(a) * hi(b) + hi(x2) + hi(x3);
 
-    return { result, carry };
+    return { lobits, hibits };
   }
 
   // returns true if (and only if) a * b == c * d
   inline bool ProductsAreEqual(int64_t a, int64_t b, int64_t c, int64_t d)
   {
-// Work around LLVM issue: https://github.com/llvm/llvm-project/issues/16778
-// Details: https://github.com/godotengine/godot/pull/95964#issuecomment-2306581804
-// #if (defined(__clang__) || defined(__GNUC__)) && UINTPTR_MAX >= UINT64_MAX
-//     const auto ab = static_cast<__int128_t>(a) * static_cast<__int128_t>(b);
-//     const auto cd = static_cast<__int128_t>(c) * static_cast<__int128_t>(d);
-//     return ab == cd;
-// #else
+#if (defined(__clang__) || defined(__GNUC__)) && UINTPTR_MAX >= UINT64_MAX
+    const auto ab = static_cast<__int128_t>(a) * static_cast<__int128_t>(b);
+    const auto cd = static_cast<__int128_t>(c) * static_cast<__int128_t>(d);
+    return ab == cd;
+#else
     // nb: unsigned values needed for calculating overflow carry
     const auto abs_a = static_cast<uint64_t>(std::abs(a));
     const auto abs_b = static_cast<uint64_t>(std::abs(b));
     const auto abs_c = static_cast<uint64_t>(std::abs(c));
     const auto abs_d = static_cast<uint64_t>(std::abs(d));
 
-    const auto abs_ab = Multiply(abs_a, abs_b);
-    const auto abs_cd = Multiply(abs_c, abs_d);
+    const auto ab = Multiply(abs_a, abs_b);
+    const auto cd = Multiply(abs_c, abs_d);
 
     // nb: it's important to differentiate 0 values here from other values
     const auto sign_ab = TriSign(a) * TriSign(b);
     const auto sign_cd = TriSign(c) * TriSign(d);
 
-    return abs_ab == abs_cd && sign_ab == sign_cd;
-// #endif
+    return ab == cd && sign_ab == sign_cd;
+#endif
+  }
+
+  template <typename T>
+  inline int CrossProductSign(const Point<T>& pt1, const Point<T>& pt2, const Point<T>& pt3)
+  {
+    const auto a = pt2.x - pt1.x;
+    const auto b = pt3.y - pt2.y;
+    const auto c = pt2.y - pt1.y;
+    const auto d = pt3.x - pt2.x;
+
+#if (defined(__clang__) || defined(__GNUC__)) && UINTPTR_MAX >= UINT64_MAX
+    const auto ab = static_cast<__int128_t>(a) * static_cast<__int128_t>(b);
+    const auto cd = static_cast<__int128_t>(c) * static_cast<__int128_t>(d);
+    if (ab > cd) return 1;
+    else if (ab < cd) return -1;
+    else return 0;
+#else
+    // nb: unsigned values needed for calculating carry into 'hi'
+    const auto abs_a = static_cast<uint64_t>(std::abs(a));
+    const auto abs_b = static_cast<uint64_t>(std::abs(b));
+    const auto abs_c = static_cast<uint64_t>(std::abs(c));
+    const auto abs_d = static_cast<uint64_t>(std::abs(d));
+
+    const auto ab = Multiply(abs_a, abs_b);
+    const auto cd = Multiply(abs_c, abs_d);
+
+    const auto sign_ab = TriSign(a) * TriSign(b);
+    const auto sign_cd = TriSign(c) * TriSign(d);
+
+    if (sign_ab == sign_cd)
+    {
+      int result;
+      if (ab.hi == cd.hi)
+      {
+        if (ab.lo == cd.lo) return 0;
+        result = (ab.lo > cd.lo) ? 1 : -1;
+      }
+      else result = (ab.hi > cd.hi) ? 1 : -1;
+      return (sign_ab > 0) ? result : -result;
+    }
+    return (sign_ab > sign_cd) ? 1 : -1;
+#endif
   }
 
   template <typename T>
