@@ -741,7 +741,7 @@
 				Returns a new [Array] containing this array's elements, from index [param begin] (inclusive) to [param end] (exclusive), every [param step] elements.
 				If either [param begin] or [param end] are negative, their value is relative to the end of the array.
 				If [param step] is negative, this method iterates through the array in reverse, returning a slice ordered backwards. For this to work, [param begin] must be greater than [param end].
-				If [param deep] is [code]true[/code], all nested [Array] and [Dictionary] elements in the slice are duplicated from the original, recursively. See also [method duplicate]).
+				If [param deep] is [code]true[/code], all nested [Array] and [Dictionary] elements in the slice are duplicated from the original, recursively. See also [method duplicate].
 				[codeblock]
 				var letters = ["A", "B", "C", "D", "E", "F"]
 
