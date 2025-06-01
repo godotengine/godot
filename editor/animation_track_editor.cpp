@@ -2816,6 +2816,18 @@ void AnimationTrackEdit::draw_rect_clipped(const Rect2 &p_rect, const Color &p_c
 	draw_rect(clip.intersection(p_rect), p_color, p_filled);
 }
 
+// Helper.
+String AnimationTrackEdit::make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width) {
+	String clipped_text = text;
+	if (font->get_string_size(clipped_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
+		while (!clipped_text.is_empty() && font->get_string_size(clipped_text + "...", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
+			clipped_text = clipped_text.substr(0, clipped_text.length() - 1);
+		}
+		clipped_text += "...";
+	}
+	return clipped_text;
+}
+
 void AnimationTrackEdit::draw_bg(int p_clip_left, int p_clip_right) {
 }
 
