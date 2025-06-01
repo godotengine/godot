@@ -80,6 +80,10 @@ void ProjectSettingsEditor::popup_for_override(const String &p_override) {
 	general_settings_inspector->set_current_section(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + p_override.get_slicec('/', 0));
 }
 
+void ProjectSettingsEditor::set_filter(const String &p_filter) {
+	search_box->set_text(p_filter);
+}
+
 void ProjectSettingsEditor::queue_save() {
 	settings_changed = true;
 	timer->start();
