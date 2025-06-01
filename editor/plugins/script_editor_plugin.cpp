@@ -4152,7 +4152,7 @@ void ScriptEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
-	ADD_SIGNAL(MethodInfo("resize_handle_gui_input", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
+	ADD_SIGNAL(MethodInfo("resize_handle_gui_input"));
 }
 
 ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
