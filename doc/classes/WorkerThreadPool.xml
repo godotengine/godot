@@ -72,6 +72,14 @@
 				[b]Warning:[/b] Every task must be waited for completion using [method wait_for_task_completion] or [method wait_for_group_task_completion] at some point so that any allocated resources inside the task can be cleaned up.
 			</description>
 		</method>
+		<method name="get_caller_task_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the task ID of the current thread calling this method, or [code]-1[/code] if the task is a group task, invalid or the current thread is not part of the thread pool (e.g. the main thread).
+				Can be used by a task to get its own task ID, or to determine whether the current code is running inside the worker thread pool.
+				[b]Note:[/b] Group tasks have their own IDs, so this method will return [code]-1[/code] for group tasks.
+			</description>
+		</method>
 		<method name="get_group_processed_element_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="group_id" type="int" />
