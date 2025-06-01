@@ -401,6 +401,10 @@ vec3 apply_tonemapping(vec3 color) { // inputs are LINEAR
 				XYZ.x = new_y * (xy.x / xy.y);
 				XYZ.z = new_y * ((1.0 - xy.x - xy.y) / xy.y);
 				color = XYZ_to_linear_sRGB * XYZ;
+				// XYZ_to_linear_sRGB transformation can result in negative
+				// numbers that are extremely close to zero. These need to be
+				// turned into non-negative for tonemappers to work well.
+				color = max(vec3(0.0), color);
 			}
 		}
 	}
