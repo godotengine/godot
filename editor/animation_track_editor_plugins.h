@@ -51,7 +51,7 @@ public:
 
 protected:
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) = 0;
-	virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right); //B
+	virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	Rect2 get_key_rect_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec);
 	virtual Vector2 calc_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x);
 	Vector2 clip_region(Vector2 &region, int p_clip_left, int p_clip_right);
@@ -64,7 +64,7 @@ protected:
 	virtual float get_length(const int p_index) { return 0; }
 	virtual void set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {}
 	virtual void set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) {}
-	virtual StringName get_edit_name(const int p_index) { return StringName(""); }
+	virtual StringName get_edit_name(const int p_index);
 
 public:
 	void set_node(Object *p_object);
@@ -182,7 +182,7 @@ public:
 
 protected:
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
-	virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override; //C
+	//virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override; //C
 
 protected:
 	virtual Ref<Resource> get_resource(const int p_index) override;
@@ -231,7 +231,7 @@ public:
 
 protected:
 	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
-	virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override; //C
+	//virtual void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override; //C
 
 protected:
 	virtual Ref<Resource> get_resource(const int p_index) override;
