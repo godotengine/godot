@@ -56,15 +56,11 @@ void AnimationPreviewGenerator::_preview_thread(void *p_preview) {
 
 	// set length
 	anim_preview->length = preview->base_anim->get_length();
-	if (anim_preview->length <= 0) {
-		anim_preview->length = 0.0001;
-	}
-
 	anim_preview->track_count = preview->base_anim->get_track_count();
 
 	// collect key frames
-	Vector<float> key_times;
-	Vector<TrackKeyTime> track_key_times;
+	Vector<float> key_times_result;
+	Vector<TrackKeyTime> track_key_times_result;
 
 	for (int i = 0; i < preview->base_anim->get_track_count(); i++) {
 		for (int j = 0; j < preview->base_anim->track_get_key_count(i); j++) {
@@ -72,8 +68,8 @@ void AnimationPreviewGenerator::_preview_thread(void *p_preview) {
 			if (!Math::is_finite(time)) {
 				continue;
 			}
-			key_times.push_back(time);
-			track_key_times.push_back({ i, time });
+			key_times_result.push_back(time);
+			track_key_times_result.push_back({ i, time });
 			if (j % 100 == 0) { // Progressives Update
 				callable_mp(singleton, &AnimationPreviewGenerator::_update_emit).call_deferred(preview->id);
 			}
@@ -81,25 +77,25 @@ void AnimationPreviewGenerator::_preview_thread(void *p_preview) {
 	}
 
 	// sort keyframes
-	key_times.sort();
-	track_key_times.sort();
+	key_times_result.sort();
+	track_key_times_result.sort();
 
 	// remove duplicated
-	if (!key_times.is_empty()) {
+	if (!key_times_result.is_empty()) {
 		Vector<float> unique_times;
-		unique_times.push_back(key_times[0]);
-		for (int i = 1; i < key_times.size(); i++) {
-			if (Math::is_equal_approx(key_times[i], unique_times[unique_times.size() - 1])) {
+		unique_times.push_back(key_times_result[0]);
+		for (int i = 1; i < key_times_result.size(); i++) {
+			if (Math::is_equal_approx(key_times_result[i], unique_times[unique_times.size() - 1])) {
 				continue;
 			}
-			unique_times.push_back(key_times[i]);
+			unique_times.push_back(key_times_result[i]);
 		}
-		key_times = unique_times;
+		key_times_result = unique_times;
 	}
 
 	// update preview
-	anim_preview->key_times = key_times;
-	anim_preview->track_key_times = track_key_times;
+	anim_preview->key_times = key_times_result;
+	anim_preview->track_key_times = track_key_times_result;
 	preview->preview = anim_preview;
 	anim_preview->version++;
 
@@ -135,16 +131,16 @@ Ref<AnimationPreview> AnimationPreviewGenerator::generate_preview(const Ref<Anim
 }
 
 void AnimationPreview::create_key_region(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
-	Vector<TrackKeyTime> key_times = get_key_times_with_tracks();
-	int track_count = get_track_count();
-	float track_h = track_count > 0 ? (rect.size.height - 2) / track_count : rect.size.height;
+	Vector<TrackKeyTime> key_times_result = get_key_times_with_tracks();
+	int curr_track_count = get_track_count();
+	float track_h = curr_track_count > 0 ? (rect.size.height - 2) / curr_track_count : rect.size.height;
 
 	float len = get_length();
 	float pixel_begin = rect.position.x;
 	float from_x = rect.position.x;
 	float to_x = from_x + rect.size.x;
 
-	for (const TrackKeyTime &kt : key_times) {
+	for (const TrackKeyTime &kt : key_times_result) {
 		float ofs = kt.time - start_ofs;
 		if (ofs < 0 || ofs > len) {
 			continue;

@@ -1884,9 +1884,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double next_key = idx + 1;
 						if (next_key < a->track_get_key_count(i)) {
 							double next_key_time = a->track_get_key_time(i, next_key);
-							double end = key_time + len_ofs;
-							double clamped_end = MIN(end, next_key_time);
-							double cropped_len = clamped_end - end;
+							double end_time = key_time + len_ofs;
+							double clamped_end = MIN(end_time, next_key_time);
+							double cropped_len = clamped_end - end_time;
 							if (cropped_len < 0) {
 								end_ofs -= cropped_len;
 								len_ofs += cropped_len;

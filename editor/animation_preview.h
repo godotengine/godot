@@ -48,6 +48,7 @@ class AnimationPreview : public RefCounted {
 	GDCLASS(AnimationPreview, RefCounted);
 	friend class Preview;
 
+private:
 	Vector<float> key_times;
 	Vector<TrackKeyTime> track_key_times;
 	float length;
