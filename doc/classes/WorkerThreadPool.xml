@@ -72,6 +72,12 @@
 				[b]Warning:[/b] Every task must be waited for completion using [method wait_for_task_completion] or [method wait_for_group_task_completion] at some point so that any allocated resources inside the task can be cleaned up.
 			</description>
 		</method>
+		<method name="get_caller_group_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the task group ID of the current thread calling this method, or [code]-1[/code] if invalid or the current thread is not part of a task group.
+			</description>
+		</method>
 		<method name="get_caller_task_id" qualifiers="const">
 			<return type="int" />
 			<description>
