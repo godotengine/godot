@@ -107,7 +107,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
-				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
+				Returns the passed [param instance] converted to a [Dictionary]. Can be useful for serializing.
 				[codeblock]
 				var foo = "bar"
 				func _ready():
@@ -133,7 +133,7 @@
 				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
-				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need dynamic type checking.
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need to check the type dynamically.
 				[b]Examples:[/b]
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
@@ -277,7 +277,8 @@
 			[b]Warning:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
 		</constant>
 		<constant name="NAN" value="nan">
-			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			"Not a Number", an invalid floating-point value. It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			[constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). Due to this, you must use [method @GlobalScope.is_nan] to check whether a number is equal to [constant NAN].
 			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>

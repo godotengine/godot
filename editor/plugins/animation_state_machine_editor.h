@@ -34,10 +34,10 @@
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/tree.h"
 
 class ConfirmationDialog;
 class EditorFileDialog;
+class LineEdit;
 class OptionButton;
 class PanelContainer;
 
@@ -149,9 +149,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	Vector2 add_node_pos;
 
-	ConfirmationDialog *delete_window = nullptr;
-	Tree *delete_tree = nullptr;
-
 	bool box_selecting = false;
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
@@ -251,10 +248,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _open_menu(const Vector2 &p_position);
 	bool _create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path);
 	void _stop_connecting();
-
-	void _delete_selected();
-	void _delete_all();
-	void _delete_tree_draw();
 
 	bool last_active = false;
 	StringName last_fading_from_node;

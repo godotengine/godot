@@ -97,6 +97,12 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	mute_audio_data.append(mute_audio);
 	p_session->send_message("scene:debug_mute_audio", mute_audio_data);
 
+	Dictionary shortcut_settings;
+	shortcut_settings["editor/suspend_resume_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
+	shortcut_settings["editor/next_frame_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/next_frame_embedded_project"));
+
+	p_session->send_message("scene:setup_embedded_shortcuts", { shortcut_settings });
+
 	emit_signal(SNAME("session_started"));
 }
 
@@ -237,11 +243,17 @@ void GameView::_sessions_changed() {
 
 	_update_debugger_buttons();
 
+#ifdef MACOS_ENABLED
+	if (!embedded_script_debugger || !embedded_script_debugger->is_session_active() || embedded_script_debugger->get_remote_pid() != embedded_process->get_embedded_pid()) {
+		_attach_script_debugger();
+	}
+#else
 	if (embedded_process->is_embedding_completed()) {
 		if (!embedded_script_debugger || !embedded_script_debugger->is_session_active() || embedded_script_debugger->get_remote_pid() != embedded_process->get_embedded_pid()) {
 			_attach_script_debugger();
 		}
 	}
+#endif
 }
 
 void GameView::_instance_starting_static(int p_idx, List<String> &r_arguments) {
@@ -364,8 +376,13 @@ void GameView::_stop_pressed() {
 }
 
 void GameView::_embedding_completed() {
+#ifndef MACOS_ENABLED
 	_attach_script_debugger();
+#endif
 	_update_ui();
+	if (make_floating_on_play) {
+		get_window()->set_flag(Window::FLAG_ALWAYS_ON_TOP, bool(GLOBAL_GET("display/window/size/always_on_top")));
+	}
 }
 
 void GameView::_embedding_failed() {
@@ -414,6 +431,23 @@ void GameView::_update_debugger_buttons() {
 		camera_override_button->set_pressed(false);
 	}
 	next_frame_button->set_disabled(!suspend_button->is_pressed());
+}
+
+void GameView::_handle_shortcut_requested(int p_embed_action) {
+	switch (p_embed_action) {
+		case ScriptEditorDebugger::EMBED_SUSPEND_TOGGLE: {
+			_toggle_suspend_button();
+		} break;
+		case ScriptEditorDebugger::EMBED_NEXT_FRAME: {
+			debugger->next_frame();
+		} break;
+	}
+}
+
+void GameView::_toggle_suspend_button() {
+	const bool new_pressed = !suspend_button->is_pressed();
+	suspend_button->set_pressed(new_pressed);
+	_suspend_button_toggled(new_pressed);
 }
 
 void GameView::_suspend_button_toggled(bool p_pressed) {
@@ -760,22 +794,29 @@ void GameView::_attach_script_debugger() {
 	}
 
 	embedded_script_debugger = nullptr;
-	for (int i = 0; EditorDebuggerNode::get_singleton()->get_debugger(i); i++) {
-		ScriptEditorDebugger *script_debugger = EditorDebuggerNode::get_singleton()->get_debugger(i);
+	int i = 0;
+	while (ScriptEditorDebugger *script_debugger = EditorDebuggerNode::get_singleton()->get_debugger(i)) {
 		if (script_debugger->is_session_active() && script_debugger->get_remote_pid() == embedded_process->get_embedded_pid()) {
 			embedded_script_debugger = script_debugger;
 			break;
 		}
+		i++;
 	}
+
+#ifdef MACOS_ENABLED
+	embedded_process->set_script_debugger(embedded_script_debugger);
+#endif
 
 	if (embedded_script_debugger) {
 		embedded_script_debugger->connect("remote_window_title_changed", callable_mp(this, &GameView::_remote_window_title_changed));
+		embedded_script_debugger->connect("embed_shortcut_requested", callable_mp(this, &GameView::_handle_shortcut_requested));
 	}
 }
 
 void GameView::_detach_script_debugger() {
 	if (embedded_script_debugger) {
 		embedded_script_debugger->disconnect("remote_window_title_changed", callable_mp(this, &GameView::_remote_window_title_changed));
+		embedded_script_debugger->disconnect("embed_shortcut_requested", callable_mp(this, &GameView::_handle_shortcut_requested));
 		embedded_script_debugger = nullptr;
 	}
 }
@@ -792,11 +833,16 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	// Remove duplicates/unwanted parameters.
 	List<String>::Element *E = r_arguments.front();
 	List<String>::Element *user_args_element = nullptr;
+	HashSet<String> remove_args({ "--position", "--resolution", "--screen" });
+#ifdef MACOS_ENABLED
+	// macOS requires the embedded display driver.
+	remove_args.insert("--display-driver");
+#endif
 	while (E) {
 		List<String>::Element *N = E->next();
 
-		//For these parameters, we need to also renove the value.
-		if (E->get() == "--position" || E->get() == "--resolution" || E->get() == "--screen") {
+		// For these parameters, we need to also remove the value.
+		if (remove_args.has(E->get())) {
 			r_arguments.erase(E);
 			if (N) {
 				List<String>::Element *V = N->next();
@@ -816,6 +862,10 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	// Add the editor window's native ID so the started game can directly set it as its parent.
 	List<String>::Element *N = r_arguments.insert_before(user_args_element, "--wid");
 	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
+
+#if MACOS_ENABLED
+	N = r_arguments.insert_after(N, "--embedded");
+#endif
 
 	// Be sure to have the correct window size in the embedded_process control.
 	_update_embed_window_size();
@@ -903,11 +953,12 @@ void GameView::_feature_profile_changed() {
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_visible(is_3d_enabled);
 }
 
-GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
+GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process, WindowWrapper *p_wrapper) {
 	singleton = this;
 
 	debugger = p_debugger;
 	window_wrapper = p_wrapper;
+	embedded_process = p_embedded_process;
 
 	// Add some margin to the sides for better aesthetics.
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
@@ -926,12 +977,18 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	suspend_button->set_theme_type_variation(SceneStringName(FlatButton));
 	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_suspend_button_toggled));
 	suspend_button->set_tooltip_text(TTR("Suspend"));
+	suspend_button->set_accessibility_name(TTRC("Suspend"));
+	ED_SHORTCUT("editor/suspend_resume_embedded_project", TTRC("Suspend/Resume Embedded Project"), Key::F9);
+	ED_SHORTCUT_OVERRIDE("editor/suspend_resume_embedded_project", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
+	suspend_button->set_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
 
 	next_frame_button = memnew(Button);
 	main_menu_hbox->add_child(next_frame_button);
 	next_frame_button->set_theme_type_variation(SceneStringName(FlatButton));
 	next_frame_button->connect(SceneStringName(pressed), callable_mp(*debugger, &GameViewDebugger::next_frame));
 	next_frame_button->set_tooltip_text(TTR("Next Frame"));
+	next_frame_button->set_accessibility_name(TTRC("Next Frame"));
+	next_frame_button->set_shortcut(ED_SHORTCUT("editor/next_frame_embedded_project", TTRC("Next Frame"), Key::F10));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -968,6 +1025,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	hide_selection->set_theme_type_variation(SceneStringName(FlatButton));
 	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
 	hide_selection->set_tooltip_text(TTR("Toggle Selection Visibility"));
+	hide_selection->set_accessibility_name(TTRC("Selection Visibility"));
 	hide_selection->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "hide_selection", false));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
@@ -1006,6 +1064,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	camera_override_button->set_toggle_mode(true);
 	camera_override_button->set_theme_type_variation(SceneStringName(FlatButton));
 	camera_override_button->set_tooltip_text(TTR("Override the in-game camera."));
+	camera_override_button->set_accessibility_name(TTRC("Override In-game Camera"));
 	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_camera_override_button_toggled));
 
 	camera_override_menu = memnew(MenuButton);
@@ -1014,7 +1073,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	camera_override_menu->set_theme_type_variation("FlatMenuButton");
 	camera_override_menu->set_h_size_flags(SIZE_SHRINK_END);
 	camera_override_menu->set_tooltip_text(TTR("Camera Override Options"));
-	_camera_override_menu_id_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "camera_override_mode", 0));
+	camera_override_menu->set_accessibility_name(TTRC("Camera Override Options"));
 
 	PopupMenu *menu = camera_override_menu->get_popup();
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_camera_override_menu_id_pressed));
@@ -1024,6 +1083,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	menu->add_radio_check_item(TTR("Manipulate In-Game"), CAMERA_MODE_INGAME);
 	menu->set_item_checked(menu->get_item_index(CAMERA_MODE_INGAME), true);
 	menu->add_radio_check_item(TTR("Manipulate From Editors"), CAMERA_MODE_EDITORS);
+	_camera_override_menu_id_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "camera_override_mode", 0));
 
 	embedding_separator = memnew(VSeparator);
 	main_menu_hbox->add_child(embedding_separator);
@@ -1033,6 +1093,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	fixed_size_button->set_toggle_mode(true);
 	fixed_size_button->set_theme_type_variation("FlatButton");
 	fixed_size_button->set_tooltip_text(TTR("Embedded game size is based on project settings.\nThe 'Keep Aspect' mode is used when the Game Workspace is smaller than the desired size."));
+	fixed_size_button->set_accessibility_name(TTRC("Fixed Size"));
 	fixed_size_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_FIXED));
 
 	keep_aspect_button = memnew(Button);
@@ -1040,6 +1101,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	keep_aspect_button->set_toggle_mode(true);
 	keep_aspect_button->set_theme_type_variation("FlatButton");
 	keep_aspect_button->set_tooltip_text(TTR("Keep the aspect ratio of the embedded game."));
+	keep_aspect_button->set_accessibility_name(TTRC("Keep Aspect Ratio"));
 	keep_aspect_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_KEEP_ASPECT));
 
 	stretch_button = memnew(Button);
@@ -1047,6 +1109,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	stretch_button->set_toggle_mode(true);
 	stretch_button->set_theme_type_variation("FlatButton");
 	stretch_button->set_tooltip_text(TTR("Embedded game size stretches to fit the Game Workspace."));
+	stretch_button->set_accessibility_name(TTRC("Stretch"));
 	stretch_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_STRETCH));
 
 	embed_options_menu = memnew(MenuButton);
@@ -1055,6 +1118,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	embed_options_menu->set_theme_type_variation("FlatMenuButton");
 	embed_options_menu->set_h_size_flags(SIZE_SHRINK_END);
 	embed_options_menu->set_tooltip_text(TTR("Embedding Options"));
+	embed_options_menu->set_accessibility_name(TTRC("Embedding Options"));
 
 	menu = embed_options_menu->get_popup();
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_embed_options_menu_menu_id_pressed));
@@ -1077,7 +1141,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	panel->set_theme_type_variation("GamePanel");
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	embedded_process = memnew(EmbeddedProcess);
 	panel->add_child(embedded_process);
 	embedded_process->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	embedded_process->connect("embedding_failed", callable_mp(this, &GameView::_embedding_failed));
@@ -1090,6 +1153,9 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	state_container->add_theme_constant_override("margin_left", 8 * EDSCALE);
 	state_container->add_theme_constant_override("margin_right", 8 * EDSCALE);
 	state_container->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+#ifdef MACOS_ENABLED
+	state_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+#endif
 	panel->add_child(state_container);
 
 	state_label = memnew(Label());
@@ -1115,7 +1181,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 
 ///////
 
-void GameViewPlugin::selected_notify() {
+void GameViewPluginBase::selected_notify() {
 	if (_is_window_wrapper_enabled()) {
 #ifdef ANDROID_ENABLED
 		notify_main_screen_changed(get_plugin_name());
@@ -1127,7 +1193,7 @@ void GameViewPlugin::selected_notify() {
 }
 
 #ifndef ANDROID_ENABLED
-void GameViewPlugin::make_visible(bool p_visible) {
+void GameViewPluginBase::make_visible(bool p_visible) {
 	if (p_visible) {
 		window_wrapper->show();
 	} else {
@@ -1135,35 +1201,54 @@ void GameViewPlugin::make_visible(bool p_visible) {
 	}
 }
 
-void GameViewPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+void GameViewPluginBase::set_window_layout(Ref<ConfigFile> p_layout) {
 	game_view->set_window_layout(p_layout);
 }
 
-void GameViewPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
+void GameViewPluginBase::get_window_layout(Ref<ConfigFile> p_layout) {
 	game_view->get_window_layout(p_layout);
 }
+
+void GameViewPluginBase::setup(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process) {
+	debugger = p_debugger;
+
+	window_wrapper = memnew(WindowWrapper);
+	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Game Workspace")));
+	window_wrapper->set_margins_enabled(true);
+
+	game_view = memnew(GameView(debugger, p_embedded_process, window_wrapper));
+	game_view->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	window_wrapper->set_wrapped_control(game_view, nullptr);
+
+	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(window_wrapper);
+	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	window_wrapper->hide();
+	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_focus_another_editor).unbind(1));
+}
+
 #endif // ANDROID_ENABLED
 
-void GameViewPlugin::_notification(int p_what) {
+void GameViewPluginBase::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			add_debugger_plugin(debugger);
-			connect("main_screen_changed", callable_mp(this, &GameViewPlugin::_save_last_editor));
+			connect("main_screen_changed", callable_mp(this, &GameViewPluginBase::_save_last_editor));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			remove_debugger_plugin(debugger);
-			disconnect("main_screen_changed", callable_mp(this, &GameViewPlugin::_save_last_editor));
+			disconnect("main_screen_changed", callable_mp(this, &GameViewPluginBase::_save_last_editor));
 		} break;
 	}
 }
 
-void GameViewPlugin::_save_last_editor(const String &p_editor) {
+void GameViewPluginBase::_save_last_editor(const String &p_editor) {
 	if (p_editor != get_plugin_name()) {
 		last_editor = p_editor;
 	}
 }
 
-void GameViewPlugin::_focus_another_editor() {
+void GameViewPluginBase::_focus_another_editor() {
 	if (_is_window_wrapper_enabled()) {
 		if (last_editor.is_empty()) {
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_2D);
@@ -1173,7 +1258,7 @@ void GameViewPlugin::_focus_another_editor() {
 	}
 }
 
-bool GameViewPlugin::_is_window_wrapper_enabled() const {
+bool GameViewPluginBase::_is_window_wrapper_enabled() const {
 #ifdef ANDROID_ENABLED
 	return true;
 #else
@@ -1181,22 +1266,15 @@ bool GameViewPlugin::_is_window_wrapper_enabled() const {
 #endif // ANDROID_ENABLED
 }
 
-GameViewPlugin::GameViewPlugin() {
-	debugger.instantiate();
+GameViewPluginBase::GameViewPluginBase() {
+}
 
+GameViewPlugin::GameViewPlugin() :
+		GameViewPluginBase() {
 #ifndef ANDROID_ENABLED
-	window_wrapper = memnew(WindowWrapper);
-	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Game Workspace")));
-	window_wrapper->set_margins_enabled(true);
-
-	game_view = memnew(GameView(debugger, window_wrapper));
-	game_view->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-	window_wrapper->set_wrapped_control(game_view, nullptr);
-
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(window_wrapper);
-	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	window_wrapper->hide();
-	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_focus_another_editor).unbind(1));
-#endif // ANDROID_ENABLED
+	Ref<GameViewDebugger> game_view_debugger;
+	game_view_debugger.instantiate();
+	EmbeddedProcess *embedded_process = memnew(EmbeddedProcess);
+	setup(game_view_debugger, embedded_process);
+#endif
 }

@@ -410,11 +410,9 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
 			tx->fold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_UNFOLD_ALL_LINES: {
 			tx->unfold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
@@ -601,8 +599,8 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	context_menu->popup();
 }
 
-void TextEditor::update_toggle_scripts_button() {
-	code_editor->update_toggle_scripts_button();
+void TextEditor::update_toggle_files_button() {
+	code_editor->update_toggle_files_button();
 }
 
 TextEditor::TextEditor() {
@@ -613,7 +611,7 @@ TextEditor::TextEditor() {
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	code_editor->show_toggle_scripts_button();
+	code_editor->show_toggle_files_button();
 	code_editor->set_toggle_list_control(ScriptEditor::get_singleton()->get_left_list_split());
 
 	update_settings();
@@ -694,7 +692,7 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 
 	MenuButton *goto_menu = memnew(MenuButton);

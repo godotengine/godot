@@ -47,6 +47,8 @@ SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
 class Node : public Object {
 	GDCLASS(Node, Object);
 
+	friend class SceneTreeFTI;
+
 protected:
 	// During group processing, these are thread-safe.
 	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
@@ -106,7 +108,8 @@ public:
 	enum NameCasing {
 		NAME_CASING_PASCAL_CASE,
 		NAME_CASING_CAMEL_CASE,
-		NAME_CASING_SNAKE_CASE
+		NAME_CASING_SNAKE_CASE,
+		NAME_CASING_KEBAB_CASE,
 	};
 
 	enum InternalMode {
@@ -173,7 +176,7 @@ private:
 		mutable int internal_children_back_count_cache = 0;
 		mutable int external_children_count_cache = 0;
 		mutable int index = -1; // relative to front, normal or back.
-		int depth = -1;
+		int32_t depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
 		SceneTree *tree = nullptr;
@@ -185,6 +188,16 @@ private:
 
 		Viewport *viewport = nullptr;
 
+		mutable RID accessibility_element;
+
+		String accessibility_name;
+		String accessibility_description;
+		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+		TypedArray<NodePath> accessibility_controls_nodes;
+		TypedArray<NodePath> accessibility_described_by_nodes;
+		TypedArray<NodePath> accessibility_labeled_by_nodes;
+		TypedArray<NodePath> accessibility_flow_to_nodes;
+
 		HashMap<StringName, GroupData> grouped;
 		List<Node *>::Element *OW = nullptr; // Owned element.
 		List<Node *> owned;
@@ -193,11 +206,11 @@ private:
 		ProcessThreadGroup process_thread_group = PROCESS_THREAD_GROUP_INHERIT;
 		Node *process_thread_group_owner = nullptr;
 		int process_thread_group_order = 0;
-		BitField<ProcessThreadMessages> process_thread_messages;
+		BitField<ProcessThreadMessages> process_thread_messages = {};
 		void *process_group = nullptr; // to avoid cyclic dependency
 
 		int multiplayer_authority = 1; // Server by default.
-		Variant rpc_config = Dictionary();
+		Variant rpc_config;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		int process_priority = 0;
@@ -366,6 +379,7 @@ protected:
 
 	void _set_use_identity_transform(bool p_enable) { data.use_identity_transform = p_enable; }
 	bool _is_using_identity_transform() const { return data.use_identity_transform; }
+	int32_t _get_scene_tree_depth() const { return data.depth; }
 
 	//call from SceneTree
 	void _call_input(const Ref<InputEvent> &p_event);
@@ -375,7 +389,13 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
+	Variant _get_node_rpc_config_bind() const {
+		return get_node_rpc_config().duplicate(true);
+	}
+
 protected:
+	virtual bool _uses_signal_mutex() const override { return false; } // Node uses thread guards instead.
+
 	virtual void input(const Ref<InputEvent> &p_event);
 	virtual void shortcut_input(const Ref<InputEvent> &p_key_event);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event);
@@ -386,12 +406,22 @@ protected:
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
+	GDVIRTUAL0RC(Vector<String>, _get_accessibility_configuration_warnings)
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
 	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
+
+	GDVIRTUAL0RC(RID, _get_focused_accessibility_element)
+	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
+
+#ifndef DISABLE_DEPRECATED
+	void _set_name_bind_compat_76560(const String &p_name);
+	Variant _get_rpc_config_bind_compat_106848() const;
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	enum {
@@ -418,6 +448,10 @@ public:
 		NOTIFICATION_ENABLED = 29,
 		NOTIFICATION_RESET_PHYSICS_INTERPOLATION = 2001, // A GodotSpace Odyssey.
 		// Keep these linked to Node.
+
+		NOTIFICATION_ACCESSIBILITY_UPDATE = 3000,
+		NOTIFICATION_ACCESSIBILITY_INVALIDATE = 3001,
+
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
 		NOTIFICATION_WM_MOUSE_EXIT = 1003,
 		NOTIFICATION_WM_WINDOW_FOCUS_IN = 1004,
@@ -452,7 +486,7 @@ public:
 
 	StringName get_name() const;
 	String get_description() const;
-	void set_name(const String &p_name);
+	void set_name(const StringName &p_name);
 
 	InternalMode get_internal_mode() const;
 
@@ -645,6 +679,36 @@ public:
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;
 
+	void set_accessibility_name(const String &p_name);
+	String get_accessibility_name() const;
+
+	void set_accessibility_description(const String &p_description);
+	String get_accessibility_description() const;
+
+	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
+	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+
+	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_controls_nodes() const;
+
+	void set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_described_by_nodes() const;
+
+	void set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_labeled_by_nodes() const;
+
+	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
+
+	void queue_accessibility_update();
+
+	virtual RID get_accessibility_element() const;
+	virtual RID get_focused_accessibility_element() const;
+	virtual String get_accessibility_container_name(const Node *p_node) const;
+	virtual bool accessibility_override_tree_hierarchy() const { return false; }
+
+	virtual PackedStringArray get_accessibility_configuration_warnings() const;
+
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const;
@@ -691,6 +755,7 @@ public:
 	ProcessThreadGroup get_process_thread_group() const;
 
 	static void print_orphan_nodes();
+	static TypedArray<int> get_orphan_node_ids();
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);
@@ -727,7 +792,7 @@ public:
 	bool is_multiplayer_authority() const;
 
 	void rpc_config(const StringName &p_method, const Variant &p_config); // config a local method for RPC
-	Variant get_rpc_config() const;
+	const Variant get_node_rpc_config() const;
 
 	template <typename... VarArgs>
 	Error rpc(const StringName &p_method, VarArgs... p_args);

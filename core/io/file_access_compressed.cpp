@@ -283,7 +283,7 @@ uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) con
 			if (dst_idx + 1 < p_length) {
 				read_eof = true;
 			}
-			return dst_idx + 1;
+			return dst_idx;
 		}
 
 		// Read the next block of compressed data.

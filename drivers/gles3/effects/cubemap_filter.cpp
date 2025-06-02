@@ -91,14 +91,14 @@ CubemapFilter::~CubemapFilter() {
 
 Vector3 importance_sample_GGX(Vector2 xi, float roughness4) {
 	// Compute distribution direction
-	float phi = 2.0 * Math_PI * xi.x;
-	float cos_theta = sqrt((1.0 - xi.y) / (1.0 + (roughness4 - 1.0) * xi.y));
-	float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+	float phi = 2.0 * Math::PI * xi.x;
+	float cos_theta = std::sqrt((1.0 - xi.y) / (1.0 + (roughness4 - 1.0) * xi.y));
+	float sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 
 	// Convert to spherical direction
 	Vector3 half_vector;
-	half_vector.x = sin_theta * cos(phi);
-	half_vector.y = sin_theta * sin(phi);
+	half_vector.x = sin_theta * std::cos(phi);
+	half_vector.y = sin_theta * std::sin(phi);
 	half_vector.z = cos_theta;
 
 	return half_vector;
@@ -107,7 +107,7 @@ Vector3 importance_sample_GGX(Vector2 xi, float roughness4) {
 float distribution_GGX(float NdotH, float roughness4) {
 	float NdotH2 = NdotH * NdotH;
 	float denom = (NdotH2 * (roughness4 - 1.0) + 1.0);
-	denom = Math_PI * denom * denom;
+	denom = Math::PI * denom * denom;
 
 	return roughness4 / denom;
 }
@@ -157,7 +157,7 @@ void CubemapFilter::filter_radiance(GLuint p_source_cubemap, GLuint p_dest_cubem
 		float roughness4 = roughness * roughness;
 		roughness4 *= roughness4;
 
-		float solid_angle_texel = 4.0 * Math_PI / float(6 * size * size);
+		float solid_angle_texel = 4.0 * Math::PI / float(6 * size * size);
 
 		LocalVector<float> sample_directions;
 		sample_directions.resize(4 * sample_count);
@@ -182,7 +182,7 @@ void CubemapFilter::filter_radiance(GLuint p_source_cubemap, GLuint p_dest_cubem
 
 			float solid_angle_sample = 1.0 / (float(sample_count) * pdf + 0.0001);
 
-			float mip_level = MAX(0.5 * log2(solid_angle_sample / solid_angle_texel) + float(MAX(1, p_layer - 3)), 1.0);
+			float mip_level = MAX(0.5 * std::log2(solid_angle_sample / solid_angle_texel) + float(MAX(1, p_layer - 3)), 1.0);
 
 			sample_directions[index * 4 + 3] = mip_level;
 			weight += light_vec.z;

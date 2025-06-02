@@ -78,6 +78,13 @@
 				Removes all font sizes from the cache entry.
 			</description>
 		</method>
+		<method name="_font_clear_system_fallback_cache" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				[b]Optional.[/b]
+				Frees all automatically loaded system fonts.
+			</description>
+		</method>
 		<method name="_font_clear_textures" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
@@ -95,9 +102,10 @@
 			<param index="3" name="pos" type="Vector2" />
 			<param index="4" name="index" type="int" />
 			<param index="5" name="color" type="Color" />
+			<param index="6" name="oversampling" type="float" />
 			<description>
 				[b]Required.[/b]
-				Draws single glyph into a canvas item at the position, using [param font_rid] at the size [param size].
+				Draws single glyph into a canvas item at the position, using [param font_rid] at the size [param size]. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="_font_draw_glyph_outline" qualifiers="virtual const">
@@ -109,9 +117,10 @@
 			<param index="4" name="pos" type="Vector2" />
 			<param index="5" name="index" type="int" />
 			<param index="6" name="color" type="Color" />
+			<param index="7" name="oversampling" type="float" />
 			<description>
 				[b]Required.[/b]
-				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size].
+				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size]. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="_font_get_antialiasing" qualifiers="virtual const">
@@ -445,6 +454,14 @@
 			<description>
 				[b]Optional.[/b]
 				Returns list of script support overrides.
+			</description>
+		</method>
+		<method name="_font_get_size_cache_info" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				[b]Optional.[/b]
+				Returns font cache information, each entry contains the following fields: [code]Vector2i size_px[/code] - font size in pixels, [code]float viewport_oversampling[/code] - viewport oversampling factor, [code]int glyphs[/code] - number of rendered glyphs, [code]int textures[/code] - number of used textures, [code]int textures_size[/code] - size of texture data in bytes.
 			</description>
 		</method>
 		<method name="_font_get_size_cache_list" qualifiers="virtual const">
@@ -1315,12 +1332,91 @@
 				Returns percent sign used in the [param language].
 			</description>
 		</method>
+		<method name="_reference_oversampling_level" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="oversampling" type="float" />
+			<description>
+				[b]Required.[/b]
+				Increases the reference count of the specified oversampling level. This method is called by [Viewport], and should not be used directly.
+			</description>
+		</method>
 		<method name="_save_support_data" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="filename" type="String" />
 			<description>
 				[b]Optional.[/b]
 				Saves optional TextServer database (e.g. ICU break iterators and dictionaries) to the file.
+			</description>
+		</method>
+		<method name="_shaped_get_run_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				[b]Required.[/b]
+				Returns the number of uniform text runs in the buffer.
+			</description>
+		</method>
+		<method name="_shaped_get_run_direction" qualifiers="virtual const">
+			<return type="int" enum="TextServer.Direction" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the direction of the [param index] text run (in visual order).
+			</description>
+		</method>
+		<method name="_shaped_get_run_font_rid" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the font RID of the [param index] text run (in visual order).
+			</description>
+		</method>
+		<method name="_shaped_get_run_font_size" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the font size of the [param index] text run (in visual order).
+			</description>
+		</method>
+		<method name="_shaped_get_run_language" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the language of the [param index] text run (in visual order).
+			</description>
+		</method>
+		<method name="_shaped_get_run_object" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the embedded object of the [param index] text run (in visual order).
+			</description>
+		</method>
+		<method name="_shaped_get_run_range" qualifiers="virtual const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the source text range of the [param index] text run (in visual order).
+			</description>
+		</method>
+		<method name="_shaped_get_run_text" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the source text of the [param index] text run (in visual order).
 			</description>
 		</method>
 		<method name="_shaped_get_span_count" qualifiers="virtual const">
@@ -1347,6 +1443,32 @@
 			<description>
 				[b]Required.[/b]
 				Returns text span metadata.
+			</description>
+		</method>
+		<method name="_shaped_get_span_object" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the text span embedded object key.
+			</description>
+		</method>
+		<method name="_shaped_get_span_text" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				[b]Required.[/b]
+				Returns the text span source text.
+			</description>
+		</method>
+		<method name="_shaped_get_text" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				[b]Required.[/b]
+				Returns the text buffer source text, including object replacement characters.
 			</description>
 		</method>
 		<method name="_shaped_set_span_update_font" qualifiers="virtual">
@@ -1413,9 +1535,10 @@
 			<param index="3" name="clip_l" type="float" />
 			<param index="4" name="clip_r" type="float" />
 			<param index="5" name="color" type="Color" />
+			<param index="6" name="oversampling" type="float" />
 			<description>
 				[b]Optional.[/b]
-				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
+				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="_shaped_text_draw_outline" qualifiers="virtual const">
@@ -1427,9 +1550,10 @@
 			<param index="4" name="clip_r" type="float" />
 			<param index="5" name="outline_size" type="int" />
 			<param index="6" name="color" type="Color" />
+			<param index="7" name="oversampling" type="float" />
 			<description>
 				[b]Optional.[/b]
-				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
+				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="_shaped_text_fit_to_width" qualifiers="virtual">
@@ -2010,6 +2134,14 @@
 			<description>
 				[b]Optional.[/b]
 				Converts OpenType tag to readable feature, variation, script, or language name.
+			</description>
+		</method>
+		<method name="_unreference_oversampling_level" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="oversampling" type="float" />
+			<description>
+				[b]Required.[/b]
+				Decreases the reference count of the specified oversampling level, and frees the font cache for oversampling level when the reference count reaches zero. This method is called by [Viewport], and should not be used directly.
 			</description>
 		</method>
 	</methods>

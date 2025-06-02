@@ -97,7 +97,7 @@ public partial class ExportedProperties : GodotObject
     [Export] private SByte PropertySByte { get; set; } = 10;
     [Export] private Int16 PropertyInt16 { get; set; } = 10;
     [Export] private Int32 PropertyInt32 { get; set; } = 10;
-    [Export] private Int64 PropertyInt64 { get; set; } = 10;
+    [Export] private Int64 PropertyInt64 { get; set; } = -10_000;
     [Export] private Byte PropertyByte { get; set; } = 10;
     [Export] private UInt16 PropertyUInt16 { get; set; } = 10;
     [Export] private UInt32 PropertyUInt32 { get; set; } = 10;

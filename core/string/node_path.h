@@ -33,7 +33,7 @@
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 
-class NodePath {
+class [[nodiscard]] NodePath {
 	struct Data {
 		SafeRefCount refcount;
 		Vector<StringName> path;

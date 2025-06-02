@@ -183,7 +183,15 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	uint32_t view_count = render_buffers->get_view_count();
 
 	RID vrs_texture;
-	if (render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
+#ifndef XR_DISABLED
+	if (render_buffers->get_vrs_mode() == RS::VIEWPORT_VRS_XR) {
+		Ref<XRInterface> interface = XRServer::get_singleton()->get_primary_interface();
+		if (interface.is_valid() && RD::get_singleton()->vrs_get_method() == RD::VRS_METHOD_FRAGMENT_DENSITY_MAP && interface->get_vrs_texture_format() == XRInterface::XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP) {
+			vrs_texture = interface->get_vrs_texture();
+		}
+	}
+#endif // XR_DISABLED
+	if (vrs_texture.is_null() && render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
 		vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 	}
 
@@ -341,6 +349,20 @@ void RenderForwardMobile::mesh_generate_pipelines(RID p_mesh, bool p_background_
 
 uint32_t RenderForwardMobile::get_pipeline_compilations(RS::PipelineSource p_source) {
 	return scene_shader.get_pipeline_compilations(p_source);
+}
+
+void RenderForwardMobile::enable_features(BitField<FeatureBits> p_feature_bits) {
+	if (p_feature_bits.has_flag(FEATURE_MULTIVIEW_BIT)) {
+		scene_shader.enable_multiview_shader_group();
+	}
+
+	if (p_feature_bits.has_flag(FEATURE_VRS_BIT)) {
+		gi.enable_vrs_shader_group();
+	}
+}
+
+String RenderForwardMobile::get_name() const {
+	return "forward_mobile";
 }
 
 bool RenderForwardMobile::free(RID p_rid) {
@@ -833,6 +855,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	p_render_data->directional_light_count = directional_light_count;
 
+	// Lightmaps need to be set up before _fill_render_list as it depends on them.
+	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
+
 	// fill our render lists early so we can find out if we use various features
 	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
@@ -875,6 +900,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
+		if (rb->get_screen_space_aa() != RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED) {
+			// Can't do blit subpass because we're using screen space AA.
+			using_subpass_post_process = false;
+		}
+
 		if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
 			// can't use our last two subpasses because we're reading from screen texture or depth texture
 			merge_transparent_pass = false;
@@ -910,13 +940,20 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		global_pipeline_data_required.use_lightmaps = true;
 	}
 
+	if (global_surface_data.screen_texture_used || global_surface_data.depth_texture_used) {
+		if (rb_data.is_valid()) {
+			// Just called to create the framebuffer since we know we will need it later.
+			rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS);
+		}
+		global_pipeline_data_required.use_separate_post_pass = true;
+	}
+
 	_update_dirty_geometry_pipelines();
 
 	p_render_data->scene_data->emissive_exposure_normalization = -1.0;
 
 	RD::get_singleton()->draw_command_begin_label("Render Setup");
 
-	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
 	_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
 	// May have changed due to the above (light buffer enlarged, as an example).
@@ -1029,7 +1066,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	{
 		base_specialization.use_directional_soft_shadows = p_render_data->directional_light_count > 0 ? p_render_data->directional_light_soft_shadows : false;
-		base_specialization.directional_lights = p_render_data->directional_light_count;
+		base_specialization.directional_lights = SceneShaderForwardMobile::shader_count_for(p_render_data->directional_light_count);
 		base_specialization.directional_light_blend_splits = light_storage->get_directional_light_blend_splits(p_render_data->directional_light_count);
 
 		if (!is_environment(p_render_data->environment) || !environment_get_fog_enabled(p_render_data->environment)) {
@@ -1042,7 +1079,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			base_specialization.disable_fog = false;
 			base_specialization.use_fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment) > 0.0;
 			base_specialization.use_fog_sun_scatter = environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
-			base_specialization.use_fog_height_density = abs(environment_get_fog_height_density(p_render_data->environment)) >= 0.0001;
+			base_specialization.use_fog_height_density = std::abs(environment_get_fog_height_density(p_render_data->environment)) >= 0.0001;
 			base_specialization.use_depth_fog = p_render_data->environment.is_valid() && environment_get_fog_mode(p_render_data->environment) == RS::EnvironmentFogMode::ENV_FOG_MODE_DEPTH;
 		}
 
@@ -1174,14 +1211,22 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
 			}
 
-			if (scene_state.used_screen_texture) {
-				// Copy screen texture to backbuffer so we can read from it
-				_render_buffers_copy_screen_texture(p_render_data);
+			if (scene_state.used_screen_texture || global_surface_data.screen_texture_used) {
+				_render_buffers_ensure_screen_texture(p_render_data);
+
+				if (scene_state.used_screen_texture) {
+					// Copy screen texture to backbuffer so we can read from it
+					_render_buffers_copy_screen_texture(p_render_data);
+				}
 			}
 
-			if (scene_state.used_depth_texture) {
-				// Copy depth texture to backbuffer so we can read from it
-				_render_buffers_copy_depth_texture(p_render_data);
+			if (scene_state.used_depth_texture || global_surface_data.depth_texture_used) {
+				_render_buffers_ensure_depth_texture(p_render_data);
+
+				if (scene_state.used_depth_texture) {
+					// Copy depth texture to backbuffer so we can read from it
+					_render_buffers_copy_depth_texture(p_render_data);
+				}
 			}
 
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
@@ -1887,9 +1932,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 
 	if (p_render_list == RENDER_LIST_OPAQUE) {
-		scene_state.used_sss = false;
 		scene_state.used_screen_texture = false;
-		scene_state.used_normal_texture = false;
 		scene_state.used_depth_texture = false;
 		scene_state.used_lightmap = false;
 	}
@@ -2043,14 +2086,8 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					scene_state.used_lightmap = true;
 				}
 
-				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING) {
-					scene_state.used_sss = true;
-				}
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE) {
 					scene_state.used_screen_texture = true;
-				}
-				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_NORMAL_TEXTURE) {
-					scene_state.used_normal_texture = true;
 				}
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE) {
 					scene_state.used_depth_texture = true;
@@ -2193,10 +2230,10 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		} else {
 			pipeline_specialization.use_light_projector = inst->use_projector;
 			pipeline_specialization.use_light_soft_shadows = inst->use_soft_shadow;
-			pipeline_specialization.omni_lights = inst->omni_light_count;
-			pipeline_specialization.spot_lights = inst->spot_light_count;
-			pipeline_specialization.reflection_probes = inst->reflection_probe_count;
-			pipeline_specialization.decals = inst->decals_count;
+			pipeline_specialization.omni_lights = SceneShaderForwardMobile::shader_count_for(inst->omni_light_count);
+			pipeline_specialization.spot_lights = SceneShaderForwardMobile::shader_count_for(inst->spot_light_count);
+			pipeline_specialization.reflection_probes = SceneShaderForwardMobile::shader_count_for(inst->reflection_probe_count);
+			pipeline_specialization.decals = inst->decals_count > 0;
 
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
@@ -2536,10 +2573,12 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 
 	if (p_material->shader_data->uses_screen_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE;
+		global_surface_data.screen_texture_used = true;
 	}
 
 	if (p_material->shader_data->uses_depth_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE;
+		global_surface_data.depth_texture_used = true;
 	}
 
 	if (p_material->shader_data->uses_normal_texture) {
@@ -2988,7 +3027,7 @@ void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipel
 	pipeline_key.primitive_type = mesh_storage->mesh_surface_get_primitive(p_surface.mesh_surface);
 	pipeline_key.wireframe = false;
 
-	const bool multiview_enabled = p_global.use_multiview && scene_shader.is_multiview_enabled();
+	const bool multiview_enabled = p_global.use_multiview && scene_shader.is_multiview_shader_group_enabled();
 	const RD::DataFormat buffers_color_format = _render_buffers_get_color_format();
 	const bool buffers_can_be_storage = _render_buffers_can_be_storage();
 	const uint32_t vrs_iterations = p_global.use_vrs ? 2 : 1;
@@ -3201,6 +3240,11 @@ RenderForwardMobile::RenderForwardMobile() {
 	bool force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
 	if (force_vertex_shading) {
 		defines += "\n#define USE_VERTEX_LIGHTING\n";
+	}
+
+	bool specular_occlusion = GLOBAL_GET("rendering/reflections/specular_occlusion/enabled");
+	if (!specular_occlusion) {
+		defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
 	}
 
 	{

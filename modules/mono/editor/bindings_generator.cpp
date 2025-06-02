@@ -30,7 +30,7 @@
 
 #include "bindings_generator.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "../godotsharp_defs.h"
 #include "../utils/naming_utils.h"
@@ -141,6 +141,7 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 	"MenuBar.TextDirection",
 	"RichTextLabel.TextDirection",
 	"TextEdit.TextDirection",
+	"FoldableContainer.TextDirection",
 	"VisualShaderNodeReroute.PortType",
 	// The following instances are uniquely egregious violations, hiding `GetType()` from `object`.
 	// Included for the sake of CI, with the understanding that they *deserve* warnings.
@@ -1904,7 +1905,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 								  "  <ItemGroup>\n");
 
 	for (int i = 0; i < compile_items.size(); i++) {
-		String include = Path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+		String include = Path::relative_to(compile_items[i], p_proj_dir).replace_char('/', '\\');
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
 
@@ -2064,7 +2065,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 								  "  <ItemGroup>\n");
 
 	for (int i = 0; i < compile_items.size(); i++) {
-		String include = Path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+		String include = Path::relative_to(compile_items[i], p_proj_dir).replace_char('/', '\\');
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
 
@@ -2731,11 +2732,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	if (getter && setter) {
 		const ArgumentInterface &setter_first_arg = setter->arguments.back()->get();
 		if (getter->return_type.cname != setter_first_arg.type.cname) {
-			// Special case for Node::set_name
-			bool whitelisted = getter->return_type.cname == name_cache.type_StringName &&
-					setter_first_arg.type.cname == name_cache.type_String;
-
-			ERR_FAIL_COND_V_MSG(!whitelisted, ERR_BUG,
+			ERR_FAIL_V_MSG(ERR_BUG,
 					"Return type from getter doesn't match first argument of setter for property: '" +
 							p_itype.name + "." + String(p_iprop.cname) + "'.");
 		}
@@ -3122,9 +3119,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (p_imethod.requires_object_call) {
 			// Fallback to Godot's object.Call(string, params)
 
-			p_output.append(INDENT2 CS_METHOD_CALL "(\"");
-			p_output.append(p_imethod.name);
-			p_output.append("\"");
+			p_output.append(INDENT2 CS_METHOD_CALL "(");
+			p_output.append("MethodName." + p_imethod.proxy_name);
 
 			for (const ArgumentInterface &iarg : p_imethod.arguments) {
 				p_output.append(", ");
@@ -5304,4 +5300,4 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED

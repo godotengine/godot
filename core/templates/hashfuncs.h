@@ -52,6 +52,7 @@
 #include "core/string/node_path.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
+#include "core/templates/pair.h"
 #include "core/templates/rid.h"
 #include "core/typedefs.h"
 
@@ -149,7 +150,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_float(float p_in, uint32_t p_see
 	if (p_in == 0.0f) {
 		u.f = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.f = NAN;
+		u.f = Math::NaN;
 	} else {
 		u.f = p_in;
 	}
@@ -172,7 +173,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_double(double p_in, uint32_t p_s
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}
@@ -260,7 +261,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev 
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}
@@ -289,7 +290,7 @@ static _FORCE_INLINE_ uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_pr
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}
@@ -323,6 +324,13 @@ struct HashMapHasherDefault {
 
 	template <typename T>
 	static _FORCE_INLINE_ uint32_t hash(const Ref<T> &p_ref) { return hash_one_uint64((uint64_t)p_ref.operator->()); }
+
+	template <typename F, typename S>
+	static _FORCE_INLINE_ uint32_t hash(const Pair<F, S> &p_pair) {
+		uint64_t h1 = hash(p_pair.first);
+		uint64_t h2 = hash(p_pair.second);
+		return hash_one_uint64((h1 << 32) | h2);
+	}
 
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }

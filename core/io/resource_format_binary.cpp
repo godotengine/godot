@@ -1195,7 +1195,7 @@ String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
 		return "";
 	}
 
-	get_unicode_string(); // type
+	_ALLOW_DISCARD_ get_unicode_string(); // type
 
 	f->get_64(); // Metadata offset
 	uint32_t flags = f->get_32();
@@ -1342,13 +1342,10 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	bool use_real64 = f->get_32();
 
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
-#ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
-#else
+
 	fw->store_32(big_endian);
-#endif
-	fw->set_big_endian(big_endian != 0);
 	fw->store_32(use_real64); //use real64
+	fw->set_big_endian(big_endian != 0);
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -2168,12 +2165,12 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	if (big_endian) {
 		f->store_32(1);
-		f->set_big_endian(true);
 	} else {
 		f->store_32(0);
 	}
-
 	f->store_32(0); //64 bits file, false for now
+	f->set_big_endian(big_endian);
+
 	f->store_32(GODOT_VERSION_MAJOR);
 	f->store_32(GODOT_VERSION_MINOR);
 	f->store_32(FORMAT_VERSION);
@@ -2412,13 +2409,10 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 	big_endian = f->get_32();
 	bool use_real64 = f->get_32();
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
-#ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
-#else
+
 	fw->store_32(big_endian);
-#endif
-	fw->set_big_endian(big_endian != 0);
 	fw->store_32(use_real64); //use real64
+	fw->set_big_endian(big_endian != 0);
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -2511,8 +2505,6 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p
 		p_extensions->push_back("res");
 	}
 }
-
-ResourceFormatSaverBinary *ResourceFormatSaverBinary::singleton = nullptr;
 
 ResourceFormatSaverBinary::ResourceFormatSaverBinary() {
 	singleton = this;

@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include "editor/add_metadata_dialog.h"
 #include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 
+class AddMetadataDialog;
 class AcceptDialog;
 class Button;
 class ConfirmationDialog;
@@ -66,6 +67,8 @@ public:
 		MENU_COPY_PROPERTY_PATH,
 		MENU_FAVORITE_PROPERTY,
 		MENU_PIN_VALUE,
+		MENU_DELETE,
+		MENU_REVERT_VALUE,
 		MENU_OPEN_DOCUMENTATION,
 	};
 
@@ -157,6 +160,9 @@ protected:
 	virtual StringName _get_revert_property() const;
 
 	void _update_property_bg();
+
+	void _accessibility_action_menu(const Variant &p_data);
+	void _accessibility_action_click(const Variant &p_data);
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -314,32 +320,49 @@ protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	void _accessibility_action_menu(const Variant &p_data);
+
 public:
 	void set_as_favorite(EditorInspector *p_for_inspector);
 
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
+
+	EditorInspectorCategory();
 };
 
 class EditorInspectorSection : public Container {
 	GDCLASS(EditorInspectorSection, Container);
 
+	friend class EditorInspector;
+
 	String label;
 	String section;
-	bool vbox_added = false; // Optimization.
 	Color bg_color;
+	bool vbox_added = false; // Optimization.
 	bool foldable = false;
+	bool checkable = false;
+	bool checked = false;
 	int indent_depth = 0;
 	int level = 1;
+	String related_enable_property;
 
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping_for_unfold = false;
+
+	Rect2 check_rect;
+	bool check_hover = false;
+
+	bool hide_feature = false;
 
 	HashSet<StringName> revertable_properties;
 
 	void _test_unfold();
 	int _get_header_height();
 	Ref<Texture2D> _get_arrow();
+	Ref<Texture2D> _get_checkbox();
+
+	EditorInspector *_get_parent_inspector() const;
 
 protected:
 	Object *object = nullptr;
@@ -349,22 +372,42 @@ protected:
 	static void _bind_methods();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	void _accessibility_action_collapse(const Variant &p_data);
+	void _accessibility_action_expand(const Variant &p_data);
+
 public:
 	virtual Size2 get_minimum_size() const override;
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
 	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
 	String get_section() const;
+	String get_label() const { return label; }
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
 	void set_bg_color(const Color &p_bg_color);
 	void reset_timer();
+	void set_checkable(const String &p_related_check_property, bool p_hide_feature);
+	void set_checked(bool p_checked);
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
+	void _property_edited(const String &p_property);
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
+};
+
+class ArrayPanelContainer : public PanelContainer {
+	GDCLASS(ArrayPanelContainer, PanelContainer);
+
+protected:
+	void _notification(int p_what);
+
+	void _accessibility_action_menu(const Variant &p_data);
+
+public:
+	ArrayPanelContainer();
 };
 
 class EditorInspectorArray : public EditorInspectorSection {
@@ -380,6 +423,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 	String swap_method;
 
 	int count = 0;
+	int selected = -1;
 
 	VBoxContainer *elements_vbox = nullptr;
 
@@ -443,6 +487,8 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	void _panel_draw(int p_index);
 	void _panel_gui_input(Ref<InputEvent> p_event, int p_index);
+	void _panel_gui_focus(int p_index);
+	void _panel_gui_unfocus(int p_index);
 	void _move_element(int p_element_index, int p_to_pos);
 	void _clear_array();
 	void _resize_array(int p_size);
@@ -470,6 +516,8 @@ public:
 	void setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_is_const = false, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
 	void setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_is_const = false, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
 	VBoxContainer *get_vbox(int p_index);
+
+	void show_menu(int p_index, const Vector2 &p_offset);
 
 	EditorInspectorArray(bool p_read_only);
 };
@@ -561,6 +609,7 @@ class EditorInspector : public ScrollContainer {
 	bool keying = false;
 	bool wide_editors = false;
 	bool deletable_properties = false;
+	bool mark_unsaved = true;
 
 	float refresh_countdown;
 	bool update_tree_pending = false;
@@ -568,6 +617,8 @@ class EditorInspector : public ScrollContainer {
 	StringName property_selected;
 	int property_focusable;
 	int update_scroll_request;
+
+	bool updating_theme = false;
 
 	struct DocCacheInfo {
 		String doc_path;
@@ -624,6 +675,8 @@ class EditorInspector : public ScrollContainer {
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
+	void _section_toggled_by_user(const String &p_path, bool p_value);
+
 	AddMetadataDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
@@ -657,6 +710,7 @@ public:
 
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
+	void set_mark_unsaved(bool p_mark) { mark_unsaved = p_mark; }
 
 	EditorPropertyNameProcessor::Style get_property_name_style() const;
 	void set_property_name_style(EditorPropertyNameProcessor::Style p_style);

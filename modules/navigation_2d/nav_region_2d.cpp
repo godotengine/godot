@@ -37,7 +37,7 @@
 #include "2d/nav_mesh_queries_2d.h"
 #include "2d/nav_region_iteration_2d.h"
 
-using namespace nav_2d;
+using namespace Nav2D;
 
 void NavRegion2D::set_map(NavMap2D *p_map) {
 	if (map == p_map) {
@@ -178,6 +178,10 @@ bool NavRegion2D::sync() {
 
 	update_polygons();
 
+	if (something_changed) {
+		iteration_id = iteration_id % UINT32_MAX + 1;
+	}
+
 	return something_changed;
 }
 
@@ -229,7 +233,7 @@ void NavRegion2D::update_polygons() {
 		const int *indices = navigation_mesh_polygon.ptr();
 		bool valid(true);
 
-		polygon.points.resize(navigation_mesh_polygon_size);
+		polygon.vertices.resize(navigation_mesh_polygon_size);
 		polygon.edges.resize(navigation_mesh_polygon_size);
 
 		real_t _new_polygon_surface_area = 0.0;
@@ -254,8 +258,7 @@ void NavRegion2D::update_polygons() {
 			}
 
 			Vector2 point_position = transform.xform(vertices_r[idx]);
-			polygon.points[j].pos = point_position;
-			polygon.points[j].key = NavMapBuilder2D::get_point_key(point_position, map->get_merge_rasterizer_cell_size());
+			polygon.vertices[j] = point_position;
 
 			if (first_vertex) {
 				first_vertex = false;

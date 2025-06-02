@@ -41,10 +41,10 @@ bool SkeletonProfile::_set(const StringName &p_path, const Variant &p_value) {
 
 		if (what == "group_name") {
 			set_group_name(which, p_value);
+			return true;
 		} else if (what == "texture") {
 			set_texture(which, p_value);
-		} else {
-			return false;
+			return true;
 		}
 	}
 
@@ -55,25 +55,31 @@ bool SkeletonProfile::_set(const StringName &p_path, const Variant &p_value) {
 
 		if (what == "bone_name") {
 			set_bone_name(which, p_value);
+			return true;
 		} else if (what == "bone_parent") {
 			set_bone_parent(which, p_value);
+			return true;
 		} else if (what == "tail_direction") {
 			set_tail_direction(which, static_cast<TailDirection>((int)p_value));
+			return true;
 		} else if (what == "bone_tail") {
 			set_bone_tail(which, p_value);
+			return true;
 		} else if (what == "reference_pose") {
 			set_reference_pose(which, p_value);
+			return true;
 		} else if (what == "handle_offset") {
 			set_handle_offset(which, p_value);
+			return true;
 		} else if (what == "group") {
 			set_group(which, p_value);
+			return true;
 		} else if (what == "require") {
 			set_required(which, p_value);
-		} else {
-			return false;
+			return true;
 		}
 	}
-	return true;
+	return false;
 }
 
 bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
@@ -86,39 +92,44 @@ bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
 
 		if (what == "group_name") {
 			r_ret = get_group_name(which);
+			return true;
 		} else if (what == "texture") {
 			r_ret = get_texture(which);
-		} else {
-			return false;
+			return true;
 		}
-	}
-
-	if (path.begins_with("bones/")) {
+	} else if (path.begins_with("bones/")) {
 		int which = path.get_slicec('/', 1).to_int();
 		String what = path.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(which, bones.size(), false);
 
 		if (what == "bone_name") {
 			r_ret = get_bone_name(which);
+			return true;
 		} else if (what == "bone_parent") {
 			r_ret = get_bone_parent(which);
+			return true;
 		} else if (what == "tail_direction") {
 			r_ret = get_tail_direction(which);
+			return true;
 		} else if (what == "bone_tail") {
 			r_ret = get_bone_tail(which);
+			return true;
 		} else if (what == "reference_pose") {
 			r_ret = get_reference_pose(which);
+			return true;
 		} else if (what == "handle_offset") {
 			r_ret = get_handle_offset(which);
+			return true;
 		} else if (what == "group") {
 			r_ret = get_group(which);
+			return true;
 		} else if (what == "require") {
 			r_ret = is_required(which);
-		} else {
-			return false;
+			return true;
 		}
 	}
-	return true;
+
+	return false;
 }
 
 void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {

@@ -47,17 +47,16 @@ struct NavMapIterationBuild2D {
 	bool use_edge_connections = true;
 	real_t edge_connection_margin;
 	real_t link_connection_radius;
-	nav_2d::PerformanceData performance_data;
+	Nav2D::PerformanceData performance_data;
 	int polygon_count = 0;
 	int free_edge_count = 0;
 
-	HashMap<nav_2d::EdgeKey, nav_2d::EdgeConnectionPair, nav_2d::EdgeKey> iter_connection_pairs_map;
-	LocalVector<nav_2d::Edge::Connection> iter_free_edges;
+	HashMap<Nav2D::EdgeKey, Nav2D::EdgeConnectionPair, Nav2D::EdgeKey> iter_connection_pairs_map;
+	LocalVector<Nav2D::Edge::Connection> iter_free_edges;
 
 	NavMapIteration2D *map_iteration = nullptr;
 
 	int navmesh_polygon_count = 0;
-	int link_polygon_count = 0;
 
 	void reset() {
 		performance_data.reset();
@@ -68,7 +67,6 @@ struct NavMapIterationBuild2D {
 		free_edge_count = 0;
 
 		navmesh_polygon_count = 0;
-		link_polygon_count = 0;
 	}
 };
 
@@ -76,16 +74,13 @@ struct NavMapIteration2D {
 	mutable SafeNumeric<uint32_t> users;
 	RWLock rwlock;
 
-	LocalVector<nav_2d::Polygon> link_polygons;
-
 	LocalVector<NavRegionIteration2D> region_iterations;
 	LocalVector<NavLinkIteration2D> link_iterations;
 
 	int navmesh_polygon_count = 0;
-	int link_polygon_count = 0;
 
 	// The edge connections that the map builds on top with the edge connection margin.
-	HashMap<uint32_t, LocalVector<nav_2d::Edge::Connection>> external_region_connections;
+	HashMap<uint32_t, LocalVector<Nav2D::Edge::Connection>> external_region_connections;
 
 	HashMap<NavRegion2D *, uint32_t> region_ptr_to_region_id;
 

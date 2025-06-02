@@ -6,7 +6,7 @@
 	<description>
 		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
 		[PackedByteArray] also provides methods to encode/decode various types to/from bytes. The way values are encoded is an implementation detail and shouldn't be relied upon when interacting with external apps.
-		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. The returned packed array of these are a copies, and changing it will [i]not[/i] affect the original value. To update a built-in property you need to modify the returned array, and then assign it to the property again.
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. In these cases the returned packed array is a copy, and changing it will [i]not[/i] affect the original value. To update a built-in property of this type, modify the returned array and then assign it to the property again.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -54,6 +54,30 @@
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+			</description>
+		</method>
+		<method name="bswap16">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 16-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 2, the byte after the last processed 16-bit segment is not modified.
+			</description>
+		</method>
+		<method name="bswap32">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 32-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 4, bytes after the last processed 32-bit segment are not modified.
+			</description>
+		</method>
+		<method name="bswap64">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 64-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 8, bytes after the last processed 64-bit segment are not modified.
 			</description>
 		</method>
 		<method name="clear">
@@ -346,13 +370,13 @@
 		<method name="get_string_from_utf16" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, little-endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_utf32" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
+				Converts UTF-32 encoded array to [String]. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_wchar" qualifiers="const">

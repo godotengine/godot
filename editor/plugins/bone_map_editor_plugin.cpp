@@ -291,6 +291,7 @@ void BoneMapper::create_editor() {
 	clear_mapping_button = memnew(Button);
 	clear_mapping_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	clear_mapping_button->set_tooltip_text(TTR("Clear mappings in current group."));
+	clear_mapping_button->set_accessibility_name(TTRC("Clear Mappings"));
 	clear_mapping_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
 

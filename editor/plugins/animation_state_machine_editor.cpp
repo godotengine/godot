@@ -39,10 +39,10 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/resources/style_box_flat.h"
@@ -448,8 +448,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		{
 			//snap
 			Vector2 cpos = state_machine->get_node_position(selected_node) + drag_ofs / EDSCALE;
-			List<StringName> nodes;
-			state_machine->get_node_list(&nodes);
+			LocalVector<StringName> nodes = state_machine->get_node_list();
 
 			float best_d_x = 1e20;
 			float best_d_y = 1e20;
@@ -631,8 +630,8 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 		}
 	}
 
-	List<StringName> classes;
-	ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
+	LocalVector<StringName> classes;
+	ClassDB::get_inheriters_from_class("AnimationRootNode", classes);
 	classes.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &class_name : classes) {
@@ -661,8 +660,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path) {
 	String prev_path;
 
-	List<StringName> nodes;
-	p_nodesm->get_node_list(&nodes);
+	LocalVector<StringName> nodes = p_nodesm->get_node_list();
 
 	PopupMenu *nodes_menu = memnew(PopupMenu);
 	nodes_menu->set_name(p_name);
@@ -704,50 +702,6 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 void AnimationNodeStateMachineEditor::_stop_connecting() {
 	connecting = false;
 	state_machine_draw->queue_redraw();
-}
-
-void AnimationNodeStateMachineEditor::_delete_selected() {
-	TreeItem *item = delete_tree->get_next_selected(nullptr);
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	while (item) {
-		if (!updating) {
-			updating = true;
-			undo_redo->create_action("Transition(s) Removed");
-		}
-
-		Vector<String> path = item->get_text(0).split(" -> ");
-
-		selected_transition_from = path[0];
-		selected_transition_to = path[1];
-		_erase_selected(true);
-
-		item = delete_tree->get_next_selected(item);
-	}
-
-	if (updating) {
-		undo_redo->commit_action();
-		updating = false;
-	}
-}
-
-void AnimationNodeStateMachineEditor::_delete_all() {
-	updating = true;
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action("Transition(s) Removed");
-	_erase_selected(true);
-	undo_redo->commit_action();
-	updating = false;
-
-	delete_window->hide();
-}
-
-void AnimationNodeStateMachineEditor::_delete_tree_draw() {
-	TreeItem *item = delete_tree->get_next_selected(nullptr);
-	while (item) {
-		delete_window->get_cancel_button()->set_disabled(false);
-		return;
-	}
-	delete_window->get_cancel_button()->set_disabled(true);
 }
 
 void AnimationNodeStateMachineEditor::_file_opened(const String &p_file) {
@@ -1005,8 +959,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	}
 	int sep = 3 * EDSCALE;
 
-	List<StringName> nodes;
-	state_machine->get_node_list(&nodes);
+	LocalVector<StringName> nodes = state_machine->get_node_list();
 
 	node_rects.clear();
 	Rect2 scroll_range;
@@ -1634,6 +1587,8 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	name_edit_popup->hide();
 	updating = false;
 
+	selected_nodes.clear();
+	connected_nodes.clear();
 	state_machine_draw->queue_redraw();
 }
 
@@ -1693,6 +1648,7 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 			updating = false;
 		}
 
+		connected_nodes.clear();
 		selected_nodes.clear();
 	}
 
@@ -1814,6 +1770,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_select->set_button_group(bg);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip_text(TTR("Select and move nodes.\nRMB: Add node at position clicked.\nShift+LMB+Drag: Connects the selected node with another node or creates a new node if you select an area without nodes."));
+	tool_select->set_accessibility_name(TTRC("Edit Nodes"));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_create = memnew(Button);
@@ -1822,6 +1779,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	tool_create->set_tooltip_text(TTR("Create new nodes."));
+	tool_create->set_accessibility_name(TTRC("Create Nodes"));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_connect = memnew(Button);
@@ -1830,6 +1788,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
 	tool_connect->set_tooltip_text(TTR("Connect nodes."));
+	tool_connect->set_accessibility_name(TTRC("Connect Nodes"));
 	tool_connect->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	// Context-sensitive selection tools:
@@ -1842,6 +1801,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_erase->set_tooltip_text(TTR("Remove selected node or transition."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
 	tool_erase->set_disabled(true);
+	tool_erase->set_accessibility_name(TTRC("Erase"));
 	selection_tools_hb->add_child(tool_erase);
 
 	transition_tools_hb = memnew(HBoxContainer);
@@ -1857,6 +1817,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	auto_advance->set_tooltip_text(TTR("New Transitions Should Auto Advance"));
 	auto_advance->set_toggle_mode(true);
 	auto_advance->set_pressed(true);
+	auto_advance->set_accessibility_name(TTRC("Transitions Auto Advance"));
 	transition_tools_hb->add_child(auto_advance);
 
 	//
@@ -1900,6 +1861,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
 	error_label = memnew(Label);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_panel->add_child(error_label);
 	error_panel->hide();
 
@@ -1943,23 +1905,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	open_file->set_title(TTR("Open Animation Node"));
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeStateMachineEditor::_file_opened));
-
-	delete_window = memnew(ConfirmationDialog);
-	delete_window->set_flag(Window::FLAG_RESIZE_DISABLED, true);
-	add_child(delete_window);
-
-	delete_tree = memnew(Tree);
-	delete_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	delete_tree->set_hide_root(true);
-	delete_tree->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeStateMachineEditor::_delete_tree_draw));
-	delete_window->add_child(delete_tree);
-
-	Button *ok = delete_window->get_cancel_button();
-	ok->set_text(TTR("Delete Selected"));
-	ok->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_delete_selected));
-
-	Button *delete_all = delete_window->add_button(TTR("Delete All"), true);
-	delete_all->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_delete_all));
 }
 
 void EditorAnimationMultiTransitionEdit::add_transition(const StringName &p_from, const StringName &p_to, Ref<AnimationNodeStateMachineTransition> p_transition) {

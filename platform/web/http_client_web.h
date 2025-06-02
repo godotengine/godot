@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
-
 typedef enum {
 	GODOT_JS_FETCH_STATE_REQUESTING = 0,
 	GODOT_JS_FETCH_STATE_BODY = 1,

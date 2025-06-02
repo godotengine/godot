@@ -124,7 +124,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 	_update_options(p_path, config);
 
 	List<Ref<ResourceImporter>> importers;
-	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_path.get_extension(), &importers);
+	ResourceFormatImporter::get_singleton()->get_importers_for_file(p_path, &importers);
 	List<Pair<String, String>> importer_names;
 
 	for (const Ref<ResourceImporter> &E : importers) {
@@ -190,8 +190,7 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 
 	HashMap<StringName, Variant> import_options;
 	if (p_config.is_valid() && p_config->has_section("params")) {
-		List<String> section_keys;
-		p_config->get_section_keys("params", &section_keys);
+		Vector<String> section_keys = p_config->get_section_keys("params");
 		for (const String &section_key : section_keys) {
 			import_options[section_key] = p_config->get_value("params", section_key);
 		}
@@ -258,8 +257,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 			continue;
 		}
 
-		List<String> keys;
-		config->get_section_keys("params", &keys);
+		Vector<String> keys = config->get_section_keys("params");
 
 		for (const String &E : keys) {
 			if (!value_frequency.has(E)) {
@@ -314,7 +312,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	params->update();
 
 	List<Ref<ResourceImporter>> importers;
-	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_paths[0].get_extension(), &importers);
+	ResourceFormatImporter::get_singleton()->get_importers_for_file(p_paths[0], &importers);
 	List<Pair<String, String>> importer_names;
 
 	for (const Ref<ResourceImporter> &E : importers) {
@@ -381,7 +379,7 @@ void ImportDock::_update_preset_menu() {
 	}
 	preset->show();
 
-	if (params->importer->get_preset_count() == 0) {
+	if (params->importer->get_preset_count() <= 0) {
 		preset->get_popup()->add_item(TTRC("Default"));
 	} else {
 		for (int i = 0; i < params->importer->get_preset_count(); i++) {
@@ -752,6 +750,7 @@ ImportDock::ImportDock() {
 	content->hide();
 
 	imported = memnew(Label);
+	imported->set_focus_mode(FOCUS_ACCESSIBILITY);
 	imported->add_theme_style_override(CoreStringName(normal), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 	imported->set_clip_text(true);
 	content->add_child(imported);
@@ -763,6 +762,7 @@ ImportDock::ImportDock() {
 	import_as->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	import_as->connect(SceneStringName(item_selected), callable_mp(this, &ImportDock::_importer_selected));
+	import_as->set_accessibility_name(TTRC("Import As"));
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
@@ -812,6 +812,7 @@ ImportDock::ImportDock() {
 	params = memnew(ImportDockParameters);
 
 	select_a_resource = memnew(Label);
+	select_a_resource->set_focus_mode(FOCUS_ACCESSIBILITY);
 	select_a_resource->set_text(TTRC("Select a resource file in the filesystem or in the inspector to adjust import settings."));
 	select_a_resource->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));

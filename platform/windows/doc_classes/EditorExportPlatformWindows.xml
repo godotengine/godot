@@ -98,6 +98,9 @@
 		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
 			If [code]true[/code], a console wrapper executable is exported alongside the main executable, which allows running the project with enabled console output.
 		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ and Mobile renderers.
+		</member>
 		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
 			Script code to execute on the remote host when app is finished.
 			The following variables can be used in the script:

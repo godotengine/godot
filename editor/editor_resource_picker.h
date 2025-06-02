@@ -56,6 +56,7 @@ class EditorResourcePicker : public HBoxContainer {
 	Button *assign_button = nullptr;
 	TextureRect *preview_rect = nullptr;
 	Button *edit_button = nullptr;
+	Button *quick_load_button = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
 
 	ConfirmationDialog *duplicate_resources_dialog = nullptr;

@@ -39,6 +39,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/popup_menu.h"
 
 void DependencyEditor::_searched(const String &p_path) {
 	HashMap<String, String> dep_rename;
@@ -302,9 +303,9 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 		}
 
 		if (only_scenes_selected) {
-			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_MENU_OPEN);
 		} else if (selected_items.size() == 1) {
-			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_MENU_OPEN);
 		} else {
 			return;
 		}
@@ -333,7 +334,7 @@ void DependencyEditorOwners::_empty_clicked(const Vector2 &p_pos, MouseButton p_
 
 void DependencyEditorOwners::_file_option(int p_option) {
 	switch (p_option) {
-		case FILE_OPEN: {
+		case FILE_MENU_OPEN: {
 			PackedInt32Array selected_items = owners->get_selected_items();
 			for (int i = 0; i < selected_items.size(); i++) {
 				int item_idx = selected_items[i];
@@ -463,17 +464,16 @@ void DependencyRemoveDialog::_find_localization_remaps_of_removed_files(Vector<R
 				p_removed.push_back(dep);
 			}
 
-			Array remap_keys = remaps.keys();
-			for (int j = 0; j < remap_keys.size(); j++) {
-				PackedStringArray remapped_files = remaps[remap_keys[j]];
-				for (int k = 0; k < remapped_files.size(); k++) {
-					int splitter_pos = remapped_files[k].rfind_char(':');
-					String res_path = remapped_files[k].substr(0, splitter_pos);
+			for (const KeyValue<Variant, Variant> &remap_kv : remaps) {
+				PackedStringArray remapped_files = remap_kv.value;
+				for (const String &remapped_file : remapped_files) {
+					int splitter_pos = remapped_file.rfind_char(':');
+					String res_path = remapped_file.substr(0, splitter_pos);
 					if (res_path == path) {
-						String locale_name = remapped_files[k].substr(splitter_pos + 1);
+						String locale_name = remapped_file.substr(splitter_pos + 1);
 
 						RemovedDependency dep;
-						dep.file = vformat(TTR("Localization remap for path '%s' and locale '%s'."), remap_keys[j], locale_name);
+						dep.file = vformat(TTR("Localization remap for path '%s' and locale '%s'."), remap_kv.key, locale_name);
 						dep.file_type = "";
 						dep.dependency = path;
 						dep.dependency_folder = files.value;
@@ -668,6 +668,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	add_child(vb);
 
 	text = memnew(Label);
+	text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(text);
 
 	Label *files_to_delete_label = memnew(Label);
@@ -679,6 +680,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	files_to_delete_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	files_to_delete_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	files_to_delete_list->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
+	files_to_delete_list->set_accessibility_name(TTRC("Files to be Deleted"));
 	vb->add_child(files_to_delete_list);
 
 	vb_owners = memnew(VBoxContainer);
@@ -695,6 +697,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_hide_root(true);
 	owners->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
+	owners->set_accessibility_name(TTRC("Dependencies"));
 	vb_owners->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -756,6 +759,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	set_cancel_button_text(TTR("Close"));
 
 	text = memnew(Label);
+	text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(text);
 	text->set_text(TTR("Which action should be taken?"));
 

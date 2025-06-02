@@ -35,6 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 
 static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
@@ -150,6 +151,7 @@ void SectionedInspector::_section_selected() {
 	selected_category = sections->get_selected()->get_metadata(0);
 	filter->set_section(selected_category, sections->get_selected()->get_first_child() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
+	inspector->set_v_scroll(0);
 }
 
 void SectionedInspector::set_current_section(const String &p_section) {
@@ -324,7 +326,7 @@ void SectionedInspector::_search_changed(const String &p_what) {
 		} else {
 			advanced_toggle->set_pressed_no_signal(true);
 			advanced_toggle->set_disabled(true);
-			advanced_toggle->set_tooltip_text(TTR("Advanced settings are always shown when searching."));
+			advanced_toggle->set_tooltip_text(TTRC("Advanced settings are always shown when searching."));
 		}
 	}
 	update_category_list();
@@ -334,6 +336,15 @@ void SectionedInspector::_advanced_toggled(bool p_toggled_on) {
 	restrict_to_basic = !p_toggled_on;
 	update_category_list();
 	inspector->set_restrict_to_basic_settings(restrict_to_basic);
+}
+
+void SectionedInspector::_notification(int p_notification) {
+	if (p_notification == NOTIFICATION_TRANSLATION_CHANGED) {
+		if (sections->get_root()) {
+			// Only update when initialized.
+			callable_mp(this, &SectionedInspector::update_category_list).call_deferred();
+		}
+	}
 }
 
 EditorInspector *SectionedInspector::get_inspector() {

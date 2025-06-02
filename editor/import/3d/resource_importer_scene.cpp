@@ -303,6 +303,9 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		}
 	}
 
+	if (p_option == "nodes/use_node_type_suffixes" && p_options.has("nodes/use_name_suffixes")) {
+		return p_options["nodes/use_name_suffixes"];
+	}
 	if (p_option == "meshes/lightmap_texel_size" && int(p_options["meshes/light_baking"]) != 2) {
 		// Only display the lightmap texel size import option when using the Static Lightmaps light baking mode.
 		return false;
@@ -639,6 +642,14 @@ void _apply_permanent_scale_to_descendants(Node *p_root_node, Vector3 p_scale) {
 }
 
 Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames, const HashMap<StringName, Variant> &p_options) {
+	bool use_name_suffixes = true;
+	if (p_options.has("nodes/use_name_suffixes")) {
+		use_name_suffixes = p_options["nodes/use_name_suffixes"];
+	}
+	if (!use_name_suffixes) {
+		return p_node;
+	}
+
 	// Children first.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _pre_fix_node(p_node->get_child(i), p_root, r_collision_map, r_occluder_arrays, r_node_renames, p_options);
@@ -826,7 +837,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				SeparationRayShape3D *rayShape = memnew(SeparationRayShape3D);
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
-				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
+				Object::cast_to<Node3D>(sb)->rotate_x(Math::PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				WorldBoundaryShape3D *world_boundary_shape = memnew(WorldBoundaryShape3D);
 				colshape->set_shape(world_boundary_shape);
@@ -2069,7 +2080,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/shadow_meshes", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lightmap_uv", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lods", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_merge_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 60.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_merge_angle", PROPERTY_HINT_RANGE, "0,180,1,degrees"), 20.0f));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -2409,6 +2420,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/import_as_skeleton_bones"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/use_name_suffixes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/use_node_type_suffixes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
@@ -2502,7 +2514,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				//do mesh processing
 
 				bool generate_lods = p_generate_lods;
-				float merge_angle = 60.0f;
+				float merge_angle = 20.0f;
 				bool create_shadow_meshes = p_create_shadow_meshes;
 				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
 				String save_to_file;
@@ -2930,7 +2942,7 @@ static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_ha
 			if (ResourceUID::get_singleton()->has_id(save_id)) {
 				if (save_path != ResourceUID::get_singleton()->get_id_path(save_id)) {
 					// The user has specified a path which does not match the default UID.
-					save_id = ResourceUID::get_singleton()->create_id();
+					save_id = ResourceUID::get_singleton()->create_id_for_path(save_path);
 				}
 			}
 			p_settings[p_path_key] = ResourceUID::get_singleton()->id_to_text(save_id);
@@ -2942,12 +2954,11 @@ static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_ha
 }
 
 Error ResourceImporterScene::_check_resource_save_paths(ResourceUID::ID p_source_id, const String &p_hash_suffix, const Dictionary &p_data) {
-	Array keys = p_data.keys();
-	for (int di = 0; di < keys.size(); di++) {
-		Dictionary settings = p_data[keys[di]];
+	for (const KeyValue<Variant, Variant> &kv : p_data) {
+		Dictionary settings = kv.value;
 
 		if (bool(settings.get("save_to_file/enabled", false)) && settings.has("save_to_file/path")) {
-			String to_hash = keys[di].operator String() + p_hash_suffix;
+			String to_hash = kv.key.operator String() + p_hash_suffix;
 			Error ret = convert_path_to_uid(p_source_id, to_hash, settings, "save_to_file/path", "save_to_file/fallback_path");
 			ERR_FAIL_COND_V_MSG(ret != OK, ret, vformat("Resource save path %s not valid. Ensure parent directory has been created.", settings.has("save_to_file/path")));
 		}
@@ -2957,7 +2968,7 @@ Error ResourceImporterScene::_check_resource_save_paths(ResourceUID::ID p_source
 			for (int si = 0; si < slice_count; si++) {
 				if (bool(settings.get("slice_" + itos(si + 1) + "/save_to_file/enabled", false)) &&
 						settings.has("slice_" + itos(si + 1) + "/save_to_file/path")) {
-					String to_hash = keys[di].operator String() + p_hash_suffix + itos(si + 1);
+					String to_hash = kv.key.operator String() + p_hash_suffix + itos(si + 1);
 					Error ret = convert_path_to_uid(p_source_id, to_hash, settings,
 							"slice_" + itos(si + 1) + "/save_to_file/path",
 							"slice_" + itos(si + 1) + "/save_to_file/fallback_path");
@@ -3194,6 +3205,8 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (scr.is_null()) {
 			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);
+		} else if (scr->get_instance_base_type() != "EditorScenePostImport") {
+			EditorNode::add_io_error(TTR("Script is not a subtype of EditorScenePostImport:") + " " + post_import_script_path);
 		} else {
 			post_import_script.instantiate();
 			post_import_script->set_script(scr);

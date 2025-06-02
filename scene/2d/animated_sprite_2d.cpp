@@ -167,6 +167,17 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 
 void AnimatedSprite2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			Rect2 dst_rect = _get_rect();
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
+			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
+			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, dst_rect);
+		} break;
+
 		case NOTIFICATION_READY: {
 			if (!Engine::get_singleton()->is_editor_hint() && frames.is_valid() && frames->has_animation(autoplay)) {
 				play(autoplay);
@@ -193,7 +204,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 				int fc = frames->get_frame_count(animation);
 
 				int last_frame = fc - 1;
-				if (!signbit(speed)) {
+				if (!std::signbit(speed)) {
 					// Forwards.
 					if (frame_progress >= 1.0) {
 						if (frame >= last_frame) {
@@ -325,7 +336,7 @@ Ref<SpriteFrames> AnimatedSprite2D::get_sprite_frames() const {
 }
 
 void AnimatedSprite2D::set_frame(int p_frame) {
-	set_frame_and_progress(p_frame, signbit(get_playing_speed()) ? 1.0 : 0.0);
+	set_frame_and_progress(p_frame, std::signbit(get_playing_speed()) ? 1.0 : 0.0);
 }
 
 int AnimatedSprite2D::get_frame() const {
@@ -487,7 +498,7 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 		emit_signal(SceneStringName(animation_changed));
 	} else {
 		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
-		bool is_backward = signbit(speed_scale * custom_speed_scale);
+		bool is_backward = std::signbit(speed_scale * custom_speed_scale);
 
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
 			set_frame_and_progress(end_frame, 1.0);
@@ -559,7 +570,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_name) {
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
 	}
 
-	if (signbit(get_playing_speed())) {
+	if (std::signbit(get_playing_speed())) {
 		set_frame_and_progress(frame_count - 1, 1.0);
 	} else {
 		set_frame_and_progress(0, 0.0);

@@ -212,6 +212,7 @@ void Tween::play() {
 
 void Tween::kill() {
 	running = false; // For the sake of is_running().
+	valid = false;
 	dead = true;
 }
 

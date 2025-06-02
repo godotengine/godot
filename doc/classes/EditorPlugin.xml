@@ -55,16 +55,16 @@
 			<return type="void" />
 			<param index="0" name="viewport_control" type="Control" />
 			<description>
-				Called by the engine when the 3D editor's viewport is updated. Use the [code]overlay[/code] [Control] for drawing. You can update the viewport manually by calling [method update_overlays].
+				Called by the engine when the 3D editor's viewport is updated. [param viewport_control] is an overlay on top of the viewport and it can be used for drawing. You can update the viewport manually by calling [method update_overlays].
 				[codeblocks]
 				[gdscript]
 				func _forward_3d_draw_over_viewport(overlay):
-				    # Draw a circle at cursor position.
+				    # Draw a circle at the cursor's position.
 				    overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.WHITE)
 
 				func _forward_3d_gui_input(camera, event):
 				    if event is InputEventMouseMotion:
-				        # Redraw viewport when cursor is moved.
+				        # Redraw the viewport when the cursor is moved.
 				        update_overlays()
 				        return EditorPlugin.AFTER_GUI_INPUT_STOP
 				    return EditorPlugin.AFTER_GUI_INPUT_PASS
@@ -72,7 +72,7 @@
 				[csharp]
 				public override void _Forward3DDrawOverViewport(Control viewportControl)
 				{
-				    // Draw a circle at cursor position.
+				    // Draw a circle at the cursor's position.
 				    viewportControl.DrawCircle(viewportControl.GetLocalMousePosition(), 64, Colors.White);
 				}
 
@@ -80,7 +80,7 @@
 				{
 				    if (@event is InputEventMouseMotion)
 				    {
-				        // Redraw viewport when cursor is moved.
+				        // Redraw the viewport when the cursor is moved.
 				        UpdateOverlays();
 				        return EditorPlugin.AfterGuiInput.Stop;
 				    }
@@ -139,16 +139,16 @@
 			<return type="void" />
 			<param index="0" name="viewport_control" type="Control" />
 			<description>
-				Called by the engine when the 2D editor's viewport is updated. Use the [code]overlay[/code] [Control] for drawing. You can update the viewport manually by calling [method update_overlays].
+				Called by the engine when the 2D editor's viewport is updated. [param viewport_control] is an overlay on top of the viewport and it can be used for drawing. You can update the viewport manually by calling [method update_overlays].
 				[codeblocks]
 				[gdscript]
 				func _forward_canvas_draw_over_viewport(overlay):
-				    # Draw a circle at cursor position.
+				    # Draw a circle at the cursor's position.
 				    overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.WHITE)
 
 				func _forward_canvas_gui_input(event):
 				    if event is InputEventMouseMotion:
-				        # Redraw viewport when cursor is moved.
+				        # Redraw the viewport when the cursor is moved.
 				        update_overlays()
 				        return true
 				    return false
@@ -156,7 +156,7 @@
 				[csharp]
 				public override void _ForwardCanvasDrawOverViewport(Control viewportControl)
 				{
-				    // Draw a circle at cursor position.
+				    // Draw a circle at the cursor's position.
 				    viewportControl.DrawCircle(viewportControl.GetLocalMousePosition(), 64, Colors.White);
 				}
 
@@ -164,7 +164,7 @@
 				{
 				    if (@event is InputEventMouseMotion)
 				    {
-				        // Redraw viewport when cursor is moved.
+				        // Redraw the viewport when the cursor is moved.
 				        UpdateOverlays();
 				        return true;
 				    }

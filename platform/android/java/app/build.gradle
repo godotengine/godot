@@ -90,7 +90,7 @@ android {
         jvmTarget = versions.javaVersion
     }
 
-    assetPacks = [":assetPacks:installTime"]
+    assetPacks = [":assetPackInstallTime"]
 
     namespace = 'com.godot.game'
 
@@ -101,6 +101,7 @@ android {
         }
 
         ndk {
+            debugSymbolLevel 'FULL'
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
@@ -129,14 +130,6 @@ android {
         // 'doNotStrip' is enabled for development within Android Studio
         if (shouldNotStrip()) {
             doNotStrip '**/*.so'
-        }
-
-        jniLibs {
-            // Setting this to true causes AGP to package compressed native libraries when building the app
-            // For more background, see:
-            // - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
-            // - https://stackoverflow.com/a/44704840
-            useLegacyPackaging shouldUseLegacyPackaging()
         }
 
         // Always select Godot's version of libc++_shared.so in case deps have their own
@@ -268,8 +261,8 @@ task copyAndRenameBinary(type: Copy) {
  * Used to validate the version of the Java SDK used for the Godot gradle builds.
  */
 task validateJavaVersion {
-    if (JavaVersion.current() != versions.javaVersion) {
-        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the required Java version for Godot gradle builds.")
+    if (!JavaVersion.current().isCompatibleWith(versions.javaVersion)) {
+        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the minimum supported Java version for Godot gradle builds.")
     }
 }
 

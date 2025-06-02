@@ -63,9 +63,9 @@ void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instanc
 		mmi->_stride = mmi->_vf_size_xform + mmi->_vf_size_color + mmi->_vf_size_data;
 
 		int size_in_floats = p_instances * mmi->_stride;
-		mmi->_data_curr.resize_zeroed(size_in_floats);
-		mmi->_data_prev.resize_zeroed(size_in_floats);
-		mmi->_data_interpolated.resize_zeroed(size_in_floats);
+		mmi->_data_curr.resize_initialized(size_in_floats);
+		mmi->_data_prev.resize_initialized(size_in_floats);
+		mmi->_data_interpolated.resize_initialized(size_in_floats);
 	}
 
 	_multimesh_allocate_data(p_multimesh, p_instances, p_transform_format, p_use_colors, p_use_custom_data, p_use_indirect);

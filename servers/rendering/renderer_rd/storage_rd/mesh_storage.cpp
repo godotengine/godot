@@ -383,7 +383,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
 			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
 			Vector<uint8_t> new_vertex_data;
-			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
+			new_vertex_data.resize_initialized(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
 			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
 			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, as_storage_flag);
 			s->vertex_buffer_size = new_vertex_data.size();
@@ -395,6 +395,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 	if (new_surface.attribute_data.size()) {
 		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.attribute_data.size(), new_surface.attribute_data);
+		s->attribute_buffer_size = new_surface.attribute_data.size();
 	}
 	if (new_surface.skin_data.size()) {
 		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data, as_storage_flag);
@@ -411,6 +412,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		bool is_index_16 = new_surface.vertex_count <= 65536 && new_surface.vertex_count > 0;
 
 		s->index_buffer = RD::get_singleton()->index_buffer_create(new_surface.index_count, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.index_data, false);
+		s->index_buffer_size = new_surface.index_data.size();
 		s->index_count = new_surface.index_count;
 		s->index_array = RD::get_singleton()->index_array_create(s->index_buffer, 0, s->index_count);
 		if (new_surface.lods.size()) {
@@ -420,6 +422,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			for (int i = 0; i < new_surface.lods.size(); i++) {
 				uint32_t indices = new_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
 				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.lods[i].index_data);
+				s->lods[i].index_buffer_size = new_surface.lods[i].index_data.size();
 				s->lods[i].index_array = RD::get_singleton()->index_array_create(s->lods[i].index_buffer, 0, indices);
 				s->lods[i].edge_length = new_surface.lods[i].edge_length;
 				s->lods[i].index_count = indices;
@@ -437,6 +440,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 	if (mesh->blend_shape_count > 0) {
 		s->blend_shape_buffer = RD::get_singleton()->storage_buffer_create(new_surface.blend_shape_data.size(), new_surface.blend_shape_data);
+		s->blend_shape_buffer_size = new_surface.blend_shape_data.size();
 	}
 
 	if (use_as_storage) {
@@ -914,6 +918,35 @@ void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {
 		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
 		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+	}
+}
+
+void MeshStorage::mesh_debug_usage(List<RS::MeshInfo> *r_info) {
+	for (const RID &mesh_rid : mesh_owner.get_owned_list()) {
+		Mesh *mesh = mesh_owner.get_or_null(mesh_rid);
+		if (!mesh) {
+			continue;
+		}
+		RS::MeshInfo mesh_info;
+		mesh_info.mesh = mesh_rid;
+		mesh_info.path = mesh->path;
+
+		for (uint32_t surface_index = 0; surface_index < mesh->surface_count; surface_index++) {
+			MeshStorage::Mesh::Surface *surface = mesh->surfaces[surface_index];
+
+			mesh_info.vertex_buffer_size += surface->vertex_buffer_size;
+			mesh_info.attribute_buffer_size += surface->attribute_buffer_size;
+			mesh_info.skin_buffer_size += surface->skin_buffer_size;
+			mesh_info.index_buffer_size += surface->index_buffer_size;
+			mesh_info.blend_shape_buffer_size += surface->blend_shape_buffer_size;
+			mesh_info.vertex_count += surface->vertex_count;
+
+			for (uint32_t lod_index = 0; lod_index < surface->lod_count; lod_index++) {
+				mesh_info.lod_index_buffers_size += surface->lods[lod_index].index_buffer_size;
+			}
+		}
+
+		r_info->push_back(mesh_info);
 	}
 }
 
@@ -1622,7 +1655,7 @@ void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 			}
 
 			Vector<uint8_t> newVector;
-			newVector.resize_zeroed(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count);
+			newVector.resize_initialized(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count);
 
 			for (uint32_t i = 0; i < mesh->surface_count; i++) {
 				uint32_t count = mesh_surface_get_vertices_drawn_count(mesh->surfaces[i]);

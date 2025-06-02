@@ -56,21 +56,25 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {
 	if (p_path == SNAME("use_external_skeleton")) {
 		set_use_external_skeleton(p_value);
+		return true;
 	} else if (p_path == SNAME("external_skeleton")) {
 		set_external_skeleton(p_value);
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
 	if (p_path == SNAME("use_external_skeleton")) {
 		r_ret = get_use_external_skeleton();
+		return true;
 	} else if (p_path == SNAME("external_skeleton")) {
 		r_ret = get_external_skeleton();
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -143,7 +147,7 @@ void BoneAttachment3D::_check_bind() {
 		if (bone_idx != -1) {
 			sk->connect(SceneStringName(skeleton_updated), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
 			bound = true;
-			callable_mp(this, &BoneAttachment3D::on_skeleton_update);
+			on_skeleton_update();
 		}
 	}
 }
@@ -220,7 +224,7 @@ void BoneAttachment3D::set_bone_idx(const int &p_idx) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone_idx <= -1 || bone_idx >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range! Cannot connect BoneAttachment to node!");
+			WARN_PRINT("Bone index " + itos(bone_idx) + " out of range! Cannot connect BoneAttachment to node!");
 			bone_idx = -1;
 		} else {
 			bone_name = sk->get_bone_name(bone_idx);
@@ -229,6 +233,8 @@ void BoneAttachment3D::set_bone_idx(const int &p_idx) {
 
 	if (is_inside_tree()) {
 		_check_bind();
+	} else {
+		on_skeleton_update();
 	}
 
 	notify_property_list_changed();
@@ -336,6 +342,7 @@ void BoneAttachment3D::on_skeleton_update() {
 	}
 	updating = false;
 }
+
 #ifdef TOOLS_ENABLED
 void BoneAttachment3D::notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map) {
 	const Skeleton3D *parent = nullptr;
@@ -366,6 +373,7 @@ void BoneAttachment3D::notify_rebind_required() {
 #endif // TOOLS_ENABLED
 
 BoneAttachment3D::BoneAttachment3D() {
+	set_physics_interpolation_mode(PHYSICS_INTERPOLATION_MODE_OFF);
 }
 
 void BoneAttachment3D::_bind_methods() {

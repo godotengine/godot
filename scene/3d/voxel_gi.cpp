@@ -526,7 +526,7 @@ float VoxelGI::_get_camera_exposure_normalization() {
 	float exposure_normalization = 1.0;
 	if (camera_attributes.is_valid()) {
 		exposure_normalization = camera_attributes->get_exposure_multiplier();
-		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 			exposure_normalization = camera_attributes->calculate_exposure_normalization();
 		}
 	}
@@ -542,6 +542,8 @@ PackedStringArray VoxelGI::get_configuration_warnings() const {
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("VoxelGI nodes are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+	} else if (OS::get_singleton()->get_current_rendering_method() == "dummy") {
+		warnings.push_back(RTR("VoxelGI nodes are not supported when using the Dummy renderer."));
 	} else if (probe_data.is_null()) {
 		warnings.push_back(RTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
 	}
@@ -563,7 +565,7 @@ void VoxelGI::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &VoxelGI::bake, DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("debug_bake"), &VoxelGI::_debug_bake);
-	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(), StringName("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdiv", PROPERTY_HINT_ENUM, "64,128,256,512"), "set_subdiv", "get_subdiv");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");

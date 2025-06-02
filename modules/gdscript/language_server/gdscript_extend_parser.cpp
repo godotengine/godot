@@ -208,11 +208,11 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 			const Variant &const_val = token.literal;
 			if (const_val.get_type() == Variant::STRING) {
 				String scr_path = const_val;
-				bool exists = fs->file_exists(scr_path);
-				if (!exists) {
-					scr_path = get_path().get_base_dir() + "/" + scr_path;
-					exists = fs->file_exists(scr_path);
+				if (scr_path.is_relative_path()) {
+					scr_path = get_path().get_base_dir().path_join(scr_path).simplify_path();
 				}
+				bool exists = fs->file_exists(scr_path);
+
 				if (exists) {
 					String value = const_val;
 					LSP::DocumentLink link;
@@ -712,9 +712,9 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	LSP::Position pos = p_position;
 	if (
 			pos.character >= line.length() // Cursor at end of line.
-			|| (!is_ascii_identifier_char(line[pos.character]) // Not on valid identifier char.
+			|| (!is_unicode_identifier_continue(line[pos.character]) // Not on valid identifier char.
 					   && (pos.character > 0 // Not line start -> there is a prev char.
-								  && is_ascii_identifier_char(line[pos.character - 1]) // Prev is valid identifier char.
+								  && is_unicode_identifier_continue(line[pos.character - 1]) // Prev is valid identifier char.
 								  ))) {
 		pos.character--;
 	}
@@ -723,7 +723,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	for (int c = pos.character; c >= 0; c--) {
 		start_pos = c;
 		char32_t ch = line[c];
-		bool valid_char = is_ascii_identifier_char(ch);
+		bool valid_char = is_unicode_identifier_continue(ch);
 		if (!valid_char) {
 			break;
 		}
@@ -732,11 +732,15 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	int end_pos = pos.character;
 	for (int c = pos.character; c < line.length(); c++) {
 		char32_t ch = line[c];
-		bool valid_char = is_ascii_identifier_char(ch);
+		bool valid_char = is_unicode_identifier_continue(ch);
 		if (!valid_char) {
 			break;
 		}
 		end_pos = c;
+	}
+
+	if (!is_unicode_identifier_start(line[start_pos + 1])) {
+		return "";
 	}
 
 	if (start_pos < end_pos) {

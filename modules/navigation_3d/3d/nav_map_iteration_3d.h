@@ -57,7 +57,6 @@ struct NavMapIterationBuild3D {
 	NavMapIteration3D *map_iteration = nullptr;
 
 	int navmesh_polygon_count = 0;
-	int link_polygon_count = 0;
 
 	void reset() {
 		performance_data.reset();
@@ -68,7 +67,6 @@ struct NavMapIterationBuild3D {
 		free_edge_count = 0;
 
 		navmesh_polygon_count = 0;
-		link_polygon_count = 0;
 	}
 };
 
@@ -77,13 +75,11 @@ struct NavMapIteration3D {
 	RWLock rwlock;
 
 	Vector3 map_up;
-	LocalVector<Nav3D::Polygon> link_polygons;
 
 	LocalVector<NavRegionIteration3D> region_iterations;
 	LocalVector<NavLinkIteration3D> link_iterations;
 
 	int navmesh_polygon_count = 0;
-	int link_polygon_count = 0;
 
 	// The edge connections that the map builds on top with the edge connection margin.
 	HashMap<uint32_t, LocalVector<Nav3D::Edge::Connection>> external_region_connections;

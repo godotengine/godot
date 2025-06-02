@@ -71,18 +71,18 @@ private:
 	bool use_angle_limitation = false;
 	bool symmetry_limitation = true;
 
-	float primary_limit_angle = Math_TAU;
+	float primary_limit_angle = Math::TAU;
 	float primary_damp_threshold = 1.0f;
-	float primary_positive_limit_angle = Math_PI;
+	float primary_positive_limit_angle = Math::PI;
 	float primary_positive_damp_threshold = 1.0f;
-	float primary_negative_limit_angle = Math_PI;
+	float primary_negative_limit_angle = Math::PI;
 	float primary_negative_damp_threshold = 1.0f;
 
-	float secondary_limit_angle = Math_TAU;
+	float secondary_limit_angle = Math::TAU;
 	float secondary_damp_threshold = 1.0f;
-	float secondary_positive_limit_angle = Math_PI;
+	float secondary_positive_limit_angle = Math::PI;
 	float secondary_positive_damp_threshold = 1.0f;
-	float secondary_negative_limit_angle = Math_PI;
+	float secondary_negative_limit_angle = Math::PI;
 	float secondary_negative_damp_threshold = 1.0f;
 
 	bool is_within_limitations = false;
@@ -104,6 +104,8 @@ private:
 protected:
 	virtual PackedStringArray get_configuration_warnings() const override;
 	void _validate_property(PropertyInfo &p_property) const;
+
+	virtual void _validate_bone_names() override;
 
 	static void _bind_methods();
 

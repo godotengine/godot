@@ -36,7 +36,7 @@
 #define ACCUMULATE_IMPULSES
 
 #define MIN_VELOCITY 0.001
-#define MAX_BIAS_ROTATION (Math_PI / 8)
+#define MAX_BIAS_ROTATION (Math::PI / 8)
 
 void GodotBodyPair2D::_add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self) {
 	GodotBodyPair2D *self = static_cast<GodotBodyPair2D *>(p_self);

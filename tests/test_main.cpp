@@ -30,6 +30,8 @@
 
 #include "test_main.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
 #include "modules/modules_enabled.gen.h"
 
 #ifdef TOOLS_ENABLED
@@ -95,6 +97,7 @@
 #include "tests/core/string/test_translation_server.h"
 #include "tests/core/templates/test_a_hash_map.h"
 #include "tests/core/templates/test_command_queue.h"
+#include "tests/core/templates/test_fixed_vector.h"
 #include "tests/core/templates/test_hash_map.h"
 #include "tests/core/templates/test_hash_set.h"
 #include "tests/core/templates/test_list.h"
@@ -105,6 +108,7 @@
 #include "tests/core/templates/test_rid.h"
 #include "tests/core/templates/test_span.h"
 #include "tests/core/templates/test_vector.h"
+#include "tests/core/templates/test_vset.h"
 #include "tests/core/test_crypto.h"
 #include "tests/core/test_hashing_context.h"
 #include "tests/core/test_time.h"
@@ -229,6 +233,13 @@ int test_main(int argc, char *argv[]) {
 	DisplayServerMock::register_mock_driver();
 
 	WorkerThreadPool::get_singleton()->init();
+
+	{
+		const String test_path = TestUtils::get_temp_path("");
+		Ref<DirAccess> da = DirAccess::open(test_path); // get_temp_path() automatically creates the folder.
+		ERR_FAIL_COND_V(da.is_null(), 0);
+		ERR_FAIL_COND_V_MSG(da->erase_contents_recursive() != OK, 0, "Failed to delete files");
+	}
 
 	// Run custom test tools.
 	if (test_commands) {

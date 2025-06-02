@@ -301,7 +301,7 @@ PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (navigation_polygon.is_null()) {
-			warnings.push_back(RTR("A NavigationMesh resource must be set or created for this node to work. Please set a property or draw a polygon."));
+			warnings.push_back(RTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon."));
 		}
 	}
 
@@ -623,8 +623,8 @@ void NavigationRegion2D::_update_debug_edge_connections_mesh() {
 
 			// Draw a circle to illustrate the margins.
 			real_t angle = a.angle_to_point(b);
-			draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, debug_edge_connection_color);
-			draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, debug_edge_connection_color);
+			draw_arc(a, radius, angle + Math::PI / 2.0, angle - Math::PI / 2.0 + Math::TAU, 10, debug_edge_connection_color);
+			draw_arc(b, radius, angle - Math::PI / 2.0, angle + Math::PI / 2.0, 10, debug_edge_connection_color);
 		}
 	}
 }

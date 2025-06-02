@@ -154,6 +154,8 @@ CSGShapeEditor::CSGShapeEditor() {
 	options->hide();
 	options->set_text(TTR("CSG"));
 	options->set_switch_on_hover(true);
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButton");
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->get_popup()->add_item(TTR("Bake Mesh Instance"), MENU_OPTION_BAKE_MESH_INSTANCE);
@@ -222,7 +224,7 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
 		CSGCylinder3D *s = Object::cast_to<CSGCylinder3D>(cs);
-		return p_id == 0 ? s->get_radius() : s->get_height();
+		return Vector2(s->get_radius(), s->get_height());
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {

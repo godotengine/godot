@@ -1752,7 +1752,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides workspace symbol support.
 	 */
-	bool workspaceSymbolProvider = true;
+	bool workspaceSymbolProvider = false;
 
 	/**
 	 * The server supports workspace folder.
@@ -1939,8 +1939,7 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[signal ", "`");
 			line = line.replace("[enum ", "`");
 			line = line.replace("[constant ", "`");
-			line = line.replace("[", "`");
-			line = line.replace("]", "`");
+			line = line.replace_chars("[]", '`');
 		}
 
 		if (!in_code_block && i < lines.size() - 1) {

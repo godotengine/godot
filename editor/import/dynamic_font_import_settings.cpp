@@ -69,7 +69,7 @@ bool DynamicFontImportSettingsData::_get(const StringName &p_name, Variant &r_re
 void DynamicFontImportSettingsData::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
 		if (owner && owner->import_settings_data.is_valid()) {
-			if (owner->import_settings_data->get("multichannel_signed_distance_field") && (E->get().option.name == "size" || E->get().option.name == "outline_size" || E->get().option.name == "oversampling")) {
+			if (owner->import_settings_data->get("multichannel_signed_distance_field") && (E->get().option.name == "size" || E->get().option.name == "outline_size")) {
 				continue;
 			}
 			if (!owner->import_settings_data->get("multichannel_signed_distance_field") && (E->get().option.name == "msdf_pixel_range" || E->get().option.name == "msdf_size")) {
@@ -507,8 +507,6 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 			_variations_validate();
 		} else if (p_edited_property == "keep_rounding_remainders") {
 			font_preview->set_keep_rounding_remainders(import_settings_data->get("keep_rounding_remainders"));
-		} else if (p_edited_property == "oversampling") {
-			font_preview->set_oversampling(import_settings_data->get("oversampling"));
 		}
 	}
 
@@ -983,7 +981,6 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	main_settings["hinting"] = import_settings_data->get("hinting");
 	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
 	main_settings["keep_rounding_remainders"] = import_settings_data->get("keep_rounding_remainders");
-	main_settings["oversampling"] = import_settings_data->get("oversampling");
 	main_settings["fallbacks"] = import_settings_data->get("fallbacks");
 	main_settings["compress"] = import_settings_data->get("compress");
 
@@ -1120,7 +1117,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 			for (int i = 0; i < contours.size(); i++) {
 				for (int j = prev_start; j <= contours[i]; j++) {
 					int next_point = (j < contours[i]) ? (j + 1) : prev_start;
-					if ((points[j].z != TextServer::CONTOUR_CURVE_TAG_ON) || (!Math::is_equal_approx(points[j].x, points[next_point].x) && !Math::is_equal_approx(points[j].y, points[next_point].y))) {
+					if ((points[j].z != (real_t)TextServer::CONTOUR_CURVE_TAG_ON) || (!Math::is_equal_approx(points[j].x, points[next_point].x) && !Math::is_equal_approx(points[j].y, points[next_point].y))) {
 						is_pixel = false;
 						break;
 					}
@@ -1204,8 +1201,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	Error err = config->load(p_path + ".import");
 	print_verbose("Loading import settings:");
 	if (err == OK) {
-		List<String> keys;
-		config->get_section_keys("params", &keys);
+		Vector<String> keys = config->get_section_keys("params");
 		for (const String &key : keys) {
 			print_verbose(String("    ") + key + " == " + String(config->get_value("params", key)));
 			if (key == "preload") {
@@ -1296,7 +1292,6 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 		}
 		font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)font_subpixel_positioning);
 		font_preview->set_keep_rounding_remainders(import_settings_data->get("keep_rounding_remainders"));
-		font_preview->set_oversampling(import_settings_data->get("oversampling"));
 	}
 	font_preview_label->add_theme_font_override(SceneStringName(font), font_preview);
 	font_preview_label->add_theme_font_size_override(SceneStringName(font_size), 200 * EDSCALE);
@@ -1330,7 +1325,6 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Metadata Overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "language_support"), Dictionary()));
@@ -1367,6 +1361,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	root_vb->add_child(main_pages);
 
 	label_warn = memnew(Label);
+	label_warn->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	label_warn->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_warn->set_text("");
 	root_vb->add_child(label_warn);
@@ -1379,6 +1374,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	main_pages->add_child(page1_vb);
 
 	page1_description = memnew(Label);
+	page1_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page1_description->set_text(TTR("Select font rendering options, fallback font, and metadata override:"));
 	page1_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page1_vb->add_child(page1_description);
@@ -1394,6 +1390,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	page1_hb->add_child(page1_lbl_vb);
 
 	font_name_label = memnew(Label);
+	font_name_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	font_name_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	font_name_label->set_clip_text(true);
 	font_name_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1420,6 +1417,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	main_pages->add_child(page2_vb);
 
 	page2_description = memnew(Label);
+	page2_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page2_description->set_text(TTR("Add font size, and variation coordinates, and select glyphs to pre-render:"));
 	page2_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1444,12 +1442,14 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	page2_hb_vars->add_child(label_vars);
 
 	add_var = memnew(Button);
-	add_var->set_tooltip_text(TTR("Add configuration"));
+	add_var->set_tooltip_text(TTR("Add new font variation configuration."));
+	add_var->set_accessibility_name(TTRC("Add Configuration"));
 	page2_hb_vars->add_child(add_var);
 	add_var->connect(SceneStringName(pressed), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_add));
 
 	vars_list = memnew(Tree);
 	vars_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	vars_list->set_accessibility_name(TTRC("Configuration"));
 	vars_list->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	vars_list->set_hide_root(true);
 	vars_list->set_columns(2);
@@ -1481,6 +1481,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	preload_pages_vb->add_child(gl_hb);
 
 	label_glyphs = memnew(Label);
+	label_glyphs->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	label_glyphs->set_text(vformat(TTR("Preloaded glyphs: %d"), 0));
 	label_glyphs->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
 	gl_hb->add_child(label_glyphs);
@@ -1495,6 +1496,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	preload_pages->add_child(page2_0_vb);
 
 	page2_0_description = memnew(Label);
+	page2_0_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page2_0_description->set_text(TTR("Select translations to add all required glyphs to pre-render list:"));
 	page2_0_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_0_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1528,6 +1530,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	preload_pages->add_child(page2_1_vb);
 
 	page2_1_description = memnew(Label);
+	page2_1_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page2_1_description->set_text(TTR("Enter a text and select OpenType features to shape and add all required glyphs to pre-render list:"));
 	page2_1_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_1_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1566,6 +1569,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	preload_pages->add_child(page2_2_vb);
 
 	page2_2_description = memnew(Label);
+	page2_2_description->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	page2_2_description->set_text(TTR("Add or remove glyphs from the character map to pre-render list:\nNote: Some stylistic alternatives and glyph variants do not have one-to-one correspondence to character, and not shown in this map, use \"Glyphs from the text\" tab to add these."));
 	page2_2_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_2_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);

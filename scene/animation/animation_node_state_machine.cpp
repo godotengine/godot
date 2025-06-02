@@ -911,7 +911,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 		}
 
 		if (transition_path.has(next.node)) {
-			WARN_PRINT_ONCE_ED("AnimationNodeStateMachinePlayback: " + base_path + "playback aborts the transition by detecting one or more looped transitions in the same frame to prevent to infinity loop. You may need to check the transition settings.");
+			WARN_PRINT_ONCE_ED("AnimationNodeStateMachinePlayback: " + base_path + "playback has detected one or more looped transitions in a single frame and aborted to prevent an infinite loop. You may need to check the transition settings.");
 			break; // Maybe infinity loop, do nothing more.
 		}
 
@@ -1427,16 +1427,24 @@ void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, co
 	updating_transitions = false;
 }
 
-void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
-	List<StringName> nodes;
+LocalVector<StringName> AnimationNodeStateMachine::get_node_list() const {
+	LocalVector<StringName> nodes;
+	nodes.reserve(states.size());
 	for (const KeyValue<StringName, State> &E : states) {
 		nodes.push_back(E.key);
 	}
 	nodes.sort_custom<StringName::AlphCompare>();
+	return nodes;
+}
 
-	for (const StringName &E : nodes) {
-		r_nodes->push_back(E);
+TypedArray<StringName> AnimationNodeStateMachine::get_node_list_as_typed_array() const {
+	TypedArray<StringName> typed_arr;
+	LocalVector<StringName> vec = get_node_list();
+	typed_arr.resize(vec.size());
+	for (uint32_t i = 0; i < vec.size(); i++) {
+		typed_arr[i] = vec[i];
 	}
+	return typed_arr;
 }
 
 bool AnimationNodeStateMachine::has_transition(const StringName &p_from, const StringName &p_to) const {
@@ -1796,6 +1804,7 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rename_node", "name", "new_name"), &AnimationNodeStateMachine::rename_node);
 	ClassDB::bind_method(D_METHOD("has_node", "name"), &AnimationNodeStateMachine::has_node);
 	ClassDB::bind_method(D_METHOD("get_node_name", "node"), &AnimationNodeStateMachine::get_node_name);
+	ClassDB::bind_method(D_METHOD("get_node_list"), &AnimationNodeStateMachine::get_node_list_as_typed_array);
 
 	ClassDB::bind_method(D_METHOD("set_node_position", "name", "position"), &AnimationNodeStateMachine::set_node_position);
 	ClassDB::bind_method(D_METHOD("get_node_position", "name"), &AnimationNodeStateMachine::get_node_position);

@@ -35,15 +35,15 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cerrno>
 
 #if defined(TOOLS_ENABLED)
-#include <limits.h>
-#include <stdlib.h>
+#include <climits>
+#include <cstdlib>
 #endif
 
 void FileAccessUnix::check_errors(bool p_write) const {

@@ -846,6 +846,7 @@ TileSetEditor::TileSetEditor() {
 	source_sort_button->set_flat(false);
 	source_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
+	source_sort_button->set_accessibility_name(TTRC("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_set_source_sort));
@@ -896,6 +897,7 @@ TileSetEditor::TileSetEditor() {
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
 	sources_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
+	sources_advanced_menu_button->set_accessibility_name(TTRC("Advanced"));
 	sources_bottom_actions->add_child(sources_advanced_menu_button);
 	sources_bottom_actions->add_child(source_sort_button);
 
@@ -913,6 +915,7 @@ TileSetEditor::TileSetEditor() {
 
 	// No source selected.
 	no_source_selected_label = memnew(Label);
+	no_source_selected_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source.\nYou can create a new source by using the Add button on the left or by dropping a tileset texture onto the source list."));
 	no_source_selected_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	no_source_selected_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
@@ -954,6 +957,7 @@ TileSetEditor::TileSetEditor() {
 	patterns_item_list->hide();
 
 	patterns_help_label = memnew(Label);
+	patterns_help_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	patterns_help_label->set_text(TTR("Add new patterns in the TileMap editing mode."));
 	patterns_help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -1003,7 +1007,7 @@ void TileSourceInspectorPlugin::_confirm_change_id() {
 }
 
 bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
-	return p_object->is_class("TileSetAtlasSourceProxyObject") || p_object->is_class("TileSetScenesCollectionProxyObject");
+	return p_object && (p_object->is_class("TileSetAtlasSourceProxyObject") || p_object->is_class("TileSetScenesCollectionProxyObject"));
 }
 
 bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {

@@ -268,7 +268,7 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->cull_mask = p_mask;
 
 	light->version++;
-	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
 }
 
 void LightStorage::light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) {
@@ -643,7 +643,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
 					light_data.energy *= light->param[RS::LIGHT_PARAM_INTENSITY];
 				} else {
-					light_data.energy *= Math_PI;
+					light_data.energy *= Math::PI;
 				}
 
 				if (p_render_data->camera_attributes.is_valid()) {
@@ -866,14 +866,14 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 			// Convert from Luminous Power to Luminous Intensity
 			if (type == RS::LIGHT_OMNI) {
-				energy *= 1.0 / (Math_PI * 4.0);
+				energy *= 1.0 / (Math::PI * 4.0);
 			} else {
 				// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 				// We make this assumption to keep them easy to control.
-				energy *= 1.0 / Math_PI;
+				energy *= 1.0 / Math::PI;
 			}
 		} else {
-			energy *= Math_PI;
+			energy *= Math::PI;
 		}
 
 		if (p_render_data->camera_attributes.is_valid()) {

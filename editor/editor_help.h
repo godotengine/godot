@@ -47,12 +47,13 @@ class FindBar : public HBoxContainer {
 	Button *find_prev = nullptr;
 	Button *find_next = nullptr;
 	Label *matches_label = nullptr;
-	TextureButton *hide_button = nullptr;
-	String prev_search;
+	Button *hide_button = nullptr;
 
 	RichTextLabel *rich_text_label = nullptr;
 
+	String prev_search;
 	int results_count = 0;
+	int results_count_to_current = 0;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 
@@ -61,7 +62,7 @@ class FindBar : public HBoxContainer {
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 
-	void _update_results_count();
+	void _update_results_count(bool p_search_previous);
 	void _update_matches_label();
 
 protected:
@@ -118,7 +119,7 @@ class EditorHelp : public VBoxContainer {
 	LineEdit *search = nullptr;
 	FindBar *find_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;
-	Button *toggle_scripts_button = nullptr;
+	Button *toggle_files_button = nullptr;
 
 	String base_path;
 
@@ -185,7 +186,7 @@ class EditorHelp : public VBoxContainer {
 	void _request_help(const String &p_string);
 	void _search(bool p_search_previous = false);
 
-	void _toggle_scripts_pressed();
+	void _toggle_files_pressed();
 
 	inline static int doc_generation_count = 0;
 	inline static String doc_version_hash;
@@ -264,7 +265,7 @@ public:
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
 
-	void update_toggle_scripts_button();
+	void update_toggle_files_button();
 
 	static void init_gdext_pointers();
 

@@ -222,6 +222,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 		bc->add_child(spin[i]);
 		spin[i]->set_flat(true);
 		spin[i]->set_label(String(COMPONENT_LABELS[i]));
+		spin[i]->set_accessibility_name(String(COMPONENT_LABELS[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -238,6 +239,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	linked->set_toggle_mode(true);
 	linked->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	linked->set_tooltip_text(TTR("Lock/Unlock Component Ratio"));
+	linked->set_accessibility_name(TTRC("Lock/Unlock Component Ratio"));
 	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyVectorN::_update_ratio));
 	linked->connect(SceneStringName(toggled), callable_mp(this, &EditorPropertyVectorN::_store_link));
 	hb->add_child(linked);

@@ -141,6 +141,10 @@ bool NavLink3D::is_dirty() const {
 }
 
 void NavLink3D::sync() {
+	if (link_dirty) {
+		iteration_id = iteration_id % UINT32_MAX + 1;
+	}
+
 	link_dirty = false;
 }
 
@@ -177,4 +181,6 @@ void NavLink3D::get_iteration_update(NavLinkIteration3D &r_iteration) {
 	r_iteration.start_position = get_start_position();
 	r_iteration.end_position = get_end_position();
 	r_iteration.bidirectional = is_bidirectional();
+
+	r_iteration.navmesh_polygons.clear();
 }

@@ -34,6 +34,8 @@
 
 #include "scroll_bar.h"
 
+class PanelContainer;
+
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
 
@@ -49,6 +51,7 @@ public:
 private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
+	PanelContainer *focus_panel = nullptr;
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
@@ -98,6 +101,12 @@ protected:
 	bool _updating_scrollbars = false;
 	void _update_scrollbar_position();
 	void _scroll_moved(float);
+
+	void _accessibility_action_scroll_set(const Variant &p_data);
+	void _accessibility_action_scroll_up(const Variant &p_data);
+	void _accessibility_action_scroll_down(const Variant &p_data);
+	void _accessibility_action_scroll_left(const Variant &p_data);
+	void _accessibility_action_scroll_right(const Variant &p_data);
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;

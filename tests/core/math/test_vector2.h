@@ -48,16 +48,16 @@ TEST_CASE("[Vector2] Angle methods") {
 	constexpr Vector2 vector_x = Vector2(1, 0);
 	constexpr Vector2 vector_y = Vector2(0, 1);
 	CHECK_MESSAGE(
-			vector_x.angle_to(vector_y) == doctest::Approx((real_t)Math_TAU / 4),
+			vector_x.angle_to(vector_y) == doctest::Approx((real_t)Math::TAU / 4),
 			"Vector2 angle_to should work as expected.");
 	CHECK_MESSAGE(
-			vector_y.angle_to(vector_x) == doctest::Approx((real_t)-Math_TAU / 4),
+			vector_y.angle_to(vector_x) == doctest::Approx((real_t)-Math::TAU / 4),
 			"Vector2 angle_to should work as expected.");
 	CHECK_MESSAGE(
-			vector_x.angle_to_point(vector_y) == doctest::Approx((real_t)Math_TAU * 3 / 8),
+			vector_x.angle_to_point(vector_y) == doctest::Approx((real_t)Math::TAU * 3 / 8),
 			"Vector2 angle_to_point should work as expected.");
 	CHECK_MESSAGE(
-			vector_y.angle_to_point(vector_x) == doctest::Approx((real_t)-Math_TAU / 8),
+			vector_y.angle_to_point(vector_x) == doctest::Approx((real_t)-Math::TAU / 8),
 			"Vector2 angle_to_point should work as expected.");
 }
 
@@ -94,7 +94,7 @@ TEST_CASE("[Vector2] Interpolation methods") {
 			vector1.normalized().slerp(vector2.normalized(), 1.0 / 3.0).is_equal_approx(Vector2(0.508990883827209473, 0.860771894454956055)),
 			"Vector2 slerp should work as expected.");
 	CHECK_MESSAGE(
-			Vector2(5, 0).slerp(Vector2(0, 5), 0.5).is_equal_approx(Vector2(5, 5) * Math_SQRT12),
+			Vector2(5, 0).slerp(Vector2(0, 5), 0.5).is_equal_approx(Vector2(5, 5) * Math::SQRT12),
 			"Vector2 slerp with non-normalized values should work as expected.");
 	CHECK_MESSAGE(
 			Vector2(1, 1).slerp(Vector2(2, 2), 0.5).is_equal_approx(Vector2(1.5, 1.5)),
@@ -135,7 +135,7 @@ TEST_CASE("[Vector2] Length methods") {
 			vector1.length_squared() == 200,
 			"Vector2 length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			vector1.length() == doctest::Approx(10 * (real_t)Math_SQRT2),
+			vector1.length() == doctest::Approx(10 * (real_t)Math::SQRT2),
 			"Vector2 length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 1300,
@@ -154,10 +154,10 @@ TEST_CASE("[Vector2] Length methods") {
 TEST_CASE("[Vector2] Limiting methods") {
 	constexpr Vector2 vector = Vector2(10, 10);
 	CHECK_MESSAGE(
-			vector.limit_length().is_equal_approx(Vector2(Math_SQRT12, Math_SQRT12)),
+			vector.limit_length().is_equal_approx(Vector2(Math::SQRT12, Math::SQRT12)),
 			"Vector2 limit_length should work as expected.");
 	CHECK_MESSAGE(
-			vector.limit_length(5).is_equal_approx(5 * Vector2(Math_SQRT12, Math_SQRT12)),
+			vector.limit_length(5).is_equal_approx(5 * Vector2(Math::SQRT12, Math::SQRT12)),
 			"Vector2 limit_length should work as expected.");
 
 	CHECK_MESSAGE(
@@ -179,7 +179,7 @@ TEST_CASE("[Vector2] Normalization methods") {
 			Vector2(1, 0).normalized() == Vector2(1, 0),
 			"Vector2 normalized should return the same vector for a normalized vector.");
 	CHECK_MESSAGE(
-			Vector2(1, 1).normalized().is_equal_approx(Vector2(Math_SQRT12, Math_SQRT12)),
+			Vector2(1, 1).normalized().is_equal_approx(Vector2(Math::SQRT12, Math::SQRT12)),
 			"Vector2 normalized should work as expected.");
 
 	Vector2 vector = Vector2(3.2, -5.4);
@@ -281,11 +281,11 @@ TEST_CASE("[Vector2] Operators") {
 			"Vector2 cast to String should work as expected.");
 #ifdef REAL_T_IS_DOUBLE
 	CHECK_MESSAGE(
-			((String)Vector2(Math_PI, Math_TAU)) == "(3.14159265358979, 6.28318530717959)",
+			((String)Vector2(Math::PI, Math::TAU)) == "(3.14159265358979, 6.28318530717959)",
 			"Vector2 cast to String should print the correct amount of digits for real_t = double.");
 #else
 	CHECK_MESSAGE(
-			((String)Vector2(Math_PI, Math_TAU)) == "(3.141593, 6.283185)",
+			((String)Vector2(Math::PI, Math::TAU)) == "(3.141593, 6.283185)",
 			"Vector2 cast to String should print the correct amount of digits for real_t = float.");
 #endif // REAL_T_IS_DOUBLE
 }
@@ -300,7 +300,7 @@ TEST_CASE("[Vector2] Other methods") {
 			vector.direction_to(Vector2()).is_equal_approx(-vector.normalized()),
 			"Vector2 direction_to should work as expected.");
 	CHECK_MESSAGE(
-			Vector2(1, 1).direction_to(Vector2(2, 2)).is_equal_approx(Vector2(Math_SQRT12, Math_SQRT12)),
+			Vector2(1, 1).direction_to(Vector2(2, 2)).is_equal_approx(Vector2(Math::SQRT12, Math::SQRT12)),
 			"Vector2 direction_to should work as expected.");
 
 	CHECK_MESSAGE(
@@ -317,16 +317,16 @@ TEST_CASE("[Vector2] Other methods") {
 			"Vector2 posmodv should work as expected.");
 
 	CHECK_MESSAGE(
-			vector.rotated(Math_TAU).is_equal_approx(Vector2(1.2, 3.4)),
+			vector.rotated(Math::TAU).is_equal_approx(Vector2(1.2, 3.4)),
 			"Vector2 rotated should work as expected.");
 	CHECK_MESSAGE(
-			vector.rotated(Math_TAU / 4).is_equal_approx(Vector2(-3.4, 1.2)),
+			vector.rotated(Math::TAU / 4).is_equal_approx(Vector2(-3.4, 1.2)),
 			"Vector2 rotated should work as expected.");
 	CHECK_MESSAGE(
-			vector.rotated(Math_TAU / 3).is_equal_approx(Vector2(-3.544486372867091398996, -0.660769515458673623883)),
+			vector.rotated(Math::TAU / 3).is_equal_approx(Vector2(-3.544486372867091398996, -0.660769515458673623883)),
 			"Vector2 rotated should work as expected.");
 	CHECK_MESSAGE(
-			vector.rotated(Math_TAU / 2).is_equal_approx(vector.rotated(Math_TAU / -2)),
+			vector.rotated(Math::TAU / 2).is_equal_approx(vector.rotated(Math::TAU / -2)),
 			"Vector2 rotated should work as expected.");
 
 	CHECK_MESSAGE(
@@ -472,7 +472,7 @@ TEST_CASE("[Vector2] Linear algebra methods") {
 }
 
 TEST_CASE("[Vector2] Finite number checks") {
-	const double infinite[] = { NAN, INFINITY, -INFINITY };
+	constexpr double infinite[] = { Math::NaN, Math::INF, -Math::INF };
 
 	CHECK_MESSAGE(
 			Vector2(0, 1).is_finite(),

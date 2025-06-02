@@ -145,6 +145,16 @@ void DisplayServerAndroid::emit_system_theme_changed() {
 	}
 }
 
+void DisplayServerAndroid::set_hardware_keyboard_connection_change_callback(const Callable &p_callable) {
+	hardware_keyboard_connection_changed = p_callable;
+}
+
+void DisplayServerAndroid::emit_hardware_keyboard_connection_changed(bool p_connected) {
+	if (hardware_keyboard_connection_changed.is_valid()) {
+		hardware_keyboard_connection_changed.call_deferred(p_connected);
+	}
+}
+
 void DisplayServerAndroid::clipboard_set(const String &p_text) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL(godot_java);
@@ -267,6 +277,13 @@ DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(in
 	const int orientation = godot_io_java->get_screen_orientation();
 	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
 	return (ScreenOrientation)orientation;
+}
+
+int DisplayServerAndroid::get_display_rotation() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 0);
+
+	return godot_io_java->get_display_rotation();
 }
 
 int DisplayServerAndroid::get_screen_count() const {

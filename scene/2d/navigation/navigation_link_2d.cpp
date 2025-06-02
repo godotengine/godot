@@ -396,8 +396,8 @@ void NavigationLink2D::_update_debug_mesh() {
 	real_t radius = NavigationServer2D::get_singleton()->map_get_link_connection_radius(get_world_2d()->get_navigation_map());
 
 	draw_line(get_start_position(), get_end_position(), color);
-	draw_arc(get_start_position(), radius, 0, Math_TAU, 10, color);
-	draw_arc(get_end_position(), radius, 0, Math_TAU, 10, color);
+	draw_arc(get_start_position(), radius, 0, Math::TAU, 10, color);
+	draw_arc(get_end_position(), radius, 0, Math::TAU, 10, color);
 
 	const Vector2 link_segment = end_position - start_position;
 	const float arror_len = 5.0;
