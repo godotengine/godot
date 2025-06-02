@@ -3839,7 +3839,7 @@ bool Animation::audio_track_is_use_blend(int p_track) const {
 
 //
 
-int Animation::animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, real_t p_start_offset, real_t p_end_offset) {
+int Animation::animation_track_insert_key(int p_track, double p_time, const StringName &p_animation, real_t p_start_offset, real_t p_end_offset) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, -1);
