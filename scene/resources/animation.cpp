@@ -4165,13 +4165,13 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("audio_track_set_use_blend", "track_idx", "enable"), &Animation::audio_track_set_use_blend);
 	ClassDB::bind_method(D_METHOD("audio_track_is_use_blend", "track_idx"), &Animation::audio_track_is_use_blend);
 
-	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track", "time", "animation", "start_offset", "end_offset"), &Animation::animation_track_insert_key, DEFVAL(0.0), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track_idx", "time", "animation", "start_offset", "end_offset"), &Animation::animation_track_insert_key, DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "track_idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
-	ClassDB::bind_method(D_METHOD("animation_track_set_key_start_offset", "track", "key", "offset"), &Animation::animation_track_set_key_start_offset);
-	ClassDB::bind_method(D_METHOD("animation_track_set_key_end_offset", "track", "key", "offset"), &Animation::animation_track_set_key_end_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_set_key_start_offset", "track_idx", "key_idx", "offset"), &Animation::animation_track_set_key_start_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_set_key_end_offset", "track_idx", "key_idx", "offset"), &Animation::animation_track_set_key_end_offset);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "track_idx", "key_idx"), &Animation::animation_track_get_key_animation);
-	ClassDB::bind_method(D_METHOD("animation_track_get_key_start_offset", "track", "key"), &Animation::animation_track_get_key_start_offset);
-	ClassDB::bind_method(D_METHOD("animation_track_get_key_end_offset", "track", "key"), &Animation::animation_track_get_key_end_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_get_key_start_offset", "track_idx", "key_idx"), &Animation::animation_track_get_key_start_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_get_key_end_offset", "track_idx", "key_idx"), &Animation::animation_track_get_key_end_offset);
 	ClassDB::bind_method(D_METHOD("animation_track_set_use_blend", "track_idx", "enable"), &Animation::animation_track_set_use_blend);
 	ClassDB::bind_method(D_METHOD("animation_track_is_use_blend", "track_idx"), &Animation::animation_track_is_use_blend);
 

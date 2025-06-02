@@ -506,7 +506,7 @@ public:
 	void audio_track_set_use_blend(int p_track, bool p_enable);
 	bool audio_track_is_use_blend(int p_track) const;
 
-	int animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, real_t p_start_offset = 0.0, real_t p_end_offset = 0.0);
+	int animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, real_t p_start_offset = 0, real_t p_end_offset = 0);
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);
 	void animation_track_set_key_start_offset(int p_track, int p_key, real_t p_offset);
 	void animation_track_set_key_end_offset(int p_track, int p_key, real_t p_offset);
