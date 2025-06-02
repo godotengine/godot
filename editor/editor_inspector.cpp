@@ -1296,8 +1296,17 @@ void EditorProperty::menu_option(int p_option) {
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
 		} break;
-		case MENU_FAVORITE_PROPERTY: {
-			emit_signal(SNAME("property_favorited"), property, !favorited);
+		case MENU_UNFAVORITE_BOTH: {
+			emit_signal(SNAME("property_favorited_global"), property, false);
+			emit_signal(SNAME("property_favorited_local"), property, false);
+			queue_redraw();
+		} break;
+		case MENU_FAVORITE_PROPERTY_GLOBAL: {
+			emit_signal(SNAME("property_favorited_global"), property, !favorited);
+			queue_redraw();
+		} break;
+		case MENU_FAVORITE_PROPERTY_LOCAL: {
+			emit_signal(SNAME("property_favorited_local"), property, !favorited);
 			queue_redraw();
 		} break;
 		case MENU_PIN_VALUE: {
@@ -1396,7 +1405,8 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING_NAME, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed_with_value", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("property_checked", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "checked")));
-	ADD_SIGNAL(MethodInfo("property_favorited", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "favorited")));
+	ADD_SIGNAL(MethodInfo("property_favorited_local", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "favorited")));
+	ADD_SIGNAL(MethodInfo("property_favorited_global", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "favorited")));
 	ADD_SIGNAL(MethodInfo("property_pinned", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "pinned")));
 	ADD_SIGNAL(MethodInfo("property_can_revert_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "can_revert")));
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
@@ -1443,12 +1453,14 @@ void EditorProperty::_update_popup() {
 
 	if (can_favorite) {
 		if (favorited) {
-			menu->add_icon_item(get_editor_theme_icon(SNAME("Unfavorite")), TTR("Unfavorite Property"), MENU_FAVORITE_PROPERTY);
-			menu->set_item_tooltip(menu->get_item_index(MENU_FAVORITE_PROPERTY), TTR("Make this property be put back at its original place."));
+			menu->add_icon_item(get_editor_theme_icon(SNAME("Unfavorite")), TTR("Unfavorite Property"), MENU_UNFAVORITE_BOTH);
+			menu->set_item_tooltip(menu->get_item_index(MENU_UNFAVORITE_BOTH), TTR("Make this property be put back at its original place."));
 		} else {
 			// TRANSLATORS: This is a menu item to add a property to the favorites.
-			menu->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTR("Favorite Property"), MENU_FAVORITE_PROPERTY);
-			menu->set_item_tooltip(menu->get_item_index(MENU_FAVORITE_PROPERTY), TTR("Make this property be placed at the top for all objects of this class."));
+			menu->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTR("Favorite Property Global"), MENU_FAVORITE_PROPERTY_GLOBAL);
+			menu->set_item_tooltip(menu->get_item_index(MENU_FAVORITE_PROPERTY_GLOBAL), TTR("Make this property be placed at the top for all objects of this class."));
+			menu->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTR("Favorite Property Local"), MENU_FAVORITE_PROPERTY_LOCAL);
+			menu->set_item_tooltip(menu->get_item_index(MENU_FAVORITE_PROPERTY_LOCAL), TTR("Make this property be placed at the top for all objects of this class."));
 		}
 	}
 
@@ -3308,7 +3320,8 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
 			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
 			ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
-			ep->connect("property_favorited", callable_mp(this, &EditorInspector::_set_property_favorited), CONNECT_DEFERRED);
+			ep->connect("property_favorited_local", callable_mp(this, &EditorInspector::_set_property_favorited_local), CONNECT_DEFERRED);
+			ep->connect("property_favorited_global", callable_mp(this, &EditorInspector::_set_property_favorited_global), CONNECT_DEFERRED);
 			ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 			ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
 			ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
@@ -4195,7 +4208,8 @@ void EditorInspector::update_tree() {
 				ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 				ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
 				ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
-				ep->connect("property_favorited", callable_mp(this, &EditorInspector::_set_property_favorited), CONNECT_DEFERRED);
+				ep->connect("property_favorited_local", callable_mp(this, &EditorInspector::_set_property_favorited_local), CONNECT_DEFERRED);
+				ep->connect("property_favorited_global", callable_mp(this, &EditorInspector::_set_property_favorited_global), CONNECT_DEFERRED);
 				ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
 				ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 				ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
@@ -4936,63 +4950,70 @@ void EditorInspector::_update_current_favorites() {
 		return;
 	}
 
-	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
+	HashMap<String, PackedStringArray> favorites_local = EditorSettings::get_singleton()->get_favorite_local_properties();
+	HashMap<String, PackedStringArray> favorites_global = EditorSettings::get_singleton()->get_favorite_global_properties();
 
-	// Fetch script properties.
-	Ref<Script> scr = object->get_script();
-	if (scr.is_valid()) {
-		List<PropertyInfo> plist;
-		// FIXME: Only properties from a saved script will be available, unsaved ones will be ignored.
-		// Can cause a little wonkiness, while nothing serious, would be nice to find a way to get
-		// unsaved ones without needing to get the entire property list of an object.
-		scr->get_script_property_list(&plist);
+	HashMap<String, PackedStringArray> favorites[2] = { favorites_local, favorites_global };
+	for (int f = 0; f < 2; f++) {
+		// Fetch script properties.
+		Ref<Script> scr = object->get_script();
+		if (scr.is_valid()) {
+			List<PropertyInfo> plist;
+			// FIXME: Only properties from a saved script will be available, unsaved ones will be ignored.
+			// Can cause a little wonkiness, while nothing serious, would be nice to find a way to get
+			// unsaved ones without needing to get the entire property list of an object.
+			scr->get_script_property_list(&plist);
 
-		String path;
-		HashMap<String, LocalVector<String>> props;
+			String path;
+			HashMap<String, LocalVector<String>> props;
 
-		for (PropertyInfo &p : plist) {
-			if (p.usage & PROPERTY_USAGE_CATEGORY) {
-				path = favorites.has(p.hint_string) ? p.hint_string : String();
-			} else if (p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE && !path.is_empty()) {
-				props[path].push_back(p.name);
-			}
-		}
-
-		// Add favorited properties while removing invalid ones.
-		bool invalid_props = false;
-		for (const KeyValue<String, LocalVector<String>> &KV : props) {
-			path = KV.key;
-			for (int i = 0; i < favorites[path].size(); i++) {
-				String prop = favorites[path][i];
-				if (KV.value.has(prop)) {
-					current_favorites.append(prop);
-				} else {
-					invalid_props = true;
-					favorites[path].erase(prop);
-					i--;
+			for (PropertyInfo &p : plist) {
+				if (p.usage & PROPERTY_USAGE_CATEGORY) {
+					path = favorites[f].has(p.hint_string) ? p.hint_string : String();
+				} else if (p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE && !path.is_empty()) {
+					props[path].push_back(p.name);
 				}
 			}
 
-			if (favorites[path].is_empty()) {
-				favorites.erase(path);
+			// Add favorited properties while removing invalid ones.
+			bool invalid_props = false;
+			for (const KeyValue<String, LocalVector<String>> &KV : props) {
+				path = KV.key;
+				for (int i = 0; i < favorites[f][path].size(); i++) {
+					String prop = favorites[f][path][i];
+					if (KV.value.has(prop)) {
+						current_favorites.append(prop);
+					} else {
+						invalid_props = true;
+						favorites[f][path].erase(prop);
+						i--;
+					}
+				}
+
+				if (favorites[f][path].is_empty()) {
+					favorites[f].erase(path);
+				}
+			}
+
+			if (invalid_props) {
+				if (f == 0) {
+					EditorSettings::get_singleton()->set_favorite_local_properties(favorites[f]);
+				} else {
+					EditorSettings::get_singleton()->set_favorite_global_properties(favorites[f]);
+				}
 			}
 		}
-
-		if (invalid_props) {
-			EditorSettings::get_singleton()->set_favorite_properties(favorites);
-		}
-	}
-
-	// Fetch built-in properties.
-	StringName class_name = object->get_class_name();
-	for (const KeyValue<String, PackedStringArray> &KV : favorites) {
-		if (ClassDB::is_parent_class(class_name, KV.key)) {
-			current_favorites.append_array(KV.value);
+		// Fetch built-in properties.
+		StringName class_name = object->get_class_name();
+		for (const KeyValue<String, PackedStringArray> &KV : favorites[f]) {
+			if (ClassDB::is_parent_class(class_name, KV.key)) {
+				current_favorites.append_array(KV.value);
+			}
 		}
 	}
 }
 
-void EditorInspector::_set_property_favorited(const String &p_path, bool p_favorited) {
+void EditorInspector::_set_property_favorited_global(const String &p_path, bool p_favorited) {
 	if (!object) {
 		return;
 	}
@@ -5056,7 +5077,7 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 		ERR_FAIL_COND_MSG(class_name.is_empty(), "Can't favorite invalid property. If said property was from a script and recently renamed, try saving it first.");
 	}
 
-	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
+	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_global_properties();
 	if (p_favorited) {
 		current_favorites.append(p_path);
 		favorites[class_name].append(p_path);
@@ -5071,39 +5092,126 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 			}
 		}
 	}
-	EditorSettings::get_singleton()->set_favorite_properties(favorites);
+	EditorSettings::get_singleton()->set_favorite_global_properties(favorites);
+
+	update_tree();
+}
+
+void EditorInspector::_set_property_favorited_local(const String &p_path, bool p_favorited) {
+	if (!object) {
+		return;
+	}
+
+	StringName validate_name = object->get_class_name();
+	StringName class_name;
+
+	String theme_property;
+	if (p_path.begins_with("theme_override_")) {
+		theme_property = p_path.get_slicec('/', 1);
+	}
+
+	while (!validate_name.is_empty()) {
+		class_name = validate_name;
+
+		if (!theme_property.is_empty()) { // Deal with theme properties.
+			bool found = false;
+			HashMap<String, DocData::ClassDoc>::ConstIterator F = EditorHelp::get_doc_data()->class_list.find(class_name);
+			if (F) {
+				for (const DocData::ThemeItemDoc &prop : F->value.theme_properties) {
+					if (prop.name == theme_property) {
+						found = true;
+						break;
+					}
+				}
+			}
+
+			if (found) {
+				break;
+			}
+		} else if (ClassDB::has_property(class_name, p_path, true)) { // Check if the property is built-in.
+			break;
+		}
+
+		validate_name = ClassDB::get_parent_class_nocheck(class_name);
+	}
+
+	// "script" isn't a real property, so a hack is necessary.
+	if (validate_name.is_empty() && p_path != "script") {
+		class_name = "";
+	}
+
+	if (class_name.is_empty()) {
+		// Check if it's part of a script.
+		Ref<Script> scr = object->get_script();
+		if (scr.is_valid()) {
+			List<PropertyInfo> plist;
+			scr->get_script_property_list(&plist);
+
+			String path;
+			for (PropertyInfo &p : plist) {
+				if (p.usage & PROPERTY_USAGE_CATEGORY) {
+					path = p.hint_string;
+				} else if (p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE && p.name == p_path) {
+					class_name = path;
+					break;
+				}
+			}
+		}
+
+		ERR_FAIL_COND_MSG(class_name.is_empty(), "Can't favorite invalid property. If said property was from a script and recently renamed, try saving it first.");
+	}
+
+	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_local_properties();
+	if (p_favorited) {
+		current_favorites.append(p_path);
+		favorites[class_name].append(p_path);
+	} else {
+		current_favorites.erase(p_path);
+
+		if (favorites.has(class_name) && favorites[class_name].has(p_path)) {
+			if (favorites[class_name].size() > 1) {
+				favorites[class_name].erase(p_path);
+			} else {
+				favorites.erase(class_name);
+			}
+		}
+	}
+	EditorSettings::get_singleton()->set_favorite_local_properties(favorites);
 
 	update_tree();
 }
 
 void EditorInspector::_clear_current_favorites() {
 	current_favorites.clear();
-
-	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
-
-	Ref<Script> scr = object->get_script();
-	if (scr.is_valid()) {
-		List<PropertyInfo> plist;
-		scr->get_script_property_list(&plist);
-
-		for (PropertyInfo &p : plist) {
-			if (p.usage & PROPERTY_USAGE_CATEGORY && favorites.has(p.hint_string)) {
-				favorites.erase(p.hint_string);
+	HashMap<String, PackedStringArray> favorites1 = EditorSettings::get_singleton()->get_favorite_local_properties();
+	HashMap<String, PackedStringArray> favorites2 = EditorSettings::get_singleton()->get_favorite_global_properties();
+	HashMap<String, PackedStringArray> favorites[2] = { favorites1, favorites2 };
+	for (int i = 0; i < 2; i++) {
+		Ref<Script> scr = object->get_script();
+		if (scr.is_valid()) {
+			List<PropertyInfo> plist;
+			scr->get_script_property_list(&plist);
+			for (PropertyInfo &p : plist) {
+				if (p.usage & PROPERTY_USAGE_CATEGORY && favorites[i].has(p.hint_string)) {
+					favorites[i].erase(p.hint_string);
+				}
 			}
 		}
-	}
+		StringName class_name = object->get_class_name();
+		while (class_name) {
+			if (favorites[i].has(class_name)) {
+				favorites[i].erase(class_name);
+			}
 
-	StringName class_name = object->get_class_name();
-	while (class_name) {
-		if (favorites.has(class_name)) {
-			favorites.erase(class_name);
+			class_name = ClassDB::get_parent_class(class_name);
 		}
-
-		class_name = ClassDB::get_parent_class(class_name);
+		if (i == 0) {
+			EditorSettings::get_singleton()->set_favorite_local_properties(favorites[i]);
+		} else {
+			EditorSettings::get_singleton()->set_favorite_global_properties(favorites[i]);
+		}
+		update_tree();
 	}
-
-	EditorSettings::get_singleton()->set_favorite_properties(favorites);
-	update_tree();
 }
 
 void EditorInspector::_notification(int p_what) {

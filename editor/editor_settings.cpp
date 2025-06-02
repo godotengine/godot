@@ -1605,8 +1605,20 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	}
 }
 
-void EditorSettings::set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties) {
-	favorite_properties = p_favorite_properties;
+void EditorSettings::set_favorite_global_properties(const HashMap<String, PackedStringArray> &p_favorite_properties) {
+	favorite_global_properties = p_favorite_properties;
+	String favorite_properties_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_properties");
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	for (const KeyValue<String, PackedStringArray> &kv : p_favorite_properties) {
+		cf->set_value(kv.key, "properties", kv.value);
+	}
+	cf->save(favorite_properties_file);
+}
+
+void EditorSettings::set_favorite_local_properties(const HashMap<String, PackedStringArray> &p_favorite_properties) {
+	favorite_local_properties = p_favorite_properties;
 	String favorite_properties_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties");
 
 	Ref<ConfigFile> cf;
@@ -1621,8 +1633,12 @@ Vector<String> EditorSettings::get_favorites() const {
 	return favorites;
 }
 
-HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
-	return favorite_properties;
+HashMap<String, PackedStringArray> EditorSettings::get_favorite_global_properties() const {
+	return favorite_global_properties;
+}
+
+HashMap<String, PackedStringArray> EditorSettings::get_favorite_local_properties() const {
+	return favorite_local_properties;
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
@@ -1647,15 +1663,16 @@ Vector<String> EditorSettings::get_recent_dirs() const {
 
 void EditorSettings::load_favorites_and_recent_dirs() {
 	String favorites_file;
-	String favorite_properties_file;
+	String favorite_properties_global_file, favorite_properties_local_file;
 	String recent_dirs_file;
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		favorites_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_dirs");
-		favorite_properties_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_properties");
+		favorite_properties_global_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_properties");
 		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().path_join("recent_dirs");
 	} else {
 		favorites_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites");
-		favorite_properties_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties");
+		favorite_properties_global_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_properties");
+		favorite_properties_local_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties");
 		recent_dirs_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("recent_dirs");
 	}
 
@@ -1674,15 +1691,31 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 
 	Ref<ConfigFile> cf;
 	cf.instantiate();
-	if (cf->load(favorite_properties_file) == OK) {
+	if (cf->load(favorite_properties_global_file) == OK) {
 		Vector<String> secs = cf->get_sections();
 
 		for (String &E : secs) {
 			PackedStringArray properties = PackedStringArray(cf->get_value(E, "properties"));
 			if (EditorNode::get_editor_data().is_type_recognized(E) || ResourceLoader::exists(E, "Script")) {
 				for (const String &property : properties) {
-					if (!favorite_properties[E].has(property)) {
-						favorite_properties[E].push_back(property);
+					if (!favorite_global_properties[E].has(property)) {
+						favorite_global_properties[E].push_back(property);
+					}
+				}
+			}
+		}
+	}
+
+	cf.instantiate();
+	if (cf->load(favorite_properties_local_file) == OK) {
+		Vector<String> secs = cf->get_sections();
+
+		for (String &E : secs) {
+			PackedStringArray properties = PackedStringArray(cf->get_value(E, "properties"));
+			if (EditorNode::get_editor_data().is_type_recognized(E) || ResourceLoader::exists(E, "Script")) {
+				for (const String &property : properties) {
+					if (!favorite_local_properties[E].has(property)) {
+						favorite_local_properties[E].push_back(property);
 					}
 				}
 			}

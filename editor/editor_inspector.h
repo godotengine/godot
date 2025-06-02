@@ -64,7 +64,9 @@ public:
 		MENU_COPY_VALUE,
 		MENU_PASTE_VALUE,
 		MENU_COPY_PROPERTY_PATH,
-		MENU_FAVORITE_PROPERTY,
+		MENU_UNFAVORITE_BOTH,
+		MENU_FAVORITE_PROPERTY_GLOBAL,
+		MENU_FAVORITE_PROPERTY_LOCAL,
 		MENU_PIN_VALUE,
 		MENU_DELETE,
 		MENU_REVERT_VALUE,
@@ -648,7 +650,8 @@ class EditorInspector : public ScrollContainer {
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 
 	void _update_current_favorites();
-	void _set_property_favorited(const String &p_path, bool p_favorited);
+	void _set_property_favorited_global(const String &p_path, bool p_favorited);
+	void _set_property_favorited_local(const String &p_path, bool p_favorited);
 	void _clear_current_favorites();
 
 	void _node_removed(Node *p_node);
