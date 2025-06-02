@@ -492,10 +492,18 @@ int DisplayServerAppleEmbedded::get_primary_screen() const {
 }
 
 Point2i DisplayServerAppleEmbedded::screen_get_position(int p_screen) const {
-	return Size2i();
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
+	return Point2i(0, 0);
 }
 
 Size2i DisplayServerAppleEmbedded::screen_get_size(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	CALayer *layer = GDTAppDelegateService.viewController.godotView.renderingLayer;
 
 	if (!layer) {
@@ -506,6 +514,10 @@ Size2i DisplayServerAppleEmbedded::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerAppleEmbedded::screen_get_usable_rect(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
@@ -550,7 +562,8 @@ void DisplayServerAppleEmbedded::window_set_title(const String &p_title, WindowI
 }
 
 int DisplayServerAppleEmbedded::window_get_current_screen(WindowID p_window) const {
-	return SCREEN_OF_MAIN_WINDOW;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	return 0;
 }
 
 void DisplayServerAppleEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -640,7 +653,10 @@ float DisplayServerAppleEmbedded::screen_get_max_scale() const {
 }
 
 void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
-	screen_orientation = p_orientation;
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
+
 	if (@available(iOS 16.0, *)) {
 		[GDTAppDelegateService.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
 	}
@@ -652,6 +668,10 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServer::ScreenOri
 }
 
 DisplayServer::ScreenOrientation DisplayServerAppleEmbedded::screen_get_orientation(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_LANDSCAPE);
+
 	return screen_orientation;
 }
 
