@@ -291,8 +291,6 @@ void Node3D::set_basis(const Basis &p_basis) {
 }
 void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 	ERR_THREAD_GUARD;
-	fti_notify_node_changed();
-
 	if (_test_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE)) {
 		// We need the scale part, so if these are dirty, update it
 		data.scale = data.local_transform.basis.get_scale();
@@ -308,6 +306,7 @@ void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+	fti_notify_node_changed();
 }
 
 Vector3 Node3D::get_global_position() const {
@@ -370,7 +369,6 @@ void Node3D::fti_notify_node_changed(bool p_transform_changed) {
 
 void Node3D::set_transform(const Transform3D &p_transform) {
 	ERR_THREAD_GUARD;
-	fti_notify_node_changed();
 	data.local_transform = p_transform;
 	_replace_dirty_mask(DIRTY_EULER_ROTATION_AND_SCALE); // Make rot/scale dirty.
 
@@ -378,6 +376,7 @@ void Node3D::set_transform(const Transform3D &p_transform) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+	fti_notify_node_changed();
 }
 
 Basis Node3D::get_basis() const {
@@ -600,12 +599,12 @@ Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
 
 void Node3D::set_position(const Vector3 &p_position) {
 	ERR_THREAD_GUARD;
-	fti_notify_node_changed();
 	data.local_transform.origin = p_position;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+	fti_notify_node_changed();
 }
 
 void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
@@ -682,7 +681,6 @@ EulerOrder Node3D::get_rotation_order() const {
 
 void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	ERR_THREAD_GUARD;
-	fti_notify_node_changed();
 	if (_test_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE)) {
 		// Update scale only if rotation and scale are dirty, as rotation will be overridden.
 		data.scale = data.local_transform.basis.get_scale();
@@ -695,6 +693,7 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+	fti_notify_node_changed();
 }
 
 void Node3D::set_rotation_degrees(const Vector3 &p_euler_degrees) {
@@ -705,7 +704,6 @@ void Node3D::set_rotation_degrees(const Vector3 &p_euler_degrees) {
 
 void Node3D::set_scale(const Vector3 &p_scale) {
 	ERR_THREAD_GUARD;
-	fti_notify_node_changed();
 	if (_test_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE)) {
 		// Update rotation only if rotation and scale are dirty, as scale will be overridden.
 		data.euler_rotation = data.local_transform.basis.get_euler_normalized(data.euler_rotation_order);
@@ -718,6 +716,7 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+	fti_notify_node_changed();
 }
 
 Vector3 Node3D::get_position() const {
