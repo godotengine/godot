@@ -8,6 +8,7 @@
 		See [AStar3D] for a more thorough explanation on how to use this class. [AStar2D] is a wrapper for [AStar3D] that enforces 2D coordinates.
 	</description>
 	<tutorials>
+		<link title="Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
 	</tutorials>
 	<methods>
 		<method name="_compute_cost" qualifiers="virtual const">
