@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/input/input.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
