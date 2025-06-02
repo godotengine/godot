@@ -45,6 +45,15 @@ bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
+// These need to be the last static variables in this file, since we're exploiting the reverse-order destruction of static variables.
+static bool is_program_exiting = false;
+struct ProgramExitGuard {
+	~ProgramExitGuard() {
+		is_program_exiting = true;
+	}
+};
+static ProgramExitGuard program_exit_guard;
+
 void Script::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -536,13 +545,21 @@ void ScriptServer::save_global_classes() {
 }
 
 Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_include_variables) {
-	int language_count = ScriptServer::get_language_count();
-	Vector<Ref<ScriptBacktrace>> result;
-	result.resize(language_count);
-	for (int i = 0; i < language_count; i++) {
-		ScriptLanguage *language = ScriptServer::get_language(i);
-		result.write[i].instantiate(language, p_include_variables);
+	if (is_program_exiting) {
+		return Vector<Ref<ScriptBacktrace>>();
 	}
+
+	MutexLock lock(languages_mutex);
+	if (!languages_ready) {
+		return Vector<Ref<ScriptBacktrace>>();
+	}
+
+	Vector<Ref<ScriptBacktrace>> result;
+	result.resize(_language_count);
+	for (int i = 0; i < _language_count; i++) {
+		result.write[i].instantiate(_languages[i], p_include_variables);
+	}
+
 	return result;
 }
 
