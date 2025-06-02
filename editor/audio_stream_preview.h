@@ -50,7 +50,7 @@ public:
 	float get_max(float p_time, float p_time_next) const;
 	float get_min(float p_time, float p_time_next) const;
 
-	void create_key_region(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
+	void create_key_region_data(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
 	AudioStreamPreview();
 };

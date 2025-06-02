@@ -34,7 +34,7 @@
 #include "editor/animation_track_editor.h"
 #include "editor/audio_stream_preview.h"
 
-#define REGION_RESIZE_THRESHOLD (5.0 * EDSCALE)
+#define REGION_RESIZE_THRESHOLD 5.0
 #define REGION_MAX_WIDTH 4.0
 #define REGION_FONT_MARGIN 3.0
 #define REGION_DEFAULT_FONT_SCALE 1.5
@@ -43,8 +43,8 @@
 
 #define COLOR_EDIT_SAMPLE_INTERVAL 64
 
-class AnimationTrackEditBase : public AnimationTrackEdit {
-	GDCLASS(AnimationTrackEditBase, AnimationTrackEdit);
+class AnimationTrackEditKey : public AnimationTrackEdit {
+	GDCLASS(AnimationTrackEditKey, AnimationTrackEdit);
 
 private:
 	ObjectID id;
@@ -64,41 +64,38 @@ private:
 	Vector2 calc_key_region_shift(Vector2 &orig_region, Vector2 &region);
 	bool is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right);
 
-protected: // Font scaling factor, overridden by derived classes for specific track types.
-	float font_scl = REGION_DEFAULT_FONT_SCALE;
-
-public: // gui
+public:
 	void set_node(Object *p_object);
 	ObjectID get_node_id() const { return id; }
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void _preview_changed(ObjectID p_which);
 
-public: // draw
+public:
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
 	virtual bool is_key_selectable_by_distance() const override { return false; }
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
-protected: // data
-	virtual Ref<Resource> get_resource(const int p_index) { return nullptr; }
-	virtual float get_start_offset(const int p_index) { return 0; }
-	virtual float get_end_offset(const int p_index) { return 0; }
-	virtual float get_length(const int p_index) { return 0; }
-	virtual void set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {}
-	virtual void set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) {}
-	virtual StringName get_edit_name(const int p_index);
+protected:
+	virtual Ref<Resource> get_resource(const int p_index) { return nullptr; } // resource of the key (AudioStream, Animation, ...)
+	virtual float get_start_offset(const int p_index) { return 0; } // start offset of the key
+	virtual float get_end_offset(const int p_index) { return 0; } // end offset of the key
+	virtual float get_length(const int p_index) { return 0; } // total length of the key
+	virtual void set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {} //sets the start offset of the key
+	virtual void set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) {} //sets the end offset of the key
+	virtual StringName get_edit_name(const int p_index); //name of the key
 
 protected:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
-	virtual void apply_data(const Ref<Resource> resource, const float ofs) {}
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {}
+	virtual void apply_data(const Ref<Resource> resource, const float time) {}
+	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {} // data to visualize the key if the key has a length
 };
 
-class AnimationTrackEditTypeAudio : public AnimationTrackEditBase {
-	GDCLASS(AnimationTrackEditTypeAudio, AnimationTrackEditBase);
+class AnimationTrackEditTypeAudio : public AnimationTrackEditKey {
+	GDCLASS(AnimationTrackEditTypeAudio, AnimationTrackEditKey);
 
 	virtual void _preview_changed(ObjectID p_which) override;
 
@@ -110,16 +107,16 @@ protected:
 	virtual void set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) override;
 	virtual void set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) override;
 
-protected: // calc
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
-	virtual void apply_data(const Ref<Resource> resource, const float ofs) override;
+protected:
+	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
+	virtual void apply_data(const Ref<Resource> resource, const float time) override;
 
 public:
 	AnimationTrackEditTypeAudio();
 };
 
-class AnimationTrackEditTypeAnimation : public AnimationTrackEditBase {
-	GDCLASS(AnimationTrackEditTypeAnimation, AnimationTrackEditBase);
+class AnimationTrackEditTypeAnimation : public AnimationTrackEditKey {
+	GDCLASS(AnimationTrackEditTypeAnimation, AnimationTrackEditKey);
 
 	virtual void _preview_changed(ObjectID p_which) override;
 
@@ -133,20 +130,20 @@ protected:
 	virtual StringName get_edit_name(const int p_index) override;
 
 protected:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
-	virtual void apply_data(const Ref<Resource> resource, const float ofs) override;
+	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
+	virtual void apply_data(const Ref<Resource> resource, const float time) override;
 
 public:
 	AnimationTrackEditTypeAnimation();
 };
 
-class AnimationTrackEditAudio : public AnimationTrackEditBase {
-	GDCLASS(AnimationTrackEditAudio, AnimationTrackEditBase);
+class AnimationTrackEditAudio : public AnimationTrackEditKey {
+	GDCLASS(AnimationTrackEditAudio, AnimationTrackEditKey);
 
 	virtual void _preview_changed(ObjectID p_which) override;
 
 protected:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
+	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual Ref<Resource> get_resource(const int p_index) override;
 	virtual float get_length(const int p_index) override;
 
@@ -154,13 +151,13 @@ public:
 	AnimationTrackEditAudio();
 };
 
-class AnimationTrackEditSubAnim : public AnimationTrackEditBase {
-	GDCLASS(AnimationTrackEditSubAnim, AnimationTrackEditBase);
+class AnimationTrackEditSubAnim : public AnimationTrackEditKey {
+	GDCLASS(AnimationTrackEditSubAnim, AnimationTrackEditKey);
 
 	virtual void _preview_changed(ObjectID p_which) override;
 
 protected:
-	virtual void create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
+	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 
 	virtual Ref<Resource> get_resource(const int p_index) override;
 	virtual float get_length(const int p_index) override;
@@ -170,8 +167,8 @@ public:
 	AnimationTrackEditSubAnim();
 };
 
-class AnimationTrackEditBool : public AnimationTrackEditBase {
-	GDCLASS(AnimationTrackEditBool, AnimationTrackEditBase);
+class AnimationTrackEditBool : public AnimationTrackEditKey {
+	GDCLASS(AnimationTrackEditBool, AnimationTrackEditKey);
 
 private:
 	Ref<Texture2D> icon_checked;
@@ -186,8 +183,8 @@ public:
 	AnimationTrackEditBool();
 };
 
-class AnimationTrackEditColor : public AnimationTrackEditBase {
-	GDCLASS(AnimationTrackEditColor, AnimationTrackEditBase);
+class AnimationTrackEditColor : public AnimationTrackEditKey {
+	GDCLASS(AnimationTrackEditColor, AnimationTrackEditKey);
 
 public:
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
@@ -200,8 +197,8 @@ public:
 	AnimationTrackEditColor();
 };
 
-class AnimationTrackEditSpriteFrame : public AnimationTrackEditBase {
-	GDCLASS(AnimationTrackEditSpriteFrame, AnimationTrackEdit);
+class AnimationTrackEditSpriteFrame : public AnimationTrackEditKey {
+	GDCLASS(AnimationTrackEditSpriteFrame, AnimationTrackEditKey);
 
 private:
 	bool is_coords = false;
@@ -217,8 +214,8 @@ public:
 	AnimationTrackEditSpriteFrame();
 };
 
-class AnimationTrackEditVolumeDB : public AnimationTrackEditBase {
-	GDCLASS(AnimationTrackEditVolumeDB, AnimationTrackEdit);
+class AnimationTrackEditVolumeDB : public AnimationTrackEditKey {
+	GDCLASS(AnimationTrackEditVolumeDB, AnimationTrackEditKey);
 
 public:
 	virtual int get_key_height() const override;

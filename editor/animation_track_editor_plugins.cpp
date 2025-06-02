@@ -45,7 +45,6 @@
 /// BOOL ///
 
 AnimationTrackEditBool::AnimationTrackEditBool() {
-	font_scl = 1.0;
 }
 
 int AnimationTrackEditBool::get_key_height() const {
@@ -82,7 +81,6 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 /// COLOR ///
 
 AnimationTrackEditColor::AnimationTrackEditColor() {
-	font_scl = 0.8;
 }
 
 Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
@@ -96,7 +94,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	int fh = font->get_height(font_size) * font_scl;
+	int fh = font->get_height(font_size) * REGION_DEFAULT_FONT_SCALE;
 
 	Rect2 rect(Vector2(p_x - fh / 2, int(get_size().height - fh) / 2), Size2(fh, fh));
 
@@ -115,7 +113,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	int fh = (font->get_height(font_size) * font_scl);
+	int fh = (font->get_height(font_size) * REGION_DEFAULT_FONT_SCALE);
 
 	fh /= 3;
 
@@ -182,7 +180,6 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 /// SPRITE FRAME / FRAME_COORDS ///
 
 AnimationTrackEditSpriteFrame::AnimationTrackEditSpriteFrame() {
-	font_scl = 2.0;
 }
 
 Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_sec) {
@@ -371,12 +368,11 @@ void AnimationTrackEditSpriteFrame::set_as_coords() {
 /// SUB ANIMATION ///
 
 AnimationTrackEditSubAnim::AnimationTrackEditSubAnim() {
-	font_scl = 1.5;
 }
 
-void AnimationTrackEditSubAnim::create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+void AnimationTrackEditSubAnim::get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
 	Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(resource);
-	preview->create_key_region(points, rect, p_pixels_sec, start_ofs);
+	preview->create_key_region_data(points, rect, p_pixels_sec, start_ofs);
 }
 
 void AnimationTrackEditSubAnim::_preview_changed(ObjectID p_which) {
@@ -424,7 +420,7 @@ float AnimationTrackEditSubAnim::get_length(const int p_index) {
 		return anim->get_length();
 	}
 
-	return AnimationTrackEditBase::get_length(p_index);
+	return AnimationTrackEditKey::get_length(p_index);
 }
 
 StringName AnimationTrackEditSubAnim::get_edit_name(const int p_index) {
@@ -433,18 +429,17 @@ StringName AnimationTrackEditSubAnim::get_edit_name(const int p_index) {
 		return edit_name;
 	}
 
-	return AnimationTrackEditBase::get_edit_name(p_index);
+	return AnimationTrackEditKey::get_edit_name(p_index);
 }
 
 //// VOLUME DB ////
 
 AnimationTrackEditVolumeDB::AnimationTrackEditVolumeDB() {
-	font_scl = 1.2;
 }
 
 int AnimationTrackEditVolumeDB::get_key_height() const {
 	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
-	return volume_texture->get_height() * font_scl;
+	return volume_texture->get_height() * REGION_DEFAULT_FONT_SCALE;
 }
 
 void AnimationTrackEditVolumeDB::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
@@ -516,27 +511,23 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 /// AUDIO ///
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
-	font_scl = 1.5;
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
 }
 
 void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
-	AnimationTrackEditBase::_preview_changed(p_which);
+	AnimationTrackEditKey::_preview_changed(p_which);
 }
 
-void AnimationTrackEditTypeAudio::create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+void AnimationTrackEditTypeAudio::get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(resource);
-	preview->create_key_region(points, rect, p_pixels_sec, start_ofs);
+	preview->create_key_region_data(points, rect, p_pixels_sec, start_ofs);
 }
 
-void AnimationTrackEditTypeAudio::apply_data(const Ref<Resource> resource, const float ofs) {
+void AnimationTrackEditTypeAudio::apply_data(const Ref<Resource> resource, const float time) {
 	Ref<AudioStream> stream = resource;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Add Audio Track Clip"));
-	undo_redo->add_do_method(get_animation().ptr(), "audio_track_insert_key", get_track(), ofs, stream);
-	undo_redo->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), ofs);
-	undo_redo->commit_action();
+	undo_redo->add_do_method(get_animation().ptr(), "audio_track_insert_key", get_track(), time, stream);
 }
 
 Ref<Resource> AnimationTrackEditTypeAudio::get_resource(const int p_index) {
@@ -558,7 +549,7 @@ float AnimationTrackEditTypeAudio::get_length(const int p_index) {
 		return stream->get_length();
 	}
 
-	return AnimationTrackEditBase::get_length(p_index);
+	return AnimationTrackEditKey::get_length(p_index);
 }
 
 void AnimationTrackEditTypeAudio::set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {
@@ -576,7 +567,6 @@ void AnimationTrackEditTypeAudio::set_end_offset(const int p_index, const float 
 /// AUDIO ///
 
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
-	font_scl = 1.5;
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditAudio::_preview_changed));
 }
 
@@ -594,9 +584,9 @@ void AnimationTrackEditAudio::_preview_changed(ObjectID p_which) {
 	}
 }
 
-void AnimationTrackEditAudio::create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+void AnimationTrackEditAudio::get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(resource);
-	preview->create_key_region(points, rect, p_pixels_sec, start_ofs);
+	preview->create_key_region_data(points, rect, p_pixels_sec, start_ofs);
 }
 
 Ref<Resource> AnimationTrackEditAudio::get_resource(const int p_index) {
@@ -610,26 +600,25 @@ float AnimationTrackEditAudio::get_length(const int p_index) {
 		return stream->get_length();
 	}
 
-	return AnimationTrackEditBase::get_length(p_index);
+	return AnimationTrackEditKey::get_length(p_index);
 }
 
 /// TYPE ANIMATION ///
 
 AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
-	font_scl = 1.5;
 	AnimationPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAnimation::_preview_changed));
 }
 
 void AnimationTrackEditTypeAnimation::_preview_changed(ObjectID p_which) {
-	AnimationTrackEditBase::_preview_changed(p_which);
+	AnimationTrackEditKey::_preview_changed(p_which);
 }
 
-void AnimationTrackEditTypeAnimation::create_key_region(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+void AnimationTrackEditTypeAnimation::get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
 	Ref<AnimationPreview> preview = AnimationPreviewGenerator::get_singleton()->generate_preview(resource);
-	preview->create_key_region(points, rect, p_pixels_sec, start_ofs);
+	preview->create_key_region_data(points, rect, p_pixels_sec, start_ofs);
 }
 
-void AnimationTrackEditTypeAnimation::apply_data(const Ref<Resource> resource, const float ofs) {
+void AnimationTrackEditTypeAnimation::apply_data(const Ref<Resource> resource, const float time) {
 	Ref<Animation> anim = resource;
 
 	StringName anim_name = anim->get_name();
@@ -639,10 +628,7 @@ void AnimationTrackEditTypeAnimation::apply_data(const Ref<Resource> resource, c
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Add Animation Track Clip"));
-	undo_redo->add_do_method(get_animation().ptr(), "animation_track_insert_key", get_track(), ofs, anim_name);
-	undo_redo->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), ofs);
-	undo_redo->commit_action();
+	undo_redo->add_do_method(get_animation().ptr(), "animation_track_insert_key", get_track(), time, anim_name);
 }
 
 Ref<Resource> AnimationTrackEditTypeAnimation::get_resource(const int p_index) {
@@ -680,7 +666,7 @@ float AnimationTrackEditTypeAnimation::get_length(const int p_index) {
 		return anim->get_length();
 	}
 
-	return AnimationTrackEditBase::get_length(p_index);
+	return AnimationTrackEditKey::get_length(p_index);
 }
 
 void AnimationTrackEditTypeAnimation::set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {
@@ -701,12 +687,12 @@ StringName AnimationTrackEditTypeAnimation::get_edit_name(const int p_index) {
 		return edit_name;
 	}
 
-	return AnimationTrackEditBase::get_edit_name(p_index);
+	return AnimationTrackEditKey::get_edit_name(p_index);
 }
 
 /// BASE ///
 
-bool AnimationTrackEditBase::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right) {
+bool AnimationTrackEditKey::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right) {
 	Vector2 region = calc_key_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
 	region = clip_key_region(region, p_clip_left, p_clip_right);
 
@@ -720,7 +706,7 @@ bool AnimationTrackEditBase::handle_track_resizing(const Ref<InputEventMouseMoti
 		float diff_left = region_begin - mm->get_position().x;
 		float diff_right = mm->get_position().x - region_end;
 
-		float resize_threshold = REGION_RESIZE_THRESHOLD;
+		float resize_threshold = REGION_RESIZE_THRESHOLD * EDSCALE;
 
 		if (diff_left > 0) { // left outside clip
 			if (Math::abs(diff_left) < resize_threshold) {
@@ -756,7 +742,7 @@ bool AnimationTrackEditBase::handle_track_resizing(const Ref<InputEventMouseMoti
 	return false;
 }
 
-void AnimationTrackEditBase::gui_input(const Ref<InputEvent> &p_event) {
+void AnimationTrackEditKey::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -865,7 +851,7 @@ void AnimationTrackEditBase::gui_input(const Ref<InputEvent> &p_event) {
 	AnimationTrackEdit::gui_input(p_event);
 }
 
-Control::CursorShape AnimationTrackEditBase::get_cursor_shape(const Point2 &p_pos) const {
+Control::CursorShape AnimationTrackEditKey::get_cursor_shape(const Point2 &p_pos) const {
 	if (over_drag_position || len_resizing) {
 		return Control::CURSOR_HSIZE;
 	} else {
@@ -873,7 +859,7 @@ Control::CursorShape AnimationTrackEditBase::get_cursor_shape(const Point2 &p_po
 	}
 }
 
-void AnimationTrackEditBase::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
+void AnimationTrackEditKey::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Ref<Resource> resource = get_resource(p_index);
 	if (!resource.is_valid()) {
 		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
@@ -899,7 +885,7 @@ void AnimationTrackEditBase::draw_key(int p_index, float p_pixels_sec, int p_x, 
 	draw_key_region(resource, start_ofs + diff_start_ofs, end_ofs + diff_end_ofs, len, p_index, p_pixels_sec, p_x + (diff_start_ofs * p_pixels_sec), p_selected, p_clip_left, p_clip_right);
 }
 
-bool AnimationTrackEditBase::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+bool AnimationTrackEditKey::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
 		Dictionary drag_data = p_data;
 		if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
@@ -924,7 +910,7 @@ bool AnimationTrackEditBase::can_drop_data(const Point2 &p_point, const Variant 
 	return AnimationTrackEdit::can_drop_data(p_point, p_data);
 }
 
-void AnimationTrackEditBase::drop_data(const Point2 &p_point, const Variant &p_data) {
+void AnimationTrackEditKey::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
 		Ref<Resource> resource;
 		Dictionary drag_data = p_data;
@@ -940,16 +926,20 @@ void AnimationTrackEditBase::drop_data(const Point2 &p_point, const Variant &p_d
 
 		if (resource.is_valid()) {
 			int x = p_point.x - get_timeline()->get_name_limit();
-			float ofs = x / get_timeline()->get_zoom_scale();
-			ofs += get_timeline()->get_value();
+			float time = x / get_timeline()->get_zoom_scale();
+			time += get_timeline()->get_value();
 
-			ofs = get_editor()->snap_time(ofs);
+			time = get_editor()->snap_time(time);
 
-			while (get_animation()->track_find_key(get_track(), ofs, Animation::FIND_MODE_APPROX) != -1) { //make sure insertion point is valid
-				ofs += 0.0001;
+			while (get_animation()->track_find_key(get_track(), time, Animation::FIND_MODE_APPROX) != -1) { //make sure insertion point is valid
+				time += 0.0001;
 			}
 
-			apply_data(resource, ofs);
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Add Track Clip"));
+			apply_data(resource, time);
+			undo_redo->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), time);
+			undo_redo->commit_action();
 
 			queue_redraw();
 			return;
@@ -959,7 +949,7 @@ void AnimationTrackEditBase::drop_data(const Point2 &p_point, const Variant &p_d
 	AnimationTrackEdit::drop_data(p_point, p_data);
 }
 
-Rect2 AnimationTrackEditBase::get_key_rect(int p_index, float p_pixels_sec) {
+Rect2 AnimationTrackEditKey::get_key_rect(int p_index, float p_pixels_sec) {
 	Ref<Resource> resource = get_resource(p_index);
 	if (!resource.is_valid()) {
 		return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
@@ -974,11 +964,11 @@ Rect2 AnimationTrackEditBase::get_key_rect(int p_index, float p_pixels_sec) {
 	return Rect2(region.x, 0, region.y, h);
 }
 
-void AnimationTrackEditBase::set_node(Object *p_object) {
+void AnimationTrackEditKey::set_node(Object *p_object) {
 	id = p_object->get_instance_id();
 }
 
-StringName AnimationTrackEditBase::get_edit_name(const int p_index) {
+StringName AnimationTrackEditKey::get_edit_name(const int p_index) {
 	String resource_name = "null";
 	Ref<Resource> resource = get_resource(p_index);
 	if (resource.is_valid()) {
@@ -993,7 +983,7 @@ StringName AnimationTrackEditBase::get_edit_name(const int p_index) {
 	return resource_name;
 }
 
-Vector2 AnimationTrackEditBase::calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x) {
+Vector2 AnimationTrackEditKey::calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x) {
 	float anim_len = len - start_ofs - end_ofs;
 	if (anim_len < 0) {
 		WARN_PRINT("anim_len < 0");
@@ -1013,22 +1003,22 @@ Vector2 AnimationTrackEditBase::calc_key_region(const float start_ofs, const flo
 	return Vector2(pixel_begin, pixel_end);
 }
 
-Vector2 AnimationTrackEditBase::clip_key_region(Vector2 region, int p_clip_left, int p_clip_right) {
+Vector2 AnimationTrackEditKey::clip_key_region(Vector2 region, int p_clip_left, int p_clip_right) {
 	region.y = CLAMP(region.y, MAX(region.x, p_clip_left), p_clip_right);
 	region.x = CLAMP(region.x, p_clip_left, MIN(region.y, p_clip_right));
 	ERR_FAIL_COND_V_MSG(region.x > region.y, region, "Clipped region is invalid (x > y).");
 	return region;
 }
 
-Vector2 AnimationTrackEditBase::calc_key_region_shift(Vector2 &orig_region, Vector2 &region) {
+Vector2 AnimationTrackEditKey::calc_key_region_shift(Vector2 &orig_region, Vector2 &region) {
 	return Vector2(region.x - orig_region.x, region.y - orig_region.y);
 }
 
-bool AnimationTrackEditBase::is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right) {
+bool AnimationTrackEditKey::is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right) {
 	return (region.y < p_clip_left || region.x > p_clip_right);
 }
 
-void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
+void AnimationTrackEditKey::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Vector2 orig_region = calc_key_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
 
 	bool is_outside = is_key_region_outside(orig_region, p_clip_left, p_clip_right);
@@ -1074,7 +1064,7 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 	}
 
 	Vector2 region_shift = calc_key_region_shift(orig_region, region);
-	create_key_region(resource, points, rect, p_pixels_sec, start_ofs + region_shift.x / p_pixels_sec);
+	get_key_region_data(resource, points, rect, p_pixels_sec, start_ofs + region_shift.x / p_pixels_sec);
 
 	if (!points.is_empty()) {
 		draw_multiline_colors(points, colors);
@@ -1116,7 +1106,7 @@ void AnimationTrackEditBase::draw_key_region(Ref<Resource> resource, float start
 	}
 }
 
-void AnimationTrackEditBase::_preview_changed(ObjectID p_which) {
+void AnimationTrackEditKey::_preview_changed(ObjectID p_which) {
 	for (int p_index = 0; p_index < get_animation()->track_get_key_count(get_track()); p_index++) {
 		Ref<Resource> resource = get_resource(p_index);
 		if (resource.is_valid() && resource->get_instance_id() == p_which) {
@@ -1126,10 +1116,10 @@ void AnimationTrackEditBase::_preview_changed(ObjectID p_which) {
 	}
 }
 
-int AnimationTrackEditBase::get_key_height() const {
+int AnimationTrackEditKey::get_key_height() const {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	return int(font->get_height(font_size) * font_scl);
+	return int(font->get_height(font_size) * REGION_DEFAULT_FONT_SCALE);
 }
 
 /// PLUGIN ///
