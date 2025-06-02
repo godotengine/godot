@@ -211,7 +211,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	return preview->preview;
 }
 
-void AudioStreamPreview::create_key_region(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+void AudioStreamPreview::create_key_region_data(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
 	float preview_len = get_length();
 	float pixel_begin = rect.position.x;
 	float from_x = rect.position.x;

@@ -130,7 +130,7 @@ Ref<AnimationPreview> AnimationPreviewGenerator::generate_preview(const Ref<Anim
 	return preview->preview;
 }
 
-void AnimationPreview::create_key_region(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+void AnimationPreview::create_key_region_data(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
 	Vector<TrackKeyTime> key_times_result = get_key_times_with_tracks();
 	int curr_track_count = get_track_count();
 	float track_h = curr_track_count > 0 ? (rect.size.height - 2) / curr_track_count : rect.size.height;
