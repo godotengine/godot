@@ -305,10 +305,10 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 		}
 
 		fae.instantiate();
-		ERR_FAIL_COND_V(fae.is_null(), ERR_SKIP);
+		ERR_FAIL_COND_V(fae.is_null(), ERR_FILE_CANT_OPEN);
 
 		Error err = fae->open_and_parse(ftmp, p_key, FileAccessEncrypted::MODE_WRITE_AES256, false, iv);
-		ERR_FAIL_COND_V(err != OK, ERR_SKIP);
+		ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
 		ftmp = fae;
 	}
 
@@ -319,6 +319,8 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 		ftmp.unref();
 		fae.unref();
 	}
+
+	ERR_FAIL_COND_V(pd->f->get_position() - sd.ofs < (uint64_t)p_data.size(), ERR_FILE_CANT_WRITE);
 
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
 	for (int i = 0; i < pad; i++) {
@@ -1906,53 +1908,19 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(EditorPaths::get_singleton()->get_temp_dir());
 
-	String tmppath = EditorPaths::get_singleton()->get_temp_dir().path_join("packtmp");
-	Ref<FileAccess> ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
-	if (ftmp.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Cannot create file \"%s\"."), tmppath));
-		return ERR_CANT_CREATE;
-	}
-
-	PackData pd;
-	pd.ep = &ep;
-	pd.f = ftmp;
-	pd.so_files = p_so_files;
-
-	Error err = export_project_files(p_preset, p_debug, p_save_func, p_remove_func, &pd, _pack_add_shared_object);
-
-	// Close temp file.
-	pd.f.unref();
-	ftmp.unref();
-
-	if (err != OK) {
-		DirAccess::remove_file_or_error(tmppath);
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Failed to export project files."));
-		return err;
-	}
-
-	if (pd.file_ofs.is_empty()) {
-		DirAccess::remove_file_or_error(tmppath);
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("No files or changes to export."));
-		return FAILED;
-	}
-
-	pd.file_ofs.sort(); //do sort, so we can do binary search later
-
 	Ref<FileAccess> f;
 	int64_t embed_pos = 0;
 	if (!p_embed) {
-		// Regular output to separate PCK file
+		// Regular output to separate PCK file.
 		f = FileAccess::open(p_path, FileAccess::WRITE);
 		if (f.is_null()) {
-			DirAccess::remove_file_or_error(tmppath);
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file for writing at path \"%s\"."), p_path));
 			return ERR_CANT_CREATE;
 		}
 	} else {
-		// Append to executable
+		// Append to executable.
 		f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 		if (f.is_null()) {
-			DirAccess::remove_file_or_error(tmppath);
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file for reading-writing at path \"%s\"."), p_path));
 			return ERR_FILE_CANT_OPEN;
 		}
@@ -1973,32 +1941,68 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	int64_t pck_start_pos = f->get_position();
 
+	// Write header.
 	f->store_32(PACK_HEADER_MAGIC);
 	f->store_32(PACK_FORMAT_VERSION);
 	f->store_32(GODOT_VERSION_MAJOR);
 	f->store_32(GODOT_VERSION_MINOR);
 	f->store_32(GODOT_VERSION_PATCH);
 
-	uint32_t pack_flags = 0;
+	uint32_t pack_flags = PACK_REL_FILEBASE;
 	bool enc_pck = p_preset->get_enc_pck();
 	bool enc_directory = p_preset->get_enc_directory();
 	if (enc_pck && enc_directory) {
 		pack_flags |= PACK_DIR_ENCRYPTED;
 	}
-	if (p_embed) {
-		pack_flags |= PACK_REL_FILEBASE;
-	}
-	f->store_32(pack_flags); // flags
+	f->store_32(pack_flags); // Flags.
 
 	uint64_t file_base_ofs = f->get_position();
-	f->store_64(0); // files base
+	f->store_64(0); // Files base.
+
+	uint64_t dir_base_ofs = f->get_position();
+	f->store_64(0); // Directory offset.
 
 	for (int i = 0; i < 16; i++) {
-		//reserved
-		f->store_32(0);
+		f->store_32(0); // Reserved.
 	}
 
-	f->store_32(pd.file_ofs.size()); //amount of files
+	uint64_t file_base = f->get_position();
+	f->seek(file_base_ofs);
+	f->store_64(file_base - pck_start_pos); // Update files base.
+	f->seek(file_base);
+
+	// Write files.
+	PackData pd;
+	pd.ep = &ep;
+	pd.f = f;
+	pd.so_files = p_so_files;
+
+	Error err = export_project_files(p_preset, p_debug, p_save_func, p_remove_func, &pd, _pack_add_shared_object);
+
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Failed to export project files."));
+		return err;
+	}
+
+	if (pd.file_ofs.is_empty()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("No files or changes to export."));
+		return FAILED;
+	}
+
+	pd.file_ofs.sort(); // Do sort, so we can do binary search later (where ?).
+
+	int dir_padding = _get_pad(PCK_PADDING, f->get_position());
+	for (int i = 0; i < dir_padding; i++) {
+		f->store_8(0);
+	}
+
+	// Write directory.
+	uint64_t dir_offset = f->get_position();
+	f->seek(dir_base_ofs);
+	f->store_64(dir_offset - pck_start_pos);
+	f->seek(dir_offset);
+
+	f->store_32(pd.file_ofs.size());
 
 	Ref<FileAccessEncrypted> fae;
 	Ref<FileAccess> fhead = f;
@@ -2048,7 +2052,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 				for (int64_t j = 0; j < pd.file_ofs[i].md5.size(); j++) {
 					seed = ((seed << 5) + seed) ^ pd.file_ofs[i].md5[j];
 				}
-				seed = ((seed << 5) + seed) ^ pd.file_ofs[i].ofs;
+				seed = ((seed << 5) + seed) ^ (pd.file_ofs[i].ofs - file_base);
 				seed = ((seed << 5) + seed) ^ pd.file_ofs[i].size;
 			}
 
@@ -2078,9 +2082,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 			fhead->store_8(0);
 		}
 
-		fhead->store_64(pd.file_ofs[i].ofs);
-		fhead->store_64(pd.file_ofs[i].size); // pay attention here, this is where file is
-		fhead->store_buffer(pd.file_ofs[i].md5.ptr(), 16); //also save md5 for file
+		fhead->store_64(pd.file_ofs[i].ofs - file_base);
+		fhead->store_64(pd.file_ofs[i].size);
+		fhead->store_buffer(pd.file_ofs[i].md5.ptr(), 16);
 		uint32_t flags = 0;
 		if (pd.file_ofs[i].encrypted) {
 			flags |= PACK_FILE_ENCRYPTED;
@@ -2096,44 +2100,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		fae.unref();
 	}
 
-	int header_padding = _get_pad(PCK_PADDING, f->get_position());
-	for (int i = 0; i < header_padding; i++) {
-		f->store_8(0);
-	}
-
-	uint64_t file_base = f->get_position();
-	uint64_t file_base_store = file_base;
-	if (pack_flags & PACK_REL_FILEBASE) {
-		file_base_store -= pck_start_pos;
-	}
-	f->seek(file_base_ofs);
-	f->store_64(file_base_store); // update files base
-	f->seek(file_base);
-
-	// Save the rest of the data.
-
-	ftmp = FileAccess::open(tmppath, FileAccess::READ);
-	if (ftmp.is_null()) {
-		DirAccess::remove_file_or_error(tmppath);
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file to read from path \"%s\"."), tmppath));
-		return ERR_CANT_CREATE;
-	}
-
-	const int bufsize = 16384;
-	uint8_t buf[bufsize];
-
-	while (true) {
-		uint64_t got = ftmp->get_buffer(buf, bufsize);
-		if (got == 0) {
-			break;
-		}
-		f->store_buffer(buf, got);
-	}
-
-	ftmp.unref(); // Close temp file.
-
 	if (p_embed) {
-		// Ensure embedded data ends at a 64-bit multiple
+		// Ensure embedded data ends at a 64-bit multiple.
 		uint64_t embed_end = f->get_position() - embed_pos + 12;
 		uint64_t pad = embed_end % 8;
 		for (uint64_t i = 0; i < pad; i++) {
@@ -2149,8 +2117,6 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		}
 	}
 	f->close();
-
-	DirAccess::remove_file_or_error(tmppath);
 
 	return OK;
 }
