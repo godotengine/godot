@@ -404,6 +404,7 @@ protected:
 	static bool inform_variant_array(int &r_min, int &r_max); // Returns true if max and min are swapped.
 
 #ifndef DISABLE_DEPRECATED
+	int animation_track_insert_key_bind_compat_106882(int p_track, double p_time, const StringName &p_animation);
 	Vector3 _position_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
 	Quaternion _rotation_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
 	Vector3 _scale_track_interpolate_bind_compat_86629(int p_track, double p_time) const;

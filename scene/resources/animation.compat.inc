@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+int Animation::animation_track_insert_key_bind_compat_106882(int p_track, double p_time, const StringName &p_animation) {
+	return animation_track_insert_key(p_track, p_time, p_animation, 0, 0);
+}
+
 Vector3 Animation::_position_track_interpolate_bind_compat_86629(int p_track, double p_time) const {
 	return position_track_interpolate(p_track, p_time, false);
 }
