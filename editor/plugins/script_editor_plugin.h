@@ -321,6 +321,14 @@ class ScriptEditor : public PanelContainer {
 		DISPLAY_FULL_PATH,
 	};
 
+	enum ScriptEditMode {
+		EDIT_DROP,
+		EDIT_CREATE,
+		EDIT_OPEN,
+		EDIT_ADDSIGNAL,
+		EDIT_NONE
+	};
+
 	HBoxContainer *menu_hb = nullptr;
 	MenuButton *file_menu = nullptr;
 	MenuButton *edit_menu = nullptr;
@@ -581,14 +589,14 @@ public:
 	void open_find_in_files_dialog(const String &text);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
-	Ref<Resource> open_file(const String &p_file);
+	Ref<Resource> open_file(const String &p_file, ScriptEditMode script_edit_mode = ScriptEditMode::EDIT_NONE);
 
 	void ensure_select_current();
 
 	bool is_editor_floating();
 
-	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
-	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
+	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true, ScriptEditMode script_edit_mode = ScriptEditMode::EDIT_NONE) { return edit(p_resource, -1, 0, p_grab_focus, script_edit_mode); }
+	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true, ScriptEditMode script_edit_mode = ScriptEditMode::EDIT_NONE);
 
 	Vector<String> _get_breakpoints();
 	void get_breakpoints(List<String> *p_breakpoints);

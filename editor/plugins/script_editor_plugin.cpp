@@ -2456,7 +2456,7 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 	return OK;
 }
 
-bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus) {
+bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus, ScriptEditMode script_edit_mode) {
 	if (p_resource.is_null()) {
 		return false;
 	}
@@ -2483,6 +2483,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	}
 
 	if (use_external_editor &&
+		script_edit_mode != ScriptEditMode::EDIT_DROP &&
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
 			p_resource->get_path().is_resource_file()) {
 		String path = EDITOR_GET("text_editor/external/exec_path");
@@ -2893,7 +2894,7 @@ void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const
 	open_textfile_after_create = false;
 }
 
-Ref<Resource> ScriptEditor::open_file(const String &p_file) {
+Ref<Resource> ScriptEditor::open_file(const String &p_file, ScriptEditMode script_edit_mode) {
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
@@ -2904,7 +2905,7 @@ Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 			return Ref<Resource>();
 		}
 
-		edit(scr);
+		edit(scr, true, script_edit_mode);
 		return scr;
 	}
 
@@ -3338,7 +3339,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 				continue;
 			}
 
-			Ref<Resource> res = open_file(file);
+			Ref<Resource> res = open_file(file, ScriptEditMode::EDIT_DROP);
 			if (res.is_valid()) {
 				const int num_tabs = tab_container->get_tab_count();
 				if (num_tabs > num_tabs_before) {
