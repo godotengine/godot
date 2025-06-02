@@ -50,15 +50,6 @@
 				Adds a track to the Animation.
 			</description>
 		</method>
-		<method name="animation_track_get_key_start_offset" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="key_idx" type="int" />
-			<description>
-				Returns the start offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track.
-				Start offset is the number of seconds cut off at the beginning of the animation.
-			</description>
-		</method>
 		<method name="animation_track_get_key_end_offset" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="track_idx" type="int" />
@@ -66,6 +57,15 @@
 			<description>
 				Returns the end offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track.
 				End offset is the number of seconds cut off at the ending of the animation.
+			</description>
+		</method>
+		<method name="animation_track_get_key_start_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the start offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track.
+				Start offset is the number of seconds cut off at the beginning of the animation.
 			</description>
 		</method>
 		<method name="animation_track_get_key_animation" qualifiers="const">
@@ -95,15 +95,6 @@
 				Returns [code]true[/code] if the track at [param track_idx] will be blended with other animations.
 			</description>
 		</method>
-		<method name="animation_track_set_key_start_offset">
-			<return type="void" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="key_idx" type="int" />
-			<param index="2" name="offset" type="float" />
-			<description>
-				Sets the start offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Animation Track.
-			</description>
-		</method>
 		<method name="animation_track_set_key_end_offset">
 			<return type="void" />
 			<param index="0" name="track_idx" type="int" />
@@ -111,6 +102,15 @@
 			<param index="2" name="offset" type="float" />
 			<description>
 				Sets the end offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Animation Track.
+			</description>
+		</method>
+		<method name="animation_track_set_key_start_offset">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="offset" type="float" />
+			<description>
+				Sets the start offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_set_key_animation">
@@ -130,15 +130,6 @@
 				Sets whether the track will be blended with other animations. If [code]true[/code], the animation changes depending on the blend value.
 			</description>
 		</method>
-		<method name="audio_track_get_key_start_offset" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="key_idx" type="int" />
-			<description>
-				Returns the start offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
-				Start offset is the number of seconds cut off at the beginning of the audio stream.
-			</description>
-		</method>
 		<method name="audio_track_get_key_end_offset" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="track_idx" type="int" />
@@ -146,6 +137,15 @@
 			<description>
 				Returns the end offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
 				End offset is the number of seconds cut off at the ending of the audio stream.
+			</description>
+		</method>
+		<method name="audio_track_get_key_start_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the start offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
+				Start offset is the number of seconds cut off at the beginning of the audio stream.
 			</description>
 		</method>
 		<method name="audio_track_get_key_stream" qualifiers="const">
@@ -175,15 +175,6 @@
 				Returns [code]true[/code] if the track at [param track_idx] will be blended with other animations.
 			</description>
 		</method>
-		<method name="audio_track_set_key_start_offset">
-			<return type="void" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="key_idx" type="int" />
-			<param index="2" name="offset" type="float" />
-			<description>
-				Sets the start offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Audio Track.
-			</description>
-		</method>
 		<method name="audio_track_set_key_end_offset">
 			<return type="void" />
 			<param index="0" name="track_idx" type="int" />
@@ -191,6 +182,15 @@
 			<param index="2" name="offset" type="float" />
 			<description>
 				Sets the end offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Audio Track.
+			</description>
+		</method>
+		<method name="audio_track_set_key_start_offset">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="offset" type="float" />
+			<description>
+				Sets the start offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_stream">
