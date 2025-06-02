@@ -501,22 +501,15 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 		}
 	}
 
-	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
-	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
-
-	PAddDllDirectory add_dll_directory = (PAddDllDirectory)(void *)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
-	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)(void *)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
-
-	bool has_dll_directory_api = ((add_dll_directory != nullptr) && (remove_dll_directory != nullptr));
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
 	String dll_path = fix_path(load_path);
 	String dll_dir = fix_path(ProjectSettings::get_singleton()->globalize_path(load_path.get_base_dir()));
-	if (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory((LPCWSTR)(dll_dir.utf16().get_data()));
+	if (p_data != nullptr && p_data->also_set_library_path) {
+		cookie = AddDllDirectory((LPCWSTR)(dll_dir.utf16().get_data()));
 	}
 
-	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(dll_path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(dll_path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 	if (!p_library_handle) {
 		if (p_data != nullptr && p_data->generate_temp_files) {
 			DirAccess::remove_absolute(load_path);
@@ -548,7 +541,7 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 #endif
 
 	if (cookie) {
-		remove_dll_directory(cookie);
+		RemoveDllDirectory(cookie);
 	}
 
 	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
@@ -643,24 +636,6 @@ String OS_Windows::get_version_alias() const {
 					} else {
 						windows_string += "10";
 					}
-				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 3) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string = "Server 2012 R2";
-				} else {
-					windows_string += "8.1";
-				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 2) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string += "Server 2012";
-				} else {
-					windows_string += "8";
-				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 1) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string = "Server 2008 R2";
-				} else {
-					windows_string += "7";
 				}
 			} else {
 				windows_string += "Unknown";
@@ -2713,7 +2688,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	GetConsoleMode(stdoutHandle, &outMode);
 	outMode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	if (!SetConsoleMode(stdoutHandle, outMode)) {
-		// Windows 8.1 or below, or Windows 10 prior to Anniversary Update.
+		// Windows 10 prior to Anniversary Update.
 		print_verbose("Can't set the ENABLE_VIRTUAL_TERMINAL_PROCESSING Windows console mode. `print_rich()` will not work as expected.");
 	}
 
