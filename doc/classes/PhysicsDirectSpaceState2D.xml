@@ -85,7 +85,8 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty array is returned instead.
-				[b]Note:[/b] The results array is not guaranteed to contain all possible intersected objects if the returned array has a size of [code skip-lint]max_results[/code]. If all elements are required it is recommended to increase the size of [code skip-lint]max_results[/code] (default 32) to compensate.
+				If [code skip-lint]max_results[/code] is set to [code]1[/code], the method will behave as [code skip-lint]intersect_ray[/code].
+				[b]Note:[/b] The results array is not guaranteed to contain all possible intersected objects if the returned array has a size of [code skip-lint]max_results[/code]. If all elements are required it is recommended to increase the size of [code skip-lint]max_results[/code] (default [code]32[/code]) to compensate. This does not apply to [code]max_results = 1[/code].
 			</description>
 		</method>
 		<method name="intersect_shape">

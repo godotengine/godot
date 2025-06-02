@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState2DExtension" inherits="PhysicsDirectSpaceState2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class
+	name="PhysicsDirectSpaceState2DExtension"
+	inherits="PhysicsDirectSpaceState2D"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../class.xsd"
+>
 	<brief_description>
 		Provides virtual methods that can be overridden to create custom [PhysicsDirectSpaceState2D] implementations.
 	</brief_description>
@@ -63,6 +68,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="_intersect_ray_multiple" qualifiers="virtual required">
+			<return type="int" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<param index="2" name="collision_mask" type="int" />
+			<param index="3" name="collide_with_bodies" type="bool" />
+			<param index="4" name="collide_with_areas" type="bool" />
+			<param index="5" name="hit_from_inside" type="bool" />
+			<param index="6" name="result" type="PhysicsServer2DExtensionRayResult*" />
+			<param index="7" name="max_results" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_intersect_shape" qualifiers="virtual required">
 			<return type="int" />
 			<param index="0" name="shape_rid" type="RID" />
@@ -86,7 +104,11 @@
 			<param index="4" name="collision_mask" type="int" />
 			<param index="5" name="collide_with_bodies" type="bool" />
 			<param index="6" name="collide_with_areas" type="bool" />
-			<param index="7" name="rest_info" type="PhysicsServer2DExtensionShapeRestInfo*" />
+			<param
+				index="7"
+				name="rest_info"
+				type="PhysicsServer2DExtensionShapeRestInfo*"
+			/>
 			<description>
 			</description>
 		</method>
