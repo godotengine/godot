@@ -11,7 +11,7 @@
 	</tutorials>
 	<members>
 		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff" default="2000.0">
-			Threshold frequency for the filter, in Hz.
+			Threshold frequency for the filter, in Hz. Can be manually set down to 1Hz.
 		</member>
 		<member name="db" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB" default="0">
 			Steepness of the cutoff curve in dB per octave, also known as the order of the filter. Higher orders have a more aggressive cutoff.

@@ -109,7 +109,7 @@ Ref<AudioEffectInstance> AudioEffectFilter::instantiate() {
 }
 
 void AudioEffectFilter::set_cutoff(float p_freq) {
-	cutoff = p_freq;
+	cutoff = MAX(p_freq, 1.0);
 }
 
 float AudioEffectFilter::get_cutoff() const {
@@ -153,7 +153,7 @@ void AudioEffectFilter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_db", "amount"), &AudioEffectFilter::set_db);
 	ClassDB::bind_method(D_METHOD("get_db"), &AudioEffectFilter::get_db);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_cutoff", "get_cutoff");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cutoff_hz", PROPERTY_HINT_RANGE, "20,20500,1,or_less,exp,suffix:Hz"), "set_cutoff", "get_cutoff");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "resonance", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_resonance", "get_resonance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gain", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_gain", "get_gain");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "db", PROPERTY_HINT_ENUM, "6 dB,12 dB,18 dB,24 dB"), "set_db", "get_db");
