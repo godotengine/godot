@@ -1295,21 +1295,30 @@ void EditorProperty::menu_option(int p_option) {
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
 		} break;
-		case MENU_OVERRIDE_FOR_PROJECT: {
-			emit_signal(SNAME("property_overridden"));
+		case MENU_UNFAVORITE_BOTH: {
+			emit_signal(SNAME("property_favorited_global"), property, false);
+			emit_signal(SNAME("property_favorited_local"), property, false);
+			queue_redraw();
 		} break;
 		case MENU_UNFAVORITE_BOTH: {
 			emit_signal(SNAME("property_favorited_global"), property, false);
 			emit_signal(SNAME("property_favorited_local"), property, false);
 			queue_redraw();
 		} break;
-		case MENU_FAVORITE_PROPERTY_GLOBAL: {
-			emit_signal(SNAME("property_favorited_global"), property, !favorited);
+		case MENU_FAVORITE_PROPERTY_GLOBAL_GLOBAL: {
+			emit_signal(SNAME("property_favorited_global_global"), property, !favorited);
 			queue_redraw();
 		} break;
 		case MENU_FAVORITE_PROPERTY_LOCAL: {
 			emit_signal(SNAME("property_favorited_local"), property, !favorited);
 			queue_redraw();
+		} break;
+		case MENU_FAVORITE_PROPERTY_LOCAL: {
+			emit_signal(SNAME("property_favorited_local"), property, !favorited);
+			queue_redraw();
+		} break;
+		case MENU_OVERRIDE_FOR_PROJECT: {
+			emit_signal(SNAME("property_overridden"));
 		} break;
 		case MENU_PIN_VALUE: {
 			emit_signal(SNAME("property_pinned"), property, !pinned);
