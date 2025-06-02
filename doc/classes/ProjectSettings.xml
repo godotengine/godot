@@ -205,7 +205,20 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Sets the specified setting's initial value. This is the value the setting reverts to.
+				Sets the specified setting's initial value. This is the value the setting reverts to. The setting should already exist before calling this method. Note that project settings equal to their default value are not saved, so your code needs to account for that.
+				[codeblock]
+				extends EditorPlugin
+
+				const SETTING_NAME = "addons/my_setting"
+				const SETTING_DEFAULT = 10.0
+
+				func _enter_tree():
+				    if not ProjectSettings.has_setting(SETTING_NAME):
+				        ProjectSettings.set_setting(SETTING_NAME, SETTING_DEFAULT)
+
+				    ProjectSettings.set_initial_value(SETTING_NAME, SETTING_DEFAULT)
+				[/codeblock]
+				If you have a project setting defined by an [EditorPlugin], but want to use it in a running project, you will need a similar code at runtime.
 			</description>
 		</method>
 		<method name="set_order">
