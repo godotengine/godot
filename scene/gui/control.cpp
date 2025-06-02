@@ -2742,7 +2742,7 @@ void Control::attempt_autofocus() {
 	}
 #endif
 
-	if (get_autofocus() && _is_focus_mode_enabled()) {
+	if (get_autofocus() && _is_focusable()) {
 		grab_focus();
 	}
 }
