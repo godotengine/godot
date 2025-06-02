@@ -121,7 +121,6 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "bezier_track_set_key_in_handle", 1028302688, 1719223284 },
 		{ "bezier_track_set_key_out_handle", 1028302688, 1719223284 },
 		{ "audio_track_insert_key", 3489962123, 4021027286 },
-		{ "animation_track_insert_key", 158676774, 3976786500 },
 	});
 	mappings.insert("AnimationNode", {
 		{ "blend_animation", 11797022, 1630801826 },
