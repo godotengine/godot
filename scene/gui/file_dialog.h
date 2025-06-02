@@ -47,6 +47,8 @@ class VBoxContainer;
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
 
+	inline static constexpr int MAX_RECENTS = 20;
+
 	struct Option {
 		String name;
 		Vector<String> values;
@@ -142,6 +144,9 @@ private:
 	bool show_hidden_files = false;
 	bool use_native_dialog = false;
 
+	inline static LocalVector<String> global_favorites;
+	inline static LocalVector<String> global_recents;
+
 	Access access = ACCESS_RESOURCES;
 	FileMode mode = FILE_MODE_SAVE_FILE;
 	FileSortOption file_sort = FileSortOption::NAME;
@@ -179,10 +184,16 @@ private:
 	HBoxContainer *shortcuts_container = nullptr;
 
 	Button *refresh_button = nullptr;
+	Button *favorite_button = nullptr;
 	Button *make_dir_button = nullptr;
 	Button *show_hidden = nullptr;
 	Button *show_filename_filter_button = nullptr;
 	MenuButton *file_sort_button = nullptr;
+
+	Button *fav_up_button = nullptr;
+	Button *fav_down_button = nullptr;
+	ItemList *favorite_list = nullptr;
+	ItemList *recent_list = nullptr;
 
 	ItemList *file_list = nullptr;
 	Label *message = nullptr;
@@ -215,6 +226,9 @@ private:
 		Ref<Texture2D> file;
 		Ref<Texture2D> create_folder;
 		Ref<Texture2D> sort;
+		Ref<Texture2D> favorite;
+		Ref<Texture2D> favorite_up;
+		Ref<Texture2D> favorite_down;
 
 		Color folder_icon_color;
 		Color file_icon_color;
@@ -264,6 +278,18 @@ private:
 	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
 	void _sort_option_selected(int p_option);
+
+	void _favorite_selected(int p_item);
+	void _favorite_pressed();
+	void _favorite_move_up();
+	void _favorite_move_down();
+	void _update_favorite_list();
+	void _update_fav_buttons();
+
+	void _recent_selected(int p_item);
+	void _save_to_recent();
+	void _update_recent_list();
+	bool _path_matches_access(const String &p_path) const;
 
 	void _invalidate();
 	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
