@@ -508,7 +508,7 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 
 void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("intersect_ray_multiple", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray_multiple, DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("intersect_ray_multiple", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_ray_multiple, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray);
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState3D::_cast_motion);
