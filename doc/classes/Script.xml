@@ -74,18 +74,21 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of methods in this [Script].
+				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_method_list].
 			</description>
 		</method>
 		<method name="get_script_property_list">
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of properties in this [Script].
+				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_property_list].
 			</description>
 		</method>
 		<method name="get_script_signal_list">
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of user signals defined in this [Script].
+				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_signal_list].
 			</description>
 		</method>
 		<method name="has_script_signal" qualifiers="const">

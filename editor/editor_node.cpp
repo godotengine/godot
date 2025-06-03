@@ -770,6 +770,12 @@ void EditorNode::_notification(int p_what) {
 				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_execute_upgrades), CONNECT_ONE_SHOT);
 				EditorFileSystem::get_singleton()->scan();
 			}
+
+			if (settings_overrides_changed) {
+				EditorSettings::get_singleton()->notify_changes();
+				EditorSettings::get_singleton()->emit_signal(SNAME("settings_changed"));
+				settings_overrides_changed = false;
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -4987,6 +4993,19 @@ bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
 	return false;
 }
 
+bool EditorNode::close_scene() {
+	int tab_index = editor_data.get_edited_scene();
+	if (tab_index == 0 && get_edited_scene() == nullptr && editor_data.get_scene_path(tab_index).is_empty()) {
+		return false;
+	}
+
+	tab_closing_idx = tab_index;
+	current_menu_option = SCENE_CLOSE;
+	_discard_changes();
+	changing_scene = false;
+	return true;
+}
+
 bool EditorNode::is_scene_in_use(const String &p_path) {
 	Node *es = get_edited_scene();
 	if (es) {
@@ -5202,9 +5221,11 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
+	const Pair<String, String> key(p_class, p_fallback);
+
 	// Take from the local cache, if available.
 	{
-		Ref<Texture2D> *icon = class_icon_cache.getptr(p_class);
+		Ref<Texture2D> *icon = class_icon_cache.getptr(key);
 		if (icon) {
 			return *icon;
 		}
@@ -5218,7 +5239,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 	}
 
 	Ref<Texture2D> icon = _get_class_or_script_icon(p_class, script_path, p_fallback, true);
-	class_icon_cache[p_class] = icon;
+	class_icon_cache[key] = icon;
 	return icon;
 }
 
@@ -7367,6 +7388,15 @@ GameViewPluginBase *get_game_view_plugin() {
 	return memnew(GameViewPlugin);
 }
 #endif
+
+void EditorNode::open_setting_override(const String &p_property) {
+	editor_settings_dialog->hide();
+	project_settings_editor->popup_for_override(p_property);
+}
+
+void EditorNode::notify_settings_overrides_changed() {
+	settings_overrides_changed = true;
+}
 
 EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);

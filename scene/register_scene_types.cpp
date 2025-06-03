@@ -214,10 +214,14 @@
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef _3D_DISABLED
+#include "scene/3d/aim_modifier_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
+#include "scene/3d/bone_constraint_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/convert_transform_modifier_3d.h"
+#include "scene/3d/copy_transform_modifier_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
 #include "scene/3d/fog_volume.h"
@@ -650,6 +654,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
 	GDREGISTER_CLASS(SpringBoneCollisionCapsule3D);
 	GDREGISTER_CLASS(SpringBoneCollisionPlane3D);
+	GDREGISTER_VIRTUAL_CLASS(BoneConstraint3D);
+	GDREGISTER_CLASS(CopyTransformModifier3D);
+	GDREGISTER_CLASS(ConvertTransformModifier3D);
+	GDREGISTER_CLASS(AimModifier3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 

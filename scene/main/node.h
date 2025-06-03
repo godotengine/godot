@@ -256,7 +256,6 @@ private:
 		bool display_folded : 1;
 		bool editable_instance : 1;
 
-		bool inside_tree : 1;
 		bool ready_notified : 1;
 		bool ready_first : 1;
 
@@ -517,7 +516,7 @@ public:
 		return data.tree;
 	}
 
-	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
+	_FORCE_INLINE_ bool is_inside_tree() const { return data.tree; }
 	bool is_internal() const { return data.internal_mode != INTERNAL_MODE_DISABLED; }
 
 	bool is_ancestor_of(const Node *p_node) const;
@@ -655,7 +654,7 @@ public:
 			// No thread processing.
 			// Only accessible if node is outside the scene tree
 			// or access will happen from a node-safe thread.
-			return !data.inside_tree || is_current_thread_safe_for_nodes();
+			return !data.tree || is_current_thread_safe_for_nodes();
 		} else {
 			// Thread processing.
 			return current_process_thread_group == data.process_thread_group_owner;
@@ -667,7 +666,7 @@ public:
 			// No thread processing.
 			// Only accessible if node is outside the scene tree
 			// or access will happen from a node-safe thread.
-			return is_current_thread_safe_for_nodes() || unlikely(!data.inside_tree);
+			return is_current_thread_safe_for_nodes() || unlikely(!data.tree);
 		} else {
 			// Thread processing.
 			return true;
