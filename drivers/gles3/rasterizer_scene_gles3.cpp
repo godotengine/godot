@@ -700,10 +700,10 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 					sky_light_data.energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
 				}
 
-				Color linear_col = light_storage->light_get_color(base);
-				sky_light_data.color[0] = linear_col.r;
-				sky_light_data.color[1] = linear_col.g;
-				sky_light_data.color[2] = linear_col.b;
+				Color srgb_col = light_storage->light_get_color(base);
+				sky_light_data.color[0] = srgb_col.r;
+				sky_light_data.color[1] = srgb_col.g;
+				sky_light_data.color[2] = srgb_col.b;
 
 				sky_light_data.enabled = true;
 
