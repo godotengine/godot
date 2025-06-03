@@ -2642,21 +2642,23 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
 
-#ifdef TOOLS_ENABLED
-	if (editor || project_manager) {
-		// The editor and project manager always detect and use hiDPI if needed.
-		OS::get_singleton()->_allow_hidpi = true;
-	}
-#endif
-
 	if (separate_thread_render == -1) {
 		separate_thread_render = (int)GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE) == OS::RENDER_SEPARATE_THREAD;
 	}
 
+#ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
-		// Editor and project manager cannot run with rendering in a separate thread (they will crash on startup).
+		// Always detect and use hiDPI if needed.
+		OS::get_singleton()->_allow_hidpi = true;
+
+		// Allow for shadows in non-embedded popups.
+		OS::get_singleton()->_allow_layered = true;
+
+		// Cannot run with rendering in a separate thread (it will crash on startup).
 		separate_thread_render = 0;
 	}
+#endif
+
 #if !defined(THREADS_ENABLED)
 	separate_thread_render = 0;
 #endif
