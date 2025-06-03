@@ -88,7 +88,6 @@ void GraphElement::_notification(int p_what) {
 }
 
 void GraphElement::_validate_property(PropertyInfo &p_property) const {
-	Control::_validate_property(p_property);
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
 		if (p_property.name == "position") {

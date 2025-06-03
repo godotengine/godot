@@ -139,8 +139,6 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			}
 		}
 	}
-
-	Node3D::_validate_property(p_property);
 }
 
 void Camera3D::_update_camera() {
