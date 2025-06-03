@@ -55,7 +55,7 @@ private:
 	float len_resizing_rel = 0.0f;
 	bool over_drag_position = false;
 
-	bool handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right);
+	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right);
 
 	Vector2 calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x);
 	Vector2 clip_key_region(Vector2 region, int p_clip_left, int p_clip_right);
