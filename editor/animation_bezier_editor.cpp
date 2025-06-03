@@ -94,6 +94,9 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 			} else if (scaling_selection) {
 				offset += -scaling_selection_offset.x + (offset - scaling_selection_pivot.x) * (scaling_selection_scale.x - 1);
 				height += -scaling_selection_offset.y + (height - scaling_selection_pivot.y) * (scaling_selection_scale.y - 1);
+
+				out_handle.x *= scaling_selection_scale.x;
+				out_handle.y *= scaling_selection_scale.y;
 			}
 		}
 
@@ -113,6 +116,9 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 			} else if (scaling_selection) {
 				offset_n += -scaling_selection_offset.x + (offset_n - scaling_selection_pivot.x) * (scaling_selection_scale.x - 1);
 				height_n += -scaling_selection_offset.y + (height_n - scaling_selection_pivot.y) * (scaling_selection_scale.y - 1);
+
+				in_handle.x *= scaling_selection_scale.x;
+				in_handle.y *= scaling_selection_scale.y;
 			}
 		}
 
@@ -570,18 +576,24 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 						}
 
 						Vector2 in_vec = animation->bezier_track_get_key_in_handle(i, j);
+						Vector2 out_vec = animation->bezier_track_get_key_out_handle(i, j);
 
 						if ((moving_handle == 1 || moving_handle == -1) && moving_handle_track == i && moving_handle_key == j) {
 							in_vec = moving_handle_left;
 						}
-						Vector2 pos_in(((offset + in_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + in_vec.y));
-
-						Vector2 out_vec = animation->bezier_track_get_key_out_handle(i, j);
 
 						if ((moving_handle == 1 || moving_handle == -1) && moving_handle_track == i && moving_handle_key == j) {
 							out_vec = moving_handle_right;
 						}
 
+						if (is_selected && scaling_selection) {
+							in_vec.x *= scaling_selection_scale.x;
+							in_vec.y *= scaling_selection_scale.y;
+							out_vec.x *= scaling_selection_scale.x;
+							out_vec.y *= scaling_selection_scale.y;
+						}
+
+						Vector2 pos_in(((offset + in_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + in_vec.y));
 						Vector2 pos_out(((offset + out_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + out_vec.y));
 
 						if (i == selected_track || is_selected) {
@@ -1673,6 +1685,14 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				h += -scaling_selection_offset.y + (h - scaling_selection_pivot.y) * (scaling_selection_scale.y - 1);
 				key[0] = h;
 
+				Vector2 in_handle = Vector2(key[1], key[2]);
+				Vector2 out_handle = Vector2(key[3], key[4]);
+
+				in_handle.x *= scaling_selection_scale.x;
+				in_handle.y *= scaling_selection_scale.y;
+				out_handle.x *= scaling_selection_scale.x;
+				out_handle.y *= scaling_selection_scale.y;
+
 				undo_redo->add_do_method(
 						this,
 						"_bezier_track_insert_key_at_anim",
@@ -1680,8 +1700,8 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 						E->get().first,
 						newpos,
 						key[0],
-						Vector2(key[1], key[2]),
-						Vector2(key[3], key[4]),
+						in_handle,
+						out_handle,
 						animation->bezier_track_get_key_handle_mode(E->get().first, E->get().second));
 			}
 
