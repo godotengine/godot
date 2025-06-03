@@ -97,6 +97,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method doesn't take potential feature overrides into account automatically. Use [method get_setting_with_override] to handle seamlessly.
+				See also [method has_setting] to check whether a setting exists.
 			</description>
 		</method>
 		<method name="get_setting_with_override" qualifiers="const">
@@ -149,6 +150,7 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if a configuration value is present.
+				[b]Note:[/b] In order to be be detected, custom settings have to be either defined with [method set_setting], or exist in the [code]project.godot[/code] file. This is especially relevant when using [method set_initial_value].
 			</description>
 		</method>
 		<method name="load_resource_pack">
