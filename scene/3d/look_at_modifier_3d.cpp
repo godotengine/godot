@@ -31,8 +31,6 @@
 #include "look_at_modifier_3d.h"
 
 void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
-	SkeletonModifier3D::_validate_property(p_property);
-
 	if (p_property.name == "bone_name" || p_property.name == "origin_bone_name") {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {

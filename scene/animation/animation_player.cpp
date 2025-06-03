@@ -106,8 +106,6 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
-	AnimationMixer::_validate_property(p_property);
-
 	if (p_property.name == "current_animation") {
 		List<String> names;
 

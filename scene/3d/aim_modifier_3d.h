@@ -31,7 +31,6 @@
 #pragma once
 
 #include "scene/3d/bone_constraint_3d.h"
-#include "scene/3d/look_at_modifier_3d.h"
 
 class AimModifier3D : public BoneConstraint3D {
 	GDCLASS(AimModifier3D, BoneConstraint3D);
@@ -49,7 +48,6 @@ protected:
 	bool _set(const StringName &p_path, const Variant &p_value);
 	virtual PackedStringArray get_configuration_warnings() const override;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _validate_dynamic_prop(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 

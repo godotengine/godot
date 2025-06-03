@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "aim_modifier_3d.h"
+#include "scene/3d/look_at_modifier_3d.h"
 
 bool AimModifier3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -76,29 +77,17 @@ bool AimModifier3D::_get(const StringName &p_path, Variant &r_ret) const {
 	return true;
 }
 
-void AimModifier3D::_validate_dynamic_prop(PropertyInfo &p_property) const {
-	PackedStringArray split = p_property.name.split("/");
-	if (split.size() == 3 && split[0] == "settings" && (split[2] == "primary_rotation_axis" || split[2] == "use_secondary_rotation")) {
-		int which = split[1].to_int();
-		if (!is_using_euler(which)) {
-			p_property.usage = PROPERTY_USAGE_NONE;
-		}
-	}
-}
-
 void AimModifier3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	BoneConstraint3D::get_property_list(p_list);
-	LocalVector<PropertyInfo> props;
+
 	for (int i = 0; i < settings.size(); i++) {
 		String path = "settings/" + itos(i) + "/";
-		props.push_back(PropertyInfo(Variant::INT, path + "forward_axis", PROPERTY_HINT_ENUM, "+X,-X,+Y,-Y,+Z,-Z"));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "use_euler"));
-		props.push_back(PropertyInfo(Variant::INT, path + "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "use_secondary_rotation"));
-	}
-	for (PropertyInfo &p : props) {
-		_validate_dynamic_prop(p);
-		p_list->push_back(p);
+		int rotation_usage = is_using_euler(i) ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NONE;
+
+		p_list->push_back(PropertyInfo(Variant::INT, path + "forward_axis", PROPERTY_HINT_ENUM, "+X,-X,+Y,-Y,+Z,-Z"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, path + "use_euler"));
+		p_list->push_back(PropertyInfo(Variant::INT, path + "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z", rotation_usage));
+		p_list->push_back(PropertyInfo(Variant::BOOL, path + "use_secondary_rotation", PROPERTY_HINT_NONE, "", rotation_usage));
 	}
 }
 
