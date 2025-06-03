@@ -127,6 +127,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 		int32_t end = -1;
 		int chr_adv = 0;
 		Vector2i chr_off;
+		Vector2i chr_size = Vector2i(chr_width, chr_height);
 
 		{
 			enum RangeParseStep {
@@ -139,6 +140,8 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 				STEP_ADVANCE_BEGIN,
 				STEP_OFF_X_BEGIN,
 				STEP_OFF_Y_BEGIN,
+				STEP_SIZE_X_BEGIN,
+				STEP_SIZE_Y_BEGIN,
 				STEP_FINISHED,
 			};
 			RangeParseStep step = STEP_START_BEGIN;
@@ -196,6 +199,8 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 						[[fallthrough]];
 					}
 					case STEP_ADVANCE_BEGIN:
+					case STEP_SIZE_X_BEGIN:
+					case STEP_SIZE_Y_BEGIN:
 					case STEP_OFF_X_BEGIN:
 					case STEP_OFF_Y_BEGIN: {
 						// Read advance and offset.
@@ -209,6 +214,18 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 								step = STEP_OFF_Y_BEGIN;
 							} else if (step == STEP_OFF_Y_BEGIN) {
 								chr_off.y = range.substr(c + 1, next - (c + 1)).to_int();
+								step = STEP_SIZE_X_BEGIN;
+							} else if (step == STEP_SIZE_X_BEGIN) {
+								int new_x = range.substr(c + 1, next - (c + 1)).to_int();
+								if (new_x > 0) {
+									chr_size.x = new_x;
+								}
+								step = STEP_SIZE_Y_BEGIN;
+							} else if (step == STEP_SIZE_Y_BEGIN) {
+								int new_y = range.substr(c + 1, next - (c + 1)).to_int();
+								if (new_y > 0) {
+									chr_size.y = new_y;
+								}
 								step = STEP_FINISHED;
 							} else {
 								chr_adv = range.substr(c + 1, next - (c + 1)).to_int();
@@ -278,10 +295,10 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range, should be " + itos(columns * rows));
 			int x = pos % columns;
 			int y = pos / columns;
-			font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width + chr_adv, 0));
-			font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_height) + chr_off);
-			font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
-			font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
+			font->set_glyph_advance(0, chr_height, idx, Vector2(chr_size.x + chr_adv, 0));
+			font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_size.y) + chr_off);
+			font->set_glyph_size(0, Vector2i(chr_height, 0), idx, chr_size);
+			font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_size.x, chr_size.y));
 			font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
 			pos++;
 		}
