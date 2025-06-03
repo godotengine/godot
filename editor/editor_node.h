@@ -448,6 +448,7 @@ private:
 	bool convert_old = false;
 	bool immediate_dialog_confirmed = false;
 	bool restoring_scenes = false;
+	bool settings_overrides_changed = false;
 	bool unsaved_cache = true;
 
 	bool requested_first_scan = false;
@@ -484,7 +485,7 @@ private:
 	PrintHandlerList print_handler;
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
-	HashMap<String, Ref<Texture2D>> class_icon_cache;
+	HashMap<Pair<String, String>, Ref<Texture2D>> class_icon_cache;
 
 	ProjectUpgradeTool *project_upgrade_tool = nullptr;
 	bool run_project_upgrade_tool = false;
@@ -943,6 +944,8 @@ public:
 		}
 	}
 
+	bool close_scene();
+
 	bool is_scene_in_use(const String &p_path);
 
 	void save_editor_layout_delayed();
@@ -976,6 +979,9 @@ public:
 	void try_autosave();
 	void restart_editor(bool p_goto_project_manager = false);
 	void unload_editor_addons();
+
+	void open_setting_override(const String &p_property);
+	void notify_settings_overrides_changed();
 
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;

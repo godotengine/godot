@@ -58,8 +58,7 @@ const GodotWebSocket = {
 				return;
 			} else if (typeof event.data === 'string') {
 				is_string = 1;
-				const enc = new TextEncoder('utf-8');
-				buffer = new Uint8Array(enc.encode(event.data));
+				buffer = new TextEncoder('utf-8').encode(event.data);
 			} else {
 				GodotRuntime.error('Unknown message type');
 				return;

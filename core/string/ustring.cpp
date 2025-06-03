@@ -745,11 +745,6 @@ signed char String::filenocasecmp_to(const String &p_str) const {
 	return naturalnocasecmp_to_base(this_str, that_str);
 }
 
-const char32_t *String::get_data() const {
-	static const char32_t zero = 0;
-	return size() ? &operator[](0) : &zero;
-}
-
 String String::_separate_compound_words() const {
 	if (length() == 0) {
 		return *this;

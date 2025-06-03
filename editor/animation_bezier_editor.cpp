@@ -1758,15 +1758,24 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (moving_selection_attempt && mm.is_valid()) {
+		Point2 new_pos = mm->get_position();
+		if (mm->is_alt_pressed()) { // Axis snap key move when alt is pressed
+			if (Math::abs(new_pos.x - moving_selection_mouse_begin.x) > Math::abs(new_pos.y - moving_selection_mouse_begin.y)) {
+				new_pos.y = moving_selection_mouse_begin.y;
+			} else {
+				new_pos.x = moving_selection_mouse_begin.x;
+			}
+		}
+
 		if (!moving_selection) {
 			moving_selection = true;
 			select_single_attempt = IntPair(-1, -1);
 		}
 
 		if (!read_only) {
-			float y = (get_size().height / 2.0 - mm->get_position().y) * timeline_v_zoom + timeline_v_scroll;
+			float y = (get_size().height / 2.0 - new_pos.y) * timeline_v_zoom + timeline_v_scroll;
 			float moving_selection_begin_time = ((moving_selection_mouse_begin.x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
-			float new_time = ((mm->get_position().x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
+			float new_time = ((new_pos.x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
 			float moving_selection_pivot = moving_selection_from_key != -1 ? animation->track_get_key_time(moving_selection_from_track, moving_selection_from_key) : 0;
 			float time_delta = new_time - moving_selection_begin_time;
 
