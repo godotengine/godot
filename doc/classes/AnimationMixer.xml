@@ -317,7 +317,7 @@
 			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation (the animation with the key [code]"RESET"[/code]) applied as if it had been seeked to time 0, with the editor keeping the values that the scene had before saving.
 			This makes it more convenient to preview and edit animations in the editor, as changes to the scene will not be saved as long as they are set in the reset animation.
 		</member>
-		<member name="root_motion_local" type="bool" setter="set_root_motion_local" getter="is_root_motion_local">
+		<member name="root_motion_local" type="bool" setter="set_root_motion_local" getter="is_root_motion_local" default="false">
 			If [code]true[/code], [method get_root_motion_position] value is extracted as a local translation value before blending. In other words, it is treated like the translation is done after the rotation.
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">

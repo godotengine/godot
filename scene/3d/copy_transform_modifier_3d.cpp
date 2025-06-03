@@ -91,10 +91,6 @@ void CopyTransformModifier3D::_get_property_list(List<PropertyInfo> *p_list) con
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "relative"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "additive"));
 	}
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
 }
 
 void CopyTransformModifier3D::_validate_setting(int p_index) {
