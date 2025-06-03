@@ -719,7 +719,7 @@
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="DebugDraw">
-			Draws the cluster used by [ReflectionProbe] nodes to optimize decal rendering.
+			Draws the cluster used by [ReflectionProbe] nodes to optimize reflection probes.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">
