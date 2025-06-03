@@ -171,8 +171,8 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 	bitmaps.sort();
 
-	int atlas_max_width = nearest_power_of_2_templated(p_atlas_max_size) / divide_by;
-	int atlas_w = nearest_power_of_2_templated(max_w);
+	int atlas_max_width = Math::closest_power_of_2(p_atlas_max_size) / divide_by;
+	int atlas_w = Math::closest_power_of_2(max_w);
 	int atlas_h;
 	while (true) {
 		atlas_h = 0;

@@ -1916,7 +1916,7 @@ void TextureStorage::update_texture_atlas() {
 			si.pixel_size = Size2i(src_tex->width, src_tex->height);
 
 			if (base_size < (uint32_t)si.size.width) {
-				base_size = nearest_power_of_2_templated(si.size.width);
+				base_size = Math::closest_power_of_2(si.size.width);
 			}
 
 			si.texture = E.key;
@@ -1986,7 +1986,7 @@ void TextureStorage::update_texture_atlas() {
 		}
 
 		texture_atlas.size.width = base_size * border;
-		texture_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
+		texture_atlas.size.height = Math::closest_power_of_2(atlas_height * border);
 
 		for (int i = 0; i < item_count; i++) {
 			TextureAtlas::Texture *t = texture_atlas.textures.getptr(items[i].texture);
@@ -3075,7 +3075,7 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 	// Process
 
-	int stride = nearest_power_of_2_templated(MAX(size.width, size.height) / 2);
+	int stride = Math::closest_power_of_2(MAX(size.width, size.height) / 2);
 
 	variant = CanvasSdfShaderGLES3::MODE_PROCESS;
 	success = sdf_shader.shader.version_bind_shader(sdf_shader.shader_version, variant);

@@ -70,8 +70,8 @@ Ref<AudioStreamPlayback> AudioStreamGenerator::instantiate_playback() {
 	Ref<AudioStreamGeneratorPlayback> playback;
 	playback.instantiate();
 	playback->generator = this;
-	uint32_t target_buffer_size = _get_target_rate() * buffer_len;
-	playback->buffer.resize(nearest_shift(target_buffer_size));
+	int target_buffer_size = _get_target_rate() * buffer_len;
+	playback->buffer.resize(Math::nearest_shift(target_buffer_size));
 	playback->buffer.clear();
 	return playback;
 }

@@ -2161,7 +2161,7 @@ void RasterizerCanvasGLES3::occluder_polygon_set_cull_mode(RID p_occluder, RS::C
 
 void RasterizerCanvasGLES3::set_shadow_texture_size(int p_size) {
 	GLES3::Config *config = GLES3::Config::get_singleton();
-	p_size = nearest_power_of_2_templated(p_size);
+	p_size = Math::closest_power_of_2(p_size);
 
 	if (p_size > config->max_texture_size) {
 		p_size = config->max_texture_size;

@@ -993,7 +993,7 @@ void RendererCanvasRenderRD::_update_occluder_buffer(uint32_t p_size) {
 
 	if (p_size > state.shadow_occluder_buffer_size) {
 		needs_update = true;
-		state.shadow_occluder_buffer_size = next_power_of_2(p_size);
+		state.shadow_occluder_buffer_size = Math::next_power_of_2(p_size);
 		if (state.shadow_occluder_buffer.is_valid()) {
 			RD::get_singleton()->free(state.shadow_occluder_buffer);
 		}
@@ -2084,7 +2084,7 @@ bool RendererCanvasRenderRD::free(RID p_rid) {
 }
 
 void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
-	p_size = MAX(1, nearest_power_of_2_templated(p_size));
+	p_size = MAX(1, Math::closest_power_of_2(p_size));
 	if (p_size == state.shadow_texture_size) {
 		return;
 	}
