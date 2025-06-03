@@ -2598,34 +2598,10 @@ void TileMapLayer::draw_tile(RID p_canvas_item, const Vector2 &p_position, const
 		// Get the tile modulation.
 		Color modulate = tile_data->get_modulate();
 
-		// Compute the offset.
-		Vector2 tile_offset = tile_data->get_texture_origin();
-
-		// Get destination rect.
+		// Compute the dest rect.
 		Rect2 dest_rect;
-		dest_rect.size = atlas_source->get_runtime_tile_texture_region(p_atlas_coords).size;
-		dest_rect.size.x += FP_ADJUST;
-		dest_rect.size.y += FP_ADJUST;
-
-		bool transpose = tile_data->get_transpose() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
-		if (transpose) {
-			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2);
-			SWAP(tile_offset.x, tile_offset.y);
-		} else {
-			dest_rect.position = (p_position - dest_rect.size / 2);
-		}
-
-		if (tile_data->get_flip_h() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H)) {
-			dest_rect.size.x = -dest_rect.size.x;
-			tile_offset.x = -tile_offset.x;
-		}
-
-		if (tile_data->get_flip_v() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V)) {
-			dest_rect.size.y = -dest_rect.size.y;
-			tile_offset.y = -tile_offset.y;
-		}
-
-		dest_rect.position -= tile_offset;
+		bool transpose;
+		compute_transformed_tile_dest_rect(dest_rect, transpose, p_position, atlas_source->get_runtime_tile_texture_region(p_atlas_coords).size, tile_data, p_alternative_tile);
 
 		// Draw the tile.
 		if (p_frame >= 0) {
@@ -2655,6 +2631,56 @@ void TileMapLayer::draw_tile(RID p_canvas_item, const Vector2 &p_position, const
 			RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
 		}
 	}
+}
+
+void TileMapLayer::compute_transformed_tile_dest_rect(Rect2 &r_dest_rect, bool &r_transpose, const Vector2 &p_position, const Vector2 &p_dest_rect_size, const TileData *p_tile_data, int p_alternative_tile) {
+	DEV_ASSERT(p_tile_data);
+	// Conceptually the order of transformations is (starting from the tile centered at the origin):
+	// - Per TileSet-tile transforms (transpose then flips).
+	// - Translation so texture origin is at the origin.
+	// - Per TileMapLayer-cell transforms (transpose then flips).
+	// - Translation to target position.
+
+	const bool tile_transpose = p_tile_data->get_transpose();
+	const bool tile_flip_h = p_tile_data->get_flip_h();
+	const bool tile_flip_v = p_tile_data->get_flip_v();
+
+	const Vector2 texture_origin = p_tile_data->get_texture_origin();
+
+	const bool cell_transpose = bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
+	const bool cell_flip_h = bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H);
+	const bool cell_flip_v = bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V);
+
+	const bool final_transpose = tile_transpose != cell_transpose;
+	const bool final_flip_h = cell_flip_h != (cell_transpose ? tile_flip_v : tile_flip_h);
+	const bool final_flip_v = cell_flip_v != (cell_transpose ? tile_flip_h : tile_flip_v);
+
+	// Rect draw commands swap the size based on the passed transpose, so the size is left non-tranposed here.
+	// Position calculations need to use transposed size though.
+	Rect2 dest_rect;
+	dest_rect.size = p_dest_rect_size;
+	dest_rect.size.x += FP_ADJUST;
+	dest_rect.size.y += FP_ADJUST;
+	Vector2 transposed_size = final_transpose ? Vector2(dest_rect.size.y, dest_rect.size.x) : dest_rect.size;
+	if (final_flip_h) {
+		dest_rect.size.x = -dest_rect.size.x;
+	}
+	if (final_flip_v) {
+		dest_rect.size.y = -dest_rect.size.y;
+	}
+
+	dest_rect.position = -0.5f * transposed_size;
+	dest_rect.position -= cell_transpose ? Vector2(texture_origin.y, texture_origin.x) : texture_origin;
+	if (cell_flip_h) {
+		dest_rect.position.x = -(dest_rect.position.x + transposed_size.x);
+	}
+	if (cell_flip_v) {
+		dest_rect.position.y = -(dest_rect.position.y + transposed_size.y);
+	}
+	dest_rect.position += p_position;
+
+	r_dest_rect = dest_rect;
+	r_transpose = final_transpose;
 }
 
 void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile) {
