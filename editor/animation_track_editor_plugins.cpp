@@ -688,7 +688,7 @@ StringName AnimationTrackEditTypeAnimation::get_edit_name(const int p_index) {
 
 /// BASE ///
 
-bool AnimationTrackEditKey::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right) {
+int AnimationTrackEditKey::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right) {
 	Vector2 region = calc_key_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x);
 	region = clip_key_region(region, p_clip_left, p_clip_right);
 
@@ -697,7 +697,7 @@ bool AnimationTrackEditKey::handle_track_resizing(const Ref<InputEventMouseMotio
 
 	if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= region_end) { //if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= p_clip_right && region_end >= p_clip_left) {
 		bool resize_start = false;
-		bool can_resize = false;
+		int can_resize = false;
 
 		float diff_left = region_begin - mm->get_position().x;
 		float diff_right = mm->get_position().x - region_end;
@@ -729,13 +729,11 @@ bool AnimationTrackEditKey::handle_track_resizing(const Ref<InputEventMouseMotio
 
 		if (can_resize) {
 			len_resizing_start = resize_start;
-			len_resizing_index = p_index;
+			return p_index;
 		}
-
-		return can_resize;
 	}
 
-	return false;
+	return -1;
 }
 
 void AnimationTrackEditKey::gui_input(const Ref<InputEvent> &p_event) {
@@ -757,9 +755,10 @@ void AnimationTrackEditKey::gui_input(const Ref<InputEvent> &p_event) {
 			float p_clip_left = get_timeline()->get_name_limit();
 			float p_clip_right = get_size().width - get_timeline()->get_buttons_width();
 
-			bool can_resize = handle_track_resizing(mm, start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x, p_clip_left, p_clip_right);
-			if (can_resize) {
+			int resizing_index = handle_track_resizing(mm, start_ofs, end_ofs, len, p_index, p_pixels_sec, p_x, p_clip_left, p_clip_right);
+			if (resizing_index != -1) {
 				use_hsize_cursor = true;
+				len_resizing_index = resizing_index;
 			}
 		}
 		over_drag_position = use_hsize_cursor;
@@ -796,6 +795,9 @@ void AnimationTrackEditKey::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		len_resizing_from_px = mb->get_position().x;
 		len_resizing_rel = 0;
+
+		emit_signal(SNAME("select_key"), len_resizing_index, true);
+
 		queue_redraw();
 		accept_event();
 		return;
