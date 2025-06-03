@@ -3342,7 +3342,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("Resource..."), FILE_MENU_NEW_RESOURCE);
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
 
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_paths);
+		const PackedStringArray folder_path = { p_paths[0].get_base_dir() };
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, folder_path);
 		p_popup->add_separator();
 	}
 
@@ -3743,13 +3744,25 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 		if (option_id > -1) {
 			_tree_rmb_option(option_id);
 		} else {
+			bool create = false;
 			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
 			if (!custom_callback.is_valid()) {
+				create = true;
 				custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_event);
 			}
 
 			if (custom_callback.is_valid()) {
-				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _tree_get_selected(false));
+				PackedStringArray selected = _tree_get_selected(false);
+				if (create) {
+					if (selected.is_empty()) {
+						selected.append("res://");
+					} else if (selected.size() == 1) {
+						selected.write[0] = selected[0].get_base_dir();
+					} else {
+						return;
+					}
+				}
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, selected);
 			} else {
 				return;
 			}
