@@ -67,6 +67,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 
 	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
 	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
+	add_theme_constant_override("margin_bottom", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_BOTTOM));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tabs_visible(false);
@@ -328,11 +329,12 @@ void EditorDebuggerNode::_notification(int p_what) {
 			}
 
 			if (tabs->get_tab_count() > 1) {
-				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
-				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
-
 				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
+
+			add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
+			add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
+			add_theme_constant_override("margin_bottom", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_BOTTOM));
 
 			remote_scene_tree->update_icon_max_width();
 		} break;
