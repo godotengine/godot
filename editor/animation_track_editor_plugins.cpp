@@ -497,7 +497,7 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 	int y_from = (get_size().height - tex_h) / 2;
 
 	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-	color.a *= 0.7;
+	color.a *= REGION_EDGE_ALPHA;
 
 	draw_line(Point2(from_x, y_from + h * tex_h), Point2(to_x, y_from + h_n * tex_h), color, 2);
 }
@@ -815,21 +815,20 @@ void AnimationTrackEditKey::gui_input(const Ref<InputEvent> &p_event) {
 			float new_ofs = prev_ofs + ofs_local;
 			float new_time = prev_time + ofs_local;
 			if (prev_time != new_time) {
-				undo_redo->create_action(TTR("Change Animation Track Clip Start Offset"));
-
-				undo_redo->add_do_method(get_animation().ptr(), "track_set_key_time", get_track(), len_resizing_index, new_time);
-				undo_redo->add_undo_method(get_animation().ptr(), "track_set_key_time", get_track(), len_resizing_index, prev_time);
-
+				undo_redo->create_action(TTR("Change Track Clip Start Offset"));
 				set_start_offset(len_resizing_index, prev_ofs, new_ofs);
-
 				undo_redo->commit_action();
+
+				emit_signal(SNAME("move_selection_begin"));
+				emit_signal(SNAME("move_selection"), ofs_local);
+				emit_signal(SNAME("move_selection_commit"));
 			}
 		} else {
 			float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
 			float prev_ofs = get_end_offset(len_resizing_index);
 			float new_ofs = prev_ofs + ofs_local;
 			if (prev_ofs != new_ofs) {
-				undo_redo->create_action(TTR("Change Animation Track Clip End Offset"));
+				undo_redo->create_action(TTR("Change Track Clip End Offset"));
 
 				set_end_offset(len_resizing_index, prev_ofs, new_ofs);
 
