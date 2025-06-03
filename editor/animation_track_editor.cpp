@@ -2686,6 +2686,17 @@ void AnimationTrackEdit::_notification(int p_what) {
 	}
 }
 
+int AnimationTrackEdit::get_key_width() const {
+	return get_key_height();
+	/*
+	if (animation.is_null()) {
+		return 0;
+	}
+
+	return type_icon->get_width();
+	*/
+}
+
 int AnimationTrackEdit::get_key_height() const {
 	if (animation.is_null()) {
 		return 0;
@@ -2698,11 +2709,19 @@ Rect2 AnimationTrackEdit::get_key_rect(int p_index, float p_pixels_sec) {
 	if (animation.is_null()) {
 		return Rect2();
 	}
-	Rect2 rect = Rect2(-type_icon->get_width() / 2, 0, type_icon->get_width(), get_size().height);
 
-	// Make it a big easier to click.
-	rect.position.x -= rect.size.x * 0.5;
-	rect.size.x *= 2;
+	int width = get_key_width();
+	int height = get_key_height();
+	Rect2 rect = Rect2(-width / 2, -height / 2, width, height);
+
+	return rect;
+}
+
+Rect2 AnimationTrackEdit::get_global_key_rect(int p_index, float p_pixels_sec, int p_x) {
+	Rect2 rect = get_key_rect(p_index, p_pixels_sec);
+	rect.position.x += p_x;
+	rect.position.y = int(get_size().height - rect.size.y) / 2;
+
 	return rect;
 }
 
@@ -2710,43 +2729,26 @@ bool AnimationTrackEdit::is_key_selectable_by_distance() const {
 	return true;
 }
 
-void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
-	if (p_next_x < p_clip_left) {
-		return;
-	}
-	if (p_x > p_clip_right) {
-		return;
-	}
-
-	Variant current = animation->track_get_key_value(get_track(), p_index);
-	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
-	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD) {
-		return;
-	}
-
-	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-	color.a = 0.5;
-
-	int from_x = MAX(p_x, p_clip_left);
-	int to_x = MIN(p_next_x, p_clip_right);
-
-	draw_line(Point2(from_x + 1, get_size().height / 2), Point2(to_x, get_size().height / 2), color, Math::round(2 * EDSCALE));
-}
-
 void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	if (animation.is_null()) {
 		return;
 	}
 
-	if (p_x < p_clip_left || p_x > p_clip_right) {
+	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
+
+	if (rect.position.x + rect.size.x < p_clip_left) {
 		return;
 	}
 
-	Ref<Texture2D> icon_to_draw = p_selected ? selected_icon : type_icon;
+	if (rect.position.x > p_clip_right) {
+		return;
+	}
+
+	Ref<Texture2D> texture = p_selected ? selected_icon : type_icon;
 
 	if (animation->track_get_type(track) == Animation::TYPE_VALUE && !Math::is_equal_approx(animation->track_get_key_transition(track, p_index), real_t(1.0))) {
 		// Use a different icon for keys with non-linear easing.
-		icon_to_draw = get_editor_theme_icon(p_selected ? SNAME("KeyEasedSelected") : SNAME("KeyValueEased"));
+		texture = get_editor_theme_icon(p_selected ? SNAME("KeyEasedSelected") : SNAME("KeyValueEased"));
 	}
 
 	// Override type icon for invalid value keys, unless selected.
@@ -2754,11 +2756,9 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		const Variant &v = animation->track_get_key_value(track, p_index);
 		Variant::Type valid_type = Variant::NIL;
 		if (!_is_value_key_valid(v, valid_type)) {
-			icon_to_draw = get_editor_theme_icon(SNAME("KeyInvalid"));
+			texture = get_editor_theme_icon(SNAME("KeyInvalid"));
 		}
 	}
-
-	Vector2 ofs(p_x - icon_to_draw->get_width() / 2, (get_size().height - icon_to_draw->get_height()) / 2);
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
 		const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
@@ -2785,24 +2785,56 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		}
 		text += ")";
 
-		int limit = ((p_selected && editor->is_moving_selection()) || editor->is_function_name_pressed()) ? 0 : MAX(0, p_clip_right - p_x - icon_to_draw->get_width() * 2);
+		int limit = ((p_selected && editor->is_moving_selection()) || editor->is_function_name_pressed()) ? 0 : MAX(0, p_clip_right - p_x - texture->get_width() * 2);
 
 		if (limit > 0) {
-			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
+			draw_string(font, Vector2(p_x + texture->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
 		}
 	}
+
+	Rect2 region;
+	region.size = texture->get_size();
 
 	// Use a different color for the currently hovered key.
 	// The color multiplier is chosen to work with both dark and light editor themes,
 	// and on both unselected and selected key icons.
-	draw_texture(
-			icon_to_draw,
-			ofs,
-			p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : Color(1, 1, 1));
+	//draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right);
+	Color color = p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : Color(1, 1, 1);
+	draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right, color);
+}
+
+void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
+	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
+
+	Rect2 next_rect = get_key_rect(p_index + 1, p_pixels_sec);
+	next_rect.position.x += p_next_x;
+
+	if (next_rect.position.x + next_rect.size.x < p_clip_left) {
+		return;
+	}
+
+	if (rect.position.x > p_clip_right) {
+		return;
+	}
+
+	Variant current = animation->track_get_key_value(get_track(), p_index);
+	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
+	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD) {
+		return;
+	}
+
+	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+	color.a = 0.5;
+
+	int from_x = MAX(rect.position.x + rect.size.x, p_clip_left);
+	int to_x = MIN(next_rect.position.x, p_clip_right);
+	float yh = get_size().height / 2;
+
+	draw_line_clipped(Point2(from_x, yh), Point2(to_x, yh), color, 2, p_clip_left, p_clip_right);
 }
 
 // Helper.
-void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right) {
+void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate) {
 	if (p_clip_left > p_rect.position.x + p_rect.size.x) {
 		return;
 	}
@@ -2832,11 +2864,49 @@ void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_tex
 		region.size.x -= region_pixels;
 	}
 
-	draw_texture_rect_region(p_texture, rect, region);
+	draw_texture_rect_region(p_texture, rect, region, p_modulate);
 }
 
 // Helper.
-void AnimationTrackEdit::draw_color_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right) {
+void AnimationTrackEdit::draw_line_clipped(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right) {
+	Point2 from = p_from;
+	Point2 to = p_to;
+
+	if (from.x == to.x && from.y == to.y) {
+		return;
+	}
+	if (to.x < from.x) {
+		SWAP(to, from);
+	}
+
+	if (to.x < p_clip_left) {
+		return;
+	}
+
+	if (from.x > p_clip_right) {
+		return;
+	}
+
+	if (to.x > p_clip_right) {
+		float c = (p_clip_right - from.x) / (to.x - from.x);
+		to = from.lerp(to, c);
+	}
+
+	if (from.x < p_clip_left) {
+		float c = (p_clip_left - from.x) / (to.x - from.x);
+		from = from.lerp(to, c);
+	}
+
+	float width = p_width;
+	if (width >= 0.0) {
+		width = Math::round(p_width * EDSCALE);
+	}
+
+	draw_line(from, to, p_color, width, true);
+}
+
+// Helper.
+void AnimationTrackEdit::draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right) {
 	if (p_rect.position.x > p_clip_right) {
 		return;
 	}
@@ -3490,10 +3560,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 				// Hovering should happen in the opposite order of drawing for more accurate overlap hovering.
 				for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-					Rect2 rect = get_key_rect(i, scale);
 					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 					offset = offset * scale + limit;
-					rect.position.x += offset;
+					Rect2 rect = get_global_key_rect(i, scale, offset);
 
 					if (rect.has_point(pos)) {
 						if (is_key_selectable_by_distance()) {
@@ -3554,10 +3623,9 @@ bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggre
 
 			// Select should happen in the opposite order of drawing for more accurate overlap select.
 			for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-				Rect2 rect = get_key_rect(i, scale);
 				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 				offset = offset * scale + limit;
-				rect.position.x += offset;
+				Rect2 rect = get_global_key_rect(i, scale, offset);
 
 				if (rect.has_point(p_pos)) {
 					if (is_key_selectable_by_distance()) {
