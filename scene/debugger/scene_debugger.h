@@ -121,6 +121,7 @@ private:
 #ifndef _3D_DISABLED
 	HANDLER(runtime_node_select_reset_camera_3d);
 #endif
+	HANDLER(rq_screenshot);
 
 #undef HANDLER
 
