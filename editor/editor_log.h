@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/os/thread.h"
+#include "editor/editor_log_search_filter.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
@@ -138,6 +139,7 @@ private:
 
 	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
+	Ref<EditorLogSearchFilter> search_filter = memnew(EditorLogSearchFilter());
 
 	// Reference to the "Output" button on the toolbar so we can update its icon when warnings or errors are encountered.
 	Button *tool_button = nullptr;
