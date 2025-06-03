@@ -88,6 +88,7 @@ private:
 
 	int light_mask = 1;
 	uint32_t visibility_layer = 1;
+	double oversampling_override = 0.0f;
 
 	int z_index = 0;
 	bool z_relative = true;
@@ -394,6 +395,9 @@ public:
 
 	virtual void set_texture_repeat(TextureRepeat p_texture_repeat);
 	TextureRepeat get_texture_repeat() const;
+
+	void set_oversampling_override(double p_oversampling);
+	double get_oversampling_override() const;
 
 	TextureFilter get_texture_filter_in_tree() const;
 	TextureRepeat get_texture_repeat_in_tree() const;
