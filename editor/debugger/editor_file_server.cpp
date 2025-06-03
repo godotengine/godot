@@ -173,7 +173,8 @@ void EditorFileServer::poll() {
 
 		ERR_FAIL_COND(err != OK);
 		// Decompress the text with all the files
-		Compression::decompress(file_buffer_decompressed.ptr(), file_buffer_decompressed.size(), file_buffer.ptr(), file_buffer.size(), Compression::MODE_ZSTD);
+		const int64_t decompressed_size = Compression::decompress(file_buffer_decompressed.ptr(), file_buffer_decompressed.size(), file_buffer.ptr(), file_buffer.size(), Compression::MODE_ZSTD);
+		ERR_FAIL_COND_MSG(decompressed_size != file_buffer_decompressed.size(), "Error decompressing file buffer. Decompressed size did not match the expected size.");
 		String files_text = String::utf8((const char *)file_buffer_decompressed.ptr(), file_buffer_decompressed.size());
 		Vector<String> files = files_text.split("\n");
 
