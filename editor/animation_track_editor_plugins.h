@@ -37,7 +37,6 @@
 #define REGION_RESIZE_THRESHOLD 5.0
 #define REGION_MAX_WIDTH 4.0
 #define REGION_FONT_MARGIN 3.0
-#define REGION_DEFAULT_FONT_SCALE 1.5
 #define REGION_BG_COLOR Color(0.25, 0.25, 0.25)
 #define REGION_EDGE_ALPHA 0.7
 
@@ -63,6 +62,9 @@ private:
 	void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	Vector2 calc_key_region_shift(Vector2 &orig_region, Vector2 &region);
 	bool is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right);
+
+protected:
+	float key_scale = 1.0;
 
 public:
 	void set_node(Object *p_object);
