@@ -180,13 +180,19 @@ bool GodotPinJoint2D::pre_solve(real_t p_step) {
 	}
 	i_sum = 1.0 / (i_sum_local);
 	if (angular_limit_enabled && B) {
-		real_t diff_vector = B->get_transform().get_rotation() - A->get_transform().get_rotation();
-		real_t dist = diff_vector - initial_angle;
+		real_t diff_vector = Math::angle_difference(B->get_transform().get_rotation(), A->get_transform().get_rotation());
+		real_t dist = Math::angle_difference(diff_vector, initial_angle);
 		real_t pdist = 0.0;
 		if (dist > angular_limit_upper) {
 			pdist = dist - angular_limit_upper;
+			is_joint_at_limit_upper = true;
+			is_joint_at_limit_lower = false;
+			is_joint_at_limit = true;
 		} else if (dist < angular_limit_lower) {
 			pdist = dist - angular_limit_lower;
+			is_joint_at_limit_lower = true;
+			is_joint_at_limit_upper = false;
+			is_joint_at_limit = true;
 		}
 
 		real_t error_bias = Math::pow(1.0 - 0.1, 60.0);
@@ -194,10 +200,11 @@ bool GodotPinJoint2D::pre_solve(real_t p_step) {
 		bias_velocity = CLAMP((-Math::pow(error_bias, p_step)) * pdist / p_step, -get_max_bias(), get_max_bias());
 		// If the bias velocity is 0, the joint is not at a limit.
 		if (bias_velocity >= -CMP_EPSILON && bias_velocity <= CMP_EPSILON) {
-			j_acc = 0;
+			j_acc_lower = 0;
+			j_acc_upper = 0;
+			is_joint_at_limit_lower = false;
+			is_joint_at_limit_upper = false;
 			is_joint_at_limit = false;
-		} else {
-			is_joint_at_limit = true;
 		}
 	} else {
 		bias_velocity = 0.0;
@@ -217,9 +224,15 @@ void GodotPinJoint2D::solve(real_t p_step) {
 		rel_vel = -vA;
 	}
 
-	if ((angular_limit_enabled && is_joint_at_limit) && B) {
-		real_t wr = B->get_angular_velocity() - A->get_angular_velocity();
-		real_t j = bias_velocity - wr;
+	// Reference: Box2D's revolute_joint.c
+	// https://github.com/erincatto/box2d/blob/4b5e72bd44bd139fab67ad890b70e1690ff405a8/src/revolute_joint.c#L347-L412
+	// Limit lower
+	if (angular_limit_enabled && is_joint_at_limit_lower && B) {
+		real_t wr = A->get_angular_velocity() - B->get_angular_velocity();
+		real_t j_old = j_acc_lower;
+		j_acc_lower = bias_velocity + wr;
+		j_acc_lower = CLAMP(j_old + j_acc_lower, 0.0, jn_max);
+		real_t j = j_acc_lower - j_old;
 		if (A->get_inv_inertia() != 0.0) {
 			A->apply_torque_impulse(-j / A->get_inv_inertia() / A->get_space()->get_solver_iterations());
 		}
@@ -227,6 +240,22 @@ void GodotPinJoint2D::solve(real_t p_step) {
 			B->apply_torque_impulse(j / B->get_inv_inertia() / B->get_space()->get_solver_iterations());
 		}
 	}
+
+	// Limit upper
+	if (angular_limit_enabled && is_joint_at_limit_upper && B) {
+		real_t wr = B->get_angular_velocity() - A->get_angular_velocity();
+		real_t j_old = j_acc_upper;
+		j_acc_upper = bias_velocity - wr;
+		j_acc_upper = CLAMP(j_old + j_acc_upper, -jn_max, 0.0);
+		real_t j = j_acc_upper - j_old;
+		if (A->get_inv_inertia() != 0.0) {
+			A->apply_torque_impulse(-j / A->get_inv_inertia() / A->get_space()->get_solver_iterations());
+		}
+		if (B->get_inv_inertia() != 0.0) {
+			B->apply_torque_impulse(j / B->get_inv_inertia() / B->get_space()->get_solver_iterations());
+		}
+	}
+
 	if (motor_enabled && !is_joint_at_limit && motor_target_velocity != 0.0 && B) {
 		if (A->get_inv_inertia() != 0.0) {
 			A->apply_torque_impulse(-motor_target_velocity * p_step / A->get_inv_inertia() / A->get_space()->get_solver_iterations());
