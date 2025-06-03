@@ -504,6 +504,8 @@ protected:
 	Node *get_root() const { return root; }
 
 public:
+	Rect2 get_global_key_rect(int p_index, float p_pixels_sec, int p_x);
+
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
@@ -511,6 +513,7 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
+	virtual int get_key_width() const;
 	virtual int get_key_height() const;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
 	virtual bool is_key_selectable_by_distance() const;
@@ -520,8 +523,9 @@ public:
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
 
 	//helper
-	void draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right);
-	void draw_color_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right);
+	void draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
+	void draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right);
+	void draw_line_clipped(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
 	String make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width);
 
 	int get_track() const;
