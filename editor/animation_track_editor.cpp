@@ -1444,7 +1444,8 @@ int AnimationTimelineEdit::get_buttons_width() const {
 int AnimationTimelineEdit::get_name_limit() const {
 	Ref<Texture2D> hsize_icon = get_editor_theme_icon(SNAME("Hsize"));
 
-	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width() + 8 * EDSCALE);
+	int filter_track_width = filter_track->is_visible() ? filter_track->get_custom_minimum_size().width : 0;
+	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width() + filter_track_width + 16 * EDSCALE);
 
 	limit = MIN(limit, get_size().width - get_buttons_width() - 1);
 
@@ -1942,10 +1943,10 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
-			int hsize_icon_width = get_editor_theme_icon(SNAME("Hsize"))->get_width();
-			add_track_hb->set_size(Size2(name_limit - ((hsize_icon_width + 16) * EDSCALE), 0));
 			// Make sure name_limit is clamped to the range that UI allows.
 			name_limit = get_name_limit();
+			int hsize_icon_width = get_editor_theme_icon(SNAME("Hsize"))->get_width();
+			add_track_hb->set_size(Size2(name_limit - ((hsize_icon_width + 16) * EDSCALE), 0));
 			queue_redraw();
 			emit_signal(SNAME("name_limit_changed"));
 			play_position->queue_redraw();
@@ -2024,6 +2025,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	add_track_hb->add_child(add_track);
 	filter_track = memnew(LineEdit);
 	filter_track->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter_track->set_custom_minimum_size(Vector2(120 * EDSCALE, 0));
 	filter_track->set_placeholder(TTR("Filter Tracks"));
 	filter_track->set_tooltip_text(TTR("Filter tracks by entering part of their node name or property."));
 	filter_track->connect(SceneStringName(text_changed), callable_mp((AnimationTrackEditor *)this, &AnimationTrackEditor::_on_filter_updated));
