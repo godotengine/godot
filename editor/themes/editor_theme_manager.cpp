@@ -1971,7 +1971,6 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 		// Bottom panel.
 		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
-		style_bottom_panel->set_content_margin(SIDE_BOTTOM, 2 * p_config.increased_margin);
 		style_bottom_panel->set_border_width_all(0);
 		style_bottom_panel->set_corner_radius_all(p_config.corner_radius * EDSCALE);
 		style_bottom_panel->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
@@ -1981,7 +1980,10 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		style_bottom_panel_hidden->set_content_margin(SIDE_TOP, 0);
 
 		Ref<StyleBoxFlat> style_bottom_panel_tabbar = p_config.content_panel_style->duplicate();
-		Ref<StyleBoxFlat> style_bottom_tab = make_flat_stylebox(Color(0, 0, 0, 0), p_config.widget_margin.x, p_config.widget_margin.y, p_config.widget_margin.x, p_config.widget_margin.y, p_config.corner_radius);
+		style_bottom_panel_tabbar->set_content_margin(SIDE_TOP, 0);
+		Ref<StyleBoxFlat> style_bottom_tab = menu_transparent_style->duplicate();
+		style_bottom_tab->set_content_margin(SIDE_TOP, (p_config.increased_margin + 2) * EDSCALE);
+		style_bottom_tab->set_content_margin(SIDE_BOTTOM, (p_config.increased_margin + 2) * EDSCALE);
 
 		Ref<StyleBoxFlat> style_bottom_tab_selected = style_bottom_tab->duplicate();
 		style_bottom_tab_selected->set_bg_color(p_config.button_style_pressed->get_bg_color());
@@ -2000,7 +2002,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_color("font_unselected_color", "BottomPanel", p_config.font_color);
 		p_theme->set_color("font_hovered_color", "BottomPanel", p_config.font_hover_color);
 		p_theme->set_color("font_selected_color", "BottomPanel", p_config.accent_color);
-		p_theme->set_constant("tab_separation", "BottomPanel", 2 * p_config.increased_margin);
+		p_theme->set_constant("tab_separation", "BottomPanel", p_config.separation_margin);
 
 		p_theme->set_type_variation("BottomPanelButton", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "BottomPanelButton", menu_transparent_style);

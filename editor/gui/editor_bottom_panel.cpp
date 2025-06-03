@@ -43,7 +43,7 @@
 
 void EditorBottomPanel::_update_margins() {
 	TabContainer::_update_margins();
-	get_tab_bar()->set_offset(SIDE_RIGHT, get_tab_bar()->get_offset(SIDE_RIGHT) - bottom_hbox->get_size().x - right_margin);
+	get_tab_bar()->set_offset(SIDE_RIGHT, get_tab_bar()->get_offset(SIDE_RIGHT) - bottom_hbox->get_size().x);
 }
 
 void EditorBottomPanel::_notification(int p_what) {
@@ -51,7 +51,6 @@ void EditorBottomPanel::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			pin_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			expand_button->set_button_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
-			right_margin = get_theme_stylebox("tabbar_background")->get_margin(SIDE_RIGHT);
 		} break;
 	}
 }
@@ -85,14 +84,6 @@ void EditorBottomPanel::_repaint() {
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		}
 	}
-}
-
-void EditorBottomPanel::_pin_button_toggled(bool p_pressed) {
-	lock_panel_switching = p_pressed;
-}
-
-void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
-	EditorNode::get_top_split()->set_visible(!p_pressed);
 }
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
@@ -150,8 +141,29 @@ void EditorBottomPanel::toggle_last_opened_bottom_panel() {
 	}
 }
 
+void EditorBottomPanel::shortcut_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (!p_event->is_pressed() && !p_event->is_echo()) {
+		for (uint32_t i = 0; i < dock_shortcuts.size(); i++) {
+			if (dock_shortcuts[i].is_valid() && dock_shortcuts[i]->matches_event(p_event)) {
+				bottom_docks[i]->set_visible(!bottom_docks[i]->is_visible());
+				break;
+			}
+		}
+	}
+}
+
+void EditorBottomPanel::_pin_button_toggled(bool p_pressed) {
+	lock_panel_switching = p_pressed;
+}
+
 void EditorBottomPanel::set_expanded(bool p_expanded) {
 	expand_button->set_pressed(p_expanded);
+}
+
+void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
+	EditorNode::get_top_split()->set_visible(!p_pressed);
 }
 
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
@@ -163,24 +175,26 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 
 	// Still return a dummy button for compatibility reasons.
 	Button *tb = memnew(Button);
-	dummy_buttons.insert(tb);
+	tb->set_toggle_mode(true);
 	tb->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorBottomPanel::_on_button_visibility_changed).bind(tb, p_item));
-	tb->set_shortcut(p_shortcut);
+	bottom_docks.push_back(p_item);
+	dock_shortcuts.push_back(p_shortcut);
+	legacy_buttons.push_back(tb);
 
-	p_item->set_meta("_editor_dummy_button", tb);
+	set_process_shortcut_input(is_processing_shortcut_input() || p_shortcut.is_valid());
+
 	return tb;
 }
 
 void EditorBottomPanel::remove_item(Control *p_item) {
-	remove_child(p_item);
+	int item_idx = bottom_docks.find(p_item);
+	bottom_docks.remove_at(item_idx);
+	dock_shortcuts.remove_at(item_idx);
 
-	// Delete dummy button that might have been added.
-	if (p_item->has_meta("_editor_dummy_button")) {
-		Button *tb = static_cast<Button *>((Object *)p_item->get_meta("_editor_dummy_button"));
-		dummy_buttons.erase(tb);
-		memdelete(tb);
-		p_item->remove_meta("_editor_dummy_button");
-	}
+	legacy_buttons[item_idx]->queue_free();
+	legacy_buttons.remove_at(item_idx);
+
+	remove_child(p_item);
 }
 
 void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, Control *p_control) {
@@ -239,7 +253,7 @@ EditorBottomPanel::EditorBottomPanel() {
 }
 
 EditorBottomPanel::~EditorBottomPanel() {
-	for (Button *b : dummy_buttons) {
+	for (Button *b : legacy_buttons) {
 		memdelete(b);
 	}
 }

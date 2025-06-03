@@ -33,6 +33,7 @@
 #include "scene/gui/tab_container.h"
 
 class Button;
+class Control;
 class ConfigFile;
 class EditorToaster;
 class HBoxContainer;
@@ -40,14 +41,16 @@ class HBoxContainer;
 class EditorBottomPanel : public TabContainer {
 	GDCLASS(EditorBottomPanel, TabContainer);
 
+private:
 	HBoxContainer *bottom_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
 
-	int right_margin = 0;
 	bool lock_panel_switching = false;
-	HashSet<Button *> dummy_buttons;
+	LocalVector<Control *> bottom_docks;
+	LocalVector<Ref<Shortcut>> dock_shortcuts;
+	LocalVector<Button *> legacy_buttons;
 
 	void _repaint();
 	void _on_tab_changed(int p_idx);
@@ -59,6 +62,7 @@ protected:
 	void _notification(int p_what);
 
 	virtual void _update_margins() override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;

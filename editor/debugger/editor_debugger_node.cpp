@@ -450,23 +450,19 @@ void EditorDebuggerNode::_update_errors() {
 		if (error_count == 0 && warning_count == 0) {
 			set_name(TTR("Debugger"));
 			parent->set_tab_icon(idx, Ref<Texture2D>());
-			// TODO: Uncomment once GH-106263 or similar is merged.
-			// parent->set_font_unselected_color_override(idx, Color(0, 0, 0, 0));
+			parent->get_tab_bar()->set_font_color_override_all(idx, Color(0, 0, 0, 0));
 		} else {
 			set_name(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count >= 1 && warning_count >= 1) {
 				parent->set_tab_icon(idx, get_editor_theme_icon(SNAME("ErrorWarning")));
 				// Use error color to represent the highest level of severity reported.
-				// TODO: Uncomment once GH-106263 or similar is merged.
-				// parent->set_font_unselected_color_override(idx, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				parent->get_tab_bar()->set_font_color_override_all(idx, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else if (error_count >= 1) {
 				parent->set_tab_icon(idx, get_editor_theme_icon(SNAME("Error")));
-				// TODO: Uncomment once GH-106263 or similar is merged.
-				// parent->set_font_unselected_color_override(idx, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				parent->get_tab_bar()->set_font_color_override_all(idx, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else {
 				parent->set_tab_icon(idx, get_editor_theme_icon(SNAME("Warning")));
-				// TODO: Uncomment once GH-106263 or similar is merged.
-				// parent->set_font_unselected_color_override(idx, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				parent->get_tab_bar()->set_font_color_override_all(idx, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			}
 		}
 	}
