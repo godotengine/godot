@@ -2802,17 +2802,48 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 }
 
 // Helper.
-void AnimationTrackEdit::draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled) {
-	int clip_left = timeline->get_name_limit();
-	int clip_right = get_size().width - timeline->get_buttons_width();
+void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right) {
+	if (p_clip_left > p_rect.position.x + p_rect.size.x) {
+		return;
+	}
+	if (p_clip_right < p_rect.position.x) {
+		return;
+	}
 
-	if (p_rect.position.x > clip_right) {
+	Rect2 rect = p_rect;
+	Rect2 region = p_region;
+
+	if (p_clip_left > rect.position.x) {
+		int rect_pixels = (p_clip_left - rect.position.x);
+		int region_pixels = rect_pixels * region.size.x / rect.size.x;
+
+		rect.position.x += rect_pixels;
+		rect.size.x -= rect_pixels;
+
+		region.position.x += region_pixels;
+		region.size.x -= region_pixels;
+	}
+
+	if (p_clip_right < rect.position.x + rect.size.x) {
+		int rect_pixels = rect.position.x + rect.size.x - p_clip_right;
+		int region_pixels = rect_pixels * region.size.x / rect.size.x;
+
+		rect.size.x -= rect_pixels;
+		region.size.x -= region_pixels;
+	}
+
+	draw_texture_rect_region(p_texture, rect, region);
+}
+
+// Helper.
+void AnimationTrackEdit::draw_color_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right) {
+	if (p_rect.position.x > p_clip_right) {
 		return;
 	}
-	if (p_rect.position.x + p_rect.size.x < clip_left) {
+	if (p_rect.position.x + p_rect.size.x < p_clip_left) {
 		return;
 	}
-	Rect2 clip = Rect2(clip_left, 0, clip_right - clip_left, get_size().height);
+	Rect2 clip = Rect2(p_clip_left, 0, p_clip_right - p_clip_left, get_size().height);
 	draw_rect(clip.intersection(p_rect), p_color, p_filled);
 }
 
@@ -2832,43 +2863,6 @@ void AnimationTrackEdit::draw_bg(int p_clip_left, int p_clip_right) {
 }
 
 void AnimationTrackEdit::draw_fg(int p_clip_left, int p_clip_right) {
-}
-
-void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region) {
-	int clip_left = timeline->get_name_limit();
-	int clip_right = get_size().width - timeline->get_buttons_width();
-
-	// Clip left and right.
-	if (clip_left > p_rect.position.x + p_rect.size.x) {
-		return;
-	}
-	if (clip_right < p_rect.position.x) {
-		return;
-	}
-
-	Rect2 rect = p_rect;
-	Rect2 region = p_region;
-
-	if (clip_left > rect.position.x) {
-		int rect_pixels = (clip_left - rect.position.x);
-		int region_pixels = rect_pixels * region.size.x / rect.size.x;
-
-		rect.position.x += rect_pixels;
-		rect.size.x -= rect_pixels;
-
-		region.position.x += region_pixels;
-		region.size.x -= region_pixels;
-	}
-
-	if (clip_right < rect.position.x + rect.size.x) {
-		int rect_pixels = rect.position.x + rect.size.x - clip_right;
-		int region_pixels = rect_pixels * region.size.x / rect.size.x;
-
-		rect.size.x -= rect_pixels;
-		region.size.x -= region_pixels;
-	}
-
-	draw_texture_rect_region(p_texture, rect, region);
 }
 
 int AnimationTrackEdit::get_track() const {

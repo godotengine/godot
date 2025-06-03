@@ -520,8 +520,8 @@ public:
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
 
 	//helper
-	void draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region);
-	void draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled = true);
+	void draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right);
+	void draw_color_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right);
 	String make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width);
 
 	int get_track() const;
