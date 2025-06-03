@@ -122,60 +122,40 @@ bool ConvertTransformModifier3D::_get(const StringName &p_path, Variant &r_ret) 
 	return true;
 }
 
-void ConvertTransformModifier3D::_validate_dynamic_prop(PropertyInfo &p_property) const {
-	PackedStringArray split = p_property.name.split("/");
-	if (split.size() == 4 && split[0] == "settings") {
-		int which = split[1].to_int();
-		bool hide = false;
-		if (split[2] == "apply") {
-			if (split[3] == "range_min" || split[3] == "range_max") {
-				if (get_apply_transform_mode(which) == TRANSFORM_MODE_POSITION) {
-					p_property.hint_string = HINT_POSITION;
-				} else if (get_apply_transform_mode(which) == TRANSFORM_MODE_ROTATION) {
-					p_property.hint_string = HINT_ROTATION;
-				} else {
-					p_property.hint_string = HINT_SCALE;
-				}
-			}
-		} else if (split[2] == "reference") {
-			if (split[3] == "range_min" || split[3] == "range_max") {
-				if (get_reference_transform_mode(which) == TRANSFORM_MODE_POSITION) {
-					p_property.hint_string = HINT_POSITION;
-				} else if (get_reference_transform_mode(which) == TRANSFORM_MODE_ROTATION) {
-					p_property.hint_string = HINT_ROTATION;
-				} else {
-					p_property.hint_string = HINT_SCALE;
-				}
-			}
-		}
-		if (hide) {
-			p_property.usage = PROPERTY_USAGE_NONE;
-		}
-	}
-}
-
 void ConvertTransformModifier3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	BoneConstraint3D::get_property_list(p_list);
-	LocalVector<PropertyInfo> props;
+
 	for (int i = 0; i < settings.size(); i++) {
 		String path = "settings/" + itos(i) + "/";
 
-		props.push_back(PropertyInfo(Variant::INT, path + "apply/transform_mode", PROPERTY_HINT_ENUM, "Position,Rotation,Scale"));
-		props.push_back(PropertyInfo(Variant::INT, path + "apply/axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "apply/range_min", PROPERTY_HINT_RANGE, HINT_POSITION));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "apply/range_max", PROPERTY_HINT_RANGE, HINT_POSITION));
+		String hint_apply_range;
+		if (get_apply_transform_mode(i) == TRANSFORM_MODE_POSITION) {
+			hint_apply_range = HINT_POSITION;
+		} else if (get_apply_transform_mode(i) == TRANSFORM_MODE_ROTATION) {
+			hint_apply_range = HINT_ROTATION;
+		} else {
+			hint_apply_range = HINT_SCALE;
+		}
+		p_list->push_back(PropertyInfo(Variant::INT, path + "apply/transform_mode", PROPERTY_HINT_ENUM, "Position,Rotation,Scale"));
+		p_list->push_back(PropertyInfo(Variant::INT, path + "apply/axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "apply/range_min", PROPERTY_HINT_RANGE, hint_apply_range));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "apply/range_max", PROPERTY_HINT_RANGE, hint_apply_range));
 
-		props.push_back(PropertyInfo(Variant::INT, path + "reference/transform_mode", PROPERTY_HINT_ENUM, "Position,Rotation,Scale"));
-		props.push_back(PropertyInfo(Variant::INT, path + "reference/axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "reference/range_min", PROPERTY_HINT_RANGE, HINT_POSITION));
-		props.push_back(PropertyInfo(Variant::FLOAT, path + "reference/range_max", PROPERTY_HINT_RANGE, HINT_POSITION));
+		String hint_reference_range;
+		if (get_reference_transform_mode(i) == TRANSFORM_MODE_POSITION) {
+			hint_reference_range = HINT_POSITION;
+		} else if (get_reference_transform_mode(i) == TRANSFORM_MODE_ROTATION) {
+			hint_reference_range = HINT_ROTATION;
+		} else {
+			hint_reference_range = HINT_SCALE;
+		}
+		p_list->push_back(PropertyInfo(Variant::INT, path + "reference/transform_mode", PROPERTY_HINT_ENUM, "Position,Rotation,Scale"));
+		p_list->push_back(PropertyInfo(Variant::INT, path + "reference/axis", PROPERTY_HINT_ENUM, "X,Y,Z"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "reference/range_min", PROPERTY_HINT_RANGE, hint_reference_range));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "reference/range_max", PROPERTY_HINT_RANGE, hint_reference_range));
 
-		props.push_back(PropertyInfo(Variant::BOOL, path + "relative"));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "additive"));
-	}
-	for (PropertyInfo &p : props) {
-		_validate_dynamic_prop(p);
-		p_list->push_back(p);
+		p_list->push_back(PropertyInfo(Variant::BOOL, path + "relative"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, path + "additive"));
 	}
 }
 

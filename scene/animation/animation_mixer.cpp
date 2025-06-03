@@ -107,15 +107,7 @@ bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
-	List<PropertyInfo> anim_names;
-	anim_names.push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries"), PROPERTY_HINT_DICTIONARY_TYPE, "StringName;AnimationLibrary"));
-	for (const PropertyInfo &E : anim_names) {
-		p_list->push_back(E);
-	}
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
+	p_list->push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries"), PROPERTY_HINT_DICTIONARY_TYPE, "StringName;AnimationLibrary"));
 }
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
