@@ -177,6 +177,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_ICON:
 		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
@@ -1808,6 +1809,11 @@ void DisplayServerWayland::swap_buffers() {
 		egl_manager->swap_buffers();
 	}
 #endif
+}
+
+void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	wayland_thread.set_icon(p_icon);
 }
 
 void DisplayServerWayland::set_context(Context p_context) {
