@@ -84,11 +84,9 @@ HashMap<String, bool *> OpenXRExtensionWrapper::get_requested_extensions() {
 
 	if (GDVIRTUAL_CALL(_get_requested_extensions, request_extension)) {
 		HashMap<String, bool *> result;
-		Array keys = request_extension.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			String key = keys.get(i);
-			GDExtensionPtr<bool> value = VariantCaster<GDExtensionPtr<bool>>::cast(request_extension.get(key, GDExtensionPtr<bool>(nullptr)));
-			result.insert(key, value);
+		for (const KeyValue<Variant, Variant> &kv : request_extension) {
+			GDExtensionPtr<bool> value = VariantCaster<GDExtensionPtr<bool>>::cast(kv.value);
+			result.insert(kv.key, value);
 		}
 		return result;
 	}

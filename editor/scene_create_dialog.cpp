@@ -226,6 +226,7 @@ SceneCreateDialog::SceneCreateDialog() {
 
 		node_type_other = memnew(CheckBox);
 		hb->add_child(node_type_other);
+		node_type_other->set_accessibility_name(TTRC("Other Type"));
 		node_type_other->set_button_group(node_type_group);
 		node_type_other->set_meta(type_meta, ROOT_OTHER);
 
@@ -234,12 +235,14 @@ SceneCreateDialog::SceneCreateDialog() {
 		spacing->set_custom_minimum_size(Size2(4 * EDSCALE, 0));
 
 		other_type_display = memnew(LineEdit);
+		other_type_display->set_accessibility_name(TTRC("Other Type"));
 		hb->add_child(other_type_display);
 		other_type_display->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		other_type_display->set_editable(false);
 		other_type_display->set_text("Node");
 
 		select_node_button = memnew(Button);
+		select_node_button->set_accessibility_name(TTRC("Select Node"));
 		hb->add_child(select_node_button);
 		select_node_button->connect(SceneStringName(pressed), callable_mp(this, &SceneCreateDialog::browse_types));
 	}
@@ -253,6 +256,7 @@ SceneCreateDialog::SceneCreateDialog() {
 
 		scene_name_edit = memnew(LineEdit);
 		hb->add_child(scene_name_edit);
+		scene_name_edit->set_accessibility_name(TTRC("Scene Name:"));
 		scene_name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		scene_name_edit->connect(SceneStringName(text_submitted), callable_mp(this, &SceneCreateDialog::accept_create).unbind(1));
 

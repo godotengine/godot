@@ -136,6 +136,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	add_child(hb);
 
 	icon = memnew(TextureButton);
+	icon->set_accessibility_name(TTRC("Open asset details"));
 	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	hb->add_child(icon);
 
@@ -145,11 +146,13 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	title = memnew(LinkButton);
+	title->set_accessibility_name(TTRC("Title"));
 	title->set_auto_translate_mode(AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
+	category->set_accessibility_name(TTRC("Category"));
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(category);
 
@@ -158,7 +161,8 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	vb->add_child(author_price_hbox);
 
 	author = memnew(LinkButton);
-	author->set_tooltip_text(TTR("Author"));
+	author->set_tooltip_text(TTRC("Author"));
+	author->set_accessibility_name(TTRC("Author"));
 	author_price_hbox->add_child(author);
 
 	author_price_hbox->add_child(memnew(HSeparator));
@@ -182,8 +186,10 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	label_margin->set_content_margin_all(0);
 
 	price = memnew(Label);
+	price->set_focus_mode(FOCUS_ACCESSIBILITY);
 	price->add_theme_style_override(CoreStringName(normal), label_margin);
-	price->set_tooltip_text(TTR("License"));
+	price->set_tooltip_text(TTRC("License"));
+	price->set_accessibility_name(TTRC("License"));
 	price->set_mouse_filter(MOUSE_FILTER_PASS);
 
 	author_price_hbox->add_child(price);
@@ -239,7 +245,6 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			previews_bg->add_theme_style_override(SceneStringName(panel), previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
 		} break;
@@ -360,8 +365,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	set_ok_button_text(TTR("Download"));
-	set_cancel_button_text(TTR("Close"));
+	set_ok_button_text(TTRC("Download"));
+	set_cancel_button_text(TTRC("Close"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -374,37 +379,37 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
 		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED: {
 			error_text = TTR("Connection error, please try again.");
-			status->set_text(TTR("Can't connect."));
+			status->set_text(TTRC("Can't connect."));
 		} break;
 		case HTTPRequest::RESULT_CANT_CONNECT:
 		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR: {
 			error_text = TTR("Can't connect to host:") + " " + host;
-			status->set_text(TTR("Can't connect."));
+			status->set_text(TTRC("Can't connect."));
 		} break;
 		case HTTPRequest::RESULT_NO_RESPONSE: {
 			error_text = TTR("No response from host:") + " " + host;
-			status->set_text(TTR("No response."));
+			status->set_text(TTRC("No response."));
 		} break;
 		case HTTPRequest::RESULT_CANT_RESOLVE: {
 			error_text = TTR("Can't resolve hostname:") + " " + host;
-			status->set_text(TTR("Can't resolve."));
+			status->set_text(TTRC("Can't resolve."));
 		} break;
 		case HTTPRequest::RESULT_REQUEST_FAILED: {
 			error_text = TTR("Request failed, return code:") + " " + itos(p_code);
-			status->set_text(TTR("Request failed."));
+			status->set_text(TTRC("Request failed."));
 		} break;
 		case HTTPRequest::RESULT_DOWNLOAD_FILE_CANT_OPEN:
 		case HTTPRequest::RESULT_DOWNLOAD_FILE_WRITE_ERROR: {
 			error_text = TTR("Cannot save response to:") + " " + download->get_download_file();
-			status->set_text(TTR("Write error."));
+			status->set_text(TTRC("Write error."));
 		} break;
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
 			error_text = TTR("Request failed, too many redirects");
-			status->set_text(TTR("Redirect loop."));
+			status->set_text(TTRC("Redirect loop."));
 		} break;
 		case HTTPRequest::RESULT_TIMEOUT: {
 			error_text = TTR("Request failed, timeout");
-			status->set_text(TTR("Timeout."));
+			status->set_text(TTRC("Timeout."));
 		} break;
 		default: {
 			if (p_code != 200) {
@@ -415,7 +420,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 				if (sha256 != download_sha256) {
 					error_text = TTR("Bad download hash, assuming file has been tampered with.") + "\n";
 					error_text += TTR("Expected:") + " " + sha256 + "\n" + TTR("Got:") + " " + download_sha256;
-					status->set_text(TTR("Failed SHA-256 hash check"));
+					status->set_text(TTRC("Failed SHA-256 hash check"));
 				}
 			}
 		} break;
@@ -434,7 +439,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	}
 
 	install_button->set_disabled(false);
-	status->set_text(TTR("Ready to install!"));
+	status->set_text(TTRC("Ready to install!"));
 
 	set_process(false);
 
@@ -491,17 +496,17 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 			if (cstatus != prev_status) {
 				switch (cstatus) {
 					case HTTPClient::STATUS_RESOLVING: {
-						status->set_text(TTR("Resolving..."));
+						status->set_text(TTRC("Resolving..."));
 						progress->set_max(1);
 						progress->set_value(0);
 					} break;
 					case HTTPClient::STATUS_CONNECTING: {
-						status->set_text(TTR("Connecting..."));
+						status->set_text(TTRC("Connecting..."));
 						progress->set_max(1);
 						progress->set_value(0);
 					} break;
 					case HTTPClient::STATUS_REQUESTING: {
-						status->set_text(TTR("Requesting..."));
+						status->set_text(TTRC("Requesting..."));
 						progress->set_max(1);
 						progress->set_value(0);
 					} break;
@@ -545,7 +550,7 @@ void EditorAssetLibraryItemDownload::_make_request() {
 
 	Error err = download->request(host);
 	if (err != OK) {
-		status->set_text(TTR("Error making request"));
+		status->set_text(TTRC("Error making request"));
 	} else {
 		progress->set_indeterminate(true);
 		set_process(true);
@@ -574,18 +579,20 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	HBoxContainer *title_hb = memnew(HBoxContainer);
 	vb->add_child(title_hb);
 	title = memnew(Label);
+	title->set_focus_mode(FOCUS_ACCESSIBILITY);
 	title_hb->add_child(title);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	dismiss_button = memnew(TextureButton);
 	dismiss_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	dismiss_button->set_accessibility_name(TTRC("Close"));
 	title_hb->add_child(dismiss_button);
 
 	title->set_clip_text(true);
 
 	vb->add_spacer();
 
-	status = memnew(Label(TTR("Idle")));
+	status = memnew(Label(TTRC("Idle")));
 	vb->add_child(status);
 	progress = memnew(ProgressBar);
 	progress->set_editor_preview_indeterminate(true);
@@ -596,12 +603,12 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	hb2->add_spacer();
 
 	install_button = memnew(Button);
-	install_button->set_text(TTR("Install..."));
+	install_button->set_text(TTRC("Install..."));
 	install_button->set_disabled(true);
 	install_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDownload::install));
 
 	retry_button = memnew(Button);
-	retry_button->set_text(TTR("Retry"));
+	retry_button->set_text(TTRC("Retry"));
 	retry_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDownload::_make_request));
 	// Only show the Retry button in case of a failure.
 	retry_button->hide();
@@ -617,7 +624,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	download_error = memnew(AcceptDialog);
 	panel->add_child(download_error);
-	download_error->set_title(TTR("Download Error"));
+	download_error->set_title(TTRC("Download Error"));
 
 	asset_installer = memnew(EditorAssetInstaller);
 	panel->add_child(asset_installer);
@@ -636,7 +643,12 @@ void EditorAssetLibrary::_notification(int p_what) {
 			error_label->move_to_front();
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (!initial_loading) {
+				_rerun_search(-1);
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			error_tr->set_texture(get_editor_theme_icon(SNAME("Error")));
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
@@ -708,11 +720,11 @@ void EditorAssetLibrary::_update_repository_options() {
 	default_urls["godotengine.org (Official)"] = "https://godotengine.org/asset-library/api";
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
 	repository->clear();
-	Array keys = available_urls.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
-		repository->add_item(key);
-		repository->set_item_metadata(i, available_urls[key]);
+	int i = 0;
+	for (const KeyValue<Variant, Variant> &kv : available_urls) {
+		repository->add_item(kv.key);
+		repository->set_item_metadata(i, kv.value);
+		i++;
 	}
 }
 
@@ -1030,7 +1042,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, int p_asset_id, String p
 }
 
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
-	_set_library_message(TTR("Loading..."));
+	_set_library_message(TTRC("Loading..."));
 
 	asset_top_page->hide();
 	asset_bottom_page->hide();
@@ -1205,7 +1217,7 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 	error_hb->hide();
 
 	if (loading_blocked) {
-		_set_library_message_with_action(TTR("The Asset Library requires an online connection and involves sending data over the internet."), TTR("Go Online"), callable_mp(this, &EditorAssetLibrary::_force_online_mode));
+		_set_library_message_with_action(TTRC("The Asset Library requires an online connection and involves sending data over the internet."), TTRC("Go Online"), callable_mp(this, &EditorAssetLibrary::_force_online_mode));
 		return;
 	}
 
@@ -1214,14 +1226,7 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 }
 
 void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
-	String str;
-
-	{
-		int datalen = p_data.size();
-		const uint8_t *r = p_data.ptr();
-		str.append_utf8((const char *)r, datalen);
-	}
-
+	String str = String::utf8((const char *)p_data.ptr(), (int)p_data.size());
 	bool error_abort = true;
 
 	switch (p_status) {
@@ -1244,7 +1249,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			error_label->set_text(TTR("Request failed, return code:") + " " + itos(p_code));
 		} break;
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
-			error_label->set_text(TTR("Request failed, too many redirects"));
+			error_label->set_text(TTRC("Request failed, too many redirects"));
 
 		} break;
 		default: {
@@ -1258,7 +1263,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 	if (error_abort) {
 		if (requesting == REQUESTING_CONFIG) {
-			_set_library_message_with_action(TTR("Failed to get repository configuration."), TTR("Retry"), callable_mp(this, &EditorAssetLibrary::_request_current_config));
+			_set_library_message_with_action(TTRC("Failed to get repository configuration."), TTRC("Retry"), callable_mp(this, &EditorAssetLibrary::_request_current_config));
 		}
 		error_hb->show();
 		return;
@@ -1277,7 +1282,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 	switch (requested) {
 		case REQUESTING_CONFIG: {
 			categories->clear();
-			categories->add_item(TTR("All"));
+			categories->add_item(TTRC("All"));
 			categories->set_item_metadata(0, 0);
 			if (d.has("categories")) {
 				Array clist = d["categories"];
@@ -1437,14 +1442,14 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(description->get_asset_id());
 			if (download_item) {
 				if (download_item->can_install()) {
-					description->set_ok_button_text(TTR("Install"));
+					description->set_ok_button_text(TTRC("Install"));
 					description->get_ok_button()->set_disabled(false);
 				} else {
-					description->set_ok_button_text(TTR("Downloading..."));
+					description->set_ok_button_text(TTRC("Downloading..."));
 					description->get_ok_button()->set_disabled(true);
 				}
 			} else {
-				description->set_ok_button_text(TTR("Download"));
+				description->set_ok_button_text(TTRC("Download"));
 				description->get_ok_button()->set_disabled(false);
 			}
 
@@ -1597,9 +1602,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	filter = memnew(LineEdit);
 	if (templates_only) {
-		filter->set_placeholder(TTR("Search Templates, Projects, and Demos"));
+		filter->set_placeholder(TTRC("Search Templates, Projects, and Demos"));
 	} else {
-		filter->set_placeholder(TTR("Search Assets (Excluding Templates, Projects, and Demos)"));
+		filter->set_placeholder(TTRC("Search Assets (Excluding Templates, Projects, and Demos)"));
 	}
 	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);
@@ -1619,12 +1624,12 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	}
 
 	Button *open_asset = memnew(Button);
-	open_asset->set_text(TTR("Import..."));
+	open_asset->set_text(TTRC("Import..."));
 	search_hb->add_child(open_asset);
 	open_asset->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_asset_open));
 
 	Button *plugins = memnew(Button);
-	plugins->set_text(TTR("Plugins..."));
+	plugins->set_text(TTRC("Plugins..."));
 	search_hb->add_child(plugins);
 	plugins->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_manage_plugins));
 
@@ -1636,10 +1641,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	HBoxContainer *search_hb2 = memnew(HBoxContainer);
 	library_main->add_child(search_hb2);
 
-	search_hb2->add_child(memnew(Label(TTR("Sort:") + " ")));
+	search_hb2->add_child(memnew(Label(TTRC("Sort:"))));
 	sort = memnew(OptionButton);
 	for (int i = 0; i < SORT_MAX; i++) {
-		sort->add_item(TTRGET(sort_text[i]));
+		sort->add_item(sort_text[i]);
 	}
 
 	search_hb2->add_child(sort);
@@ -1650,9 +1655,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(memnew(VSeparator));
 
-	search_hb2->add_child(memnew(Label(TTR("Category:") + " ")));
+	search_hb2->add_child(memnew(Label(TTRC("Category:"))));
 	categories = memnew(OptionButton);
-	categories->add_item(TTR("All"));
+	categories->add_item(TTRC("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	categories->set_clip_text(true);
@@ -1660,7 +1665,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(memnew(VSeparator));
 
-	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
+	search_hb2->add_child(memnew(Label(TTRC("Site:"))));
 	repository = memnew(OptionButton);
 
 	_update_repository_options();
@@ -1675,11 +1680,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	support = memnew(MenuButton);
 	search_hb2->add_child(support);
-	support->set_text(TTR("Support"));
+	support->set_text(TTRC("Support"));
 	support->get_popup()->set_hide_on_checkable_item_selection(false);
-	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_FEATURED]), SUPPORT_FEATURED);
-	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_COMMUNITY]), SUPPORT_COMMUNITY);
-	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_TESTING]), SUPPORT_TESTING);
+	support->get_popup()->add_check_item(support_text[SUPPORT_FEATURED], SUPPORT_FEATURED);
+	support->get_popup()->add_check_item(support_text[SUPPORT_COMMUNITY], SUPPORT_COMMUNITY);
+	support->get_popup()->add_check_item(support_text[SUPPORT_TESTING], SUPPORT_TESTING);
 	support->get_popup()->set_item_checked(SUPPORT_FEATURED, true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, true);
 	support->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorAssetLibrary::_support_toggled));
@@ -1714,6 +1719,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->add_child(library_message_box);
 
 	library_message = memnew(Label);
+	library_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	library_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	library_message_box->add_child(library_message);
 
@@ -1747,6 +1753,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -1766,7 +1773,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	asset_open = memnew(EditorFileDialog);
 
 	asset_open->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	asset_open->add_filter("*.zip", TTR("Assets ZIP File"));
+	asset_open->add_filter("*.zip", TTRC("Assets ZIP File"));
 	asset_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(asset_open);
 	asset_open->connect("file_selected", callable_mp(this, &EditorAssetLibrary::_asset_file_selected));

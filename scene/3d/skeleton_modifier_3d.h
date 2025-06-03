@@ -61,6 +61,9 @@ protected:
 	void _force_update_skeleton_skin();
 
 	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new);
+	virtual void _validate_bone_names();
+	GDVIRTUAL2(_skeleton_changed, Skeleton3D *, Skeleton3D *);
+	GDVIRTUAL0(_validate_bone_names);
 
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
@@ -68,8 +71,12 @@ protected:
 
 	virtual void _set_active(bool p_active);
 
-	virtual void _process_modification();
+	virtual void _process_modification(double p_delta);
+	// TODO: In Godot 5, should obsolete old GDVIRTUAL0(_process_modification); and replace it with _process_modification_with_delta as GDVIRTUAL1(_process_modification, double).
+	GDVIRTUAL1(_process_modification_with_delta, double);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0(_process_modification);
+#endif
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
@@ -83,7 +90,7 @@ public:
 
 	Skeleton3D *get_skeleton() const;
 
-	void process_modification();
+	void process_modification(double p_delta);
 
 	// Utility APIs.
 	static Vector3 get_vector_from_bone_axis(BoneAxis p_axis);

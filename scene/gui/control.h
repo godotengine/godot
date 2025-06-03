@@ -64,13 +64,14 @@ public:
 	enum FocusMode {
 		FOCUS_NONE,
 		FOCUS_CLICK,
-		FOCUS_ALL
+		FOCUS_ALL,
+		FOCUS_ACCESSIBILITY,
 	};
 
-	enum RecursiveBehavior {
-		RECURSIVE_BEHAVIOR_INHERITED,
-		RECURSIVE_BEHAVIOR_DISABLED,
-		RECURSIVE_BEHAVIOR_ENABLED,
+	enum FocusBehaviorRecursive {
+		FOCUS_BEHAVIOR_INHERITED,
+		FOCUS_BEHAVIOR_DISABLED,
+		FOCUS_BEHAVIOR_ENABLED,
 	};
 
 	enum SizeFlags {
@@ -87,6 +88,12 @@ public:
 		MOUSE_FILTER_STOP,
 		MOUSE_FILTER_PASS,
 		MOUSE_FILTER_IGNORE
+	};
+
+	enum MouseBehaviorRecursive {
+		MOUSE_BEHAVIOR_INHERITED,
+		MOUSE_BEHAVIOR_DISABLED,
+		MOUSE_BEHAVIOR_ENABLED,
 	};
 
 	enum CursorShape {
@@ -196,8 +203,8 @@ private:
 		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
-		RecursiveBehavior parent_focus_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
-		RecursiveBehavior focus_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
+		FocusBehaviorRecursive focus_behavior_recursive = FOCUS_BEHAVIOR_INHERITED;
+		bool parent_focus_behavior_recursive_enabled = false;
 		GrowDirection h_grow = GROW_DIRECTION_END;
 		GrowDirection v_grow = GROW_DIRECTION_END;
 
@@ -226,8 +233,8 @@ private:
 		// Input events and rendering.
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
-		RecursiveBehavior parent_mouse_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
-		RecursiveBehavior mouse_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
+		MouseBehaviorRecursive mouse_behavior_recursive = MOUSE_BEHAVIOR_INHERITED;
+		bool parent_mouse_behavior_recursive_enabled = true;
 		bool force_pass_scroll_events = true;
 
 		bool clip_contents = false;
@@ -323,17 +330,18 @@ private:
 
 	// Mouse Filter.
 
-	bool _is_parent_mouse_disabled() const;
+	bool _is_mouse_filter_enabled() const;
+	void _update_mouse_behavior_recursive();
+	void _propagate_mouse_behavior_recursive_recursively(bool p_enabled, bool p_skip_non_inherited);
 
 	// Focus.
 
+	bool _is_focusable() const;
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
-	bool _is_focus_disabled_recursively() const;
-	void _propagate_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
-	void _propagate_mouse_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
-	void _set_mouse_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_mouse_behavior);
-	void _set_focus_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_mouse_behavior);
+	bool _is_focus_mode_enabled() const;
+	void _update_focus_behavior_recursive();
+	void _propagate_focus_behavior_recursive_recursively(bool p_enabled, bool p_skip_non_inherited);
 
 	// Theming.
 
@@ -344,8 +352,6 @@ private:
 	// Extra properties.
 
 	static int root_layout_direction;
-
-	String get_tooltip_text() const;
 
 protected:
 	// Dynamic properties.
@@ -371,6 +377,12 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
+	void _accessibility_action_foucs(const Variant &p_data);
+	void _accessibility_action_blur(const Variant &p_data);
+	void _accessibility_action_show_tooltip(const Variant &p_data);
+	void _accessibility_action_hide_tooltip(const Variant &p_data);
+	void _accessibility_action_scroll_into_view(const Variant &p_data);
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -382,6 +394,8 @@ protected:
 	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
 	GDVIRTUAL2(_drop_data, Vector2, Variant)
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
 
 	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
@@ -438,6 +452,7 @@ public:
 	static void set_root_layout_direction(int p_root_dir);
 
 	PackedStringArray get_configuration_warnings() const override;
+	PackedStringArray get_accessibility_configuration_warnings() const override;
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif //TOOLS_ENABLED
@@ -445,8 +460,6 @@ public:
 	virtual bool is_text_field() const;
 
 	// Global relations.
-
-	bool is_top_level_control() const;
 
 	Control *get_parent_control() const;
 	Window *get_parent_window() const;
@@ -534,10 +547,10 @@ public:
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
-	MouseFilter get_mouse_filter_with_recursive() const;
+	MouseFilter get_mouse_filter_with_override() const;
 
-	void set_mouse_recursive_behavior(RecursiveBehavior p_recursive_mouse_behavior);
-	RecursiveBehavior get_mouse_recursive_behavior() const;
+	void set_mouse_behavior_recursive(MouseBehaviorRecursive p_mouse_behavior_recursive);
+	MouseBehaviorRecursive get_mouse_behavior_recursive() const;
 
 	void set_force_pass_scroll_events(bool p_force_pass_scroll_events);
 	bool is_force_pass_scroll_events() const;
@@ -556,15 +569,17 @@ public:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 	void set_drag_preview(Control *p_control);
 	void force_drag(const Variant &p_data, Control *p_control);
+	void accessibility_drag();
+	void accessibility_drop();
 	bool is_drag_successful() const;
 
 	// Focus.
 
 	void set_focus_mode(FocusMode p_focus_mode);
 	FocusMode get_focus_mode() const;
-	FocusMode get_focus_mode_with_recursive() const;
-	void set_focus_recursive_behavior(RecursiveBehavior p_recursive_mouse_behavior);
-	RecursiveBehavior get_focus_recursive_behavior() const;
+	FocusMode get_focus_mode_with_override() const;
+	void set_focus_behavior_recursive(FocusBehaviorRecursive p_focus_behavior_recursive);
+	FocusBehaviorRecursive get_focus_behavior_recursive() const;
 	bool has_focus() const;
 	void grab_focus();
 	void grab_click_focus();
@@ -674,16 +689,20 @@ public:
 
 	// Extra properties.
 
+	String get_tooltip_text() const;
 	void set_tooltip_text(const String &text);
 	virtual String get_tooltip(const Point2 &p_pos) const;
 	virtual Control *make_custom_tooltip(const String &p_text) const;
+
+	virtual String accessibility_get_contextual_info() const;
 
 	Control();
 	~Control();
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);
-VARIANT_ENUM_CAST(Control::RecursiveBehavior);
+VARIANT_ENUM_CAST(Control::FocusBehaviorRecursive);
+VARIANT_ENUM_CAST(Control::MouseBehaviorRecursive);
 VARIANT_BITFIELD_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);

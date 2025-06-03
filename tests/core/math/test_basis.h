@@ -38,11 +38,11 @@
 namespace TestBasis {
 
 Vector3 deg_to_rad(const Vector3 &p_rotation) {
-	return p_rotation / 180.0 * Math_PI;
+	return p_rotation / 180.0 * Math::PI;
 }
 
 Vector3 rad2deg(const Vector3 &p_rotation) {
-	return p_rotation / Math_PI * 180.0;
+	return p_rotation / Math::PI * 180.0;
 }
 
 String get_rot_order_name(EulerOrder ro) {
@@ -218,7 +218,7 @@ TEST_CASE("[Stress][Basis] Euler conversions") {
 TEST_CASE("[Basis] Set axis angle") {
 	Vector3 axis;
 	real_t angle;
-	real_t pi = (real_t)Math_PI;
+	real_t pi = (real_t)Math::PI;
 
 	// Testing the singularity when the angle is 0°.
 	Basis identity(1, 0, 0, 0, 1, 0, 0, 0, 1);
@@ -270,7 +270,7 @@ TEST_CASE("[Basis] Set axis angle") {
 
 TEST_CASE("[Basis] Finite number checks") {
 	constexpr Vector3 x(0, 1, 2);
-	const Vector3 infinite(NAN, NAN, NAN);
+	constexpr Vector3 infinite(Math::NaN, Math::NaN, Math::NaN);
 
 	CHECK_MESSAGE(
 			Basis(x, x, x).is_finite(),
@@ -327,7 +327,7 @@ TEST_CASE("[Basis] Is conformal checks") {
 			"Basis with non-uniform scale should not be conformal.");
 
 	CHECK_FALSE_MESSAGE(
-			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_conformal(),
+			Basis(Vector3(Math::SQRT12, Math::SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_conformal(),
 			"Basis with the X axis skewed 45 degrees should not be conformal.");
 
 	CHECK_MESSAGE(
@@ -357,7 +357,7 @@ TEST_CASE("[Basis] Is orthogonal checks") {
 			"Basis with a flip, rotation, and uniform scale should be orthogonal.");
 
 	CHECK_FALSE_MESSAGE(
-			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_orthogonal(),
+			Basis(Vector3(Math::SQRT12, Math::SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_orthogonal(),
 			"Basis with the X axis skewed 45 degrees should not be orthogonal.");
 
 	CHECK_MESSAGE(
@@ -387,7 +387,7 @@ TEST_CASE("[Basis] Is orthonormal checks") {
 			"Basis with a flip, rotation, and uniform scale should not be orthonormal.");
 
 	CHECK_FALSE_MESSAGE(
-			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_orthonormal(),
+			Basis(Vector3(Math::SQRT12, Math::SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_orthonormal(),
 			"Basis with the X axis skewed 45 degrees should not be orthonormal.");
 
 	CHECK_FALSE_MESSAGE(
@@ -417,7 +417,7 @@ TEST_CASE("[Basis] Is rotation checks") {
 			"Basis with a squeeze should not be a rotation.");
 
 	CHECK_FALSE_MESSAGE(
-			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_rotation(),
+			Basis(Vector3(Math::SQRT12, Math::SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_rotation(),
 			"Basis with the X axis skewed 45 degrees should not be a rotation.");
 
 	CHECK_FALSE_MESSAGE(

@@ -77,7 +77,6 @@ import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -715,12 +714,14 @@ class Godot(private val context: Context) {
 		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
 		val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
 		val overrideVolumeButtons = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/override_volume_buttons"))
+		val scrollDeadzoneDisabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/disable_scroll_deadzone"))
 
 		runOnUiThread {
 			renderView?.inputHandler?.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtons)
+				disableScrollDeadzone(scrollDeadzoneDisabled)
 				try {
 					setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
 				} catch (e: NumberFormatException) {
@@ -864,16 +865,13 @@ class Godot(private val context: Context) {
 		if (packageManager == null) {
 			return false
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			if (!packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1)) {
-				// Optional requirements.. log as warning if missing
-				Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
-			}
-
-			// Check for api version 1.0
-			return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
+		if (!packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1)) {
+			// Optional requirements.. log as warning if missing
+			Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
 		}
-		return false
+
+		// Check for api version 1.0
+		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
 	}
 
 	private fun setKeepScreenOn(enabled: Boolean) {

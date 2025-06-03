@@ -86,9 +86,9 @@ TEST_CASE("[Transform3D] rotation") {
 
 TEST_CASE("[Transform3D] Finite number checks") {
 	constexpr Vector3 y(0, 1, 2);
-	const Vector3 infinite_vec(NAN, NAN, NAN);
+	constexpr Vector3 infinite_vec(Math::NaN, Math::NaN, Math::NaN);
 	constexpr Basis x(y, y, y);
-	const Basis infinite_basis(infinite_vec, infinite_vec, infinite_vec);
+	constexpr Basis infinite_basis(infinite_vec, infinite_vec, infinite_vec);
 
 	CHECK_MESSAGE(
 			Transform3D(x, y).is_finite(),
@@ -117,7 +117,7 @@ TEST_CASE("[Transform3D] Rotate around global origin") {
 	expected.basis[0] = Vector3(-1, 0, 0);
 	expected.basis[2] = Vector3(0, 0, -1);
 
-	const Transform3D rotated_transform = transform.rotated(Vector3(0, 1, 0), Math_PI);
+	const Transform3D rotated_transform = transform.rotated(Vector3(0, 1, 0), Math::PI);
 	CHECK_MESSAGE(rotated_transform.is_equal_approx(expected), "The rotated transform should have a new orientation and basis.");
 }
 
@@ -132,7 +132,7 @@ TEST_CASE("[Transform3D] Rotate in-place (local rotation)") {
 	expected.basis[0] = Vector3(-1, 0, 0);
 	expected.basis[2] = Vector3(0, 0, -1);
 
-	const Transform3D rotated_transform = Transform3D(transform.rotated_local(Vector3(0, 1, 0), Math_PI));
+	const Transform3D rotated_transform = Transform3D(transform.rotated_local(Vector3(0, 1, 0), Math::PI));
 	CHECK_MESSAGE(rotated_transform.is_equal_approx(expected), "The rotated transform should have a new orientation but still be based on the same origin.");
 }
 } // namespace TestTransform3D

@@ -30,14 +30,15 @@
 
 #pragma once
 
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
 class Button;
 class CheckBox;
+class CheckButton;
 class ConnectDialogBinds;
 class EditorInspector;
+class EditorVariantTypeOptionButton;
 class Label;
 class LineEdit;
 class OptionButton;
@@ -71,6 +72,12 @@ public:
 				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(p_connection.callable.get_custom());
 				if (ccb) {
 					binds = ccb->get_binds();
+
+					// The source object may already be bound, ignore it to prevent display of the source object.
+					if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
+						binds.remove_at(0);
+					}
+
 					base_callable = ccb->get_callable();
 				}
 
@@ -127,9 +134,10 @@ private:
 
 	SpinBox *unbind_count = nullptr;
 	EditorInspector *bind_editor = nullptr;
-	OptionButton *type_list = nullptr;
+	EditorVariantTypeOptionButton *type_list = nullptr;
 	CheckBox *deferred = nullptr;
 	CheckBox *one_shot = nullptr;
+	CheckBox *append_source = nullptr;
 	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
@@ -177,6 +185,7 @@ public:
 
 	bool get_deferred() const;
 	bool get_one_shot() const;
+	bool get_append_source() const;
 	bool is_editing() const;
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;

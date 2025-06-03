@@ -35,16 +35,6 @@
 #include "tests/test_macros.h"
 
 namespace TestCodeEdit {
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-
 TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
@@ -75,7 +65,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			ERR_PRINT_ON;
 
-			Array args = build_array(build_array(0));
+			Array args = { { 0 } };
 
 			code_edit->set_line_as_breakpoint(0, true);
 			CHECK(code_edit->is_line_breakpointed(0));
@@ -91,7 +81,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->clear_breakpointed_lines();
 			SIGNAL_CHECK_FALSE("breakpoint_toggled");
 
-			Array args = build_array(build_array(0));
+			Array args = { { 0 } };
 
 			code_edit->set_line_as_breakpoint(0, true);
 			CHECK(code_edit->is_line_breakpointed(0));
@@ -103,7 +93,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and set text") {
-			Array args = build_array(build_array(0));
+			Array args = { { 0 } };
 
 			code_edit->set_text("test\nline");
 			code_edit->set_line_as_breakpoint(0, true);
@@ -120,7 +110,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->clear_breakpointed_lines();
 			SIGNAL_DISCARD("breakpoint_toggled")
 
-			args = build_array(build_array(1));
+			args = { { 1 } };
 			code_edit->set_text("test\nline");
 			code_edit->set_line_as_breakpoint(1, true);
 			CHECK(code_edit->is_line_breakpointed(1));
@@ -136,7 +126,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and clear") {
-			Array args = build_array(build_array(0));
+			Array args = { { 0 } };
 
 			code_edit->set_text("test\nline");
 			code_edit->set_line_as_breakpoint(0, true);
@@ -153,7 +143,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->clear_breakpointed_lines();
 			SIGNAL_DISCARD("breakpoint_toggled")
 
-			args = build_array(build_array(1));
+			args = { { 1 } };
 			code_edit->set_text("test\nline");
 			code_edit->set_line_as_breakpoint(1, true);
 			CHECK(code_edit->is_line_breakpointed(1));
@@ -169,7 +159,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and new lines no text") {
-			Array args = build_array(build_array(0));
+			Array args = { { 0 } };
 
 			/* No text moves breakpoint. */
 			code_edit->set_line_as_breakpoint(0, true);
@@ -177,7 +167,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Normal.
-			args = build_array(build_array(0), build_array(1));
+			args = { { 0 }, { 1 } };
 
 			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line_count() == 2);
@@ -186,7 +176,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Non-Breaking.
-			args = build_array(build_array(1), build_array(2));
+			args = { { 1 }, { 2 } };
 			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line_count() == 3);
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
@@ -194,7 +184,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Above.
-			args = build_array(build_array(2), build_array(3));
+			args = { { 2 }, { 3 } };
 			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line_count() == 4);
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
@@ -203,7 +193,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and new lines with text") {
-			Array args = build_array(build_array(0));
+			Array args = { { 0 } };
 
 			/* Having text does not move breakpoint. */
 			code_edit->insert_text_at_caret("text");
@@ -227,7 +217,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK_FALSE("breakpoint_toggled");
 
 			// Above does move.
-			args = build_array(build_array(0), build_array(1));
+			args = { { 0 }, { 1 } };
 
 			code_edit->set_caret_line(0);
 			SEND_GUI_ACTION("ui_text_newline_above");
@@ -238,7 +228,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and backspace") {
-			Array args = build_array(build_array(1));
+			Array args = { { 1 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(1, true);
@@ -261,7 +251,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Backspace above breakpointed line moves it.
-			args = build_array(build_array(2));
+			args = { { 2 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(2, true);
@@ -270,7 +260,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->set_caret_line(1);
 
-			args = build_array(build_array(2), build_array(1));
+			args = { { 2 }, { 1 } };
 			SEND_GUI_ACTION("ui_text_backspace");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
@@ -280,7 +270,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete") {
-			Array args = build_array(build_array(1));
+			Array args = { { 1 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(1, true);
@@ -304,7 +294,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Delete above breakpointed line moves it.
-			args = build_array(build_array(2));
+			args = { { 2 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(2, true);
@@ -313,7 +303,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->set_caret_line(0);
 
-			args = build_array(build_array(2), build_array(1));
+			args = { { 2 }, { 1 } };
 			SEND_GUI_ACTION("ui_text_delete");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
@@ -323,7 +313,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete selection") {
-			Array args = build_array(build_array(1));
+			Array args = { { 1 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(1, true);
@@ -337,7 +327,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Should handle breakpoint move when deleting selection by adding less text then removed.
-			args = build_array(build_array(9));
+			args = { { 9 } };
 
 			code_edit->set_text("\n\n\n\n\n\n\n\n\n");
 			code_edit->set_line_as_breakpoint(9, true);
@@ -346,7 +336,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->select(0, 0, 6, 0);
 
-			args = build_array(build_array(9), build_array(4));
+			args = { { 9 }, { 4 } };
 			SEND_GUI_ACTION("ui_text_newline");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(9));
@@ -355,7 +345,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Should handle breakpoint move when deleting selection by adding more text then removed.
-			args = build_array(build_array(9), build_array(14));
+			args = { { 9 }, { 14 } };
 
 			code_edit->insert_text_at_caret("\n\n\n\n\n");
 			MessageQueue::get_singleton()->flush();
@@ -370,7 +360,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and undo") {
-			Array args = build_array(build_array(1));
+			Array args = { { 1 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(1, true);
@@ -2825,6 +2815,16 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		CHECK(code_edit->has_selection());
 		CHECK(code_edit->get_selection_origin_column() == 2);
 		CHECK(code_edit->get_caret_column() == 3);
+
+		// Multiline blocks.
+		code_edit->set_text("'''\n    test\n        test\n'''");
+		code_edit->select(1, 0, 1, 8);
+		code_edit->convert_indent();
+		CHECK(code_edit->get_line(1) == "    test");
+		CHECK(code_edit->get_line(2) == "        test");
+		CHECK(code_edit->has_selection());
+		CHECK(code_edit->get_selection_origin_column() == 0);
+		CHECK(code_edit->get_caret_column() == 8);
 	}
 
 	SUBCASE("[CodeEdit] convert indent to spaces") {
@@ -3267,6 +3267,47 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		CHECK(code_edit->is_line_folded(0));
 		CHECK_FALSE(code_edit->is_line_folded(1));
 		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
+	}
+
+	SUBCASE("[CodeEdit] folding comments including and/or adjacent to code regions") {
+		code_edit->add_comment_delimiter("#", "", true);
+
+		// Single line comment directly above a code region tag is not foldable.
+		code_edit->set_text("#line0\n#region a\nnothing\n#line3\n#endregion");
+		CHECK_FALSE(code_edit->can_fold_line(0));
+		CHECK_FALSE(code_edit->can_fold_line(3));
+
+		// Comment blocks.
+		// Foldable even when directly below a code region start tag.
+		code_edit->set_text("#line0\n#line1\n#region a\n#line3\n#line4\nnothing\n#endregion");
+		CHECK(code_edit->can_fold_line(3));
+
+		// Doesn't fold beyond region start tag.
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(0, 1), 1);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(2, 2), 1);
+
+		// Foldable even when directly below a code region end tag.
+		code_edit->set_text("#region a\nnothing\n#line2\n#line3\n#endregion\n#line5\n#line6");
+		CHECK(code_edit->can_fold_line(5));
+
+		// Doesn't fold beyond region end tag.
+		code_edit->fold_line(2);
+		CHECK(code_edit->is_line_folded(2));
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(2, 3), 1);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(4, 4), 1);
+
+		code_edit->add_comment_delimiter("/*", "*/", false);
+
+		// Multiline comments.
+		// Folds a region tag inside it.
+		code_edit->set_text("/*\nnothing\n#region a\n*/\n#endregion");
+		CHECK(code_edit->can_fold_line(0));
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(0, 3), 1);
+		CHECK_EQ(code_edit->get_visible_line_count_in_range(4, 4), 1);
 	}
 
 	SUBCASE("[CodeEdit] folding carets") {
@@ -4107,10 +4148,10 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 			Point2 caret_pos = code_edit->get_caret_draw_pos();
 			caret_pos.y += code_edit->get_line_height();
-			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_DOWN, 0, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 1);
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_UP, 0, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_UP, MouseButtonMask::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			/* Single click selects. */
@@ -4492,7 +4533,7 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 		SEND_GUI_KEY_EVENT(Key::CTRL);
 #endif
 
-		Array signal_args = build_array(build_array("some"));
+		Array signal_args = { { "some" } };
 		SIGNAL_CHECK("symbol_validate", signal_args);
 
 		SIGNAL_UNWATCH(code_edit, "symbol_validate");

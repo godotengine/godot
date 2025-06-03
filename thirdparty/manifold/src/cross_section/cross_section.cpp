@@ -376,6 +376,16 @@ CrossSection CrossSection::BatchBoolean(
     return crossSections[0];
 
   auto subjs = crossSections[0].GetPaths();
+
+  if (op == OpType::Intersect) {
+    auto res = subjs->paths_;
+    for (size_t i = 1; i < crossSections.size(); ++i) {
+      res = C2::BooleanOp(C2::ClipType::Intersection, C2::FillRule::Positive,
+                          res, crossSections[i].GetPaths()->paths_, precision_);
+    }
+    return CrossSection(shared_paths(res));
+  }
+
   int n_clips = 0;
   for (size_t i = 1; i < crossSections.size(); ++i) {
     n_clips += crossSections[i].GetPaths()->paths_.size();
@@ -446,7 +456,8 @@ CrossSection& CrossSection::operator^=(const CrossSection& Q) {
  * Construct a CrossSection from a vector of other CrossSections (batch
  * boolean union).
  */
-CrossSection CrossSection::Compose(std::vector<CrossSection>& crossSections) {
+CrossSection CrossSection::Compose(
+    const std::vector<CrossSection>& crossSections) {
   return BatchBoolean(crossSections, OpType::Add);
 }
 
@@ -518,9 +529,9 @@ CrossSection CrossSection::Scale(const vec2 scale) const {
 }
 
 /**
- * Mirror this CrossSection over the arbitrary axis described by the unit form
- * of the given vector. If the length of the vector is zero, an empty
- * CrossSection is returned. This operation can be chained. Transforms are
+ * Mirror this CrossSection over the arbitrary axis whose normal is described by
+ * the unit form of the given vector. If the length of the vector is zero, an
+ * empty CrossSection is returned. This operation can be chained. Transforms are
  * combined and applied lazily.
  *
  * @param ax the axis to be mirrored over
@@ -529,7 +540,7 @@ CrossSection CrossSection::Mirror(const vec2 ax) const {
   if (la::length(ax) == 0.) {
     return CrossSection();
   }
-  auto n = la::normalize(la::abs(ax));
+  auto n = la::normalize(ax);
   auto m = mat2x3(mat2(la::identity) - 2.0 * la::outerprod(n, n), vec2(0.0));
   return Transform(m);
 }
@@ -641,7 +652,7 @@ CrossSection CrossSection::Simplify(double epsilon) const {
  * to expand, and retraction of inner (hole) contours. Negative deltas will
  * have the opposite effect.
  * @param jointype The join type specifying the treatment of contour joins
- * (corners).
+ * (corners). Defaults to Round.
  * @param miter_limit The maximum distance in multiples of delta that vertices
  * can be offset from their original positions with before squaring is
  * applied, <B>when the join type is Miter</B> (default is 2, which is the

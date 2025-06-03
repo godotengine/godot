@@ -209,7 +209,7 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(Variant, _get_rpc_config)
 
-	virtual Variant get_rpc_config() const override {
+	virtual const Variant get_rpc_config() const override {
 		Variant ret;
 		GDVIRTUAL_CALL(_get_rpc_config, ret);
 		return ret;
@@ -239,43 +239,35 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_reserved_words)
 
-	virtual void get_reserved_words(List<String> *p_words) const override {
+	virtual Vector<String> get_reserved_words() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_reserved_words, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 	EXBIND1RC(bool, is_control_flow_keyword, const String &)
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_comment_delimiters)
 
-	virtual void get_comment_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_comment_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
 
-	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_doc_comment_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_string_delimiters)
 
-	virtual void get_string_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_string_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_string_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	EXBIND3RC(Ref<Script>, make_template, const String &, const String &, const String &)
@@ -513,7 +505,7 @@ public:
 	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_locals, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_locals != nullptr && ret.has("locals")) {
@@ -533,7 +525,7 @@ public:
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_members, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_members != nullptr && ret.has("members")) {
@@ -560,7 +552,7 @@ public:
 	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_globals, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_globals != nullptr && ret.has("globals")) {
@@ -711,11 +703,7 @@ public:
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
-// There should not be warnings on explicit casts.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#endif
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wignored-qualifiers") // There should not be warnings on explicit casts.
 
 	virtual bool set(const StringName &p_name, const Variant &p_value) override {
 		if (native_info->set_func) {
@@ -822,7 +810,9 @@ public:
 	virtual void get_property_state(List<Pair<StringName, Variant>> &state) override {
 		if (native_info->get_property_state_func) {
 			native_info->get_property_state_func(instance, _add_property_with_state, &state);
+			return;
 		}
+		ScriptInstance::get_property_state(state);
 	}
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const override {
@@ -963,7 +953,5 @@ public:
 #endif // DISABLE_DEPRECATED
 	}
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 };

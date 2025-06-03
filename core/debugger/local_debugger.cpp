@@ -242,7 +242,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		} else if (line.begins_with("br") || line.begins_with("break")) {
 			if (line.get_slice_count(" ") <= 1) {
 				const HashMap<int, HashSet<StringName>> &breakpoints = script_debugger->get_breakpoints();
-				if (breakpoints.size() == 0) {
+				if (breakpoints.is_empty()) {
 					print_line("No Breakpoints.");
 					continue;
 				}

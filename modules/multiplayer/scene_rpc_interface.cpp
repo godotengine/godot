@@ -105,7 +105,7 @@ const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(con
 		return rpc_cache[oid];
 	}
 	RPCConfigCache cache;
-	_parse_rpc_config(p_node->get_rpc_config(), true, cache);
+	_parse_rpc_config(p_node->get_node_rpc_config(), true, cache);
 	if (p_node->get_script_instance()) {
 		_parse_rpc_config(p_node->get_script_instance()->get_rpc_config(), false, cache);
 	}
@@ -135,8 +135,7 @@ Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, 
 
 		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, nullptr, "Invalid packet received. Size smaller than declared.");
 
-		String paths;
-		paths.append_utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
+		String paths = String::utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
 
 		NodePath np = paths;
 

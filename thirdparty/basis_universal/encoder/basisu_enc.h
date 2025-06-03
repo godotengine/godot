@@ -64,8 +64,19 @@ namespace basisu
 	void error_vprintf(const char* pFmt, va_list args);
 	void error_printf(const char *pFmt, ...);
 	
-	// Helpers
+	template <typename... Args>
+	inline void fmt_error_printf(const char* pFmt, Args&&... args)
+	{
+		std::string res;
+		if (!fmt_variants(res, pFmt, fmt_variant_vec{ fmt_variant(std::forward<Args>(args))... }))
+			return;
+		error_printf("%s", res.c_str());
+	}
 
+	void platform_sleep(uint32_t ms);
+	
+	// Helpers
+		
 	inline uint8_t clamp255(int32_t i)
 	{
 		return (uint8_t)((i & 0xFFFFFF00U) ? (~(i >> 31)) : i);
@@ -96,6 +107,17 @@ namespace basisu
 	{
 		v = v * a + 128; 
 		return (uint8_t)((v + (v >> 8)) >> 8);
+	}
+
+	inline int fast_roundf_int(float x)
+	{
+		return (x >= 0.0f) ? (int)(x + 0.5f) : (int)(x - 0.5f);
+	}
+
+	inline int fast_floorf_int(float x)
+	{
+		int xi = (int)x;  // Truncate towards zero
+		return ((x < 0.0f) && (x != (float)xi)) ? (xi - 1) : xi;
 	}
 
 	inline uint64_t read_bits(const uint8_t* pBuf, uint32_t& bit_offset, uint32_t codesize)
@@ -168,6 +190,15 @@ namespace basisu
 	}
 
 	bool string_begins_with(const std::string& str, const char* pPhrase);
+
+	// Case sensitive, returns -1 if can't find
+	inline int string_find_first(const std::string& str, const char* pPhrase)
+	{
+		size_t res = str.find(pPhrase, 0);
+		if (res == std::string::npos)
+			return -1;
+		return (int)res;
+	}
 				
 	// Hashing
 	
@@ -209,9 +240,20 @@ namespace basisu
 	template <typename Key>
 	struct bit_hasher
 	{
-		std::size_t operator()(const Key& k) const
+		inline std::size_t operator()(const Key& k) const
 		{
 			return hash_hsieh(reinterpret_cast<const uint8_t *>(&k), sizeof(k));
+		}
+	};
+
+	struct string_hasher
+	{
+		inline std::size_t operator()(const std::string& k) const
+		{
+			size_t l = k.size();
+			if (!l)
+				return 0;
+			return hash_hsieh(reinterpret_cast<const uint8_t*>(k.c_str()), l);
 		}
 	};
 
@@ -297,7 +339,7 @@ namespace basisu
 	};
 
 	// Linear algebra
-
+			
 	template <uint32_t N, typename T>
 	class vec
 	{
@@ -318,7 +360,7 @@ namespace basisu
 		inline vec(const vec &other) { for (uint32_t i = 0; i < N; i++) m_v[i] = other.m_v[i]; }
 		template <uint32_t OtherN, typename OtherT> inline vec(const vec<OtherN, OtherT> &other) { set(other); }
 
-		inline T operator[](uint32_t i) const { assert(i < N); return m_v[i]; }
+		inline const T& operator[](uint32_t i) const { assert(i < N); return m_v[i]; }
 		inline T &operator[](uint32_t i) { assert(i < N); return m_v[i]; }
 
 		inline T getX() const { return m_v[0]; }
@@ -327,6 +369,7 @@ namespace basisu
 		inline T getW() const { static_assert(N >= 4, "N too small"); return m_v[3]; }
 
 		inline bool operator==(const vec &rhs) const { for (uint32_t i = 0; i < N; i++) if (m_v[i] != rhs.m_v[i]) return false;	return true; }
+		inline bool operator!=(const vec& rhs) const { return !(*this == rhs); }
 		inline bool operator<(const vec &rhs) const { for (uint32_t i = 0; i < N; i++) { if (m_v[i] < rhs.m_v[i]) return true; else if (m_v[i] != rhs.m_v[i]) return false; } return false; }
 
 		inline void set_zero() { for (uint32_t i = 0; i < N; i++) m_v[i] = 0; }
@@ -433,11 +476,21 @@ namespace basisu
 
 		inline vec &normalize_in_place() { T len = length(); if (len != 0.0f) *this *= (1.0f / len); return *this; }
 
+		inline vec get_normalized() const { vec res(*this); res.normalize_in_place(); return res; }
+
 		inline vec &clamp(T l, T h)
 		{
 			for (uint32_t i = 0; i < N; i++)
 				m_v[i] = basisu::clamp(m_v[i], l, h);
 			return *this;
+		}
+
+		static vec component_mul(const vec& a, const vec& b)
+		{
+			vec res;
+			for (uint32_t i = 0; i < N; i++)
+				res[i] = a[i] * b[i];
+			return res;
 		}
 
 		static vec component_min(const vec& a, const vec& b)
@@ -455,6 +508,14 @@ namespace basisu
 				res[i] = maximum(a[i], b[i]);
 			return res;
 		}
+
+		static vec lerp(const vec& a, const vec& b, float s)
+		{
+			vec res;
+			for (uint32_t i = 0; i < N; i++)
+				res[i] = basisu::lerp(a[i], b[i], s);
+			return res;
+		}
 	};
 
 	typedef vec<4, double> vec4D;
@@ -462,12 +523,17 @@ namespace basisu
 	typedef vec<2, double> vec2D;
 	typedef vec<1, double> vec1D;
 
+	typedef vec<6, float> vec6F;
+	typedef vec<5, float> vec5F;
 	typedef vec<4, float> vec4F;
 	typedef vec<3, float> vec3F;
 	typedef vec<2, float> vec2F;
 	typedef vec<1, float> vec1F;
 
 	typedef vec<16, float> vec16F;
+
+	template<uint32_t N, typename T> struct bitwise_copyable< vec<N, T> > { enum { cFlag = true }; };
+	template<uint32_t N, typename T> struct bitwise_movable< vec<N, T> > { enum { cFlag = true }; };
 		
 	template <uint32_t Rows, uint32_t Cols, typename T>
 	class matrix
@@ -513,6 +579,9 @@ namespace basisu
 			return *this;
 		}
 	};
+
+	template<uint32_t R, uint32_t C, typename T> struct bitwise_copyable< matrix<R, C, T> > { enum { cFlag = true }; };
+	template<uint32_t R, uint32_t C, typename T> struct bitwise_movable< matrix<R, C, T> > { enum { cFlag = true }; };
 
 	template<uint32_t N, typename VectorType>
 	inline VectorType compute_pca_from_covar(matrix<N, N, float> &cmatrix)
@@ -759,6 +828,8 @@ namespace basisu
 		
 		std::atomic<bool> m_kill_flag;
 
+		std::atomic<int> m_num_active_workers;
+
 		void job_thread(uint32_t index);
 	};
 
@@ -962,6 +1033,9 @@ namespace basisu
 		inline int get_709_luma() const { return (13938U * m_comps[0] + 46869U * m_comps[1] + 4729U * m_comps[2] + 32768U) >> 16U; } 
 		inline int get_luma(bool luma_601) const { return luma_601 ? get_601_luma() : get_709_luma(); }
 
+		inline uint32_t get_bgra_uint32() const { return b | (g << 8) | (r << 16) | (a << 24); }
+		inline uint32_t get_rgba_uint32() const { return r | (g << 8) | (b << 16) | (a << 24); }
+
 		inline basist::color32 get_color32() const
 		{
 			return basist::color32(r, g, b, a);
@@ -1135,23 +1209,7 @@ namespace basisu
 
 		return true;
 	}
-
-	inline std::string string_format(const char* pFmt, ...)
-	{
-		char buf[2048];
-
-		va_list args;
-		va_start(args, pFmt);
-#ifdef _WIN32		
-		vsprintf_s(buf, sizeof(buf), pFmt, args);
-#else
-		vsnprintf(buf, sizeof(buf), pFmt, args);
-#endif		
-		va_end(args);
-
-		return std::string(buf);
-	}
-
+		
 	inline std::string string_tolower(const std::string& s)
 	{
 		std::string result(s);
@@ -1710,7 +1768,7 @@ namespace basisu
 				// This SSE function takes pointers to void types, so do some sanity checks.
 				assert(sizeof(TrainingVectorType) == sizeof(float) * 16);
 				assert(sizeof(training_vec_with_weight) == sizeof(std::pair<vec16F, uint64_t>));
-				update_covar_matrix_16x16_sse41(node.m_training_vecs.size(), m_training_vecs.data(), &node.m_origin, node.m_training_vecs.data(), &cmatrix);
+				update_covar_matrix_16x16_sse41(node.m_training_vecs.size_u32(), m_training_vecs.data(), &node.m_origin, node.m_training_vecs.data(), &cmatrix);
 #endif
 			}
 
@@ -2019,9 +2077,7 @@ namespace basisu
 
 		for (uint32_t thread_iter = 0; thread_iter < max_threads; thread_iter++)
 		{
-#ifndef __EMSCRIPTEN__
 			pJob_pool->add_job( [thread_iter, &local_clusters, &local_parent_clusters, &success_flags, &quantizers, &initial_codebook, &q, &limit_clusterizers, &max_codebook_size, &max_threads, &max_parent_codebook_size] {
-#endif
 
 				Quantizer& lq = quantizers[thread_iter];
 				uint_vec& cluster_indices = initial_codebook[thread_iter];
@@ -2062,15 +2118,11 @@ namespace basisu
 					}
 				}
 
-#ifndef __EMSCRIPTEN__
 			} );
-#endif
 
 		} // thread_iter
 
-#ifndef __EMSCRIPTEN__
 		pJob_pool->wait_for_all();
-#endif
 
 		uint32_t total_clusters = 0, total_parent_clusters = 0;
 
@@ -2353,6 +2405,48 @@ namespace basisu
 		{
 		}
 
+		bitwise_coder(const bitwise_coder& other) :
+			m_bytes(other.m_bytes),
+			m_bit_buffer(other.m_bit_buffer),
+			m_bit_buffer_size(other.m_bit_buffer_size),
+			m_total_bits(other.m_total_bits)			
+		{
+		}
+
+		bitwise_coder(bitwise_coder&& other) :
+			m_bytes(std::move(other.m_bytes)),
+			m_bit_buffer(other.m_bit_buffer),
+			m_bit_buffer_size(other.m_bit_buffer_size),
+			m_total_bits(other.m_total_bits)
+		{
+		}
+
+		bitwise_coder& operator= (const bitwise_coder& rhs)
+		{
+			if (this == &rhs)
+				return *this;
+
+			m_bytes = rhs.m_bytes;
+			m_bit_buffer = rhs.m_bit_buffer;
+			m_bit_buffer_size = rhs.m_bit_buffer_size;
+			m_total_bits = rhs.m_total_bits;
+
+			return *this;
+		}
+
+		bitwise_coder& operator= (bitwise_coder&& rhs)
+		{
+			if (this == &rhs)
+				return *this;
+
+			m_bytes = std::move(rhs.m_bytes);
+			m_bit_buffer = rhs.m_bit_buffer;
+			m_bit_buffer_size = rhs.m_bit_buffer_size;
+			m_total_bits = rhs.m_total_bits;
+
+			return *this;
+		}
+
 		inline void clear()
 		{
 			clear_vector(m_bytes);
@@ -2370,8 +2464,12 @@ namespace basisu
 		}
 
 		inline const uint8_vec &get_bytes() const { return m_bytes; }
+		inline uint8_vec& get_bytes() { return m_bytes; }
+
+		inline void reserve(uint32_t size) { m_bytes.reserve(size); }
 
 		inline uint64_t get_total_bits() const { return m_total_bits; }
+		inline uint32_t get_total_bits_u32() const { assert(m_total_bits <= UINT32_MAX); return static_cast<uint32_t>(m_total_bits); }
 		inline void clear_total_bits() { m_total_bits = 0; }
 
 		inline void init(uint32_t reserve_size = 1024)
@@ -2495,16 +2593,27 @@ namespace basisu
 		}
 
 		uint32_t emit_huffman_table(const huffman_encoding_table &tab);
+
+		void append(const bitwise_coder& other)
+		{
+			for (uint32_t i = 0; i < other.m_bytes.size(); i++)
+				put_bits(other.m_bytes[i], 8);
+		
+			if (other.m_bit_buffer_size)
+				put_bits(other.m_bit_buffer, other.m_bit_buffer_size);
+		}
 		
 	private:
 		uint8_vec m_bytes;
 		uint32_t m_bit_buffer, m_bit_buffer_size;
 		uint64_t m_total_bits;
 
-		void append_byte(uint8_t c)
+		inline void append_byte(uint8_t c)
 		{
-			m_bytes.resize(m_bytes.size() + 1);
-			m_bytes.back() = c;
+			//m_bytes.resize(m_bytes.size() + 1);
+			//m_bytes.back() = c;
+
+			m_bytes.push_back(c);
 		}
 
 		static void end_nonzero_run(uint16_vec &syms, uint32_t &run_size, uint32_t len);
@@ -2672,6 +2781,31 @@ namespace basisu
 			*this = other;
 		}
 
+		image(image&& other) :
+			m_width(other.m_width), m_height(other.m_height), m_pitch(other.m_pitch),
+			m_pixels(std::move(other.m_pixels))
+		{
+			other.m_width = 0;
+			other.m_height = 0;
+			other.m_pitch = 0;
+		}
+
+		image& operator= (image&& rhs)
+		{
+			if (this != &rhs)
+			{
+				m_width = rhs.m_width;
+				m_height = rhs.m_height;
+				m_pitch = rhs.m_pitch;
+				m_pixels = std::move(rhs.m_pixels);
+
+				rhs.m_width = 0;
+				rhs.m_height = 0;
+				rhs.m_pitch = 0;
+			}
+			return *this;
+		}
+
 		image &swap(image &other)
 		{
 			std::swap(m_width, other.m_width);
@@ -2699,6 +2833,12 @@ namespace basisu
 			m_height = 0;
 			m_pitch = 0;
 			clear_vector(m_pixels);
+			return *this;
+		}
+
+		image& match_dimensions(const image& other)
+		{
+			resize(other.get_width(), other.get_height());
 			return *this;
 		}
 
@@ -2913,7 +3053,7 @@ namespace basisu
 					const int sx = src_x + x;
 					if (sx < 0)
 						continue;
-					else if (sx >= (int)src.get_height())
+					else if (sx >= (int)src.get_width())
 						break;
 
 					set_clipped(dst_x + x, dst_y + y, src(sx, sy));
@@ -2954,6 +3094,8 @@ namespace basisu
 					set_clipped(dst_x + x, dst_y + y, *pSrc++);
 			return *this;
 		}
+
+		inline bool is_valid() const { return m_width > 0; }
 
 		inline uint32_t get_width() const { return m_width; }
 		inline uint32_t get_height() const { return m_height; }
@@ -3038,7 +3180,55 @@ namespace basisu
 			return *this;
 		}
 
+		void swap_rb()
+		{
+			for (auto& v : m_pixels)
+				std::swap(v.r, v.b);
+		}
+
 		void debug_text(uint32_t x_ofs, uint32_t y_ofs, uint32_t x_scale, uint32_t y_scale, const color_rgba &fg, const color_rgba *pBG, bool alpha_only, const char* p, ...);
+				
+		vec4F get_filtered_vec4F(float x, float y) const
+		{
+			x -= .5f;
+			y -= .5f;
+
+			int ix = (int)floorf(x);
+			int iy = (int)floorf(y);
+			float wx = x - ix;
+			float wy = y - iy;
+
+			color_rgba a(get_clamped(ix, iy));
+			color_rgba b(get_clamped(ix + 1, iy));
+			color_rgba c(get_clamped(ix, iy + 1));
+			color_rgba d(get_clamped(ix + 1, iy + 1));
+
+			vec4F result;
+
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				const float top = lerp<float>((float)a[i], (float)b[i], wx);
+				const float bot = lerp<float>((float)c[i], (float)d[i], wx);
+				const float m = lerp<float>((float)top, (float)bot, wy);
+
+				result[i] = m;
+			}
+
+			return result;
+		}
+
+		// (x,y) - Continuous coordinates, where pixel centers are at (.5,.5), valid image coords are [0,width] and [0,height]. Clamp addressing.
+		color_rgba get_filtered(float x, float y) const
+		{
+			const vec4F fresult(get_filtered_vec4F(x, y));
+
+			color_rgba result;
+
+			for (uint32_t i = 0; i < 4; i++)
+				result[i] = (uint8_t)clamp<int>((int)(fresult[i] + .5f), 0, 255);
+
+			return result;
+		}
 				
 	private:
 		uint32_t m_width, m_height, m_pitch;  // all in pixels
@@ -3067,6 +3257,31 @@ namespace basisu
 			m_width(0), m_height(0), m_pitch(0)
 		{
 			*this = other;
+		}
+
+		imagef(imagef&& other) :
+			m_width(other.m_width), m_height(other.m_height), m_pitch(other.m_pitch),
+			m_pixels(std::move(other.m_pixels))
+		{
+			other.m_width = 0;
+			other.m_height = 0;
+			other.m_pitch = 0;
+		}
+
+		imagef& operator= (imagef&& rhs)
+		{
+			if (this != &rhs)
+			{
+				m_width = rhs.m_width;
+				m_height = rhs.m_height;
+				m_pitch = rhs.m_pitch;
+				m_pixels = std::move(rhs.m_pixels);
+
+				rhs.m_width = 0;
+				rhs.m_height = 0;
+				rhs.m_pitch = 0;
+			}
+			return *this;
 		}
 
 		imagef &swap(imagef &other)
@@ -3115,6 +3330,12 @@ namespace basisu
 				}
 			}
 
+			return *this;
+		}
+
+		imagef& match_dimensions(const imagef& other)
+		{
+			resize(other.get_width(), other.get_height());
 			return *this;
 		}
 
@@ -3248,7 +3469,7 @@ namespace basisu
 					const int sx = src_x + x;
 					if (sx < 0)
 						continue;
-					else if (sx >= (int)src.get_height())
+					else if (sx >= (int)src.get_width())
 						break;
 
 					set_clipped(dst_x + x, dst_y + y, src(sx, sy));
@@ -3274,10 +3495,12 @@ namespace basisu
 			return *this;
 		}
 
+		inline bool is_valid() const { return m_width > 0; }
+
 		inline uint32_t get_width() const { return m_width; }
 		inline uint32_t get_height() const { return m_height; }
 		inline uint32_t get_pitch() const { return m_pitch; }
-		inline uint32_t get_total_pixels() const { return m_width * m_height; }
+		inline uint64_t get_total_pixels() const { return (uint64_t)m_width * m_height; }
 
 		inline uint32_t get_block_width(uint32_t w) const { return (m_width + (w - 1)) / w; }
 		inline uint32_t get_block_height(uint32_t h) const { return (m_height + (h - 1)) / h; }
@@ -3315,7 +3538,7 @@ namespace basisu
 							{
 								if (!nan_msg)
 								{
-									fprintf(stderr, "One or more pixels was NaN, setting to 0.\n");
+									fprintf(stderr, "One or more input pixels was NaN, setting to 0.\n");
 									nan_msg = true;
 								}
 							}
@@ -3324,7 +3547,7 @@ namespace basisu
 							{
 								if (!inf_msg)
 								{
-									fprintf(stderr, "One or more pixels was INF, setting to 0.\n");
+									fprintf(stderr, "One or more input pixels was INF, setting to 0.\n");
 									inf_msg = true;
 								}
 							}
@@ -3333,7 +3556,7 @@ namespace basisu
 							{
 								if (!neg_zero_msg)
 								{
-									fprintf(stderr, "One or more pixels was -0, setting them to 0.\n");
+									fprintf(stderr, "One or more input pixels was -0, setting them to 0.\n");
 									neg_zero_msg = true;
 								}
 							}
@@ -3350,7 +3573,7 @@ namespace basisu
 
 								if (!neg_msg)
 								{
-									fprintf(stderr, "One or more pixels was negative -- setting these pixel components to 0 because ASTC HDR doesn't support signed values.\n");
+									fprintf(stderr, "One or more input pixels was negative -- setting these pixel components to 0 because ASTC HDR doesn't support signed values.\n");
 									neg_msg = true;
 								}
 								
@@ -3363,7 +3586,7 @@ namespace basisu
 								
 								if (!clamp_msg)
 								{
-									fprintf(stderr, "One or more pixels had to be clamped to %f.\n", highest_mag);
+									fprintf(stderr, "One or more input pixels had to be clamped to %f.\n", highest_mag);
 									clamp_msg = true;
 								}
 
@@ -3385,6 +3608,45 @@ namespace basisu
 
 			return *this;
 		}
+
+		bool has_alpha(uint32_t channel = 3) const
+		{
+			for (uint32_t y = 0; y < m_height; ++y)
+				for (uint32_t x = 0; x < m_width; ++x)
+					if ((*this)(x, y)[channel] != 1.0f)
+						return true;
+
+			return false;
+		}
+
+		vec4F get_filtered_vec4F(float x, float y) const
+		{
+			x -= .5f;
+			y -= .5f;
+
+			int ix = (int)floorf(x);
+			int iy = (int)floorf(y);
+			float wx = x - ix;
+			float wy = y - iy;
+
+			vec4F a(get_clamped(ix, iy));
+			vec4F b(get_clamped(ix + 1, iy));
+			vec4F c(get_clamped(ix, iy + 1));
+			vec4F d(get_clamped(ix + 1, iy + 1));
+
+			vec4F result;
+
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				const float top = lerp<float>((float)a[i], (float)b[i], wx);
+				const float bot = lerp<float>((float)c[i], (float)d[i], wx);
+				const float m = lerp<float>((float)top, (float)bot, wy);
+
+				result[i] = m;
+			}
+
+			return result;
+		}
 						
 	private:
 		uint32_t m_width, m_height, m_pitch;  // all in pixels
@@ -3402,6 +3664,52 @@ namespace basisu
 	float linear_to_srgb(float l);
 	float srgb_to_linear(float s);
 
+	class fast_linear_to_srgb
+	{
+	public:
+		fast_linear_to_srgb()
+		{
+			init();
+		}
+
+		void init()
+		{
+			for (int i = 0; i < LINEAR_TO_SRGB_TABLE_SIZE; ++i)
+			{
+				float l = (float)i * (1.0f / (LINEAR_TO_SRGB_TABLE_SIZE - 1));
+				m_linear_to_srgb_table[i] = (uint8_t)basisu::fast_floorf_int(255.0f * basisu::linear_to_srgb(l));
+			}
+
+			float srgb_to_linear[256];
+			for (int i = 0; i < 256; i++)
+				srgb_to_linear[i] = basisu::srgb_to_linear((float)i / 255.0f);
+
+			for (int i = 0; i < 256; i++)
+				m_srgb_to_linear_thresh[i] = (srgb_to_linear[i] + srgb_to_linear[basisu::minimum<int>(i + 1, 255)]) * .5f;
+		}
+
+		inline uint8_t convert(float l) const
+		{
+			assert((l >= 0.0f) && (l <= 1.0f));
+			int j = basisu::fast_roundf_int((LINEAR_TO_SRGB_TABLE_SIZE - 1) * l);
+
+			assert((j >= 0) && (j < LINEAR_TO_SRGB_TABLE_SIZE));
+			int b = m_linear_to_srgb_table[j];
+
+			b += (l > m_srgb_to_linear_thresh[b]);
+
+			return (uint8_t)b;
+		}
+
+	private:
+		static constexpr int LINEAR_TO_SRGB_TABLE_SIZE = 2048;
+		uint8_t m_linear_to_srgb_table[LINEAR_TO_SRGB_TABLE_SIZE];
+
+		float m_srgb_to_linear_thresh[256];
+	};
+
+	extern fast_linear_to_srgb g_fast_linear_to_srgb;
+		
 	// Image metrics
 		
 	class image_metrics
@@ -3438,6 +3746,8 @@ namespace basisu
 		void calc(const image &a, const image &b, uint32_t first_chan = 0, uint32_t total_chans = 0, bool avg_comp_error = true, bool use_601_luma = false);
 	};
 
+	void print_image_metrics(const image& a, const image& b);
+
 	// Image saving/loading/resampling
 
 	bool load_png(const uint8_t* pBuf, size_t buf_size, image& img, const char* pFilename = nullptr);
@@ -3450,15 +3760,22 @@ namespace basisu
 	bool load_qoi(const char* pFilename, image& img);
 
 	bool load_jpg(const char *pFilename, image& img);
+	bool load_jpg(const uint8_t* pBuf, size_t buf_size, image& img);
 	inline bool load_jpg(const std::string &filename, image &img) { return load_jpg(filename.c_str(), img); }
 	
 	// Currently loads .PNG, .TGA, or .JPG
 	bool load_image(const char* pFilename, image& img);
 	inline bool load_image(const std::string &filename, image &img) { return load_image(filename.c_str(), img); }
 
+	bool is_image_filename_hdr(const char* pFilename);
+
 	// Supports .HDR and most (but not all) .EXR's (see TinyEXR).
-	bool load_image_hdr(const char* pFilename, imagef& img, bool ldr_srgb_to_linear = true);
-	inline bool load_image_hdr(const std::string& filename, imagef& img, bool ldr_srgb_to_linear = true) { return load_image_hdr(filename.c_str(), img, ldr_srgb_to_linear); }
+	bool load_image_hdr(const char* pFilename, imagef& img, bool ldr_srgb_to_linear = true, float linear_nit_multiplier = 1.0f, float ldr_black_bias = 0.0f);
+	
+	inline bool load_image_hdr(const std::string& filename, imagef& img, bool ldr_srgb_to_linear = true, float linear_nit_multiplier = 1.0f, float ldr_black_bias = 0.0f)
+	{ 
+		return load_image_hdr(filename.c_str(), img, ldr_srgb_to_linear, linear_nit_multiplier, ldr_black_bias);
+	}
 
 	enum class hdr_image_type
 	{
@@ -3466,10 +3783,11 @@ namespace basisu
 		cHITRGBAFloat = 1,
 		cHITPNGImage = 2,
 		cHITEXRImage = 3,
-		cHITHDRImage = 4
+		cHITHDRImage = 4,
+		cHITJPGImage = 5
 	};
 
-	bool load_image_hdr(const void* pMem, size_t mem_size, imagef& img, uint32_t width, uint32_t height, hdr_image_type img_type, bool ldr_srgb_to_linear);
+	bool load_image_hdr(const void* pMem, size_t mem_size, imagef& img, uint32_t width, uint32_t height, hdr_image_type img_type, bool ldr_srgb_to_linear, float linear_nit_multiplier = 1.0f, float ldr_black_bias = 0.0f);
 
 	uint8_t *read_tga(const uint8_t *pBuf, uint32_t buf_size, int &width, int &height, int &n_chans);
 	uint8_t *read_tga(const char *pFilename, int &width, int &height, int &n_chans);
@@ -3512,7 +3830,7 @@ namespace basisu
 	};
 
 	// Supports 1 (Y), 3 (RGB), or 4 (RGBA) channel images.
-	bool write_exr(const char* pFilename, imagef& img, uint32_t n_chans, uint32_t flags);
+	bool write_exr(const char* pFilename, const imagef& img, uint32_t n_chans, uint32_t flags);
 			
 	enum
 	{
@@ -3572,102 +3890,6 @@ namespace basisu
 
 	inline double get_interval_timer() { return interval_timer::ticks_to_secs(interval_timer::get_ticks()); }
 
-	// 2D array
-
-	template<typename T>
-	class vector2D
-	{
-		typedef basisu::vector<T> TVec;
-
-		uint32_t m_width, m_height;
-		TVec m_values;
-
-	public:
-		vector2D() :
-			m_width(0),
-			m_height(0)
-		{
-		}
-
-		vector2D(uint32_t w, uint32_t h) :
-			m_width(0),
-			m_height(0)
-		{
-			resize(w, h);
-		}
-
-		vector2D(const vector2D &other)
-		{
-			*this = other;
-		}
-
-		vector2D &operator= (const vector2D &other)
-		{
-			if (this != &other)
-			{
-				m_width = other.m_width;
-				m_height = other.m_height;
-				m_values = other.m_values;
-			}
-			return *this;
-		}
-
-		inline bool operator== (const vector2D &rhs) const
-		{
-			return (m_width == rhs.m_width) && (m_height == rhs.m_height) && (m_values == rhs.m_values);
-		}
-
-		inline uint32_t size_in_bytes() const { return (uint32_t)m_values.size() * sizeof(m_values[0]); }
-
-		inline const T &operator() (uint32_t x, uint32_t y) const { assert(x < m_width && y < m_height); return m_values[x + y * m_width]; }
-		inline T &operator() (uint32_t x, uint32_t y) { assert(x < m_width && y < m_height); return m_values[x + y * m_width]; }
-
-		inline const T &operator[] (uint32_t i) const { return m_values[i]; }
-		inline T &operator[] (uint32_t i) { return m_values[i]; }
-				
-		inline const T &at_clamped(int x, int y) const { return (*this)(clamp<int>(x, 0, m_width - 1), clamp<int>(y, 0, m_height - 1)); }		
-		inline T &at_clamped(int x, int y) { return (*this)(clamp<int>(x, 0, m_width - 1), clamp<int>(y, 0, m_height - 1)); }
-
-		void clear()
-		{
-			m_width = 0;
-			m_height = 0;
-			m_values.clear();
-		}
-
-		void set_all(const T&val)
-		{
-			vector_set_all(m_values, val);
-		}
-
-		inline const T* get_ptr() const { return &m_values[0]; }
-		inline T* get_ptr() { return &m_values[0]; }
-
-		vector2D &resize(uint32_t new_width, uint32_t new_height)
-		{
-			if ((m_width == new_width) && (m_height == new_height))
-				return *this;
-
-			TVec oldVals(new_width * new_height);
-			oldVals.swap(m_values);
-
-			const uint32_t w = minimum(m_width, new_width);
-			const uint32_t h = minimum(m_height, new_height);
-
-			if ((w) && (h))
-			{
-				for (uint32_t y = 0; y < h; y++)
-					for (uint32_t x = 0; x < w; x++)
-						m_values[x + y * new_width] = oldVals[x + y * m_width];
-			}
-
-			m_width = new_width;
-			m_height = new_height;
-
-			return *this;
-		}
-	};
-
 	inline FILE *fopen_safe(const char *pFilename, const char *pMode)
 	{
 #ifdef _WIN32
@@ -3723,12 +3945,14 @@ namespace basisu
 	};
 	typedef basisu::vector<pixel_block_hdr> pixel_block_hdr_vec;
 
-	void tonemap_image_reinhard(image& ldr_img, const imagef& hdr_img, float exposure);
+	void tonemap_image_reinhard(image& ldr_img, const imagef& hdr_img, float exposure, bool add_noise = false, bool per_component = true, bool luma_scaling = false);
 	bool tonemap_image_compressive(image& dst_img, const imagef& hdr_test_img);
+	bool tonemap_image_compressive2(image& dst_img, const imagef& hdr_test_img);
 	
 	// Intersection
 	enum eClear { cClear = 0 };
 	enum eInitExpand { cInitExpand = 0 };
+	enum eIdentity { cIdentity = 0 };
 
 	template<typename vector_type>
 	class ray
@@ -3845,6 +4069,7 @@ namespace basisu
 	typedef vec_interval<vec3F> vec_interval3F;
 	typedef vec_interval<vec4F> vec_interval4F;
 
+	typedef vec_interval1F aabb1F;
 	typedef vec_interval2F aabb2F;
 	typedef vec_interval3F aabb3F;
 
@@ -4004,18 +4229,19 @@ namespace basisu
 		return result;
 	}
 
+	union fu32
+	{
+		uint32_t u;
+		float f;
+	};
+
 	// Supports positive and denormals only. No NaN or Inf.
-	inline float fast_half_to_float_pos_not_inf_or_nan(basist::half_float h)
+	BASISU_FORCE_INLINE float fast_half_to_float_pos_not_inf_or_nan(basist::half_float h)
 	{
 		assert(!basist::half_is_signed(h) && !basist::is_half_inf_or_nan(h));
-
-		union fu32
-		{
-			uint32_t u;
-			float f;
-		};
-
-		static const fu32 K = { 0x77800000 };
+				
+		// add 112 to the exponent (112+half float's exp bias of 15=float32's bias of 127)
+		static const fu32 K = { 0x77800000 }; 
 
 		fu32 o;
 		o.u = h << 13;
@@ -4023,7 +4249,62 @@ namespace basisu
 
 		return o.f;
 	}
+
+	// Positive, negative, or denormals. No NaN or Inf. Clamped to MAX_HALF_FLOAT.
+	inline basist::half_float fast_float_to_half_trunc_no_nan_or_inf(float f)
+	{
+		assert(!isnan(f) && !isinf(f));
+
+		// Sutract 112 from the exponent, to change the bias from 127 to 15.
+		static const fu32 g_f_to_h{ 0x7800000 };
 				
+		fu32 fu;
+
+		fu.f = minimum<float>((float)basist::MAX_HALF_FLOAT, fabsf(f)) * g_f_to_h.f;
+
+		return (basist::half_float)(((fu.u >> (23 - 10)) & 0x7FFF) | ((f < 0.0f) ? 0x8000 : 0));
+	}
+
+	inline basist::half_float fast_float_to_half_trunc_no_clamp_neg_nan_or_inf(float f)
+	{
+		assert(!isnan(f) && !isinf(f));
+		assert((f >= 0.0f) && (f <= basist::MAX_HALF_FLOAT));
+		
+		// Sutract 112 from the exponent, to change the bias from 127 to 15.
+		static const fu32 g_f_to_h{ 0x7800000 };
+
+		fu32 fu;
+
+		fu.f = f * g_f_to_h.f;
+		
+		return (basist::half_float)((fu.u >> (23 - 10)) & 0x7FFF);
+	}
+		
+	inline basist::half_float fast_float_to_half_no_clamp_neg_nan_or_inf(float f)
+	{
+		assert(!isnan(f) && !isinf(f));
+		assert((f >= 0.0f) && (f <= basist::MAX_HALF_FLOAT));
+
+		// Sutract 112 from the exponent, to change the bias from 127 to 15.
+		static const fu32 g_f_to_h{ 0x7800000 };
+
+		fu32 fu;
+
+		fu.f = f * g_f_to_h.f;
+
+		uint32_t h = (basist::half_float)((fu.u >> (23 - 10)) & 0x7FFF);
+
+		// round to even or nearest
+		uint32_t mant = fu.u & 8191; // examine lowest 13 bits
+		uint32_t inc = (mant > 4096) | ((mant == 4096) & (h & 1));
+		h += inc;
+
+		if (h > basist::MAX_HALF_FLOAT_AS_INT_BITS)
+			h = basist::MAX_HALF_FLOAT_AS_INT_BITS;
+
+		return (basist::half_float)h;
+	}
+								
 } // namespace basisu
 
-
+#include "basisu_math.h"

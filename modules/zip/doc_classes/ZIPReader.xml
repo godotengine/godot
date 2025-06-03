@@ -61,6 +61,14 @@
 				Must be called after [method open].
 			</description>
 		</method>
+		<method name="get_compression_level">
+			<return type="int" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="case_sensitive" type="bool" default="true" />
+			<description>
+				Returns the compression level of the file in the loaded zip archive. Returns [code]-1[/code] if the file doesn't exist or any other error occurs. Must be called after [method open].
+			</description>
+		</method>
 		<method name="get_files">
 			<return type="PackedStringArray" />
 			<description>

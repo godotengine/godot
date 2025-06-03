@@ -127,6 +127,13 @@ void VideoStreamPlayer::_mix_audio() {
 
 void VideoStreamPlayer::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_VIDEO);
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			AudioServer::get_singleton()->add_mix_callback(_mix_audios, this);
 
@@ -147,14 +154,10 @@ void VideoStreamPlayer::_notification(int p_notification) {
 				return;
 			}
 
-			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec());
+			double delta = first_frame ? 0 : get_process_delta_time();
+			first_frame = false;
 
-			double delta = last_audio_time == 0 ? 0 : audio_time - last_audio_time;
-			last_audio_time = audio_time;
-
-			if (delta == 0) {
-				return;
-			}
+			resampler.set_playback_speed(Engine::get_singleton()->get_time_scale());
 
 			playback->update(delta); // playback->is_playing() returns false in the last video frame
 
@@ -188,7 +191,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 					playback->set_paused(true);
 					set_process_internal(false);
 				}
-				last_audio_time = 0;
 			}
 		} break;
 
@@ -206,7 +208,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 					playback->set_paused(false);
 					set_process_internal(true);
 				}
-				last_audio_time = 0;
 			}
 		} break;
 	}
@@ -332,13 +333,9 @@ void VideoStreamPlayer::play() {
 	if (playback.is_null()) {
 		return;
 	}
-	playback->stop();
 	playback->play();
 	set_process_internal(true);
-	last_audio_time = 0;
-
-	// We update the playback to render the first frame immediately.
-	playback->update(0);
+	first_frame = true;
 
 	if (!can_process()) {
 		_notification(NOTIFICATION_PAUSED);
@@ -356,7 +353,6 @@ void VideoStreamPlayer::stop() {
 	playback->stop();
 	resampler.flush();
 	set_process_internal(false);
-	last_audio_time = 0;
 }
 
 bool VideoStreamPlayer::is_playing() const {
@@ -385,7 +381,6 @@ void VideoStreamPlayer::set_paused(bool p_paused) {
 		playback->set_paused(p_paused);
 		set_process_internal(!p_paused);
 	}
-	last_audio_time = 0;
 }
 
 bool VideoStreamPlayer::is_paused() const {
@@ -461,7 +456,9 @@ double VideoStreamPlayer::get_stream_position() const {
 
 void VideoStreamPlayer::set_stream_position(double p_position) {
 	if (playback.is_valid()) {
+		resampler.flush();
 		playback->seek(p_position);
+		first_frame = true;
 	}
 }
 
@@ -571,8 +568,6 @@ void VideoStreamPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 }
-
-VideoStreamPlayer::VideoStreamPlayer() {}
 
 VideoStreamPlayer::~VideoStreamPlayer() {
 	resampler.clear(); // Not necessary here, but make in consistent with other "stream_player" classes.

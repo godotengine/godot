@@ -328,6 +328,9 @@ void SoftBodyShape::sRegister()
 	{
 		CollisionDispatch::sRegisterCollideShape(s, EShapeSubType::SoftBody, sCollideConvexVsSoftBody);
 		CollisionDispatch::sRegisterCastShape(s, EShapeSubType::SoftBody, sCastConvexVsSoftBody);
+
+		CollisionDispatch::sRegisterCollideShape(EShapeSubType::SoftBody, s, CollisionDispatch::sReversedCollideShape);
+		CollisionDispatch::sRegisterCastShape(EShapeSubType::SoftBody, s, CollisionDispatch::sReversedCastShape);
 	}
 
 	// Specialized collision functions

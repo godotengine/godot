@@ -155,7 +155,6 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 
 void AbstractPolygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			button_create->set_button_icon(get_editor_theme_icon(SNAME("CurveCreate")));
 			button_edit->set_button_icon(get_editor_theme_icon(SNAME("CurveEdit")));
@@ -707,12 +706,12 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 		const int n_segments = n_points - (_is_line() ? 1 : 0);
 
 		for (int i = 0; i < n_segments; i++) {
-			Vector2 segment[2] = { xform.xform(points[i] + offset),
-				xform.xform(points[(i + 1) % n_points] + offset) };
+			const Vector2 segment_a = xform.xform(points[i] + offset);
+			const Vector2 segment_b = xform.xform(points[(i + 1) % n_points] + offset);
 
-			Vector2 cp = Geometry2D::get_closest_point_to_segment(p_pos, segment);
+			Vector2 cp = Geometry2D::get_closest_point_to_segment(p_pos, segment_a, segment_b);
 
-			if (cp.distance_squared_to(segment[0]) < eps2 || cp.distance_squared_to(segment[1]) < eps2) {
+			if (cp.distance_squared_to(segment_a) < eps2 || cp.distance_squared_to(segment_b) < eps2) {
 				continue; //not valid to reuse point
 			}
 
@@ -737,18 +736,21 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 
 	button_create = memnew(Button);
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
+	button_create->set_accessibility_name(TTRC("Create Polygon Points"));
 	add_child(button_create);
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
+	button_edit->set_accessibility_name(TTRC("Edit Polygon Points"));
 	add_child(button_edit);
 	button_edit->connect(SceneStringName(pressed), callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
 	button_delete = memnew(Button);
 	button_delete->set_theme_type_variation(SceneStringName(FlatButton));
+	button_delete->set_accessibility_name(TTRC("Delete Polygon Points"));
 	add_child(button_delete);
 	button_delete->connect(SceneStringName(pressed), callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_DELETE));
 	button_delete->set_toggle_mode(true);

@@ -56,6 +56,27 @@ public:
 		SHADER_VERSION_MAX
 	};
 
+	enum ShaderCount {
+		SHADER_COUNT_NONE,
+		SHADER_COUNT_SINGLE,
+		SHADER_COUNT_MULTIPLE
+	};
+
+	_FORCE_INLINE_ static ShaderCount shader_count_for(uint32_t p_count) {
+		if (p_count == 0) {
+			return SHADER_COUNT_NONE;
+		} else if (p_count == 1) {
+			return SHADER_COUNT_SINGLE;
+		} else {
+			return SHADER_COUNT_MULTIPLE;
+		}
+	}
+
+	enum ShaderGroup {
+		SHADER_GROUP_BASE, // Always compiled at the beginning.
+		SHADER_GROUP_MULTIVIEW,
+	};
+
 	struct ShaderSpecialization {
 		union {
 			uint32_t packed_0;
@@ -91,25 +112,18 @@ public:
 			struct {
 				uint32_t directional_soft_shadow_samples : 6;
 				uint32_t directional_penumbra_shadow_samples : 6;
-				uint32_t omni_lights : 4;
-				uint32_t spot_lights : 4;
-				uint32_t reflection_probes : 4;
-				uint32_t directional_lights : 4;
-				uint32_t decals : 4;
-			};
-		};
-
-		union {
-			uint32_t packed_2;
-
-			struct {
+				uint32_t omni_lights : 2;
+				uint32_t spot_lights : 2;
+				uint32_t reflection_probes : 2;
+				uint32_t directional_lights : 2;
+				uint32_t decals : 1;
 				uint32_t directional_light_blend_splits : 8;
-				uint32_t padding_1 : 24;
+				uint32_t padding_1 : 3;
 			};
 		};
 
 		union {
-			float packed_3;
+			float packed_2;
 			float luminance_multiplier;
 		};
 	};
@@ -122,10 +136,6 @@ public:
 				uint32_t cull_mode : 2;
 			};
 		};
-
-		uint32_t padding_1;
-		uint32_t padding_2;
-		uint32_t padding_3;
 	};
 
 	struct ShaderData : public RendererRD::MaterialStorage::ShaderData {
@@ -172,8 +182,7 @@ public:
 				h = hash_murmur3_one_32(primitive_type, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_0, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_1, h);
-				h = hash_murmur3_one_32(shader_specialization.packed_2, h);
-				h = hash_murmur3_one_float(shader_specialization.packed_3, h);
+				h = hash_murmur3_one_float(shader_specialization.packed_2, h);
 				h = hash_murmur3_one_32(version, h);
 				h = hash_murmur3_one_32(render_pass, h);
 				h = hash_murmur3_one_32(wireframe, h);
@@ -217,6 +226,7 @@ public:
 		bool uses_tangent = false;
 		bool uses_particle_trails = false;
 		bool uses_normal_map = false;
+		bool uses_bent_normal_map = false;
 		bool wireframe = false;
 
 		bool unshaded = false;
@@ -260,6 +270,7 @@ public:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		RD::PolygonCullMode get_cull_mode_from_cull_variant(CullVariant p_cull_variant);
 		void _clear_vertex_input_mask_cache();
 		RID get_shader_variant(ShaderVersion p_shader_version, bool p_ubershader) const;
@@ -332,7 +343,8 @@ public:
 	void init(const String p_defines);
 	void set_default_specialization(const ShaderSpecialization &p_specialization);
 	uint32_t get_pipeline_compilations(RS::PipelineSource p_source);
-	bool is_multiview_enabled() const;
+	void enable_multiview_shader_group();
+	bool is_multiview_shader_group_enabled() const;
 };
 
 } // namespace RendererSceneRenderImplementation

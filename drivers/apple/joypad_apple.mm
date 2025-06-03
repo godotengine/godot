@@ -136,7 +136,6 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 	force_feedback = NO;
 
 	for (int i = 0; i < (int)JoyAxis::MAX; i++) {
-		axis_changed[i] = false;
 		axis_value[i] = 0.0;
 	}
 	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
@@ -151,7 +150,11 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 
 	if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
 		if ([controller.productCategory isEqualToString:@"Switch Pro Controller"] || [controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L/R)"]) {
-			nintendo_button_layout = true;
+			double_nintendo_joycon_layout = true;
+		}
+
+		if ([controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L)"] || [controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (R)"]) {
+			single_nintendo_joycon_layout = true;
 		}
 	}
 
@@ -163,6 +166,42 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 		};
 	};
 
+	auto JOYSTICK_LEFT = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
+		if (axis_value[(int)JoyAxis::LEFT_X] != xValue) {
+			axis_changed_mask |= (1 << (int)JoyAxis::LEFT_X);
+			axis_value[(int)JoyAxis::LEFT_X] = xValue;
+		}
+		if (axis_value[(int)JoyAxis::LEFT_Y] != -yValue) {
+			axis_changed_mask |= (1 << (int)JoyAxis::LEFT_Y);
+			axis_value[(int)JoyAxis::LEFT_Y] = -yValue;
+		}
+	};
+
+	auto JOYSTICK_RIGHT = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
+		if (axis_value[(int)JoyAxis::RIGHT_X] != xValue) {
+			axis_changed_mask |= (1 << (int)JoyAxis::RIGHT_X);
+			axis_value[(int)JoyAxis::RIGHT_X] = xValue;
+		}
+		if (axis_value[(int)JoyAxis::RIGHT_Y] != -yValue) {
+			axis_changed_mask |= (1 << (int)JoyAxis::RIGHT_Y);
+			axis_value[(int)JoyAxis::RIGHT_Y] = -yValue;
+		}
+	};
+
+	auto TRIGGER_LEFT = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+		if (axis_value[(int)JoyAxis::TRIGGER_LEFT] != value) {
+			axis_changed_mask |= (1 << (int)JoyAxis::TRIGGER_LEFT);
+			axis_value[(int)JoyAxis::TRIGGER_LEFT] = value;
+		}
+	};
+
+	auto TRIGGER_RIGHT = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+		if (axis_value[(int)JoyAxis::TRIGGER_RIGHT] != value) {
+			axis_changed_mask |= (1 << (int)JoyAxis::TRIGGER_RIGHT);
+			axis_value[(int)JoyAxis::TRIGGER_RIGHT] = value;
+		}
+	};
+
 	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
 		if (controller.physicalInputProfile != nil) {
 			GCPhysicalInputProfile *profile = controller.physicalInputProfile;
@@ -171,7 +210,7 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 			GCControllerButtonInput *buttonB = profile.buttons[GCInputButtonB];
 			GCControllerButtonInput *buttonX = profile.buttons[GCInputButtonX];
 			GCControllerButtonInput *buttonY = profile.buttons[GCInputButtonY];
-			if (nintendo_button_layout) {
+			if (double_nintendo_joycon_layout) {
 				if (buttonA) {
 					buttonA.pressedChangedHandler = BUTTON(JoyButton::B);
 				}
@@ -183,6 +222,19 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 				}
 				if (buttonY) {
 					buttonY.pressedChangedHandler = BUTTON(JoyButton::X);
+				}
+			} else if (single_nintendo_joycon_layout) {
+				if (buttonA) {
+					buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
+				}
+				if (buttonB) {
+					buttonB.pressedChangedHandler = BUTTON(JoyButton::X);
+				}
+				if (buttonX) {
+					buttonX.pressedChangedHandler = BUTTON(JoyButton::B);
+				}
+				if (buttonY) {
+					buttonY.pressedChangedHandler = BUTTON(JoyButton::Y);
 				}
 			} else {
 				if (buttonA) {
@@ -220,20 +272,10 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 			GCControllerButtonInput *leftTrigger = profile.buttons[GCInputLeftTrigger];
 			GCControllerButtonInput *rightTrigger = profile.buttons[GCInputRightTrigger];
 			if (leftTrigger) {
-				leftTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-					if (axis_value[(int)JoyAxis::TRIGGER_LEFT] != value) {
-						axis_changed[(int)JoyAxis::TRIGGER_LEFT] = true;
-						axis_value[(int)JoyAxis::TRIGGER_LEFT] = value;
-					}
-				};
+				leftTrigger.valueChangedHandler = TRIGGER_LEFT;
 			}
 			if (rightTrigger) {
-				rightTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-					if (axis_value[(int)JoyAxis::TRIGGER_RIGHT] != value) {
-						axis_changed[(int)JoyAxis::TRIGGER_RIGHT] = true;
-						axis_value[(int)JoyAxis::TRIGGER_RIGHT] = value;
-					}
-				};
+				rightTrigger.valueChangedHandler = TRIGGER_RIGHT;
 			}
 
 			GCControllerButtonInput *buttonMenu = profile.buttons[GCInputButtonMenu];
@@ -276,30 +318,12 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 
 			GCControllerDirectionPad *leftThumbstick = profile.dpads[GCInputLeftThumbstick];
 			if (leftThumbstick) {
-				leftThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-					if (axis_value[(int)JoyAxis::LEFT_X] != xValue) {
-						axis_changed[(int)JoyAxis::LEFT_X] = true;
-						axis_value[(int)JoyAxis::LEFT_X] = xValue;
-					}
-					if (axis_value[(int)JoyAxis::LEFT_Y] != -yValue) {
-						axis_changed[(int)JoyAxis::LEFT_Y] = true;
-						axis_value[(int)JoyAxis::LEFT_Y] = -yValue;
-					}
-				};
+				leftThumbstick.valueChangedHandler = JOYSTICK_LEFT;
 			}
 
 			GCControllerDirectionPad *rightThumbstick = profile.dpads[GCInputRightThumbstick];
 			if (rightThumbstick) {
-				rightThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-					if (axis_value[(int)JoyAxis::RIGHT_X] != xValue) {
-						axis_changed[(int)JoyAxis::RIGHT_X] = true;
-						axis_value[(int)JoyAxis::RIGHT_X] = xValue;
-					}
-					if (axis_value[(int)JoyAxis::RIGHT_Y] != -yValue) {
-						axis_changed[(int)JoyAxis::RIGHT_Y] = true;
-						axis_value[(int)JoyAxis::RIGHT_Y] = -yValue;
-					}
-				};
+				rightThumbstick.valueChangedHandler = JOYSTICK_RIGHT;
 			}
 
 			GCControllerDirectionPad *dpad = nil;
@@ -318,11 +342,16 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 	} else if (controller.extendedGamepad != nil) {
 		GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
-		if (nintendo_button_layout) {
+		if (double_nintendo_joycon_layout) {
 			gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::B);
 			gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::A);
 			gamepad.buttonX.pressedChangedHandler = BUTTON(JoyButton::Y);
 			gamepad.buttonY.pressedChangedHandler = BUTTON(JoyButton::X);
+		} else if (single_nintendo_joycon_layout) {
+			gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
+			gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::X);
+			gamepad.buttonX.pressedChangedHandler = BUTTON(JoyButton::B);
+			gamepad.buttonY.pressedChangedHandler = BUTTON(JoyButton::Y);
 		} else {
 			gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
 			gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::B);
@@ -337,39 +366,10 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 		gamepad.dpad.left.pressedChangedHandler = BUTTON(JoyButton::DPAD_LEFT);
 		gamepad.dpad.right.pressedChangedHandler = BUTTON(JoyButton::DPAD_RIGHT);
 
-		gamepad.leftThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-			if (axis_value[(int)JoyAxis::LEFT_X] != xValue) {
-				axis_changed[(int)JoyAxis::LEFT_X] = true;
-				axis_value[(int)JoyAxis::LEFT_X] = xValue;
-			}
-			if (axis_value[(int)JoyAxis::LEFT_Y] != -yValue) {
-				axis_changed[(int)JoyAxis::LEFT_Y] = true;
-				axis_value[(int)JoyAxis::LEFT_Y] = -yValue;
-			}
-		};
-
-		gamepad.rightThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-			if (axis_value[(int)JoyAxis::RIGHT_X] != xValue) {
-				axis_changed[(int)JoyAxis::RIGHT_X] = true;
-				axis_value[(int)JoyAxis::RIGHT_X] = xValue;
-			}
-			if (axis_value[(int)JoyAxis::RIGHT_Y] != -yValue) {
-				axis_changed[(int)JoyAxis::RIGHT_Y] = true;
-				axis_value[(int)JoyAxis::RIGHT_Y] = -yValue;
-			}
-		};
-		gamepad.leftTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-			if (axis_value[(int)JoyAxis::TRIGGER_LEFT] != value) {
-				axis_changed[(int)JoyAxis::TRIGGER_LEFT] = true;
-				axis_value[(int)JoyAxis::TRIGGER_LEFT] = value;
-			}
-		};
-		gamepad.rightTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-			if (axis_value[(int)JoyAxis::TRIGGER_RIGHT] != value) {
-				axis_changed[(int)JoyAxis::TRIGGER_RIGHT] = true;
-				axis_value[(int)JoyAxis::TRIGGER_RIGHT] = value;
-			}
-		};
+		gamepad.leftThumbstick.valueChangedHandler = JOYSTICK_LEFT;
+		gamepad.rightThumbstick.valueChangedHandler = JOYSTICK_RIGHT;
+		gamepad.leftTrigger.valueChangedHandler = TRIGGER_LEFT;
+		gamepad.rightTrigger.valueChangedHandler = TRIGGER_RIGHT;
 
 		if (@available(macOS 10.14.1, iOS 12.1, tvOS 12.1, *)) {
 			gamepad.leftThumbstickButton.pressedChangedHandler = BUTTON(JoyButton::LEFT_STICK);
@@ -502,7 +502,13 @@ void JoypadApple::add_joypad(GCController *p_controller) {
 	}
 
 	// Tell Godot about our new controller.
-	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8(p_controller.vendorName.UTF8String));
+	char const *device_name;
+	if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+		device_name = p_controller.productCategory.UTF8String;
+	} else {
+		device_name = p_controller.vendorName.UTF8String;
+	}
+	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8(device_name));
 
 	// Assign our player index.
 	joypads.insert(joy_id, memnew(GameController(joy_id, p_controller)));
@@ -588,20 +594,25 @@ void JoypadApple::joypad_vibration_stop(GameController &p_joypad, uint64_t p_tim
 }
 
 void JoypadApple::process_joypads() {
+	Input *input = Input::get_singleton();
+
 	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
 		for (KeyValue<int, GameController *> &E : joypads) {
 			int id = E.key;
 			GameController &joypad = *E.value;
 
-			for (int i = 0; i < (int)JoyAxis::MAX; i++) {
-				if (joypad.axis_changed[i]) {
-					joypad.axis_changed[i] = false;
-					Input::get_singleton()->joy_axis(id, (JoyAxis)i, joypad.axis_value[i]);
-				}
+			uint32_t changed = joypad.axis_changed_mask;
+			joypad.axis_changed_mask = 0;
+			// Loop over changed axes.
+			while (changed) {
+				// Find the index of the next set bit.
+				uint32_t i = (uint32_t)__builtin_ctzll(changed);
+				// Clear the set bit.
+				changed &= (changed - 1);
+				input->joy_axis(id, (JoyAxis)i, joypad.axis_value[i]);
 			}
 
 			if (joypad.force_feedback) {
-				Input *input = Input::get_singleton();
 				uint64_t timestamp = input->get_joy_vibration_timestamp(id);
 
 				if (timestamp > (unsigned)joypad.ff_effect_timestamp) {

@@ -37,16 +37,16 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 	float dmin = base->range_min / (sampling_rate / 2.0);
 	float dmax = base->range_max / (sampling_rate / 2.0);
 
-	float increment = Math_TAU * (base->rate / sampling_rate);
+	float increment = Math::TAU * (base->rate / sampling_rate);
 
 	for (int i = 0; i < p_frame_count; i++) {
 		phase += increment;
 
-		while (phase >= Math_TAU) {
-			phase -= Math_TAU;
+		while (phase >= Math::TAU) {
+			phase -= Math::TAU;
 		}
 
-		float d = dmin + (dmax - dmin) * ((sin(phase) + 1.f) / 2.f);
+		float d = dmin + (dmax - dmin) * ((std::sin(phase) + 1.f) / 2.f);
 
 		//update filter coeffs
 		for (int j = 0; j < 6; j++) {

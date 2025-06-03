@@ -85,6 +85,15 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			_open_popup(selected_menu, true);
 		}
 		return;
+	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
+		if (focused_menu == -1) {
+			focused_menu = 0;
+		}
+		selected_menu = focused_menu;
+		if (active_menu >= 0) {
+			get_menu_popup(active_menu)->hide();
+		}
+		_open_popup(selected_menu, true);
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -221,7 +230,7 @@ void MenuBar::bind_global_menu() {
 		for (int i = 0; i < count; i++) {
 			String tag = nmenu->get_item_tag(main_menu, i).operator String().get_slicec('#', 1);
 			if (!tag.is_empty() && tag != prev_tag) {
-				MenuBar *mb = Object::cast_to<MenuBar>(ObjectDB::get_instance(ObjectID(static_cast<uint64_t>(tag.to_int()))));
+				MenuBar *mb = ObjectDB::get_instance<MenuBar>(ObjectID(static_cast<uint64_t>(tag.to_int())));
 				if (mb && mb->get_start_index() >= start_index) {
 					global_start_idx = i;
 					break;
@@ -276,6 +285,12 @@ void MenuBar::unbind_global_menu() {
 
 void MenuBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_MENU_BAR);
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (get_menu_count() > 0) {
 				_refresh_menu_names();
@@ -504,13 +519,14 @@ void MenuBar::_refresh_menu_names() {
 	bool is_global = !global_menu_tag.is_empty();
 	RID main_menu = is_global ? nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID) : RID();
 
+	bool dirty = false;
 	Vector<PopupMenu *> popups = _get_popups();
 	for (int i = 0; i < popups.size(); i++) {
 		String menu_name = popups[i]->get_title().is_empty() ? String(popups[i]->get_name()) : popups[i]->get_title();
 		if (!popups[i]->has_meta("_menu_name") && menu_name != get_menu_title(i)) {
 			menu_cache.write[i].name = menu_name;
 			shape(menu_cache.write[i]);
-			queue_redraw();
+			dirty = true;
 			if (is_global && menu_cache[i].submenu_rid.is_valid()) {
 				int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
 				if (item_idx >= 0) {
@@ -518,6 +534,11 @@ void MenuBar::_refresh_menu_names() {
 				}
 			}
 		}
+	}
+
+	if (dirty && !is_global) {
+		queue_redraw();
+		update_minimum_size();
 	}
 }
 
@@ -548,7 +569,7 @@ int MenuBar::get_menu_idx_from_control(PopupMenu *p_child) const {
 }
 
 void MenuBar::_popup_changed(ObjectID p_menu) {
-	PopupMenu *pm = Object::cast_to<PopupMenu>(ObjectDB::get_instance(p_menu));
+	PopupMenu *pm = ObjectDB::get_instance<PopupMenu>(p_menu);
 	if (!pm) {
 		return;
 	}
@@ -950,6 +971,7 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 }
 
 MenuBar::MenuBar() {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_process_shortcut_input(true);
 }
 

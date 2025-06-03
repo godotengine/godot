@@ -201,6 +201,7 @@ EditorRunNative::EditorRunNative() {
 	remote_debug->set_theme_type_variation("RunBarButton");
 	remote_debug->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunNative::start_run_native));
 	remote_debug->set_tooltip_text(TTR("Remote Deploy"));
+	remote_debug->set_accessibility_name(TTRC("Remote Deploy"));
 	remote_debug->set_disabled(true);
 
 	add_child(remote_debug);

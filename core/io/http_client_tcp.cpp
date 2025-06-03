@@ -483,8 +483,7 @@ Error HTTPClientTCP::poll() {
 						(rs >= 4 && response_str[rs - 4] == '\r' && response_str[rs - 3] == '\n' && response_str[rs - 2] == '\r' && response_str[rs - 1] == '\n')) {
 					// End of response, parse.
 					response_str.push_back(0);
-					String response;
-					response.append_utf8((const char *)response_str.ptr(), response_str.size());
+					String response = String::utf8((const char *)response_str.ptr(), response_str.size());
 					Vector<String> responses = response.split("\n");
 					body_size = -1;
 					chunked = false;

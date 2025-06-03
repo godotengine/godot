@@ -132,7 +132,7 @@ void finish_language() {
 StringName GDScriptTestRunner::test_function_name;
 
 GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames, bool p_use_binary_tokens) {
-	test_function_name = StaticCString::create("test");
+	test_function_name = StringName("test");
 	do_init_languages = p_init_language;
 	print_filenames = p_print_filenames;
 	binary_tokens = p_use_binary_tokens;
@@ -478,7 +478,7 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 
 	if (include_source_info) {
 		header += vformat(" at %s:%d on %s()",
-				String::utf8(p_file).trim_prefix(self->base_dir).replace("\\", "/"),
+				String::utf8(p_file).trim_prefix(self->base_dir).replace_char('\\', '/'),
 				p_line,
 				String::utf8(p_function));
 	}
@@ -655,6 +655,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.status = GDTEST_LOAD_ERROR;
 		result.output = "";
 		result.passed = false;
+		remove_print_handler(&_print_handler);
+		remove_error_handler(&_error_handler);
 		ERR_FAIL_V_MSG(result, "\nCould not reload script: '" + source_file + "'");
 	}
 

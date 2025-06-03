@@ -38,7 +38,7 @@
 #include <emscripten/html5.h>
 
 class DisplayServerWeb : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWeb, DisplayServer);
 
 private:
 	struct JSTouchEvent {
@@ -102,8 +102,9 @@ private:
 	int key_event_pos = 0;
 
 	bool swap_cancel_ok = false;
-	bool tts = false;
 	NativeMenu *native_menu = nullptr;
+
+	int active_gamepad_sample_count = -1;
 
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
 	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;

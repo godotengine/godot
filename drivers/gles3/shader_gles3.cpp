@@ -129,12 +129,6 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	feedback_count = p_feedback_count;
 
 	StringBuilder tohash;
-	/*
-	tohash.append("[SpirvCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
-	tohash.append("[BinaryCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_binary_cache_key());
-	*/
 	tohash.append("[Vertex]");
 	tohash.append(p_vertex_code ? p_vertex_code : "");
 	tohash.append("[Fragment]");
@@ -321,7 +315,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.vert_id, 1, &cstr, nullptr);
+		GLint cstr_len = cs.length();
+		glShaderSource(spec.vert_id, 1, &cstr, &cstr_len);
 		glCompileShader(spec.vert_id);
 
 		glGetShaderiv(spec.vert_id, GL_COMPILE_STATUS, &status);
@@ -340,8 +335,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 					iloglen = 4096; // buggy driver (Adreno 220+)
 				}
 
-				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				memset(ilogmem, 0, iloglen + 1);
+				char *ilogmem = (char *)Memory::alloc_static_zeroed(iloglen + 1);
 				glGetShaderInfoLog(spec.vert_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Vertex shader compilation failed:\n";
@@ -369,7 +363,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.frag_id, 1, &cstr, nullptr);
+		GLint cstr_len = cs.length();
+		glShaderSource(spec.frag_id, 1, &cstr, &cstr_len);
 		glCompileShader(spec.frag_id);
 
 		glGetShaderiv(spec.frag_id, GL_COMPILE_STATUS, &status);
@@ -388,8 +383,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 					iloglen = 4096; // buggy driver (Adreno 220+)
 				}
 
-				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				memset(ilogmem, 0, iloglen + 1);
+				char *ilogmem = (char *)Memory::alloc_static_zeroed(iloglen + 1);
 				glGetShaderInfoLog(spec.frag_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Fragment shader compilation failed:\n";
@@ -690,7 +684,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 
 void ShaderGLES3::_clear_version(Version *p_version) {
 	// Variants not compiled yet, just return
-	if (p_version->variants.size() == 0) {
+	if (p_version->variants.is_empty()) {
 		return;
 	}
 
@@ -841,13 +835,11 @@ bool ShaderGLES3::shader_cache_save_compressed_zstd = true;
 bool ShaderGLES3::shader_cache_save_debug = true;
 
 ShaderGLES3::~ShaderGLES3() {
-	List<RID> remaining;
-	version_owner.get_owned_list(&remaining);
+	LocalVector<RID> remaining = version_owner.get_owned_list();
 	if (remaining.size()) {
 		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
-		while (remaining.size()) {
-			version_free(remaining.front()->get());
-			remaining.pop_front();
+		for (RID &rid : remaining) {
+			version_free(rid);
 		}
 	}
 }

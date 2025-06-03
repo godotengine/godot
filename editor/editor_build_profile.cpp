@@ -38,6 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
@@ -808,6 +809,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	HBoxContainer *path_hbc = memnew(HBoxContainer);
 	profile_path = memnew(LineEdit);
 	path_hbc->add_child(profile_path);
+	profile_path->set_accessibility_name(TTRC("Profile Path"));
 	profile_path->set_editable(true);
 	profile_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -880,6 +882,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	force_detect_classes = memnew(LineEdit);
+	force_detect_classes->set_accessibility_name(TTRC("Forced Classes"));
 	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
 	force_detect_classes->connect(SceneStringName(text_changed), callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 

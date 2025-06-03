@@ -32,8 +32,10 @@
 #include "tile_map.compat.inc"
 
 #include "core/io/marshalls.h"
+#ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "servers/navigation_server_2d.h"
+#endif // NAVIGATION_2D_DISABLED
 
 #define TILEMAP_CALL_FOR_LAYER(layer, function, ...) \
 	if (layer < 0) {                                 \
@@ -49,8 +51,10 @@
 	ERR_FAIL_INDEX_V(layer, (int)layers.size(), err_value);       \
 	return layers[layer]->function(__VA_ARGS__);
 
+#ifndef NAVIGATION_2D_DISABLED
 Callable TileMap::_navmesh_source_geometry_parsing_callback;
 RID TileMap::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
 
 void TileMap::_tile_set_changed() {
 	update_configuration_warnings();
@@ -376,6 +380,7 @@ int TileMap::get_layer_z_index(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, 0, get_z_index);
 }
 
+#ifndef NAVIGATION_2D_DISABLED
 void TileMap::set_layer_navigation_enabled(int p_layer, bool p_enabled) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_navigation_enabled, p_enabled);
 }
@@ -391,6 +396,7 @@ void TileMap::set_layer_navigation_map(int p_layer, RID p_map) {
 RID TileMap::get_layer_navigation_map(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, RID(), get_navigation_map);
 }
+#endif // NAVIGATION_2D_DISABLED
 
 void TileMap::set_collision_animatable(bool p_collision_animatable) {
 	if (collision_animatable == p_collision_animatable) {
@@ -423,6 +429,7 @@ TileMap::VisibilityMode TileMap::get_collision_visibility_mode() const {
 	return collision_visibility_mode;
 }
 
+#ifndef NAVIGATION_2D_DISABLED
 void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navigation) {
 	if (navigation_visibility_mode == p_show_navigation) {
 		return;
@@ -437,6 +444,7 @@ void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navi
 TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() const {
 	return navigation_visibility_mode;
 }
+#endif // NAVIGATION_2D_DISABLED
 
 void TileMap::set_y_sort_enabled(bool p_enable) {
 	if (is_y_sort_enabled() == p_enable) {
@@ -898,8 +906,10 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 
 void TileMap::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
+#ifndef NAVIGATION_2D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "layer", "map"), &TileMap::set_layer_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map", "layer"), &TileMap::get_layer_navigation_map);
+#endif // NAVIGATION_2D_DISABLED
 	ClassDB::bind_method(D_METHOD("force_update", "layer"), &TileMap::force_update, DEFVAL(-1));
 #endif // DISABLE_DEPRECATED
 
@@ -925,18 +935,22 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_y_sort_origin", "layer"), &TileMap::get_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("set_layer_z_index", "layer", "z_index"), &TileMap::set_layer_z_index);
 	ClassDB::bind_method(D_METHOD("get_layer_z_index", "layer"), &TileMap::get_layer_z_index);
+#ifndef NAVIGATION_2D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_layer_navigation_enabled", "layer", "enabled"), &TileMap::set_layer_navigation_enabled);
 	ClassDB::bind_method(D_METHOD("is_layer_navigation_enabled", "layer"), &TileMap::is_layer_navigation_enabled);
 	ClassDB::bind_method(D_METHOD("set_layer_navigation_map", "layer", "map"), &TileMap::set_layer_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_layer_navigation_map", "layer"), &TileMap::get_layer_navigation_map);
+#endif // NAVIGATION_2D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_collision_animatable", "enabled"), &TileMap::set_collision_animatable);
 	ClassDB::bind_method(D_METHOD("is_collision_animatable"), &TileMap::is_collision_animatable);
 	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "collision_visibility_mode"), &TileMap::set_collision_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &TileMap::get_collision_visibility_mode);
 
+#ifndef NAVIGATION_2D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "navigation_visibility_mode"), &TileMap::set_navigation_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::get_navigation_visibility_mode);
+#endif // NAVIGATION_2D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);
@@ -986,7 +1000,9 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
+#ifndef NAVIGATION_2D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
+#endif // NAVIGATION_2D_DISABLED
 
 	ADD_ARRAY("layers", "layer_");
 
@@ -1021,7 +1037,9 @@ TileMap::TileMap() {
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "y_sort_enabled"), defaults->is_y_sort_enabled(), &TileMap::set_layer_y_sort_enabled, &TileMap::is_layer_y_sort_enabled);
 		base_property_helper.register_property(PropertyInfo(Variant::INT, "y_sort_origin", PROPERTY_HINT_NONE, "suffix:px"), defaults->get_y_sort_origin(), &TileMap::set_layer_y_sort_origin, &TileMap::get_layer_y_sort_origin);
 		base_property_helper.register_property(PropertyInfo(Variant::INT, "z_index"), defaults->get_z_index(), &TileMap::set_layer_z_index, &TileMap::get_layer_z_index);
+#ifndef NAVIGATION_2D_DISABLED
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "navigation_enabled"), defaults->is_navigation_enabled(), &TileMap::set_layer_navigation_enabled, &TileMap::is_layer_navigation_enabled);
+#endif // NAVIGATION_2D_DISABLED
 		base_property_helper.register_property(PropertyInfo(Variant::PACKED_INT32_ARRAY, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Vector<int>(), &TileMap::_set_layer_tile_data, &TileMap::_get_tile_map_data_using_compatibility_format);
 		PropertyListHelper::register_base_helper(&base_property_helper);
 
@@ -1031,6 +1049,7 @@ TileMap::TileMap() {
 	property_helper.setup_for_instance(base_property_helper, this);
 }
 
+#ifndef NAVIGATION_2D_DISABLED
 void TileMap::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -1058,6 +1077,7 @@ void TileMap::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navi
 		}
 	}
 }
+#endif // NAVIGATION_2D_DISABLED
 
 #undef TILEMAP_CALL_FOR_LAYER
 #undef TILEMAP_CALL_FOR_LAYER_V

@@ -47,6 +47,14 @@ env.NoCache(
     ),
     env.WAYLAND_API_CODE("protocol/viewporter.gen.c", "#thirdparty/wayland-protocols/stable/viewporter/viewporter.xml"),
     env.WAYLAND_API_HEADER(
+        "protocol/cursor_shape.gen.h",
+        "#thirdparty/wayland-protocols/staging/cursor-shape/cursor-shape-v1.xml",
+    ),
+    env.WAYLAND_API_CODE(
+        "protocol/cursor_shape.gen.c",
+        "#thirdparty/wayland-protocols/staging/cursor-shape/cursor-shape-v1.xml",
+    ),
+    env.WAYLAND_API_HEADER(
         "protocol/fractional_scale.gen.h",
         "#thirdparty/wayland-protocols/staging/fractional-scale/fractional-scale-v1.xml",
     ),
@@ -158,6 +166,7 @@ env.NoCache(
 source_files = [
     "protocol/wayland.gen.c",
     "protocol/viewporter.gen.c",
+    "protocol/cursor_shape.gen.c",
     "protocol/fractional_scale.gen.c",
     "protocol/xdg_shell.gen.c",
     "protocol/xdg_system_bell.gen.c",

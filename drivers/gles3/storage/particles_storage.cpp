@@ -868,10 +868,10 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		particles->process_buffer_stride_cache = sizeof(float) * 4 * particles->num_attrib_arrays_cache;
 
 		PackedByteArray data;
-		data.resize_zeroed(particles->process_buffer_stride_cache * total_amount);
+		data.resize_initialized(particles->process_buffer_stride_cache * total_amount);
 
 		PackedByteArray instance_data;
-		instance_data.resize_zeroed(particles->instance_buffer_size_cache);
+		instance_data.resize_initialized(particles->instance_buffer_size_cache);
 
 		{
 			glGenVertexArrays(1, &particles->front_vertex_array);
@@ -1319,6 +1319,13 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
+}
+
+uint32_t ParticlesStorage::particles_collision_get_cull_mask(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, 0);
+	return particles_collision->cull_mask;
 }
 
 void ParticlesStorage::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {

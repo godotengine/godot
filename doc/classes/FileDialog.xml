@@ -151,7 +151,6 @@
 		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true">
 			If [code]true[/code], changing the [member file_mode] property will set the window title accordingly (e.g. setting [member file_mode] to [constant FILE_MODE_OPEN_FILE] will change the window title to "Open a File").
 		</member>
-		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" overrides="AcceptDialog" default="&quot;Save&quot;" />
 		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
 			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
 		</member>
@@ -241,6 +240,15 @@
 		<theme_item name="create_folder" data_type="icon" type="Texture2D">
 			Custom icon for the create folder button.
 		</theme_item>
+		<theme_item name="favorite" data_type="icon" type="Texture2D">
+			Custom icon for favorite folder button.
+		</theme_item>
+		<theme_item name="favorite_down" data_type="icon" type="Texture2D">
+			Custom icon for button to move down a favorite entry.
+		</theme_item>
+		<theme_item name="favorite_up" data_type="icon" type="Texture2D">
+			Custom icon for button to move up a favorite entry.
+		</theme_item>
 		<theme_item name="file" data_type="icon" type="Texture2D">
 			Custom icon for files.
 		</theme_item>
@@ -255,6 +263,9 @@
 		</theme_item>
 		<theme_item name="reload" data_type="icon" type="Texture2D">
 			Custom icon for the reload button.
+		</theme_item>
+		<theme_item name="sort" data_type="icon" type="Texture2D">
+			Custom icon for the sorting options menu.
 		</theme_item>
 		<theme_item name="toggle_filename_filter" data_type="icon" type="Texture2D">
 			Custom icon for the toggle button for the filter for file names.

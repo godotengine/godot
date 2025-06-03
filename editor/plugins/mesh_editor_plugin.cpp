@@ -43,7 +43,7 @@ void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 		rot_x -= mm->get_relative().y * 0.01;
 		rot_y -= mm->get_relative().x * 0.01;
 
-		rot_x = CLAMP(rot_x, -Math_PI / 2, Math_PI / 2);
+		rot_x = CLAMP(rot_x, -Math::PI / 2, Math::PI / 2);
 		_update_rotation();
 	}
 }
@@ -149,6 +149,7 @@ MeshEditor::MeshEditor() {
 	light_1_switch->set_theme_type_variation("PreviewLightButton");
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
+	light_1_switch->set_accessibility_name(TTRC("First Light"));
 	vb_light->add_child(light_1_switch);
 	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &MeshEditor::_on_light_1_switch_pressed));
 
@@ -156,6 +157,7 @@ MeshEditor::MeshEditor() {
 	light_2_switch->set_theme_type_variation("PreviewLightButton");
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
+	light_2_switch->set_accessibility_name(TTRC("Second Light"));
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MeshEditor::_on_light_2_switch_pressed));
 

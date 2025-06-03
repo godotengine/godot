@@ -38,8 +38,12 @@
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
+
+#define PACK_FORMAT_VERSION_V2 2
+#define PACK_FORMAT_VERSION_V3 3
+
 // The current packed file format version number.
-#define PACK_FORMAT_VERSION 2
+#define PACK_FORMAT_VERSION PACK_FORMAT_VERSION_V3
 
 enum PackFlags {
 	PACK_DIR_ENCRYPTED = 1 << 0,
@@ -102,7 +106,7 @@ private:
 
 	PackedDir *root = nullptr;
 
-	static PackedData *singleton;
+	static inline PackedData *singleton = nullptr;
 	bool disabled = false;
 
 	void _free_packed_dirs(PackedDir *p_dir);
@@ -157,6 +161,7 @@ public:
 };
 
 class FileAccessPack : public FileAccess {
+	GDSOFTCLASS(FileAccessPack, FileAccess);
 	PackedData::PackedFile pf;
 
 	mutable uint64_t pos;
@@ -241,6 +246,7 @@ bool PackedData::has_directory(const String &p_path) {
 }
 
 class DirAccessPack : public DirAccess {
+	GDSOFTCLASS(DirAccessPack, DirAccess);
 	PackedData::PackedDir *current;
 
 	List<String> list_dirs;

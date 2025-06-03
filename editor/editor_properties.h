@@ -39,6 +39,7 @@ class EditorFileDialog;
 class EditorLocaleDialog;
 class EditorResourcePicker;
 class EditorSpinSlider;
+class EditorVariantTypePopupMenu;
 class MenuButton;
 class PropertySelector;
 class SceneTreeDialog;
@@ -52,6 +53,29 @@ class EditorPropertyNil : public EditorProperty {
 public:
 	virtual void update_property() override;
 	EditorPropertyNil();
+};
+
+class EditorPropertyVariant : public EditorProperty {
+	GDCLASS(EditorPropertyVariant, EditorProperty);
+
+	HBoxContainer *content = nullptr;
+	EditorProperty *sub_property = nullptr;
+	Button *edit_button = nullptr;
+	EditorVariantTypePopupMenu *change_type = nullptr;
+
+	Variant::Type current_type = Variant::VARIANT_MAX;
+	Variant::Type new_type = Variant::VARIANT_MAX;
+
+	void _change_type(int p_to_type);
+	void _popup_edit_menu();
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+
+public:
+	virtual void update_property() override;
+	EditorPropertyVariant();
 };
 
 class EditorPropertyText : public EditorProperty {

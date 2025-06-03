@@ -186,8 +186,8 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		Vector3 ofs = aabb.get_center();
 		aabb.position -= ofs;
 		Transform3D xform;
-		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
-		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
+		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6);
+		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI / 6) * xform.basis;
 		AABB rot_aabb = xform.xform(aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {
@@ -282,8 +282,8 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	Vector3 center = scene_aabb.get_center();
 	float camera_size = scene_aabb.get_longest_axis_size();
 
-	const float cam_rot_x = -Math_PI / 4;
-	const float cam_rot_y = -Math_PI / 4;
+	const float cam_rot_x = -Math::PI / 4;
+	const float cam_rot_y = -Math::PI / 4;
 
 	camera->set_orthogonal(camera_size * 2.0, 0.0001, camera_size * 2.0);
 
@@ -295,8 +295,8 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	camera->set_transform(xf);
 
 	Transform3D xform;
-	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
-	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
+	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6);
+	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI / 6) * xform.basis;
 
 	light->set_transform(xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
 	light2->set_transform(xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
@@ -713,6 +713,10 @@ void EditorInterface::save_all_scenes() {
 	EditorNode::get_singleton()->save_all_scenes();
 }
 
+Error EditorInterface::close_scene() {
+	return EditorNode::get_singleton()->close_scene() ? OK : ERR_DOES_NOT_EXIST;
+}
+
 // Scene playback.
 
 void EditorInterface::play_main_scene() {
@@ -845,6 +849,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("save_all_scenes"), &EditorInterface::save_all_scenes);
+	ClassDB::bind_method(D_METHOD("close_scene"), &EditorInterface::close_scene);
 
 	ClassDB::bind_method(D_METHOD("mark_scene_as_unsaved"), &EditorInterface::mark_scene_as_unsaved);
 

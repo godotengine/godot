@@ -2226,7 +2226,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
 			Vector<String> parts = parse_arguments(line.substr(start, end));
-			if (parts.size() == 0) {
+			if (parts.is_empty()) {
 				line = line.substr(0, start) + "DisplayServer.get_display_safe_area()" + line.substr(end + start);
 			}
 		}

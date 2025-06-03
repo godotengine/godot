@@ -35,7 +35,7 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #ifdef WINDOWS_ENABLED
 #define WIN32_LEAN_AND_MEAN
@@ -43,8 +43,8 @@
 
 #define ENV_PATH_SEP ";"
 #else
-#include <limits.h>
 #include <unistd.h>
+#include <climits>
 
 #define ENV_PATH_SEP ":"
 #endif
@@ -92,8 +92,7 @@ String cwd() {
 		return ".";
 	}
 
-	String result;
-	result.append_utf16(buffer.ptr());
+	String result = String::utf16(buffer.ptr());
 	if (result.is_empty()) {
 		return ".";
 	}
@@ -145,8 +144,7 @@ String realpath(const String &p_path) {
 
 	::CloseHandle(hFile);
 
-	String result;
-	result.append_utf16(buffer.ptr());
+	String result = String::utf16(buffer.ptr());
 	if (result.is_empty()) {
 		return p_path;
 	}

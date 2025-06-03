@@ -41,6 +41,7 @@
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -95,20 +96,18 @@ void EditorRunBar::_notification(int p_what) {
 
 			if (is_movie_maker_enabled()) {
 				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
+				write_movie_button->set_theme_type_variation("RunBarButtonMovieMakerEnabled");
+
 				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 			} else {
 				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
+				write_movie_button->set_theme_type_variation("RunBarButtonMovieMakerDisabled");
+
 				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 			}
 
 			write_movie_button->set_button_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
-			// This button behaves differently, so color it as such.
-			write_movie_button->begin_bulk_theme_override();
-			write_movie_button->add_theme_color_override("icon_normal_color", get_theme_color(SNAME("movie_writer_icon_normal"), EditorStringName(EditorStyles)));
-			write_movie_button->add_theme_color_override("icon_pressed_color", get_theme_color(SNAME("movie_writer_icon_pressed"), EditorStringName(EditorStyles)));
-			write_movie_button->add_theme_color_override("icon_hover_color", get_theme_color(SNAME("movie_writer_icon_hover"), EditorStringName(EditorStyles)));
-			write_movie_button->add_theme_color_override("icon_hover_pressed_color", get_theme_color(SNAME("movie_writer_icon_hover_pressed"), EditorStringName(EditorStyles)));
-			write_movie_button->end_bulk_theme_override();
+
 		} break;
 	}
 }
@@ -154,6 +153,23 @@ void EditorRunBar::_update_play_buttons() {
 		active_button->set_pressed(true);
 		active_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 		active_button->set_tooltip_text(TTR("Reload the played scene."));
+	}
+}
+
+void EditorRunBar::_movie_maker_item_pressed(int p_id) {
+	switch (p_id) {
+		case MOVIE_MAKER_TOGGLE: {
+			bool new_enabled = !is_movie_maker_enabled();
+			set_movie_maker_enabled(new_enabled);
+			write_movie_button->get_popup()->set_item_checked(0, new_enabled);
+			write_movie_button->set_pressed(new_enabled);
+			_write_movie_toggled(new_enabled);
+			break;
+		}
+		case MOVIE_MAKER_OPEN_SETTINGS:
+			ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
+			ProjectSettingsEditor::get_singleton()->set_general_page("editor/movie_writer");
+			break;
 	}
 }
 
@@ -218,6 +234,10 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 		return;
 	}
 
+	if (!EditorNode::get_singleton()->validate_custom_directory()) {
+		return;
+	}
+
 	_reset_play_buttons();
 
 	String write_movie_file;
@@ -255,7 +275,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 	String run_filename;
 	switch (current_mode) {
 		case RUN_CUSTOM: {
-			run_filename = p_scene_path;
+			run_filename = ResourceUID::ensure_path(p_scene_path);
 			run_custom_filename = run_filename;
 		} break;
 
@@ -450,11 +470,12 @@ OS::ProcessID EditorRunBar::get_current_process() const {
 }
 
 void EditorRunBar::set_movie_maker_enabled(bool p_enabled) {
-	write_movie_button->set_pressed(p_enabled);
+	movie_maker_enabled = p_enabled;
+	write_movie_button->get_popup()->set_item_checked(0, p_enabled);
 }
 
 bool EditorRunBar::is_movie_maker_enabled() const {
-	return write_movie_button->is_pressed();
+	return movie_maker_enabled;
 }
 
 void EditorRunBar::update_profiler_autostart_indicator() {
@@ -530,6 +551,7 @@ EditorRunBar::EditorRunBar() {
 		recovery_mode_reload_button->set_theme_type_variation("RunBarButton");
 		recovery_mode_reload_button->set_focus_mode(Control::FOCUS_NONE);
 		recovery_mode_reload_button->set_tooltip_text(TTR("Disable recovery mode and reload the project."));
+		recovery_mode_reload_button->set_accessibility_name(TTRC("Disable Recovery Mode"));
 		recovery_mode_reload_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::recovery_mode_reload_project));
 
 		recovery_mode_panel = memnew(PanelContainer);
@@ -552,6 +574,7 @@ EditorRunBar::EditorRunBar() {
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->set_tooltip_text(TTRC("Run the project's default scene."));
+	play_button->set_accessibility_name(TTRC("Run Default Scene"));
 	play_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::play_main_scene).bind(false));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTRC("Run Project"), Key::F5);
@@ -564,6 +587,7 @@ EditorRunBar::EditorRunBar() {
 	pause_button->set_toggle_mode(true);
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
 	pause_button->set_tooltip_text(TTRC("Pause the running project's execution for debugging."));
+	pause_button->set_accessibility_name(TTRC("Pause"));
 	pause_button->set_disabled(true);
 
 	ED_SHORTCUT("editor/pause_running_project", TTRC("Pause Running Project"), Key::F7);
@@ -575,6 +599,7 @@ EditorRunBar::EditorRunBar() {
 	stop_button->set_theme_type_variation("RunBarButton");
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_tooltip_text(TTRC("Stop the currently running project."));
+	stop_button->set_accessibility_name(TTRC("Stop"));
 	stop_button->set_disabled(true);
 	stop_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::stop_playing));
 
@@ -585,13 +610,15 @@ EditorRunBar::EditorRunBar() {
 	run_native = memnew(EditorRunNative);
 	main_hbox->add_child(run_native);
 	run_native->connect("native_run", callable_mp(this, &EditorRunBar::_run_native));
+#ifdef ANDROID_ENABLED
+	run_native->hide();
+#endif
 
 	bool add_play_xr_mode_options = false;
 #ifndef XR_DISABLED
-	if (OS::get_singleton()->has_feature("xr_editor") &&
-			(XRServer::get_xr_mode() == XRServer::XRMODE_ON ||
-					(XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT && GLOBAL_GET("xr/openxr/enabled")))) {
-		// If this is the XR editor and openxr is enabled, we turn the `play_scene_button` and
+	if (XRServer::get_xr_mode() == XRServer::XRMODE_ON ||
+			(XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT && GLOBAL_GET("xr/openxr/enabled"))) {
+		// If OpenXR is enabled, we turn the `play_scene_button` and
 		// `play_custom_scene_button` into MenuButtons to provide the option to start a scene in
 		// either regular mode or XR mode.
 		add_play_xr_mode_options = true;
@@ -614,6 +641,7 @@ EditorRunBar::EditorRunBar() {
 	play_scene_button->set_theme_type_variation("RunBarButton");
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->set_tooltip_text(TTRC("Run the currently edited scene."));
+	play_scene_button->set_accessibility_name(TTRC("Run Edited Scene"));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTRC("Run Current Scene"), Key::F6);
 	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
@@ -635,6 +663,7 @@ EditorRunBar::EditorRunBar() {
 	play_custom_scene_button->set_theme_type_variation("RunBarButton");
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->set_tooltip_text(TTRC("Run a specific scene."));
+	play_custom_scene_button->set_accessibility_name(TTRC("Run Specific Scene"));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTRC("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
@@ -643,12 +672,15 @@ EditorRunBar::EditorRunBar() {
 	write_movie_panel = memnew(PanelContainer);
 	main_hbox->add_child(write_movie_panel);
 
-	write_movie_button = memnew(Button);
+	write_movie_button = memnew(MenuButton);
+	PopupMenu *write_movie_popup = write_movie_button->get_popup();
+	write_movie_popup->add_check_item(TTRC("Enable Movie Maker Mode"), MOVIE_MAKER_TOGGLE);
+	write_movie_popup->add_item(TTRC("Open Movie Maker Settings..."), MOVIE_MAKER_OPEN_SETTINGS);
+	write_movie_popup->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunBar::_movie_maker_item_pressed));
+
 	write_movie_panel->add_child(write_movie_button);
-	write_movie_button->set_theme_type_variation("RunBarButton");
-	write_movie_button->set_toggle_mode(true);
-	write_movie_button->set_pressed(false);
+	write_movie_button->set_theme_type_variation("RunBarButtonMovieMakerDisabled");
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
 	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
-	write_movie_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_write_movie_toggled));
+	write_movie_button->set_accessibility_name(TTRC("Enable Movie Maker Mode"));
 }

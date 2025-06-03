@@ -100,8 +100,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	ERR_FAIL_NULL(root_node);
 	int ofs = 1;
 
-	String methods_md5;
-	methods_md5.append_utf8((const char *)(p_packet + ofs), 32);
+	String methods_md5 = String::utf8((const char *)(p_packet + ofs), 32);
 	ofs += 33;
 
 	int id = decode_uint32(&p_packet[ofs]);
@@ -109,8 +108,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 
 	ERR_FAIL_COND_MSG(peers_info[p_from].recv_nodes.has(id), vformat("Duplicate remote cache ID %d for peer %d", id, p_from));
 
-	String paths;
-	paths.append_utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
+	String paths = String::utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
 
 	const NodePath path = paths;
 
@@ -154,7 +152,7 @@ void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_pack
 	}
 
 	if (valid_rpc_checksum == false) {
-		const Node *node = Object::cast_to<Node>(ObjectDB::get_instance(*oid));
+		const Node *node = ObjectDB::get_instance<Node>(*oid);
 		ERR_FAIL_NULL(node); // Bug.
 		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + node->get_path());
 	}
@@ -280,7 +278,7 @@ Object *SceneCacheInterface::get_cached_object(int p_from, uint32_t p_cache_id) 
 
 	RecvNode *recv_node = pinfo->recv_nodes.getptr(p_cache_id);
 	ERR_FAIL_NULL_V_MSG(recv_node, nullptr, vformat("ID %d not found in cache of peer %d.", p_cache_id, p_from));
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(recv_node->oid));
+	Node *node = ObjectDB::get_instance<Node>(recv_node->oid);
 	if (!node) {
 		// Fallback to path lookup.
 		Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());

@@ -51,7 +51,6 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/missing_resource.h"
-#include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
@@ -71,6 +70,7 @@
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/object/class_db.h"
+#include "core/object/script_backtrace.h"
 #include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
 #include "core/object/worker_thread_pool.h"
@@ -79,6 +79,9 @@
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
+#ifndef DISABLE_DEPRECATED
+#include "core/io/packed_data_container.h"
+#endif
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -162,7 +165,7 @@ void register_core_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(Script);
 	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
-
+	GDREGISTER_CLASS(ScriptBacktrace);
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
 	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
@@ -254,6 +257,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(CoreBind::Thread);
 	GDREGISTER_CLASS(CoreBind::Mutex);
 	GDREGISTER_CLASS(CoreBind::Semaphore);
+	GDREGISTER_VIRTUAL_CLASS(CoreBind::Logger);
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
@@ -262,13 +266,15 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(PCKPacker);
 
-	GDREGISTER_CLASS(PackedDataContainer);
-	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
 	GDREGISTER_CLASS(AStar3D);
 	GDREGISTER_CLASS(AStar2D);
 	GDREGISTER_CLASS(AStarGrid2D);
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
+#ifndef DISABLE_DEPRECATED
+	GDREGISTER_CLASS(PackedDataContainer);
+	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
+#endif
 
 	GDREGISTER_ABSTRACT_CLASS(ImageFormatLoader);
 	GDREGISTER_CLASS(ImageFormatLoaderExtension);

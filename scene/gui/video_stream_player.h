@@ -63,9 +63,9 @@ class VideoStreamPlayer : public Control {
 	bool paused_from_tree = false;
 	bool autoplay = false;
 	float volume = 1.0;
-	double last_audio_time = 0.0;
 	bool expand = false;
 	bool loop = false;
+	bool first_frame = false;
 	int buffering_ms = 500;
 	int audio_track = 0;
 	int bus_index = 0;
@@ -124,6 +124,5 @@ public:
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 
-	VideoStreamPlayer();
 	~VideoStreamPlayer();
 };

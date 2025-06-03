@@ -43,7 +43,8 @@
 #include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pooled_list.h"
-#include <limits.h>
+
+#include <climits>
 
 #define BVHABB_CLASS BVH_ABB<BOUNDS, POINT>
 

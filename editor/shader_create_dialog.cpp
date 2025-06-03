@@ -130,6 +130,10 @@ void ShaderCreateDialog::_template_changed(int p_template) {
 void ShaderCreateDialog::ok_pressed() {
 	if (is_new_shader_created) {
 		_create_new();
+		if (built_in_enabled) {
+			// Only save state of built-in checkbox if it's enabled.
+			EditorSettings::get_singleton()->set_project_metadata("shader_setup", "create_built_in_shader", internal->is_pressed());
+		}
 	} else {
 		_load_exist();
 	}
@@ -409,6 +413,10 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 	built_in_enabled = p_built_in_enabled;
 	load_enabled = p_load_enabled;
 
+	if (built_in_enabled) {
+		internal->set_pressed(EditorSettings::get_singleton()->get_project_metadata("shader_setup", "create_built_in_shader", false));
+	}
+
 	if (p_preferred_type > -1) {
 		type_menu->select(p_preferred_type);
 		_type_changed(p_preferred_type);
@@ -573,6 +581,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	type_menu = memnew(OptionButton);
 	type_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	type_menu->set_accessibility_name(TTRC("Type"));
 	type_menu->set_custom_minimum_size(Size2(250, 0) * EDSCALE);
 	type_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	gc->add_child(memnew(Label(TTR("Type:"))));
@@ -614,6 +623,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	mode_menu = memnew(OptionButton);
 	mode_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	mode_menu->set_accessibility_name(TTRC("Mode"));
 	for (const String &type_name : ShaderTypes::get_singleton()->get_types_list()) {
 		mode_menu->add_item(type_name.capitalize());
 	}
@@ -624,6 +634,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	// Templates.
 
 	template_menu = memnew(OptionButton);
+	template_menu->set_accessibility_name(TTRC("Template"));
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	gc->add_child(template_menu);
 	template_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_template_changed));
@@ -632,6 +643,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
+	internal->set_accessibility_name(TTRC("Built-in Shader"));
 	internal->connect(SceneStringName(toggled), callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
 	gc->add_child(memnew(Label(TTR("Built-in Shader:"))));
 	gc->add_child(internal);
@@ -647,6 +659,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	hb->add_child(file_path);
 	register_text_enter(file_path);
 	path_button = memnew(Button);
+	path_button->set_accessibility_name(TTRC("Select"));
 	path_button->connect(SceneStringName(pressed), callable_mp(this, &ShaderCreateDialog::_browse_path));
 	hb->add_child(path_button);
 	gc->add_child(memnew(Label(TTR("Path:"))));

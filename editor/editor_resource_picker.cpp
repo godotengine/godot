@@ -88,6 +88,7 @@ void EditorResourcePicker::_update_resource() {
 	}
 
 	assign_button->set_disabled(!editable && edited_resource.is_null());
+	quick_load_button->set_visible(editable && edited_resource.is_null());
 }
 
 void EditorResourcePicker::_update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj) {
@@ -320,6 +321,9 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			List<String> extensions;
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
 				String base = base_type.get_slicec(',', i);
+				if (base == "Resource") {
+					base = "";
+				}
 				ResourceLoader::get_recognized_extensions_for_type(base, &extensions);
 				if (ScriptServer::is_global_class(base)) {
 					ResourceLoader::get_recognized_extensions_for_type(ScriptServer::get_global_class_native_base(base), &extensions);
@@ -398,6 +402,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				vb->add_child(label);
 
 				duplicate_resources_tree = memnew(Tree);
+				duplicate_resources_tree->set_accessibility_name(TTRC("Duplicate resources"));
 				duplicate_resources_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				vb->add_child(duplicate_resources_tree);
 				duplicate_resources_tree->set_columns(2);
@@ -607,8 +612,8 @@ static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vect
 			p_vector->push_back(p_type);
 		}
 
-		List<StringName> inheriters;
-		ClassDB::get_inheriters_from_class(p_type, &inheriters);
+		LocalVector<StringName> inheriters;
+		ClassDB::get_inheriters_from_class(p_type, inheriters);
 		for (const StringName &S : inheriters) {
 			_add_allowed_type(S, p_vector);
 		}
@@ -859,6 +864,7 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
+			quick_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -1000,6 +1006,7 @@ void EditorResourcePicker::set_resource_owner(Object *p_object) {
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
 	assign_button->set_disabled(!editable && edited_resource.is_null());
+	quick_load_button->set_visible(editable && edited_resource.is_null());
 	edit_button->set_visible(editable);
 }
 
@@ -1103,6 +1110,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	assign_button->set_accessibility_name(TTRC("Assign Resource"));
 	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -1123,12 +1131,18 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 		assign_button->add_child(preview_rect);
 	}
 
+	quick_load_button = memnew(Button);
+	quick_load_button->set_tooltip_text(TTRC("Quick Load"));
+	add_child(quick_load_button);
+	quick_load_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_QUICKLOAD));
+
 	edit_button = memnew(Button);
 	edit_button->set_flat(false);
 	edit_button->set_toggle_mode(true);
 	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
-	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
+	edit_button->set_accessibility_name(TTRC("Edit"));
 	add_child(edit_button);
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
 	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	add_theme_constant_override("separation", 0);

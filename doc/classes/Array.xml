@@ -332,7 +332,16 @@
 			<param index="0" name="deep" type="bool" default="false" />
 			<description>
 				Returns a new copy of the array.
-				By default, a [b]shallow[/b] copy is returned: all nested [Array] and [Dictionary] elements are shared with the original array. Modifying them in one array will also affect them in the other.[br]If [param deep] is [code]true[/code], a [b]deep[/b] copy is returned: all nested arrays and dictionaries are also duplicated (recursively).
+				By default, a [b]shallow[/b] copy is returned: all nested [Array], [Dictionary], and [Resource] elements are shared with the original array. Modifying any of those in one array will also affect them in the other.
+				If [param deep] is [code]true[/code], a [b]deep[/b] copy is returned: all nested arrays and dictionaries are also duplicated (recursively). Any [Resource] is still shared with the original array, though.
+			</description>
+		</method>
+		<method name="duplicate_deep" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="deep_subresources_mode" type="int" default="1" />
+			<description>
+				Duplicates this array, deeply, like [method duplicate][code](true)[/code], with extra control over how subresources are handled.
+				[param deep_subresources_mode] must be one of the values from [enum Resource.ResourceDeepDuplicateMode]. By default, only internal resources will be duplicated (recursively).
 			</description>
 		</method>
 		<method name="erase">
@@ -426,7 +435,8 @@
 			<return type="Variant" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the element at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+				Returns the element at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]null[/code].
+				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>
 		<method name="get_typed_builtin" qualifiers="const">
@@ -488,7 +498,7 @@
 			<param index="0" name="position" type="int" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Inserts a new element ([param value]) at a given index ([param position]) in the array. [param position] should be between [code]0[/code] and the array's [method size].
+				Inserts a new element ([param value]) at a given index ([param position]) in the array. [param position] should be between [code]0[/code] and the array's [method size]. If negative, [param position] is considered relative to the end of the array.
 				Returns [constant OK] on success, or one of the other [enum Error] constants if this method fails.
 				[b]Note:[/b] Every element's index after [param position] needs to be shifted forward, which may have a noticeable performance cost, especially on larger arrays.
 			</description>
@@ -663,7 +673,7 @@
 			<return type="void" />
 			<param index="0" name="position" type="int" />
 			<description>
-				Removes the element from the array at the given index ([param position]). If the index is out of bounds, this method fails.
+				Removes the element from the array at the given index ([param position]). If the index is out of bounds, this method fails. If the index is negative, [param position] is considered relative to the end of the array.
 				If you need to return the removed element, use [method pop_at]. To remove an element by value, use [method erase] instead.
 				[b]Note:[/b] This method shifts every element's index after [param position] back, which may have a noticeable performance cost, especially on larger arrays.
 				[b]Note:[/b] The [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array, use [code]arr.resize(arr.size() - 1)[/code].
@@ -731,7 +741,7 @@
 				Returns a new [Array] containing this array's elements, from index [param begin] (inclusive) to [param end] (exclusive), every [param step] elements.
 				If either [param begin] or [param end] are negative, their value is relative to the end of the array.
 				If [param step] is negative, this method iterates through the array in reverse, returning a slice ordered backwards. For this to work, [param begin] must be greater than [param end].
-				If [param deep] is [code]true[/code], all nested [Array] and [Dictionary] elements in the slice are duplicated from the original, recursively. See also [method duplicate]).
+				If [param deep] is [code]true[/code], all nested [Array] and [Dictionary] elements in the slice are duplicated from the original, recursively. See also [method duplicate].
 				[codeblock]
 				var letters = ["A", "B", "C", "D", "E", "F"]
 

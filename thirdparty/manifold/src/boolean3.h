@@ -13,11 +13,11 @@
 // limitations under the License.
 
 #pragma once
-#include "./impl.h"
+#include "impl.h"
 
 #ifdef MANIFOLD_DEBUG
 #define PRINT(msg) \
-  if (ManifoldParams().verbose) std::cout << msg << std::endl;
+  if (ManifoldParams().verbose > 0) std::cout << msg << std::endl;
 #else
 #define PRINT(msg)
 #endif
@@ -53,8 +53,9 @@ class Boolean3 {
  private:
   const Manifold::Impl &inP_, &inQ_;
   const double expandP_;
-  SparseIndices p1q2_, p2q1_;
+  Vec<std::array<int, 2>> p1q2_, p2q1_;
   Vec<int> x12_, x21_, w03_, w30_;
   Vec<vec3> v12_, v21_;
+  bool valid = true;
 };
 }  // namespace manifold

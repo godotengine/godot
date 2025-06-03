@@ -894,10 +894,9 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 
 	// Get the correct editor for the TileData's property.
 	if (current_tile_data_editor) {
-		current_tile_data_editor_toolbar = current_tile_data_editor->get_toolbar();
 		current_property = property;
 		current_tile_data_editor->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
-		current_tile_data_editor_toolbar->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
+		current_tile_data_editor->get_toolbar()->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
 	}
 }
 
@@ -1031,6 +1030,10 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 
 void TileSetAtlasSourceEditor::_update_toolbar() {
 	// Show the tools and settings.
+	Control *current_tile_data_editor_toolbar = nullptr;
+	if (current_tile_data_editor) {
+		current_tile_data_editor_toolbar = current_tile_data_editor->get_toolbar();
+	}
 	if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
 		if (current_tile_data_editor_toolbar) {
 			current_tile_data_editor_toolbar->hide();
@@ -2575,6 +2578,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
+	tile_inspector_no_tile_selected_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	tile_inspector_no_tile_selected_label->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	tile_inspector_no_tile_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	tile_inspector_no_tile_selected_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -2668,6 +2672,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(middle_space);
 
 	tool_tile_id_label = memnew(Label);
+	tool_tile_id_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	tool_tile_id_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	tool_settings->add_child(tool_tile_id_label);
 	_update_tile_id_label();
@@ -2688,6 +2693,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	right_panel->add_child(tile_atlas_view);
 
 	help_label = memnew(Label);
+	help_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	help_label->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	help_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	help_label->set_vertical_alignment(VERTICAL_ALIGNMENT_BOTTOM);
@@ -2764,7 +2770,7 @@ TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {
 
 void EditorPropertyTilePolygon::_add_focusable_children(Node *p_node) {
 	Control *control = Object::cast_to<Control>(p_node);
-	if (control && control->get_focus_mode_with_recursive() != Control::FOCUS_NONE) {
+	if (control && control->get_focus_mode_with_override() != Control::FOCUS_NONE) {
 		add_focusable(control);
 	}
 	for (int i = 0; i < p_node->get_child_count(); i++) {

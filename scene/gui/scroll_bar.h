@@ -110,6 +110,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static inline const int PAGE_DIVISOR = 8;
+
 	void scroll(double p_amount);
 	void scroll_to(double p_position);
 

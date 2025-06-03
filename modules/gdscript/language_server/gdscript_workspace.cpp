@@ -45,7 +45,7 @@
 
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
-	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::did_delete_files);
+	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::didDeleteFiles);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
 	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
@@ -106,7 +106,7 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 	GDScriptLanguageProtocol::get_singleton()->request_client("workspace/applyEdit", params.to_json());
 }
 
-void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
+void GDScriptWorkspace::didDeleteFiles(const Dictionary &p_params) {
 	Array files = p_params["files"];
 	for (int i = 0; i < files.size(); ++i) {
 		Dictionary file = files[i];
@@ -279,6 +279,8 @@ ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) 
 	return nullptr;
 }
 
+#define HANDLE_DOC(m_string) ((is_native ? DTR(m_string) : (m_string)).strip_edges())
+
 Error GDScriptWorkspace::initialize() {
 	if (initialized) {
 		return OK;
@@ -287,6 +289,7 @@ Error GDScriptWorkspace::initialize() {
 	DocTools *doc = EditorHelp::get_doc_data();
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		const DocData::ClassDoc &class_data = E.value;
+		const bool is_native = !class_data.is_script_doc;
 		LSP::DocumentSymbol class_symbol;
 		String class_name = E.key;
 		class_symbol.name = class_name;
@@ -296,7 +299,7 @@ Error GDScriptWorkspace::initialize() {
 		if (!class_data.inherits.is_empty()) {
 			class_symbol.detail += " extends " + class_data.inherits;
 		}
-		class_symbol.documentation = class_data.brief_description + "\n" + class_data.description;
+		class_symbol.documentation = HANDLE_DOC(class_data.brief_description) + "\n" + HANDLE_DOC(class_data.description);
 
 		for (int i = 0; i < class_data.constants.size(); i++) {
 			const DocData::ConstantDoc &const_data = class_data.constants[i];
@@ -309,7 +312,7 @@ Error GDScriptWorkspace::initialize() {
 				symbol.detail += ": " + const_data.enumeration;
 			}
 			symbol.detail += " = " + const_data.value;
-			symbol.documentation = const_data.description;
+			symbol.documentation = HANDLE_DOC(const_data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -325,7 +328,7 @@ Error GDScriptWorkspace::initialize() {
 			} else {
 				symbol.detail += ": " + data.type;
 			}
-			symbol.documentation = data.description;
+			symbol.documentation = HANDLE_DOC(data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -336,7 +339,7 @@ Error GDScriptWorkspace::initialize() {
 			symbol.native_class = class_name;
 			symbol.kind = LSP::SymbolKind::Property;
 			symbol.detail = "<Theme> var " + class_name + "." + data.name + ": " + data.type;
-			symbol.documentation = data.description;
+			symbol.documentation = HANDLE_DOC(data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -388,7 +391,7 @@ Error GDScriptWorkspace::initialize() {
 				return_type = "void";
 			}
 			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + return_type;
-			symbol.documentation = data.description;
+			symbol.documentation = HANDLE_DOC(data.description);
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -486,7 +489,8 @@ bool GDScriptWorkspace::can_rename(const LSP::TextDocumentPositionParams &p_doc_
 
 	String path = get_file_path(p_doc_pos.textDocument.uri);
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
-		parser->get_identifier_under_position(p_doc_pos.position, r_range);
+		// We only care about the range.
+		_ALLOW_DISCARD_ parser->get_identifier_under_position(p_doc_pos.position, r_range);
 		r_symbol = *reference_symbol;
 		return true;
 	}
@@ -559,8 +563,8 @@ Error GDScriptWorkspace::parse_local_script(const String &p_path) {
 }
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) const {
-	String path = p_uri.uri_decode();
-	String base_uri = root_uri.uri_decode();
+	String path = p_uri.uri_file_decode();
+	String base_uri = root_uri.uri_file_decode();
 	path = path.replacen(base_uri + "/", "res://");
 	return path;
 }
@@ -844,9 +848,7 @@ Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams
 	return ERR_METHOD_NOT_FOUND;
 }
 
-GDScriptWorkspace::GDScriptWorkspace() {
-	ProjectSettings::get_singleton()->get_resource_path();
-}
+GDScriptWorkspace::GDScriptWorkspace() {}
 
 GDScriptWorkspace::~GDScriptWorkspace() {
 	HashSet<String> cached_parsers;

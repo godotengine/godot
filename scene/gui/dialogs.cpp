@@ -51,6 +51,12 @@ void AcceptDialog::_parent_focused() {
 
 void AcceptDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_DIALOG);
+		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
 			if (is_visible()) {
 				get_ok_button()->grab_focus();
@@ -255,7 +261,7 @@ void AcceptDialog::_update_child_rects() {
 
 void AcceptDialog::_update_ok_text() {
 	String prev_text = ok_button->get_text();
-	String new_text = internal_ok_text;
+	String new_text = default_ok_text;
 
 	if (!ok_text.is_empty()) {
 		new_text = ok_text;
@@ -309,9 +315,13 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	return content_minsize;
 }
 
-void AcceptDialog::set_internal_ok_text(const String &p_text) {
-	internal_ok_text = p_text;
+void AcceptDialog::set_default_ok_text(const String &p_text) {
+	if (default_ok_text == p_text) {
+		return;
+	}
+	default_ok_text = p_text;
 	_update_ok_text();
+	notify_property_list_changed();
 }
 
 void AcceptDialog::_custom_action(const String &p_action) {
@@ -435,7 +445,13 @@ void AcceptDialog::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_min_height);
 }
 
-bool AcceptDialog::swap_cancel_ok = false;
+void AcceptDialog::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "ok_button_text") {
+		p_property.hint = PROPERTY_HINT_PLACEHOLDER_TEXT;
+		p_property.hint_string = default_ok_text;
+	}
+}
+
 void AcceptDialog::set_swap_cancel_ok(bool p_swap) {
 	swap_cancel_ok = p_swap;
 }
@@ -448,21 +464,25 @@ AcceptDialog::AcceptDialog() {
 	set_clamp_to_embedder(true);
 	set_keep_title_visible(true);
 
+	set_flag(FLAG_MINIMIZE_DISABLED, true);
+	set_flag(FLAG_MAXIMIZE_DISABLED, true);
+
 	bg_panel = memnew(Panel);
 	add_child(bg_panel, false, INTERNAL_MODE_FRONT);
 
 	buttons_hbox = memnew(HBoxContainer);
 
 	message_label = memnew(Label);
+	message_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	message_label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
 	message_label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 	add_child(message_label, false, INTERNAL_MODE_FRONT);
 
-	add_child(buttons_hbox, false, INTERNAL_MODE_FRONT);
+	add_child(buttons_hbox, false, INTERNAL_MODE_BACK);
 
 	buttons_hbox->add_spacer();
 	ok_button = memnew(Button);
-	set_internal_ok_text(ETR("OK"));
+	set_default_ok_text(ETR("OK"));
 	buttons_hbox->add_child(ok_button);
 	buttons_hbox->add_spacer();
 

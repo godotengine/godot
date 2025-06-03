@@ -31,6 +31,9 @@
 #import "os_macos.h"
 
 #import "dir_access_macos.h"
+#ifdef DEBUG_ENABLED
+#import "display_server_embedded.h"
+#endif
 #import "display_server_macos.h"
 #import "godot_application.h"
 #import "godot_application_delegate.h"
@@ -45,32 +48,6 @@
 #import <mach-o/dyld.h>
 #include <os/log.h>
 #include <sys/sysctl.h>
-
-void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
-	OS_MacOS *os = static_cast<OS_MacOS *>(OS::get_singleton());
-
-	@autoreleasepool {
-		@try {
-			// Get rid of pending events.
-			DisplayServer *ds = DisplayServer::get_singleton();
-			DisplayServerMacOS *ds_mac = Object::cast_to<DisplayServerMacOS>(ds);
-			if (ds_mac) {
-				ds_mac->_process_events(false);
-			} else if (ds) {
-				ds->process_events();
-			}
-			os->joypad_apple->process_joypads();
-
-			if (Main::iteration()) {
-				os->terminate();
-			}
-		} @catch (NSException *exception) {
-			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
-		}
-	}
-
-	CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
-}
 
 void OS_MacOS::initialize() {
 	crash_handler.initialize();
@@ -100,8 +77,34 @@ bool OS_MacOS::is_sandboxed() const {
 	return has_environment("APP_SANDBOX_CONTAINER_ID");
 }
 
+bool OS_MacOS::request_permission(const String &p_name) {
+	if (@available(macOS 10.15, *)) {
+		if (p_name == "macos.permission.RECORD_SCREEN") {
+			if (CGPreflightScreenCaptureAccess()) {
+				return true;
+			} else {
+				CGRequestScreenCaptureAccess();
+				return false;
+			}
+		}
+	} else {
+		if (p_name == "macos.permission.RECORD_SCREEN") {
+			return true;
+		}
+	}
+	return false;
+}
+
 Vector<String> OS_MacOS::get_granted_permissions() const {
 	Vector<String> ret;
+
+	if (@available(macOS 10.15, *)) {
+		if (CGPreflightScreenCaptureAccess()) {
+			ret.push_back("macos.permission.RECORD_SCREEN");
+		}
+	} else {
+		ret.push_back("macos.permission.RECORD_SCREEN");
+	}
 
 	if (is_sandboxed()) {
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
@@ -110,8 +113,7 @@ Vector<String> OS_MacOS::get_granted_permissions() const {
 			BOOL isStale = NO;
 			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
 			if (!error && !isStale) {
-				String url_string;
-				url_string.append_utf8([[url path] UTF8String]);
+				String url_string = String::utf8([[url path] UTF8String]);
 				ret.push_back(url_string);
 			}
 		}
@@ -125,6 +127,59 @@ void OS_MacOS::revoke_granted_permissions() {
 		[[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"sec_bookmarks"];
 	}
 }
+
+#if TOOLS_ENABLED
+
+// Function to check if a debugger is attached to the current process
+bool OS_MacOS::is_debugger_attached() {
+	int mib[4];
+	struct kinfo_proc info{};
+	size_t size = sizeof(info);
+
+	// Initialize the flags so that, if sysctl fails, info.kp_proc.p_flag will be 0.
+	info.kp_proc.p_flag = 0;
+
+	// Initialize mib, which tells sysctl the info we want, in this case we're looking for information
+	// about a specific process ID.
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_PROC;
+	mib[2] = KERN_PROC_PID;
+	mib[3] = getpid();
+
+	if (sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, nullptr, 0) != 0) {
+		perror("sysctl");
+		return false;
+	}
+
+	return (info.kp_proc.p_flag & P_TRACED) != 0;
+}
+
+void OS_MacOS::wait_for_debugger(uint32_t p_msec) {
+	if (p_msec == 0) {
+		return;
+	}
+
+	CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+	CFTimeInterval wait_time = p_msec / 1000.0;
+
+	NSTimer *timer = [NSTimer timerWithTimeInterval:0.100
+											repeats:YES
+											  block:^(NSTimer *t) {
+												  if (is_debugger_attached() || CFAbsoluteTimeGetCurrent() > start + wait_time) {
+													  [NSApp stopModalWithCode:NSModalResponseContinue];
+													  [t invalidate];
+												  }
+											  }];
+
+	[[NSRunLoop mainRunLoop] addTimer:timer forMode:NSModalPanelRunLoopMode];
+
+	pid_t pid = getpid();
+	alert(vformat("Attach debugger to pid: %d", pid));
+
+	print("continue...");
+}
+
+#endif
 
 void OS_MacOS::initialize_core() {
 	OS_Unix::initialize_core();
@@ -432,7 +487,7 @@ Error OS_MacOS::shell_open(const String &p_uri) {
 
 String OS_MacOS::get_locale() const {
 	NSString *locale_code = [[NSLocale preferredLanguages] objectAtIndex:0];
-	return String([locale_code UTF8String]).replace("-", "_");
+	return String([locale_code UTF8String]).replace_char('-', '_');
 }
 
 Vector<String> OS_MacOS::get_system_fonts() const {
@@ -651,10 +706,7 @@ String OS_MacOS::get_executable_path() const {
 	if (ret <= 0) {
 		return OS::get_executable_path();
 	} else {
-		String path;
-		path.append_utf8(pathbuf);
-
-		return path;
+		return String::utf8(pathbuf);
 	}
 }
 
@@ -724,8 +776,7 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
-		String path;
-		path.append_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
@@ -833,74 +884,11 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
 }
 
-void OS_MacOS::run() {
-	[NSApp run];
-}
-
-void OS_MacOS::start_main() {
-	Error err;
-	@autoreleasepool {
-		err = Main::setup(execpath, argc, argv);
-	}
-
-	if (err == OK) {
-		main_stared = true;
-
-		int ret;
-		@autoreleasepool {
-			ret = Main::start();
-		}
-		if (ret == EXIT_SUCCESS) {
-			if (main_loop) {
-				@autoreleasepool {
-					main_loop->initialize();
-				}
-				pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
-				CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-				return;
-			}
-		} else {
-			set_exit_code(EXIT_FAILURE);
-		}
-	} else if (err == ERR_HELP) { // Returned by --help and --version, so success.
-		set_exit_code(EXIT_SUCCESS);
-	} else {
-		set_exit_code(EXIT_FAILURE);
-	}
-
-	terminate();
-}
-
-void OS_MacOS::activate() {
-	[delegate activate];
-}
-
-void OS_MacOS::terminate() {
-	if (pre_wait_observer) {
-		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-		CFRelease(pre_wait_observer);
-		pre_wait_observer = nil;
-	}
-
-	should_terminate = true;
-	[NSApp terminate:nil];
-}
-
-void OS_MacOS::cleanup() {
-	if (main_loop) {
-		main_loop->finalize();
-	}
-	if (main_stared) {
-		@autoreleasepool {
-			Main::cleanup();
-		}
-	}
-}
-
 OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 	execpath = p_execpath;
 	argc = p_argc;
 	argv = p_argv;
+
 	if (is_sandboxed()) {
 		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
@@ -918,8 +906,6 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
 	}
 
-	main_loop = nullptr;
-
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(MacOSTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
@@ -929,7 +915,102 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 #endif
 
 	DisplayServerMacOS::register_macos_driver();
+}
 
+// MARK: - OS_MacOS_NSApp
+
+void OS_MacOS_NSApp::run() {
+	[NSApp run];
+}
+
+static bool sig_received = false;
+
+static void handle_interrupt(int sig) {
+	if (sig == SIGINT) {
+		sig_received = true;
+	}
+}
+
+void OS_MacOS_NSApp::start_main() {
+	Error err;
+	@autoreleasepool {
+		err = Main::setup(execpath, argc, argv);
+	}
+
+	if (err == OK) {
+		main_started = true;
+
+		int ret;
+		@autoreleasepool {
+			ret = Main::start();
+		}
+		if (ret == EXIT_SUCCESS) {
+			if (main_loop) {
+				@autoreleasepool {
+					main_loop->initialize();
+				}
+				DisplayServer *ds = DisplayServer::get_singleton();
+				DisplayServerMacOS *ds_mac = Object::cast_to<DisplayServerMacOS>(ds);
+
+				pre_wait_observer = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+					@autoreleasepool {
+						@try {
+							if (ds_mac) {
+								ds_mac->_process_events(false);
+							} else if (ds) {
+								ds->process_events();
+							}
+							joypad_apple->process_joypads();
+
+							if (Main::iteration() || sig_received) {
+								terminate();
+							}
+						} @catch (NSException *exception) {
+							ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+						}
+					}
+
+					CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+				});
+				CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+				return;
+			}
+		} else {
+			set_exit_code(EXIT_FAILURE);
+		}
+	} else if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		set_exit_code(EXIT_SUCCESS);
+	} else {
+		set_exit_code(EXIT_FAILURE);
+	}
+
+	terminate();
+}
+
+void OS_MacOS_NSApp::terminate() {
+	if (pre_wait_observer) {
+		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+		CFRelease(pre_wait_observer);
+		pre_wait_observer = nil;
+	}
+
+	should_terminate = true;
+	[NSApp terminate:nil];
+}
+
+void OS_MacOS_NSApp::cleanup() {
+	if (main_loop) {
+		main_loop->finalize();
+	}
+	if (main_started) {
+		@autoreleasepool {
+			Main::cleanup();
+		}
+	}
+}
+
+OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv) :
+		OS_MacOS(p_execpath, p_argc, p_argv) {
 	// Implicitly create shared NSApplication instance.
 	[GodotApplication sharedApplication];
 
@@ -943,12 +1024,74 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	[NSApp setMainMenu:main_menu];
 
-	delegate = [[GodotApplicationDelegate alloc] init];
+	delegate = [[GodotApplicationDelegate alloc] initWithOS:this];
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
+
+	struct sigaction action;
+	memset(&action, 0, sizeof(action));
+	action.sa_handler = handle_interrupt;
+	sigaction(SIGINT, &action, nullptr);
 }
 
-OS_MacOS::~OS_MacOS() {
-	// NOP
+// MARK: - OS_MacOS_Embedded
+
+#ifdef DEBUG_ENABLED
+
+void OS_MacOS_Embedded::run() {
+	CFRunLoopGetCurrent();
+
+	@autoreleasepool {
+		Error err = Main::setup(execpath, argc, argv);
+		if (err != OK) {
+			if (err == ERR_HELP) {
+				return set_exit_code(EXIT_SUCCESS);
+			}
+			return set_exit_code(EXIT_FAILURE);
+		}
+	}
+
+	int ret;
+	@autoreleasepool {
+		ret = Main::start();
+	}
+
+	DisplayServerEmbedded *ds = Object::cast_to<DisplayServerEmbedded>(DisplayServer::get_singleton());
+	if (!ds) {
+		ERR_FAIL_MSG("DisplayServerEmbedded is not initialized.");
+	}
+
+	if (ds && ret == EXIT_SUCCESS && main_loop) {
+		@autoreleasepool {
+			main_loop->initialize();
+		}
+
+		while (true) {
+			@autoreleasepool {
+				@try {
+					ds->process_events();
+
+					if (Main::iteration()) {
+						break;
+					}
+
+					CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, 0);
+				} @catch (NSException *exception) {
+					ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+				}
+			}
+		}
+
+		main_loop->finalize();
+	}
+
+	Main::cleanup();
 }
+
+OS_MacOS_Embedded::OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv) :
+		OS_MacOS(p_execpath, p_argc, p_argv) {
+	DisplayServerEmbedded::register_embedded_driver();
+}
+
+#endif

@@ -551,14 +551,14 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
+				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity. See also [method is_inf] and [method is_nan].
 			</description>
 		</method>
 		<method name="is_inf">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity.
+				Returns [code]true[/code] if [param x] is either positive infinity or negative infinity. See also [method is_finite] and [method is_nan].
 			</description>
 		</method>
 		<method name="is_instance_id_valid">
@@ -579,7 +579,7 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value.
+				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value. This method is needed as [constant @GDScript.NAN] is not equal to itself, which means [code]x == NAN[/code] can't be used to check whether a value is a NaN.
 			</description>
 		</method>
 		<method name="is_same">
@@ -876,7 +876,6 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
-				[b]Note:[/b] On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.
 				[b]Note:[/b] Output displayed in the editor supports clickable [code skip-lint][url=address]text[/url][/code] tags. The [code skip-lint][url][/code] tag's [code]address[/code] value is handled by [method OS.shell_open] when clicked.
 			</description>
 		</method>
@@ -1323,7 +1322,7 @@
 				sqrt(10.24) # Returns 3.2
 				sqrt(-1)    # Returns NaN
 				[/codeblock]
-				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). in C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
+				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). In C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
 			</description>
 		</method>
 		<method name="step_decimals">
@@ -2849,6 +2848,7 @@
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
 			If a property is [String], hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
 			If a property is [Array], hints the editor how to show elements. The [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code].
+			If a property is [Dictionary], hints the editor how to show elements. The [code]hint_string[/code] is the same as [Array], with a [code]";"[/code] separating the key and value.
 			[codeblocks]
 			[gdscript]
 			# Array of elem_type.
@@ -2923,10 +2923,12 @@
 			Hints that an [int] property is a pointer. Used by GDExtension.
 		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
-			Hints that a property is an [Array] with the stored type specified in the hint string.
+			Hints that a property is an [Array] with the stored type specified in the hint string. The hint string contains the type of the array (e.g. [code]"String"[/code]).
+			Use the hint string format from [constant PROPERTY_HINT_TYPE_STRING] for more control over the stored type.
 		</constant>
 		<constant name="PROPERTY_HINT_DICTIONARY_TYPE" value="38" enum="PropertyHint">
 			Hints that a property is a [Dictionary] with the stored types specified in the hint string. The hint string contains the key and value types separated by a semicolon (e.g. [code]"int;String"[/code]).
+			Use the hint string format from [constant PROPERTY_HINT_TYPE_STRING] for more control over the stored types.
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
@@ -2954,7 +2956,16 @@
 		<constant name="PROPERTY_HINT_ONESHOT" value="40" enum="PropertyHint">
 			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GROUP_ENABLE" value="42" enum="PropertyHint">
+			Hints that a boolean property will enable the feature associated with the group that it occurs in. Only works within a group or subgroup. Use the optional hint string [code]"feature"[/code] when the group only has variables that are meaningful when the feature is enabled.
+			[b]Note:[/b] The [code]"feature"[/code] hint string does not modify or reset any values.
+		</constant>
+		<constant name="PROPERTY_HINT_INPUT_NAME" value="43" enum="PropertyHint">
+			Hints that a [String] or [StringName] property is the name of an input action. This allows the selection of any action name from the Input Map in the Project Settings. The hint string may contain two options separated by commas:
+			- If it contains [code]"show_builtin"[/code], built-in input actions are included in the selection.
+			- If it contains [code]"loose_mode"[/code], loose mode is enabled. This allows inserting any action name even if it's not present in the input map.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="44" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

@@ -31,7 +31,7 @@ struct {
 	struct {
 		char     magic[4];         // magic bytes "qoaf"
 		uint32_t samples;          // samples per channel in this file
-	} file_header;             
+	} file_header;
 
 	struct {
 		struct {
@@ -39,12 +39,12 @@ struct {
 			uint24_t samplerate;   // samplerate in hz
 			uint16_t fsamples;     // samples per channel in this frame
 			uint16_t fsize;        // frame size (includes this header)
-		} frame_header;          
+		} frame_header;
 
 		struct {
 			int16_t history[4];    // most recent last
 			int16_t weights[4];    // most recent last
-		} lms_state[num_channels]; 
+		} lms_state[num_channels];
 
 		qoa_slice_t slices[256][num_channels];
 
@@ -66,7 +66,7 @@ frame may contain between 1 .. 256 (inclusive) slices per channel. The last
 slice (for each channel) in the last frame may contain less than 20 samples; the
 slice still must be 8 bytes wide, with the unused samples zeroed out.
 
-Channels are interleaved per slice. E.g. for 2 channel stereo: 
+Channels are interleaved per slice. E.g. for 2 channel stereo:
 slice[0] = L, slice[1] = R, slice[2] = L, slice[3] = R ...
 
 A valid QOA file or stream must have at least one frame. Each frame must contain
@@ -74,7 +74,7 @@ at least one channel and one sample with a samplerate between 1 .. 16777215
 (inclusive).
 
 If the total number of samples is not known by the encoder, the samples in the
-file header may be set to 0x00000000 to indicate that the encoder is 
+file header may be set to 0x00000000 to indicate that the encoder is
 "streaming". In a streaming context, the samplerate and number of channels may
 differ from frame to frame. For static files (those with samples set to a
 non-zero value), each frame must have the same number of channels and same
@@ -88,15 +88,15 @@ counts 1 .. 8 is:
 
 	1. Mono
 	2. L, R
-	3. L, R, C 
-	4. FL, FR, B/SL, B/SR 
-	5. FL, FR, C, B/SL, B/SR 
+	3. L, R, C
+	4. FL, FR, B/SL, B/SR
+	5. FL, FR, C, B/SL, B/SR
 	6. FL, FR, C, LFE, B/SL, B/SR
-	7. FL, FR, C, LFE, B, SL, SR 
+	7. FL, FR, C, LFE, B, SL, SR
 	8. FL, FR, C, LFE, BL, BR, SL, SR
 
 QOA predicts each audio sample based on the previously decoded ones using a
-"Sign-Sign Least Mean Squares Filter" (LMS). This prediction plus the 
+"Sign-Sign Least Mean Squares Filter" (LMS). This prediction plus the
 dequantized residual forms the final output sample.
 
 */
@@ -178,9 +178,9 @@ typedef unsigned long long qoa_uint64_t;
 
 
 /* The quant_tab provides an index into the dequant_tab for residuals in the
-range of -8 .. 8. It maps this range to just 3bits and becomes less accurate at 
-the higher end. Note that the residual zero is identical to the lowest positive 
-value. This is mostly fine, since the qoa_div() function always rounds away 
+range of -8 .. 8. It maps this range to just 3bits and becomes less accurate at
+the higher end. Note that the residual zero is identical to the lowest positive
+value. This is mostly fine, since the qoa_div() function always rounds away
 from zero. */
 
 static const int qoa_quant_tab[17] = {
@@ -193,8 +193,8 @@ static const int qoa_quant_tab[17] = {
 /* We have 16 different scalefactors. Like the quantized residuals these become
 less accurate at the higher end. In theory, the highest scalefactor that we
 would need to encode the highest 16bit residual is (2**16)/8 = 8192. However we
-rely on the LMS filter to predict samples accurately enough that a maximum 
-residual of one quarter of the 16 bit range is sufficient. I.e. with the 
+rely on the LMS filter to predict samples accurately enough that a maximum
+residual of one quarter of the 16 bit range is sufficient. I.e. with the
 scalefactor 2048 times the quant range of 8 we can encode residuals up to 2**14.
 
 The scalefactor values are computed as:
@@ -205,9 +205,9 @@ static const int qoa_scalefactor_tab[16] = {
 };
 
 
-/* The reciprocal_tab maps each of the 16 scalefactors to their rounded 
-reciprocals 1/scalefactor. This allows us to calculate the scaled residuals in 
-the encoder with just one multiplication instead of an expensive division. We 
+/* The reciprocal_tab maps each of the 16 scalefactors to their rounded
+reciprocals 1/scalefactor. This allows us to calculate the scaled residuals in
+the encoder with just one multiplication instead of an expensive division. We
 do this in .16 fixed point with integers, instead of floats.
 
 The reciprocal_tab is computed as:
@@ -218,11 +218,11 @@ static const int qoa_reciprocal_tab[16] = {
 };
 
 
-/* The dequant_tab maps each of the scalefactors and quantized residuals to 
+/* The dequant_tab maps each of the scalefactors and quantized residuals to
 their unscaled & dequantized version.
 
 Since qoa_div rounds away from the zero, the smallest entries are mapped to 3/4
-instead of 1. The dequant_tab assumes the following dequantized values for each 
+instead of 1. The dequant_tab assumes the following dequantized values for each
 of the quant_tab indices and is computed as:
 float dqt[8] = {0.75, -0.75, 2.5, -2.5, 4.5, -4.5, 7, -7};
 dequant_tab[s][q] <- round_ties_away_from_zero(scalefactor_tab[s] * dqt[q])
@@ -258,7 +258,7 @@ adjusting 4 weights based on the residual of the previous prediction.
 The next sample is predicted as the sum of (weight[i] * history[i]).
 
 The adjustment of the weights is done with a "Sign-Sign-LMS" that adds or
-subtracts the residual to each weight, based on the corresponding sample from 
+subtracts the residual to each weight, based on the corresponding sample from
 the history. This, surprisingly, is sufficient to get worthwhile predictions.
 
 This is all done with fixed point integers. Hence the right-shifts when updating
@@ -285,8 +285,8 @@ static void qoa_lms_update(qoa_lms_t *lms, int sample, int residual) {
 }
 
 
-/* qoa_div() implements a rounding division, but avoids rounding to zero for 
-small numbers. E.g. 0.1 will be rounded to 1. Note that 0 itself still 
+/* qoa_div() implements a rounding division, but avoids rounding to zero for
+small numbers. E.g. 0.1 will be rounded to 1. Note that 0 itself still
 returns as 0, which is handled in the qoa_quant_tab[].
 qoa_div() takes an index into the .16 fixed point qoa_reciprocal_tab as an
 argument, so it can do the division with a cheaper integer multiplication. */
@@ -385,10 +385,10 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 		for (unsigned int c = 0; c < channels; c++) {
 			int slice_len = qoa_clamp(QOA_SLICE_LEN, 0, frame_len - sample_index);
 			int slice_start = sample_index * channels + c;
-			int slice_end = (sample_index + slice_len) * channels + c;			
+			int slice_end = (sample_index + slice_len) * channels + c;
 
-			/* Brute for search for the best scalefactor. Just go through all
-			16 scalefactors, encode all samples for the current slice and 
+			/* Brute force search for the best scalefactor. Just go through all
+			16 scalefactors, encode all samples for the current slice and
 			meassure the total squared error. */
 			qoa_uint64_t best_rank = -1;
 			#ifdef QOA_RECORD_TOTAL_ERROR
@@ -402,7 +402,7 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 				/* There is a strong correlation between the scalefactors of
 				neighboring slices. As an optimization, start testing
 				the best scalefactor of the previous slice first. */
-				int scalefactor = (sfi + prev_scalefactor[c]) % 16;
+				int scalefactor = (sfi + prev_scalefactor[c]) & (16 - 1);
 
 				/* We have to reset the LMS state to the last known good one
 				before trying each scalefactor, as each pass updates the LMS

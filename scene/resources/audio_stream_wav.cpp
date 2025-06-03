@@ -441,10 +441,6 @@ void AudioStreamPlaybackWAV::set_sample_playback(const Ref<AudioSamplePlayback> 
 	}
 }
 
-AudioStreamPlaybackWAV::AudioStreamPlaybackWAV() {}
-
-AudioStreamPlaybackWAV::~AudioStreamPlaybackWAV() {}
-
 /////////////////////
 
 void AudioStreamWAV::set_format(Format p_format) {
@@ -595,8 +591,7 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	Vector<uint8_t> stream_data = get_data();
-	const uint8_t *read_data = stream_data.ptr();
+	const uint8_t *read_data = data.ptr();
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
@@ -1172,7 +1167,3 @@ void AudioStreamWAV::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
-
-AudioStreamWAV::AudioStreamWAV() {}
-
-AudioStreamWAV::~AudioStreamWAV() {}

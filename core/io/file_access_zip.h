@@ -53,7 +53,7 @@ private:
 
 	HashMap<String, File> files;
 
-	static ZipArchive *instance;
+	static inline ZipArchive *instance = nullptr;
 
 public:
 	void close_handle(unzFile p_file) const;
@@ -73,6 +73,7 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
+	GDSOFTCLASS(FileAccessZip, FileAccess);
 	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 

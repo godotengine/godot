@@ -30,7 +30,7 @@ def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
     return [
-        EnumVariable("linker", "Linker program", "default", ("default", "bfd", "gold", "lld", "mold")),
+        EnumVariable("linker", "Linker program", "default", ["default", "bfd", "gold", "lld", "mold"], ignorecase=2),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_coverage", "Test Godot coverage", False),
@@ -73,7 +73,7 @@ def get_flags():
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "loongarch64"]
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc64", "loongarch64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     ## Build type
@@ -293,7 +293,7 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_recastnavigation"]:
         # No pkgconfig file so far, hardcode default paths.
-        env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
+        env.Prepend(CPPEXTPATH=["/usr/include/recastnavigation"])
         env.Append(LIBS=["Recast"])
 
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
@@ -394,7 +394,7 @@ def configure(env: "SConsEnvironment"):
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
     if env["use_sowrap"]:
-        env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers"])
+        env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers"])
 
     env.Append(
         CPPDEFINES=[
@@ -456,15 +456,33 @@ def configure(env: "SConsEnvironment"):
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-egl --cflags --libs")
         else:
-            env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/wayland/"])
+            env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers/wayland/"])
             if env["libdecor"]:
-                env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
+                env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
 
         if env["libdecor"]:
             env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
 
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
+
+    if env["accesskit"]:
+        if env["accesskit_sdk_path"] != "":
+            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            if env["arch"] == "arm64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
+            elif env["arch"] == "arm32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
+            elif env["arch"] == "rv64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
+            elif env["arch"] == "x86_64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
+            elif env["arch"] == "x86_32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
+            env.Append(LIBS=["accesskit"])
+        else:
+            env.Append(CPPDEFINES=["ACCESSKIT_DYNAMIC"])
+        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])

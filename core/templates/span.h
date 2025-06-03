@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/error/error_macros.h"
 #include "core/typedefs.h"
 
 // Equivalent of std::span.
@@ -44,11 +45,10 @@ class Span {
 
 public:
 	static constexpr bool is_string = std::disjunction_v<
-		std::is_same<T, char>,
-		std::is_same<T, char16_t>,
-		std::is_same<T, char32_t>,
-		std::is_same<T, wchar_t>
-	>;
+			std::is_same<T, char>,
+			std::is_same<T, char16_t>,
+			std::is_same<T, char32_t>,
+			std::is_same<T, wchar_t>>;
 
 	_FORCE_INLINE_ constexpr Span() = default;
 	_FORCE_INLINE_ constexpr Span(const T *p_ptr, uint64_t p_len) :
@@ -87,6 +87,10 @@ public:
 	constexpr int64_t rfind(const T &p_val, uint64_t p_from) const;
 	_FORCE_INLINE_ constexpr int64_t rfind(const T &p_val) const { return rfind(p_val, size() - 1); }
 	constexpr uint64_t count(const T &p_val) const;
+	/// Find the index of the given value using binary search.
+	/// Note: Assumes that elements in the span are sorted. Otherwise, use find() instead.
+	template <typename Comparator = Comparator<T>>
+	constexpr uint64_t bisect(const T &p_value, bool p_before, Comparator compare = Comparator()) const;
 };
 
 template <typename T>
@@ -118,6 +122,33 @@ constexpr uint64_t Span<T>::count(const T &p_val) const {
 		}
 	}
 	return amount;
+}
+
+template <typename T>
+template <typename Comparator>
+constexpr uint64_t Span<T>::bisect(const T &p_value, bool p_before, Comparator compare) const {
+	uint64_t lo = 0;
+	uint64_t hi = size();
+	if (p_before) {
+		while (lo < hi) {
+			const uint64_t mid = (lo + hi) / 2;
+			if (compare(ptr()[mid], p_value)) {
+				lo = mid + 1;
+			} else {
+				hi = mid;
+			}
+		}
+	} else {
+		while (lo < hi) {
+			const uint64_t mid = (lo + hi) / 2;
+			if (compare(p_value, ptr()[mid])) {
+				hi = mid;
+			} else {
+				lo = mid + 1;
+			}
+		}
+	}
+	return lo;
 }
 
 // Zero-constructing Span initializes _ptr and _len to 0 (and thus empty).

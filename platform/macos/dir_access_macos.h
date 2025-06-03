@@ -41,6 +41,8 @@
 #include <unistd.h>
 
 class DirAccessMacOS : public DirAccessUnix {
+	GDSOFTCLASS(DirAccessMacOS, DirAccessUnix);
+
 protected:
 	virtual String fix_unicode_name(const char *p_name) const override;
 
@@ -49,6 +51,8 @@ protected:
 
 	virtual bool is_hidden(const String &p_name) override;
 	virtual bool is_case_sensitive(const String &p_path) const override;
+
+	virtual String get_filesystem_type() const override;
 
 	virtual bool is_bundle(const String &p_file) const override;
 };

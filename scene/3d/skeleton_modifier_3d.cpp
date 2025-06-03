@@ -45,7 +45,7 @@ PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
 /* Skeleton3D */
 
 Skeleton3D *SkeletonModifier3D::get_skeleton() const {
-	return Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
+	return ObjectDB::get_instance<Skeleton3D>(skeleton_id);
 }
 
 void SkeletonModifier3D::_update_skeleton_path() {
@@ -68,11 +68,18 @@ void SkeletonModifier3D::_update_skeleton() {
 	if (old_sk != new_sk) {
 		_skeleton_changed(old_sk, new_sk);
 	}
+	if (new_sk) {
+		_validate_bone_names();
+	}
 	update_configuration_warnings();
 }
 
 void SkeletonModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
-	//
+	GDVIRTUAL_CALL(_skeleton_changed, p_old, p_new);
+}
+
+void SkeletonModifier3D::_validate_bone_names() {
+	GDVIRTUAL_CALL(_validate_bone_names);
 }
 
 void SkeletonModifier3D::_force_update_skeleton_skin() {
@@ -113,16 +120,23 @@ real_t SkeletonModifier3D::get_influence() const {
 	return influence;
 }
 
-void SkeletonModifier3D::process_modification() {
+void SkeletonModifier3D::process_modification(double p_delta) {
 	if (!active) {
 		return;
 	}
-	_process_modification();
+	_process_modification(p_delta);
 	emit_signal(SNAME("modification_processed"));
 }
 
-void SkeletonModifier3D::_process_modification() {
-	GDVIRTUAL_CALL(_process_modification);
+void SkeletonModifier3D::_process_modification(double p_delta) {
+	if (GDVIRTUAL_CALL(_process_modification_with_delta, p_delta)) {
+		return;
+	}
+#ifndef DISABLE_DEPRECATED
+	if (GDVIRTUAL_CALL(_process_modification)) {
+		return;
+	}
+#endif // DISABLE_DEPRECATED
 }
 
 void SkeletonModifier3D::_notification(int p_what) {
@@ -151,7 +165,13 @@ void SkeletonModifier3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "influence", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_influence", "get_influence");
 
 	ADD_SIGNAL(MethodInfo("modification_processed"));
+	GDVIRTUAL_BIND(_process_modification_with_delta, "delta");
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_process_modification);
+#endif
+
+	GDVIRTUAL_BIND(_skeleton_changed, "old_skeleton", "new_skeleton");
+	GDVIRTUAL_BIND(_validate_bone_names);
 
 	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_X);
 	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_X);

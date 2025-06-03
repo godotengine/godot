@@ -42,7 +42,6 @@
 
 void ResourcePreloaderEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			load->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
@@ -253,7 +252,7 @@ void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
 }
 
 Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	TreeItem *ti = tree->get_item_at_position(p_point);
+	TreeItem *ti = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_selected() : tree->get_item_at_position(p_point);
 	if (!ti) {
 		return Variant();
 	}
@@ -356,6 +355,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew(Button);
+	load->set_accessibility_name(TTRC("Load Resource"));
 	load->set_tooltip_text(TTR("Load Resource"));
 	hbc->add_child(load);
 

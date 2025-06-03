@@ -88,7 +88,7 @@ bool PngLoader::read()
 
     if (w == 0 || h == 0) return false;
 
-    if (cs == ColorSpace::ARGB8888 || cs == ColorSpace::ARGB8888S) {
+    if (ImageLoader::cs == ColorSpace::ARGB8888 || ImageLoader::cs == ColorSpace::ARGB8888S) {
         image->format = PNG_FORMAT_BGRA;
         surface.cs = ColorSpace::ARGB8888S;
     } else {

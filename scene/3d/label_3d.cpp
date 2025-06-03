@@ -620,6 +620,24 @@ void Label3D::_shape() {
 		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing) * pixel_size;
 	}
 
+	switch (get_billboard_mode()) {
+		case StandardMaterial3D::BILLBOARD_ENABLED: {
+			real_t size_new = MAX(Math::abs(aabb.position.x), (aabb.position.x + aabb.size.x));
+			size_new = MAX(size_new, MAX(Math::abs(aabb.position.y), (aabb.position.y + aabb.size.y)));
+			aabb.position = Vector3(-size_new, -size_new, -size_new);
+			aabb.size = Vector3(size_new * 2.0, size_new * 2.0, size_new * 2.0);
+		} break;
+		case StandardMaterial3D::BILLBOARD_FIXED_Y: {
+			real_t size_new = MAX(Math::abs(aabb.position.x), (aabb.position.x + aabb.size.x));
+			aabb.position.x = -size_new;
+			aabb.position.z = -size_new;
+			aabb.size.x = size_new * 2.0;
+			aabb.size.z = size_new * 2.0;
+		} break;
+		default:
+			break;
+	}
+
 	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
 		Array mesh_array;
 		mesh_array.resize(RS::ARRAY_MAX);

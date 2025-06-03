@@ -128,6 +128,14 @@ void CurveEdit::_notification(int p_what) {
 			tangent_hover_radius = Math::round(BASE_TANGENT_HOVER_RADIUS * get_theme_default_base_scale() * gizmo_scale);
 			tangent_length = Math::round(BASE_TANGENT_LENGTH * get_theme_default_base_scale());
 		} break;
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			//TODO
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Curve editor")));
+		} break;
 		case NOTIFICATION_DRAW: {
 			_redraw();
 		} break;
@@ -989,6 +997,7 @@ CurveEditor::CurveEditor() {
 
 	snap_button = memnew(Button);
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
+	snap_button->set_accessibility_name(TTRC("Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
 	snap_button->connect(SceneStringName(toggled), callable_mp(this, &CurveEditor::_set_snap_enabled));
@@ -998,6 +1007,7 @@ CurveEditor::CurveEditor() {
 	snap_count_edit = memnew(EditorSpinSlider);
 	snap_count_edit->set_min(2);
 	snap_count_edit->set_max(100);
+	snap_count_edit->set_accessibility_name(TTRC("Snap Step"));
 	snap_count_edit->set_value(DEFAULT_SNAP);
 	snap_count_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_count_edit);

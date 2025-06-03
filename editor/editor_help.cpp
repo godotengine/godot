@@ -103,7 +103,8 @@ const Vector<String> classes_with_csharp_differences = {
 };
 #endif
 
-static const String nbsp = String::chr(160);
+static const char32_t nbsp_chr = 160;
+static const String nbsp = String::chr(nbsp_chr);
 static const String nbsp_equal_nbsp = nbsp + "=" + nbsp;
 static const String colon_nbsp = ":" + nbsp;
 
@@ -121,7 +122,7 @@ const Vector<String> packed_array_types = {
 };
 
 static String _replace_nbsp_with_space(const String &p_string) {
-	return p_string.replace(nbsp, " ");
+	return p_string.replace_char(nbsp_chr, ' ');
 }
 
 static String _fix_constant(const String &p_constant) {
@@ -1511,15 +1512,27 @@ void EditorHelp::_update_doc() {
 			cd.signals.sort();
 		}
 
-		class_desc->add_newline();
-		class_desc->add_newline();
-
-		section_line.push_back(Pair<String, int>(TTR("Signals"), class_desc->get_paragraph_count() - 2));
-		_push_title_font();
-		class_desc->add_text(TTR("Signals"));
-		_pop_title_font();
+		bool header_added = false;
 
 		for (const DocData::MethodDoc &signal : cd.signals) {
+			// Ignore undocumented private.
+			const bool is_documented = signal.is_deprecated || signal.is_experimental || !signal.description.strip_edges().is_empty();
+			if (!is_documented && signal.name.begins_with("_")) {
+				continue;
+			}
+
+			if (!header_added) {
+				header_added = true;
+
+				class_desc->add_newline();
+				class_desc->add_newline();
+
+				section_line.push_back(Pair<String, int>(TTR("Signals"), class_desc->get_paragraph_count() - 2));
+				_push_title_font();
+				class_desc->add_text(TTR("Signals"));
+				_pop_title_font();
+			}
+
 			class_desc->add_newline();
 			class_desc->add_newline();
 
@@ -3197,9 +3210,9 @@ void EditorHelp::generate_doc(bool p_use_cache, bool p_use_script_cache) {
 	}
 }
 
-void EditorHelp::_toggle_scripts_pressed() {
-	ScriptEditor::get_singleton()->toggle_scripts_panel();
-	update_toggle_scripts_button();
+void EditorHelp::_toggle_files_pressed() {
+	ScriptEditor::get_singleton()->toggle_files_panel();
+	update_toggle_files_button();
 }
 
 void EditorHelp::_notification(int p_what) {
@@ -3233,13 +3246,13 @@ void EditorHelp::_notification(int p_what) {
 			if (is_inside_tree()) {
 				_class_desc_resized(true);
 			}
-			update_toggle_scripts_button();
+			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			update_toggle_scripts_button();
+			update_toggle_files_button();
 		} break;
 	}
 }
@@ -3308,13 +3321,13 @@ void EditorHelp::set_scroll(int p_scroll) {
 	class_desc->get_v_scroll_bar()->set_value(p_scroll);
 }
 
-void EditorHelp::update_toggle_scripts_button() {
+void EditorHelp::update_toggle_files_button() {
 	if (is_layout_rtl()) {
-		toggle_scripts_button->set_button_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back")));
+		toggle_files_button->set_button_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_files_panel_toggled() ? SNAME("Forward") : SNAME("Back")));
 	} else {
-		toggle_scripts_button->set_button_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward")));
+		toggle_files_button->set_button_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_files_panel_toggled() ? SNAME("Back") : SNAME("Forward")));
 	}
-	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
 void EditorHelp::_bind_methods() {
@@ -3357,10 +3370,11 @@ EditorHelp::EditorHelp() {
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
 
-	toggle_scripts_button = memnew(Button);
-	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_scripts_pressed));
-	status_bar->add_child(toggle_scripts_button);
+	toggle_files_button = memnew(Button);
+	toggle_files_button->set_accessibility_name(TTRC("Scripts"));
+	toggle_files_button->set_flat(true);
+	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_files_pressed));
+	status_bar->add_child(toggle_files_button);
 
 	class_desc->set_selection_enabled(true);
 	class_desc->set_context_menu_enabled(true);
@@ -4301,7 +4315,7 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 			help_data.doc_type.type = ResourceLoader::get_resource_type(path);
 			if (help_data.doc_type.type.is_empty()) {
 				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-				symbol_type = textfile_ext.has(path.get_extension()) ? TTR("TextFile") : TTR("File");
+				symbol_type = textfile_ext.has(path.get_extension()) ? TTR("Text File") : TTR("File");
 			} else {
 				symbol_type = TTR("Resource");
 				symbol_hint = SYMBOL_HINT_ASSIGNABLE;
@@ -4483,7 +4497,7 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 						queue_free();
 					}
 				} else if (!Input::get_singleton()->get_last_mouse_velocity().is_zero_approx()) {
-					if (!_is_mouse_inside_tooltip && OS::get_singleton()->get_ticks_msec() - _enter_tree_time > 250) {
+					if (!_is_mouse_inside_tooltip && OS::get_singleton()->get_ticks_msec() - _enter_tree_time > 350) {
 						_start_timer();
 					}
 				}
@@ -4518,7 +4532,7 @@ Control *EditorHelpBitTooltip::show_tooltip(Control *p_target, const String &p_s
 // Copy-paste from `Viewport::_gui_show_tooltip()`.
 void EditorHelpBitTooltip::popup_under_cursor() {
 	Point2 mouse_pos = get_mouse_position();
-	Point2 tooltip_offset = GLOBAL_GET("display/mouse_cursor/tooltip_position_offset");
+	Point2 tooltip_offset = GLOBAL_GET_CACHED(Point2, "display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(mouse_pos + tooltip_offset, get_contents_minimum_size());
 	r.size = r.size.min(get_max_size());
 
@@ -4555,7 +4569,7 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 	// When `FLAG_POPUP` is false, it prevents the editor from losing focus when displaying the tooltip.
 	// This way, clicks and double-clicks are still available outside the tooltip.
 	set_flag(Window::FLAG_POPUP, false);
-	set_flag(Window::FLAG_NO_FOCUS, true);
+	set_flag(Window::FLAG_NO_FOCUS, !is_embedded());
 	popup(r);
 }
 
@@ -4744,8 +4758,11 @@ EditorHelpHighlighter::~EditorHelpHighlighter() {
 
 FindBar::FindBar() {
 	search_text = memnew(LineEdit);
-	add_child(search_text);
 	search_text->set_keep_editing_on_text_submit(true);
+	add_child(search_text);
+	search_text->set_placeholder(TTR("Search"));
+	search_text->set_tooltip_text(TTR("Search"));
+	search_text->set_accessibility_name(TTRC("Search Documentation"));
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindBar::_search_text_changed));
@@ -4753,30 +4770,35 @@ FindBar::FindBar() {
 
 	matches_label = memnew(Label);
 	add_child(matches_label);
+	matches_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	matches_label->hide();
 
 	find_prev = memnew(Button);
 	find_prev->set_flat(true);
+	find_prev->set_disabled(results_count < 1);
+	find_prev->set_tooltip_text(TTR("Previous Match"));
+	find_prev->set_accessibility_name(TTRC("Previous Match"));
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
 	find_next->set_flat(true);
+	find_next->set_disabled(results_count < 1);
+	find_next->set_tooltip_text(TTR("Next Match"));
+	find_next->set_accessibility_name(TTRC("Next Match"));
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
 
-	Control *space = memnew(Control);
-	add_child(space);
-	space->set_custom_minimum_size(Size2(4, 0) * EDSCALE);
-
-	hide_button = memnew(TextureButton);
-	add_child(hide_button);
+	hide_button = memnew(Button);
+	hide_button->set_flat(true);
+	hide_button->set_tooltip_text(TTR("Hide"));
+	hide_button->set_accessibility_name(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->set_ignore_texture_size(true);
-	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));
+	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+	add_child(hide_button);
 }
 
 void FindBar::popup_search() {
@@ -4791,6 +4813,8 @@ void FindBar::popup_search() {
 		search_text->select_all();
 		search_text->set_caret_column(search_text->get_text().length());
 		if (grabbed_focus) {
+			rich_text_label->deselect();
+			results_count_to_current = 0;
 			_search();
 		}
 	}
@@ -4801,10 +4825,7 @@ void FindBar::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			find_prev->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
 			find_next->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
-			hide_button->set_texture_normal(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_texture_hover(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_texture_pressed(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
+			hide_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 			matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
@@ -4829,22 +4850,25 @@ bool FindBar::search_prev() {
 bool FindBar::_search(bool p_search_previous) {
 	String stext = search_text->get_text();
 	bool keep = prev_search == stext;
-
 	bool ret = rich_text_label->search(stext, keep, p_search_previous);
 
 	prev_search = stext;
+	if (!keep) {
+		results_count_to_current = 0;
+	}
 
 	if (ret) {
-		_update_results_count();
+		_update_results_count(p_search_previous);
 	} else {
 		results_count = 0;
+		results_count_to_current = 0;
 	}
 	_update_matches_label();
 
 	return ret;
 }
 
-void FindBar::_update_results_count() {
+void FindBar::_update_results_count(bool p_search_previous) {
 	results_count = 0;
 
 	String searched = search_text->get_text();
@@ -4865,6 +4889,13 @@ void FindBar::_update_results_count() {
 		results_count++;
 		from_pos = pos + searched.length();
 	}
+
+	results_count_to_current += (p_search_previous) ? -1 : 1;
+	if (results_count_to_current > results_count) {
+		results_count_to_current = results_count_to_current - results_count;
+	} else if (results_count_to_current <= 0) {
+		results_count_to_current = results_count;
+	}
 }
 
 void FindBar::_update_matches_label() {
@@ -4874,8 +4905,16 @@ void FindBar::_update_matches_label() {
 		matches_label->show();
 
 		matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
+		if (results_count == 0) {
+			matches_label->set_text(TTR("No match"));
+		} else if (results_count_to_current == 0) {
+			matches_label->set_text(vformat(TTRN("%d match", "%d matches", results_count), results_count));
+		} else {
+			matches_label->set_text(vformat(TTRN("%d of %d match", "%d of %d matches", results_count), results_count_to_current, results_count));
+		}
 	}
+	find_prev->set_disabled(results_count < 1);
+	find_next->set_disabled(results_count < 1);
 }
 
 void FindBar::_hide_bar() {

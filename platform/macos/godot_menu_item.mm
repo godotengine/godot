@@ -41,6 +41,7 @@
 	self->checked = false;
 	self->max_states = 0;
 	self->state = 0;
+	self->accel = Key::NONE;
 
 	return self;
 }
