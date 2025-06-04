@@ -33,6 +33,7 @@
 			<param index="1" name="debug" type="bool" />
 			<param index="2" name="path" type="String" />
 			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<param index="4" name="sparse" type="bool" />
 			<description>
 				[b]Optional.[/b]
 				Creates a PCK archive at [param path] for the specified [param preset].
@@ -46,6 +47,7 @@
 			<param index="2" name="path" type="String" />
 			<param index="3" name="patches" type="PackedStringArray" />
 			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<param index="5" name="sparse" type="bool" />
 			<description>
 				[b]Optional.[/b]
 				Creates a patch PCK archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
