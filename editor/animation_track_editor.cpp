@@ -2064,7 +2064,6 @@ void AnimationTimelineEdit::_play_position_draw() {
 
 	if (px >= get_name_limit() && px < (play_position->get_size().width - get_buttons_width())) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 		play_position->draw_texture(
 				get_editor_theme_icon(SNAME("TimelineIndicator")),
 				Point2(px - get_editor_theme_icon(SNAME("TimelineIndicator"))->get_width() * 0.5, 0),
@@ -2686,7 +2685,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 	}
 }
 
-int AnimationTrackEdit::get_key_width() const {
+int AnimationTrackEdit::get_key_width(int p_index, float p_pixels_sec) const {
 	if (animation.is_null()) {
 		return 0;
 	}
@@ -2694,7 +2693,7 @@ int AnimationTrackEdit::get_key_width() const {
 	return type_icon->get_width();
 }
 
-int AnimationTrackEdit::get_key_height() const {
+int AnimationTrackEdit::get_key_height(int p_index, float p_pixels_sec) const {
 	if (animation.is_null()) {
 		return 0;
 	}
@@ -2707,8 +2706,8 @@ Rect2 AnimationTrackEdit::get_key_rect(int p_index, float p_pixels_sec) {
 		return Rect2();
 	}
 
-	int width = get_key_width();
-	int height = get_key_height();
+	int width = get_key_width(p_index, p_pixels_sec);
+	int height = get_key_height(p_index, p_pixels_sec);
 	Rect2 rect = Rect2(-width / 2, -height / 2, width, height);
 
 	return rect;
@@ -2731,7 +2730,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		return;
 	}
 
-	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
+	Rect2 rect = AnimationTrackEdit::get_global_key_rect(p_index, p_pixels_sec, p_x);
 
 	if (rect.position.x + rect.size.x < p_clip_left) {
 		return;
@@ -2796,8 +2795,10 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 	// The color multiplier is chosen to work with both dark and light editor themes,
 	// and on both unselected and selected key icons.
 	Color color = p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : Color(1, 1, 1);
-	draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right, color);
+	animationTrackDrawUtils->_draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right, color);
 }
+
+// Helper.
 
 void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
@@ -2824,106 +2825,9 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 	int to_x = MIN(next_rect.position.x, p_clip_right);
 	float yh = get_size().height / 2;
 
-	draw_line_clipped(Point2(from_x, yh), Point2(to_x, yh), color, 2, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_line_clipped(Point2(from_x, yh), Point2(to_x, yh), color, 2, p_clip_left, p_clip_right);
 }
 
-// Helper.
-void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate) {
-	if (p_clip_left > p_rect.position.x + p_rect.size.x) {
-		return;
-	}
-	if (p_clip_right < p_rect.position.x) {
-		return;
-	}
-
-	Rect2 rect = p_rect;
-	Rect2 region = p_region;
-
-	if (p_clip_left > rect.position.x) {
-		int rect_pixels = (p_clip_left - rect.position.x);
-		int region_pixels = rect_pixels * region.size.x / rect.size.x;
-
-		rect.position.x += rect_pixels;
-		rect.size.x -= rect_pixels;
-
-		region.position.x += region_pixels;
-		region.size.x -= region_pixels;
-	}
-
-	if (p_clip_right < rect.position.x + rect.size.x) {
-		int rect_pixels = rect.position.x + rect.size.x - p_clip_right;
-		int region_pixels = rect_pixels * region.size.x / rect.size.x;
-
-		rect.size.x -= rect_pixels;
-		region.size.x -= region_pixels;
-	}
-
-	draw_texture_rect_region(p_texture, rect, region, p_modulate);
-}
-
-// Helper.
-void AnimationTrackEdit::draw_line_clipped(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right) {
-	Point2 from = p_from;
-	Point2 to = p_to;
-
-	if (from.x == to.x && from.y == to.y) {
-		return;
-	}
-	if (to.x < from.x) {
-		SWAP(to, from);
-	}
-
-	if (to.x < p_clip_left) {
-		return;
-	}
-
-	if (from.x > p_clip_right) {
-		return;
-	}
-
-	if (to.x > p_clip_right) {
-		float c = (p_clip_right - from.x) / (to.x - from.x);
-		to = from.lerp(to, c);
-	}
-
-	if (from.x < p_clip_left) {
-		float c = (p_clip_left - from.x) / (to.x - from.x);
-		from = from.lerp(to, c);
-	}
-
-	float width = p_width;
-	if (width >= 0.0) {
-		width = Math::round(p_width * EDSCALE);
-	}
-
-	draw_line(from, to, p_color, width, true);
-}
-
-// Helper.
-void AnimationTrackEdit::draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right) {
-	if (p_rect.position.x > p_clip_right) {
-		return;
-	}
-	if (p_rect.position.x + p_rect.size.x < p_clip_left) {
-		return;
-	}
-	Rect2 clip = Rect2(p_clip_left, 0, p_clip_right - p_clip_left, get_size().height);
-	draw_rect(clip.intersection(p_rect), p_color, p_filled);
-}
-
-// Helper.
-String AnimationTrackEdit::make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width) {
-	String clipped_text = text;
-	if (font->get_string_size(clipped_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
-		while (!clipped_text.is_empty() && font->get_string_size(clipped_text + "...", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
-			clipped_text = clipped_text.substr(0, clipped_text.length() - 1);
-		}
-		clipped_text += "...";
-	}
-	return clipped_text;
-}
-
-// Helper.
 int AnimationTrackEdit::_get_theme_font_height(float p_scale) const {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
@@ -2962,14 +2866,33 @@ NodePath AnimationTrackEdit::get_path() const {
 	return node_path;
 }
 
+float AnimationTrackEdit::_get_pixels_sec(int p_index) const {
+	if (!animation.is_valid()) {
+		return 0;
+	}
+
+	if (animation->track_get_key_count(track) == 0) {
+		return 0;
+	}
+
+	float offset = animation->track_get_key_time(track, p_index) - timeline->get_value();
+	int limit = timeline->get_name_limit();
+	offset = offset * timeline->get_zoom_scale() + limit;
+
+	return offset;
+}
+
 Size2 AnimationTrackEdit::get_minimum_size() const {
 	Ref<Texture2D> texture = get_editor_theme_icon(SNAME("Object"));
 	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	const int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
+	int p_index = -1;
+	float p_pixels_sec = 0;
+
 	int max_h = MAX(texture->get_height(), font->get_height(font_size));
-	max_h = MAX(max_h, get_key_height());
+	max_h = MAX(max_h, get_key_height(p_index, p_pixels_sec));
 
 	return Vector2(1, max_h + separation);
 }
@@ -2997,6 +2920,7 @@ void AnimationTrackEdit::_play_position_draw() {
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		//_draw_line_clipped(Point2(px, 0), h, color, 2, p_clip_left, int p_clip_right)
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }
@@ -3120,8 +3044,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 		// Select should happen in the opposite order of drawing for more accurate overlap select.
 		for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-			float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-			offset = offset * timeline->get_zoom_scale() + limit;
+			float offset = _get_pixels_sec(i);
 			Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_global_key_rect(i, timeline->get_zoom_scale(), offset);
 
 			if (rect.has_point(p_pos)) {
@@ -3967,6 +3890,8 @@ void AnimationTrackEdit::_bind_methods() {
 }
 
 AnimationTrackEdit::AnimationTrackEdit() {
+	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
+	animationTrackDrawUtils->canvas_item = this;
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
@@ -8823,6 +8748,23 @@ void AnimationMarkerEdit::_play_position_draw() {
 	}
 }
 
+float AnimationMarkerEdit::_get_pixels_sec(int p_index) const {
+	if (!animation.is_valid()) {
+		return 0;
+	}
+
+	PackedStringArray names = animation->get_marker_names();
+	if (names.size() == 0) {
+		return 0;
+	}
+
+	float offset = animation->get_marker_time(names[p_index]) - timeline->get_value();
+	int limit = timeline->get_name_limit();
+	offset = offset * timeline->get_zoom_scale() + limit;
+
+	return offset;
+}
+
 bool AnimationMarkerEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable) {
 	int limit = timeline->get_name_limit();
 	int limit_end = get_size().width - timeline->get_buttons_width();
@@ -8834,9 +8776,8 @@ bool AnimationMarkerEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggr
 		float key_distance = 1e20;
 		PackedStringArray names = animation->get_marker_names();
 		for (int i = 0; i < names.size(); i++) {
-			float offset = animation->get_marker_time(names[i]) - timeline->get_value();
-			offset = offset * timeline->get_zoom_scale() + limit;
-			Rect2 rect = const_cast<AnimationMarkerEdit *>(this)->get_global_key_rect(timeline->get_zoom_scale(), offset);
+			float offset = _get_pixels_sec(i);
+			Rect2 rect = const_cast<AnimationMarkerEdit *>(this)->get_global_key_rect(i, timeline->get_zoom_scale(), offset);
 
 			if (rect.has_point(p_pos)) {
 				if (const_cast<AnimationMarkerEdit *>(this)->is_key_selectable_by_distance()) {
@@ -9072,7 +9013,7 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 					offset = offset * scale + limit;
 
-					draw_key(name, scale, int(offset), is_selected, limit, limit_end);
+					draw_key(name, i, scale, int(offset), is_selected, limit, limit_end);
 
 					const int font_size = 12 * EDSCALE;
 					Size2 string_size = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size);
@@ -9240,7 +9181,7 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 				StringName name = names[i];
 				float offset = animation->get_marker_time(name) - timeline->get_value();
 				offset = offset * scale + limit;
-				Rect2 rect = get_global_key_rect(scale, offset);
+				Rect2 rect = get_global_key_rect(i, scale, offset);
 
 				if (rect.has_point(pos)) {
 					if (is_key_selectable_by_distance()) {
@@ -9305,9 +9246,8 @@ String AnimationMarkerEdit::get_tooltip(const Point2 &p_pos) const {
 		// Select should happen in the opposite order of drawing for more accurate overlap select.
 		for (int i = names.size() - 1; i >= 0; i--) {
 			StringName name = names[i];
-			float offset = animation->get_marker_time(name) - timeline->get_value();
-			offset = offset * timeline->get_zoom_scale() + limit;
-			Rect2 rect = const_cast<AnimationMarkerEdit *>(this)->get_global_key_rect(timeline->get_zoom_scale(), offset);
+			float offset = _get_pixels_sec(i);
+			Rect2 rect = const_cast<AnimationMarkerEdit *>(this)->get_global_key_rect(i, timeline->get_zoom_scale(), offset);
 
 			if (rect.has_point(p_pos)) {
 				if (const_cast<AnimationMarkerEdit *>(this)->is_key_selectable_by_distance()) {
@@ -9334,7 +9274,7 @@ String AnimationMarkerEdit::get_tooltip(const Point2 &p_pos) const {
 	return Control::get_tooltip(p_pos);
 }
 
-int AnimationMarkerEdit::get_key_width() const {
+int AnimationMarkerEdit::get_key_width(int p_index, float p_pixels_sec) const {
 	if (animation.is_null()) {
 		return 0;
 	}
@@ -9342,7 +9282,7 @@ int AnimationMarkerEdit::get_key_width() const {
 	return type_icon->get_width();
 }
 
-int AnimationMarkerEdit::get_key_height() const {
+int AnimationMarkerEdit::get_key_height(int p_index, float p_pixels_sec) const {
 	if (animation.is_null()) {
 		return 0;
 	}
@@ -9350,20 +9290,20 @@ int AnimationMarkerEdit::get_key_height() const {
 	return type_icon->get_height();
 }
 
-Rect2 AnimationMarkerEdit::get_key_rect(float p_pixels_sec) const {
+Rect2 AnimationMarkerEdit::get_key_rect(int p_index, float p_pixels_sec) const {
 	if (animation.is_null()) {
 		return Rect2();
 	}
 
-	int width = get_key_width();
-	int height = get_key_height();
+	int width = get_key_width(p_index, p_pixels_sec);
+	int height = get_key_height(p_index, p_pixels_sec);
 	Rect2 rect = Rect2(-width / 2, -height, width, height);
 
 	return rect;
 }
 
-Rect2 AnimationMarkerEdit::get_global_key_rect(float p_pixels_sec, int p_x) const {
-	Rect2 rect = get_key_rect(p_pixels_sec);
+Rect2 AnimationMarkerEdit::get_global_key_rect(int p_index, float p_pixels_sec, int p_x) const {
+	Rect2 rect = get_key_rect(p_index, p_pixels_sec);
 	rect.position.x += p_x;
 	rect.position.y += get_size().height;
 
@@ -9402,12 +9342,12 @@ bool AnimationMarkerEdit::is_key_selectable_by_distance() const {
 	return true;
 }
 
-void AnimationMarkerEdit::draw_key(const StringName &p_name, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
+void AnimationMarkerEdit::draw_key(const StringName &p_name, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	if (animation.is_null()) {
 		return;
 	}
 
-	Rect2 rect = get_global_key_rect(p_pixels_sec, p_x);
+	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
 
 	if (rect.position.x + rect.size.x < p_clip_left) {
 		return;
@@ -9429,41 +9369,7 @@ void AnimationMarkerEdit::draw_key(const StringName &p_name, float p_pixels_sec,
 	// The color multiplier is chosen to work with both dark and light editor themes,
 	// and on both unselected and selected key icons.
 	Color color = p_name == hovering_marker ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : marker_color;
-	draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right, color);
-}
-
-// Helper.
-void AnimationMarkerEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate) {
-	if (p_clip_left > p_rect.position.x + p_rect.size.x) {
-		return;
-	}
-	if (p_clip_right < p_rect.position.x) {
-		return;
-	}
-
-	Rect2 rect = p_rect;
-	Rect2 region = p_region;
-
-	if (p_clip_left > rect.position.x) {
-		int rect_pixels = (p_clip_left - rect.position.x);
-		int region_pixels = rect_pixels * region.size.x / rect.size.x;
-
-		rect.position.x += rect_pixels;
-		rect.size.x -= rect_pixels;
-
-		region.position.x += region_pixels;
-		region.size.x -= region_pixels;
-	}
-
-	if (p_clip_right < rect.position.x + rect.size.x) {
-		int rect_pixels = rect.position.x + rect.size.x - p_clip_right;
-		int region_pixels = rect_pixels * region.size.x / rect.size.x;
-
-		rect.size.x -= rect_pixels;
-		region.size.x -= region_pixels;
-	}
-
-	draw_texture_rect_region(p_texture, rect, region, p_modulate);
+	animationTrackDrawUtils->_draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right, color);
 }
 
 void AnimationMarkerEdit::draw_bg(int p_clip_left, int p_clip_right) {
@@ -9494,8 +9400,11 @@ Size2 AnimationMarkerEdit::get_minimum_size() const {
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
+	int p_index = -1;
+	float p_pixels_sec = 0;
+
 	int max_h = MAX(texture->get_height(), font->get_height(font_size));
-	max_h = MAX(max_h, get_key_height());
+	max_h = MAX(max_h, get_key_height(p_index, p_pixels_sec));
 
 	return Vector2(1, max_h + separation);
 }
@@ -9774,6 +9683,8 @@ void AnimationMarkerEdit::_marker_rename_new_name_changed(const String &p_text) 
 }
 
 AnimationMarkerEdit::AnimationMarkerEdit() {
+	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
+	animationTrackDrawUtils->canvas_item = this;
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
@@ -10018,4 +9929,148 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
+}
+
+// Draw
+
+void AnimationTrackDrawUtils::_draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate) {
+	ERR_FAIL_NULL(canvas_item);
+
+	if (p_clip_left > p_rect.position.x + p_rect.size.x) {
+		return;
+	}
+	if (p_clip_right < p_rect.position.x) {
+		return;
+	}
+
+	Rect2 rect = p_rect;
+	Rect2 region = p_region;
+
+	if (p_clip_left > rect.position.x) {
+		int rect_pixels = (p_clip_left - rect.position.x);
+		int region_pixels = rect_pixels * region.size.x / rect.size.x;
+
+		rect.position.x += rect_pixels;
+		rect.size.x -= rect_pixels;
+
+		region.position.x += region_pixels;
+		region.size.x -= region_pixels;
+	}
+
+	if (p_clip_right < rect.position.x + rect.size.x) {
+		int rect_pixels = rect.position.x + rect.size.x - p_clip_right;
+		int region_pixels = rect_pixels * region.size.x / rect.size.x;
+
+		rect.size.x -= rect_pixels;
+		region.size.x -= region_pixels;
+	}
+
+	canvas_item->draw_texture_rect_region(p_texture, rect, region, p_modulate);
+}
+
+void AnimationTrackDrawUtils::_draw_line_clipped(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right) {
+	ERR_FAIL_NULL(canvas_item);
+
+	Point2 from = p_from;
+	Point2 to = p_to;
+
+	if (from.x == to.x && from.y == to.y) {
+		return;
+	}
+	if (to.x < from.x) {
+		SWAP(to, from);
+	}
+
+	if (to.x < p_clip_left) {
+		return;
+	}
+
+	if (from.x > p_clip_right) {
+		return;
+	}
+
+	if (to.x > p_clip_right) {
+		float c = (p_clip_right - from.x) / (to.x - from.x);
+		to = from.lerp(to, c);
+	}
+
+	if (from.x < p_clip_left) {
+		float c = (p_clip_left - from.x) / (to.x - from.x);
+		from = from.lerp(to, c);
+	}
+
+	float width = p_width;
+	if (width >= 0.0) {
+		width = Math::round(p_width * EDSCALE);
+	}
+
+	canvas_item->draw_line(from, to, p_color, width, true);
+}
+
+void AnimationTrackDrawUtils::_draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right) {
+	ERR_FAIL_NULL(canvas_item);
+
+	Rect2 clipped_rect = p_rect;
+
+	if (clipped_rect.position.x < p_clip_left) {
+		float excess = p_clip_left - clipped_rect.position.x;
+		clipped_rect.position.x = p_clip_left;
+		clipped_rect.size.x -= excess;
+	}
+
+	if (clipped_rect.position.x + clipped_rect.size.x > p_clip_right) {
+		float excess = (clipped_rect.position.x + clipped_rect.size.x) - p_clip_right;
+		clipped_rect.size.x -= excess;
+	}
+
+	if (clipped_rect.size.x <= 0.0f) {
+		return;
+	}
+
+	canvas_item->draw_rect(clipped_rect, p_color, p_filled);
+}
+
+void AnimationTrackDrawUtils::_draw_vertical_line_clipped(const Point2 &p_from, float p_length, const Color &p_color, float p_width, int p_clip_left, int p_clip_right) {
+	ERR_FAIL_NULL(canvas_item);
+
+	Point2 from = p_from;
+	Point2 to = Point2(p_from.x, p_from.y + p_length);
+
+	if (p_length == 0.0f) {
+		return;
+	}
+
+	if (from.x < p_clip_left - p_width / 2.0f || from.x > p_clip_right + p_width / 2.0f) {
+		return;
+	}
+
+	float clipped_width = p_width;
+	if (from.x - p_width / 2.0f < p_clip_left) {
+		// Linker Rand wird abgeschnitten
+		float excess = p_clip_left - (from.x - p_width / 2.0f);
+		clipped_width -= excess;
+	}
+	if (from.x + p_width / 2.0f > p_clip_right) {
+		// Rechter Rand wird abgeschnitten
+		float excess = (from.x + p_width / 2.0f) - p_clip_right;
+		clipped_width -= excess;
+	}
+
+	if (clipped_width <= 0.0f) {
+		return;
+	}
+
+	clipped_width = Math::round(clipped_width * EDSCALE);
+	canvas_item->draw_line(from, to, p_color, clipped_width, true);
+}
+
+String AnimationTrackDrawUtils::_make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width) {
+	String clipped_text = text;
+	if (font->get_string_size(clipped_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
+		while (!clipped_text.is_empty() && font->get_string_size(clipped_text + "...", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
+			clipped_text = clipped_text.substr(0, clipped_text.length() - 1);
+		}
+		clipped_text += "...";
+	}
+	return clipped_text;
 }

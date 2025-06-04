@@ -47,12 +47,12 @@
 AnimationTrackEditBool::AnimationTrackEditBool() {
 }
 
-int AnimationTrackEditBool::get_key_width() const {
+int AnimationTrackEditBool::get_key_width(int p_index, float p_pixels_sec) const {
 	Ref<Texture2D> texture = get_theme_icon(SNAME("checked"), SNAME("CheckBox"));
 	return texture->get_width();
 }
 
-int AnimationTrackEditBool::get_key_height() const {
+int AnimationTrackEditBool::get_key_height(int p_index, float p_pixels_sec) const {
 	Ref<Texture2D> texture = get_theme_icon(SNAME("checked"), SNAME("CheckBox"));
 	return texture->get_height();
 }
@@ -82,11 +82,11 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 
 	Rect2 region;
 	region.size = texture->get_size();
-	draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right);
 
 	if (p_selected) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-		draw_rect_clipped(rect, color, false, p_clip_left, p_clip_right);
+		animationTrackDrawUtils->_draw_rect_clipped(rect, color, false, p_clip_left, p_clip_right);
 	}
 }
 
@@ -95,11 +95,11 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 AnimationTrackEditColor::AnimationTrackEditColor() {
 }
 
-int AnimationTrackEditColor::get_key_width() const {
+int AnimationTrackEditColor::get_key_width(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(0.8);
 }
 
-int AnimationTrackEditColor::get_key_height() const {
+int AnimationTrackEditColor::get_key_height(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(0.8);
 }
 
@@ -112,20 +112,20 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 
 	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
 
-	draw_rect_clipped(Rect2(rect.position, rect.size / 2), Color(0.4, 0.4, 0.4), true, p_clip_left, p_clip_right);
-	draw_rect_clipped(Rect2(rect.position + rect.size / 2, rect.size / 2), Color(0.4, 0.4, 0.4), true, p_clip_left, p_clip_right);
-	draw_rect_clipped(Rect2(rect.position + Vector2(rect.size.x / 2, 0), rect.size / 2), Color(0.6, 0.6, 0.6), true, p_clip_left, p_clip_right);
-	draw_rect_clipped(Rect2(rect.position + Vector2(0, rect.size.y / 2), rect.size / 2), Color(0.6, 0.6, 0.6), true, p_clip_left, p_clip_right);
-	draw_rect_clipped(rect, color, true, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_rect_clipped(Rect2(rect.position, rect.size / 2), Color(0.4, 0.4, 0.4), true, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_rect_clipped(Rect2(rect.position + rect.size / 2, rect.size / 2), Color(0.4, 0.4, 0.4), true, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_rect_clipped(Rect2(rect.position + Vector2(rect.size.x / 2, 0), rect.size / 2), Color(0.6, 0.6, 0.6), true, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_rect_clipped(Rect2(rect.position + Vector2(0, rect.size.y / 2), rect.size / 2), Color(0.6, 0.6, 0.6), true, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_rect_clipped(rect, color, true, p_clip_left, p_clip_right);
 
 	if (p_selected) {
 		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-		draw_rect_clipped(rect, accent, false, p_clip_left, p_clip_right);
+		animationTrackDrawUtils->_draw_rect_clipped(rect, accent, false, p_clip_left, p_clip_right);
 	}
 }
 
 void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
-	int fh = get_key_height();
+	int fh = get_key_height(p_index, p_pixels_sec);
 
 	fh /= 3;
 
@@ -194,52 +194,37 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 AnimationTrackEditSpriteFrame::AnimationTrackEditSpriteFrame() {
 }
 
-int AnimationTrackEditSpriteFrame::get_key_width() const {
+int AnimationTrackEditSpriteFrame::get_key_width(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(2.0);
 }
 
-int AnimationTrackEditSpriteFrame::get_key_height() const {
+int AnimationTrackEditSpriteFrame::get_key_height(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(2.0);
 }
 
 Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_sec) {
+	return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
+}
+
+Ref<Resource> AnimationTrackEditSpriteFrame::get_resource(const int p_index) {
 	Object *object = ObjectDB::get_instance(get_node_id());
 
 	if (!object) {
-		return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
+		return Ref<Resource>();
 	}
 
-	Size2 size;
-
+	Ref<Texture2D> texture;
 	if (Object::cast_to<Sprite2D>(object) || Object::cast_to<Sprite3D>(object)) {
-		Ref<Texture2D> texture = object->call("get_texture");
-		if (texture.is_null()) {
-			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
-		}
+		texture = object->call("get_texture");
 
-		size = texture->get_size();
-
-		if (bool(object->call("is_region_enabled"))) {
-			size = Rect2(object->call("get_region_rect")).size;
-		}
-
-		int hframes = object->call("get_hframes");
-		int vframes = object->call("get_vframes");
-
-		if (hframes > 1) {
-			size.x /= hframes;
-		}
-		if (vframes > 1) {
-			size.y /= vframes;
-		}
 	} else if (Object::cast_to<AnimatedSprite2D>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
-		Ref<SpriteFrames> sf = object->call("get_sprite_frames");
-		if (sf.is_null()) {
-			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
-		}
-
 		List<StringName> animations;
-		sf->get_animation_list(&animations);
+
+		Ref<SpriteFrames> sprite_frames = object->call("get_sprite_frames");
+		if (!sprite_frames.is_valid()) {
+			return Ref<Texture2D>();
+		}
+		sprite_frames->get_animation_list(&animations);
 
 		int frame = get_animation()->track_get_key_value(get_track(), p_index);
 		String animation_name;
@@ -255,48 +240,25 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 			animation_name = get_animation()->track_get_key_value(animation_track, animation_index);
 		}
 
-		Ref<Texture2D> texture = sf->get_frame_texture(animation_name, frame);
-		if (texture.is_null()) {
-			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
-		}
-
-		size = texture->get_size();
+		texture = sprite_frames->get_frame_texture(animation_name, frame);
 	}
 
-	size = size.floor();
-
-	int fh = get_key_height();
-	int fw = fh * size.width / size.height;
-
-	return Rect2(0, 0, fw, get_size().height);
+	return texture;
 }
 
-void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	Object *object = ObjectDB::get_instance(get_node_id());
-
-	if (!object) {
-		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
-		return;
-	}
-
-	Ref<Texture2D> texture;
+Rect2 AnimationTrackEditSpriteFrame::_create_texture_region_sprite(int p_index, Object *object, const Ref<Texture2D> texture) {
 	Rect2 region;
 
-	if (Object::cast_to<Sprite2D>(object) || Object::cast_to<Sprite3D>(object)) {
-		texture = object->call("get_texture");
-		if (texture.is_null()) {
-			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
-			return;
-		}
-
+	if (texture.is_valid()) {
 		int hframes = object->call("get_hframes");
 		int vframes = object->call("get_vframes");
 
+		Variant value = get_animation()->track_get_key_value(get_track(), p_index);
 		Vector2 coords;
 		if (is_coords) {
-			coords = get_animation()->track_get_key_value(get_track(), p_index);
+			coords = value;
 		} else {
-			int frame = get_animation()->track_get_key_value(get_track(), p_index);
+			int frame = value;
 			coords.x = frame % hframes;
 			coords.y = frame / hframes;
 		}
@@ -316,42 +278,34 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 
 		region.position.x += region.size.x * coords.x;
 		region.position.y += region.size.y * coords.y;
-
-	} else if (Object::cast_to<AnimatedSprite2D>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
-		Ref<SpriteFrames> sf = object->call("get_sprite_frames");
-		if (sf.is_null()) {
-			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
-			return;
-		}
-
-		List<StringName> animations;
-		sf->get_animation_list(&animations);
-
-		int frame = get_animation()->track_get_key_value(get_track(), p_index);
-		String animation_name;
-		if (animations.size() == 1) {
-			animation_name = animations.front()->get();
-		} else {
-			// Go through other track to find if animation is set
-			String animation_path = String(get_animation()->track_get_path(get_track()));
-			animation_path = animation_path.replace(":frame", ":animation");
-			int animation_track = get_animation()->find_track(animation_path, get_animation()->track_get_type(get_track()));
-			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
-			int animation_index = get_animation()->track_find_key(animation_track, track_time);
-			animation_name = get_animation()->track_get_key_value(animation_track, animation_index);
-		}
-
-		texture = sf->get_frame_texture(animation_name, frame);
-		if (texture.is_null()) {
-			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
-			return;
-		}
-
-		region.size = texture->get_size();
 	}
 
-	int height = get_key_height();
-	int width = height * region.size.width / region.size.height;
+	return region;
+}
+
+void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
+	Object *object = ObjectDB::get_instance(get_node_id());
+
+	if (!object) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
+		return;
+	}
+
+	Ref<Resource> resource = get_resource(p_index);
+	if (!resource.is_valid()) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
+		return;
+	}
+
+	Ref<Texture2D> texture = resource;
+	Rect2 region;
+
+	if (Object::cast_to<Sprite2D>(object) || Object::cast_to<Sprite3D>(object)) {
+		region = _create_texture_region_sprite(p_index, object, texture);
+
+	} else if (Object::cast_to<AnimatedSprite2D>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
+		region = _create_region_animated_sprite(p_index, object, texture);
+	}
 
 	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
 
@@ -367,12 +321,10 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 	Color bg = accent;
 	bg.a = 0.15;
 
-	draw_rect_clipped(rect, bg, true, p_clip_left, p_clip_right);
-
-	draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right);
 
 	if (p_selected) {
-		draw_rect_clipped(rect, accent, false, p_clip_left, p_clip_right);
+		animationTrackDrawUtils->_draw_rect_clipped(rect, accent, false, p_clip_left, p_clip_right);
 	}
 }
 
@@ -385,11 +337,11 @@ void AnimationTrackEditSpriteFrame::set_as_coords() {
 AnimationTrackEditSubAnim::AnimationTrackEditSubAnim() {
 }
 
-int AnimationTrackEditSubAnim::get_key_width() const {
+int AnimationTrackEditSubAnim::get_key_width(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.5);
 }
 
-int AnimationTrackEditSubAnim::get_key_height() const {
+int AnimationTrackEditSubAnim::get_key_height(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.5);
 }
 
@@ -420,17 +372,17 @@ Ref<Resource> AnimationTrackEditSubAnim::get_resource(const int p_index) {
 	StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
 
 	if (String(anim_name) == "[stop]") {
-		return nullptr;
+		return Ref<Resource>();
 	}
 
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
 	if (!ap || !ap->has_animation(anim_name)) {
-		return nullptr;
+		return Ref<Resource>();
 	}
 
 	Ref<Animation> anim = ap->get_animation(anim_name);
 	if (!anim.is_valid()) {
-		return nullptr;
+		return Ref<Resource>();
 	}
 
 	return anim;
@@ -460,12 +412,12 @@ StringName AnimationTrackEditSubAnim::get_edit_name(const int p_index) {
 AnimationTrackEditVolumeDB::AnimationTrackEditVolumeDB() {
 }
 
-int AnimationTrackEditVolumeDB::get_key_width() const {
-	return AnimationTrackEdit::get_key_width();
+int AnimationTrackEditVolumeDB::get_key_width(int p_index, float p_pixels_sec) const {
+	return AnimationTrackEdit::get_key_width(p_index, p_pixels_sec);
 }
 
-int AnimationTrackEditVolumeDB::get_key_height() const {
-	return AnimationTrackEdit::get_key_height();
+int AnimationTrackEditVolumeDB::get_key_height(int p_index, float p_pixels_sec) const {
+	return AnimationTrackEdit::get_key_height(p_index, p_pixels_sec);
 }
 
 void AnimationTrackEditVolumeDB::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
@@ -489,7 +441,7 @@ void AnimationTrackEditVolumeDB::draw_fg(int p_clip_left, int p_clip_right) {
 	int y_from = (get_size().height - tex_h) / 2;
 	int db0 = y_from + (24 / 80.0) * tex_h;
 
-	draw_line_clipped(Vector2(p_clip_left, db0), Vector2(p_clip_right, db0), Color(1, 1, 1, 0.3), -1.0, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_line_clipped(Vector2(p_clip_left, db0), Vector2(p_clip_right, db0), Color(1, 1, 1, 0.3), -1.0, p_clip_left, p_clip_right);
 }
 
 void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
@@ -516,7 +468,7 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 
 	int from_x = p_x;
 	int to_x = p_next_x;
-	draw_line_clipped(Point2(from_x, y_from + h * tex_h), Point2(to_x, y_from + h_n * tex_h), color, 2, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_line_clipped(Point2(from_x, y_from + h * tex_h), Point2(to_x, y_from + h_n * tex_h), color, 2, p_clip_left, p_clip_right);
 }
 
 /// AUDIO ///
@@ -525,11 +477,11 @@ AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
 }
 
-int AnimationTrackEditTypeAudio::get_key_width() const {
+int AnimationTrackEditTypeAudio::get_key_width(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.5);
 }
 
-int AnimationTrackEditTypeAudio::get_key_height() const {
+int AnimationTrackEditTypeAudio::get_key_height(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.5);
 }
 
@@ -589,11 +541,11 @@ AnimationTrackEditAudio::AnimationTrackEditAudio() {
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditAudio::_preview_changed));
 }
 
-int AnimationTrackEditAudio::get_key_width() const {
+int AnimationTrackEditAudio::get_key_width(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.5);
 }
 
-int AnimationTrackEditAudio::get_key_height() const {
+int AnimationTrackEditAudio::get_key_height(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.5);
 }
 
@@ -636,11 +588,11 @@ AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
 	AnimationPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAnimation::_preview_changed));
 }
 
-int AnimationTrackEditTypeAnimation::get_key_width() const {
+int AnimationTrackEditTypeAnimation::get_key_width(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.5);
 }
 
-int AnimationTrackEditTypeAnimation::get_key_height() const {
+int AnimationTrackEditTypeAnimation::get_key_height(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.5);
 }
 
@@ -670,17 +622,17 @@ Ref<Resource> AnimationTrackEditTypeAnimation::get_resource(const int p_index) {
 	StringName anim_name = get_animation()->animation_track_get_key_animation(get_track(), p_index);
 
 	if (String(anim_name) == "[stop]") {
-		return nullptr;
+		return Ref<Resource>();
 	}
 
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
 	if (!ap || !ap->has_animation(anim_name)) {
-		return nullptr;
+		return Ref<Resource>();
 	}
 
 	Ref<Animation> anim = ap->get_animation(anim_name);
 	if (!anim.is_valid()) {
-		return nullptr;
+		return Ref<Resource>();
 	}
 
 	return anim;
@@ -727,11 +679,11 @@ StringName AnimationTrackEditTypeAnimation::get_edit_name(const int p_index) {
 
 /// KEY ///
 
-int AnimationTrackEditKey::get_key_width() const {
+int AnimationTrackEditKey::get_key_width(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.0);
 }
 
-int AnimationTrackEditKey::get_key_height() const {
+int AnimationTrackEditKey::get_key_height(int p_index, float p_pixels_sec) const {
 	return _get_theme_font_height(1.0);
 }
 
@@ -751,7 +703,7 @@ Rect2 AnimationTrackEditKey::get_key_rect(int p_index, float p_pixels_sec) {
 	float len = get_length(p_index);
 
 	Vector2 region = calc_key_region(start_ofs, end_ofs, len, p_index, p_pixels_sec, 0);
-	int height = get_key_height();
+	int height = get_key_height(p_index, p_pixels_sec);
 
 	return Rect2(region.x, 0, region.y, height);
 }
@@ -1145,7 +1097,7 @@ void AnimationTrackEditKey::draw_key_region(Ref<Resource> resource, float start_
 			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 
 			int f_h = int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
-			draw_string(font, Point2(region_begin + REGION_FONT_MARGIN, f_h), make_text_clipped(edit_name, font, font_size, max_width), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
+			draw_string(font, Point2(region_begin + REGION_FONT_MARGIN, f_h), animationTrackDrawUtils->_make_text_clipped(edit_name, font, font_size, max_width), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
 		}
 	}
 
