@@ -41,6 +41,7 @@
 #define REGION_EDGE_ALPHA 0.7
 
 #define COLOR_EDIT_SAMPLE_INTERVAL 64
+#define COLOR_EDIT_RECT_INTERVAL 2
 
 class AnimationTrackEditKey : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditKey, AnimationTrackEdit);
