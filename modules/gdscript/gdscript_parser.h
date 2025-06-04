@@ -74,6 +74,7 @@ public:
 	struct EnumNode;
 	struct ExpressionNode;
 	struct ForNode;
+	struct FormattedStringNode;
 	struct FunctionNode;
 	struct GetNodeNode;
 	struct IdentifierNode;
@@ -311,6 +312,7 @@ public:
 			DICTIONARY,
 			ENUM,
 			FOR,
+			FORMATTED_STRING,
 			FUNCTION,
 			GET_NODE,
 			IDENTIFIER,
@@ -845,6 +847,38 @@ public:
 
 		ForNode() {
 			type = FOR;
+		}
+	};
+
+	struct FormattedStringNode : public ExpressionNode {
+		// A template is composed of a sequence of text and slot pieces. Text are string literals. Slots hold the
+		// expression to be stringified and placed into the formatted string.
+		struct TemplatePiece {
+			enum Type {
+				TEXT,
+				SLOT,
+			};
+			Type type = TEXT;
+			String text;
+			ExpressionNode *slot = nullptr; // Eventually, format directive can be bundled with this.
+		};
+		Vector<TemplatePiece> template_pieces;
+
+		FormattedStringNode() {
+			type = FORMATTED_STRING;
+		}
+		void add_text(const String &p_text) {
+			TemplatePiece piece;
+			piece.type = TemplatePiece::TEXT;
+			piece.text = p_text;
+			template_pieces.push_back(piece);
+		}
+		void add_slot(ExpressionNode *slot_exp) {
+			DEV_ASSERT(slot_exp != nullptr);
+			TemplatePiece piece;
+			piece.type = TemplatePiece::SLOT;
+			piece.slot = slot_exp;
+			template_pieces.push_back(piece);
 		}
 	};
 
@@ -1572,6 +1606,7 @@ private:
 	ExpressionNode *parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_array(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_formatted_string(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_call(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign);
@@ -1655,6 +1690,7 @@ public:
 		void print_expression(ExpressionNode *p_expression);
 		void print_enum(EnumNode *p_enum);
 		void print_for(ForNode *p_for);
+		void print_formatted_string(FormattedStringNode *p_formatted_string);
 		void print_function(FunctionNode *p_function, const String &p_context = "Function");
 		void print_get_node(GetNodeNode *p_get_node);
 		void print_if(IfNode *p_if, bool p_is_elif = false);
