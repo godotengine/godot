@@ -1956,7 +1956,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
 
-		geom->geometry_instance->pair_light_instances(nullptr, 0);
+		geom->geometry_instance->clear_light_instances();
 		geom->geometry_instance->pair_reflection_probe_instances(nullptr, 0);
 		geom->geometry_instance->pair_decal_instances(nullptr, 0);
 		geom->geometry_instance->pair_voxel_gi_instances(nullptr, 0);
@@ -2813,6 +2813,8 @@ void RendererSceneCull::_scene_cull_threaded(uint32_t p_thread, CullData *cull_d
 	_scene_cull(*cull_data, scene_cull_result_threads[p_thread], cull_from, cull_to);
 }
 
+#include "core/os/os.h"
+#include "core/os/time.h"
 void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cull_result, uint64_t p_from, uint64_t p_to) {
 	uint64_t frame_number = RSG::rasterizer->get_frame_number();
 	float lightmap_probe_update_speed = RSG::light_storage->lightmap_get_probe_capture_update_speed() * RSG::rasterizer->get_frame_delta_time();
@@ -2932,8 +2934,21 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_LIGHT) && (idata.flags & InstanceData::FLAG_GEOM_LIGHTING_DIRTY)) {
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
-						uint32_t idx = 0;
+						ERR_FAIL_NULL(geom->geometry_instance);
+						uint32_t link_max_count = geom->geometry_instance->clear_light_instances();
+						if( link_max_count > 0 ) {
+							//	Profile the new way vs old pair_light_instances
+							uint64_t tin = Time::get_singleton()->get_ticks_usec();
+							
+							//	clear any existing light instances and return the max count.
+							uint32_t omni_count = 0, omni_worst = 0, spot_count = 0, spot_worst = 0;
+							LocalVector<float> omni_scores, spot_scores;	//	I want to switch to SortArray of a pair(score,index)
+							omni_scores.resize( link_max_count );
+							spot_scores.resize( link_max_count );
 
+							//	Score each light relative to this mesh.
+							Vector3 mesh_center = idata.instance->transformed_aabb.get_center();
+							//print_line(vformat("mesh(%f,%f,%f)", mesh_center.x, mesh_center.y, mesh_center.z));
 						for (const Instance *E : geom->lights) {
 							InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
 							if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
@@ -2944,14 +2959,94 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 								continue;
 							}
 
-							instance_pair_buffer[idx++] = light->instance;
-							if (idx == MAX_INSTANCE_PAIRS) {
-								break;
+								#if 0
+								//	Only keep the 1st N
+								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
+								switch (light_type) {
+									case RS::LIGHT_OMNI: {
+										if( omni_count < link_max_count ) {
+											geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_count++);
+										}
+									} break;
+									case RS::LIGHT_SPOT: {
+										if( spot_count < link_max_count ) {
+											geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_count++);
+										}
+									} break;
+									default: break;
+								}
+								#else
+								//	Large scores are worse, so linear with distance, inverse with energy and range
+								//Vector3 light_center = E->transformed_aabb.get_center();	//	maybe a bit faster?
+								Vector3 light_center = E->transform.xform( RSG::light_storage->light_get_aabb(E->base).get_center() );	//	should be more accurate
+								//print_line(vformat("light(%f,%f,%f)", light_center.x, light_center.y, light_center.z));
+								float light_range = RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_RANGE);
+								float light_energy = RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_ENERGY);
+								float light_inst_score = mesh_center.distance_to( light_center ) / (0.1f + light_range * light_energy);
+								//	Keep the best per-light-type
+								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
+								switch (light_type) {
+									case RS::LIGHT_OMNI: {
+										if( omni_count < link_max_count ) {
+											omni_scores[ omni_count ] = light_inst_score;
+											if( light_inst_score > omni_scores[ omni_worst ] ) {
+												omni_worst = omni_count;
+											}
+											geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_count++);
+										} else {
+											if( light_inst_score < omni_scores[ omni_worst ] ) {
+												geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_worst);
+												omni_scores[ omni_worst ] = light_inst_score;
+												for( uint32_t i = 0; i < link_max_count; ++i ) {
+													if( omni_scores[ i ] > omni_scores[ omni_worst ] ) {
+														omni_worst = i;
+													}
+												}
+											}
+										}
+									} break;
+									case RS::LIGHT_SPOT: {
+										if( spot_count < link_max_count ) {
+											spot_scores[ spot_count ] = light_inst_score;
+											if( light_inst_score > spot_scores[ spot_worst ] ) {
+												spot_worst = spot_count;
+											}
+											geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_count++);
+										}else {
+											if( light_inst_score < spot_scores[ spot_worst ] ) {
+												geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_worst);
+												spot_scores[ spot_worst ] = light_inst_score;
+												for( uint32_t i = 0; i < link_max_count; ++i ) {
+													if( spot_scores[ i ] > spot_scores[ spot_worst ] ) {
+														spot_worst = i;
+													}
+												}
+											}
+										}
+									} break;
+									default: break;
+								}
+								#endif								
+							}
+							{
+								//	This block is just for profiling.
+								uint64_t tout = Time::get_singleton()->get_ticks_usec();
+								static uint64_t prof_lights = 0;
+								static uint64_t prof_count = 0;
+								static uint64_t prof_us = 0;
+								prof_lights += geom->lights.size();
+								prof_us += tout - tin;
+								if( ++prof_count >= 100 )
+								{
+									double lights_per_call = prof_lights; lights_per_call /= prof_count;
+									double us_per_call = prof_us; us_per_call /= prof_count;
+									print_line(vformat("modified pair_light_instances avg %1.2f [us] for %1.2f lights", us_per_call, lights_per_call));
+									prof_lights = 0;
+									prof_count = 0;
+									prof_us = 0;
+								}							
 							}
 						}
-
-						ERR_FAIL_NULL(geom->geometry_instance);
-						geom->geometry_instance->pair_light_instances(instance_pair_buffer, idx);
 						idata.flags &= ~InstanceData::FLAG_GEOM_LIGHTING_DIRTY;
 					}
 
