@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_FONTFILE_H
-#define TEST_FONTFILE_H
+#pragma once
 
 #include "modules/modules_enabled.gen.h"
 
@@ -37,6 +36,54 @@
 #include "tests/test_macros.h"
 
 namespace TestFontfile {
+
+TEST_CASE("[FontFile] Load Dynamic Font - getters") {
+#ifdef MODULE_FREETYPE_ENABLED
+	String test_dynamic_font = "thirdparty/fonts/NotoSansHebrew_Regular.woff2";
+	Ref<FontFile> ff;
+	ff.instantiate();
+	CHECK(ff->load_dynamic_font(test_dynamic_font) == OK);
+
+	// These properties come from the font file itself.
+	CHECK(ff->get_font_name() == "Noto Sans Hebrew");
+	CHECK(ff->get_font_style_name() == "Regular");
+	CHECK(ff->get_font_weight() == 400);
+	CHECK(ff->get_font_stretch() == 100);
+	CHECK(ff->get_opentype_features() == Dictionary());
+
+	Dictionary expected_ot_name_strings;
+	Dictionary en_dict;
+	en_dict["copyright"] = "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/hebrew)";
+	en_dict["family_name"] = "Noto Sans Hebrew";
+	en_dict["subfamily_name"] = "Regular";
+	en_dict["full_name"] = "Noto Sans Hebrew Regular";
+	en_dict["unique_identifier"] = "2.003;GOOG;NotoSansHebrew-Regular";
+	en_dict["version"] = "Version 2.003";
+	en_dict["postscript_name"] = "NotoSansHebrew-Regular";
+	en_dict["trademark"] = "Noto is a trademark of Google Inc.";
+	en_dict["license"] = "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL";
+	en_dict["license_url"] = "https://scripts.sil.org/OFL";
+	en_dict["designer"] = "Monotype Design Team";
+	en_dict["designer_url"] = "http://www.monotype.com/studio";
+	en_dict["description"] = "Designed by Monotype design team.";
+	en_dict["manufacturer"] = "Monotype Imaging Inc.";
+	en_dict["vendor_url"] = "http://www.google.com/get/noto/";
+	expected_ot_name_strings["en"] = en_dict;
+	CHECK(ff->get_ot_name_strings() == expected_ot_name_strings);
+
+	// These are dependent on size and potentially other state. Act as regression tests based of arbitrary small size 10 and large size 100.
+	CHECK(ff->get_height(10) == doctest::Approx((real_t)14));
+	CHECK(ff->get_ascent(10) == doctest::Approx((real_t)11));
+	CHECK(ff->get_descent(10) == doctest::Approx((real_t)3));
+	CHECK(ff->get_underline_position(10) == doctest::Approx((real_t)1.25));
+	CHECK(ff->get_underline_thickness(10) == doctest::Approx((real_t)0.5));
+	CHECK(ff->get_height(100) == doctest::Approx((real_t)137));
+	CHECK(ff->get_ascent(100) == doctest::Approx((real_t)107));
+	CHECK(ff->get_descent(100) == doctest::Approx((real_t)30));
+	CHECK(ff->get_underline_position(100) == doctest::Approx((real_t)12.5));
+	CHECK(ff->get_underline_thickness(100) == doctest::Approx((real_t)5));
+#endif
+}
 
 TEST_CASE("[FontFile] Create font file and check data") {
 	// Create test instance.
@@ -78,5 +125,3 @@ TEST_CASE("[FontFile] Create font file and check data") {
 }
 
 } // namespace TestFontfile
-
-#endif // TEST_FONTFILE_H

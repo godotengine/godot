@@ -76,14 +76,17 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				bool is_plural = false;
 				for (uint32_t j = 0; j < str_len + 1; j++) {
 					if (data[j] == 0x04) {
-						msg_context.parse_utf8((const char *)data.ptr(), j);
+						msg_context.clear();
+						msg_context.append_utf8((const char *)data.ptr(), j);
 						str_start = j + 1;
 					}
 					if (data[j] == 0x00) {
 						if (is_plural) {
-							msg_id_plural.parse_utf8((const char *)(data.ptr() + str_start), j - str_start);
+							msg_id_plural.clear();
+							msg_id_plural.append_utf8((const char *)(data.ptr() + str_start), j - str_start);
 						} else {
-							msg_id.parse_utf8((const char *)(data.ptr() + str_start), j - str_start);
+							msg_id.clear();
+							msg_id.append_utf8((const char *)(data.ptr() + str_start), j - str_start);
 							is_plural = true;
 						}
 						str_start = j + 1;
@@ -189,7 +192,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					}
 				}
 				msg_context = "";
-				l = l.substr(7, l.length()).strip_edges();
+				l = l.substr(7).strip_edges();
 				status = STATUS_READING_CONTEXT;
 				entered_context = true;
 			}
@@ -202,7 +205,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				}
 				// We don't record the message in "msgid_plural" itself as tr_n(), TTRN(), RTRN() interfaces provide the plural string already.
 				// We just have to reset variables related to plurals for "msgstr[]" later on.
-				l = l.substr(12, l.length()).strip_edges();
+				l = l.substr(12).strip_edges();
 				plural_index = -1;
 				msgs_plural.clear();
 				msgs_plural.resize(plural_forms);
@@ -230,7 +233,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					}
 				}
 
-				l = l.substr(5, l.length()).strip_edges();
+				l = l.substr(5).strip_edges();
 				status = STATUS_READING_ID;
 				// If we did not encounter msgctxt, we reset context to empty to reset it.
 				if (!entered_context) {
@@ -246,10 +249,10 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			if (l.begins_with("msgstr[")) {
 				ERR_FAIL_COND_V_MSG(status != STATUS_READING_PLURAL, Ref<Resource>(), vformat("Unexpected 'msgstr[]', was expecting 'msgid_plural' before 'msgstr[]' while parsing: %s:%d.", path, line));
 				plural_index++; // Increment to add to the next slot in vector msgs_plural.
-				l = l.substr(9, l.length()).strip_edges();
+				l = l.substr(9).strip_edges();
 			} else if (l.begins_with("msgstr")) {
 				ERR_FAIL_COND_V_MSG(status != STATUS_READING_ID, Ref<Resource>(), vformat("Unexpected 'msgstr', was expecting 'msgid' before 'msgstr' while parsing: %s:%d.", path, line));
-				l = l.substr(6, l.length()).strip_edges();
+				l = l.substr(6).strip_edges();
 				status = STATUS_READING_STRING;
 			}
 
@@ -263,7 +266,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 
 			ERR_FAIL_COND_V_MSG(!l.begins_with("\"") || status == STATUS_NONE, Ref<Resource>(), vformat("Invalid line '%s' while parsing: %s:%d.", l, path, line));
 
-			l = l.substr(1, l.length());
+			l = l.substr(1);
 			// Find final quote, ignoring escaped ones (\").
 			// The escape_next logic is necessary to properly parse things like \\"
 			// where the backslash is the one being escaped, not the quote.
@@ -329,7 +332,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			continue;
 		}
 		String prop = c.substr(0, p).strip_edges();
-		String value = c.substr(p + 1, c.length()).strip_edges();
+		String value = c.substr(p + 1).strip_edges();
 
 		if (prop == "X-Language" || prop == "Language") {
 			translation->set_locale(value);

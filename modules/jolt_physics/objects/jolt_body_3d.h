@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_BODY_3D_H
-#define JOLT_BODY_3D_H
+#pragma once
 
 #include "jolt_physics_direct_body_state_3d.h"
 #include "jolt_shaped_object_3d.h"
@@ -110,15 +109,13 @@ private:
 
 	virtual void _add_to_space() override;
 
+	bool _should_call_queries() const { return state_sync_callback.is_valid() || custom_integration_callback.is_valid(); }
 	void _enqueue_call_queries();
 	void _dequeue_call_queries();
 
 	void _integrate_forces(float p_step, JPH::Body &p_jolt_body);
 
 	void _move_kinematic(float p_step, JPH::Body &p_jolt_body);
-
-	void _pre_step_rigid(float p_step, JPH::Body &p_jolt_body);
-	void _pre_step_kinematic(float p_step, JPH::Body &p_jolt_body);
 
 	JPH::EAllowedDOFs _calculate_allowed_dofs() const;
 
@@ -139,7 +136,7 @@ private:
 	void _exit_all_areas();
 
 	void _mode_changed();
-	virtual void _shapes_built() override;
+	virtual void _shapes_committed() override;
 	virtual void _space_changing() override;
 	virtual void _space_changed() override;
 	void _areas_changed();
@@ -307,5 +304,3 @@ public:
 	virtual bool can_interact_with(const JoltSoftBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltArea3D &p_other) const override;
 };
-
-#endif // JOLT_BODY_3D_H

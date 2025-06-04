@@ -194,6 +194,7 @@
 			<param index="1" name="aspect" type="float" />
 			<description>
 				Returns the vertical field of view of the projection (in degrees) associated with the given horizontal field of view (in degrees) and aspect ratio.
+				[b]Note:[/b] Unlike most methods of [Projection], [param aspect] is expected to be 1 divided by the X:Y aspect ratio.
 			</description>
 		</method>
 		<method name="get_lod_multiplier" qualifiers="const">
@@ -206,7 +207,7 @@
 			<return type="int" />
 			<param index="0" name="for_pixel_width" type="int" />
 			<description>
-				Returns the number of pixels with the given pixel width displayed per meter, after this [Projection] is applied.
+				Returns [param for_pixel_width] divided by the viewport's width measured in meters on the near plane, after this [Projection] is applied.
 			</description>
 		</method>
 		<method name="get_projection_plane" qualifiers="const">

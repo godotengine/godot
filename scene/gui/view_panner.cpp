@@ -92,16 +92,26 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 			return false;
 		}
 
-		bool is_drag_event = mb->get_button_index() == MouseButton::MIDDLE ||
+		drag_type = DragType::DRAG_TYPE_NONE;
+
+		bool is_drag_zoom_event = mb->get_button_index() == MouseButton::MIDDLE && mb->is_ctrl_pressed();
+
+		if (is_drag_zoom_event) {
+			if (mb->is_pressed()) {
+				drag_type = DragType::DRAG_TYPE_ZOOM;
+				drag_zoom_position = mb->get_position();
+			}
+			return true;
+		}
+
+		bool is_drag_pan_event = mb->get_button_index() == MouseButton::MIDDLE ||
 				(enable_rmb && mb->get_button_index() == MouseButton::RIGHT) ||
 				(!simple_panning_enabled && mb->get_button_index() == MouseButton::LEFT && is_panning()) ||
 				(force_drag && mb->get_button_index() == MouseButton::LEFT);
 
-		if (is_drag_event) {
+		if (is_drag_pan_event) {
 			if (mb->is_pressed()) {
-				is_dragging = true;
-			} else {
-				is_dragging = false;
+				drag_type = DragType::DRAG_TYPE_PAN;
 			}
 			return mb->get_button_index() != MouseButton::LEFT || mb->is_pressed(); // Don't consume LMB release events (it fixes some selection problems).
 		}
@@ -109,12 +119,22 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		if (is_dragging) {
+		if (drag_type == DragType::DRAG_TYPE_PAN) {
 			if (warped_panning_viewport && p_canvas_rect.has_area()) {
 				pan_callback.call(warped_panning_viewport->wrap_mouse_in_rect(mm->get_relative(), p_canvas_rect), p_event);
 			} else {
 				pan_callback.call(mm->get_relative(), p_event);
 			}
+			return true;
+		} else if (drag_type == DragType::DRAG_TYPE_ZOOM) {
+			float drag_zoom_distance = 0.0;
+			if (zoom_style == ZoomStyle::ZOOM_VERTICAL) {
+				drag_zoom_distance = mm->get_relative().y;
+			} else if (zoom_style == ZoomStyle::ZOOM_HORIZONTAL) {
+				drag_zoom_distance = mm->get_relative().x * -1.0; // Needs to be flipped to match the 3D horizontal zoom style.
+			}
+			float drag_zoom_factor = 1.0 + (drag_zoom_distance * scroll_zoom_factor * drag_zoom_sensitivity_factor);
+			zoom_callback.call(drag_zoom_factor, drag_zoom_position, p_event);
 			return true;
 		}
 	}
@@ -157,7 +177,11 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 		if (pan_view_shortcut.is_valid() && pan_view_shortcut->matches_event(k)) {
 			pan_key_pressed = k->is_pressed();
 			if (simple_panning_enabled || Input::get_singleton()->get_mouse_button_mask().has_flag(MouseButtonMask::LEFT)) {
-				is_dragging = pan_key_pressed;
+				if (pan_key_pressed) {
+					drag_type = DragType::DRAG_TYPE_PAN;
+				} else if (drag_type == DragType::DRAG_TYPE_PAN) {
+					drag_type = DragType::DRAG_TYPE_NONE;
+				}
 			}
 			return true;
 		}
@@ -168,7 +192,9 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 
 void ViewPanner::release_pan_key() {
 	pan_key_pressed = false;
-	is_dragging = false;
+	if (drag_type == DragType::DRAG_TYPE_PAN) {
+		drag_type = DragType::DRAG_TYPE_NONE;
+	}
 }
 
 void ViewPanner::set_callbacks(Callable p_pan_callback, Callable p_zoom_callback) {
@@ -207,6 +233,10 @@ void ViewPanner::set_pan_axis(PanAxis p_pan_axis) {
 	pan_axis = p_pan_axis;
 }
 
+void ViewPanner::set_zoom_style(ZoomStyle p_zoom_style) {
+	zoom_style = p_zoom_style;
+}
+
 void ViewPanner::setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning) {
 	set_control_scheme(p_scheme);
 	set_pan_shortcut(p_shortcut);
@@ -218,7 +248,7 @@ void ViewPanner::setup_warped_panning(Viewport *p_viewport, bool p_allowed) {
 }
 
 bool ViewPanner::is_panning() const {
-	return is_dragging || pan_key_pressed;
+	return (drag_type == DragType::DRAG_TYPE_PAN) || pan_key_pressed;
 }
 
 void ViewPanner::set_force_drag(bool p_force) {
@@ -226,9 +256,7 @@ void ViewPanner::set_force_drag(bool p_force) {
 }
 
 ViewPanner::ViewPanner() {
-	Array inputs;
-	inputs.append(InputEventKey::create_reference(Key::SPACE));
-
+	Array inputs = { InputEventKey::create_reference(Key::SPACE) };
 	pan_view_shortcut.instantiate();
 	pan_view_shortcut->set_events(inputs);
 }

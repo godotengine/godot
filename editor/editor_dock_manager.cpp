@@ -40,7 +40,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/filesystem_dock.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
@@ -159,16 +158,19 @@ void EditorDockManager::_update_layout() {
 		return;
 	}
 	dock_context_popup->docks_updated();
-	_update_docks_menu();
+	update_docks_menu();
 	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
-void EditorDockManager::_update_docks_menu() {
+void EditorDockManager::update_docks_menu() {
 	docks_menu->clear();
 	docks_menu->reset_size();
 
 	const Ref<Texture2D> default_icon = docks_menu->get_editor_theme_icon(SNAME("Window"));
 	const Color closed_icon_color_mod = Color(1, 1, 1, 0.5);
+
+	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
+	bool dark_mode = DisplayServer::get_singleton()->is_dark_mode_supported() && DisplayServer::get_singleton()->is_dark_mode();
 
 	// Add docks.
 	docks_menu_docks.clear();
@@ -183,7 +185,7 @@ void EditorDockManager::_update_docks_menu() {
 		} else {
 			docks_menu->add_item(dock.value.title, id);
 		}
-		const Ref<Texture2D> icon = dock.value.icon_name ? docks_menu->get_editor_theme_icon(dock.value.icon_name) : dock.value.icon;
+		const Ref<Texture2D> icon = dock.value.icon_name ? docks_menu->get_editor_theme_native_menu_icon(dock.value.icon_name, global_menu, dark_mode) : dock.value.icon;
 		docks_menu->set_item_icon(id, icon.is_valid() ? icon : default_icon);
 		if (!dock.value.open) {
 			docks_menu->set_item_icon_modulate(id, closed_icon_color_mod);
@@ -480,6 +482,8 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	Array bottom_docks_dump;
 	Array closed_docks_dump;
 	for (const KeyValue<Control *, DockInfo> &d : all_docks) {
+		d.key->call(SNAME("_save_layout_to_config"), p_layout, p_section);
+
 		if (!d.value.at_bottom && d.value.open && (!d.value.previous_at_bottom || !d.value.dock_window)) {
 			continue;
 		}
@@ -516,8 +520,6 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	for (int i = 0; i < hsplits.size(); i++) {
 		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), int(hsplits[i]->get_split_offset() / EDSCALE));
 	}
-
-	FileSystemDock::get_singleton()->save_layout_to_config(p_layout, p_section);
 }
 
 void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load) {
@@ -551,6 +553,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 
 			if (!all_docks[dock].enabled) {
 				// Don't open disabled docks.
+				dock->call(SNAME("_load_layout_from_config"), p_layout, p_section);
 				continue;
 			}
 			bool at_bottom = false;
@@ -563,6 +566,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			} else if (i >= 0) {
 				_move_dock(dock, dock_slot[i], 0);
 			}
+			dock->call(SNAME("_load_layout_from_config"), p_layout, p_section);
 
 			if (closed_docks.has(name)) {
 				_move_dock(dock, closed_dock_parent);
@@ -612,10 +616,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		int ofs = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
 		hsplits[i]->set_split_offset(ofs * EDSCALE);
 	}
-
-	FileSystemDock::get_singleton()->load_layout_from_config(p_layout, p_section);
-
-	_update_docks_menu();
+	update_docks_menu();
 }
 
 void EditorDockManager::bottom_dock_show_placement_popup(const Rect2i &p_position, Control *p_dock) {
@@ -850,11 +851,13 @@ EditorDockManager::EditorDockManager() {
 	docks_menu = memnew(PopupMenu);
 	docks_menu->set_hide_on_item_selection(false);
 	docks_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDockManager::_docks_menu_option));
-	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorDockManager::_update_docks_menu));
+	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorDockManager::update_docks_menu));
 }
 
 void DockContextPopup::_notification(int p_what) {
 	switch (p_what) {
+		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (make_float_button) {
 				make_float_button->set_button_icon(get_editor_theme_icon(SNAME("MakeFloating")));
@@ -1089,6 +1092,7 @@ DockContextPopup::DockContextPopup() {
 
 	HBoxContainer *header_hb = memnew(HBoxContainer);
 	tab_move_left_button = memnew(Button);
+	tab_move_left_button->set_accessibility_name(TTRC("Move Tab Left"));
 	tab_move_left_button->set_flat(true);
 	tab_move_left_button->set_focus_mode(Control::FOCUS_NONE);
 	tab_move_left_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_tab_move_left));
@@ -1101,6 +1105,7 @@ DockContextPopup::DockContextPopup() {
 	header_hb->add_child(position_label);
 
 	tab_move_right_button = memnew(Button);
+	tab_move_right_button->set_accessibility_name(TTRC("Move Tab Right"));
 	tab_move_right_button->set_flat(true);
 	tab_move_right_button->set_focus_mode(Control::FOCUS_NONE);
 	tab_move_right_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_tab_move_right));

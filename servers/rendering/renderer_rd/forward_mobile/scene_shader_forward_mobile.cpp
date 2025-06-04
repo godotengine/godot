@@ -69,6 +69,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uses_normal = false;
 	uses_tangent = false;
 	uses_normal_map = false;
+	uses_bent_normal_map = false;
 	wireframe = false;
 
 	unshaded = false;
@@ -126,6 +127,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
 	actions.usage_flag_pointers["NORMAL"] = &uses_normal;
 	actions.usage_flag_pointers["NORMAL_MAP"] = &uses_normal_map;
+	actions.usage_flag_pointers["BENT_NORMAL_MAP"] = &uses_bent_normal_map;
 
 	actions.usage_flag_pointers["TANGENT"] = &uses_tangent;
 	actions.usage_flag_pointers["BINORMAL"] = &uses_tangent;
@@ -153,7 +155,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	}
 
 	if (version.is_null()) {
-		version = SceneShaderForwardMobile::singleton->shader.version_create();
+		version = SceneShaderForwardMobile::singleton->shader.version_create(false);
 	}
 
 	depth_draw = DepthDraw(depth_drawi);
@@ -165,7 +167,9 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uses_depth_texture = gen_code.uses_depth_texture;
 	uses_normal_texture = gen_code.uses_normal_roughness_texture;
 	uses_normal |= uses_normal_map;
+	uses_normal |= uses_bent_normal_map;
 	uses_tangent |= uses_normal_map;
+	uses_tangent |= uses_bent_normal_map;
 
 #ifdef DEBUG_ENABLED
 	if (uses_sss) {
@@ -232,6 +236,15 @@ RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_sour
 	}
 }
 
+Pair<ShaderRD *, RID> SceneShaderForwardMobile::ShaderData::get_native_shader_and_version() const {
+	if (version.is_valid()) {
+		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
+		return { &SceneShaderForwardMobile::singleton->shader, version };
+	} else {
+		return {};
+	}
+}
+
 void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeline_key) {
 #if PRINT_PIPELINE_COMPILATION_KEYS
 	print_line(
@@ -245,7 +258,6 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			"SPEC PACKED #0:", p_pipeline_key.shader_specialization.packed_0,
 			"SPEC PACKED #1:", p_pipeline_key.shader_specialization.packed_1,
 			"SPEC PACKED #2:", p_pipeline_key.shader_specialization.packed_2,
-			"SPEC PACKED #3:", p_pipeline_key.shader_specialization.packed_3,
 			"RENDER PASS:", p_pipeline_key.render_pass,
 			"WIREFRAME:", p_pipeline_key.wireframe);
 #endif
@@ -336,12 +348,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	specialization_constants.push_back(sc);
 
 	sc.constant_id = 2;
-	sc.int_value = p_pipeline_key.shader_specialization.packed_2;
-	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
-	specialization_constants.push_back(sc);
-
-	sc.constant_id = 3;
-	sc.float_value = p_pipeline_key.shader_specialization.packed_3;
+	sc.float_value = p_pipeline_key.shader_specialization.packed_2;
 	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
 	specialization_constants.push_back(sc);
 
@@ -482,19 +489,19 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 	/* SCENE SHADER */
 
 	{
-		Vector<String> shader_versions;
+		Vector<ShaderRD::VariantDefine> shader_versions;
 		for (uint32_t ubershader = 0; ubershader < 2; ubershader++) {
 			const String base_define = ubershader ? "\n#define UBERSHADER\n" : "";
-			shader_versions.push_back(base_define + ""); // SHADER_VERSION_COLOR_PASS
-			shader_versions.push_back(base_define + "\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
-			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
-			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_SHADOW_PASS_DP
-			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "", true)); // SHADER_VERSION_COLOR_PASS
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "\n#define USE_LIGHTMAP\n", true)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", true)); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n#define SHADOW_PASS\n", true)); // SHADER_VERSION_SHADOW_PASS_DP
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n", true)); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 
 			// Multiview versions of our shaders.
-			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n"); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
-			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
-			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n", false)); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n", false)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", false)); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
 		}
 
 		Vector<RD::PipelineImmutableSampler> immutable_samplers;
@@ -504,13 +511,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		immutable_shadow_sampler.uniform_type = RenderingDeviceCommons::UNIFORM_TYPE_SAMPLER;
 		immutable_samplers.push_back(immutable_shadow_sampler);
 		shader.initialize(shader_versions, p_defines, immutable_samplers);
-		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
-			for (uint32_t ubershader = 0; ubershader < 2; ubershader++) {
-				uint32_t base_variant = ubershader ? SHADER_VERSION_MAX : 0;
-				shader.set_variant_enabled(base_variant + SHADER_VERSION_COLOR_PASS_MULTIVIEW, false);
-				shader.set_variant_enabled(base_variant + SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW, false);
-				shader.set_variant_enabled(base_variant + SHADER_VERSION_SHADOW_PASS_MULTIVIEW, false);
-			}
+
+		if (RendererCompositorRD::get_singleton()->is_xr_enabled()) {
+			shader.enable_group(SHADER_GROUP_MULTIVIEW);
 		}
 	}
 
@@ -542,6 +545,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["POINT_SIZE"] = "gl_PointSize";
 		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
 		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
+		actions.renames["Z_CLIP_SCALE"] = "z_clip_scale";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
 		actions.renames["ALPHA_HASH_SCALE"] = "alpha_hash_scale";
@@ -552,17 +556,19 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 
 		actions.renames["TIME"] = "scene_data_block.data.time";
 		actions.renames["EXPOSURE"] = "(1.0 / scene_data_block.data.emissive_exposure_normalization)";
-		actions.renames["PI"] = _MKSTR(Math_PI);
-		actions.renames["TAU"] = _MKSTR(Math_TAU);
-		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
+		actions.renames["IN_SHADOW_PASS"] = "IN_SHADOW_PASS";
 		actions.renames["VIEWPORT_SIZE"] = "read_viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
+		actions.renames["BENT_NORMAL_MAP"] = "bent_normal_map";
 		actions.renames["ALBEDO"] = "albedo";
 		actions.renames["ALPHA"] = "alpha";
 		actions.renames["PREMUL_ALPHA_FACTOR"] = "premul_alpha";
@@ -640,10 +646,12 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["CUSTOM3"] = "#define CUSTOM3_USED\n";
 		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
 		actions.usage_defines["NORMAL_MAP_DEPTH"] = "@NORMAL_MAP";
+		actions.usage_defines["BENT_NORMAL_MAP"] = "#define BENT_NORMAL_MAP_USED\n";
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 		actions.usage_defines["LIGHT_VERTEX"] = "#define LIGHT_VERTEX_USED\n";
+		actions.usage_defines["Z_CLIP_SCALE"] = "#define Z_CLIP_SCALE_USED\n";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
@@ -698,6 +706,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.render_mode_defines["debug_shadow_splits"] = "#define DEBUG_DRAW_PSSM_SPLITS\n";
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
+		actions.render_mode_defines["specular_occlusion_disabled"] = "#define SPECULAR_OCCLUSION_DISABLED\n";
+
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardMobile::MATERIAL_UNIFORM_SET;
 		actions.base_uniform_string = "material.";
@@ -709,7 +719,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.instance_uniform_index_variable = "instances.data[draw_call.instance_index].instance_uniforms_ofs";
 
 		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
-		actions.check_multiview_samplers = RendererCompositorRD::get_singleton()->is_xr_enabled(); // Make sure we check sampling multiview textures.
+		actions.check_multiview_samplers = true;
 
 		compiler.initialize(actions);
 	}
@@ -819,8 +829,12 @@ uint32_t SceneShaderForwardMobile::get_pipeline_compilations(RS::PipelineSource 
 	return pipeline_compilations[p_source];
 }
 
-bool SceneShaderForwardMobile::is_multiview_enabled() const {
-	return shader.is_variant_enabled(SHADER_VERSION_COLOR_PASS_MULTIVIEW);
+void SceneShaderForwardMobile::enable_multiview_shader_group() {
+	shader.enable_group(SHADER_GROUP_MULTIVIEW);
+}
+
+bool SceneShaderForwardMobile::is_multiview_shader_group_enabled() const {
+	return shader.is_group_enabled(SHADER_GROUP_MULTIVIEW);
 }
 
 SceneShaderForwardMobile::~SceneShaderForwardMobile() {

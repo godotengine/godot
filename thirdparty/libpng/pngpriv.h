@@ -1,4 +1,3 @@
-
 /* pngpriv.h - private declarations for use inside libpng
  *
  * Copyright (c) 2018-2024 Cosmin Truta
@@ -672,7 +671,7 @@
 #define PNG_FLAG_CRC_ANCILLARY_NOWARN     0x0200U
 #define PNG_FLAG_CRC_CRITICAL_USE         0x0400U
 #define PNG_FLAG_CRC_CRITICAL_IGNORE      0x0800U
-#define PNG_FLAG_ASSUME_sRGB              0x1000U /* Added to libpng-1.5.4 */
+/*      PNG_FLAG_ASSUME_sRGB unused       0x1000U  * Added to libpng-1.5.4 */
 #define PNG_FLAG_OPTIMIZE_ALPHA           0x2000U /* Added to libpng-1.5.4 */
 #define PNG_FLAG_DETECT_UNINITIALIZED     0x4000U /* Added to libpng-1.5.4 */
 /* #define PNG_FLAG_KEEP_UNKNOWN_CHUNKS      0x8000U */
@@ -783,6 +782,8 @@
 #ifdef PNG_FIXED_POINT_MACRO_SUPPORTED
 #define png_fixed(png_ptr, fp, s) ((fp) <= 21474 && (fp) >= -21474 ?\
     ((png_fixed_point)(100000 * (fp))) : (png_fixed_error(png_ptr, s),0))
+#define png_fixed_ITU(png_ptr, fp, s) ((fp) <= 214748 && (fp) >= 0 ?\
+    ((png_uint_32)(10000 * (fp))) : (png_fixed_error(png_ptr, s),0))
 #endif
 /* else the corresponding function is defined below, inside the scope of the
  * cplusplus test.
@@ -801,10 +802,30 @@
  *
  * PNG_32b correctly produces a value shifted by up to 24 bits, even on
  * architectures where (int) is only 16 bits.
+ *
+ * 1.6.47: PNG_32b was made into a preprocessor evaluable macro by replacing the
+ * static_cast with a promoting binary operation using a guaranteed 32-bit
+ * (minimum) unsigned value.
  */
-#define PNG_32b(b,s) ((png_uint_32)(b) << (s))
+#define PNG_32b(b,s) (((0xFFFFFFFFU)&(b)) << (s))
 #define PNG_U32(b1,b2,b3,b4) \
    (PNG_32b(b1,24) | PNG_32b(b2,16) | PNG_32b(b3,8) | PNG_32b(b4,0))
+
+/* Chunk name validation.  When using these macros all the arguments should be
+ * constants, otherwise code bloat may well occur.  The macros are provided
+ * primarily for use in #if checks.
+ *
+ * PNG_32to8 produces a byte value with the right shift; used to extract the
+ * byte value from a chunk name.
+ */
+#define PNG_32to8(cn,s) (((cn) >> (s)) & 0xffU)
+#define PNG_CN_VALID_UPPER(b) ((b) >= 65 && (b) <= 90) /* upper-case ASCII */
+#define PNG_CN_VALID_ASCII(b) PNG_CN_VALID_UPPER((b) & ~32U)
+#define PNG_CHUNK_NAME_VALID(cn) (\
+   PNG_CN_VALID_ASCII(PNG_32to8(cn,24)) && /* critical, !ancillary */\
+   PNG_CN_VALID_ASCII(PNG_32to8(cn,16)) && /* public, !privately defined */\
+   PNG_CN_VALID_UPPER(PNG_32to8(cn, 8)) && /* VALID, !reserved */\
+   PNG_CN_VALID_ASCII(PNG_32to8(cn, 0))   /* data-dependent, !copy ok */)
 
 /* Constants for known chunk types.
  *
@@ -833,9 +854,14 @@
 #define png_IEND PNG_U32( 73,  69,  78,  68)
 #define png_IHDR PNG_U32( 73,  72,  68,  82)
 #define png_PLTE PNG_U32( 80,  76,  84,  69)
+#define png_acTL PNG_U32( 97,  99,  84,  76) /* PNGv3: APNG */
 #define png_bKGD PNG_U32( 98,  75,  71,  68)
 #define png_cHRM PNG_U32( 99,  72,  82,  77)
+#define png_cICP PNG_U32( 99,  73,  67,  80) /* PNGv3 */
+#define png_cLLI PNG_U32( 99,  76,  76,  73) /* PNGv3 */
 #define png_eXIf PNG_U32(101,  88,  73, 102) /* registered July 2017 */
+#define png_fcTL PNG_U32(102,  99,  84,  76) /* PNGv3: APNG */
+#define png_fdAT PNG_U32(102, 100,  65,  84) /* PNGv3: APNG */
 #define png_fRAc PNG_U32(102,  82,  65,  99) /* registered, not defined */
 #define png_gAMA PNG_U32(103,  65,  77,  65)
 #define png_gIFg PNG_U32(103,  73,  70, 103)
@@ -844,6 +870,7 @@
 #define png_hIST PNG_U32(104,  73,  83,  84)
 #define png_iCCP PNG_U32(105,  67,  67,  80)
 #define png_iTXt PNG_U32(105,  84,  88, 116)
+#define png_mDCV PNG_U32(109,  68,  67,  86) /* PNGv3 */
 #define png_oFFs PNG_U32(111,  70,  70, 115)
 #define png_pCAL PNG_U32(112,  67,  65,  76)
 #define png_pHYs PNG_U32(112,  72,  89, 115)
@@ -884,10 +911,73 @@
 #define PNG_CHUNK_RESERVED(c)     (1 & ((c) >> 13))
 #define PNG_CHUNK_SAFE_TO_COPY(c) (1 & ((c) >>  5))
 
+/* Known chunks.  All supported chunks must be listed here.  The macro PNG_CHUNK
+ * contains the four character ASCII name by which the chunk is identified.  The
+ * macro is implemented as required to build tables or switch statements which
+ * require entries for every known chunk.  The macro also contains an index
+ * value which should be in order (this is checked in png.c).
+ *
+ * Notice that "known" does not require "SUPPORTED"; tables should be built in
+ * such a way that chunks unsupported in a build require no more than the table
+ * entry (which should be small.)  In particular function pointers for
+ * unsupported chunks should be NULL.
+ *
+ * At present these index values are not exported (not part of the public API)
+ * so can be changed at will.  For convenience the names are in lexical sort
+ * order but with the critical chunks at the start in the order of occurence in
+ * a PNG.
+ *
+ * PNG_INFO_ values do not exist for every one of these chunk handles; for
+ * example PNG_INFO_{IDAT,IEND,tEXt,iTXt,zTXt} and possibly other chunks in the
+ * future.
+ */
+#define PNG_KNOWN_CHUNKS\
+   PNG_CHUNK(IHDR,  0)\
+   PNG_CHUNK(PLTE,  1)\
+   PNG_CHUNK(IDAT,  2)\
+   PNG_CHUNK(IEND,  3)\
+   PNG_CHUNK(acTL,  4)\
+   PNG_CHUNK(bKGD,  5)\
+   PNG_CHUNK(cHRM,  6)\
+   PNG_CHUNK(cICP,  7)\
+   PNG_CHUNK(cLLI,  8)\
+   PNG_CHUNK(eXIf,  9)\
+   PNG_CHUNK(fcTL, 10)\
+   PNG_CHUNK(fdAT, 11)\
+   PNG_CHUNK(gAMA, 12)\
+   PNG_CHUNK(hIST, 13)\
+   PNG_CHUNK(iCCP, 14)\
+   PNG_CHUNK(iTXt, 15)\
+   PNG_CHUNK(mDCV, 16)\
+   PNG_CHUNK(oFFs, 17)\
+   PNG_CHUNK(pCAL, 18)\
+   PNG_CHUNK(pHYs, 19)\
+   PNG_CHUNK(sBIT, 20)\
+   PNG_CHUNK(sCAL, 21)\
+   PNG_CHUNK(sPLT, 22)\
+   PNG_CHUNK(sRGB, 23)\
+   PNG_CHUNK(tEXt, 24)\
+   PNG_CHUNK(tIME, 25)\
+   PNG_CHUNK(tRNS, 26)\
+   PNG_CHUNK(zTXt, 27)
+
 /* Gamma values (new at libpng-1.5.4): */
 #define PNG_GAMMA_MAC_OLD 151724  /* Assume '1.8' is really 2.2/1.45! */
 #define PNG_GAMMA_MAC_INVERSE 65909
 #define PNG_GAMMA_sRGB_INVERSE 45455
+
+/* gamma sanity check.  libpng cannot implement gamma transforms outside a
+ * certain limit because of its use of 16-bit fixed point intermediate values.
+ * Gamma values that are too large or too small will zap the 16-bit values all
+ * to 0 or 65535 resulting in an obvious 'bad' image.
+ *
+ * In libpng 1.6.0 the limits were changed from 0.07..3 to 0.01..100 to
+ * accommodate the optimal 16-bit gamma of 36 and its reciprocal.
+ *
+ * These are png_fixed_point integral values:
+ */
+#define PNG_LIB_GAMMA_MIN 1000
+#define PNG_LIB_GAMMA_MAX 10000000
 
 /* Almost everything below is C specific; the #defines above can be used in
  * non-C code (so long as it is C-preprocessed) the rest of this stuff cannot.
@@ -952,7 +1042,6 @@ extern "C" {
  *
  * All of these functions must be declared with PNG_INTERNAL_FUNCTION.
  */
-
 /* Zlib support */
 #define PNG_UNEXPECTED_ZLIB_RETURN (-7)
 PNG_INTERNAL_FUNCTION(void, png_zstream_error,(png_structrp png_ptr, int ret),
@@ -971,10 +1060,18 @@ PNG_INTERNAL_FUNCTION(void,png_free_buffer_list,(png_structrp png_ptr,
    !defined(PNG_FIXED_POINT_MACRO_SUPPORTED) && \
    (defined(PNG_gAMA_SUPPORTED) || defined(PNG_cHRM_SUPPORTED) || \
    defined(PNG_sCAL_SUPPORTED) || defined(PNG_READ_BACKGROUND_SUPPORTED) || \
+   defined(PNG_mDCV_SUPPORTED) || \
    defined(PNG_READ_RGB_TO_GRAY_SUPPORTED)) || \
    (defined(PNG_sCAL_SUPPORTED) && \
    defined(PNG_FLOATING_ARITHMETIC_SUPPORTED))
 PNG_INTERNAL_FUNCTION(png_fixed_point,png_fixed,(png_const_structrp png_ptr,
+   double fp, png_const_charp text),PNG_EMPTY);
+#endif
+
+#if defined(PNG_FLOATING_POINT_SUPPORTED) && \
+   !defined(PNG_FIXED_POINT_MACRO_SUPPORTED) && \
+   (defined(PNG_cLLI_SUPPORTED) || defined(PNG_mDCV_SUPPORTED))
+PNG_INTERNAL_FUNCTION(png_uint_32,png_fixed_ITU,(png_const_structrp png_ptr,
    double fp, png_const_charp text),PNG_EMPTY);
 #endif
 
@@ -983,6 +1080,25 @@ PNG_INTERNAL_FUNCTION(png_fixed_point,png_fixed,(png_const_structrp png_ptr,
  */
 PNG_INTERNAL_FUNCTION(int,png_user_version_check,(png_structrp png_ptr,
    png_const_charp user_png_ver),PNG_EMPTY);
+
+#ifdef PNG_READ_SUPPORTED /* should only be used on read */
+/* Security: read limits on the largest allocations while reading a PNG.  This
+ * avoids very large allocations caused by PNG files with damaged or altered
+ * chunk 'length' fields.
+ */
+#ifdef PNG_SET_USER_LIMITS_SUPPORTED /* run-time limit */
+#  define png_chunk_max(png_ptr) ((png_ptr)->user_chunk_malloc_max)
+
+#elif PNG_USER_CHUNK_MALLOC_MAX > 0 /* compile-time limit */
+#  define png_chunk_max(png_ptr) ((void)png_ptr, PNG_USER_CHUNK_MALLOC_MAX)
+
+#elif (defined PNG_MAX_MALLOC_64K)  /* legacy system limit */
+#  define png_chunk_max(png_ptr) ((void)png_ptr, 65536U)
+
+#else                               /* modern system limit SIZE_MAX (C99) */
+#  define png_chunk_max(png_ptr) ((void)png_ptr, PNG_SIZE_MAX)
+#endif
+#endif /* READ */
 
 /* Internal base allocator - no messages, NULL on failure to allocate.  This
  * does, however, call the application provided allocator and that could call
@@ -1083,9 +1199,6 @@ PNG_INTERNAL_FUNCTION(void,png_crc_read,(png_structrp png_ptr, png_bytep buf,
 PNG_INTERNAL_FUNCTION(int,png_crc_finish,(png_structrp png_ptr,
    png_uint_32 skip),PNG_EMPTY);
 
-/* Read the CRC from the file and compare it to the libpng calculated CRC */
-PNG_INTERNAL_FUNCTION(int,png_crc_error,(png_structrp png_ptr),PNG_EMPTY);
-
 /* Calculate the CRC over a section of data.  Note that we are only
  * passing a maximum of 64K on systems that have this as a memory limit,
  * since this is the maximum buffer size we can specify.
@@ -1131,6 +1244,26 @@ PNG_INTERNAL_FUNCTION(void,png_write_cHRM_fixed,(png_structrp png_ptr,
    /* The xy value must have been previously validated */
 #endif
 
+#ifdef PNG_WRITE_cICP_SUPPORTED
+PNG_INTERNAL_FUNCTION(void,png_write_cICP,(png_structrp png_ptr,
+    png_byte colour_primaries, png_byte transfer_function,
+    png_byte matrix_coefficients, png_byte video_full_range_flag), PNG_EMPTY);
+#endif
+
+#ifdef PNG_WRITE_cLLI_SUPPORTED
+PNG_INTERNAL_FUNCTION(void,png_write_cLLI_fixed,(png_structrp png_ptr,
+   png_uint_32 maxCLL, png_uint_32 maxFALL), PNG_EMPTY);
+#endif
+
+#ifdef PNG_WRITE_mDCV_SUPPORTED
+PNG_INTERNAL_FUNCTION(void,png_write_mDCV_fixed,(png_structrp png_ptr,
+   png_uint_16 red_x, png_uint_16 red_y,
+   png_uint_16 green_x, png_uint_16 green_y,
+   png_uint_16 blue_x, png_uint_16 blue_y,
+   png_uint_16 white_x, png_uint_16 white_y,
+   png_uint_32 maxDL, png_uint_32 minDL), PNG_EMPTY);
+#endif
+
 #ifdef PNG_WRITE_sRGB_SUPPORTED
 PNG_INTERNAL_FUNCTION(void,png_write_sRGB,(png_structrp png_ptr,
     int intent),PNG_EMPTY);
@@ -1143,10 +1276,10 @@ PNG_INTERNAL_FUNCTION(void,png_write_eXIf,(png_structrp png_ptr,
 
 #ifdef PNG_WRITE_iCCP_SUPPORTED
 PNG_INTERNAL_FUNCTION(void,png_write_iCCP,(png_structrp png_ptr,
-   png_const_charp name, png_const_bytep profile), PNG_EMPTY);
-   /* The profile must have been previously validated for correctness, the
-    * length comes from the first four bytes.  Only the base, deflate,
-    * compression is supported.
+   png_const_charp name, png_const_bytep profile, png_uint_32 proflen),
+   PNG_EMPTY);
+   /* Writes a previously 'set' profile.  The profile argument is **not**
+    * compressed.
     */
 #endif
 
@@ -1455,117 +1588,34 @@ PNG_INTERNAL_FUNCTION(void,png_do_bgr,(png_row_infop row_info,
 /* The following decodes the appropriate chunks, and does error correction,
  * then calls the appropriate callback for the chunk if it is valid.
  */
+typedef enum
+{
+   /* Result of a call to png_handle_chunk made to handle the current chunk
+    * png_struct::chunk_name on read.  Always informational, either the stream
+    * is read for the next chunk or the routine will call png_error.
+    *
+    * NOTE: order is important internally.  handled_saved and above are regarded
+    * as handling the chunk.
+    */
+   handled_error = 0,  /* bad crc or known and bad format or too long */
+   handled_discarded,  /* not saved in the unknown chunk list */
+   handled_saved,      /* saved in the unknown chunk list */
+   handled_ok          /* known, supported and handled without error */
+} png_handle_result_code;
 
-/* Decode the IHDR chunk */
-PNG_INTERNAL_FUNCTION(void,png_handle_IHDR,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-PNG_INTERNAL_FUNCTION(void,png_handle_PLTE,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-PNG_INTERNAL_FUNCTION(void,png_handle_IEND,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-
-#ifdef PNG_READ_bKGD_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_bKGD,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_cHRM_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_cHRM,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_eXIf_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_eXIf,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_gAMA_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_gAMA,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_hIST_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_hIST,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_iCCP_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_iCCP,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif /* READ_iCCP */
-
-#ifdef PNG_READ_iTXt_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_iTXt,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_oFFs_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_oFFs,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_pCAL_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_pCAL,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_pHYs_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_pHYs,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_sBIT_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_sBIT,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_sCAL_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_sCAL,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_sPLT_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_sPLT,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif /* READ_sPLT */
-
-#ifdef PNG_READ_sRGB_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_sRGB,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_tEXt_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_tEXt,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_tIME_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_tIME,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_tRNS_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_tRNS,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-#ifdef PNG_READ_zTXt_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_handle_zTXt,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-#endif
-
-PNG_INTERNAL_FUNCTION(void,png_check_chunk_name,(png_const_structrp png_ptr,
-    png_uint_32 chunk_name),PNG_EMPTY);
-
-PNG_INTERNAL_FUNCTION(void,png_check_chunk_length,(png_const_structrp png_ptr,
-    png_uint_32 chunk_length),PNG_EMPTY);
-
-PNG_INTERNAL_FUNCTION(void,png_handle_unknown,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length, int keep),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(png_handle_result_code,png_handle_unknown,
+    (png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length, int keep),
+    PNG_EMPTY);
    /* This is the function that gets called for unknown chunks.  The 'keep'
     * argument is either non-zero for a known chunk that has been set to be
     * handled as unknown or zero for an unknown chunk.  By default the function
     * just skips the chunk or errors out if it is critical.
+    */
+
+PNG_INTERNAL_FUNCTION(png_handle_result_code,png_handle_chunk,
+    (png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
+   /* This handles the current chunk png_ptr->chunk_name with unread
+    * data[length] and returns one of the above result codes.
     */
 
 #if defined(PNG_READ_UNKNOWN_CHUNKS_SUPPORTED) ||\
@@ -1607,8 +1657,6 @@ PNG_INTERNAL_FUNCTION(void,png_process_IDAT_data,(png_structrp png_ptr,
     png_bytep buffer, size_t buffer_length),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_push_process_row,(png_structrp png_ptr),
     PNG_EMPTY);
-PNG_INTERNAL_FUNCTION(void,png_push_handle_unknown,(png_structrp png_ptr,
-   png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_push_have_info,(png_structrp png_ptr,
    png_inforp info_ptr),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_push_have_end,(png_structrp png_ptr,
@@ -1621,109 +1669,28 @@ PNG_INTERNAL_FUNCTION(void,png_process_some_data,(png_structrp png_ptr,
     png_inforp info_ptr),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_read_push_finish_row,(png_structrp png_ptr),
     PNG_EMPTY);
-#  ifdef PNG_READ_tEXt_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_push_handle_tEXt,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-PNG_INTERNAL_FUNCTION(void,png_push_read_tEXt,(png_structrp png_ptr,
-    png_inforp info_ptr),PNG_EMPTY);
-#  endif
-#  ifdef PNG_READ_zTXt_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_push_handle_zTXt,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-PNG_INTERNAL_FUNCTION(void,png_push_read_zTXt,(png_structrp png_ptr,
-    png_inforp info_ptr),PNG_EMPTY);
-#  endif
-#  ifdef PNG_READ_iTXt_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_push_handle_iTXt,(png_structrp png_ptr,
-    png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
-PNG_INTERNAL_FUNCTION(void,png_push_read_iTXt,(png_structrp png_ptr,
-    png_inforp info_ptr),PNG_EMPTY);
-#  endif
-
 #endif /* PROGRESSIVE_READ */
 
-/* Added at libpng version 1.6.0 */
-#ifdef PNG_GAMMA_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_colorspace_set_gamma,(png_const_structrp png_ptr,
-    png_colorspacerp colorspace, png_fixed_point gAMA), PNG_EMPTY);
-   /* Set the colorspace gamma with a value provided by the application or by
-    * the gAMA chunk on read.  The value will override anything set by an ICC
-    * profile.
-    */
-
-PNG_INTERNAL_FUNCTION(void,png_colorspace_sync_info,(png_const_structrp png_ptr,
-    png_inforp info_ptr), PNG_EMPTY);
-   /* Synchronize the info 'valid' flags with the colorspace */
-
-PNG_INTERNAL_FUNCTION(void,png_colorspace_sync,(png_const_structrp png_ptr,
-    png_inforp info_ptr), PNG_EMPTY);
-   /* Copy the png_struct colorspace to the info_struct and call the above to
-    * synchronize the flags.  Checks for NULL info_ptr and does nothing.
-    */
-#endif
-
-/* Added at libpng version 1.4.0 */
-#ifdef PNG_COLORSPACE_SUPPORTED
-/* These internal functions are for maintaining the colorspace structure within
- * a png_info or png_struct (or, indeed, both).
- */
-PNG_INTERNAL_FUNCTION(int,png_colorspace_set_chromaticities,
-   (png_const_structrp png_ptr, png_colorspacerp colorspace, const png_xy *xy,
-    int preferred), PNG_EMPTY);
-
-PNG_INTERNAL_FUNCTION(int,png_colorspace_set_endpoints,
-   (png_const_structrp png_ptr, png_colorspacerp colorspace, const png_XYZ *XYZ,
-    int preferred), PNG_EMPTY);
-
-#ifdef PNG_sRGB_SUPPORTED
-PNG_INTERNAL_FUNCTION(int,png_colorspace_set_sRGB,(png_const_structrp png_ptr,
-   png_colorspacerp colorspace, int intent), PNG_EMPTY);
-   /* This does set the colorspace gAMA and cHRM values too, but doesn't set the
-    * flags to write them, if it returns false there was a problem and an error
-    * message has already been output (but the colorspace may still need to be
-    * synced to record the invalid flag).
-    */
-#endif /* sRGB */
-
 #ifdef PNG_iCCP_SUPPORTED
-PNG_INTERNAL_FUNCTION(int,png_colorspace_set_ICC,(png_const_structrp png_ptr,
-   png_colorspacerp colorspace, png_const_charp name,
-   png_uint_32 profile_length, png_const_bytep profile, int color_type),
-   PNG_EMPTY);
-   /* The 'name' is used for information only */
-
 /* Routines for checking parts of an ICC profile. */
 #ifdef PNG_READ_iCCP_SUPPORTED
 PNG_INTERNAL_FUNCTION(int,png_icc_check_length,(png_const_structrp png_ptr,
-   png_colorspacerp colorspace, png_const_charp name,
-   png_uint_32 profile_length), PNG_EMPTY);
+   png_const_charp name, png_uint_32 profile_length), PNG_EMPTY);
 #endif /* READ_iCCP */
 PNG_INTERNAL_FUNCTION(int,png_icc_check_header,(png_const_structrp png_ptr,
-   png_colorspacerp colorspace, png_const_charp name,
-   png_uint_32 profile_length,
+   png_const_charp name, png_uint_32 profile_length,
    png_const_bytep profile /* first 132 bytes only */, int color_type),
    PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(int,png_icc_check_tag_table,(png_const_structrp png_ptr,
-   png_colorspacerp colorspace, png_const_charp name,
-   png_uint_32 profile_length,
+   png_const_charp name, png_uint_32 profile_length,
    png_const_bytep profile /* header plus whole tag table */), PNG_EMPTY);
-#ifdef PNG_sRGB_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_icc_set_sRGB,(
-   png_const_structrp png_ptr, png_colorspacerp colorspace,
-   png_const_bytep profile, uLong adler), PNG_EMPTY);
-   /* 'adler' is the Adler32 checksum of the uncompressed profile data. It may
-    * be zero to indicate that it is not available.  It is used, if provided,
-    * as a fast check on the profile when checking to see if it is sRGB.
-    */
-#endif
 #endif /* iCCP */
 
 #ifdef PNG_READ_RGB_TO_GRAY_SUPPORTED
-PNG_INTERNAL_FUNCTION(void,png_colorspace_set_rgb_coefficients,
-   (png_structrp png_ptr), PNG_EMPTY);
-   /* Set the rgb_to_gray coefficients from the colorspace Y values */
+PNG_INTERNAL_FUNCTION(void,png_set_rgb_coefficients, (png_structrp png_ptr),
+   PNG_EMPTY);
+   /* Set the rgb_to_gray coefficients from the cHRM Y values (if unset) */
 #endif /* READ_RGB_TO_GRAY */
-#endif /* COLORSPACE */
 
 /* Added at libpng version 1.4.0 */
 PNG_INTERNAL_FUNCTION(void,png_check_IHDR,(png_const_structrp png_ptr,
@@ -1985,8 +1952,10 @@ PNG_INTERNAL_FUNCTION(int,png_check_fp_string,(png_const_charp string,
    size_t size),PNG_EMPTY);
 #endif /* pCAL || sCAL */
 
-#if defined(PNG_GAMMA_SUPPORTED) ||\
-    defined(PNG_INCH_CONVERSIONS_SUPPORTED) || defined(PNG_READ_pHYs_SUPPORTED)
+#if defined(PNG_READ_GAMMA_SUPPORTED) ||\
+    defined(PNG_COLORSPACE_SUPPORTED) ||\
+    defined(PNG_INCH_CONVERSIONS_SUPPORTED) ||\
+    defined(PNG_READ_pHYs_SUPPORTED)
 /* Added at libpng version 1.5.0 */
 /* This is a utility to provide a*times/div (rounded) and indicate
  * if there is an overflow.  The result is a boolean - false (0)
@@ -1995,22 +1964,14 @@ PNG_INTERNAL_FUNCTION(int,png_check_fp_string,(png_const_charp string,
  */
 PNG_INTERNAL_FUNCTION(int,png_muldiv,(png_fixed_point_p res, png_fixed_point a,
    png_int_32 multiplied_by, png_int_32 divided_by),PNG_EMPTY);
-#endif
 
-#if defined(PNG_READ_GAMMA_SUPPORTED) || defined(PNG_INCH_CONVERSIONS_SUPPORTED)
-/* Same deal, but issue a warning on overflow and return 0. */
-PNG_INTERNAL_FUNCTION(png_fixed_point,png_muldiv_warn,
-   (png_const_structrp png_ptr, png_fixed_point a, png_int_32 multiplied_by,
-   png_int_32 divided_by),PNG_EMPTY);
-#endif
-
-#ifdef PNG_GAMMA_SUPPORTED
 /* Calculate a reciprocal - used for gamma values.  This returns
  * 0 if the argument is 0 in order to maintain an undefined value;
  * there are no warnings.
  */
 PNG_INTERNAL_FUNCTION(png_fixed_point,png_reciprocal,(png_fixed_point a),
    PNG_EMPTY);
+#endif
 
 #ifdef PNG_READ_GAMMA_SUPPORTED
 /* The same but gives a reciprocal of the product of two fixed point
@@ -2019,14 +1980,22 @@ PNG_INTERNAL_FUNCTION(png_fixed_point,png_reciprocal,(png_fixed_point a),
  */
 PNG_INTERNAL_FUNCTION(png_fixed_point,png_reciprocal2,(png_fixed_point a,
    png_fixed_point b),PNG_EMPTY);
-#endif
 
 /* Return true if the gamma value is significantly different from 1.0 */
 PNG_INTERNAL_FUNCTION(int,png_gamma_significant,(png_fixed_point gamma_value),
    PNG_EMPTY);
-#endif
 
-#ifdef PNG_READ_GAMMA_SUPPORTED
+/* PNGv3: 'resolve' the file gamma according to the new PNGv3 rules for colour
+ * space information.
+ *
+ * NOTE: this uses precisely those chunks that libpng supports.  For example it
+ * doesn't use iCCP and it can only use cICP for known and manageable
+ * transforms.  For this reason a gamma specified by png_set_gamma always takes
+ * precedence.
+ */
+PNG_INTERNAL_FUNCTION(png_fixed_point,png_resolve_file_gamma,
+   (png_const_structrp png_ptr),PNG_EMPTY);
+
 /* Internal fixed point gamma correction.  These APIs are called as
  * required to convert single values - they don't need to be fast,
  * they are not used when processing image pixel values.
@@ -2044,6 +2013,22 @@ PNG_INTERNAL_FUNCTION(void,png_destroy_gamma_table,(png_structrp png_ptr),
    PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_build_gamma_table,(png_structrp png_ptr,
    int bit_depth),PNG_EMPTY);
+#endif /* READ_GAMMA */
+
+#ifdef PNG_READ_RGB_TO_GRAY_SUPPORTED
+/* Set the RGB coefficients if not already set by png_set_rgb_to_gray */
+PNG_INTERNAL_FUNCTION(void,png_set_rgb_coefficients,(png_structrp png_ptr),
+   PNG_EMPTY);
+#endif
+
+#if defined(PNG_cHRM_SUPPORTED) || defined(PNG_READ_RGB_TO_GRAY_SUPPORTED)
+PNG_INTERNAL_FUNCTION(int,png_XYZ_from_xy,(png_XYZ *XYZ, const png_xy *xy),
+   PNG_EMPTY);
+#endif /* cHRM || READ_RGB_TO_GRAY */
+
+#ifdef PNG_COLORSPACE_SUPPORTED
+PNG_INTERNAL_FUNCTION(int,png_xy_from_XYZ,(png_xy *xy, const png_XYZ *XYZ),
+   PNG_EMPTY);
 #endif
 
 /* SIMPLIFIED READ/WRITE SUPPORT */

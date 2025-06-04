@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_menu_item.h"
+#import "godot_menu_item.h"
 
 @implementation GodotMenuItem
 
@@ -41,6 +41,7 @@
 	self->checked = false;
 	self->max_states = 0;
 	self->state = 0;
+	self->accel = Key::NONE;
 
 	return self;
 }

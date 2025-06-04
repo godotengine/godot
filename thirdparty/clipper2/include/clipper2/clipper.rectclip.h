@@ -1,19 +1,17 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
 * Date      :  5 July 2024                                                     *
-* Website   :  http://www.angusj.com                                           *
+* Website   :  https://www.angusj.com                                          *
 * Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  FAST rectangular clipping                                       *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
 #ifndef CLIPPER_RECTCLIP_H
 #define CLIPPER_RECTCLIP_H
 
-#include <cstdlib>
-#include <vector>
-#include <queue>
 #include "clipper2/clipper.core.h"
+#include <queue>
 
 namespace Clipper2Lib
 {

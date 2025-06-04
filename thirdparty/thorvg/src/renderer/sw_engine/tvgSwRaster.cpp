@@ -22,7 +22,7 @@
 
 #ifdef _WIN32
     #include <malloc.h>
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__ZEPHYR__)
     #include <alloca.h>
 #else
     #include <stdlib.h>
@@ -1667,6 +1667,20 @@ bool rasterClear(SwSurface* surface, uint32_t x, uint32_t y, uint32_t w, uint32_
 }
 
 
+uint32_t rasterUnpremultiply(uint32_t data)
+{
+    uint8_t a = data >> 24;
+    if (a == 255 || a == 0) return data;
+    uint16_t r = ((data >> 8) & 0xff00) / a;
+    uint16_t g = ((data) & 0xff00) / a;
+    uint16_t b = ((data << 8) & 0xff00) / a;
+    if (r > 0xff) r = 0xff;
+    if (g > 0xff) g = 0xff;
+    if (b > 0xff) b = 0xff;
+    return (a << 24) | (r << 16) | (g << 8) | (b);
+}
+
+
 void rasterUnpremultiply(RenderSurface* surface)
 {
     if (surface->channelSize != sizeof(uint32_t)) return;
@@ -1677,20 +1691,7 @@ void rasterUnpremultiply(RenderSurface* surface)
     for (uint32_t y = 0; y < surface->h; y++) {
         auto buffer = surface->buf32 + surface->stride * y;
         for (uint32_t x = 0; x < surface->w; ++x) {
-            uint8_t a = buffer[x] >> 24;
-            if (a == 255) {
-                continue;
-            } else if (a == 0) {
-                buffer[x] = 0x00ffffff;
-            } else {
-                uint16_t r = ((buffer[x] >> 8) & 0xff00) / a;
-                uint16_t g = ((buffer[x]) & 0xff00) / a;
-                uint16_t b = ((buffer[x] << 8) & 0xff00) / a;
-                if (r > 0xff) r = 0xff;
-                if (g > 0xff) g = 0xff;
-                if (b > 0xff) b = 0xff;
-                buffer[x] = (a << 24) | (r << 16) | (g << 8) | (b);
-            }
+            buffer[x] = rasterUnpremultiply(buffer[x]);
         }
     }
     surface->premultiplied = false;
@@ -1812,7 +1813,7 @@ bool rasterConvertCS(RenderSurface* surface, ColorSpace to)
 //TODO: SIMD OPTIMIZATION?
 void rasterXYFlip(uint32_t* src, uint32_t* dst, int32_t stride, int32_t w, int32_t h, const SwBBox& bbox, bool flipped)
 {
-    constexpr int BLOCK = 8;  //experimental decision
+    constexpr int32_t BLOCK = 8;  //experimental decision
 
     if (flipped) {
         src += ((bbox.min.x * stride) + bbox.min.y);
@@ -1823,16 +1824,16 @@ void rasterXYFlip(uint32_t* src, uint32_t* dst, int32_t stride, int32_t w, int32
     }
 
     #pragma omp parallel for
-    for (int x = 0; x < w; x += BLOCK) {
+    for (int32_t x = 0; x < w; x += BLOCK) {
         auto bx = std::min(w, x + BLOCK) - x;
         auto in = &src[x];
         auto out = &dst[x * stride];
-        for (int y = 0; y < h; y += BLOCK) {
+        for (int32_t y = 0; y < h; y += BLOCK) {
             auto p = &in[y * stride];
             auto q = &out[y];
             auto by = std::min(h, y + BLOCK) - y;
-            for (int xx = 0; xx < bx; ++xx) {
-                for (int yy = 0; yy < by; ++yy) {
+            for (int32_t xx = 0; xx < bx; ++xx) {
+                for (int32_t yy = 0; yy < by; ++yy) {
                     *q = *p;
                     p += stride;
                     ++q;

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSLATION_DOMAIN_H
-#define TRANSLATION_DOMAIN_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 
@@ -50,6 +49,9 @@ class TranslationDomain : public RefCounted {
 		String suffix = "]";
 	};
 
+	bool enabled = true;
+
+	String locale_override;
 	HashSet<Ref<Translation>> translations;
 	PseudolocalizationConfig pseudolocalization;
 
@@ -80,6 +82,12 @@ public:
 	StringName translate(const StringName &p_message, const StringName &p_context) const;
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
 
+	String get_locale_override() const;
+	void set_locale_override(const String &p_locale);
+
+	bool is_enabled() const;
+	void set_enabled(bool p_enabled);
+
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool p_enabled);
 	bool is_pseudolocalization_accents_enabled() const;
@@ -103,5 +111,3 @@ public:
 
 	TranslationDomain();
 };
-
-#endif // TRANSLATION_DOMAIN_H

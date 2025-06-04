@@ -522,7 +522,7 @@ struct parsed_values_t
 
   void alloc (unsigned n)
   {
-    values.alloc (n, true);
+    values.alloc_exact (n);
   }
 
   void add_op (op_code_t op, const byte_str_ref_t& str_ref = byte_str_ref_t (), const VAL &v = VAL ())

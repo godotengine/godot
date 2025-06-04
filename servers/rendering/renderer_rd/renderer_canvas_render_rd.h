@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_CANVAS_RENDER_RD_H
-#define RENDERER_CANVAS_RENDER_RD_H
+#pragma once
 
 #include "core/templates/lru.h"
 #include "servers/rendering/renderer_canvas_render.h"
@@ -107,7 +106,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		MAX_RENDER_ITEMS = 256 * 1024,
 		MAX_LIGHT_TEXTURES = 1024,
 		MAX_LIGHTS_PER_ITEM = 16,
-		DEFAULT_MAX_LIGHTS_PER_RENDER = 256
+		MAX_LIGHTS_PER_RENDER = 256,
 	};
 
 	/****************/
@@ -116,11 +115,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	struct ShaderSpecialization {
 		union {
+			uint32_t packed_0;
+
 			struct {
 				uint32_t use_lighting : 1;
 			};
-
-			uint32_t packed_0;
 		};
 	};
 
@@ -170,6 +169,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		RID get_shader(ShaderVariant p_shader_variant, bool p_ubershader) const;
 		uint64_t get_vertex_input_mask(ShaderVariant p_shader_variant, bool p_ubershader);
 		bool is_valid() const;
@@ -485,9 +485,14 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	static void _before_evict(RendererCanvasRenderRD::RIDSetKey &p_key, RID &p_rid);
 	static void _uniform_set_invalidation_callback(void *p_userdata);
+	static void _canvas_texture_invalidation_callback(bool p_deleted, void *p_userdata);
 
 	typedef LRUCache<RIDSetKey, RID, HashableHasher<RIDSetKey>, HashMapComparatorDefault<RIDSetKey>, _before_evict> RIDCache;
 	RIDCache rid_set_to_uniform_set;
+	/// Maps a CanvasTexture to its associated uniform sets, which must
+	/// be invalidated when the CanvasTexture is updated, such as changing the
+	/// diffuse texture.
+	HashMap<RID, TightLocalVector<RID>> canvas_texture_to_uniform_set;
 
 	struct Batch {
 		// Position in the UBO measured in bytes
@@ -521,7 +526,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t flags = 0;
 	};
 
-	HashMap<TextureState, TextureInfo, HashableHasher<TextureState>> texture_info_map;
+	HashMap<TextureState, TextureInfo, HashableHasher<TextureState>, HashMapComparatorDefault<TextureState>, PagedAllocator<HashMapElement<TextureState, TextureInfo>>> texture_info_map;
 
 	// per-frame buffers
 	struct DataBuffer {
@@ -546,8 +551,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 			uint32_t directional_light_count;
 			float tex_to_sdf;
+			float shadow_pixel_size;
 			uint32_t flags;
-			uint32_t pad2;
 		};
 
 		DataBuffer canvas_instance_data_buffers[BATCH_DATA_BUFFER_COUNT];
@@ -566,7 +571,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 		LightUniform *light_uniforms = nullptr;
 
-		RID lights_uniform_buffer;
+		RID lights_storage_buffer;
 		RID canvas_state_buffer;
 		RID shadow_sampler;
 		RID shadow_texture;
@@ -579,8 +584,6 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID shadow_ocluder_uniform_set;
 
 		RID default_transforms_uniform_set;
-
-		uint32_t max_lights_per_render;
 
 		double time;
 
@@ -634,7 +637,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	void _update_occluder_buffer(uint32_t p_size);
 
 public:
-	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;
+	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), int p_count = -1) override;
 	void free_polygon(PolygonID p_polygon) override;
 
 	RID light_create() override;
@@ -662,5 +665,3 @@ public:
 	RendererCanvasRenderRD();
 	~RendererCanvasRenderRD();
 };
-
-#endif // RENDERER_CANVAS_RENDER_RD_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_WEB_H
-#define OS_WEB_H
+#pragma once
 
 #include "audio_driver_web.h"
 #include "webmidi_driver.h"
@@ -92,7 +91,7 @@ public:
 	int get_process_exit_code(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
 	String get_unique_id() const override;
-	int get_default_thread_pool_size() const override { return 1; }
+	int get_default_thread_pool_size() const override;
 
 	String get_executable_path() const override;
 	Error shell_open(const String &p_uri) override;
@@ -107,7 +106,7 @@ public:
 	String get_cache_path() const override;
 	String get_config_path() const override;
 	String get_data_path() const override;
-	String get_user_data_dir() const override;
+	String get_user_data_dir(const String &p_user_dir) const override;
 
 	bool is_userfs_persistent() const override;
 
@@ -119,5 +118,3 @@ public:
 
 	OS_Web();
 };
-
-#endif // OS_WEB_H

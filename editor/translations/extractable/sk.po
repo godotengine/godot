@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Generator: Weblate 5.3-dev\n"
 
+msgid "All Recognized"
+msgstr "Všetko rozpoznané"
+
 msgid "Network"
 msgstr "Sieť"
 
@@ -34,11 +37,11 @@ msgstr "Otvoriť"
 msgid "Select Current Folder"
 msgstr "Vybrať Aktuálny Priečinok"
 
+msgid "Save"
+msgstr "Uložiť"
+
 msgid "Select This Folder"
 msgstr "Vybrať Tento Priečinok"
-
-msgid "All Recognized"
-msgstr "Všetko rozpoznané"
 
 msgid "Open a File"
 msgstr "Otvoriť súbor"
@@ -51,9 +54,6 @@ msgstr "Otvorit priečinok"
 
 msgid "Open a File or Directory"
 msgstr "Otvoriť súbor / priečinok"
-
-msgid "Save"
-msgstr "Uložiť"
 
 msgid "Save a File"
 msgstr "Uložiť súbor"

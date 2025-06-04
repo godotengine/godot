@@ -255,7 +255,7 @@ NodePath NodePath::slice(int p_begin, int p_end) const {
 	if (end < 0) {
 		end += total_count;
 	}
-	const int sub_begin = MAX(begin - name_count - 1, 0);
+	const int sub_begin = MAX(begin - name_count, 0);
 	const int sub_end = MAX(end - name_count, 0);
 
 	const Vector<StringName> names = get_names().slice(begin, end);
@@ -350,7 +350,7 @@ void NodePath::simplify() {
 			data->path.remove_at(i - 1);
 			data->path.remove_at(i - 1);
 			i -= 2;
-			if (data->path.size() == 0) {
+			if (data->path.is_empty()) {
 				data->path.push_back(".");
 				break;
 			}
@@ -366,7 +366,7 @@ NodePath NodePath::simplified() const {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
-	if (p_path.size() == 0 && !p_absolute) {
+	if (p_path.is_empty() && !p_absolute) {
 		return;
 	}
 
@@ -378,7 +378,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
-	if (p_path.size() == 0 && p_subpath.size() == 0 && !p_absolute) {
+	if (p_path.is_empty() && p_subpath.is_empty() && !p_absolute) {
 		return;
 	}
 

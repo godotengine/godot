@@ -34,6 +34,7 @@ import org.godotengine.godot.error.Error;
 import org.godotengine.godot.input.GodotEditText;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
@@ -46,7 +47,9 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.DisplayCutout;
+import android.view.Surface;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 
 import androidx.core.content.FileProvider;
 
@@ -304,6 +307,19 @@ public class GodotIO {
 			default:
 				return -1;
 		}
+	}
+
+	public int getDisplayRotation() {
+		WindowManager windowManager = (WindowManager)activity.getSystemService(Context.WINDOW_SERVICE);
+		int rotation = windowManager.getDefaultDisplay().getRotation();
+		if (rotation == Surface.ROTATION_90) {
+			return 90;
+		} else if (rotation == Surface.ROTATION_180) {
+			return 180;
+		} else if (rotation == Surface.ROTATION_270) {
+			return 270;
+		}
+		return 0;
 	}
 
 	public void setEdit(GodotEditText _edit) {

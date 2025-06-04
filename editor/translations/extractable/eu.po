@@ -25,6 +25,9 @@ msgstr "Ireki"
 msgid "Select Current Folder"
 msgstr "Hautatu uneko karpeta"
 
+msgid "Save"
+msgstr "Gorde"
+
 msgid "Select This Folder"
 msgstr "Hautatu karpeta hau"
 
@@ -39,9 +42,6 @@ msgstr "Ireki direktorioa"
 
 msgid "Open a File or Directory"
 msgstr "Ireki fitxategia edo direktorioa"
-
-msgid "Save"
-msgstr "Gorde"
 
 msgid "Save a File"
 msgstr "Gorde fitxategia"

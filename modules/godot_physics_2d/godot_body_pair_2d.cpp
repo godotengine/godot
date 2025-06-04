@@ -36,7 +36,7 @@
 #define ACCUMULATE_IMPULSES
 
 #define MIN_VELOCITY 0.001
-#define MAX_BIAS_ROTATION (Math_PI / 8)
+#define MAX_BIAS_ROTATION (Math::PI / 8)
 
 void GodotBodyPair2D::_add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self) {
 	GodotBodyPair2D *self = static_cast<GodotBodyPair2D *>(p_self);
@@ -244,7 +244,7 @@ real_t combine_bounce(GodotBody2D *A, GodotBody2D *B) {
 }
 
 real_t combine_friction(GodotBody2D *A, GodotBody2D *B) {
-	return ABS(MIN(A->get_friction(), B->get_friction()));
+	return Math::abs(MIN(A->get_friction(), B->get_friction()));
 }
 
 bool GodotBodyPair2D::setup(real_t p_step) {

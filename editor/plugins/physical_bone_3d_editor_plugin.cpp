@@ -82,8 +82,6 @@ void PhysicalBone3DEditor::show() {
 	spatial_editor_hb->show();
 }
 
-PhysicalBone3DEditorPlugin::PhysicalBone3DEditorPlugin() {}
-
 void PhysicalBone3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		physical_bone_editor.show();

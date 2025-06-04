@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./hashtable.h"
-#include "./impl.h"
-#include "./parallel.h"
-#include "./utils.h"
-#include "./vec.h"
+#include "hashtable.h"
+#include "impl.h"
 #include "manifold/manifold.h"
+#include "parallel.h"
+#include "utils.h"
+#include "vec.h"
 
 namespace {
 using namespace manifold;
@@ -95,13 +95,14 @@ ivec4 Neighbor(ivec4 base, int i) {
   return neighborIndex;
 }
 
-Uint64 EncodeIndex(ivec4 gridPos, ivec3 gridPow) {
-  return static_cast<Uint64>(gridPos.w) | static_cast<Uint64>(gridPos.z) << 1 |
-         static_cast<Uint64>(gridPos.y) << (1 + gridPow.z) |
-         static_cast<Uint64>(gridPos.x) << (1 + gridPow.z + gridPow.y);
+uint64_t EncodeIndex(ivec4 gridPos, ivec3 gridPow) {
+  return static_cast<uint64_t>(gridPos.w) |
+         static_cast<uint64_t>(gridPos.z) << 1 |
+         static_cast<uint64_t>(gridPos.y) << (1 + gridPow.z) |
+         static_cast<uint64_t>(gridPos.x) << (1 + gridPow.z + gridPow.y);
 }
 
-ivec4 DecodeIndex(Uint64 idx, ivec3 gridPow) {
+ivec4 DecodeIndex(uint64_t idx, ivec3 gridPow) {
   ivec4 gridPos;
   gridPos.w = idx & 1;
   idx = idx >> 1;
@@ -211,7 +212,7 @@ struct NearSurface {
   const double level;
   const double tol;
 
-  inline void operator()(Uint64 index) {
+  inline void operator()(uint64_t index) {
     ZoneScoped;
     if (gridVerts.Full()) return;
 
@@ -296,7 +297,7 @@ struct ComputeVerts {
 
   void operator()(int idx) {
     ZoneScoped;
-    Uint64 baseKey = gridVerts.KeyAt(idx);
+    uint64_t baseKey = gridVerts.KeyAt(idx);
     if (baseKey == kOpen) return;
 
     GridVert& gridVert = gridVerts.At(idx);
@@ -358,7 +359,7 @@ struct BuildTris {
 
   void operator()(int idx) {
     ZoneScoped;
-    Uint64 baseKey = gridVerts.KeyAt(idx);
+    uint64_t baseKey = gridVerts.KeyAt(idx);
     if (baseKey == kOpen) return;
 
     const GridVert& base = gridVerts.At(idx);
@@ -467,7 +468,7 @@ Manifold Manifold::LevelSet(std::function<double(vec3)> sdf, Box bounds,
   const vec3 spacing = dim / (vec3(gridSize - 1));
 
   const ivec3 gridPow(la::log2(gridSize + 2) + 1);
-  const Uint64 maxIndex = EncodeIndex(ivec4(gridSize + 2, 1), gridPow);
+  const uint64_t maxIndex = EncodeIndex(ivec4(gridSize + 2, 1), gridPow);
 
   // Parallel policies violate will crash language runtimes with runtime locks
   // that expect to not be called back by unregistered threads. This allows
@@ -479,15 +480,15 @@ Manifold Manifold::LevelSet(std::function<double(vec3)> sdf, Box bounds,
   Vec<double> voxels(maxIndex);
   for_each_n(
       pol, countAt(0_uz), maxIndex,
-      [&voxels, sdf, level, origin, spacing, gridSize, gridPow](Uint64 idx) {
+      [&voxels, sdf, level, origin, spacing, gridSize, gridPow](uint64_t idx) {
         voxels[idx] = BoundedSDF(DecodeIndex(idx, gridPow) - kVoxelOffset,
                                  origin, spacing, gridSize, level, sdf);
       });
 
   size_t tableSize = std::min(
-      2 * maxIndex, static_cast<Uint64>(10 * la::pow(maxIndex, 0.667)));
+      2 * maxIndex, static_cast<uint64_t>(10 * la::pow(maxIndex, 0.667)));
   HashTable<GridVert> gridVerts(tableSize);
-  vertPos.resize(gridVerts.Size() * 7);
+  vertPos.resize_nofill(gridVerts.Size() * 7);
 
   while (1) {
     Vec<int> index(1, 0);
@@ -497,7 +498,7 @@ Manifold Manifold::LevelSet(std::function<double(vec3)> sdf, Box bounds,
 
     if (gridVerts.Full()) {  // Resize HashTable
       const vec3 lastVert = vertPos[index[0] - 1];
-      const Uint64 lastIndex =
+      const uint64_t lastIndex =
           EncodeIndex(ivec4(ivec3((lastVert - origin) / spacing), 1), gridPow);
       const double ratio = static_cast<double>(maxIndex) / lastIndex;
 
@@ -526,8 +527,10 @@ Manifold Manifold::LevelSet(std::function<double(vec3)> sdf, Box bounds,
 
   pImpl_->CreateHalfedges(triVerts);
   pImpl_->CleanupTopology();
+  pImpl_->RemoveUnreferencedVerts();
   pImpl_->Finish();
   pImpl_->InitializeOriginal();
+  pImpl_->MarkCoplanar();
   return Manifold(pImpl_);
 }
 }  // namespace manifold

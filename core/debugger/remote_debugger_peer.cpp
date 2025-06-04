@@ -96,7 +96,7 @@ void RemoteDebuggerPeerTCP::_write_out() {
 	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_OUT) == OK) {
 		uint8_t *buf = out_buf.ptrw();
 		if (out_left <= 0) {
-			if (out_queue.size() == 0) {
+			if (out_queue.is_empty()) {
 				break; // Nothing left to send
 			}
 			mutex.lock();
@@ -173,12 +173,12 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 		} else {
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
-			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
+			print_verbose("Remote Debugger: Connection failed with status: '" + String::num_int64(tcp_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
 		}
 	}
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-		ERR_PRINT(vformat("Remote Debugger: Unable to connect. Status: %s.", String::num(tcp_client->get_status())));
+		ERR_PRINT(vformat("Remote Debugger: Unable to connect. Status: %s.", String::num_int64(tcp_client->get_status())));
 		return FAILED;
 	}
 	connected = true;

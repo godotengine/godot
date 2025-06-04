@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from emscripten_helpers import (
     add_js_externs,
     add_js_libraries,
+    add_js_post,
     add_js_pre,
     create_engine_file,
     create_template_zip,
@@ -26,6 +27,11 @@ def get_name():
 
 def can_build():
     return WhereIs("emcc") is not None
+
+
+def get_tools(env: "SConsEnvironment"):
+    # Use generic POSIX build toolchain for Emscripten.
+    return ["cc", "c++", "ar", "link", "textfile", "zip"]
 
 
 def get_opts():
@@ -52,6 +58,7 @@ def get_opts():
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
             False,
         ),
+        BoolVariable("wasm_simd", "Use WebAssembly SIMD to improve CPU performance", True),
     ]
 
 
@@ -84,7 +91,17 @@ def get_flags():
     }
 
 
+def library_emitter(target, source, env):
+    # Make every source file dependent on the compiler version.
+    # This makes sure that when emscripten is updated, that the cached files
+    # aren't used and are recompiled instead.
+    env.Depends(source, env.Value(get_compiler_version(env)))
+    return target, source
+
+
 def configure(env: "SConsEnvironment"):
+    env.Append(LIBEMITTER=[library_emitter])
+
     # Validate arch.
     supported_arches = ["wasm32"]
     validate_arch(env["arch"], get_name(), supported_arches)
@@ -115,10 +132,14 @@ def configure(env: "SConsEnvironment"):
     ## Copy env variables.
     env["ENV"] = os.environ
 
+    # This makes `wasm-ld` treat all warnings as errors.
+    if env["werror"]:
+        env.Append(LINKFLAGS=["-Wl,--fatal-warnings"])
+
     # LTO
 
-    if env["lto"] == "auto":  # Full LTO for production.
-        env["lto"] = "full"
+    if env["lto"] == "auto":  # Enable LTO for production.
+        env["lto"] = "thin"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -149,12 +170,14 @@ def configure(env: "SConsEnvironment"):
         jscc = env.Builder(generator=run_closure_compiler, suffix=".cc.js", src_suffix=".js")
         env.Append(BUILDERS={"BuildJS": jscc})
 
-    # Add helper method for adding libraries, externs, pre-js.
+    # Add helper method for adding libraries, externs, pre-js, post-js.
     env["JS_LIBS"] = []
     env["JS_PRE"] = []
+    env["JS_POST"] = []
     env["JS_EXTERNS"] = []
     env.AddMethod(add_js_libraries, "AddJSLibraries")
     env.AddMethod(add_js_pre, "AddJSPre")
+    env.AddMethod(add_js_post, "AddJSPost")
     env.AddMethod(add_js_externs, "AddJSExterns")
 
     # Add method that joins/compiles our Engine files.
@@ -165,9 +188,6 @@ def configure(env: "SConsEnvironment"):
 
     # Add method for creating the final zip file
     env.AddMethod(create_template_zip, "CreateTemplateZip")
-
-    # Closure compiler extern and support for ecmascript specs (const, let, etc).
-    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT_2021"
 
     env["CC"] = "emcc"
     env["CXX"] = "em++"
@@ -224,7 +244,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
-        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=8"])
+        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE='Module[\"emscriptenPoolSize\"]||8'"])
         env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
         if not env["dlink_enabled"]:
             # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
@@ -259,6 +279,10 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
         # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
         env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
+
+    # Enable WebAssembly SIMD
+    if env["wasm_simd"]:
+        env.Append(CCFLAGS=["-msimd128"])
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-sENVIRONMENT=web,worker"])

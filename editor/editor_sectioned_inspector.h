@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SECTIONED_INSPECTOR_H
-#define EDITOR_SECTIONED_INSPECTOR_H
+#pragma once
 
 #include "scene/gui/split_container.h"
 
@@ -63,6 +62,9 @@ class SectionedInspector : public HSplitContainer {
 	void _search_changed(const String &p_what);
 	void _advanced_toggled(bool p_toggled_on);
 
+protected:
+	void _notification(int p_notification);
+
 public:
 	void register_search_box(LineEdit *p_box);
 	void register_advanced_toggle(CheckButton *p_toggle);
@@ -79,5 +81,3 @@ public:
 	SectionedInspector();
 	~SectionedInspector();
 };
-
-#endif // EDITOR_SECTIONED_INSPECTOR_H

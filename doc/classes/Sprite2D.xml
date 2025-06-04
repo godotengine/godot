@@ -71,6 +71,7 @@
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
+			[b]Note:[/b] When you increase [member offset].y in Sprite2D, the sprite moves downward on screen (i.e., +Y is down).
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
 			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect].

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_SCENE_OCCLUSION_CULL_H
-#define RENDERER_SCENE_OCCLUSION_CULL_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
@@ -72,7 +71,7 @@ public:
 				return false;
 			}
 
-			float min_depth = (closest_point - p_cam_position).length();
+			float min_depth = -closest_point_view.z;
 
 			Vector2 rect_min = Vector2(FLT_MAX, FLT_MAX);
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
@@ -83,12 +82,9 @@ public:
 				Vector3 corner = Vector3(p_bounds[0] * c.x + p_bounds[3] * nc.x, p_bounds[1] * c.y + p_bounds[4] * nc.y, p_bounds[2] * c.z + p_bounds[5] * nc.z);
 				Vector3 view = p_cam_inv_transform.xform(corner);
 
-				if (p_cam_projection.is_orthogonal()) {
-					min_depth = MIN(min_depth, -view.z);
-				}
-
 				Plane vp = Plane(view, 1.0);
 				Plane projected = p_cam_projection.xform4(vp);
+				min_depth = MIN(min_depth, -view.z);
 
 				float w = projected.d;
 				if (w < 1.0) {
@@ -240,5 +236,3 @@ public:
 		singleton = nullptr;
 	}
 };
-
-#endif // RENDERER_SCENE_OCCLUSION_CULL_H

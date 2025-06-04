@@ -63,7 +63,7 @@
 			If set, this [Expression] will be used to convert the property value from the Godot property to the value expected by the glTF object model. This is useful when the glTF object model uses a different unit system, or when the data needs to be transformed in some way. If [code]null[/code], the value will be copied as-is.
 		</member>
 		<member name="json_pointers" type="PackedStringArray[]" setter="set_json_pointers" getter="get_json_pointers" default="[]">
-			The glTF object model JSON pointers used to identify the property in the glTF object model. In most cases, there will be only one item in this array, but niche cases may require multiple pointers. The items are themselves arrays which represent the JSON pointer split into its components.
+			The glTF object model JSON pointers used to identify the property in the glTF object model. In most cases, there will be only one item in this array, but specific cases may require multiple pointers. The items are themselves arrays which represent the JSON pointer split into its components.
 		</member>
 		<member name="node_paths" type="NodePath[]" setter="set_node_paths" getter="get_node_paths" default="[]">
 			An array of [NodePath]s that point to a property, or multiple properties, in the Godot scene tree. On import, this will either be set by [GLTFDocument], or by a [GLTFDocumentExtension] class. For simple cases, use [method append_path_to_property] to add properties to this array.

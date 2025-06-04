@@ -155,10 +155,8 @@ typedef struct zlib_filefunc_def_s
     close_file_func     zclose_file;
     testerror_file_func zerror_file;
     voidpf              opaque;
-    /* GODOT start */
     alloc_func          alloc_mem;
     free_func           free_mem;
-    /* GODOT end */
 } zlib_filefunc_def;
 
 typedef ZPOS64_T (ZCALLBACK *tell64_file_func)    (voidpf opaque, voidpf stream);
@@ -175,10 +173,8 @@ typedef struct zlib_filefunc64_def_s
     close_file_func     zclose_file;
     testerror_file_func zerror_file;
     voidpf              opaque;
-    /* GODOT start */
     alloc_func          alloc_mem;
     free_func           free_mem;
-    /* GODOT end */
 } zlib_filefunc64_def;
 
 void fill_fopen64_filefunc(zlib_filefunc64_def* pzlib_filefunc_def);

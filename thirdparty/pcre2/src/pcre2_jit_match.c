@@ -83,7 +83,7 @@ Arguments:
 
 Returns:          > 0 => success; value is the number of ovector pairs filled
                   = 0 => success, but ovector is not big enough
-                   -1 => failed to match (PCRE_ERROR_NOMATCH)
+                   -1 => failed to match (PCRE2_ERROR_NOMATCH)
                  < -1 => some kind of unexpected problem
 */
 

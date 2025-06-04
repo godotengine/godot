@@ -32,8 +32,9 @@
 
 #include "core/version.h"
 
-Mutex ParticleProcessMaterial::material_mutex;
+Mutex ParticleProcessMaterial::dirty_materials_mutex;
 SelfList<ParticleProcessMaterial>::List ParticleProcessMaterial::dirty_materials;
+Mutex ParticleProcessMaterial::shader_map_mutex;
 HashMap<ParticleProcessMaterial::MaterialKey, ParticleProcessMaterial::ShaderData, ParticleProcessMaterial::MaterialKey> ParticleProcessMaterial::shader_map;
 RBSet<String> ParticleProcessMaterial::min_max_properties;
 ParticleProcessMaterial::ShaderNames *ParticleProcessMaterial::shader_names = nullptr;
@@ -132,6 +133,7 @@ void ParticleProcessMaterial::init_shaders() {
 	shader_names->sub_emitter_frequency = "sub_emitter_frequency";
 	shader_names->sub_emitter_amount_at_end = "sub_emitter_amount_at_end";
 	shader_names->sub_emitter_amount_at_collision = "sub_emitter_amount_at_collision";
+	shader_names->sub_emitter_amount_at_start = "sub_emitter_amount_at_start";
 	shader_names->sub_emitter_keep_velocity = "sub_emitter_keep_velocity";
 
 	shader_names->collision_friction = "collision_friction";
@@ -146,32 +148,43 @@ void ParticleProcessMaterial::finish_shaders() {
 }
 
 void ParticleProcessMaterial::_update_shader() {
+	if (!_is_initialized()) {
+		_mark_ready();
+	}
+
 	MaterialKey mk = _compute_key();
 	if (mk == current_key) {
 		return; // No update required in the end.
 	}
 
-	if (shader_map.has(current_key)) {
-		shader_map[current_key].users--;
-		if (shader_map[current_key].users == 0) {
-			// Deallocate shader, as it's no longer in use.
-			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
+	{
+		MutexLock lock(shader_map_mutex);
+		ShaderData *v = shader_map.getptr(current_key);
+		if (v) {
+			v->users--;
+			if (v->users == 0) {
+				// Deallocate shader, as it's no longer in use.
+				RS::get_singleton()->free(v->shader);
+				shader_map.erase(current_key);
+				shader_rid = RID();
+			}
 		}
-	}
 
-	current_key = mk;
+		current_key = mk;
 
-	if (shader_map.has(mk)) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader_map[mk].shader);
-		shader_map[mk].users++;
-		return;
+		v = shader_map.getptr(mk);
+		if (v) {
+			shader_rid = v->shader;
+			RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
+			v->users++;
+			return;
+		}
 	}
 
 	// No pre-existing shader, create one.
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s ParticleProcessMaterial.\n\n";
+	String code = "// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s ParticleProcessMaterial.\n\n";
 
 	code += "shader_type particles;\n";
 	code += "render_mode disable_velocity;\n";
@@ -286,6 +299,9 @@ void ParticleProcessMaterial::_update_shader() {
 		}
 		if (sub_emitter_mode == SUB_EMITTER_AT_COLLISION) {
 			code += "uniform int sub_emitter_amount_at_collision;\n";
+		}
+		if (sub_emitter_mode == SUB_EMITTER_AT_START) {
+			code += "uniform int sub_emitter_amount_at_start;\n";
 		}
 		code += "uniform bool sub_emitter_keep_velocity;\n";
 	}
@@ -523,6 +539,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	float animation_offset;\n";
 	code += "	float lifetime;\n";
 	code += "	vec4 color;\n";
+	code += "	float emission_texture_position;\n";
 	code += "};\n\n";
 
 	code += "struct DynamicsParameters {\n";
@@ -579,11 +596,15 @@ void ParticleProcessMaterial::_update_shader() {
 	if (color_initial_ramp.is_valid()) {
 		code += "	params.color *= texture(color_initial_ramp, vec2(rand_from_seed(alt_seed)));\n";
 	}
-	if (emission_color_texture.is_valid() && (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS)) {
-		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
-		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
-		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
-		code += "	params.color *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
+	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
+		code += "	params.emission_texture_position = rand_from_seed(alt_seed);\n";
+
+		if (emission_color_texture.is_valid()) {
+			code += "	int point = min(emission_texture_point_count - 1, int(params.emission_texture_position * float(emission_texture_point_count)));\n";
+			code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
+			code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
+			code += "	params.color *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
+		}
 	}
 	code += "}\n\n";
 
@@ -614,7 +635,7 @@ void ParticleProcessMaterial::_update_shader() {
 	}
 	code += "}\n\n";
 
-	code += "vec3 calculate_initial_position(inout uint alt_seed) {\n";
+	code += "vec3 calculate_initial_position(inout DisplayParameters params, inout uint alt_seed) {\n";
 	code += "	float pi = 3.14159;\n";
 	code += "	vec3 pos = vec3(0.0);\n";
 	code += "	{ // Emission shape.\n";
@@ -639,7 +660,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		pos = vec3(rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0) * emission_box_extents;\n";
 	}
 	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
-		code += "		int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+		code += "		int point = min(emission_texture_point_count - 1, int(params.emission_texture_position * float(emission_texture_point_count)));\n";
 		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "		ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 		code += "		pos = texelFetch(emission_texture_points, emission_tex_ofs, 0).xyz;\n";
@@ -860,7 +881,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		TRANSFORM[2].xyz = vec3(0.0, 0.0, 1.0);\n";
 	code += "	}\n";
 	code += "	if (RESTART_POSITION) {\n";
-	code += "		TRANSFORM[3].xyz = calculate_initial_position(alt_seed);\n";
+	code += "		TRANSFORM[3].xyz = calculate_initial_position(params, alt_seed);\n";
 	if (turbulence_enabled) {
 		code += "		float initial_turbulence_displacement = mix(turbulence_initial_displacement_min, turbulence_initial_displacement_max, rand_from_seed(alt_seed));\n";
 		code += "		vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
@@ -871,7 +892,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	if (RESTART_VELOCITY) {\n";
 	code += "		VELOCITY = get_random_direction_from_spread(alt_seed, spread) * dynamic_params.initial_velocity_multiplier;\n";
 	if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
-		code += "		int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+		code += "		int point = min(emission_texture_point_count - 1, int(params.emission_texture_position * float(emission_texture_point_count)));\n";
 		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "		ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
@@ -917,6 +938,10 @@ void ParticleProcessMaterial::_update_shader() {
 
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n\n";
+
+	if (sub_emitter_mode == SUB_EMITTER_AT_START && !RenderingServer::get_singleton()->is_low_end()) {
+		code += "	bool just_spawned = CUSTOM.y == 0.0;\n";
+	}
 
 	code += "	CUSTOM.y += DELTA / LIFETIME;\n";
 	code += "	CUSTOM.y = mix(CUSTOM.y, 1.0, INTERPOLATE_TO_END);\n";
@@ -1021,7 +1046,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	{\n";
 		}
 		code += "		float vel_mag = length(VELOCITY);\n";
-		code += "		float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0, 1.0);\n";
+		code += "		float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0, 1.0) * (DELTA <= 0.0 ? 0.0 : 1.0);\n";
 		code += "		VELOCITY = mix(VELOCITY, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
 		code += "		vel_mag = length(controlled_displacement);\n";
 		code += "		controlled_displacement = mix(controlled_displacement, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
@@ -1108,9 +1133,16 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		params.scale *= texture(scale_over_velocity_curve, vec2(0.0)).rgb;\n";
 		code += "	}\n";
 	}
-	code += "	TRANSFORM[0].xyz *= sign(params.scale.x) * max(abs(params.scale.x), 0.001);\n";
-	code += "	TRANSFORM[1].xyz *= sign(params.scale.y) * max(abs(params.scale.y), 0.001);\n";
-	code += "	TRANSFORM[2].xyz *= sign(params.scale.z) * max(abs(params.scale.z), 0.001);\n";
+	// A scale of 0 results in no emission at some emission amounts (including 3 and 6).
+	// `sign(scale)` is unsuitable, because sign(0) returns 0, nullifying the minimum value.
+	// The following evaluates to 1 when scale is 0, falling back to a positive minimum value.
+	code += "	float scale_sign_x = params.scale.x < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_sign_y = params.scale.y < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_sign_z = params.scale.z < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_minimum = 0.001;\n";
+	code += "	TRANSFORM[0].xyz *= scale_sign_x * max(abs(params.scale.x), scale_minimum);\n";
+	code += "	TRANSFORM[1].xyz *= scale_sign_y * max(abs(params.scale.y), scale_minimum);\n";
+	code += "	TRANSFORM[2].xyz *= scale_sign_z * max(abs(params.scale.z), scale_minimum);\n";
 	code += "\n";
 	code += "	CUSTOM.z = params.animation_offset + lifetime_percent * params.animation_speed;\n\n";
 
@@ -1134,6 +1166,11 @@ void ParticleProcessMaterial::_update_shader() {
 				code += "		emit_count = sub_emitter_amount_at_end;\n";
 				code += "	}\n";
 			} break;
+			case SUB_EMITTER_AT_START: {
+				code += "	if (just_spawned) {\n";
+				code += "		emit_count = sub_emitter_amount_at_start;\n";
+				code += "	}\n";
+			} break;
 			default: {
 			}
 		}
@@ -1151,19 +1188,34 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	}\n";
 	code += "}\n";
 
-	ShaderData shader_data;
-	shader_data.shader = RS::get_singleton()->shader_create();
-	shader_data.users = 1;
+	// We must create the shader outside the shader_map_mutex to avoid potential deadlocks with
+	// other tasks in the WorkerThreadPool simultaneously creating materials, which
+	// may also hold the shared shader_map_mutex lock.
+	RID new_shader = RS::get_singleton()->shader_create_from_code(code);
 
-	RS::get_singleton()->shader_set_code(shader_data.shader, code);
+	MutexLock lock(shader_map_mutex);
 
-	shader_map[mk] = shader_data;
+	ShaderData *v = shader_map.getptr(mk);
+	if (unlikely(v)) {
+		// We raced and managed to create the same key concurrently, so we'll free the shader we just created,
+		// given we know it isn't used, and use the winner.
+		RS::get_singleton()->free(new_shader);
+	} else {
+		ShaderData shader_data;
+		shader_data.shader = new_shader;
+		// ShaderData will be inserted with a users count of 0, but we
+		// increment unconditionally outside this if block, whilst still under lock.
+		v = &shader_map.insert(mk, shader_data)->value;
+	}
 
-	RS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
+	shader_rid = v->shader;
+	v->users++;
+
+	RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
 }
 
 void ParticleProcessMaterial::flush_changes() {
-	MutexLock lock(material_mutex);
+	MutexLock lock(dirty_materials_mutex);
 
 	while (dirty_materials.first()) {
 		dirty_materials.first()->self()->_update_shader();
@@ -1176,7 +1228,7 @@ void ParticleProcessMaterial::_queue_shader_change() {
 		return;
 	}
 
-	MutexLock lock(material_mutex);
+	MutexLock lock(dirty_materials_mutex);
 
 	if (!element.in_list()) {
 		dirty_materials.add(&element);
@@ -1762,8 +1814,8 @@ void ParticleProcessMaterial::set_turbulence_noise_scale(float p_turbulence_nois
 	const float noise_frequency_when_slider_is_zero = 4.0;
 	const float max_slider_value = 10.0;
 	const float curve_exponent = 0.25;
-	const float curve_rescale = noise_frequency_when_slider_is_zero / pow(max_slider_value, curve_exponent);
-	float shader_turbulence_noise_scale = pow(p_turbulence_noise_scale, curve_exponent) * curve_rescale - noise_frequency_when_slider_is_zero;
+	const float curve_rescale = noise_frequency_when_slider_is_zero / std::pow(max_slider_value, curve_exponent);
+	float shader_turbulence_noise_scale = std::pow(p_turbulence_noise_scale, curve_exponent) * curve_rescale - noise_frequency_when_slider_is_zero;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_scale, shader_turbulence_noise_scale);
 }
 
@@ -1811,9 +1863,14 @@ double ParticleProcessMaterial::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
 
+RID ParticleProcessMaterial::get_rid() const {
+	const_cast<ParticleProcessMaterial *>(this)->_update_shader();
+	return Material::get_rid();
+}
+
 RID ParticleProcessMaterial::get_shader_rid() const {
-	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
-	return shader_map[current_key].shader;
+	const_cast<ParticleProcessMaterial *>(this)->_update_shader();
+	return shader_rid;
 }
 
 void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const {
@@ -1853,16 +1910,8 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (!turbulence_enabled) {
-		if (p_property.name == "turbulence_noise_strength" ||
-				p_property.name == "turbulence_noise_scale" ||
-				p_property.name == "turbulence_noise_speed" ||
-				p_property.name == "turbulence_noise_speed_random" ||
-				p_property.name == "turbulence_influence_over_life" ||
-				p_property.name == "turbulence_influence" ||
-				p_property.name == "turbulence_initial_displacement") {
-			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
-		}
+	if (p_property.name == "sub_emitter_amount_at_start" && sub_emitter_mode != SUB_EMITTER_AT_START) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if (p_property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
@@ -1925,6 +1974,15 @@ void ParticleProcessMaterial::set_sub_emitter_amount_at_collision(int p_amount) 
 
 int ParticleProcessMaterial::get_sub_emitter_amount_at_collision() const {
 	return sub_emitter_amount_at_collision;
+}
+
+void ParticleProcessMaterial::set_sub_emitter_amount_at_start(int p_amount) {
+	sub_emitter_amount_at_start = p_amount;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_amount_at_start, p_amount);
+}
+
+int ParticleProcessMaterial::get_sub_emitter_amount_at_start() const {
+	return sub_emitter_amount_at_start;
 }
 
 void ParticleProcessMaterial::set_sub_emitter_keep_velocity(bool p_enable) {
@@ -2108,6 +2166,9 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sub_emitter_amount_at_collision"), &ParticleProcessMaterial::get_sub_emitter_amount_at_collision);
 	ClassDB::bind_method(D_METHOD("set_sub_emitter_amount_at_collision", "amount"), &ParticleProcessMaterial::set_sub_emitter_amount_at_collision);
 
+	ClassDB::bind_method(D_METHOD("get_sub_emitter_amount_at_start"), &ParticleProcessMaterial::get_sub_emitter_amount_at_start);
+	ClassDB::bind_method(D_METHOD("set_sub_emitter_amount_at_start", "amount"), &ParticleProcessMaterial::set_sub_emitter_amount_at_start);
+
 	ClassDB::bind_method(D_METHOD("get_sub_emitter_keep_velocity"), &ParticleProcessMaterial::get_sub_emitter_keep_velocity);
 	ClassDB::bind_method(D_METHOD("set_sub_emitter_keep_velocity", "enable"), &ParticleProcessMaterial::set_sub_emitter_keep_velocity);
 
@@ -2222,7 +2283,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANIM_OFFSET);
 
 	ADD_GROUP("Turbulence", "turbulence_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled"), "set_turbulence_enabled", "get_turbulence_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_turbulence_enabled", "get_turbulence_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_strength", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_turbulence_noise_strength", "get_turbulence_noise_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "turbulence_noise_speed"), "set_turbulence_noise_speed", "get_turbulence_noise_speed");
@@ -2237,10 +2298,11 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_use_scale"), "set_collision_use_scale", "is_collision_using_scale");
 	ADD_GROUP("Sub Emitter", "sub_emitter_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_mode", PROPERTY_HINT_ENUM, "Disabled,Constant,At End,At Collision"), "set_sub_emitter_mode", "get_sub_emitter_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_mode", PROPERTY_HINT_ENUM, "Disabled:0,Constant:1,At Start:4,At End:2,At Collision:3"), "set_sub_emitter_mode", "get_sub_emitter_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sub_emitter_frequency", PROPERTY_HINT_RANGE, "0.01,100,0.01,suffix:Hz"), "set_sub_emitter_frequency", "get_sub_emitter_frequency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_amount_at_end", PROPERTY_HINT_RANGE, "1,32,1"), "set_sub_emitter_amount_at_end", "get_sub_emitter_amount_at_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_amount_at_collision", PROPERTY_HINT_RANGE, "1,32,1"), "set_sub_emitter_amount_at_collision", "get_sub_emitter_amount_at_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_amount_at_start", PROPERTY_HINT_RANGE, "1,32,1"), "set_sub_emitter_amount_at_start", "get_sub_emitter_amount_at_start");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sub_emitter_keep_velocity"), "set_sub_emitter_keep_velocity", "get_sub_emitter_keep_velocity");
 
 	ADD_SIGNAL(MethodInfo("emission_shape_changed"));
@@ -2285,6 +2347,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUB_EMITTER_CONSTANT);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_AT_END);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_AT_COLLISION);
+	BIND_ENUM_CONSTANT(SUB_EMITTER_AT_START);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_MAX);
 
 	BIND_ENUM_CONSTANT(COLLISION_DISABLED);
@@ -2356,6 +2419,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 	set_sub_emitter_frequency(4);
 	set_sub_emitter_amount_at_end(1);
 	set_sub_emitter_amount_at_collision(1);
+	set_sub_emitter_amount_at_start(1);
 	set_sub_emitter_keep_velocity(false);
 
 	set_attractor_interaction_enabled(true);
@@ -2371,13 +2435,11 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 	set_color(Color(1, 1, 1, 1));
 
 	current_key.invalid_key = 1;
-
-	_mark_initialized(callable_mp(this, &ParticleProcessMaterial::_queue_shader_change), callable_mp(this, &ParticleProcessMaterial::_update_shader));
 }
 
 ParticleProcessMaterial::~ParticleProcessMaterial() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	MutexLock lock(material_mutex);
+	MutexLock lock(shader_map_mutex);
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -48,14 +50,12 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#ifndef METAL_OBJECTS_H
-#define METAL_OBJECTS_H
-
 #import "metal_device_properties.h"
 #import "metal_utils.h"
 #import "pixel_formats.h"
+#import "sha256_digest.h"
 
-#import "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_device_driver.h"
 
 #import <CommonCrypto/CommonDigest.h>
 #import <Foundation/Foundation.h>
@@ -65,7 +65,6 @@
 #import <zlib.h>
 #import <initializer_list>
 #import <optional>
-#import <spirv.hpp>
 
 // These types can be used in Vector and other containers that use
 // pointer operations not supported by ARC.
@@ -83,9 +82,6 @@ namespace MTL {
 MTL_CLASS(Texture)
 
 } //namespace MTL
-
-/// Metal buffer index for the view mask when rendering multi-view.
-const uint32_t VIEW_MASK_BUFFER_INDEX = 24;
 
 enum ShaderStageUsage : uint32_t {
 	None = 0,
@@ -180,7 +176,7 @@ struct ClearAttKey {
 	}
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDResourceFactory {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDResourceFactory {
 private:
 	RenderingDeviceDriverMetal *device_driver;
 
@@ -198,7 +194,7 @@ public:
 	~MDResourceFactory() = default;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDResourceCache {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDResourceCache {
 private:
 	typedef HashMap<ClearAttKey, id<MTLRenderPipelineState>, HashableHasher<ClearAttKey>> HashMap;
 	std::unique_ptr<MDResourceFactory> resource_factory;
@@ -247,7 +243,7 @@ struct MDSubpass {
 	MTLFmtCaps getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const;
 };
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) MDAttachment {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDAttachment {
 private:
 	uint32_t index = 0;
 	uint32_t firstUseSubpassIndex = 0;
@@ -299,7 +295,7 @@ public:
 	bool shouldClear(MDSubpass const &p_subpass, bool p_is_stencil) const;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDRenderPass {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDRenderPass {
 public:
 	Vector<MDAttachment> attachments;
 	Vector<MDSubpass> subpasses;
@@ -311,7 +307,7 @@ public:
 	MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses);
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDCommandBuffer {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDCommandBuffer {
 private:
 	RenderingDeviceDriverMetal *device_driver = nullptr;
 	id<MTLCommandQueue> queue = nil;
@@ -357,7 +353,7 @@ public:
 			DIRTY_NONE     = 0b0000'0000,
 			DIRTY_PIPELINE = 0b0000'0001, //! pipeline state
 			DIRTY_UNIFORMS = 0b0000'0010, //! uniform sets
-			DIRTY_DEPTH    = 0b0000'0100, //! depth / stenci state
+			DIRTY_DEPTH    = 0b0000'0100, //! depth / stencil state
 			DIRTY_VERTEX   = 0b0000'1000, //! vertex buffers
 			DIRTY_VIEWPORT = 0b0001'0000, //! viewport rectangles
 			DIRTY_SCISSOR  = 0b0010'0000, //! scissor rectangles
@@ -557,13 +553,13 @@ public:
 #define MTLBindingAccessWriteOnly MTLArgumentAccessWriteOnly
 #endif
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) BindingInfo {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) BindingInfo {
 	MTLDataType dataType = MTLDataTypeNone;
 	uint32_t index = 0;
 	MTLBindingAccess access = MTLBindingAccessReadOnly;
 	MTLResourceUsage usage = 0;
 	MTLTextureType textureType = MTLTextureType2D;
-	spv::ImageFormat imageFormat = spv::ImageFormatUnknown;
+	int imageFormat = 0;
 	uint32_t arrayLength = 0;
 	bool isMultisampled = false;
 
@@ -576,48 +572,20 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) BindingInfo {
 		desc.arrayLength = arrayLength;
 		return desc;
 	}
-
-	size_t serialize_size() const {
-		return sizeof(uint32_t) * 8 /* 8 uint32_t fields */;
-	}
-
-	template <typename W>
-	void serialize(W &p_writer) const {
-		p_writer.write((uint32_t)dataType);
-		p_writer.write(index);
-		p_writer.write((uint32_t)access);
-		p_writer.write((uint32_t)usage);
-		p_writer.write((uint32_t)textureType);
-		p_writer.write(imageFormat);
-		p_writer.write(arrayLength);
-		p_writer.write(isMultisampled);
-	}
-
-	template <typename R>
-	void deserialize(R &p_reader) {
-		p_reader.read((uint32_t &)dataType);
-		p_reader.read(index);
-		p_reader.read((uint32_t &)access);
-		p_reader.read((uint32_t &)usage);
-		p_reader.read((uint32_t &)textureType);
-		p_reader.read((uint32_t &)imageFormat);
-		p_reader.read(arrayLength);
-		p_reader.read(isMultisampled);
-	}
 };
 
 using RDC = RenderingDeviceCommons;
 
-typedef API_AVAILABLE(macos(11.0), ios(14.0)) HashMap<RDC::ShaderStage, BindingInfo> BindingInfoMap;
+typedef API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) HashMap<RDC::ShaderStage, BindingInfo> BindingInfoMap;
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformInfo {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformInfo {
 	uint32_t binding;
 	ShaderStageUsage active_stages = None;
 	BindingInfoMap bindings;
 	BindingInfoMap bindings_secondary;
 };
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformSet {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformSet {
 	LocalVector<UniformInfo> uniforms;
 	uint32_t buffer_size = 0;
 	HashMap<RDC::ShaderStage, uint32_t> offsets;
@@ -627,45 +595,38 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformSet {
 struct ShaderCacheEntry;
 
 enum class ShaderLoadStrategy {
-	DEFAULT,
+	IMMEDIATE,
 	LAZY,
+
+	/// The default strategy is to load the shader immediately.
+	DEFAULT = IMMEDIATE,
 };
 
 /// A Metal shader library.
 @interface MDLibrary : NSObject {
 	ShaderCacheEntry *_entry;
+	NSString *_original_source;
 };
 - (id<MTLLibrary>)library;
 - (NSError *)error;
 - (void)setLabel:(NSString *)label;
+#ifdef DEV_ENABLED
+- (NSString *)originalSource;
+#endif
 
 + (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
 								  device:(id<MTLDevice>)device
 								  source:(NSString *)source
 								 options:(MTLCompileOptions *)options
 								strategy:(ShaderLoadStrategy)strategy;
+
++ (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
+								  device:(id<MTLDevice>)device
+#ifdef DEV_ENABLED
+								  source:(NSString *)source
+#endif
+									data:(dispatch_data_t)data;
 @end
-
-struct SHA256Digest {
-	unsigned char data[CC_SHA256_DIGEST_LENGTH];
-
-	uint32_t hash() const {
-		uint32_t c = crc32(0, data, CC_SHA256_DIGEST_LENGTH);
-		return c;
-	}
-
-	SHA256Digest() {
-		bzero(data, CC_SHA256_DIGEST_LENGTH);
-	}
-
-	SHA256Digest(const char *p_data, size_t p_length) {
-		CC_SHA256(p_data, (CC_LONG)p_length, data);
-	}
-
-	_FORCE_INLINE_ uint32_t short_sha() const {
-		return __builtin_bswap32(*(uint32_t *)&data[0]);
-	}
-};
 
 template <>
 struct HashMapComparatorDefault<SHA256Digest> {
@@ -694,7 +655,7 @@ struct ShaderCacheEntry {
 	~ShaderCacheEntry() = default;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDShader {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDShader {
 public:
 	CharString name;
 	Vector<UniformSet> sets;
@@ -707,7 +668,7 @@ public:
 	virtual ~MDShader() = default;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDComputeShader final : public MDShader {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDComputeShader final : public MDShader {
 public:
 	struct {
 		uint32_t binding = -1;
@@ -716,16 +677,13 @@ public:
 	MTLSize local = {};
 
 	MDLibrary *kernel;
-#if DEV_ENABLED
-	CharString kernel_source;
-#endif
 
 	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
 	MDComputeShader(CharString p_name, Vector<UniformSet> p_sets, bool p_uses_argument_buffers, MDLibrary *p_kernel);
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDRenderShader final : public MDShader {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDRenderShader final : public MDShader {
 public:
 	struct {
 		struct {
@@ -741,10 +699,6 @@ public:
 
 	MDLibrary *vert;
 	MDLibrary *frag;
-#if DEV_ENABLED
-	CharString vert_source;
-	CharString frag_source;
-#endif
 
 	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
@@ -786,25 +740,25 @@ struct BoundUniformSet {
 	void merge_into(ResourceUsageMap &p_dst) const;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDUniformSet {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDUniformSet {
 private:
-	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state);
-	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::RenderState &p_state);
-	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state);
-	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state);
+	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
+	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
+	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
+	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
 
 public:
 	uint32_t index;
 	LocalVector<RDD::BoundUniform> uniforms;
 	HashMap<MDShader *, BoundUniformSet> bound_uniforms;
 
-	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state);
-	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state);
+	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
+	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
 
-	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage);
+	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index);
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDPipeline {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDPipeline {
 public:
 	MDPipelineType type;
 
@@ -813,7 +767,7 @@ public:
 	virtual ~MDPipeline() = default;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDRenderPipeline final : public MDPipeline {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDRenderPipeline final : public MDPipeline {
 public:
 	id<MTLRenderPipelineState> state = nil;
 	id<MTLDepthStencilState> depth_stencil = nil;
@@ -850,8 +804,9 @@ public:
 			uint32_t front_reference = 0;
 			uint32_t back_reference = 0;
 			_FORCE_INLINE_ void apply(id<MTLRenderCommandEncoder> __unsafe_unretained p_enc) const {
-				if (!enabled)
+				if (!enabled) {
 					return;
+				}
 				[p_enc setStencilFrontReferenceValue:front_reference backReferenceValue:back_reference];
 			}
 		} stencil;
@@ -889,7 +844,7 @@ public:
 	~MDRenderPipeline() final = default;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDComputePipeline final : public MDPipeline {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDComputePipeline final : public MDPipeline {
 public:
 	id<MTLComputePipelineState> state = nil;
 	struct {
@@ -903,7 +858,7 @@ public:
 	~MDComputePipeline() final = default;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDFrameBuffer {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDFrameBuffer {
 	Vector<MTL::Texture> textures;
 
 public:
@@ -946,8 +901,7 @@ namespace rid {
 
 // Converts an Objective-C object to a pointer, and incrementing the
 // reference count.
-_FORCE_INLINE_
-void *owned(id p_id) {
+_FORCE_INLINE_ void *owned(id p_id) {
 	return (__bridge_retained void *)p_id;
 }
 
@@ -963,17 +917,13 @@ MAKE_ID(MTLVertexDescriptor *, RDD::VertexFormatID)
 MAKE_ID(id<MTLCommandQueue>, RDD::CommandPoolID)
 
 // Converts a pointer to an Objective-C object without changing the reference count.
-_FORCE_INLINE_
-auto get(RDD::ID p_id) {
+_FORCE_INLINE_ auto get(RDD::ID p_id) {
 	return (p_id.id) ? (__bridge ::id)(void *)p_id.id : nil;
 }
 
 // Converts a pointer to an Objective-C object, and decrements the reference count.
-_FORCE_INLINE_
-auto release(RDD::ID p_id) {
+_FORCE_INLINE_ auto release(RDD::ID p_id) {
 	return (__bridge_transfer ::id)(void *)p_id.id;
 }
 
 } // namespace rid
-
-#endif // METAL_OBJECTS_H

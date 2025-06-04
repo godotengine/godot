@@ -95,7 +95,7 @@ void AudioDriverWeb::_audio_driver_process(int p_from, int p_samples) {
 }
 
 void AudioDriverWeb::_audio_driver_capture(int p_from, int p_samples) {
-	if (get_input_buffer().size() == 0) {
+	if (get_input_buffer().is_empty()) {
 		return; // Input capture stopped.
 	}
 	const int max_samples = memarr_len(input_rb);
@@ -129,7 +129,7 @@ Error AudioDriverWeb::init() {
 	}
 	mix_rate = audio_context.mix_rate;
 	channel_count = audio_context.channel_count;
-	buffer_length = closest_power_of_2((latency * mix_rate / 1000));
+	buffer_length = closest_power_of_2(uint32_t(latency * mix_rate / 1000));
 	Error err = create(buffer_length, channel_count);
 	if (err != OK) {
 		return err;

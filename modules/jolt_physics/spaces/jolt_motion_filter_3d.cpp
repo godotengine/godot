@@ -90,8 +90,7 @@ bool JoltMotionFilter3D::ShouldCollideLocked(const JPH::Body &p_jolt_body) const
 		return false;
 	}
 
-	const JoltReadableBody3D jolt_body_self = space.read_body(body_self);
-	return jolt_body_self->GetCollisionGroup().CanCollide(p_jolt_body.GetCollisionGroup());
+	return body_self.get_jolt_body()->GetCollisionGroup().CanCollide(p_jolt_body.GetCollisionGroup());
 }
 
 bool JoltMotionFilter3D::ShouldCollide(const JPH::Shape *p_jolt_shape, const JPH::SubShapeID &p_jolt_shape_id) const {

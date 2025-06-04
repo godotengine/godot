@@ -70,6 +70,7 @@ void JavaObject::_bind_methods() {
 
 void JavaClassWrapper::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wrap", "name"), &JavaClassWrapper::wrap);
+	ClassDB::bind_method(D_METHOD("get_exception"), &JavaClassWrapper::get_exception);
 }
 
 #if !defined(ANDROID_ENABLED)

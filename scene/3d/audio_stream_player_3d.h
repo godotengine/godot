@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_3D_H
-#define AUDIO_STREAM_PLAYER_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "servers/audio_server.h"
 
+#ifndef PHYSICS_3D_DISABLED
 class Area3D;
+#endif // PHYSICS_3D_DISABLED
 struct AudioFrame;
 class AudioStream;
 class AudioStreamPlayback;
@@ -80,15 +81,20 @@ private:
 	bool force_update_panning = false;
 
 	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, Vector<AudioFrame> &output);
+	static AudioFrame _calc_output_vol_stereo(const Vector3 &source_dir, real_t panning_strength);
 
+#ifndef PHYSICS_3D_DISABLED
 	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol);
+#endif // PHYSICS_3D_DISABLED
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->force_update_panning = true; }
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 	StringName _get_actual_bus();
+#ifndef PHYSICS_3D_DISABLED
 	Area3D *_get_overriding_area();
+#endif // PHYSICS_3D_DISABLED
 	Vector<AudioFrame> _update_panning();
 
 	uint32_t area_mask = 1;
@@ -208,5 +214,3 @@ public:
 
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::AttenuationModel)
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::DopplerTracking)
-
-#endif // AUDIO_STREAM_PLAYER_3D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_TREE_DOCK_H
-#define SCENE_TREE_DOCK_H
+#pragma once
 
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/script_create_dialog.h"
@@ -40,14 +39,10 @@ class CheckBox;
 class EditorData;
 class EditorSelection;
 class MenuButton;
+class RenameDialog;
 class ReparentDialog;
 class ShaderCreateDialog;
 class TextureRect;
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-class RenameDialog;
-#endif // MODULE_REGEX_ENABLED
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
@@ -61,9 +56,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_PASTE,
 		TOOL_PASTE_AS_SIBLING,
 		TOOL_RENAME,
-#ifdef MODULE_REGEX_ENABLED
 		TOOL_BATCH_RENAME,
-#endif // MODULE_REGEX_ENABLED
 		TOOL_REPLACE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
@@ -94,7 +87,8 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_CREATE_USER_INTERFACE,
 		TOOL_CREATE_FAVORITE,
 		TOOL_CENTER_PARENT,
-
+		TOOL_HIDE_FILTERED_OUT_PARENTS,
+		TOOL_ACCESSIBILITY_WARNINGS,
 	};
 
 	enum {
@@ -107,9 +101,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	int current_option = 0;
 	CreateDialog *create_dialog = nullptr;
-#ifdef MODULE_REGEX_ENABLED
 	RenameDialog *rename_dialog = nullptr;
-#endif // MODULE_REGEX_ENABLED
 
 	Button *button_add = nullptr;
 	Button *button_instance = nullptr;
@@ -298,6 +290,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	bool profile_allow_editing = true;
 	bool profile_allow_script_editing = true;
+	bool determine_path_automatically = true;
 
 	static void _update_configuration_warning();
 
@@ -363,5 +356,3 @@ public:
 	SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
 	~SceneTreeDock();
 };
-
-#endif // SCENE_TREE_DOCK_H

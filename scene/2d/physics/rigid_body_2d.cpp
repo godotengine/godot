@@ -498,6 +498,7 @@ bool RigidBody2D::is_sleeping() const {
 }
 
 void RigidBody2D::set_max_contacts_reported(int p_amount) {
+	ERR_FAIL_INDEX_MSG(p_amount, MAX_CONTACTS_REPORTED_2D_MAX, "Max contacts reported allocates memory (about 100 bytes each), and therefore must not be set too high.");
 	max_contacts_reported = p_amount;
 	PhysicsServer2D::get_singleton()->body_set_max_contacts_reported(get_rid(), p_amount);
 }
@@ -643,7 +644,7 @@ PackedStringArray RigidBody2D::get_configuration_warnings() const {
 
 	PackedStringArray warnings = PhysicsBody2D::get_configuration_warnings();
 
-	if (ABS(t.columns[0].length() - 1.0) > 0.05 || ABS(t.columns[1].length() - 1.0) > 0.05) {
+	if (Math::abs(t.columns[0].length() - 1.0) > 0.05 || Math::abs(t.columns[1].length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 

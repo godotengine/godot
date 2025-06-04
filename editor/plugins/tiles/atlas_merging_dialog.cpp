@@ -216,7 +216,7 @@ void AtlasMergingDialog::_merge_confirmed(const String &p_path) {
 		}
 	}
 	undo_redo->commit_action();
-	commited_actions_count++;
+	committed_actions_count++;
 
 	hide();
 }
@@ -228,10 +228,10 @@ void AtlasMergingDialog::ok_pressed() {
 
 void AtlasMergingDialog::cancel_pressed() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	for (int i = 0; i < commited_actions_count; i++) {
+	for (int i = 0; i < committed_actions_count; i++) {
 		undo_redo->undo();
 	}
-	commited_actions_count = 0;
+	committed_actions_count = 0;
 }
 
 void AtlasMergingDialog::custom_action(const String &p_action) {
@@ -289,7 +289,7 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 	get_ok_button()->set_disabled(true);
 	merge_button->set_disabled(true);
 
-	commited_actions_count = 0;
+	committed_actions_count = 0;
 }
 
 AtlasMergingDialog::AtlasMergingDialog() {
@@ -352,6 +352,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	atlas_merging_right_panel->add_child(preview);
 
 	select_2_atlases_label = memnew(Label);
+	select_2_atlases_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	select_2_atlases_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_2_atlases_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	select_2_atlases_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

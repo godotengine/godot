@@ -402,10 +402,10 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         case 'q':
         case 'Q': {
             Point p[3];
-            float ctrl_x0 = (cur->x + 2 * arr[0]) * (1.0 / 3.0);
-            float ctrl_y0 = (cur->y + 2 * arr[1]) * (1.0 / 3.0);
-            float ctrl_x1 = (arr[2] + 2 * arr[0]) * (1.0 / 3.0);
-            float ctrl_y1 = (arr[3] + 2 * arr[1]) * (1.0 / 3.0);
+            float ctrl_x0 = (cur->x + 2 * arr[0]) * (1.0f / 3.0f);
+            float ctrl_y0 = (cur->y + 2 * arr[1]) * (1.0f / 3.0f);
+            float ctrl_x1 = (arr[2] + 2 * arr[0]) * (1.0f / 3.0f);
+            float ctrl_y1 = (arr[3] + 2 * arr[1]) * (1.0f / 3.0f);
             cmds->push(PathCommand::CubicTo);
             p[0] = {ctrl_x0, ctrl_y0};
             p[1] = {ctrl_x1, ctrl_y1};
@@ -428,10 +428,10 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
             } else {
                 ctrl = *cur;
             }
-            float ctrl_x0 = (cur->x + 2 * ctrl.x) * (1.0 / 3.0);
-            float ctrl_y0 = (cur->y + 2 * ctrl.y) * (1.0 / 3.0);
-            float ctrl_x1 = (arr[0] + 2 * ctrl.x) * (1.0 / 3.0);
-            float ctrl_y1 = (arr[1] + 2 * ctrl.y) * (1.0 / 3.0);
+            float ctrl_x0 = (cur->x + 2 * ctrl.x) * (1.0f / 3.0f);
+            float ctrl_y0 = (cur->y + 2 * ctrl.y) * (1.0f / 3.0f);
+            float ctrl_x1 = (arr[0] + 2 * ctrl.x) * (1.0f / 3.0f);
+            float ctrl_y1 = (arr[1] + 2 * ctrl.y) * (1.0f / 3.0f);
             cmds->push(PathCommand::CubicTo);
             p[0] = {ctrl_x0, ctrl_y0};
             p[1] = {ctrl_x1, ctrl_y1};

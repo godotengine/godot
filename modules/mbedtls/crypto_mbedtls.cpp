@@ -99,10 +99,11 @@ Error CryptoKeyMbedTLS::save(const String &p_path, bool p_public_only) {
 
 Error CryptoKeyMbedTLS::load_from_string(const String &p_string_key, bool p_public_only) {
 	int ret = 0;
+	const CharString string_key_utf8 = p_string_key.utf8();
 	if (p_public_only) {
-		ret = mbedtls_pk_parse_public_key(&pkey, (unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size());
+		ret = mbedtls_pk_parse_public_key(&pkey, (const unsigned char *)string_key_utf8.get_data(), string_key_utf8.size());
 	} else {
-		ret = _parse_key((unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size());
+		ret = _parse_key((const unsigned char *)string_key_utf8.get_data(), string_key_utf8.size());
 	}
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing key '" + itos(ret) + "'.");
 
@@ -211,7 +212,8 @@ String X509CertificateMbedTLS::save_to_string() {
 		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
 		ERR_FAIL_COND_V_MSG(ret != 0 || wrote == 0, String(), "Error saving the certificate.");
 
-		buffer += String((char *)w, wrote);
+		// PEM is base64, aka ascii
+		buffer += String::ascii(Span((char *)w, wrote));
 		crt = crt->next;
 	}
 	if (buffer.length() <= PEM_MIN_SIZE) {
@@ -369,7 +371,8 @@ void CryptoMbedTLS::load_default_certificates(const String &p_path) {
 			// Use builtin certs if there are no system certs.
 			PackedByteArray certs;
 			certs.resize(_certs_uncompressed_size + 1);
-			Compression::decompress(certs.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+			const int64_t decompressed_size = Compression::decompress(certs.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_MSG(decompressed_size != _certs_uncompressed_size, "Error decompressing builtin CA certificates. Decompressed size did not match expected size.");
 			certs.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
 			default_certs->load_from_memory(certs.ptr(), certs.size());
 			print_verbose("Loaded builtin CA certificates");

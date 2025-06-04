@@ -44,6 +44,9 @@ void CircleShape2D::_update_shape() {
 
 void CircleShape2D::set_radius(real_t p_radius) {
 	ERR_FAIL_COND_MSG(p_radius < 0, "CircleShape2D radius cannot be negative.");
+	if (radius == p_radius) {
+		return;
+	}
 	radius = p_radius;
 	_update_shape();
 }
@@ -74,7 +77,7 @@ void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Vector2> points;
 	points.resize(24);
 
-	const real_t turn_step = Math_TAU / 24.0;
+	const real_t turn_step = Math::TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
 		points.write[i] = Vector2(Math::cos(i * turn_step), Math::sin(i * turn_step)) * get_radius();
 	}

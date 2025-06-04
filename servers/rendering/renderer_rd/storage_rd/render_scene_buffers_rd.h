@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_SCENE_BUFFERS_RD_H
-#define RENDER_SCENE_BUFFERS_RD_H
+#pragma once
 
+#ifdef METAL_ENABLED
+#include "../effects/metal_fx.h"
+#endif
 #include "../effects/vrs.h"
 #include "core/templates/hash_map.h"
 #include "material_storage.h"
@@ -67,6 +69,7 @@ private:
 	RD::DataFormat base_data_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	RendererRD::VRS *vrs = nullptr;
 	uint64_t auto_exposure_version = 1;
+	RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
 
 	// Our render target represents our final destination that we display on screen.
 	RID render_target;
@@ -80,7 +83,11 @@ private:
 	float texture_mipmap_bias = 0.0f;
 	RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::VIEWPORT_ANISOTROPY_4X;
 
-	// Aliassing settings
+#ifdef METAL_ENABLED
+	RendererRD::MFXSpatialContext *mfx_spatial_context = nullptr;
+#endif
+
+	// Aliasing settings
 	RS::ViewportMSAA msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
 	RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	bool use_taa = false;
@@ -182,6 +189,7 @@ public:
 	void set_base_data_format(const RD::DataFormat p_base_data_format) { base_data_format = p_base_data_format; }
 	RD::DataFormat get_base_data_format() const { return base_data_format; }
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
+	RS::ViewportVRSMode get_vrs_mode() { return vrs_mode; }
 
 	void cleanup();
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
@@ -190,6 +198,11 @@ public:
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
 	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
+
+#ifdef METAL_ENABLED
+	void ensure_mfx(RendererRD::MFXSpatialEffect *p_effect);
+	_FORCE_INLINE_ RendererRD::MFXSpatialContext *get_mfx_spatial_context() const { return mfx_spatial_context; }
+#endif
 
 	// Named Textures
 
@@ -439,5 +452,3 @@ public:
 	// 2 full size, 2 half size
 	WeightBuffers weight_buffers[4]; // Only used in raster
 };
-
-#endif // RENDER_SCENE_BUFFERS_RD_H

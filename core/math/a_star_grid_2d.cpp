@@ -34,27 +34,27 @@
 #include "core/variant/typed_array.h"
 
 static real_t heuristic_euclidean(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return (real_t)Math::sqrt(dx * dx + dy * dy);
 }
 
 static real_t heuristic_manhattan(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return dx + dy;
 }
 
 static real_t heuristic_octile(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	real_t F = Math_SQRT2 - 1;
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
+	real_t F = Math::SQRT2 - 1;
 	return (dx < dy) ? F * dx + dy : F * dy + dx;
 }
 
 static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return MAX(dx, dy);
 }
 
@@ -503,6 +503,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 
 	LocalVector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
+	LocalVector<Point *> nbors;
 
 	p_begin_point->g_score = 0;
 	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
@@ -528,7 +529,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed.
 
-		LocalVector<Point *> nbors;
+		nbors.clear();
 		_get_nbors(p, nbors);
 
 		for (Point *e : nbors) {

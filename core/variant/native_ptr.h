@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NATIVE_PTR_H
-#define NATIVE_PTR_H
+#pragma once
 
 #include "core/math/audio_frame.h"
 #include "core/variant/method_ptrcall.h"
@@ -121,7 +120,7 @@ struct GDExtensionPtr {
 
 template <typename T>
 struct GetTypeInfo<GDExtensionConstPtr<T>> {
-	static const Variant::Type VARIANT_TYPE = Variant::NIL;
+	static const Variant::Type VARIANT_TYPE = Variant::INT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_INT_IS_POINTER, GDExtensionConstPtr<T>::get_name());
@@ -130,7 +129,7 @@ struct GetTypeInfo<GDExtensionConstPtr<T>> {
 
 template <typename T>
 struct GetTypeInfo<GDExtensionPtr<T>> {
-	static const Variant::Type VARIANT_TYPE = Variant::NIL;
+	static const Variant::Type VARIANT_TYPE = Variant::INT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_INT_IS_POINTER, GDExtensionPtr<T>::get_name());
@@ -176,5 +175,3 @@ GDVIRTUAL_NATIVE_PTR(int64_t)
 GDVIRTUAL_NATIVE_PTR(uint64_t)
 GDVIRTUAL_NATIVE_PTR(float)
 GDVIRTUAL_NATIVE_PTR(double)
-
-#endif // NATIVE_PTR_H

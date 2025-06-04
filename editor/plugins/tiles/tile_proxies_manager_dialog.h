@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_PROXIES_MANAGER_DIALOG_H
-#define TILE_PROXIES_MANAGER_DIALOG_H
+#pragma once
 
 #include "editor/editor_properties.h"
 #include "scene/gui/dialogs.h"
@@ -43,7 +42,7 @@ class TileProxiesManagerDialog : public ConfirmationDialog {
 	GDCLASS(TileProxiesManagerDialog, ConfirmationDialog);
 
 private:
-	int commited_actions_count = 0;
+	int committed_actions_count = 0;
 	Ref<TileSet> tile_set;
 
 	TileMapCell from;
@@ -85,5 +84,3 @@ public:
 
 	TileProxiesManagerDialog();
 };
-
-#endif // TILE_PROXIES_MANAGER_DIALOG_H

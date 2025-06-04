@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICAL_BONE_3D_EDITOR_PLUGIN_H
-#define PHYSICAL_BONE_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
@@ -51,7 +50,6 @@ private:
 
 public:
 	PhysicalBone3DEditor();
-	~PhysicalBone3DEditor() {}
 
 	void set_selected(PhysicalBone3D *p_pb);
 
@@ -70,8 +68,4 @@ public:
 	virtual bool handles(Object *p_object) const override { return p_object->is_class("PhysicalBone3D"); }
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_node) override;
-
-	PhysicalBone3DEditorPlugin();
 };
-
-#endif // PHYSICAL_BONE_3D_EDITOR_PLUGIN_H

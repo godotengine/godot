@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_COMPRESSED_H
-#define FILE_ACCESS_COMPRESSED_H
+#pragma once
 
 #include "core/io/compression.h"
 #include "core/io/file_access.h"
 
 class FileAccessCompressed : public FileAccess {
+	GDSOFTCLASS(FileAccessCompressed, FileAccess);
 	Compression::Mode cmode = Compression::MODE_ZSTD;
 	bool writing = false;
 	uint64_t write_pos = 0;
 	uint8_t *write_ptr = nullptr;
-	uint32_t write_buffer_size = 0;
+	uint64_t write_buffer_size = 0;
 	uint64_t write_max = 0;
 	uint32_t block_size = 0;
 	mutable bool read_eof = false;
@@ -94,6 +94,8 @@ public:
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) override;
+	virtual uint64_t _get_access_time(const String &p_file) override;
+	virtual int64_t _get_size(const String &p_file) override;
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override;
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override;
 
@@ -107,5 +109,3 @@ public:
 	FileAccessCompressed() {}
 	virtual ~FileAccessCompressed();
 };
-
-#endif // FILE_ACCESS_COMPRESSED_H

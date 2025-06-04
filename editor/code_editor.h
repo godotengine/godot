@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CODE_EDITOR_H
-#define CODE_EDITOR_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -80,14 +79,13 @@ class FindReplaceBar : public HBoxContainer {
 	Button *find_next = nullptr;
 	CheckBox *case_sensitive = nullptr;
 	CheckBox *whole_words = nullptr;
-	TextureButton *hide_button = nullptr;
+	Button *hide_button = nullptr;
 
 	LineEdit *replace_text = nullptr;
 	Button *replace = nullptr;
 	Button *replace_all = nullptr;
 	CheckBox *selection_only = nullptr;
 
-	VBoxContainer *vbc_lineedit = nullptr;
 	HBoxContainer *hbc_button_replace = nullptr;
 	HBoxContainer *hbc_option_replace = nullptr;
 
@@ -104,12 +102,14 @@ class FindReplaceBar : public HBoxContainer {
 	bool replace_all_mode = false;
 	bool preserve_cursor = false;
 
+	virtual void input(const Ref<InputEvent> &p_event) override;
+
 	void _get_search_from(int &r_line, int &r_col, SearchMode p_search_mode);
 	void _update_results_count();
 	void _update_matches_display();
 
 	void _show_search(bool p_with_replace, bool p_show_only);
-	void _hide_bar(bool p_force_focus = false);
+	void _hide_bar();
 	void _update_toggle_replace_button(bool p_replace_visible);
 
 	void _editor_text_changed();
@@ -121,8 +121,6 @@ class FindReplaceBar : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
-	void _focus_lost();
 
 	void _update_flags(bool p_direction_backwards);
 
@@ -166,8 +164,8 @@ class CodeTextEditor : public VBoxContainer {
 	FindReplaceBar *find_replace_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;
 
-	Button *toggle_scripts_button = nullptr;
-	Control *toggle_scripts_list = nullptr;
+	Button *toggle_files_button = nullptr;
+	Control *toggle_files_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
@@ -221,7 +219,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _zoom_popup_id_pressed(int p_idx);
 
-	void _toggle_scripts_pressed();
+	void _toggle_files_pressed();
 
 protected:
 	virtual void _load_theme_settings() {}
@@ -299,10 +297,8 @@ public:
 	void validate_script();
 
 	void set_toggle_list_control(Control *p_control);
-	void show_toggle_scripts_button();
-	void update_toggle_scripts_button();
+	void show_toggle_files_button();
+	void update_toggle_files_button();
 
 	CodeTextEditor();
 };
-
-#endif // CODE_EDITOR_H

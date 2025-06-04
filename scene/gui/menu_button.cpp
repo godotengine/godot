@@ -126,6 +126,14 @@ int MenuButton::get_item_count() const {
 
 void MenuButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
+		} break;
+
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 		} break;
@@ -186,6 +194,8 @@ void MenuButton::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 
+	ADD_CLASS_DEPENDENCY("PopupMenu");
+
 	PopupMenu::Item defaults(true);
 
 	base_property_helper.set_prefix("popup/item_");
@@ -204,13 +214,21 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 	disable_shortcuts = p_disabled;
 }
 
+#ifdef TOOLS_ENABLED
+PackedStringArray MenuButton::get_configuration_warnings() const {
+	PackedStringArray warnings = Button::get_configuration_warnings();
+	warnings.append_array(popup->get_configuration_warnings());
+	return warnings;
+}
+#endif
+
 MenuButton::MenuButton(const String &p_text) :
 		Button(p_text) {
 	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
 	set_process_shortcut_input(true);
-	set_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);

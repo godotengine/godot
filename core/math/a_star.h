@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef A_STAR_H
-#define A_STAR_H
+#pragma once
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
@@ -90,7 +89,7 @@ class AStar3D : public RefCounted {
 		unsigned char direction = NONE;
 
 		static uint32_t hash(const Segment &p_seg) {
-			return PairHash<int64_t, int64_t>().hash(p_seg.key);
+			return HashMapHasherDefault::hash(p_seg.key);
 		}
 		bool operator==(const Segment &p_s) const { return key == p_s.key; }
 
@@ -222,5 +221,3 @@ public:
 	AStar2D() {}
 	~AStar2D() {}
 };
-
-#endif // A_STAR_H

@@ -190,11 +190,44 @@ public class GodotLib {
 	public static native String getGlobal(String p_key);
 
 	/**
+	 * Used to get info about the current rendering system.
+	 *
+	 * @return A String array with two elements:
+	 *         [0] Rendering driver name.
+	 *         [1] Rendering method.
+	 */
+	public static native String[] getRendererInfo();
+
+	/**
 	 * Used to access Godot's editor settings.
 	 * @param settingKey Setting key
 	 * @return String value of the setting
 	 */
 	public static native String getEditorSetting(String settingKey);
+
+	/**
+	 * Update the 'key' editor setting with the given data. Must be called on the render thread.
+	 * @param key
+	 * @param data
+	 */
+	public static native void setEditorSetting(String key, Object data);
+
+	/**
+	 * Used to access project metadata from the editor settings. Must be accessed on the render thread.
+	 * @param section
+	 * @param key
+	 * @param defaultValue
+	 * @return
+	 */
+	public static native Object getEditorProjectMetadata(String section, String key, Object defaultValue);
+
+	/**
+	 * Set the project metadata to the editor settings. Must be accessed on the render thread.
+	 * @param section
+	 * @param key
+	 * @param data
+	 */
+	public static native void setEditorProjectMetadata(String section, String key, Object data);
 
 	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id|
@@ -236,9 +269,9 @@ public class GodotLib {
 	public static native void onNightModeChanged();
 
 	/**
-	 * Invoked on the input dialog submitted.
+	 * Invoked on the hardware keyboard connected/disconnected.
 	 */
-	public static native void inputDialogCallback(String p_text);
+	public static native void hardwareKeyboardConnected(boolean connected);
 
 	/**
 	 * Invoked on the file picker closed.
@@ -272,4 +305,8 @@ public class GodotLib {
 	 * @return the project resource directory
 	 */
 	public static native String getProjectResourceDir();
+
+	static native boolean isEditorHint();
+
+	static native boolean isProjectManagerHint();
 }

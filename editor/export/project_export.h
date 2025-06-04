@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_EXPORT_H
-#define PROJECT_EXPORT_H
+#pragma once
 
 #include "editor/export/editor_export_preset.h"
 #include "scene/gui/dialogs.h"
@@ -45,6 +44,7 @@ class LinkButton;
 class MenuButton;
 class OptionButton;
 class PopupMenu;
+class ProjectExportDialog;
 class RichTextLabel;
 class TabContainer;
 class Tree;
@@ -53,6 +53,7 @@ class TreeItem;
 class ProjectExportTextureFormatError : public HBoxContainer {
 	GDCLASS(ProjectExportTextureFormatError, HBoxContainer);
 
+	ProjectExportDialog *export_dialog = nullptr;
 	Label *texture_format_error_label = nullptr;
 	LinkButton *fix_texture_format_button = nullptr;
 	String setting_identifier;
@@ -64,7 +65,7 @@ protected:
 
 public:
 	void show_for_texture_format(const String &p_friendly_name, const String &p_setting_identifier);
-	ProjectExportTextureFormatError();
+	ProjectExportTextureFormatError(ProjectExportDialog *p_export_dialog);
 };
 
 class ProjectExportDialog : public ConfirmationDialog {
@@ -222,7 +223,4 @@ public:
 	bool is_exporting() const { return exporting; }
 
 	ProjectExportDialog();
-	~ProjectExportDialog();
 };
-
-#endif // PROJECT_EXPORT_H

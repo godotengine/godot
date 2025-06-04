@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FRAMEBUFFER_CACHE_RD_H
-#define FRAMEBUFFER_CACHE_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
@@ -59,7 +58,6 @@ class FramebufferCacheRD : public Object {
 
 	static _FORCE_INLINE_ uint32_t _hash_pass(const RD::FramebufferPass &p, uint32_t h) {
 		h = hash_murmur3_one_32(p.depth_attachment, h);
-		h = hash_murmur3_one_32(p.vrs_attachment, h);
 
 		h = hash_murmur3_one_32(p.color_attachments.size(), h);
 		for (int i = 0; i < p.color_attachments.size(); i++) {
@@ -81,10 +79,6 @@ class FramebufferCacheRD : public Object {
 
 	static _FORCE_INLINE_ bool _compare_pass(const RD::FramebufferPass &a, const RD::FramebufferPass &b) {
 		if (a.depth_attachment != b.depth_attachment) {
-			return false;
-		}
-
-		if (a.vrs_attachment != b.vrs_attachment) {
 			return false;
 		}
 
@@ -213,7 +207,7 @@ public:
 			const Cache *c = hash_table[table_idx];
 
 			while (c) {
-				if (c->hash == h && c->passes.size() == 0 && c->textures.size() == sizeof...(Args) && c->views == 1 && _compare_args(0, c->textures, args...)) {
+				if (c->hash == h && c->passes.is_empty() && c->textures.size() == sizeof...(Args) && c->views == 1 && _compare_args(0, c->textures, args...)) {
 					return c->cache;
 				}
 				c = c->next;
@@ -241,7 +235,7 @@ public:
 			const Cache *c = hash_table[table_idx];
 
 			while (c) {
-				if (c->hash == h && c->passes.size() == 0 && c->textures.size() == sizeof...(Args) && c->views == p_views && _compare_args(0, c->textures, args...)) {
+				if (c->hash == h && c->passes.is_empty() && c->textures.size() == sizeof...(Args) && c->views == p_views && _compare_args(0, c->textures, args...)) {
 					return c->cache;
 				}
 				c = c->next;
@@ -312,5 +306,3 @@ public:
 	FramebufferCacheRD();
 	~FramebufferCacheRD();
 };
-
-#endif // FRAMEBUFFER_CACHE_RD_H

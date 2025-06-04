@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLUGIN_CONFIG_DIALOG_H
-#define PLUGIN_CONFIG_DIALOG_H
+#pragma once
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
@@ -82,7 +81,4 @@ public:
 	void config(const String &p_config_path);
 
 	PluginConfigDialog();
-	~PluginConfigDialog();
 };
-
-#endif // PLUGIN_CONFIG_DIALOG_H

@@ -33,11 +33,6 @@
 #include <oleauto.h>
 #include <wbemidl.h>
 
-#if defined(__GNUC__)
-// Workaround GCC warning from -Wcast-function-type.
-#define GetProcAddress (void *)GetProcAddress
-#endif
-
 DWORD WINAPI _xinput_get_state(DWORD dwUserIndex, XINPUT_STATE *pState) {
 	return ERROR_DEVICE_NOT_CONNECTED;
 }
@@ -484,7 +479,7 @@ void JoypadWindows::process_joypads() {
 }
 
 void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
-	BitField<HatMask> dpad_val;
+	BitField<HatMask> dpad_val = HatMask::CENTER;
 
 	// Should be -1 when centered, but according to docs:
 	// "Some drivers report the centered position of the POV indicator as 65,535. Determine whether the indicator is centered as follows:
@@ -530,17 +525,17 @@ float JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool
 		return p_trigger ? -1.0f : 0.0f;
 	}
 	if (!p_xinput) {
-		return (float)p_val / MAX_JOY_AXIS;
+		return p_val / (float)MAX_JOY_AXIS;
 	}
 	if (p_trigger) {
 		// Convert to a value between -1.0f and 1.0f.
-		return 2.0f * p_val / MAX_TRIGGER - 1.0f;
+		return 2.0f * p_val / (float)MAX_TRIGGER - 1.0f;
 	}
 	float value;
 	if (p_val < 0) {
-		value = (float)p_val / MAX_JOY_AXIS;
+		value = p_val / (float)MAX_JOY_AXIS;
 	} else {
-		value = (float)p_val / (MAX_JOY_AXIS - 1);
+		value = p_val / (float)(MAX_JOY_AXIS - 1);
 	}
 	if (p_negate) {
 		value = -value;
@@ -597,8 +592,8 @@ void JoypadWindows::load_xinput() {
 
 	// (LPCSTR)100 is the magic number to get XInputGetStateEx, which also provides the state for the guide button
 	LPCSTR get_state_func_name = legacy_xinput ? "XInputGetState" : (LPCSTR)100;
-	XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, get_state_func_name);
-	XInputSetState_t set_func = (XInputSetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputSetState");
+	XInputGetState_t func = (XInputGetState_t)(void *)GetProcAddress((HMODULE)xinput_dll, get_state_func_name);
+	XInputSetState_t set_func = (XInputSetState_t)(void *)GetProcAddress((HMODULE)xinput_dll, "XInputSetState");
 	if (!func || !set_func) {
 		unload_xinput();
 		return;
@@ -608,7 +603,7 @@ void JoypadWindows::load_xinput() {
 
 	winmm_dll = LoadLibrary("Winmm.dll");
 	if (winmm_dll) {
-		joyGetDevCaps_t caps_func = (joyGetDevCaps_t)GetProcAddress((HMODULE)winmm_dll, "joyGetDevCapsW");
+		joyGetDevCaps_t caps_func = (joyGetDevCaps_t)(void *)GetProcAddress((HMODULE)winmm_dll, "joyGetDevCapsW");
 		if (caps_func) {
 			winmm_get_joycaps = caps_func;
 		} else {

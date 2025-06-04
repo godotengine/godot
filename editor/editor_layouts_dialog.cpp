@@ -95,8 +95,7 @@ void EditorLayoutsDialog::_post_popup() {
 		return;
 	}
 
-	List<String> layouts;
-	config.ptr()->get_sections(&layouts);
+	Vector<String> layouts = config->get_sections();
 
 	for (const String &E : layouts) {
 		layout_names->add_item(E);
@@ -128,6 +127,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	name = memnew(LineEdit);
 	makevb->add_child(name);
 	name->set_placeholder(TTR("Or enter new layout name"));
+	name->set_accessibility_name(TTRC("Layout Name"));
 	name->set_offset(SIDE_TOP, 5);
 	name->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
 	name->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);

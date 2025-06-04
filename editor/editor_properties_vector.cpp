@@ -153,7 +153,7 @@ void EditorPropertyVectorN::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_radians_as_degrees) {
+void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_radians_as_degrees, bool p_is_int) {
 	radians_as_degrees = p_radians_as_degrees;
 
 	for (EditorSpinSlider *spin : spin_sliders) {
@@ -164,6 +164,7 @@ void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, boo
 		spin->set_allow_greater(true);
 		spin->set_allow_lesser(true);
 		spin->set_suffix(p_suffix);
+		spin->set_editing_integer(p_is_int);
 	}
 
 	if (!p_link) {
@@ -221,6 +222,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 		bc->add_child(spin[i]);
 		spin[i]->set_flat(true);
 		spin[i]->set_label(String(COMPONENT_LABELS[i]));
+		spin[i]->set_accessibility_name(String(COMPONENT_LABELS[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -237,6 +239,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	linked->set_toggle_mode(true);
 	linked->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	linked->set_tooltip_text(TTR("Lock/Unlock Component Ratio"));
+	linked->set_accessibility_name(TTRC("Lock/Unlock Component Ratio"));
 	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyVectorN::_update_ratio));
 	linked->connect(SceneStringName(toggled), callable_mp(this, &EditorPropertyVectorN::_store_link));
 	hb->add_child(linked);

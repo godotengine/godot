@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #pragma once
-#include "./utils.h"
 #include "manifold/manifold.h"
+#include "utils.h"
 
 namespace manifold {
 
@@ -25,14 +25,14 @@ class CsgLeafNode;
 class CsgNode : public std::enable_shared_from_this<CsgNode> {
  public:
   virtual std::shared_ptr<CsgLeafNode> ToLeafNode() const = 0;
-  virtual std::shared_ptr<CsgNode> Transform(const mat3x4 &m) const = 0;
+  virtual std::shared_ptr<CsgNode> Transform(const mat3x4& m) const = 0;
   virtual CsgNodeType GetNodeType() const = 0;
 
   virtual std::shared_ptr<CsgNode> Boolean(
-      const std::shared_ptr<CsgNode> &second, OpType op);
+      const std::shared_ptr<CsgNode>& second, OpType op);
 
-  std::shared_ptr<CsgNode> Translate(const vec3 &t) const;
-  std::shared_ptr<CsgNode> Scale(const vec3 &s) const;
+  std::shared_ptr<CsgNode> Translate(const vec3& t) const;
+  std::shared_ptr<CsgNode> Scale(const vec3& s) const;
   std::shared_ptr<CsgNode> Rotate(double xDegrees = 0, double yDegrees = 0,
                                   double zDegrees = 0) const;
 };
@@ -47,12 +47,12 @@ class CsgLeafNode final : public CsgNode {
 
   std::shared_ptr<CsgLeafNode> ToLeafNode() const override;
 
-  std::shared_ptr<CsgNode> Transform(const mat3x4 &m) const override;
+  std::shared_ptr<CsgNode> Transform(const mat3x4& m) const override;
 
   CsgNodeType GetNodeType() const override;
 
   static std::shared_ptr<CsgLeafNode> Compose(
-      const std::vector<std::shared_ptr<CsgLeafNode>> &nodes);
+      const std::vector<std::shared_ptr<CsgLeafNode>>& nodes);
 
  private:
   mutable std::shared_ptr<const Manifold::Impl> pImpl_;
@@ -63,23 +63,22 @@ class CsgOpNode final : public CsgNode {
  public:
   CsgOpNode();
 
-  CsgOpNode(const std::vector<std::shared_ptr<CsgNode>> &children, OpType op);
+  CsgOpNode(const std::vector<std::shared_ptr<CsgNode>>& children, OpType op);
 
-  std::shared_ptr<CsgNode> Boolean(const std::shared_ptr<CsgNode> &second,
+  std::shared_ptr<CsgNode> Boolean(const std::shared_ptr<CsgNode>& second,
                                    OpType op) override;
 
-  std::shared_ptr<CsgNode> Transform(const mat3x4 &m) const override;
+  std::shared_ptr<CsgNode> Transform(const mat3x4& m) const override;
 
   std::shared_ptr<CsgLeafNode> ToLeafNode() const override;
 
   CsgNodeType GetNodeType() const override;
 
+  ~CsgOpNode();
+
  private:
-  struct Impl {
-    std::vector<std::shared_ptr<CsgNode>> children_;
-    bool forcedToLeafNodes_ = false;
-  };
-  mutable ConcurrentSharedPtr<Impl> impl_ = ConcurrentSharedPtr<Impl>(Impl{});
+  mutable ConcurrentSharedPtr<std::vector<std::shared_ptr<CsgNode>>> impl_ =
+      ConcurrentSharedPtr<std::vector<std::shared_ptr<CsgNode>>>({});
   OpType op_;
   mat3x4 transform_ = la::identity;
   // the following fields are for lazy evaluation, so they are mutable

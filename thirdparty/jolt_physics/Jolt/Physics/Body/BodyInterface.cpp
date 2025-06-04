@@ -316,11 +316,11 @@ void BodyInterface::SetShape(const BodyID &inBodyID, const Shape *inShape, bool 
 			{
 				BodyID id = body.GetID();
 				mBroadPhase->NotifyBodiesAABBChanged(&id, 1);
-			}
 
-			// Optionally activate body
-			if (inActivationMode == EActivation::Activate && !body.IsStatic())
-				ActivateBodyInternal(body);
+				// Optionally activate body
+				if (inActivationMode == EActivation::Activate && !body.IsStatic())
+					ActivateBodyInternal(body);
+			}
 		}
 	}
 }
@@ -346,11 +346,11 @@ void BodyInterface::NotifyShapeChanged(const BodyID &inBodyID, Vec3Arg inPreviou
 		{
 			BodyID id = body.GetID();
 			mBroadPhase->NotifyBodiesAABBChanged(&id, 1);
-		}
 
-		// Optionally activate body
-		if (inActivationMode == EActivation::Activate && !body.IsStatic())
-			ActivateBodyInternal(body);
+			// Optionally activate body
+			if (inActivationMode == EActivation::Activate && !body.IsStatic())
+				ActivateBodyInternal(body);
+		}
 	}
 }
 
@@ -401,11 +401,11 @@ void BodyInterface::SetPositionAndRotation(const BodyID &inBodyID, RVec3Arg inPo
 		{
 			BodyID id = body.GetID();
 			mBroadPhase->NotifyBodiesAABBChanged(&id, 1);
-		}
 
-		// Optionally activate body
-		if (inActivationMode == EActivation::Activate && !body.IsStatic())
-			ActivateBodyInternal(body);
+			// Optionally activate body
+			if (inActivationMode == EActivation::Activate && !body.IsStatic())
+				ActivateBodyInternal(body);
+		}
 	}
 }
 
@@ -428,11 +428,11 @@ void BodyInterface::SetPositionAndRotationWhenChanged(const BodyID &inBodyID, RV
 			{
 				BodyID id = body.GetID();
 				mBroadPhase->NotifyBodiesAABBChanged(&id, 1);
-			}
 
-			// Optionally activate body
-			if (inActivationMode == EActivation::Activate && !body.IsStatic())
-				ActivateBodyInternal(body);
+				// Optionally activate body
+				if (inActivationMode == EActivation::Activate && !body.IsStatic())
+					ActivateBodyInternal(body);
+			}
 		}
 	}
 }
@@ -468,11 +468,11 @@ void BodyInterface::SetPosition(const BodyID &inBodyID, RVec3Arg inPosition, EAc
 		{
 			BodyID id = body.GetID();
 			mBroadPhase->NotifyBodiesAABBChanged(&id, 1);
-		}
 
-		// Optionally activate body
-		if (inActivationMode == EActivation::Activate && !body.IsStatic())
-			ActivateBodyInternal(body);
+			// Optionally activate body
+			if (inActivationMode == EActivation::Activate && !body.IsStatic())
+				ActivateBodyInternal(body);
+		}
 	}
 }
 
@@ -509,11 +509,11 @@ void BodyInterface::SetRotation(const BodyID &inBodyID, QuatArg inRotation, EAct
 		{
 			BodyID id = body.GetID();
 			mBroadPhase->NotifyBodiesAABBChanged(&id, 1);
-		}
 
-		// Optionally activate body
-		if (inActivationMode == EActivation::Activate && !body.IsStatic())
-			ActivateBodyInternal(body);
+			// Optionally activate body
+			if (inActivationMode == EActivation::Activate && !body.IsStatic())
+				ActivateBodyInternal(body);
+		}
 	}
 }
 
@@ -988,6 +988,22 @@ bool BodyInterface::GetUseManifoldReduction(const BodyID &inBodyID) const
 		return lock.GetBody().GetUseManifoldReduction();
 	else
 		return true;
+}
+
+void BodyInterface::SetCollisionGroup(const BodyID &inBodyID, const CollisionGroup &inCollisionGroup)
+{
+	BodyLockWrite lock(*mBodyLockInterface, inBodyID);
+	if (lock.Succeeded())
+		lock.GetBody().SetCollisionGroup(inCollisionGroup);
+}
+
+const CollisionGroup &BodyInterface::GetCollisionGroup(const BodyID &inBodyID) const
+{
+	BodyLockRead lock(*mBodyLockInterface, inBodyID);
+	if (lock.Succeeded())
+		return lock.GetBody().GetCollisionGroup();
+	else
+		return CollisionGroup::sInvalid;
 }
 
 TransformedShape BodyInterface::GetTransformedShape(const BodyID &inBodyID) const

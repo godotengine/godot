@@ -36,12 +36,11 @@
 
 void PackedSceneEditor::_on_open_scene_pressed() {
 	// Using deferred call because changing scene updates the Inspector and thus destroys this plugin.
-	callable_mp(EditorNode::get_singleton(), &EditorNode::open_request).call_deferred(packed_scene->get_path(), false);
+	callable_mp(EditorNode::get_singleton(), &EditorNode::load_scene).call_deferred(packed_scene->get_path(), false, false, false, false);
 }
 
 void PackedSceneEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			open_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PackedScene")));
 		} break;

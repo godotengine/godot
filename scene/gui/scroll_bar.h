@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCROLL_BAR_H
-#define SCROLL_BAR_H
+#pragma once
 
 #include "scene/gui/range.h"
 
@@ -111,6 +110,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static inline const int PAGE_DIVISOR = 8;
+
 	void scroll(double p_amount);
 	void scroll_to(double p_position);
 
@@ -144,5 +145,3 @@ public:
 	VScrollBar() :
 			ScrollBar(VERTICAL) { set_h_size_flags(0); }
 };
-
-#endif // SCROLL_BAR_H

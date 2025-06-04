@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_3D_EDITOR_PLUGIN_H
-#define CAMERA_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
@@ -85,7 +84,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	Camera3DEditorPlugin();
-	~Camera3DEditorPlugin();
 };
-
-#endif // CAMERA_3D_EDITOR_PLUGIN_H

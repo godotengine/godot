@@ -32,6 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid.h"
@@ -244,10 +245,10 @@ Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_er
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
 		case Variant::INT: {
-			return ABS(VariantInternalAccessor<int64_t>::get(&x));
+			return Math::abs(VariantInternalAccessor<int64_t>::get(&x));
 		} break;
 		case Variant::FLOAT: {
-			return Math::absd(VariantInternalAccessor<double>::get(&x));
+			return Math::abs(VariantInternalAccessor<double>::get(&x));
 		} break;
 		case Variant::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).abs();
@@ -277,11 +278,11 @@ Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_er
 }
 
 double VariantUtilityFunctions::absf(double x) {
-	return Math::absd(x);
+	return Math::abs(x);
 }
 
 int64_t VariantUtilityFunctions::absi(int64_t x) {
-	return ABS(x);
+	return Math::abs(x);
 }
 
 Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_error) {
@@ -938,20 +939,10 @@ String VariantUtilityFunctions::str(const Variant **p_args, int p_arg_count, Cal
 		r_error.expected = 1;
 		return String();
 	}
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
 
 	r_error.error = Callable::CallError::CALL_OK;
 
-	return s;
+	return join_string(p_args, p_arg_count);
 }
 
 String VariantUtilityFunctions::error_string(Error error) {
@@ -968,74 +959,28 @@ String VariantUtilityFunctions::type_string(Variant::Type p_type) {
 }
 
 void VariantUtilityFunctions::print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	print_line(s);
+	print_line(join_string(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
 void VariantUtilityFunctions::print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	print_line_rich(s);
+	print_line_rich(join_string(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
-#undef print_verbose
-
-void VariantUtilityFunctions::print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+void VariantUtilityFunctions::_print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
-
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
-			}
-		}
-
 		// No need to use `print_verbose()` as this call already only happens
 		// when verbose mode is enabled. This avoids performing string argument concatenation
 		// when not needed.
-		print_line(s);
+		print_line(join_string(p_args, p_arg_count));
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
 void VariantUtilityFunctions::printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	print_error(s);
+	print_error(join_string(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1066,18 +1011,7 @@ void VariantUtilityFunctions::prints(const Variant **p_args, int p_arg_count, Ca
 }
 
 void VariantUtilityFunctions::printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
-
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	OS::get_singleton()->print("%s", s.utf8().get_data());
+	OS::get_singleton()->print("%s", join_string(p_args, p_arg_count).utf8().get_data());
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1086,18 +1020,8 @@ void VariantUtilityFunctions::push_error(const Variant **p_args, int p_arg_count
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.expected = 1;
 	}
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
 
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	ERR_PRINT(s);
+	ERR_PRINT(join_string(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1106,18 +1030,8 @@ void VariantUtilityFunctions::push_warning(const Variant **p_args, int p_arg_cou
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.expected = 1;
 	}
-	String s;
-	for (int i = 0; i < p_arg_count; i++) {
-		String os = p_args[i]->operator String();
 
-		if (i == 0) {
-			s = os;
-		} else {
-			s += os;
-		}
-	}
-
-	WARN_PRINT(s);
+	WARN_PRINT(join_string(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
 }
 
@@ -1236,13 +1150,22 @@ bool VariantUtilityFunctions::is_same(const Variant &p_a, const Variant &p_b) {
 	return p_a.identity_compare(p_b);
 }
 
-#ifdef DEBUG_METHODS_ENABLED
+String VariantUtilityFunctions::join_string(const Variant **p_args, int p_arg_count) {
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+		s += os;
+	}
+	return s;
+}
+
+#ifdef DEBUG_ENABLED
 #define VCALLR *ret = p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
 #define VCALL p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
 #else
 #define VCALLR *ret = p_func(VariantCaster<P>::cast(*p_args[Is])...)
 #define VCALL p_func(VariantCaster<P>::cast(*p_args[Is])...)
-#endif
+#endif // DEBUG_ENABLED
 
 template <typename R, typename... P, size_t... Is>
 static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *ret, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
@@ -1581,16 +1504,16 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	};                                                                                                           \
 	register_utility_function<Func_##m_func>(#m_func, m_args)
 
-#define FUNCBINDVARARGV(m_func, m_args, m_category)                                                              \
+#define FUNCBINDVARARGV_CNAME(m_func, m_func_cname, m_args, m_category)                                          \
 	class Func_##m_func {                                                                                        \
 	public:                                                                                                      \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
 			r_error.error = Callable::CallError::CALL_OK;                                                        \
-			VariantUtilityFunctions::m_func(p_args, p_argcount, r_error);                                        \
+			VariantUtilityFunctions::m_func_cname(p_args, p_argcount, r_error);                                  \
 		}                                                                                                        \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			Callable::CallError c;                                                                               \
-			VariantUtilityFunctions::m_func(p_args, p_argcount, c);                                              \
+			VariantUtilityFunctions::m_func_cname(p_args, p_argcount, c);                                        \
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			Vector<Variant> args;                                                                                \
@@ -1624,6 +1547,8 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		}                                                                                                        \
 	};                                                                                                           \
 	register_utility_function<Func_##m_func>(#m_func, m_args)
+
+#define FUNCBINDVARARGV(m_func, m_args, m_category) FUNCBINDVARARGV_CNAME(m_func, m_func, m_args, m_category)
 
 #define FUNCBIND(m_func, m_args, m_category)                                                                     \
 	class Func_##m_func {                                                                                        \
@@ -1678,7 +1603,7 @@ template <typename T>
 static void register_utility_function(const String &p_name, const Vector<String> &argnames) {
 	String name = p_name;
 	if (name.begins_with("_")) {
-		name = name.substr(1, name.length() - 1);
+		name = name.substr(1);
 	}
 	StringName sname = name;
 	ERR_FAIL_COND(utility_function_table.has(sname));
@@ -1832,7 +1757,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printraw, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDVARARGV(print_verbose, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV_CNAME(print_verbose, _print_verbose, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_error, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_warning, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 

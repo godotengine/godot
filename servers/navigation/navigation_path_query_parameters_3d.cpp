@@ -102,6 +102,38 @@ real_t NavigationPathQueryParameters3D::get_simplify_epsilon() const {
 	return simplify_epsilon;
 }
 
+void NavigationPathQueryParameters3D::set_included_regions(const TypedArray<RID> &p_regions) {
+	_included_regions.resize(p_regions.size());
+	for (uint32_t i = 0; i < _included_regions.size(); i++) {
+		_included_regions[i] = p_regions[i];
+	}
+}
+
+TypedArray<RID> NavigationPathQueryParameters3D::get_included_regions() const {
+	TypedArray<RID> r_regions;
+	r_regions.resize(_included_regions.size());
+	for (uint32_t i = 0; i < _included_regions.size(); i++) {
+		r_regions[i] = _included_regions[i];
+	}
+	return r_regions;
+}
+
+void NavigationPathQueryParameters3D::set_excluded_regions(const TypedArray<RID> &p_regions) {
+	_excluded_regions.resize(p_regions.size());
+	for (uint32_t i = 0; i < _excluded_regions.size(); i++) {
+		_excluded_regions[i] = p_regions[i];
+	}
+}
+
+TypedArray<RID> NavigationPathQueryParameters3D::get_excluded_regions() const {
+	TypedArray<RID> r_regions;
+	r_regions.resize(_excluded_regions.size());
+	for (uint32_t i = 0; i < _excluded_regions.size(); i++) {
+		r_regions[i] = _excluded_regions[i];
+	}
+	return r_regions;
+}
+
 void NavigationPathQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pathfinding_algorithm", "pathfinding_algorithm"), &NavigationPathQueryParameters3D::set_pathfinding_algorithm);
 	ClassDB::bind_method(D_METHOD("get_pathfinding_algorithm"), &NavigationPathQueryParameters3D::get_pathfinding_algorithm);
@@ -130,6 +162,12 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_simplify_epsilon", "epsilon"), &NavigationPathQueryParameters3D::set_simplify_epsilon);
 	ClassDB::bind_method(D_METHOD("get_simplify_epsilon"), &NavigationPathQueryParameters3D::get_simplify_epsilon);
 
+	ClassDB::bind_method(D_METHOD("set_included_regions", "regions"), &NavigationPathQueryParameters3D::set_included_regions);
+	ClassDB::bind_method(D_METHOD("get_included_regions"), &NavigationPathQueryParameters3D::get_included_regions);
+
+	ClassDB::bind_method(D_METHOD("set_excluded_regions", "regions"), &NavigationPathQueryParameters3D::set_excluded_regions);
+	ClassDB::bind_method(D_METHOD("get_excluded_regions"), &NavigationPathQueryParameters3D::get_excluded_regions);
+
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "map"), "set_map", "get_map");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_position"), "set_start_position", "get_start_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position"), "set_target_position", "get_target_position");
@@ -139,6 +177,8 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_metadata_flags", "get_metadata_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon"), "set_simplify_epsilon", "get_simplify_epsilon");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "excluded_regions", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_excluded_regions", "get_excluded_regions");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "included_regions", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_included_regions", "get_included_regions");
 
 	BIND_ENUM_CONSTANT(PATHFINDING_ALGORITHM_ASTAR);
 

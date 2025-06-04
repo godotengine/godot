@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_SPECIAL_COMPAT_HASHES_H
-#define GDEXTENSION_SPECIAL_COMPAT_HASHES_H
+#pragma once
 
 #ifndef DISABLE_DEPRECATED
 
@@ -48,7 +47,7 @@ class GDExtensionSpecialCompatHashes {
 		uint32_t current_hash;
 	};
 
-	static HashMap<StringName, LocalVector<Mapping>> mappings;
+	static inline HashMap<StringName, LocalVector<Mapping>> mappings;
 
 public:
 	static void initialize();
@@ -58,5 +57,3 @@ public:
 };
 
 #endif // DISABLE_DEPRECATED
-
-#endif // GDEXTENSION_SPECIAL_COMPAT_HASHES_H

@@ -498,7 +498,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationTree *p_tree, Animation
 
 String AnimationNodeStateMachinePlayback::_validate_path(AnimationNodeStateMachine *p_state_machine, const String &p_path) {
 	if (p_state_machine->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
-		return p_path; // Grouped state machine doesn't allow validat-able request.
+		return p_path; // Grouped state machine doesn't allow validate-able request.
 	}
 	String target = p_path;
 	Ref<AnimationNodeStateMachine> anodesm = p_state_machine->find_node_by_path(target);
@@ -563,7 +563,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 
 	// Begin astar.
 	while (!found_route) {
-		if (open_list.size() == 0) {
+		if (open_list.is_empty()) {
 			break; // No path found.
 		}
 
@@ -799,7 +799,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		pi.is_external_seeking = false;
 		pi.weight = 0;
 		current_nti = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
-		// Don't process first node if not necessary, insteads process next node.
+		// Don't process first node if not necessary, instead process next node.
 		_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
 	}
 
@@ -911,7 +911,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 		}
 
 		if (transition_path.has(next.node)) {
-			WARN_PRINT_ONCE_ED("AnimationNodeStateMachinePlayback: " + base_path + "playback aborts the transition by detecting one or more looped transitions in the same frame to prevent to infinity loop. You may need to check the transition settings.");
+			WARN_PRINT_ONCE_ED("AnimationNodeStateMachinePlayback: " + base_path + "playback has detected one or more looped transitions in a single frame and aborted to prevent an infinite loop. You may need to check the transition settings.");
 			break; // Maybe infinity loop, do nothing more.
 		}
 
@@ -1322,7 +1322,8 @@ bool AnimationNodeStateMachine::are_ends_reset() const {
 
 bool AnimationNodeStateMachine::can_edit_node(const StringName &p_name) const {
 	if (states.has(p_name)) {
-		return !(states[p_name].node->is_class("AnimationNodeStartState") || states[p_name].node->is_class("AnimationNodeEndState"));
+		const AnimationNode *anode = states[p_name].node.ptr();
+		return !(Object::cast_to<AnimationNodeStartState>(anode) || Object::cast_to<AnimationNodeEndState>(anode));
 	}
 
 	return true;
@@ -1426,16 +1427,24 @@ void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, co
 	updating_transitions = false;
 }
 
-void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
-	List<StringName> nodes;
+LocalVector<StringName> AnimationNodeStateMachine::get_node_list() const {
+	LocalVector<StringName> nodes;
+	nodes.reserve(states.size());
 	for (const KeyValue<StringName, State> &E : states) {
 		nodes.push_back(E.key);
 	}
 	nodes.sort_custom<StringName::AlphCompare>();
+	return nodes;
+}
 
-	for (const StringName &E : nodes) {
-		r_nodes->push_back(E);
+TypedArray<StringName> AnimationNodeStateMachine::get_node_list_as_typed_array() const {
+	TypedArray<StringName> typed_arr;
+	LocalVector<StringName> vec = get_node_list();
+	typed_arr.resize(vec.size());
+	for (uint32_t i = 0; i < vec.size(); i++) {
+		typed_arr[i] = vec[i];
 	}
+	return typed_arr;
 }
 
 bool AnimationNodeStateMachine::has_transition(const StringName &p_from, const StringName &p_to) const {
@@ -1695,7 +1704,8 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 }
 
 void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) const {
-	List<StringName> names;
+	LocalVector<StringName> names;
+	names.reserve(states.size());
 	for (const KeyValue<StringName, State> &E : states) {
 		names.push_back(E.key);
 	}
@@ -1708,10 +1718,6 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
 }
 
 void AnimationNodeStateMachine::_validate_property(PropertyInfo &p_property) const {
@@ -1795,6 +1801,7 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rename_node", "name", "new_name"), &AnimationNodeStateMachine::rename_node);
 	ClassDB::bind_method(D_METHOD("has_node", "name"), &AnimationNodeStateMachine::has_node);
 	ClassDB::bind_method(D_METHOD("get_node_name", "node"), &AnimationNodeStateMachine::get_node_name);
+	ClassDB::bind_method(D_METHOD("get_node_list"), &AnimationNodeStateMachine::get_node_list_as_typed_array);
 
 	ClassDB::bind_method(D_METHOD("set_node_position", "name", "position"), &AnimationNodeStateMachine::set_node_position);
 	ClassDB::bind_method(D_METHOD("get_node_position", "name"), &AnimationNodeStateMachine::get_node_position);

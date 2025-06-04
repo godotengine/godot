@@ -31,21 +31,20 @@
 #include "default_theme.h"
 
 #include "core/io/image.h"
-#include "default_font.gen.h"
-#include "default_theme_icons.gen.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
+#include "scene/theme/default_theme_icons.gen.h"
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
-#ifdef MODULE_SVG_ENABLED
-#include "modules/svg/image_loader_svg.h"
+#ifdef BROTLI_ENABLED
+#include "scene/theme/default_font.gen.h"
 #endif
 
 static const int default_font_size = 16;
@@ -80,24 +79,8 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 }
 
 // See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
-static Ref<ImageTexture> generate_icon(int p_index) {
-	Ref<Image> img = memnew(Image);
-
-#ifdef MODULE_SVG_ENABLED
-	// Upsample icon generation only if the scale isn't an integer multiplier.
-	// Generating upsampled icons is slower, and the benefit is hardly visible
-	// with integer scales.
-	const bool upsample = !Math::is_equal_approx(Math::round(scale), scale);
-
-	Error err = ImageLoaderSVG::create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
-#else
-	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
-	// 16 pixels is used as it's the most common base size for Godot icons.
-	img = Image::create_empty(Math::round(16 * scale), Math::round(16 * scale), false, Image::FORMAT_RGBA8);
-#endif
-
-	return ImageTexture::create_from_image(img);
+static Ref<SVGTexture> generate_icon(int p_index) {
+	return SVGTexture::create_from_string(default_theme_icons_sources[p_index], scale);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
@@ -326,6 +309,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("check_v_offset", "CheckBox", 0);
 	theme->set_constant("outline_size", "CheckBox", 0);
 
+	theme->set_color("checkbox_checked_color", "CheckBox", Color(1, 1, 1));
+	theme->set_color("checkbox_unchecked_color", "CheckBox", Color(1, 1, 1));
+
 	// CheckButton
 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
@@ -363,6 +349,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("check_v_offset", "CheckButton", 0);
 	theme->set_constant("outline_size", "CheckButton", 0);
 
+	theme->set_color("button_checked_color", "CheckButton", Color(1, 1, 1));
+	theme->set_color("button_unchecked_color", "CheckButton", Color(1, 1, 1));
+
 	// Button variations
 
 	theme->set_type_variation(SceneStringName(FlatButton), "Button");
@@ -388,6 +377,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Label
 
 	theme->set_stylebox(CoreStringName(normal), "Label", memnew(StyleBoxEmpty));
+	theme->set_stylebox("focus", "Label", focus);
 	theme->set_font(SceneStringName(font), "Label", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "Label", -1);
 
@@ -693,6 +683,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// File Dialog
 
+	theme->set_constant("thumbnail_size", "FileDialog", 64);
 	theme->set_icon("load", "FileDialog", icons["load"]);
 	theme->set_icon("save", "FileDialog", icons["save"]);
 	theme->set_icon("clear", "FileDialog", icons["clear"]);
@@ -700,11 +691,20 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("back_folder", "FileDialog", icons["arrow_left"]);
 	theme->set_icon("forward_folder", "FileDialog", icons["arrow_right"]);
 	theme->set_icon("reload", "FileDialog", icons["reload"]);
+	theme->set_icon("favorite", "FileDialog", icons["favorite"]);
 	theme->set_icon("toggle_hidden", "FileDialog", icons["visibility_visible"]);
 	theme->set_icon("toggle_filename_filter", "FileDialog", icons["toggle_filename_filter"]);
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
+	theme->set_icon("thumbnail_mode", "FileDialog", icons["file_mode_thumbnail"]);
+	theme->set_icon("list_mode", "FileDialog", icons["file_mode_list"]);
 	theme->set_icon("create_folder", "FileDialog", icons["folder_create"]);
+	theme->set_icon("sort", "FileDialog", icons["sort"]);
+	theme->set_icon("favorite_up", "FileDialog", icons["move_up"]);
+	theme->set_icon("favorite_down", "FileDialog", icons["move_down"]);
+
+	theme->set_icon("file_thumbnail", "FileDialog", icons["file_thumbnail"]);
+	theme->set_icon("folder_thumbnail", "FileDialog", icons["folder_thumbnail"]);
 	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));
@@ -785,9 +785,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox(SceneStringName(panel), "GraphNode", graphnode_normal);
 	theme->set_stylebox("panel_selected", "GraphNode", graphnode_selected);
+	theme->set_stylebox("panel_focus", "GraphNode", focus);
 	theme->set_stylebox("titlebar", "GraphNode", graphn_sb_titlebar);
 	theme->set_stylebox("titlebar_selected", "GraphNode", graphn_sb_titlebar_selected);
 	theme->set_stylebox("slot", "GraphNode", graphnode_slot);
+	theme->set_stylebox("slot_selected", "GraphNode", focus);
 	theme->set_icon("port", "GraphNode", icons["graph_port"]);
 	theme->set_icon("resizer", "GraphNode", icons["resizer_se"]);
 	theme->set_color("resizer_color", "GraphNode", control_font_color);
@@ -846,12 +848,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "Tree", focus);
 	theme->set_stylebox("hovered", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.07)));
 	theme->set_stylebox("hovered_dimmed", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.03)));
+	theme->set_stylebox("hovered_selected", "Tree", make_flat_stylebox(style_hover_selected_color));
+	theme->set_stylebox("hovered_selected_focus", "Tree", make_flat_stylebox(style_hover_selected_color));
 	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "Tree", focus);
 	theme->set_stylebox("cursor_unfocused", "Tree", focus);
 	theme->set_stylebox("button_hover", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.07)));
 	theme->set_stylebox("button_pressed", "Tree", button_pressed);
+	theme->set_stylebox("button_hover", "Tree", button_hover);
 	theme->set_stylebox("title_button_normal", "Tree", make_flat_stylebox(style_pressed_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_pressed", "Tree", make_flat_stylebox(style_hover_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_hover", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 4));
@@ -880,6 +885,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color(SceneStringName(font_color), "Tree", control_font_low_color);
 	theme->set_color("font_hovered_color", "Tree", control_font_hover_color);
 	theme->set_color("font_hovered_dimmed_color", "Tree", control_font_color);
+	theme->set_color("font_hovered_selected_color", "Tree", control_font_pressed_color);
 	theme->set_color("font_selected_color", "Tree", control_font_pressed_color);
 	theme->set_color("font_disabled_color", "Tree", control_font_disabled_color);
 	theme->set_color("font_outline_color", "Tree", Color(0, 0, 0));
@@ -1032,6 +1038,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "VSeparator", Math::round(4 * scale));
 
 	// ColorPicker
+	Ref<StyleBoxFlat> focus_circle = make_flat_stylebox(style_focus_color, default_margin, default_margin, default_margin, default_margin, default_corner_radius, false, 2);
+	focus_circle->set_corner_radius_all(Math::round(256 * scale));
+	focus_circle->set_corner_detail(Math::round(32 * scale));
 
 	theme->set_constant("margin", "ColorPicker", Math::round(4 * scale));
 	theme->set_constant("sv_width", "ColorPicker", Math::round(256 * scale));
@@ -1039,6 +1048,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_width", "ColorPicker", Math::round(30 * scale));
 	theme->set_constant("label_width", "ColorPicker", Math::round(10 * scale));
 	theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
+
+	theme->set_stylebox("sample_focus", "ColorPicker", focus);
+	theme->set_stylebox("picker_focus_rectangle", "ColorPicker", focus);
+	theme->set_stylebox("picker_focus_circle", "ColorPicker", focus_circle);
+	theme->set_color("focused_not_editing_cursor_color", "ColorPicker", Color(1, 1, 1, 0.275f));
 
 	theme->set_icon("menu_option", "ColorPicker", icons["tabs_menu_hl"]);
 	theme->set_icon("folded_arrow", "ColorPicker", icons["arrow_right"]);
@@ -1053,6 +1067,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("overbright_indicator", "ColorPicker", icons["color_picker_overbright"]);
 	theme->set_icon("bar_arrow", "ColorPicker", icons["color_picker_bar_arrow"]);
 	theme->set_icon("picker_cursor", "ColorPicker", icons["color_picker_cursor"]);
+	theme->set_icon("picker_cursor_bg", "ColorPicker", icons["color_picker_cursor_bg"]);
+	theme->set_icon("color_script", "ColorPicker", icons["script"]);
 
 	{
 		const int precision = 7;
@@ -1079,33 +1095,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 		hue_texture->set_gradient(hue_gradient);
 
 		theme->set_icon("color_hue", "ColorPicker", hue_texture);
-	}
-
-	{
-		const int precision = 7;
-
-		Ref<Gradient> hue_gradient;
-		hue_gradient.instantiate();
-		PackedFloat32Array offsets;
-		offsets.resize(precision);
-		PackedColorArray colors;
-		colors.resize(precision);
-
-		for (int i = 0; i < precision; i++) {
-			float h = i / float(precision - 1);
-			offsets.write[i] = h;
-			colors.write[i] = Color::from_ok_hsl(h, 1, 0.5);
-		}
-		hue_gradient->set_offsets(offsets);
-		hue_gradient->set_colors(colors);
-
-		Ref<GradientTexture2D> hue_texture;
-		hue_texture.instantiate();
-		hue_texture->set_width(800);
-		hue_texture->set_height(6);
-		hue_texture->set_gradient(hue_gradient);
-
-		theme->set_icon("color_okhsl_hue", "ColorPicker", hue_texture);
 	}
 
 	// ColorPickerButton
@@ -1138,6 +1127,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	preset_sb->set_anti_aliased(false);
 
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
+	theme->set_stylebox("preset_focus", "ColorPicker", focus);
 	theme->set_icon("preset_bg", "ColorPresetButton", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPresetButton", icons["color_picker_overbright"]);
 
@@ -1246,6 +1236,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("layout", "GraphEdit", icons["grid_layout"]);
 
 	theme->set_stylebox(SceneStringName(panel), "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+	theme->set_stylebox("panel_focus", "GraphEdit", focus);
 
 	Ref<StyleBoxFlat> graph_toolbar_style = make_flat_stylebox(Color(0.24, 0.24, 0.24, 0.6), 4, 2, 4, 2);
 	theme->set_stylebox("menu_panel", "GraphEdit", graph_toolbar_style);
@@ -1259,6 +1250,40 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("connection_hover_thickness", "GraphEdit", 0);
 	theme->set_color("connection_valid_target_tint_color", "GraphEdit", Color(1, 1, 1, 0.4));
 	theme->set_color("connection_rim_color", "GraphEdit", style_normal_color);
+
+	Ref<StyleBoxFlat> foldable_container_title = make_flat_stylebox(style_pressed_color);
+	foldable_container_title->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	foldable_container_title->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	theme->set_stylebox("title_panel", "FoldableContainer", foldable_container_title);
+	Ref<StyleBoxFlat> foldable_container_hover = make_flat_stylebox(style_hover_color);
+	foldable_container_hover->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	foldable_container_hover->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	theme->set_stylebox("title_hover_panel", "FoldableContainer", foldable_container_hover);
+	theme->set_stylebox("title_collapsed_panel", "FoldableContainer", make_flat_stylebox(style_pressed_color));
+	theme->set_stylebox("title_collapsed_hover_panel", "FoldableContainer", make_flat_stylebox(style_hover_color));
+	Ref<StyleBoxFlat> foldable_container_panel = make_flat_stylebox(style_normal_color);
+	foldable_container_panel->set_content_margin_all(default_margin);
+	foldable_container_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
+	foldable_container_panel->set_corner_radius(CORNER_TOP_RIGHT, 0);
+	theme->set_stylebox(SceneStringName(panel), "FoldableContainer", foldable_container_panel);
+	Ref<StyleBoxFlat> foldable_focus_style = make_flat_stylebox(style_focus_color, default_margin, default_margin, default_margin, default_margin, default_corner_radius, false, 2);
+	theme->set_stylebox("focus", "FoldableContainer", foldable_focus_style);
+
+	theme->set_font(SceneStringName(font), "FoldableContainer", Ref<Font>());
+	theme->set_font_size(SceneStringName(font_size), "FoldableContainer", default_font_size);
+
+	theme->set_color(SceneStringName(font_color), "FoldableContainer", control_font_color);
+	theme->set_color("hover_font_color", "FoldableContainer", control_font_hover_color);
+	theme->set_color("collapsed_font_color", "FoldableContainer", control_font_pressed_color);
+	theme->set_color("font_outline_color", "FoldableContainer", Color(1, 1, 1));
+
+	theme->set_icon("expanded_arrow", "FoldableContainer", icons["arrow_down"]);
+	theme->set_icon("expanded_arrow_mirrored", "FoldableContainer", icons["arrow_up"]);
+	theme->set_icon("folded_arrow", "FoldableContainer", icons["arrow_right"]);
+	theme->set_icon("folded_arrow_mirrored", "FoldableContainer", icons["arrow_left"]);
+
+	theme->set_constant("outline_size", "FoldableContainer", 0);
+	theme->set_constant("h_separation", "FoldableContainer", Math::round(2 * scale));
 
 	// Visual Node Ports
 
@@ -1303,13 +1328,14 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		// embedded in both editor and export template binaries.
 		Ref<FontFile> dynamic_font;
 		dynamic_font.instantiate();
+#ifdef BROTLI_ENABLED
 		dynamic_font->set_data_ptr(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size);
 		dynamic_font->set_subpixel_positioning(p_font_subpixel);
 		dynamic_font->set_hinting(p_font_hinting);
 		dynamic_font->set_antialiasing(p_font_antialiasing);
 		dynamic_font->set_multichannel_signed_distance_field(p_font_msdf);
 		dynamic_font->set_generate_mipmaps(p_font_generate_mipmaps);
-
+#endif
 		default_font = dynamic_font;
 	}
 

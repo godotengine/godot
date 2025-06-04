@@ -110,7 +110,7 @@ void __print_line_rich(const String &p_string) {
 		int brk_end = p_string.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
-			txt += p_string.substr(brk_pos, p_string.length() - brk_pos);
+			txt += p_string.substr(brk_pos);
 			output += txt;
 			break;
 		}
@@ -148,7 +148,7 @@ void __print_line_rich(const String &p_string) {
 			output += "";
 		} else if (tag == "center") {
 			output += "\n\t\t\t";
-		} else if (tag == "center") {
+		} else if (tag == "/center") {
 			output += "";
 		} else if (tag == "right") {
 			output += "\n\t\t\t\t\t\t";
@@ -257,7 +257,8 @@ void __print_line_rich(const String &p_string) {
 		} else if (tag == "/fgcolor") {
 			output += "\u001b[39;49m";
 		} else {
-			output += vformat("[%s]", tag);
+			output += "[";
+			pos = brk_pos + 1;
 		}
 	}
 	output += "\u001b[0m"; // Reset.

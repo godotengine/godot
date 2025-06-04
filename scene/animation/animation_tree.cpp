@@ -121,12 +121,10 @@ AnimationNode::NodeTimeInfo AnimationNode::get_node_time_info() const {
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	Dictionary cn;
 	if (GDVIRTUAL_CALL(_get_child_nodes, cn)) {
-		List<Variant> keys;
-		cn.get_key_list(&keys);
-		for (const Variant &E : keys) {
+		for (const KeyValue<Variant, Variant> &kv : cn) {
 			ChildNode child;
-			child.name = E;
-			child.node = cn[E];
+			child.name = kv.key;
+			child.node = kv.value;
 			r_child_nodes->push_back(child);
 		}
 	}
@@ -776,7 +774,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 			activity.push_back(a);
 		}
 		input_activity_map[p_base_path] = activity;
-		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = &input_activity_map[p_base_path];
+		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = input_activity_map.get_index(p_base_path);
 	}
 
 	List<PropertyInfo> plist;
@@ -895,8 +893,6 @@ void AnimationTree::_setup_animation_player() {
 }
 
 void AnimationTree::_validate_property(PropertyInfo &p_property) const {
-	AnimationMixer::_validate_property(p_property);
-
 	if (!animation_player.is_empty()) {
 		if (p_property.name == "root_node" || p_property.name.begins_with("libraries")) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
@@ -963,17 +959,15 @@ real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_co
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
 	}
-	const LocalVector<Activity> *activity = input_activity_map_get[p_path];
 
-	if (!activity || p_connection < 0 || p_connection >= (int64_t)activity->size()) {
+	int index = input_activity_map_get[p_path];
+	const LocalVector<Activity> &activity = input_activity_map.get_by_index(index).value;
+
+	if (p_connection < 0 || p_connection >= (int64_t)activity.size() || activity[p_connection].last_pass != process_pass) {
 		return 0;
 	}
 
-	if ((*activity)[p_connection].last_pass != process_pass) {
-		return 0;
-	}
-
-	return (*activity)[p_connection].activity;
+	return activity[p_connection].activity;
 }
 
 void AnimationTree::_bind_methods() {

@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_WINDOWS_NATIVE_H
-#define GL_MANAGER_WINDOWS_NATIVE_H
+#pragma once
 
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/error/error_list.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
@@ -105,5 +103,3 @@ public:
 };
 
 #endif // WINDOWS_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_WINDOWS_NATIVE_H

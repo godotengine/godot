@@ -4,7 +4,7 @@
 		Base class for the desktop platform exporter (Windows and Linux/BSD).
 	</brief_description>
 	<description>
-		The base class for the desktop platform exporters. These include Windows and Linux/BSD, but not macOS. See the classes inheriting this one for more details.
+		The base class for the desktop platform exporters. These include Windows and Linux/BSD, but not macOS. See the classes inheriting from this one for more details.
 	</description>
 	<tutorials>
 		<link title="Exporting for Windows">$DOCS_URL/tutorials/export/exporting_for_windows.html</link>

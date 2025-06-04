@@ -39,7 +39,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "main/main.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/packed_scene.h"
@@ -239,7 +239,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 		case MENU_OPTION_REMOVE_ITEM: {
 			String p = InspectorDock::get_inspector_singleton()->get_selected_path();
 			if (p.begins_with("item") && p.get_slice_count("/") >= 2) {
-				to_erase = p.get_slice("/", 1).to_int();
+				to_erase = p.get_slicec('/', 1).to_int();
 				cd_remove->set_text(vformat(TTR("Remove item %d?"), to_erase));
 				cd_remove->popup_centered(Size2(300, 60));
 			}
@@ -278,6 +278,8 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("MeshLibrary"));
 	menu->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
+	menu->set_flat(false);
+	menu->set_theme_type_variation("FlatMenuButton");
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();

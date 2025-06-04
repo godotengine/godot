@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_PATH_QUERY_RESULT_2D_H
-#define NAVIGATION_PATH_QUERY_RESULT_2D_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "servers/navigation/navigation_utilities.h"
@@ -64,8 +63,8 @@ public:
 	const Vector<int64_t> &get_path_owner_ids() const;
 
 	void reset();
+
+	void set_data(const LocalVector<Vector2> &p_path, const LocalVector<int32_t> &p_path_types, const LocalVector<RID> &p_path_rids, const LocalVector<int64_t> &p_path_owner_ids);
 };
 
 VARIANT_ENUM_CAST(NavigationPathQueryResult2D::PathSegmentType);
-
-#endif // NAVIGATION_PATH_QUERY_RESULT_2D_H

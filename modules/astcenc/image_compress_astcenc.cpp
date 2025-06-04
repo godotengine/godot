@@ -35,6 +35,7 @@
 
 #include <astcenc.h>
 
+#ifdef TOOLS_ENABLED
 void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	const uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
@@ -171,6 +172,7 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 
 	print_verbose(vformat("astcenc: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
+#endif // TOOLS_ENABLED
 
 void _decompress_astc(Image *r_img) {
 	const uint64_t start_time = OS::get_singleton()->get_ticks_msec();
@@ -213,8 +215,9 @@ void _decompress_astc(Image *r_img) {
 
 	astcenc_config config;
 	const float quality = ASTCENC_PRE_MEDIUM;
+	const uint32_t flags = ASTCENC_FLG_DECOMPRESS_ONLY;
 
-	astcenc_error status = astcenc_config_init(profile, block_x, block_y, 1, quality, 0, &config);
+	astcenc_error status = astcenc_config_init(profile, block_x, block_y, 1, quality, flags, &config);
 	ERR_FAIL_COND_MSG(status != ASTCENC_SUCCESS,
 			vformat("astcenc: Configuration initialization failed: %s.", astcenc_get_error_string(status)));
 

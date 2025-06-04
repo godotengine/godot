@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLADA_H
-#define COLLADA_H
+#pragma once
 
 #include "core/io/xml_parser.h"
 
@@ -57,7 +56,6 @@ public:
 			int uv_idx = 0;
 			String texture;
 			Color color;
-			Channel() {}
 		};
 
 		Channel diffuse, specular, emission, bump;
@@ -117,8 +115,6 @@ public:
 
 		float spot_angle = 45;
 		float spot_exp = 1;
-
-		LightData() {}
 	};
 
 	struct MeshData {
@@ -154,8 +150,6 @@ public:
 
 		bool found_double_sided = false;
 		bool double_sided = true;
-
-		MeshData() {}
 	};
 
 	struct CurveData {
@@ -171,8 +165,6 @@ public:
 		HashMap<String, Source> sources;
 
 		HashMap<String, String> control_vertices;
-
-		CurveData() {}
 	};
 
 	struct SkinControllerData {
@@ -185,7 +177,6 @@ public:
 			Vector<String> sarray; //maybe for names
 			Vector<float> array;
 			int stride = 1;
-			Source() {}
 		};
 
 		HashMap<String, Source> sources;
@@ -208,8 +199,6 @@ public:
 		} weights;
 
 		HashMap<String, Transform3D> bone_rest_map;
-
-		SkinControllerData() {}
 	};
 
 	struct MorphControllerData {
@@ -220,13 +209,11 @@ public:
 			int stride = 1;
 			Vector<String> sarray; //maybe for names
 			Vector<float> array;
-			Source() {}
 		};
 
 		HashMap<String, Source> sources;
 
 		HashMap<String, String> targets;
-		MorphControllerData() {}
 	};
 
 	struct Vertex {
@@ -304,8 +291,6 @@ public:
 				return uid < p_vert.uid;
 			}
 		}
-
-		Vertex() {}
 	};
 
 	struct Node {
@@ -351,7 +336,6 @@ public:
 
 		bool ignore_anim = false;
 
-		Node() {}
 		virtual ~Node() {
 			for (int i = 0; i < children.size(); i++) {
 				memdelete(children[i]);
@@ -413,8 +397,6 @@ public:
 		float begin = 0;
 		float end = 1;
 		Vector<String> tracks;
-
-		AnimationClip() {}
 	};
 
 	struct AnimationTrack {
@@ -440,15 +422,11 @@ public:
 			Point2 in_tangent;
 			Point2 out_tangent;
 			InterpolationType interp_type = INTERP_LINEAR;
-
-			Key() {}
 		};
 
 		Vector<float> get_value_at_time(float p_time) const;
 
 		Vector<Key> keys;
-
-		AnimationTrack() {}
 	};
 
 	/****************/
@@ -506,13 +484,9 @@ public:
 		HashMap<String, Vector<int>> by_id_tracks;
 
 		float animation_length = 0;
-
-		State() {}
 	} state;
 
 	Error load(const String &p_path, int p_flags = 0);
-
-	Collada();
 
 	Transform3D fix_transform(const Transform3D &p_transform);
 
@@ -570,5 +544,3 @@ private: // private stuff
 
 	void _optimize();
 };
-
-#endif // COLLADA_H

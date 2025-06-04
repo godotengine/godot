@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_FORWARD_MOBILE_H
-#define RENDER_FORWARD_MOBILE_H
+#pragma once
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
@@ -174,7 +173,6 @@ private:
 	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	RID render_base_uniform_set;
-	LocalVector<RID> render_pass_uniform_sets;
 
 	/* Light map */
 
@@ -211,7 +209,7 @@ private:
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; // Base offset in global buffer for instance variables.
 			uint32_t gi_offset; // GI information when using lightmapping (VCT or lightmap index).
-			uint32_t layer_mask = 1;
+			uint32_t layer_mask;
 			float lightmap_uv_scale[4]; // Doubles as uv_offset when needed.
 			uint32_t reflection_probes[2]; // Packed reflection probes.
 			uint32_t omni_lights[2]; // Packed omni lights.
@@ -220,7 +218,52 @@ private:
 			float compressed_aabb_position[4];
 			float compressed_aabb_size[4];
 			float uv_scale[4];
+
+			// These setters allow us to copy the data over with operation when using floats.
+			inline void set_lightmap_uv_scale(const Rect2 &p_rect) {
+#ifdef REAL_T_IS_DOUBLE
+				lightmap_uv_scale[0] = p_rect.position.x;
+				lightmap_uv_scale[1] = p_rect.position.y;
+				lightmap_uv_scale[2] = p_rect.size.x;
+				lightmap_uv_scale[3] = p_rect.size.y;
+#else
+				Rect2 *rect = reinterpret_cast<Rect2 *>(lightmap_uv_scale);
+				*rect = p_rect;
+#endif
+			}
+
+			inline void set_compressed_aabb(const AABB &p_aabb) {
+#ifdef REAL_T_IS_DOUBLE
+				compressed_aabb_position[0] = p_aabb.position.x;
+				compressed_aabb_position[1] = p_aabb.position.y;
+				compressed_aabb_position[2] = p_aabb.position.z;
+
+				compressed_aabb_size[0] = p_aabb.size.x;
+				compressed_aabb_size[1] = p_aabb.size.y;
+				compressed_aabb_size[2] = p_aabb.size.z;
+#else
+				Vector3 *compressed_aabb_position_vec3 = reinterpret_cast<Vector3 *>(compressed_aabb_position);
+				Vector3 *compressed_aabb_size_vec3 = reinterpret_cast<Vector3 *>(compressed_aabb_size);
+				*compressed_aabb_position_vec3 = p_aabb.position;
+				*compressed_aabb_size_vec3 = p_aabb.size;
+#endif
+			}
+
+			inline void set_uv_scale(const Vector4 &p_uv_scale) {
+#ifdef REAL_T_IS_DOUBLE
+				uv_scale[0] = p_uv_scale.x;
+				uv_scale[1] = p_uv_scale.y;
+				uv_scale[2] = p_uv_scale.z;
+				uv_scale[3] = p_uv_scale.w;
+#else
+				Vector4 *uv_scale_vec4 = reinterpret_cast<Vector4 *>(uv_scale);
+				*uv_scale_vec4 = p_uv_scale;
+#endif
+			}
 		};
+
+		static_assert(std::is_trivially_destructible_v<InstanceData>);
+		static_assert(std::is_trivially_constructible_v<InstanceData>);
 
 		RID instance_buffer[RENDER_LIST_MAX];
 		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
@@ -239,9 +282,7 @@ private:
 		RID lightmap_capture_buffer;
 
 		bool used_screen_texture = false;
-		bool used_normal_texture = false;
 		bool used_depth_texture = false;
-		bool used_sss = false;
 		bool used_lightmap = false;
 
 		struct ShadowPass {
@@ -322,10 +363,18 @@ private:
 	};
 
 	struct RenderElementInfo {
-		uint32_t uses_lightmap : 1;
-		uint32_t lod_index : 8;
-		uint32_t reserved : 23;
+		union {
+			struct {
+				uint32_t lod_index : 8;
+				uint32_t uses_lightmap : 1;
+				uint32_t reserved : 23;
+			};
+			uint32_t value;
+		};
 	};
+
+	static_assert(std::is_trivially_destructible_v<RenderElementInfo>);
+	static_assert(std::is_trivially_constructible_v<RenderElementInfo>);
 
 	template <PassMode p_pass_mode>
 	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
@@ -358,6 +407,7 @@ protected:
 
 	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
 	enum {
+		INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT = 1 << 2,
 		INSTANCE_DATA_FLAGS_DYNAMIC = 1 << 3,
 		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
 		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
@@ -397,31 +447,26 @@ protected:
 
 		union {
 			struct {
-				// !BAS! CHECK BITS!!!
-
-				uint64_t surface_index : 10;
-				uint64_t geometry_id : 32;
-				uint64_t material_id_low : 16;
-
-				uint64_t material_id_hi : 16;
-				uint64_t shader_id : 32;
-				uint64_t uses_lightmap : 4; // sort by lightmap id here, not whether its yes/no (is 4 bits enough?)
-				uint64_t depth_layer : 4;
-				uint64_t priority : 8;
-
-				// uint64_t lod_index : 8; // no need to sort on LOD
-				// uint64_t uses_forward_gi : 1; // no GI here, remove
-			};
-			struct {
 				uint64_t sort_key1;
 				uint64_t sort_key2;
+			};
+			struct {
+				uint64_t lod_index : 8;
+				uint64_t uses_lightmap : 1;
+				uint64_t pad : 3;
+				uint64_t depth_layer : 4;
+				uint64_t surface_index : 8;
+				uint64_t priority : 8;
+				uint64_t geometry_id : 32;
+
+				uint64_t material_id : 32;
+				uint64_t shader_id : 32;
 			};
 		} sort;
 
 		RS::PrimitiveType primitive = RS::PRIMITIVE_MAX;
 		uint32_t flags = 0;
 		uint32_t surface_index = 0;
-		uint32_t lod_index = 0;
 
 		void *surface = nullptr;
 		RID material_uniform_set;
@@ -527,6 +572,14 @@ protected:
 		return forward_id_storage_mobile;
 	}
 
+	struct ForwardIDByMapSort {
+		uint8_t map;
+		RendererRD::ForwardID forward_id;
+		bool operator<(const ForwardIDByMapSort &p_sort) const {
+			return map > p_sort.map;
+		}
+	};
+
 public:
 	static RenderForwardMobile *get_singleton() { return singleton; }
 
@@ -566,6 +619,8 @@ public:
 
 	struct GlobalPipelineData {
 		union {
+			uint32_t key;
+
 			struct {
 				uint32_t texture_samples : 3;
 				uint32_t target_samples : 3;
@@ -576,9 +631,12 @@ public:
 				uint32_t use_32_bit_shadows : 1;
 				uint32_t use_shadow_cubemaps : 1;
 				uint32_t use_shadow_dual_paraboloid : 1;
+				uint32_t use_vrs : 1;
+				uint32_t use_subpass_post_pass : 1;
+				uint32_t use_separate_post_pass : 1;
+				uint32_t use_hdr_render_target : 1;
+				uint32_t use_ldr_render_target : 1;
 			};
-
-			uint32_t key;
 		};
 	};
 
@@ -599,6 +657,12 @@ public:
 	void _update_dirty_geometry_instances();
 	void _update_dirty_geometry_pipelines();
 
+	// Global data about the scene that can be used to pre-allocate resources without relying on culling.
+	struct GlobalSurfaceData {
+		bool screen_texture_used = false;
+		bool depth_texture_used = false;
+	} global_surface_data;
+
 	virtual RenderGeometryInstance *geometry_instance_create(RID p_base) override;
 	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;
 
@@ -608,6 +672,11 @@ public:
 
 	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) override;
 	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override;
+
+	/* SHADER LIBRARY */
+
+	virtual void enable_features(BitField<FeatureBits> p_feature_bits) override;
+	virtual String get_name() const override;
 
 	virtual bool free(RID p_rid) override;
 
@@ -623,5 +692,3 @@ public:
 	~RenderForwardMobile();
 };
 } // namespace RendererSceneRenderImplementation
-
-#endif // RENDER_FORWARD_MOBILE_H

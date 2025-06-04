@@ -216,7 +216,7 @@ void TextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
 	PackedInt32Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
-	if (bookmark_list.size() == 0) {
+	if (bookmark_list.is_empty()) {
 		return;
 	}
 
@@ -229,7 +229,7 @@ void TextEditor::_update_bookmark_list() {
 			line = line.substr(0, 50);
 		}
 
-		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
+		bookmarks_menu->add_item(String::num_int64(bookmark_list[i] + 1) + " - \"" + line + "\"");
 		bookmarks_menu->set_item_metadata(-1, bookmark_list[i]);
 	}
 }
@@ -302,6 +302,7 @@ void TextEditor::convert_indent() {
 
 void TextEditor::tag_saved_version() {
 	code_editor->get_text_editor()->tag_saved_version();
+	edited_file_data.last_modified_time = FileAccess::get_modified_time(edited_file_data.path);
 }
 
 void TextEditor::goto_line(int p_line, int p_column) {
@@ -409,11 +410,9 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
 			tx->fold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_UNFOLD_ALL_LINES: {
 			tx->unfold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
@@ -480,6 +479,9 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case BOOKMARK_REMOVE_ALL: {
 			code_editor->remove_all_bookmarks();
+		} break;
+		case EDIT_EMOJI_AND_SYMBOL: {
+			code_editor->get_text_editor()->show_emoji_and_symbol_picker();
 		} break;
 	}
 }
@@ -560,6 +562,10 @@ void TextEditor::_prepare_edit_menu() {
 
 void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position) {
 	context_menu->clear();
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+		context_menu->add_item(TTR("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
+		context_menu->add_separator();
+	}
 	if (p_selection) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_cut"), EDIT_CUT);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_copy"), EDIT_COPY);
@@ -593,8 +599,8 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	context_menu->popup();
 }
 
-void TextEditor::update_toggle_scripts_button() {
-	code_editor->update_toggle_scripts_button();
+void TextEditor::update_toggle_files_button() {
+	code_editor->update_toggle_files_button();
 }
 
 TextEditor::TextEditor() {
@@ -605,7 +611,7 @@ TextEditor::TextEditor() {
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	code_editor->show_toggle_scripts_button();
+	code_editor->show_toggle_files_button();
 	code_editor->set_toggle_list_control(ScriptEditor::get_singleton()->get_left_list_split());
 
 	update_settings();
@@ -686,7 +692,7 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 
 	MenuButton *goto_menu = memnew(MenuButton);

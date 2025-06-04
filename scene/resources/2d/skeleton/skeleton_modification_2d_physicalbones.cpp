@@ -67,7 +67,8 @@ bool SkeletonModification2DPhysicalBones::_get(const StringName &p_path, Variant
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (path.begins_with("fetch_bones")) {
-			return true; // Do nothing!
+			// Do nothing!
+			return false;
 		}
 	}
 #endif //TOOLS_ENABLED
@@ -118,7 +119,7 @@ void SkeletonModification2DPhysicalBones::_execute(float p_delta) {
 			continue;
 		}
 
-		PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(ObjectDB::get_instance(bone_data.physical_bone_node_cache));
+		PhysicalBone2D *physical_bone = ObjectDB::get_instance<PhysicalBone2D>(bone_data.physical_bone_node_cache);
 		if (!physical_bone) {
 			ERR_PRINT_ONCE("PhysicalBone2D not found at index " + itos(i) + "!");
 			return;
@@ -238,7 +239,7 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 	}
 	_simulation_state_dirty = false;
 
-	if (_simulation_state_dirty_names.size() <= 0) {
+	if (_simulation_state_dirty_names.is_empty()) {
 		for (int i = 0; i < physical_bone_chain.size(); i++) {
 			PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(stack->skeleton->get_node(physical_bone_chain[i].physical_bone_node));
 			if (!physical_bone) {
@@ -249,7 +250,7 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 		}
 	} else {
 		for (int i = 0; i < physical_bone_chain.size(); i++) {
-			PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(ObjectDB::get_instance(physical_bone_chain[i].physical_bone_node_cache));
+			PhysicalBone2D *physical_bone = ObjectDB::get_instance<PhysicalBone2D>(physical_bone_chain[i].physical_bone_node_cache);
 			if (!physical_bone) {
 				continue;
 			}

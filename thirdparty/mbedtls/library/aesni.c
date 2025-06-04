@@ -489,7 +489,7 @@ int mbedtls_aesni_crypt_ecb(mbedtls_aes_context *ctx,
          "movdqu    %%xmm0, (%4)    \n\t" // export output
          :
          : "r" (ctx->nr), "r" (ctx->buf + ctx->rk_offset), "r" (mode), "r" (input), "r" (output)
-         : "memory", "cc", "xmm0", "xmm1");
+         : "memory", "cc", "xmm0", "xmm1", "0", "1");
 
 
     return 0;
@@ -679,7 +679,7 @@ static void aesni_setkey_enc_128(unsigned char *rk,
          AESKEYGENA(xmm0_xmm1, "0x36")      "call 1b \n\t"
          :
          : "r" (rk), "r" (key)
-         : "memory", "cc", "0");
+         : "memory", "cc", "xmm0", "xmm1", "0");
 }
 
 /*
@@ -737,7 +737,7 @@ static void aesni_setkey_enc_192(unsigned char *rk,
 
          :
          : "r" (rk), "r" (key)
-         : "memory", "cc", "0");
+         : "memory", "cc", "xmm0", "xmm1", "xmm2", "0");
 }
 #endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
 
@@ -805,7 +805,7 @@ static void aesni_setkey_enc_256(unsigned char *rk,
          AESKEYGENA(xmm1_xmm2, "0x40")      "call 1b \n\t"
          :
          : "r" (rk), "r" (key)
-         : "memory", "cc", "0");
+         : "memory", "cc", "xmm0", "xmm1", "xmm2", "0");
 }
 #endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
 

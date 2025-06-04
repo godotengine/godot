@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_MANAGER_H
-#define GDEXTENSION_MANAGER_H
+#pragma once
 
 #include "core/extension/gdextension.h"
 
@@ -42,7 +41,7 @@ class GDExtensionManager : public Object {
 
 	static void _bind_methods();
 
-	static GDExtensionManager *singleton;
+	static inline GDExtensionManager *singleton = nullptr;
 
 public:
 	enum LoadStatus {
@@ -92,5 +91,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(GDExtensionManager::LoadStatus)
-
-#endif // GDEXTENSION_MANAGER_H

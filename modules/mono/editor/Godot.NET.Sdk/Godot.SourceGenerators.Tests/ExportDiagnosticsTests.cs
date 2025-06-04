@@ -101,4 +101,13 @@ public class ExportDiagnosticsTests
             new string[] { "ExportDiagnostics_GD0110_ScriptProperties.generated.cs" }
         );
     }
+
+    [Fact]
+    public async void ExportToolButtonStoringCallable()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
+            new string[] { "ExportDiagnostics_GD0111.cs" },
+            new string[] { "ExportDiagnostics_GD0111_ScriptProperties.generated.cs" }
+        );
+    }
 }

@@ -3,6 +3,8 @@
 This folder contains the C++, Objective-C and Objective-C++ code for the macOS
 platform port.
 
+This platform uses shared Apple code ([`drivers/apple`](/drivers/apple)).
+
 See also [`misc/dist/macos`](/misc/dist/macos) folder for additional files used
 by this platform. [`misc/dist/macos_tools.app`](/misc/dist/macos_tools.app) is
 an `.app` bundle template used for packaging the macOS editor, while

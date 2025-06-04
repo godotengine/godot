@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MEMORY_H
-#define MEMORY_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
 
-#include <stddef.h>
-#include <new>
+#include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
 class Memory {
@@ -43,8 +41,6 @@ class Memory {
 	static SafeNumeric<uint64_t> mem_usage;
 	static SafeNumeric<uint64_t> max_usage;
 #endif
-
-	static SafeNumeric<uint64_t> alloc_count;
 
 public:
 	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
@@ -58,7 +54,9 @@ public:
 	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
 	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
 
+	template <bool p_ensure_zero = false>
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
+	_FORCE_INLINE_ static void *alloc_static_zeroed(size_t p_bytes, bool p_pad_align = false) { return alloc_static<true>(p_bytes, p_pad_align); }
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
 
@@ -111,6 +109,7 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #endif
 
 #define memalloc(m_size) Memory::alloc_static(m_size)
+#define memalloc_zeroed(m_size) Memory::alloc_static_zeroed(m_size)
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
 #define memfree(m_mem) Memory::free_static(m_mem)
 
@@ -196,6 +195,20 @@ T *memnew_arr_template(size_t p_elements) {
 	return (T *)mem;
 }
 
+// Fast alternative to a loop constructor pattern.
+template <typename T>
+_FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
+	if constexpr (is_zero_constructible_v<T>) {
+		// Can optimize with memset.
+		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
+	} else {
+		// Need to use a for loop.
+		for (size_t i = 0; i < p_num; i++) {
+			memnew_placement(p_start + i, T());
+		}
+	}
+}
+
 /**
  * Wonders of having own array functions, you can actually check the length of
  * an allocated-with memnew_arr() array
@@ -244,5 +257,3 @@ public:
 	_FORCE_INLINE_ T *new_allocation(const Args &&...p_args) { return memnew(T(p_args...)); }
 	_FORCE_INLINE_ void delete_allocation(T *p_allocation) { memdelete(p_allocation); }
 };
-
-#endif // MEMORY_H

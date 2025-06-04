@@ -157,6 +157,8 @@ struct CoverageFormat2_4
     }
   }
 
+  unsigned cost () const { return hb_bit_storage ((unsigned) rangeRecord.len); /* bsearch cost */ }
+
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const
   {

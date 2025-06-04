@@ -44,7 +44,6 @@ import android.os.*
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
-import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
@@ -65,6 +64,7 @@ import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.godot.tts.GodotTTS
 import org.godotengine.godot.utils.CommandLineFileParser
+import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.GodotNetUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.PermissionsUtil.requestPermission
@@ -77,7 +77,6 @@ import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -333,7 +332,7 @@ class Godot(private val context: Context) {
 	 * Toggle immersive mode.
 	 * Must be called from the UI thread.
 	 */
-	private fun enableImmersiveMode(enabled: Boolean, override: Boolean = false) {
+	fun enableImmersiveMode(enabled: Boolean, override: Boolean = false) {
 		val activity = getActivity() ?: return
 		val window = activity.window ?: return
 
@@ -664,6 +663,8 @@ class Godot(private val context: Context) {
 	 * Configuration change callback
 	*/
 	fun onConfigurationChanged(newConfig: Configuration) {
+		renderView?.inputHandler?.onConfigurationChanged(newConfig)
+
 		val newDarkMode = newConfig.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 		if (darkMode != newDarkMode) {
 			darkMode = newDarkMode
@@ -712,11 +713,15 @@ class Godot(private val context: Context) {
 		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
 		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
 		val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
+		val overrideVolumeButtons = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/override_volume_buttons"))
+		val scrollDeadzoneDisabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/disable_scroll_deadzone"))
 
 		runOnUiThread {
 			renderView?.inputHandler?.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
+				setOverrideVolumeButtons(overrideVolumeButtons)
+				disableScrollDeadzone(scrollDeadzoneDisabled)
 				try {
 					setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
 				} catch (e: NumberFormatException) {
@@ -823,9 +828,27 @@ class Godot(private val context: Context) {
 	 * Returns true if `Vulkan` is used for rendering.
 	 */
 	private fun usesVulkan(): Boolean {
-		val renderer = GodotLib.getGlobal("rendering/renderer/rendering_method")
-		val renderingDevice = GodotLib.getGlobal("rendering/rendering_device/driver")
-		return ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
+		val rendererInfo = GodotLib.getRendererInfo()
+		var renderingDeviceSource = "ProjectSettings"
+		var renderingDevice = rendererInfo[0]
+		var rendererSource = "ProjectSettings"
+		var renderer = rendererInfo[1]
+		val cmdline = getCommandLine()
+		var index = cmdline.indexOf("--rendering-method")
+		if (index > -1 && cmdline.size > index + 1) {
+			rendererSource = "CommandLine"
+			renderer = cmdline.get(index + 1)
+		}
+		index = cmdline.indexOf("--rendering-driver")
+		if (index > -1 && cmdline.size > index + 1) {
+			renderingDeviceSource = "CommandLine"
+			renderingDevice = cmdline.get(index + 1)
+		}
+		val result = ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
+		Log.d(TAG, """usesVulkan(): ${result}
+			renderingDevice: ${renderingDevice} (${renderingDeviceSource})
+			renderer: ${renderer} (${rendererSource})""")
+		return result
 	}
 
 	/**
@@ -842,16 +865,13 @@ class Godot(private val context: Context) {
 		if (packageManager == null) {
 			return false
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			if (!packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1)) {
-				// Optional requirements.. log as warning if missing
-				Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
-			}
-
-			// Check for api version 1.0
-			return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
+		if (!packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1)) {
+			// Optional requirements.. log as warning if missing
+			Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
 		}
-		return false
+
+		// Check for api version 1.0
+		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
 	}
 
 	private fun setKeepScreenOn(enabled: Boolean) {
@@ -903,27 +923,27 @@ class Godot(private val context: Context) {
 	}
 
 	/**
-	 * Popup a dialog to input text.
+	 * This method shows a dialog with multiple buttons.
+	 *
+	 * @param title The title of the dialog.
+	 * @param message The message displayed in the dialog.
+	 * @param buttons An array of button labels to display.
+	 */
+	@Keep
+	private fun showDialog(title: String, message: String, buttons: Array<String>) {
+		getActivity()?.let { DialogUtils.showDialog(it, title, message, buttons) }
+	}
+
+	/**
+	 * This method shows a dialog with a text input field, allowing the user to input text.
+	 *
+	 * @param title The title of the input dialog.
+	 * @param message The message displayed in the input dialog.
+	 * @param existingText The existing text that will be pre-filled in the input field.
 	 */
 	@Keep
 	private fun showInputDialog(title: String, message: String, existingText: String) {
-		val activity: Activity = getActivity() ?: return
-		val inputField = EditText(activity)
-		val paddingHorizontal = activity.resources.getDimensionPixelSize(R.dimen.input_dialog_padding_horizontal)
-		val paddingVertical = activity.resources.getDimensionPixelSize(R.dimen.input_dialog_padding_vertical)
-		inputField.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical)
-		inputField.setText(existingText)
-		runOnUiThread {
-			val builder = AlertDialog.Builder(activity)
-			builder.setMessage(message).setTitle(title).setView(inputField)
-			builder.setPositiveButton(R.string.dialog_ok) {
-				dialog: DialogInterface, id: Int ->
-				GodotLib.inputDialogCallback(inputField.text.toString())
-				dialog.dismiss()
-			}
-			val dialog = builder.create()
-			dialog.show()
-		}
+		getActivity()?.let { DialogUtils.showInputDialog(it, title, message, existingText) }
 	}
 
 	@Keep
@@ -1052,6 +1072,16 @@ class Godot(private val context: Context) {
 	}
 
 	/**
+	 * Returns true if this is the Godot editor.
+	 */
+	fun isEditorHint() = isEditorBuild() && GodotLib.isEditorHint()
+
+	/**
+	 * Returns true if this is the Godot project manager.
+	 */
+	fun isProjectManagerHint() = isEditorBuild() && GodotLib.isProjectManagerHint()
+
+	/**
 	 * Return true if the given feature is supported.
 	 */
 	@Keep
@@ -1159,5 +1189,10 @@ class Godot(private val context: Context) {
 	private fun nativeVerifyApk(apkPath: String): Int {
 		val verifyResult = primaryHost?.verifyApk(apkPath) ?: Error.ERR_UNAVAILABLE
 		return verifyResult.toNativeValue()
+	}
+
+	@Keep
+	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
+		primaryHost?.onEditorWorkspaceSelected(workspace)
 	}
 }

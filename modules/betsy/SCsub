@@ -5,25 +5,14 @@ Import("env")
 Import("env_modules")
 
 env_betsy = env_modules.Clone()
+
+# Betsy shaders, originally from https://github.com/darksylinc/betsy
 env_betsy.GLSL_HEADER("bc6h.glsl")
 env_betsy.GLSL_HEADER("bc1.glsl")
 env_betsy.GLSL_HEADER("bc4.glsl")
 env_betsy.GLSL_HEADER("alpha_stitch.glsl")
+
 env_betsy.Depends(Glob("*.glsl.gen.h"), ["#glsl_builders.py"])
 
-# Thirdparty source files
-thirdparty_obj = []
-thirdparty_dir = "#thirdparty/betsy/"
-env_betsy.Prepend(CPPPATH=[thirdparty_dir])
-
-env_thirdparty = env_betsy.Clone()
-env_thirdparty.disable_warnings()
-env.modules_sources += thirdparty_obj
-
 # Godot source files
-module_obj = []
-env_betsy.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
-
-# Needed to force rebuilding the module files when the thirdparty library is updated.
-env.Depends(module_obj, thirdparty_obj)
+env_betsy.add_source_files(env.modules_sources, "*.cpp")

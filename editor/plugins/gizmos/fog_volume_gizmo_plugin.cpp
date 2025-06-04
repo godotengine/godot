@@ -48,9 +48,6 @@ FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-FogVolumeGizmoPlugin::~FogVolumeGizmoPlugin() {
-}
-
 bool FogVolumeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return (Object::cast_to<FogVolume>(p_spatial) != nullptr);
 }

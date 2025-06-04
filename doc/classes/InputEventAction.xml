@@ -14,7 +14,7 @@
 	</tutorials>
 	<members>
 		<member name="action" type="StringName" setter="set_action" getter="get_action" default="&amp;&quot;&quot;">
-			The action's name. Actions are accessed via this [String].
+			The action's name. This is usually the name of an existing action in the [InputMap] which you want this custom event to match.
 		</member>
 		<member name="event_index" type="int" setter="set_event_index" getter="get_event_index" default="-1">
 			The real event index in action this event corresponds to (from events defined for this action in the [InputMap]). If [code]-1[/code], a unique ID will be used and actions pressed with this ID will need to be released with another [InputEventAction].

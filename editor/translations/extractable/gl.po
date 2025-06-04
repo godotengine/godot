@@ -16,17 +16,20 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.3-dev\n"
 
+msgid "All Recognized"
+msgstr "Todos Recoñecidos"
+
 msgid "Open"
 msgstr "Abrir"
 
 msgid "Select Current Folder"
 msgstr "Seleccionar Cartafol Actual"
 
+msgid "Save"
+msgstr "Gardar"
+
 msgid "Select This Folder"
 msgstr "Seleccionar Este Cartafol"
-
-msgid "All Recognized"
-msgstr "Todos Recoñecidos"
 
 msgid "Open a File"
 msgstr "Abrir un Arquivo"
@@ -39,9 +42,6 @@ msgstr "Abrir un Directorio"
 
 msgid "Open a File or Directory"
 msgstr "Abrir un Arquivo ou Directorio"
-
-msgid "Save"
-msgstr "Gardar"
 
 msgid "Save a File"
 msgstr "Gardar un Arquivo"

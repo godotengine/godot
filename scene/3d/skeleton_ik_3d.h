@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_IK_3D_H
-#define SKELETON_IK_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
@@ -91,8 +90,6 @@ public:
 		Vector<EndEffector> end_effectors;
 
 		Transform3D goal_global_transform;
-
-		Task() {}
 	};
 
 private:
@@ -145,7 +142,7 @@ protected:
 	static void _bind_methods();
 	virtual void _notification(int p_what);
 
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 
 public:
 	SkeletonIK3D();
@@ -191,5 +188,3 @@ private:
 	void reload_goal();
 	void _solve_chain();
 };
-
-#endif // SKELETON_IK_3D_H

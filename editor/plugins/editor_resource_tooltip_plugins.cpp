@@ -30,6 +30,7 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
+#include "editor/editor_file_system.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -38,7 +39,7 @@
 
 void EditorResourceTooltipPlugin::_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 	ObjectID trid = p_udata;
-	TextureRect *tr = Object::cast_to<TextureRect>(ObjectDB::get_instance(trid));
+	TextureRect *tr = ObjectDB::get_instance<TextureRect>(trid);
 
 	if (!tr) {
 		return;
@@ -60,6 +61,12 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 	vb->add_theme_constant_override("separation", -4 * EDSCALE);
 	{
 		Label *label = memnew(Label(p_resource_path.get_file()));
+		vb->add_child(label);
+	}
+
+	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
+	if (id != ResourceUID::INVALID_ID) {
+		Label *label = memnew(Label(ResourceUID::get_singleton()->id_to_text(id)));
 		vb->add_child(label);
 	}
 
@@ -131,7 +138,7 @@ Control *EditorAudioStreamTooltipPlugin::make_tooltip_for_path(const String &p_r
 
 	double length = p_metadata.get("length", 0.0);
 	if (length >= 60.0) {
-		vb->add_child(memnew(Label(vformat(TTR("Length: %0dm %0ds"), int(length / 60.0), int(fmod(length, 60))))));
+		vb->add_child(memnew(Label(vformat(TTR("Length: %0dm %0ds"), int(length / 60.0), int(std::fmod(length, 60))))));
 	} else if (length >= 1.0) {
 		vb->add_child(memnew(Label(vformat(TTR("Length: %0.1fs"), length))));
 	} else {

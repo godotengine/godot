@@ -28,8 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CHAR_RANGE_INC
-#define CHAR_RANGE_INC
+// This file was generated using the `misc/scripts/char_range_fetch.py` script.
+
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -43,7 +44,7 @@ struct CharRange {
 
 constexpr inline CharRange xid_start[] = {
 	{ 0x41, 0x5a },
-	{ 0x5f, 0x5f }, // Underscore technically isn't in XID_Start, but for our purposes it's included.
+	{ 0x5f, 0x5f },
 	{ 0x61, 0x7a },
 	{ 0xaa, 0xaa },
 	{ 0xb5, 0xb5 },
@@ -3628,5 +3629,3 @@ constexpr inline CharRange unicode_letter[] = {
 	{ 0x30000, 0x3134a },
 	{ 0x31350, 0x323af },
 };
-
-#endif // CHAR_RANGE_INC

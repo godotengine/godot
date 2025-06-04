@@ -462,6 +462,15 @@
 				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
 			</description>
 		</method>
+		<method name="rename_type">
+			<return type="void" />
+			<param index="0" name="old_theme_type" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Renames the theme type [param old_theme_type] to [param theme_type], if the old type exists and the new one doesn't exist.
+				[b]Note:[/b] Renaming a theme type to an empty name or a variation to a type associated with a built-in class removes type variation connections in a way that cannot be undone by reversing the rename alone.
+			</description>
+		</method>
 		<method name="set_color">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />

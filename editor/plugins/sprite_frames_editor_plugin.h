@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_FRAMES_EDITOR_PLUGIN_H
-#define SPRITE_FRAMES_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/button.h"
@@ -87,6 +86,12 @@ class SpriteFramesEditor : public HSplitContainer {
 		FRAME_ORDER_BOTTOM_TOP_RIGHT_LEFT,
 	};
 
+	enum {
+		MENU_SHOW_IN_FILESYSTEM,
+	};
+
+	int right_clicked_frame = -1;
+
 	bool read_only = false;
 
 	Ref<Texture2D> autoplay_icon;
@@ -136,6 +141,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	EditorFileDialog *file = nullptr;
 
 	AcceptDialog *dialog = nullptr;
+
+	PopupMenu *menu = nullptr;
 
 	StringName edited_anim;
 
@@ -214,10 +221,13 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
+	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
 	void _frame_list_item_selected(int p_index, bool p_selected);
+
+	void _menu_selected(int p_id);
 
 	void _zoom_in();
 	void _zoom_out();
@@ -291,7 +301,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	SpriteFramesEditorPlugin();
-	~SpriteFramesEditorPlugin();
 };
-
-#endif // SPRITE_FRAMES_EDITOR_PLUGIN_H

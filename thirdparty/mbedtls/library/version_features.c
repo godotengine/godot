@@ -459,6 +459,9 @@ static const char * const features[] = {
 #if defined(MBEDTLS_SSL_ASYNC_PRIVATE)
     "SSL_ASYNC_PRIVATE", //no-check-names
 #endif /* MBEDTLS_SSL_ASYNC_PRIVATE */
+#if defined(MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME)
+    "SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME", //no-check-names
+#endif /* MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME */
 #if defined(MBEDTLS_SSL_CONTEXT_SERIALIZATION)
     "SSL_CONTEXT_SERIALIZATION", //no-check-names
 #endif /* MBEDTLS_SSL_CONTEXT_SERIALIZATION */
@@ -720,6 +723,9 @@ static const char * const features[] = {
 #if defined(MBEDTLS_PSA_ITS_FILE_C)
     "PSA_ITS_FILE_C", //no-check-names
 #endif /* MBEDTLS_PSA_ITS_FILE_C */
+#if defined(MBEDTLS_PSA_STATIC_KEY_SLOTS)
+    "PSA_STATIC_KEY_SLOTS", //no-check-names
+#endif /* MBEDTLS_PSA_STATIC_KEY_SLOTS */
 #if defined(MBEDTLS_RIPEMD160_C)
     "RIPEMD160_C", //no-check-names
 #endif /* MBEDTLS_RIPEMD160_C */

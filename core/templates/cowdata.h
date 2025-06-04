@@ -28,69 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COWDATA_H
-#define COWDATA_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/span.h"
 
-#include <string.h>
 #include <initializer_list>
 #include <type_traits>
-#include <utility>
-
-template <typename T>
-class Vector;
-class String;
-class Char16String;
-class CharString;
-template <typename T, typename V>
-class VMap;
 
 static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
-// Silence a false positive warning (see GH-52119).
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wplacement-new"
-#endif
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wplacement-new") // Silence a false positive warning (see GH-52119).
+GODOT_GCC_WARNING_IGNORE("-Wmaybe-uninitialized") // False positive raised when using constexpr.
 
 template <typename T>
 class CowData {
-	template <typename TV>
-	friend class Vector;
-	friend class String;
-	friend class Char16String;
-	friend class CharString;
-	template <typename TV, typename VV>
-	friend class VMap;
-
 public:
 	typedef int64_t Size;
 	typedef uint64_t USize;
 	static constexpr USize MAX_INT = INT64_MAX;
 
 private:
-	// Function to find the next power of 2 to an integer.
-	static _FORCE_INLINE_ USize next_po2(USize x) {
-		if (x == 0) {
-			return 0;
-		}
-
-		--x;
-		x |= x >> 1;
-		x |= x >> 2;
-		x |= x >> 4;
-		x |= x >> 8;
-		x |= x >> 16;
-		if (sizeof(USize) == 8) {
-			x |= x >> 32;
-		}
-
-		return ++x;
-	}
-
 	// Alignment:  ↓ max_align_t           ↓ USize          ↓ max_align_t
 	//             ┌────────────────────┬──┬─────────────┬──┬───────────...
 	//             │ SafeNumeric<USize> │░░│ USize       │░░│ T[]
@@ -105,14 +66,6 @@ private:
 	mutable T *_ptr = nullptr;
 
 	// internal helpers
-
-	static _FORCE_INLINE_ SafeNumeric<USize> *_get_refcount_ptr(uint8_t *p_ptr) {
-		return (SafeNumeric<USize> *)(p_ptr + REF_COUNT_OFFSET);
-	}
-
-	static _FORCE_INLINE_ USize *_get_size_ptr(uint8_t *p_ptr) {
-		return (USize *)(p_ptr + SIZE_OFFSET);
-	}
 
 	static _FORCE_INLINE_ T *_get_data_ptr(uint8_t *p_ptr) {
 		return (T *)(p_ptr + DATA_OFFSET);
@@ -134,11 +87,11 @@ private:
 		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + SIZE_OFFSET);
 	}
 
-	_FORCE_INLINE_ USize _get_alloc_size(USize p_elements) const {
-		return next_po2(p_elements * sizeof(T));
+	_FORCE_INLINE_ static USize _get_alloc_size(USize p_elements) {
+		return next_power_of_2(p_elements * (USize)sizeof(T));
 	}
 
-	_FORCE_INLINE_ bool _get_alloc_size_checked(USize p_elements, USize *out) const {
+	_FORCE_INLINE_ static bool _get_alloc_size_checked(USize p_elements, USize *out) {
 		if (unlikely(p_elements == 0)) {
 			*out = 0;
 			return true;
@@ -150,7 +103,7 @@ private:
 			*out = 0;
 			return false;
 		}
-		*out = next_po2(o);
+		*out = next_power_of_2(o);
 		if (__builtin_add_overflow(o, static_cast<USize>(32), &p)) {
 			return false; // No longer allocated here.
 		}
@@ -167,8 +120,23 @@ private:
 	void _unref();
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
-	USize _copy_on_write();
-	Error _realloc(Size p_alloc_size);
+
+	// Ensures that the backing buffer is at least p_size wide, and that this CowData instance is
+	// the only reference to it. The buffer is populated with as many element copies from the old
+	// array as possible.
+	// It is the responsibility of the caller to populate newly allocated space up to p_size.
+	Error _fork_allocate(USize p_size);
+	Error _copy_on_write() { return _fork_allocate(size()); }
+
+	// Allocates a backing array of the given capacity. The reference count is initialized to 1.
+	// It is the responsibility of the caller to populate the array and the new size property.
+	Error _alloc(USize p_alloc_size);
+
+	// Re-allocates the backing array to the given capacity. The reference count is initialized to 1.
+	// It is the responsibility of the caller to populate the array and the new size property.
+	// The caller must also make sure there are no other references to the data, as pointers may
+	// be invalidated.
+	Error _realloc(USize p_alloc_size);
 
 public:
 	void operator=(const CowData<T> &p_from) { _ref(p_from); }
@@ -200,7 +168,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ void clear() { resize(0); }
+	_FORCE_INLINE_ void clear() { _unref(); }
 	_FORCE_INLINE_ bool is_empty() const { return _ptr == nullptr; }
 
 	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) {
@@ -221,7 +189,7 @@ public:
 		return _ptr[p_index];
 	}
 
-	template <bool p_ensure_zero = false>
+	template <bool p_initialize = true>
 	Error resize(Size p_size);
 
 	_FORCE_INLINE_ void remove_at(Size p_index) {
@@ -249,9 +217,8 @@ public:
 		return OK;
 	}
 
-	Size find(const T &p_val, Size p_from = 0) const;
-	Size rfind(const T &p_val, Size p_from = -1) const;
-	Size count(const T &p_val) const;
+	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }
@@ -275,7 +242,8 @@ void CowData<T>::_unref() {
 		_ptr = nullptr;
 		return;
 	}
-	// Clean up.
+	// We had the only reference; destroy the data.
+
 	// First, invalidate our own reference.
 	// NOTE: It is required to do so immediately because it must not be observable outside of this
 	//       function after refcount has already been reduced to 0.
@@ -293,193 +261,148 @@ void CowData<T>::_unref() {
 		}
 	}
 
-	// free mem
+	// Free memory.
 	Memory::free_static((uint8_t *)prev_ptr - DATA_OFFSET, false);
+
+#ifdef DEBUG_ENABLED
+	// If any destructors access us through pointers, it is a bug.
+	// We can't really test for that, but we can at least check no items have been added.
+	ERR_FAIL_COND_MSG(_ptr != nullptr, "Internal bug, please report: CowData was modified during destruction.");
+#endif
 }
 
 template <typename T>
-typename CowData<T>::USize CowData<T>::_copy_on_write() {
-	if (!_ptr) {
-		return 0;
-	}
-
-	SafeNumeric<USize> *refc = _get_refcount();
-
-	USize rc = refc->get();
-	if (unlikely(rc > 1)) {
-		/* in use by more than me */
-		USize current_size = *_get_size();
-
-		uint8_t *mem_new = (uint8_t *)Memory::alloc_static(_get_alloc_size(current_size) + DATA_OFFSET, false);
-		ERR_FAIL_NULL_V(mem_new, 0);
-
-		SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-		USize *_size_ptr = _get_size_ptr(mem_new);
-		T *_data_ptr = _get_data_ptr(mem_new);
-
-		new (_refc_ptr) SafeNumeric<USize>(1); //refcount
-		*(_size_ptr) = current_size; //size
-
-		// initialize new elements
-		if constexpr (std::is_trivially_copyable_v<T>) {
-			memcpy((uint8_t *)_data_ptr, _ptr, current_size * sizeof(T));
-		} else {
-			for (USize i = 0; i < current_size; i++) {
-				memnew_placement(&_data_ptr[i], T(_ptr[i]));
-			}
-		}
-
-		_unref();
-		_ptr = _data_ptr;
-
-		rc = 1;
-	}
-	return rc;
-}
-
-template <typename T>
-template <bool p_ensure_zero>
-Error CowData<T>::resize(Size p_size) {
-	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
-
-	Size current_size = size();
-
-	if (p_size == current_size) {
-		return OK;
-	}
-
+Error CowData<T>::_fork_allocate(USize p_size) {
 	if (p_size == 0) {
 		// Wants to clean up.
-		_unref(); // Resets _ptr to nullptr.
+		_unref();
 		return OK;
 	}
 
-	// possibly changing size, copy on write
-	_copy_on_write();
-
-	USize current_alloc_size = _get_alloc_size(current_size);
 	USize alloc_size;
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
 
-	if (p_size > current_size) {
-		if (alloc_size != current_alloc_size) {
-			if (current_size == 0) {
-				// alloc from scratch
-				uint8_t *mem_new = (uint8_t *)Memory::alloc_static(alloc_size + DATA_OFFSET, false);
-				ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
+	const USize prev_size = size();
 
-				SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-				USize *_size_ptr = _get_size_ptr(mem_new);
-				T *_data_ptr = _get_data_ptr(mem_new);
-
-				new (_refc_ptr) SafeNumeric<USize>(1); //refcount
-				*(_size_ptr) = 0; //size, currently none
-
-				_ptr = _data_ptr;
-
-			} else {
-				const Error error = _realloc(alloc_size);
-				if (error) {
-					return error;
-				}
-			}
+	if (!_ptr) {
+		// We had no data before; just allocate a new array.
+		const Error error = _alloc(alloc_size);
+		if (error) {
+			return error;
+		}
+	} else if (_get_refcount()->get() == 1) {
+		// Resize in-place.
+		// NOTE: This case is not just an optimization, but required, as some callers depend on
+		//       `_copy_on_write()` calls not changing the pointer after the first fork
+		//       (e.g. mutable iterators).
+		if (p_size == prev_size) {
+			// We can shortcut here; we don't need to do anything.
+			return OK;
 		}
 
-		// construct the newly created elements
-
-		if constexpr (!std::is_trivially_constructible_v<T>) {
-			for (Size i = *_get_size(); i < p_size; i++) {
-				memnew_placement(&_ptr[i], T);
-			}
-		} else if (p_ensure_zero) {
-			memset((void *)(_ptr + current_size), 0, (p_size - current_size) * sizeof(T));
-		}
-
-		*_get_size() = p_size;
-
-	} else if (p_size < current_size) {
+		// Destroy extraneous elements.
 		if constexpr (!std::is_trivially_destructible_v<T>) {
-			// deinitialize no longer needed elements
-			for (USize i = p_size; i < *_get_size(); i++) {
-				T *t = &_ptr[i];
-				t->~T();
+			for (USize i = prev_size; i > p_size; i--) {
+				_ptr[i - 1].~T();
 			}
 		}
 
-		if (alloc_size != current_alloc_size) {
+		if (alloc_size != _get_alloc_size(prev_size)) {
 			const Error error = _realloc(alloc_size);
 			if (error) {
+				// Out of memory; the current array is still valid though.
 				return error;
 			}
 		}
+	} else {
+		// Resize by forking.
 
-		*_get_size() = p_size;
+		// Create a temporary CowData to hold ownership over our _ptr.
+		// It will be used to copy elements from the old buffer over to our new buffer.
+		// At the end of the block, it will be automatically destructed by going out of scope.
+		const CowData prev_data;
+		prev_data._ptr = _ptr;
+		_ptr = nullptr;
+
+		const Error error = _alloc(alloc_size);
+		if (error) {
+			// On failure to allocate, just give up the old data and return.
+			// We could recover our old pointer from prev_data, but by just dropping our data, we
+			// consciously invite early failure for the case that the caller does not handle this
+			// case gracefully.
+			return error;
+		}
+
+		// Copy over elements.
+		const USize copied_element_count = MIN(prev_size, p_size);
+		if (copied_element_count > 0) {
+			if constexpr (std::is_trivially_copyable_v<T>) {
+				memcpy((uint8_t *)_ptr, (uint8_t *)prev_data._ptr, copied_element_count * sizeof(T));
+			} else {
+				for (USize i = 0; i < copied_element_count; i++) {
+					memnew_placement(&_ptr[i], T(prev_data._ptr[i]));
+				}
+			}
+		}
+	}
+
+	// Set our new size.
+	*_get_size() = p_size;
+
+	return OK;
+}
+
+template <typename T>
+template <bool p_initialize>
+Error CowData<T>::resize(Size p_size) {
+	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+
+	const Size prev_size = size();
+	if (p_size == prev_size) {
+		return OK;
+	}
+
+	const Error error = _fork_allocate(p_size);
+	if (error) {
+		return error;
+	}
+
+	if constexpr (p_initialize) {
+		if (p_size > prev_size) {
+			memnew_arr_placement(_ptr + prev_size, p_size - prev_size);
+		}
+	} else {
+		static_assert(std::is_trivially_destructible_v<T>);
 	}
 
 	return OK;
 }
 
 template <typename T>
-Error CowData<T>::_realloc(Size p_alloc_size) {
+Error CowData<T>::_alloc(USize p_alloc_size) {
+	uint8_t *mem_new = (uint8_t *)Memory::alloc_static(p_alloc_size + DATA_OFFSET, false);
+	ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
+
+	_ptr = _get_data_ptr(mem_new);
+
+	// If we alloc, we're guaranteed to be the only reference.
+	new (_get_refcount()) SafeNumeric<USize>(1);
+
+	return OK;
+}
+
+template <typename T>
+Error CowData<T>::_realloc(USize p_alloc_size) {
 	uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, p_alloc_size + DATA_OFFSET, false);
 	ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-	SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-	T *_data_ptr = _get_data_ptr(mem_new);
+	_ptr = _get_data_ptr(mem_new);
 
 	// If we realloc, we're guaranteed to be the only reference.
-	new (_refc_ptr) SafeNumeric<USize>(1);
-	_ptr = _data_ptr;
+	// So the reference was 1 and was copied to be 1 again.
+	DEV_ASSERT(_get_refcount()->get() == 1);
 
 	return OK;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::find(const T &p_val, Size p_from) const {
-	Size ret = -1;
-
-	if (p_from < 0 || size() == 0) {
-		return ret;
-	}
-
-	for (Size i = p_from; i < size(); i++) {
-		if (get(i) == p_val) {
-			ret = i;
-			break;
-		}
-	}
-
-	return ret;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::rfind(const T &p_val, Size p_from) const {
-	const Size s = size();
-
-	if (p_from < 0) {
-		p_from = s + p_from;
-	}
-	if (p_from < 0 || p_from >= s) {
-		p_from = s - 1;
-	}
-
-	for (Size i = p_from; i >= 0; i--) {
-		if (get(i) == p_val) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::count(const T &p_val) const {
-	Size amount = 0;
-	for (Size i = 0; i < size(); i++) {
-		if (get(i) == p_val) {
-			amount++;
-		}
-	}
-	return amount;
 }
 
 template <typename T>
@@ -517,8 +440,8 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 	}
 }
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
-#endif // COWDATA_H
+// Zero-constructing CowData initializes _ptr to nullptr (and thus empty).
+template <typename T>
+struct is_zero_constructible<CowData<T>> : std::true_type {};

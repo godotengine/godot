@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef METAL_UTILS_H
-#define METAL_UTILS_H
+#pragma once
 
 #import <os/log.h>
+
+#import <functional>
 
 #pragma mark - Boolean flags
 
@@ -101,5 +102,3 @@ private:
 extern os_log_t LOG_DRIVER;
 // Used for dynamic tracing.
 extern os_log_t LOG_INTERVALS;
-
-#endif // METAL_UTILS_H

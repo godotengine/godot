@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_UNIX_H
-#define FILE_ACCESS_UNIX_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/os/memory.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #if defined(UNIX_ENABLED)
 
 class FileAccessUnix : public FileAccess {
+	GDSOFTCLASS(FileAccessUnix, FileAccess);
 	FILE *f = nullptr;
 	int flags = 0;
 	void check_errors(bool p_write = false) const;
@@ -81,6 +81,8 @@ public:
 	virtual bool file_exists(const String &p_path) override; ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) override;
+	virtual uint64_t _get_access_time(const String &p_file) override;
+	virtual int64_t _get_size(const String &p_file) override;
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override;
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override;
 
@@ -96,5 +98,3 @@ public:
 };
 
 #endif // UNIX_ENABLED
-
-#endif // FILE_ACCESS_UNIX_H

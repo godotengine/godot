@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CLUSTER_BUILDER_RD_H
-#define CLUSTER_BUILDER_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/shaders/cluster_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_render.glsl.gen.h"
@@ -73,6 +72,11 @@ class ClusterBuilderSharedDataRD {
 		ClusterRenderShaderRD cluster_render_shader;
 		RID shader_version;
 		RID shader;
+
+		enum ShaderVariant {
+			SHADER_NORMAL,
+			SHADER_USE_ATTACHMENT,
+		};
 
 		enum PipelineVersion {
 			PIPELINE_NORMAL,
@@ -185,8 +189,8 @@ private:
 	};
 
 	uint32_t cluster_size = 32;
-#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
-	// Results in visual artifacts on macOS and iOS when using MSAA and subgroups.
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	// Results in visual artifacts on macOS and iOS/visionOS when using MSAA and subgroups.
 	// Using subgroups and disabling MSAA is the optimal solution for now and also works
 	// with MoltenVK.
 	bool use_msaa = false;
@@ -392,5 +396,3 @@ public:
 	ClusterBuilderRD();
 	~ClusterBuilderRD();
 };
-
-#endif // CLUSTER_BUILDER_RD_H

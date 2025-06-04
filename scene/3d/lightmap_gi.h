@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHTMAP_GI_H
-#define LIGHTMAP_GI_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/light_3d.h"
@@ -192,6 +191,8 @@ private:
 	float bias = 0.0005;
 	float texel_scale = 1.0;
 	int max_texture_size = 16384;
+	bool supersampling_enabled = false;
+	float supersampling_factor = 2.0;
 	bool interior = false;
 	EnvironmentMode environment_mode = ENVIRONMENT_MODE_SCENE;
 	Ref<Sky> environment_custom_sky;
@@ -204,6 +205,7 @@ private:
 	Ref<CameraAttributes> camera_attributes;
 
 	Ref<LightmapGIData> light_data;
+	Node *last_owner = nullptr;
 
 	struct LightsFound {
 		Transform3D xform;
@@ -332,6 +334,12 @@ public:
 	void set_max_texture_size(int p_size);
 	int get_max_texture_size() const;
 
+	void set_supersampling_enabled(bool p_enable);
+	bool is_supersampling_enabled() const;
+
+	void set_supersampling_factor(float p_factor);
+	float get_supersampling_factor() const;
+
 	void set_generate_probes(GenerateProbes p_generate_probes);
 	GenerateProbes get_generate_probes() const;
 
@@ -352,5 +360,3 @@ VARIANT_ENUM_CAST(LightmapGI::BakeQuality);
 VARIANT_ENUM_CAST(LightmapGI::GenerateProbes);
 VARIANT_ENUM_CAST(LightmapGI::BakeError);
 VARIANT_ENUM_CAST(LightmapGI::EnvironmentMode);
-
-#endif // LIGHTMAP_GI_H

@@ -76,7 +76,7 @@ struct Fill::Impl
         ret->pImpl->cnt = cnt;
         ret->pImpl->spread = spread;
         ret->pImpl->colorStops = static_cast<ColorStop*>(malloc(sizeof(ColorStop) * cnt));
-        memcpy(ret->pImpl->colorStops, colorStops, sizeof(ColorStop) * cnt);
+        if (cnt > 0) memcpy(ret->pImpl->colorStops, colorStops, sizeof(ColorStop) * cnt);
         if (transform) {
             ret->pImpl->transform = static_cast<Matrix*>(malloc(sizeof(Matrix)));
             *ret->pImpl->transform = *transform;

@@ -695,6 +695,9 @@
 		<member name="privacy/tracking_enabled" type="bool" setter="" getter="">
 			Indicates whether your app uses data for tracking. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files]Privacy manifest files[/url].
 		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
+		</member>
 		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
 			Script code to execute on the remote host when app is finished.
 			The following variables can be used in the script:
