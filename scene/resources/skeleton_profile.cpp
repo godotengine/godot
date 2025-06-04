@@ -133,6 +133,9 @@ bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
 }
 
 void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (is_read_only) {
 		if (p_property.name == ("group_size") || p_property.name == ("bone_size") || p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
