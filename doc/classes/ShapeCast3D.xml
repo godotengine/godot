@@ -4,7 +4,7 @@
 		A 3D shape that sweeps a region of space to detect [CollisionObject3D]s.
 	</brief_description>
 	<description>
-		Shape casting allows to detect collision objects by sweeping its [member shape] along the cast direction determined by [member target_position]. This is similar to [RayCast3D], but it allows for sweeping a region of space, rather than just a straight line. [ShapeCast3D] can detect multiple collision objects. It is useful for things like wide laser beams or snapping a simple shape to a floor.
+		Shape casting allows detection of collision objects by sweeping its [member shape] along the cast direction determined by [member target_position]. This is similar to [RayCast3D], but it allows for sweeping a region of space, rather than just a straight line. [ShapeCast3D] can detect multiple collision objects if they are found simultaneously, as it stops scanning at the first instance of collision. It is useful for things like wide laser beams or snapping a simple shape to a floor.
 		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector3(0, 0, 0)[/code] and by calling [method force_shapecast_update] within the same physics frame. This helps to overcome some limitations of [Area3D] when used as an instantaneous detection area, as collision information isn't immediately available to it.
 		[b]Note:[/b] Shape casting is more computationally expensive than ray casting.
 	</description>
