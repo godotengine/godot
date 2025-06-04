@@ -96,7 +96,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 
 	ERR_FAIL_COND_V_MSG(columns <= 0, ERR_FILE_CANT_READ, vformat("Columns (%d) must be positive.", columns));
 	ERR_FAIL_COND_V_MSG(rows <= 0, ERR_FILE_CANT_READ, vformat("Rows (%d) must be positive.", rows));
-	int count = columns * rows;
+	int remaining = columns * rows;
 	int chr_cell_width = (img->get_width() - img_margin.position.x - img_margin.size.x) / columns;
 	int chr_cell_height = (img->get_height() - img_margin.position.y - img_margin.size.y) / rows;
 	ERR_FAIL_COND_V_MSG(chr_cell_width <= 0 || chr_cell_height <= 0, ERR_FILE_CANT_READ, "Image margin too big.");
@@ -123,6 +123,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 
 	int32_t pos = 0;
 	for (const String &range : ranges) {
+		Vector<int32_t> list;
 		int32_t start = -1;
 		int32_t end = -1;
 		int chr_adv = 0;
@@ -174,7 +175,12 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 								token = String();
 								if (step == STEP_START_BEGIN) {
 									start = range.unicode_at(c + 1);
-									step = STEP_END_BEGIN;
+									if ((c <= range.length() - 4) && (range[c + 3] == ',')) {
+										list.push_back(start);
+										step = STEP_START_BEGIN;
+									} else {
+										step = STEP_END_BEGIN;
+									}
 								} else {
 									end = range.unicode_at(c + 1);
 									step = STEP_ADVANCE_BEGIN;
@@ -226,7 +232,12 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 						} else {
 							if (step == STEP_START_READ_HEX) {
 								start = token.hex_to_int();
-								step = STEP_END_BEGIN;
+								if (range[c] == ',') {
+									list.push_back(start);
+									step = STEP_START_BEGIN;
+								} else {
+									step = STEP_END_BEGIN;
+								}
 							} else {
 								end = token.hex_to_int();
 								step = STEP_ADVANCE_BEGIN;
@@ -242,7 +253,12 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 						} else {
 							if (step == STEP_START_READ_DEC) {
 								start = token.to_int();
-								step = STEP_END_BEGIN;
+								if (range[c] == ',') {
+									list.push_back(start);
+									step = STEP_START_BEGIN;
+								} else {
+									step = STEP_END_BEGIN;
+								}
 							} else {
 								end = token.to_int();
 								step = STEP_ADVANCE_BEGIN;
@@ -267,6 +283,9 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 			if (end == -1) {
 				end = start;
 			}
+			if (!list.is_empty() && end != list[list.size() - 1]) {
+				list.push_back(end);
+			}
 
 			if (start == -1) {
 				WARN_PRINT(vformat("Invalid range: \"%s\"", range));
@@ -274,16 +293,32 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 			}
 		}
 
-		for (int32_t idx = MIN(start, end); idx <= MAX(start, end); idx++) {
-			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range, should be " + itos(columns * rows));
-			int x = pos % columns;
-			int y = pos / columns;
-			font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width + chr_adv, 0));
-			font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_height) + chr_off);
-			font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
-			font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
-			font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
-			pos++;
+		if (!list.is_empty()) {
+			ERR_FAIL_COND_V_MSG(list.size() > remaining, ERR_CANT_CREATE, vformat("Too many characters in range \"%s\", got %d but expected be %d.", range, list.size(), remaining));
+			for (int32_t idx : list) {
+				int x = pos % columns;
+				int y = pos / columns;
+				font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width + chr_adv, 0));
+				font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_height) + chr_off);
+				font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
+				font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
+				font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
+				pos++;
+			}
+			remaining -= list.size();
+		} else {
+			ERR_FAIL_COND_V_MSG(Math::abs(end - start) > remaining, ERR_CANT_CREATE, vformat("Too many characters in range \"%s\", got %d but expected %d.", range, Math::abs(end - start), remaining));
+			for (int32_t idx = MIN(start, end); idx <= MAX(start, end); idx++) {
+				int x = pos % columns;
+				int y = pos / columns;
+				font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width + chr_adv, 0));
+				font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_height) + chr_off);
+				font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
+				font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
+				font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
+				pos++;
+			}
+			remaining -= abs(end - start);
 		}
 	}
 	for (const String &kp : kern) {
