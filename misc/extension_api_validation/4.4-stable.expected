@@ -258,3 +258,10 @@ GH-106848
 Validate extension JSON: API was removed: classes/Node/methods/get_rpc_config
 
 Change Node `get_rpc_config` to `get_node_rpc_config`. Compatibility method registered.
+
+
+GH-106940
+---------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/environment_set_tonemap/arguments': size changed value in new API, from 4 to 5.
+
+Added optional "contrast" argument to environment_set_tonemap method in RenderingServer class. Compatibility methods registered.

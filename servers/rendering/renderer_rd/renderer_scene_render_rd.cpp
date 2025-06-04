@@ -658,7 +658,11 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		if (p_render_data->environment.is_valid()) {
 			tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
-			tonemap.white = environment_get_white(p_render_data->environment);
+			RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment);
+			tonemap.tonemap_a = params.tonemap_a;
+			tonemap.tonemap_b = params.tonemap_b;
+			tonemap.tonemap_c = params.tonemap_c;
+			tonemap.tonemap_d = params.tonemap_d;
 			tonemap.exposure = environment_get_exposure(p_render_data->environment);
 		}
 
@@ -800,8 +804,12 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	if (p_render_data->environment.is_valid()) {
 		tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment);
+		tonemap.tonemap_a = params.tonemap_a;
+		tonemap.tonemap_b = params.tonemap_b;
+		tonemap.tonemap_c = params.tonemap_c;
+		tonemap.tonemap_d = params.tonemap_d;
 		tonemap.exposure = environment_get_exposure(p_render_data->environment);
-		tonemap.white = environment_get_white(p_render_data->environment);
 	}
 
 	// We don't support glow or auto exposure here, if they are needed, don't use subpasses!
