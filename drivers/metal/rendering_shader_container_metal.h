@@ -78,11 +78,25 @@ struct MetalDeviceProfile {
 		bool simdPermute = false;
 	};
 
+	/**
+	 * @brief Options to configure the Metal device profile.
+	 *
+	 * This structure allows customization of the Metal device profile,
+	 * such as the argument buffers tier, which can affect how shaders are compiled.
+	 */
+	struct Options {
+		ArgumentBuffersTier argument_buffers_tier = ArgumentBuffersTier::Tier1;
+	};
+
 	Platform platform = Platform::macOS;
 	GPU gpu = GPU::Apple4;
 	Features features;
+	Options options;
 
 	static const MetalDeviceProfile *get_profile(Platform p_platform, GPU p_gpu);
+
+	// Configure any options for the device profile, which may include overrides from the environment.
+	void update_options();
 
 	MetalDeviceProfile() = default;
 

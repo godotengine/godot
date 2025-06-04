@@ -4,7 +4,7 @@
 
 #VERSION_DEFINES
 
-layout(push_constant, std430) uniform Params {
+layout(set = 1, binding = 0, std140) uniform Params {
 	float z_far;
 	float z_near;
 	vec2 texel_size;
@@ -29,7 +29,7 @@ layout(location = 0) in vec2 uv_interp;
 
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
 
-layout(push_constant, std430) uniform Params {
+layout(set = 1, binding = 0, std140) uniform Params {
 	float z_far;
 	float z_near;
 	vec2 texel_size;

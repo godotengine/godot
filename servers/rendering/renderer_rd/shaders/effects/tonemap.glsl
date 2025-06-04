@@ -46,18 +46,18 @@ layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #endif
 
-layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
+layout(set = 0, binding = 1) uniform sampler2D source_auto_exposure;
 #ifdef USE_MULTIVIEW
-layout(set = 2, binding = 0) uniform sampler2DArray source_glow;
+layout(set = 0, binding = 2) uniform sampler2DArray source_glow;
 #else
-layout(set = 2, binding = 0) uniform sampler2D source_glow;
+layout(set = 0, binding = 2) uniform sampler2D source_glow;
 #endif
-layout(set = 2, binding = 1) uniform sampler2D glow_map;
+layout(set = 0, binding = 3) uniform sampler2D glow_map;
 
 #ifdef USE_1D_LUT
-layout(set = 3, binding = 0) uniform sampler2D source_color_correction;
+layout(set = 0, binding = 4) uniform sampler2D source_color_correction;
 #else
-layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
+layout(set = 0, binding = 4) uniform sampler3D source_color_correction;
 #endif
 
 #define FLAG_USE_BCS (1 << 0)
@@ -68,7 +68,7 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_DEBANDING (1 << 5)
 #define FLAG_CONVERT_TO_SRGB (1 << 6)
 
-layout(push_constant, std430) uniform Params {
+layout(set = 1, binding = 0, std140) uniform Params {
 	vec3 bcs;
 	uint flags;
 
@@ -80,8 +80,9 @@ layout(push_constant, std430) uniform Params {
 	float glow_intensity;
 	float glow_map_strength;
 
+	vec4 glow_levelsA;
+	vec3 glow_levelsB;
 	uint glow_mode;
-	float glow_levels[7];
 
 	float exposure;
 	float white;
@@ -363,32 +364,32 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 #endif // defined(USE_MULTIVIEW)
 	vec3 glow = vec3(0.0f);
 
-	if (params.glow_levels[0] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb * params.glow_levels[0];
+	if (params.glow_levelsA.x > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb * params.glow_levelsA.x;
 	}
 
-	if (params.glow_levels[1] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb * params.glow_levels[1];
+	if (params.glow_levelsA.y > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb * params.glow_levelsA.y;
 	}
 
-	if (params.glow_levels[2] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb * params.glow_levels[2];
+	if (params.glow_levelsA.z > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb * params.glow_levelsA.z;
 	}
 
-	if (params.glow_levels[3] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb * params.glow_levels[3];
+	if (params.glow_levelsA.w > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb * params.glow_levelsA.w;
 	}
 
-	if (params.glow_levels[4] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb * params.glow_levels[4];
+	if (params.glow_levelsB.x > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb * params.glow_levelsB.x;
 	}
 
-	if (params.glow_levels[5] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb * params.glow_levels[5];
+	if (params.glow_levelsB.y > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb * params.glow_levelsB.y;
 	}
 
-	if (params.glow_levels[6] > 0.0001) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levels[6];
+	if (params.glow_levelsB.z > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levelsB.z;
 	}
 
 	return glow;

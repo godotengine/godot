@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "servers/rendering/push_constants_emu.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/tonemap.glsl.gen.h"
 
@@ -79,9 +80,9 @@ private:
 		float glow_intensity; //  4 - 44
 		float glow_map_strength; //  4 - 48
 
-		uint32_t glow_mode; //  4 - 52
-		float glow_levels[7]; // 28 - 80
-
+		// Be careful of the order of glow_levels for correct alignment of UBO.
+		float glow_levels[7]; // 28 - 76
+		uint32_t glow_mode; //  4 - 80
 		float exposure; //  4 - 84
 		float white; //  4 - 88
 		float auto_exposure_scale; //  4 - 92
@@ -93,7 +94,7 @@ private:
 	 * compute, as that framebuffer might be in different formats
 	 */
 	struct Tonemap {
-		TonemapPushConstant push_constant;
+		PushConstantsEmu<TonemapPushConstant> push_constant = { "tonemap" };
 		TonemapShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[TONEMAP_MODE_MAX];

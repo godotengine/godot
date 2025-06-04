@@ -55,6 +55,7 @@ protected:
 		uint32_t specialization_constants_count = 0;
 		uint32_t is_compute = 0;
 		uint32_t has_multiview = 0;
+		uint32_t has_dynamic_buffers = 0;
 		uint32_t compute_local_size[3] = {};
 		uint32_t set_count = 0;
 		uint32_t push_constant_size = 0;
