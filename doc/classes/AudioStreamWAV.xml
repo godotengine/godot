@@ -55,8 +55,8 @@
 		<method name="save_to_wav_buffer">
 			<return type="Dictionary" />
 			<description>
-				Stores the AudioStreamWAV as a WAV file to the wav field of the returned Dictionary. Samples with IMA ADPCM or Quite OK Audio formats can't be saved.
-				The error field of the returned Dictionary contains ERR_OK if the store was successful. ERR_UNAVAILABLE is returned if the format is not supported.
+				Stores the AudioStreamWAV as a WAV file to the [code]wav[/code] field of the returned Dictionary. The [code]error[/code] field of the returned Dictionary contains [constant OK] if the store was successful, or [constant ERR_UNAVAILABLE] if the format is not supported.
+				[b]Note:[/b] Samples with IMA ADPCM or Quite OK Audio formats can't be saved.
 			</description>
 		</method>
 	</methods>
