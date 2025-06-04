@@ -63,9 +63,6 @@ private:
 	Vector2 calc_key_region_shift(Vector2 &orig_region, Vector2 &region);
 	bool is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right);
 
-protected:
-	float key_scale = 1.0;
-
 public:
 	void set_node(Object *p_object);
 	ObjectID get_node_id() const { return id; }
@@ -102,6 +99,10 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEditKey {
 
 	virtual void _preview_changed(ObjectID p_which) override;
 
+public:
+	virtual int get_key_width() const override;
+	virtual int get_key_height() const override;
+
 protected:
 	virtual Ref<Resource> get_resource(const int p_index) override;
 	virtual float get_start_offset(const int p_index) override;
@@ -122,6 +123,10 @@ class AnimationTrackEditTypeAnimation : public AnimationTrackEditKey {
 	GDCLASS(AnimationTrackEditTypeAnimation, AnimationTrackEditKey);
 
 	virtual void _preview_changed(ObjectID p_which) override;
+
+public:
+	virtual int get_key_width() const override;
+	virtual int get_key_height() const override;
 
 protected:
 	virtual Ref<Resource> get_resource(const int p_index) override;
@@ -145,6 +150,10 @@ class AnimationTrackEditAudio : public AnimationTrackEditKey {
 
 	virtual void _preview_changed(ObjectID p_which) override;
 
+public:
+	virtual int get_key_width() const override;
+	virtual int get_key_height() const override;
+
 protected:
 	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
 	virtual Ref<Resource> get_resource(const int p_index) override;
@@ -158,6 +167,10 @@ class AnimationTrackEditSubAnim : public AnimationTrackEditKey {
 	GDCLASS(AnimationTrackEditSubAnim, AnimationTrackEditKey);
 
 	virtual void _preview_changed(ObjectID p_which) override;
+
+public:
+	virtual int get_key_width() const override;
+	virtual int get_key_height() const override;
 
 protected:
 	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
@@ -210,6 +223,8 @@ private:
 	bool is_coords = false;
 
 public:
+	virtual int get_key_width() const override;
+	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 

@@ -2687,14 +2687,11 @@ void AnimationTrackEdit::_notification(int p_what) {
 }
 
 int AnimationTrackEdit::get_key_width() const {
-	return get_key_height();
-	/*
 	if (animation.is_null()) {
 		return 0;
 	}
 
 	return type_icon->get_width();
-	*/
 }
 
 int AnimationTrackEdit::get_key_height() const {
@@ -2720,7 +2717,7 @@ Rect2 AnimationTrackEdit::get_key_rect(int p_index, float p_pixels_sec) {
 Rect2 AnimationTrackEdit::get_global_key_rect(int p_index, float p_pixels_sec, int p_x) {
 	Rect2 rect = get_key_rect(p_index, p_pixels_sec);
 	rect.position.x += p_x;
-	rect.position.y = int(get_size().height - rect.size.y) / 2;
+	rect.position.y = (get_size().height - rect.size.y) / 2;
 
 	return rect;
 }
@@ -2798,16 +2795,13 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 	// Use a different color for the currently hovered key.
 	// The color multiplier is chosen to work with both dark and light editor themes,
 	// and on both unselected and selected key icons.
-	//draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right);
 	Color color = p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : Color(1, 1, 1);
 	draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right, color);
 }
 
 void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
-
-	Rect2 next_rect = get_key_rect(p_index + 1, p_pixels_sec);
-	next_rect.position.x += p_next_x;
+	Rect2 next_rect = get_global_key_rect(p_index + 1, p_pixels_sec, p_next_x);
 
 	if (next_rect.position.x + next_rect.size.x < p_clip_left) {
 		return;
@@ -2927,6 +2921,13 @@ String AnimationTrackEdit::make_text_clipped(const String &text, const Ref<Font>
 		clipped_text += "...";
 	}
 	return clipped_text;
+}
+
+// Helper.
+int AnimationTrackEdit::_get_theme_font_height(float p_scale) const {
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	return int(font->get_height(font_size) * p_scale);
 }
 
 void AnimationTrackEdit::draw_bg(int p_clip_left, int p_clip_right) {
@@ -3119,10 +3120,9 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 		// Select should happen in the opposite order of drawing for more accurate overlap select.
 		for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-			Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_key_rect(i, timeline->get_zoom_scale());
 			float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 			offset = offset * timeline->get_zoom_scale() + limit;
-			rect.position.x += offset;
+			Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_global_key_rect(i, timeline->get_zoom_scale(), offset);
 
 			if (rect.has_point(p_pos)) {
 				if (const_cast<AnimationTrackEdit *>(this)->is_key_selectable_by_distance()) {
@@ -3931,10 +3931,9 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 
 	// Select should happen in the opposite order of drawing for more accurate overlap select.
 	for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-		Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_key_rect(i, timeline->get_zoom_scale());
 		float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 		offset = offset * timeline->get_zoom_scale() + timeline->get_name_limit();
-		rect.position.x += offset;
+		Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_global_key_rect(i, timeline->get_zoom_scale(), offset);
 
 		if (select_rect.intersects(rect)) {
 			if (p_deselection) {
@@ -8835,10 +8834,10 @@ bool AnimationMarkerEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggr
 		float key_distance = 1e20;
 		PackedStringArray names = animation->get_marker_names();
 		for (int i = 0; i < names.size(); i++) {
-			Rect2 rect = const_cast<AnimationMarkerEdit *>(this)->get_key_rect(timeline->get_zoom_scale());
 			float offset = animation->get_marker_time(names[i]) - timeline->get_value();
 			offset = offset * timeline->get_zoom_scale() + limit;
-			rect.position.x += offset;
+			Rect2 rect = const_cast<AnimationMarkerEdit *>(this)->get_global_key_rect(timeline->get_zoom_scale(), offset);
+
 			if (rect.has_point(p_pos)) {
 				if (const_cast<AnimationMarkerEdit *>(this)->is_key_selectable_by_distance()) {
 					float distance = Math::abs(offset - p_pos.x);
@@ -9239,10 +9238,9 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 			// Hovering should happen in the opposite order of drawing for more accurate overlap hovering.
 			for (int i = names.size() - 1; i >= 0; i--) {
 				StringName name = names[i];
-				Rect2 rect = get_key_rect(scale);
 				float offset = animation->get_marker_time(name) - timeline->get_value();
 				offset = offset * scale + limit;
-				rect.position.x += offset;
+				Rect2 rect = get_global_key_rect(scale, offset);
 
 				if (rect.has_point(pos)) {
 					if (is_key_selectable_by_distance()) {
@@ -9307,10 +9305,9 @@ String AnimationMarkerEdit::get_tooltip(const Point2 &p_pos) const {
 		// Select should happen in the opposite order of drawing for more accurate overlap select.
 		for (int i = names.size() - 1; i >= 0; i--) {
 			StringName name = names[i];
-			Rect2 rect = const_cast<AnimationMarkerEdit *>(this)->get_key_rect(timeline->get_zoom_scale());
 			float offset = animation->get_marker_time(name) - timeline->get_value();
 			offset = offset * timeline->get_zoom_scale() + limit;
-			rect.position.x += offset;
+			Rect2 rect = const_cast<AnimationMarkerEdit *>(this)->get_global_key_rect(timeline->get_zoom_scale(), offset);
 
 			if (rect.has_point(p_pos)) {
 				if (const_cast<AnimationMarkerEdit *>(this)->is_key_selectable_by_distance()) {
@@ -9337,6 +9334,14 @@ String AnimationMarkerEdit::get_tooltip(const Point2 &p_pos) const {
 	return Control::get_tooltip(p_pos);
 }
 
+int AnimationMarkerEdit::get_key_width() const {
+	if (animation.is_null()) {
+		return 0;
+	}
+
+	return type_icon->get_width();
+}
+
 int AnimationMarkerEdit::get_key_height() const {
 	if (animation.is_null()) {
 		return 0;
@@ -9350,11 +9355,18 @@ Rect2 AnimationMarkerEdit::get_key_rect(float p_pixels_sec) const {
 		return Rect2();
 	}
 
-	Rect2 rect = Rect2(-type_icon->get_width() / 2, get_size().height - type_icon->get_size().height, type_icon->get_width(), type_icon->get_size().height);
+	int width = get_key_width();
+	int height = get_key_height();
+	Rect2 rect = Rect2(-width / 2, -height, width, height);
 
-	// Make it a big easier to click.
-	rect.position.x -= rect.size.x * 0.5;
-	rect.size.x *= 2;
+	return rect;
+}
+
+Rect2 AnimationMarkerEdit::get_global_key_rect(float p_pixels_sec, int p_x) const {
+	Rect2 rect = get_key_rect(p_pixels_sec);
+	rect.position.x += p_x;
+	rect.position.y += get_size().height;
+
 	return rect;
 }
 
@@ -9395,24 +9407,63 @@ void AnimationMarkerEdit::draw_key(const StringName &p_name, float p_pixels_sec,
 		return;
 	}
 
-	if (p_x < p_clip_left || p_x > p_clip_right) {
+	Rect2 rect = get_global_key_rect(p_pixels_sec, p_x);
+
+	if (rect.position.x + rect.size.x < p_clip_left) {
 		return;
 	}
 
-	Ref<Texture2D> icon_to_draw = p_selected ? selected_icon : type_icon;
+	if (rect.position.x > p_clip_right) {
+		return;
+	}
 
-	Vector2 ofs(p_x - icon_to_draw->get_width() / 2, int(get_size().height - icon_to_draw->get_height()));
+	Ref<Texture2D> texture = p_selected ? selected_icon : type_icon;
 
 	// Don't apply custom marker color when the key is selected.
 	Color marker_color = p_selected ? Color(1, 1, 1) : animation->get_marker_color(p_name);
 
+	Rect2 region;
+	region.size = texture->get_size();
+
 	// Use a different color for the currently hovered key.
 	// The color multiplier is chosen to work with both dark and light editor themes,
 	// and on both unselected and selected key icons.
-	draw_texture(
-			icon_to_draw,
-			ofs,
-			p_name == hovering_marker ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : marker_color);
+	Color color = p_name == hovering_marker ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : marker_color;
+	draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right, color);
+}
+
+// Helper.
+void AnimationMarkerEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate) {
+	if (p_clip_left > p_rect.position.x + p_rect.size.x) {
+		return;
+	}
+	if (p_clip_right < p_rect.position.x) {
+		return;
+	}
+
+	Rect2 rect = p_rect;
+	Rect2 region = p_region;
+
+	if (p_clip_left > rect.position.x) {
+		int rect_pixels = (p_clip_left - rect.position.x);
+		int region_pixels = rect_pixels * region.size.x / rect.size.x;
+
+		rect.position.x += rect_pixels;
+		rect.size.x -= rect_pixels;
+
+		region.position.x += region_pixels;
+		region.size.x -= region_pixels;
+	}
+
+	if (p_clip_right < rect.position.x + rect.size.x) {
+		int rect_pixels = rect.position.x + rect.size.x - p_clip_right;
+		int region_pixels = rect_pixels * region.size.x / rect.size.x;
+
+		rect.size.x -= rect_pixels;
+		region.size.x -= region_pixels;
+	}
+
+	draw_texture_rect_region(p_texture, rect, region, p_modulate);
 }
 
 void AnimationMarkerEdit::draw_bg(int p_clip_left, int p_clip_right) {
