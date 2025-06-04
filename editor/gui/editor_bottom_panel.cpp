@@ -108,16 +108,12 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 }
 
 void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool p_ignore_lock) {
-	// Don't allow changing tabs involuntarily when tabs are locked
+	// Don't allow changing tabs involuntarily when tabs are locked.
 	if (!p_ignore_lock && lock_panel_switching && pin_button->is_visible()) {
 		return;
 	}
 
-	if (p_visible) {
-		p_item->show();
-	} else {
-		set_current_tab(get_previous_tab());
-	}
+	p_item->set_visible(p_visible);
 }
 
 void EditorBottomPanel::move_item_to_end(Control *p_item) {
@@ -129,16 +125,7 @@ void EditorBottomPanel::hide_bottom_panel() {
 }
 
 void EditorBottomPanel::toggle_last_opened_bottom_panel() {
-	// Select by control instead of index, so that the last bottom panel is opened correctly
-	// if it's been reordered since.
-	if (get_previous_tab() != -1) {
-		set_current_tab(get_previous_tab() != get_current_tab() ? get_previous_tab() : -1);
-	} else {
-		// Try to open an adjacent panel, otherwise hide the bottom panel.
-		if (!select_previous_available() && !select_next_available()) {
-			set_current_tab(-1);
-		}
-	}
+	set_current_tab(get_current_tab() == -1 ? get_previous_tab() : -1);
 }
 
 void EditorBottomPanel::shortcut_input(const Ref<InputEvent> &p_event) {
@@ -172,22 +159,23 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	if (p_at_front) {
 		move_child(p_item, 0);
 	}
+	bottom_docks.push_back(p_item);
+	dock_shortcuts.push_back(p_shortcut);
+
+	set_process_shortcut_input(is_processing_shortcut_input() || p_shortcut.is_valid());
 
 	// Still return a dummy button for compatibility reasons.
 	Button *tb = memnew(Button);
 	tb->set_toggle_mode(true);
 	tb->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorBottomPanel::_on_button_visibility_changed).bind(tb, p_item));
-	bottom_docks.push_back(p_item);
-	dock_shortcuts.push_back(p_shortcut);
 	legacy_buttons.push_back(tb);
-
-	set_process_shortcut_input(is_processing_shortcut_input() || p_shortcut.is_valid());
-
 	return tb;
 }
 
 void EditorBottomPanel::remove_item(Control *p_item) {
 	int item_idx = bottom_docks.find(p_item);
+	ERR_FAIL_COND_MSG(item_idx == -1, vformat("Cannot remove unknown dock \"%s\" from the bottom panel.", p_item->get_name()));
+
 	bottom_docks.remove_at(item_idx);
 	dock_shortcuts.remove_at(item_idx);
 

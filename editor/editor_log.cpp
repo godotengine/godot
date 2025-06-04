@@ -256,8 +256,8 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 }
 
 void EditorLog::_set_dock_tab_icon(Ref<Texture2D> p_icon) {
-	// This is the sole reason to import TabContainer here.
-	TabContainer *parent = static_cast<TabContainer *>(get_parent());
+	// This is the sole reason to include "tab_container.h" here.
+	TabContainer *parent = Object::cast_to<TabContainer>(get_parent());
 	if (parent) {
 		int idx = parent->get_tab_idx_from_control(this);
 		parent->set_tab_icon(idx, p_icon);

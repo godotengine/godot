@@ -1986,7 +1986,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		style_bottom_tab->set_content_margin(SIDE_BOTTOM, (p_config.increased_margin + 2) * EDSCALE);
 
 		Ref<StyleBoxFlat> style_bottom_tab_selected = style_bottom_tab->duplicate();
-		style_bottom_tab_selected->set_bg_color(p_config.button_style_pressed->get_bg_color());
+		style_bottom_tab_selected->set_bg_color(p_config.dark_color_1);
 
 		Ref<StyleBoxFlat> style_bottom_tab_hover = style_bottom_tab->duplicate();
 		style_bottom_tab_hover->set_bg_color(p_config.button_style_hover->get_bg_color());
@@ -2566,7 +2566,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 		Ref<StyleBoxFlat> invisible_top_panel_style = p_config.content_panel_style->duplicate();
 		invisible_top_panel_style->set_expand_margin(SIDE_TOP, -invisible_top_offset);
-		invisible_top_panel_style->set_content_margin(SIDE_TOP, 0);
+		invisible_top_panel_style->set_content_margin_all(0);
 		invisible_top_panel_style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 		invisible_top_panel_style->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 		p_theme->set_stylebox("BottomPanelDebuggerOverride", EditorStringName(EditorStyles), invisible_top_panel_style);

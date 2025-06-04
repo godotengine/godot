@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "gui/editor_bottom_panel.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
 
@@ -79,7 +78,7 @@ public:
 
 private:
 	friend class DockContextPopup;
-	friend class EditorBottomPanel; // Temporary until DOCK_SLOT_BOTTOM registered. Used to connect signals.
+	friend class EditorBottomPanel; // TODO: Temporary until DOCK_SLOT_BOTTOM registered. Used to connect signals.
 
 	struct DockInfo {
 		String title;

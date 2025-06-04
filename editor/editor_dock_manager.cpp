@@ -30,6 +30,7 @@
 
 #include "editor_dock_manager.h"
 
+#include "gui/editor_bottom_panel.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
