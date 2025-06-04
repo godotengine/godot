@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A vertical scrollbar, typically used to navigate through content that extends beyond the visible height of a control. It is a [Range]-based control and goes from top (min) to bottom (max). Note that this direction is the opposite of [VSlider]'s.
+		This class inherits its properties, methods, and signals from [ScrollBar].
 	</description>
 	<tutorials>
 	</tutorials>
