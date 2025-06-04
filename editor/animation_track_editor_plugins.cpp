@@ -112,11 +112,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 
 	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
 
-	animationTrackDrawUtils->_draw_rect_clipped(Rect2(rect.position, rect.size / 2), Color(0.4, 0.4, 0.4), true, p_clip_left, p_clip_right);
-	animationTrackDrawUtils->_draw_rect_clipped(Rect2(rect.position + rect.size / 2, rect.size / 2), Color(0.4, 0.4, 0.4), true, p_clip_left, p_clip_right);
-	animationTrackDrawUtils->_draw_rect_clipped(Rect2(rect.position + Vector2(rect.size.x / 2, 0), rect.size / 2), Color(0.6, 0.6, 0.6), true, p_clip_left, p_clip_right);
-	animationTrackDrawUtils->_draw_rect_clipped(Rect2(rect.position + Vector2(0, rect.size.y / 2), rect.size / 2), Color(0.6, 0.6, 0.6), true, p_clip_left, p_clip_right);
-	animationTrackDrawUtils->_draw_rect_clipped(rect, color, true, p_clip_left, p_clip_right);
+	animationTrackDrawUtils->_draw_grid_clipped(rect, color, COLOR_EDIT_RECT_INTERVAL, p_clip_left, p_clip_right);
 
 	if (p_selected) {
 		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -320,7 +316,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 	Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	Color bg = accent;
 	bg.a = 0.15;
-
+	animationTrackDrawUtils->_draw_rect_clipped(rect, bg, true, p_clip_left, p_clip_right);
 	animationTrackDrawUtils->_draw_texture_region_clipped(texture, rect, region, p_clip_left, p_clip_right);
 
 	if (p_selected) {

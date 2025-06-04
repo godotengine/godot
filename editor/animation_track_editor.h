@@ -63,6 +63,7 @@ public:
 
 public:
 	void _draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right);
+	void _draw_grid_clipped(const Rect2 &p_rect, const Color &p_color, int p_raster_size, int p_clip_left, int p_clip_right);
 	void _draw_line_clipped(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
 	void _draw_vertical_line_clipped(const Point2 &p_from, float p_length, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
 	void _draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
@@ -612,6 +613,10 @@ public:
 	void set_editor(AnimationTrackEditor *p_editor);
 	String get_node_name() const;
 
+public:
+	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
+
+public:
 	AnimationTrackEditGroup();
 };
 

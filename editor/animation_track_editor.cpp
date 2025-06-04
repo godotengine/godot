@@ -2064,6 +2064,7 @@ void AnimationTimelineEdit::_play_position_draw() {
 
 	if (px >= get_name_limit() && px < (play_position->get_size().width - get_buttons_width())) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 		play_position->draw_texture(
 				get_editor_theme_icon(SNAME("TimelineIndicator")),
 				Point2(px - get_editor_theme_icon(SNAME("TimelineIndicator"))->get_width() * 0.5, 0),
@@ -2288,6 +2289,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			ERR_FAIL_INDEX(track, animation->get_track_count());
 
 			int limit = timeline->get_name_limit();
+			int limit_end = get_size().width - timeline->get_buttons_width();
 
 			const Ref<StyleBox> &stylebox_odd = get_theme_stylebox(SNAME("odd"), SNAME("AnimationTrackEdit"));
 			const Ref<StyleBox> &stylebox_focus = get_theme_stylebox(SNAME("focus"), SNAME("AnimationTrackEdit"));
@@ -2389,7 +2391,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			{
 				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width();
 
 				PackedStringArray section = editor->get_selected_section();
 				if (section.size() == 2) {
@@ -2426,6 +2427,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			{
 				float scale = timeline->get_zoom_scale();
 				PackedStringArray markers = animation->get_marker_names();
+
 				for (const StringName marker : markers) {
 					double time = animation->get_marker_time(marker);
 					if (editor->is_marker_selected(marker) && editor->is_marker_moving_selection()) {
@@ -2436,18 +2438,17 @@ void AnimationTrackEdit::_notification(int p_what) {
 						offset = offset * scale + limit;
 						Color marker_color = animation->get_marker_color(marker);
 						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
+						animationTrackDrawUtils->_draw_vertical_line_clipped(Point2(offset, 0), get_size().height, marker_color, 2, limit, limit_end);
 					}
 				}
 			}
 
 			// Keyframes.
 
-			draw_bg(limit, get_size().width - timeline->get_buttons_width() - outer_margin);
+			draw_bg(limit, limit_end);
 
 			{
 				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width() - outer_margin;
 
 				for (int i = 0; i < animation->track_get_key_count(track); i++) {
 					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
@@ -2482,7 +2483,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				}
 			}
 
-			draw_fg(limit, get_size().width - timeline->get_buttons_width() - outer_margin);
+			draw_fg(limit, limit_end);
 
 			// Buttons.
 
@@ -2508,7 +2509,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_editor_theme_icon(SNAME("UseBlendDisable")),
 				};
 
-				int ofs = get_size().width - timeline->get_buttons_width() - outer_margin;
+				int ofs = limit_end;
 
 				const Ref<Texture2D> down_icon = get_theme_icon(SNAME("select_arrow"), SNAME("Tree"));
 
@@ -2641,7 +2642,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 					Ref<Texture2D> icon = get_editor_theme_icon(animation->track_is_compressed(track) ? SNAME("Lock") : SNAME("Remove"));
 
-					remove_rect.position.x = ofs + ((get_size().width - ofs) - icon->get_width()) - outer_margin;
+					remove_rect.position.x = ofs + ((get_size().width - ofs) - icon->get_width()); // - outer_margin;
 					remove_rect.position.y = Math::round((get_size().height - icon->get_height()) / 2);
 					remove_rect.size = icon->get_size();
 
@@ -2920,7 +2921,6 @@ void AnimationTrackEdit::_play_position_draw() {
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-		//_draw_line_clipped(Point2(px, 0), h, color, 2, p_clip_left, int p_clip_right)
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }
@@ -3947,7 +3947,6 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 
 			const Ref<StyleBox> &stylebox_header = get_theme_stylebox(SNAME("header"), SNAME("AnimationTrackEditGroup"));
-			const int outer_margin = get_theme_constant(SNAME("outer_margin"), SNAME("AnimationTrackEdit"));
 
 			float v_margin_offset = stylebox_header->get_content_margin(SIDE_TOP) - stylebox_header->get_content_margin(SIDE_BOTTOM);
 
@@ -3965,6 +3964,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			draw_style_box(stylebox_header, Rect2(Point2(), get_size()));
 
 			int limit = timeline->get_name_limit();
+			int limit_end = get_size().width - timeline->get_buttons_width();
 
 			// Section preview.
 
@@ -4017,14 +4017,15 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 						offset = offset * scale + limit;
 						Color marker_color = editor->get_current_animation()->get_marker_color(marker);
 						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
+
+						animationTrackDrawUtils->_draw_vertical_line_clipped(Point2(offset, 0), get_size().height, marker_color, 1, limit, limit_end);
 					}
 				}
 			}
 
 			draw_line(Point2(), Point2(get_size().width, 0), h_line_color, Math::round(EDSCALE));
 			draw_line(Point2(timeline->get_name_limit(), 0), Point2(timeline->get_name_limit(), get_size().height), v_line_color, Math::round(EDSCALE));
-			draw_line(Point2(get_size().width - timeline->get_buttons_width() - outer_margin, 0), Point2(get_size().width - timeline->get_buttons_width() - outer_margin, get_size().height), v_line_color, Math::round(EDSCALE));
+			draw_line(Point2(limit_end, 0), Point2(limit_end, get_size().height), v_line_color, Math::round(EDSCALE));
 
 			int ofs = stylebox_header->get_margin(SIDE_LEFT);
 			draw_texture_rect(icon, Rect2(Point2(ofs, (get_size().height - icon_size.y) / 2 + v_margin_offset).round(), icon_size));
@@ -4033,9 +4034,9 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 			int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
 
-			if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
+			if (px >= limit && px < limit_end) {
 				const Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-				draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
+				animationTrackDrawUtils->_draw_vertical_line_clipped(Point2(px, 0), get_size().height, accent, 2, limit, limit_end);
 			}
 		} break;
 	}
@@ -4103,6 +4104,8 @@ void AnimationTrackEditGroup::_zoom_changed() {
 }
 
 AnimationTrackEditGroup::AnimationTrackEditGroup() {
+	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
+	animationTrackDrawUtils->canvas_item = this;
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
@@ -10030,6 +10033,54 @@ void AnimationTrackDrawUtils::_draw_rect_clipped(const Rect2 &p_rect, const Colo
 	canvas_item->draw_rect(clipped_rect, p_color, p_filled);
 }
 
+void AnimationTrackDrawUtils::_draw_grid_clipped(const Rect2 &p_rect, const Color &p_color, int p_raster_size, int p_clip_left, int p_clip_right) {
+	ERR_FAIL_NULL(canvas_item);
+	ERR_FAIL_COND_MSG(p_raster_size < 1, "Raster size must be at least 1");
+
+	if (p_rect.position.x + p_rect.size.x < p_clip_left || p_rect.position.x > p_clip_right) {
+		return;
+	}
+
+	Color shadow_color = Color(0.4, 0.4, 0.4);
+	Color highlight_color = Color(0.6, 0.6, 0.6);
+	Color main_color = p_color;
+
+	float cell_width = p_rect.size.x / p_raster_size;
+	float cell_height = p_rect.size.y / p_raster_size;
+
+	for (int y = 0; y < p_raster_size; y++) {
+		for (int x = 0; x < p_raster_size; x++) {
+			Vector2 cell_pos = p_rect.position + Vector2(x * cell_width, y * cell_height);
+			Rect2 cell_rect(cell_pos, Vector2(cell_width, cell_height));
+
+			if (cell_rect.position.x + cell_rect.size.x < p_clip_left || cell_rect.position.x > p_clip_right) {
+				continue;
+			}
+
+			float x_min = cell_rect.position.x;
+			float x_max = cell_rect.position.x + cell_rect.size.x;
+
+			if (x_min < p_clip_left) {
+				x_min = p_clip_left;
+			}
+
+			if (x_max > p_clip_right) {
+				x_max = p_clip_right;
+			}
+
+			if (x_min >= x_max) {
+				continue;
+			}
+
+			Rect2 clipped_cell(Vector2(x_min, cell_rect.position.y), Vector2(x_max - x_min, cell_rect.size.y));
+			Color cell_color = (x + y) % 2 == 0 ? shadow_color : highlight_color;
+			cell_color = cell_color.lerp(main_color, main_color.a);
+
+			canvas_item->draw_rect(clipped_cell, cell_color, true);
+		}
+	}
+}
+
 void AnimationTrackDrawUtils::_draw_vertical_line_clipped(const Point2 &p_from, float p_length, const Color &p_color, float p_width, int p_clip_left, int p_clip_right) {
 	ERR_FAIL_NULL(canvas_item);
 
@@ -10046,12 +10097,10 @@ void AnimationTrackDrawUtils::_draw_vertical_line_clipped(const Point2 &p_from, 
 
 	float clipped_width = p_width;
 	if (from.x - p_width / 2.0f < p_clip_left) {
-		// Linker Rand wird abgeschnitten
 		float excess = p_clip_left - (from.x - p_width / 2.0f);
 		clipped_width -= excess;
 	}
 	if (from.x + p_width / 2.0f > p_clip_right) {
-		// Rechter Rand wird abgeschnitten
 		float excess = (from.x + p_width / 2.0f) - p_clip_right;
 		clipped_width -= excess;
 	}
