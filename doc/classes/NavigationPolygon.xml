@@ -90,7 +90,7 @@
 		<method name="get_navigation_mesh">
 			<return type="NavigationMesh" />
 			<description>
-				Returns the [NavigationMesh] resulting from this navigation polygon. This navigation mesh can be used to update the navigation mesh of a region with the [method NavigationServer3D.region_set_navigation_mesh] API directly (as 2D uses the 3D server behind the scene).
+				Returns the [NavigationMesh] resulting from this navigation polygon. This navigation mesh can be used to update the navigation mesh of a region with the [method NavigationServer3D.region_set_navigation_mesh] API directly.
 			</description>
 		</method>
 		<method name="get_outline" qualifiers="const">

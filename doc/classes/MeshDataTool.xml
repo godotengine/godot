@@ -100,8 +100,8 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="vertex" type="int" />
 			<description>
-				Returns index of specified vertex connected to given edge.
-				Vertex argument can only be 0 or 1 because edges are comprised of two vertices.
+				Returns the index of the specified [param vertex] connected to the edge at index [param idx].
+				[param vertex] can only be [code]0[/code] or [code]1[/code], as edges are composed of two vertices.
 			</description>
 		</method>
 		<method name="get_face_count" qualifiers="const">
@@ -115,8 +115,8 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="edge" type="int" />
 			<description>
-				Returns specified edge associated with given face.
-				Edge argument must be either 0, 1, or 2 because a face only has three edges.
+				Returns the edge associated with the face at index [param idx].
+				[param edge] argument must be either [code]0[/code], [code]1[/code], or [code]2[/code] because a face only has three edges.
 			</description>
 		</method>
 		<method name="get_face_meta" qualifiers="const">
