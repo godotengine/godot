@@ -291,7 +291,12 @@ void DisplayServerAppleEmbedded::touch_drag(int p_idx, int p_prev_x, int p_prev_
 }
 
 void DisplayServerAppleEmbedded::perform_event(const Ref<InputEvent> &p_event) {
-	Input::get_singleton()->parse_input_event(p_event);
+	Input *input_singleton = Input::get_singleton();
+	if (input_singleton == nullptr) {
+		return;
+	}
+
+	input_singleton->parse_input_event(p_event);
 }
 
 void DisplayServerAppleEmbedded::touches_canceled(int p_idx) {
