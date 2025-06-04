@@ -798,7 +798,7 @@
 			<param index="0" name="key" type="int" />
 			<param index="1" name="with" type="int" />
 			<description>
-				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be made up of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
+				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be composed of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
 			</description>
 		</method>
 		<method name="replace_chars" qualifiers="const">

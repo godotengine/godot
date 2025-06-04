@@ -2704,7 +2704,7 @@
 		</member>
 		<member name="rendering/2d/batching/uniform_set_cache_size" type="int" setter="" getter="" default="4096">
 			Maximum number of uniform sets that will be cached by the 2D renderer when batching draw calls.
-			[b]Note:[/b] A project that uses a large number of unique sprite textures per frame may benefit from increasing this value.
+			[b]Note:[/b] Increasing this value can improve performance if the project renders many unique sprite textures every frame.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
@@ -2908,15 +2908,15 @@
 			- [code]opengl3_angle[/code], OpenGL ES 3.0 using the ANGLE compatibility layer over native Direct3D 11 drivers. If [member rendering/gl_compatibility/fallback_to_angle] is enabled, this is used as a fallback if OpenGL 3.3 is not supported. By default, ANGLE is used as the default driver for some devices listed in [member rendering/gl_compatibility/force_angle_on_devices].
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
+			If [code]true[/code], the Compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_gles" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to OpenGLES if desktop OpenGL is not supported.
+			If [code]true[/code], the Compatibility renderer will fall back to OpenGLES if desktop OpenGL is not supported.
 			[b]Note:[/b] This setting is implemented only on Linux/X11.
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_native" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE is not supported, or ANGLE dynamic libraries aren't found.
+			If [code]true[/code], the Compatibility renderer will fall back to native OpenGL if ANGLE is not supported, or ANGLE dynamic libraries aren't found.
 			[b]Note:[/b] This setting is implemented on macOS and Windows.
 		</member>
 		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="">
@@ -3032,19 +3032,19 @@
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size" type="int" setter="" getter="" default="4096">
-			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
+			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/positional_shadow/atlas_size] on mobile devices, due to performance concerns or driver support.
