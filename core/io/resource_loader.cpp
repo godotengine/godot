@@ -296,7 +296,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
 		bool is_remapped_load = original_path == parent_task_path;
 		if (E && !is_remapped_load) {
-			E->value.sub_tasks.insert(p_original_path);
+			E->value.sub_tasks.insert(original_path);
 		}
 	}
 	load_paths_stack.push_back(original_path);
