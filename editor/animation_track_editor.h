@@ -55,6 +55,20 @@ class TextureRect;
 class ViewPanner;
 class EditorValidationPanel;
 
+class AnimationTrackDrawUtils : public Object {
+	GDCLASS(AnimationTrackDrawUtils, Object);
+
+public:
+	CanvasItem *canvas_item;
+
+public:
+	void _draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right);
+	void _draw_line_clipped(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
+	void _draw_vertical_line_clipped(const Point2 &p_from, float p_length, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
+	void _draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
+	String _make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width);
+};
+
 class AnimationTrackKeyEdit : public Object {
 	GDCLASS(AnimationTrackKeyEdit, Object);
 
@@ -372,19 +386,20 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
+	Rect2 get_global_key_rect(int p_index, float p_pixels_sec, int p_x) const;
+
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	virtual int get_key_width() const;
-	virtual int get_key_height() const;
-	virtual Rect2 get_key_rect(float p_pixels_sec) const;
-	virtual Rect2 get_global_key_rect(float p_pixels_sec, int p_x) const;
+	virtual int get_key_width(int p_index, float p_pixels_sec) const;
+	virtual int get_key_height(int p_index, float p_pixels_sec) const;
+	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) const;
 	virtual bool is_key_selectable_by_distance() const;
-	virtual void draw_key(const StringName &p_name, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
+	virtual void draw_key(const StringName &p_name, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	virtual void draw_bg(int p_clip_left, int p_clip_right);
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
 
-	//helper
-	void draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
+	// helper
+	float _get_pixels_sec(int p_index) const;
 
 	Ref<Animation> get_animation() const;
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
@@ -409,6 +424,10 @@ public:
 	// For use by AnimationTrackEditor.
 	void _clear_selection(bool p_update);
 
+public:
+	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
+
+public:
 	AnimationMarkerEdit();
 };
 
@@ -518,21 +537,14 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	virtual int get_key_width() const;
-	virtual int get_key_height() const;
+	virtual int get_key_width(int p_index, float p_pixels_sec) const;
+	virtual int get_key_height(int p_index, float p_pixels_sec) const;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
 	virtual bool is_key_selectable_by_distance() const;
 	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	virtual void draw_bg(int p_clip_left, int p_clip_right);
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
-
-	//helper
-	void draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
-	void draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right);
-	void draw_line_clipped(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
-	String make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width);
-	int _get_theme_font_height(float p_scale) const;
 
 	int get_track() const;
 	Ref<Animation> get_animation() const;
@@ -553,6 +565,12 @@ public:
 	void set_in_group(bool p_enable);
 	void append_to_selection(const Rect2 &p_box, bool p_deselection);
 
+public:
+	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
+	int _get_theme_font_height(float p_scale) const;
+	float _get_pixels_sec(int p_index) const;
+
+public:
 	AnimationTrackEdit();
 };
 
