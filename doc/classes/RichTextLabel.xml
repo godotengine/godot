@@ -526,8 +526,9 @@
 		</method>
 		<method name="push_strikethrough">
 			<return type="void" />
+			<param index="0" name="color" type="Color" default="Color(0, 0, 0, 0)" />
 			<description>
-				Adds a [code skip-lint][s][/code] tag to the tag stack.
+				Adds a [code skip-lint][s][/code] tag to the tag stack. If [param color] alpha value is zero, current font color with alpha multiplied by [theme_item strikethrough_alpha] is used.
 			</description>
 		</method>
 		<method name="push_table">
@@ -542,8 +543,9 @@
 		</method>
 		<method name="push_underline">
 			<return type="void" />
+			<param index="0" name="color" type="Color" default="Color(0, 0, 0, 0)" />
 			<description>
-				Adds a [code skip-lint][u][/code] tag to the tag stack.
+				Adds a [code skip-lint][u][/code] tag to the tag stack. If [param color] alpha value is zero, current font color with alpha multiplied by [theme_item underline_alpha] is used.
 			</description>
 		</method>
 		<method name="reload_effects">
@@ -887,6 +889,9 @@
 		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
 			The size of the shadow outline.
 		</theme_item>
+		<theme_item name="strikethrough_alpha" data_type="constant" type="int" default="50">
+			The default strikethrough color transparency (percent). For strikethroughs with a custom color, this theme item is only used if the custom color's alpha is [code]0.0[/code] (fully transparent).
+		</theme_item>
 		<theme_item name="table_h_separation" data_type="constant" type="int" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
@@ -898,6 +903,9 @@
 		</theme_item>
 		<theme_item name="text_highlight_v_padding" data_type="constant" type="int" default="3">
 			The vertical padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection. To avoid any risk of neighboring highlights overlapping each other, set this to [code]0[/code] to disable padding.
+		</theme_item>
+		<theme_item name="underline_alpha" data_type="constant" type="int" default="50">
+			The default underline color transparency (percent). For underlines with a custom color, this theme item is only used if the custom color's alpha is [code]0.0[/code] (fully transparent).
 		</theme_item>
 		<theme_item name="bold_font" data_type="font" type="Font">
 			The font used for bold text.
