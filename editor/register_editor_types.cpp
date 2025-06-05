@@ -173,6 +173,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
 	GDREGISTER_CLASS(EditorSceneFormatImporter);
 	GDREGISTER_CLASS(EditorScenePostImportPlugin);
+	GDREGISTER_CLASS(EditorScriptPreCreationPlugin);
 	GDREGISTER_CLASS(EditorInspector);
 	GDREGISTER_CLASS(EditorInspectorPlugin);
 	GDREGISTER_CLASS(EditorProperty);

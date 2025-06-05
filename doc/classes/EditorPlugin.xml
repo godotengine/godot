@@ -544,6 +544,15 @@
 				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>
+		<method name="add_script_pre_creation_plugin">
+			<return type="void" />
+			<param index="0" name="script_creation_plugin" type="EditorScriptPreCreationPlugin" />
+			<param index="1" name="first_priority" type="bool" default="false" />
+			<description>
+				Add a [EditorScriptPreCreationPlugin]. These plugins allow customizing the creation process of scripts.
+				If [param first_priority] is [code]true[/code], the new creation plugin is inserted first in the list and takes precedence over pre-existing plugins.
+			</description>
+		</method>
 		<method name="add_tool_menu_item">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
@@ -730,6 +739,13 @@
 			<param index="0" name="scene_import_plugin" type="EditorScenePostImportPlugin" />
 			<description>
 				Remove the [EditorScenePostImportPlugin], added with [method add_scene_post_import_plugin].
+			</description>
+		</method>
+		<method name="remove_script_pre_creation_plugin">
+			<return type="void" />
+			<param index="0" name="script_creation_plugin" type="EditorScriptPreCreationPlugin" />
+			<description>
+				Remove the [EditorScriptPreCreationPlugin], added with [method add_script_pre_creation_plugin].
 			</description>
 		</method>
 		<method name="remove_tool_menu_item">
