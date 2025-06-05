@@ -968,33 +968,12 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 								continue;
 							}
 
-							// Compute the offset
 							Rect2i source_rect = atlas_source->get_tile_texture_region(E.value.get_atlas_coords());
-							Vector2i tile_offset = tile_data->get_texture_origin();
 
 							// Compute the destination rectangle in the CanvasItem.
 							Rect2 dest_rect;
-							dest_rect.size = source_rect.size;
-
-							bool transpose = tile_data->get_transpose() ^ bool(E.value.alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
-							if (transpose) {
-								dest_rect.position = (tile_set->map_to_local(E.key) - Vector2(dest_rect.size.y, dest_rect.size.x) / 2);
-								SWAP(tile_offset.x, tile_offset.y);
-							} else {
-								dest_rect.position = (tile_set->map_to_local(E.key) - dest_rect.size / 2);
-							}
-
-							if (tile_data->get_flip_h() ^ bool(E.value.alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H)) {
-								dest_rect.size.x = -dest_rect.size.x;
-								tile_offset.x = -tile_offset.x;
-							}
-
-							if (tile_data->get_flip_v() ^ bool(E.value.alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V)) {
-								dest_rect.size.y = -dest_rect.size.y;
-								tile_offset.y = -tile_offset.y;
-							}
-
-							dest_rect.position -= tile_offset;
+							bool transpose;
+							TileMapLayer::compute_transformed_tile_dest_rect(dest_rect, transpose, tile_set->map_to_local(E.key), source_rect.size, tile_data, E.value.alternative_tile);
 
 							// Get the tile modulation.
 							Color modulate = tile_data->get_modulate() * edited_layer->get_modulate_in_tree() * edited_layer->get_self_modulate();
@@ -1501,14 +1480,13 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 	drag_type = DRAG_TYPE_NONE;
 }
 
-void TileMapLayerEditorTilesPlugin::_apply_transform(int p_type) {
+void TileMapLayerEditorTilesPlugin::_apply_transform(TileTransformType p_type) {
 	if (selection_pattern.is_null() || selection_pattern->is_empty()) {
 		return;
 	}
 
 	Ref<TileMapPattern> transformed_pattern;
 	transformed_pattern.instantiate();
-	bool keep_shape = selection_pattern->get_size() == Vector2i(1, 1);
 
 	Vector2i size = selection_pattern->get_size();
 	for (int y = 0; y < size.y; y++) {
@@ -1520,9 +1498,7 @@ void TileMapLayerEditorTilesPlugin::_apply_transform(int p_type) {
 
 			Vector2i dst_coords;
 
-			if (keep_shape) {
-				dst_coords = src_coords;
-			} else if (p_type == TRANSFORM_ROTATE_LEFT) {
+			if (p_type == TRANSFORM_ROTATE_LEFT) {
 				dst_coords = Vector2i(y, size.x - x - 1);
 			} else if (p_type == TRANSFORM_ROTATE_RIGHT) {
 				dst_coords = Vector2i(size.y - y - 1, x);
@@ -1541,46 +1517,28 @@ void TileMapLayerEditorTilesPlugin::_apply_transform(int p_type) {
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-int TileMapLayerEditorTilesPlugin::_get_transformed_alternative(int p_alternative_id, int p_transform) {
+int TileMapLayerEditorTilesPlugin::_get_transformed_alternative(int p_alternative_id, TileTransformType p_transform) {
 	bool transform_flip_h = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_H;
 	bool transform_flip_v = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V;
 	bool transform_transpose = p_alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
 
 	switch (p_transform) {
-		case TRANSFORM_ROTATE_LEFT:
-		case TRANSFORM_ROTATE_RIGHT: {
-			// A matrix with every possible flip/transpose combination, sorted by what comes next when you rotate.
-			const LocalVector<bool> rotation_matrix = {
-				// NOLINTBEGIN(modernize-use-bool-literals)
-				0, 0, 0,
-				0, 1, 1,
-				1, 1, 0,
-				1, 0, 1,
-				1, 0, 0,
-				0, 0, 1,
-				0, 1, 0,
-				1, 1, 1
-				// NOLINTEND(modernize-use-bool-literals)
-			};
-
-			for (int i = 0; i < 8; i++) {
-				if (transform_flip_h == rotation_matrix[i * 3] && transform_flip_v == rotation_matrix[i * 3 + 1] && transform_transpose == rotation_matrix[i * 3 + 2]) {
-					if (p_transform == TRANSFORM_ROTATE_LEFT) {
-						i = i / 4 * 4 + (i + 1) % 4;
-					} else {
-						i = i / 4 * 4 + Math::posmod(i - 1, 4);
-					}
-					transform_flip_h = rotation_matrix[i * 3];
-					transform_flip_v = rotation_matrix[i * 3 + 1];
-					transform_transpose = rotation_matrix[i * 3 + 2];
-					break;
-				}
-			}
+		case TRANSFORM_ROTATE_LEFT: { // (h, v, t) -> (v, !h, !t)
+			bool negated_flip_h = !transform_flip_h;
+			transform_flip_h = transform_flip_v;
+			transform_flip_v = negated_flip_h;
+			transform_transpose = !transform_transpose;
 		} break;
-		case TRANSFORM_FLIP_H: {
+		case TRANSFORM_ROTATE_RIGHT: { // (h, v, t) -> (!v, h, !t)
+			bool negated_flip_v = !transform_flip_v;
+			transform_flip_v = transform_flip_h;
+			transform_flip_h = negated_flip_v;
+			transform_transpose = !transform_transpose;
+		} break;
+		case TRANSFORM_FLIP_H: { // (h, v, t) -> (!h, v, t)
 			transform_flip_h = !transform_flip_h;
 		} break;
-		case TRANSFORM_FLIP_V: {
+		case TRANSFORM_FLIP_V: { // (h, v, t) -> (h, !v, t)
 			transform_flip_v = !transform_flip_v;
 		} break;
 	}
