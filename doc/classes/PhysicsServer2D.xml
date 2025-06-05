@@ -906,13 +906,6 @@
 				Creates a 2D separation ray shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's [code]length[/code] and [code]slide_on_slope[/code] properties.
 			</description>
 		</method>
-		<method name="set_active">
-			<return type="void" />
-			<param index="0" name="active" type="bool" />
-			<description>
-				Activates or deactivates the 2D physics server. If [param active] is [code]false[/code], then the physics server will not do anything in its physics step.
-			</description>
-		</method>
 		<method name="shape_get_data" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="shape" type="RID" />
@@ -996,6 +989,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="active" type="bool" setter="set_active" getter="is_active">
+			If [code]true[/code], the server can be accessed and will update on each physics frame.
+		</member>
+	</members>
 	<constants>
 		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0" enum="SpaceParameter">
 			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated. The default value of this parameter is [member ProjectSettings.physics/2d/solver/contact_recycle_radius].

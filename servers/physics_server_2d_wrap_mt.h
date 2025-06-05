@@ -312,6 +312,10 @@ public:
 	virtual void flush_queries() override;
 	virtual void finish() override;
 
+	virtual bool is_active() const override {
+		return physics_server_2d->is_active();
+	}
+
 	virtual bool is_flushing_queries() const override {
 		return physics_server_2d->is_flushing_queries();
 	}
