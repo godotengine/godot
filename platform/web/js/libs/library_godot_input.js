@@ -515,9 +515,9 @@ const GodotInput = {
 			const rel_pos_x = evt.movementX * rw;
 			const rel_pos_y = evt.movementY * rh;
 			const modifiers = GodotInput.getModifiers(evt);
-			func(pos[0], pos[1], rel_pos_x, rel_pos_y, modifiers);
+			func(pos[0], pos[1], rel_pos_x, rel_pos_y, modifiers, evt.pressure);
 		}
-		GodotEventListeners.add(window, 'mousemove', move_cb, false);
+		GodotEventListeners.add(window, 'pointermove', move_cb, false);
 	},
 
 	godot_js_input_mouse_wheel_cb__proxy: 'sync',
