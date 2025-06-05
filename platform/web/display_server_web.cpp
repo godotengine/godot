@@ -305,18 +305,18 @@ int DisplayServerWeb::_mouse_button_callback(int p_pressed, int p_button, double
 	return true;
 }
 
-void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
+void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers);
+		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 		return;
 	}
 #endif
 
-	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers);
+	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 }
 
-void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
+void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure) {
 	BitField<MouseButtonMask> input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behavior.
@@ -332,6 +332,7 @@ void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel
 
 	ev->set_position(pos);
 	ev->set_global_position(pos);
+	ev->set_pressure((float)p_pressure);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
 	ev->set_relative_screen_position(ev->get_relative());
