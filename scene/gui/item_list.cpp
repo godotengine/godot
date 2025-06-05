@@ -730,6 +730,17 @@ void ItemList::set_fixed_tag_icon_size(const Size2i &p_size) {
 	shape_changed = true;
 }
 
+Control::CursorShape ItemList::get_cursor_shape(const Point2 &p_pos) const {
+	if (scroll_bar_v && scroll_bar_v->is_panning()) {
+		return CURSOR_MOVE;
+	}
+	if (scroll_bar_h && scroll_bar_h->is_panning()) {
+		return CURSOR_MOVE;
+	}
+
+	return get_default_cursor_shape();
+}
+
 void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -903,6 +914,13 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		}
+	}
+
+	if (scroll_bar_h && scroll_bar_h->is_panning()) {
+		scroll_bar_h->pan_callback(mm, this);
+	}
+	if (scroll_bar_v && scroll_bar_v->is_panning()) {
+		scroll_bar_v->pan_callback(mm, this);
 	}
 
 	if (p_event->is_pressed() && items.size() > 0) {
