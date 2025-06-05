@@ -2566,10 +2566,11 @@ uint32_t RenderForwardMobile::geometry_instance_get_pair_mask() {
 	return ((1 << RS::INSTANCE_LIGHT) + (1 << RS::INSTANCE_REFLECTION_PROBE) + (1 << RS::INSTANCE_DECAL));
 }
 
-uint32_t RenderForwardMobile::GeometryInstanceForwardMobile::clear_light_instances()
+uint32_t RenderForwardMobile::GeometryInstanceForwardMobile::clear_light_instances(uint32_t &total_max_lights)
 {
 	omni_light_count = 0;
 	spot_light_count = 0;
+	total_max_lights = get_singleton()->get_max_elements();
 	return MAX_RDL_CULL;
 }
 void RenderForwardMobile::GeometryInstanceForwardMobile::pair_light_instance(

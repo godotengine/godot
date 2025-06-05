@@ -72,12 +72,13 @@ uint32_t RasterizerSceneGLES3::geometry_instance_get_pair_mask() {
 	return ((1 << RS::INSTANCE_LIGHT) | (1 << RS::INSTANCE_REFLECTION_PROBE));
 }
 
-uint32_t RasterizerSceneGLES3::GeometryInstanceGLES3::clear_light_instances()
+uint32_t RasterizerSceneGLES3::GeometryInstanceGLES3::clear_light_instances( uint32_t &total_max_lights )
 {
 	paired_omni_light_count = 0;
 	paired_spot_light_count = 0;
 	paired_omni_lights.clear();
 	paired_spot_lights.clear();
+	total_max_lights = GLES3::Config::get_singleton()->max_renderable_lights;
 	return GLES3::Config::get_singleton()->max_lights_per_object;
 }
 void RasterizerSceneGLES3::GeometryInstanceGLES3::pair_light_instance(
