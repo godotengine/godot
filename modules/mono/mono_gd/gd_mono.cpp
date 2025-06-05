@@ -599,6 +599,21 @@ void GDMono::initialize() {
 
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
+#ifdef WEB_ENABLED
+	// For web platform, we need to set up the Mono runtime differently
+	// The runtime is statically linked in this case
+	print_verbose("Mono: Static linking for web platform.");
+	runtime_initialized = true;
+	_domain = nullptr;
+
+	mono_jit_init("godot");
+	
+	_load_assemblies(GodotSharpDirs::get_api_assemblies_dir());
+
+	// TODO: Add implementation for loading Godot plugins for web platform
+	return;
+#endif
+
 #if !defined(APPLE_EMBEDDED_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {

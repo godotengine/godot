@@ -172,6 +172,9 @@ private:
 #ifdef ANDROID_ENABLED
 		api_assemblies_dir = packed_path;
 		print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
+#elif defined(WEB_ENABLED)
+		mono_user_dir = "user://";
+		api_assemblies_dir = "res://.godot/mono/publish/wasm";
 #else
 		if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.
