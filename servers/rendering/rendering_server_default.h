@@ -366,6 +366,7 @@ public:
 	FUNC4(mesh_surface_update_vertex_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_skin_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_index_region, RID, int, int, const Vector<uint8_t> &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
