@@ -816,6 +816,7 @@ Vector<int> Voxelizer::get_voxel_gi_level_cell_count() const {
 // https://prideout.net/blog/distance_fields/
 
 #define square(m_s) ((m_s) * (m_s))
+#define BIG_VAL 1e20
 
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
@@ -825,8 +826,8 @@ static void edt(float *f, int stride, int n) {
 
 	int k = 0;
 	v[0] = 0;
-	z[0] = -Math::INF;
-	z[1] = +Math::INF;
+	z[0] = -BIG_VAL;
+	z[1] = +BIG_VAL;
 	for (int q = 1; q <= n - 1; q++) {
 		float s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
 		while (s <= z[k]) {
@@ -837,7 +838,7 @@ static void edt(float *f, int stride, int n) {
 		v[k] = q;
 
 		z[k] = s;
-		z[k + 1] = +Math::INF;
+		z[k + 1] = +BIG_VAL;
 	}
 
 	k = 0;
@@ -861,7 +862,7 @@ Voxelizer::BakeResult Voxelizer::get_sdf_3d_image(Vector<uint8_t> &r_image, Bake
 	uint32_t float_count = octree_size.x * octree_size.y * octree_size.z;
 	float *work_memory = memnew_arr(float, float_count);
 	for (uint32_t i = 0; i < float_count; i++) {
-		work_memory[i] = Math::INF;
+		work_memory[i] = BIG_VAL;
 	}
 
 	uint32_t y_mult = octree_size.x;
@@ -943,6 +944,8 @@ Voxelizer::BakeResult Voxelizer::get_sdf_3d_image(Vector<uint8_t> &r_image, Bake
 
 	return BAKE_RESULT_OK;
 }
+
+#undef BIG_VAL
 
 void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx) {
 	if (p_level == cell_subdiv - 1) {
