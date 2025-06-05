@@ -927,6 +927,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
 	inspector->get_inspector()->connect("restart_requested", callable_mp(this, &EditorSettingsDialog::_editor_restart_request));
 
+	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
+		inspector->set_touch_dragger_enabled(true);
+	}
+
 	restart_container = memnew(PanelContainer);
 	tab_general->add_child(restart_container);
 	HBoxContainer *restart_hb = memnew(HBoxContainer);
