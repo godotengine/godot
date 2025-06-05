@@ -441,6 +441,19 @@ void TranslationServer::remove_domain(const StringName &p_domain) {
 	custom_domains.erase(p_domain);
 }
 
+Vector<String> TranslationServer::get_all_domains(const bool &include_internal) const {
+	Vector<String> domains;
+
+	for (const KeyValue<StringName, Ref<TranslationDomain>> &E : custom_domains) {
+		if (!include_internal && (E.key == "godot.editor" || E.key == "godot.properties" || E.key == "godot.documentation")) {
+			continue; // Skip these internal domains
+		}
+		domains.push_back(E.key);
+	}
+
+	return domains;
+}
+
 void TranslationServer::setup() {
 	String test = GLOBAL_DEF("internationalization/locale/test", "");
 	test = test.strip_edges();
@@ -595,6 +608,7 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_domain", "domain"), &TranslationServer::has_domain);
 	ClassDB::bind_method(D_METHOD("get_or_add_domain", "domain"), &TranslationServer::get_or_add_domain);
 	ClassDB::bind_method(D_METHOD("remove_domain", "domain"), &TranslationServer::remove_domain);
+	ClassDB::bind_method(D_METHOD("get_all_domains", "include_internal"), &TranslationServer::get_all_domains, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 

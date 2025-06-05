@@ -141,6 +141,7 @@ public:
 	bool has_domain(const StringName &p_domain) const;
 	Ref<TranslationDomain> get_or_add_domain(const StringName &p_domain);
 	void remove_domain(const StringName &p_domain);
+	Vector<String> get_all_domains(const bool &include_internal) const;
 
 	void setup();
 
