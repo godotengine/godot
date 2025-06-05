@@ -504,7 +504,7 @@ Patches:
 ## libjpeg-turbo
 
 - Upstream: https://github.com/libjpeg-turbo/libjpeg-turbo
-- Version: git (20ade4dea9589515a69793e447a6c6220b464535, 2024)
+- Version: 3.1.0 (20ade4dea9589515a69793e447a6c6220b464535, 2024)
 - License: BSD-3-Clause and IJG
 
 Files extracted from upstream source:
@@ -519,6 +519,7 @@ Patches:
 - `0001-cmake-generated-headers.patch` (GH-104347)
 - `0002-disable-16bitlossless.patch` (GH-104347)
 - `0003-remove-bmp-ppm-support.patch` (GH-104347)
+
 
 ## libktx
 
@@ -929,6 +930,18 @@ and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
 
 
+## smaa
+
+- Upstream: https://github.com/iryoku/smaa
+- Version: git (71c806a838bdd7d517df19192a20f0c61b3ca29d, 2013)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `LICENSE`
+- Textures generated using the Python scripts in the `Scripts` folder
+
+
 ## spirv-cross
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Cross
@@ -964,6 +977,19 @@ Patches:
 
 - `0001-specialization-constants.patch` (GH-50325)
 - `0002-zero-size-for-sc-sized-arrays.patch` (GH-94985)
+
+
+## swappy-frame-pacing
+
+- Upstream: https://android.googlesource.com/platform/frameworks/opt/gamesdk/ via https://github.com/godotengine/godot-swappy
+- Version: git (1198bb06b041e2df5d42cc5cf18fac81fcefa03f, 2025)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `include/common/`
+- `include/swappy/{swappy_common.h,swappyVk.h}`
+- `LICENSE`
 
 
 ## thorvg
