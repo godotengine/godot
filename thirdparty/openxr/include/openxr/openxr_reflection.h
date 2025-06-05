@@ -507,6 +507,7 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META, 1000266101) \
     _(XR_TYPE_SPACE_TRIANGLE_MESH_GET_INFO_META, 1000269001) \
     _(XR_TYPE_SPACE_TRIANGLE_MESH_META, 1000269002) \
+    _(XR_TYPE_SYSTEM_PROPERTIES_BODY_TRACKING_FULL_BODY_META, 1000274000) \
     _(XR_TYPE_EVENT_DATA_PASSTHROUGH_LAYER_RESUMED_META, 1000282000) \
     _(XR_TYPE_SYSTEM_FACE_TRACKING_PROPERTIES2_FB, 1000287013) \
     _(XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB, 1000287014) \
@@ -578,6 +579,7 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SCENE_CAPTURE_INFO_BD, 1000392001) \
     _(XR_TYPE_SYSTEM_SPATIAL_MESH_PROPERTIES_BD, 1000393000) \
     _(XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_SPATIAL_MESH_BD, 1000393001) \
+    _(XR_TYPE_FUTURE_POLL_RESULT_PROGRESS_BD, 1000394001) \
     _(XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT, 1000428000) \
     _(XR_TYPE_HAND_TRACKING_DATA_SOURCE_STATE_EXT, 1000428001) \
     _(XR_TYPE_PLANE_DETECTOR_CREATE_INFO_EXT, 1000429001) \
@@ -610,6 +612,9 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_FACIAL_EXPRESSION_CLIENT_CREATE_INFO_ML, 1000482005) \
     _(XR_TYPE_FACIAL_EXPRESSION_BLEND_SHAPE_GET_INFO_ML, 1000482006) \
     _(XR_TYPE_FACIAL_EXPRESSION_BLEND_SHAPE_PROPERTIES_ML, 1000482007) \
+    _(XR_TYPE_SYSTEM_SIMULTANEOUS_HANDS_AND_CONTROLLERS_PROPERTIES_META, 1000532001) \
+    _(XR_TYPE_SIMULTANEOUS_HANDS_AND_CONTROLLERS_TRACKING_RESUME_INFO_META, 1000532002) \
+    _(XR_TYPE_SIMULTANEOUS_HANDS_AND_CONTROLLERS_TRACKING_PAUSE_INFO_META, 1000532003) \
     _(XR_TYPE_COLOCATION_DISCOVERY_START_INFO_META, 1000571010) \
     _(XR_TYPE_COLOCATION_DISCOVERY_STOP_INFO_META, 1000571011) \
     _(XR_TYPE_COLOCATION_ADVERTISEMENT_START_INFO_META, 1000571012) \
@@ -913,6 +918,7 @@ XR_ENUM_STR(XrResult);
 
 #define XR_LIST_ENUM_XrBodyJointSetFB(_) \
     _(XR_BODY_JOINT_SET_DEFAULT_FB, 0) \
+    _(XR_BODY_JOINT_SET_FULL_BODY_META, 1000274000) \
     _(XR_BODY_JOINT_SET_MAX_ENUM_FB, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrHandJointsMotionRangeEXT(_) \
@@ -1381,6 +1387,95 @@ XR_ENUM_STR(XrResult);
     _(XR_PASSTHROUGH_COLOR_LUT_CHANNELS_RGB_META, 1) \
     _(XR_PASSTHROUGH_COLOR_LUT_CHANNELS_RGBA_META, 2) \
     _(XR_PASSTHROUGH_COLOR_LUT_CHANNELS_MAX_ENUM_META, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrFullBodyJointMETA(_) \
+    _(XR_FULL_BODY_JOINT_ROOT_META, 0) \
+    _(XR_FULL_BODY_JOINT_HIPS_META, 1) \
+    _(XR_FULL_BODY_JOINT_SPINE_LOWER_META, 2) \
+    _(XR_FULL_BODY_JOINT_SPINE_MIDDLE_META, 3) \
+    _(XR_FULL_BODY_JOINT_SPINE_UPPER_META, 4) \
+    _(XR_FULL_BODY_JOINT_CHEST_META, 5) \
+    _(XR_FULL_BODY_JOINT_NECK_META, 6) \
+    _(XR_FULL_BODY_JOINT_HEAD_META, 7) \
+    _(XR_FULL_BODY_JOINT_LEFT_SHOULDER_META, 8) \
+    _(XR_FULL_BODY_JOINT_LEFT_SCAPULA_META, 9) \
+    _(XR_FULL_BODY_JOINT_LEFT_ARM_UPPER_META, 10) \
+    _(XR_FULL_BODY_JOINT_LEFT_ARM_LOWER_META, 11) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_WRIST_TWIST_META, 12) \
+    _(XR_FULL_BODY_JOINT_RIGHT_SHOULDER_META, 13) \
+    _(XR_FULL_BODY_JOINT_RIGHT_SCAPULA_META, 14) \
+    _(XR_FULL_BODY_JOINT_RIGHT_ARM_UPPER_META, 15) \
+    _(XR_FULL_BODY_JOINT_RIGHT_ARM_LOWER_META, 16) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_WRIST_TWIST_META, 17) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_PALM_META, 18) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_WRIST_META, 19) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_THUMB_METACARPAL_META, 20) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_THUMB_PROXIMAL_META, 21) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_THUMB_DISTAL_META, 22) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_THUMB_TIP_META, 23) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_INDEX_METACARPAL_META, 24) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_INDEX_PROXIMAL_META, 25) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_INDEX_INTERMEDIATE_META, 26) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_INDEX_DISTAL_META, 27) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_INDEX_TIP_META, 28) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_MIDDLE_METACARPAL_META, 29) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_MIDDLE_PROXIMAL_META, 30) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_MIDDLE_INTERMEDIATE_META, 31) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_MIDDLE_DISTAL_META, 32) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_MIDDLE_TIP_META, 33) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_RING_METACARPAL_META, 34) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_RING_PROXIMAL_META, 35) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_RING_INTERMEDIATE_META, 36) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_RING_DISTAL_META, 37) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_RING_TIP_META, 38) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_LITTLE_METACARPAL_META, 39) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_LITTLE_PROXIMAL_META, 40) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_LITTLE_INTERMEDIATE_META, 41) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_LITTLE_DISTAL_META, 42) \
+    _(XR_FULL_BODY_JOINT_LEFT_HAND_LITTLE_TIP_META, 43) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_PALM_META, 44) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_WRIST_META, 45) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_THUMB_METACARPAL_META, 46) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_THUMB_PROXIMAL_META, 47) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_THUMB_DISTAL_META, 48) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_THUMB_TIP_META, 49) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_INDEX_METACARPAL_META, 50) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_INDEX_PROXIMAL_META, 51) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_INDEX_INTERMEDIATE_META, 52) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_INDEX_DISTAL_META, 53) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_INDEX_TIP_META, 54) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_MIDDLE_METACARPAL_META, 55) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_MIDDLE_PROXIMAL_META, 56) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_MIDDLE_INTERMEDIATE_META, 57) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_MIDDLE_DISTAL_META, 58) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_MIDDLE_TIP_META, 59) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_RING_METACARPAL_META, 60) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_RING_PROXIMAL_META, 61) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_RING_INTERMEDIATE_META, 62) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_RING_DISTAL_META, 63) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_RING_TIP_META, 64) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_LITTLE_METACARPAL_META, 65) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_LITTLE_PROXIMAL_META, 66) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_LITTLE_INTERMEDIATE_META, 67) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_LITTLE_DISTAL_META, 68) \
+    _(XR_FULL_BODY_JOINT_RIGHT_HAND_LITTLE_TIP_META, 69) \
+    _(XR_FULL_BODY_JOINT_LEFT_UPPER_LEG_META, 70) \
+    _(XR_FULL_BODY_JOINT_LEFT_LOWER_LEG_META, 71) \
+    _(XR_FULL_BODY_JOINT_LEFT_FOOT_ANKLE_TWIST_META, 72) \
+    _(XR_FULL_BODY_JOINT_LEFT_FOOT_ANKLE_META, 73) \
+    _(XR_FULL_BODY_JOINT_LEFT_FOOT_SUBTALAR_META, 74) \
+    _(XR_FULL_BODY_JOINT_LEFT_FOOT_TRANSVERSE_META, 75) \
+    _(XR_FULL_BODY_JOINT_LEFT_FOOT_BALL_META, 76) \
+    _(XR_FULL_BODY_JOINT_RIGHT_UPPER_LEG_META, 77) \
+    _(XR_FULL_BODY_JOINT_RIGHT_LOWER_LEG_META, 78) \
+    _(XR_FULL_BODY_JOINT_RIGHT_FOOT_ANKLE_TWIST_META, 79) \
+    _(XR_FULL_BODY_JOINT_RIGHT_FOOT_ANKLE_META, 80) \
+    _(XR_FULL_BODY_JOINT_RIGHT_FOOT_SUBTALAR_META, 81) \
+    _(XR_FULL_BODY_JOINT_RIGHT_FOOT_TRANSVERSE_META, 82) \
+    _(XR_FULL_BODY_JOINT_RIGHT_FOOT_BALL_META, 83) \
+    _(XR_FULL_BODY_JOINT_COUNT_META, 84) \
+    _(XR_FULL_BODY_JOINT_NONE_META, 85) \
+    _(XR_FULL_BODY_JOINT_MAX_ENUM_META, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrFaceExpression2FB(_) \
     _(XR_FACE_EXPRESSION2_BROW_LOWERER_L_FB, 0) \
@@ -4933,6 +5028,12 @@ XR_ENUM_STR(XrResult);
     _(indexCountOutput) \
     _(indices) \
 
+/// Calls your macro with the name of each member of XrSystemPropertiesBodyTrackingFullBodyMETA, in order.
+#define XR_LIST_STRUCT_XrSystemPropertiesBodyTrackingFullBodyMETA(_) \
+    _(type) \
+    _(next) \
+    _(supportsFullBodyTracking) \
+
 /// Calls your macro with the name of each member of XrEventDataPassthroughLayerResumedMETA, in order.
 #define XR_LIST_STRUCT_XrEventDataPassthroughLayerResumedMETA(_) \
     _(type) \
@@ -5478,6 +5579,13 @@ XR_ENUM_STR(XrResult);
     _(configFlags) \
     _(lod) \
 
+/// Calls your macro with the name of each member of XrFuturePollResultProgressBD, in order.
+#define XR_LIST_STRUCT_XrFuturePollResultProgressBD(_) \
+    _(type) \
+    _(next) \
+    _(isSupported) \
+    _(progressPercentage) \
+
 /// Calls your macro with the name of each member of XrHandTrackingDataSourceInfoEXT, in order.
 #define XR_LIST_STRUCT_XrHandTrackingDataSourceInfoEXT(_) \
     _(type) \
@@ -5744,6 +5852,22 @@ XR_ENUM_STR(XrResult);
     _(weight) \
     _(flags) \
     _(time) \
+
+/// Calls your macro with the name of each member of XrSystemSimultaneousHandsAndControllersPropertiesMETA, in order.
+#define XR_LIST_STRUCT_XrSystemSimultaneousHandsAndControllersPropertiesMETA(_) \
+    _(type) \
+    _(next) \
+    _(supportsSimultaneousHandsAndControllers) \
+
+/// Calls your macro with the name of each member of XrSimultaneousHandsAndControllersTrackingResumeInfoMETA, in order.
+#define XR_LIST_STRUCT_XrSimultaneousHandsAndControllersTrackingResumeInfoMETA(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrSimultaneousHandsAndControllersTrackingPauseInfoMETA, in order.
+#define XR_LIST_STRUCT_XrSimultaneousHandsAndControllersTrackingPauseInfoMETA(_) \
+    _(type) \
+    _(next) \
 
 /// Calls your macro with the name of each member of XrColocationDiscoveryStartInfoMETA, in order.
 #define XR_LIST_STRUCT_XrColocationDiscoveryStartInfoMETA(_) \
@@ -6164,6 +6288,7 @@ XR_ENUM_STR(XrResult);
     _(XrSystemPassthroughColorLutPropertiesMETA, XR_TYPE_SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META) \
     _(XrSpaceTriangleMeshGetInfoMETA, XR_TYPE_SPACE_TRIANGLE_MESH_GET_INFO_META) \
     _(XrSpaceTriangleMeshMETA, XR_TYPE_SPACE_TRIANGLE_MESH_META) \
+    _(XrSystemPropertiesBodyTrackingFullBodyMETA, XR_TYPE_SYSTEM_PROPERTIES_BODY_TRACKING_FULL_BODY_META) \
     _(XrEventDataPassthroughLayerResumedMETA, XR_TYPE_EVENT_DATA_PASSTHROUGH_LAYER_RESUMED_META) \
     _(XrSystemFaceTrackingProperties2FB, XR_TYPE_SYSTEM_FACE_TRACKING_PROPERTIES2_FB) \
     _(XrFaceTrackerCreateInfo2FB, XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB) \
@@ -6236,6 +6361,7 @@ XR_ENUM_STR(XrResult);
     _(XrSceneCaptureInfoBD, XR_TYPE_SCENE_CAPTURE_INFO_BD) \
     _(XrSystemSpatialMeshPropertiesBD, XR_TYPE_SYSTEM_SPATIAL_MESH_PROPERTIES_BD) \
     _(XrSenseDataProviderCreateInfoSpatialMeshBD, XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_SPATIAL_MESH_BD) \
+    _(XrFuturePollResultProgressBD, XR_TYPE_FUTURE_POLL_RESULT_PROGRESS_BD) \
     _(XrHandTrackingDataSourceInfoEXT, XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT) \
     _(XrHandTrackingDataSourceStateEXT, XR_TYPE_HAND_TRACKING_DATA_SOURCE_STATE_EXT) \
     _(XrSystemPlaneDetectionPropertiesEXT, XR_TYPE_SYSTEM_PLANE_DETECTION_PROPERTIES_EXT) \
@@ -6270,6 +6396,9 @@ XR_ENUM_STR(XrResult);
     _(XrFacialExpressionClientCreateInfoML, XR_TYPE_FACIAL_EXPRESSION_CLIENT_CREATE_INFO_ML) \
     _(XrFacialExpressionBlendShapeGetInfoML, XR_TYPE_FACIAL_EXPRESSION_BLEND_SHAPE_GET_INFO_ML) \
     _(XrFacialExpressionBlendShapePropertiesML, XR_TYPE_FACIAL_EXPRESSION_BLEND_SHAPE_PROPERTIES_ML) \
+    _(XrSystemSimultaneousHandsAndControllersPropertiesMETA, XR_TYPE_SYSTEM_SIMULTANEOUS_HANDS_AND_CONTROLLERS_PROPERTIES_META) \
+    _(XrSimultaneousHandsAndControllersTrackingResumeInfoMETA, XR_TYPE_SIMULTANEOUS_HANDS_AND_CONTROLLERS_TRACKING_RESUME_INFO_META) \
+    _(XrSimultaneousHandsAndControllersTrackingPauseInfoMETA, XR_TYPE_SIMULTANEOUS_HANDS_AND_CONTROLLERS_TRACKING_PAUSE_INFO_META) \
     _(XrColocationDiscoveryStartInfoMETA, XR_TYPE_COLOCATION_DISCOVERY_START_INFO_META) \
     _(XrColocationDiscoveryStopInfoMETA, XR_TYPE_COLOCATION_DISCOVERY_STOP_INFO_META) \
     _(XrColocationAdvertisementStartInfoMETA, XR_TYPE_COLOCATION_ADVERTISEMENT_START_INFO_META) \
@@ -6603,6 +6732,7 @@ XR_ENUM_STR(XrResult);
     _(XR_META_passthrough_color_lut, 267) \
     _(XR_META_spatial_entity_mesh, 270) \
     _(XR_META_automatic_layer_filter, 272) \
+    _(XR_META_body_tracking_full_body, 275) \
     _(XR_META_touch_controller_plus, 280) \
     _(XR_META_passthrough_layer_resumed_event, 283) \
     _(XR_FB_face_tracking2, 288) \
@@ -6624,6 +6754,7 @@ XR_ENUM_STR(XrResult);
     _(XR_BD_spatial_anchor_sharing, 392) \
     _(XR_BD_spatial_scene, 393) \
     _(XR_BD_spatial_mesh, 394) \
+    _(XR_BD_future_progress, 395) \
     _(XR_EXT_local_floor, 427) \
     _(XR_EXT_hand_tracking_data_source, 429) \
     _(XR_EXT_plane_detection, 430) \
@@ -6637,6 +6768,7 @@ XR_ENUM_STR(XrResult);
     _(XR_ML_facial_expression, 483) \
     _(XR_ML_view_configuration_depth_range_change, 484) \
     _(XR_YVR_controller_interaction, 498) \
+    _(XR_META_simultaneous_hands_and_controllers, 533) \
     _(XR_EXT_composition_layer_inverted_alpha, 555) \
     _(XR_META_colocation_discovery, 572) \
     _(XR_META_spatial_entity_group_sharing, 573) \
@@ -7657,6 +7789,15 @@ XR_ENUM_STR(XrResult);
     _(CreateFacialExpressionClientML, ML_facial_expression) \
     _(DestroyFacialExpressionClientML, ML_facial_expression) \
     _(GetFacialExpressionBlendShapePropertiesML, ML_facial_expression) \
+
+
+/// For every function defined by XR_META_simultaneous_hands_and_controllers in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_simultaneous_hands_and_controllers(_) \
+    _(ResumeSimultaneousHandsAndControllersTrackingMETA, META_simultaneous_hands_and_controllers) \
+    _(PauseSimultaneousHandsAndControllersTrackingMETA, META_simultaneous_hands_and_controllers) \
 
 
 /// For every function defined by XR_META_colocation_discovery in this version of the spec,
