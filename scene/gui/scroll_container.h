@@ -109,6 +109,7 @@ protected:
 	void _accessibility_action_scroll_right(const Variant &p_data);
 
 public:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
 	void set_h_scroll(int p_pos);
