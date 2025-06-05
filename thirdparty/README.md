@@ -574,7 +574,7 @@ Files extracted from upstream source:
 ## libtheora
 
 - Upstream: https://www.theora.org
-- Version: git (7180717276af1ebc7da15c83162d6c5d6203aabf, 2020)
+- Version: 1.2.0 (8e4808736e9c181b971306cc3f05df9e61354004, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
