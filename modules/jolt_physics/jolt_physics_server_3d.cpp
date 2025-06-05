@@ -1126,6 +1126,20 @@ int JoltPhysicsServer3D::soft_body_get_simulation_precision(RID p_body) const {
 	return body->get_simulation_precision();
 }
 
+void JoltPhysicsServer3D::soft_body_set_point_radius(RID p_body, real_t p_radius) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->set_point_radius((float)p_radius);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_point_radius(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_point_radius();
+}
+
 void JoltPhysicsServer3D::soft_body_set_total_mass(RID p_body, real_t p_total_mass) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
