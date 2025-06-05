@@ -225,3 +225,11 @@ Validate extension JSON: API was removed: classes/EditorFileDialog/properties/op
 Validate extension JSON: API was removed: classes/EditorFileDialog/properties/show_hidden_files
 
 The errors are false-positives. The removed methods are now part of the new parent class.
+
+
+GH-107167
+---------
+Validate extension JSON: Error: Field 'classes/EditorExportPreset/methods/get_script_export_mode': meta was removed.
+Validate extension JSON: Error: Field 'classes/EditorExportPreset/methods/get_script_export_mode/return_value': type changed value in new API, from "int" to "enum::EditorExportPreset.ScriptExportMode".
+
+Change return type from `int` to `EditorExportPreset.ScriptExportMode` enum. Compatibility method registered.
