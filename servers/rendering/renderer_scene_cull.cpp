@@ -2935,22 +2935,19 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_LIGHT) && (idata.flags & InstanceData::FLAG_GEOM_LIGHTING_DIRTY)) {
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						ERR_FAIL_NULL(geom->geometry_instance);
+						//	clear any existing light instances for this mesh and return the max count.
 						uint32_t link_max_count = geom->geometry_instance->clear_light_instances();
 						if( link_max_count > 0 ) {
-							//	Profile the new way vs old pair_light_instances
 							uint64_t tin = Time::get_singleton()->get_ticks_usec();
 							
-							//	clear any existing light instances and return the max count.
+							//	Run through all M lights, but only use a heap to keep track of the best N
 							uint32_t omni_count = 0, spot_count = 0;
 							LocalVector<Pair<float,uint32_t> > omni_score_idx, spot_score_idx;	//	score, index into the light array
 							omni_score_idx.resize( link_max_count );
 							spot_score_idx.resize( link_max_count );
-							SortArray<Pair<float,uint32_t> > heapify;	//	I want to switch to SortArray of a pair(score,index)
+							SortArray<Pair<float,uint32_t> > heapify;
 							bool omni_needs_heap = true, spot_needs_heap = true;
-							
-							//	Score each light relative to this mesh.
 							Vector3 mesh_center = idata.instance->transformed_aabb.get_center();
-							//print_line(vformat("mesh(%f,%f,%f)", mesh_center.x, mesh_center.y, mesh_center.z));
 							for (const Instance *E : geom->lights) {
 								InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
 								if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
@@ -2962,7 +2959,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 								}
 
 								#if 0
-								//	Only keep the 1st N
+								//	Only pair the 1st N; this is the old way, for benchmarking
 								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
 								switch (light_type) {
 									case RS::LIGHT_OMNI: {
@@ -2979,12 +2976,16 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 								}
 								#else
 								//	Large scores are worse, so linear with distance, inverse with energy and range
-								//Vector3 light_center = E->transformed_aabb.get_center();	//	maybe a bit faster?
-								Vector3 light_center = E->transform.xform( RSG::light_storage->light_get_aabb(E->base).get_center() );	//	should be more accurate
-								//print_line(vformat("light(%f,%f,%f)", light_center.x, light_center.y, light_center.z));
+								Vector3 light_center = E->transformed_aabb.get_center();	//	maybe a bit faster?
+								//Vector3 light_center = E->transform.xform( RSG::light_storage->light_get_aabb(E->base).get_center() );	//	should be more accurate
+								#if 1
 								float light_range = RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_RANGE);
 								float light_energy = RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_ENERGY);
 								float light_inst_score = mesh_center.distance_to( light_center ) / (0.1f + light_range * light_energy);
+								#else
+								//	(on my machine this saves about 0.5 us per mesh, probably not worth it...)
+								float light_inst_score = mesh_center.distance_squared_to( light_center );
+								#endif
 								//	Keep the best per-light-type
 								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
 								switch (light_type) {
@@ -3030,7 +3031,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 								}
 								#endif								
 							}
-							#if 0
+							#if 1
 							{
 								//	This block is just for profiling.
 								uint64_t tout = Time::get_singleton()->get_ticks_usec();
