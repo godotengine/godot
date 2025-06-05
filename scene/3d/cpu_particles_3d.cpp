@@ -1822,5 +1822,5 @@ CPUParticles3D::CPUParticles3D() {
 
 CPUParticles3D::~CPUParticles3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(multimesh);
+	RS::get_singleton()->free_rid(multimesh);
 }

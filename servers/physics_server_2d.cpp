@@ -796,7 +796,7 @@ void PhysicsServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("joint_get_type", "joint"), &PhysicsServer2D::joint_get_type);
 
-	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &PhysicsServer2D::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &PhysicsServer2D::free_rid);
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &PhysicsServer2D::set_active);
 
