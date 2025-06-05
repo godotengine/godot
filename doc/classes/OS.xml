@@ -26,7 +26,7 @@
 				Displays a modal dialog box using the host platform's implementation. The engine execution is blocked until the dialog is closed.
 			</description>
 		</method>
-		<method name="close_midi_inputs">
+		<method name="close_midi_inputs" deprecated="Use [method InputEventMIDI.close_inputs] instead.">
 			<return type="void" />
 			<description>
 				Shuts down the system MIDI driver. Godot will no longer receive [InputEventMIDI]. See also [method open_midi_inputs] and [method get_connected_midi_inputs].
@@ -247,7 +247,7 @@
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
-		<method name="get_connected_midi_inputs">
+		<method name="get_connected_midi_inputs" deprecated="Use [method InputEventMIDI.get_connected_inputs] instead.">
 			<return type="PackedStringArray" />
 			<description>
 				Returns an array of connected MIDI device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_midi_inputs]. See also [method close_midi_inputs].
@@ -721,7 +721,7 @@
 				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
 			</description>
 		</method>
-		<method name="open_midi_inputs">
+		<method name="open_midi_inputs" deprecated="Use [method InputEventMIDI.open_inputs] instead.">
 			<return type="void" />
 			<description>
 				Initializes the singleton for the system MIDI driver, allowing Godot to receive [InputEventMIDI]. See also [method get_connected_midi_inputs] and [method close_midi_inputs].
