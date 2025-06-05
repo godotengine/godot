@@ -36,8 +36,8 @@
 #include "core/io/marshalls.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/oa_hash_map.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
@@ -1264,7 +1264,7 @@ struct VariantBuiltInMethodInfo {
 	}
 };
 
-typedef OAHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
+typedef AHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
 static BuiltinMethodMap *builtin_method_info;
 static List<StringName> *builtin_method_names;
 
@@ -1318,7 +1318,7 @@ void Variant::callp(const StringName &p_method, const Variant **p_args, int p_ar
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
 
-		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].lookup_ptr(p_method);
+		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].getptr(p_method);
 
 		if (!imf) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1350,7 +1350,7 @@ void Variant::call_const(const StringName &p_method, const Variant **p_args, int
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
 
-		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].lookup_ptr(p_method);
+		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].getptr(p_method);
 
 		if (!imf) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1369,7 +1369,7 @@ void Variant::call_const(const StringName &p_method, const Variant **p_args, int
 void Variant::call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	const VariantBuiltInMethodInfo *imf = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *imf = builtin_method_info[p_type].getptr(p_method);
 
 	if (!imf) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1404,35 +1404,35 @@ bool Variant::has_builtin_method(Variant::Type p_type, const StringName &p_metho
 
 Variant::ValidatedBuiltInMethod Variant::get_validated_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, nullptr);
 	return method->validated_call;
 }
 
 Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, nullptr);
 	return method->ptrcall;
 }
 
 MethodInfo Variant::get_builtin_method_info(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, MethodInfo());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, MethodInfo());
 	return method->get_method_info(p_method);
 }
 
 int Variant::get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, 0);
 	return method->argument_count;
 }
 
 Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, Variant::NIL);
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, Variant::NIL);
 	return method->get_argument_type(p_argument);
@@ -1440,7 +1440,7 @@ Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, co
 
 String Variant::get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, String());
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, String());
@@ -1452,14 +1452,14 @@ String Variant::get_builtin_method_argument_name(Variant::Type p_type, const Str
 
 Vector<Variant> Variant::get_builtin_method_default_arguments(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<Variant>());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, Vector<Variant>());
 	return method->default_arguments;
 }
 
 bool Variant::has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->has_return_type;
 }
@@ -1478,35 +1478,35 @@ int Variant::get_builtin_method_count(Variant::Type p_type) {
 
 Variant::Type Variant::get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, Variant::NIL);
 	return method->return_type;
 }
 
 bool Variant::is_builtin_method_const(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_const;
 }
 
 bool Variant::is_builtin_method_static(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_static;
 }
 
 bool Variant::is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_vararg;
 }
 
 uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, 0);
 	uint32_t hash = hash_murmur3_one_32(method->is_const);
 	hash = hash_murmur3_one_32(method->is_static, hash);
@@ -1531,7 +1531,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 		}
 	} else {
 		for (const StringName &E : builtin_method_names[type]) {
-			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E);
+			const VariantBuiltInMethodInfo *method = builtin_method_info[type].getptr(E);
 			ERR_CONTINUE(!method);
 			p_list->push_back(method->get_method_info(E));
 		}
