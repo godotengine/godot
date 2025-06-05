@@ -861,16 +861,32 @@ void main() {
 			light_for_texture += light;
 
 #ifdef USE_SH_LIGHTMAPS
-			// These coefficients include the factored out SH evaluation, diffuse convolution, and final application, as well as the BRDF 1/PI and the spherical monte carlo factor.
-			// LO: 1/(2*sqrtPI) * 1/(2*sqrtPI) * PI * PI * 1/PI = 0.25
-			// L1: sqrt(3/(4*pi)) * sqrt(3/(4*pi)) * (PI*2/3) * (2 * PI) * 1/PI = 1.0
-			// Note: This only works because we aren't scaling, rotating, or combing harmonics, we are just directing applying them in the shader.
+			// For L0, light needs to be attenuated by dot(normal, light_dir) else it is oversaturated when sampled later.
+			// For L1, light can't be attenuated by dot(normal, light_dir) since when sampling later, the dot product is done.
+			// The output of trace_direct_light() is already attenuated by dot(normal, light_dir).
+			// So L0 and L1 has the following relationship: L1 = L0 / dot(normal, light_dir).
 
+			// For L1 packing to work, there needs to be a defined ratio (4) between L0 and L1 values.
+			// This ratio is achieved with two coefficients c_l0 and c_l1, and ensuring that
+			// 4 = (c_l0 * LO) / (c_l1 * L1)
+
+			// For direct lights to look right, its effective "energy" needs to be 1 since it is not being integrated
+			// unlike indirect lighting.
+			// This binds c_l0 and c_l1 to the following relationship: 1 = c_l0 + c_l1
+
+			float attenuation = dot(normal, light_dir);
+
+			if (attenuation <= 0.0001) {
+				continue;
+			}
+
+			float c_l0 = 1 / (1 + 4 * attenuation);
+			float c_l1 = 1 - c_l0;
 			float c[4] = float[](
-					0.25, //l0
-					light_dir.y, //l1n1
-					light_dir.z, //l1n0
-					light_dir.x //l1p1
+					c_l0, //l0
+					c_l1 / attenuation * light_dir.y, //l1n1
+					c_l1 / attenuation * light_dir.z, //l1n0
+					c_l1 / attenuation * light_dir.x //l1p1
 			);
 
 			for (uint j = 0; j < 4; j++) {
