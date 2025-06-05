@@ -542,6 +542,7 @@ public:
 
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
+	static bool validate_type_match(const Variant &p_from, Variant &r_to);
 
 	static Variant cast_to_blendwise(const Variant p_value);
 	static Variant cast_from_blendwise(const Variant p_value, const Variant::Type p_type);
