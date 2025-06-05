@@ -794,11 +794,8 @@ void GameView::_update_floating_window_settings() {
 }
 
 void GameView::_attach_script_debugger() {
-	if (embedded_script_debugger) {
-		_detach_script_debugger();
-	}
+	_detach_script_debugger();
 
-	embedded_script_debugger = nullptr;
 	int i = 0;
 	while (ScriptEditorDebugger *script_debugger = EditorDebuggerNode::get_singleton()->get_debugger(i)) {
 		if (script_debugger->is_session_active() && script_debugger->get_remote_pid() == embedded_process->get_embedded_pid()) {
@@ -824,6 +821,7 @@ void GameView::_detach_script_debugger() {
 		embedded_script_debugger->disconnect("embed_shortcut_requested", callable_mp(this, &GameView::_handle_shortcut_requested));
 		embedded_script_debugger = nullptr;
 	}
+	embedded_process->set_script_debugger(nullptr);
 }
 
 void GameView::_remote_window_title_changed(String title) {
@@ -913,6 +911,10 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 }
 
 void GameView::_window_close_request() {
+	if (window_wrapper->get_window_enabled()) {
+		window_wrapper->set_window_enabled(false);
+	}
+
 	// Before the parent window closed, we close the embedded game. That prevents
 	// the embedded game to be seen without a parent window for a fraction of second.
 	if (EditorRunBar::get_singleton()->is_playing() && (embedded_process->is_embedding_completed() || embedded_process->is_embedding_in_progress())) {
