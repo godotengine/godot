@@ -2469,6 +2469,14 @@
 				Returns the stride of the attribute buffer for a mesh with given [param format].
 			</description>
 		</method>
+		<method name="mesh_surface_get_format_index_stride" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
+			<param index="1" name="vertex_count" type="int" />
+			<description>
+				Returns the stride of the index buffer for a mesh with the given [param format].
+			</description>
+		</method>
 		<method name="mesh_surface_get_format_normal_tangent_stride" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
@@ -2534,6 +2542,16 @@
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
 			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_update_index_region">
+			<return type="void" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<param index="2" name="offset" type="int" />
+			<param index="3" name="data" type="PackedByteArray" />
+			<description>
+				Updates the index buffer of the mesh surface with the given [param data]. The expected data are 16 or 32-bit unsigned integers, which can be determined with [method mesh_surface_get_format_index_stride].
 			</description>
 		</method>
 		<method name="mesh_surface_update_skin_region">
