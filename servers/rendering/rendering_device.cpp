@@ -1065,7 +1065,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 #endif
 
 	if (data.size()) {
-		for (uint32_t i = 0; i < p_format.array_layers; i++) {
+		for (uint32_t i = 0; i < format.array_layers; i++) {
 			_texture_initialize(id, i, data[i], immediate_flush);
 		}
 
