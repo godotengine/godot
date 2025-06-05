@@ -30,7 +30,7 @@
 				[b]Note:[/b] [method _customize_scene] will only be called for scenes that have been modified since the last export.
 			</description>
 		</method>
-		<method name="_customize_resource" qualifiers="virtual">
+		<method name="_customize_resource" qualifiers="virtual required">
 			<return type="Resource" />
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="path" type="String" />
@@ -47,7 +47,7 @@
 				- [CompressedTexture3D]
 			</description>
 		</method>
-		<method name="_customize_scene" qualifiers="virtual">
+		<method name="_customize_scene" qualifiers="virtual required">
 			<return type="Node" />
 			<param index="0" name="scene" type="Node" />
 			<param index="1" name="path" type="String" />
@@ -152,7 +152,7 @@
 				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
 			</description>
 		</method>
-		<method name="_get_customization_configuration_hash" qualifiers="virtual const">
+		<method name="_get_customization_configuration_hash" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Return a hash based on the configuration passed (for both scenes and resources). This helps keep separate caches for separate export configurations.
@@ -172,7 +172,6 @@
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<param index="1" name="option" type="String" />
 			<description>
-				[b]Optional.[/b]
 				Validates [param option] and returns the visibility for the specified [param platform]. The default implementation returns [code]true[/code] for all options.
 			</description>
 		</method>
@@ -220,7 +219,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="_get_name" qualifiers="virtual const">
+		<method name="_get_name" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 				Return the name identifier of this plugin (for future identification by the exporter). The plugins are sorted by name before exporting.

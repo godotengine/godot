@@ -11,37 +11,37 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_data" qualifiers="virtual const">
+		<method name="_get_data" qualifiers="virtual required const">
 			<return type="Image[]" />
 			<description>
 				Called when the [Texture3D]'s data is queried.
 			</description>
 		</method>
-		<method name="_get_depth" qualifiers="virtual const">
+		<method name="_get_depth" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture3D]'s depth is queried.
 			</description>
 		</method>
-		<method name="_get_format" qualifiers="virtual const">
+		<method name="_get_format" qualifiers="virtual required const">
 			<return type="int" enum="Image.Format" />
 			<description>
 				Called when the [Texture3D]'s format is queried.
 			</description>
 		</method>
-		<method name="_get_height" qualifiers="virtual const">
+		<method name="_get_height" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture3D]'s height is queried.
 			</description>
 		</method>
-		<method name="_get_width" qualifiers="virtual const">
+		<method name="_get_width" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture3D]'s width is queried.
 			</description>
 		</method>
-		<method name="_has_mipmaps" qualifiers="virtual const">
+		<method name="_has_mipmaps" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 				Called when the presence of mipmaps in the [Texture3D] is queried.

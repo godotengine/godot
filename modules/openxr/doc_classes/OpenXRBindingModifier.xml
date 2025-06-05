@@ -9,13 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_description" qualifiers="virtual const">
+		<method name="_get_description" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 				Return the description of this class that is used for the title bar of the binding modifier editor.
 			</description>
 		</method>
-		<method name="_get_ip_modification" qualifiers="virtual">
+		<method name="_get_ip_modification" qualifiers="virtual required">
 			<return type="PackedByteArray" />
 			<description>
 				Returns the data that is sent to OpenXR when submitting the suggested interacting bindings this modifier is a part of.

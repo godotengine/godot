@@ -16,19 +16,19 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_audio_mix_rate" qualifiers="virtual const">
+		<method name="_get_audio_mix_rate" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the audio sample rate used for recording the audio is requested by the engine. The value returned must be specified in Hz. Defaults to 48000 Hz if [method _get_audio_mix_rate] is not overridden.
 			</description>
 		</method>
-		<method name="_get_audio_speaker_mode" qualifiers="virtual const">
+		<method name="_get_audio_speaker_mode" qualifiers="virtual required const">
 			<return type="int" enum="AudioServer.SpeakerMode" />
 			<description>
 				Called when the audio speaker mode used for recording the audio is requested by the engine. This can affect the number of output channels in the resulting audio file/stream. Defaults to [constant AudioServer.SPEAKER_MODE_STEREO] if [method _get_audio_speaker_mode] is not overridden.
 			</description>
 		</method>
-		<method name="_handles_file" qualifiers="virtual const">
+		<method name="_handles_file" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
 			<description>
@@ -41,7 +41,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="_write_begin" qualifiers="virtual">
+		<method name="_write_begin" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="movie_size" type="Vector2i" />
 			<param index="1" name="fps" type="int" />
@@ -50,14 +50,14 @@
 				Called once before the engine starts writing video and audio data. [param movie_size] is the width and height of the video to save. [param fps] is the number of frames per second specified in the project settings or using the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			</description>
 		</method>
-		<method name="_write_end" qualifiers="virtual">
+		<method name="_write_end" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 				Called when the engine finishes writing. This occurs when the engine quits by pressing the window manager's close button, or when [method SceneTree.quit] is called.
 				[b]Note:[/b] Pressing [kbd]Ctrl + C[/kbd] on the terminal running the editor/project does [i]not[/i] result in [method _write_end] being called.
 			</description>
 		</method>
-		<method name="_write_frame" qualifiers="virtual">
+		<method name="_write_frame" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="frame_image" type="Image" />
 			<param index="1" name="audio_frame_block" type="const void*" />

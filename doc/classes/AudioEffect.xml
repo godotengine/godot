@@ -12,7 +12,7 @@
 		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
 	</tutorials>
 	<methods>
-		<method name="_instantiate" qualifiers="virtual">
+		<method name="_instantiate" qualifiers="virtual required">
 			<return type="AudioEffectInstance" />
 			<description>
 				Override this method to customize the [AudioEffectInstance] created when this effect is applied on a bus in the editor's Audio panel, or through [method AudioServer.add_bus_effect].
