@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include "core/input/input.h"
-#include "servers/display_server.h"
+#include "display_server_macos_base.h"
 
 @class CAContext;
 @class CALayer;
@@ -54,10 +53,8 @@ struct DisplayServerEmbeddedState {
 	}
 };
 
-class DisplayServerEmbedded : public DisplayServer {
-	GDCLASS(DisplayServerEmbedded, DisplayServer)
-
-	_THREAD_SAFE_CLASS_
+class DisplayServerEmbedded : public DisplayServerMacOSBase {
+	GDSOFTCLASS(DisplayServerEmbedded, DisplayServerMacOSBase)
 
 	DisplayServerEmbeddedState state;
 

@@ -43,7 +43,6 @@
 #import "key_mapping_macos.h"
 #import "macos_quartz_core_spi.h"
 #import "os_macos.h"
-#import "tts_macos.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -916,66 +915,6 @@ Callable DisplayServerMacOS::_help_get_action_callback() const {
 	return help_action_callback;
 }
 
-void DisplayServerMacOS::initialize_tts() const {
-	const_cast<DisplayServerMacOS *>(this)->tts = [[TTS_MacOS alloc] init];
-}
-
-bool DisplayServerMacOS::tts_is_speaking() const {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL_V(tts, false);
-	return [tts isSpeaking];
-}
-
-bool DisplayServerMacOS::tts_is_paused() const {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL_V(tts, false);
-	return [tts isPaused];
-}
-
-TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
-	return [tts getVoices];
-}
-
-void DisplayServerMacOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL(tts);
-	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
-}
-
-void DisplayServerMacOS::tts_pause() {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL(tts);
-	[tts pauseSpeaking];
-}
-
-void DisplayServerMacOS::tts_resume() {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL(tts);
-	[tts resumeSpeaking];
-}
-
-void DisplayServerMacOS::tts_stop() {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL(tts);
-	[tts stopSpeaking];
-}
-
 bool DisplayServerMacOS::is_dark_mode_supported() const {
 	if (@available(macOS 10.14, *)) {
 		return true;
@@ -1640,69 +1579,6 @@ BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
 		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
 	}
 	return last_button_state;
-}
-
-void DisplayServerMacOS::clipboard_set(const String &p_text) {
-	_THREAD_SAFE_METHOD_
-
-	NSString *copiedString = [NSString stringWithUTF8String:p_text.utf8().get_data()];
-	NSArray *copiedStringArray = [NSArray arrayWithObject:copiedString];
-
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	[pasteboard clearContents];
-	[pasteboard writeObjects:copiedStringArray];
-}
-
-String DisplayServerMacOS::clipboard_get() const {
-	_THREAD_SAFE_METHOD_
-
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
-	NSDictionary *options = [NSDictionary dictionary];
-
-	BOOL ok = [pasteboard canReadObjectForClasses:classArray options:options];
-
-	if (!ok) {
-		return "";
-	}
-
-	NSArray *objectsToPaste = [pasteboard readObjectsForClasses:classArray options:options];
-	NSString *string = [objectsToPaste objectAtIndex:0];
-
-	String ret;
-	ret.append_utf8([string UTF8String]);
-	return ret;
-}
-
-Ref<Image> DisplayServerMacOS::clipboard_get_image() const {
-	Ref<Image> image;
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
-	if (!result) {
-		return image;
-	}
-	NSData *data = [pasteboard dataForType:result];
-	if (!data) {
-		return image;
-	}
-	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
-	NSData *pngData = [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
-	image.instantiate();
-	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
-	return image;
-}
-
-bool DisplayServerMacOS::clipboard_has() const {
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
-	NSDictionary *options = [NSDictionary dictionary];
-	return [pasteboard canReadObjectForClasses:classArray options:options];
-}
-
-bool DisplayServerMacOS::clipboard_has_image() const {
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
-	return result;
 }
 
 int DisplayServerMacOS::get_screen_count() const {
@@ -4012,12 +3888,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	// Register to be notified on displays arrangement changes.
 	CGDisplayRegisterReconfigurationCallback(_displays_arrangement_changed, nullptr);
-
-	// Init TTS
-	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
-	if (tts_enabled) {
-		initialize_tts();
-	}
 
 	native_menu = memnew(NativeMenuMacOS);
 
