@@ -320,14 +320,14 @@ CopyEffects::~CopyEffects() {
 	copy.shader.version_free(copy.shader_version);
 	specular_merge.shader.version_free(specular_merge.shader_version);
 
-	RD::get_singleton()->free(filter.coefficient_buffer);
+	RD::get_singleton()->free_rid(filter.coefficient_buffer);
 
 	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
-		RD::get_singleton()->free(filter.image_uniform_set);
+		RD::get_singleton()->free_rid(filter.image_uniform_set);
 	}
 
 	if (RD::get_singleton()->uniform_set_is_valid(filter.uniform_set)) {
-		RD::get_singleton()->free(filter.uniform_set);
+		RD::get_singleton()->free_rid(filter.uniform_set);
 	}
 
 	copy_to_fb.shader.version_free(copy_to_fb.shader_version);
@@ -1117,7 +1117,7 @@ void CopyEffects::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubema
 		uniforms.push_back(u);
 	}
 	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
-		RD::get_singleton()->free(filter.image_uniform_set);
+		RD::get_singleton()->free_rid(filter.image_uniform_set);
 	}
 	filter.image_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.compute_shader.version_get_shader(filter.shader_version, 0), 2);
 

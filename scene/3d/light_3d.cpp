@@ -506,7 +506,7 @@ Light3D::~Light3D() {
 	RS::get_singleton()->instance_set_base(get_instance(), RID());
 
 	if (light.is_valid()) {
-		RenderingServer::get_singleton()->free(light);
+		RenderingServer::get_singleton()->free_rid(light);
 	}
 }
 
