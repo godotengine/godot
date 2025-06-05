@@ -185,6 +185,12 @@ void GridMapEditor::_menu_option(int p_option) {
 			_fill_selection();
 
 		} break;
+		case MENU_OPTION_CLEAR_ALL_CELLS: {
+			_clear_all_cells();
+		} break;
+		case MENU_OPTION_FIX_INVALID_CELLS: {
+			_fix_invalid_cells();
+		} break;
 		case MENU_OPTION_GRIDMAP_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50) * EDSCALE);
 		} break;
@@ -499,6 +505,24 @@ void GridMapEditor::_fill_selection() {
 	}
 	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
 	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
+	undo_redo->commit_action();
+}
+
+void GridMapEditor::_clear_all_cells() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Clear All Cells"));
+	undo_redo->add_undo_method(node, "set", "data", node->get("data"));
+	node->clear();
+	undo_redo->add_do_method(node, "set", "data", node->get("data"));
+	undo_redo->commit_action();
+}
+
+void GridMapEditor::_fix_invalid_cells() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Fix Invalid Cells"));
+	undo_redo->add_undo_method(node, "set", "data", node->get("data"));
+	node->fix_invalid_cells();
+	undo_redo->add_do_method(node, "set", "data", node->get("data"));
 	undo_redo->commit_action();
 }
 
@@ -1322,6 +1346,9 @@ GridMapEditor::GridMapEditor() {
 	options->get_popup()->add_shortcut(ED_GET_SHORTCUT("grid_map/clear_rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION);
 	options->get_popup()->add_check_shortcut(ED_GET_SHORTCUT("grid_map/keep_selected"), MENU_OPTION_PASTE_SELECTS);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_PASTE_SELECTS), true);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Clear All Cells"), MENU_OPTION_CLEAR_ALL_CELLS);
+	options->get_popup()->add_item(TTR("Fix Invalid Cells"), MENU_OPTION_FIX_INVALID_CELLS);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Settings..."), MENU_OPTION_GRIDMAP_SETTINGS);
 
