@@ -67,7 +67,6 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
 
-#define RULER_WIDTH (15 * EDSCALE)
 #define DRAG_THRESHOLD (8 * EDSCALE)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
 constexpr real_t MOVE_HANDLE_DISTANCE = 25;
@@ -1125,7 +1124,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			is_hovering_h_guide = false;
 			is_hovering_v_guide = false;
 
-			if (m.is_valid() && m->get_position().x < RULER_WIDTH) {
+			if (m.is_valid() && m->get_position().x < ruler_width_scaled) {
 				// Check if we are hovering an existing horizontal guide
 				for (int i = 0; i < hguides.size(); i++) {
 					if (Math::abs(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8)) {
@@ -1135,7 +1134,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					}
 				}
 
-			} else if (m.is_valid() && m->get_position().y < RULER_WIDTH) {
+			} else if (m.is_valid() && m->get_position().y < ruler_width_scaled) {
 				// Check if we are hovering an existing vertical guide
 				for (int i = 0; i < vguides.size(); i++) {
 					if (Math::abs(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8)) {
@@ -1149,12 +1148,12 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			// Start dragging a guide
 			if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 				// Press button
-				if (b->get_position().x < RULER_WIDTH && b->get_position().y < RULER_WIDTH) {
+				if (b->get_position().x < ruler_width_scaled && b->get_position().y < ruler_width_scaled) {
 					// Drag a new double guide
 					drag_type = DRAG_DOUBLE_GUIDE;
 					dragged_guide_index = -1;
 					return true;
-				} else if (b->get_position().x < RULER_WIDTH) {
+				} else if (b->get_position().x < ruler_width_scaled) {
 					// Check if we drag an existing horizontal guide
 					dragged_guide_index = -1;
 					for (int i = 0; i < hguides.size(); i++) {
@@ -1171,7 +1170,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						drag_type = DRAG_V_GUIDE;
 					}
 					return true;
-				} else if (b->get_position().y < RULER_WIDTH) {
+				} else if (b->get_position().y < ruler_width_scaled) {
 					// Check if we drag an existing vertical guide
 					dragged_guide_index = -1;
 					for (int i = 0; i < vguides.size(); i++) {
@@ -1217,7 +1216,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 				Point2 edited = snap_point(xform.affine_inverse().xform(b->get_position()), SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES);
 				if (drag_type == DRAG_V_GUIDE) {
 					Array prev_vguides = vguides.duplicate();
-					if (b->get_position().x > RULER_WIDTH) {
+					if (b->get_position().x > ruler_width_scaled) {
 						// Adds a new vertical guide
 						if (dragged_guide_index >= 0) {
 							vguides[dragged_guide_index] = edited.x;
@@ -1254,7 +1253,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					}
 				} else if (drag_type == DRAG_H_GUIDE) {
 					Array prev_hguides = hguides.duplicate();
-					if (b->get_position().y > RULER_WIDTH) {
+					if (b->get_position().y > ruler_width_scaled) {
 						// Adds a new horizontal guide
 						if (dragged_guide_index >= 0) {
 							hguides[dragged_guide_index] = edited.y;
@@ -1292,7 +1291,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 				} else if (drag_type == DRAG_DOUBLE_GUIDE) {
 					Array prev_hguides = hguides.duplicate();
 					Array prev_vguides = vguides.duplicate();
-					if (b->get_position().x > RULER_WIDTH && b->get_position().y > RULER_WIDTH) {
+					if (b->get_position().x > ruler_width_scaled && b->get_position().y > ruler_width_scaled) {
 						// Adds a new horizontal guide a new vertical guide
 						vguides.push_back(edited.x);
 						hguides.push_back(edited.y);
@@ -3012,8 +3011,8 @@ void CanvasItemEditor::_draw_guides() {
 		Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 		Size2 text_size = font->get_string_size(str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-		viewport->draw_string_outline(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
-		viewport->draw_string(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		viewport->draw_string_outline(font, Point2(dragged_guide_pos.x + 10, ruler_width_scaled + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+		viewport->draw_string(font, Point2(dragged_guide_pos.x + 10, ruler_width_scaled + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
 		viewport->draw_line(Point2(dragged_guide_pos.x, 0), Point2(dragged_guide_pos.x, viewport->get_size().y), guide_color, Math::round(EDSCALE));
 	}
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_H_GUIDE) {
@@ -3021,8 +3020,8 @@ void CanvasItemEditor::_draw_guides() {
 		Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 		Size2 text_size = font->get_string_size(str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-		viewport->draw_string_outline(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
-		viewport->draw_string(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		viewport->draw_string_outline(font, Point2(ruler_width_scaled + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+		viewport->draw_string(font, Point2(ruler_width_scaled + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
 		viewport->draw_line(Point2(0, dragged_guide_pos.y), Point2(viewport->get_size().x, dragged_guide_pos.y), guide_color, Math::round(EDSCALE));
 	}
 }
@@ -3047,7 +3046,7 @@ void CanvasItemEditor::_draw_rulers() {
 	Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 	font_color.a = 0.8;
 	Ref<Font> font = get_theme_font(SNAME("rulers"), EditorStringName(EditorFonts));
-	int font_size = get_theme_font_size(SNAME("rulers_size"), EditorStringName(EditorFonts));
+	real_t ruler_tick_scale = ruler_width_scaled / 15.0;
 
 	// The rule transform
 	Transform2D ruler_transform;
@@ -3060,15 +3059,15 @@ void CanvasItemEditor::_draw_rulers() {
 			ruler_transform.translate_local(grid_offset);
 			ruler_transform.scale_basis(grid_step * Math::pow(2.0, grid_step_multiplier));
 		}
-		while ((transform * ruler_transform).get_scale().x < 50 || (transform * ruler_transform).get_scale().y < 50) {
+		while ((transform * ruler_transform).get_scale().x < 50.0 * ruler_tick_scale || (transform * ruler_transform).get_scale().y < 50.0 * ruler_tick_scale) {
 			ruler_transform.scale_basis(Point2(2, 2));
 		}
 	} else {
 		real_t basic_rule = 100;
-		for (int i = 0; basic_rule * zoom > 100; i++) {
+		for (int i = 0; basic_rule * zoom > 100 * ruler_tick_scale; i++) {
 			basic_rule /= (i % 2) ? 5.0 : 2.0;
 		}
-		for (int i = 0; basic_rule * zoom < 100; i++) {
+		for (int i = 0; basic_rule * zoom < 60 * ruler_tick_scale; i++) {
 			basic_rule *= (i % 2) ? 2.0 : 5.0;
 		}
 		ruler_transform.scale(Size2(basic_rule, basic_rule));
@@ -3084,50 +3083,50 @@ void CanvasItemEditor::_draw_rulers() {
 	minor_subdivide.scale(Size2(1.0 / minor_subdivision, 1.0 / minor_subdivision));
 
 	// First and last graduations to draw (in the ruler space)
-	Point2 first = (transform * ruler_transform * major_subdivide * minor_subdivide).affine_inverse().xform(Point2(RULER_WIDTH, RULER_WIDTH));
+	Point2 first = (transform * ruler_transform * major_subdivide * minor_subdivide).affine_inverse().xform(Point2(ruler_width_scaled, ruler_width_scaled));
 	Point2 last = (transform * ruler_transform * major_subdivide * minor_subdivide).affine_inverse().xform(viewport->get_size());
 
 	// Draw top ruler
-	viewport->draw_rect(Rect2(Point2(RULER_WIDTH, 0), Size2(viewport->get_size().x, RULER_WIDTH)), bg_color);
+	viewport->draw_rect(Rect2(Point2(ruler_width_scaled, 0), Size2(viewport->get_size().x, ruler_width_scaled)), bg_color);
 	for (int i = Math::ceil(first.x); i < last.x; i++) {
 		Point2 position = (transform * ruler_transform * major_subdivide * minor_subdivide).xform(Point2(i, 0)).round();
 		if (i % (major_subdivision * minor_subdivision) == 0) {
-			viewport->draw_line(Point2(position.x, 0), Point2(position.x, RULER_WIDTH), graduation_color, Math::round(EDSCALE));
+			viewport->draw_line(Point2(position.x, 0), Point2(position.x, ruler_width_scaled), graduation_color, Math::round(EDSCALE));
 			real_t val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(i, 0)).x;
-			viewport->draw_string(font, Point2(position.x + 2, font->get_ascent(font_size) + Math::round(EDSCALE)), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+			viewport->draw_string(font, Point2(position.x + MAX(Math::round(ruler_font_size / 8.0), 2), font->get_ascent(ruler_font_size) + Math::round(EDSCALE)), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HORIZONTAL_ALIGNMENT_LEFT, -1, ruler_font_size, font_color);
 		} else {
 			if (i % minor_subdivision == 0) {
-				viewport->draw_line(Point2(position.x, RULER_WIDTH * 0.33), Point2(position.x, RULER_WIDTH), graduation_color, Math::round(EDSCALE));
+				viewport->draw_line(Point2(position.x, ruler_width_scaled * 0.33), Point2(position.x, ruler_width_scaled), graduation_color, Math::round(EDSCALE));
 			} else {
-				viewport->draw_line(Point2(position.x, RULER_WIDTH * 0.75), Point2(position.x, RULER_WIDTH), graduation_color, Math::round(EDSCALE));
+				viewport->draw_line(Point2(position.x, ruler_width_scaled * 0.75), Point2(position.x, ruler_width_scaled), graduation_color, Math::round(EDSCALE));
 			}
 		}
 	}
 
 	// Draw left ruler
-	viewport->draw_rect(Rect2(Point2(0, RULER_WIDTH), Size2(RULER_WIDTH, viewport->get_size().y)), bg_color);
+	viewport->draw_rect(Rect2(Point2(0, ruler_width_scaled), Size2(ruler_width_scaled, viewport->get_size().y)), bg_color);
 	for (int i = Math::ceil(first.y); i < last.y; i++) {
 		Point2 position = (transform * ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i)).round();
 		if (i % (major_subdivision * minor_subdivision) == 0) {
-			viewport->draw_line(Point2(0, position.y), Point2(RULER_WIDTH, position.y), graduation_color, Math::round(EDSCALE));
+			viewport->draw_line(Point2(0, position.y), Point2(ruler_width_scaled, position.y), graduation_color, Math::round(EDSCALE));
 			real_t val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i)).y;
 
-			Transform2D text_xform = Transform2D(-Math::PI / 2.0, Point2(font->get_ascent(font_size) + Math::round(EDSCALE), position.y - 2));
+			Transform2D text_xform = Transform2D(-Math::PI / 2.0, Point2(font->get_ascent(ruler_font_size) + Math::round(EDSCALE), position.y - 2));
 			viewport->draw_set_transform_matrix(viewport->get_transform() * text_xform);
-			viewport->draw_string(font, Point2(), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+			viewport->draw_string(font, Point2(), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HORIZONTAL_ALIGNMENT_LEFT, -1, ruler_font_size, font_color);
 			viewport->draw_set_transform_matrix(viewport->get_transform());
 
 		} else {
 			if (i % minor_subdivision == 0) {
-				viewport->draw_line(Point2(RULER_WIDTH * 0.33, position.y), Point2(RULER_WIDTH, position.y), graduation_color, Math::round(EDSCALE));
+				viewport->draw_line(Point2(ruler_width_scaled * 0.33, position.y), Point2(ruler_width_scaled, position.y), graduation_color, Math::round(EDSCALE));
 			} else {
-				viewport->draw_line(Point2(RULER_WIDTH * 0.75, position.y), Point2(RULER_WIDTH, position.y), graduation_color, Math::round(EDSCALE));
+				viewport->draw_line(Point2(ruler_width_scaled * 0.75, position.y), Point2(ruler_width_scaled, position.y), graduation_color, Math::round(EDSCALE));
 			}
 		}
 	}
 
 	// Draw the top left corner
-	viewport->draw_rect(Rect2(Point2(), Size2(RULER_WIDTH, RULER_WIDTH)), graduation_color);
+	viewport->draw_rect(Rect2(Point2(), Size2(ruler_width_scaled, ruler_width_scaled)), graduation_color);
 }
 
 void CanvasItemEditor::_draw_grid() {
@@ -3987,7 +3986,7 @@ void CanvasItemEditor::_draw_message() {
 
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	Point2 msgpos = Point2(RULER_WIDTH + 10 * EDSCALE, viewport->get_size().y - 14 * EDSCALE);
+	Point2 msgpos = Point2(ruler_width_scaled + 10 * EDSCALE, viewport->get_size().y - 14 * EDSCALE);
 	viewport->draw_string(font, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 	viewport->draw_string(font, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 	viewport->draw_string(font, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
@@ -4132,6 +4131,11 @@ void CanvasItemEditor::_update_editor_settings() {
 	panner->set_scroll_speed(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
 	panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 	panner->set_zoom_style((ViewPanner::ZoomStyle)EDITOR_GET("editors/panning/zoom_style").operator int());
+
+	// Compute the ruler width here so we can reuse the result throughout the various draw functions.
+	real_t ruler_width_unscaled = EDITOR_GET("editors/2d/ruler_width");
+	ruler_font_size = MAX(get_theme_font_size(SNAME("rulers_size"), EditorStringName(EditorFonts)) * ruler_width_unscaled / 15.0, 8);
+	ruler_width_scaled = MAX(ruler_width_unscaled * EDSCALE, ruler_font_size * 2.0);
 }
 
 void CanvasItemEditor::_project_settings_changed() {
@@ -4250,8 +4254,10 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated() ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+					EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("editors/2d")) {
 				_update_editor_settings();
+				update_viewport();
 			}
 		} break;
 
@@ -4294,7 +4300,7 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	// Move the zoom buttons.
 	Point2 controls_vb_begin = Point2(5, 5);
-	controls_vb_begin += (show_rulers) ? Point2(RULER_WIDTH, RULER_WIDTH) : Point2();
+	controls_vb_begin += (show_rulers) ? Point2(ruler_width_scaled, ruler_width_scaled) : Point2();
 	controls_vb->set_begin(controls_vb_begin);
 
 	Size2 hmin = h_scroll->get_minimum_size();
@@ -4339,13 +4345,13 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	// Move and resize the scrollbars, avoiding overlap.
 	if (is_layout_rtl()) {
-		v_scroll->set_begin(Point2(0, (show_rulers) ? RULER_WIDTH : 0));
+		v_scroll->set_begin(Point2(0, (show_rulers) ? ruler_width_scaled : 0));
 		v_scroll->set_end(Point2(vmin.width, size.height - (h_scroll->is_visible() ? hmin.height : 0)));
 	} else {
-		v_scroll->set_begin(Point2(size.width - vmin.width, (show_rulers) ? RULER_WIDTH : 0));
+		v_scroll->set_begin(Point2(size.width - vmin.width, (show_rulers) ? ruler_width_scaled : 0));
 		v_scroll->set_end(Point2(size.width, size.height - (h_scroll->is_visible() ? hmin.height : 0)));
 	}
-	h_scroll->set_begin(Point2((show_rulers) ? RULER_WIDTH : 0, size.height - hmin.height));
+	h_scroll->set_begin(Point2((show_rulers) ? ruler_width_scaled : 0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - (v_scroll->is_visible() ? vmin.width : 0), size.height));
 
 	// Calculate scrollable area.
@@ -5200,7 +5206,7 @@ void CanvasItemEditor::clear() {
 	zoom = 1.0 / MAX(1, EDSCALE);
 	zoom_widget->set_zoom(zoom);
 
-	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
+	view_offset = Point2(-150 - ruler_width_scaled, -95 - ruler_width_scaled);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen.
 	_update_scrollbars();
 
