@@ -433,7 +433,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		script_key_error->hide();
 	}
 
-	int script_export_mode = current->get_script_export_mode();
+	int script_export_mode = int(current->get_script_export_mode());
 	script_mode->select(script_export_mode);
 
 	updating = false;
@@ -703,7 +703,7 @@ bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 	return is_valid;
 }
 
-void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
+void ProjectExportDialog::_script_export_mode_changed(EditorExportPreset::ScriptExportMode p_mode) {
 	if (updating) {
 		return;
 	}
