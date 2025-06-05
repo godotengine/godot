@@ -175,7 +175,7 @@
 			If set to [code]true[/code] text will display invalid characters.
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="3">
-			Sets the clipping behavior when the text exceeds the text line's set width. See [enum TextServer.OverrunBehavior] for a description of all modes.
+			The clipping behavior when the text exceeds the text line's set width.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="-1.0">
 			Text line width.

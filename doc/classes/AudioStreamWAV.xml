@@ -60,7 +60,7 @@
 			[b]Note:[/b] If [member format] is set to [constant FORMAT_QOA], this property expects data from a full QOA file.
 		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="0">
-			Audio format. See [enum Format] constants for values.
+			Audio format.
 		</member>
 		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
 			The loop start point (in number of samples, relative to the beginning of the stream).
@@ -69,7 +69,7 @@
 			The loop end point (in number of samples, relative to the beginning of the stream).
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamWAV.LoopMode" default="0">
-			The loop mode. See [enum LoopMode] constants for values.
+			The loop mode.
 		</member>
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
 			The sample rate for mixing this audio. Higher values require more storage space, but result in better quality.

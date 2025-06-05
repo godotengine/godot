@@ -37,7 +37,7 @@
 			<return type="int" />
 			<param index="0" name="corner" type="int" enum="Corner" />
 			<description>
-				Returns the given [param corner]'s radius. See [enum Corner] for possible values.
+				Returns the given [param corner]'s radius.
 			</description>
 		</method>
 		<method name="get_expand_margin" qualifiers="const">
@@ -67,7 +67,7 @@
 			<param index="0" name="corner" type="int" enum="Corner" />
 			<param index="1" name="radius" type="int" />
 			<description>
-				Sets the corner radius to [param radius] pixels for the given [param corner]. See [enum Corner] for possible values.
+				Sets the corner radius to [param radius] pixels for the given [param corner].
 			</description>
 		</method>
 		<method name="set_corner_radius_all">

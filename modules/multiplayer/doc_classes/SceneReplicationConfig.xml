@@ -41,7 +41,7 @@
 			<return type="int" enum="SceneReplicationConfig.ReplicationMode" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				Returns the replication mode for the property identified by the given [param path]. See [enum ReplicationMode].
+				Returns the replication mode for the property identified by the given [param path].
 			</description>
 		</method>
 		<method name="property_get_spawn">
@@ -70,7 +70,7 @@
 			<param index="0" name="path" type="NodePath" />
 			<param index="1" name="mode" type="int" enum="SceneReplicationConfig.ReplicationMode" />
 			<description>
-				Sets the synchronization mode for the property identified by the given [param path]. See [enum ReplicationMode].
+				Sets the synchronization mode for the property identified by the given [param path].
 			</description>
 		</method>
 		<method name="property_set_spawn">
