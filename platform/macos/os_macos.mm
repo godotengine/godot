@@ -831,6 +831,64 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	}
 }
 
+Error OS_MacOS::open_with_program(const String &p_program_path, const List<String> &p_paths) {
+	NSURL *app_url = [NSURL fileURLWithPath:@(p_program_path.utf8().get_data())];
+	if (!app_url) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	NSBundle *bundle = [NSBundle bundleWithURL:app_url];
+	if (!bundle) {
+		return OS_Unix::create_process(p_program_path, p_paths);
+	}
+
+	NSMutableArray *urls_to_open = [[NSMutableArray alloc] init];
+	for (const String &path : p_paths) {
+		NSURL *file_url = [NSURL fileURLWithPath:@(path.utf8().get_data())];
+		if (file_url) {
+			[urls_to_open addObject:file_url];
+		}
+	}
+
+	if ([urls_to_open count] == 0) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+#if defined(__x86_64__)
+	if (@available(macOS 10.15, *)) {
+#endif
+		NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+		[configuration setCreatesNewApplicationInstance:NO];
+		__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+		__block Error err = ERR_TIMEOUT;
+
+		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open
+						   withApplicationAtURL:app_url
+								  configuration:configuration
+							  completionHandler:^(NSRunningApplication *app, NSError *error) {
+								  if (error) {
+									  err = ERR_CANT_FORK;
+									  NSLog(@"Failed to open paths: %@", error.localizedDescription);
+								  } else {
+									  err = OK;
+								  }
+								  dispatch_semaphore_signal(lock);
+							  }];
+		dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+
+		return err;
+#if defined(__x86_64__)
+	} else {
+		NSError *error = nullptr;
+		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open withApplicationAtURL:app_url options:NSWorkspaceLaunchDefault configuration:@{} error:&error];
+		if (error) {
+			return ERR_CANT_FORK;
+		}
+		return OK;
+	}
+#endif
+}
+
 bool OS_MacOS::is_process_running(const ProcessID &p_pid) const {
 	NSRunningApplication *app = [NSRunningApplication runningApplicationWithProcessIdentifier:(pid_t)p_pid];
 	if (!app) {

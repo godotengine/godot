@@ -2204,9 +2204,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (external_program.is_empty()) {
 				OS::get_singleton()->shell_open(file);
 			} else {
-				List<String> args;
-				args.push_back(file);
-				OS::get_singleton()->create_process(external_program, args);
+				List<String> paths;
+				paths.push_back(file);
+				OS::get_singleton()->open_with_program(external_program, paths);
 			}
 		} break;
 
