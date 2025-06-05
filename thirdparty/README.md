@@ -833,7 +833,7 @@ Collection of single-file libraries used in Godot components.
 ## msdfgen
 
 - Upstream: https://github.com/Chlumsky/msdfgen
-- Version: 1.12 (85e8b3d47b3d1a42e4a5ebda0a24fb1cc2e669e0, 2024)
+- Version: 1.12.1 (6574da1310df433c97ca0fddcab7e463c31e58f8, 2025)
 - License: MIT
 
 Files extracted from the upstream source:
