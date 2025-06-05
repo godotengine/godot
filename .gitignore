@@ -387,3 +387,5 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 *.generated.props
+compile debug godot.bat
+compile size godot.bat
