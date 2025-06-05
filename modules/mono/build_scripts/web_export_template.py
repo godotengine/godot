@@ -1,20 +1,20 @@
 #!/usr/bin/python3
 
 import os
+import shutil
 import subprocess
 import sys
-import shutil
 
 def find_emscripten_sdk():
     """Find the Emscripten SDK directory using environment variables."""
-    emsdk = os.environ.get('EMSDK')
+    emsdk = os.environ.get("EMSDK")
     if emsdk:
         return emsdk
     
     # Try to find it in PATH
-    path = os.environ.get('PATH', '').split(os.pathsep)
+    path = os.environ.get("PATH", "").split(os.pathsep)
     for p in path:
-        em_config = os.path.join(p, 'em-config')
+        em_config = os.path.join(p, "em-config")
         if os.path.exists(em_config):
             # This is in bin, go up one level
             return os.path.dirname(p)
@@ -37,9 +37,6 @@ def build_mono_wasm(godot_dir, output_dir, debug=False):
 
     # Set build configuration
     config = "Debug" if debug else "Release"
-    
-    # Set paths
-    mono_dir = os.path.join(godot_dir, "thirdparty", "mono")
     
     # Download and build mono-wasm
     try:
@@ -105,20 +102,19 @@ var GodotMonoSupport = {
 def prepare_export_template(godot_dir, output_dir, debug=False):
     """Prepare the C# web export template."""
     template_type = "debug" if debug else "release"
-    
+
     # Define paths
-    export_dir = os.path.join(output_dir, f"templates", f"web_{template_type}.zip")
-    mono_dir = os.path.join(output_dir, "wasm")
-    
+    export_dir = os.path.join(output_dir, "templates", f"web_{template_type}.zip")
+
     # Create necessary directories
     os.makedirs(os.path.dirname(export_dir), exist_ok=True)
-    
+
     print(f"Creating web export template for {template_type}...")
-    
+
     # Add mono-wasm files to the template
     # This would normally be integrated with the regular template creation process
     # but for this example, we'll just copy what we need
-    
+
     return True
 
 def main():
