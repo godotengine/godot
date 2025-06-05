@@ -7,12 +7,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_available_packet_count" qualifiers="virtual const">
+		<method name="_get_available_packet_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_max_packet_size" qualifiers="virtual const">
+		<method name="_get_max_packet_size" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 			</description>

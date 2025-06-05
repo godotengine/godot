@@ -59,6 +59,7 @@ BASE_STRINGS = [
     "value",
     "Getter",
     "This method should typically be overridden by the user to have any effect.",
+    "This method is required to be overridden when extending its base class.",
     "This method has no side effects. It doesn't modify any of the instance's member variables.",
     "This method accepts any number of arguments after the ones described here.",
     "This method is used to construct a type.",
@@ -1663,6 +1664,7 @@ def make_footer() -> str:
     # Generate reusable abbreviation substitutions.
     # This way, we avoid bloating the generated rST with duplicate abbreviations.
     virtual_msg = translate("This method should typically be overridden by the user to have any effect.")
+    required_msg = translate("This method is required to be overridden when extending its base class.")
     const_msg = translate("This method has no side effects. It doesn't modify any of the instance's member variables.")
     vararg_msg = translate("This method accepts any number of arguments after the ones described here.")
     constructor_msg = translate("This method is used to construct a type.")
@@ -1675,6 +1677,7 @@ def make_footer() -> str:
 
     return (
         f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
+        f".. |required| replace:: :abbr:`required ({required_msg})`\n"
         f".. |const| replace:: :abbr:`const ({const_msg})`\n"
         f".. |vararg| replace:: :abbr:`vararg ({vararg_msg})`\n"
         f".. |constructor| replace:: :abbr:`constructor ({constructor_msg})`\n"
