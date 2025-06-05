@@ -707,6 +707,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env["CXX"] = get_detected(env, "clang++")
         env["AR"] = get_detected(env, "ar")
         env["RANLIB"] = get_detected(env, "ranlib")
+        env["AS"] = get_detected(env, "clang")
         env.Append(ASFLAGS=["-c"])
         env.extra_suffix = ".llvm" + env.extra_suffix
     else:
@@ -714,6 +715,8 @@ def configure_mingw(env: "SConsEnvironment"):
         env["CXX"] = get_detected(env, "g++")
         env["AR"] = get_detected(env, "gcc-ar" if os.name != "nt" else "ar")
         env["RANLIB"] = get_detected(env, "gcc-ranlib")
+        env["AS"] = get_detected(env, "gcc")
+        env.Append(ASFLAGS=["-c"])
 
     env["RC"] = get_detected(env, "windres")
     ARCH_TARGETS = {
@@ -724,7 +727,6 @@ def configure_mingw(env: "SConsEnvironment"):
     }
     env.AppendUnique(RCFLAGS=f"--target={ARCH_TARGETS[env['arch']]}")
 
-    env["AS"] = get_detected(env, "as")
     env["OBJCOPY"] = get_detected(env, "objcopy")
     env["STRIP"] = get_detected(env, "strip")
 
