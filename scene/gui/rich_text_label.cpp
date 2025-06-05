@@ -1091,10 +1091,16 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				Color font_shadow_color = p_font_shadow_color;
 				bool txt_visible = (font_color.a != 0);
 				if (step == DRAW_STEP_OUTLINE && (outline_size <= 0 || font_outline_color.a == 0)) {
+					processed_glyphs_step += glyphs[i].repeat;
+					off_step.x += glyphs[i].advance * glyphs[i].repeat;
 					continue;
 				} else if (step == DRAW_STEP_SHADOW_OUTLINE && (font_shadow_color.a == 0 || p_shadow_outline_size <= 0)) {
+					processed_glyphs_step += glyphs[i].repeat;
+					off_step.x += glyphs[i].advance * glyphs[i].repeat;
 					continue;
 				} else if (step == DRAW_STEP_SHADOW && (font_shadow_color.a == 0)) {
+					processed_glyphs_step += glyphs[i].repeat;
+					off_step.x += glyphs[i].advance * glyphs[i].repeat;
 					continue;
 				} else if (step == DRAW_STEP_TEXT) {
 					Color user_ul_color = Color(0, 0, 0, 0);
