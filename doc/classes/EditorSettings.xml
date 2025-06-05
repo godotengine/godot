@@ -902,9 +902,11 @@
 		</member>
 		<member name="interface/editor/main_font" type="String" setter="" getter="">
 			The font to use for the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
+			[b]Note:[/b] If the provided font is variable, a weight of 400 (normal) will be used.
 		</member>
 		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
+			[b]Note:[/b] If the provided font is variable, a weight of 700 (bold) will be used.
 		</member>
 		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
 			The size of the font in the editor interface.
