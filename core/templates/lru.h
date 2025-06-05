@@ -31,95 +31,54 @@
 #pragma once
 
 #include "hash_map.h"
-#include "list.h"
 
-template <typename TKey, typename TData, typename Hasher = HashMapHasherDefault, typename Comparator = HashMapComparatorDefault<TKey>, void (*BeforeEvict)(TKey &, TData &) = nullptr>
+template <typename TKey, typename TData, typename Hasher = HashMapHasherDefault, typename Comparator = HashMapComparatorDefault<TKey>, void (*BeforeEvict)(const TKey &, TData &) = nullptr>
 class LRUCache {
 public:
-	struct Pair {
-		TKey key;
-		TData data;
-
-		Pair() {}
-		Pair(const TKey &p_key, const TData &p_data) :
-				key(p_key),
-				data(p_data) {
-		}
-	};
-
-	typedef typename List<Pair>::Element *Element;
+	using Iterator = typename HashMap<TKey, TData, Hasher, Comparator>::Iterator;
 
 private:
-	List<Pair> _list;
-	HashMap<TKey, Element, Hasher, Comparator> _map;
+	HashMap<TKey, TData, Hasher, Comparator> _map;
 	size_t capacity;
 
 public:
-	const Pair *insert(const TKey &p_key, const TData &p_value) {
-		Element *e = _map.getptr(p_key);
-		Element n = _list.push_front(Pair(p_key, p_value));
+	const Iterator insert(const TKey &p_key, const TData &p_value) {
+		Iterator old_entry = _map.find(p_key);
 
-		if (e) {
+		if (old_entry) {
 			GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Waddress")
 			if constexpr (BeforeEvict != nullptr) {
-				BeforeEvict((*e)->get().key, (*e)->get().data);
+				BeforeEvict(old_entry->key, old_entry->value);
 			}
 			GODOT_GCC_WARNING_POP
-			_list.erase(*e);
 			_map.erase(p_key);
 		}
-		_map[p_key] = _list.front();
+		Iterator iter = _map.insert(p_key, p_value);
 
 		while (_map.size() > capacity) {
-			Element d = _list.back();
+			Iterator first = _map.begin();
 			GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Waddress")
 			if constexpr (BeforeEvict != nullptr) {
-				BeforeEvict(d->get().key, d->get().data);
+				BeforeEvict(first->key, first->value);
 			}
 			GODOT_GCC_WARNING_POP
-			_map.erase(d->get().key);
-			_list.pop_back();
+			_map.erase(first->key);
 		}
 
-		return &n->get();
+		return iter;
 	}
 
-	void clear() {
-		_map.clear();
-		_list.clear();
-	}
-
-	bool has(const TKey &p_key) const {
-		return _map.getptr(p_key);
-	}
-
-	bool erase(const TKey &p_key) {
-		Element *e = _map.getptr(p_key);
-		if (!e) {
-			return false;
-		}
-		_list.move_to_front(*e);
-		_map.erase(p_key);
-		_list.pop_front();
-		return true;
-	}
+	void clear() { _map.clear(); }
+	bool has(const TKey &p_key) const { return _map.has(p_key); }
+	bool erase(const TKey &p_key) { return _map.erase(p_key); }
 
 	const TData &get(const TKey &p_key) {
-		Element *e = _map.getptr(p_key);
-		CRASH_COND(!e);
-		_list.move_to_front(*e);
-		return (*e)->get().data;
+		TData *value = _map.renew_key(p_key);
+		CRASH_COND(!value);
+		return *value;
 	}
 
-	const TData *getptr(const TKey &p_key) {
-		Element *e = _map.getptr(p_key);
-		if (!e) {
-			return nullptr;
-		} else {
-			_list.move_to_front(*e);
-			return &(*e)->get().data;
-		}
-	}
+	const TData *getptr(const TKey &p_key) { return _map.renew_key(p_key); }
 
 	_FORCE_INLINE_ size_t get_capacity() const { return capacity; }
 	_FORCE_INLINE_ size_t get_size() const { return _map.size(); }
@@ -128,14 +87,13 @@ public:
 		if (capacity > 0) {
 			capacity = p_capacity;
 			while (_map.size() > capacity) {
-				Element d = _list.back();
+				Iterator first = _map.begin();
 				GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Waddress")
 				if constexpr (BeforeEvict != nullptr) {
-					BeforeEvict(d->get().key, d->get().data);
+					BeforeEvict(first->key, first->value);
 				}
 				GODOT_GCC_WARNING_POP
-				_map.erase(d->get().key);
-				_list.pop_back();
+				_map.erase(first->key);
 			}
 		}
 	}
