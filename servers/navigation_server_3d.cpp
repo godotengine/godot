@@ -210,7 +210,7 @@ void NavigationServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("simplify_path", "path", "epsilon"), &NavigationServer3D::simplify_path);
 
-	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer3D::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer3D::free_rid);
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &NavigationServer3D::set_active);
 
@@ -370,13 +370,13 @@ RID NavigationServer3D::source_geometry_parser_create() {
 	return rid;
 }
 
-void NavigationServer3D::free(RID p_object) {
-	if (!geometry_parser_owner.owns(p_object)) {
+void NavigationServer3D::free_rid(RID p_rid) {
+	if (!geometry_parser_owner.owns(p_rid)) {
 		return;
 	}
 	RWLockWrite write_lock(geometry_parser_rwlock);
 
-	NavMeshGeometryParser3D *parser = geometry_parser_owner.get_or_null(p_object);
+	NavMeshGeometryParser3D *parser = geometry_parser_owner.get_or_null(p_rid);
 	ERR_FAIL_NULL(parser);
 
 	generator_parsers.erase(parser);
