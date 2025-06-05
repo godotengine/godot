@@ -40,6 +40,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="_complete_rest_info" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="motion" type="Vector3" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="rest_infos" type="PhysicsServer3DExtensionShapeRestInfo*" />
+			<param index="8" name="max_results" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_closest_point_to_object_volume" qualifiers="virtual const">
 			<return type="Vector3" />
 			<param index="0" name="object" type="RID" />

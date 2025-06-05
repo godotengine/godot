@@ -501,6 +501,185 @@ bool GodotPhysicsDirectSpaceState2D::rest_info(const ShapeParameters &p_paramete
 	return true;
 }
 
+struct _RestResultData {
+	const GodotCollisionObject2D *object = nullptr;
+	int local_shape = 0;
+	int shape = 0;
+	Vector2 contact;
+	Vector2 normal;
+	real_t len = 0.0;
+};
+
+struct _RestCallbackData {
+	const GodotCollisionObject2D *object = nullptr;
+	int local_shape = 0;
+	int shape = 0;
+
+	real_t min_allowed_depth = 0.0;
+	Vector2 valid_dir;
+	real_t valid_depth = 0.0;
+
+	_RestResultData best_result;
+
+	int max_results = 0;
+	int result_count = 0;
+	_RestResultData *other_results = nullptr;
+};
+
+static void _complete_rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata) {
+	_RestCallbackData *rd = static_cast<_RestCallbackData *>(p_userdata);
+
+	Vector2 contact_rel = p_point_B - p_point_A;
+	real_t len = contact_rel.length();
+
+	if (len < rd->min_allowed_depth) {
+		return;
+	}
+
+	Vector2 normal = contact_rel / len;
+
+	if (rd->valid_dir != Vector2()) {
+		if (len > rd->valid_depth) {
+			return;
+		}
+
+		if (rd->valid_dir.dot(normal) > -CMP_EPSILON) {
+			return;
+		}
+	}
+
+	bool is_best_result = (len > rd->best_result.len);
+
+	if (rd->other_results && rd->result_count > 0) {
+		// Consider as new result by default.
+		int prev_result_count = rd->result_count++;
+
+		int result_index = 0;
+		real_t tested_len = is_best_result ? rd->best_result.len : len;
+		for (; result_index < prev_result_count - 1; ++result_index) {
+			if (tested_len > rd->other_results[result_index].len) {
+				// Reusing a previous result.
+				rd->result_count--;
+				break;
+			}
+		}
+
+		if (result_index < rd->max_results - 1) {
+			_RestResultData &result = rd->other_results[result_index];
+
+			if (is_best_result) {
+				// Keep the previous best result as separate result.
+				result = rd->best_result;
+			} else {
+				// Keep this result as separate result.
+				result.len = len;
+				result.contact = p_point_B;
+				result.normal = normal;
+				result.object = rd->object;
+				result.shape = rd->shape;
+				result.local_shape = rd->local_shape;
+			}
+		} else {
+			// Discarding this result.
+			rd->result_count--;
+		}
+	} else if (is_best_result) {
+		rd->result_count = 1;
+	}
+
+	if (!is_best_result) {
+		return;
+	}
+
+	rd->best_result.len = len;
+	rd->best_result.contact = p_point_B;
+	rd->best_result.normal = normal;
+	rd->best_result.object = rd->object;
+	rd->best_result.shape = rd->shape;
+	rd->best_result.local_shape = rd->local_shape;
+}
+
+int GodotPhysicsDirectSpaceState2D::complete_rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_infos, int p_result_max) {
+	if (p_result_max <= 0) {
+		return 0;
+	}
+
+	GodotShape2D *shape = GodotPhysicsServer2D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
+	ERR_FAIL_NULL_V(shape, false);
+
+	real_t margin = MAX(p_parameters.margin, TEST_MOTION_MARGIN_MIN_VALUE);
+
+	Rect2 aabb = p_parameters.transform.xform(shape->get_aabb());
+	aabb = aabb.merge(Rect2(aabb.position + p_parameters.motion, aabb.size)); //motion
+	aabb = aabb.grow(margin);
+
+	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace2D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
+
+	Vector<_RestResultData> results;
+	results.resize(p_result_max);
+
+	_RestCallbackData rcd;
+	if (p_result_max > 1) {
+		rcd.max_results = p_result_max;
+		rcd.other_results = results.ptrw();
+	}
+
+	// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
+	real_t motion_length = p_parameters.motion.length();
+	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	rcd.min_allowed_depth = MIN(motion_length, min_contact_depth);
+
+	for (int i = 0; i < amount; i++) {
+		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
+			continue;
+		}
+
+		const GodotCollisionObject2D *col_obj = space->intersection_query_results[i];
+
+		if (p_parameters.exclude.has(col_obj->get_self())) {
+			continue;
+		}
+
+		int shape_idx = space->intersection_query_subindex_results[i];
+
+		rcd.valid_dir = Vector2();
+		rcd.object = col_obj;
+		rcd.shape = shape_idx;
+		rcd.local_shape = 0;
+		bool sc = GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), _complete_rest_cbk_result, &rcd, nullptr, margin);
+		if (!sc) {
+			continue;
+		}
+	}
+
+	if (rcd.best_result.len == 0 || !rcd.best_result.object) {
+		return 0;
+	}
+
+	for (int collision_index = 0; collision_index < rcd.result_count; ++collision_index) {
+		const _RestResultData &result = (collision_index > 0) ? rcd.other_results[collision_index - 1] : rcd.best_result;
+
+		ShapeRestInfo &sri = r_infos[collision_index];
+
+		sri.collider_id = result.object->get_instance_id();
+		sri.shape = result.shape;
+		sri.normal = result.normal;
+		sri.point = result.contact;
+		sri.depth = result.len;
+		sri.rid = result.object->get_self();
+		if (result.object->get_type() == GodotCollisionObject2D::TYPE_BODY) {
+			const GodotBody2D *body = static_cast<const GodotBody2D *>(result.object);
+			Vector2 rel_vec = sri.point - (body->get_transform().get_origin() + body->get_center_of_mass());
+			sri.linear_velocity = Vector2(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
+
+		} else {
+			sri.linear_velocity = Vector2();
+		}
+	}
+
+	return rcd.result_count;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int GodotSpace2D::_cull_aabb_for_body(GodotBody2D *p_body, const Rect2 &p_aabb) {

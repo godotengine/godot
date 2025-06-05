@@ -30,6 +30,22 @@
 				Returned points are a list of pairs of contact points. For each pair the first one is in the shape passed in [PhysicsShapeQueryParameters2D] object, second one is in the collided shape from the physics space.
 			</description>
 		</method>
+		<method name="get_complete_rest_info">
+			<return type="Dictionary[]" />
+			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
+			<param index="1" name="max_results" type="int" default="32" />
+			<description>
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. The information about the intersections are returned in an array containing dictionaries with the following fields:
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]linear_velocity[/code]: The colliding object's velocity [Vector2]. If the object is an [Area2D], the result is [code](0, 0)[/code].
+				[code]normal[/code]: The collision normal of the query shape at the intersection point, pointing away from the intersecting object.
+				[code]depth[/code]: The collision depth of the intersection point.
+				[code]point[/code]: The intersection point.
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				The number of intersections can be limited with the [param max_results] parameter, to reduce the processing time.
+			</description>
+		</method>
 		<method name="get_rest_info">
 			<return type="Dictionary" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
