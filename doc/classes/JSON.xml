@@ -8,21 +8,26 @@
 		[method stringify] is used to convert any data type into a JSON string.
 		[method parse] is used to convert any existing JSON data into a [Variant] that can be used within Godot. If successfully parsed, use [member data] to retrieve the [Variant], and use [method @GlobalScope.typeof] to check if the Variant's type is what you expect. JSON Objects are converted into a [Dictionary], but JSON data can be used to store [Array]s, numbers, [String]s and even just a boolean.
 		[codeblock]
-		var data_to_send = ["a", "b", "c"]
-		var json_string = JSON.stringify(data_to_send)
-		# Save data
-		# ...
-		# Retrieve data
+		var data_to_save = ["a", "b", "c"]
+		var json_string = JSON.stringify(data_to_save)
+		# Save the serialized data to persistent storage using FileAccess.
+		var file_access = FileAccess.open("user://save.json", FileAccess.WRITE)
+		file_access.store_string(json_string)
+		file_access.close()
+
+		# Load data from persistent storage using FileAccess.
+		var json_from_filesystem = FileAccess.get_file_as_string("user://save.json")
+		# Retrieve data after loading it from persistent storage. This is known as deserialization.
 		var json = JSON.new()
-		var error = json.parse(json_string)
+		var error = json.parse(json_from_filesystem)
 		if error == OK:
 		    var data_received = json.data
 		    if typeof(data_received) == TYPE_ARRAY:
 		        print(data_received) # Prints the array.
 		    else:
-		        print("Unexpected data")
+		        push_error("Unexpected data")
 		else:
-		    print("JSON Parse Error: ", json.get_error_message(), " in ", json_string, " at line ", json.get_error_line())
+		    push_error("JSON Parse Error: ", json.get_error_message(), " in ", json_string, " at line ", json.get_error_line())
 		[/codeblock]
 		Alternatively, you can parse strings using the static [method parse_string] method, but it doesn't handle errors.
 		[codeblock]
