@@ -44,7 +44,7 @@ static void _editor_init() {
 }
 #endif
 
-void initialize_minimp3_module(ModuleInitializationLevel p_level) {
+void initialize_mp3_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(AudioStreamMP3);
 	}
@@ -58,5 +58,5 @@ void initialize_minimp3_module(ModuleInitializationLevel p_level) {
 #endif
 }
 
-void uninitialize_minimp3_module(ModuleInitializationLevel p_level) {
+void uninitialize_mp3_module(ModuleInitializationLevel p_level) {
 }
