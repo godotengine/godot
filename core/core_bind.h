@@ -221,6 +221,7 @@ public:
 	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
+	Error open_with_program(const String &p_program_path, const Vector<String> &p_paths);
 	Error kill(int p_pid);
 	Error shell_open(const String &p_uri);
 	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
