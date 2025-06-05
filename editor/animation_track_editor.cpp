@@ -2451,24 +2451,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 				float scale = timeline->get_zoom_scale();
 
 				for (int i = 0; i < animation->track_get_key_count(track); i++) {
-					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-					if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-						offset = offset + editor->get_moving_selection_offset();
-					}
-					offset = offset * scale + limit;
+					float offset = _get_pixels_sec(i, false);
 					if (i < animation->track_get_key_count(track) - 1) {
-						float offset_n = animation->track_get_key_time(track, i + 1) - timeline->get_value();
-						if (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) {
-							offset_n = offset_n + editor->get_moving_selection_offset();
-						}
-						offset_n = offset_n * scale + limit;
+						float offset_n = _get_pixels_sec(i + 1, false);
 						float offset_last = limit_end;
 						if (i < animation->track_get_key_count(track) - 2) {
-							offset_last = animation->track_get_key_time(track, i + 2) - timeline->get_value();
-							if (editor->is_key_selected(track, i + 2) && editor->is_moving_selection()) {
-								offset_last = offset_last + editor->get_moving_selection_offset();
-							}
-							offset_last = offset_last * scale + limit;
+							float offset_last = _get_pixels_sec(i + 2, false);
 						}
 						int limit_string = (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) ? int(offset_last) : int(offset_n);
 						if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
@@ -2715,6 +2703,7 @@ Rect2 AnimationTrackEdit::get_key_rect(int p_index, float p_pixels_sec) {
 }
 
 Rect2 AnimationTrackEdit::get_global_key_rect(int p_index, float p_pixels_sec, int p_x) {
+	//float p_pixels_sec = _get_pixels_sec(p_index);
 	Rect2 rect = get_key_rect(p_index, p_pixels_sec);
 	rect.position.x += p_x;
 	rect.position.y = (get_size().height - rect.size.y) / 2;
@@ -2758,34 +2747,41 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 	}
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-		const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-		color.a = 0.5;
-
 		Dictionary d = animation->track_get_key_value(track, p_index);
-		String text;
+		String method_name = make_method_text(d);
 
-		if (d.has("method")) {
-			text += String(d["method"]);
-		}
-		text += "(";
-		Vector<Variant> args;
-		if (d.has("args")) {
-			args = d["args"];
-		}
-		for (int i = 0; i < args.size(); i++) {
-			if (i > 0) {
-				text += ", ";
-			}
-			text += args[i].get_construct_string();
-		}
-		text += ")";
+		Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
 
-		int limit = ((p_selected && editor->is_moving_selection()) || editor->is_function_name_pressed()) ? 0 : MAX(0, p_clip_right - p_x - texture->get_width() * 2);
+		int limit = timeline->get_name_limit();
+		int limit_end = get_size().width - timeline->get_buttons_width();
 
-		if (limit > 0) {
-			draw_string(font, Vector2(p_x + texture->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
+		float clip_r = p_clip_right - REGION_FONT_MARGIN;
+		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+			float p_next_x = _get_pixels_sec(p_index + 1, false);
+			Rect2 rect_next = get_global_key_rect(p_index + 1, p_pixels_sec, p_next_x);
+			clip_r = MIN(rect_next.position.x - REGION_FONT_MARGIN, clip_r);
+		}
+
+		//if (rect.position.x + rect.size.x < p_clip_left) {
+		//	return;
+		//}
+
+		//if (rect.position.x > p_clip_right) {
+		//	return;
+		//}
+
+		float text_pos = rect.position.x + rect.size.width + REGION_FONT_MARGIN;
+		float max_width = MAX(0.0, clip_r - text_pos);
+		if (max_width > 0) {
+			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+			const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+			color.a = 0.5;
+
+			String edit_name = animationTrackDrawUtils->_make_text_clipped(method_name, font, font_size, max_width);
+			
+			int f_h = int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
+			draw_string(font, Vector2(text_pos, f_h), edit_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 		}
 	}
 
@@ -2800,6 +2796,28 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 }
 
 // Helper.
+
+String AnimationTrackEdit::make_method_text(const Dictionary &d) {
+	String text;
+
+	if (d.has("method")) {
+		text += String(d["method"]);
+	}
+	text += "(";
+	Vector<Variant> args;
+	if (d.has("args")) {
+		args = d["args"];
+	}
+	for (int i = 0; i < args.size(); i++) {
+		if (i > 0) {
+			text += ", ";
+		}
+		text += args[i].get_construct_string();
+	}
+	text += ")";
+
+	return text;
+}
 
 void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	Rect2 rect = get_global_key_rect(p_index, p_pixels_sec, p_x);
@@ -2867,7 +2885,7 @@ NodePath AnimationTrackEdit::get_path() const {
 	return node_path;
 }
 
-float AnimationTrackEdit::_get_pixels_sec(int p_index) const {
+float AnimationTrackEdit::_get_pixels_sec(int p_index, bool ignore_moving_selection) const {
 	if (!animation.is_valid()) {
 		return 0;
 	}
@@ -2877,6 +2895,12 @@ float AnimationTrackEdit::_get_pixels_sec(int p_index) const {
 	}
 
 	float offset = animation->track_get_key_time(track, p_index) - timeline->get_value();
+	if (!ignore_moving_selection) {
+		if (editor->is_key_selected(track, p_index) && editor->is_moving_selection()) {
+			offset = offset + editor->get_moving_selection_offset();
+		}
+	}
+	
 	int limit = timeline->get_name_limit();
 	offset = offset * timeline->get_zoom_scale() + limit;
 
@@ -3970,7 +3994,6 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 			{
 				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width();
 
 				PackedStringArray section = editor->get_selected_section();
 				if (section.size() == 2) {
@@ -8957,6 +8980,7 @@ void AnimationMarkerEdit::_notification(int p_what) {
 			}
 
 			int limit = timeline->get_name_limit();
+			int limit_end = get_size().width - timeline->get_buttons_width();
 
 			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
@@ -8965,7 +8989,6 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 			{
 				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width();
 
 				PackedStringArray section = get_selected_section();
 				if (section.size() == 2) {
@@ -9003,7 +9026,6 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 			{
 				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width();
 
 				PackedStringArray names = animation->get_marker_names();
 				for (int i = 0; i < names.size(); i++) {

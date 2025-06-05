@@ -199,7 +199,11 @@ int AnimationTrackEditSpriteFrame::get_key_height(int p_index, float p_pixels_se
 }
 
 Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_sec) {
-	return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
+	int width = get_key_width(p_index, p_pixels_sec);
+	int height = get_key_height(p_index, p_pixels_sec);
+	Rect2 rect = Rect2(0, -height / 2, width, height);
+
+	return rect;
 }
 
 Ref<Resource> AnimationTrackEditSpriteFrame::get_resource(const int p_index) {

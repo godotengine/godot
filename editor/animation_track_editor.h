@@ -569,7 +569,8 @@ public:
 public:
 	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
 	int _get_theme_font_height(float p_scale) const;
-	float _get_pixels_sec(int p_index) const;
+	float _get_pixels_sec(int p_index, bool ignore_moving_selection = true) const;
+	String make_method_text(const Dictionary &d);
 
 public:
 	AnimationTrackEdit();
