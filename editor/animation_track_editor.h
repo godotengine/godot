@@ -387,20 +387,20 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
-	Rect2 get_global_key_rect(int p_index, float p_pixels_sec, int p_x) const;
+	Rect2 get_global_key_rect(int p_index, bool ignore_moving_selection = false) const;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	virtual int get_key_width(int p_index, float p_pixels_sec) const;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const;
-	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) const;
+	virtual int get_key_width(int p_index) const;
+	virtual int get_key_height(int p_index) const;
+	virtual Rect2 get_key_rect(int p_index) const;
 	virtual bool is_key_selectable_by_distance() const;
 	virtual void draw_key(const StringName &p_name, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	virtual void draw_bg(int p_clip_left, int p_clip_right);
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
 
 	// helper
-	float _get_pixels_sec(int p_index) const;
+	float _get_pixels_sec(int p_index, bool ignore_moving_selection = false) const;
 
 	Ref<Animation> get_animation() const;
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
@@ -529,7 +529,7 @@ protected:
 	Node *get_root() const { return root; }
 
 public:
-	Rect2 get_global_key_rect(int p_index, float p_pixels_sec, int p_x);
+	Rect2 get_global_key_rect(int p_index, bool ignore_moving_selection = false);
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
@@ -538,9 +538,9 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	virtual int get_key_width(int p_index, float p_pixels_sec) const;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const;
-	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
+	virtual int get_key_width(int p_index) const;
+	virtual int get_key_height(int p_index) const;
+	virtual Rect2 get_key_rect(int p_index);
 	virtual bool is_key_selectable_by_distance() const;
 	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
@@ -569,7 +569,7 @@ public:
 public:
 	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
 	int _get_theme_font_height(float p_scale) const;
-	float _get_pixels_sec(int p_index, bool ignore_moving_selection = true) const;
+	float _get_pixels_sec(int p_index, bool ignore_moving_selection = false) const;
 	String make_method_text(const Dictionary &d);
 
 public:
