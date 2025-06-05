@@ -213,18 +213,18 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		ERR_CONTINUE(img.is_null() || img->is_empty());
 		Ref<ImageTexture> it = ImageTexture::create_from_image(img);
 
-		RS::get_singleton()->free(inst);
+		RS::get_singleton()->free_rid(inst);
 
 		textures.push_back(it);
 	}
 
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(scenario);
 
 	return textures;
 }

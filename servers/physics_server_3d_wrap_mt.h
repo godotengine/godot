@@ -394,7 +394,7 @@ public:
 
 	/* MISC */
 
-	FUNC1(free, RID);
+	FUNC1(free_rid, RID);
 	FUNC1(set_active, bool);
 
 	virtual void init() override;

@@ -41,7 +41,7 @@ NoiseTexture3D::NoiseTexture3D() {
 NoiseTexture3D::~NoiseTexture3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (texture.is_valid()) {
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 	if (noise_thread.is_started()) {
 		noise_thread.wait_to_finish();

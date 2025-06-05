@@ -139,7 +139,7 @@ CameraAttributes::CameraAttributes() {
 
 CameraAttributes::~CameraAttributes() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(camera_attributes);
+	RS::get_singleton()->free_rid(camera_attributes);
 }
 
 //////////////////////////////////////////////////////

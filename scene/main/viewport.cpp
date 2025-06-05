@@ -203,7 +203,7 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (proxy_ph.is_valid()) {
 		RS::get_singleton()->texture_proxy_update(proxy, vp->texture_rid);
-		RS::get_singleton()->free(proxy_ph);
+		RS::get_singleton()->free_rid(proxy_ph);
 		proxy_ph = RID();
 	} else {
 		ERR_FAIL_COND(proxy.is_valid()); // Should be invalid.
@@ -233,10 +233,10 @@ ViewportTexture::~ViewportTexture() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
 	if (proxy_ph.is_valid()) {
-		RS::get_singleton()->free(proxy_ph);
+		RS::get_singleton()->free_rid(proxy_ph);
 	}
 	if (proxy.is_valid()) {
-		RS::get_singleton()->free(proxy);
+		RS::get_singleton()->free_rid(proxy);
 	}
 }
 
@@ -466,11 +466,11 @@ void Viewport::_sub_window_remove(Window *p_window) {
 		sw.window->_mouse_leave_viewport();
 		gui.subwindow_over = nullptr;
 	}
-	RS::get_singleton()->free(sw.canvas_item);
+	RS::get_singleton()->free_rid(sw.canvas_item);
 	gui.sub_windows.remove_at(index);
 
 	if (gui.sub_windows.is_empty()) {
-		RS::get_singleton()->free(subwindow_canvas);
+		RS::get_singleton()->free_rid(subwindow_canvas);
 		subwindow_canvas = RID();
 	}
 
@@ -633,15 +633,15 @@ void Viewport::_notification(int p_what) {
 			RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 #ifndef PHYSICS_2D_DISABLED
 			if (contact_2d_debug.is_valid()) {
-				RenderingServer::get_singleton()->free(contact_2d_debug);
+				RenderingServer::get_singleton()->free_rid(contact_2d_debug);
 				contact_2d_debug = RID();
 			}
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 			if (contact_3d_debug_multimesh.is_valid()) {
-				RenderingServer::get_singleton()->free(contact_3d_debug_multimesh);
-				RenderingServer::get_singleton()->free(contact_3d_debug_instance);
+				RenderingServer::get_singleton()->free_rid(contact_3d_debug_multimesh);
+				RenderingServer::get_singleton()->free_rid(contact_3d_debug_instance);
 				contact_3d_debug_instance = RID();
 				contact_3d_debug_multimesh = RID();
 			}
@@ -5338,7 +5338,7 @@ Viewport::~Viewport() {
 		world_2d->remove_viewport(this);
 	}
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(viewport);
+	RenderingServer::get_singleton()->free_rid(viewport);
 }
 
 /////////////////////////////////

@@ -267,7 +267,7 @@ void SkyRD::ReflectionData::clear_reflection_data() {
 	layers.clear();
 	radiance_base_cubemap = RID();
 	if (downsampled_radiance_cubemap.is_valid()) {
-		RD::get_singleton()->free(downsampled_radiance_cubemap);
+		RD::get_singleton()->free_rid(downsampled_radiance_cubemap);
 	}
 	downsampled_radiance_cubemap = RID();
 	downsampled_layer.mipmaps.clear();
@@ -540,13 +540,13 @@ void SkyRD::ReflectionData::update_reflection_mipmaps(int p_start, int p_end) {
 
 void SkyRD::Sky::free() {
 	if (radiance.is_valid()) {
-		RD::get_singleton()->free(radiance);
+		RD::get_singleton()->free_rid(radiance);
 		radiance = RID();
 	}
 	reflection.clear_reflection_data();
 
 	if (uniform_buffer.is_valid()) {
-		RD::get_singleton()->free(uniform_buffer);
+		RD::get_singleton()->free_rid(uniform_buffer);
 		uniform_buffer = RID();
 	}
 
@@ -629,7 +629,7 @@ bool SkyRD::Sky::set_radiance_size(int p_radiance_size) {
 	}
 
 	if (radiance.is_valid()) {
-		RD::get_singleton()->free(radiance);
+		RD::get_singleton()->free_rid(radiance);
 		radiance = RID();
 	}
 	reflection.clear_reflection_data();
@@ -650,7 +650,7 @@ bool SkyRD::Sky::set_mode(RS::SkyMode p_mode) {
 	}
 
 	if (radiance.is_valid()) {
-		RD::get_singleton()->free(radiance);
+		RD::get_singleton()->free_rid(radiance);
 		radiance = RID();
 	}
 	reflection.clear_reflection_data();
@@ -680,7 +680,7 @@ Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, con
 		RID rad_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		copy_effects->copy_cubemap_to_panorama(radiance, rad_tex, p_size, p_roughness_layers, reflection.layers.size() > 1);
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
-		RD::get_singleton()->free(rad_tex);
+		RD::get_singleton()->free_rid(rad_tex);
 
 		Ref<Image> img = Image::create_from_data(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
 		for (int i = 0; i < p_size.width; i++) {
@@ -964,8 +964,8 @@ SkyRD::~SkyRD() {
 
 	SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	sky_shader.shader.version_free(md->shader_data->version);
-	RD::get_singleton()->free(sky_scene_state.directional_light_buffer);
-	RD::get_singleton()->free(sky_scene_state.uniform_buffer);
+	RD::get_singleton()->free_rid(sky_scene_state.directional_light_buffer);
+	RD::get_singleton()->free_rid(sky_scene_state.uniform_buffer);
 	memdelete_arr(sky_scene_state.directional_lights);
 	memdelete_arr(sky_scene_state.last_frame_directional_lights);
 	material_storage->shader_free(sky_shader.default_shader);
@@ -974,15 +974,15 @@ SkyRD::~SkyRD() {
 	material_storage->material_free(sky_scene_state.fog_material);
 
 	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.uniform_set)) {
-		RD::get_singleton()->free(sky_scene_state.uniform_set);
+		RD::get_singleton()->free_rid(sky_scene_state.uniform_set);
 	}
 
 	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.default_fog_uniform_set)) {
-		RD::get_singleton()->free(sky_scene_state.default_fog_uniform_set);
+		RD::get_singleton()->free_rid(sky_scene_state.default_fog_uniform_set);
 	}
 
 	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.fog_only_texture_uniform_set)) {
-		RD::get_singleton()->free(sky_scene_state.fog_only_texture_uniform_set);
+		RD::get_singleton()->free_rid(sky_scene_state.fog_only_texture_uniform_set);
 	}
 }
 
