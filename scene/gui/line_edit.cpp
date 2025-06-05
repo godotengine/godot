@@ -2444,6 +2444,7 @@ void LineEdit::set_secret(bool p_secret) {
 
 	pass = p_secret;
 	_shape();
+	set_caret_column(caret_column); // Update scroll_offset.
 	queue_redraw();
 }
 
@@ -2462,6 +2463,7 @@ void LineEdit::set_secret_character(const String &p_string) {
 	}
 	secret_character = c;
 	_shape();
+	set_caret_column(caret_column); // Update scroll_offset.
 	queue_redraw();
 }
 
