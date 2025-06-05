@@ -338,10 +338,10 @@ void Fog::free_fog_shader() {
 		volumetric_fog.process_shader.version_free(volumetric_fog.process_shader_version);
 	}
 	if (volumetric_fog.volume_ubo.is_valid()) {
-		RD::get_singleton()->free(volumetric_fog.volume_ubo);
+		RD::get_singleton()->free_rid(volumetric_fog.volume_ubo);
 	}
 	if (volumetric_fog.params_ubo.is_valid()) {
-		RD::get_singleton()->free(volumetric_fog.params_ubo);
+		RD::get_singleton()->free_rid(volumetric_fog.params_ubo);
 	}
 	if (volumetric_fog.default_shader.is_valid()) {
 		material_storage->shader_free(volumetric_fog.default_shader);
@@ -439,9 +439,9 @@ bool Fog::VolumetricFog::sync_gi_dependent_sets_validity(bool p_ensure_freed) {
 
 	if (valid) {
 		if (p_ensure_freed) {
-			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set_density);
-			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set);
-			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set2);
+			RD::get_singleton()->free_rid(gi_dependent_sets.process_uniform_set_density);
+			RD::get_singleton()->free_rid(gi_dependent_sets.process_uniform_set);
+			RD::get_singleton()->free_rid(gi_dependent_sets.process_uniform_set2);
 			valid = false;
 		}
 	}
@@ -518,27 +518,27 @@ void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
 }
 
 Fog::VolumetricFog::~VolumetricFog() {
-	RD::get_singleton()->free(prev_light_density_map);
-	RD::get_singleton()->free(light_density_map);
-	RD::get_singleton()->free(fog_map);
-	RD::get_singleton()->free(density_map);
-	RD::get_singleton()->free(light_map);
-	RD::get_singleton()->free(emissive_map);
+	RD::get_singleton()->free_rid(prev_light_density_map);
+	RD::get_singleton()->free_rid(light_density_map);
+	RD::get_singleton()->free_rid(fog_map);
+	RD::get_singleton()->free_rid(density_map);
+	RD::get_singleton()->free_rid(light_map);
+	RD::get_singleton()->free_rid(emissive_map);
 
 	if (fog_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(fog_uniform_set)) {
-		RD::get_singleton()->free(fog_uniform_set);
+		RD::get_singleton()->free_rid(fog_uniform_set);
 	}
 	if (copy_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(copy_uniform_set)) {
-		RD::get_singleton()->free(copy_uniform_set);
+		RD::get_singleton()->free_rid(copy_uniform_set);
 	}
 
 	sync_gi_dependent_sets_validity(true);
 
 	if (sdfgi_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sdfgi_uniform_set)) {
-		RD::get_singleton()->free(sdfgi_uniform_set);
+		RD::get_singleton()->free_rid(sdfgi_uniform_set);
 	}
 	if (sky_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_uniform_set)) {
-		RD::get_singleton()->free(sky_uniform_set);
+		RD::get_singleton()->free_rid(sky_uniform_set);
 	}
 }
 
@@ -979,7 +979,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		}
 
 		if (fog->copy_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(fog->copy_uniform_set)) {
-			RD::get_singleton()->free(fog->copy_uniform_set);
+			RD::get_singleton()->free_rid(fog->copy_uniform_set);
 		}
 		fog->copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY)), 0);
 

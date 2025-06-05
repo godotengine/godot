@@ -1699,7 +1699,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 void AnimationPlayerEditor::_free_onion_layers() {
 	for (uint32_t i = 0; i < onion.captures.size(); i++) {
 		if (onion.captures[i].is_valid()) {
-			RS::get_singleton()->free(onion.captures[i]);
+			RS::get_singleton()->free_rid(onion.captures[i]);
 		}
 	}
 	onion.captures.clear();
@@ -2283,8 +2283,8 @@ void fragment() {
 
 AnimationPlayerEditor::~AnimationPlayerEditor() {
 	_free_onion_layers();
-	RS::get_singleton()->free(onion.capture.canvas);
-	RS::get_singleton()->free(onion.capture.canvas_item);
+	RS::get_singleton()->free_rid(onion.capture.canvas);
+	RS::get_singleton()->free_rid(onion.capture.canvas_item);
 	onion.capture = {};
 }
 

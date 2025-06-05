@@ -4257,15 +4257,15 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 void Node3DEditorViewport::_finish_gizmo_instances() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	for (int i = 0; i < 3; i++) {
-		RS::get_singleton()->free(move_gizmo_instance[i]);
-		RS::get_singleton()->free(move_plane_gizmo_instance[i]);
-		RS::get_singleton()->free(rotate_gizmo_instance[i]);
-		RS::get_singleton()->free(scale_gizmo_instance[i]);
-		RS::get_singleton()->free(scale_plane_gizmo_instance[i]);
-		RS::get_singleton()->free(axis_gizmo_instance[i]);
+		RS::get_singleton()->free_rid(move_gizmo_instance[i]);
+		RS::get_singleton()->free_rid(move_plane_gizmo_instance[i]);
+		RS::get_singleton()->free_rid(rotate_gizmo_instance[i]);
+		RS::get_singleton()->free_rid(scale_gizmo_instance[i]);
+		RS::get_singleton()->free_rid(scale_plane_gizmo_instance[i]);
+		RS::get_singleton()->free_rid(axis_gizmo_instance[i]);
 	}
 	// Rotation white outline
-	RS::get_singleton()->free(rotate_gizmo_instance[3]);
+	RS::get_singleton()->free_rid(rotate_gizmo_instance[3]);
 }
 
 void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
@@ -6574,16 +6574,16 @@ Node3DEditor *Node3DEditor::singleton = nullptr;
 Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (sbox_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(sbox_instance);
+		RenderingServer::get_singleton()->free_rid(sbox_instance);
 	}
 	if (sbox_instance_offset.is_valid()) {
-		RenderingServer::get_singleton()->free(sbox_instance_offset);
+		RenderingServer::get_singleton()->free_rid(sbox_instance_offset);
 	}
 	if (sbox_instance_xray.is_valid()) {
-		RenderingServer::get_singleton()->free(sbox_instance_xray);
+		RenderingServer::get_singleton()->free_rid(sbox_instance_xray);
 	}
 	if (sbox_instance_xray_offset.is_valid()) {
-		RenderingServer::get_singleton()->free(sbox_instance_xray_offset);
+		RenderingServer::get_singleton()->free_rid(sbox_instance_xray_offset);
 	}
 }
 
@@ -8191,17 +8191,17 @@ void Node3DEditor::_init_grid() {
 }
 
 void Node3DEditor::_finish_indicators() {
-	RenderingServer::get_singleton()->free(origin_instance);
-	RenderingServer::get_singleton()->free(origin_multimesh);
-	RenderingServer::get_singleton()->free(origin_mesh);
+	RenderingServer::get_singleton()->free_rid(origin_instance);
+	RenderingServer::get_singleton()->free_rid(origin_multimesh);
+	RenderingServer::get_singleton()->free_rid(origin_mesh);
 
 	_finish_grid();
 }
 
 void Node3DEditor::_finish_grid() {
 	for (int i = 0; i < 3; i++) {
-		RenderingServer::get_singleton()->free(grid_instance[i]);
-		RenderingServer::get_singleton()->free(grid[i]);
+		RenderingServer::get_singleton()->free_rid(grid_instance[i]);
+		RenderingServer::get_singleton()->free_rid(grid[i]);
 	}
 }
 

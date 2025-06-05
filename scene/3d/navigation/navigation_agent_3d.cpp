@@ -383,7 +383,7 @@ NavigationAgent3D::NavigationAgent3D() {
 
 NavigationAgent3D::~NavigationAgent3D() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
-	NavigationServer3D::get_singleton()->free(agent);
+	NavigationServer3D::get_singleton()->free_rid(agent);
 	agent = RID(); // Pointless
 
 #ifdef DEBUG_ENABLED
@@ -391,10 +391,10 @@ NavigationAgent3D::~NavigationAgent3D() {
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_path_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_instance);
+		RenderingServer::get_singleton()->free_rid(debug_path_instance);
 	}
 	if (debug_path_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_path_mesh->get_rid());
 	}
 #endif // DEBUG_ENABLED
 }

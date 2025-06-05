@@ -1778,7 +1778,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 
 void RenderForwardMobile::base_uniforms_changed() {
 	if (!render_base_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-		RD::get_singleton()->free(render_base_uniform_set);
+		RD::get_singleton()->free_rid(render_base_uniform_set);
 	}
 	render_base_uniform_set = RID();
 }
@@ -1788,7 +1788,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 
 	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
 		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-			RD::get_singleton()->free(render_base_uniform_set);
+			RD::get_singleton()->free_rid(render_base_uniform_set);
 		}
 
 		lightmap_texture_array_version = light_storage->lightmap_array_get_version();
@@ -1904,7 +1904,7 @@ void RenderForwardMobile::_update_instance_data_buffer(RenderListType p_render_l
 	if (scene_state.instance_data[p_render_list].size() > 0) {
 		if (scene_state.instance_buffer[p_render_list] == RID() || scene_state.instance_buffer_size[p_render_list] < scene_state.instance_data[p_render_list].size()) {
 			if (scene_state.instance_buffer[p_render_list] != RID()) {
-				RD::get_singleton()->free(scene_state.instance_buffer[p_render_list]);
+				RD::get_singleton()->free_rid(scene_state.instance_buffer[p_render_list]);
 			}
 			uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), scene_state.instance_data[p_render_list].size()));
 			scene_state.instance_buffer[p_render_list] = RD::get_singleton()->storage_buffer_create(new_size * sizeof(SceneState::InstanceData));
@@ -3393,15 +3393,15 @@ RenderForwardMobile::~RenderForwardMobile() {
 
 	{
 		for (const RID &rid : scene_state.uniform_buffers) {
-			RD::get_singleton()->free(rid);
+			RD::get_singleton()->free_rid(rid);
 		}
 		for (uint32_t i = 0; i < RENDER_LIST_MAX; i++) {
 			if (scene_state.instance_buffer[i].is_valid()) {
-				RD::get_singleton()->free(scene_state.instance_buffer[i]);
+				RD::get_singleton()->free_rid(scene_state.instance_buffer[i]);
 			}
 		}
-		RD::get_singleton()->free(scene_state.lightmap_buffer);
-		RD::get_singleton()->free(scene_state.lightmap_capture_buffer);
+		RD::get_singleton()->free_rid(scene_state.lightmap_buffer);
+		RD::get_singleton()->free_rid(scene_state.lightmap_capture_buffer);
 		memdelete_arr(scene_state.lightmap_captures);
 	}
 }

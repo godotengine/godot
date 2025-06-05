@@ -355,10 +355,10 @@ private:
 
 		~SelectionBox3D() {
 			if (instance.is_valid()) {
-				RS::get_singleton()->free(instance);
-				RS::get_singleton()->free(instance_ofs);
-				RS::get_singleton()->free(instance_xray);
-				RS::get_singleton()->free(instance_xray_ofs);
+				RS::get_singleton()->free_rid(instance);
+				RS::get_singleton()->free_rid(instance_ofs);
+				RS::get_singleton()->free_rid(instance_xray);
+				RS::get_singleton()->free_rid(instance_xray_ofs);
 			}
 		}
 	};

@@ -1501,9 +1501,9 @@ RuntimeNodeSelect::~RuntimeNodeSelect() {
 	}
 
 	if (draw_canvas.is_valid()) {
-		RS::get_singleton()->free(sel_drag_ci);
-		RS::get_singleton()->free(sbox_2d_ci);
-		RS::get_singleton()->free(draw_canvas);
+		RS::get_singleton()->free_rid(sel_drag_ci);
+		RS::get_singleton()->free_rid(sbox_2d_ci);
+		RS::get_singleton()->free_rid(draw_canvas);
 	}
 }
 

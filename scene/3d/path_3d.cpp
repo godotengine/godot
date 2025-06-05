@@ -42,11 +42,11 @@ Path3D::Path3D() {
 Path3D::~Path3D() {
 	if (debug_instance.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(debug_instance);
+		RS::get_singleton()->free_rid(debug_instance);
 	}
 	if (debug_mesh.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(debug_mesh->get_rid());
+		RS::get_singleton()->free_rid(debug_mesh->get_rid());
 	}
 }
 

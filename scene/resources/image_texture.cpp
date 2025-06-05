@@ -243,7 +243,7 @@ void ImageTexture::_bind_methods() {
 ImageTexture::~ImageTexture() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(texture);
+		RenderingServer::get_singleton()->free_rid(texture);
 	}
 }
 
@@ -385,7 +385,7 @@ ImageTextureLayered::ImageTextureLayered(LayeredType p_layered_type) {
 ImageTextureLayered::~ImageTextureLayered() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 
@@ -533,7 +533,7 @@ ImageTexture3D::ImageTexture3D() {
 ImageTexture3D::~ImageTexture3D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 

@@ -105,6 +105,6 @@ ExternalTexture::ExternalTexture() {
 ExternalTexture::~ExternalTexture() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(texture);
+		RenderingServer::get_singleton()->free_rid(texture);
 	}
 }

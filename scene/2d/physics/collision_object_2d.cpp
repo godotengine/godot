@@ -682,5 +682,5 @@ CollisionObject2D::CollisionObject2D() {
 
 CollisionObject2D::~CollisionObject2D() {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
-	PhysicsServer2D::get_singleton()->free(rid);
+	PhysicsServer2D::get_singleton()->free_rid(rid);
 }

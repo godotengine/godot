@@ -177,7 +177,7 @@ public:
 
 	int get_process_info(ProcessInfo p_info) const override { return 0; }
 
-	void free(RID p_object) override {}
+	void free_rid(RID p_object) override {}
 
 	void parse_source_geometry_data(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override {}
 	void bake_from_source_geometry_data(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}

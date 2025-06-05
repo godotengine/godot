@@ -209,7 +209,7 @@ void ShaderRD::_clear_version(Version *p_version) {
 	if (!p_version->variants.is_empty()) {
 		for (int i = 0; i < variant_defines.size(); i++) {
 			if (p_version->variants[i].is_valid()) {
-				RD::get_singleton()->free(p_version->variants[i]);
+				RD::get_singleton()->free_rid(p_version->variants[i]);
 			}
 		}
 
@@ -495,7 +495,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 			if (shader.is_null()) {
 				for (uint32_t j = 0; j < i; j++) {
 					int variant_free_id = group_to_variant_map[p_group][j];
-					RD::get_singleton()->free(p_version->variants[variant_free_id]);
+					RD::get_singleton()->free_rid(p_version->variants[variant_free_id]);
 				}
 				ERR_FAIL_COND_V(shader.is_null(), false);
 			}
@@ -584,7 +584,7 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 				continue; // Disabled.
 			}
 			if (!p_version->variants[i].is_null()) {
-				RD::get_singleton()->free(p_version->variants[i]);
+				RD::get_singleton()->free_rid(p_version->variants[i]);
 			}
 		}
 

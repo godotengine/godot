@@ -467,16 +467,16 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(sphere);
-	RS::get_singleton()->free(sphere_instance);
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(camera_attributes);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(sphere);
+	RS::get_singleton()->free_rid(sphere_instance);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(camera_attributes);
+	RS::get_singleton()->free_rid(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -811,15 +811,15 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	//RS::get_singleton()->free(sphere);
-	RS::get_singleton()->free(mesh_instance);
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(camera_attributes);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(mesh_instance);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(camera_attributes);
+	RS::get_singleton()->free_rid(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -903,9 +903,9 @@ EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(canvas_item);
-	RS::get_singleton()->free(canvas);
-	RS::get_singleton()->free(viewport);
+	RS::get_singleton()->free_rid(canvas_item);
+	RS::get_singleton()->free_rid(canvas);
+	RS::get_singleton()->free_rid(viewport);
 }
 
 ////////////////////////////////////////////////////////////////////////////

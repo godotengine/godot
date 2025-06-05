@@ -239,5 +239,5 @@ Joint3D::Joint3D() {
 
 Joint3D::~Joint3D() {
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(joint);
+	PhysicsServer3D::get_singleton()->free_rid(joint);
 }

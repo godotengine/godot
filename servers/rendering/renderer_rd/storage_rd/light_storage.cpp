@@ -78,7 +78,7 @@ LightStorage::~LightStorage() {
 	free_light_data();
 
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
-		RD::get_singleton()->free(E.value.cubemap);
+		RD::get_singleton()->free_rid(E.value.cubemap);
 	}
 
 	singleton = nullptr;
@@ -539,17 +539,17 @@ void LightStorage::light_instance_mark_visible(RID p_light_instance) {
 
 void LightStorage::free_light_data() {
 	if (directional_light_buffer.is_valid()) {
-		RD::get_singleton()->free(directional_light_buffer);
+		RD::get_singleton()->free_rid(directional_light_buffer);
 		directional_light_buffer = RID();
 	}
 
 	if (omni_light_buffer.is_valid()) {
-		RD::get_singleton()->free(omni_light_buffer);
+		RD::get_singleton()->free_rid(omni_light_buffer);
 		omni_light_buffer = RID();
 	}
 
 	if (spot_light_buffer.is_valid()) {
-		RD::get_singleton()->free(spot_light_buffer);
+		RD::get_singleton()->free_rid(spot_light_buffer);
 		spot_light_buffer = RID();
 	}
 
@@ -1354,9 +1354,9 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 
 	if (ra->reflection.is_valid()) {
 		//clear and invalidate everything
-		RD::get_singleton()->free(ra->reflection);
+		RD::get_singleton()->free_rid(ra->reflection);
 		ra->reflection = RID();
-		RD::get_singleton()->free(ra->depth_buffer);
+		RD::get_singleton()->free_rid(ra->depth_buffer);
 		ra->depth_buffer = RID();
 		for (int i = 0; i < ra->reflections.size(); i++) {
 			ra->reflections.write[i].data.clear_reflection_data();
@@ -1494,7 +1494,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	const bool real_time_mipmaps_different = update_always && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8;
 	if (update_mode_changed || real_time_mipmaps_different) {
 		// Invalidate reflection atlas, need to regenerate
-		RD::get_singleton()->free(atlas->reflection);
+		RD::get_singleton()->free_rid(atlas->reflection);
 		atlas->reflection = RID();
 
 		for (int i = 0; i < atlas->reflections.size(); i++) {
@@ -1691,7 +1691,7 @@ ClusterBuilderRD *LightStorage::reflection_probe_instance_get_cluster_builder(RI
 
 void LightStorage::free_reflection_data() {
 	if (reflection_buffer.is_valid()) {
-		RD::get_singleton()->free(reflection_buffer);
+		RD::get_singleton()->free_rid(reflection_buffer);
 		reflection_buffer = RID();
 	}
 
@@ -2134,7 +2134,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 
 	// erasing atlas
 	if (shadow_atlas->depth.is_valid()) {
-		RD::get_singleton()->free(shadow_atlas->depth);
+		RD::get_singleton()->free_rid(shadow_atlas->depth);
 		shadow_atlas->depth = RID();
 	}
 	for (int i = 0; i < 4; i++) {
@@ -2533,7 +2533,7 @@ void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits)
 	directional_shadow.use_16_bits = p_16_bits;
 
 	if (directional_shadow.depth.is_valid()) {
-		RD::get_singleton()->free(directional_shadow.depth);
+		RD::get_singleton()->free_rid(directional_shadow.depth);
 		directional_shadow.depth = RID();
 		RendererSceneRenderRD::get_singleton()->base_uniforms_changed();
 	}

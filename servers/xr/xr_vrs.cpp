@@ -53,7 +53,7 @@ void XRVRS::_bind_methods() {
 XRVRS::~XRVRS() {
 	if (vrs_texture.is_valid()) {
 		ERR_FAIL_NULL(RS::get_singleton());
-		RS::get_singleton()->free(vrs_texture);
+		RS::get_singleton()->free_rid(vrs_texture);
 		vrs_texture = RID();
 	}
 }
@@ -126,7 +126,7 @@ RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array
 	if (target_size != vrs_sizei || eye_foci != p_eye_foci || vrs_dirty) {
 		// Out with the old.
 		if (vrs_texture.is_valid()) {
-			RS::get_singleton()->free(vrs_texture);
+			RS::get_singleton()->free_rid(vrs_texture);
 			vrs_texture = RID();
 		}
 

@@ -198,16 +198,16 @@ NavigationObstacle2D::NavigationObstacle2D() {
 NavigationObstacle2D::~NavigationObstacle2D() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 
-	NavigationServer2D::get_singleton()->free(obstacle);
+	NavigationServer2D::get_singleton()->free_rid(obstacle);
 	obstacle = RID();
 
 #ifdef DEBUG_ENABLED
 	if (debug_mesh_rid.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_mesh_rid);
+		RenderingServer::get_singleton()->free_rid(debug_mesh_rid);
 		debug_mesh_rid = RID();
 	}
 	if (debug_canvas_item.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_canvas_item);
+		RenderingServer::get_singleton()->free_rid(debug_canvas_item);
 		debug_canvas_item = RID();
 	}
 #endif // DEBUG_ENABLED

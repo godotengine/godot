@@ -237,7 +237,7 @@ void RenderingServerDefault::_init() {
 
 void RenderingServerDefault::_finish() {
 	if (test_cube.is_valid()) {
-		free(test_cube);
+		free_rid(test_cube);
 	}
 
 	RSG::canvas->finalize();
