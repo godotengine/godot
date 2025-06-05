@@ -93,17 +93,34 @@ const char* dfdToStringTransferFunction(khr_df_transfer_e value) {
     case KHR_DF_TRANSFER_LINEAR:
         return "KHR_DF_TRANSFER_LINEAR";
     case KHR_DF_TRANSFER_SRGB:
+    // case KHR_DF_TRANSFER_SRGB_EOTF:
+    // case KHR_DF_TRANSFER_SCRGB:
+    // case KHR_DF_TRANSFER_SCRGB_EOTF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_SRGB";
     case KHR_DF_TRANSFER_ITU:
+    // case KHR_DF_ITU_OETF:
+    // case KHR_DF_TRANSFER_BT601:
+    // case KHR_DF_TRANSFER_BT601_OETF:
+    // case KHR_DF_TRANSFER_BT709:
+    // case KHR_DF_TRANSFER_BT709_OETF:
+    // case KHR_DF_TRANSFER_BT2020:
+    // case KHR_DF_TRANSFER_BT2020_OETF:
+    // case KHR_DF_TRANSFER_SMTPE170M:
+    // case KHR_DF_TRANSFER_SMTPE170M_OETF:
+    // case KHR_DF_TRANSFER_SMTPE170M_EOTF:
+    // case KHR_DF_TRANSFER_SMTPE170M: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_ITU";
     case KHR_DF_TRANSFER_NTSC:
-    // case KHR_DF_TRANSFER_SMTPE170M: // Fallthrough, Matching values
+    // case KHR_DF_TRANSFER_NTSC_EOTF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_NTSC";
     case KHR_DF_TRANSFER_SLOG:
+    //case KHR_DF_TRANSFER_SLOG_OETF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_SLOG";
     case KHR_DF_TRANSFER_SLOG2:
-        return "KHR_DF_TRANSFER_SLOG2";
+    // case KHR_DF_TRANSFER_SLOG2_OETF:
+       return "KHR_DF_TRANSFER_SLOG2";
     case KHR_DF_TRANSFER_BT1886:
+    // case KHR_DF_TRANSFER_BT1886_EOTF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_BT1886";
     case KHR_DF_TRANSFER_HLG_OETF:
         return "KHR_DF_TRANSFER_HLG_OETF";
@@ -114,19 +131,27 @@ const char* dfdToStringTransferFunction(khr_df_transfer_e value) {
     case KHR_DF_TRANSFER_PQ_OETF:
         return "KHR_DF_TRANSFER_PQ_OETF";
     case KHR_DF_TRANSFER_DCIP3:
+    // case KHR_DF_TRANSFER_DCIP3_EOTF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_DCIP3";
     case KHR_DF_TRANSFER_PAL_OETF:
         return "KHR_DF_TRANSFER_PAL_OETF";
     case KHR_DF_TRANSFER_PAL625_EOTF:
         return "KHR_DF_TRANSFER_PAL625_EOTF";
     case KHR_DF_TRANSFER_ST240:
+    // case KHR_DF_TRANSFER_ST240_EOTF:
+    // case KHR_DF_TRANSFER_ST240_OETF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_ST240";
     case KHR_DF_TRANSFER_ACESCC:
+    // case KHR_DF_TRANSFER_ACESCC_OETF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_ACESCC";
     case KHR_DF_TRANSFER_ACESCCT:
+    // case KHR_DF_TRANSFER_ACESCCT_OETF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_ACESCCT";
     case KHR_DF_TRANSFER_ADOBERGB:
+    // case KHR_DF_TRANSFER_ADOBERGB_EOTF: // Fallthrough, matching values
         return "KHR_DF_TRANSFER_ADOBERGB";
+    case KHR_DF_TRANSFER_HLG_UNNORMALIZED_OETF:
+        return "KHR_DF_TRANSFER_HLG_UNNORMALIZED_OETF";
 
     case KHR_DF_TRANSFER_MAX:
         // These enum values are not meant for string representation. Ignore
@@ -245,7 +270,7 @@ const char* dfdToStringColorModel(khr_df_model_e value) {
     return NULL;
 }
 
-const char* dfdToStringSampleDatatypeQualifiers(uint32_t bit_index, bool bit_value) {
+const char* dfdToStringSampleDatatypeQualifiersBit(uint32_t bit_index, bool bit_value) {
     if (!bit_value)
         return NULL;
 
@@ -782,7 +807,7 @@ void printDFD(uint32_t *DFD, uint32_t dataSize)
 
                 khr_df_sample_datatype_qualifiers_e qualifiers = KHR_DFDSVAL(block, sample, QUALIFIERS);
                 printf("    Qualifiers: 0x%X (", qualifiers);
-                printFlagBits(qualifiers, dfdToStringSampleDatatypeQualifiers);
+                printFlagBits(qualifiers, dfdToStringSampleDatatypeQualifiersBit);
                 printf(")\n");
                 printf("    Channel Type: 0x%X", channelType);
                 {
@@ -960,7 +985,7 @@ void printDFDJSON(uint32_t* DFD, uint32_t dataSize, uint32_t base_indent, uint32
 
                 } else {
                     PRINT_INDENT(4, "\"qualifiers\":%s[%s", space, nl)
-                    printFlagBitsJSON(LENGTH_OF_INDENT(5), nl, qualifiers, dfdToStringSampleDatatypeQualifiers);
+                    printFlagBitsJSON(LENGTH_OF_INDENT(5), nl, qualifiers, dfdToStringSampleDatatypeQualifiersBit);
                     PRINT_INDENT(4, "],%s", nl)
                 }
 

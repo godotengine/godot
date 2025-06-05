@@ -1,6 +1,6 @@
-/* The Khronos Data Format Specification (version 1.3) */
+/* The Khronos Data Format Specification (version 1.4.0) */
 /*
-** Copyright 2015-2020 The Khronos Group Inc.
+** Copyright 2015-2025 The Khronos Group Inc.
 ** SPDX-License-Identifier: Apache-2.0
 */
 
@@ -16,11 +16,6 @@
 
 #ifndef _KHR_DATA_FORMAT_H_
 #define _KHR_DATA_FORMAT_H_
-
-/** @file khr_df.h
-
-    @brief Data Format enums and macros.
-*/
 
 /* Accessors */
 typedef enum _khr_word_e {
@@ -106,7 +101,7 @@ typedef enum _khr_df_mask_e {
     ((BDB)[KHR_DF_WORD_ ## X] = \
      ((BDB)[KHR_DF_WORD_ ## X] & \
       ~((KHR_DF_MASK_ ## X) << (KHR_DF_SHIFT_ ## X))) | \
-     (((val) & (KHR_DF_MASK_ ## X)) << (KHR_DF_SHIFT_ ## X)))
+     (((uint32_t)(val) & (KHR_DF_MASK_ ## X)) << (KHR_DF_SHIFT_ ## X)))
 
 /* Offsets relative to the start of a sample */
 typedef enum _khr_df_sampleword_e {
@@ -140,14 +135,14 @@ typedef enum _khr_df_sampleshift_e {
 
 typedef enum _khr_df_samplemask_e {
     KHR_DF_SAMPLEMASK_BITOFFSET = 0xFFFFU,
-    KHR_DF_SAMPLEMASK_BITLENGTH = 0xFF,
-    KHR_DF_SAMPLEMASK_CHANNELID = 0xF,
+    KHR_DF_SAMPLEMASK_BITLENGTH = 0xFFU,
+    KHR_DF_SAMPLEMASK_CHANNELID = 0xFU,
     /* N.B. Qualifiers are defined as an offset into a byte */
-    KHR_DF_SAMPLEMASK_QUALIFIERS = 0xF0,
-    KHR_DF_SAMPLEMASK_SAMPLEPOSITION0 = 0xFF,
-    KHR_DF_SAMPLEMASK_SAMPLEPOSITION1 = 0xFF,
-    KHR_DF_SAMPLEMASK_SAMPLEPOSITION2 = 0xFF,
-    KHR_DF_SAMPLEMASK_SAMPLEPOSITION3 = 0xFF,
+    KHR_DF_SAMPLEMASK_QUALIFIERS = 0xF0U,
+    KHR_DF_SAMPLEMASK_SAMPLEPOSITION0 = 0xFFU,
+    KHR_DF_SAMPLEMASK_SAMPLEPOSITION1 = 0xFFU,
+    KHR_DF_SAMPLEMASK_SAMPLEPOSITION2 = 0xFFU,
+    KHR_DF_SAMPLEMASK_SAMPLEPOSITION3 = 0xFFU,
     /* ISO C restricts enum values to range of int hence the
        cast. We do it verbosely instead of using -1 to ensure
        it is a 32-bit value even if int is 64 bits. */
@@ -174,7 +169,7 @@ typedef enum _khr_df_samplemask_e {
             ((S) * KHR_DF_WORD_SAMPLEWORDS) + \
             KHR_DF_SAMPLEWORD_ ## X] & \
       ~((uint32_t)(KHR_DF_SAMPLEMASK_ ## X) << (KHR_DF_SAMPLESHIFT_ ## X))) | \
-     (((val) & (uint32_t)(KHR_DF_SAMPLEMASK_ ## X)) << (KHR_DF_SAMPLESHIFT_ ## X)))
+     (((uint32_t)(val) & (uint32_t)(KHR_DF_SAMPLEMASK_ ## X)) << (KHR_DF_SAMPLESHIFT_ ## X)))
 
 /* Helper macro:
    Number of samples in basic descriptor block BDB */
@@ -218,46 +213,46 @@ typedef enum _khr_df_versionnumber_e {
     KHR_DF_VERSIONNUMBER_1_1 = 0U, /* Version 1.1 did not bump the version number */
     KHR_DF_VERSIONNUMBER_1_2 = 1U, /* Version 1.2 increased the version number */
     KHR_DF_VERSIONNUMBER_1_3 = 2U, /* Version 1.3 increased the version number */
-    KHR_DF_VERSIONNUMBER_LATEST = KHR_DF_VERSIONNUMBER_1_3,
+    KHR_DF_VERSIONNUMBER_1_4 = 2U, /* Version 1.4.0 did not bump the block version number */
+    KHR_DF_VERSIONNUMBER_LATEST = KHR_DF_VERSIONNUMBER_1_4,
     KHR_DF_VERSIONNUMBER_MAX = 0xFFFFU
 } khr_df_versionnumber_e;
 
-/** @~English
-   @brief Model in which the color coordinate space is defined.
+/* Model in which the color coordinate space is defined.
    There is no requirement that a color format use all the
    channel types that are defined in the color model. */
 typedef enum _khr_df_model_e {
-    /** No interpretation of color channels defined */
+    /* No interpretation of color channels defined */
     KHR_DF_MODEL_UNSPECIFIED  = 0U,
-    /** Color primaries (red, green, blue) + alpha, depth and stencil */
+    /* Color primaries (red, green, blue) + alpha, depth and stencil */
     KHR_DF_MODEL_RGBSDA       = 1U,
-    /** Color differences (Y', Cb, Cr) + alpha, depth and stencil */
+    /* Color differences (Y', Cb, Cr) + alpha, depth and stencil */
     KHR_DF_MODEL_YUVSDA       = 2U,
-    /** Color differences (Y', I, Q) + alpha, depth and stencil */
+    /* Color differences (Y', I, Q) + alpha, depth and stencil */
     KHR_DF_MODEL_YIQSDA       = 3U,
-    /** Perceptual color (CIE L*a*b*) + alpha, depth and stencil */
+    /* Perceptual color (CIE L*a*b*) + alpha, depth and stencil */
     KHR_DF_MODEL_LABSDA       = 4U,
-    /** Subtractive colors (cyan, magenta, yellow, black) + alpha */
+    /* Subtractive colors (cyan, magenta, yellow, black) + alpha */
     KHR_DF_MODEL_CMYKA        = 5U,
-    /** Non-color coordinate data (X, Y, Z, W) */
+    /* Non-color coordinate data (X, Y, Z, W) */
     KHR_DF_MODEL_XYZW         = 6U,
-    /** Hue, saturation, value, hue angle on color circle, plus alpha */
+    /* Hue, saturation, value, hue angle on color circle, plus alpha */
     KHR_DF_MODEL_HSVA_ANG     = 7U,
-    /** Hue, saturation, lightness, hue angle on color circle, plus alpha */
+    /* Hue, saturation, lightness, hue angle on color circle, plus alpha */
     KHR_DF_MODEL_HSLA_ANG     = 8U,
-    /** Hue, saturation, value, hue on color hexagon, plus alpha */
+    /* Hue, saturation, value, hue on color hexagon, plus alpha */
     KHR_DF_MODEL_HSVA_HEX     = 9U,
-    /** Hue, saturation, lightness, hue on color hexagon, plus alpha */
+    /* Hue, saturation, lightness, hue on color hexagon, plus alpha */
     KHR_DF_MODEL_HSLA_HEX     = 10U,
-    /** Lightweight approximate color difference (luma, orange, green) */
+    /* Lightweight approximate color difference (luma, orange, green) */
     KHR_DF_MODEL_YCGCOA       = 11U,
-    /** ITU BT.2020 constant luminance YcCbcCrc */
+    /* ITU BT.2020 constant luminance YcCbcCrc */
     KHR_DF_MODEL_YCCBCCRC     = 12U,
-    /** ITU BT.2100 constant intensity ICtCp */
+    /* ITU BT.2100 constant intensity ICtCp */
     KHR_DF_MODEL_ICTCP        = 13U,
-    /** CIE 1931 XYZ color coordinates (X, Y, Z) */
+    /* CIE 1931 XYZ color coordinates (X, Y, Z) */
     KHR_DF_MODEL_CIEXYZ       = 14U,
-    /** CIE 1931 xyY color coordinates (X, Y, Y) */
+    /* CIE 1931 xyY color coordinates (X, Y, Y) */
     KHR_DF_MODEL_CIEXYY       = 15U,
 
     /* Compressed formats start at 128. */
@@ -266,54 +261,55 @@ typedef enum _khr_df_model_e {
        channels are used to distinguish formats, these should be cosited. */
     /* Direct3D (and S3) compressed formats */
     /* Note that premultiplied status is recorded separately */
-    /** DXT1 "channels" are RGB (0), Alpha (1)
-        DXT1/BC1 with one channel is opaque
-        DXT1/BC1 with a cosited alpha sample is transparent */
+    /* DXT1 "channels" are RGB (0), Alpha (1) */
+    /* DXT1/BC1 with one channel is opaque */
+    /* DXT1/BC1 with a cosited alpha sample is transparent */
     KHR_DF_MODEL_DXT1A         = 128U,
     KHR_DF_MODEL_BC1A          = 128U,
-    /** DXT2/DXT3/BC2, with explicit 4-bit alpha */
+    /* DXT2/DXT3/BC2, with explicit 4-bit alpha */
     KHR_DF_MODEL_DXT2          = 129U,
     KHR_DF_MODEL_DXT3          = 129U,
     KHR_DF_MODEL_BC2           = 129U,
-    /** DXT4/DXT5/BC3, with interpolated alpha */
+    /* DXT4/DXT5/BC3, with interpolated alpha */
     KHR_DF_MODEL_DXT4          = 130U,
     KHR_DF_MODEL_DXT5          = 130U,
     KHR_DF_MODEL_BC3           = 130U,
-    /** BC4 - single channel interpolated 8-bit data
-        (The UNORM/SNORM variation is recorded in the channel data) */
+    /* ATI1n/DXT5A/BC4 - single channel interpolated 8-bit data */
+    /* (The UNORM/SNORM variation is recorded in the channel data) */
+    KHR_DF_MODEL_ATI1N         = 131U,
+    KHR_DF_MODEL_DXT5A         = 131U,
     KHR_DF_MODEL_BC4           = 131U,
-    /** BC5 - two channel interpolated 8-bit data
-        (The UNORM/SNORM variation is recorded in the channel data) */
+    /* ATI2n_XY/DXN/BC5 - two channel interpolated 8-bit data */
+    /* (The UNORM/SNORM variation is recorded in the channel data) */
+    KHR_DF_MODEL_ATI2N_XY      = 132U,
+    KHR_DF_MODEL_DXN           = 132U,
     KHR_DF_MODEL_BC5           = 132U,
-    /** BC6H - DX11 format for 16-bit float channels */
+    /* BC6H - DX11 format for 16-bit float channels */
     KHR_DF_MODEL_BC6H          = 133U,
-    /** BC7 - DX11 format */
+    /* BC7 - DX11 format */
     KHR_DF_MODEL_BC7           = 134U,
     /* Gap left for future desktop expansion */
 
     /* Mobile compressed formats follow */
-    /** A format of ETC1 indicates that the format shall be decodable
-        by an ETC1-compliant decoder and not rely on ETC2 features */
+    /* A format of ETC1 indicates that the format shall be decodable
+       by an ETC1-compliant decoder and not rely on ETC2 features */
     KHR_DF_MODEL_ETC1          = 160U,
-    /** A format of ETC2 is permitted to use ETC2 encodings on top of
-        the baseline ETC1 specification.
-        The ETC2 format has channels "red", "green", "RGB" and "alpha",
-        which should be cosited samples.
-        Punch-through alpha can be distinguished from full alpha by
-        the plane size in bytes required for the texel block */
+    /* A format of ETC2 is permitted to use ETC2 encodings on top of
+       the baseline ETC1 specification */
+    /* The ETC2 format has channels "red", "green", "RGB" and "alpha",
+       which should be cosited samples */
+    /* Punch-through alpha can be distinguished from full alpha by
+       the plane size in bytes required for the texel block */
     KHR_DF_MODEL_ETC2          = 161U,
-    /** Adaptive Scalable Texture Compression */
-    /** ASTC HDR vs LDR is determined by the float flag in the channel */
-    /** ASTC block size can be distinguished by texel block size */
+    /* Adaptive Scalable Texture Compression */
+    /* ASTC HDR vs LDR is determined by the float flag in the channel */
+    /* ASTC block size can be distinguished by texel block size */
     KHR_DF_MODEL_ASTC          = 162U,
-    /** ETC1S is a simplified subset of ETC1 */
+    /* ETC1S is a simplified subset of ETC1 */
     KHR_DF_MODEL_ETC1S         = 163U,
-    /** PowerVR Texture Compression v1 */
+    /* PowerVR Texture Compression */
     KHR_DF_MODEL_PVRTC         = 164U,
-    /** PowerVR Texture Compression v2 */
     KHR_DF_MODEL_PVRTC2        = 165U,
-    /** UASTC is a transcodable subset of ASTC
-        with additions to support the transcoding. */
     KHR_DF_MODEL_UASTC         = 166U,
     /* Proprietary formats (ATITC, etc.) should follow */
     KHR_DF_MODEL_MAX = 0xFFU
@@ -511,7 +507,6 @@ typedef enum _khr_df_model_channels_e {
     KHR_DF_CHANNEL_PVRTC2_DATA  = 0U,
     KHR_DF_CHANNEL_PVRTC2_COLOR = 0U,
     /* MODEL UASTC */
-    KHR_DF_CHANNEL_UASTC_DATA  = 0U,
     KHR_DF_CHANNEL_UASTC_RGB   = 0U,
     KHR_DF_CHANNEL_UASTC_RGBA  = 3U,
     KHR_DF_CHANNEL_UASTC_RRR   = 4U,
@@ -529,90 +524,119 @@ typedef enum _khr_df_model_channels_e {
     KHR_DF_CHANNEL_COMMON_A       = 15U
 } khr_df_model_channels_e;
 
-/** @~English
-   @brief Definition of the primary colors in color coordinates.
+/* Definition of the primary colors in color coordinates.
    This is implicitly responsible for defining the conversion
    between RGB an YUV color spaces.
    LAB and related absolute color models should use
    KHR_DF_PRIMARIES_CIEXYZ. */
 typedef enum _khr_df_primaries_e {
-    /** No color primaries defined */
+    /* No color primaries defined */
     KHR_DF_PRIMARIES_UNSPECIFIED = 0U,
-    /** Color primaries of ITU-R BT.709 and sRGB */
+    /* Color primaries of ITU-R BT.709 and sRGB */
     KHR_DF_PRIMARIES_BT709       = 1U,
-    /** Synonym for KHR_DF_PRIMARIES_BT709 */
+    /* Synonym for KHR_DF_PRIMARIES_BT709 */
     KHR_DF_PRIMARIES_SRGB        = 1U,
-    /** Color primaries of ITU-R BT.601 (625-line EBU variant) */
+    /* Color primaries of ITU-R BT.601 (625-line EBU variant) */
     KHR_DF_PRIMARIES_BT601_EBU   = 2U,
-    /** Color primaries of ITU-R BT.601 (525-line SMPTE C variant) */
+    /* Color primaries of ITU-R BT.601 (525-line SMPTE C variant) */
     KHR_DF_PRIMARIES_BT601_SMPTE = 3U,
-    /** Color primaries of ITU-R BT.2020 */
+    /* Color primaries of ITU-R BT.2020 */
     KHR_DF_PRIMARIES_BT2020      = 4U,
-    /** CIE theoretical color coordinate space */
+    /* ITU-R BT.2100 uses the same primaries as BT.2020 */
+    KHR_DF_PRIMARIES_BT2100      = 4U,
+    /* CIE theoretical color coordinate space */
     KHR_DF_PRIMARIES_CIEXYZ      = 5U,
-    /** Academy Color Encoding System primaries */
+    /* Academy Color Encoding System primaries */
     KHR_DF_PRIMARIES_ACES        = 6U,
-    /** Color primaries of ACEScc */
+    /* Color primaries of ACEScc */
     KHR_DF_PRIMARIES_ACESCC      = 7U,
-    /** Legacy NTSC 1953 primaries */
+    /* Legacy NTSC 1953 primaries */
     KHR_DF_PRIMARIES_NTSC1953    = 8U,
-    /** Legacy PAL 525-line primaries */
+    /* Legacy PAL 525-line primaries */
     KHR_DF_PRIMARIES_PAL525      = 9U,
-    /** Color primaries of Display P3 */
+    /* Color primaries of Display P3 */
     KHR_DF_PRIMARIES_DISPLAYP3   = 10U,
-    /** Color primaries of Adobe RGB (1998) */
+    /* Color primaries of Adobe RGB (1998) */
     KHR_DF_PRIMARIES_ADOBERGB    = 11U,
     KHR_DF_PRIMARIES_MAX         = 0xFFU
 } khr_df_primaries_e;
 
-/** @~English
-   @brief Definition of the optical to digital transfer function
+/* Definition of the optical to digital transfer function
    ("gamma correction"). Most transfer functions are not a pure
    power function and also include a linear element.
    LAB and related absolute color representations should use
-   KHR_DF_TRANSFER_UNSPECIFIED. */
+   KHR_DF_TRANSFER_UNSPECIFIED.
+   These encodings indicate that the representation has had
+   the corresponding transfer function applied relative to a
+   linear representation; hence to process the linear intensity
+   represented by the value, a corresponding inverse transform
+   must be applied. */
 typedef enum _khr_df_transfer_e {
-    /** No transfer function defined */
+    /* No transfer function defined */
     KHR_DF_TRANSFER_UNSPECIFIED = 0U,
-    /** Linear transfer function (value proportional to intensity) */
+    /* Linear transfer function (value proportional to intensity) */
     KHR_DF_TRANSFER_LINEAR      = 1U,
-    /** Perceptually-linear transfer function of sRGH (~2.4) */
+    /* Perceptually-linear transfer function of sRGB (~2.2); also used for scRGB */
     KHR_DF_TRANSFER_SRGB        = 2U,
-    /** Perceptually-linear transfer function of ITU BT.601, BT.709 and BT.2020 (~1/.45) */
+    KHR_DF_TRANSFER_SRGB_EOTF   = 2U,
+    KHR_DF_TRANSFER_SCRGB       = 2U,
+    KHR_DF_TRANSFER_SCRGB_EOTF  = 2U,
+    /* Perceptually-linear transfer function of ITU BT.601, BT.709 and BT.2020 (~1/.45) */
     KHR_DF_TRANSFER_ITU         = 3U,
-    /** SMTPE170M (digital NTSC) defines an alias for the ITU transfer function (~1/.45) */
-    KHR_DF_TRANSFER_SMTPE170M   = 3U,
-    /** Perceptually-linear gamma function of original NTSC (simple 2.2 gamma) */
+    KHR_DF_TRANSFER_ITU_OETF    = 3U,
+    KHR_DF_TRANSFER_BT601       = 3U,
+    KHR_DF_TRANSFER_BT601_OETF  = 3U,
+    KHR_DF_TRANSFER_BT709       = 3U,
+    KHR_DF_TRANSFER_BT709_OETF  = 3U,
+    KHR_DF_TRANSFER_BT2020      = 3U,
+    KHR_DF_TRANSFER_BT2020_OETF = 3U,
+    /* SMTPE170M (digital NTSC) defines an alias for the ITU transfer function (~1/.45) and a linear OOTF */
+    KHR_DF_TRANSFER_SMTPE170M      = 3U,
+    KHR_DF_TRANSFER_SMTPE170M_OETF = 3U,
+    KHR_DF_TRANSFER_SMTPE170M_EOTF = 3U,
+    /* Perceptually-linear gamma function of original NTSC (simple 2.2 gamma) */
     KHR_DF_TRANSFER_NTSC        = 4U,
-    /** Sony S-log used by Sony video cameras */
+    KHR_DF_TRANSFER_NTSC_EOTF   = 4U,
+    /* Sony S-log used by Sony video cameras */
     KHR_DF_TRANSFER_SLOG        = 5U,
-    /** Sony S-log 2 used by Sony video cameras */
+    KHR_DF_TRANSFER_SLOG_OETF   = 5U,
+    /* Sony S-log 2 used by Sony video cameras */
     KHR_DF_TRANSFER_SLOG2       = 6U,
-    /** ITU BT.1886 EOTF */
+    KHR_DF_TRANSFER_SLOG2_OETF  = 6U,
+    /* ITU BT.1886 EOTF */
     KHR_DF_TRANSFER_BT1886      = 7U,
-    /** ITU BT.2100 HLG OETF */
+    KHR_DF_TRANSFER_BT1886_EOTF = 7U,
+    /* ITU BT.2100 HLG OETF (typical scene-referred content), linear light normalized 0..1 */
     KHR_DF_TRANSFER_HLG_OETF    = 8U,
-    /** ITU BT.2100 HLG EOTF */
+    /* ITU BT.2100 HLG EOTF (nominal HDR display of HLG content), linear light normalized 0..1 */
     KHR_DF_TRANSFER_HLG_EOTF    = 9U,
-    /** ITU BT.2100 PQ EOTF */
+    /* ITU BT.2100 PQ EOTF (typical HDR display-referred PQ content) */
     KHR_DF_TRANSFER_PQ_EOTF     = 10U,
-    /** ITU BT.2100 PQ OETF */
+    /* ITU BT.2100 PQ OETF (nominal scene described by PQ HDR content) */
     KHR_DF_TRANSFER_PQ_OETF     = 11U,
-    /** DCI P3 transfer function */
+    /* DCI P3 transfer function */
     KHR_DF_TRANSFER_DCIP3       = 12U,
-    /** Legacy PAL OETF */
+    KHR_DF_TRANSFER_DCIP3_EOTF  = 12U,
+    /* Legacy PAL OETF */
     KHR_DF_TRANSFER_PAL_OETF    = 13U,
-    /** Legacy PAL 625-line EOTF */
+    /* Legacy PAL 625-line EOTF */
     KHR_DF_TRANSFER_PAL625_EOTF = 14U,
-    /** Legacy ST240 transfer function */
+    /* Legacy ST240 transfer function */
     KHR_DF_TRANSFER_ST240       = 15U,
-    /** ACEScc transfer function */
+    KHR_DF_TRANSFER_ST240_OETF  = 15U,
+    KHR_DF_TRANSFER_ST240_EOTF  = 15U,
+    /* ACEScc transfer function */
     KHR_DF_TRANSFER_ACESCC      = 16U,
-    /** ACEScct transfer function */
-    KHR_DF_TRANSFER_ACESCCT     = 17U,
-    /** Adobe RGB (1998) transfer function */
-    KHR_DF_TRANSFER_ADOBERGB    = 18U,
-    KHR_DF_TRANSFER_MAX         = 0xFFU
+    KHR_DF_TRANSFER_ACESCC_OETF = 16U,
+    /* ACEScct transfer function */
+    KHR_DF_TRANSFER_ACESCCT      = 17U,
+    KHR_DF_TRANSFER_ACESCCT_OETF = 17U,
+    /* Adobe RGB (1998) transfer function */
+    KHR_DF_TRANSFER_ADOBERGB      = 18U,
+    KHR_DF_TRANSFER_ADOBERGB_EOTF = 18U,
+    /* Legacy ITU BT.2100 HLG OETF (typical scene-referred content), linear light normalized 0..12 */
+    KHR_DF_TRANSFER_HLG_UNNORMALIZED_OETF = 19U,
+    KHR_DF_TRANSFER_MAX                   = 0xFFU
 } khr_df_transfer_e;
 
 typedef enum _khr_df_flags_e {
