@@ -56,9 +56,9 @@ private:
 	float len_resizing_rel = 0.0f;
 	bool over_drag_position = false;
 
-	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x, const int p_clip_left, const int p_clip_right);
+	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_clip_left, const int p_clip_right);
 
-	Vector2 calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const float p_pixels_sec, const int p_x);
+	Vector2 calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_x);
 	Vector2 clip_key_region(Vector2 region, int p_clip_left, int p_clip_right);
 	void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	Vector2 calc_key_region_shift(Vector2 &orig_region, Vector2 &region);
@@ -72,9 +72,9 @@ public:
 	virtual void _preview_changed(ObjectID p_which);
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
-	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
+	virtual Rect2 get_key_rect(int p_index) override;
 	virtual bool is_key_selectable_by_distance() const override { return false; }
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
@@ -101,8 +101,8 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEditKey {
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
 
 protected:
 	virtual Ref<Resource> get_resource(const int p_index) override;
@@ -126,8 +126,8 @@ class AnimationTrackEditTypeAnimation : public AnimationTrackEditKey {
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
 
 protected:
 	virtual Ref<Resource> get_resource(const int p_index) override;
@@ -152,8 +152,8 @@ class AnimationTrackEditAudio : public AnimationTrackEditKey {
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
 
 protected:
 	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
@@ -170,8 +170,8 @@ class AnimationTrackEditSubAnim : public AnimationTrackEditKey {
 	virtual void _preview_changed(ObjectID p_which) override;
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
 
 protected:
 	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;
@@ -192,9 +192,9 @@ private:
 	Ref<Texture2D> icon_unchecked;
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
-	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
+	virtual Rect2 get_key_rect(int p_index) override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 public:
@@ -205,9 +205,9 @@ class AnimationTrackEditColor : public AnimationTrackEditKey {
 	GDCLASS(AnimationTrackEditColor, AnimationTrackEditKey);
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
-	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
+	virtual Rect2 get_key_rect(int p_index) override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 protected:
@@ -231,9 +231,9 @@ public:
 	void set_as_coords();
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
-	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
+	virtual Rect2 get_key_rect(int p_index) override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 protected:
@@ -247,8 +247,8 @@ class AnimationTrackEditVolumeDB : public AnimationTrackEditKey {
 	GDCLASS(AnimationTrackEditVolumeDB, AnimationTrackEditKey);
 
 public:
-	virtual int get_key_width(int p_index, float p_pixels_sec) const override;
-	virtual int get_key_height(int p_index, float p_pixels_sec) const override;
+	virtual int get_key_width(int p_index) const override;
+	virtual int get_key_height(int p_index) const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 protected:
