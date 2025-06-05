@@ -66,13 +66,13 @@
 			Specifies which [member VisualInstance3D.layers] this decal will project on. By default, Decals affect all layers. This is used so you can specify which types of objects receive the Decal and which do not. This is especially useful so you can ensure that dynamic objects don't accidentally receive a Decal intended for the terrain under them.
 		</member>
 		<member name="distance_fade_begin" type="float" setter="set_distance_fade_begin" getter="get_distance_fade_begin" default="40.0" keywords="lod_begin">
-			The distance from the camera at which the Decal begins to fade away (in 3D units).
+			The distance from the camera at which the decal begins to fade away, in meters.
 		</member>
 		<member name="distance_fade_enabled" type="bool" setter="set_enable_distance_fade" getter="is_distance_fade_enabled" default="false" keywords="lod_enabled">
 			If [code]true[/code], decals will smoothly fade away when far from the active [Camera3D] starting at [member distance_fade_begin]. The Decal will fade out over [member distance_fade_begin] + [member distance_fade_length], after which it will be culled and not sent to the shader at all. Use this to reduce the number of active Decals in a scene and thus improve performance.
 		</member>
 		<member name="distance_fade_length" type="float" setter="set_distance_fade_length" getter="get_distance_fade_length" default="10.0" keywords="lod_length">
-			The distance over which the Decal fades (in 3D units). The Decal becomes slowly more transparent over this distance and is completely invisible at the end. Higher values result in a smoother fade-out transition, which is more suited when the camera moves fast.
+			The distance over which the decal fades, in meters. The decal becomes slowly more transparent over this distance and is completely invisible at the end. Higher values result in a smoother fade-out transition, which is more suited when the camera moves fast.
 		</member>
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
 			Energy multiplier for the emission texture. This will make the decal emit light at a higher or lower intensity, independently of the albedo color. See also [member modulate].

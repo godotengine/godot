@@ -12,7 +12,7 @@
 	</tutorials>
 	<members>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(1, 1)">
-			The quad's size in 3D units.
+			The quad's size in meters.
 		</member>
 	</members>
 </class>

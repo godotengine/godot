@@ -117,7 +117,7 @@
 			<param index="0" name="offset" type="float" default="0.0" />
 			<param index="1" name="cubic" type="bool" default="false" />
 			<description>
-				Returns a point within the curve at position [param offset], where [param offset] is measured as a distance in 3D units along the curve. To do that, it finds the two cached points where the [param offset] lies between, then interpolates the values. This interpolation is cubic if [param cubic] is set to [code]true[/code], or linear if set to [code]false[/code].
+				Returns a point within the curve at position [param offset], where [param offset] is measured as a distance in meters along the curve. To do that, it finds the two cached points where the [param offset] lies between, then interpolates the values. This interpolation is cubic if [param cubic] is set to [code]true[/code], or linear if set to [code]false[/code].
 				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
@@ -126,8 +126,8 @@
 			<param index="0" name="offset" type="float" />
 			<param index="1" name="apply_tilt" type="bool" default="false" />
 			<description>
-				Returns an up vector within the curve at position [param offset], where [param offset] is measured as a distance in 3D units along the curve. To do that, it finds the two cached up vectors where the [param offset] lies between, then interpolates the values. If [param apply_tilt] is [code]true[/code], an interpolated tilt is applied to the interpolated up vector.
-				If the curve has no up vectors, the function sends an error to the console, and returns [code](0, 1, 0)[/code].
+				Returns an up vector within the curve at position [param offset], where [param offset] is measured as a distance in meters along the curve. To do that, it finds the two cached up vectors where the [param offset] lies between, then interpolates the values. If [param apply_tilt] is [code]true[/code], an interpolated tilt is applied to the interpolated up vector.
+				If the curve has no up vectors, this method generates an error and returns [constant Vector3.UP].
 			</description>
 		</method>
 		<method name="sample_baked_with_rotation" qualifiers="const">
