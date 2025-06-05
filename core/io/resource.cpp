@@ -382,6 +382,8 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 		r->local_scene = p_params.local_scene;
 	}
 
+	r->path_cache = path_cache;
+
 	// Duplicate script first, so the scripted properties are considered.
 	BEFORE_USER_CODE
 	r->set_script(get_script());
