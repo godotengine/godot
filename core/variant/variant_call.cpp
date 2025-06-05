@@ -2449,6 +2449,7 @@ VARIANT_ENUM_CAST(ResourceDeepDuplicateMode);
 static void _register_variant_builtin_methods_misc() {
 	/* RID */
 
+	bind_method(RID, is_null, sarray(), varray());
 	bind_method(RID, is_valid, sarray(), varray());
 	bind_method(RID, get_id, sarray(), varray());
 
