@@ -1,0 +1,119 @@
+From 76e9d2f867467a567cec330e19f25c763e9129a0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?R=C3=A9mi=20Verschelde?= <rverschelde@gmail.com>
+Date: Thu, 5 Jun 2025 14:10:03 +0200
+Subject: [PATCH] zstd: Enable x86_64 assembly for Windows/MinGW
+
+Fix SCons setup to compile .S files with preprocessor support with MinGW.
+---
+ core/SCsub                                          | 10 ++++++----
+ platform/windows/detect.py                          |  4 +++-
+ thirdparty/README.md                                |  4 ----
+ thirdparty/zstd/common/portability_macros.h         |  2 +-
+ .../zstd/patches/0001-windows-turn-off-asm.patch    | 13 -------------
+ 5 files changed, 10 insertions(+), 23 deletions(-)
+ delete mode 100644 thirdparty/zstd/patches/0001-windows-turn-off-asm.patch
+
+diff --git a/core/SCsub b/core/SCsub
+index 5820b78b12..b4c4a691a2 100644
+--- a/core/SCsub
++++ b/core/SCsub
+@@ -111,9 +111,7 @@ thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
+ thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
+ env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
+ 
+-# Zstd library, can be unbundled in theory
+-# though we currently use some private symbols
+-# https://github.com/godotengine/godot/issues/17374
++# Zstd library, can be unbundled
+ if env["builtin_zstd"]:
+     thirdparty_zstd_dir = "#thirdparty/zstd/"
+     thirdparty_zstd_sources = [
+@@ -144,7 +142,11 @@ if env["builtin_zstd"]:
+         "decompress/zstd_decompress_block.c",
+         "decompress/zstd_decompress.c",
+     ]
+-    if env["platform"] in ["android", "ios", "linuxbsd", "macos"] and env["arch"] == "x86_64":
++    if (
++        env["platform"] in ["android", "ios", "linuxbsd", "macos", "windows"]
++        and env["arch"] == "x86_64"
++        and not env.msvc
++    ):
+         # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
+         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
+     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
+diff --git a/platform/windows/detect.py b/platform/windows/detect.py
+index 3e808ac8a9..9a5ee8e467 100644
+--- a/platform/windows/detect.py
++++ b/platform/windows/detect.py
+@@ -707,6 +707,7 @@ def configure_mingw(env: "SConsEnvironment"):
+         env["CXX"] = get_detected(env, "clang++")
+         env["AR"] = get_detected(env, "ar")
+         env["RANLIB"] = get_detected(env, "ranlib")
++        env["AS"] = get_detected(env, "clang")
+         env.Append(ASFLAGS=["-c"])
+         env.extra_suffix = ".llvm" + env.extra_suffix
+     else:
+@@ -714,6 +715,8 @@ def configure_mingw(env: "SConsEnvironment"):
+         env["CXX"] = get_detected(env, "g++")
+         env["AR"] = get_detected(env, "gcc-ar" if os.name != "nt" else "ar")
+         env["RANLIB"] = get_detected(env, "gcc-ranlib")
++        env["AS"] = get_detected(env, "gcc")
++        env.Append(ASFLAGS=["-c"])
+ 
+     env["RC"] = get_detected(env, "windres")
+     ARCH_TARGETS = {
+@@ -724,7 +727,6 @@ def configure_mingw(env: "SConsEnvironment"):
+     }
+     env.AppendUnique(RCFLAGS=f"--target={ARCH_TARGETS[env['arch']]}")
+ 
+-    env["AS"] = get_detected(env, "as")
+     env["OBJCOPY"] = get_detected(env, "objcopy")
+     env["STRIP"] = get_detected(env, "strip")
+ 
+diff --git a/thirdparty/README.md b/thirdparty/README.md
+index 988349b137..f5730f30bd 100644
+--- a/thirdparty/README.md
++++ b/thirdparty/README.md
+@@ -1182,7 +1182,3 @@ Files extracted from upstream source:
+ 
+ - `lib/{common/,compress/,decompress/,zstd.h,zstd_errors.h}`
+ - `LICENSE`
+-
+-Patches:
+-
+-- `0001-windows-turn-off-asm.patch` (GH-103596)
+diff --git a/thirdparty/zstd/common/portability_macros.h b/thirdparty/zstd/common/portability_macros.h
+index b2c028ccf1..860734141d 100644
+--- a/thirdparty/zstd/common/portability_macros.h
++++ b/thirdparty/zstd/common/portability_macros.h
+@@ -114,7 +114,7 @@
+  * 100% of code to be instrumented to work.
+  */
+ #if defined(__GNUC__)
+-#  if defined(__linux__) || defined(__linux) || defined(__APPLE__)
++#  if defined(__linux__) || defined(__linux) || defined(__APPLE__) || defined(_WIN32)
+ #    if ZSTD_MEMORY_SANITIZER
+ #      define ZSTD_ASM_SUPPORTED 0
+ #    elif ZSTD_DATAFLOW_SANITIZER
+diff --git a/thirdparty/zstd/patches/0001-windows-turn-off-asm.patch b/thirdparty/zstd/patches/0001-windows-turn-off-asm.patch
+deleted file mode 100644
+index 4765a17690..0000000000
+--- a/thirdparty/zstd/patches/0001-windows-turn-off-asm.patch
++++ /dev/null
+@@ -1,13 +0,0 @@
+-diff --git a/thirdparty/zstd/common/portability_macros.h b/thirdparty/zstd/common/portability_macros.h
+-index 860734141d..b2c028ccf1 100644
+---- a/thirdparty/zstd/common/portability_macros.h
+-+++ b/thirdparty/zstd/common/portability_macros.h
+-@@ -114,7 +114,7 @@
+-  * 100% of code to be instrumented to work.
+-  */
+- #if defined(__GNUC__)
+--#  if defined(__linux__) || defined(__linux) || defined(__APPLE__) || defined(_WIN32)
+-+#  if defined(__linux__) || defined(__linux) || defined(__APPLE__)
+- #    if ZSTD_MEMORY_SANITIZER
+- #      define ZSTD_ASM_SUPPORTED 0
+- #    elif ZSTD_DATAFLOW_SANITIZER
+-- 
+2.49.0
+
