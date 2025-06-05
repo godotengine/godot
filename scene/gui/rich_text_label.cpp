@@ -2954,6 +2954,10 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				queue_redraw();
 			}
 		}
+
+		if (vscroll) {
+			vscroll->_pan_callback(m, this, false, true);
+		}
 	}
 }
 

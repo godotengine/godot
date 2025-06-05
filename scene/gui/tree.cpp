@@ -3973,6 +3973,13 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			v_scroll->set_value(drag_from + drag_accum);
 			drag_speed = -mm->get_velocity().y;
 		}
+
+		if (h_scroll) {
+			h_scroll->_pan_callback(mm, this, h_scroll_enabled, false);
+		}
+		if (v_scroll) {
+			v_scroll->_pan_callback(mm, this, false, v_scroll_enabled);
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
