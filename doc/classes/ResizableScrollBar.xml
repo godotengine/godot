@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResizableScrollBar" inherits="ScrollBar" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for resizable scrollbars.
+	</brief_description>
+	<description>
+		Abstract base class for resizable scrollbars, with the same function as [ScrollBar] but with handles. Allows implementation of zoom changing in editors by pulling the handles.
+	</description>
+	<tutorials>
+	</tutorials>
+	<signals>
+		<signal name="change_zoom">
+			<description>
+				Emitted when a handle is being pulled.
+			</description>
+		</signal>
+	</signals>
+</class>
