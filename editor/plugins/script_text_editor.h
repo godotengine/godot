@@ -181,6 +181,16 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	void _enable_code_editor();
 
+	struct DraggedExport {
+		String variable_name;
+		Variant value;
+	};
+
+	LocalVector<DraggedExport> pending_dragged_exports;
+	String _get_dropped_resource_as_member(const Ref<Resource> &p_resource, bool p_create_field, bool p_allow_uid);
+	String _get_dropped_resource_as_exported_member(const Ref<Resource> &p_resource, bool assign_export_variable);
+	void _assign_dragged_export_variables();
+
 protected:
 	void _update_breakpoint_list();
 	void _breakpoint_item_pressed(int p_idx);
