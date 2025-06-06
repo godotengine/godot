@@ -31,8 +31,8 @@
 #include "lightmap_probe_gizmo_plugin.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/lightmap_probe.h"
 
 LightmapProbeGizmoPlugin::LightmapProbeGizmoPlugin() {

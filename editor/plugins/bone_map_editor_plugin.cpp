@@ -30,11 +30,11 @@
 
 #include "bone_map_editor_plugin.h"
 
-#include "editor/editor_settings.h"
 #include "editor/import/3d/post_import_plugin_skeleton_renamer.h"
 #include "editor/import/3d/post_import_plugin_skeleton_rest_fixer.h"
 #include "editor/import/3d/post_import_plugin_skeleton_track_organizer.h"
 #include "editor/import/3d/scene_import_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/aspect_ratio_container.h"

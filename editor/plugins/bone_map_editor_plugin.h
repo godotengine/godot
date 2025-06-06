@@ -31,7 +31,7 @@
 #pragma once
 
 #include "editor/editor_node.h"
-#include "editor/editor_properties.h"
+#include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 
 #include "scene/3d/skeleton_3d.h"

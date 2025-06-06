@@ -44,7 +44,7 @@
 #include "core/object/script_language.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 
