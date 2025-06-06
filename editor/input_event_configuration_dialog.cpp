@@ -303,6 +303,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		mouse_root->set_meta("__type", INPUT_MOUSE_BUTTON);
 
 		MouseButton mouse_buttons[9] = { MouseButton::LEFT, MouseButton::RIGHT, MouseButton::MIDDLE, MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT, MouseButton::WHEEL_RIGHT, MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 };
+		Ref<Texture2D> mouse_icons[9] = { icon_cache.mouse_left_button, icon_cache.mouse_right_button, icon_cache.mouse_middle_button, icon_cache.mouse_wheel_up, icon_cache.mouse_wheel_down, icon_cache.mouse_wheel_left, icon_cache.mouse_wheel_right, icon_cache.mouse_xbutton1, icon_cache.mouse_xbutton2 };
 		for (int i = 0; i < 9; i++) {
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
@@ -315,6 +316,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 
 			TreeItem *item = input_list_tree->create_item(mouse_root);
 			item->set_text(0, desc);
+			item->set_icon(0, mouse_icons[i]);
 			item->set_meta("__index", mouse_buttons[i]);
 		}
 	}
@@ -580,6 +582,15 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 
 			icon_cache.keyboard = get_editor_theme_icon(SNAME("Keyboard"));
 			icon_cache.mouse = get_editor_theme_icon(SNAME("Mouse"));
+			icon_cache.mouse_left_button = get_editor_theme_icon(SNAME("MouseButtonLeft"));
+			icon_cache.mouse_right_button = get_editor_theme_icon(SNAME("MouseButtonRight"));
+			icon_cache.mouse_middle_button = get_editor_theme_icon(SNAME("MouseButtonMiddle"));
+			icon_cache.mouse_wheel_up = get_editor_theme_icon(SNAME("MouseButtonWheelUp"));
+			icon_cache.mouse_wheel_down = get_editor_theme_icon(SNAME("MouseButtonWheelDown"));
+			icon_cache.mouse_wheel_left = get_editor_theme_icon(SNAME("MouseButtonWheelLeft"));
+			icon_cache.mouse_wheel_right = get_editor_theme_icon(SNAME("MouseButtonWheelRight"));
+			icon_cache.mouse_xbutton1 = get_editor_theme_icon(SNAME("MouseButtonXButton1"));
+			icon_cache.mouse_xbutton2 = get_editor_theme_icon(SNAME("MouseButtonXButton2"));
 			icon_cache.joypad_button = get_editor_theme_icon(SNAME("JoyButton"));
 			icon_cache.joypad_axis = get_editor_theme_icon(SNAME("JoyAxis"));
 

@@ -501,7 +501,27 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 			Ref<InputEventMouseButton> mb = event;
 			if (mb.is_valid()) {
-				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("Mouse")));
+				if (mb->get_button_index() == MouseButton::LEFT) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonLeft")));
+				} else if (mb->get_button_index() == MouseButton::RIGHT) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonRight")));
+				} else if (mb->get_button_index() == MouseButton::MIDDLE) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonMiddle")));
+				} else if (mb->get_button_index() == MouseButton::WHEEL_UP) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonWheelUp")));
+				} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonWheelDown")));
+				} else if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonWheelLeft")));
+				} else if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonWheelRight")));
+				} else if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonXButton1")));
+				} else if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("MouseButtonXButton2")));
+				} else {
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("Mouse")));
+				}
 			}
 
 			Ref<InputEventJoypadButton> jb = event;
