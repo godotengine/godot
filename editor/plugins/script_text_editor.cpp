@@ -859,7 +859,7 @@ void ScriptTextEditor::_update_warnings() {
 
 	bool has_connections_table = false;
 	// Add missing connections.
-	if (GLOBAL_GET("debug/gdscript/warnings/enable")) {
+	if (GLOBAL_EDITOR_GET("debug/gdscript/warnings/enable")) {
 		Node *base = get_tree()->get_edited_scene_root();
 		if (base && missing_connections.size() > 0) {
 			has_connections_table = true;

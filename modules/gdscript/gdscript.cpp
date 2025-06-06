@@ -2952,16 +2952,6 @@ GDScriptLanguage::GDScriptLanguage() {
 #ifdef DEBUG_ENABLED
 	track_call_stack = true;
 	track_locals = track_locals || EngineDebugger::is_active();
-
-	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
-	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
-	GLOBAL_DEF("debug/gdscript/warnings/renamed_in_godot_4_hint", true);
-	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
-		GDScriptWarning::Code code = (GDScriptWarning::Code)i;
-		Variant default_enabled = GDScriptWarning::get_default_value(code);
-		String path = GDScriptWarning::get_settings_path_from_code(code);
-		GLOBAL_DEF(GDScriptWarning::get_property_info(code), default_enabled);
-	}
 #endif // DEBUG_ENABLED
 }
 

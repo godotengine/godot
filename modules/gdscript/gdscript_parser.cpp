@@ -135,7 +135,7 @@ GDScriptParser::GDScriptParser() {
 	}
 
 #ifdef DEBUG_ENABLED
-	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
+	is_ignoring_warnings = !(bool)GLOBAL_EDITOR_GET("debug/gdscript/warnings/enable");
 	for (int i = 0; i < GDScriptWarning::WARNING_MAX; i++) {
 		warning_ignore_start_lines[i] = INT_MAX;
 	}
@@ -196,10 +196,10 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	if (is_ignoring_warnings) {
 		return;
 	}
-	if (GLOBAL_GET_CACHED(bool, "debug/gdscript/warnings/exclude_addons") && script_path.begins_with("res://addons/")) {
+	if (GLOBAL_EDITOR_GET_CACHED(bool, "debug/gdscript/warnings/exclude_addons") && script_path.begins_with("res://addons/")) {
 		return;
 	}
-	GDScriptWarning::WarnLevel warn_level = (GDScriptWarning::WarnLevel)(int)GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(p_code));
+	GDScriptWarning::WarnLevel warn_level = (GDScriptWarning::WarnLevel)(int)GLOBAL_EDITOR_GET(GDScriptWarning::get_settings_path_from_code(p_code));
 	if (warn_level == GDScriptWarning::IGNORE) {
 		return;
 	}

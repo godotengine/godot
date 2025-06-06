@@ -1309,6 +1309,12 @@ void EditorSettings::create() {
 			config_file_path = get_newest_settings_path();
 			goto fail;
 		}
+		ProjectSettings::get_singleton()->editor_settings = singleton.ptr();
+
+		for (const KeyValue<String, Array> &setting : ProjectSettings::get_singleton()->pending_editor_settings) {
+			singleton->define_from_project_setting(setting.value[0], setting.value[1], setting.value[2], setting.value[3]);
+		}
+		ProjectSettings::get_singleton()->pending_editor_settings.clear();
 
 		singleton->set_path(get_newest_settings_path()); // Settings can be loaded from older version file, so make sure it's newest.
 		singleton->save_changed_setting = true;
@@ -1440,12 +1446,18 @@ void EditorSettings::mark_setting_changed(const String &p_setting) {
 	changed_settings.insert(p_setting);
 }
 
+Variant EditorSettings::define_from_project_setting(const Dictionary &p_info, const Variant &p_default, bool p_restart_if_changed, bool p_basic) {
+	const Variant def = _EDITOR_DEF(PropertyInfo::from_dict(p_info), p_default, p_restart_if_changed, p_basic);
+	return def;
+}
+
 void EditorSettings::destroy() {
 	if (!singleton.ptr()) {
 		return;
 	}
 	save();
 	singleton = Ref<EditorSettings>();
+	ProjectSettings::get_singleton()->editor_settings = nullptr;
 }
 
 void EditorSettings::set_optimize_save(bool p_optimize) {
@@ -1533,6 +1545,12 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
 	}
 
+	return ret;
+}
+
+Variant _EDITOR_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p_restart_if_changed, bool p_basic) {
+	Variant ret = _EDITOR_DEF(p_info.name, p_default, p_restart_if_changed, p_basic);
+	EditorSettings::get_singleton()->add_property_hint(p_info);
 	return ret;
 }
 
@@ -2202,6 +2220,8 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &EditorSettings::check_changed_settings_in_group);
 	ClassDB::bind_method(D_METHOD("get_changed_settings"), &EditorSettings::get_changed_settings);
 	ClassDB::bind_method(D_METHOD("mark_setting_changed", "setting"), &EditorSettings::mark_setting_changed);
+
+	ClassDB::bind_method(D_METHOD("_define_from_project_setting"), &EditorSettings::define_from_project_setting);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 

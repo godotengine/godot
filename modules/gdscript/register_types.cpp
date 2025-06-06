@@ -152,6 +152,16 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		gdscript_cache = memnew(GDScriptCache);
 
 		GDScriptUtilityFunctions::register_functions();
+
+		_GLOBAL_EDITOR_DEF("debug/gdscript/warnings/enable", true);
+		_GLOBAL_EDITOR_DEF("debug/gdscript/warnings/exclude_addons", true);
+		_GLOBAL_EDITOR_DEF("debug/gdscript/warnings/renamed_in_godot_4_hint", true);
+		for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+			GDScriptWarning::Code code = (GDScriptWarning::Code)i;
+			Variant default_enabled = GDScriptWarning::get_default_value(code);
+			String path = GDScriptWarning::get_settings_path_from_code(code);
+			_GLOBAL_EDITOR_DEF(GDScriptWarning::get_property_info(code), default_enabled);
+		}
 	}
 
 #ifdef TOOLS_ENABLED
