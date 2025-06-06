@@ -440,6 +440,16 @@
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
+		<member name="audio/driver/override_channel_out" type="int" setter="" getter="" default="0">
+			The channel index to send to the stereo output when [code]override_speaker_channels[/code] has forced there to be a higher number of actual channels.
+		</member>
+		<member name="audio/driver/override_channels" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the number of output channels will be set by [code]override_speaker_channels[/code] instead of the speaker mode of the output device.
+			[b]Note:[/b] This is only implemented in the PulseAudio audio driver on Linux. Other platforms are unaffected by this project setting.
+		</member>
+		<member name="audio/driver/override_speaker_channels" type="int" setter="" getter="" default="8">
+			The number of channels to use when [code]override_channels[/code] is set to [code]true[/code].
+		</member>
 		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer2D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
 			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
