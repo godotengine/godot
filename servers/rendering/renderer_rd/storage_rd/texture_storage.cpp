@@ -3275,6 +3275,95 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 	}
 }
 
+/* TEXTURE DRAWABLE API */
+
+void TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps) {
+	TextureFromRDFormat imfmt;
+	_texture_format_from_rd(p_texture_format, imfmt);
+	ERR_FAIL_COND(imfmt.image_format == Image::FORMAT_MAX);
+	uint32_t mipmaps = 1;
+	{
+		uint32_t w = p_width;
+		uint32_t h = p_height;
+		if (p_use_mipmaps) {
+			while (true) {
+				if (w == 1 && h == 1) {
+					break;
+				}
+				w = MAX(1u, w >> 1);
+				h = MAX(1u, h >> 1);
+				mipmaps++;
+			}
+		}
+	}
+	RD::TextureFormat rd_tex_format;
+	rd_tex_format.width = p_width;
+	rd_tex_format.height = p_height;
+	rd_tex_format.mipmaps = mipmaps;
+	rd_tex_format.texture_type = RD::TEXTURE_TYPE_2D;
+	rd_tex_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	if (!CopyEffects::get_singleton()->get_prefer_raster_effects()) {
+		rd_tex_format.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+	}
+	rd_tex_format.format = imfmt.rd_format;
+
+	Texture texture;
+	texture.type = TextureStorage::TYPE_2D;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.layers = 1;
+	texture.mipmaps = mipmaps;
+	texture.depth = 1;
+	texture.format = imfmt.image_format;
+	texture.validated_format = imfmt.image_format;
+	texture.rd_type = rd_tex_format.texture_type;
+	texture.rd_format = imfmt.rd_format;
+	texture.rd_format_srgb = imfmt.rd_format_srgb;
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.is_proxy = false;
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_tex_format.shareable_formats.push_back(texture.rd_format);
+		rd_tex_format.shareable_formats.push_back(texture.rd_format_srgb);
+	}
+
+	RD::TextureView rd_view;
+	rd_view.format_override = (imfmt.rd_format == rd_tex_format.format) ? RD::DATA_FORMAT_MAX : imfmt.rd_format;
+	rd_view.swizzle_r = imfmt.swizzle_r;
+	rd_view.swizzle_g = imfmt.swizzle_g;
+	rd_view.swizzle_b = imfmt.swizzle_b;
+	rd_view.swizzle_a = imfmt.swizzle_a;
+	texture.rd_view = rd_view;
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_tex_format, rd_view);
+
+	rd_view.format_override = texture.rd_format_srgb;
+	texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+
+	texture_owner.initialize_rid(p_rid, texture);
+}
+
+void RendererRD::TextureStorage::texture_drawable_generate_mipmaps(RID p_texture_drawable) {
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	RID rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, false);
+	RD::TextureFormat tex_fmt = RD::get_singleton()->texture_get_format(rd_texture);
+	int mipmap_count = tex_fmt.mipmaps;
+	// Generate mipmaps.
+	for (int i = 1; i < mipmap_count; i++) {
+		Size2i mipmap_size = Size2i(tex_fmt.width / (1 << i), tex_fmt.height / (1 << i)).maxi(1);
+		RID tex_src = RD::get_singleton()->texture_create_shared_from_slice({}, rd_texture, 0, i - 1);
+		RID tex_dst = RD::get_singleton()->texture_create_shared_from_slice({}, rd_texture, 0, i);
+
+		if (CopyEffects::get_singleton()->get_prefer_raster_effects()) {
+			CopyEffects::get_singleton()->make_mipmap_raster(tex_src, tex_dst, mipmap_size);
+		} else {
+			CopyEffects::get_singleton()->make_mipmap(tex_src, tex_dst, mipmap_size);
+		}
+		RD::get_singleton()->free(tex_src);
+		RD::get_singleton()->free(tex_dst);
+	}
+}
+
 /* RENDER TARGET API */
 
 RID TextureStorage::RenderTarget::get_framebuffer() {
