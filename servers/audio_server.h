@@ -224,6 +224,9 @@ private:
 	int channel_count = 0;
 	int to_mix = 0;
 
+	int speaker_mode_config = -1;
+	int channel_remap[MAX_CHANNELS_PER_BUS];
+
 	float playback_speed_scale = 1.0f;
 
 	bool tag_used_audio_streams = false;
@@ -322,7 +325,11 @@ private:
 
 	void _update_bus_effects(int p_bus);
 
+	String _get_speaker_mode_name() const;
+
 	static AudioServer *singleton;
+
+	void init_channel_remap();
 
 	void init_channels_and_buffers();
 
@@ -375,6 +382,8 @@ public:
 	bool get_debug_mute() const;
 #endif // DEBUG_ENABLED
 
+	void project_settings_changed();
+
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
 
@@ -424,6 +433,9 @@ public:
 
 	bool is_bus_channel_active(int p_bus, int p_channel) const;
 
+	void set_channel_remap(int p_output_channel, int p_source_channel);
+	int get_channel_remap(int p_output_channel) const;
+
 	void set_playback_speed_scale(float p_scale);
 	float get_playback_speed_scale() const;
 
@@ -448,6 +460,8 @@ public:
 	uint64_t get_mixed_frames() const;
 
 	String get_driver_name() const;
+	SpeakerMode get_driver_speaker_mode() const;
+	int get_driver_channel_count() const;
 
 	void notify_listener_changed();
 
