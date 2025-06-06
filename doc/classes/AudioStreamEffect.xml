@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamEffect" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Applies effects to an audio stream.
+	</brief_description>
+	<description>
+		[AudioStreamEffect] applies [AudioEffect]s to a child [AudioStream]. Effects are applied in the order in which they are listed.
+		[b]Note:[/b] Different effects can require vastly different amounts of processing power. Be mindful of how often intensive effects such as reverb and delay are used with your set-up.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_effect">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="effect" type="AudioEffect" />
+			<param index="2" name="bypass" type="bool" default="false" />
+			<description>
+				Inserts an effect at the specified index. If [param index] is less than 0, the effect will be added to the end.
+			</description>
+		</method>
+		<method name="get_effect" qualifiers="const">
+			<return type="AudioEffect" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the audio effect at the specified index.
+			</description>
+		</method>
+		<method name="get_effect_bypass_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns if the audio effect at the specified index is currently bypassed.
+			</description>
+		</method>
+		<method name="move_effect">
+			<return type="void" />
+			<param index="0" name="index_from" type="int" />
+			<param index="1" name="index_to" type="int" />
+			<description>
+				Moves the effect at [param index_from] to [param index_to]. If [param index_to] is below 0, the effect will be moved to the end of the list.
+				[b]Note:[/b] Due to the way elements are moved, if [param index_to] is greater than [param index_from], the final index of the moved item will be one less than [param index_to].
+			</description>
+		</method>
+		<method name="remove_effect">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes the effect at the specified index. Shifts all elements past the specified index back.
+			</description>
+		</method>
+		<method name="set_effect">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="effect" type="AudioEffect" />
+			<description>
+				Sets the audio effect at the specified index.
+			</description>
+		</method>
+		<method name="set_effect_bypass_enabled">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enables or disables bypass on the effect at the specified index.
+				Bypassing an effect disables the effect's influence on the sound, essentially turning it off.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="effect_count" type="int" setter="set_effect_count" getter="get_effect_count" default="0">
+			The total amount of effect slots in the [AudioStreamEffect].
+		</member>
+		<member name="process_bypassed_effects" type="bool" setter="set_process_bypassed" getter="get_process_bypassed" default="false">
+			If [code]true[/code], effects that are bypassed will still be processed.
+			Useful for effects like reverb, where pausing processing will "freeze" the state of the effect, and un-bypassing will resume the effect from where it left off, potentially causing a sudden burst of sound.
+			Setting this to [code]true[/code] will negate any performance improvements gained from enabling bypass on effects, as effects will still be processed.
+		</member>
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
+			The [AudioStream] resource to play and apply effects to.
+		</member>
+		<member name="tail_fade_curve" type="float" setter="set_tail_fade_curve" getter="get_tail_fade_curve" default="1.0">
+			The volume curve to apply to the tail as it fades out. Set to a low value such as 0.0001 to mimic a hard cut when the tail ends.
+		</member>
+		<member name="tail_time" type="float" setter="set_tail_time" getter="get_tail_time" default="0.0">
+			The amount of time, in seconds, to wait after the child stream stops before stopping this stream. Useful for letting effects like reverb ring out.
+		</member>
+	</members>
+</class>

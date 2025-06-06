@@ -108,6 +108,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/audio_stream_effect.h"
 #include "scene/resources/audio_stream_polyphonic.h"
 #include "scene/resources/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
@@ -1074,6 +1075,8 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
+	GDREGISTER_CLASS(AudioStreamEffect);
+	GDREGISTER_CLASS(AudioStreamPlaybackEffect);
 	GDREGISTER_CLASS(AudioStreamPlayer);
 	GDREGISTER_CLASS(AudioStreamWAV);
 	GDREGISTER_CLASS(AudioStreamPolyphonic);
