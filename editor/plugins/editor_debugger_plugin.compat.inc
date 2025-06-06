@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  core_bind.compat.inc                                                  */
+/*  editor_debugger_plugin.compat.inc                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,45 +30,12 @@
 
 #ifndef DISABLE_DEPRECATED
 
-namespace CoreBind {
-
-// Semaphore
-
-void Semaphore::_post_bind_compat_93605() {
-	post(1);
+void EditorDebuggerSession::_set_breakpoint_100516(const String &p_path, int p_line, bool p_breakpointed) {
+	return set_breakpoint(p_path, p_line, p_breakpointed);
 }
 
-void Semaphore::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("post"), &Semaphore::_post_bind_compat_93605);
+void EditorDebuggerSession::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_breakpoint", "path", "line", "breakpointed"), &EditorDebuggerSession::_set_breakpoint_100516);
 }
 
-// OS
-
-String OS::_read_string_from_stdin_bind_compat_91201() {
-	return read_string_from_stdin(1024);
-}
-
-Dictionary OS::_execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments) {
-	return execute_with_pipe(p_path, p_arguments, true);
-}
-
-void OS::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("read_string_from_stdin", "buffer_size"), &OS::read_string_from_stdin);
-	ClassDB::bind_compatibility_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin);
-	ClassDB::bind_compatibility_method(D_METHOD("read_string_from_stdin"), &OS::_read_string_from_stdin_bind_compat_91201);
-	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
-}
-
-// Debugger
-
-void EngineDebugger::_insert_breakpoint_bind_compat_100516(int p_line, const StringName &p_source) {
-	insert_breakpoint(p_line, p_source);
-}
-
-void EngineDebugger::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("insert_breakpoint", "line", "source"), &EngineDebugger::_insert_breakpoint_bind_compat_100516);
-}
-
-} // namespace CoreBind
-
-#endif // DISABLE_DEPRECATED
+#endif
