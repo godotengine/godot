@@ -89,6 +89,8 @@ public:
     bool protectedFlag;
     inline ShapeDistanceChecker(const BitmapConstRef<float, N> &sdf, const Shape &shape, const Projection &projection, DistanceMapping distanceMapping, double minImproveRatio) : distanceFinder(shape), sdf(sdf), distanceMapping(distanceMapping), minImproveRatio(minImproveRatio) {
         texelSize = projection.unprojectVector(Vector2(1));
+        if (shape.inverseYAxis)
+            texelSize.y = -texelSize.y;
     }
     inline ArtifactClassifier classifier(const Vector2 &direction, double span) {
         return ArtifactClassifier(this, direction, span);
@@ -127,10 +129,10 @@ void MSDFErrorCorrection::protectCorners(const Shape &shape) {
                 if (!(commonColor&(commonColor-1))) {
                     // Find the four texels that envelop the corner and mark them as protected.
                     Point2 p = transformation.project((*edge)->point(0));
-                    if (shape.inverseYAxis)
-                        p.y = stencil.height-p.y;
                     int l = (int) floor(p.x-.5);
                     int b = (int) floor(p.y-.5);
+                    if (shape.inverseYAxis)
+                        b = stencil.height-b-2;
                     int r = l+1;
                     int t = b+1;
                     // Check that the positions are within bounds.
