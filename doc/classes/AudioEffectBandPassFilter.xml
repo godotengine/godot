@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectBandPassFilter" inherits="AudioEffectFilter" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a band-pass filter to an audio bus.
+		Adds a band-pass filter.
 	</brief_description>
 	<description>
 		A "band-pass" filter allows the frequencies at [member AudioEffectFilter.cutoff_hz] to pass unchanged, and attenuates frequencies outside the frequency threshold. It is the opposite of [AudioEffectBandLimitFilter] and [AudioEffectNotchFilter].

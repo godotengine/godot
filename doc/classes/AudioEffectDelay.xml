@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectDelay" inherits="AudioEffect" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a delay audio effect to an audio bus.
+		Adds a delay audio effect.
 		Emulates an echo by playing the input audio back after a period of time.
 	</brief_description>
 	<description>

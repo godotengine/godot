@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Calculates a Fourier Transform of the audio signal. This effect does not alter the audio. Can be used for creating real-time audio visualizations, like a spectrogram.
-		This resource configures an [AudioEffectSpectrumAnalyzerInstance], which performs the actual analysis at runtime. An instance should be obtained with [method AudioServer.get_bus_effect_instance] to make use of this effect.
+		This resource configures an [AudioEffectSpectrumAnalyzerInstance], which performs the actual analysis at runtime. When placed on a bus, an instance should be obtained with [method AudioServer.get_bus_effect_instance] to make use of this effect. When placed on an [AudioStreamWithEffects], an instance should be obtained with [method AudioStreamPlaybackWithEffects.get_effect_instance]
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>

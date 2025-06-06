@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectLowShelfFilter" inherits="AudioEffectFilter" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a low-shelf filter to an audio bus.
+		Adds a low-shelf filter.
 	</brief_description>
 	<description>
 		A "low-shelf" filter controls the gain of all frequencies below [member AudioEffectFilter.cutoff_hz].
