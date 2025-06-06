@@ -82,6 +82,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	PackedStringArray get_accessibility_configuration_warnings() const override;
+
 public:
 	void set_text(const String &p_text);
 	String get_text() const;
