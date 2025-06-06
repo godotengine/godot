@@ -110,9 +110,6 @@ else:
     sys_env.Append(LIBS=["idbfs.js"])
     build = sys_env.add_program(build_targets, web_files + ["web_runtime.cpp"])
 
-sys_env.Append(LINKFLAGS=["-s", "ASYNCIFY=2"])
-sys_env.Append(LINKFLAGS=["-s", "ASYNCIFY_IMPORTS=['godot_js_camera_get_cameras', 'godot_js_camera_get_capabilities']"])
-
 sys_env.Depends(build[0], sys_env["JS_LIBS"])
 sys_env.Depends(build[0], sys_env["JS_PRE"])
 sys_env.Depends(build[0], sys_env["JS_POST"])
