@@ -41,6 +41,18 @@ class EditorFileDialog;
 class EditorValidationPanel;
 class LineEdit;
 
+class EditorScriptPreCreationPlugin : public RefCounted {
+	GDCLASS(EditorScriptPreCreationPlugin, RefCounted);
+
+protected:
+	GDVIRTUAL1(_pre_creation, Ref<Script>)
+
+	static void _bind_methods();
+
+public:
+	virtual void pre_creation(Ref<Script> p_script);
+};
+
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
 
@@ -50,6 +62,8 @@ class ScriptCreateDialog : public ConfirmationDialog {
 		MSG_ID_BUILT_IN,
 		MSG_ID_TEMPLATE,
 	};
+
+	static Vector<Ref<EditorScriptPreCreationPlugin>> pre_creation_plugins;
 
 	EditorValidationPanel *validation_panel = nullptr;
 	LineEdit *parent_name = nullptr;
@@ -121,6 +135,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	static void add_pre_creation_plugin(const Ref<EditorScriptPreCreationPlugin> &p_plugin, bool p_first_priority = false);
+	static void remove_pre_creation_plugin(const Ref<EditorScriptPreCreationPlugin> &p_plugin);
+	static void clean_up_creation_plugins();
+
 	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true);
 	void set_inheritance_base_type(const String &p_base);
 	ScriptCreateDialog();
