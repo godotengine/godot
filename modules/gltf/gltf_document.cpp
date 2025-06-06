@@ -1156,6 +1156,12 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 	const int component_count = COMPONENT_COUNT_FOR_ACCESSOR_TYPE[p_accessor_type];
 	const int component_size = _get_component_type_size(p_component_type);
 	ERR_FAIL_COND_V(component_size == 0, FAILED);
+	// The byte offset of an accessor MUST be a multiple of the accessor’s component size.
+	// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#data-alignment
+	int64_t offset = p_byte_offset;
+	if (p_byte_offset % component_size != 0) {
+		offset += component_size - (p_byte_offset % component_size);
+	}
 
 	int skip_every = 0;
 	int skip_bytes = 0;
@@ -1185,7 +1191,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 
 	Ref<GLTFBufferView> bv;
 	bv.instantiate();
-	const uint32_t offset = bv->byte_offset = p_byte_offset;
+	bv->byte_offset = offset;
 	Vector<uint8_t> &gltf_buffer = p_state->buffers.write[0];
 
 	int stride = component_count * component_size;
@@ -1195,7 +1201,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 	//use to debug
 	print_verbose("glTF: encoding accessor type " + _get_accessor_type_name(p_accessor_type) + " component type: " + _get_component_type_name(p_component_type) + " stride: " + itos(stride) + " amount " + itos(p_count));
 
-	print_verbose("glTF: encoding accessor offset " + itos(p_byte_offset) + " view offset: " + itos(bv->byte_offset) + " total buffer len: " + itos(gltf_buffer.size()) + " view len " + itos(bv->byte_length));
+	print_verbose("glTF: encoding accessor offset " + itos(offset) + " view offset: " + itos(bv->byte_offset) + " total buffer len: " + itos(gltf_buffer.size()) + " view len " + itos(bv->byte_length));
 
 	const int buffer_end = (stride * (p_count - 1)) + component_size;
 	// TODO define bv->byte_stride
@@ -1466,6 +1472,12 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 	}
 
 	ERR_FAIL_INDEX_V(bv->buffer, p_state->buffers.size(), ERR_PARSE_ERROR);
+	if (bv->byte_offset % p_component_size != 0) {
+		WARN_PRINT("glTF: Buffer view byte offset is not a multiple of accessor component size. This file is invalid per the glTF specification and will not load correctly in some glTF viewers, but Godot will try to load it anyway.");
+	}
+	if (p_byte_offset % p_component_size != 0) {
+		WARN_PRINT("glTF: Accessor byte offset is not a multiple of accessor component size. This file is invalid per the glTF specification and will not load correctly in some glTF viewers, but Godot will try to load it anyway.");
+	}
 
 	const uint32_t offset = bv->byte_offset + p_byte_offset;
 	Vector<uint8_t> buffer = p_state->buffers[bv->buffer]; //copy on write, so no performance hit
