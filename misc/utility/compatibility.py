@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-import methods
-
 import os
 import subprocess
 
+import methods
+
 is_able_to_use_module_cache = None
+
 
 def try_use_cxx20_module(env):
     """
@@ -33,11 +34,13 @@ def is_msvc_support_module(env) -> bool:
     """
     MSVC supports C++ modules after 19.2.8.
     """
+    # Only "major", "minor", and "patch" has int type.
     version = methods.get_compiler_version(env)
+    major: int = version["major"]
+    minor: int = version["minor"]
+    patch: int = version["patch"]
 
-    return version["major"] > 19 \
-        or (version["major"] == 19 and version["minor"] >= 2) \
-        or (version["major"] == 19 and version["minor"] == 2 and version["patch"] >= 8)
+    return major > 19 or (version["major"] == 19 and minor >= 2) or (major == 19 and minor == 2 and patch >= 8)
 
 
 def is_clang_support_module() -> bool:
@@ -46,7 +49,5 @@ def is_clang_support_module() -> bool:
     """
     env = os.environ.copy()
     env["LC_ALL"] = "C"
-    version_text: str = subprocess.check_output(
-        ["clang", "--version"], env=env, encoding="utf-8"
-    )
+    version_text: str = subprocess.check_output(["clang", "--version"], env=env, encoding="utf-8")
     return "Apple clang version" in version_text
