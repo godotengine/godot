@@ -776,20 +776,20 @@
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has already been granted. See also [signal MainLoop.on_request_permissions_result].
+				Requests a [i]dangerous[/i] permission (matching the given [param name]) from the OS. Returns [code]true[/code] unless [param name] is a valid [i]dangerous[/i] permission which has not already been granted. Otherwise dispatches the appropriate request to Android and returns [code]false[/code]. See also [signal MainLoop.on_request_permissions_result].
 				The [param name] must be the full permission name. For example:
 				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
 				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
 				- [code]OS.request_permission("macos.permission.RECORD_SCREEN")[/code]
-				[b]Note:[/b] On Android, permission must be checked during export.
 				[b]Note:[/b] This method is implemented on Android and macOS.
+				[b]Note:[/b] On Android, it is a requirement that said permission be ticked during export time; to insert it into AndroidManifest, and prevent the OS / [signal MainLoop.on_request_permissions_result] from reporting immediately back upon request that the permission was user-denied.
+				[b]Note:[/b] Under current Android implementations, single-permission requests such as this are simply discarded if the OS' permissions dialog is already open, awaiting user input. Care should be taken in handing 'focus' over between app, OS, and back; potentially even pausing the scene-tree where appropriate.
 			</description>
 		</method>
 		<method name="request_permissions">
 			<return type="bool" />
 			<description>
-				Requests [i]dangerous[/i] permissions from the OS. Returns [code]true[/code] if permissions have already been granted. See also [signal MainLoop.on_request_permissions_result].
-				[b]Note:[/b] Permissions must be checked during export.
+				Requests [i]dangerous[/i] permissions from the OS; as per the AndroidManifest (ie, those ticked during export). Returns [code]true[/code] if all permissions have already been granted. Otherwise dispatches the appropriate request(s) to Android and returns [code]false[/code]. See also [signal MainLoop.on_request_permissions_result].
 				[b]Note:[/b] This method is only implemented on Android. Normal permissions are automatically granted at install time in Android applications.
 			</description>
 		</method>
