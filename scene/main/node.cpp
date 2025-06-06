@@ -2750,6 +2750,7 @@ String Node::get_editor_description() const {
 	return data.editor_description;
 }
 
+#ifdef DEBUG_ENABLED
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	ERR_THREAD_GUARD
 	ERR_FAIL_NULL(p_node);
@@ -2773,6 +2774,7 @@ bool Node::is_editable_instance(const Node *p_node) const {
 	ERR_FAIL_COND_V(!is_ancestor_of(p_node), false);
 	return p_node->data.editable_instance;
 }
+#endif // DEBUG_ENABLED
 
 Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	ERR_THREAD_GUARD_V(nullptr);
@@ -2930,7 +2932,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 	if (!get_scene_file_path().is_empty()) { //an instance
 		node->set_scene_file_path(get_scene_file_path());
+#ifdef DEBUG_ENABLED
 		node->data.editable_instance = data.editable_instance;
+#endif
 	}
 
 	List<const Node *> hidden_roots;
@@ -3629,6 +3633,7 @@ void Node::update_configuration_warnings() {
 #endif
 }
 
+#ifdef DEBUG_ENABLED
 void Node::set_display_folded(bool p_folded) {
 	ERR_THREAD_GUARD
 	data.display_folded = p_folded;
@@ -3637,6 +3642,7 @@ void Node::set_display_folded(bool p_folded) {
 bool Node::is_displayed_folded() const {
 	return data.display_folded;
 }
+#endif // DEBUG_ENABLED
 
 bool Node::is_ready() const {
 	return !data.ready_first;
@@ -4220,8 +4226,10 @@ Node::Node() {
 
 	data.use_placeholder = false;
 
+#ifdef DEBUG_ENABLED
 	data.display_folded = false;
 	data.editable_instance = false;
+#endif
 
 	data.ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
 	data.ready_first = true;
