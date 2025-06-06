@@ -94,7 +94,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 				event = Ref<InputEvent>();
 				original_event = Ref<InputEvent>();
 				event_listener->clear_event();
-				event_as_text->set_text(TTR("No Event Configured"));
+				event_as_text->set_text(TTRC("No Event Configured"));
 
 				additional_options_container->hide();
 				input_list_tree->deselect_all();
@@ -192,7 +192,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		event = Ref<InputEvent>();
 		original_event = Ref<InputEvent>();
 		event_listener->clear_event();
-		event_as_text->set_text(TTR("No Event Configured"));
+		event_as_text->set_text(TTRC("No Event Configured"));
 
 		additional_options_container->hide();
 		input_list_tree->deselect_all();
@@ -587,6 +587,12 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 
 			_update_input_list();
 		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			key_location->set_item_text(key_location->get_item_index((int)KeyLocation::UNSPECIFIED), TTR("Unspecified", "Key Location"));
+			key_location->set_item_text(key_location->get_item_index((int)KeyLocation::LEFT), TTR("Left", "Key Location"));
+			key_location->set_item_text(key_location->get_item_index((int)KeyLocation::RIGHT), TTR("Right", "Key Location"));
+		} break;
 	}
 }
 
@@ -654,21 +660,19 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	event_listener->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	event_listener->set_stretch_ratio(0.75);
 	event_listener->connect("event_changed", callable_mp(this, &InputEventConfigurationDialog::_on_listen_input_changed));
-	event_listener->connect(SceneStringName(focus_entered), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
-	event_listener->connect(SceneStringName(focus_exited), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
 	main_vbox->add_child(event_listener);
 
 	main_vbox->add_child(memnew(HSeparator));
 
 	// List of all input options to manually select from.
 	VBoxContainer *manual_vbox = memnew(VBoxContainer);
-	manual_vbox->set_name(TTR("Manual Selection"));
+	manual_vbox->set_name("Manual Selection");
 	manual_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vbox->add_child(manual_vbox);
 
 	input_list_search = memnew(LineEdit);
 	input_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	input_list_search->set_placeholder(TTR("Filter Inputs"));
+	input_list_search->set_placeholder(TTRC("Filter Inputs"));
 	input_list_search->set_accessibility_name(TTRC("Filter Inputs"));
 	input_list_search->set_clear_button_enabled(true);
 	input_list_search->connect(SceneStringName(text_changed), callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
@@ -690,18 +694,16 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	additional_options_container = memnew(VBoxContainer);
 	additional_options_container->hide();
 
-	Label *opts_label = memnew(Label);
+	Label *opts_label = memnew(Label(TTRC("Additional Options")));
 	opts_label->set_theme_type_variation("HeaderSmall");
-	opts_label->set_text(TTR("Additional Options"));
 	additional_options_container->add_child(opts_label);
 
 	// Device Selection
 	device_container = memnew(HBoxContainer);
 	device_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	Label *device_label = memnew(Label);
+	Label *device_label = memnew(Label(TTRC("Device:")));
 	device_label->set_theme_type_variation("HeaderSmall");
-	device_label->set_text(TTR("Device:"));
 	device_container->add_child(device_label);
 
 	device_id_option = memnew(OptionButton);
@@ -721,20 +723,20 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	mod_container = memnew(HBoxContainer);
 	for (int i = 0; i < MOD_MAX; i++) {
 		String name = mods[i];
-		mod_checkboxes[i] = memnew(CheckBox);
+		mod_checkboxes[i] = memnew(CheckBox(name));
 		mod_checkboxes[i]->connect(SceneStringName(toggled), callable_mp(this, &InputEventConfigurationDialog::_mod_toggled).bind(i));
-		mod_checkboxes[i]->set_text(name);
-		mod_checkboxes[i]->set_tooltip_text(TTR(mods_tip[i]));
+		mod_checkboxes[i]->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		mod_checkboxes[i]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		mod_checkboxes[i]->set_tooltip_text(mods_tip[i]);
 		mod_container->add_child(mod_checkboxes[i]);
 	}
 
 	mod_container->add_child(memnew(VSeparator));
 
-	autoremap_command_or_control_checkbox = memnew(CheckBox);
+	autoremap_command_or_control_checkbox = memnew(CheckBox(TTRC("Command / Control (auto)")));
 	autoremap_command_or_control_checkbox->connect(SceneStringName(toggled), callable_mp(this, &InputEventConfigurationDialog::_autoremap_command_or_control_toggled));
 	autoremap_command_or_control_checkbox->set_pressed(false);
-	autoremap_command_or_control_checkbox->set_text(TTR("Command / Control (auto)"));
-	autoremap_command_or_control_checkbox->set_tooltip_text(TTR("Automatically remaps between 'Meta' ('Command') and 'Control' depending on current platform."));
+	autoremap_command_or_control_checkbox->set_tooltip_text(TTRC("Automatically remaps between 'Meta' ('Command') and 'Control' depending on current platform."));
 	mod_container->add_child(autoremap_command_or_control_checkbox);
 
 	mod_container->hide();
@@ -743,9 +745,9 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	// Key Mode Selection
 
 	key_mode = memnew(OptionButton);
-	key_mode->add_item(TTR("Keycode (Latin Equivalent)"), KEYMODE_KEYCODE);
-	key_mode->add_item(TTR("Physical Keycode (Position on US QWERTY Keyboard)"), KEYMODE_PHY_KEYCODE);
-	key_mode->add_item(TTR("Key Label (Unicode, Case-Insensitive)"), KEYMODE_UNICODE);
+	key_mode->add_item(TTRC("Keycode (Latin Equivalent)"), KEYMODE_KEYCODE);
+	key_mode->add_item(TTRC("Physical Keycode (Position on US QWERTY Keyboard)"), KEYMODE_PHY_KEYCODE);
+	key_mode->add_item(TTRC("Key Label (Unicode, Case-Insensitive)"), KEYMODE_UNICODE);
 	key_mode->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_mode_selected));
 	key_mode->hide();
 	additional_options_container->add_child(key_mode);
@@ -755,15 +757,15 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	location_container = memnew(HBoxContainer);
 	location_container->hide();
 
-	Label *location_label = memnew(Label);
-	location_label->set_text(TTR("Physical location"));
-	location_container->add_child(location_label);
+	location_container->add_child(memnew(Label(TTRC("Physical location"))));
 
 	key_location = memnew(OptionButton);
 	key_location->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	key_location->add_item(TTR("Any"), (int)KeyLocation::UNSPECIFIED);
-	key_location->add_item(TTR("Left"), (int)KeyLocation::LEFT);
-	key_location->add_item(TTR("Right"), (int)KeyLocation::RIGHT);
+	key_location->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	// Item texts will be set in `NOTIFICATION_TRANSLATION_CHANGED`.
+	key_location->add_item(String(), (int)KeyLocation::UNSPECIFIED);
+	key_location->add_item(String(), (int)KeyLocation::LEFT);
+	key_location->add_item(String(), (int)KeyLocation::RIGHT);
 	key_location->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
 	key_location->set_accessibility_name(TTRC("Location"));
 

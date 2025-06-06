@@ -85,7 +85,12 @@ private:
 #else
 	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Meta" };
 #endif
-	String mods_tip[MOD_MAX] = { "Alt or Option key", "Shift key", "Control key", "Meta/Windows or Command key" };
+	String mods_tip[MOD_MAX] = {
+		TTRC("Alt or Option key"),
+		TTRC("Shift key"),
+		TTRC("Control key"),
+		TTRC("Meta/Windows or Command key"),
+	};
 
 	CheckBox *mod_checkboxes[MOD_MAX];
 	CheckBox *autoremap_command_or_control_checkbox = nullptr;
