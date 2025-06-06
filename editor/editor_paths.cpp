@@ -46,6 +46,10 @@ String EditorPaths::get_data_dir() const {
 	return data_dir;
 }
 
+const Vector<String> &EditorPaths::get_data_search_paths() const {
+	return data_search_paths;
+}
+
 String EditorPaths::get_config_dir() const {
 	return config_dir;
 }
@@ -72,6 +76,10 @@ String EditorPaths::get_self_contained_file() const {
 
 String EditorPaths::get_export_templates_dir() const {
 	return get_data_dir().path_join(export_templates_folder);
+}
+
+const Vector<String> &EditorPaths::get_export_templates_search_paths() const {
+	return export_templates_search_paths;
 }
 
 String EditorPaths::get_debug_keystore_path() const {
@@ -170,6 +178,9 @@ EditorPaths::EditorPaths() {
 		// Typically XDG_DATA_HOME or %APPDATA%.
 		data_path = OS::get_singleton()->get_data_path();
 		data_dir = data_path.path_join(OS::get_singleton()->get_godot_dir_name());
+		for (auto const &dir : OS::get_singleton()->get_data_search_paths()) {
+			data_search_paths.push_back(dir.path_join(OS::get_singleton()->get_godot_dir_name()));
+		}
 		// Can be different from data_path e.g. on Linux or macOS.
 		config_path = OS::get_singleton()->get_config_path();
 		config_dir = config_path.path_join(OS::get_singleton()->get_godot_dir_name());
@@ -181,6 +192,10 @@ EditorPaths::EditorPaths() {
 			cache_dir = cache_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		}
 		temp_dir = OS::get_singleton()->get_temp_path();
+	}
+
+	for (auto const &dir : data_search_paths) {
+		export_templates_search_paths.push_back(dir.path_join(export_templates_folder));
 	}
 
 	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());
