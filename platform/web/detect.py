@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from emscripten_helpers import (
@@ -114,6 +115,14 @@ def configure(env: "SConsEnvironment"):
     except Exception:
         print_error("Initial memory must be a valid integer")
         sys.exit(255)
+
+    # Add Emscripten to the included paths (for compile_commands.json completion)
+    emcc_path = Path(str(WhereIs("emcc")))
+    while emcc_path.is_symlink():
+        # For some reason, mypy trips on `Path.readlink` not being defined, somehow.
+        emcc_path = emcc_path.readlink()  # type: ignore[attr-defined]
+    emscripten_include_path = emcc_path.parent.joinpath("cache", "sysroot", "include")
+    env.Append(CPPPATH=[emscripten_include_path])
 
     ## Build type
 
