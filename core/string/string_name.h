@@ -95,6 +95,7 @@ public:
 		}
 		return (char32_t)_data->name[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
 	}
+
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
 		return _data < p_name._data;
 	}
