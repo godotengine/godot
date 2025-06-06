@@ -943,65 +943,38 @@ int Animation::add_track(TrackType p_type, int p_at_pos) {
 }
 
 void Animation::remove_track(int p_track) {
-	ERR_FAIL_INDEX(p_track, tracks.size());
-	Track *t = tracks[p_track];
-
-	switch (t->type) {
-		case TYPE_POSITION_3D: {
-			PositionTrack *tt = static_cast<PositionTrack *>(t);
-			ERR_FAIL_COND_MSG(tt->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
-			tt->positions.clear();
-
-		} break;
-		case TYPE_ROTATION_3D: {
-			RotationTrack *rt = static_cast<RotationTrack *>(t);
-			ERR_FAIL_COND_MSG(rt->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
-			rt->rotations.clear();
-
-		} break;
-		case TYPE_SCALE_3D: {
-			ScaleTrack *st = static_cast<ScaleTrack *>(t);
-			ERR_FAIL_COND_MSG(st->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
-			st->scales.clear();
-
-		} break;
-		case TYPE_BLEND_SHAPE: {
-			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
-			ERR_FAIL_COND_MSG(bst->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
-			bst->blend_shapes.clear();
-
-		} break;
-		case TYPE_VALUE: {
-			ValueTrack *vt = static_cast<ValueTrack *>(t);
-			vt->values.clear();
-
-		} break;
-		case TYPE_METHOD: {
-			MethodTrack *mt = static_cast<MethodTrack *>(t);
-			mt->methods.clear();
-
-		} break;
-		case TYPE_BEZIER: {
-			BezierTrack *bz = static_cast<BezierTrack *>(t);
-			bz->values.clear();
-
-		} break;
-		case TYPE_AUDIO: {
-			AudioTrack *ad = static_cast<AudioTrack *>(t);
-			ad->values.clear();
-
-		} break;
-		case TYPE_ANIMATION: {
-			AnimationTrack *an = static_cast<AnimationTrack *>(t);
-			an->values.clear();
-
-		} break;
-	}
-
-	memdelete(t);
-	tracks.remove_at(p_track);
+	_remove_track(p_track);
 	emit_changed();
 	_check_capture_included();
+}
+
+Error Animation::resize_tracks(int p_size) {
+	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+
+	int old_size = tracks.size();
+
+	bool changed_size = false;
+
+	for (int i = p_size; i < old_size; i++) {
+		_remove_track(i);
+		changed_size = true;
+	}
+
+	Error err = tracks.resize(p_size);
+
+	if (!err) {
+		for (int i = old_size; i < tracks.size(); i++) {
+			tracks.set(i, memnew(ValueTrack));
+			changed_size = true;
+		}
+	}
+
+	if (changed_size) {
+		emit_changed();
+		_check_capture_included();
+	}
+
+	return err;
 }
 
 bool Animation::is_capture_included() const {
@@ -1137,6 +1110,66 @@ int Animation::_marker_insert(double p_time, Vector<MarkerKey> &p_keys, const Ma
 	}
 
 	return -1;
+}
+
+void Animation::_remove_track(int p_track) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+
+	switch (t->type) {
+		case TYPE_POSITION_3D: {
+			PositionTrack *tt = static_cast<PositionTrack *>(t);
+			ERR_FAIL_COND_MSG(tt->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
+			tt->positions.clear();
+
+		} break;
+		case TYPE_ROTATION_3D: {
+			RotationTrack *rt = static_cast<RotationTrack *>(t);
+			ERR_FAIL_COND_MSG(rt->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
+			rt->rotations.clear();
+
+		} break;
+		case TYPE_SCALE_3D: {
+			ScaleTrack *st = static_cast<ScaleTrack *>(t);
+			ERR_FAIL_COND_MSG(st->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
+			st->scales.clear();
+
+		} break;
+		case TYPE_BLEND_SHAPE: {
+			BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
+			ERR_FAIL_COND_MSG(bst->compressed_track >= 0, "Compressed tracks can't be manually removed. Call clear() to get rid of compression first.");
+			bst->blend_shapes.clear();
+
+		} break;
+		case TYPE_VALUE: {
+			ValueTrack *vt = static_cast<ValueTrack *>(t);
+			vt->values.clear();
+
+		} break;
+		case TYPE_METHOD: {
+			MethodTrack *mt = static_cast<MethodTrack *>(t);
+			mt->methods.clear();
+
+		} break;
+		case TYPE_BEZIER: {
+			BezierTrack *bz = static_cast<BezierTrack *>(t);
+			bz->values.clear();
+
+		} break;
+		case TYPE_AUDIO: {
+			AudioTrack *ad = static_cast<AudioTrack *>(t);
+			ad->values.clear();
+
+		} break;
+		case TYPE_ANIMATION: {
+			AnimationTrack *an = static_cast<AnimationTrack *>(t);
+			an->values.clear();
+
+		} break;
+	}
+
+	memdelete(t);
+	tracks.remove_at(p_track);
 }
 
 ////
@@ -3960,6 +3993,7 @@ void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_track", "type", "at_position"), &Animation::add_track, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("remove_track", "track_idx"), &Animation::remove_track);
+	ClassDB::bind_method(D_METHOD("resize_tracks", "size"), &Animation::resize_tracks);
 	ClassDB::bind_method(D_METHOD("get_track_count"), &Animation::get_track_count);
 	ClassDB::bind_method(D_METHOD("track_get_type", "track_idx"), &Animation::track_get_type);
 	ClassDB::bind_method(D_METHOD("track_get_path", "track_idx"), &Animation::track_get_path);
