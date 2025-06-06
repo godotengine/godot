@@ -7328,6 +7328,8 @@ void EditorNode::notify_settings_overrides_changed() {
 }
 
 EditorNode::EditorNode() {
+	print_line("Opening editor.");
+
 	DEV_ASSERT(!singleton);
 	singleton = this;
 
