@@ -108,13 +108,14 @@
 # Tim Nikitin <tim.nikitin@posteo.de>, 2025.
 # Sky64Redstone <sky64redstone@gmail.com>, 2025.
 # Mirco Höhne <mirco.hoehne@gmail.com>, 2025.
+# Fabian Donner <ThunderFD@users.noreply.github.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-29 17:02+0000\n"
-"Last-Translator: Mirco Höhne <mirco.hoehne@gmail.com>\n"
+"PO-Revision-Date: 2025-06-02 20:55+0000\n"
+"Last-Translator: Fabian Donner <ThunderFD@users.noreply.github.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -291,6 +292,9 @@ msgstr "Unterfenster"
 
 msgid "Embed Subwindows"
 msgstr "Unterfenster einbetten"
+
+msgid "Frame Pacing"
+msgstr "Frame-Taktung"
 
 msgid "Android"
 msgstr "Android"

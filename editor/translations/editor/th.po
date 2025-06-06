@@ -22,13 +22,14 @@
 # Mineis Meee <simsfashion694@gmail.com>, 2024.
 # Suvijak Nopparatcharoensuk <guy.suvijak@hotmail.com>, 2025.
 # J Iamsamang <nodtem66@gmail.com>, 2025.
+# Tan <nazapizzaemail.com@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-27 00:43+0000\n"
-"Last-Translator: J Iamsamang <nodtem66@gmail.com>\n"
+"PO-Revision-Date: 2025-06-04 16:52+0000\n"
+"Last-Translator: Tan <nazapizzaemail.com@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10.2-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Main Thread"
 msgstr "เธรดหลัก"
@@ -195,7 +196,7 @@ msgid "released"
 msgstr "ปล่อย"
 
 msgid "Screen %s at (%s) with %s touch points"
-msgstr "การสั่งงานหน้าจอ %s ที่ตำแหน่ง (s) ด้วยการแตะ %s จุด"
+msgstr "การสั่งงานหน้าจอ %s ที่ตำแหน่ง (%s) ด้วยการแตะ %s จุด"
 
 msgid ""
 "Screen dragged with %s touch points at position (%s) with velocity of (%s)"
@@ -490,6 +491,9 @@ msgstr "ชื่อ:"
 msgid "Type:"
 msgstr "ชนิด:"
 
+msgid "Add Metadata Property for \"%s\""
+msgstr "เพิ่มข้อมูลเมตาเพิ่มเติมสำหรับ \"%s\""
+
 msgid "Metadata name can't be empty."
 msgstr "ชื่อไม่สามารถปล่อยว่างได้"
 
@@ -705,6 +709,9 @@ msgstr "ค่าต่ำสุด/สูงสุดของการวน�
 
 msgid "Duplicate Key(s)"
 msgstr "สร้างคีย์ซ้ำอีกอัน"
+
+msgid "Add RESET Value(s)"
+msgstr "เพิ่มค่าเริ่มต้น"
 
 msgid "Delete Key(s)"
 msgstr "ลบคีย์"
@@ -2972,6 +2979,9 @@ msgstr "ไฟล์:"
 msgid "No sub-resources found."
 msgstr "ไม่พบทรัพยากรย่อย"
 
+msgid " (recently opened)"
+msgstr " (เปิดเมื่อเร็วๆ นี้)"
+
 msgid "Play the project."
 msgstr "เล่นโปรเจกต์"
 
@@ -4059,6 +4069,9 @@ msgstr "แก้ไขปลั๊กอิน"
 
 msgid "Installed Plugins:"
 msgstr "ปลั๊กอินที่ติดตั้งแล้ว:"
+
+msgid "Variation"
+msgstr "รูปแบบ"
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "แก้ไของศาการเปล่งเสียงของ AudioStreamPlayer3D"

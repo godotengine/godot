@@ -59,8 +59,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-16 12:30+0000\n"
-"Last-Translator: John Smith <pkafsharix@gmail.com>\n"
+"PO-Revision-Date: 2025-06-04 16:52+0000\n"
+"Last-Translator: Atur <aturaseman9@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -438,10 +438,10 @@ msgid "Invalid operands to operator %s, %s and %s."
 msgstr "عملوند های نامعتبر به عملگر %s, %s , %s."
 
 msgid "Invalid index of type %s for base type %s"
-msgstr "نوع ایندکس %s برای نوع اصلی %s نامعتبر است"
+msgstr "گونهٔ اندیس %s برای گونهٔ پایهٔ %s نامعتبر است"
 
 msgid "Invalid named index '%s' for base type %s"
-msgstr "اندیس نام گذاری شده نامعتبر '%s' برای نوع پایه %s"
+msgstr "اندیس نام‌گذاری‌شدهٔ «%s» برای گونهٔ پایهٔ %s نامعتبر است"
 
 msgid "Invalid arguments to construct '%s'"
 msgstr "آرگومان های نامعتبر برای ساخت '%s'"
@@ -535,7 +535,7 @@ msgid "Name:"
 msgstr "نام:"
 
 msgid "Type:"
-msgstr "نوع:"
+msgstr "گونه:"
 
 msgid "Metadata name is valid."
 msgstr "نام فراداده معتبر است."
@@ -766,7 +766,7 @@ msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr "حالت پوشش چرخه (میان‌یابی پایان با آغاز هنگام چرخه)"
 
 msgid "Remove this track."
-msgstr "این نوار را برچین."
+msgstr "این نوار را برمی‌چیند."
 
 msgid "Time (s):"
 msgstr "زمان:"
@@ -784,7 +784,7 @@ msgid "Blend Shape:"
 msgstr "درآمیختن شکل:"
 
 msgid "(Invalid, expected type: %s)"
-msgstr "(نامعتبر, نوع مورد انتظار: %s)"
+msgstr "(نامعتبر, گونهٔ مورد انتظار: %s)"
 
 msgid "Easing:"
 msgstr "تسهیل:"
@@ -826,7 +826,7 @@ msgid "Don't Use Blend"
 msgstr "درآمیزی را به کار نبرید"
 
 msgid "Continuous"
-msgstr "مستمر"
+msgstr "پیوسته"
 
 msgid "Discrete"
 msgstr "گسسته"
@@ -841,7 +841,7 @@ msgid "Linear"
 msgstr "خطی"
 
 msgid "Cubic"
-msgstr "مکعب"
+msgstr "مکعبی"
 
 msgid "Linear Angle"
 msgstr "زاویه خطی"
@@ -1162,10 +1162,10 @@ msgid "Delete Selection"
 msgstr "زدایش برگزیده"
 
 msgid "Go to Next Step"
-msgstr "برو به گام بعد"
+msgstr "رفتن به گام بعدی"
 
 msgid "Go to Previous Step"
-msgstr "برو به گام پیشین"
+msgstr "رفتن به گام پیشین"
 
 msgid "Apply Reset"
 msgstr "بازنشانی را اعمال کنید"
@@ -1298,7 +1298,7 @@ msgid "Transition Type:"
 msgstr "گونهٔ گذار:"
 
 msgid "Ease Type:"
-msgstr "نوع سهول:"
+msgstr "گونهٔ آسان‌سازی:"
 
 msgid "FPS:"
 msgstr "FPS:"
@@ -1403,7 +1403,7 @@ msgid "Change Audio Track Clip End Offset"
 msgstr "دگرش بازه از مبدای پایان تکه‌نوار شنیداری"
 
 msgid "Go to Line"
-msgstr "برو به خط"
+msgstr "رفتن به خط"
 
 msgid "Line Number:"
 msgstr "شماره خط:"
@@ -1531,7 +1531,7 @@ msgid "Filter Nodes"
 msgstr "پالایش گره‌ها"
 
 msgid "Go to Source"
-msgstr "برو به منبع"
+msgstr "رفتن به منبع"
 
 msgid "Scene does not contain any script."
 msgstr "صحنه دارای هیچ اسکریپتی نیست."
@@ -1642,10 +1642,10 @@ msgid "Edit..."
 msgstr "ویرایش..."
 
 msgid "Go to Method"
-msgstr "برو به متد"
+msgstr "رفتن به روش"
 
 msgid "Change Type of \"%s\""
-msgstr "تغییر نوع \"%s\""
+msgstr "تغییر گونهٔ «%s»"
 
 msgid "Change"
 msgstr "دگرش"
@@ -1696,10 +1696,10 @@ msgid "Session %d"
 msgstr "نشست %d"
 
 msgid "Debugger"
-msgstr "اشکال زدا"
+msgstr "اشکال‌زدا"
 
 msgid "Debug"
-msgstr "اشکال زدایی"
+msgstr "اشکال‌زدایی"
 
 msgid "Save Branch as Scene"
 msgstr "ذخیرهٔ شاخه به‌عنوان صحنه"
@@ -1877,22 +1877,22 @@ msgid "Stack Trace:"
 msgstr "ردیابی پشته(Stack Trace):"
 
 msgid "Debug session started."
-msgstr "نشست اشکال زدایی شزوع شد."
+msgstr "نشست اشکال‌زدایی آغاز شد."
 
 msgid "Debug session closed."
-msgstr "نشست اشکال زدایی بسته شد."
+msgstr "نشست اشکال‌زدایی بسته شد."
 
 msgid "Line %d"
 msgstr "خط %d"
 
 msgid "Delete Breakpoint"
-msgstr "حذف Breakpoint"
+msgstr "زدایش نقطهٔ گسست"
 
 msgid "Delete All Breakpoints in:"
-msgstr "تمام Breakpoints ها را حذف کن در:"
+msgstr "زدایش همهٔ نقطه‌های گسست درون:"
 
 msgid "Delete All Breakpoints"
-msgstr "حذف تمام Breakpoint ها"
+msgstr "زدایش همهٔ نقطه‌های گسست"
 
 msgid "Copy Error"
 msgstr "روگرفت خطا"
@@ -1907,7 +1907,7 @@ msgid "Video RAM"
 msgstr "ویدئو رم"
 
 msgid "Skip Breakpoints"
-msgstr "ردکردن Breakpoint ها"
+msgstr "رد کردن نقطه‌های گسست"
 
 msgid "Step Into"
 msgstr "قدم به درون"
@@ -1931,7 +1931,7 @@ msgid "Filter Stack Variables"
 msgstr "پالایش متغیرهای پشته"
 
 msgid "Breakpoints"
-msgstr "مکان های وقفه"
+msgstr "نقطه‌های گسست"
 
 msgid "Expand All"
 msgstr "گسترش همه"
@@ -2347,7 +2347,7 @@ msgid "Solo"
 msgstr "انفرادی"
 
 msgid "Mute"
-msgstr "بدون صدا"
+msgstr "بی‌صدا"
 
 msgid "Bypass"
 msgstr "‌گذرگاه فرعی"
@@ -2356,13 +2356,13 @@ msgid "Bus Options"
 msgstr "گزینه های اتوبوس"
 
 msgid "Duplicate Bus"
-msgstr "تکثیر کردن Bus"
+msgstr "دوتاسازی گذرگاه"
 
 msgid "Delete Bus"
-msgstr "حذف Bus"
+msgstr "زدایش گذرگاه"
 
 msgid "Reset Volume"
-msgstr "بازنشاندن گنجایش"
+msgstr "بازنشانی بلندی"
 
 msgid "Delete Effect"
 msgstr "زدایش جلوه"
@@ -2377,7 +2377,7 @@ msgid "Master bus can't be deleted!"
 msgstr "گذرگاه اصلی زدودنی نیست!"
 
 msgid "Delete Audio Bus"
-msgstr "حذف Bus صدا"
+msgstr "زدایش گذرگاه صدا"
 
 msgid "Duplicate Audio Bus"
 msgstr "تکثیر Bus صدا"
@@ -3350,7 +3350,7 @@ msgid "Theme Properties Only"
 msgstr "تنها ویژگی‌های زمینه"
 
 msgid "Member Type"
-msgstr "نوع عضو"
+msgstr "گونهٔ عضو"
 
 msgid "Keywords"
 msgstr "کلید واژه ها"
@@ -4265,7 +4265,7 @@ msgid "Screenshots are stored in the user data folder (\"user://\")."
 msgstr "نماگرفت‌ها در پوشه داده‌های کاربر (\"user://\") ذخیره می‌شوند."
 
 msgid "Toggle Fullscreen"
-msgstr "تبدیل به تمام صفحه"
+msgstr "روشن/خاموش کردن تمام‌صفحه"
 
 msgid "Open Editor Data/Settings Folder"
 msgstr "گشودن پوشهٔ داده‌ها/تنظیمات ویراستار"
@@ -4295,7 +4295,7 @@ msgid "Online Documentation"
 msgstr "مستندات آنلاین"
 
 msgid "Forum"
-msgstr "انجمن"
+msgstr "وبگاه گفتگو"
 
 msgid "Community"
 msgstr "انجمن"
@@ -4337,7 +4337,7 @@ msgstr ""
 "- در سکوی وب، همیشه روش نماپردازش «سازگاری» بکار می‌رود."
 
 msgid "Update Continuously"
-msgstr "بروزرسانی مستمر"
+msgstr "به‌روزرسانی پیوسته‌وار"
 
 msgid "Update When Changed"
 msgstr "به‌روزرسانی پس از دگرگون شدن"
@@ -4987,7 +4987,7 @@ msgid "Failed to move temporary file \"%s\" to \"%s\"."
 msgstr "ناکامی در جابه‌جایی پروندهٔ موقت «%s» به «%s»."
 
 msgid "Custom debug template not found."
-msgstr "قالب اشکال زدایی سفارشی یافت نشد."
+msgstr "قالب اشکال‌زدایی سفارشی یافت نشد."
 
 msgid "Custom release template not found."
 msgstr "قالب انتشار سفارشی یافت نشد."
@@ -5436,7 +5436,7 @@ msgid "Scripts"
 msgstr "اسکریپت‌ها"
 
 msgid "GDScript Export Mode:"
-msgstr "حالت برون‌برد GDScript:"
+msgstr "حالت برون‌برد جی‌دی‌اسکریپت:"
 
 msgid "Text (easier debugging)"
 msgstr "نوشتار (اشکال‌زدایی آسانتر)"
@@ -5802,10 +5802,10 @@ msgid "Gray"
 msgstr "توسی"
 
 msgid "Go to previous selected folder/file."
-msgstr "برو به پرونده/پوشهٔ برگزیدهٔ پیشین."
+msgstr "رفتن به پرونده/پوشهٔ برگزیدهٔ پیشین."
 
 msgid "Go to next selected folder/file."
-msgstr "برو به پرونده/پوشهٔ برگزیدهٔ بعدی."
+msgstr "رفتن به پرونده/پوشهٔ برگزیدهٔ بعدی."
 
 msgid "Re-Scan Filesystem"
 msgstr "بازپویش سامانهٔ پرونده"
@@ -6089,13 +6089,13 @@ msgid "Move Favorite Down"
 msgstr "انتقال موارد دلخواه به پایین"
 
 msgid "Go to previous folder."
-msgstr "برو به پوشه پیشین."
+msgstr "رفتن به پوشهٔ پیشین."
 
 msgid "Go to next folder."
-msgstr "برو به پوشه بعد."
+msgstr "رفتن به پوشهٔ بعدی."
 
 msgid "Go to parent folder."
-msgstr "برو به پوشه والد."
+msgstr "رفتن به پوشهٔ والد."
 
 msgid "Refresh files."
 msgstr "نوگردانی پرونده‌ها."
@@ -7922,6 +7922,9 @@ msgstr "ناکامی:"
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr "هش بارگرفته بد است، با فرض اینکه پرونده دستکاری شده است."
 
+msgid "Expected:"
+msgstr "مورد انتظار:"
+
 msgid "Got:"
 msgstr "گرفته شد:"
 
@@ -8614,8 +8617,14 @@ msgstr "راست پایین"
 msgid "Bottom Wide"
 msgstr "پهن پایین"
 
+msgid "Left Wide"
+msgstr "چپ پهن"
+
 msgid "VCenter Wide"
 msgstr "پهن مرکز عمودی"
+
+msgid "Right Wide"
+msgstr "راست پهن"
 
 msgid "Full Rect"
 msgstr "مستطیل کامل"
@@ -8635,6 +8644,18 @@ msgstr "تغییر لنگرها، آفست‌ها، جهت رشد"
 
 msgid "Change Anchors, Offsets (Keep Ratio)"
 msgstr "دگرش لنگرها، بازه از مبداها (نگهداشتن نسبت)"
+
+msgid "Change Vertical Size Flags"
+msgstr "دگرش اندازهٔ عمودی پرچم‌ها"
+
+msgid "Change Horizontal Size Flags"
+msgstr "دگرش اندازهٔ افقی پرچم‌ها"
+
+msgid "Change Vertical Expand Flag"
+msgstr "دگرش گسترش عمودی پرچم"
+
+msgid "Change Horizontal Expand Flag"
+msgstr "دگرش گسترش افقی پرچم"
 
 msgid "Presets for the anchor and offset values of a Control node."
 msgstr "پیش‌نشانده‌ها برای ارزش‌های لنگر و آفست یک گرهٔ کنترل."
@@ -8737,7 +8758,7 @@ msgstr ""
 "گزینه زمان تست برای پروژه‌هایی با دارایی‌های بزرگ را تسریع می‌کند."
 
 msgid "Visible Collision Shapes"
-msgstr "شکل‌های پدیدار برخوردگاه"
+msgstr "پدیداری شکل برخوردگاه‌ها"
 
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
@@ -8747,7 +8768,7 @@ msgstr ""
 "و سه‌بعدی) در پروژهٔ در حال اجرا پدیدار خواهند بود."
 
 msgid "Visible Paths"
-msgstr "مسیر‌های پدیدار"
+msgstr "پدیداری مسیر‌ها"
 
 msgid ""
 "When this option is enabled, curve resources used by path nodes will be "
@@ -8757,7 +8778,7 @@ msgstr ""
 "در پروژهٔ در حال اجرا پدیدار خواهند بود."
 
 msgid "Visible Navigation"
-msgstr "ناوبری پدیدار"
+msgstr "پدیداری ناوبری"
 
 msgid ""
 "When this option is enabled, navigation meshes, and polygons will be visible "
@@ -8767,7 +8788,7 @@ msgstr ""
 "پدیدار خواهند بود."
 
 msgid "Visible Avoidance"
-msgstr "پرهیز پدیدار"
+msgstr "پدیداری پرهیز"
 
 msgid ""
 "When this option is enabled, redraw requests of 2D objects will become "
@@ -8890,6 +8911,15 @@ msgstr "ویژگی‌ها (%d از %d ست)"
 
 msgid "Add Feature"
 msgstr "افزودن ویژگی‌"
+
+msgid "Capitals"
+msgstr "حرف‌های بزرگ"
+
+msgid "Ligatures"
+msgstr "نویسه‌های دوگانه"
+
+msgid "Alternates"
+msgstr "دگرگزین‌ها"
 
 msgid "East Asian Language"
 msgstr "زبان آسیای شرقی"
@@ -9309,7 +9339,7 @@ msgid "Unwrap UV2"
 msgstr "بی‌پوشش کردن فرابنفش ۲"
 
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr "مش موجود از نوع ArrayMesh نیست."
+msgstr "مش موجود از گونهٔ ArrayMesh نیست."
 
 msgid "Can't unwrap mesh with blend shapes."
 msgstr "نمی‌توان مِش دارای شکل‌های درآمیزی را بی‌پوشش کرد."
@@ -9339,7 +9369,7 @@ msgid "Mesh has no surface to create outlines from."
 msgstr "مش هیچ سطحی برای ساخت پیراخط از آن ندارد."
 
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES."
-msgstr "نوع هندسی مش برابر با PRIMITIVE_TRIANGLES نیست."
+msgstr "گونهٔ اولیهٔ مش PRIMITIVE_TRIANGLES نیست."
 
 msgid "Could not create outline."
 msgstr "ناتوانی در ساخت پیراخط."
@@ -10118,7 +10148,7 @@ msgid "Scale (ratio):"
 msgstr "مقیاس کردن (نسبت):"
 
 msgid "Transform Type"
-msgstr "نوع تبدیل"
+msgstr "گونهٔ ترادیسی"
 
 msgid "Pre"
 msgstr "پیش"
@@ -10315,7 +10345,7 @@ msgid "Emission Source:"
 msgstr "سرچشمهٔ برون‌پاشی:"
 
 msgid "A processor material of type 'ParticleProcessMaterial' is required."
-msgstr "یک ماده پردازش‌گر از نوع «ParticleProcessMaterial»مورد نیاز است."
+msgstr "ماده پردازش‌گری از گونهٔ «ParticleProcessMaterial» نیاز است."
 
 msgid "Create Emission Points"
 msgstr "ساخت نقطه‌های گسیل"
@@ -10884,8 +10914,11 @@ msgstr "بزرگ کردن حروف"
 msgid "Standard"
 msgstr "استاندارد"
 
+msgid "Plain Text"
+msgstr "نوشتار ساده"
+
 msgid "JSON"
-msgstr "JSON"
+msgstr "جِی‌سان"
 
 msgid "Markdown"
 msgstr "مارک‌داون"
@@ -10943,14 +10976,20 @@ msgstr "انتخاب رنگ"
 msgid "Line"
 msgstr "خط"
 
+msgid "Folding"
+msgstr "تا کردن"
+
 msgid "Convert Case"
 msgstr "تبدیل مورد"
+
+msgid "Syntax Highlighter"
+msgstr "برجسته‌ساز نحو"
 
 msgid "Bookmarks"
 msgstr "نشانک‌ها"
 
 msgid "Go To"
-msgstr "برو به"
+msgstr "رفتن به"
 
 msgid "Delete Line"
 msgstr "زدایش خط"
@@ -10958,8 +10997,17 @@ msgstr "زدایش خط"
 msgid "Unindent"
 msgstr "کاهش تورفتگی"
 
+msgid "Fold/Unfold Line"
+msgstr "تا کردن/گشودن خط"
+
+msgid "Fold All Lines"
+msgstr "تا کردن همهٔ خط‌ها"
+
 msgid "Create Code Region"
 msgstr "ساخت دامنهٔ کد"
+
+msgid "Unfold All Lines"
+msgstr "گشودن همه خط‌ها"
 
 msgid "Duplicate Selection"
 msgstr "دوتاسازی برگزیده"
@@ -10994,6 +11042,9 @@ msgstr "جایگزینی در پرونده‌ها..."
 msgid "Contextual Help"
 msgstr "راهنمای بافتاری"
 
+msgid "Toggle Bookmark"
+msgstr "روشن/خاموش کردن نشانک"
+
 msgid "Go to Next Bookmark"
 msgstr "رفتن به نشانک بعدی"
 
@@ -11007,16 +11058,22 @@ msgid "Go to Function..."
 msgstr "رفتن به تابع..."
 
 msgid "Go to Line..."
-msgstr "برو به خط..."
+msgstr "رفتن به خط..."
 
 msgid "Lookup Symbol"
 msgstr "جستجوی نماد"
 
 msgid "Toggle Breakpoint"
-msgstr "یک Breakpoint درج کن"
+msgstr "روشن/خاموش کردن نقطهٔ گسست"
 
 msgid "Remove All Breakpoints"
-msgstr "حذف تمام نقاط توقف"
+msgstr "برچیدن همهٔ نقطه‌های گسست"
+
+msgid "Go to Next Breakpoint"
+msgstr "رفتن به نقطهٔ گسست بعدی"
+
+msgid "Go to Previous Breakpoint"
+msgstr "رفتن به نقطهٔ گسست پیشین"
 
 msgid "Save changes to the following shaders(s) before quitting?"
 msgstr "پیش از بیرون رفتن دگرش‌ها را در سایه‌زن(ها)‌ی زیر ذخیره می‌کنید؟"
@@ -11704,7 +11761,7 @@ msgid "Types:"
 msgstr "گونه‌ها:"
 
 msgid "Add Type:"
-msgstr "افزودن نوع:"
+msgstr "افزودن گونه:"
 
 msgid "Add Item:"
 msgstr "افزودن مورد:"
@@ -11770,8 +11827,8 @@ msgid ""
 "Pin this StyleBox as a main style. Editing its properties will update the "
 "same properties in all other StyleBoxes of this type."
 msgstr ""
-"این استایل‌باکس را به‌عنوان استایل اصلی پین کنید. ویرایش ویژگی‌های آن، ویژگی‌های "
-"مشابه را در تمام استایل‌باکس‌های دیگر از این نوع به‌روزرسانی خواهد کرد."
+"این استایل‌باکس را به‌عنوان استایل اصلی سنجاق کنید. ویرایش ویژگی‌های آن، "
+"ویژگی‌های مشابه در همهٔ استایل‌باکس‌های دیگر از این گونه را به‌روزرسانی خواهد کرد."
 
 msgid "Add Item Type"
 msgstr "افزودن گونهٔ مورد"
@@ -11810,31 +11867,31 @@ msgid "Set Base Type"
 msgstr "نشاندن گونهٔ پایه"
 
 msgid "Add a type from a list of available types or create a new one."
-msgstr "یک نوع از فهرست انواع موجود اضافه کنید یا نوع جدیدی ایجاد کنید."
+msgstr "گونه‌ای از فهرست گونه‌های دردسترس بیفزایید یا گونه‌ای نو بسازید."
 
 msgid "Show Default"
 msgstr "نمایش پیشفرض"
 
 msgid "Show default type items alongside items that have been overridden."
-msgstr "نمایش آیتم‌های نوع پیش‌فرض در کنار آیتم‌هایی که بازنویسی شده‌اند."
+msgstr "نمایش آیتم‌های گونهٔ پیش‌فرض در کنار آیتم‌هایی که بازنویسی شده‌اند."
 
 msgid "Override All"
 msgstr "بازنویسی همه"
 
 msgid "Override all default type items."
-msgstr "بازنویسی تمام آیتم‌های نوع پیش‌فرض."
+msgstr "بازنویسی همهٔ آیتم‌های گونهٔ پیش‌فرض."
 
 msgid "Base Type"
-msgstr "نوع پایه"
+msgstr "گونهٔ پایه"
 
 msgid "Select the variation base type from a list of available types."
-msgstr "نوع پایه واریانت را از فهرست انواع موجود انتخاب کنید."
+msgstr "گونهٔ پایه واریانت را از فهرست گونه‌های دردسترس برگزینید."
 
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
 msgstr ""
-"یک نوع مرتبط با کلاس داخلی نمی‌تواند به عنوان واریانت نوع دیگری علامت‌گذاری شود."
+"گونهٔ مرتبط با کلاسی درونی نمی‌تواند به‌عنوان واریانت گونهٔ دیگری علامت‌گذاری شود."
 
 msgid "Theme:"
 msgstr "زمینه:"
@@ -12061,7 +12118,7 @@ msgid "Empty Scene Collection Source (ID: %d)"
 msgstr "منبع مجموعه صحنه خالی (شناسه: %d)"
 
 msgid "Unknown Type Source (ID: %d)"
-msgstr "منبع نوع ناشناخته (شناسه: %d)"
+msgstr "منبع گونه ناشناخته است (شناسه: %d)"
 
 msgid "Add TileSet pattern"
 msgstr "افزودن الگوی دسته‌کاشی"
@@ -12759,7 +12816,7 @@ msgid "Light"
 msgstr "نور"
 
 msgid "Process"
-msgstr "فرآیند"
+msgstr "پردازش"
 
 msgid "Sky"
 msgstr "آسمان"
@@ -13861,7 +13918,7 @@ msgid "Node name."
 msgstr "نام گره."
 
 msgid "Node type."
-msgstr "نوع گره."
+msgstr "گونهٔ گره."
 
 msgid "Current scene name."
 msgstr "نام صحنهٔ کنونی."
@@ -13901,6 +13958,9 @@ msgstr "نگهداری ترادیسی جهانی"
 
 msgid "Reparent"
 msgstr "تغییر والد"
+
+msgid "Pick Root Node Type"
+msgstr "گزینش گونهٔ گرهٔ ریشه"
 
 msgid "Scene name is empty."
 msgstr "نام صحنه تهی است."
@@ -14097,6 +14157,9 @@ msgstr "دگرش گونهٔ گره(ها)"
 msgid "This operation requires a single selected node."
 msgstr "این عملیات به یک گره انتخاب شده نیاز دارد."
 
+msgid "Reset Scale"
+msgstr "بازنشانی مقیاس"
+
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
@@ -14131,6 +14194,9 @@ msgstr "فرزند ويرايش‌پذیر"
 msgid "Load as Placeholder"
 msgstr "بارکردن به‌عنوان جانگهدار"
 
+msgid "Auto Expand to Selected"
+msgstr "گسترش خودکار تا برگزیده‌شده"
+
 msgid "Center Node on Reparent"
 msgstr "مرکزدهی گره هنگام تغییر والد"
 
@@ -14150,10 +14216,10 @@ msgid ""
 "or group (if prefixed with \"group:\" or \"g:\"). Filtering is case-"
 "insensitive."
 msgstr ""
-"برای فیلتر کردن گره‌ها، بخشی از نام، نوع (اگر با \"type:\" یا \"t:\" پیشوند "
-"داشته باشد)\n"
-"یا گروه (اگر با \"group:\" یا \"g:\" پیشوند داشته باشد) را وارد کنید. فیلتر "
-"کردن حساس به بزرگی و کوچکی حروف نیست."
+"برای پالایش گره‌ها، بخشی از نام، گونه (اگر دارای پیشوند «type:» یا «t:» "
+"باشند)\n"
+"یا گروه (اگر دارای پیشوند «group:» یا «g:» باشند) را وارد کنید. پالایش حساس "
+"به بزرگی و کوچکی حرف‌ها نیست."
 
 msgid "Filter by Type"
 msgstr "پالایش بر پایهٔ گونه"
@@ -14186,6 +14252,9 @@ msgstr "چسباندن به‌عنوان هم‌نیا"
 msgid "Change Type..."
 msgstr "دگرش گونه..."
 
+msgid "Attach Script..."
+msgstr "پیوست کردن اسکریپت..."
+
 msgid "Make Scene Root"
 msgstr "ریشه کردن صحنه"
 
@@ -14200,6 +14269,13 @@ msgstr "زدایش (بی‌تایید)"
 
 msgid "Add/Create a New Node."
 msgstr "افزودن/ساختن یک گره جدید."
+
+msgid ""
+"Instantiate a scene file as a Node. Creates an inherited scene if no root "
+"node exists."
+msgstr ""
+"نمونه‌سازی پروندهٔ صحنه به‌عنوان گره. اگر گرهٔ ریشه‌ای وجود نداشته باشد صحنه‌ای "
+"ارث‌گرفته می‌سازد."
 
 msgid "Attach a new or existing script to the selected node."
 msgstr "پیوست کردن یک اسکریپت جدید یا از پیش موجود برای گره انتخاب شده."
@@ -14344,7 +14420,8 @@ msgid "Restart & Upgrade"
 msgstr "بازراه‌اندازی و ارتقا"
 
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "آرگومان نوع نامعتبر برای convert()، از ثابت‌های TYPE\\_\\* استفاده کنید."
+msgstr ""
+"آرگومان گونه برای convert() نامعتبر است، ثابت‌های TYPE\\_\\* را به کار بگیرید."
 
 msgid "Not based on a script."
 msgstr "بر اساس یک اسکریپت نیست."
@@ -14589,7 +14666,7 @@ msgid "Remove Property"
 msgstr "برچیدن ویژگی"
 
 msgid "Property of this type not supported."
-msgstr "ویژگی از این نوع پشتیبانی نمی‌شود."
+msgstr "از این گونه ویژگی پشتیبانی نمی‌شود."
 
 msgctxt "Replication Mode"
 msgid "Never"

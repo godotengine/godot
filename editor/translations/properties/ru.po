@@ -186,13 +186,16 @@
 # JekSun97 <jeksun2022@gmail.com>, 2025.
 # xsSplater <xssplater@gmail.com>, 2025.
 # ScoLite albertovich <kirilllevchik@yandex.ru>, 2025.
+# PROGRAMMER12 <vladislavkalinkin@icloud.com>, 2025.
+# Огненный рыцарь <demon776854@gmail.com>, 2025.
+# EasyBoy <astahove97@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-28 15:02+0000\n"
-"Last-Translator: ScoLite albertovich <kirilllevchik@yandex.ru>\n"
+"PO-Revision-Date: 2025-06-05 16:43+0000\n"
+"Last-Translator: EasyBoy <astahove97@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -998,6 +1001,9 @@ msgstr "Подпись"
 msgid "Read Only"
 msgstr "Только чтение"
 
+msgid "Draw Label"
+msgstr "Нарисовать табличку"
+
 msgid "Draw Background"
 msgstr "Нарисуйте фон"
 
@@ -1018,6 +1024,9 @@ msgstr "Удаляемый"
 
 msgid "Selectable"
 msgstr "Доступно для выбора"
+
+msgid "Use Folding"
+msgstr "Сворачивание кода"
 
 msgid "Name Split Ratio"
 msgstr "Коэффициент разделения имени"
@@ -1072,6 +1081,9 @@ msgstr "Сторона редактора"
 
 msgid "Project Manager Screen"
 msgstr "Экран менеджера проекта"
+
+msgid "Connection"
+msgstr "Подключение"
 
 msgid "Engine Version Update Mode"
 msgstr "Режим обновления версии движка"
@@ -1139,6 +1151,9 @@ msgstr "Навигация по истории дополнительными к
 msgid "Save Each Scene on Quit"
 msgstr "Сохранять каждую сцену при выходе"
 
+msgid "Save on Focus Loss"
+msgstr "Отключить снятие выделения при потере фокуса"
+
 msgid "Accept Dialog Cancel OK Buttons"
 msgstr "Кнопки «ОК» и «Отмена» диалога подтверждения"
 
@@ -1191,6 +1206,9 @@ msgstr "Максимальное количество элементов сло�
 
 msgid "Show Low Level OpenType Features"
 msgstr "Показать низкоуровневые возможности OpenType"
+
+msgid "Float Drag Speed"
+msgstr "Скорость прокручивания"
 
 msgid "Nested Color Mode"
 msgstr "Режим цветa"
@@ -1306,6 +1324,12 @@ msgstr "Показать кнопку скрипта"
 msgid "Restore Scenes on Load"
 msgstr "Восстанавливать сцены при загрузке"
 
+msgid "Multi Window"
+msgstr "Множественное окно"
+
+msgid "Restore Windows on Load"
+msgstr "Восстанавливать окна при загрузке"
+
 msgid "Maximize Window"
 msgstr "Развернуть окно"
 
@@ -1373,6 +1397,9 @@ msgstr "Режим отображения"
 msgid "Thumbnail Size"
 msgstr "Размер миниатюр"
 
+msgid "Quick Open Dialog"
+msgstr "Файловое диалоговое окно"
+
 msgid "Max Results"
 msgstr "Макс. кол-во результатов"
 
@@ -1381,6 +1408,9 @@ msgstr "Показать выделение поиска"
 
 msgid "Enable Fuzzy Matching"
 msgstr "Включить приближенное соответствие строк"
+
+msgid "Max Fuzzy Misses"
+msgstr "Макс. кол-во сообщений в очереди"
 
 msgid "Include Addons"
 msgstr "Включать дополнения"
@@ -1658,6 +1688,9 @@ msgstr "Завершение"
 msgid "Idle Parse Delay"
 msgstr "Задержка перед анализом синтаксиса"
 
+msgid "Idle Parse Delay With Errors Found"
+msgstr "Задержка перед анализом синтаксиса с ошибками"
+
 msgid "Auto Brace Complete"
 msgstr "Автозакрытие скобок"
 
@@ -1696,6 +1729,9 @@ msgstr "Справка"
 
 msgid "Show Help Index"
 msgstr "Показывать справочный указатель"
+
+msgid "Help Font Size"
+msgstr "Размер шрифта"
 
 msgid "Class Reference Examples"
 msgstr "Примеры референсов на классы"
@@ -6415,6 +6451,9 @@ msgstr "Вторичный положительный порог влажнос�
 msgid "Secondary Negative Limit Angle"
 msgstr "Вторичная отрицательная граница угла"
 
+msgid "Secondary Negative Damp Threshold"
+msgstr "Вторичный отрицательный порог демпфирования"
+
 msgid "Surface Material Override"
 msgstr "Переопределение материала поверхности"
 
@@ -6971,6 +7010,9 @@ msgstr "Задержка"
 
 msgid "Random Delay"
 msgstr "Случайная задержка"
+
+msgid "Explicit Elapse"
+msgstr "Явный промах"
 
 msgid "Xfade Time"
 msgstr "Время плавного перехода"
@@ -9940,6 +9982,9 @@ msgstr "Разделение поля и кнопок"
 
 msgid "Buttons Width"
 msgstr "Ширина кнопок"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Установить минимальную ширину кнопки на основе изображения"
 
 msgid "Embedded Border"
 msgstr "Встроенная граница"

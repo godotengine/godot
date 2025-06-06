@@ -60,7 +60,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-29 17:02+0000\n"
+"PO-Revision-Date: 2025-06-02 20:55+0000\n"
 "Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
@@ -465,7 +465,7 @@ msgid "Low Processor Usage Mode"
 msgstr "저사양 모드"
 
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "저사양 모드 슬립 (마이크로초)"
+msgstr "낮은 프로세서 사용률 모드 슬립 (µsec)"
 
 msgid "Delta Smoothing"
 msgstr "델타 스무딩"
@@ -480,7 +480,7 @@ msgid "Physics Ticks per Second"
 msgstr "초당 물리 틱"
 
 msgid "Max Physics Steps per Frame"
-msgstr "프레임당 최대 물리 스텝"
+msgstr "프레임 당 최대 물리 스텝"
 
 msgid "Max FPS"
 msgstr "최대 FPS"
@@ -3858,6 +3858,9 @@ msgstr "속도 단계"
 msgid "Position Steps"
 msgstr "위치 단계"
 
+msgid "Use Enhanced Internal Edge Removal"
+msgstr "향상된 내부 엣지 제거 사용"
+
 msgid "Soft Body Point Radius"
 msgstr "소프트 바디 점 반경"
 
@@ -3865,13 +3868,13 @@ msgid "Bounce Velocity Threshold"
 msgstr "바운스 속도 역치값"
 
 msgid "Allow Sleep"
-msgstr "잠 허용"
+msgstr "슬립 허용"
 
 msgid "Sleep Velocity Threshold"
-msgstr "잠 속도 역치값"
+msgstr "슬립 속도 역치값"
 
 msgid "Sleep Time Threshold"
-msgstr "잠 시간 역치값"
+msgstr "슬립 시간 역치값"
 
 msgid "Continuous CD Movement Threshold"
 msgstr "연속 CD 이동 역치값"
@@ -3890,6 +3893,12 @@ msgstr "쿼리"
 
 msgid "Enable Ray Cast Face Index"
 msgstr "레이 캐스트 페이스 인덱스 활성화"
+
+msgid "Recovery Iterations"
+msgstr "복구 반복 횟수"
+
+msgid "Recovery Amount"
+msgstr "복구 양"
 
 msgid "Collisions"
 msgstr "콜리전"
@@ -3962,6 +3971,12 @@ msgstr "매우 높은 품질 프로브 광선 개수"
 
 msgid "Max Rays per Probe Pass"
 msgstr "프로브 패스 당 최대 광선 수"
+
+msgid "Denoising"
+msgstr "디노이징"
+
+msgid "Denoiser"
+msgstr "디노이저"
 
 msgid "BPM"
 msgstr "BPM"
@@ -4146,11 +4161,20 @@ msgstr "상호작용 프로필 경로"
 msgid "Runtime Paths"
 msgstr "런타임 경로"
 
+msgid "Action Set"
+msgstr "액션 세트"
+
 msgid "Input Path"
 msgstr "입력 경로"
 
 msgid "Wedge Angle"
 msgstr "웨지 각도"
+
+msgid "On Haptic"
+msgstr "햅틱 켜기"
+
+msgid "Off Haptic"
+msgstr "햅틱 끄기"
 
 msgid "On Threshold"
 msgstr "역치값 켜기"
@@ -4926,6 +4950,9 @@ msgstr "아이콘 180 X 180"
 msgid "Icon 512 X 512"
 msgstr "아이콘 512 X 512"
 
+msgid "Windows"
+msgstr "Windows"
+
 msgid "rcedit"
 msgstr "rcedit"
 
@@ -4973,6 +5000,9 @@ msgstr "파일 설명"
 
 msgid "Trademarks"
 msgstr "상표"
+
+msgid "Export D3D12"
+msgstr "D3D12 내보내기"
 
 msgid "D3D12 Agility SDK Multiarch"
 msgstr "D3D12 Agility SDK 멀티아키텍처"
@@ -5294,6 +5324,9 @@ msgstr "최대 오프셋"
 
 msgid "Offset Curve"
 msgstr "오프셋 곡선"
+
+msgid "Amount Ratio"
+msgstr "양 비율"
 
 msgid "Sub Emitter"
 msgstr "서브 이미터"
@@ -6578,6 +6611,12 @@ msgstr "자석 사용"
 
 msgid "Magnet"
 msgstr "자석"
+
+msgid "Min Distance"
+msgstr "최소 거리"
+
+msgid "Max Iterations"
+msgstr "최대 반복 횟수"
 
 msgid "Active"
 msgstr "활성"
@@ -9003,6 +9042,9 @@ msgstr "디폴트 셀 높이"
 msgid "World"
 msgstr "세계"
 
+msgid "Map Use Async Iterations"
+msgstr "지도에 비동기 반복 사용"
+
 msgid "Baking"
 msgstr "굽기"
 
@@ -9067,10 +9109,10 @@ msgid "Default Angular Damp"
 msgstr "디폴트 각도 댐핑"
 
 msgid "Sleep Threshold Linear"
-msgstr "선형 슬립 역치값"
+msgstr "슬립 선형 역치값"
 
 msgid "Sleep Threshold Angular"
-msgstr "각도 슬립 역치값"
+msgstr "슬립 각도 역치값"
 
 msgid "Time Before Sleep"
 msgstr "슬립까지 기다릴 시간"
@@ -9209,6 +9251,9 @@ msgstr "프로브 광선 개수"
 
 msgid "Frames to Update Lights"
 msgstr "조명을 업데이트할 프레임"
+
+msgid "Update Iterations per Frame"
+msgstr "프레임당 반복 횟수 업데이트"
 
 msgid "OpenGL"
 msgstr "OpenGL"

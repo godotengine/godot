@@ -22,13 +22,14 @@
 # Филип Узунов <filkata@gmail.com>, 2024.
 # "П@₿€л" <pavel.veselinov.georgiev@gmail.com>, 2024.
 # Макар Разин <makarrazin14@gmail.com>, 2025.
+# Ivan Dortulov <ivandortulov@yahoo.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-27 14:01+0000\n"
-"Last-Translator: Макар Разин <makarrazin14@gmail.com>\n"
+"PO-Revision-Date: 2025-06-03 10:16+0000\n"
+"Last-Translator: Ivan Dortulov <ivandortulov@yahoo.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -118,6 +119,21 @@ msgstr "Неизвестна ос на джойпада"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
 msgstr "Движение на джойстика по ос %d (%s) със стойност %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Действие надолу, Sony: Кръг, Xbox: A, Nintendo: B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Дясно действие, Sony Кръг, Xbox B, Nintento A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Ляво действие, Sony Квадрат, Xbox A, Nintento B"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Действие нагоре, Sony Триъгълник, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Назад, Sony Селект, Xbox назад, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Ръководство, Sony PS, Xbox Начало"
@@ -327,6 +343,12 @@ msgstr "Курсор в началото на документа"
 msgid "Caret Document End"
 msgstr "Курсор в края документа"
 
+msgid "Caret Add Below"
+msgstr "Курсор добавяне отдолу"
+
+msgid "Caret Add Above"
+msgstr "Курсор добавяне отгоре"
+
 msgid "Scroll Up"
 msgstr "Превъртане нагоре"
 
@@ -342,11 +364,17 @@ msgstr "Избиране на думата под курсора"
 msgid "Add Selection for Next Occurrence"
 msgstr "Добавяне на следващото срещане към избраното"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Пропускане на следващото срещане"
+
 msgid "Clear Carets and Selection"
 msgstr "Изчистване на курсорите и избраното"
 
 msgid "Toggle Insert Mode"
 msgstr "Превключване на режима на вмъкване"
+
+msgid "Submit Text"
+msgstr "Изпращане на текст"
 
 msgid "Duplicate Nodes"
 msgstr "Дублиране на обектите"
@@ -354,11 +382,20 @@ msgstr "Дублиране на обектите"
 msgid "Delete Nodes"
 msgstr "Изтриване на обектите"
 
+msgid "Go Up One Level"
+msgstr "Качване едно ниво по-нагоре"
+
+msgid "Refresh"
+msgstr "Опресни"
+
 msgid "Show Hidden"
 msgstr "Показване на скритите"
 
 msgid "Swap Input Direction"
 msgstr "Промяна на направлението на въвеждане"
+
+msgid "Start Unicode Character Input"
+msgstr "Въвеждане на Unicode символ"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Неправилен входен параметър %d (не е подаден) в израза"
@@ -419,11 +456,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Вече съществува действие с името „%s“."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Отмяната е невъзможна – действието е същото като началното"
+
 msgid "Revert Action"
 msgstr "Отмяна на действието"
 
 msgid "Add Event"
 msgstr "Добавяне на събитие"
+
+msgid "Remove Action"
+msgstr "Премахване на действие"
 
 msgid "Cannot Remove Action"
 msgstr "Действието не може да се премахне"
@@ -449,8 +492,14 @@ msgstr "Добавяне на ново действие"
 msgid "Add"
 msgstr "Добавяне"
 
+msgid "Show Built-in Actions"
+msgstr "Показвай вградените действия"
+
 msgid "Action"
 msgstr "Действие"
+
+msgid "Deadzone"
+msgstr "Мъртва зона"
 
 msgid "Name:"
 msgstr "Име:"
@@ -458,8 +507,25 @@ msgstr "Име:"
 msgid "Type:"
 msgstr "Тип:"
 
+msgid "Metadata name is valid."
+msgstr "Името на метаданните е валидно."
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Добавяне на свойство на метаданни за \"%s\""
+
+msgid "Metadata name can't be empty."
+msgstr "Името на метаданните не може да е празно."
+
 msgid "Metadata name must be a valid identifier."
 msgstr "Името на мета-данните трябва да бъде правилен идентификатор."
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "Вече съществуват метаданни с името „%s“."
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr ""
+"Имената, започващи с _ , са запазени за метаданни, използвани само от "
+"редактора."
 
 msgid "Time:"
 msgstr "Време:"
@@ -467,11 +533,23 @@ msgstr "Време:"
 msgid "Value:"
 msgstr "Стойност:"
 
+msgid "Update Selected Key Handles"
+msgstr "Обновяване на избраните контролни точки"
+
 msgid "Insert Key Here"
 msgstr "Вмъкване на ключ тук"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Дупликат на избран(и) ключ(ове)"
+
+msgid "Cut Selected Key(s)"
+msgstr "Изрязване на избран(и) ключ(ове)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Копиране на избран(и) ключ(ове)"
+
+msgid "Paste Key(s)"
+msgstr "Поставяне на избран(и) ключ(ове)"
 
 msgid "Delete Selected Key(s)"
 msgstr "Изтриване на избран(и) ключ(ове)"

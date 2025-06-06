@@ -99,13 +99,14 @@
 # ابْنُ السَدِيمِ <amarlubs2@gmail.com>, 2025.
 # Zeyad Alsultan <z.t.alsultan@gmail.com>, 2025.
 # TonyxDz <tony23dz@gmail.com>, 2025.
+# Modem Hexagon <nexusnecromance@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-15 12:20+0000\n"
-"Last-Translator: TonyxDz <tony23dz@gmail.com>\n"
+"PO-Revision-Date: 2025-06-03 04:59+0000\n"
+"Last-Translator: Modem Hexagon <nexusnecromance@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -3028,6 +3029,9 @@ msgstr ""
 "لا تتطلب هذه الدالة نسخها ليتم استدعاءها.\n"
 "يمكن أن تستدعيها باستعمال اسم الصف class name."
 
+msgid "Code snippet copied to clipboard."
+msgstr "نسخت جزئية البرمجة إلى الحافظة."
+
 msgid "No return value."
 msgstr "لا قيمة عائدة."
 
@@ -3264,6 +3268,9 @@ msgstr "إضغط للفتح في المتصفح."
 msgid "No description available."
 msgstr "لا يوجد وصف متاح."
 
+msgid "This annotation may be changed or removed in future versions."
+msgstr "هذه التأشيرة قد تتغير أو تُزال من الإصدارات المقبلة."
+
 msgid "Show in FileSystem"
 msgstr "أظهر في نظام الملفات"
 
@@ -3303,8 +3310,14 @@ msgstr "الإشارة"
 msgid "Annotation"
 msgstr "التوضيح"
 
+msgid "Local Constant"
+msgstr "قيمة ثابتة محلية"
+
 msgid "Local Variable"
 msgstr "مُتغيّر خاص"
+
+msgid "This variable may be changed or removed in future versions."
+msgstr "قد تتغير أو تُحذف هذه القيمة المتغيرة في الإصدارات المُقبلة."
 
 msgid "TextFile"
 msgstr "ملف نصي"
@@ -4691,6 +4704,9 @@ msgstr ""
 "تحذير: معمارية المعالج %s ليست نشطة عندك في تجهيزات التصدير.\n"
 "\n"
 
+msgid "Run \"Remote Deploy\" anyway?"
+msgstr "شغّل \"النشر عن بعد\" على أي حال؟"
+
 msgid "Deploy to First Device in List"
 msgstr "أنشر إلى أول جهاز في القائمة"
 
@@ -5228,6 +5244,9 @@ msgstr "تثبيت من ملف"
 msgid "Install templates from a local file."
 msgstr "تثبيت القوالب من ملف محلي."
 
+msgid "Online mode is needed to download the templates."
+msgstr "تحتاج وضع الإتصال بالإنترنت لتحميل النماذج."
+
 msgid "Go Online"
 msgstr "الاتصال بالشبكة"
 
@@ -5575,6 +5594,9 @@ msgstr "خطأ في تحريك:"
 msgid "Error duplicating:"
 msgstr "خطآ في التكرار:"
 
+msgid "Error duplicating directory:"
+msgstr "خطأ في تكرار المجلد:"
+
 msgid "Unable to update dependencies for:"
 msgstr "غير قادر على تحديث التبعيات لـ:"
 
@@ -5598,6 +5620,9 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "يوجد ملف أو مجلد بهذا الاسم سابقا."
 
+msgid "Could not create base directory: %s"
+msgstr "تعذر إنشاء مجلد الأساس: \"%s\""
+
 msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':"
@@ -5611,6 +5636,22 @@ msgstr "هل ترغب بالكتابة فوقهم او تغيير اسم الم�
 msgid "Do you wish to overwrite them or rename the moved files?"
 msgstr "هل ترغب بالكتابة فوقهم او تغيير اسم الملفات المنقولة؟"
 
+msgid ""
+"Couldn't run external program to check for terminal emulator presence: "
+"command -v %s"
+msgstr ""
+"لم يمكن تشغيل البرنامج الخارجي للتأكد من وجود محاكي طرفية حاسوب: اكتب \"-v "
+"%s\""
+
+msgid ""
+"Couldn't run external terminal program (error code %d): %s %s\n"
+"Check `filesystem/external_programs/terminal_emulator` and `filesystem/"
+"external_programs/terminal_emulator_flags` in the Editor Settings."
+msgstr ""
+"لم يمكن تشغيل برنامج طرفية حاسوب (رقم الخظأ %d): %s %s\n"
+"تأكد من `filesystem/external_programs/terminal_emulator` و `filesystem/"
+"external_programs/terminal_emulator_flags`في إعدادات المحرر."
+
 msgid "Duplicating file:"
 msgstr "مضاعفة الملف:"
 
@@ -5619,6 +5660,13 @@ msgstr "تكرار مجلد:"
 
 msgid "Create Folder"
 msgstr "أنشئ مجلد"
+
+msgid ""
+"Do you wish to convert these files to %s? (This operation cannot be undone!)"
+msgstr "أتريد أن تحول هذه الملفات إلى %s؟ (هذه العملية لا يمكن التراجع منها!)"
+
+msgid "Could not create folder: %s"
+msgstr "لا يمكن إنشاء المجلد: %s"
 
 msgid "New Inherited Scene"
 msgstr "مشهد مُوّرَث جديد"
@@ -5680,11 +5728,17 @@ msgstr "إضافة إلى المفضلات"
 msgid "Remove from Favorites"
 msgstr "حذف من المفضلات"
 
+msgid "Convert to..."
+msgstr "حوّلْ إلى..."
+
 msgid "Reimport"
 msgstr "إعادة الاستيراد"
 
 msgid "Open in Terminal"
 msgstr "الفتح في الطرفية"
+
+msgid "Open Folder in Terminal"
+msgstr "فتح المجلد في طرفية حاسوب"
 
 msgid "New Folder..."
 msgstr "مجلد جديد..."
@@ -5795,6 +5849,9 @@ msgstr "احتفظ بكليهما"
 msgid "Create Script"
 msgstr "إنشاء نص برمجي"
 
+msgid "Convert"
+msgstr "حوِّل"
+
 msgid "Find in Files"
 msgstr "البحث في الملفات"
 
@@ -5830,6 +5887,9 @@ msgstr "استبدال الكل (لا رجوع)"
 
 msgid "Searching..."
 msgstr "جاري البحث..."
+
+msgid "Remove result"
+msgstr "إزالة النتيجة"
 
 msgid "%d match in %d file"
 msgstr "%d تطابق في %d ملف"
@@ -5920,6 +5980,24 @@ msgstr "إضافة مجموعة جديدة."
 
 msgid "Filter Groups"
 msgstr "تصفية المجموعات"
+
+msgid ""
+"Scroll Left\n"
+"Hold Ctrl to scroll to the begin.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"تنقل إلى اليسار\n"
+"أطل الضغط على Ctrl لنقل نفسك للبداية.\n"
+"أطل الضغط على Shift لنقل نفسك لمدى صفحةٍ واحدة."
+
+msgid ""
+"Scroll Right\n"
+"Hold Ctrl to scroll to the end.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"تنقل إلى اليمين\n"
+"أطل الضغط على Ctrl لنقل نفسك للنهاية.\n"
+"أطل الضغط على Shift لنقل نفسك لمدى صفحةٍ واحدة."
 
 msgid "Expand Bottom Panel"
 msgstr "توسيع القائمة السفلية"

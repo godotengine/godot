@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-14 14:07+0000\n"
+"PO-Revision-Date: 2025-06-04 16:52+0000\n"
 "Last-Translator: Atur <aturaseman9@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
@@ -60,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Application"
 msgstr "برنامه"
@@ -794,6 +794,9 @@ msgstr "صفحهٔ ویراستار"
 msgid "Project Manager Screen"
 msgstr "صفحه مدیر پروژه"
 
+msgid "Connection"
+msgstr "اتصال"
+
 msgid "Use Embedded Menu"
 msgstr "به‌کارگیری گزینگان نهادینه‌شده"
 
@@ -898,6 +901,9 @@ msgstr "نمایش دکمه اسکریپت"
 
 msgid "Restore Scenes on Load"
 msgstr "برگرداندن صحنه‌ها هنگام بارکردن"
+
+msgid "Multi Window"
+msgstr "چندپنجرگی"
 
 msgid "FileSystem"
 msgstr "سامانهٔ پرونده"
@@ -1288,6 +1294,9 @@ msgstr "ذخیره خودکار"
 
 msgid "Save Before Running"
 msgstr "ذخیره پیش از اجرا"
+
+msgid "Bottom Panel"
+msgstr "پهنهٔ پایینی"
 
 msgid "Output"
 msgstr "برونداد"
@@ -2205,6 +2214,9 @@ msgstr "کلید اِی.پی.آی"
 msgid "API Key ID"
 msgstr "شناسهٔ کلید اِی.پی.آی"
 
+msgid "Web"
+msgstr "وب"
+
 msgid "HTTP Host"
 msgstr "میزبان اچ‌تی‌تی‌پی"
 
@@ -2234,6 +2246,9 @@ msgstr "برای گوشی"
 
 msgid "HTML"
 msgstr "HTML"
+
+msgid "Windows"
+msgstr "ویندوز"
 
 msgid "File Version"
 msgstr "نسخهٔ پرونده"

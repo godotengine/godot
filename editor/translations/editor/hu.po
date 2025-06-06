@@ -41,13 +41,14 @@
 # Dávid Groniewsky <gro.david.d@gmail.com>, 2024.
 # Zsolt Levente Deli <delizsoltlevente@gmail.com>, 2025.
 # Dfo <s.daneee@gmail.com>, 2025.
+# therealmate <hellogaming91@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-01 03:14+0000\n"
-"Last-Translator: Dfo <s.daneee@gmail.com>\n"
+"PO-Revision-Date: 2025-06-04 01:37+0000\n"
+"Last-Translator: therealmate <hellogaming91@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -67,31 +68,31 @@ msgid "Physical"
 msgstr "Fizikai"
 
 msgid "Left Mouse Button"
-msgstr "Bal Egérgomb"
+msgstr "Bal egérgomb"
 
 msgid "Right Mouse Button"
-msgstr "Jobb Egérgomb"
+msgstr "Jobb egérgomb"
 
 msgid "Middle Mouse Button"
-msgstr "Középső Egérgomb"
+msgstr "Középső egérgomb"
 
 msgid "Mouse Wheel Up"
-msgstr "Egérgörgő Fel"
+msgstr "Egérgörgő fel"
 
 msgid "Mouse Wheel Down"
-msgstr "Egérgörgő Le"
+msgstr "Egérgörgő le"
 
 msgid "Mouse Wheel Left"
-msgstr "Egérgörgő Bal"
+msgstr "Egérgörgő bal"
 
 msgid "Mouse Wheel Right"
-msgstr "Egérgörgő Jobb"
+msgstr "Egérgörgő jobb"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Oldalsó Egérgomb 1"
+msgstr "Oldalsó egérgomb 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Oldalsó Egérgomb 2"
+msgstr "Oldalsó egérgomb 2"
 
 msgid "Button"
 msgstr "Gomb"
@@ -570,6 +571,24 @@ msgstr "Kulcs(ok) Beillesztése"
 msgid "Delete Selected Key(s)"
 msgstr "Kiválasztott Kulcs(ok) Törlése"
 
+msgid "Make Handles Free"
+msgstr "Fogópontok szabaddá tétele"
+
+msgid "Make Handles Linear"
+msgstr "Fogópontok lineárissá tétele"
+
+msgid "Make Handles Balanced"
+msgstr "Fogópontok kiegyensúlyozása"
+
+msgid "Make Handles Mirrored"
+msgstr "Fogópontok tükrözése"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Fogópontok kiegyensúlyozása (automatikus érintő)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Fogópontok tükrözése (automatikus érintő)"
+
 msgid "Add Bezier Point"
 msgstr "Bézier Pont Hozzáadása"
 
@@ -617,6 +636,35 @@ msgstr "Animáció Hosszának Változtatása"
 
 msgid "Change Animation Loop"
 msgstr "Animáció Ismétlésének Változtatása"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Nem lehet megváltoztatni az ismétlési módot egy importált jelenetből származó "
+"példányosított animáción.\n"
+"\n"
+"Az animáció ismétlési módjának módosításához lépj a jelenet speciális "
+"importálási beállításaihoz, és válaszd ki az animációt.\n"
+"Ezután az ellenőrző menüben módosíthatod az ismétlési módot."
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Nem lehet megváltoztatni az ismétlési módot egy importált erőforrásból "
+"származó példányosított animáción."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Nem lehet megváltoztatni az ismétlési módot egy másik jelenetbe ágyazott "
+"animáción.\n"
+"\n"
+"Ehhez nyisd meg a jelenetet, és ott módosítsd az animáció ismétlési módját."
 
 msgid "Animation length (frames)"
 msgstr "Animáció hossza (képkockák)"
@@ -2295,6 +2343,9 @@ msgstr "Jelenlegi Verzió:"
 msgid "Uninstall"
 msgstr "Eltávolítás"
 
+msgid "Go Online"
+msgstr "Lépj online"
+
 msgid "Select Template File"
 msgstr "Válasszon sablonfájlt"
 
@@ -3065,6 +3116,12 @@ msgstr "Tesztelés"
 
 msgid "Loading..."
 msgstr "Betöltés..."
+
+msgid ""
+"The Asset Library requires an online connection and involves sending data "
+"over the internet."
+msgstr ""
+"A csomagtár használatához internetkapcsolat szükséges, és adatforgalommal jár."
 
 msgid "All"
 msgstr "Mind"
@@ -4308,14 +4365,34 @@ msgstr "Vektorfüggvény."
 msgid "Vector operator."
 msgstr "Vektor operátor."
 
+msgid "Projects"
+msgstr "Projektek"
+
 msgid "New Project"
 msgstr "Új projekt"
 
 msgid "Scan"
 msgstr "Keresés"
 
+msgid "Scan Projects"
+msgstr "Projektek beolvasása"
+
 msgid "Loading, please wait..."
 msgstr "Betöltés, kérem várjon..."
+
+msgid "Filter Projects"
+msgstr "Projektek szűrése"
+
+msgid "Last Edited"
+msgstr "Utoljára szerkesztve"
+
+msgid ""
+"Get started by creating a new one,\n"
+"importing one that exists, or by downloading a project template from the "
+"Asset Library!"
+msgstr ""
+"Kezdésként hozz létre egy új projektet,\n"
+"importálj egy meglévőt, vagy tölts le egy sablont a csomagtárból!"
 
 msgid "Create New Project"
 msgstr "Új Projekt Létrehozása"
@@ -4323,14 +4400,27 @@ msgstr "Új Projekt Létrehozása"
 msgid "Import Existing Project"
 msgstr "Meglévő Projekt Importálása"
 
+msgid ""
+"Note: The Asset Library requires an online connection and involves sending "
+"data over the internet."
+msgstr ""
+"Megjegyzés: A csomagtár használatához internetkapcsolat szükséges, és "
+"adatforgalommal jár."
+
 msgid "Rename Project"
 msgstr "Projekt átnevezése"
+
+msgid "Manage Tags"
+msgstr "Címkék kezelése"
 
 msgid "Remove Missing"
 msgstr "Hiányzó eltávolítása"
 
 msgid "Select a Folder to Scan"
 msgstr "Válassza ki a mappát a kereséshez"
+
+msgid "Manage Project Tags"
+msgstr "Projektcímkék kezelése"
 
 msgid "The path specified doesn't exist."
 msgstr "A megadott útvonal nem létezik."
@@ -4352,6 +4442,9 @@ msgstr "Projekt neve:"
 
 msgid "Project Path:"
 msgstr "Projekt Elérési Útja:"
+
+msgid "Scanning for projects..."
+msgstr "Projektek beolvasása..."
 
 msgid "Missing Project"
 msgstr "Hiányzó projekt"

@@ -47,13 +47,14 @@
 # Aglo <wilmer.heltborg2008@gmail.com>, 2025.
 # Mathias Johansson <mathias9807@gmail.com>, 2025.
 # Christoffer <fusionpatcher@gmail.com>, 2025.
+# Krissse10 <Kristoffer.kaldani@hotmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-26 12:05+0000\n"
-"Last-Translator: Christoffer <fusionpatcher@gmail.com>\n"
+"PO-Revision-Date: 2025-05-31 13:42+0000\n"
+"Last-Translator: Krissse10 <Kristoffer.kaldani@hotmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -908,6 +909,9 @@ msgstr "AnimationPlayer kan inte animera sig själv, bara andra spelare."
 
 msgid "property '%s'"
 msgstr "egenskap \"%s\""
+
+msgid "Nearest FPS: %d"
+msgstr "Närmaste FPS: %d"
 
 msgid "Change Animation Step"
 msgstr "Ändra animationssteg"

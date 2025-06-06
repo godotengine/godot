@@ -105,13 +105,14 @@
 # ChenLei <falsecollector@outlook.com>, 2025.
 # Myeongjin Lee <aranet100@gmail.com>, 2025.
 # Jianwen Xu <jianwen-xu@users.noreply.hosted.weblate.org>, 2025.
+# bocai-bca <c3204835842@icloud.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-05-23 05:05+0000\n"
-"Last-Translator: Jianwen Xu <jianwen-xu@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2025-06-05 16:43+0000\n"
+"Last-Translator: bocai-bca <c3204835842@icloud.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -5508,7 +5509,7 @@ msgid ""
 msgstr ""
 "编辑器无法识别该文件扩展名。\n"
 "如果你仍要重命名，请使用操作系统的文件管理器。\n"
-"在重命名为未知扩展名后，改文件不会再在编辑器中显示。"
+"在重命名为未知扩展名后，该文件不会再在编辑器中显示。"
 
 msgid "A file or folder with this name already exists."
 msgstr "已经存在同名的文件或文件夹。"

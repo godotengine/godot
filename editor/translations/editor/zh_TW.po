@@ -64,13 +64,14 @@
 # codetea <codetea@users.noreply.hosted.weblate.org>, 2025.
 # Myeongjin Lee <aranet100@gmail.com>, 2025.
 # sashimi <kyle2160k@gmail.com>, 2025.
+# 陳間時光（MorningFungame） <morningfungame@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-05-30 10:24+0000\n"
-"Last-Translator: sashimi <kyle2160k@gmail.com>\n"
+"PO-Revision-Date: 2025-06-02 05:01+0000\n"
+"Last-Translator: 陳間時光（MorningFungame） <morningfungame@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -15451,15 +15452,6 @@ msgstr "隱藏已篩選的父節點"
 
 msgid "All Scene Sub-Resources"
 msgstr "所有場景子資源"
-
-msgid ""
-"Filter nodes by entering a part of their name, type (if prefixed with \"type:"
-"\" or \"t:\")\n"
-"or group (if prefixed with \"group:\" or \"g:\"). Filtering is case-"
-"insensitive."
-msgstr ""
-"篩選節點，輸入部分名稱、型別（以“type：”或“t：”開頭）、\n"
-"分組（以“group：”或“g：”開頭）。篩選區分大小寫。"
 
 msgid "Filter by Type"
 msgstr "依照型別篩選"
