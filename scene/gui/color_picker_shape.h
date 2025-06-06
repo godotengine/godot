@@ -52,7 +52,7 @@ protected:
 	void draw_focus_circle(Control *p_control);
 	void draw_sv_square(Control *p_control, const Rect2 &p_square, bool p_draw_focus = true);
 	void draw_cursor(Control *p_control, const Vector2 &p_center, bool p_draw_bg = true);
-	void draw_circle_cursor(Control *p_control, float p_hue);
+	void draw_circle_cursor(Control *p_control, float p_hue, float p_saturation);
 
 	void connect_shape_focus(Control *p_shape);
 	void shape_focus_entered();
