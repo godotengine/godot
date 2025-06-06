@@ -226,6 +226,7 @@ class PopupMenu : public Popup {
 	String _atr(int p_idx, const String &p_text) const;
 
 protected:
+	virtual void _pre_popup() override;
 	virtual Rect2i _popup_adjust_rect() const override;
 
 	virtual void add_child_notify(Node *p_child) override;
