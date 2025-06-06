@@ -808,34 +808,83 @@ void EditorDockManager::set_tab_icon_max_width(int p_max_width) {
 	}
 }
 
-void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {
-	vsplits.push_back(p_split);
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+void EditorDockManager::initialize_layout(Node *p_main_parent, DockSplitContainer **r_center_split) {
+	ERR_FAIL_NULL(r_center_split);
+
+	DockSplitContainer *left_l_hsplit = _create_split(false, p_main_parent, "DockHSplitLeftL");
+	left_l_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	DockSplitContainer *left_l_vsplit = _create_split(true, left_l_hsplit, "DockVSplitLeftL");
+	_create_dock_slot(DOCK_SLOT_LEFT_UL, left_l_vsplit, "DockSlotLeftUL");
+	_create_dock_slot(DOCK_SLOT_LEFT_BL, left_l_vsplit, "DockSlotLeftBL");
+
+	DockSplitContainer *left_r_hsplit = _create_split(false, left_l_hsplit, "DockHSplitLeftR");
+
+	DockSplitContainer *left_r_vsplit = _create_split(true, left_r_hsplit, "DockVSplitLeftR");
+	_create_dock_slot(DOCK_SLOT_LEFT_UR, left_r_vsplit, "DockSlotLeftUR");
+	_create_dock_slot(DOCK_SLOT_LEFT_BR, left_r_vsplit, "DockSlotLeftBR");
+
+	DockSplitContainer *main_hsplit = _create_split(false, left_r_hsplit, "DockHSplitMain");
+	VBoxContainer *center_vb = memnew(VBoxContainer);
+	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_hsplit->add_child(center_vb);
+
+	DockSplitContainer *center_split = _create_split(true, center_vb, "DockVSplitCenter");
+	center_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	center_split->set_collapsed(false);
+	*r_center_split = center_split;
+
+	DockSplitContainer *right_hsplit = _create_split(false, main_hsplit, "DockHSplitRight");
+
+	DockSplitContainer *right_l_vsplit = _create_split(true, right_hsplit, "DockVSplitRightL");
+	_create_dock_slot(DOCK_SLOT_RIGHT_UL, right_l_vsplit, "DockSlotRightUL");
+	_create_dock_slot(DOCK_SLOT_RIGHT_BL, right_l_vsplit, "DockSlotRightBL");
+
+	DockSplitContainer *right_r_vsplit = _create_split(true, right_hsplit, "DockVSplitRightR");
+	_create_dock_slot(DOCK_SLOT_RIGHT_UR, right_r_vsplit, "DockSlotRightUR");
+	_create_dock_slot(DOCK_SLOT_RIGHT_BR, right_r_vsplit, "DockSlotRightBR");
+
+	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize.
+	left_r_hsplit->set_split_offset(270 * EDSCALE);
+	main_hsplit->set_split_offset(-270 * EDSCALE);
 }
 
-void EditorDockManager::add_hsplit(DockSplitContainer *p_split) {
-	hsplits.push_back(p_split);
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+DockSplitContainer *EditorDockManager::_create_split(bool p_vertical, Node *p_parent, const String &p_name) {
+	DockSplitContainer *split = memnew(DockSplitContainer);
+	split->set_name(p_name);
+	split->set_vertical(p_vertical);
+	p_parent->add_child(split);
+
+	if (p_vertical) {
+		vsplits.push_back(split);
+	} else {
+		hsplits.push_back(split);
+	}
+	split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+	return split;
 }
 
-void EditorDockManager::register_dock_slot(DockSlot p_dock_slot, TabContainer *p_tab_container) {
-	ERR_FAIL_NULL(p_tab_container);
+void EditorDockManager::_create_dock_slot(DockSlot p_dock_slot, Node *p_parent, const String &p_name) {
 	ERR_FAIL_INDEX(p_dock_slot, DOCK_SLOT_MAX);
 
-	dock_slot[p_dock_slot] = p_tab_container;
+	TabContainer *tab_container = memnew(TabContainer);
+	tab_container->set_name(p_name);
+	dock_slot[p_dock_slot] = tab_container;
 
-	p_tab_container->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
-	p_tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	p_tab_container->set_popup(dock_context_popup);
-	p_tab_container->connect("pre_popup_pressed", callable_mp(dock_context_popup, &DockContextPopup::select_current_dock_in_dock_slot).bind(p_dock_slot));
-	p_tab_container->set_drag_to_rearrange_enabled(true);
-	p_tab_container->set_tabs_rearrange_group(1);
-	p_tab_container->connect("tab_changed", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
-	p_tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
-	p_tab_container->connect("child_order_changed", callable_mp(this, &EditorDockManager::_dock_container_update_visibility).bind(p_tab_container));
-	p_tab_container->set_use_hidden_tabs_for_min_size(true);
-	p_tab_container->get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_dock_container_gui_input).bind(p_tab_container));
-	p_tab_container->hide();
+	tab_container->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
+	tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tab_container->set_popup(dock_context_popup);
+	tab_container->connect("pre_popup_pressed", callable_mp(dock_context_popup, &DockContextPopup::select_current_dock_in_dock_slot).bind(p_dock_slot));
+	tab_container->set_drag_to_rearrange_enabled(true);
+	tab_container->set_tabs_rearrange_group(1);
+	tab_container->connect("tab_changed", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
+	tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
+	tab_container->connect("child_order_changed", callable_mp(this, &EditorDockManager::_dock_container_update_visibility).bind(tab_container));
+	tab_container->set_use_hidden_tabs_for_min_size(true);
+	tab_container->get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_dock_container_gui_input).bind(tab_container));
+	tab_container->hide();
+
+	p_parent->add_child(tab_container);
 }
 
 int EditorDockManager::get_vsplit_count() const {

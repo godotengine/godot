@@ -109,6 +109,9 @@ private:
 	Vector<Control *> docks_menu_docks;
 	Control *closed_dock_parent = nullptr;
 
+	DockSplitContainer *_create_split(bool p_vertical, Node *p_parent, const String &p_name);
+	void _create_dock_slot(DockSlot p_dock_slot, Node *p_parent, const String &p_name);
+
 	void _dock_split_dragged(int p_offset);
 	void _dock_container_gui_input(const Ref<InputEvent> &p_input, TabContainer *p_dock_container);
 	void _bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, Control *p_dock, Button *p_bottom_button);
@@ -138,9 +141,7 @@ public:
 	void update_tab_styles();
 	void set_tab_icon_max_width(int p_max_width);
 
-	void add_vsplit(DockSplitContainer *p_split);
-	void add_hsplit(DockSplitContainer *p_split);
-	void register_dock_slot(DockSlot p_dock_slot, TabContainer *p_tab_container);
+	void initialize_layout(Node *p_main_parent, DockSplitContainer **r_center_split);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
