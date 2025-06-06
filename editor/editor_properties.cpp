@@ -2905,10 +2905,13 @@ void EditorPropertyNodePath::_text_submitted(const String &p_text) {
 }
 
 const NodePath EditorPropertyNodePath::_get_node_path() const {
-	const Node *base_node = const_cast<EditorPropertyNodePath *>(this)->get_base_node();
-
 	Variant val = get_edited_property_value();
-	Node *n = Object::cast_to<Node>(val);
+	if (val.get_type() == Variant::NODE_PATH) {
+		return val;
+	}
+
+	const Node *base_node = const_cast<EditorPropertyNodePath *>(this)->get_base_node();
+	const Node *n = Object::cast_to<Node>(val.get_validated_object());
 	if (n) {
 		if (!n->is_inside_tree()) {
 			return NodePath();
@@ -2918,9 +2921,8 @@ const NodePath EditorPropertyNodePath::_get_node_path() const {
 		} else {
 			return get_tree()->get_edited_scene_root()->get_path_to(n);
 		}
-	} else {
-		return val;
 	}
+	return NodePath();
 }
 
 bool EditorPropertyNodePath::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
