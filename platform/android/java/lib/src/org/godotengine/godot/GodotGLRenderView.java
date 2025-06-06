@@ -46,7 +46,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -83,7 +82,7 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final GodotRenderer godotRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotGLRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl) {
+	public GodotGLRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
 		super(host.getActivity());
 
 		this.host = host;
@@ -91,7 +90,7 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
-		init(xrMode, false, useDebugOpengl);
+		init(xrMode, shouldBeTranslucent, useDebugOpengl);
 	}
 
 	@Override
