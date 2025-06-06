@@ -202,20 +202,20 @@
 				Return a [Dictionary] of override values for export options, that will be used instead of user-provided values. Overridden options will be hidden from the user interface.
 				[codeblock]
 				class MyExportPlugin extends EditorExportPlugin:
-				    func _get_name() -&gt; String:
-				        return "MyExportPlugin"
+					func _get_name() -&gt; String:
+						return "MyExportPlugin"
 
-				    func _supports_platform(platform) -&gt; bool:
-				        if platform is EditorExportPlatformPC:
-				            # Run on all desktop platforms including Windows, MacOS and Linux.
-				            return true
-				        return false
+					func _supports_platform(platform) -&gt; bool:
+						if platform is EditorExportPlatformPC:
+							# Run on all desktop platforms including Windows, MacOS and Linux.
+							return true
+						return false
 
-				    func _get_export_options_overrides(platform) -&gt; Dictionary:
-				        # Override "Embed PCK" to always be enabled.
-				        return {
-				            "binary_format/embed_pck": true,
-				        }
+					func _get_export_options_overrides(platform) -&gt; Dictionary:
+						# Override "Embed PCK" to always be enabled.
+						return {
+							"binary_format/embed_pck": true,
+						}
 				[/codeblock]
 			</description>
 		</method>

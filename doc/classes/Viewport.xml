@@ -124,8 +124,8 @@
 				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
 				[codeblock]
 				func _ready():
-				    await RenderingServer.frame_post_draw
-				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
+					await RenderingServer.frame_post_draw
+					$Viewport.get_texture().get_image().save_png("user://Screenshot.png")
 				[/codeblock]
 				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image encoded in linear space.
 			</description>

@@ -15,7 +15,7 @@
 		[codeblock]
 		var container = load("packed_data.res")
 		for key in container:
-		    prints(key, container[key])
+			prints(key, container[key])
 		[/codeblock]
 		Prints:
 		[codeblock lang=text]
