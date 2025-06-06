@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectFilter" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a filter to the audio bus.
+		Adds a filter.
 	</brief_description>
 	<description>
 		Allows frequencies other than the [member cutoff_hz] to pass.

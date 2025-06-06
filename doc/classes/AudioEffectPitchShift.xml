@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectPitchShift" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a pitch-shifting audio effect to an audio bus.
+		Adds a pitch-shifting audio effect.
 		Raises or lowers the pitch of original sound.
 	</brief_description>
 	<description>
