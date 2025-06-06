@@ -4092,6 +4092,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 }
 
 ::Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
+	WARN_PRINT(p_symbol); // TEST ONLY
+
 	// Before parsing, try the usual stuff.
 	if (ClassDB::class_exists(p_symbol)) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
@@ -4267,10 +4269,6 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 			}
 
-			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
-				return OK;
-			}
-
 			if (!is_function) {
 				if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
 					const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(p_symbol);
@@ -4345,6 +4343,11 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					return OK;
 				}
 			}
+
+			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
+				return OK;
+			}
+
 		} break;
 		case GDScriptParser::COMPLETION_ATTRIBUTE_METHOD:
 		case GDScriptParser::COMPLETION_ATTRIBUTE: {
