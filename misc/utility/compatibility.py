@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-import os
-import subprocess
 
-import methods
+from methods import is_apple_clang
 
 is_able_to_use_module_cache = None
 
@@ -20,17 +18,7 @@ def try_use_cxx20_module(env):
         is_able_to_use_module_cache = True
 
         # Apple clang supports module.
-        if methods.using_clang(env) and is_clang_support_module():
+        if is_apple_clang(env):
             env.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
         else:
             is_able_to_use_module_cache = False
-
-
-def is_clang_support_module() -> bool:
-    """
-    Check if the clang is Apple clang.
-    """
-    env = os.environ.copy()
-    env["LC_ALL"] = "C"
-    version_text: str = subprocess.check_output(["clang", "--version"], env=env, encoding="utf-8")
-    return "Apple clang version" in version_text
