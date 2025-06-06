@@ -1468,13 +1468,19 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 							drag_selection.front()->get()->get_name(),
 							drag_selection.front()->get()->_edit_get_pivot().x,
 							drag_selection.front()->get()->_edit_get_pivot().y));
+
+			snap_target[0] = SNAP_TARGET_NONE;
+			snap_target[1] = SNAP_TARGET_NONE;
 			_reset_drag();
+			viewport->queue_redraw();
 			return true;
 		}
 
 		// Cancel a drag
 		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
+			snap_target[0] = SNAP_TARGET_NONE;
+			snap_target[1] = SNAP_TARGET_NONE;
 			_reset_drag();
 			viewport->queue_redraw();
 			return true;
