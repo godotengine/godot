@@ -534,6 +534,8 @@ private:
 	bool underline_meta = true;
 	bool underline_hint = true;
 	bool use_selected_font_color = false;
+	double tab_char_width = 0.0;
+	double base_font_h = 0.0;
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
