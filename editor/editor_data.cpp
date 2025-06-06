@@ -337,19 +337,11 @@ void EditorData::set_editor_plugin_states(const Dictionary &p_states) {
 	}
 
 	for (const KeyValue<Variant, Variant> &kv : p_states) {
-		String name = kv.key;
-		int idx = -1;
-		for (int i = 0; i < editor_plugins.size(); i++) {
-			if (editor_plugins[i]->get_plugin_name() == name) {
-				idx = i;
-				break;
-			}
-		}
-
-		if (idx == -1) {
+		EditorPlugin *plugin = get_editor_by_name(kv.key);
+		if (plugin == nullptr) {
 			continue;
 		}
-		editor_plugins[idx]->set_state(kv.value);
+		plugin->set_state(kv.value);
 	}
 }
 

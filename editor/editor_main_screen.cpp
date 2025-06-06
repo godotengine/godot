@@ -59,6 +59,7 @@ void EditorMainScreen::_notification(int p_what) {
 
 			select(-1);
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < buttons.size(); i++) {
 				Button *tb = buttons[i];
@@ -70,6 +71,12 @@ void EditorMainScreen::_notification(int p_what) {
 				} else if (has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
 					tb->set_button_icon(get_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons)));
 				}
+			}
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			for (int i = 0; i < buttons.size(); i++) {
+				buttons[i]->set_text(editor_table[i]->get_workspace_display_name());
 			}
 		} break;
 	}
@@ -238,13 +245,12 @@ bool EditorMainScreen::can_auto_switch_screens() const {
 		return true;
 	}
 	// Only allow auto-switching if the selected button is to the left of the Script button.
-	for (int i = 0; i < button_hb->get_child_count(); i++) {
-		Button *button = Object::cast_to<Button>(button_hb->get_child(i));
-		if (button->get_text() == "Script") {
+	for (const EditorPlugin *plugin : editor_table) {
+		if (plugin->get_plugin_name() == "Script") {
 			// Selected button is at or after the Script button.
 			return false;
 		}
-		if (button->get_text() == selected_plugin->get_plugin_name()) {
+		if (plugin == selected_plugin) {
 			// Selected button is before the Script button.
 			return true;
 		}
@@ -258,10 +264,11 @@ VBoxContainer *EditorMainScreen::get_control() const {
 
 void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	Button *tb = memnew(Button);
+	tb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tb->set_toggle_mode(true);
 	tb->set_theme_type_variation("MainScreenButton");
 	tb->set_name(p_editor->get_plugin_name());
-	tb->set_text(p_editor->get_plugin_name());
+	tb->set_text(p_editor->get_workspace_display_name());
 
 	Ref<Texture2D> icon = p_editor->get_plugin_icon();
 	if (icon.is_null() && has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
@@ -285,7 +292,7 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 	// Remove the main editor button and update the bindings of
 	// all buttons behind it to point to the correct main window.
 	for (int i = buttons.size() - 1; i >= 0; i--) {
-		if (p_editor->get_plugin_name() == buttons[i]->get_text()) {
+		if (p_editor == editor_table[i]) {
 			if (buttons[i]->is_pressed()) {
 				select(EDITOR_SCRIPT);
 			}

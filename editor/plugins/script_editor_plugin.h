@@ -648,7 +648,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_plugin_name() const override { return TTRC("Script"); }
+	virtual String get_plugin_name() const override { return "Script"; }
+	virtual String get_workspace_display_name() const override { return TTR("Script", "Workspace"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
