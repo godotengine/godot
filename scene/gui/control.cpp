@@ -33,6 +33,7 @@
 #include "container.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/string/translation_server.h"
@@ -399,7 +400,13 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	ERR_MAIN_THREAD_GUARD;
 	List<ThemeDB::ThemeItemBind> theme_items;
-	ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true);
+
+	Ref<Script> scr = get_script();
+	if (scr.is_valid() && scr->is_valid()) {
+		ThemeDB::get_singleton()->get_script_items(scr, &theme_items, true);
+	} else {
+		ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true);
+	}
 
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
