@@ -46,28 +46,30 @@
 #define KEY_MAX String("max")
 #define KEY_WIDTH String("width")
 
-struct CameraInfo {
-	int index;
-	String device_id;
-	String label;
-};
-
 struct CapabilityInfo {
 	int width;
 	int height;
 };
 
+struct CameraInfo {
+	int index;
+	String device_id;
+	String label;
+	CapabilityInfo capability;
+};
+
+using CameraDriverWeb_OnGetCamerasCallback = void (*)(void *context, const Vector<CameraInfo> &camera_info);
+
 class CameraDriverWeb {
 private:
 	static CameraDriverWeb *singleton;
 	static Array _camera_info_key;
-	WASM_EXPORT static void _on_get_cameras_callback(void *context, const char *json_ptr);
-	WASM_EXPORT static void _on_get_capabilities_callback(void *context, const char *json_ptr);
+	static int _get_max_or_direct(const Variant &p_val);
+	WASM_EXPORT static void _on_get_cameras_callback(void *context, void *callback, const char *json_ptr);
 
 public:
 	static CameraDriverWeb *get_singleton();
-	void get_cameras(Vector<CameraInfo> *camera_info);
-	void get_capabilities(Vector<CapabilityInfo> *capabilities, const String &p_device_id);
+	void get_cameras(void *context, CameraDriverWeb_OnGetCamerasCallback callback);
 	void get_pixel_data(void *context, const String &p_device_id, const int width, const int height, CameraLibrary_OnGetPixelDataCallback p_callback, CameraLibrary_OnDeniedCallback p_denied_callback);
 	void stop_stream(const String &device_id = String());
 
