@@ -433,5 +433,5 @@ MultiMesh::MultiMesh() {
 
 MultiMesh::~MultiMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(multimesh);
+	RenderingServer::get_singleton()->free_rid(multimesh);
 }

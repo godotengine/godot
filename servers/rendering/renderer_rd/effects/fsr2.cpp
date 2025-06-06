@@ -196,7 +196,7 @@ static FfxErrorCode destroy_backend_context_rd(FfxFsr2Interface *p_backend_inter
 	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
 
 	for (uint32_t i = 0; i < FSR2_UBO_RING_BUFFER_SIZE; i++) {
-		RD::get_singleton()->free(scratch.ubo_ring_buffer[i]);
+		RD::get_singleton()->free_rid(scratch.ubo_ring_buffer[i]);
 	}
 
 	return FFX_OK;
@@ -288,7 +288,7 @@ static FfxErrorCode destroy_resource_rd(FfxFsr2Interface *p_backend_interface, F
 	if (p_resource.internalIndex != -1) {
 		FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
 		if (scratch.resources.rids[p_resource.internalIndex].is_valid()) {
-			RD::get_singleton()->free(scratch.resources.rids[p_resource.internalIndex]);
+			RD::get_singleton()->free_rid(scratch.resources.rids[p_resource.internalIndex]);
 			scratch.resources.remove(p_resource.internalIndex);
 		}
 	}
@@ -792,8 +792,8 @@ FSR2Effect::FSR2Effect() {
 }
 
 FSR2Effect::~FSR2Effect() {
-	RD::get_singleton()->free(device.point_clamp_sampler);
-	RD::get_singleton()->free(device.linear_clamp_sampler);
+	RD::get_singleton()->free_rid(device.point_clamp_sampler);
+	RD::get_singleton()->free_rid(device.linear_clamp_sampler);
 
 	for (uint32_t i = 0; i < FFX_FSR2_PASS_COUNT; i++) {
 		device.passes[i].shader->version_free(device.passes[i].shader_version);
