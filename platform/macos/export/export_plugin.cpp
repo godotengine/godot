@@ -103,7 +103,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 			}
 		}
 
-		if (p_name == "shader_baker/enabled") {
+		if (p_name == "shader_baker/enabled" && bool(p_preset->get("shader_baker/enabled"))) {
 			String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
 			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 				return TTR("\"Shader Baker\" is not supported when using the Compatibility renderer.");
