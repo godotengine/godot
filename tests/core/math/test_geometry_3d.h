@@ -160,6 +160,7 @@ TEST_CASE("[Geometry3D] Does Segment Intersect Convex") {
 	CHECK(Geometry3D::segment_intersects_convex(Vector3(10, 10, 10), Vector3(0, 0, 0), &box_planes[0], box_planes.size(), &result, &normal) == true);
 	CHECK(Geometry3D::segment_intersects_convex(Vector3(10, 10, 10), Vector3(5, 5, 5), &box_planes[0], box_planes.size(), &result, &normal) == true);
 	CHECK(Geometry3D::segment_intersects_convex(Vector3(10, 10, 10), Vector3(6, 5, 5), &box_planes[0], box_planes.size(), &result, &normal) == false);
+	CHECK(Geometry3D::segment_intersects_convex(Vector3(10, 10, 0), Vector3(10, 0, 0), &box_planes[0], box_planes.size(), &result, &normal) == false);
 }
 
 TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
