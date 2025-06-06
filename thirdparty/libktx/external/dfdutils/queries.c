@@ -97,19 +97,23 @@ uint32_t getDFDNumComponents(const uint32_t* DFD)
     return numComponents;
 }
 
-
 /**
  * @~English
  * @brief Reconstruct the value of bytesPlane0 from sample info.
  *
- * Reconstruct the value for data that has been variable-rate compressed so
- * has bytesPlane0 = 0.  For DFDs that are valid for KTX files. Little-endian
- * data only and no multi-plane formats.
+ * @deprecated Use reconstructDFDBytesPlanesFromSamples. This does not handle
+ *             the possible second plane of the ETC1S model.
  *
- * @param DFD Pointer to a Data Format Descriptor for which,
- *            described as 32-bit words in native endianness.
+ * Reconstruct the value for data that has been variable-rate compressed
+ * and and whose bytesPlane0 value has been set to 0.  For DFDs that
+ * are valid for KTX files. Little-endian data only and no multi-plane models
+ * except ETC1S.
+ *
+ * @param DFD Pointer to the Data Format Descriptor for which to provide
+ *            the value described as 32-bit words in native endianness.
  *            Note that this is the whole descriptor, not just
  *            the basic descriptor block.
+ * @return The number of bytes a pixel occupies in bytesPlane0.
  */
 uint32_t
 reconstructDFDBytesPlane0FromSamples(const uint32_t* DFD)
@@ -143,6 +147,10 @@ reconstructDFDBytesPlane0FromSamples(const uint32_t* DFD)
             }
         }
     }
+    if (KHR_DFDVAL(BDFDB, MODEL) == KHR_DF_MODEL_ETC1S) {
+        // Size of the first plane.
+        return 8;
+    }
     for (sampleNumber = 0; sampleNumber < numSamples; ++sampleNumber) {
         int32_t sampleBitOffset = KHR_DFDSVAL(BDFDB, sampleNumber, BITOFFSET);
         if (sampleBitOffset > largestOffset) {
@@ -159,14 +167,42 @@ reconstructDFDBytesPlane0FromSamples(const uint32_t* DFD)
 
 /**
  * @~English
+ * @brief Reconstruct the values of bytesPlane[01] from sample info.
+ *
+ * Reconstruct the values for data that has been variable-rate compressed
+ * and whose bytesPlane[01] values have been set to 0 and update the
+ * fields of the target DFD. For DFDs that are valid for KTX files.
+ * Little-endian data only and no multi-plane models except ETC1S hence
+ * only looking at bytesPlane0 abd bytesPlane1.
+ *
+ * @param DFD Pointer to a Data Format Descriptor for which,
+ *            described as 32-bit words in native endianness.
+ *            Note that this is the whole descriptor, not just
+ *            the basic descriptor block.
+ */
+
+void
+reconstructDFDBytesPlanesFromSamples(uint32_t* DFD)
+{
+    uint32_t *BDFDB = DFD+1;
+
+    KHR_DFDSETVAL(BDFDB, BYTESPLANE0, reconstructDFDBytesPlane0FromSamples(DFD));
+    if (KHR_DFDVAL(BDFDB, MODEL) == KHR_DF_MODEL_ETC1S) {
+        if (KHR_DFDSAMPLECOUNT(BDFDB) == 2)
+            KHR_DFDSETVAL(BDFDB, BYTESPLANE1, 8);
+    }
+}
+
+/**
+ * @~English
  * @brief Reconstruct the value of bytesPlane0 from sample info.
  *
  * @see reconstructDFDBytesPlane0FromSamples for details.
  * @deprecated For backward comparibility only. Use
- *             reconstructDFDBytesPlane0FromSamples.
+ *             reconstructDFDBytesPlanesFromSamples.
  *
- * @param DFD Pointer to a Data Format Descriptor for which,
- *            described as 32-bit words in native endianness.
+ * @param DFD Pointer to the Data Format Descriptor for which to provide
+ *            the value described as 32-bit words in native endianness.
  *            Note that this is the whole descriptor, not just
  *            the basic descriptor block.
  * @param bytesPlane0  pointer to a 32-bit word in which the recreated
