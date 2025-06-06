@@ -82,6 +82,34 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_voxelgi() 
 	}
 }
 
+void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_deferred_render_textures() {
+	ERR_FAIL_NULL(render_buffers);
+	ERR_FAIL_COND(render_buffers->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED);
+
+	uint32_t usage_bits = render_buffers->get_color_usage_bits(false, false, true);
+
+	if (!render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ALBEDO)) {
+		RD::DataFormat albedo_format = render_buffers->get_base_data_format();
+		render_buffers->create_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ALBEDO, albedo_format, usage_bits);
+	}
+
+	if (!render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_NORMAL)) {
+		RD::DataFormat normal_format = get_normal_roughness_format();
+		render_buffers->create_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_NORMAL, normal_format, usage_bits);
+	}
+
+	if (!render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_POSITION)) {
+		RD::DataFormat pos_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT; // TODO make this a get_pos_format function??
+		uint32_t pos_usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		render_buffers->create_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_POSITION, pos_format, pos_usage_bits);
+	}
+
+	if (!render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ORM)) {
+		RD::DataFormat orm_format = RD::DATA_FORMAT_R8G8B8A8_UNORM; // TODO make this a get_orm_format() function ??
+		render_buffers->create_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ORM, orm_format, usage_bits);
+	}
+}
+
 void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_fsr2(RendererRD::FSR2Effect *p_effect) {
 	if (fsr2_context == nullptr) {
 		fsr2_context = p_effect->create_context(render_buffers->get_internal_size(), render_buffers->get_target_size());
@@ -179,12 +207,7 @@ RID RenderForwardClustered::RenderBufferDataForwardClustered::get_color_pass_fb(
 
 	int v_count = (p_color_pass_flags & COLOR_PASS_FLAG_MULTIVIEW) ? render_buffers->get_view_count() : 1;
 	RID color = use_msaa ? render_buffers->get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA) : render_buffers->get_internal_texture();
-
-	RID specular;
-	if (p_color_pass_flags & COLOR_PASS_FLAG_SEPARATE_SPECULAR) {
-		ensure_specular();
-		specular = render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, use_msaa ? RB_TEX_SPECULAR_MSAA : RB_TEX_SPECULAR);
-	}
+	RID depth = use_msaa ? render_buffers->get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA) : render_buffers->get_depth_texture();
 
 	RID velocity_buffer;
 	if (p_color_pass_flags & COLOR_PASS_FLAG_MOTION_VECTORS) {
@@ -192,13 +215,41 @@ RID RenderForwardClustered::RenderBufferDataForwardClustered::get_color_pass_fb(
 		velocity_buffer = render_buffers->get_velocity_buffer(use_msaa);
 	}
 
-	RID depth = use_msaa ? render_buffers->get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA) : render_buffers->get_depth_texture();
-
+	RID vrs_texture;
 	if (render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
-		RID vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
-		return FramebufferCacheRD::get_singleton()->get_cache_multiview(v_count, color, specular, velocity_buffer, depth, vrs_texture);
+		vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
+	}
+
+	if (p_color_pass_flags & COLOR_PASS_FLAG_DEFERRED_RENDERER) {
+		// We do not support MSAA with deferred rendering!
+		ERR_FAIL_COND_V(use_msaa, RID());
+
+		ensure_deferred_render_textures();
+		RID albedo = get_dr_albedo();
+		RID position = get_dr_position();
+		RID normal = get_dr_normal();
+		RID orm = get_dr_orm();
+
+		// Note, we're outputting ambient and emissive colors directly into our color buffer,
+		// then writing albedo separately for our lighting passes.
+
+		if (vrs_texture.is_valid()) {
+			return FramebufferCacheRD::get_singleton()->get_cache_multiview(v_count, color, albedo, position, normal, orm, velocity_buffer, depth, vrs_texture);
+		} else {
+			return FramebufferCacheRD::get_singleton()->get_cache_multiview(v_count, color, albedo, position, normal, orm, velocity_buffer, depth);
+		}
 	} else {
-		return FramebufferCacheRD::get_singleton()->get_cache_multiview(v_count, color, specular, velocity_buffer, depth);
+		RID specular;
+		if (p_color_pass_flags & COLOR_PASS_FLAG_SEPARATE_SPECULAR) {
+			ensure_specular();
+			specular = render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, use_msaa ? RB_TEX_SPECULAR_MSAA : RB_TEX_SPECULAR);
+		}
+
+		if (vrs_texture.is_valid()) {
+			return FramebufferCacheRD::get_singleton()->get_cache_multiview(v_count, color, specular, velocity_buffer, depth, vrs_texture);
+		} else {
+			return FramebufferCacheRD::get_singleton()->get_cache_multiview(v_count, color, specular, velocity_buffer, depth);
+		}
 	}
 }
 
@@ -454,6 +505,10 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 					pipeline_key.color_pass_flags |= SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_MULTIVIEW;
 				}
 
+				if constexpr ((p_color_pass_flags & COLOR_PASS_FLAG_DEFERRED_RENDERER) != 0) {
+					pipeline_key.color_pass_flags |= SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_DEFERRED_RENDERER;
+				}
+
 				pipeline_key.version = SceneShaderForwardClustered::PIPELINE_VERSION_COLOR_PASS;
 			} break;
 			case PASS_MODE_SHADOW:
@@ -636,6 +691,10 @@ void RenderForwardClustered::_render_list(RenderingDevice::DrawListID p_draw_lis
 				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_MOTION_VECTORS);
 				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_SEPARATE_SPECULAR | COLOR_PASS_FLAG_MULTIVIEW | COLOR_PASS_FLAG_MOTION_VECTORS);
 				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_TRANSPARENT | COLOR_PASS_FLAG_MULTIVIEW | COLOR_PASS_FLAG_MOTION_VECTORS);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_DEFERRED_RENDERER);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_DEFERRED_RENDERER | COLOR_PASS_FLAG_MULTIVIEW);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_DEFERRED_RENDERER | COLOR_PASS_FLAG_MULTIVIEW | COLOR_PASS_FLAG_MOTION_VECTORS);
+				VALID_FLAG_COMBINATION(COLOR_PASS_FLAG_DEFERRED_RENDERER | COLOR_PASS_FLAG_MOTION_VECTORS);
 				default: {
 					ERR_FAIL_MSG("Invalid color pass flag combination " + itos(p_params->color_pass_flags));
 				}
@@ -1774,6 +1833,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_ssr = false;
 	bool using_sdfgi = false;
 	bool using_voxelgi = false;
+	bool using_deferred_renderer = false;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
 	bool using_motion_pass = rb_data.is_valid() && using_upscaling;
@@ -1797,6 +1857,14 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		// Indicate pipelines for reflection probes are required.
 		global_pipeline_data_required.use_reflection_probes = true;
 	} else {
+		using_deferred_renderer = (dr_lighting != nullptr);
+		if (using_deferred_renderer) {
+			color_pass_flags |= COLOR_PASS_FLAG_DEFERRED_RENDERER;
+
+			// TODO We should have a group to enable compiling deferred versions, but it means doubling our number of groups.
+			// Need to discuss with Clay.
+		}
+
 		screen_size = rb->get_internal_size();
 
 		if (p_render_data->scene_data->calculate_motion_vectors) {
@@ -1860,6 +1928,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	RD::get_singleton()->draw_command_end_label();
 
 	if (!is_reflection_probe) {
+		// TODO probably limit this if we're using deferred rendering...
+
 		if (using_voxelgi) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI;
 		} else if (p_render_data->environment.is_valid()) {
@@ -1896,6 +1966,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	bool using_sss = rb_data.is_valid() && !is_reflection_probe && scene_state.used_sss && ss_effects->sss_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
 
+	// TODO check impact of deferred renderer here, need to move outputting specular to lighting pass
 	if ((using_sss || ce_needs_separate_specular) && !using_separate_specular) {
 		using_separate_specular = true;
 		color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
@@ -1930,6 +2001,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	if (using_separate_specular || global_surface_data.sss_used) {
 		global_pipeline_data_required.use_separate_specular = true;
+	}
+
+	if (using_deferred_renderer) {
+		// Unset specular flag, for deferred renderer we handle this in lighting passes
+		color_pass_flags &= ~COLOR_PASS_FLAG_SEPARATE_SPECULAR;
 	}
 
 	// Update the compiled pipelines if any of the requirements have changed.
@@ -2140,6 +2216,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				c.push_back(cc);
 
 				if (rb_data.is_valid()) {
+					if (using_deferred_renderer) {
+						c.push_back(Color(0, 0, 0, 0)); // Albedo
+						c.push_back(Color(0, 0, 0, 0)); // Position
+						c.push_back(Color(0, 0, 0, 0)); // Normal
+					}
 					c.push_back(Color(0, 0, 0, 0)); // Separate specular.
 					c.push_back(Color(0, 0, 0, 0)); // Motion vector. Pushed to the clear color vector even if the framebuffer isn't bound.
 				}
@@ -2178,6 +2259,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 			RD::get_singleton()->draw_command_end_label();
 		}
+	}
+
+	if (using_deferred_renderer) {
+		// TODO should look into moving some of these parameters into our render data?
+		dr_lighting->apply_lighting(p_render_data, true, samplers, light_projectors_get_filter());
 	}
 
 	{
@@ -2353,7 +2439,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
 	{
-		uint32_t transparent_color_pass_flags = (color_pass_flags | uint32_t(COLOR_PASS_FLAG_TRANSPARENT)) & ~uint32_t(COLOR_PASS_FLAG_SEPARATE_SPECULAR);
+		uint32_t transparent_color_pass_flags = (color_pass_flags | uint32_t(COLOR_PASS_FLAG_TRANSPARENT)) & ~uint32_t(COLOR_PASS_FLAG_SEPARATE_SPECULAR | COLOR_PASS_FLAG_DEFERRED_RENDERER);
 		if (using_motion_pass) {
 			// Motion vectors on transparent draw calls are not required when using the reactive mask.
 			transparent_color_pass_flags &= ~uint32_t(COLOR_PASS_FLAG_MOTION_VECTORS);
@@ -4466,6 +4552,8 @@ void RenderForwardClustered::_mesh_compile_pipelines_for_surface(const SurfacePi
 	pipeline_key.primitive_type = mesh_storage->mesh_surface_get_primitive(p_surface.mesh_surface);
 	pipeline_key.wireframe = false;
 
+	// TODO is there an impact here for deferred rendering?
+
 	// Grab the shader and surface used for most passes.
 	const uint32_t multiview_iterations = multiview_enabled ? 2 : 1;
 	const uint32_t lightmap_iterations = p_global.use_lightmaps && p_surface.can_use_lightmap ? 2 : 1;
@@ -4881,6 +4969,15 @@ void RenderForwardClustered::_update_shader_quality_settings() {
 	base_uniforms_changed(); //also need this
 }
 
+void RenderForwardClustered::init() {
+	RendererSceneRenderRD::init();
+
+	if (dr_lighting) {
+		uint32_t max_directional_lights = RendererRD::LightStorage::get_singleton()->get_max_directional_lights();
+		dr_lighting->init_shader(max_directional_lights);
+	}
+}
+
 RenderForwardClustered::RenderForwardClustered() {
 	singleton = this;
 
@@ -5014,6 +5111,11 @@ RenderForwardClustered::RenderForwardClustered() {
 		RD::get_singleton()->compute_list_end();
 	}
 
+	if (bool(GLOBAL_GET_CACHED(bool, "rendering/driver/deferred_rendering/enable"))) {
+		// Deferred lighting
+		dr_lighting = memnew(RendererRD::DeferredRendererLighting);
+	}
+
 	_update_shader_quality_settings();
 	_update_global_pipeline_data_requirements_from_project();
 
@@ -5028,6 +5130,11 @@ RenderForwardClustered::RenderForwardClustered() {
 }
 
 RenderForwardClustered::~RenderForwardClustered() {
+	if (dr_lighting != nullptr) {
+		memdelete(dr_lighting);
+		dr_lighting = nullptr;
+	}
+
 	if (ss_effects != nullptr) {
 		memdelete(ss_effects);
 		ss_effects = nullptr;
