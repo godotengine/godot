@@ -551,7 +551,9 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_offset->set_accessibility_name(TTRC("Loop Offset"));
 	loop_offset->set_max(10000);
 	loop_offset->set_step(0.001);
-	loop_offset->set_suffix("sec");
+	loop_offset->set_suffix("s");
+	loop_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	loop_offset->set_stretch_ratio(0.33);
 	loop_offset->set_tooltip_text(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
 	loop_offset->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop_offset);
