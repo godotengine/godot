@@ -87,6 +87,8 @@ private:
 	int _get_auto_brace_pair_open_at_pos(int p_line, int p_col);
 	int _get_auto_brace_pair_close_at_pos(int p_line, int p_col);
 
+	void _count_brace_balance(int p_pair, int p_line, int &r_count);
+
 	/* Main Gutter */
 	enum MainGutterType {
 		MAIN_GUTTER_BREAKPOINT = 0x01,
