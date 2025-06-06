@@ -34,10 +34,15 @@
 
 #include "core/io/json.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
 
 SnapshotJsonView::SnapshotJsonView() {
-	set_name(TTR("JSON"));
+	set_name(TTRC("JSON"));
+}
+
+SnapshotJsonView::~SnapshotJsonView() {
+	_wait_for_serialization();
 }
 
 void SnapshotJsonView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
@@ -51,7 +56,7 @@ void SnapshotJsonView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 
 	loading_panel = memnew(DarkPanelContainer);
 	CenterContainer *loading_center = memnew(CenterContainer);
-	Label *loading_label = memnew(Label(TTR("Loading")));
+	Label *loading_label = memnew(Label(TTRC("Loading")));
 	add_child(loading_panel);
 	loading_panel->add_child(loading_center);
 	loading_center->add_child(loading_label);
@@ -62,10 +67,10 @@ void SnapshotJsonView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 	json_box->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	json_box->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	box->add_child(json_box);
-	String hdr_a_text = diff_data ? TTR("Snapshot A JSON") : TTR("Snapshot JSON");
+	String hdr_a_text = diff_data ? TTRC("Snapshot A JSON") : TTRC("Snapshot JSON");
 	SpanningHeader *hdr_a = memnew(SpanningHeader(hdr_a_text));
 	if (diff_data) {
-		hdr_a->set_tooltip_text(TTR("Snapshot A:") + " " + snapshot_data->name);
+		hdr_a->set_tooltip_text(vformat(TTRC("Snapshot A: %s"), snapshot_data->name));
 	}
 	json_box->add_child(hdr_a);
 
@@ -84,9 +89,9 @@ void SnapshotJsonView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 		diff_json_box->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 		diff_json_box->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 		box->add_child(diff_json_box);
-		String hrd_b_text = TTR("Snapshot B JSON");
+		String hrd_b_text = TTRC("Snapshot B JSON");
 		SpanningHeader *hdr_b = memnew(SpanningHeader(hrd_b_text));
-		hdr_b->set_tooltip_text(TTR("Snapshot B:") + " " + diff_data->name);
+		hdr_b->set_tooltip_text(vformat(TTRC("Snapshot B: %s"), diff_data->name));
 		diff_json_box->add_child(hdr_b);
 
 		diff_json_content = memnew(EditorJsonVisualizer);
@@ -97,7 +102,8 @@ void SnapshotJsonView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 		diff_json_box->add_child(diff_json_content);
 	}
 
-	WorkerThreadPool::get_singleton()->add_native_task(&SnapshotJsonView::_serialization_worker, this);
+	_wait_for_serialization();
+	serialization_task_id = WorkerThreadPool::get_singleton()->add_native_task(&SnapshotJsonView::_serialization_worker, this);
 }
 
 String SnapshotJsonView::_snapshot_to_json(GameStateSnapshot *p_snapshot) {
@@ -135,11 +141,8 @@ void SnapshotJsonView::_serialization_worker(void *p_ud) {
 	SnapshotJsonView *self = static_cast<SnapshotJsonView *>(p_ud);
 	GameStateSnapshot *snapshot_data = self->snapshot_data;
 	GameStateSnapshot *diff_data = self->diff_data;
-	// let the message queue figure out if self is still a valid object or if it's been destroyed.
-	MessageQueue::get_singleton()->push_call(self, "_update_text",
-			snapshot_data, diff_data,
-			_snapshot_to_json(snapshot_data),
-			_snapshot_to_json(diff_data));
+	// Let the message queue figure out if self is still a valid object or if it's been destroyed.
+	callable_mp(self, &SnapshotJsonView::_update_text).call_deferred(snapshot_data, diff_data, _snapshot_to_json(snapshot_data), _snapshot_to_json(diff_data));
 }
 
 void SnapshotJsonView::_update_text(GameStateSnapshot *p_data_ptr, GameStateSnapshot *p_diff_ptr, const String &p_data_str, const String &p_diff_data_str) {
@@ -158,6 +161,9 @@ void SnapshotJsonView::_update_text(GameStateSnapshot *p_data_ptr, GameStateSnap
 	// Loading json done, release the lock.
 }
 
-void SnapshotJsonView::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_text", "p_data_ptr", "p_diff_ptr", "p_data_str", "p_diff_data_str"), &SnapshotJsonView::_update_text);
+void SnapshotJsonView::_wait_for_serialization() {
+	if (serialization_task_id != -1) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(serialization_task_id);
+		serialization_task_id = -1;
+	}
 }
