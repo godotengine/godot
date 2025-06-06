@@ -91,12 +91,20 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 				result = get_analyzer()->resolve_inheritance();
 			} break;
 			case INHERITANCE_SOLVED: {
+				status = USES_SOLVED;
+				result = get_analyzer()->resolve_uses();
+			} break;
+			case USES_SOLVED: {
 				status = INTERFACE_SOLVED;
 				result = get_analyzer()->resolve_interface();
 			} break;
 			case INTERFACE_SOLVED: {
-				status = FULLY_SOLVED;
+				status = BODY_SOLVED;
 				result = get_analyzer()->resolve_body();
+			} break;
+			case BODY_SOLVED: {
+				status = FULLY_SOLVED;
+				result = get_analyzer()->resolve_dependencies();
 			} break;
 			case FULLY_SOLVED: {
 				return result;
