@@ -19,28 +19,11 @@ def try_use_cxx20_module(env):
     else:
         is_able_to_use_module_cache = True
 
-        # According to the reference, currently (06/03/2025, mm/dd/yyyy),
-        #  only msvc has full support of module.
-        if env.msvc and is_msvc_support_module(env):
-            env.Append(CCFLAGS=["/experimental:module"])
-        # Apple clang also supports module.
-        elif methods.using_clang(env) and is_clang_support_module():
+        # Apple clang supports module.
+        if methods.using_clang(env) and is_clang_support_module():
             env.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
         else:
             is_able_to_use_module_cache = False
-
-
-def is_msvc_support_module(env) -> bool:
-    """
-    MSVC supports C++ modules after 19.2.8.
-    """
-    # Only "major", "minor", and "patch" has int type.
-    version = methods.get_compiler_version(env)
-    major: int = version["major"]
-    minor: int = version["minor"]
-    patch: int = version["patch"]
-
-    return major > 19 or (version["major"] == 19 and minor >= 2) or (major == 19 and minor == 2 and patch >= 8)
 
 
 def is_clang_support_module() -> bool:
