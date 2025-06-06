@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_main_screen.h"
@@ -62,6 +63,7 @@
 #include "scene/2d/node_2d.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/audio/audio_stream_player.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -4646,13 +4648,18 @@ void SceneTreeDock::_update_configuration_warning() {
 
 SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data) {
 	singleton = this;
-	set_name("Scene");
+	set_name(TTRC("Scene"));
+	set_icon_name("PackedScene");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_scene", TTRC("Open Scene Dock")));
+	set_default_slot(EditorDockManager::DOCK_SLOT_LEFT_UR);
+
 	edited_scene = nullptr;
 	editor_data = &p_editor_data;
 	editor_selection = p_editor_selection;
 	scene_root = p_scene_root;
 
-	VBoxContainer *vbc = this;
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
 
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
 	filter_hbc->add_theme_constant_override("separate", 0);
