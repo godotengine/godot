@@ -68,12 +68,19 @@ class SpinBox : public Range {
 	void _range_click_timeout();
 	void _release_mouse_from_drag_mode();
 
+	void _update_prefix_suffix();
 	void _update_text(bool p_only_update_if_value_changed = false);
 	void _text_submitted(const String &p_string);
 	void _text_changed(const String &p_string);
 
 	String prefix;
+	String xl_prefix;
+	AutoTranslateMode prefix_auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED;
+
 	String suffix;
+	String xl_suffix;
+	AutoTranslateMode suffix_auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED;
+
 	String last_text_value;
 	double custom_arrow_step = 0.0;
 	bool use_custom_arrow_step = false;
@@ -168,8 +175,14 @@ public:
 	void set_suffix(const String &p_suffix);
 	String get_suffix() const;
 
+	void set_suffix_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_suffix_auto_translate_mode() const { return suffix_auto_translate_mode; }
+
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+
+	void set_prefix_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_prefix_auto_translate_mode() const { return prefix_auto_translate_mode; }
 
 	void set_update_on_text_changed(bool p_enabled);
 	bool get_update_on_text_changed() const;
