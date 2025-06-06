@@ -135,7 +135,7 @@ private:
 	mutable RID accessibility_row_element;
 	mutable bool accessibility_row_dirty = true;
 
-	Vector<Cell> cells;
+	LocalVector<Cell> cells;
 
 	bool collapsed = false; // Won't show children.
 	bool visible = true;
