@@ -154,6 +154,8 @@ static void _add_qualifiers_to_rt(const String &p_qualifiers, RichTextLabel *p_r
 			hint = TTR("This method has no side effects.\nIt does not modify the object in any way.");
 		} else if (qualifier == "static") {
 			hint = TTR("This method does not need an instance to be called.\nIt can be called directly using the class name.");
+		} else if (qualifier == "abstract") {
+			hint = TTR("This method must be implemented to complete the abstract class.");
 		}
 
 		p_rt->add_text(" ");
