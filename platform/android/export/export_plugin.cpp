@@ -2067,7 +2067,7 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!bool(p_preset->get("package/show_in_app_library")) && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to disable \"Show In App Library\".");
 			}
-		} else if (p_name == "shader_baker/enabled") {
+		} else if (p_name == "shader_baker/enabled" && bool(p_preset->get("shader_baker/enabled"))) {
 			String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
 			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 				return TTR("\"Shader Baker\" is not supported when using the Compatibility renderer.");
