@@ -123,7 +123,8 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 
 	{
 		container = memnew(QuickOpenResultContainer);
-		container->connect("result_clicked", callable_mp(this, &EditorQuickOpenDialog::ok_pressed));
+		container->connect("selection_changed", callable_mp(this, &EditorQuickOpenDialog::selection_changed));
+		container->connect("result_clicked", callable_mp(this, &EditorQuickOpenDialog::item_pressed));
 		vbc->add_child(container);
 	}
 
@@ -160,12 +161,33 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 }
 
 void EditorQuickOpenDialog::ok_pressed() {
-	item_selected_callback.call(container->get_selected());
-
-	container->save_selected_item();
 	container->cleanup();
 	search_box->clear();
 	hide();
+}
+
+void EditorQuickOpenDialog::selection_changed() {
+	if (!EDITOR_GET("filesystem/quick_open_dialog/instant_preview")) {
+		return;
+	}
+	item_selected_callback.call(container->get_selected());
+	container->save_selected_item();
+
+	// Required due to the way keyboard navigation between items is handled;
+	// it doesn't appear to use Godot's normal focus system. We may want to
+	// update it to use the standard focus/navigation system in the future.
+	search_box->grab_focus();
+}
+
+void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
+	if (!EDITOR_GET("filesystem/quick_open_dialog/instant_preview")) {
+		item_selected_callback.call(container->get_selected());
+
+		container->save_selected_item();
+		ok_pressed();
+	} else if (p_double_click) {
+		ok_pressed();
+	}
 }
 
 void EditorQuickOpenDialog::cancel_pressed() {
@@ -262,6 +284,13 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		bottom_bar->add_theme_constant_override("separation", 3);
 		add_child(bottom_bar);
 
+		instant_preview_toggle = memnew(CheckButton);
+		style_button(instant_preview_toggle);
+		instant_preview_toggle->set_text(TTR("Instant Preview"));
+		instant_preview_toggle->set_tooltip_text(TTR("Selected resource will be immediately updated in editor"));
+		instant_preview_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_instant_preview));
+		bottom_bar->add_child(instant_preview_toggle);
+
 		fuzzy_search_toggle = memnew(CheckButton);
 		style_button(fuzzy_search_toggle);
 		fuzzy_search_toggle->set_text(TTR("Fuzzy Search"));
@@ -333,8 +362,10 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		_set_display_mode((QuickOpenDisplayMode)last);
 	}
 
+	const bool do_instant_preview = EDITOR_GET("filesystem/quick_open_dialog/instant_preview");
 	const bool fuzzy_matching = EDITOR_GET("filesystem/quick_open_dialog/enable_fuzzy_matching");
 	const bool include_addons = EDITOR_GET("filesystem/quick_open_dialog/include_addons");
+	instant_preview_toggle->set_pressed_no_signal(do_instant_preview);
 	fuzzy_search_toggle->set_pressed_no_signal(fuzzy_matching);
 	include_addons_toggle->set_pressed_no_signal(include_addons);
 	never_opened = false;
@@ -680,6 +711,8 @@ void QuickOpenResultContainer::_select_item(int p_index) {
 	bool in_history = history_set.has(candidates[selection_index].file_path);
 	file_details_path->set_text(get_selected() + (in_history ? TTR(" (recently opened)") : ""));
 
+	emit_signal(SNAME("selection_changed"));
+
 	const QuickOpenResultItem *item = result_items[selection_index];
 
 	// Copied from Tree.
@@ -701,7 +734,7 @@ void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_in
 	if (mb.is_valid() && mb->is_pressed()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			_select_item(p_index);
-			emit_signal(SNAME("result_clicked"));
+			emit_signal(SNAME("result_clicked"), mb->is_double_click());
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			_select_item(p_index);
 			file_context_menu->set_position(result_items[p_index]->get_screen_position() + mb->get_position());
@@ -709,6 +742,10 @@ void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_in
 			file_context_menu->popup();
 		}
 	}
+}
+
+void QuickOpenResultContainer::_toggle_instant_preview(bool p_pressed) {
+	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/instant_preview", p_pressed);
 }
 
 void QuickOpenResultContainer::_toggle_fuzzy_search(bool p_pressed) {
@@ -886,7 +923,8 @@ void QuickOpenResultContainer::_notification(int p_what) {
 }
 
 void QuickOpenResultContainer::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("result_clicked"));
+	ADD_SIGNAL(MethodInfo("selection_changed"));
+	ADD_SIGNAL(MethodInfo("result_clicked", PropertyInfo(Variant::BOOL, "double_click")));
 }
 
 //------------------------- Result Item
