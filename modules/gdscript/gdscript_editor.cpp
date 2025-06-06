@@ -3557,26 +3557,28 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				if (method_hint.contains_char(':')) {
 					method_hint = method_hint.get_slicec(':', 0);
 				}
-				method_hint += "(";
+				if (!completion_context.has_param_parenthesis) {
+					method_hint += "(";
 
-				for (int64_t i = 0; i < mi.arguments.size(); ++i) {
-					if (i > 0) {
-						method_hint += ", ";
+					for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+						if (i > 0) {
+							method_hint += ", ";
+						}
+						String arg = mi.arguments[i].name;
+						if (arg.contains_char(':')) {
+							arg = arg.substr(0, arg.find_char(':'));
+						}
+						method_hint += arg;
+						if (use_type_hint) {
+							method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
+						}
 					}
-					String arg = mi.arguments[i].name;
-					if (arg.contains_char(':')) {
-						arg = arg.substr(0, arg.find_char(':'));
-					}
-					method_hint += arg;
+					method_hint += ")";
 					if (use_type_hint) {
-						method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
+						method_hint += " -> " + _get_visual_datatype(mi.return_val, false, class_name);
 					}
+					method_hint += ":";
 				}
-				method_hint += ")";
-				if (use_type_hint) {
-					method_hint += " -> " + _get_visual_datatype(mi.return_val, false, class_name);
-				}
-				method_hint += ":";
 
 				ScriptLanguage::CodeCompletionOption option(method_hint, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 				options.insert(option.display, option);

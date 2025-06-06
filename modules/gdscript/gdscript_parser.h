@@ -1314,6 +1314,7 @@ public:
 		int current_line = -1;
 		int current_argument = -1;
 		Variant::Type builtin_type = Variant::VARIANT_MAX;
+		bool has_param_parenthesis = false;
 		Node *node = nullptr;
 		Object *base = nullptr;
 		GDScriptParser *parser = nullptr;
@@ -1475,8 +1476,10 @@ private:
 	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
 	// See parse_precedence for an example.
-	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = true);
-	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = true);
+	bool make_completion_context(CompletionType p_type, Node *p_node, bool p_force = true);
+	void make_completion_context_argument(CompletionType p_type, Node *p_node, int p_argument, bool p_force = true);
+	void make_completion_context_bultin_type(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = true);
+	bool make_completion_context_virtual_method(CompletionType p_type, Node *p_node, bool p_has_param_parenthesis, bool p_force = true);
 	// In some cases it might become necessary to alter the completion context after parsing a subexpression.
 	// For example to not override COMPLETE_CALL_ARGUMENTS with COMPLETION_NONE from string literals.
 	void override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument = -1);
