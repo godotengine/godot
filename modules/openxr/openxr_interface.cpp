@@ -30,8 +30,11 @@
 
 #include "openxr_interface.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "modules/openxr/extensions/openxr_overlay_extension.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
@@ -115,6 +118,9 @@ void OpenXRInterface::_bind_methods() {
 	ADD_GROUP("Vulkan VRS", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
+	// Overlays
+	ClassDB::bind_method(D_METHOD("set_overlay_session_layers_placement", "placement"), &OpenXRInterface::set_overlay_session_layers_placement);
+	ClassDB::bind_method(D_METHOD("get_overlay_session_layers_placement"), &OpenXRInterface::get_overlay_session_layers_placement);
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -1290,6 +1296,27 @@ bool OpenXRInterface::start_passthrough() {
 
 void OpenXRInterface::stop_passthrough() {
 	set_environment_blend_mode(XR_ENV_BLEND_MODE_OPAQUE);
+}
+
+bool OpenXRInterface::is_overlay_supported() {
+	return overlay_wrapper != nullptr && overlay_wrapper->is_available();
+}
+
+bool OpenXRInterface::is_overlay_enabled() {
+	return overlay_wrapper != nullptr && overlay_wrapper->is_enabled();
+}
+
+int OpenXRInterface::get_overlay_session_layers_placement() const {
+	if (overlay_wrapper == nullptr) {
+		WARN_PRINT_ED("The overlay extension is not enabled or not supported. Returning -1.");
+		return -1;
+	}
+	return overlay_wrapper->get_session_layers_placement();
+}
+
+void OpenXRInterface::set_overlay_session_layers_placement(int p_overlay_session_layers_placement) {
+	ERR_FAIL_NULL_MSG(overlay_wrapper, "The overlay extension is not enabled or not supported.");
+	overlay_wrapper->set_session_layers_placement(p_overlay_session_layers_placement);
 }
 
 Array OpenXRInterface::get_supported_environment_blend_modes() {
