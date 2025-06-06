@@ -21,24 +21,14 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Kaikki tunnistetut"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Väri: #%s\n"
-"Vasen hiirenkorva: Aseta väri\n"
-"Oikea hiirenkorva: Poista esiasetus"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Väri: #%s\n"
-"Vasen hiiren painike: Aseta väri"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "Syötä hex koodi (\"#ff0000\") tai nimetty väri (\"red\")."
+
+msgid "Save"
+msgstr "Tallenna"
+
+msgid "Clear"
+msgstr "Tyhjennä"
 
 msgid "Hex code or named color"
 msgstr "Hex koodi tai nimetty väri"
@@ -61,9 +51,6 @@ msgstr "Avaa"
 
 msgid "Select Current Folder"
 msgstr "Valitse nykyinen kansio"
-
-msgid "Save"
-msgstr "Tallenna"
 
 msgid "Select This Folder"
 msgstr "Valitse tämä kansio"
@@ -101,11 +88,11 @@ msgstr "Polku:"
 msgid "Refresh files."
 msgstr "Lataa uudelleen tiedostot."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Aseta piilotiedostojen näyttäminen."
-
 msgid "Directories & Files:"
 msgstr "Hakemistot ja Tiedostot:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Aseta piilotiedostojen näyttäminen."
 
 msgid "File:"
 msgstr "Tiedosto:"
@@ -142,9 +129,6 @@ msgstr "Liitä"
 
 msgid "Select All"
 msgstr "Valitse kaikki"
-
-msgid "Clear"
-msgstr "Tyhjennä"
 
 msgid "Undo"
 msgstr "Peru"

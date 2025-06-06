@@ -116,6 +116,9 @@ msgstr "Automaticky přijmout ukončení"
 msgid "Quit on Go Back"
 msgstr "Ukončit při Zpět"
 
+msgid "General"
+msgstr "Obecné"
+
 msgid "Display"
 msgstr "Zobrazení"
 
@@ -196,9 +199,6 @@ msgstr "Sběrnice"
 
 msgid "Default Bus Layout"
 msgstr "Výchozí rozvržení sběrnice"
-
-msgid "General"
-msgstr "Obecné"
 
 msgid "Default Playback Type"
 msgstr "Výchozí typ přehrávání"
@@ -448,6 +448,33 @@ msgstr "Povolit gesta posunutí a škálování"
 
 msgid "Rotary Input Scroll Axis"
 msgstr "Osa posování otočného vstupu"
+
+msgid "Navigation"
+msgstr "Navigace"
+
+msgid "Avoidance"
+msgstr "Vyhýbání"
+
+msgid "Thread Model"
+msgstr "Vláknový model"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "Použít více vláken pro vyhýbání"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Použít vysokoprioritní vlákna pro vyhýbání"
+
+msgid "Pathfinding"
+msgstr "Hledání cest"
+
+msgid "Max Threads"
+msgstr "Maximální počet vláken"
+
+msgid "Baking Use Multiple Threads"
+msgstr "Použít více vláken pro vypalování"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Použít vysokoprioritní vlákna pro vypalování"
 
 msgid "Low Processor Usage Mode"
 msgstr "Režim nízkého využití procesoru"
@@ -754,9 +781,6 @@ msgstr "Threading"
 
 msgid "Worker Pool"
 msgstr "Pool workerů"
-
-msgid "Max Threads"
-msgstr "Maximální počet vláken"
 
 msgid "Low Priority Thread Ratio"
 msgstr "Poměr vláken s nízkou prioritou"
@@ -1094,9 +1118,6 @@ msgstr "Dotyková obrazovka"
 msgid "Scale Gizmo Handles"
 msgstr "Škálovat úchyty gizma"
 
-msgid "Increase Scrollbar Touch Area"
-msgstr "Zvětšit plochu dotyku posuvníků"
-
 msgid "Scene Tabs"
 msgstr "Záložky scén"
 
@@ -1247,9 +1268,6 @@ msgstr "Odstín zbarvení dílčích zdrojů"
 msgid "Text Editor"
 msgstr "Editor textu"
 
-msgid "Line Spacing"
-msgstr "Řádkování"
-
 msgid "Color Theme"
 msgstr "Barevný motiv"
 
@@ -1325,14 +1343,14 @@ msgstr "Vykreslit tabulátory"
 msgid "Draw Spaces"
 msgstr "Vykreslit mezery"
 
+msgid "Line Spacing"
+msgstr "Řádkování"
+
 msgid "Behavior"
 msgstr "Chování"
 
 msgid "Empty Selection Clipboard"
 msgstr "Prázdný výběr do schránky"
-
-msgid "Navigation"
-msgstr "Navigace"
 
 msgid "Move Caret on Right Click"
 msgstr "Přemístit kurzor při pravém kliknutí"
@@ -2003,6 +2021,9 @@ msgstr "Barva proměnných členů"
 msgid "Mark Color"
 msgstr "Barva značek"
 
+msgid "Warning Color"
+msgstr "Barva varování"
+
 msgid "Bookmark Color"
 msgstr "Barva záložek"
 
@@ -2083,6 +2104,138 @@ msgstr "Vlastní šablona"
 
 msgid "Release"
 msgstr "Vydání"
+
+msgid "Architectures"
+msgstr "Architektury"
+
+msgid "App Store Team ID"
+msgstr "App Store Team ID"
+
+msgid "Export Method Debug"
+msgstr "Metoda exportu ladění"
+
+msgid "Code Sign Identity Debug"
+msgstr "Identita podepisování kódu pro ladění"
+
+msgid "Code Sign Identity Release"
+msgstr "Identita podepisování kódu pro vydání"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "UUID provisioning profilu pro ladění"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "UUID provisioning profilu pro vydání"
+
+msgid "Provisioning Profile Specifier Debug"
+msgstr "Specifikátor provisioning profilu pro ladění"
+
+msgid "Provisioning Profile Specifier Release"
+msgstr "Specifikátor provisioning profilu pro vydání"
+
+msgid "Export Method Release"
+msgstr "Metoda exportu vydání"
+
+msgid "Bundle Identifier"
+msgstr "Identifikátor balíčku"
+
+msgid "Signature"
+msgstr "Podpis"
+
+msgid "Short Version"
+msgstr "Krátká verze"
+
+msgid "Additional Plist Content"
+msgstr "Dodatečný obsah plist"
+
+msgid "Icon Interpolation"
+msgstr "Interpolace ikon"
+
+msgid "Export Project Only"
+msgstr "Exportovat pouze projekt"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "Bezpodmínečně smazat staré soubory exportu"
+
+msgid "Plugins"
+msgstr "Zásuvné moduly"
+
+msgid "Entitlements"
+msgstr "Oprávnění"
+
+msgid "Increased Memory Limit"
+msgstr "Zvýšený limit paměti"
+
+msgid "Game Center"
+msgstr "Herní centrum"
+
+msgid "Push Notifications"
+msgstr "Push notifikace"
+
+msgid "Additional"
+msgstr "Dodatečné"
+
+msgid "Capabilities"
+msgstr "Způsobilosti"
+
+msgid "Access Wi-Fi"
+msgstr "Přístup k Wi-Fi"
+
+msgid "Performance Gaming Tier"
+msgstr "Výkon herní úrovně"
+
+msgid "Performance A 12"
+msgstr "Výkon A12"
+
+msgid "Enabled"
+msgstr "Povoleno"
+
+msgid "User Data"
+msgstr "Uživatelská data"
+
+msgid "Accessible From Files App"
+msgstr "Přístupné z aplikace Soubory"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Přístupné z iTunes sdílení"
+
+msgid "Privacy"
+msgstr "Soukromí"
+
+msgid "Camera Usage Description"
+msgstr "Popis použití fotoaparátu"
+
+msgid "Camera Usage Description Localized"
+msgstr "Lokalizovaný popis použití fotoaparátu"
+
+msgid "Microphone Usage Description"
+msgstr "Popis použití mikrofonu"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Lokalizovaný popis použití mikrofonu"
+
+msgid "Photolibrary Usage Description"
+msgstr "Popis použití knihovny fotek"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "Lokalizovaný popis použití knihovny fotek"
+
+msgid "Tracking Enabled"
+msgstr "Sledování povoleno"
+
+msgid "Tracking Domains"
+msgstr "Oblasti sledování"
+
+msgid "Icons"
+msgstr "Ikony"
+
+msgid "Icon 1024 X 1024"
+msgstr "Ikona 1024 x 1024"
+
+msgid "Icon 1024 X 1024 Dark"
+msgstr "Ikona 1024 x 1024 tmavá"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "Ikona 1024 x 1024 zabarvená"
 
 msgid "Export Console Wrapper"
 msgstr "Exportovat wrapper konzole"
@@ -2330,9 +2483,6 @@ msgstr "Vzdálenost zjednodušení"
 msgid "Save to File"
 msgstr "Uložit do souboru"
 
-msgid "Enabled"
-msgstr "Povoleno"
-
 msgid "Shadow Meshes"
 msgstr "Sítě stínů"
 
@@ -2488,9 +2638,6 @@ msgstr "Subpixelové polohování"
 
 msgid "Keep Rounding Remainders"
 msgstr "Ponechat zbytky po zaokrouhlení"
-
-msgid "Oversampling"
-msgstr "Převzorkování"
 
 msgid "Metadata Overrides"
 msgstr "Přepisy metadat"
@@ -2873,9 +3020,6 @@ msgstr "Povoleno"
 
 msgid "Threads"
 msgstr "Vlákna"
-
-msgid "Thread Model"
-msgstr "Vláknový model"
 
 msgid "Display Server"
 msgstr "Okenní systém"
@@ -3297,9 +3441,6 @@ msgstr "Značky komentářů"
 msgid "Critical Color"
 msgstr "Barva kritických chyb"
 
-msgid "Warning Color"
-msgstr "Barva varování"
-
 msgid "Notice Color"
 msgstr "Barva upozornění"
 
@@ -3585,6 +3726,9 @@ msgstr "Potomci"
 msgid "Light"
 msgstr "Světlo"
 
+msgid "Visible"
+msgstr "Viditelný"
+
 msgid "glTF to Godot Expression"
 msgstr "glTF na výraz Godotu"
 
@@ -3698,9 +3842,6 @@ msgstr "Kroky pozice"
 
 msgid "Use Enhanced Internal Edge Removal"
 msgstr "Použít vylepšené odstraňování vnitřních hran"
-
-msgid "Areas Detect Static Bodies"
-msgstr "Oblasti detekují statická tělesa"
 
 msgid "Generate All Kinematic Contacts"
 msgstr "Generovat všechny kinematické kontakty"
@@ -4239,9 +4380,6 @@ msgstr "Adresář Gradle sestavení"
 msgid "Android Source Template"
 msgstr "Zdrojová Android šablona"
 
-msgid "Compress Native Libraries"
-msgstr "Komprimovat nativní knihovny"
-
 msgid "Export Format"
 msgstr "Formát exportu"
 
@@ -4250,12 +4388,6 @@ msgstr "Minimální SDK"
 
 msgid "Target SDK"
 msgstr "Cílové SDK"
-
-msgid "Plugins"
-msgstr "Zásuvné moduly"
-
-msgid "Architectures"
-msgstr "Architektury"
 
 msgid "Keystore"
 msgstr "Úložiště klíčů"
@@ -4362,8 +4494,29 @@ msgstr "Oprávnění"
 msgid "Custom Permissions"
 msgstr "Vlastní oprávnění"
 
-msgid "Icons"
-msgstr "Ikony"
+msgid "Targeted Device Family"
+msgstr "Cílená rodina zařízení"
+
+msgid "Min iOS Version"
+msgstr "Minimální verze iOS"
+
+msgid "Storyboard"
+msgstr "Storyboard"
+
+msgid "Image Scale Mode"
+msgstr "Režim škálování obrázku"
+
+msgid "Custom Image @2x"
+msgstr "Vlastní obrázek @2x"
+
+msgid "Custom Image @3x"
+msgstr "Vlastní obrázek @3x"
+
+msgid "Use Custom BG Color"
+msgstr "Použít vlastní barvu pozadí"
+
+msgid "Custom BG Color"
+msgstr "Vlastní barva pozadí"
 
 msgid "Settings 58 X 58"
 msgstr "Nastavení 58 x 58"
@@ -4412,150 +4565,6 @@ msgstr "iOS 136 x 136"
 
 msgid "App Store 1024 X 1024"
 msgstr "App Store 1024 x 1024"
-
-msgid "App Store Team ID"
-msgstr "App Store Team ID"
-
-msgid "Export Method Debug"
-msgstr "Metoda exportu ladění"
-
-msgid "Code Sign Identity Debug"
-msgstr "Identita podepisování kódu pro ladění"
-
-msgid "Code Sign Identity Release"
-msgstr "Identita podepisování kódu pro vydání"
-
-msgid "Provisioning Profile UUID Debug"
-msgstr "UUID provisioning profilu pro ladění"
-
-msgid "Provisioning Profile UUID Release"
-msgstr "UUID provisioning profilu pro vydání"
-
-msgid "Provisioning Profile Specifier Debug"
-msgstr "Specifikátor provisioning profilu pro ladění"
-
-msgid "Provisioning Profile Specifier Release"
-msgstr "Specifikátor provisioning profilu pro vydání"
-
-msgid "Export Method Release"
-msgstr "Metoda exportu vydání"
-
-msgid "Targeted Device Family"
-msgstr "Cílená rodina zařízení"
-
-msgid "Bundle Identifier"
-msgstr "Identifikátor balíčku"
-
-msgid "Signature"
-msgstr "Podpis"
-
-msgid "Short Version"
-msgstr "Krátká verze"
-
-msgid "Min iOS Version"
-msgstr "Minimální verze iOS"
-
-msgid "Additional Plist Content"
-msgstr "Dodatečný obsah plist"
-
-msgid "Icon Interpolation"
-msgstr "Interpolace ikon"
-
-msgid "Export Project Only"
-msgstr "Exportovat pouze projekt"
-
-msgid "Delete Old Export Files Unconditionally"
-msgstr "Bezpodmínečně smazat staré soubory exportu"
-
-msgid "Entitlements"
-msgstr "Oprávnění"
-
-msgid "Increased Memory Limit"
-msgstr "Zvýšený limit paměti"
-
-msgid "Game Center"
-msgstr "Herní centrum"
-
-msgid "Push Notifications"
-msgstr "Push notifikace"
-
-msgid "Additional"
-msgstr "Dodatečné"
-
-msgid "Capabilities"
-msgstr "Způsobilosti"
-
-msgid "Access Wi-Fi"
-msgstr "Přístup k Wi-Fi"
-
-msgid "Performance Gaming Tier"
-msgstr "Výkon herní úrovně"
-
-msgid "Performance A 12"
-msgstr "Výkon A12"
-
-msgid "User Data"
-msgstr "Uživatelská data"
-
-msgid "Accessible From Files App"
-msgstr "Přístupné z aplikace Soubory"
-
-msgid "Accessible From iTunes Sharing"
-msgstr "Přístupné z iTunes sdílení"
-
-msgid "Privacy"
-msgstr "Soukromí"
-
-msgid "Camera Usage Description"
-msgstr "Popis použití fotoaparátu"
-
-msgid "Camera Usage Description Localized"
-msgstr "Lokalizovaný popis použití fotoaparátu"
-
-msgid "Microphone Usage Description"
-msgstr "Popis použití mikrofonu"
-
-msgid "Microphone Usage Description Localized"
-msgstr "Lokalizovaný popis použití mikrofonu"
-
-msgid "Photolibrary Usage Description"
-msgstr "Popis použití knihovny fotek"
-
-msgid "Photolibrary Usage Description Localized"
-msgstr "Lokalizovaný popis použití knihovny fotek"
-
-msgid "Tracking Enabled"
-msgstr "Sledování povoleno"
-
-msgid "Tracking Domains"
-msgstr "Oblasti sledování"
-
-msgid "Icon 1024 X 1024"
-msgstr "Ikona 1024 x 1024"
-
-msgid "Icon 1024 X 1024 Dark"
-msgstr "Ikona 1024 x 1024 tmavá"
-
-msgid "Icon 1024 X 1024 Tinted"
-msgstr "Ikona 1024 x 1024 zabarvená"
-
-msgid "Storyboard"
-msgstr "Storyboard"
-
-msgid "Image Scale Mode"
-msgstr "Režim škálování obrázku"
-
-msgid "Custom Image @2x"
-msgstr "Vlastní obrázek @2x"
-
-msgid "Custom Image @3x"
-msgstr "Vlastní obrázek @3x"
-
-msgid "Use Custom BG Color"
-msgstr "Použít vlastní barvu pozadí"
-
-msgid "Custom BG Color"
-msgstr "Vlastní barva pozadí"
 
 msgid "Architecture"
 msgstr "Architektura"
@@ -5238,9 +5247,6 @@ msgstr "Vyhlazený"
 msgid "Multimesh"
 msgstr "Multimesh"
 
-msgid "Pathfinding"
-msgstr "Hledání cest"
-
 msgid "Path Desired Distance"
 msgstr "Požadovaná vzdálenost cesty"
 
@@ -5267,9 +5273,6 @@ msgstr "Zjednodušit cestu"
 
 msgid "Simplify Epsilon"
 msgstr "Epsilon zjednodušení"
-
-msgid "Avoidance"
-msgstr "Vyhýbání"
 
 msgid "Avoidance Enabled"
 msgstr "Vyhýbání povoleno"
@@ -5409,8 +5412,8 @@ msgstr "Deaktivovaný"
 msgid "One Way Collision"
 msgstr "Jednosměrné kolize"
 
-msgid "One Way Collision Margin"
-msgstr "Rozpětí jednosměrných kolizí"
+msgid "Margin"
+msgstr "Rozpětí"
 
 msgid "Debug Color"
 msgstr "Barva ladění"
@@ -5536,8 +5539,8 @@ msgstr "Síla"
 msgid "Torque"
 msgstr "Točivý moment"
 
-msgid "Margin"
-msgstr "Rozpětí"
+msgid "Bitmask"
+msgstr "Bitmaska"
 
 msgid "UV"
 msgstr "UV"
@@ -5592,9 +5595,6 @@ msgstr "Režim viditelnosti kolizí"
 
 msgid "Navigation Visibility Mode"
 msgstr "Režim viditelnosti navigace"
-
-msgid "Bitmask"
-msgstr "Bitmaska"
 
 msgid "Degrees"
 msgstr "Stupně"
@@ -6044,11 +6044,11 @@ msgstr "Báze"
 msgid "Visibility"
 msgstr "Viditelnost"
 
-msgid "Visible"
-msgstr "Viditelný"
-
 msgid "Bake"
 msgstr "Vypálit"
+
+msgid "Debug Shape"
+msgstr "Tvar ladění"
 
 msgid "Rotation Mode"
 msgstr "Režim otáčení"
@@ -6119,8 +6119,38 @@ msgstr "Priorita řešitele"
 msgid "Exclude Nodes From Collision"
 msgstr "Vyloučit uzly z kolizí"
 
-msgid "Debug Shape"
-msgstr "Tvar ladění"
+msgid "Pinned Points"
+msgstr "Připnuté body"
+
+msgid "Attachments"
+msgstr "Přípojky"
+
+msgid "Point Index"
+msgstr "Index bodu"
+
+msgid "Spatial Attachment Path"
+msgstr "Cesta k prostorové přípojce"
+
+msgid "Parent Collision Ignore"
+msgstr "Rodič ignorovaný kolizemi"
+
+msgid "Simulation Precision"
+msgstr "Přesnost simulace"
+
+msgid "Total Mass"
+msgstr "Celková hmotnost"
+
+msgid "Linear Stiffness"
+msgstr "Lineární tuhost"
+
+msgid "Pressure Coefficient"
+msgstr "Koeficient tlaku"
+
+msgid "Damping Coefficient"
+msgstr "Koeficient tlumení"
+
+msgid "Drag Coefficient"
+msgstr "Koeficient odporu vzduchu"
 
 msgid "Per-Wheel Motion"
 msgstr "Pohyb na kolo"
@@ -6184,39 +6214,6 @@ msgstr "Aktivní"
 
 msgid "Influence"
 msgstr "Vliv"
-
-msgid "Pinned Points"
-msgstr "Připnuté body"
-
-msgid "Attachments"
-msgstr "Přípojky"
-
-msgid "Point Index"
-msgstr "Index bodu"
-
-msgid "Spatial Attachment Path"
-msgstr "Cesta k prostorové přípojce"
-
-msgid "Parent Collision Ignore"
-msgstr "Rodič ignorovaný kolizemi"
-
-msgid "Simulation Precision"
-msgstr "Přesnost simulace"
-
-msgid "Total Mass"
-msgstr "Celková hmotnost"
-
-msgid "Linear Stiffness"
-msgstr "Lineární tuhost"
-
-msgid "Pressure Coefficient"
-msgstr "Koeficient tlaku"
-
-msgid "Damping Coefficient"
-msgstr "Koeficient tlumení"
-
-msgid "Drag Coefficient"
-msgstr "Koeficient odporu vzduchu"
 
 msgid "Position Offset"
 msgstr "Offset pozice"
@@ -6593,6 +6590,9 @@ msgstr "Text tlačítka Zrušit"
 msgid "Use Native Dialog"
 msgstr "Použít nativní dialog"
 
+msgid "Title"
+msgstr "Nadpis"
+
 msgid "Show Grid"
 msgstr "Zobrazit mřížku"
 
@@ -6646,9 +6646,6 @@ msgstr "Zobrazit tlačítka minimapy"
 
 msgid "Show Arrange Button"
 msgstr "Zobrazit tlačítko Uspořádat"
-
-msgid "Title"
-msgstr "Nadpis"
 
 msgid "Tint Color Enabled"
 msgstr "Povolena barva odstínu"
@@ -6995,6 +6992,9 @@ msgstr "Kvadrant 3"
 msgid "Canvas Cull Mask"
 msgstr "Maska vyřazení plátna"
 
+msgid "Oversampling"
+msgstr "Převzorkování"
+
 msgid "Size 2D Override"
 msgstr "Přepis 2D velikosti"
 
@@ -7306,18 +7306,6 @@ msgstr "Zakázat V-Sync"
 
 msgid "Default Cell Size"
 msgstr "Výchozí velikost buňky"
-
-msgid "Avoidance Use Multiple Threads"
-msgstr "Použít více vláken pro vyhýbání"
-
-msgid "Avoidance Use High Priority Threads"
-msgstr "Použít vysokoprioritní vlákna pro vyhýbání"
-
-msgid "Baking Use Multiple Threads"
-msgstr "Použít více vláken pro vypalování"
-
-msgid "Baking Use High Priority Threads"
-msgstr "Použít vysokoprioritní vlákna pro vypalování"
 
 msgid "Physics Engine"
 msgstr "Fyzikální engine"
