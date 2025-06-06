@@ -407,6 +407,27 @@ StringName StringName::search(const String &p_name) {
 	return StringName(); //does not exist
 }
 
+StringName::_Data *StringName::get_data_by_hash(const uint32_t p_hash) {
+	const uint32_t idx = p_hash & Table::TABLE_MASK;
+
+	MutexLock lock(Table::mutex);
+	_Data *_data = Table::table[idx];
+	return _data;
+}
+
+StringName StringName::check_data(_Data *p_data) {
+	if (p_data && p_data->refcount.ref()) {
+#ifdef DEBUG_ENABLED
+		if (unlikely(debug_stringname)) {
+			p_data->debug_references++;
+		}
+#endif
+		return StringName(p_data);
+	}
+
+	return StringName(); //does not exist
+}
+
 bool operator==(const String &p_name, const StringName &p_string_name) {
 	return p_string_name.operator==(p_name);
 }
