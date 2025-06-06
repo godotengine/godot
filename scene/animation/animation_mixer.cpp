@@ -33,7 +33,6 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/string/string_name.h"
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/audio/audio_stream_player.h"
@@ -160,7 +159,7 @@ void AnimationMixer::_animation_set_cache_update() {
 	}
 
 	// Check removed.
-	List<StringName> to_erase;
+	LocalVector<StringName> to_erase;
 	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
 		if (E.value.last_update != animation_set_update_pass) {
 			// Was not updated, must be erased.
@@ -169,10 +168,10 @@ void AnimationMixer::_animation_set_cache_update() {
 		}
 	}
 
-	while (to_erase.size()) {
-		animation_set.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	for (const StringName &key : to_erase) {
+		animation_set.erase(key);
 	}
+	to_erase.clear();
 
 	if (clear_cache_needed) {
 		// If something was modified or removed, caches need to be cleared.
