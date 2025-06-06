@@ -962,6 +962,18 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_controls_nodes" type="NodePath[]" setter="set_accessibility_controls_nodes" getter="get_accessibility_controls_nodes" default="[]">
+			The list of nodes which are controlled by this node.
+		</member>
+		<member name="accessibility_described_by_nodes" type="NodePath[]" setter="set_accessibility_described_by_nodes" getter="get_accessibility_described_by_nodes" default="[]">
+			The list of nodes which are describing this node.
+		</member>
+		<member name="accessibility_flow_to_nodes" type="NodePath[]" setter="set_accessibility_flow_to_nodes" getter="get_accessibility_flow_to_nodes" default="[]">
+			The list of nodes which this node flows into.
+		</member>
+		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
+			The list of nodes which label this node.
+		</member>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>

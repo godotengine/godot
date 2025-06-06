@@ -250,6 +250,11 @@ private:
 
 		ObjectID shortcut_context;
 
+		TypedArray<NodePath> accessibility_controls_nodes;
+		TypedArray<NodePath> accessibility_described_by_nodes;
+		TypedArray<NodePath> accessibility_labeled_by_nodes;
+		TypedArray<NodePath> accessibility_flow_to_nodes;
+
 		// Theming.
 
 		ThemeOwner *theme_owner = nullptr;
@@ -596,6 +601,18 @@ public:
 	NodePath get_focus_next() const;
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
+
+	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_controls_nodes() const;
+
+	void set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_described_by_nodes() const;
+
+	void set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_labeled_by_nodes() const;
+
+	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
 
 	// Rendering.
 
