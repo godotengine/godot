@@ -30,6 +30,8 @@
 
 #include "wayland_thread.h"
 
+#include "core/io/config_file.h"
+
 #ifdef WAYLAND_ENABLED
 
 #ifdef __FreeBSD__
@@ -651,6 +653,11 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, xx_session_manager_v1_interface.name) == 0) {
+		registry->xx_session_manager = (struct xx_session_manager_v1 *)wl_registry_bind(wl_registry, name, &xx_session_manager_v1_interface, 1);
+		registry->xx_session_manager_name = name;
+	}
+
 	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
 		registry->wp_fifo_manager_name = name;
 	}
@@ -1060,6 +1067,20 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 			it = it->next();
 		}
+	}
+
+	if (name == registry->xx_session_manager_name) {
+		if (registry->xx_session) {
+			xx_session_v1_destroy(registry->xx_session);
+			registry->xx_session = nullptr;
+		}
+
+		if (registry->xx_session_manager) {
+			xx_session_manager_v1_destroy(registry->xx_session_manager);
+			registry->xx_session_manager = nullptr;
+		}
+
+		registry->xx_session_manager_name = 0;
 	}
 
 	if (name == registry->wp_fifo_manager_name) {
@@ -2977,6 +2998,24 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
 }
 
+void WaylandThread::_xx_session_on_created(void *data, struct xx_session_v1 *xx_session, const char *id) {
+	RegistryState *registry = (RegistryState *)data;
+
+	Ref<ConfigFile> file;
+	file.instantiate();
+	file->load(registry->session_path);
+
+	file->set_value("meta", "wayland_session_id", id);
+
+	file->save(registry->session_path);
+}
+
+void WaylandThread::_xx_session_on_restored(void *data, struct xx_session_v1 *xx_session) {
+}
+
+void WaylandThread::_xx_session_on_replaced(void *data, struct xx_session_v1 *xx_session) {
+}
+
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
 	ThreadData *data = (ThreadData *)p_data;
@@ -3455,6 +3494,23 @@ void WaylandThread::seat_state_echo_keys(SeatState *p_ss) {
 	}
 }
 
+void WaylandThread::set_session_path(const String &p_path) {
+	registry.session_path = p_path;
+
+	Ref<ConfigFile> file;
+	file.instantiate();
+	file->load(p_path);
+
+	String session = file->get_value("meta", "wayland_session_id", "");
+	if (session.is_empty()) {
+		registry.xx_session = xx_session_manager_v1_get_session(registry.xx_session_manager, xx_session_manager_v1_reason::XX_SESSION_MANAGER_V1_REASON_LAUNCH, nullptr);
+		xx_session_v1_add_listener(registry.xx_session, &xx_session_listener, &registry);
+	} else {
+		registry.xx_session = xx_session_manager_v1_get_session(registry.xx_session_manager, xx_session_manager_v1_reason::XX_SESSION_MANAGER_V1_REASON_LAUNCH, session.utf8().get_data());
+		xx_session_v1_add_listener(registry.xx_session, &xx_session_listener, &registry);
+	}
+}
+
 void WaylandThread::push_message(Ref<Message> message) {
 	messages.push_back(message);
 }
@@ -3529,6 +3585,24 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 
 			decorated = true;
 		}
+	}
+
+	if (registry.xx_session && !ws.session_id.is_empty()) {
+		Ref<ConfigFile> window_state;
+		window_state.instantiate();
+		window_state->load(registry.session_path);
+
+		if (window_state->get_value(ws.session_id, "wayland_tracked", false)) {
+			//TODO: are these useful for us?
+			struct xx_toplevel_session_v1 *toplevel_session = xx_session_v1_restore_toplevel(registry.xx_session, ws.xdg_toplevel, ws.session_id.utf8().get_data());
+			xx_toplevel_session_v1_destroy(toplevel_session);
+			window_state->set_value(ws.session_id, "wayland_tracked", true);
+		} else {
+			struct xx_toplevel_session_v1 *toplevel_session = xx_session_v1_add_toplevel(registry.xx_session, ws.xdg_toplevel, ws.session_id.utf8().get_data());
+			xx_toplevel_session_v1_destroy(toplevel_session);
+		}
+
+		window_state->save(registry.session_path);
 	}
 
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);
@@ -4079,6 +4153,13 @@ void WaylandThread::window_set_app_id(DisplayServer::WindowID p_window_id, const
 		xdg_toplevel_set_app_id(ws.xdg_toplevel, p_app_id.utf8().get_data());
 		return;
 	}
+}
+
+void WaylandThread::window_set_session_id(DisplayServer::WindowID p_window_id, const String &p_session_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowState &ws = windows[p_window_id];
+
+	ws.session_id = p_session_id;
 }
 
 DisplayServer::WindowMode WaylandThread::window_get_mode(DisplayServer::WindowID p_window_id) const {
@@ -5028,6 +5109,15 @@ void WaylandThread::destroy() {
 	if (registry.xdg_exporter_v2) {
 		zxdg_exporter_v2_destroy(registry.xdg_exporter_v2);
 	}
+
+	if (registry.xx_session_manager) {
+		xx_session_manager_v1_destroy(registry.xx_session_manager);
+	}
+
+	if (registry.xx_session) {
+		xx_session_v1_destroy(registry.xx_session);
+	}
+
 	if (registry.wl_shm) {
 		wl_shm_destroy(registry.wl_shm);
 	}

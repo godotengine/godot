@@ -3212,6 +3212,16 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 
 #ifdef TOOLS_ENABLED
+		if (project_manager) {
+			String path = EditorPaths::get_singleton()->get_data_dir() + "/window_state.cfg";
+			DisplayServer::get_singleton()->set_session_path(path);
+		} else if (editor) {
+			String path = EditorPaths::get_singleton()->get_project_data_dir() + "/editor_layout.cfg";
+			DisplayServer::get_singleton()->set_session_path(path);
+		} else {
+			DisplayServer::get_singleton()->set_session_path("user://godot_window_state.cfg");
+		}
+
 		if (project_manager && init_display_scale_found) {
 			float ui_scale = init_custom_scale;
 			switch (init_display_scale) {
