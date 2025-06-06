@@ -14,7 +14,7 @@ from emscripten_helpers import (
 )
 from SCons.Util import WhereIs
 
-from methods import get_compiler_version, print_error, print_info, print_warning
+from methods import print_error, print_info, print_warning
 from platform_methods import validate_arch
 
 if TYPE_CHECKING:
@@ -215,8 +215,7 @@ def configure(env: "SConsEnvironment"):
     env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
 
     # Get version info for checks below.
-    cc_version = get_compiler_version(env)
-    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
+    cc_semver = (env.compiler_version["major"], env.compiler_version["minor"], env.compiler_version["patch"])
 
     # Minimum emscripten requirements.
     if cc_semver < (3, 1, 62):
