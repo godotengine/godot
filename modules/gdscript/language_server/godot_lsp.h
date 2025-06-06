@@ -1679,16 +1679,8 @@ struct FileOperations {
  * Workspace specific server capabilities
  */
 struct Workspace {
-	/**
-	 * The server is interested in file notifications/requests.
-	 */
-	FileOperations fileOperations;
-
 	Dictionary to_json() const {
 		Dictionary dict;
-
-		dict["fileOperations"] = fileOperations.to_json();
-
 		return dict;
 	}
 };

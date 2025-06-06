@@ -37,6 +37,14 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 
+#define LSP_CLIENT_V(m_ret_val)        \
+	Ref<LSPeer> client = get_client(); \
+	if (!client.is_valid()) {          \
+		return m_ret_val;              \
+	}
+
+#define LSP_CLIENT LSP_CLIENT_V();
+
 GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
 
 Error GDScriptLanguageProtocol::LSPeer::handle_data() {
@@ -134,6 +142,7 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
+	//get_workspace()->client_managed_files.clear();
 	EditorNode::get_log()->add_message("[LSP] Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
@@ -334,6 +343,137 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 	return bool(_EDITOR_GET("network/language_server/show_native_symbols_in_editor"));
 }
 
+Ref<GDScriptLanguageProtocol::LSPeer> GDScriptLanguageProtocol::get_client() {
+	if (latest_client_id == -1) {
+		return Ref<LSPeer>();
+	}
+	ERR_FAIL_COND_V(!clients.has(latest_client_id), Ref<LSPeer>());
+	return clients.get(latest_client_id);
+}
+
+ExtendGDScriptParser *GDScriptLanguageProtocol::LSPeer::parse_script(const String &p_path) {
+	remove_cached_parser(p_path);
+
+	const LSP::TextDocumentItem *document = managed_files.getptr(p_path);
+
+	String content;
+	if (document == nullptr) {
+		if (p_path.get_extension().to_lower() != "gd") {
+			return nullptr;
+		}
+		Error err;
+		content = FileAccess::get_file_as_string(p_path, &err);
+		if (err != OK) {
+			return nullptr;
+		}
+	} else {
+		if (document->languageId != "gdscript") {
+			return nullptr;
+		}
+		content = document->text;
+	}
+
+	ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
+	parser->parse(content, p_path);
+
+	if (document != nullptr) {
+		parse_results[p_path] = parser;
+		GDScriptLanguageProtocol::get_singleton()->get_workspace()->publish_diagnostics(p_path);
+	}
+
+	return parser;
+}
+
+void GDScriptLanguageProtocol::LSPeer::remove_cached_parser(const String &p_path) {
+	HashMap<String, ExtendGDScriptParser *>::Iterator parser = parse_results.find(p_path);
+	if (parser) {
+		memdelete(parser->value);
+		parse_results.erase(p_path);
+	}
+}
+
+ExtendGDScriptParser *GDScriptLanguageProtocol::get_parse_result(const String &p_path) {
+	LSP_CLIENT_V(nullptr);
+
+	ExtendGDScriptParser **cached_parser = client->parse_results.getptr(p_path);
+	if (cached_parser == nullptr) {
+		return client->parse_script(p_path);
+	}
+	return *cached_parser;
+}
+
+void GDScriptLanguageProtocol::lsp_did_open(const Dictionary &p_params) {
+	LSP_CLIENT;
+
+	LSP::TextDocumentItem document;
+	document.load(p_params["textDocument"]);
+
+	// We keep track of non GDScript files that the client owns, but we are not interested in the content.
+	if (document.languageId != "gdscript") {
+		document.text = "";
+	}
+
+	String path = get_workspace()->get_file_path(document.uri);
+
+	/// An open notification must not be sent more than once without a corresponding close notification send before.
+	ERR_FAIL_COND_MSG(client->managed_files.has(path), "LSP: Client is opening already opened file.");
+
+	client->managed_files[path] = document;
+
+	client->parse_script(path);
+}
+
+void GDScriptLanguageProtocol::lsp_did_change(const Dictionary &p_params) {
+	LSP_CLIENT;
+
+	LSP::TextDocumentIdentifier identifier;
+	identifier.load(p_params["textDocument"]);
+
+	String path = get_workspace()->get_file_path(identifier.uri);
+	LSP::TextDocumentItem *document = client->managed_files.getptr(path);
+
+	/// Before a client can change a text document it must claim ownership of its content using the textDocument/didOpen notification.
+	ERR_FAIL_COND_MSG(document == nullptr, "LSP: Client is changing file without opening it.");
+
+	if (document->languageId != "gdscript") {
+		return;
+	}
+
+	Array contentChanges = p_params["contentChanges"];
+
+	if (contentChanges.is_empty()) {
+		return;
+	}
+
+	// We only support TextDocumentSyncKind::Full. So only the last full text is relevant.
+	LSP::TextDocumentContentChangeEvent event;
+	event.load(contentChanges.back());
+	document->text = event.text;
+
+	client->parse_script(path);
+}
+
+void GDScriptLanguageProtocol::lsp_did_close(const Dictionary &p_params) {
+	LSP_CLIENT;
+
+	LSP::TextDocumentIdentifier identifier;
+	identifier.load(p_params["textDocument"]);
+
+	String path = get_workspace()->get_file_path(identifier.uri);
+	bool was_opened = client->managed_files.erase(path);
+
+	client->parse_script(path);
+
+	/// A close notification requires a previous open notification to be sent.
+	ERR_FAIL_COND_MSG(!was_opened, "LSP: Client is closing file without opening it.");
+}
+
+GDScriptLanguageProtocol::LSPeer::~LSPeer() {
+	while (!parse_results.is_empty()) {
+		remove_cached_parser(parse_results.begin()->key);
+	}
+}
+
 // clang-format off
 #define SET_DOCUMENT_METHOD(m_method) set_method(_STR(textDocument/m_method), callable_mp(text_document.ptr(), &GDScriptTextDocument::m_method))
 #define SET_COMPLETION_METHOD(m_method) set_method(_STR(completionItem/m_method), callable_mp(text_document.ptr(), &GDScriptTextDocument::m_method))
@@ -370,8 +510,6 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 
 	SET_COMPLETION_METHOD(resolve);
 
-	SET_WORKSPACE_METHOD(didDeleteFiles);
-
 	set_method("initialize", callable_mp(this, &GDScriptLanguageProtocol::initialize));
 	set_method("initialized", callable_mp(this, &GDScriptLanguageProtocol::initialized));
 
@@ -381,3 +519,6 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 #undef SET_DOCUMENT_METHOD
 #undef SET_COMPLETION_METHOD
 #undef SET_WORKSPACE_METHOD
+
+#undef LSP_CLIENT
+#undef LSP_CLIENT_V
