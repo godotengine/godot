@@ -306,12 +306,20 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 			edit_menu->set_item_disabled(-1, !unique_enabled);
 
+			String modifier = "Ctrl";
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+				modifier = "Cmd";
+			}
+			const String drag_and_drop_text = vformat(TTRC("Hold %s while drag-and-dropping from the FileSystem dock or another resource picker to automatically make a dropped resource unique."), modifier);
+
 			if (!unique_enabled) {
 				if (EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource) && EditorNode::get_singleton()->get_resource_count(edited_resource) == 1) {
-					edit_menu->set_item_tooltip(-1, TTRC("This Resource is already unique."));
+					edit_menu->set_item_tooltip(-1, String(TTRC("This Resource is already unique.")) + "\n" + drag_and_drop_text);
 				} else if (_has_parent_resource().is_valid()) {
-					edit_menu->set_item_tooltip(-1, TTRC("In order to duplicate it, make its parent Resource unique."));
+					edit_menu->set_item_tooltip(-1, String(TTRC("In order to duplicate it, make its parent Resource unique.")) + "\n" + drag_and_drop_text);
 				}
+			} else {
+				edit_menu->set_item_tooltip(-1, drag_and_drop_text);
 			}
 
 			if (_has_sub_resources(edited_resource)) {
@@ -985,7 +993,14 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		}
 
 		edited_resource = dropped_resource;
-		_resource_changed();
+
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			// `_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE)` already calls `_resource_changed()`,
+			// so we don't need to manually call it in this case.
+			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+		} else {
+			_resource_changed();
+		}
 	}
 }
 
