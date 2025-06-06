@@ -2426,7 +2426,12 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	wd.was_fullscreen_pre_min = false;
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED && wd.borderless) {
-		p_mode = WINDOW_MODE_FULLSCREEN;
+		int cs = window_get_current_screen(p_window);
+		Rect2i full = Rect2i(screen_get_position(cs), screen_get_size(cs));
+		Rect2i usable = screen_get_usable_rect(cs);
+		if (full == usable) {
+			p_mode = WINDOW_MODE_FULLSCREEN;
+		}
 	}
 
 	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
@@ -2465,10 +2470,22 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.minimized = false;
 	}
 
-	if (p_mode == WINDOW_MODE_MAXIMIZED) {
+	if (p_mode == WINDOW_MODE_MAXIMIZED && !wd.borderless) {
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 		wd.maximized = true;
 		wd.minimized = false;
+	}
+
+	if (p_mode == WINDOW_MODE_MAXIMIZED && wd.borderless) {
+		ShowWindow(wd.hWnd, SW_NORMAL);
+		wd.maximized = true;
+		wd.minimized = false;
+
+		int cs = window_get_current_screen(p_window);
+		Rect2i usable = screen_get_usable_rect(cs);
+		Point2 pos = usable.position + _get_screens_origin();
+		Size2 size = usable.size;
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 	}
 
 	if (p_mode == WINDOW_MODE_MINIMIZED) {
@@ -5689,6 +5706,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				int screen_id = window_get_current_screen(window_id);
 				Size2i screen_size = screen_get_size(screen_id);
 				Point2i screen_position = screen_get_position(screen_id);
+				Rect2i usable = screen_get_usable_rect(screen_id);
 
 				window.maximized = false;
 				window.minimized = false;
@@ -5705,8 +5723,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						window.maximized_fs = true;
 						_update_window_style(window_id, false);
 					}
+					if (window.borderless && (screen_size != usable.size || screen_position != usable.position)) {
+						Point2 pos = usable.position + _get_screens_origin();
+						Size2 size = usable.size;
+						MoveWindow(window.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+					}
 				} else if (window_rect.position == screen_position && window_rect.size == screen_size) {
 					window.fullscreen = true;
+				} else if (window.borderless && usable.position == window_rect.position && usable.size == window_rect.size) {
+					window.maximized = true;
 				}
 
 				if (window.maximized_fs && !window.maximized) {
