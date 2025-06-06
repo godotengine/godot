@@ -98,6 +98,8 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				add_track(TYPE_VALUE);
 			} else if (type == "method") {
 				add_track(TYPE_METHOD);
+			} else if (type == "signal") {
+				add_track(TYPE_SIGNAL);
 			} else if (type == "bezier") {
 				add_track(TYPE_BEZIER);
 			} else if (type == "audio") {
@@ -329,6 +331,46 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 						}
 					}
 				}
+			} else if (track_get_type(track) == TYPE_SIGNAL) {
+				while (track_get_key_count(track)) {
+					track_remove_key(track, 0); // clear existing keys
+				}
+
+				Dictionary d = p_value;
+				ERR_FAIL_COND_V(!d.has("times"), false);
+				ERR_FAIL_COND_V(!d.has("values"), false);
+
+				Vector<real_t> times = d["times"];
+				Array values = d["values"];
+
+				ERR_FAIL_COND_V(times.size() != values.size(), false);
+
+				if (times.size()) {
+					int count = times.size();
+					const real_t *time_ptr = times.ptr();
+
+					for (int i = 0; i < count; i++) {
+						const Variant &val = values[i];
+
+						Variant::Type val_type = val.get_type();
+						ERR_CONTINUE_MSG(
+								val_type != Variant::ARRAY && val_type != Variant::DICTIONARY,
+								vformat("Signal key at index %d must be an Array or Dictionary (got %s).", i, Variant::get_type_name(val_type)));
+
+						track_insert_key(track, time_ptr[i], val);
+					}
+
+					if (d.has("transitions")) {
+						Vector<real_t> transitions = d["transitions"];
+						ERR_FAIL_COND_V(transitions.size() != count, false);
+
+						const real_t *transition_ptr = transitions.ptr();
+
+						for (int i = 0; i < count; i++) {
+							track_set_key_transition(track, i, transition_ptr[i]);
+						}
+					}
+				}
 			} else if (track_get_type(track) == TYPE_BEZIER) {
 				BezierTrack *bt = static_cast<BezierTrack *>(tracks[track]);
 				Dictionary d = p_value;
@@ -529,6 +571,9 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					break;
 				case TYPE_METHOD:
 					r_ret = "method";
+					break;
+				case TYPE_SIGNAL:
+					r_ret = "signal";
 					break;
 				case TYPE_BEZIER:
 					r_ret = "bezier";
@@ -743,6 +788,34 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = d;
 
 				return true;
+			} else if (track_get_type(track) == TYPE_SIGNAL) {
+				Dictionary d;
+
+				Vector<real_t> key_times;
+				Vector<real_t> key_transitions;
+				Array key_values;
+
+				int kk = track_get_key_count(track);
+
+				key_times.resize(kk);
+				key_transitions.resize(kk);
+				key_values.resize(kk);
+
+				real_t *wti = key_times.ptrw();
+				real_t *wtr = key_transitions.ptrw();
+
+				for (int i = 0; i < kk; i++) {
+					wti[i] = track_get_key_time(track, i);
+					wtr[i] = track_get_key_transition(track, i);
+					key_values[i] = track_get_key_value(track, i);
+				}
+
+				d["times"] = key_times;
+				d["transitions"] = key_transitions;
+				d["values"] = key_values;
+
+				r_ret = d;
+				return true;
 			} else if (track_get_type(track) == TYPE_BEZIER) {
 				const BezierTrack *bt = static_cast<const BezierTrack *>(tracks[track]);
 
@@ -922,6 +995,10 @@ int Animation::add_track(TrackType p_type, int p_at_pos) {
 			tracks.insert(p_at_pos, memnew(MethodTrack));
 
 		} break;
+		case TYPE_SIGNAL: {
+			tracks.insert(p_at_pos, memnew(SignalTrack));
+
+		} break;
 		case TYPE_BEZIER: {
 			tracks.insert(p_at_pos, memnew(BezierTrack));
 
@@ -979,6 +1056,11 @@ void Animation::remove_track(int p_track) {
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			mt->methods.clear();
+
+		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			st->signals.clear();
 
 		} break;
 		case TYPE_BEZIER: {
@@ -1520,6 +1602,12 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 			mt->methods.remove_at(p_idx);
 
 		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			ERR_FAIL_INDEX(p_idx, st->signals.size());
+			st->signals.remove_at(p_idx);
+
+		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bz = static_cast<BezierTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, bz->values.size());
@@ -1680,6 +1768,17 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 			return k;
 
 		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			int k = _find(st->signals, p_time, p_backward, p_limit);
+			if (k < 0 || k >= st->signals.size()) {
+				return -1;
+			}
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(st->signals[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && st->signals[k].time != p_time)) {
+				return -1;
+			}
+			return k;
+		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
 			int k = _find(bt->values, p_time, p_backward, p_limit);
@@ -1781,6 +1880,24 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 			ret = _insert(p_time, mt->methods, k);
 
 		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+
+			ERR_FAIL_COND_V(p_key.get_type() != Variant::DICTIONARY, -1);
+
+			Dictionary d = p_key;
+			ERR_FAIL_COND_V(!d.has("signal") || !d["signal"].is_string(), -1);
+			ERR_FAIL_COND_V(!d.has("args") || !d["args"].is_array(), -1);
+
+			SignalKey k;
+
+			k.time = p_time;
+			k.transition = p_transition;
+			k.signal = d["signal"];
+			k.params = d["args"];
+
+			ret = _insert(p_time, st->signals, k);
+		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
 
@@ -1880,6 +1997,10 @@ int Animation::track_get_key_count(int p_track) const {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			return mt->methods.size();
 		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			return st->signals.size();
+		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
 			return bt->values.size();
@@ -1934,6 +2055,15 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 			Dictionary d;
 			d["method"] = mt->methods[p_key_idx].method;
 			d["args"] = mt->methods[p_key_idx].params;
+			return d;
+
+		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			ERR_FAIL_INDEX_V(p_key_idx, st->signals.size(), Variant());
+			Dictionary d;
+			d["signal"] = st->signals[p_key_idx].signal;
+			d["args"] = st->signals[p_key_idx].params;
 			return d;
 
 		} break;
@@ -2039,6 +2169,12 @@ double Animation::track_get_key_time(int p_track, int p_key_idx) const {
 			return mt->methods[p_key_idx].time;
 
 		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			ERR_FAIL_INDEX_V(p_key_idx, st->signals.size(), -1);
+			return st->signals[p_key_idx].time;
+
+		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
 			ERR_FAIL_INDEX_V(p_key_idx, bt->values.size(), -1);
@@ -2125,6 +2261,15 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			_insert(p_time, mt->methods, key);
 			return;
 		}
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, st->signals.size());
+			SignalKey key = st->signals[p_key_idx];
+			key.time = p_time;
+			st->signals.remove_at(p_key_idx);
+			_insert(p_time, st->signals, key);
+			return;
+		}
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, bt->values.size());
@@ -2204,6 +2349,12 @@ real_t Animation::track_get_key_transition(int p_track, int p_key_idx) const {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			ERR_FAIL_INDEX_V(p_key_idx, mt->methods.size(), -1);
 			return mt->methods[p_key_idx].transition;
+
+		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			ERR_FAIL_INDEX_V(p_key_idx, st->signals.size(), -1);
+			return st->signals[p_key_idx].transition;
 
 		} break;
 		case TYPE_BEZIER: {
@@ -2309,6 +2460,20 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			}
 
 		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, st->signals.size());
+
+			Dictionary d = p_value;
+
+			if (d.has("signal")) {
+				st->signals.write[p_key_idx].signal = d["signal"];
+			}
+			if (d.has("args")) {
+				st->signals.write[p_key_idx].params = d["args"];
+			}
+
+		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, bt->values.size());
@@ -2388,6 +2553,12 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, real_t p_tr
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, mt->methods.size());
 			mt->methods.write[p_key_idx].transition = p_transition;
+
+		} break;
+		case TYPE_SIGNAL: {
+			SignalTrack *st = static_cast<SignalTrack *>(t);
+			ERR_FAIL_INDEX(p_key_idx, st->signals.size());
+			st->signals.write[p_key_idx].transition = p_transition;
 
 		} break;
 		case TYPE_BEZIER:
@@ -2946,6 +3117,16 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 							_track_get_key_indices_in_range(mt->methods, from_time, anim_end, p_indices, is_backward);
 						}
 					} break;
+					case TYPE_SIGNAL: {
+						const SignalTrack *st = static_cast<const SignalTrack *>(t);
+						if (!is_backward) {
+							_track_get_key_indices_in_range(st->signals, from_time, anim_end, p_indices, is_backward);
+							_track_get_key_indices_in_range(st->signals, anim_start, to_time, p_indices, is_backward);
+						} else {
+							_track_get_key_indices_in_range(st->signals, anim_start, to_time, p_indices, is_backward);
+							_track_get_key_indices_in_range(st->signals, from_time, anim_end, p_indices, is_backward);
+						}
+					} break;
 					case TYPE_BEZIER: {
 						const BezierTrack *bz = static_cast<const BezierTrack *>(t);
 						if (!is_backward) {
@@ -3056,6 +3237,11 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						_track_get_key_indices_in_range(mt->methods, 0, from_time, p_indices, true);
 						_track_get_key_indices_in_range(mt->methods, 0, to_time, p_indices, false);
 					} break;
+					case TYPE_SIGNAL: {
+						const SignalTrack *st = static_cast<const SignalTrack *>(t);
+						_track_get_key_indices_in_range(st->signals, 0, from_time, p_indices, true);
+						_track_get_key_indices_in_range(st->signals, 0, to_time, p_indices, false);
+					} break;
 					case TYPE_BEZIER: {
 						const BezierTrack *bz = static_cast<const BezierTrack *>(t);
 						_track_get_key_indices_in_range(bz->values, 0, from_time, p_indices, true);
@@ -3127,6 +3313,11 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						_track_get_key_indices_in_range(mt->methods, from_time, length, p_indices, false);
 						_track_get_key_indices_in_range(mt->methods, to_time, length, p_indices, true);
 					} break;
+					case TYPE_SIGNAL: {
+						const SignalTrack *st = static_cast<const SignalTrack *>(t);
+						_track_get_key_indices_in_range(st->signals, from_time, length, p_indices, false);
+						_track_get_key_indices_in_range(st->signals, to_time, length, p_indices, true);
+					} break;
 					case TYPE_BEZIER: {
 						const BezierTrack *bz = static_cast<const BezierTrack *>(t);
 						_track_get_key_indices_in_range(bz->values, from_time, length, p_indices, false);
@@ -3194,6 +3385,10 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 		case TYPE_METHOD: {
 			const MethodTrack *mt = static_cast<const MethodTrack *>(t);
 			_track_get_key_indices_in_range(mt->methods, from_time, to_time, p_indices, is_backward);
+		} break;
+		case TYPE_SIGNAL: {
+			const SignalTrack *st = static_cast<const SignalTrack *>(t);
+			_track_get_key_indices_in_range(st->signals, from_time, to_time, p_indices, is_backward);
 		} break;
 		case TYPE_BEZIER: {
 			const BezierTrack *bz = static_cast<const BezierTrack *>(t);
@@ -3318,6 +3513,62 @@ StringName Animation::method_track_get_name(int p_track, int p_key_idx) const {
 	ERR_FAIL_INDEX_V(p_key_idx, pm->methods.size(), StringName());
 
 	return pm->methods[p_key_idx].method;
+}
+
+Vector<Variant> Animation::signal_track_get_params(int p_track, int p_key_idx) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), Vector<Variant>());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_SIGNAL, Vector<Variant>());
+
+	SignalTrack *ps = static_cast<SignalTrack *>(t);
+
+	ERR_FAIL_INDEX_V(p_key_idx, ps->signals.size(), Vector<Variant>());
+
+	const SignalKey &sk = ps->signals[p_key_idx];
+
+	return sk.params;
+}
+
+StringName Animation::signal_track_get_name(int p_track, int p_key_idx) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), StringName());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_SIGNAL, StringName());
+
+	SignalTrack *ps = static_cast<SignalTrack *>(t);
+
+	ERR_FAIL_INDEX_V(p_key_idx, ps->signals.size(), StringName());
+
+	return ps->signals[p_key_idx].signal;
+}
+
+void Animation::emit_signal_from_object(ObjectID object_id, const StringName &signal, const Vector<Variant> &params) {
+	Object *obj = ObjectDB::get_instance(object_id);
+	if (!obj) {
+		return;
+	}
+
+	if (!obj->has_signal(signal)) {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT(vformat("Object '%s' does not have signal '%s'", obj->to_string(), String(signal)));
+#endif
+		return;
+	}
+
+	const Variant **args = nullptr;
+	int argcount = params.size();
+
+	if (argcount > 0) {
+		args = (const Variant **)memalloc(sizeof(Variant *) * argcount);
+		for (int i = 0; i < argcount; i++) {
+			args[i] = &params[i];
+		}
+	}
+
+	obj->emit_signalp(signal, args, argcount);
+
+	if (args) {
+		memfree(args);
+	}
 }
 
 Array Animation::make_default_bezier_key(float p_value) {
@@ -4016,6 +4267,9 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("method_track_get_name", "track_idx", "key_idx"), &Animation::method_track_get_name);
 	ClassDB::bind_method(D_METHOD("method_track_get_params", "track_idx", "key_idx"), &Animation::method_track_get_params);
 
+	ClassDB::bind_method(D_METHOD("signal_track_get_name", "track_idx", "key_idx"), &Animation::signal_track_get_name);
+	ClassDB::bind_method(D_METHOD("signal_track_get_params", "track_idx", "key_idx"), &Animation::signal_track_get_params);
+
 	ClassDB::bind_method(D_METHOD("bezier_track_insert_key", "track_idx", "time", "value", "in_handle", "out_handle"), &Animation::bezier_track_insert_key, DEFVAL(Vector2()), DEFVAL(Vector2()));
 
 	ClassDB::bind_method(D_METHOD("bezier_track_set_key_value", "track_idx", "key_idx", "value"), &Animation::bezier_track_set_key_value);
@@ -4081,6 +4335,7 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_SCALE_3D);
 	BIND_ENUM_CONSTANT(TYPE_BLEND_SHAPE);
 	BIND_ENUM_CONSTANT(TYPE_METHOD);
+	BIND_ENUM_CONSTANT(TYPE_SIGNAL);
 	BIND_ENUM_CONSTANT(TYPE_BEZIER);
 	BIND_ENUM_CONSTANT(TYPE_AUDIO);
 	BIND_ENUM_CONSTANT(TYPE_ANIMATION);
