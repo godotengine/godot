@@ -100,7 +100,7 @@
 				GD.Print(myBasis.Z); // Prints (0, -1, 0)
 				[/csharp]
 				[/codeblocks]
-				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]): the basis rotates first around the Y axis (yaw), then X (pitch), and lastly Z (roll). When using the opposite method [method get_euler], this order is reversed.
+				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). In Godot, Euler angles always use intrinsic order. By default, the intrinsic YXZ convention is used ([constant EULER_ORDER_YXZ]): the basis rotates first around the local Y axis (yaw), then local X (pitch), and lastly local Z (roll). When using the opposite method [method get_euler] to decompose a rotation, this order is reversed.
 			</description>
 		</method>
 		<method name="from_scale" qualifiers="static">
@@ -135,7 +135,7 @@
 				- The [member Vector3.x] contains the angle around the [member x] axis (pitch);
 				- The [member Vector3.y] contains the angle around the [member y] axis (yaw);
 				- The [member Vector3.z] contains the angle around the [member z] axis (roll).
-				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]): Z (roll) is calculated first, then X (pitch), and lastly Y (yaw). When using the opposite method [method from_euler], this order is reversed.
+				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). In Godot, Euler angles always use intrinsic order. By default, the intrinsic YXZ convention is used ([constant EULER_ORDER_YXZ]): since we are decomposing, local Z (roll) is calculated first, then local X (pitch), and lastly local Y (yaw). When using the opposite method [method from_euler] to compose a rotation, this order is reversed.
 				[b]Note:[/b] For this method to return correctly, the basis needs to be [i]orthonormal[/i] (see [method orthonormalized]).
 				[b]Note:[/b] Euler angles are much more intuitive but are not suitable for 3D math. Because of this, consider using the [method get_rotation_quaternion] method instead, which returns a [Quaternion].
 				[b]Note:[/b] In the Inspector dock, a basis's rotation is often displayed in Euler angles (in degrees), as is the case with the [member Node3D.rotation] property.
