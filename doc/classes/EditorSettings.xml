@@ -407,6 +407,9 @@
 		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
 			The mouse cursor movement direction to use when zooming by moving the mouse. This does not affect zooming with the mouse wheel.
 		</member>
+		<member name="editors/3d/navigation/invert_zoom_direction" type="bool" setter="" getter="">
+			If [code]true[/code], invert the direction when zooming by moving the mouse. This does not affect zooming with the mouse wheel.
+		</member>
 		<member name="editors/3d/navigation_feel/orbit_inertia" type="float" setter="" getter="">
 			The inertia to use when orbiting in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
