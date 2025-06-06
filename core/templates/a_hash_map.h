@@ -274,6 +274,21 @@ private:
 		memcpy(map_data, p_other.map_data, sizeof(HashMapData) * real_capacity);
 	}
 
+	/// Remove the hash at the given index from map_data.
+	/// The caller is responsible for destructing the corresponding element before the call, if needed.
+	void _erase_hash_entry(uint32_t p_hash_idx) {
+		uint32_t idx = p_hash_idx;
+		uint32_t next_idx = (idx + 1) & capacity;
+
+		while (map_data[next_idx].hash != EMPTY_HASH && _get_probe_length(next_idx, map_data[next_idx].hash, capacity) != 0) {
+			map_data[idx] = map_data[next_idx];
+			idx = next_idx;
+			next_idx = (next_idx + 1) & capacity;
+		}
+
+		map_data[idx].data = EMPTY_HASH;
+	}
+
 public:
 	/* Standard Godot Container API */
 
@@ -347,21 +362,11 @@ public:
 	bool erase(const TKey &p_key) {
 		uint32_t pos = 0;
 		uint32_t element_pos = 0;
-		bool exists = _lookup_pos(p_key, element_pos, pos);
-
-		if (!exists) {
+		if (!_lookup_pos(p_key, element_pos, pos)) {
 			return false;
 		}
 
-		uint32_t next_pos = (pos + 1) & capacity;
-		while (map_data[next_pos].hash != EMPTY_HASH && _get_probe_length(next_pos, map_data[next_pos].hash, capacity) != 0) {
-			SWAP(map_data[next_pos], map_data[pos]);
-
-			pos = next_pos;
-			next_pos = (next_pos + 1) & capacity;
-		}
-
-		map_data[pos].data = EMPTY_HASH;
+		_erase_hash_entry(pos);
 		elements[element_pos].key.~TKey();
 		elements[element_pos].value.~TValue();
 		num_elements--;
@@ -381,7 +386,7 @@ public:
 	// Replace the key of an entry in-place, without invalidating iterators or changing the entries position during iteration.
 	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
 	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
-		if (p_old_key == p_new_key) {
+		if (Comparator::compare(p_old_key, p_new_key)) {
 			return true;
 		}
 		uint32_t pos = 0;
@@ -391,18 +396,9 @@ public:
 		MapKeyValue &element = elements[element_pos];
 		const_cast<TKey &>(element.key) = p_new_key;
 
-		uint32_t next_pos = (pos + 1) & capacity;
-		while (map_data[next_pos].hash != EMPTY_HASH && _get_probe_length(next_pos, map_data[next_pos].hash, capacity) != 0) {
-			SWAP(map_data[next_pos], map_data[pos]);
+		_erase_hash_entry(pos);
 
-			pos = next_pos;
-			next_pos = (next_pos + 1) & capacity;
-		}
-
-		map_data[pos].data = EMPTY_HASH;
-
-		uint32_t hash = _hash(p_new_key);
-		_insert_with_hash(hash, element_pos);
+		_insert_with_hash(_hash(p_new_key), element_pos);
 
 		return true;
 	}
