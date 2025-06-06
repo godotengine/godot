@@ -543,6 +543,12 @@ void EditorPropertyArray::_remove_pressed(int p_slot_index) {
 	Variant array = object->get_array().duplicate();
 	array.call("remove_at", slots[p_slot_index].index);
 
+	// Sync folded state after deletion.
+	for (int i = p_slot_index; i < (int)array.call("size"); i++) {
+		bool folded = object->editor_is_section_unfolded("indices/" + itos(i + 1));
+		object->editor_set_section_unfold("indices/" + itos(i), folded);
+	}
+
 	emit_changed(get_edited_property(), array);
 }
 
@@ -926,6 +932,24 @@ void EditorPropertyArray::_reorder_button_up() {
 	if (reorder_slot.index != reorder_to_index) {
 		// Move the element.
 		Variant array = object->get_array().duplicate();
+		int min_i = MIN(reorder_slot.index, reorder_to_index);
+		int max_i = MAX(reorder_slot.index, reorder_to_index);
+
+		// Sync folded state after move.
+		Vector<bool> folds;
+		for (int i = min_i; i <= max_i; i++) {
+			StringName p = "indices/" + itos(i);
+			bool folded = object->editor_is_section_unfolded(p);
+			folds.append(folded);
+		}
+		bool f = folds[reorder_slot.index - min_i];
+		folds.remove_at(reorder_slot.index - min_i);
+		folds.insert(reorder_to_index - min_i, f);
+
+		for (int i = 0; i < folds.size(); i++) {
+			bool folded = folds[i];
+			object->editor_set_section_unfold("indices/" + itos(i + min_i), folded);
+		}
 
 		property_vbox->move_child(reorder_slot.container, reorder_slot.index % page_length);
 		Variant value_to_move = array.get(reorder_slot.index);
