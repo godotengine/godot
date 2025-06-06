@@ -980,6 +980,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
+- `0002-cpp20-explicit-namespace.patch` (GH-100749)
 
 
 ## tinyexr
