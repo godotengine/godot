@@ -373,7 +373,7 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	}
 
 	feature_box->clear();
-	feature_box->add_item(TTRC("(All)"), FEATURE_ALL); // So it is always on top.
+	feature_box->add_item(TTRC("All"), FEATURE_ALL); // So it is always on top.
 	feature_box->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	feature_box->add_item(TTRC("Custom"), FEATURE_CUSTOM);
 	feature_box->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
