@@ -2566,12 +2566,12 @@ uint32_t RenderForwardMobile::geometry_instance_get_pair_mask() {
 	return ((1 << RS::INSTANCE_LIGHT) + (1 << RS::INSTANCE_REFLECTION_PROBE) + (1 << RS::INSTANCE_DECAL));
 }
 
-uint32_t RenderForwardMobile::GeometryInstanceForwardMobile::clear_light_instances(uint32_t &total_max_lights)
+Pair<uint32_t,uint32_t> RenderForwardMobile::GeometryInstanceForwardMobile::clear_light_instances()
 {
 	omni_light_count = 0;
 	spot_light_count = 0;
-	total_max_lights = get_singleton()->get_max_elements();
-	return MAX_RDL_CULL;
+	return Pair(	(uint32_t)MAX_RDL_CULL,
+					(uint32_t)get_singleton()->get_max_elements() );
 }
 void RenderForwardMobile::GeometryInstanceForwardMobile::pair_light_instance(
 				const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx )

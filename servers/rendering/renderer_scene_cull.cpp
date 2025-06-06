@@ -1956,8 +1956,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
 		
-		uint32_t dummy_max_light_count = 256;
-		geom->geometry_instance->clear_light_instances(dummy_max_light_count);
+		geom->geometry_instance->clear_light_instances();
 		geom->geometry_instance->pair_reflection_probe_instances(nullptr, 0);
 		geom->geometry_instance->pair_decal_instances(nullptr, 0);
 		geom->geometry_instance->pair_voxel_gi_instances(nullptr, 0);
@@ -2814,9 +2813,6 @@ void RendererSceneCull::_scene_cull_threaded(uint32_t p_thread, CullData *cull_d
 	_scene_cull(*cull_data, scene_cull_result_threads[p_thread], cull_from, cull_to);
 }
 
-//	os.h and time.h are needed for simple profiling info
-#include "core/os/os.h"
-#include "core/os/time.h"
 void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cull_result, uint64_t p_from, uint64_t p_to) {
 	uint64_t frame_number = RSG::rasterizer->get_frame_number();
 	float lightmap_probe_update_speed = RSG::light_storage->lightmap_get_probe_capture_update_speed() * RSG::rasterizer->get_frame_delta_time();
@@ -2937,138 +2933,78 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_LIGHT) && (idata.flags & InstanceData::FLAG_GEOM_LIGHTING_DIRTY)) {
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						ERR_FAIL_NULL(geom->geometry_instance);
-						//	clear any existing light instances for this mesh and return the max count.
-						uint32_t total_max_count = 256;
-						uint32_t link_max_count = geom->geometry_instance->clear_light_instances(total_max_count);
-						if( link_max_count > 0 ) {
-							uint64_t tin = Time::get_singleton()->get_ticks_usec();
-							
-							//	Run through all M lights, but only use a heap to keep track of the best N
-							uint32_t omni_count = 0, spot_count = 0, processed_count = 0;
+						//	clear any existing light instances for this mesh and return the max count per-mesh, and total (per-scene).
+						Pair<uint32_t,uint32_t> max_per_mesh_total = geom->geometry_instance->clear_light_instances();
+						if( (max_per_mesh_total.first > 0) && (max_per_mesh_total.second > 0) ) {
+							//	Run through all M lights, but use a heap to keep track of the best N
+							uint32_t omni_count = 0, spot_count = 0;
 							LocalVector<Pair<float,uint32_t> > omni_score_idx, spot_score_idx;	//	score, index into the light array
-							omni_score_idx.resize( link_max_count );
-							spot_score_idx.resize( link_max_count );
-							SortArray<Pair<float,uint32_t> > heapify;
+							SortArray<Pair<float,uint32_t> > heapify;	//	SortArray has heap functionality in it
 							bool omni_needs_heap = true, spot_needs_heap = true;
 							Vector3 mesh_center = idata.instance->transformed_aabb.get_center();
-							#if 1
-							//	Run through all lights in the scene (can be more than max_renderable_lights)
+							//	Run through all lights in the scene (there might be more than max_renderable_lights)
+							uint32_t total_omni_count = 0, total_spot_count = 0;
 							for (const Instance *E : geom->lights) {
-							#else
-							//	These are in the correct order, but the list is still being built up [8^/ 
-							uint32_t num_culled_lights = cull_result.lights.size();
-							for( uint32_t liidx = 0; liidx < num_culled_lights; ++liidx ) {
-								const Instance *E = cull_result.lights[ liidx ];
-							#endif
-								InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
-								if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
-									continue;
-								}
-
-								if ((RSG::light_storage->light_get_bake_mode(E->base) == RS::LIGHT_BAKE_STATIC) && idata.instance->lightmap) {
-									continue;
-								}
-
-								#if 0
-								//	Only pair the 1st N; this is the old way, for benchmarking
 								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
-								switch (light_type) {
-									case RS::LIGHT_OMNI: {
-										if( (omni_count < link_max_count) && (omni_count < total_max_count) ) {
-											geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_count++);
-										}
-									} break;
-									case RS::LIGHT_SPOT: {
-										if( (spot_count < link_max_count) && (spot_count < total_max_count) ) {
-											geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_count++);
-										}
-									} break;
-									default: break;
-								}
-								#else
-								//	Large scores are worse, so linear with distance, inverse with energy and range
-								Vector3 light_center = E->transformed_aabb.get_center();	//	maybe a bit faster?
-								//Vector3 light_center = E->transform.xform( RSG::light_storage->light_get_aabb(E->base).get_center() );	//	maybe a bit more accurate
-								#if 1
-								float light_range = RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_RANGE);
-								float light_energy = RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_ENERGY);
-								float light_inst_score = mesh_center.distance_to( light_center ) / (0.1f + light_range * light_energy);
-								#else
-								//	(on my machine this saves about 0.5 us per mesh, probably not worth it...)
-								float light_inst_score = mesh_center.distance_squared_to( light_center );
-								#endif
-								//	Keep the best per-light-type
-								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
-								switch (light_type) {
-									case RS::LIGHT_OMNI: {
-										if( omni_count < total_max_count ) {
-											if( omni_count < link_max_count ) {
+								if(		((RS::LIGHT_OMNI == light_type) && (total_omni_count++ < max_per_mesh_total.second)) || 
+										((RS::LIGHT_SPOT == light_type) && (total_spot_count++ < max_per_mesh_total.second)) ) {
+									//	Cull
+									if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
+										continue;
+									}
+									if ((RSG::light_storage->light_get_bake_mode(E->base) == RS::LIGHT_BAKE_STATIC) && idata.instance->lightmap) {
+										continue;
+									}
+									
+									InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
+									//	Large scores are worse, so linear with distance, inverse with energy and range
+									Vector3 light_center = E->transformed_aabb.get_center();
+									float light_range_energy = 
+											RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_RANGE) *
+											RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_ENERGY);
+									float light_inst_score = mesh_center.distance_to( light_center ) / MAX(0.01f, light_range_energy);
+									//	Keep the best per-light-type
+									switch (light_type) {
+										case RS::LIGHT_OMNI: {
+											if( omni_count < max_per_mesh_total.first ) {
 												//	We have room to just add it, and track the score and where it goes
-												omni_score_idx[ omni_count ] = Pair(light_inst_score, omni_count);
-												geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_count);
+												omni_score_idx.push_back( Pair(light_inst_score, omni_count) );
+												geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_count++);
 											} else {
 												if( omni_needs_heap ) {
 													//	We need to make this a heap one time
-													heapify.make_heap( 0, link_max_count, &omni_score_idx[0] );
+													heapify.make_heap( 0, omni_count, &omni_score_idx[0] );
 													omni_needs_heap = false;
 												}
 												if( light_inst_score < omni_score_idx[ 0 ].first ) {
 													uint32_t replace_index = omni_score_idx[ 0 ].second;
 													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
-													heapify.adjust_heap( 0, 0, link_max_count, Pair( light_inst_score, replace_index ), 
-																				&omni_score_idx[0] );
+													heapify.adjust_heap( 0, 0, omni_count, Pair( light_inst_score, replace_index ), &omni_score_idx[0] );
 												}
 											}
-											++omni_count;
-										}
-									} break;
-									case RS::LIGHT_SPOT: {
-										if( spot_count < total_max_count ) {
-											if( spot_count < link_max_count ) {
+										} break;
+										case RS::LIGHT_SPOT: {
+											if( spot_count < max_per_mesh_total.first ) {
 												//	We have room to just add it, and track the score and where it goes
-												spot_score_idx[ spot_count ] = Pair(light_inst_score, spot_count);
-												geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_count);
+												spot_score_idx.push_back( Pair(light_inst_score, spot_count) );
+												geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_count++);
 											} else {
 												if( spot_needs_heap ) {
 													//	We need to make this a heap one time
-													heapify.make_heap( 0, link_max_count, &spot_score_idx[0] );
+													heapify.make_heap( 0, spot_count, &spot_score_idx[0] );
 													spot_needs_heap = false;
 												}
 												if( light_inst_score < spot_score_idx[ 0 ].first ) {
 													uint32_t replace_index = spot_score_idx[ 0 ].second;
 													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
-													heapify.adjust_heap( 0, 0, link_max_count, Pair( light_inst_score, replace_index ), 
-																				&spot_score_idx[0] );
+													heapify.adjust_heap( 0, 0, spot_count, Pair( light_inst_score, replace_index ), &spot_score_idx[0] );
 												}
 											}
-											++spot_count;
-										}
-									} break;
-									default: break;
+										} break;
+										default: break;
+									}
 								}
-								#endif
-								++processed_count;
 							}
-							#if 1
-							{
-								//	This block is just for profiling.
-								uint64_t tout = Time::get_singleton()->get_ticks_usec();
-								static uint64_t prof_lights = 0;
-								static uint64_t prof_count = 0;
-								static uint64_t prof_us = 0;
-								prof_lights += processed_count;
-								prof_us += tout - tin;
-								if( ++prof_count >= 100 )
-								{
-									double lights_per_call = prof_lights; lights_per_call /= prof_count;
-									double us_per_call = prof_us; us_per_call /= prof_count;
-									print_line(vformat("modified pair_light_instances avg %1.2f [us] for %1.2f lights", us_per_call, lights_per_call));
-									prof_lights = 0;
-									prof_count = 0;
-									prof_us = 0;
-								}							
-							}
-							#endif
 						}
 						idata.flags &= ~InstanceData::FLAG_GEOM_LIGHTING_DIRTY;
 					}
