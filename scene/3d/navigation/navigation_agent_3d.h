@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/main/node.h"
+#include "servers/navigation/navigation_layers_cost_map_3d.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
 
@@ -67,6 +68,9 @@ class NavigationAgent3D : public Node {
 	real_t path_max_distance = 5.0;
 	bool simplify_path = false;
 	real_t simplify_epsilon = 0.0;
+
+	Ref<NavigationLayersCostMap3D> navigation_layers_cost_map;
+	void _navigation_layers_cost_map_changed();
 
 	Vector3 target_position;
 
@@ -254,6 +258,9 @@ public:
 
 	void set_debug_path_custom_point_size(float p_point_size);
 	float get_debug_path_custom_point_size() const;
+
+	void set_navigation_layers_cost_map(const Ref<NavigationLayersCostMap3D> &p_cost_map);
+	Ref<NavigationLayersCostMap3D> get_navigation_layers_cost_map() const;
 
 private:
 	bool _is_target_reachable() const;
