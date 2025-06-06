@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
+from misc.utility.compatibility import try_use_cxx20_module
 
 Import("env")
 
@@ -40,7 +41,8 @@ if "-std=gnu++17" in env_metal["CXXFLAGS"]:
 env_metal.Append(CXXFLAGS=["-std=c++20"])
 
 # Enable module support
-env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+# env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+try_use_cxx20_module(env_metal)
 
 # Driver source files
 

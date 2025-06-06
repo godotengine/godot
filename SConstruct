@@ -52,6 +52,7 @@ _helper_module("version", "version.py")
 _helper_module("core.core_builders", "core/core_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
 _helper_module("misc.utility.color", "misc/utility/color.py")
+_helper_module("misc.utility.compatibility", "misc/utility/compatibility.py")
 
 # Local
 import gles3_builders
