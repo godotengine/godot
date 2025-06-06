@@ -43,6 +43,7 @@ class PanelContainer;
 class SpinBox;
 class VSeparator;
 
+class BlendPointEditor1D;
 class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace1DEditor, AnimationTreeNodeEditorPlugin);
 
@@ -67,6 +68,11 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
 	CheckBox *sync = nullptr;
 	OptionButton *interpolation = nullptr;
+
+	HBoxContainer *blending_hb = nullptr;
+	CheckBox *use_velocity_limit = nullptr;
+	SpinBox *default_velocity_limit = nullptr;
+	Ref<BlendPointEditor1D> current_blend_point_editor;
 
 	HBoxContainer *edit_hb = nullptr;
 	SpinBox *edit_value = nullptr;
@@ -134,4 +140,34 @@ public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeBlendSpace1DEditor();
+};
+
+class BlendPointEditor1D : public RefCounted {
+	GDCLASS(BlendPointEditor1D, RefCounted);
+
+private:
+	Ref<AnimationNodeBlendSpace1D> blend_space;
+	Ref<AnimationNode> anim_node;
+	float velocity_limit_ease;
+	int selected_point = -1;
+	float velocity_limit = 0.0;
+	bool override_velocity_limit = false;
+	bool updating = false;
+
+public:
+	void setup(Ref<AnimationNodeBlendSpace1D> p_blend_space, int idx, Ref<AnimationNode> p_anim_node);
+
+	void set_velocity_limit(float p_value);
+	double get_velocity_limit() const;
+	void set_override_velocity_limit(bool const p_ovl);
+	bool get_override_velocity_limit() const;
+
+	Ref<AnimationNode> get_anim_node() const;
+	void set_velocity_limit_ease(float const p_ease);
+	float get_velocity_limit_ease() const;
+	bool _hide_script_from_inspector() { return true; }
+	bool _hide_metadata_from_inspector() { return true; }
+	bool _dont_undo_redo() { return true; }
+
+	static void _bind_methods();
 };
