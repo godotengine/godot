@@ -1800,6 +1800,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 
 					DragType resize_drag = DRAG_NONE;
 					real_t radius = (select_handle->get_size().width / 2) * 1.5;
+					handles_in_range.clear();
 
 					for (int i = 0; i < 4; i++) {
 						int prev = (i + 3) % 4;
@@ -1810,6 +1811,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 						ofs += endpoints[i];
 						if (ofs.distance_to(b->get_position()) < radius) {
 							resize_drag = dragger[i * 2];
+							handles_in_range.set_flag(1 << resize_drag);
 						}
 
 						ofs = (endpoints[i] + endpoints[next]) / 2;
@@ -1864,6 +1866,23 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 
 			Point2 drag_begin = xform.affine_inverse().xform(drag_to_snapped_begin);
 			Point2 drag_end = xform.affine_inverse().xform(drag_to_snapped_end);
+
+			if (handles_in_range > 0) {
+				real_t min_angle = Math_TAU;
+				Point2 delta = m->get_relative();
+				const DragType draggers[4] = { DRAG_TOP_LEFT, DRAG_TOP_RIGHT, DRAG_BOTTOM_RIGHT, DRAG_BOTTOM_LEFT };
+				const Vector2 drag_dirs[4] = { Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1) };
+				for (int i = 0; i < 4; i++) {
+					if (handles_in_range.has_flag(1 << draggers[i])) {
+						real_t new_angle = abs(delta.angle_to(drag_dirs[i]));
+						if (new_angle < min_angle) {
+							min_angle = new_angle;
+							drag_type = draggers[i];
+						}
+					}
+				}
+				handles_in_range = 0;
+			}
 
 			// Horizontal resize
 			if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_BOTTOM_LEFT) {
