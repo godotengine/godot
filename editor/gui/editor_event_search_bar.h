@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  event_listener_line_edit.h                                            */
+/*  editor_event_search_bar.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,47 +30,35 @@
 
 #pragma once
 
-#include "scene/gui/line_edit.h"
+#include "scene/gui/box_container.h"
 
-enum InputType {
-	INPUT_KEY = 1,
-	INPUT_MOUSE_BUTTON = 2,
-	INPUT_JOY_BUTTON = 4,
-	INPUT_JOY_MOTION = 8
-};
+class Button;
+class EventListenerLineEdit;
+class LineEdit;
 
-class EventListenerLineEdit : public LineEdit {
-	GDCLASS(EventListenerLineEdit, LineEdit)
+class EditorEventSearchBar : public HBoxContainer {
+	GDCLASS(EditorEventSearchBar, HBoxContainer);
 
-	uint64_t hold_next = 0;
-	Ref<InputEvent> hold_event;
+	LineEdit *search_by_name = nullptr;
+	EventListenerLineEdit *search_by_event = nullptr;
+	Button *clear_all = nullptr;
 
-	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
-	bool ignore_next_event = true;
-	bool share_keycodes = false;
-	Ref<InputEvent> event;
+	void _on_event_changed(const Ref<InputEvent> &p_event);
+	void _on_clear_all();
 
-	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;
-
-	void gui_input(const Ref<InputEvent> &p_event) override;
-	void _on_text_changed(const String &p_text);
+	void _value_changed();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	static String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device);
-	static String get_device_string(int p_device);
+	LineEdit *get_name_search_box() const { return search_by_name; }
 
+	bool is_searching() const;
+
+	String get_name() const;
 	Ref<InputEvent> get_event() const;
-	void clear_event();
 
-	void set_allowed_input_types(int p_type_masks);
-	int get_allowed_input_types() const;
-
-	void grab_focus();
-
-public:
-	EventListenerLineEdit();
+	EditorEventSearchBar();
 };
