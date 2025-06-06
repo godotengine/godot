@@ -13,7 +13,7 @@ thirdparty_obj = []
 if env["builtin_libvorbis"]:
     thirdparty_dir = "#thirdparty/libvorbis/"
     thirdparty_sources = [
-        # "analysis.c",
+        "analysis.c",
         # "barkmel.c",
         "bitrate.c",
         "block.c",
@@ -35,7 +35,7 @@ if env["builtin_libvorbis"]:
         "smallft.c",
         "synthesis.c",
         # "tone.c",
-        # "vorbisenc.c",
+        "vorbisenc.c",
         "vorbisfile.c",
         "window.c",
     ]
