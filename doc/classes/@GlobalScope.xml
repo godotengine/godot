@@ -1492,8 +1492,8 @@
 			<param index="1" name="min" type="Variant" />
 			<param index="2" name="max" type="Variant" />
 			<description>
-				Wraps the [Variant] [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
-				Variant types [int] and [float] are supported. If any of the arguments is [float] this function returns a [float], otherwise it returns an [int].
+				Wraps the [Variant] [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
+				Variant types [int] and [float] are supported. If any of the arguments is [float], this function returns a [float], otherwise it returns an [int].
 				[codeblock]
 				var a = wrap(4, 5, 10)
 				# a is 9 (int)
@@ -1512,7 +1512,7 @@
 			<param index="1" name="min" type="float" />
 			<param index="2" name="max" type="float" />
 			<description>
-				Wraps the float [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
+				Wraps the float [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
 				[codeblock]
 				# Infinite loop between 5.0 and 9.9
 				value = wrapf(value + 0.1, 5.0, 10.0)
@@ -1525,8 +1525,7 @@
 				# Infinite rotation (in radians)
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
-				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
-				[method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
+				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead. [method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
 		<method name="wrapi">
@@ -1535,7 +1534,7 @@
 			<param index="1" name="min" type="int" />
 			<param index="2" name="max" type="int" />
 			<description>
-				Wraps the integer [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
+				Wraps the integer [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
 				[codeblock]
 				# Infinite loop between 5 and 9
 				frame = wrapi(frame + 1, 5, 10)
