@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
 import os
 import shutil
@@ -41,7 +41,7 @@ def build_mono_wasm(godot_dir, output_dir, debug=False):
     # Download and build mono-wasm
     try:
         # Clone mono-wasm repository if needed
-        mono_wasm_repo = os.path.join(godot_dir, "modules", "mono", "thirdparty", "mono-wasm")
+        mono_wasm_repo = os.path.join(godot_dir, "thirdparty", "mono-wasm")
         if not os.path.exists(mono_wasm_repo):
             os.makedirs(os.path.dirname(mono_wasm_repo), exist_ok=True)
             subprocess.check_call(["git", "clone", "https://github.com/mono/mono-wasm.git", mono_wasm_repo])
@@ -81,15 +81,19 @@ def build_mono_wasm(godot_dir, output_dir, debug=False):
             f.write("""
 // Godot Mono WebAssembly Support
 var GodotMonoSupport = {
-    initialize: function() {
-        // This will be called by the Godot engine
-        return MonoRuntime.init();
+    // Initialize the Mono runtime
+    init: function() {
+        // This will be called when Godot starts
+        console.log("Initializing Mono runtime for WebAssembly...");
+        
+        // TODO: Add initialization code here
+        return true;
     },
-    loadAssembly: function(assemblyName) {
-        return MonoRuntime.loadAssembly(assemblyName);
-    },
-    invokeMethod: function(assemblyName, namespace, className, methodName, args) {
-        return MonoRuntime.call_method(assemblyName, namespace, className, methodName, args || []);
+    
+    // Load assemblies
+    loadAssemblies: function(assemblies) {
+        // Called to load .NET assemblies
+        console.log("Loading .NET assemblies: " + assemblies);
     }
 };
 """)
@@ -102,18 +106,19 @@ var GodotMonoSupport = {
 def prepare_export_template(godot_dir, output_dir, debug=False):
     """Prepare the C# web export template."""
     template_type = "debug" if debug else "release"
-
-    # Define paths
-    export_dir = os.path.join(output_dir, "templates", f"web_{template_type}.zip")
-
-    # Create necessary directories
-    os.makedirs(os.path.dirname(export_dir), exist_ok=True)
-
-    print(f"Creating web export template for {template_type}...")
-
-    # Add mono-wasm files to the template
-    # This would normally be integrated with the regular template creation process
-    # but for this example, we'll just copy what we need
+    print(f"Preparing {template_type} export template...")
+    
+    # Copy the Godot web export template
+    godot_template_dir = os.path.join(godot_dir, "bin", f"godot.web.{template_type}.zip")
+    if not os.path.exists(godot_template_dir):
+        print(f"Error: Godot web template not found at {godot_template_dir}")
+        print("Did you build Godot with 'scons platform=web target=template_release module_mono_enabled=yes'?")
+        return False
+    
+    # Copy to output
+    output_template = os.path.join(output_dir, f"godot.web.{template_type}.zip")
+    shutil.copy(godot_template_dir, output_template)
+    print(f"Template copied to {output_template}")
 
     return True
 

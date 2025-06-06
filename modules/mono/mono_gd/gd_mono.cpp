@@ -607,11 +607,10 @@ void GDMono::initialize() {
 	_domain = nullptr;
 
 	mono_jit_init("godot");
-	
+
 	_load_assemblies(GodotSharpDirs::get_api_assemblies_dir());
 
-	// TODO: Add implementation for loading Godot plugins for web platform
-	return;
+	return true;
 #endif
 
 #if !defined(APPLE_EMBEDDED_ENABLED)

@@ -17,6 +17,7 @@ def configure(env):
             supported.append("mono")
         else:
             import sys
+
             print("The 'mono' module does not currently support building for this platform. Aborting.")
             sys.exit(255)
 
