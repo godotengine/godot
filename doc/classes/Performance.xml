@@ -299,7 +299,34 @@
 		<constant name="NAVIGATION_3D_OBSTACLE_COUNT" value="58" enum="Monitor">
 			Number of active navigation obstacles in the [NavigationServer3D].
 		</constant>
-		<constant name="MONITOR_MAX" value="59" enum="Monitor">
+		<constant name="FRAME_PACING_TOTAL_TIME" value="59" enum="Monitor">
+			Value used by Godot when PACING_METHOD_SEQUENTIAL_SYNC is available and no other better latency-reduction method is available. to determine whether we should be in [constant RenderingServer.CPU_GPU_SYNC_PARALLEL] or in [constant RenderingServer.CPU_GPU_SYNC_SEQUENTIAL] mode. It is the sum of CPU Time + GPU Time. If the value is consistently high enough, Godot will determine to use PARALLEL, otherwise it will prefer SEQUENTIAL.
+			[b]Note:[/b] this value attempts to be bereft of any additional time caused from waiting for V-Sync, therefore it will not match any other timing value (e.g. actual FPS, time taken by physics, etc). It is an estimation of how long the system would take if CPU and GPU were to be processing a frame serially, without the added delay of waiting for V-Sync.
+			[b]Note:[/b] When using these monitors, it's best to set the Editor to a simple view like the Script tab to avoid the 2D/3D view from consuming system resources that could interfere with readings. Or better yet, run the Editor profiler in another machine.
+		</constant>
+		<constant name="FRAME_PACING_CPU_TIME" value="60" enum="Monitor">
+			How long CPU took to process the frame, bereft of waiting delays caused by V-Sync. This value is an approximation and might not match any other timing value. If this value is added to GPU Time, you get Total Time. Useful to know where to focus optimization efforts.
+		</constant>
+		<constant name="FRAME_PACING_GPU_TIME" value="61" enum="Monitor">
+			How long GPU took to process the frame, bereft of waiting delays caused by V-Sync. This value is an approximation and will not match any other timing value. If this value is added to CPU Time, you get Total Time. Useful to know where to focus optimization efforts.
+		</constant>
+		<constant name="FRAME_PACING_EVALUATED_SYNC_MODE" value="62" enum="Monitor">
+			The mode decided by Godot that we should be in for each frame based on Total Time. "1" means we should be in [constant RenderingServer.CPU_GPU_SYNC_PARALLEL], "2" means we should be in [constant RenderingServer.CPU_GPU_SYNC_SEQUENTIAL].
+			[b]Note:[/b] This value is not the actual mode Godot is in, because the decision is averaged over time to prevent Godot from constantly switching back and forth between PARALLEL and SEQUENTIAL (which would cause visible stutters). Ideally this should be a perfect flat line of either 1s or 2s. If you see the game going back and forth between 1 and 2, then the system is not fast enough for a smooth low-latency experience; or the game should be optimized further until it is. The higher the monitor refresh rate, the higher the system requirements are for the line to be flat.
+		</constant>
+		<constant name="FRAME_PACING_ACTUAL_SYNC_MODE" value="63" enum="Monitor">
+			The [b]actual[/b] mode the game currently is. "1" means we are in [constant RenderingServer.CPU_GPU_SYNC_PARALLEL], "2" means we are in [constant RenderingServer.CPU_GPU_SYNC_SEQUENTIAL].
+			[b]Note:[/b] This value should be as flat as possible. Every time it switches between "1" and "2", the game may suffer a small stutter.
+			[b]Note:[/b] This value is ignored if PACING_METHOD_WAITABLE_SWAPCHAIN is available; or if [method RenderingDevice.get_latency_mode] is equal or higher than [constant RenderingDevice.LATENCY_MODE_MEDIUM]
+		</constant>
+		<constant name="FRAME_PACING_MISSED_HARD_TARGET" value="64" enum="Monitor">
+			The number of frames where the "Total Time" has exceeded the monitor's refresh rate or the max FPS (whichever is lower). This does not necessarily mean the game has missed a V-Blank (if the game is running in [constant RenderingServer.CPU_GPU_SYNC_PARALLEL], then total frame time should be lower than the sum of CPU Time + GPU Time; thus in practice the app may not have missed any V-Blank) but it indicates V-Blanks would've been missed if executing in [constant RenderingServer.CPU_GPU_SYNC_SEQUENTIAL]. The value is expressed in thousands.
+			For example one missed Hard Target will be shown as 1000. Two missed Hard Targets will be shown as 2000. This value decreases quickly over time. Missed Hard Targets weight heavily on Godot deciding to switch to PARALLEL to avoid degrading the experience further.
+			[b]Note:[/b] While in PARALLEL mode, this counter is always reset to 0 each new frame, thus while [constant FRAME_PACING_ACTUAL_SYNC_MODE] is 1, this value will be either 0 or 1000, where a flat 1000 line means the game is always failing to reach the target framerate.
+			[b]Note:[/b] Spikes in missed hard targets almost always means very visible stutter and thus should be avoided at all costs during gameplay. This value should be kept at 0 at all times. If the system isn't fast enough to keep the target framerate, this value should always be 1000 to keep pacing consistent.
+			[b]Note:[/b] Periodically failing this metric means you should optimize your content to run faster, avoid spikes, or increase [member ProjectSettings.rendering/rendering_device/vsync/latency_mode] to a higher latency mode.
+		</constant>
+		<constant name="MONITOR_MAX" value="65" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 	</constants>
