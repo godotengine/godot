@@ -2566,29 +2566,31 @@ uint32_t RenderForwardMobile::geometry_instance_get_pair_mask() {
 	return ((1 << RS::INSTANCE_LIGHT) + (1 << RS::INSTANCE_REFLECTION_PROBE) + (1 << RS::INSTANCE_DECAL));
 }
 
-Pair<uint32_t,uint32_t> RenderForwardMobile::GeometryInstanceForwardMobile::clear_light_instances()
-{
+Pair<uint32_t, uint32_t> RenderForwardMobile::GeometryInstanceForwardMobile::clear_light_instances() {
 	omni_light_count = 0;
 	spot_light_count = 0;
-	return Pair(	(uint32_t)MAX_RDL_CULL,
-					(uint32_t)get_singleton()->get_max_elements() );
+	return Pair((uint32_t)MAX_RDL_CULL,
+			(uint32_t)get_singleton()->get_max_elements());
 }
 void RenderForwardMobile::GeometryInstanceForwardMobile::pair_light_instance(
-				const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx )
-{
-	if( placement_idx < (uint32_t)MAX_RDL_CULL ){
-		RendererRD::ForwardID light_id = RendererRD::LightStorage::get_singleton()->
-												light_instance_get_forward_id(p_light_instance);
+		const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx) {
+	if (placement_idx < (uint32_t)MAX_RDL_CULL) {
+		RendererRD::ForwardID light_id = RendererRD::LightStorage::get_singleton()->light_instance_get_forward_id(p_light_instance);
 		switch (light_type) {
 			case RS::LIGHT_OMNI: {
-				omni_lights[ placement_idx ] = light_id;
-				if( placement_idx >= omni_light_count ) { omni_light_count = placement_idx + 1; }
+				omni_lights[placement_idx] = light_id;
+				if (placement_idx >= omni_light_count) {
+					omni_light_count = placement_idx + 1;
+				}
 			} break;
 			case RS::LIGHT_SPOT: {
-				spot_lights[ placement_idx ] = light_id;
-				if( placement_idx >= spot_light_count ) { spot_light_count = placement_idx + 1; }
+				spot_lights[placement_idx] = light_id;
+				if (placement_idx >= spot_light_count) {
+					spot_light_count = placement_idx + 1;
+				}
 			} break;
-			default: break;
+			default:
+				break;
 		}
 	}
 }
