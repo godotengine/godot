@@ -110,12 +110,20 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				frame->set_value(0);
 			} else if (last_active) {
 				// Need the last frame after it stopped.
+				if (last_playing_speed > 0) {
+					// Stop at the end when playing forwards
+					player->seek_internal(player->get_current_animation_length(), true, true, false);
+				} else {
+					// Stop at the beginning when playing backwards
+					player->seek_internal(0, true, true, false);
+				}
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
 				stop->set_button_icon(stop_icon);
 			}
 
 			last_active = player->is_playing();
+			last_playing_speed = player->get_playing_speed();
 
 			updating = false;
 		} break;
