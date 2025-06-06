@@ -2489,48 +2489,50 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "grow_amount" && !grow_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "grow_amount" && !grow_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "uv1_triplanar_sharpness" || p_property.name == "uv1_world_triplanar") && !flags[FLAG_UV1_USE_TRIPLANAR]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if ((p_property.name == "uv1_triplanar_sharpness" || p_property.name == "uv1_world_triplanar") && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "uv2_triplanar_sharpness" || p_property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if ((p_property.name == "uv2_triplanar_sharpness" || p_property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "z_clip_scale" && !flags[FLAG_USE_Z_CLIP_SCALE]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "z_clip_scale" && !flags[FLAG_USE_Z_CLIP_SCALE]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "fov_override" && !flags[FLAG_USE_FOV_OVERRIDE]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (p_property.name == "fov_override" && !flags[FLAG_USE_FOV_OVERRIDE]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 
 	// you can only enable anti-aliasing (in materials) on alpha scissor and alpha hash

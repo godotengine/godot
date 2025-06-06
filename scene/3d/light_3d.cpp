@@ -541,14 +541,16 @@ DirectionalLight3D::SkyMode DirectionalLight3D::get_sky_mode() const {
 }
 
 void DirectionalLight3D::_validate_property(PropertyInfo &p_property) const {
-	if (shadow_mode == SHADOW_ORTHOGONAL && (p_property.name == "directional_shadow_split_1" || p_property.name == "directional_shadow_blend_splits")) {
-		// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (shadow_mode == SHADOW_ORTHOGONAL && (p_property.name == "directional_shadow_split_1" || p_property.name == "directional_shadow_blend_splits")) {
+			// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (p_property.name == "directional_shadow_split_2" || p_property.name == "directional_shadow_split_3")) {
-		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (p_property.name == "directional_shadow_split_2" || p_property.name == "directional_shadow_split_3")) {
+			// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 
 	if (p_property.name == "light_size" || p_property.name == "light_projector") {
