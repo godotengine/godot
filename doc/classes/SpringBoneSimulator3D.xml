@@ -691,4 +691,12 @@
 			Enumerated value for an optional rotation axis. See also [method set_joint_rotation_axis_vector].
 		</constant>
 	</constants>
+	<enums>
+		<enum name="BoneDirection">
+		</enum>
+		<enum name="CenterFrom">
+		</enum>
+		<enum name="RotationAxis">
+		</enum>
+	</enums>
 </class>
