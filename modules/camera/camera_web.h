@@ -34,14 +34,16 @@
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
 
+#include <atomic>
+
 class CameraFeedWeb : public CameraFeed {
-	GDCLASS(CameraFeedWeb, CameraFeed);
+	GDSOFTCLASS(CameraFeedWeb, CameraFeed);
 
 private:
 	String device_id;
 	Ref<Image> image;
 	Vector<uint8_t> data;
-	static void _on_get_pixeldata(void *, const uint8_t *, const int, const int, const int, const char *error);
+	static void _on_get_pixeldata(void *context, const uint8_t *rawdata, const int length, const int p_width, const int p_height, const char *error);
 	static void _on_denied_callback(void *context);
 
 protected:
@@ -61,8 +63,10 @@ class CameraWeb : public CameraServer {
 
 private:
 	CameraDriverWeb *camera_driver_web = nullptr;
+	std::atomic<bool> activating;
 	void _cleanup();
 	void _update_feeds();
+	static void _on_get_cameras_callback(void *context, const Vector<CameraInfo> &camera_info);
 
 protected:
 public:
