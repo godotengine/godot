@@ -160,10 +160,12 @@ bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "web") {
 		return true;
 	}
-	if (godot_js_os_has_feature(p_feature.utf8().get_data())) {
-		return true;
+	if (feature_support_cache.has(p_feature)) {
+		return feature_support_cache[p_feature];
 	}
-	return false;
+	bool supported = godot_js_os_has_feature(p_feature.utf8().get_data());
+	feature_support_cache[p_feature] = supported;
+	return supported;
 }
 
 String OS_Web::get_executable_path() const {
