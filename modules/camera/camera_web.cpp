@@ -73,11 +73,14 @@ void CameraFeedWeb::_on_denied_callback(void *context) {
 bool CameraFeedWeb::activate_feed() {
 	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
 
-	CameraFeed::FeedFormat f = formats[selected_format];
 	int width = parameters.get(KEY_WIDTH, 0);
 	int height = parameters.get(KEY_HEIGHT, 0);
-	width = width > 0 ? width : f.width;
-	height = height > 0 ? height : f.height;
+	// Firefox ESR (128.11.0esr) does not implement MediaStreamTrack.getCapabilities(), so 'formats' will be empty.
+	if (formats.size() > selected_format) {
+		CameraFeed::FeedFormat f = formats[selected_format];
+		width = width > 0 ? width : f.width;
+		height = height > 0 ? height : f.height;
+	}
 	CameraDriverWeb::get_singleton()->get_pixel_data(this, device_id, width, height, &_on_get_pixeldata, &_on_denied_callback);
 	return true;
 }
@@ -116,16 +119,11 @@ CameraFeedWeb::CameraFeedWeb(const CameraInfo &info) {
 	name = info.label;
 	device_id = info.device_id;
 
-	Vector<CapabilityInfo> capabilities;
-	CameraDriverWeb::get_singleton()->get_capabilities(&capabilities, device_id);
-	for (int i = 0; i < capabilities.size(); i++) {
-		CapabilityInfo capability = capabilities[i];
-		FeedFormat feed_format;
-		feed_format.width = capability.width;
-		feed_format.height = capability.height;
-		feed_format.format = String("RGBA");
-		formats.append(feed_format);
-	}
+	FeedFormat feed_format;
+	feed_format.width = info.capability.width;
+	feed_format.height = info.capability.height;
+	feed_format.format = String("RGBA");
+	formats.append(feed_format);
 
 	image.instantiate();
 }
@@ -136,18 +134,23 @@ CameraFeedWeb::~CameraFeedWeb() {
 	}
 }
 
-void CameraWeb::_update_feeds() {
-	for (int i = feeds.size() - 1; i >= 0; i--) {
-		remove_feed(feeds[i]);
+void CameraWeb::_on_get_cameras_callback(void *context, const Vector<CameraInfo> &camera_info) {
+	CameraWeb *server = static_cast<CameraWeb *>(context);
+	for (int i = server->feeds.size() - 1; i >= 0; i--) {
+		server->remove_feed(server->feeds[i]);
 	}
-
-	Vector<CameraInfo> camera_info;
-	camera_driver_web->get_cameras(&camera_info);
 	for (int i = 0; i < camera_info.size(); i++) {
 		CameraInfo info = camera_info[i];
 		Ref<CameraFeedWeb> feed = memnew(CameraFeedWeb(info));
-		add_feed(feed);
+		server->add_feed(feed);
 	}
+	server->CameraServer::set_monitoring_feeds(true);
+	server->activating = false;
+}
+
+void CameraWeb::_update_feeds() {
+	activating = true;
+	camera_driver_web->get_cameras((void *)this, &_on_get_cameras_callback);
 }
 
 void CameraWeb::_cleanup() {
@@ -159,17 +162,17 @@ void CameraWeb::_cleanup() {
 }
 
 void CameraWeb::set_monitoring_feeds(bool p_monitoring_feeds) {
-	if (p_monitoring_feeds == monitoring_feeds) {
+	if (p_monitoring_feeds == monitoring_feeds || activating) {
 		return;
 	}
 
-	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (p_monitoring_feeds) {
 		if (camera_driver_web == nullptr) {
 			camera_driver_web = new CameraDriverWeb();
 		}
 		_update_feeds();
 	} else {
+		CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 		_cleanup();
 	}
 }

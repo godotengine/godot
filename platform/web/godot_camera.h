@@ -37,13 +37,16 @@
 extern "C" {
 #endif
 
-using CameraLibrary_OnGetCamerasCallback = void (*)(void *, const char *);
+using CameraLibrary_OnGetCamerasCallback = void (*)(void *context, void *callback, const char *result);
 
-using CameraLibrary_OnGetCapabilitiesCallback = void (*)(void *, const char *);
+using CameraLibrary_OnGetPixelDataCallback = void (*)(void *context, const uint8_t *, const int size, const int width, const int height, const char *error);
 
-using CameraLibrary_OnGetPixelDataCallback = void (*)(void *, const uint8_t *, const int, const int, const int, const char *);
+using CameraLibrary_OnDeniedCallback = void (*)(void *context);
 
-using CameraLibrary_OnDeniedCallback = void (*)(void *);
+extern void godot_js_camera_get_cameras(
+		void *context,
+		void *callback,
+		CameraLibrary_OnGetCamerasCallback p_callback_ptr);
 
 extern void godot_js_camera_get_pixel_data(
 		void *context,
