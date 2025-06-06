@@ -2273,7 +2273,11 @@ void main() {
 
 #if defined(USE_SHADOW_TO_OPACITY)
 #ifndef MODE_RENDER_DEPTH
+#ifndef MODE_UNSHADED
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
+#else
+	alpha = 0.0;
+#endif
 
 #if defined(ALPHA_SCISSOR_USED)
 #ifdef RENDER_MATERIAL
