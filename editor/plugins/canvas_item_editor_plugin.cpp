@@ -2802,6 +2802,11 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 }
 
 void CanvasItemEditor::_update_cursor() {
+	if (cursor_shape_override != CURSOR_ARROW) {
+		set_default_cursor_shape(cursor_shape_override);
+		return;
+	}
+
 	// Choose the correct default cursor.
 	CursorShape c = CURSOR_ARROW;
 	switch (tool) {
@@ -2863,6 +2868,14 @@ void CanvasItemEditor::_update_lock_and_group_button() {
 	group_button->set_disabled(!has_canvas_item);
 	ungroup_button->set_visible(all_group);
 	ungroup_button->set_disabled(!has_canvas_item);
+}
+
+void CanvasItemEditor::set_cursor_shape_override(CursorShape p_shape) {
+	if (cursor_shape_override == p_shape) {
+		return;
+	}
+	cursor_shape_override = p_shape;
+	_update_cursor();
 }
 
 Control::CursorShape CanvasItemEditor::get_cursor_shape(const Point2 &p_pos) const {
