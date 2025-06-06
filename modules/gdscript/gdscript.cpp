@@ -154,6 +154,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	GDScriptInstance *instance = memnew(GDScriptInstance);
 	instance->base_ref_counted = p_is_ref_counted;
 	instance->members.resize(member_indices.size());
+	instance->_members = instance->members.ptrw();
 	instance->script = Ref<GDScript>(this);
 	instance->owner = p_owner;
 	instance->owner_id = p_owner->get_instance_id();
@@ -1692,7 +1693,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
-				members.write[member->index] = value;
+				_members[member->index] = value;
 				return true;
 			}
 		}
@@ -2151,6 +2152,7 @@ void GDScriptInstance::reload_members() {
 
 	//apply
 	members = new_members;
+	_members = members.ptrw();
 
 	//pass the values to the new indices
 	member_indices_cache.clear();
