@@ -5386,6 +5386,12 @@ String EditorNode::_get_system_info() const {
 
 	info.push_back(vformat("%s (%d threads)", processor_name, processor_count));
 
+	const int64_t system_ram = OS::get_singleton()->get_memory_info()["physical"];
+	if (system_ram > 0) {
+		// If the memory info is available, display it.
+		info.push_back(vformat("%s memory", String::humanize_size(system_ram)));
+	}
+
 	return String(" - ").join(info);
 }
 
