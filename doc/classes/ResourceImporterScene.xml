@@ -33,6 +33,21 @@
 		<member name="import_script/path" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an import script, which can run code after the import process has completed for custom processing. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html#using-import-scripts-for-automation]Using import scripts for automation[/url] for more information.
 		</member>
+		<member name="materials/extract" type="int" setter="" getter="" default="0">
+			Material extraction mode.
+			- [code]0 (Keep Internal)[/code], materials are not extracted.
+			- [code]1 (Extract Once)[/code], materials are extracted once and reused on subsequent import.
+			- [code]2 (Extract and Overwrite)[/code], materials are extracted and overwritten on every import.
+		</member>
+		<member name="materials/extract_format" type="int" setter="" getter="" default="0">
+			Extracted material file format.
+			- [code]0 (Text)[/code], text file format ([code]*.tres[/code]).
+			- [code]1 (Binary)[/code], binary file format ([code]*.res[/code]).
+			- [code]2 (Material)[/code], binary file format ([code]*.material[/code]).
+		</member>
+		<member name="materials/extract_path" type="String" setter="" getter="" default="&quot;&quot;">
+			Path extracted materials are saved to. If empty, source scene path is used.
+		</member>
 		<member name="meshes/create_shadow_meshes" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables the generation of shadow meshes on import. This optimizes shadow rendering without reducing quality by welding vertices together when possible. This in turn reduces the memory bandwidth required to render shadows. Shadow mesh generation currently doesn't support using a lower detail level than the source mesh (but shadow rendering will make use of LODs when relevant).
 		</member>
