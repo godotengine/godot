@@ -41,18 +41,21 @@ class SnapshotJsonView : public SnapshotView {
 protected:
 	static void _serialization_worker(void *p_ud);
 	void _update_text(GameStateSnapshot *p_data_ptr, GameStateSnapshot *p_diff_ptr, const String &p_data_str, const String &p_diff_data_str);
-
-	static void _bind_methods();
+	void _wait_for_serialization();
 
 	EditorJsonVisualizer *json_content = nullptr;
 	EditorJsonVisualizer *diff_json_content = nullptr;
 
 	Control *loading_panel = nullptr;
 
+	WorkerThreadPool::TaskID serialization_task_id = -1;
+
 	void _load_theme_settings();
 	static String _snapshot_to_json(GameStateSnapshot *p_snapshot);
 
 public:
 	SnapshotJsonView();
+	~SnapshotJsonView();
+
 	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
 };

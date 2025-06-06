@@ -45,8 +45,8 @@ void ObjectDBProfilerDebuggerPlugin::setup_session(int p_session_id) {
 	Ref<EditorDebuggerSession> session = get_session(p_session_id);
 	ERR_FAIL_COND(session.is_null());
 	debugger_panel = memnew(ObjectDBProfilerPanel);
-	session->connect(SNAME("started"), callable_mp(debugger_panel, &ObjectDBProfilerPanel::set_enabled).bind(true));
-	session->connect(SNAME("stopped"), callable_mp(debugger_panel, &ObjectDBProfilerPanel::set_enabled).bind(false));
+	session->connect("started", callable_mp(debugger_panel, &ObjectDBProfilerPanel::set_enabled).bind(true));
+	session->connect("stopped", callable_mp(debugger_panel, &ObjectDBProfilerPanel::set_enabled).bind(false));
 	session->add_session_tab(debugger_panel);
 }
 

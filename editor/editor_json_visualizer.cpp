@@ -115,14 +115,16 @@ void EditorJsonVisualizer::load_theme(Ref<EditorJsonVisualizerSyntaxHighlighter>
 void EditorJsonVisualizer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<Font> source_font = get_theme_font("source", EditorStringName(EditorFonts));
-		int source_font_size = get_theme_font_size("source_size", EditorStringName(EditorFonts));
-		int line_spacing = EDITOR_GET("text_editor/theme/line_spacing");
 		if (get_theme_font(SceneStringName(font)) != source_font) {
 			add_theme_font_override(SceneStringName(font), source_font);
 		}
+
+		int source_font_size = get_theme_font_size("source_size", EditorStringName(EditorFonts));
 		if (get_theme_font_size(SceneStringName(font_size)) != source_font_size) {
 			add_theme_font_size_override(SceneStringName(font_size), source_font_size);
 		}
+
+		int line_spacing = EDITOR_GET("text_editor/appearance/whitespace/line_spacing");
 		if (get_theme_constant("line_spacing") != line_spacing) {
 			add_theme_constant_override("line_spacing", line_spacing);
 		}

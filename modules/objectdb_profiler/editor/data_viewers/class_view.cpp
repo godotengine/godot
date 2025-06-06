@@ -57,7 +57,7 @@ int ClassData::get_recursive_instance_count(HashMap<String, ClassData> &p_all_cl
 }
 
 SnapshotClassView::SnapshotClassView() {
-	set_name(TTR("Classes"));
+	set_name(TTRC("Classes"));
 
 	class_tree = nullptr;
 	object_list = nullptr;
@@ -84,16 +84,16 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 
 	class_tree = memnew(Tree);
 
-	TreeSortAndFilterBar *filter_bar = memnew(TreeSortAndFilterBar(class_tree, TTR("Filter Classes")));
-	filter_bar->add_sort_option(TTR("Name"), TreeSortAndFilterBar::SortType::ALPHA_SORT, 0);
+	TreeSortAndFilterBar *filter_bar = memnew(TreeSortAndFilterBar(class_tree, TTRC("Filter Classes")));
+	filter_bar->add_sort_option(TTRC("Name"), TreeSortAndFilterBar::SortType::ALPHA_SORT, 0);
 
 	TreeSortAndFilterBar::SortOptionIndexes default_sort;
 	if (!diff_data) {
-		default_sort = filter_bar->add_sort_option(TTR("Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 1);
+		default_sort = filter_bar->add_sort_option(TTRC("Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 1);
 	} else {
-		filter_bar->add_sort_option(TTR("A Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 1);
-		filter_bar->add_sort_option(TTR("B Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 2);
-		default_sort = filter_bar->add_sort_option(TTR("Delta"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 3);
+		filter_bar->add_sort_option(TTRC("A Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 1);
+		filter_bar->add_sort_option(TTRC("B Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 2);
+		default_sort = filter_bar->add_sort_option(TTRC("Delta"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 3);
 	}
 	class_list_column->add_child(filter_bar);
 
@@ -104,20 +104,20 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 	class_tree->set_hide_root(true);
 	class_tree->set_columns(diff_data ? 4 : 2);
 	class_tree->set_column_titles_visible(true);
-	class_tree->set_column_title(0, TTR("Object Class"));
+	class_tree->set_column_title(0, TTRC("Class"));
 	class_tree->set_column_expand(0, true);
 	class_tree->set_column_custom_minimum_width(0, 200 * EDSCALE);
-	class_tree->set_column_title(1, diff_data ? TTR("A Count") : TTR("Count"));
+	class_tree->set_column_title(1, diff_data ? TTRC("A Count") : TTRC("Count"));
 	class_tree->set_column_expand(1, false);
 	if (diff_data) {
-		class_tree->set_column_title(2, TTR("B Count"));
+		class_tree->set_column_title(2, TTRC("B Count"));
 		class_tree->set_column_expand(2, false);
-		class_tree->set_column_title(3, TTR("Delta"));
+		class_tree->set_column_title(3, TTRC("Delta"));
 		class_tree->set_column_expand(3, false);
 
 		// Add tooltip with the names of snapshot A and B
-		class_tree->set_column_title_tooltip_text(1, TTR("A: ") + snapshot_data->name);
-		class_tree->set_column_title_tooltip_text(2, TTR("B: ") + diff_data->name);
+		class_tree->set_column_title_tooltip_text(1, TTRC("A: ") + snapshot_data->name);
+		class_tree->set_column_title_tooltip_text(2, TTRC("B: ") + diff_data->name);
 	}
 	class_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotClassView::_class_selected));
 	class_tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
@@ -130,10 +130,10 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 	object_lists->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	object_lists->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	if (!diff_data) {
-		object_lists->add_child(object_list = _make_object_list_tree(TTR("Objects")));
+		object_lists->add_child(object_list = _make_object_list_tree(TTRC("Objects")));
 	} else {
-		object_lists->add_child(object_list = _make_object_list_tree(TTR("A Objects")));
-		object_lists->add_child(diff_object_list = _make_object_list_tree(TTR("B Objects")));
+		object_lists->add_child(object_list = _make_object_list_tree(TTRC("A Objects")));
+		object_lists->add_child(diff_object_list = _make_object_list_tree(TTRC("B Objects")));
 	}
 
 	HashMap<String, ClassData> grouped_by_class;
@@ -235,10 +235,10 @@ void SnapshotClassView::_object_selected(Tree *p_tree) {
 
 void SnapshotClassView::_class_selected() {
 	if (!diff_data) {
-		_populate_object_list(snapshot_data, object_list, TTR("Objects"));
+		_populate_object_list(snapshot_data, object_list, TTRC("Objects"));
 	} else {
-		_populate_object_list(snapshot_data, object_list, TTR("A Objects"));
-		_populate_object_list(diff_data, diff_object_list, TTR("B Objects"));
+		_populate_object_list(snapshot_data, object_list, TTRC("A Objects"));
+		_populate_object_list(diff_data, diff_object_list, TTRC("B Objects"));
 	}
 }
 
@@ -250,6 +250,7 @@ void SnapshotClassView::_populate_object_list(GameStateSnapshot *p_snapshot, Tre
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &pair : p_snapshot->objects) {
 		if (pair.value->type_name == class_name) {
 			TreeItem *item = p_list->create_item(root);
+			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			item->set_text(0, pair.value->get_name());
 			item->set_metadata(0, pair.value->remote_object_id);
 			item->set_text_overrun_behavior(0, TextServer::OverrunBehavior::OVERRUN_NO_TRIMMING);
@@ -260,15 +261,9 @@ void SnapshotClassView::_populate_object_list(GameStateSnapshot *p_snapshot, Tre
 }
 
 void SnapshotClassView::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED: {
-			for (TreeItem *item : _get_children_recursive(class_tree)) {
-				item->set_icon(0, EditorNode::get_singleton()->get_class_icon(item->get_metadata(0), ""));
-			}
-
-		} break;
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		for (TreeItem *item : _get_children_recursive(class_tree)) {
+			item->set_icon(0, EditorNode::get_singleton()->get_class_icon(item->get_metadata(0), ""));
+		}
 	}
 }
