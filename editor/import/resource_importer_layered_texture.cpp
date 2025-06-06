@@ -501,6 +501,7 @@ ResourceImporterLayeredTexture::~ResourceImporterLayeredTexture() {
 void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source_file, Ref<LayeredTextureImport> r_texture_import) {
 	String extension = get_save_extension();
 	ERR_FAIL_NULL(r_texture_import->csource);
+
 	if (r_texture_import->compress_mode != COMPRESS_VRAM_COMPRESSED) {
 		// Import normally.
 		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params,
