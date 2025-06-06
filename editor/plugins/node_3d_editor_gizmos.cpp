@@ -435,12 +435,10 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 			int id = p_ids.is_empty() ? i : p_ids[i];
 
 			Color col(1, 1, 1, 1);
-			if (is_handle_highlighted(id, p_secondary)) {
-				col = Color(0, 0, 1, 0.9);
-			}
-
 			if (!is_current_hover_gizmo || current_hover_handle != id || p_secondary != current_hover_handle_secondary) {
 				col.a = 0.8;
+			} else {
+				col = Color(0, 0, 1, 0.5);
 			}
 
 			w[i] = col;
