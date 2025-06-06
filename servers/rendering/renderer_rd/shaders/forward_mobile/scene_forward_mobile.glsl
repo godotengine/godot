@@ -151,6 +151,7 @@ ivec3 multiview_uv(ivec2 uv) {
 	return ivec3(uv, int(ViewIndex));
 }
 #else // USE_MULTIVIEW
+#define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
@@ -882,6 +883,7 @@ ivec3 multiview_uv(ivec2 uv) {
 	return ivec3(uv, int(ViewIndex));
 }
 #else // USE_MULTIVIEW
+#define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
