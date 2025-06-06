@@ -36,13 +36,13 @@
  * }} CameraInfo
  *
  * @typedef {{
- *   video: HTMLVideoElement?
- *   canvas: HTMLCanvasElement | OffscreenCanvas?
- *   canvasContext: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D?
- *   stream: MediaStream?
- *   animationFrameId: number?
- *   permissionListener: Function?
- *   permissionStatus: PermissionStatus?
+ *   video: HTMLVideoElement|null
+ *   canvas: (HTMLCanvasElement|OffscreenCanvas)|null
+ *   canvasContext: (CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D)|null
+ *   stream: MediaStream|null
+ *   animationFrameId: number|null
+ *   permissionListener: Function|null
+ *   permissionStatus: PermissionStatus|null
  * }} CameraResource
  */
 
@@ -55,6 +55,14 @@ const GodotCamera = {
 		 * @type {Map<string, CameraResource>}
 		 */
 		cameras: new Map(),
+		defaultMinimumCapabilities: {
+			'width': {
+				'max': 1280,
+			},
+			'height': {
+				'max': 1080,
+			},
+		},
 
 		/**
 		 * Ensures cameras Map is properly initialized.
@@ -78,14 +86,15 @@ const GodotCamera = {
 		/**
 		 * Sends a JSON result to the callback function.
 		 * @param {Function} callback Callback function pointer
+		 * @param {number} callbackPtr Context value to pass to callback
 		 * @param {number} context Context value to pass to callback
 		 * @param {Object} result Result object to stringify
 		 * @returns {void}
 		 */
-		sendCallbackResult: function (callback, context, result) {
+		sendCamerasCallbackResult: function (callback, callbackPtr, context, result) {
 			const jsonStr = JSON.stringify(result);
 			const strPtr = GodotRuntime.allocString(jsonStr);
-			callback(context, strPtr);
+			callback(context, callbackPtr, strPtr);
 			GodotRuntime.free(strPtr);
 		},
 
@@ -97,10 +106,10 @@ const GodotCamera = {
 		 * @param {number} dataLen Length of pixel data
 		 * @param {number} width Image width
 		 * @param {number} height Image height
-		 * @param {string?} errorMsg Error message if any
+		 * @param {string|null} errorMsg Error message if any
 		 * @returns {void}
 		 */
-		sendErrorCallback: function (callback, context, dataPtr, dataLen, width, height, errorMsg) {
+		sendGetPixelDataCallback: function (callback, context, dataPtr, dataLen, width, height, errorMsg) {
 			const errorMsgPtr = errorMsg ? GodotRuntime.allocString(errorMsg) : 0;
 			callback(context, dataPtr, dataLen, width, height, errorMsgPtr);
 			if (errorMsgPtr) {
@@ -142,17 +151,22 @@ const GodotCamera = {
 			 * Gets list of available cameras.
 			 * Calls callback with JSON containing array of camera info.
 			 * @param {number} context Context value to pass to callback
-			 * @param {number} callbackPtr Pointer to callback function
+			 * @param {number} callbackPtr1 Pointer to callback function
+			 * @param {number} callbackPtr2 Pointer to callback function
 			 * @returns {Promise<void>}
 			 */
-			getCameras: async function (context, callbackPtr) {
-				const callback = GodotRuntime.get_func(callbackPtr);
+			getCameras: async function (context, callbackPtr1, callbackPtr2) {
+				const callback = GodotRuntime.get_func(callbackPtr2);
 				const result = { error: null, cameras: null };
 
 				try {
 					// request camera access permission
 					const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-					stream.getTracks().forEach((track) => track.stop());
+					const getCapabilities = function (deviceId) {
+						const videoTrack = stream.getVideoTracks()
+							.find((track) => track.getSettings().deviceId === deviceId);
+						return videoTrack?.getCapabilities() || GodotCamera.defaultMinimumCapabilities;
+					};
 					const devices = await navigator.mediaDevices.enumerateDevices();
 					result.cameras = devices
 						.filter((device) => device.kind === 'videoinput')
@@ -160,52 +174,23 @@ const GodotCamera = {
 							index,
 							id: device.deviceId,
 							label: device.label || `Camera ${index}`,
+							capabilities: getCapabilities(device.deviceId),
 						}));
 
+					stream.getTracks().forEach((track) => track.stop());
 					GodotCamera.api.stop();
 				} catch (error) {
 					result.error = error.message;
 				}
 
-				GodotCamera.sendCallbackResult(callback, context, result);
-			},
-
-			/**
-			 * Gets capabilities of a specific camera.
-			 * Calls callback with JSON containing camera capabilities.
-			 * @param {number} deviceIdPtr Pointer to device ID string
-			 * @param {number} context Context value to pass to callback
-			 * @param {number} callbackPtr Pointer to callback function
-			 * @returns {Promise<void>}
-			 */
-			getCameraCapabilities: async function (deviceIdPtr, context, callbackPtr) {
-				const callback = GodotRuntime.get_func(callbackPtr);
-				const deviceId = GodotRuntime.parseString(deviceIdPtr);
-				const result = { error: null, capabilities: null };
-
-				try {
-					// request camera access permission
-					const stream = await navigator.mediaDevices.getUserMedia({
-						video: { deviceId: { exact: deviceId } },
-						audio: false,
-					});
-
-					const videoTrack = stream.getVideoTracks()[0];
-					result.capabilities = videoTrack.getCapabilities();
-
-					stream.getTracks().forEach((track) => track.stop());
-				} catch (error) {
-					result.error = error.message;
-				}
-
-				GodotCamera.sendCallbackResult(callback, context, result);
+				GodotCamera.sendCamerasCallbackResult(callback, callbackPtr1, context, result);
 			},
 
 			/**
 			 * Starts capturing pixel data from camera.
 			 * Continuously calls callback with pixel data.
 			 * @param {number} context Context value to pass to callback
-			 * @param {string?} deviceId Camera device ID
+			 * @param {string|null} deviceId Camera device ID
 			 * @param {number} width Desired capture width
 			 * @param {number} height Desired capture height
 			 * @param {number} callbackPtr Pointer to callback function
@@ -233,20 +218,13 @@ const GodotCamera = {
 						camerasMap.set(cameraId, camera);
 					}
 
+					let _height, _width;
 					if (!camera.stream) {
 						camera.video = document.createElement('video');
 						camera.video.style.display = 'none';
 						camera.video.autoplay = true;
 						camera.video.playsInline = true;
 						document.body.appendChild(camera.video);
-
-						if (typeof OffscreenCanvas !== 'undefined') {
-							camera.canvas = new OffscreenCanvas(width, height);
-						} else {
-							camera.canvas = document.createElement('canvas');
-							camera.canvas.style.display = 'none';
-							document.body.appendChild(camera.canvas);
-						}
 
 						const constraints = {
 							video: {
@@ -258,13 +236,19 @@ const GodotCamera = {
 						// eslint-disable-next-line require-atomic-updates
 						camera.stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-						const videoTrack = camera.stream.getVideoTracks()[0];
-						if (videoTrack) {
-							videoTrack.addEventListener('ended', () => {
-								GodotRuntime.print('Camera track ended, stopping stream');
-								GodotCamera.api.stop(deviceId);
-							});
+						const [videoTrack] = camera.stream.getVideoTracks();
+						({ width: _width, height: _height } = videoTrack.getSettings());
+						if (typeof OffscreenCanvas !== 'undefined') {
+							camera.canvas = new OffscreenCanvas(_width, _height);
+						} else {
+							camera.canvas = document.createElement('canvas');
+							camera.canvas.style.display = 'none';
+							document.body.appendChild(camera.canvas);
 						}
+						videoTrack.addEventListener('ended', () => {
+							GodotRuntime.print('Camera track ended, stopping stream');
+							GodotCamera.api.stop(deviceId);
+						});
 
 						if (navigator.permissions && navigator.permissions.query) {
 							try {
@@ -276,8 +260,6 @@ const GodotCamera = {
 										GodotRuntime.print('Camera permission denied, stopping stream');
 										if (camera.permissionListener) {
 											permissionStatus.removeEventListener('change', camera.permissionListener);
-											camera.permissionListener = null;
-											camera.permissionStatus = null;
 										}
 										GodotCamera.api.stop(deviceId);
 										deniedCallback(context);
@@ -285,17 +267,23 @@ const GodotCamera = {
 								};
 								permissionStatus.addEventListener('change', camera.permissionListener);
 							} catch (e) {
-								GodotRuntime.error(e);
+								// Some browsers don't support 'camera' permission query
+								// This is not critical - we can still use the camera
+								GodotRuntime.print('Camera permission query not supported:', e.message);
 							}
 						}
 
 						camera.video.srcObject = camera.stream;
 						await camera.video.play();
+					} else {
+						// Use requested dimensions when stream already exists
+						_width = width;
+						_height = height;
 					}
 
-					if (camera.canvas.width !== width || camera.canvas.height !== height) {
-						camera.canvas.width = width;
-						camera.canvas.height = height;
+					if (camera.canvas.width !== _width || camera.canvas.height !== _height) {
+						camera.canvas.width = _width;
+						camera.canvas.height = _height;
 					}
 					camera.canvasContext = camera.canvas.getContext('2d', { willReadFrequently: true });
 
@@ -320,26 +308,26 @@ const GodotCamera = {
 
 						if (video.readyState === video.HAVE_ENOUGH_DATA) {
 							try {
-								canvasContext.drawImage(video, 0, 0, width, height);
-								const imageData = canvasContext.getImageData(0, 0, width, height);
+								canvasContext.drawImage(video, 0, 0, _width, _height);
+								const imageData = canvasContext.getImageData(0, 0, _width, _height);
 								const pixelData = imageData.data;
 
 								const dataPtr = GodotRuntime.malloc(pixelData.length);
 								GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
 
-								GodotCamera.sendErrorCallback(
+								GodotCamera.sendGetPixelDataCallback(
 									callback,
 									context,
 									dataPtr,
 									pixelData.length,
-									video.videoWidth,
-									video.videoHeight,
+									_width,
+									_height,
 									null
 								);
 
 								GodotRuntime.free(dataPtr);
 							} catch (error) {
-								GodotCamera.sendErrorCallback(callback, context, 0, 0, 0, 0, error.message);
+								GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, error.message);
 
 								if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
 									GodotRuntime.print('Security error, stopping stream:', error);
@@ -354,13 +342,13 @@ const GodotCamera = {
 
 					camera.animationFrameId = requestAnimationFrame(captureFrame);
 				} catch (error) {
-					GodotCamera.sendErrorCallback(callback, context, 0, 0, 0, 0, error.message);
+					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, error.message);
 				}
 			},
 
 			/**
 			 * Stops camera stream(s).
-			 * @param {string?} deviceId Device ID to stop, or null to stop all
+			 * @param {string|null} deviceId Device ID to stop, or null to stop all
 			 * @returns {void}
 			 */
 			stop: function (deviceId) {
@@ -385,6 +373,17 @@ const GodotCamera = {
 	},
 
 	/**
+	 * Native binding for getting list of cameras.
+	 * @param {number} context Context value to pass to callback
+	 * @param {number} callbackPtr1 Pointer to callback function
+	 * @param {number} callbackPtr2 Pointer to callback function
+	 * @returns {Promise<void>}
+	 */
+	godot_js_camera_get_cameras: function (context, callbackPtr1, callbackPtr2) {
+		return GodotCamera.api.getCameras(context, callbackPtr1, callbackPtr2);
+	},
+
+	/**
 	 * Native binding for getting pixel data from camera.
 	 * @param {number} context Context value to pass to callback
 	 * @param {number} deviceIdPtr Pointer to device ID string
@@ -395,7 +394,7 @@ const GodotCamera = {
 	 * @returns {*}
 	 */
 	godot_js_camera_get_pixel_data: function (context, deviceIdPtr, width, height, callbackPtr, deniedCallbackPtr) {
-		const deviceId = deviceIdPtr && deviceIdPtr !== 0 ? GodotRuntime.parseString(deviceIdPtr) : undefined;
+		const deviceId = deviceIdPtr ? GodotRuntime.parseString(deviceIdPtr) : undefined;
 		return GodotCamera.api.getPixelData(context, deviceId, width, height, callbackPtr, deniedCallbackPtr);
 	},
 
@@ -405,7 +404,7 @@ const GodotCamera = {
 	 * @returns {void}
 	 */
 	godot_js_camera_stop_stream: function (deviceIdPtr) {
-		const deviceId = deviceIdPtr && deviceIdPtr !== 0 ? GodotRuntime.parseString(deviceIdPtr) : undefined;
+		const deviceId = deviceIdPtr ? GodotRuntime.parseString(deviceIdPtr) : undefined;
 		GodotCamera.api.stop(deviceId);
 	},
 };
