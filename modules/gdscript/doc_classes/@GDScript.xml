@@ -773,6 +773,123 @@
 				[b]Warning:[/b] Currently, due to a bug, scripts are never freed, even if [annotation @static_unload] annotation is used.
 			</description>
 		</annotation>
+		<annotation name="@themed" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="theme_item" type="String" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as a themed property, binding it to a theme item name. By default, the same name as the property is used, but a specific theme item and theme type names can be provided.
+				After a property is bound to a theme item, the engine will update its value with the result of the appropriate [code]get_theme_*(theme_item, theme_type)[/code] call whenever a theme change notification occurs.
+				The bound theme item will be available for overriding through code or within the editor.
+
+				[annotation @themed] infers the type of theme item to bind to. The property must thus be explicitly typed as one of [int], [float], [bool], [Color], [Font], [Texture2D] or [StyleBox].
+				Numerical types ([int], [float], [bool]) are bound to theme constants.
+				[Font], [Texture2D] and [StyleBox] are bound to theme fonts, icons, and styleboxes.
+				[annotation @themed] doesn't bind to font sizes. If you need to bind to a font size, use [annotation @themed_font_size] instead.
+				[b]Note:[/b] Themed properties are only supported on globally registered scripts using the [code]class_name[/code] keyword and extending [Control] or [Window].
+				[b]Warning:[/b] Since themed properties have their values automatically updated by the engine, it's best to avoid writing to them outside of their setter, as any assigned value will be lost when the next update takes place.
+				[codeblock]
+				extends Control
+				class_name MainMenu
+
+				# Theme item name and property name match
+				@themed var line_thickness: int
+				@themed var foreground_color: Color
+				@themed var main_font: Font
+				@themed var button_icon: Texture2D
+				@themed var dark_background: StyleBox
+
+				# Property name is different from the item name
+				@themed("separation_horizontal") var hsep: int
+				@themed("accent") var item_name_color: Color
+				@themed("creepy_font") var game_over_font: Font
+				@themed("accept_2x") var accept_icon: Texture2D
+				@themed("panel_secondary") var tooltip_box: StyleBox
+
+				# The theme item is fetched in a specific theme type
+				@themed("healthbar_color", "healthbar") var healthbar_color: Color
+				@themed("default_size", "defaults") var default_size: int
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@themed_color" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="theme_item" type="String" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as bound to a theme color name.
+				See [annotation @themed] for more information.
+				[codeblock]
+				@themed_color var foreground_color
+				@themed_color("background_color") var bg_color
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@themed_constant" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="theme_item" type="String" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as bound to a theme constant name.
+				See [annotation @themed] for more information.
+				[codeblock]
+				@themed_constant var vertical_separation
+				@themed_constant("horizontal_separation") var hsep
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@themed_font" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="theme_item" type="String" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as bound to a theme font name.
+				See [annotation @themed] for more information.
+				[codeblock]
+				@themed_font var main_font
+				@themed_font("secondary_font") var alt_font
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@themed_font_size" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="theme_item" type="String" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as bound to a theme font size name.
+				See [annotation @themed] for more information.
+				[codeblock]
+				@themed_font_size var small_text_size
+				@themed_font_size("large_text_size") var header_size
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@themed_icon" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="theme_item" type="String" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as bound to a theme icon name.
+				See [annotation @themed] for more information.
+				[codeblock]
+				@themed_icon var accept_icon
+				@themed_icon("delete") var delete_icon
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@themed_stylebox" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="theme_item" type="String" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as bound to a theme stylebox name.
+				See [annotation @themed] for more information.
+				[codeblock]
+				@themed_stylebox var highlighted
+				@themed_stylebox("primary") var primary_background
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@tool">
 			<return type="void" />
 			<description>
