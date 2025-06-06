@@ -291,7 +291,12 @@ void SceneTreeFTI::_create_depth_lists() {
 			}
 #endif
 
+			// Prevent being added to the dest_list twice when on
+			// the frame_xform_list AND the frame_xform_list_forced.
 			if ((l == 0) && s->data.fti_frame_xform_force_update) {
+#ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
+				DEV_ASSERT(data.frame_xform_list_forced.find(s) != -1);
+#endif
 				continue;
 			}
 
@@ -520,14 +525,14 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_fra
 
 	if (p_active) {
 #ifdef GODOT_SCENE_TREE_FTI_PRINT_TREE
-		bool dirty = s->data.dirty & Node3D::DIRTY_GLOBAL_INTERPOLATED;
+		bool dirty = s->_test_dirty_bits(Node3D::DIRTY_GLOBAL_INTERPOLATED_TRANSFORM);
 
 		if (data.periodic_debug_log && !data.use_optimized_traversal_method && !data.frame_start) {
 			String sz;
 			for (int n = 0; n < p_depth; n++) {
 				sz += "\t";
 			}
-			print_line(sz + p_node->get_name() + (dirty ? " DIRTY" : "") + (s->get_transform() == Transform() ? "\t[IDENTITY]" : ""));
+			print_line(sz + p_node->get_name() + (dirty ? " DIRTY" : "") + (s->get_transform() == Transform3D() ? "\t[IDENTITY]" : ""));
 		}
 #endif
 
@@ -574,11 +579,6 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_fra
 
 		// Upload to RenderingServer the interpolated global xform.
 		s->fti_update_servers_xform();
-
-		// Only do this at most for one frame,
-		// it is used to catch objects being removed from the tick lists
-		// that have a deferred frame update.
-		s->data.fti_frame_xform_force_update = false;
 
 		// Ensure branches are only processed once on each traversal.
 		s->data.fti_processed = true;
@@ -719,6 +719,17 @@ void SceneTreeFTI::frame_update(Node *p_root, bool p_frame_start) {
 
 #endif //  not GODOT_SCENE_TREE_FTI_VERIFY
 
+	// In theory we could clear the `force_update` flags from the nodes in the traversal.
+	// The problem is that hidden nodes are not recursed into, therefore the flags would
+	// never get cleared and could get out of sync with the forced list.
+	// So instead we are clearing them here manually.
+	// This is not ideal in terms of cache coherence so perhaps another method can be
+	// explored in future.
+	uint32_t forced_list_size = data.frame_xform_list_forced.size();
+	for (uint32_t n = 0; n < forced_list_size; n++) {
+		Node3D *s = data.frame_xform_list_forced[n];
+		s->data.fti_frame_xform_force_update = false;
+	}
 	data.frame_xform_list_forced.clear();
 
 	if (!p_frame_start && data.periodic_debug_log) {
