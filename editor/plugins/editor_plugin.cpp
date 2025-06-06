@@ -237,13 +237,13 @@ void EditorPlugin::notify_scene_changed(const Node *scn_root) {
 	emit_signal(SNAME("scene_changed"), scn_root);
 }
 
-void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
-	if (screen_name == last_main_screen_name) {
+void EditorPlugin::notify_main_screen_changed(const String &plugin_name) {
+	if (plugin_name == last_main_screen_plugin_name) {
 		return;
 	}
 
-	emit_signal(SNAME("main_screen_changed"), screen_name);
-	last_main_screen_name = screen_name;
+	emit_signal(SNAME("main_screen_changed"), plugin_name);
+	last_main_screen_plugin_name = plugin_name;
 }
 
 void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
@@ -329,6 +329,14 @@ bool EditorPlugin::has_main_screen() const {
 	bool success = false;
 	GDVIRTUAL_CALL(_has_main_screen, success);
 	return success;
+}
+
+String EditorPlugin::get_workspace_display_name() const {
+	String name;
+	if (GDVIRTUAL_CALL(_get_workspace_display_name, name)) {
+		return name;
+	}
+	return get_plugin_name();
 }
 
 void EditorPlugin::make_visible(bool p_visible) {
@@ -652,6 +660,7 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_plugin_name);
 	GDVIRTUAL_BIND(_get_plugin_icon);
 	GDVIRTUAL_BIND(_has_main_screen);
+	GDVIRTUAL_BIND(_get_workspace_display_name);
 	GDVIRTUAL_BIND(_make_visible, "visible");
 	GDVIRTUAL_BIND(_edit, "object");
 	GDVIRTUAL_BIND(_handles, "object");
@@ -670,7 +679,7 @@ void EditorPlugin::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
-	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
+	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "plugin_name")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));

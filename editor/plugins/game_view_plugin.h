@@ -243,7 +243,8 @@ protected:
 #endif
 
 public:
-	virtual String get_plugin_name() const override { return TTRC("Game"); }
+	virtual String get_plugin_name() const override { return "Game"; }
+	virtual String get_workspace_display_name() const override { return TTR("Game", "Workspace"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
