@@ -339,8 +339,16 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 	}
 #endif
-	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(),
-			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
+
+	String error_message = vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path);
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// Remove part of the error message that is not relevant to the user (the project is already open in the editor).
+		error_message = vformat("Failed loading resource: %s.", p_path);
+	}
+#endif
+
+	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(), error_message);
 
 #ifdef TOOLS_ENABLED
 	Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
@@ -348,14 +356,14 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
-		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, p_type_hint));
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
 	}
 #endif
 
 	if (r_error) {
 		*r_error = ERR_FILE_UNRECOGNIZED;
 	}
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, p_type_hint));
+	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
 }
 
 // This implementation must allow re-entrancy for a task that started awaiting in a deeper stack frame.
