@@ -918,6 +918,7 @@
 			<description>
 				Creates a new texture. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				[b]Note:[/b] [param data] takes an [Array] of [PackedByteArray]s. For [constant TEXTURE_TYPE_1D], [constant TEXTURE_TYPE_2D], and [constant TEXTURE_TYPE_3D] types, this array should only have one element, a [PackedByteArray] containing all the data for the texture. For [code]_ARRAY[/code] and [code]_CUBE[/code] types, the length should be the same as the number of [member RDTextureFormat.array_layers] in [param format].
 				[b]Note:[/b] Not to be confused with [method RenderingServer.texture_2d_create], which creates the Godot-specific [Texture2D] resource as opposed to the graphics API's own texture type.
 			</description>
 		</method>
