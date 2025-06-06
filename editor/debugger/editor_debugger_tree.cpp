@@ -187,6 +187,9 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 ///
 void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger) {
 	set_hide_root(false);
+	// Temporary fix for slow tree update.
+	// Ideally the remote tree should not rebuild completely on each refresh.
+	bool custom_icons_enabled = p_tree->nodes.size() <= 5000;
 
 	updating_scene_tree = true;
 	const String last_path = get_selected_path();
@@ -239,7 +242,15 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		} else {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Instance:") + " " + node.scene_file_path + "\n" + TTR("Type:") + " " + node.type_name);
 		}
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name, "");
+
+		Ref<Texture2D> icon;
+		if (custom_icons_enabled) {
+			icon = EditorNode::get_singleton()->get_class_icon(node.type_name, "");
+		} else if (ClassDB::class_exists(node.type_name)) {
+			icon = get_editor_theme_icon(node.type_name);
+		} else {
+			icon = get_editor_theme_icon(SNAME("Node"));
+		}
 		if (icon.is_valid()) {
 			item->set_icon(0, icon);
 		}
