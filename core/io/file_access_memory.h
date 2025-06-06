@@ -31,9 +31,23 @@
 #pragma once
 
 #include "core/io/file_access.h"
+#include "core/templates/safe_refcount.h"
 
 class FileAccessMemory : public FileAccess {
 	GDSOFTCLASS(FileAccessMemory, FileAccess);
+
+	struct FileInfo {
+		bool persistent = false;
+		PackedByteArray data;
+		SafeNumeric<uint64_t> refc;
+	};
+
+	static Mutex mutex;
+	static HashMap<String, FileInfo *> files;
+
+	String filename;
+	FileInfo *info = nullptr;
+	bool read_only = false;
 	uint8_t *data = nullptr;
 	uint64_t length = 0;
 	mutable uint64_t pos = 0;
@@ -44,26 +58,26 @@ public:
 	static void register_file(const String &p_name, const Vector<uint8_t> &p_data);
 	static void cleanup();
 
-	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len); ///< open a file
-	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
-	virtual bool is_open() const override; ///< true when file is open
+	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len);
+	virtual Error open_internal(const String &p_path, int p_mode_flags) override;
+	virtual bool is_open() const override;
 
-	virtual void seek(uint64_t p_position) override; ///< seek to a given position
-	virtual void seek_end(int64_t p_position) override; ///< seek from the end of file
-	virtual uint64_t get_position() const override; ///< get position in the file
-	virtual uint64_t get_length() const override; ///< get size of the file
+	virtual void seek(uint64_t p_position) override;
+	virtual void seek_end(int64_t p_position) override;
+	virtual uint64_t get_position() const override;
+	virtual uint64_t get_length() const override;
 
-	virtual bool eof_reached() const override; ///< reading passed EOF
+	virtual bool eof_reached() const override;
 
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override; ///< get an array of bytes
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
-	virtual Error get_error() const override; ///< get last error
+	virtual Error get_error() const override;
 
-	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
+	virtual Error resize(int64_t p_length) override;
 	virtual void flush() override;
-	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
-	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
+	virtual bool file_exists(const String &p_name) override;
 
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
 	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
@@ -77,7 +91,8 @@ public:
 	virtual bool _get_read_only_attribute(const String &p_file) override { return false; }
 	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override { return ERR_UNAVAILABLE; }
 
-	virtual void close() override {}
+	virtual void close() override;
 
 	FileAccessMemory() {}
+	~FileAccessMemory();
 };
