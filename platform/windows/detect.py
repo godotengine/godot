@@ -447,6 +447,7 @@ def configure_msvc(env: "SConsEnvironment"):
         "dwrite",
         "wbemuuid",
         "ntdll",
+        "Comctl32",
     ]
 
     if env.debug_features:
@@ -823,6 +824,7 @@ def configure_mingw(env: "SConsEnvironment"):
             "dwrite",
             "wbemuuid",
             "ntdll",
+            "comctl32",
         ]
     )
 
