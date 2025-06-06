@@ -41,7 +41,7 @@ FSR::FSR() {
 	fsr_shader.initialize(fsr_upscale_modes);
 
 	FSRShaderVariant variant;
-	if (RD::get_singleton()->has_feature(RD::SUPPORTS_FSR_HALF_FLOAT)) {
+	if (RD::get_singleton()->has_feature(RD::SUPPORTS_HALF_FLOAT)) {
 		variant = FSR_SHADER_VARIANT_NORMAL;
 	} else {
 		variant = FSR_SHADER_VARIANT_FALLBACK;

@@ -541,7 +541,7 @@ void main() {
 						float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation);
 
 						vec3 spot_dir = spot_lights.data[light_index].direction;
-						highp float cone_angle = spot_lights.data[light_index].cone_angle;
+						float cone_angle = spot_lights.data[light_index].cone_angle;
 						float scos = max(dot(-normalize(light_rel_vec), spot_dir), cone_angle);
 						float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cone_angle));
 						attenuation *= 1.0 - pow(spot_rim, spot_lights.data[light_index].cone_attenuation);
