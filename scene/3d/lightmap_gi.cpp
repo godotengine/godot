@@ -1467,7 +1467,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	gi_data->set_path(p_image_data_path, true);
-	Error err = ResourceSaver::save(gi_data);
+	Error err = ResourceSaver::save(gi_data, "", ResourceSaver::FLAG_COMPRESS);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;
