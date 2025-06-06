@@ -280,7 +280,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		extension_vector.push_back("*." + extension);
 	}
 
-	export_path->setup(extension_vector, false, true);
+	export_path->setup(extension_vector, false, true, false);
 	export_path->update_property();
 	advanced_options->set_disabled(false);
 	advanced_options->set_pressed(current->are_advanced_options_enabled());
