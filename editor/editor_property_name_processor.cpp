@@ -289,6 +289,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["textfile"] = "TextFile";
 	capitalize_string_remaps["tls"] = "TLS";
 	capitalize_string_remaps["tv"] = "TV";
+	capitalize_string_remaps["tvos"] = "tvOS";
 	capitalize_string_remaps["uastc"] = "UASTC";
 	capitalize_string_remaps["ui"] = "UI";
 	capitalize_string_remaps["uri"] = "URI";
@@ -303,6 +304,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["uv1"] = "UV1";
 	capitalize_string_remaps["uv2"] = "UV2";
 	capitalize_string_remaps["vector2"] = "Vector2";
+	capitalize_string_remaps["visionos"] = "visionOS";
 	capitalize_string_remaps["vpn"] = "VPN";
 	capitalize_string_remaps["vram"] = "VRAM";
 	capitalize_string_remaps["vrs"] = "VRS";
