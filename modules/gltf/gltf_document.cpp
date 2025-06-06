@@ -858,7 +858,9 @@ Error GLTFDocument::_encode_buffer_views(Ref<GLTFState> p_state) {
 		d["buffer"] = buffer_view->buffer;
 		d["byteLength"] = buffer_view->byte_length;
 
-		d["byteOffset"] = buffer_view->byte_offset;
+		if (buffer_view->byte_offset > 0) {
+			d["byteOffset"] = buffer_view->byte_offset;
+		}
 
 		if (buffer_view->byte_stride != -1) {
 			d["byteStride"] = buffer_view->byte_stride;
@@ -937,7 +939,9 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> p_state) {
 		d["min"] = accessor->min;
 		if (accessor->buffer_view != -1) {
 			// bufferView may be omitted to zero-initialize the buffer. When this happens, byteOffset MUST also be omitted.
-			d["byteOffset"] = accessor->byte_offset;
+			if (accessor->byte_offset > 0) {
+				d["byteOffset"] = accessor->byte_offset;
+			}
 			d["bufferView"] = accessor->buffer_view;
 		}
 
@@ -948,7 +952,7 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> p_state) {
 			Dictionary si;
 			si["bufferView"] = accessor->sparse_indices_buffer_view;
 			si["componentType"] = accessor->sparse_indices_component_type;
-			if (accessor->sparse_indices_byte_offset != -1) {
+			if (accessor->sparse_indices_byte_offset > 0) {
 				si["byteOffset"] = accessor->sparse_indices_byte_offset;
 			}
 			ERR_FAIL_COND_V(!si.has("bufferView") || !si.has("componentType"), ERR_PARSE_ERROR);
@@ -956,7 +960,7 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> p_state) {
 
 			Dictionary sv;
 			sv["bufferView"] = accessor->sparse_values_buffer_view;
-			if (accessor->sparse_values_byte_offset != -1) {
+			if (accessor->sparse_values_byte_offset > 0) {
 				sv["byteOffset"] = accessor->sparse_values_byte_offset;
 			}
 			ERR_FAIL_COND_V(!sv.has("bufferView"), ERR_PARSE_ERROR);
