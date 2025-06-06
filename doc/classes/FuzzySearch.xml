@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FuzzySearch" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="search" qualifiers="const">
+			<return type="FuzzyMatch" />
+			<param index="0" name="target" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="search_all" qualifiers="const">
+			<return type="FuzzyMatch[]" />
+			<param index="0" name="targets" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_subsequences" type="bool" setter="set_allow_subsequences" getter="get_allow_subsequences" default="true">
+		</member>
+		<member name="case_sensitive" type="bool" setter="set_case_sensitive" getter="get_case_sensitive" default="false">
+		</member>
+		<member name="max_misses" type="int" setter="set_max_misses" getter="get_max_misses" default="2">
+		</member>
+		<member name="max_results" type="int" setter="set_max_results" getter="get_max_results" default="100">
+		</member>
+		<member name="query" type="String" setter="set_query" getter="get_query" default="&quot;&quot;">
+		</member>
+	</members>
+</class>
