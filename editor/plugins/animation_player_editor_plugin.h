@@ -112,6 +112,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<Texture2D> reset_icon;
 	Ref<ImageTexture> autoplay_reset_icon;
 
+	bool finishing = false;
 	bool last_active = false;
 	float timeline_position = 0;
 
@@ -204,6 +205,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _update_animation_blend();
 
 	void _list_changed();
+	void _animation_finished(const String &p_name);
 	void _current_animation_changed(const String &p_name);
 	void _update_animation();
 	void _update_player();
