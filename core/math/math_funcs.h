@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/error/error_macros.h"
+#include "core/func_defs.h"
 #include "core/math/math_defs.h"
 #include "core/typedefs.h"
 
@@ -622,10 +623,12 @@ _ALWAYS_INLINE_ float db_to_linear(float p_db) {
 	return exp(p_db * (float)0.11512925464970228420089957273422);
 }
 
-_ALWAYS_INLINE_ double round(double p_val) {
+EXPLICIT_PARAM_FUNC(double, double, _ALWAYS_INLINE_)
+round(T p_val) {
 	return std::round(p_val);
 }
-_ALWAYS_INLINE_ float round(float p_val) {
+EXPLICIT_PARAM_FUNC(float, float, _ALWAYS_INLINE_)
+round(T p_val) {
 	return std::round(p_val);
 }
 
