@@ -187,7 +187,7 @@ env.add_source_files(env.core_sources, gen_hash)
 # Generate AES256 script encryption key
 gen_encrypt = env.CommandNoCache(
     "script_encryption_key.gen.cpp",
-    env.Value(os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")),
+    [env.Value(os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")), env.Value(os.environ.get("GODOT_XOR_BITMASK"))],
     env.Run(core_builders.encryption_key_builder),
 )
 env.add_source_files(env.core_sources, gen_encrypt)
