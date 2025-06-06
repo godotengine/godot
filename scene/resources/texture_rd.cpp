@@ -80,7 +80,6 @@ void Texture2DRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 		texture_rid = RID();
 		size = Size2i();
 
-		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -100,12 +99,12 @@ void Texture2DRD::_set_texture_rd_rid(RID p_texture_rd_rid) {
 	texture_rd_rid = p_texture_rd_rid;
 
 	if (texture_rid.is_valid()) {
-		RS::get_singleton()->texture_replace(texture_rid, RS::get_singleton()->texture_rd_create(p_texture_rd_rid));
+		RS::get_singleton()->free(texture_rid);
+		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid);
 	} else {
 		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid);
 	}
 
-	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -186,7 +185,6 @@ void TextureLayeredRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 		layers = 0;
 		mipmaps = 0;
 
-		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -225,14 +223,14 @@ void TextureLayeredRD::_set_texture_rd_rid(RID p_texture_rd_rid) {
 	texture_rd_rid = p_texture_rd_rid;
 
 	if (texture_rid.is_valid()) {
-		RS::get_singleton()->texture_replace(texture_rid, RS::get_singleton()->texture_rd_create(p_texture_rd_rid, rs_layer_type));
+		RS::get_singleton()->free(texture_rid);
+		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid, rs_layer_type);
 	} else {
 		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid, rs_layer_type);
 	}
 
 	image_format = RS::get_singleton()->texture_get_format(texture_rid);
 
-	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -307,7 +305,6 @@ void Texture3DRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 		size = Vector3i();
 		mipmaps = 0;
 
-		notify_property_list_changed();
 		emit_changed();
 	}
 }
@@ -328,14 +325,14 @@ void Texture3DRD::_set_texture_rd_rid(RID p_texture_rd_rid) {
 	texture_rd_rid = p_texture_rd_rid;
 
 	if (texture_rid.is_valid()) {
-		RS::get_singleton()->texture_replace(texture_rid, RS::get_singleton()->texture_rd_create(p_texture_rd_rid));
+		RS::get_singleton()->free(texture_rid);
+		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid);
 	} else {
 		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid);
 	}
 
 	image_format = RS::get_singleton()->texture_get_format(texture_rid);
 
-	notify_property_list_changed();
 	emit_changed();
 }
 
