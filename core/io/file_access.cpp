@@ -419,7 +419,7 @@ class CharBuffer {
 	int64_t written = 0;
 
 	bool grow() {
-		if (vector.resize(next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
+		if (vector.resize(Math::next_power_of_2(1 + written)) != OK) {
 			return false;
 		}
 

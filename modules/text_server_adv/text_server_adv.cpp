@@ -853,17 +853,17 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		// Could not find texture to fit, create one.
 		int texsize = MAX(p_data->size.x * 0.125, 256);
 
-		texsize = next_power_of_2((uint32_t)texsize);
+		texsize = Math::next_power_of_2(texsize);
 		if (p_msdf) {
 			texsize = MIN(texsize, 2048);
 		} else {
 			texsize = MIN(texsize, 1024);
 		}
 		if (mw > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2((uint32_t)mw);
+			texsize = Math::next_power_of_2(mw);
 		}
 		if (mh > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2((uint32_t)mh);
+			texsize = Math::next_power_of_2(mh);
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);

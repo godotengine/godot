@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
 #include "core/templates/vector.h"
@@ -60,7 +61,7 @@ private:
 			count = p_size;
 		} else if (p_size > count) {
 			if (unlikely(p_size > capacity)) {
-				capacity = tight ? p_size : nearest_power_of_2_templated(p_size);
+				capacity = tight ? p_size : Math::closest_power_of_2(p_size);
 				data = (T *)memrealloc(data, capacity * sizeof(T));
 				CRASH_COND_MSG(!data, "Out of memory");
 			}

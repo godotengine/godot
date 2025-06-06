@@ -39,6 +39,124 @@
 
 namespace Math {
 
+template <typename... Types>
+using common_float_t = std::conditional_t<std::is_integral_v<std::common_type_t<Types...>>, double, std::common_type_t<Types...>>;
+template <typename... Types>
+using common_int_t = std::conditional_t<std::is_floating_point_v<std::common_type_t<Types...>>, int64_t, std::common_type_t<Types...>>;
+
+template <typename T>
+constexpr bool is_power_of_2(T p_value) {
+	static_assert(std::is_integral_v<T>);
+	return p_value > 0 && ((p_value & (p_value - 1)) == 0);
+}
+
+template <typename T>
+constexpr std::make_unsigned_t<common_int_t<T>> next_power_of_2(T p_value) {
+	static_assert(std::is_arithmetic_v<T>);
+	if constexpr (std::is_signed_v<T>) {
+		if (p_value < 0) {
+			return 0;
+		}
+		return next_power_of_2<std::make_unsigned_t<common_int_t<T>>>(p_value);
+	} else {
+		if (p_value == 0) {
+			return 0;
+		}
+		--p_value;
+		p_value |= p_value >> 1;
+		p_value |= p_value >> 2;
+		p_value |= p_value >> 4;
+		if constexpr (sizeof(T) >= 2) {
+			p_value |= p_value >> 8;
+		}
+		if constexpr (sizeof(T) >= 4) {
+			p_value |= p_value >> 16;
+		}
+		if constexpr (sizeof(T) >= 8) {
+			p_value |= p_value >> 32;
+		}
+		return ++p_value;
+	}
+}
+
+template <typename T>
+constexpr std::make_unsigned_t<common_int_t<T>> previous_power_of_2(T p_value) {
+	static_assert(std::is_arithmetic_v<T>);
+	if constexpr (std::is_signed_v<T>) {
+		if (p_value < 0) {
+			return 0;
+		}
+		return previous_power_of_2<std::make_unsigned_t<common_int_t<T>>>(p_value);
+	} else {
+		p_value |= p_value >> 1;
+		p_value |= p_value >> 2;
+		p_value |= p_value >> 4;
+		if constexpr (sizeof(T) >= 2) {
+			p_value |= p_value >> 8;
+		}
+		if constexpr (sizeof(T) >= 4) {
+			p_value |= p_value >> 16;
+		}
+		if constexpr (sizeof(T) >= 8) {
+			p_value |= p_value >> 32;
+		}
+		return p_value - (p_value >> 1);
+	}
+}
+
+template <typename T>
+constexpr std::make_unsigned_t<common_int_t<T>> closest_power_of_2(T p_value) {
+	static_assert(std::is_arithmetic_v<T>);
+	if constexpr (std::is_signed_v<T>) {
+		if (p_value < 0) {
+			return 0;
+		}
+		return closest_power_of_2<std::make_unsigned_t<common_int_t<T>>>(p_value);
+	} else {
+		T next = next_power_of_2(p_value);
+		T prev = previous_power_of_2(p_value);
+		return (next - p_value) > (p_value - prev) ? prev : next;
+	}
+}
+
+template <typename T>
+constexpr int32_t shift_from_power_of_2(T p_value) {
+	static_assert(std::is_arithmetic_v<T>);
+	if constexpr (std::is_signed_v<T>) {
+		if (p_value < 0) {
+			return -1;
+		}
+		return shift_from_power_of_2<std::make_unsigned_t<common_int_t<T>>>(p_value);
+	} else {
+		constexpr int32_t range = sizeof(T) * 8;
+		for (int32_t i = 0; i < range; i++) {
+			if (p_value == static_cast<T>(1) << i) {
+				return i;
+			}
+		}
+		return -1;
+	}
+}
+
+template <typename T>
+constexpr int32_t nearest_shift(T p_value) {
+	static_assert(std::is_arithmetic_v<T>);
+	if constexpr (std::is_signed_v<T>) {
+		if (p_value < 0) {
+			return 0;
+		}
+		return nearest_shift<std::make_unsigned_t<common_int_t<T>>>(p_value);
+	} else {
+		constexpr int32_t range = sizeof(T) * 8 - 2;
+		for (int32_t i = range; i >= 0; i--) {
+			if (p_value & (static_cast<T>(1) << i)) {
+				return i + 1;
+			}
+		}
+		return 0;
+	}
+}
+
 _ALWAYS_INLINE_ double sin(double p_x) {
 	return std::sin(p_x);
 }

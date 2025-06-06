@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/math_funcs.h"
 #include "tests/test_macros.h"
 
 namespace TestMath {
@@ -58,35 +59,53 @@ TEST_CASE("[Math] C++ macros") {
 }
 
 TEST_CASE("[Math] Power of two functions") {
-	CHECK(next_power_of_2((uint32_t)0) == 0);
-	CHECK(next_power_of_2((uint32_t)1) == 1);
-	CHECK(next_power_of_2((uint32_t)16) == 16);
-	CHECK(next_power_of_2((uint32_t)17) == 32);
-	CHECK(next_power_of_2((uint32_t)65535) == 65536);
+	static_assert(Math::is_power_of_2(-1) == false);
+	static_assert(Math::is_power_of_2(0) == false);
+	static_assert(Math::is_power_of_2(1) == true);
+	static_assert(Math::is_power_of_2(16) == true);
+	static_assert(Math::is_power_of_2(17) == false);
+	static_assert(Math::is_power_of_2(65535) == false);
+	static_assert(Math::is_power_of_2(4294967295) == false);
 
-	CHECK(previous_power_of_2((uint32_t)0) == 0);
-	CHECK(previous_power_of_2((uint32_t)1) == 1);
-	CHECK(previous_power_of_2((uint32_t)16) == 16);
-	CHECK(previous_power_of_2((uint32_t)17) == 16);
-	CHECK(previous_power_of_2((uint32_t)65535) == 32768);
+	static_assert(Math::next_power_of_2(-1) == 0);
+	static_assert(Math::next_power_of_2(0) == 0);
+	static_assert(Math::next_power_of_2(1) == 1);
+	static_assert(Math::next_power_of_2(16) == 16);
+	static_assert(Math::next_power_of_2(17) == 32);
+	static_assert(Math::next_power_of_2(65535) == 65536);
+	static_assert(Math::next_power_of_2(4294967295) == 4294967296);
 
-	CHECK(closest_power_of_2((uint32_t)0) == 0);
-	CHECK(closest_power_of_2((uint32_t)1) == 1);
-	CHECK(closest_power_of_2((uint32_t)16) == 16);
-	CHECK(closest_power_of_2((uint32_t)17) == 16);
-	CHECK(closest_power_of_2((uint32_t)65535) == 65536);
+	static_assert(Math::previous_power_of_2(-1) == 0);
+	static_assert(Math::previous_power_of_2(0) == 0);
+	static_assert(Math::previous_power_of_2(1) == 1);
+	static_assert(Math::previous_power_of_2(16) == 16);
+	static_assert(Math::previous_power_of_2(17) == 16);
+	static_assert(Math::previous_power_of_2(65535) == 32768);
+	static_assert(Math::previous_power_of_2(4294967295) == 2147483648);
 
-	CHECK(get_shift_from_power_of_2((uint32_t)0) == -1);
-	CHECK(get_shift_from_power_of_2((uint32_t)1) == 0);
-	CHECK(get_shift_from_power_of_2((uint32_t)16) == 4);
-	CHECK(get_shift_from_power_of_2((uint32_t)17) == -1);
-	CHECK(get_shift_from_power_of_2((uint32_t)65535) == -1);
+	static_assert(Math::closest_power_of_2(-1) == 0);
+	static_assert(Math::closest_power_of_2(0) == 0);
+	static_assert(Math::closest_power_of_2(1) == 1);
+	static_assert(Math::closest_power_of_2(16) == 16);
+	static_assert(Math::closest_power_of_2(17) == 16);
+	static_assert(Math::closest_power_of_2(65535) == 65536);
+	static_assert(Math::closest_power_of_2(4294967295) == 4294967296);
 
-	CHECK(nearest_shift((uint32_t)0) == 0);
-	CHECK(nearest_shift((uint32_t)1) == 1);
-	CHECK(nearest_shift((uint32_t)16) == 5);
-	CHECK(nearest_shift((uint32_t)17) == 5);
-	CHECK(nearest_shift((uint32_t)65535) == 16);
+	static_assert(Math::shift_from_power_of_2(-1) == -1);
+	static_assert(Math::shift_from_power_of_2(0) == -1);
+	static_assert(Math::shift_from_power_of_2(1) == 0);
+	static_assert(Math::shift_from_power_of_2(16) == 4);
+	static_assert(Math::shift_from_power_of_2(17) == -1);
+	static_assert(Math::shift_from_power_of_2(65535) == -1);
+	static_assert(Math::shift_from_power_of_2(4294967295) == -1);
+
+	static_assert(Math::nearest_shift(-1) == 0);
+	static_assert(Math::nearest_shift(0) == 0);
+	static_assert(Math::nearest_shift(1) == 1);
+	static_assert(Math::nearest_shift(16) == 5);
+	static_assert(Math::nearest_shift(17) == 5);
+	static_assert(Math::nearest_shift(65535) == 16);
+	static_assert(Math::nearest_shift(4294967295) == 32);
 }
 
 TEST_CASE_TEMPLATE("[Math] abs", T, int, float, double) {

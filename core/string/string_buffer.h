@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 
 template <int SHORT_BUFFER_SIZE = 64>
@@ -123,7 +124,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_
 	}
 
 	bool need_copy = string_length > 0 && buffer.is_empty();
-	buffer.resize(next_power_of_2((uint32_t)p_size));
+	buffer.resize(Math::next_power_of_2(p_size));
 	if (need_copy) {
 		memcpy(buffer.ptrw(), short_buffer, string_length * sizeof(char32_t));
 	}
