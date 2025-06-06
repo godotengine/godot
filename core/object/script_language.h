@@ -257,7 +257,7 @@ public:
 		}
 	};
 
-	void get_core_type_words(List<String> *p_core_type_words) const;
+	const Span<String> get_core_type_words() const;
 	virtual Vector<String> get_reserved_words() const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
 	virtual Vector<String> get_comment_delimiters() const = 0;
