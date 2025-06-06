@@ -44,6 +44,8 @@ class Range : public Control {
 		bool exp_ratio = false;
 		bool allow_greater = false;
 		bool allow_lesser = false;
+		bool allow_inf = false;
+		bool allow_nan = false;
 		HashSet<Range *> owners;
 		void emit_value_changed();
 		void emit_changed();
@@ -103,6 +105,12 @@ public:
 
 	void set_allow_lesser(bool p_allow);
 	bool is_lesser_allowed() const;
+
+	void set_allow_inf(bool p_allow);
+	bool is_inf_allowed() const;
+
+	void set_allow_nan(bool p_allow);
+	bool is_nan_allowed() const;
 
 	void share(Range *p_range);
 	void unshare();
