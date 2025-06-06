@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/config/project_settings.h"
 #include "core/os/thread.h"
 #include "core/typedefs.h"
 
@@ -37,6 +38,130 @@ template <typename T>
 class Vector;
 
 class Main {
+	struct LaunchOptions {
+		struct Option {
+			int id = -1;
+			int availability = -1;
+			String name;
+			String alias;
+			String params;
+			String description;
+		};
+
+		enum {
+			ARG_HELP,
+			ARG_VERSION,
+			ARG_VERBOSE,
+			ARG_QUIET,
+			ARG_NO_HEADER,
+			ARG_SEPARATOR,
+			ARG_EDITOR,
+			ARG_PROJECT_MANAGER,
+			ARG_RECOVERY_MODE,
+			ARG_DEBUG_SERVER,
+			ARG_DAP_PORT,
+			ARG_LSP_PORT,
+			ARG_QUIT,
+			ARG_QUIT_AFTER,
+			ARG_LANGUAGE,
+			ARG_PATH,
+			ARG_SCENE,
+			ARG_UPWARDS,
+			ARG_MAIN_PACK,
+			ARG_RENDER_THREAD_MODE,
+			ARG_RENDER_REMOTE_FS,
+			ARG_RENDER_REMOTE_FS_PASSWORD,
+			ARG_AUDIO_DRIVER,
+			ARG_DISPLAY_DRIVER,
+			ARG_AUDIO_OUTPUT_LATENCY,
+			ARG_RENDERING_METHOD,
+			ARG_RENDERING_DRIVER,
+			ARG_GPU_INDEX,
+			ARG_TEXT_DRIVER,
+			ARG_TABLET_DRIVER,
+			ARG_HEADLESS,
+			ARG_LOG_FILE,
+			ARG_WRITE_MOVE,
+			ARG_FULLSCREEN,
+			ARG_MAXIMIZED,
+			ARG_WINDOWED,
+			ARG_ALWAYS_ON_TOP,
+			ARG_RESOLUTION,
+			ARG_POSITION,
+			ARG_SCREEN,
+			ARG_SINGLE_WINDOW,
+			ARG_XR_MODE,
+			ARG_WINDOW_ID,
+			ARG_ACCESSIBILITY,
+			ARG_DEBUG,
+			ARG_BREAKPOINTS,
+			ARG_IGNORE_ERROR_BREAKS,
+			ARG_PROFILING,
+			ARG_GPU_PROFILE,
+			ARG_GPU_VALIDATION,
+			ARG_GPU_ABORT,
+			ARG_GENERATE_SPIRV_DEBUG_INFO,
+			ARG_EXTRA_GPU_MEMORY_TRACKING,
+			ARG_ACCURATE_BREADCRUMBS,
+			ARG_REMOTE_DEBUG,
+			ARG_SINGLE_THREADED_SCENE,
+			ARG_DEBUG_COLLISIONS,
+			ARG_DEBUG_PATHS,
+			ARG_DEBUG_NAVIGATION,
+			ARG_DEBUG_AVOIDANCE,
+			ARG_DEBUG_STRING_NAMES,
+			ARG_DEBUG_CANVAS_ITEM_REDRAW,
+			ARG_MAX_FPS,
+			ARG_FRAME_DELAY,
+			ARG_TIME_SCALE,
+			ARG_DISABLE_VSYNC,
+			ARG_DISABLE_RENDER_LOOP,
+			ARG_DISABLE_CRASH_HANDLER,
+			ARG_FIXED_FPS,
+			ARG_DELTA_SMOOTHING,
+			ARG_PRINT_FPS,
+			ARG_EDITOR_PSEUDOLOCALIZATION,
+			ARG_SCRIPT,
+			ARG_MAIN_LOOP,
+			ARG_CHECK_ONLY,
+			ARG_IMPORT,
+			ARG_EXPORT_RELEASE,
+			ARG_EXPORT_DEBUG,
+			ARG_EXPORT_PACK,
+			ARG_EXPORT_PATCH,
+			ARG_PATCHES,
+			ARG_INSTALL_ANDROID_BUILD_TEMPLATE,
+			ARG_CONVERT_3_TO_4,
+			ARG_VALIDATE_CONVERSION_3_TO_4,
+			ARG_DOCTOOL,
+			ARG_NO_DOCBASE,
+			ARG_GDEXTENSION_DOCS,
+			ARG_GDSCRIPT_DOCS,
+			ARG_BUILD_SOLUTIONS,
+			ARG_DUMP_GDEXTENSION_INTERFACE,
+			ARG_DUMP_EXTENSION_API,
+			ARG_DUMP_EXTENSION_API_WITH_DOCS,
+			ARG_VALIDATE_EXTENSION_API,
+			ARG_BENCHMARK,
+			ARG_BENCHMARK_FILE,
+			ARG_TEST,
+		};
+
+		LocalVector<Option> registered_options;
+
+		const List<String>::Element *I = nullptr;
+
+		void register_option(int p_id, const String &p_name, const String &p_description, const String &p_params = String(), const String &p_alias = String());
+		void register_option(int p_id, int p_availability, const String &p_name, const String &p_description, const String &p_params = String(), const String &p_alias = String());
+
+		void print_help();
+		
+		void process_arguments(const List<String> &p_arguments);
+		int get_next_option();
+		bool is_finished() const;
+		String get_next_argument();
+	};
+
 	enum CLIOptionAvailability {
 		CLI_OPTION_AVAILABILITY_EDITOR,
 		CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG,

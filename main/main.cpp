@@ -30,7 +30,6 @@
 
 #include "main.h"
 
-#include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
@@ -993,6 +992,110 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
+	LaunchOptions options;
+	options.register_option(LaunchOptions::ARG_HELP, "--help", "Display this help message.", "", "-h");
+	options.register_option(LaunchOptions::ARG_VERSION, "--version", "Display the version string.");
+	options.register_option(LaunchOptions::ARG_VERBOSE, "--verbose", "Use verbose stdout mode.", "", "-v");
+	options.register_option(LaunchOptions::ARG_QUIET, "--quiet", "Quiet mode, silences stdout messages. Errors are still displayed.");
+	options.register_option(LaunchOptions::ARG_NO_HEADER, "--no-header", "Do not print engine version and rendering method header on startup.");
+	options.register_option(LaunchOptions::ARG_SEPARATOR, "--", "Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.", "", "++");
+	options.register_option(LaunchOptions::ARG_EDITOR, "--editor", "Start the editor instead of running the scene.", "", "-e");
+	options.register_option(LaunchOptions::ARG_PROJECT_MANAGER, "--project-manager", "Start the project manager, even if a project is auto-detected.", "", "-p");
+	options.register_option(LaunchOptions::ARG_RECOVERY_MODE, "--recovery-mode", "Start the editor in recovery mode, which disables features that can typically cause startup crashes, such as tool scripts, editor plugins, GDExtension addons, and others.");
+	options.register_option(LaunchOptions::ARG_DEBUG_SERVER, "--debug-server", "Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)", "<uri>");
+	options.register_option(LaunchOptions::ARG_DAP_PORT, "--dap-port", "Use the specified port for the GDScript Debugger Adaptor protocol. Recommended port range [1024, 49151].", "<port>");
+	options.register_option(LaunchOptions::ARG_LSP_PORT, "--lsp-port", "Use the specified port for the GDScript language server protocol. Recommended port range [1024, 49151].", "<port>");
+	options.register_option(LaunchOptions::ARG_QUIT, "--quit", "Quit after the first iteration.");
+	options.register_option(LaunchOptions::ARG_QUIT_AFTER, "--quit-after", "Quit after the given number of iterations. Set to 0 to disable.", "<int>");
+	options.register_option(LaunchOptions::ARG_LANGUAGE, "--language", "Use a specific locale (<locale> being a two-letter code).", "<locale>", "-l");
+	options.register_option(LaunchOptions::ARG_PATH, "--path", "Path to a project (<directory> must contain a \"project.godot\" file).", "<directory>");
+	options.register_option(LaunchOptions::ARG_SCENE, "--scene", "Path or UID of a scene in the project that should be started.", "<path>");
+	options.register_option(LaunchOptions::ARG_UPWARDS, "--upwards", "Scan folders upwards for project.godot file.", "", "-u");
+	options.register_option(LaunchOptions::ARG_MAIN_PACK, "--main-pack", "Path to a pack (.pck) file to load.", "<file>");
+#ifdef DISABLE_DEPRECATED
+	options.register_option(LaunchOptions::ARG_RENDER_THREAD_MODE, "--render-thread", "Render thread mode (\"safe\", \"separate\").", "<mode>");
+#else
+	options.register_option(LaunchOptions::ARG_RENDER_THREAD_MODE, "--render-thread", "Render thread mode (\"unsafe\" [deprecated], \"safe\", \"separate\").", "<mode>");
+#endif
+	options.register_option(LaunchOptions::ARG_RENDER_REMOTE_FS, "--remote-fs", "Remote filesystem (<host/IP>[:<port>] address).", "<address>");
+	options.register_option(LaunchOptions::ARG_RENDER_REMOTE_FS_PASSWORD, "--remote-fs-password", "Password for remote filesystem.", "<password>");
+	options.register_option(LaunchOptions::ARG_AUDIO_DRIVER, "--audio-driver", "Audio driver [TODO]", "<driver>");
+	options.register_option(LaunchOptions::ARG_DISPLAY_DRIVER, "--display-driver", "Display driver (and rendering driver) [TODO]", "<driver>");
+	options.register_option(LaunchOptions::ARG_AUDIO_OUTPUT_LATENCY, "--audio-output-latency", "Override audio output latency in milliseconds (default is 15 ms).\nLower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.", "<ms>");
+	options.register_option(LaunchOptions::ARG_RENDERING_METHOD, "--rendering-method", "Renderer name. Requires driver support.", "<renderer>");
+	options.register_option(LaunchOptions::ARG_RENDERING_DRIVER, "--rendering-driver", "Rendering driver (depends on display driver).", "<driver>");
+	options.register_option(LaunchOptions::ARG_GPU_INDEX, "--gpu-index", "Use a specific GPU (run with --verbose to get a list of available devices).", "<device_index>");
+	options.register_option(LaunchOptions::ARG_TEXT_DRIVER, "--text-driver", "Text driver (used for font rendering, bidirectional support and shaping).", "<driver>");
+	options.register_option(LaunchOptions::ARG_TABLET_DRIVER, "--tablet-driver", "Pen tablet input driver.", "<driver>");
+	options.register_option(LaunchOptions::ARG_HEADLESS, "--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.");
+	options.register_option(LaunchOptions::ARG_LOG_FILE, "--log-file", "Write output/error log to the specified path instead of the default location defined by the project.\n<file> path should be absolute or relative to the project directory.", "<file>");
+	options.register_option(LaunchOptions::ARG_WRITE_MOVE, "--write-movie", "Write a video to the specified path (usually with .avi or .png extension).\n--fixed-fps is forced when enabled, but it can be used to change movie FPS.\n--disable-vsync can speed up movie writing but makes interaction more difficult.\n--quit-after can be used to specify the number of frames to write.", "<file>");
+	options.register_option(LaunchOptions::ARG_FULLSCREEN, "--fullscreen", "Request fullscreen mode.", "", "-f");
+	options.register_option(LaunchOptions::ARG_MAXIMIZED, "--maximized", "Request a maximized window.", "", "-m");
+	options.register_option(LaunchOptions::ARG_WINDOWED, "--windowed", "Request windowed mode.", "-w");
+	options.register_option(LaunchOptions::ARG_ALWAYS_ON_TOP, "--always-on-top", "Request an always-on-top window.", "-t");
+	options.register_option(LaunchOptions::ARG_RESOLUTION, "--resolution", "Request window resolution.", "<W>x<H>");
+	options.register_option(LaunchOptions::ARG_POSITION, "--position", "Request window position.", "<X>,<Y>");
+	options.register_option(LaunchOptions::ARG_SCREEN, "--screen", "Request window screen.", "<N>");
+	options.register_option(LaunchOptions::ARG_SINGLE_WINDOW, "--single-window", "Use a single window (no separate subwindows).");
+#ifndef _3D_DISABLED
+	options.register_option(LaunchOptions::ARG_XR_MODE, "--xr-mode", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].", "<mode>");
+#endif
+	options.register_option(LaunchOptions::ARG_WINDOW_ID, "--wid", "Request parented to window.", "<window_id>");
+	options.register_option(LaunchOptions::ARG_ACCESSIBILITY, "--accessibility", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].", "<mode>");
+	options.register_option(LaunchOptions::ARG_DEBUG, "--debug", "Debug (local stdout debugger).", "", "-d");
+	options.register_option(LaunchOptions::ARG_BREAKPOINTS, "--breakpoints", "Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).", "", "-b");
+	options.register_option(LaunchOptions::ARG_IGNORE_ERROR_BREAKS, "--ignore-error-breaks", "If debugger is connected, prevents sending error breakpoints.");
+	options.register_option(LaunchOptions::ARG_PROFILING, "--profiling", "Enable profiling in the script debugger.");
+	options.register_option(LaunchOptions::ARG_GPU_PROFILE, "--gpu-profile", "Show a GPU profile of the tasks that took the most time during frame rendering.");
+	options.register_option(LaunchOptions::ARG_GPU_VALIDATION, "--gpu-validation", "Enable graphics API validation layers for debugging.");
+	options.register_option(LaunchOptions::ARG_GPU_ABORT, "--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.");
+	options.register_option(LaunchOptions::ARG_GENERATE_SPIRV_DEBUG_INFO, "--generate-spirv-debug-info", "Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.");
+	options.register_option(LaunchOptions::ARG_EXTRA_GPU_MEMORY_TRACKING, "--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967.");
+	options.register_option(LaunchOptions::ARG_ACCURATE_BREADCRUMBS, "--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.");
+	options.register_option(LaunchOptions::ARG_REMOTE_DEBUG, "--remote-debug", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).", "<uri>");
+	options.register_option(LaunchOptions::ARG_SINGLE_THREADED_SCENE, "--single-threaded-scene", "Force scene tree to run in single-threaded mode. Sub-thread groups are disabled and run on the main thread.");
+	options.register_option(LaunchOptions::ARG_DEBUG_COLLISIONS, "--debug-collisions", "Show collision shapes when running the scene.");
+	options.register_option(LaunchOptions::ARG_DEBUG_PATHS, "--debug-paths", "Show path lines when running the scene.");
+	options.register_option(LaunchOptions::ARG_DEBUG_NAVIGATION, "--debug-navigation", "Show navigation polygons when running the scene.");
+	options.register_option(LaunchOptions::ARG_DEBUG_AVOIDANCE, "--debug-avoidance", "Show navigation avoidance debug visuals when running the scene.");
+	options.register_option(LaunchOptions::ARG_DEBUG_STRING_NAMES, "--debug-stringnames", "Print all StringName allocations to stdout when the engine quits.");
+	options.register_option(LaunchOptions::ARG_DEBUG_CANVAS_ITEM_REDRAW, "--debug-canvas-item-redraw", "Display a rectangle each time a canvas item requests a redraw (useful to troubleshoot low processor mode).");
+	options.register_option(LaunchOptions::ARG_MAX_FPS, "--max-fps", "Set a maximum number of frames per second rendered (can be used to limit power usage). A value of 0 results in unlimited framerate.", "<fps>");
+	options.register_option(LaunchOptions::ARG_FRAME_DELAY, "--frame-delay", "Simulate high CPU load (delay each frame by <ms> milliseconds). Do not use as a FPS limiter; use --max-fps instead.", "<ms>");
+	options.register_option(LaunchOptions::ARG_TIME_SCALE, "--time-scale", "Force time scale (higher values are faster, 1.0 is normal speed).", "<scale>");
+	options.register_option(LaunchOptions::ARG_DISABLE_VSYNC, "--disable-vsync", "Forces disabling of vertical synchronization, even if enabled in the project settings. Does not override driver-level V-Sync enforcement.");
+	options.register_option(LaunchOptions::ARG_DISABLE_RENDER_LOOP, "--disable-render-loop", "Disable render loop so rendering only occurs when called explicitly from script.");
+	options.register_option(LaunchOptions::ARG_DISABLE_CRASH_HANDLER, "--disable-crash-handler", "Disable crash handler when supported by the platform code.");
+	options.register_option(LaunchOptions::ARG_FIXED_FPS, "--fixed-fps", "Force a fixed number of frames per second. This setting disables real-time synchronization.", "<fps>");
+	options.register_option(LaunchOptions::ARG_DELTA_SMOOTHING, "--delta-smoothing", "Enable or disable frame delta smoothing [\"enable\", \"disable\"].", "<enable>");
+	options.register_option(LaunchOptions::ARG_PRINT_FPS, "--print-fps", "Enable or disable frame delta smoothing [\"enable\", \"disable\"].");
+	options.register_option(LaunchOptions::ARG_EDITOR_PSEUDOLOCALIZATION, "--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.");
+	options.register_option(LaunchOptions::ARG_SCRIPT, "--script", "Run a script.", "<script>", "-s");
+	options.register_option(LaunchOptions::ARG_MAIN_LOOP, "--main-loop", "Run a MainLoop specified by its global class name.", "<main_loop_name>");
+	options.register_option(LaunchOptions::ARG_CHECK_ONLY, "--check-only", "Only parse for errors and quit (use with --script)");
+	options.register_option(LaunchOptions::ARG_IMPORT, "--import", "Starts the editor, waits for any resources to be imported, and then quits.");
+	options.register_option(LaunchOptions::ARG_EXPORT_RELEASE, "--export-release", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. \"builds/game.exe\").\nThe target directory must exist.", "<preset> <path>");
+	options.register_option(LaunchOptions::ARG_EXPORT_DEBUG, "--export-debug", "Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.", "<preset> <path>");
+	options.register_option(LaunchOptions::ARG_EXPORT_PACK, "--export-pack", "Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.", "<preset> <path>");
+	options.register_option(LaunchOptions::ARG_EXPORT_PATCH, "--export-patch", "Export pack with changed files only. See --export-pack description for other considerations.", "<preset> <path>");
+	options.register_option(LaunchOptions::ARG_PATCHES, "--patches", "List of patches to use with --export-patch. The list is comma-separated.");
+	options.register_option(LaunchOptions::ARG_INSTALL_ANDROID_BUILD_TEMPLATE, "--install-android-build-template", "Install the Android build template. Used in conjunction with --export-release or --export-debug.");
+	options.register_option(LaunchOptions::ARG_CONVERT_3_TO_4, "--convert-3to4", "Converts project from Godot 3.x to Godot 4.x.", "[max_file_kb] [max_line_size]");
+	options.register_option(LaunchOptions::ARG_VALIDATE_CONVERSION_3_TO_4, "--validate-conversion-3to4", "Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.", "[max_file_kb] [max_line_size]");
+	options.register_option(LaunchOptions::ARG_DOCTOOL, "--doctool", "Dump the engine API reference to the given <path> (defaults to current directory) in XML format, merging if existing files are found.", "[path]");
+	options.register_option(LaunchOptions::ARG_NO_DOCBASE, "--no-docbase", "Disallow dumping the base types (used with --doctool).");
+	options.register_option(LaunchOptions::ARG_GDEXTENSION_DOCS, "--gdextension-docs", "Rather than dumping the engine API, generate API reference from all the GDExtensions loaded in the current project (used with --doctool).");
+	options.register_option(LaunchOptions::ARG_GDSCRIPT_DOCS, "--gdscript-docs", "Rather than dumping the engine API, generate API reference from the inline documentation in the GDScript files found in <path> (used with --doctool).", "<path>");
+	options.register_option(LaunchOptions::ARG_BUILD_SOLUTIONS, "--build-solutions", "Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.");
+	options.register_option(LaunchOptions::ARG_DUMP_GDEXTENSION_INTERFACE, "--dump-gdextension-interface", "Generate a GDExtension header file \"gdextension_interface.h\" in the current folder. This file is the base file required to implement a GDExtension.");
+	options.register_option(LaunchOptions::ARG_DUMP_EXTENSION_API, "--dump-extension-api", "Generate a JSON dump of the Godot API for GDExtension bindings named \"extension_api.json\" in the current folder.");
+	options.register_option(LaunchOptions::ARG_DUMP_EXTENSION_API_WITH_DOCS, "--dump-extension-api-with-docs", "Generate JSON dump of the Godot API like the previous option, but including documentation.");
+	options.register_option(LaunchOptions::ARG_VALIDATE_EXTENSION_API, "--validate-extension-api", "Validate an extension API file dumped (with one of the two previous options) from a previous version of the engine to ensure API compatibility.\nIf incompatibilities or errors are detected, the exit code will be non-zero.", "<path>");
+	options.register_option(LaunchOptions::ARG_BENCHMARK, "--benchmark", "Benchmark the run time and print it to console.");
+	options.register_option(LaunchOptions::ARG_BENCHMARK_FILE, "--benchmark-file", "Benchmark the run time and save it to a given file in JSON format. The path should be absolute.", "<path>");
+	options.register_option(LaunchOptions::ARG_TEST, "--test", "Run unit tests. Use --test --help for more information.", "[--help]");
+
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
@@ -1063,6 +1166,30 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// It's returned as the program exit code. ERR_HELP is special cased and handled as success (0).
 	Error exit_err = ERR_INVALID_PARAMETER;
 
+	options.process_arguments(args);
+	while (!options.is_finished()) {
+		int option = options.get_next_option();
+
+		switch (option) {
+			case LaunchOptions::ARG_HELP: {
+				print_header(true);
+				print_help_copyright("Free and open source software under the terms of the MIT license.");
+				print_help_copyright("(c) 2014-present Godot Engine contributors. (c) 2007-present Juan Linietsky, Ariel Manzur.");
+
+				options.print_help();
+
+				exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
+				goto error;
+			} break;
+
+			case LaunchOptions::ARG_VERSION: {
+				print_line(get_full_version_string());
+				exit_err = ERR_HELP;
+				goto error;
+			} break;
+		}
+	}
+
 	I = args.front();
 	while (I) {
 		List<String>::Element *N = I->next();
@@ -1112,17 +1239,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		if (adding_user_args) {
 			user_args.push_back(arg);
-		} else if (arg == "-h" || arg == "--help" || arg == "/?") { // display help
-
-			show_help = true;
-			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
-			goto error;
-
-		} else if (arg == "--version") {
-			print_line(get_full_version_string());
-			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
-			goto error;
-
 		} else if (arg == "-v" || arg == "--verbose") { // verbose output
 
 			OS::get_singleton()->_verbose_stdout = true;
@@ -2822,10 +2938,6 @@ error:
 
 	args.clear();
 	main_args.clear();
-
-	if (show_help) {
-		print_help(execpath);
-	}
 
 	if (editor) {
 		OS::get_singleton()->remove_lock_file();
@@ -5072,4 +5184,61 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
+}
+
+void Main::LaunchOptions::register_option(int p_id, const String &p_name, const String &p_description, const String &p_params, const String &p_alias) {
+	Option op;
+	op.id = p_id;
+	op.availability = CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE;
+	op.name = p_name;
+	op.alias = p_alias;
+	op.params = p_name;
+	op.description = p_description;
+	registered_options.push_back(op);
+}
+
+void Main::LaunchOptions::register_option(int p_id, int p_availability, const String &p_name, const String &p_description, const String &p_params, const String &p_alias) {
+	Option op;
+	op.id = p_id;
+	op.availability = p_availability;
+	op.name = p_name;
+	op.alias = p_alias;
+	op.params = p_name;
+	op.description = p_description;
+	registered_options.push_back(op);
+}
+
+void Main::LaunchOptions::print_help() {
+	for (const Option &op : registered_options) {
+		print_line(op.name, op.description);
+	}
+}
+
+void Main::LaunchOptions::process_arguments(const List<String> &p_arguments) {
+	I = p_arguments.front();
+}
+
+int Main::LaunchOptions::get_next_option() {
+	const String &arg = I->get();
+	I = I->next();
+
+	for (const Option &op : registered_options) {
+		if (op.name == arg || op.alias == arg) {
+			return op.id;
+		}
+	}
+	return -1;
+}
+
+bool Main::LaunchOptions::is_finished() const {
+	return I == nullptr;
+}
+
+String Main::LaunchOptions::get_next_argument() {
+	if (I) {
+		const String &arg = I->get();
+		I = I->next();
+		return arg;
+	}
+	return String();
 }
