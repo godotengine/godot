@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HResizableScrollBar" inherits="ResizableScrollBar" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A horizontal resizable scrollbar that goes from left (min) to right (max).
+	</brief_description>
+	<description>
+		A horizontal resizable scrollbar, with the same function as [ScrollBar] that goes from left to right but with handles. Allows implementation of zoom changing in editors by pulling handles.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

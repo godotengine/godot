@@ -76,6 +76,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/reference_rect.h"
+#include "scene/gui/resizable_scroll_bar.h"
 #include "scene/gui/rich_text_effect.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_bar.h"
@@ -449,6 +450,9 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(ScrollBar);
 	GDREGISTER_CLASS(HScrollBar);
 	GDREGISTER_CLASS(VScrollBar);
+	GDREGISTER_ABSTRACT_CLASS(ResizableScrollBar);
+	GDREGISTER_CLASS(HResizableScrollBar);
+	GDREGISTER_CLASS(VResizableScrollBar);
 	GDREGISTER_CLASS(ProgressBar);
 	GDREGISTER_ABSTRACT_CLASS(Slider);
 	GDREGISTER_CLASS(HSlider);
