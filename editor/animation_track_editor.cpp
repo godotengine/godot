@@ -4463,17 +4463,8 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	String path = root->get_path_to(p_node, true);
 
 	// Get the value from the subpath.
-	Variant value = p_node;
-	Vector<String> property_path = p_property.split(":");
-	for (const String &E : property_path) {
-		if (value.get_type() == Variant::OBJECT) {
-			Object *obj = value;
-			value = obj->get(E);
-		} else {
-			value = Variant();
-			break;
-		}
-	}
+	Vector<StringName> subpath = NodePath(p_property).get_as_property_path().get_subnames();
+	Variant value = p_node->get_indexed(subpath);
 
 	if (Object::cast_to<AnimationPlayer>(p_node) && p_property == "current_animation") {
 		if (p_node == AnimationPlayerEditor::get_singleton()->get_player()) {
@@ -4710,30 +4701,6 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 		}
 	}
 
-	for (int i = 0; i < leftover_path.size() - 1; i++) {
-		bool valid;
-		property_info_base = property_info_base.get_named(leftover_path[i], valid);
-	}
-
-	// Hack for the fact that bezier tracks leftover paths can reference
-	// the individual components for types like vectors.
-	if (property_info_base.is_null()) {
-		if (res.is_valid()) {
-			property_info_base = res;
-		} else if (node) {
-			property_info_base = node;
-		}
-
-		if (leftover_path.size()) {
-			leftover_path.remove_at(leftover_path.size() - 1);
-		}
-
-		for (int i = 0; i < leftover_path.size() - 1; i++) {
-			bool valid;
-			property_info_base = property_info_base.get_named(leftover_path[i], valid);
-		}
-	}
-
 	if (property_info_base.is_null()) {
 		WARN_PRINT(vformat("Could not determine track hint for '%s:%s' because its base property is null.",
 				String(path.get_concatenated_names()), String(path.get_concatenated_subnames())));
@@ -4790,6 +4757,9 @@ static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool
 			subindices.push_back(":y");
 			subindices.push_back(":z");
 			subindices.push_back(":d");
+		} break;
+		case Variant::NIL: {
+			subindices.push_back(""); // Hack: it is probably float since non-numeric types are filtered in the selection window.
 		} break;
 		default: {
 			if (r_valid) {
