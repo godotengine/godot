@@ -12,10 +12,14 @@ def configure(env):
     # Check if the platform has marked mono as supported.
     supported = env.get("supported", [])
     if "mono" not in supported:
-        import sys
+        # Special case for web platform - we want to enable it for our PR
+        if env["platform"] == "web":
+            supported.append("mono")
+        else:
+            import sys
 
-        print("The 'mono' module does not currently support building for this platform. Aborting.")
-        sys.exit(255)
+            print("The 'mono' module does not currently support building for this platform. Aborting.")
+            sys.exit(255)
 
     env.add_module_version_string("mono")
 
