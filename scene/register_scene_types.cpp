@@ -371,6 +371,24 @@ void register_scene_types() {
 
 	Node::init_node_hrcr();
 
+	GDREGISTER_CLASS(Node);
+	GDREGISTER_VIRTUAL_CLASS(MissingNode);
+	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
+
+	GDREGISTER_ABSTRACT_CLASS(CanvasItem);
+	GDREGISTER_CLASS(Node2D);
+	GDREGISTER_CLASS(Control);
+
+	GDREGISTER_VIRTUAL_CLASS(Texture);
+	GDREGISTER_VIRTUAL_CLASS(Texture2D);
+	GDREGISTER_VIRTUAL_CLASS(Texture3D);
+	GDREGISTER_CLASS(CanvasTexture);
+
+	GDREGISTER_VIRTUAL_CLASS(Material);
+	GDREGISTER_CLASS(PlaceholderMaterial);
+	GDREGISTER_CLASS(ShaderMaterial);
+	GDREGISTER_CLASS(CanvasItemMaterial);
+
 	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
 		resource_loader_stream_texture.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
@@ -410,12 +428,6 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	GDREGISTER_CLASS(Object);
-
-	GDREGISTER_CLASS(Node);
-	GDREGISTER_VIRTUAL_CLASS(MissingNode);
-	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
-
 	GDREGISTER_ABSTRACT_CLASS(Viewport);
 	GDREGISTER_CLASS(SubViewport);
 	GDREGISTER_CLASS(ViewportTexture);
@@ -443,7 +455,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	GDREGISTER_CLASS(Control);
+	GDREGISTER_VIRTUAL_CLASS(Range);
 	GDREGISTER_CLASS(Button);
 	GDREGISTER_CLASS(Label);
 	GDREGISTER_ABSTRACT_CLASS(ScrollBar);
@@ -459,10 +471,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CheckButton);
 	GDREGISTER_CLASS(LinkButton);
 	GDREGISTER_CLASS(Panel);
-	GDREGISTER_VIRTUAL_CLASS(Range);
 
 	OS::get_singleton()->yield(); // may take time to init
 
+	GDREGISTER_CLASS(Container);
 	GDREGISTER_CLASS(TextureRect);
 	GDREGISTER_CLASS(ColorRect);
 	GDREGISTER_CLASS(NinePatchRect);
@@ -474,7 +486,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HSeparator);
 	GDREGISTER_CLASS(VSeparator);
 	GDREGISTER_CLASS(TextureButton);
-	GDREGISTER_CLASS(Container);
 	GDREGISTER_CLASS(BoxContainer);
 	GDREGISTER_CLASS(HBoxContainer);
 	GDREGISTER_CLASS(VBoxContainer);
@@ -498,8 +509,6 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(VideoStream);
 
 #ifndef ADVANCED_GUI_DISABLED
-	GDREGISTER_CLASS(FileDialog);
-
 	GDREGISTER_CLASS(PopupMenu);
 	GDREGISTER_CLASS(Tree);
 
@@ -521,6 +530,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(AcceptDialog);
 	GDREGISTER_CLASS(ConfirmationDialog);
+	GDREGISTER_CLASS(FileDialog);
 
 	GDREGISTER_CLASS(SubViewportContainer);
 	GDREGISTER_CLASS(SplitContainer);
@@ -601,16 +611,6 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(AudioListener3D);
-#ifndef XR_DISABLED
-	GDREGISTER_CLASS(XRCamera3D);
-	GDREGISTER_CLASS(XRNode3D);
-	GDREGISTER_CLASS(XRController3D);
-	GDREGISTER_CLASS(XRAnchor3D);
-	GDREGISTER_CLASS(XROrigin3D);
-	GDREGISTER_CLASS(XRBodyModifier3D);
-	GDREGISTER_CLASS(XRHandModifier3D);
-	GDREGISTER_CLASS(XRFaceModifier3D);
-#endif // XR_DISABLED
 	GDREGISTER_CLASS(MeshInstance3D);
 	GDREGISTER_CLASS(OccluderInstance3D);
 	GDREGISTER_ABSTRACT_CLASS(Occluder3D);
@@ -660,6 +660,17 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CopyTransformModifier3D);
 	GDREGISTER_CLASS(ConvertTransformModifier3D);
 	GDREGISTER_CLASS(AimModifier3D);
+
+#ifndef XR_DISABLED
+	GDREGISTER_CLASS(XRCamera3D);
+	GDREGISTER_CLASS(XRNode3D);
+	GDREGISTER_CLASS(XRController3D);
+	GDREGISTER_CLASS(XRAnchor3D);
+	GDREGISTER_CLASS(XROrigin3D);
+	GDREGISTER_CLASS(XRBodyModifier3D);
+	GDREGISTER_CLASS(XRHandModifier3D);
+	GDREGISTER_CLASS(XRFaceModifier3D);
+#endif // XR_DISABLED
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -846,18 +857,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParticleAccelerator);
 	GDREGISTER_CLASS(VisualShaderNodeParticleEmit);
 
-	GDREGISTER_VIRTUAL_CLASS(Material);
-	GDREGISTER_CLASS(PlaceholderMaterial);
-	GDREGISTER_CLASS(ShaderMaterial);
-	GDREGISTER_ABSTRACT_CLASS(CanvasItem);
-	GDREGISTER_CLASS(CanvasTexture);
-	GDREGISTER_CLASS(CanvasItemMaterial);
 	SceneTree::add_idle_callback(CanvasItemMaterial::flush_changes);
 	CanvasItemMaterial::init_shaders();
 
 	/* REGISTER 2D */
 
-	GDREGISTER_CLASS(Node2D);
 	GDREGISTER_CLASS(CanvasGroup);
 	GDREGISTER_CLASS(CPUParticles2D);
 	GDREGISTER_CLASS(GPUParticles2D);
@@ -1007,8 +1011,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CameraAttributesPhysical);
 	GDREGISTER_CLASS(CameraAttributesPractical);
 	GDREGISTER_CLASS(World2D);
-	GDREGISTER_VIRTUAL_CLASS(Texture);
-	GDREGISTER_VIRTUAL_CLASS(Texture2D);
 	GDREGISTER_CLASS(Sky);
 	GDREGISTER_CLASS(CompressedTexture2D);
 	GDREGISTER_CLASS(PortableCompressedTexture2D);
@@ -1023,7 +1025,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ExternalTexture);
 	GDREGISTER_VIRTUAL_CLASS(TextureLayered);
 	GDREGISTER_ABSTRACT_CLASS(ImageTextureLayered);
-	GDREGISTER_VIRTUAL_CLASS(Texture3D);
 	GDREGISTER_CLASS(ImageTexture3D);
 	GDREGISTER_CLASS(CompressedTexture3D);
 	GDREGISTER_CLASS(Cubemap);
@@ -1121,35 +1122,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationLink2D);
 	GDREGISTER_CLASS(PolygonPathFinder);
 
-	OS::get_singleton()->yield(); // may take time to init
-
-	// 2D nodes that support navmesh baking need to server register their source geometry parsers.
-	MeshInstance2D::navmesh_parse_init();
-	MultiMeshInstance2D::navmesh_parse_init();
-	NavigationObstacle2D::navmesh_parse_init();
-	Polygon2D::navmesh_parse_init();
-#ifndef DISABLE_DEPRECATED
-	TileMap::navmesh_parse_init();
-#endif
-	TileMapLayer::navmesh_parse_init();
-#ifndef PHYSICS_2D_DISABLED
-	StaticBody2D::navmesh_parse_init();
-#endif // PHYSICS_2D_DISABLED
 #endif // NAVIGATION_2D_DISABLED
-
-#ifndef NAVIGATION_3D_DISABLED
-	// 3D nodes that support navmesh baking need to server register their source geometry parsers.
-	MeshInstance3D::navmesh_parse_init();
-	MultiMeshInstance3D::navmesh_parse_init();
-	NavigationObstacle3D::navmesh_parse_init();
-#ifndef PHYSICS_3D_DISABLED
-	StaticBody3D::navmesh_parse_init();
-#endif // PHYSICS_3D_DISABLED
-#endif // NAVIGATION_3D_DISABLED
-
-#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
-	OS::get_singleton()->yield(); // may take time to init
-#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
 	GDREGISTER_ABSTRACT_CLASS(SceneState);
 	GDREGISTER_CLASS(PackedScene);
@@ -1447,8 +1420,6 @@ void unregister_scene_types() {
 
 void register_scene_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Scene", "Register Singletons");
-
-	GDREGISTER_CLASS(ThemeDB);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ThemeDB", ThemeDB::get_singleton()));
 

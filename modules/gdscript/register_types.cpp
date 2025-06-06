@@ -139,6 +139,7 @@ static void _editor_init() {
 void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		GDREGISTER_CLASS(GDScript);
+		GDREGISTER_ABSTRACT_CLASS(GDScriptNativeClass);
 
 		script_language_gd = memnew(GDScriptLanguage);
 		ScriptServer::register_language(script_language_gd);
@@ -155,12 +156,12 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		EditorNode::add_init_callback(_editor_init);
 
 		gdscript_translation_parser_plugin.instantiate();
 		EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
-	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+
 		GDREGISTER_CLASS(GDScriptSyntaxHighlighter);
 	}
 #endif // TOOLS_ENABLED
