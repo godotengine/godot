@@ -248,6 +248,8 @@ void EditorScenePostImportPlugin::_bind_methods() {
 
 /////////////////////////////////////////////////////////
 
+const String ResourceImporterScene::material_extension[3] = { ".tres", ".res", ".material" };
+
 String ResourceImporterScene::get_importer_name() const {
 	// For compatibility with 4.2 and earlier we need to keep the "scene" and "animation_library" names.
 	// However this is arbitrary so for new import types we can use any string.
@@ -1366,12 +1368,25 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale, const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps, p_applied_root_scale);
+		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps, p_applied_root_scale, p_source_file, p_options);
 		if (!r) {
 			i--; //was erased
+		}
+	}
+
+	int extract_mat = 0;
+	if (p_options.has("materials/extract")) {
+		extract_mat = p_options["materials/extract"];
+	}
+
+	String spath = p_source_file.get_base_dir();
+	if (p_options.has("materials/extract_path")) {
+		String extpath = p_options["materials/extract_path"];
+		if (!extpath.is_empty()) {
+			spath = extpath;
 		}
 	}
 
@@ -1520,7 +1535,6 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					Ref<Material> mat = m->get_surface_material(i);
 					if (mat.is_valid()) {
 						String mat_id = mat->get_meta("import_id", mat->get_name());
-
 						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
 							{
@@ -1537,7 +1551,27 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							for (int j = 0; j < post_importer_plugins.size(); j++) {
 								post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
 							}
+						}
+						if (!mat_id.is_empty() && extract_mat != 0) {
+							String ext = material_extension[p_options.has("materials/extract_format") ? (int)p_options["materials/extract_format"] : 0];
+							String path = spath.path_join(mat_id.validate_filename() + ext);
+							String uid_path = ResourceUID::path_to_uid(path);
 
+							Dictionary matdata = p_material_data[mat_id];
+							matdata["use_external/enabled"] = true;
+							matdata["use_external/path"] = uid_path;
+							matdata["use_external/fallback_path"] = path;
+							if (!FileAccess::exists(path) || extract_mat == 2 /*overwrite*/) {
+								ResourceSaver::save(mat, path);
+							}
+
+							Ref<Material> external_mat = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
+							if (external_mat.is_valid()) {
+								m->set_surface_material(i, external_mat);
+							}
+						}
+						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
+							Dictionary matdata = p_material_data[mat_id];
 							if (matdata.has("use_external/enabled") && bool(matdata["use_external/enabled"]) && matdata.has("use_external/path")) {
 								String path = matdata["use_external/path"];
 								Ref<Material> external_mat = ResourceLoader::load(path);
@@ -2434,6 +2468,9 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/remove_immutable_tracks"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import_rest_as_RESET"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "import_script/path", PROPERTY_HINT_FILE, script_ext_hint), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/extract", PROPERTY_HINT_ENUM, "Keep Internal,Extract Once,Extract and Overwrite"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/extract_format", PROPERTY_HINT_ENUM, "Text (*.tres),Binary (*.res),Material (*.material)"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "materials/extract_path", PROPERTY_HINT_DIR, ""), ""));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
 
@@ -3106,7 +3143,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	}
 	bool remove_immutable_tracks = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
 	_pre_fix_animations(scene, scene, node_data, animation_data, fps);
-	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0);
+	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0, p_source_file, p_options);
 	_post_fix_animations(scene, scene, node_data, animation_data, fps, remove_immutable_tracks);
 
 	String root_type = p_options["nodes/root_type"];
