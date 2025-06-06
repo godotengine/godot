@@ -135,6 +135,7 @@ private:
 		Ref<AnimationNodeStateMachineTransition> transition;
 	};
 
+	Ref<AnimationNodeStateMachineTransition> default_transition;
 	Vector<Transition> transitions;
 
 	StringName playback = "playback";
@@ -206,6 +207,9 @@ public:
 	void set_reset_ends(bool p_enable);
 	bool are_ends_reset() const;
 
+	void set_default_transition(Ref<AnimationNodeStateMachineTransition> p_transition);
+	Ref<AnimationNodeStateMachineTransition> get_default_transition();
+
 	bool can_edit_node(const StringName &p_name) const;
 
 	void set_graph_offset(const Vector2 &p_offset);
@@ -259,7 +263,6 @@ class AnimationNodeStateMachinePlayback : public Resource {
 		bool is_reset = false;
 	};
 
-	Ref<AnimationNodeStateMachineTransition> default_transition;
 	String base_path;
 
 	AnimationNode::NodeTimeInfo current_nti;
@@ -284,11 +287,14 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool _reset_request_for_fading_from = false;
 	bool next_request = false;
 	bool stop_request = false;
+	bool request_jump_instead = false;
 	bool teleport_request = false;
+	bool jump_request = false;
+	bool retain_path_request = false;
 
 	bool is_grouped = false;
 
-	void _travel_main(const StringName &p_state, bool p_reset_on_teleport = true);
+	void _travel_main(const StringName &p_state, bool p_reset_on_teleport = true, bool p_force_jump = false, bool p_retain_path = false);
 	void _start_main(const StringName &p_state, bool p_reset = true);
 	void _next_main();
 	void _stop_main();
@@ -326,6 +332,8 @@ protected:
 
 public:
 	void travel(const StringName &p_state, bool p_reset_on_teleport = true);
+	void queue_travel(const StringName &p_state);
+	void queue(const StringName &p_state);
 	void start(const StringName &p_state, bool p_reset = true);
 	void next();
 	void stop();
