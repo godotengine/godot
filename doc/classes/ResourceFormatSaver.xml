@@ -38,6 +38,7 @@
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="path" type="String" />
 			<param index="2" name="flags" type="int" />
+			<param index="3" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" />
 			<description>
 				Saves the given resource object to a file at the target [param path]. [param flags] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
 				Returns [constant OK] on success, or an [enum Error] constant in case of failure.

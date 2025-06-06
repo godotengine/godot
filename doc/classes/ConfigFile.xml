@@ -195,6 +195,7 @@
 		<method name="save">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
+			<param index="1" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" default="0" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the file specified as a parameter. The output file uses an INI-style structure.
 				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
@@ -204,6 +205,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="key" type="PackedByteArray" />
+			<param index="2" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" default="0" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param key] to encrypt it. The output file uses an INI-style structure.
 				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
@@ -213,6 +215,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="password" type="String" />
+			<param index="2" name="integrity_level" type="int" enum="FileAccess.SaveIntegrityLevel" default="0" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param password] to encrypt it. The output file uses an INI-style structure.
 				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.

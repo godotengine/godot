@@ -308,8 +308,15 @@ void OS::close_midi_inputs() {
 	::OS::get_singleton()->close_midi_inputs();
 }
 
+#ifndef DISABLE_DEPRECATED
 void OS::set_use_file_access_save_and_swap(bool p_enable) {
-	FileAccess::set_backup_save(p_enable);
+	WARN_DEPRECATED_MSG("Use set_default_save_integrity_level() instead.");
+	FileAccess::set_default_save_integrity_level(p_enable ? FileAccess::SAVE_INTEGRITY_SAVE_SWAP : FileAccess::SAVE_INTEGRITY_NONE);
+}
+#endif
+
+void OS::set_default_save_integrity_level(FileAccess::SaveIntegrityLevel p_integrity_level) {
+	FileAccess::set_default_save_integrity_level(p_integrity_level);
 }
 
 void OS::set_low_processor_usage_mode(bool p_enabled) {
@@ -817,7 +824,10 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_keycode_unicode", "code"), &OS::is_keycode_unicode);
 	ClassDB::bind_method(D_METHOD("find_keycode_from_string", "string"), &OS::find_keycode_from_string);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap", "enabled"), &OS::set_use_file_access_save_and_swap);
+#endif
+	ClassDB::bind_method(D_METHOD("set_default_save_integrity_level", "integrity_level"), &OS::set_default_save_integrity_level);
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &OS::set_thread_name);
 	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &OS::get_thread_caller_id);

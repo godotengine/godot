@@ -97,7 +97,7 @@ String FileAccessWindows::fix_path(const String &p_path) const {
 	return r_path;
 }
 
-Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
+Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	if (is_path_invalid(p_path)) {
 #ifdef DEBUG_ENABLED
 		if (p_mode_flags != READ) {
@@ -108,6 +108,9 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	}
 
 	_close();
+
+	DEV_ASSERT(p_integrity_level != SAVE_INTEGRITY_DEFAULT); // It should have already been resolved.
+	ERR_FAIL_INDEX_V(p_integrity_level, SAVE_INTEGRITY_MAX, ERR_INVALID_PARAMETER);
 
 	path_src = p_path;
 	path = fix_path(p_path);
@@ -193,7 +196,9 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	}
 #endif
 
-	if (is_backup_save_enabled() && p_mode_flags == WRITE) {
+	integrity_level = p_integrity_level;
+
+	if (integrity_level > SAVE_INTEGRITY_NONE && p_mode_flags == WRITE) {
 		save_path = path;
 		// Create a temporary file in the same directory as the target file.
 		// Note: do not use GetTempFileNameW, it's not long path aware!
@@ -214,7 +219,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		path = tmpfile;
 	}
 
-	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, is_backup_save_enabled() ? ((p_mode_flags == READ) ? _SH_DENYWR : _SH_DENYRW) : _SH_DENYNO);
+	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, (integrity_level > SAVE_INTEGRITY_NONE) ? ((p_mode_flags == READ) ? _SH_DENYWR : _SH_DENYRW) : _SH_DENYNO);
 
 	if (f == nullptr) {
 		switch (errno) {

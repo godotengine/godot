@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/file_access.h"
 #include "core/io/resource.h"
 #include "core/math/color.h"
 
@@ -43,22 +44,22 @@ class Image;
 
 // Function pointer prototypes.
 
-typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
+typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img, FileAccess::SaveIntegrityLevel p_integrity_level);
 typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
 
-typedef Error (*SaveJPGFunc)(const String &p_path, const Ref<Image> &p_img, float p_quality);
+typedef Error (*SaveJPGFunc)(const String &p_path, const Ref<Image> &p_img, float p_quality, FileAccess::SaveIntegrityLevel p_integrity_level);
 typedef Vector<uint8_t> (*SaveJPGBufferFunc)(const Ref<Image> &p_img, float p_quality);
 
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_data, int p_size);
 typedef Ref<Image> (*ScalableImageMemLoadFunc)(const uint8_t *p_data, int p_size, float p_scale);
 
-typedef Error (*SaveWebPFunc)(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
+typedef Error (*SaveWebPFunc)(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality, FileAccess::SaveIntegrityLevel p_integrity_level);
 typedef Vector<uint8_t> (*SaveWebPBufferFunc)(const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
 
-typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
+typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, FileAccess::SaveIntegrityLevel p_integrity_level);
 typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale);
 
-typedef Error (*SaveDDSFunc)(const String &p_path, const Ref<Image> &p_img);
+typedef Error (*SaveDDSFunc)(const String &p_path, const Ref<Image> &p_img, FileAccess::SaveIntegrityLevel p_integrity_level);
 typedef Vector<uint8_t> (*SaveDDSBufferFunc)(const Ref<Image> &p_img);
 
 class Image : public Resource {
@@ -248,6 +249,16 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Error _save_png_compat_100447(const String &p_path) const;
+	Error _save_jpg_compat_100447(const String &p_path, float p_quality = 0.75) const;
+	Error _save_dds_compat_100447(const String &p_path) const;
+	Error _save_exr_compat_100447(const String &p_path, bool p_grayscale = false) const;
+	Error _save_webp_compat_100447(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
+
+	static void _bind_compatibility_methods();
+#endif
+
 private:
 	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
@@ -343,15 +354,15 @@ public:
 
 	Error load(const String &p_path);
 	static Ref<Image> load_from_file(const String &p_path);
-	Error save_png(const String &p_path) const;
-	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
-	Error save_dds(const String &p_path) const;
+	Error save_png(const String &p_path, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) const;
+	Error save_jpg(const String &p_path, float p_quality = 0.75, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) const;
+	Error save_dds(const String &p_path, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) const;
 	Vector<uint8_t> save_png_to_buffer() const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
 	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false) const;
 	Vector<uint8_t> save_dds_to_buffer() const;
-	Error save_exr(const String &p_path, bool p_grayscale = false) const;
-	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
+	Error save_exr(const String &p_path, bool p_grayscale = false, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) const;
+	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
 
 	static Ref<Image> create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format);

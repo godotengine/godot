@@ -155,7 +155,7 @@ void EGLManager::_set_cache(const void *p_key, EGLsizeiANDROID p_key_size, const
 	String path = shader_cache_dir.path_join(name) + ".cache";
 
 	Error err = OK;
-	Ref<FileAccess> file = FileAccess::open(path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(path, FileAccess::WRITE, &err, FileAccess::SAVE_INTEGRITY_SAVE_SWAP);
 	if (err != OK) {
 		return;
 	}

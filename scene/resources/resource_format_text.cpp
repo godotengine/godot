@@ -1700,7 +1700,7 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 	}
 }
 
-Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Resource::seed_scene_unique_id(p_path.hash()); // Seeding for save path should make it deterministic for importers.
 
 	if (p_path.ends_with(".tscn")) {
@@ -1708,7 +1708,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	}
 
 	Error err;
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_OPEN, "Cannot save file '" + p_path + "'.");
 	Ref<FileAccess> _fref(f);
 
@@ -2112,13 +2112,13 @@ Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
 	return OK;
 }
 
-Error ResourceFormatSaverText::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceFormatSaverText::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	if (p_path.ends_with(".tscn") && Ref<PackedScene>(p_resource).is_null()) {
 		return ERR_FILE_UNRECOGNIZED;
 	}
 
 	ResourceFormatSaverTextInstance saver;
-	return saver.save(p_path, p_resource, p_flags);
+	return saver.save(p_path, p_resource, p_flags, p_integrity_level);
 }
 
 Error ResourceFormatSaverText::set_uid(const String &p_path, ResourceUID::ID p_uid) {

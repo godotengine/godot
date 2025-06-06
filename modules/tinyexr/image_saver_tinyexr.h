@@ -32,5 +32,5 @@
 
 #include "core/io/image.h"
 
-Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
+Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, FileAccess::SaveIntegrityLevel p_integrity_level);
 Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale);

@@ -283,13 +283,13 @@ Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale) {
 	return buffer;
 }
 
-Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) {
+Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	const Vector<uint8_t> buffer = save_exr_buffer(p_img, p_grayscale);
 	if (buffer.is_empty()) {
 		print_error(String("Saving EXR failed."));
 		return ERR_FILE_CANT_WRITE;
 	} else {
-		Ref<FileAccess> ref = FileAccess::open(p_path, FileAccess::WRITE);
+		Ref<FileAccess> ref = FileAccess::open(p_path, FileAccess::WRITE, nullptr, p_integrity_level);
 		ERR_FAIL_COND_V(ref.is_null(), ERR_FILE_CANT_WRITE);
 		ref->store_buffer(buffer.ptr(), buffer.size());
 	}

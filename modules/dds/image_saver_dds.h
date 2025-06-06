@@ -32,5 +32,5 @@
 
 #include "core/io/image.h"
 
-Error save_dds(const String &p_path, const Ref<Image> &p_img);
+Error save_dds(const String &p_path, const Ref<Image> &p_img, FileAccess::SaveIntegrityLevel p_integrity_level);
 Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img);

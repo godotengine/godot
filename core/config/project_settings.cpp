@@ -962,7 +962,7 @@ Error ProjectSettings::save() {
 
 Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<String, List<String>> &p_props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err, FileAccess::SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Couldn't save project.binary at '%s'.", p_file));
 
 	uint8_t hdr[4] = { 'E', 'C', 'F', 'G' };
@@ -1031,7 +1031,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<String, List<String>> &p_props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err, FileAccess::SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Couldn't save project.godot - %s.", p_file));
 
@@ -1343,7 +1343,7 @@ void ProjectSettings::store_global_class_list(const Array &p_classes) {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	cf->set_value("", "list", p_classes);
-	cf->save(get_global_class_list_path());
+	cf->save(get_global_class_list_path(), FileAccess::SAVE_INTEGRITY_NONE);
 
 	global_class_list = p_classes;
 }

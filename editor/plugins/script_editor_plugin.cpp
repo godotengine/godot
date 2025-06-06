@@ -3661,7 +3661,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ScriptEditor", "zoom_factor", zoom_factor);
 
 	// Save the cache.
-	script_editor_cache->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
+	script_editor_cache->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"), FileAccess::SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
 }
 
 void ScriptEditor::_help_class_open(const String &p_class) {

@@ -36,7 +36,7 @@
 #include "core/io/image.h"
 #include "scene/resources/image_texture.h"
 
-Error ResourceSaverWebP::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceSaverWebP::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Ref<ImageTexture> texture = p_resource;
 
 	ERR_FAIL_COND_V_MSG(texture.is_null(), ERR_INVALID_PARAMETER, "Can't save invalid texture as WebP.");
@@ -44,15 +44,15 @@ Error ResourceSaverWebP::save(const Ref<Resource> &p_resource, const String &p_p
 
 	Ref<Image> img = texture->get_image();
 
-	Error err = save_image(p_path, img);
+	Error err = save_image(p_path, img, false, 0.75f, p_integrity_level);
 
 	return err;
 }
 
-Error ResourceSaverWebP::save_image(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality) {
+Error ResourceSaverWebP::save_image(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Vector<uint8_t> buffer = save_image_to_buffer(p_img, p_lossy, p_quality);
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save WebP at path: '%s'.", p_path));
 
 	const uint8_t *reader = buffer.ptr();
