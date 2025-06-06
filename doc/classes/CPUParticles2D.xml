@@ -97,7 +97,12 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
-			Number of particles emitted in one emission cycle.
+			The number of particles to emit in one emission cycle. The effective emission rate is [code](amount * amount_ratio) / lifetime[/code] particles per second. Higher values will increase processing load, even if not all particles are visible at a given time or if [member amount_ratio] is decreased.
+			[b]Note:[/b] Changing this value will cause the particle system to restart. To avoid this, change [member amount_ratio] instead.
+		</member>
+		<member name="amount_ratio" type="float" setter="set_amount_ratio" getter="get_amount_ratio" default="1.0">
+			The ratio of particles that should actually be emitted. If set to a value lower than [code]1.0[/code], this will set the amount of emitted particles throughout the lifetime to [code]amount * amount_ratio[/code]. Unlike changing [member amount], changing [member amount_ratio] while emitting does not affect already-emitted particles and doesn't cause the particle system to restart. [member amount_ratio] can be used to create effects that make the number of emitted particles vary over time.
+			[b]Note:[/b] Reducing the [member amount_ratio] has no performance benefit, since resources need to be allocated and processed for the total [member amount] of particles regardless of the [member amount_ratio]. If you don't intend to change the number of particles emitted while the particles are emitting, make sure [member amount_ratio] is set to [code]1[/code] and change [member amount] to your liking instead.
 		</member>
 		<member name="angle_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's rotation will be animated along this [Curve]. Should be a unit [Curve].
