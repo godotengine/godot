@@ -196,6 +196,20 @@ Files extracted from upstream source:
 - `LICENSE.txt`
 
 
+# dr_libs
+
+- Upstream> https://github.com/mackron/dr_libs
+- Version: git (92844c5c07f05b21855e37b482ed0b3143256cf6, 2025)
+- License: Public Domain or Unlicense or MIT-0
+
+Files extracted from upstream source:
+
+- `dr_wav.h`
+- `LICENSE`
+
+`dr_alloc_calls.h` is a Godot file and should be preserved on updates.
+
+
 ## embree
 
 - Upstream: https://github.com/embree/embree
