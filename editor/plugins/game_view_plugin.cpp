@@ -1275,6 +1275,9 @@ bool GameViewPluginBase::_is_window_wrapper_enabled() const {
 }
 
 GameViewPluginBase::GameViewPluginBase() {
+#ifdef ANDROID_ENABLED
+	debugger.instantiate();
+#endif
 }
 
 GameViewPlugin::GameViewPlugin() :
