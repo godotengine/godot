@@ -36,6 +36,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/resizable_scroll_bar.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
@@ -211,9 +212,13 @@ class AnimationTimelineEdit : public Range {
 	MenuButton *add_track = nullptr;
 	LineEdit *filter_track = nullptr;
 	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
-	HScrollBar *hscroll = nullptr;
+	HResizableScrollBar *hscroll = nullptr;
+
+	bool scroll_zoom_change = false;
 
 	void _zoom_changed(double);
+	void _zoom_changed_scroll();
+	double _scale_to_zoom(double scale);
 	void _anim_length_changed(double p_new_len);
 	void _anim_loop_pressed();
 
@@ -277,7 +282,7 @@ public:
 	void set_use_fps(bool p_use_fps);
 	bool is_using_fps() const;
 
-	void set_hscroll(HScrollBar *p_hscroll);
+	void set_hscroll(HResizableScrollBar *p_hscroll);
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
@@ -611,7 +616,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	MenuButton *edit = nullptr;
 
 	PanelContainer *main_panel = nullptr;
-	HScrollBar *hscroll = nullptr;
+	HResizableScrollBar *hscroll = nullptr;
 	ScrollContainer *scroll = nullptr;
 	VBoxContainer *track_vbox = nullptr;
 	AnimationBezierTrackEdit *bezier_edit = nullptr;
