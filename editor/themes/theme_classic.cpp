@@ -1143,11 +1143,13 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 		// HScrollBar.
 
+		Ref<StyleBox> h_scroll_style;
 		if (p_config.enable_touch_optimizations) {
-			p_theme->set_stylebox("scroll", "HScrollBar", EditorThemeManager::make_line_stylebox(p_config.separator_color, 50));
+			h_scroll_style = EditorThemeManager::make_line_stylebox(p_config.separator_color, 50);
 		} else {
-			p_theme->set_stylebox("scroll", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, -5, 1, -5, 1));
+			h_scroll_style = EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, -5, 1, -5, 1);
 		}
+		p_theme->set_stylebox("scroll", "HScrollBar", h_scroll_style);
 		p_theme->set_stylebox("scroll_focus", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
 		p_theme->set_stylebox("grabber", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
 		p_theme->set_stylebox("grabber_highlight", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabberHl"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
@@ -1159,6 +1161,40 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_icon("decrement", "HScrollBar", empty_icon);
 		p_theme->set_icon("decrement_highlight", "HScrollBar", empty_icon);
 		p_theme->set_icon("decrement_pressed", "HScrollBar", empty_icon);
+
+		// HResizableScrollBar.
+		Ref<StyleBoxTexture> resizable_h_scroll_style = h_scroll_style->duplicate();
+		resizable_h_scroll_style->set_expand_margin(SIDE_TOP, 10);
+		resizable_h_scroll_style->set_expand_margin(SIDE_BOTTOM, 10);
+
+		Ref<StyleBoxTexture> resizable_h_scroll_focus_style = EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1);
+		resizable_h_scroll_focus_style->set_expand_margin(SIDE_TOP, 10);
+		resizable_h_scroll_focus_style->set_expand_margin(SIDE_BOTTOM, 10);
+
+		Ref<StyleBoxTexture> resizable_grabber_style = EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1);
+		resizable_grabber_style->set_expand_margin(SIDE_TOP, 10);
+		resizable_grabber_style->set_expand_margin(SIDE_BOTTOM, 10);
+
+		Ref<StyleBoxTexture> resizable_grabber_hl_style = EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabberHl"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1);
+		resizable_grabber_hl_style->set_expand_margin(SIDE_TOP, 10);
+		resizable_grabber_hl_style->set_expand_margin(SIDE_BOTTOM, 10);
+
+		Ref<StyleBoxTexture> resizable_grabber_pr_style = EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabberPressed"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1);
+		resizable_grabber_pr_style->set_expand_margin(SIDE_TOP, 10);
+		resizable_grabber_pr_style->set_expand_margin(SIDE_BOTTOM, 10);
+
+		p_theme->set_stylebox("scroll", "HResizableScrollBar", resizable_h_scroll_style);
+		p_theme->set_stylebox("scroll_focus", "HResizableScrollBar", resizable_h_scroll_focus_style);
+		p_theme->set_stylebox("grabber", "HResizableScrollBar", resizable_grabber_style);
+		p_theme->set_stylebox("grabber_highlight", "HResizableScrollBar", resizable_grabber_hl_style);
+		p_theme->set_stylebox("grabber_pressed", "HResizableScrollBar", resizable_grabber_pr_style);
+
+		p_theme->set_icon("increment", "HResizableScrollBar", empty_icon);
+		p_theme->set_icon("increment_highlight", "HResizableScrollBar", empty_icon);
+		p_theme->set_icon("increment_pressed", "HResizableScrollBar", empty_icon);
+		p_theme->set_icon("decrement", "HResizableScrollBar", empty_icon);
+		p_theme->set_icon("decrement_highlight", "HResizableScrollBar", empty_icon);
+		p_theme->set_icon("decrement_pressed", "HResizableScrollBar", empty_icon);
 
 		// VScrollBar.
 
