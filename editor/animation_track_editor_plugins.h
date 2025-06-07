@@ -58,11 +58,10 @@ private:
 
 	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_clip_left, const int p_clip_right);
 
-	Vector2 calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_x) const;
-	Vector2 clip_key_region(Vector2 region, int p_clip_left, int p_clip_right);
-	void draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
-	Vector2 calc_key_region_shift(Vector2 &orig_region, Vector2 &region);
-	bool is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right);
+	Vector2 _calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_x) const;
+	Vector2 _clip_key_region(Vector2 region, int p_clip_left, int p_clip_right);
+	Vector2 _calc_key_region_shift(Vector2 &orig_region, Vector2 &region);
+	bool _is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right);
 
 public:
 	void set_node(Object *p_object);

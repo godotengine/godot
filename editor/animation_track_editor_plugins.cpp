@@ -718,15 +718,12 @@ int AnimationTrackEditKey::get_key_height(const int p_index) const {
 }
 
 int AnimationTrackEditKey::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_clip_left, const int p_clip_right) {
-	float p_x = ((get_animation()->track_get_key_time(get_track(), p_index) - get_timeline()->get_value()) * get_timeline()->get_zoom_scale()) + get_timeline()->get_name_limit();
+	Rect2 rect = get_global_key_rect(p_index);
 
-	Vector2 region = calc_key_region(start_ofs, end_ofs, len, p_index, p_x);
-	region = clip_key_region(region, p_clip_left, p_clip_right);
+	int region_begin = rect.position.x;
+	int region_end = rect.position.x + rect.size.x;
 
-	int region_begin = region.x;
-	int region_end = region.y;
-
-	if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= region_end) { //if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= p_clip_right && region_end >= p_clip_left) {
+	if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= region_end) {
 		bool resize_start = false;
 		int can_resize = false;
 
@@ -908,7 +905,93 @@ void AnimationTrackEditKey::draw_key(int p_index, float p_pixels_sec, int p_x, b
 		}
 	}
 
-	draw_key_region(resource, start_ofs + diff_start_ofs, end_ofs + diff_end_ofs, len, p_index, p_pixels_sec, p_x + (diff_start_ofs * p_pixels_sec), p_selected, p_clip_left, p_clip_right);
+	float p_x_ = p_x + (diff_start_ofs * p_pixels_sec);
+	float start_ofs_ = start_ofs + diff_start_ofs;
+	float end_ofs_ = end_ofs + diff_end_ofs;
+
+	Vector2 orig_region = _calc_key_region(start_ofs_, end_ofs_, len, p_index, p_x_);
+
+	bool is_outside = _is_key_region_outside(orig_region, p_clip_left, p_clip_right);
+	if (is_outside) {
+		return;
+	}
+
+	Vector2 region = _clip_key_region(orig_region, p_clip_left, p_clip_right);
+
+	int region_begin = region.x;
+	int region_end = region.y;
+	int region_width = region.y - region.x;
+
+	Rect2 key_rect = get_global_key_rect(p_index);
+
+	Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+
+	if (orig_region.y - orig_region.x <= REGION_MAX_WIDTH) {
+		Rect2 region_rect = Rect2(region_begin, key_rect.position.y, REGION_MAX_WIDTH, key_rect.size.y);
+		draw_rect(region_rect, accent_color);
+
+		if (p_selected) {
+			draw_rect(region_rect, accent_color, false);
+		}
+
+		return;
+	}
+
+	Color bg_color = REGION_BG_COLOR;
+	Rect2 rect = Rect2(region_begin, key_rect.position.y, region_width, key_rect.size.y);
+	draw_rect(rect, bg_color);
+
+	Vector<Vector2> points;
+	points.resize(region_width * 2);
+
+	Vector<Color> colors;
+	if (p_selected) {
+		colors = { bg_color.lightened(0.8) };
+	} else {
+		colors = { bg_color.lightened(0.2) };
+	}
+
+	Vector2 region_shift = _calc_key_region_shift(orig_region, region);
+	get_key_region_data(resource, points, rect, p_pixels_sec, start_ofs_ + region_shift.x / p_pixels_sec);
+
+	if (!points.is_empty()) {
+		draw_multiline_colors(points, colors);
+	}
+
+	Color edge_color = Color(accent_color);
+	edge_color.a = REGION_EDGE_ALPHA;
+	if (start_ofs_ > 0 && region_begin > p_clip_left) {
+		draw_rect(Rect2(region_begin, rect.position.y, 1, rect.size.y), edge_color);
+	}
+	if (end_ofs_ > 0 && region_end < p_clip_right) {
+		draw_rect(Rect2(region_end, rect.position.y, 1, rect.size.y), edge_color);
+	}
+
+	if (region_width > REGION_MAX_WIDTH) {
+		StringName edit_name = get_edit_name(p_index);
+		if (!edit_name.is_empty()) {
+			Color name_color;
+			if (p_selected) {
+				name_color = Color(accent_color);
+				name_color.a = 0.0;
+			} else {
+				Color font_color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+				name_color = font_color;
+			}
+
+			float max_width = region_width - REGION_FONT_MARGIN;
+
+			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+
+			int f_h = key_rect.position.y + key_rect.size.y / 2 - font->get_height(font_size) / 2 + font->get_ascent(font_size);
+			draw_string(font, Point2(region_begin + REGION_FONT_MARGIN, f_h), animationTrackDrawUtils->_make_text_clipped(edit_name, font, font_size, max_width), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
+		}
+	}
+
+	if (p_selected) {
+		draw_rect(rect, accent_color, false);
+	}
 }
 
 bool AnimationTrackEditKey::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
@@ -994,7 +1077,7 @@ StringName AnimationTrackEditKey::get_edit_name(const int p_index) const {
 	return resource_name;
 }
 
-Vector2 AnimationTrackEditKey::calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_x) const {
+Vector2 AnimationTrackEditKey::_calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_x) const {
 	float anim_len = len - start_ofs - end_ofs;
 	if (anim_len < 0) {
 		WARN_PRINT("anim_len < 0");
@@ -1014,105 +1097,19 @@ Vector2 AnimationTrackEditKey::calc_key_region(const float start_ofs, const floa
 	return Vector2(pixel_begin, pixel_end);
 }
 
-Vector2 AnimationTrackEditKey::clip_key_region(Vector2 region, int p_clip_left, int p_clip_right) {
+Vector2 AnimationTrackEditKey::_clip_key_region(Vector2 region, int p_clip_left, int p_clip_right) {
 	region.y = CLAMP(region.y, MAX(region.x, p_clip_left), p_clip_right);
 	region.x = CLAMP(region.x, p_clip_left, MIN(region.y, p_clip_right));
 	ERR_FAIL_COND_V_MSG(region.x > region.y, region, "Clipped region is invalid (x > y).");
 	return region;
 }
 
-Vector2 AnimationTrackEditKey::calc_key_region_shift(Vector2 &orig_region, Vector2 &region) {
+Vector2 AnimationTrackEditKey::_calc_key_region_shift(Vector2 &orig_region, Vector2 &region) {
 	return Vector2(region.x - orig_region.x, region.y - orig_region.y);
 }
 
-bool AnimationTrackEditKey::is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right) {
+bool AnimationTrackEditKey::_is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right) {
 	return (region.y < p_clip_left || region.x > p_clip_right);
-}
-
-void AnimationTrackEditKey::draw_key_region(Ref<Resource> resource, float start_ofs, float end_ofs, float len, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	Vector2 orig_region = calc_key_region(start_ofs, end_ofs, len, p_index, p_x);
-
-	bool is_outside = is_key_region_outside(orig_region, p_clip_left, p_clip_right);
-	if (is_outside) {
-		return;
-	}
-
-	Vector2 region = clip_key_region(orig_region, p_clip_left, p_clip_right);
-
-	int region_begin = region.x;
-	int region_end = region.y;
-	int region_width = region.y - region.x;
-
-	Rect2 key_rect = get_global_key_rect(p_index);
-
-	Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-
-	if (orig_region.y - orig_region.x <= REGION_MAX_WIDTH) {
-		Rect2 region_rect = Rect2(region_begin, key_rect.position.y, REGION_MAX_WIDTH, key_rect.size.y);
-		draw_rect(region_rect, accent_color);
-
-		if (p_selected) {
-			draw_rect(region_rect, accent_color, false);
-		}
-
-		return;
-	}
-
-	Color bg_color = REGION_BG_COLOR;
-	Rect2 rect = Rect2(region_begin, key_rect.position.y, region_width, key_rect.size.y);
-	draw_rect(rect, bg_color);
-
-	Vector<Vector2> points;
-	points.resize(region_width * 2);
-
-	Vector<Color> colors;
-	if (p_selected) {
-		colors = { bg_color.lightened(0.8) };
-	} else {
-		colors = { bg_color.lightened(0.2) };
-	}
-
-	Vector2 region_shift = calc_key_region_shift(orig_region, region);
-	get_key_region_data(resource, points, rect, p_pixels_sec, start_ofs + region_shift.x / p_pixels_sec);
-
-	if (!points.is_empty()) {
-		draw_multiline_colors(points, colors);
-	}
-
-	Color edge_color = Color(accent_color);
-	edge_color.a = REGION_EDGE_ALPHA;
-	if (start_ofs > 0 && region_begin > p_clip_left) {
-		draw_rect(Rect2(region_begin, rect.position.y, 1, rect.size.y), edge_color);
-	}
-	if (end_ofs > 0 && region_end < p_clip_right) {
-		draw_rect(Rect2(region_end, rect.position.y, 1, rect.size.y), edge_color);
-	}
-
-	if (region_width > REGION_MAX_WIDTH) {
-		StringName edit_name = get_edit_name(p_index);
-		if (!edit_name.is_empty()) {
-			Color name_color;
-			if (p_selected) {
-				name_color = Color(accent_color);
-				name_color.a = 0.0;
-			} else {
-				Color font_color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-				name_color = font_color;
-			}
-
-			float max_width = region_width - REGION_FONT_MARGIN;
-
-			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-
-			int f_h = key_rect.position.y + key_rect.size.y / 2 - font->get_height(font_size) / 2 + font->get_ascent(font_size);
-			draw_string(font, Point2(region_begin + REGION_FONT_MARGIN, f_h), animationTrackDrawUtils->_make_text_clipped(edit_name, font, font_size, max_width), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
-		}
-	}
-
-	if (p_selected) {
-		draw_rect(rect, accent_color, false);
-	}
 }
 
 void AnimationTrackEditKey::_preview_changed(ObjectID p_which) {
