@@ -241,14 +241,16 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
-	bufferList.mBuffers[0].mData = ad->input_buf.ptrw();
+	bufferList.mBuffers[0].mData = nullptr; 
 	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
 	bufferList.mBuffers[0].mDataByteSize = ad->input_buf.size() * sizeof(int16_t);
 
 	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
+	ad->input_buf.resize(inNumberFrames * ad->capture_channels);
 	if (result == noErr) {
+		int16_t *data = (int16_t *)bufferList.mBuffers[0].mData;
 		for (unsigned int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
-			int32_t sample = ad->input_buf[i] << 16;
+			int32_t sample = data[i] << 16;
 			ad->input_buffer_write(sample);
 
 			if (ad->capture_channels == 1) {
@@ -392,9 +394,6 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	UInt32 flag = 1;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
-	flag = 0;
-	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, sizeof(flag));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	UInt32 size;
