@@ -1287,6 +1287,10 @@ void AnimationMultiTrackKeyEdit::set_use_fps(bool p_enable) {
 }
 
 void AnimationTimelineEdit::_zoom_changed(double) {
+	if (scroll_zoom_change) {
+		return;
+	}
+
 	double zoom_pivot = 0; // Point on timeline to stay fixed.
 	double zoom_pivot_delta = 0; // Delta seconds from left-most point on timeline to zoom pivot.
 
@@ -1562,21 +1566,25 @@ void AnimationTimelineEdit::_notification(int p_what) {
 					}
 				}
 
-				float extra = (zoomw / scale) * 0.5;
+				float extra = animation->get_length() * 0.2;
 
 				time_max += extra;
 				set_min(time_min);
 				set_max(time_max);
-
-				if (zoomw / scale < (time_max - time_min)) {
-					hscroll->show();
-
-				} else {
-					hscroll->hide();
-				}
 			}
 
 			set_page(zoomw / scale);
+
+			if (scroll_zoom_change) {
+				if (hscroll->is_min_handle_being_dragged()) {
+					hscroll->set_value(hscroll->get_start_page_at_drag());
+				} else if (hscroll->is_max_handle_being_dragged()) {
+					hscroll->set_value(hscroll->get_start_page());
+				}
+				hscroll->set_min(get_min());
+				hscroll->set_max(get_max());
+				scroll_zoom_change = false;
+			}
 
 			if (hscroll->is_visible() && hscroll_on_zoom_buffer >= 0) {
 				hscroll->set_value(hscroll_on_zoom_buffer);
@@ -2032,8 +2040,45 @@ bool AnimationTimelineEdit::is_using_fps() const {
 	return use_fps;
 }
 
-void AnimationTimelineEdit::set_hscroll(HScrollBar *p_hscroll) {
+void AnimationTimelineEdit::set_hscroll(HResizableScrollBar *p_hscroll) {
 	hscroll = p_hscroll;
+	hscroll->connect(SNAME("zoom_changed"), callable_mp(this, &AnimationTimelineEdit::_zoom_changed_scroll));
+}
+
+void AnimationTimelineEdit::_zoom_changed_scroll() {
+	double page;
+	// Calculate new page size.
+	if (hscroll->is_min_handle_being_dragged()) {
+		page = hscroll->get_end_page() - hscroll->get_start_page_at_drag();
+	} else {
+		page = hscroll->get_end_page_at_drag() - hscroll->get_start_page();
+	}
+	// Calculate zoom value to change in the slider.
+	if (page > 0) {
+		int key_range = get_size().width - get_buttons_width() - get_name_limit();
+		double scale = key_range / page;
+		double zoom_value;
+		if (scale > _get_zoom_scale(zoom->get_max())) {
+			zoom_value = zoom->get_max();
+		} else {
+			zoom_value = _scale_to_zoom(scale);
+			scroll_zoom_change = true;
+			zoom->set_value(zoom_value);
+		}
+
+		queue_redraw();
+		play_position->queue_redraw();
+		emit_signal(SNAME("zoom_changed"));
+	}
+}
+
+double AnimationTimelineEdit::_scale_to_zoom(double scale) {
+	float val = scale / 100.0f;
+	if (val >= 1.0f) {
+		return pow(val, 1.0f / 8.0f);
+	} else {
+		return 2.0f - pow(1.0f / val, 1.0f / 8.0f);
+	}
 }
 
 void AnimationTimelineEdit::_track_added(int p_track) {
@@ -8171,7 +8216,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(mc);
 
-	PanelContainer *main_panel = memnew(PanelContainer);
+	main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
 	main_panel->set_theme_type_variation("AnimationTrackPanel");
 	mc->add_child(main_panel);
@@ -8272,7 +8317,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	timeline_vbox->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 
-	hscroll = memnew(HScrollBar);
+	hscroll = memnew(HResizableScrollBar);
 	hscroll->share(timeline);
 	hscroll->hide();
 	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_update_scroll));
@@ -8454,7 +8499,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	zoom_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	zoom_hb->add_child(zoom_icon);
 	zoom = memnew(HSlider);
-	zoom->set_step(0.01);
+	zoom->set_step(0.000001);
 	zoom->set_min(0.0);
 	zoom->set_max(2.0);
 	zoom->set_value(1.0);
