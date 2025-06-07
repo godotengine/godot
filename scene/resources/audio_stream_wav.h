@@ -155,8 +155,6 @@ public:
 	void set_tags(const Dictionary &p_tags);
 	virtual Dictionary get_tags() const override;
 
-	HashMap<String, String>::ConstIterator remap_tag_id(const String &p_tag_id);
-
 	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
@@ -293,7 +291,11 @@ public:
 		}
 	}
 
-	AudioStreamWAV();
+	typedef Ref<AudioStreamWAV> (*LoadFromBufferFunc)(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options);
+	typedef Ref<AudioStreamWAV> (*LoadFromFileFunc)(const String &p_path, const Dictionary &p_options);
+
+	static LoadFromBufferFunc load_from_buffer_func;
+	static LoadFromFileFunc load_from_file_func;
 };
 
 VARIANT_ENUM_CAST(AudioStreamWAV::Format)
