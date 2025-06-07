@@ -74,7 +74,7 @@ class AnimationKeyEdit : public Control { //XXX
 	GDCLASS(AnimationKeyEdit, Control);
 
 protected:
-	float key_pivot = 0.0;
+	Vector2 key_pivot;
 	float track_alignment = 0.0;
 
 	Ref<Animation> animation;
