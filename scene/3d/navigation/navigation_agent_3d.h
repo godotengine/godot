@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/main/node.h"
+#include "servers/navigation/navigation_globals.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
 
@@ -56,14 +57,14 @@ class NavigationAgent3D : public Node {
 
 	real_t path_desired_distance = 1.0;
 	real_t target_desired_distance = 1.0;
-	real_t height = 1.0;
-	real_t radius = 0.5;
+	real_t height = NavigationDefaults3D::AVOIDANCE_AGENT_HEIGHT;
+	real_t radius = NavigationDefaults3D::AVOIDANCE_AGENT_RADIUS;
 	real_t path_height_offset = 0.0;
-	real_t neighbor_distance = 50.0;
-	int max_neighbors = 10;
-	real_t time_horizon_agents = 1.0;
-	real_t time_horizon_obstacles = 0.0;
-	real_t max_speed = 10.0;
+	real_t neighbor_distance = NavigationDefaults3D::AVOIDANCE_AGENT_NEIGHBOR_DISTANCE;
+	int max_neighbors = NavigationDefaults3D::AVOIDANCE_AGENT_MAX_NEIGHBORS;
+	real_t time_horizon_agents = NavigationDefaults3D::AVOIDANCE_AGENT_TIME_HORIZON_AGENTS;
+	real_t time_horizon_obstacles = NavigationDefaults3D::AVOIDANCE_AGENT_TIME_HORIZON_OBSTACLES;
+	real_t max_speed = NavigationDefaults3D::AVOIDANCE_AGENT_MAX_SPEED;
 	real_t path_max_distance = 5.0;
 	bool simplify_path = false;
 	real_t simplify_epsilon = 0.0;
