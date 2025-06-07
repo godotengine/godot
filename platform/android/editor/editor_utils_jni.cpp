@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GameMenuUtils.kt                                                      */
+/*  editor_utils_jni.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,93 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.utils
+#include "editor_utils_jni.h"
 
-import android.util.Log
-import org.godotengine.godot.GodotLib
+#include "jni_utils.h"
 
-/**
- * Utility class for accessing and using game menu APIs.
- */
-object GameMenuUtils {
-	private val TAG = GameMenuUtils::class.java.simpleName
+#ifdef TOOLS_ENABLED
+#include "editor/gui/editor_run_bar.h"
+#include "main/main.h"
+#endif
 
-	/**
-	 * Enum representing the "run/window_placement/game_embed_mode" editor settings.
- 	 */
-	enum class GameEmbedMode(internal val nativeValue: Int) {
-		DISABLED(-1), AUTO(0), ENABLED(1);
+extern "C" {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runScene(JNIEnv *p_env, jclass, jstring p_scene, jobjectArray p_scene_args) {
+#ifdef TOOLS_ENABLED
+	Vector<String> scene_args;
+	jint length = p_env->GetArrayLength(p_scene_args);
+	for (jint i = 0; i < length; ++i) {
+		jstring j_arg = (jstring)p_env->GetObjectArrayElement(p_scene_args, i);
+		String arg = jstring_to_string(j_arg, p_env);
+		scene_args.push_back(arg);
+		p_env->DeleteLocalRef(j_arg);
+	}
 
-		companion object {
-			internal const val SETTING_KEY = "run/window_placement/game_embed_mode"
+	String scene = jstring_to_string(p_scene, p_env);
 
-			@JvmStatic
-			internal fun fromNativeValue(nativeValue: Int): GameEmbedMode? {
-				for (mode in GameEmbedMode.entries) {
-					if (mode.nativeValue == nativeValue) {
-						return mode
-					}
-				}
-				return null
-			}
+	EditorRunBar *editor_run_bar = EditorRunBar::get_singleton();
+	if (editor_run_bar != nullptr) {
+		if (scene.is_empty()) {
+			editor_run_bar->play_main_scene(false);
+		} else {
+			editor_run_bar->play_custom_scene(scene, scene_args);
 		}
-	}
+	} else {
+		List<String> args;
 
-	@JvmStatic
-	external fun setSuspend(enabled: Boolean)
-
-	@JvmStatic
-	external fun nextFrame()
-
-	@JvmStatic
-	external fun setNodeType(type: Int)
-
-	@JvmStatic
-	external fun setSelectMode(mode: Int)
-
-	@JvmStatic
-	external fun setSelectionVisible(visible: Boolean)
-
-	@JvmStatic
-	external fun setCameraOverride(enabled: Boolean)
-
-	@JvmStatic
-	external fun setCameraManipulateMode(mode: Int)
-
-	@JvmStatic
-	external fun resetCamera2DPosition()
-
-	@JvmStatic
-	external fun resetCamera3DPosition()
-
-	@JvmStatic
-	external fun playMainScene()
-
-	@JvmStatic
-	external fun setDebugMuteAudio(enabled: Boolean)
-
-	/**
-	 * Returns [GameEmbedMode] stored in the editor settings.
-	 *
-	 * Must be called on the render thread.
-	 */
-	fun fetchGameEmbedMode(): GameEmbedMode {
-		try {
-			val gameEmbedModeValue = Integer.parseInt(GodotLib.getEditorSetting(GameEmbedMode.SETTING_KEY))
-			val gameEmbedMode = GameEmbedMode.fromNativeValue(gameEmbedModeValue) ?: GameEmbedMode.AUTO
-			return gameEmbedMode
-		} catch (e: Exception) {
-			Log.w(TAG, "Unable to retrieve game embed mode", e)
-			return GameEmbedMode.AUTO
+		for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_PROJECT)) {
+			args.push_back(a);
 		}
-	}
 
-	/**
-	 * Update the 'game_embed_mode' editor setting.
-	 *
-	 * Must be called on the render thread.
-	 */
-	fun saveGameEmbedMode(gameEmbedMode: GameEmbedMode) {
-		GodotLib.setEditorSetting(GameEmbedMode.SETTING_KEY, gameEmbedMode.nativeValue)
+		for (const String &arg : scene_args) {
+			args.push_back(arg);
+		}
+
+		if (!scene.is_empty()) {
+			args.push_back("--scene");
+			args.push_back(scene);
+		}
+
+		Error err = OS::get_singleton()->create_instance(args);
+		ERR_FAIL_COND(err);
 	}
+#endif
+}
 }
