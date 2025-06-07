@@ -3,7 +3,7 @@ CLASSES = "$(BASEDIR)/classes/" "$(BASEDIR)/../modules/" "$(BASEDIR)/../platform
 OUTPUTDIR = $(BASEDIR)/_build
 TOOLSDIR = $(BASEDIR)/tools
 JSDIR = "$(BASEDIR)/../platform/web"
-LANGARG ?= en
+LANGARG ?= zh_CN
 TOOLSOPT ?=
 
 .ONESHELL:
