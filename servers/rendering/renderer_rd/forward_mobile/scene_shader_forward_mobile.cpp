@@ -307,7 +307,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			multisample_state.enable_alpha_to_one = true;
 		}
 
-		if (p_pipeline_key.version == SHADER_VERSION_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW) {
+		if (p_pipeline_key.version == SHADER_VERSION_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_MOTION_VECTORS_MULTIVIEW) {
 			blend_state = blend_state_blend;
 			if (depth_draw == DEPTH_DRAW_OPAQUE && !uses_alpha_clip) {
 				// Alpha does not write to depth.
@@ -322,7 +322,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			// Do not use this version (error case).
 		}
 	} else {
-		if (p_pipeline_key.version == SHADER_VERSION_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW) {
+		if (p_pipeline_key.version == SHADER_VERSION_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_MOTION_VECTORS_MULTIVIEW) {
 			blend_state = blend_state_opaque;
 		} else if (p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS || p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS_DP) {
 			// Contains nothing.
@@ -502,6 +502,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n", false)); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
 			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n", false)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
 			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", false)); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_MOTION_VECTORS\n", false)); // SHADER_VERSION_MOTION_VECTORS_MULTIVIEW
 		}
 
 		Vector<RD::PipelineImmutableSampler> immutable_samplers;
@@ -711,7 +712,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardMobile::MATERIAL_UNIFORM_SET;
 		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 10;
+		actions.base_varying_index = 14;
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;

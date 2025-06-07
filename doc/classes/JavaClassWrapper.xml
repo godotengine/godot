@@ -18,6 +18,7 @@
 		[b]Warning:[/b] When calling Java methods, be sure to check [method JavaClassWrapper.get_exception] to check if the method threw an exception.
 	</description>
 	<tutorials>
+		<link title="Integrating with Android APIs">$DOCS_URL/tutorials/platform/android/javaclasswrapper_and_androidruntimeplugin.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_exception">

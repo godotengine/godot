@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.15.1 (0d1da94a33708041b07c61eb702c67cfa3a5f95b, 2025)
+- Version: 0.16.0 (06c1779473ff4304f42ea254f77fef2e33f982b0, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -120,7 +120,7 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.5.2 (6901921c4be75126d1de60bfd24bd86a61319fd0, 2025)
+- Version: 1.5.3 (fa165fe8364b7d0e5d5db2182369b8c82348f4ea, 2025)
 - License: BSL 1.0
 
 Files extracted from upstream source:
@@ -131,7 +131,6 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-disable-exceptions.patch` (GH-80796)
-- `0002-llvm-disable-int128-math.patch` (GH-95964)
 
 
 ## cvtt
@@ -575,7 +574,7 @@ Files extracted from upstream source:
 ## libtheora
 
 - Upstream: https://www.theora.org
-- Version: git (7180717276af1ebc7da15c83162d6c5d6203aabf, 2020)
+- Version: 1.2.0 (8e4808736e9c181b971306cc3f05df9e61354004, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -624,12 +623,12 @@ See `linuxbsd_headers/README.md`.
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
-- Version: 3.0.1 (98b8142519d35c13e0e25cfa9fd6e3a271403be6, 2024)
+- Version: 3.1.1 (2f4741e0b1de44d6d461b869e481351335340b44, 2025)
 - License: Apache 2.0
 
 File extracted from upstream source:
 
-- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.cpp` and `meshIO.{cpp,h}`
+- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.h` and `meshIO.{cpp,h}`
 - `AUTHORS`, `LICENSE`
 
 
@@ -834,7 +833,7 @@ Collection of single-file libraries used in Godot components.
 ## msdfgen
 
 - Upstream: https://github.com/Chlumsky/msdfgen
-- Version: 1.12 (85e8b3d47b3d1a42e4a5ebda0a24fb1cc2e669e0, 2024)
+- Version: 1.12.1 (6574da1310df433c97ca0fddcab7e463c31e58f8, 2025)
 - License: MIT
 
 Files extracted from the upstream source:
@@ -847,7 +846,7 @@ Files extracted from the upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.41 (7d1c0961351bac61fd7bb72d402649d5ac3f2935, 2024)
+- Version: 1.1.47 (858912260ca616f4c23f7fb61c89228c353eb124, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -1176,7 +1175,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.5.6 (794ea1b0afca0f020f4e57b6732332231fb23c70, 2024)
+- Version: 1.5.7 (f8745da6ff1ad1e7bab384bd1f9d742439278e99, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

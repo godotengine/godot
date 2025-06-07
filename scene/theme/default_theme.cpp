@@ -683,6 +683,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// File Dialog
 
+	theme->set_constant("thumbnail_size", "FileDialog", 64);
 	theme->set_icon("load", "FileDialog", icons["load"]);
 	theme->set_icon("save", "FileDialog", icons["save"]);
 	theme->set_icon("clear", "FileDialog", icons["clear"]);
@@ -690,13 +691,20 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("back_folder", "FileDialog", icons["arrow_left"]);
 	theme->set_icon("forward_folder", "FileDialog", icons["arrow_right"]);
 	theme->set_icon("reload", "FileDialog", icons["reload"]);
+	theme->set_icon("favorite", "FileDialog", icons["favorite"]);
 	theme->set_icon("toggle_hidden", "FileDialog", icons["visibility_visible"]);
 	theme->set_icon("toggle_filename_filter", "FileDialog", icons["toggle_filename_filter"]);
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
+	theme->set_icon("thumbnail_mode", "FileDialog", icons["file_mode_thumbnail"]);
+	theme->set_icon("list_mode", "FileDialog", icons["file_mode_list"]);
 	theme->set_icon("create_folder", "FileDialog", icons["folder_create"]);
 	theme->set_icon("sort", "FileDialog", icons["sort"]);
+	theme->set_icon("favorite_up", "FileDialog", icons["move_up"]);
+	theme->set_icon("favorite_down", "FileDialog", icons["move_down"]);
 
+	theme->set_icon("file_thumbnail", "FileDialog", icons["file_thumbnail"]);
+	theme->set_icon("folder_thumbnail", "FileDialog", icons["folder_thumbnail"]);
 	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));
@@ -1182,8 +1190,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("text_highlight_h_padding", "RichTextLabel", Math::round(3 * scale));
 	theme->set_constant("text_highlight_v_padding", "RichTextLabel", Math::round(3 * scale));
 
+	theme->set_constant("underline_alpha", "RichTextLabel", 50);
+	theme->set_constant("strikethrough_alpha", "RichTextLabel", 50);
+
 	// Containers
 
+	theme->set_icon("h_touch_dragger", "SplitContainer", icons["h_dragger"]);
+	theme->set_icon("v_touch_dragger", "SplitContainer", icons["v_dragger"]);
+	theme->set_icon("touch_dragger", "VSplitContainer", icons["v_dragger"]);
+	theme->set_icon("touch_dragger", "HSplitContainer", icons["h_dragger"]);
 	theme->set_icon("h_grabber", "SplitContainer", icons["hsplitter"]);
 	theme->set_icon("v_grabber", "SplitContainer", icons["vsplitter"]);
 	theme->set_icon("grabber", "VSplitContainer", icons["vsplitter"]);

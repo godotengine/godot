@@ -191,6 +191,7 @@ public:
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) { return Dictionary(); }
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); }
+	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) { return create_process(p_program_path, p_paths); }
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
@@ -205,6 +206,7 @@ public:
 	virtual String get_environment(const String &p_var) const = 0;
 	virtual void set_environment(const String &p_var, const String &p_value) const = 0;
 	virtual void unset_environment(const String &p_var) const = 0;
+	virtual void load_shell_environment() const {}
 
 	virtual String get_name() const = 0;
 	virtual String get_identifier() const;
@@ -246,7 +248,8 @@ public:
 	virtual double get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
-	virtual void add_frame_delay(bool p_can_draw);
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events);
+	virtual uint64_t get_frame_delay(bool p_can_draw) const;
 
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;

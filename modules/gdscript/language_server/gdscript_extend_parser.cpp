@@ -403,8 +403,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.name = m.enum_value.identifier->name;
 				symbol.kind = LSP::SymbolKind::EnumMember;
 				symbol.deprecated = false;
-				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.leftmost_column).to_lsp(lines);
-				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.rightmost_column).to_lsp(lines);
+				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.start_column).to_lsp(lines);
+				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.end_column).to_lsp(lines);
 				symbol.selectionRange = range_of_node(m.enum_value.identifier);
 				symbol.documentation = m.enum_value.doc_data.description;
 				symbol.uri = uri;
@@ -439,8 +439,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					child.name = value.identifier->name;
 					child.kind = LSP::SymbolKind::EnumMember;
 					child.deprecated = false;
-					child.range.start = GodotPosition(value.line, value.leftmost_column).to_lsp(lines);
-					child.range.end = GodotPosition(value.line, value.rightmost_column).to_lsp(lines);
+					child.range.start = GodotPosition(value.line, value.start_column).to_lsp(lines);
+					child.range.end = GodotPosition(value.line, value.end_column).to_lsp(lines);
 					child.selectionRange = range_of_node(value.identifier);
 					child.documentation = value.doc_data.description;
 					child.uri = uri;

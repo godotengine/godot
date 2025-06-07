@@ -99,6 +99,7 @@ private:
 
 	HashMap<Node *, RID> tab_panels;
 
+	Rect2 _get_tab_rect() const;
 	int _get_tab_height() const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();

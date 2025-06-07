@@ -29,10 +29,10 @@
 				ProjectSettings.set("category/property_name", 0)
 
 				var property_info = {
-				    "name": "category/property_name",
-				    "type": TYPE_INT,
-				    "hint": PROPERTY_HINT_ENUM,
-				    "hint_string": "one,two,three"
+					"name": "category/property_name",
+					"type": TYPE_INT,
+					"hint": PROPERTY_HINT_ENUM,
+					"hint_string": "one,two,three"
 				}
 
 				ProjectSettings.add_property_info(property_info)
@@ -42,10 +42,10 @@
 
 				var propertyInfo = new Godot.Collections.Dictionary
 				{
-				    {"name", "category/propertyName"},
-				    {"type", (int)Variant.Type.Int},
-				    {"hint", (int)PropertyHint.Enum},
-				    {"hint_string", "one,two,three"},
+					{"name", "category/propertyName"},
+					{"type", (int)Variant.Type.Int},
+					{"hint", (int)PropertyHint.Enum},
+					{"hint_string", "one,two,three"},
 				};
 
 				ProjectSettings.AddPropertyInfo(propertyInfo);
@@ -97,6 +97,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method doesn't take potential feature overrides into account automatically. Use [method get_setting_with_override] to handle seamlessly.
+				See also [method has_setting] to check whether a setting exists.
 			</description>
 		</method>
 		<method name="get_setting_with_override" qualifiers="const">
@@ -132,15 +133,15 @@
 				[codeblock]
 				var path = ""
 				if OS.has_feature("editor"):
-				    # Running from an editor binary.
-				    # `path` will contain the absolute path to `hello.txt` located in the project root.
-				    path = ProjectSettings.globalize_path("res://hello.txt")
+					# Running from an editor binary.
+					# `path` will contain the absolute path to `hello.txt` located in the project root.
+					path = ProjectSettings.globalize_path("res://hello.txt")
 				else:
-				    # Running from an exported project.
-				    # `path` will contain the absolute path to `hello.txt` next to the executable.
-				    # This is *not* identical to using `ProjectSettings.globalize_path()` with a `res://` path,
-				    # but is close enough in spirit.
-				    path = OS.get_executable_path().get_base_dir().path_join("hello.txt")
+					# Running from an exported project.
+					# `path` will contain the absolute path to `hello.txt` next to the executable.
+					# This is *not* identical to using `ProjectSettings.globalize_path()` with a `res://` path,
+					# but is close enough in spirit.
+					path = OS.get_executable_path().get_base_dir().path_join("hello.txt")
 				[/codeblock]
 			</description>
 		</method>
@@ -149,6 +150,7 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if a configuration value is present.
+				[b]Note:[/b] In order to be be detected, custom settings have to be either defined with [method set_setting], or exist in the [code]project.godot[/code] file. This is especially relevant when using [method set_initial_value].
 			</description>
 		</method>
 		<method name="load_resource_pack">
@@ -205,7 +207,20 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Sets the specified setting's initial value. This is the value the setting reverts to.
+				Sets the specified setting's initial value. This is the value the setting reverts to. The setting should already exist before calling this method. Note that project settings equal to their default value are not saved, so your code needs to account for that.
+				[codeblock]
+				extends EditorPlugin
+
+				const SETTING_NAME = "addons/my_setting"
+				const SETTING_DEFAULT = 10.0
+
+				func _enter_tree():
+					if not ProjectSettings.has_setting(SETTING_NAME):
+						ProjectSettings.set_setting(SETTING_NAME, SETTING_DEFAULT)
+
+					ProjectSettings.set_initial_value(SETTING_NAME, SETTING_DEFAULT)
+				[/codeblock]
+				If you have a project setting defined by an [EditorPlugin], but want to use it in a running project, you will need a similar code at runtime.
 			</description>
 		</method>
 		<method name="set_order">
@@ -360,6 +375,10 @@
 			Forces a [i]constant[/i] delay between frames in the main loop (in milliseconds). In most situations, [member application/run/max_fps] should be preferred as an FPS limiter as it's more precise.
 			This setting can be overridden using the [code]--frame-delay &lt;ms;&gt;[/code] command line argument.
 		</member>
+		<member name="application/run/load_shell_environment" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], loads the default shell and copies environment variables set by the shell startup scripts to the app environment.
+			[b]Note:[/b] This setting is implemented on macOS for non-sandboxed applications only.
+		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables low-processor usage mode. When enabled, the engine takes longer to redraw, but only redraws the screen if necessary. This may lower power consumption, and is intended for editors or mobile applications. For most games, because the screen needs to be redrawn every frame, it is recommended to keep this setting disabled.
 		</member>
@@ -402,7 +421,7 @@
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
-			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows 10 and later, make sure that apps are allowed to access the microphone in the OS' privacy settings.
+			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows, make sure that apps are allowed to access the microphone in the OS' privacy settings.
 		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
 			Target mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
@@ -416,7 +435,7 @@
 			Specifies the preferred output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible crackling on slower hardware.
 			Audio output latency may be constrained by the host operating system and audio hardware drivers. If the host can not provide the specified audio output latency then Godot will attempt to use the nearest latency allowed by the host. As such you should always use [method AudioServer.get_output_latency] to determine the actual audio output latency.
 			Audio output latency can be overridden using the [code]--audio-output-latency &lt;ms&gt;[/code] command line argument.
-			[b]Note:[/b] This setting is ignored on Android, and on all versions of Windows prior to Windows 10.
+			[b]Note:[/b] This setting is ignored on Android.
 		</member>
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
@@ -2606,12 +2625,6 @@
 		</member>
 		<member name="physics/jolt_physics_3d/simulation/allow_sleep" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [RigidBody3D] nodes are allowed to go to sleep if their velocity is below the threshold defined in [member physics/jolt_physics_3d/simulation/sleep_velocity_threshold] for the duration set in [member physics/jolt_physics_3d/simulation/sleep_time_threshold]. This can improve physics simulation performance when there are non-moving [RigidBody3D] nodes, at the cost of some nodes possibly failing to wake up in certain scenarios. Consider disabling this temporarily to troubleshoot [RigidBody3D] nodes not moving when they should.
-		</member>
-		<member name="physics/jolt_physics_3d/simulation/areas_detect_static_bodies" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], [Area3D] nodes are able to detect overlaps with [StaticBody3D] nodes.
-			[b]Note:[/b] Enabling this setting can come at a heavy CPU and memory cost if you allow many/large [Area3D] to overlap with complex static geometry, such as [ConcavePolygonShape3D] or [HeightMapShape3D]. It is strongly recommended that you set up your collision layers and masks in such a way that only a few small [Area3D] nodes can detect [StaticBody3D] nodes.
-			[b]Note:[/b] This also applies to overlaps with a [RigidBody3D] frozen with [constant RigidBody3D.FREEZE_MODE_STATIC].
-			[b]Note:[/b] This is not needed to detect overlaps with [AnimatableBody3D], as it is a kinematic body, despite inheriting from [StaticBody3D].
 		</member>
 		<member name="physics/jolt_physics_3d/simulation/baumgarte_stabilization_factor" type="float" setter="" getter="" default="0.2">
 			How much of the position error of a [RigidBody3D] to fix during a physics step, where [code]0.0[/code] is none and [code]1.0[/code] is the full amount. This affects things like how quickly bodies depenetrate.

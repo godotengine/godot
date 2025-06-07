@@ -74,7 +74,7 @@ class TileMapLayerEditorTilesPlugin : public TileMapLayerSubEditorPlugin {
 	GDCLASS(TileMapLayerEditorTilesPlugin, TileMapLayerSubEditorPlugin);
 
 public:
-	enum {
+	enum TileTransformType {
 		TRANSFORM_ROTATE_LEFT,
 		TRANSFORM_ROTATE_RIGHT,
 		TRANSFORM_FLIP_H,
@@ -146,8 +146,8 @@ private:
 	HashMap<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();
 
-	void _apply_transform(int p_type);
-	int _get_transformed_alternative(int p_alternative_id, int p_transform);
+	void _apply_transform(TileTransformType p_type);
+	int _get_transformed_alternative(int p_alternative_id, TileTransformType p_transform);
 
 	///// Selection system. /////
 	RBSet<Vector2i> tile_map_selection;
@@ -348,6 +348,9 @@ private:
 	void _update_tile_map_layers_in_scene_list_cache();
 	void _node_change(Node *p_node);
 
+	Control *custom_overlay = nullptr;
+	void _draw_overlay();
+
 	// Vector to keep plugins.
 	Vector<TileMapLayerSubEditorPlugin *> tile_map_editor_plugins;
 
@@ -420,3 +423,5 @@ public:
 	// Static functions.
 	static Vector<Vector2i> get_line(const TileMapLayer *p_tile_map_layer, Vector2i p_from_cell, Vector2i p_to_cell);
 };
+
+VARIANT_ENUM_CAST(TileMapLayerEditorTilesPlugin::TileTransformType);

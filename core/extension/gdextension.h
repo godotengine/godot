@@ -184,6 +184,9 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
+#ifdef TOOLS_ENABLED
+	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
+#endif // TOOLS_ENABLED
 };
 
 #ifdef TOOLS_ENABLED

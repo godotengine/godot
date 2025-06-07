@@ -770,6 +770,12 @@ void EditorNode::_notification(int p_what) {
 				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_execute_upgrades), CONNECT_ONE_SHOT);
 				EditorFileSystem::get_singleton()->scan();
 			}
+
+			if (settings_overrides_changed) {
+				EditorSettings::get_singleton()->notify_changes();
+				EditorSettings::get_singleton()->emit_signal(SNAME("settings_changed"));
+				settings_overrides_changed = false;
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -932,6 +938,7 @@ void EditorNode::_notification(int p_what) {
 			use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
 
 			if (EditorThemeManager::is_generated_theme_outdated()) {
+				class_icon_cache.clear();
 				_update_theme();
 				_build_icon_type_cache();
 				recent_scenes->reset_size();
@@ -1853,91 +1860,6 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 	}
 }
 
-void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
-	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
-
-	if (editor_data.get_edited_scene_root() != nullptr) {
-		save_scene_progress->step(TTR("Analyzing"), 0);
-
-		int c2d = 0;
-		int c3d = 0;
-
-		_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
-
-		save_scene_progress->step(TTR("Creating Thumbnail"), 1);
-		// Current view?
-
-		Ref<Image> img;
-		// If neither 3D or 2D nodes are present, make a 1x1 black texture.
-		// We cannot fallback on the 2D editor, because it may not have been used yet,
-		// which would result in an invalid texture.
-		if (c3d == 0 && c2d == 0) {
-			img.instantiate();
-			img->initialize_data(1, 1, false, Image::FORMAT_RGB8);
-		} else if (c3d < c2d) {
-			Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
-			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
-				img = viewport_texture->get_image();
-			}
-		} else {
-			// The 3D editor may be disabled as a feature, but scenes can still be opened.
-			// This check prevents the preview from regenerating in case those scenes are then saved.
-			// The preview will be generated if no feature profile is set (as the 3D editor is enabled by default).
-			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
-			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
-				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
-			}
-		}
-
-		if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
-			img = img->duplicate();
-
-			save_scene_progress->step(TTR("Creating Thumbnail"), 3);
-
-			int preview_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
-			preview_size *= EDSCALE;
-
-			// Consider a square region.
-			int vp_size = MIN(img->get_width(), img->get_height());
-			int x = (img->get_width() - vp_size) / 2;
-			int y = (img->get_height() - vp_size) / 2;
-
-			if (vp_size < preview_size) {
-				// Just square it.
-				img->crop_from_point(x, y, vp_size, vp_size);
-			} else {
-				int ratio = vp_size / preview_size;
-				int size = preview_size * MAX(1, ratio / 2);
-
-				x = (img->get_width() - size) / 2;
-				y = (img->get_height() - size) / 2;
-
-				img->crop_from_point(x, y, size, size);
-				img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
-			}
-			img->convert(Image::FORMAT_RGB8);
-
-			// Save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5.
-			String temp_path = EditorPaths::get_singleton()->get_cache_dir();
-			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
-			cache_base = temp_path.path_join("resthumb-" + cache_base);
-
-			// Does not have it, try to load a cached thumbnail.
-			post_process_preview(img);
-			img->save_png(cache_base + ".png");
-		}
-	}
-
-	save_scene_progress->step(TTR("Saving Scene"), 4);
-	_save_scene(p_file, p_idx);
-
-	if (!singleton->cmdline_mode) {
-		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
-	}
-
-	_close_save_scene_progress();
-}
-
 void EditorNode::_close_save_scene_progress() {
 	memdelete_notnull(save_scene_progress);
 	save_scene_progress = nullptr;
@@ -2068,13 +1990,18 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
+	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 3));
+	save_scene_progress->step(TTR("Analyzing"), 0);
+
 	if (!scene) {
 		show_accept(TTR("This operation can't be done without a tree root."), TTR("OK"));
+		_close_save_scene_progress();
 		return;
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
 		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
+		_close_save_scene_progress();
 		return;
 	}
 
@@ -2085,6 +2012,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
 	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
+
+	save_scene_progress->step(TTR("Packing Scene"), 1);
 
 	Ref<PackedScene> sdata;
 
@@ -2106,8 +2035,11 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (err != OK) {
 		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
+		_close_save_scene_progress();
 		return;
 	}
+
+	save_scene_progress->step(TTR("Saving scene"), 2);
 
 	int flg = 0;
 	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
@@ -2120,6 +2052,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	// This needs to be emitted before saving external resources.
 	emit_signal(SNAME("scene_saved"), p_file);
 	editor_data.notify_scene_saved(p_file);
+
+	save_scene_progress->step(TTR("Saving external resources"), 3);
 
 	_save_external_resources();
 	saving_scene = p_file; // Some editors may save scenes of built-in resources as external data, so avoid saving this scene again.
@@ -2145,6 +2079,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 	_update_unsaved_cache();
+	_close_save_scene_progress();
 }
 
 void EditorNode::save_all_scenes() {
@@ -2184,7 +2119,7 @@ void EditorNode::try_autosave() {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (scene && !scene->get_scene_file_path().is_empty()) { // Only autosave if there is a scene and if it has a path.
-			_save_scene_with_preview(scene->get_scene_file_path());
+			_save_scene(scene->get_scene_file_path());
 		}
 	}
 	_menu_option(SCENE_SAVE_ALL_SCENES);
@@ -2212,7 +2147,7 @@ void EditorNode::_save_all_scenes() {
 		}
 
 		if (i == editor_data.get_edited_scene()) {
-			_save_scene_with_preview(scene_path);
+			_save_scene(scene_path);
 		} else {
 			_save_scene(scene_path, i);
 		}
@@ -2306,7 +2241,7 @@ void EditorNode::_dialog_action(String p_file) {
 				}
 
 				save_default_environment();
-				_save_scene_with_preview(p_file, scene_idx);
+				_save_scene(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
 				save_editor_layout_delayed();
 
@@ -2327,7 +2262,7 @@ void EditorNode::_dialog_action(String p_file) {
 		case SAVE_AND_RUN: {
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				save_default_environment();
-				_save_scene_with_preview(p_file);
+				_save_scene(p_file);
 				project_run_bar->play_custom_scene(p_file);
 			}
 		} break;
@@ -2338,7 +2273,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				save_default_environment();
-				_save_scene_with_preview(p_file);
+				_save_scene(p_file);
 				project_run_bar->play_main_scene((bool)pick_main_scene->get_meta("from_native", false));
 			}
 		} break;
@@ -2452,7 +2387,7 @@ void EditorNode::_dialog_action(String p_file) {
 		default: {
 			// Save scene?
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
-				_save_scene_with_preview(p_file);
+				_save_scene(p_file);
 			}
 
 		} break;
@@ -3002,9 +2937,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (scene && !scene->get_scene_file_path().is_empty()) {
 				if (DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
 					if (scene_idx != editor_data.get_edited_scene()) {
-						_save_scene_with_preview(scene->get_scene_file_path(), scene_idx);
+						_save_scene(scene->get_scene_file_path(), scene_idx);
 					} else {
-						_save_scene_with_preview(scene->get_scene_file_path());
+						_save_scene(scene->get_scene_file_path());
 					}
 
 					if (scene_idx != -1) {
@@ -3174,7 +3109,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					confirmation_button->grab_focus();
 					break;
 				} else {
-					_save_scene_with_preview(scene_filename);
+					_save_scene(scene_filename);
 				}
 			}
 
@@ -4987,6 +4922,19 @@ bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
 	return false;
 }
 
+bool EditorNode::close_scene() {
+	int tab_index = editor_data.get_edited_scene();
+	if (tab_index == 0 && get_edited_scene() == nullptr && editor_data.get_scene_path(tab_index).is_empty()) {
+		return false;
+	}
+
+	tab_closing_idx = tab_index;
+	current_menu_option = SCENE_CLOSE;
+	_discard_changes();
+	changing_scene = false;
+	return true;
+}
+
 bool EditorNode::is_scene_in_use(const String &p_path) {
 	Node *es = get_edited_scene();
 	if (es) {
@@ -5202,9 +5150,11 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
+	const Pair<String, String> key(p_class, p_fallback);
+
 	// Take from the local cache, if available.
 	{
-		Ref<Texture2D> *icon = class_icon_cache.getptr(p_class);
+		Ref<Texture2D> *icon = class_icon_cache.getptr(key);
 		if (icon) {
 			return *icon;
 		}
@@ -5218,7 +5168,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 	}
 
 	Ref<Texture2D> icon = _get_class_or_script_icon(p_class, script_path, p_fallback, true);
-	class_icon_cache[p_class] = icon;
+	class_icon_cache[key] = icon;
 	return icon;
 }
 
@@ -7368,6 +7318,15 @@ GameViewPluginBase *get_game_view_plugin() {
 }
 #endif
 
+void EditorNode::open_setting_override(const String &p_property) {
+	editor_settings_dialog->hide();
+	project_settings_editor->popup_for_override(p_property);
+}
+
+void EditorNode::notify_settings_overrides_changed() {
+	settings_overrides_changed = true;
+}
+
 EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);
 	singleton = this;
@@ -7514,7 +7473,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_dependency_error_notify_func(&EditorNode::_dependency_error_report);
 
 	SceneState::set_instantiation_warning_notify_func([](const String &p_warning) {
-		add_io_warning(p_warning);
+		callable_mp_static(EditorNode::add_io_warning).call_deferred(p_warning);
 		callable_mp(EditorInterface::get_singleton(), &EditorInterface::mark_scene_as_unsaved).call_deferred();
 	});
 

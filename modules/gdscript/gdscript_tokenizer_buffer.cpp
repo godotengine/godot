@@ -152,7 +152,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 		contents = p_buffer.slice(12);
 	} else {
 		contents.resize(decompressed_size);
-		int result = Compression::decompress(contents.ptrw(), contents.size(), &buf[12], p_buffer.size() - 12, Compression::MODE_ZSTD);
+		const int64_t result = Compression::decompress(contents.ptrw(), contents.size(), &buf[12], p_buffer.size() - 12, Compression::MODE_ZSTD);
 		ERR_FAIL_COND_V_MSG(result != decompressed_size, ERR_INVALID_DATA, "Error decompressing GDScript tokenizer buffer.");
 	}
 
@@ -371,10 +371,10 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 		case COMPRESS_ZSTD: {
 			encode_uint32(contents.size(), &buf.write[8]);
 			Vector<uint8_t> compressed;
-			int max_size = Compression::get_max_compressed_buffer_size(contents.size(), Compression::MODE_ZSTD);
+			const int64_t max_size = Compression::get_max_compressed_buffer_size(contents.size(), Compression::MODE_ZSTD);
 			compressed.resize(max_size);
 
-			int compressed_size = Compression::compress(compressed.ptrw(), contents.ptr(), contents.size(), Compression::MODE_ZSTD);
+			const int64_t compressed_size = Compression::compress(compressed.ptrw(), contents.ptr(), contents.size(), Compression::MODE_ZSTD);
 			ERR_FAIL_COND_V_MSG(compressed_size < 0, Vector<uint8_t>(), "Error compressing GDScript tokenizer buffer.");
 			compressed.resize(compressed_size);
 

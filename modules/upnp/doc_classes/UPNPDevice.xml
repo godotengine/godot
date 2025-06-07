@@ -55,7 +55,7 @@
 			IGD service type.
 		</member>
 		<member name="igd_status" type="int" setter="set_igd_status" getter="get_igd_status" enum="UPNPDevice.IGDStatus" default="9">
-			IGD status. See [enum IGDStatus].
+			IGD status.
 		</member>
 		<member name="service_type" type="String" setter="set_service_type" getter="get_service_type" default="&quot;&quot;">
 			Service type.

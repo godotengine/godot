@@ -674,7 +674,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="mode" type="int" enum="Animation.UpdateMode" />
 			<description>
-				Sets the update mode (see [enum UpdateMode]) of a value track.
+				Sets the update mode of a value track.
 			</description>
 		</method>
 	</methods>

@@ -623,7 +623,7 @@
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
-			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
+			Specifies the initial type of position for the [Window].
 		</member>
 		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" default="false">
 			If [code]true[/code], the [Window] width is expanded to keep the title bar text fully visible.
@@ -764,10 +764,10 @@
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
 				[codeblock]
 				func _ready():
-				    get_window().files_dropped.connect(on_files_dropped)
+					get_window().files_dropped.connect(on_files_dropped)
 
 				func on_files_dropped(files):
-				    print(files)
+					print(files)
 				[/codeblock]
 				[b]Note:[/b] This signal only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
 			</description>
