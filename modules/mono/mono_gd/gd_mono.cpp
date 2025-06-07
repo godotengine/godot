@@ -37,11 +37,8 @@
 #include "../thirdparty/hostfxr.h"
 #include "../utils/path_utils.h"
 #include "gd_mono_cache.h"
-
-#ifdef TOOLS_ENABLED
-#include "../editor/hostfxr_resolver.h"
-#include "../editor/semver.h"
-#endif
+#include "hostfxr_resolver.h"
+#include "semver.h"
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -106,64 +103,102 @@ const char_t *get_data(const HostFxrCharString &p_char_str) {
 	return (const char_t *)p_char_str.get_data();
 }
 
-#ifdef TOOLS_ENABLED
-bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
+bool try_get_path_from_dotnet_command_line(String &r_path, const String &p_arg, int p_version_str_index, int p_path_str_index) {
 	String pipe;
 	List<String> args;
-	args.push_back("--list-sdks");
+	args.push_back(p_arg);
 
 	int exitcode;
 	Error err = OS::get_singleton()->execute("dotnet", args, &pipe, &exitcode, true);
 
-	ERR_FAIL_COND_V_MSG(err != OK, false, String(".NET failed to get list of installed SDKs. Error: ") + error_names[err]);
+	ERR_FAIL_COND_V_MSG(err != OK, false, String(".NET failed to get list of installations with \"") + p_arg + String("\". Error: ") + error_names[err]);
 	ERR_FAIL_COND_V_MSG(exitcode != 0, false, pipe);
 
-	Vector<String> sdks = pipe.strip_edges().replace("\r\n", "\n").split("\n", false);
+	Vector<String> results = pipe.strip_edges().replace("\r\n", "\n").split("\n", false);
 
 	godotsharp::SemVerParser sem_ver_parser;
 
-	godotsharp::SemVer latest_sdk_version;
-	String latest_sdk_path;
+	godotsharp::SemVer latest_version;
+	String latest_path;
 
-	for (const String &sdk : sdks) {
-		// The format of the SDK lines is:
-		// 8.0.401 [/usr/share/dotnet/sdk]
-		String version_string = sdk.get_slice(" ", 0);
-		String path = sdk.get_slice(" ", 1);
+	for (const String &result : results) {
+		Vector<String> split = result.split(" ", false, p_path_str_index);
+		String version_string = std::move(split[p_version_str_index]);
+		String path = std::move(split[p_path_str_index]);
+		// The format of the paths is [/usr/share/dotnet/...]
 		path = path.substr(1, path.length() - 2);
 
 		godotsharp::SemVer version;
 		if (!sem_ver_parser.parse(version_string, version)) {
-			WARN_PRINT("Unable to parse .NET SDK version '" + version_string + "'.");
+			WARN_PRINT("Unable to parse .NET version '" + version_string + "'.");
 			continue;
 		}
 
 		if (!DirAccess::exists(path)) {
-			WARN_PRINT("Found .NET SDK version '" + version_string + "' with invalid path '" + path + "'.");
+			WARN_PRINT("Found .NET version '" + version_string + "' with invalid path '" + path + "'.");
 			continue;
 		}
 
-		if (version > latest_sdk_version) {
-			latest_sdk_version = version;
-			latest_sdk_path = path;
+		if (version > latest_version) {
+			latest_version = version;
+			latest_path = std::move(path);
 		}
 	}
 
-	if (!latest_sdk_path.is_empty()) {
-		print_verbose("Found .NET SDK at " + latest_sdk_path);
-		// The `dotnet_root` is the parent directory.
-		r_dotnet_root = latest_sdk_path.path_join("..").simplify_path();
+	if (!latest_path.is_empty()) {
+		r_path = std::move(latest_path);
 		return true;
 	}
 
 	return false;
 }
-#endif
+
+bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
+	String path;
+
+	// The format of the SDK lines is:
+	// 8.0.401 [/usr/share/dotnet/sdk]
+	if (try_get_path_from_dotnet_command_line(path, "--list-sdks", 0, 1)) {
+		print_verbose("Found .NET SDK at " + path);
+		// The `dotnet_root` is the parent directory.
+		r_dotnet_root = path.path_join("..").simplify_path();
+		return true;
+	}
+
+	// The format of the runtime lines is:
+	// Microsoft.NETCore.App 5.0.17 [/usr/share/dotnet/shared/Microsoft.NETCore.App]
+	if (try_get_path_from_dotnet_command_line(path, "--list-runtimes", 1, 2)) {
+		print_verbose("Found .NET runtime at " + path);
+		// The `dotnet_root` is the parent's parent directory.
+		r_dotnet_root = path.path_join("..").path_join("..").simplify_path();
+		return true;
+	}
+
+	return false;
+}
 
 String find_hostfxr() {
-#ifdef TOOLS_ENABLED
-	String dotnet_root;
 	String fxr_path;
+#ifndef TOOLS_ENABLED
+#if defined(WINDOWS_ENABLED)
+	fxr_path = GodotSharpDirs::get_api_assemblies_dir()
+					   .path_join("hostfxr.dll");
+#elif defined(MACOS_ENABLED)
+	fxr_path = GodotSharpDirs::get_api_assemblies_dir()
+					   .path_join("libhostfxr.dylib");
+#elif defined(UNIX_ENABLED)
+	fxr_path = GodotSharpDirs::get_api_assemblies_dir()
+					   .path_join("libhostfxr.so");
+#else
+#error "Platform not supported (yet?)"
+#endif
+
+	if (FileAccess::exists(fxr_path)) {
+		return fxr_path;
+	}
+#endif
+
+	String dotnet_root;
 	if (godotsharp::hostfxr_resolver::try_get_path(dotnet_root, fxr_path)) {
 		return fxr_path;
 	}
@@ -181,28 +216,6 @@ String find_hostfxr() {
 			"libraries are not present in the expected locations.");
 
 	return String();
-#else
-
-#if defined(WINDOWS_ENABLED)
-	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.path_join("hostfxr.dll");
-#elif defined(MACOS_ENABLED)
-	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.path_join("libhostfxr.dylib");
-#elif defined(UNIX_ENABLED)
-	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.path_join("libhostfxr.so");
-#else
-#error "Platform not supported (yet?)"
-#endif
-
-	if (FileAccess::exists(probe_path)) {
-		return probe_path;
-	}
-
-	return String();
-
-#endif
 }
 
 #ifndef TOOLS_ENABLED
