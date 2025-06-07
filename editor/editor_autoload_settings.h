@@ -32,6 +32,7 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
@@ -69,7 +70,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 
 	Tree *tree = nullptr;
 	LineEdit *autoload_add_name = nullptr;
-	Button *add_autoload = nullptr;
+	MenuButton *add_autoload = nullptr;
 	LineEdit *autoload_add_path = nullptr;
 	Label *error_message = nullptr;
 	Button *browse_button = nullptr;
@@ -77,7 +78,9 @@ class EditorAutoloadSettings : public VBoxContainer {
 
 	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 
+	void _autoload_add_index_pressed(int p_index);
 	void _autoload_add();
+	void _autoload_add_scene();
 	void _autoload_selected();
 	void _autoload_edited();
 	void _autoload_button_pressed(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
@@ -90,6 +93,8 @@ class EditorAutoloadSettings : public VBoxContainer {
 	Node *_create_autoload(const String &p_path);
 
 	void _script_created(Ref<Script> p_script);
+
+	void _scene_created();
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_control);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const;

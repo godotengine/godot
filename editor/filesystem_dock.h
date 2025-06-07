@@ -34,6 +34,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/file_info.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/scene_create_dialog.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
@@ -47,7 +48,6 @@ class EditorDirDialog;
 class ItemList;
 class LineEdit;
 class ProgressBar;
-class SceneCreateDialog;
 class ShaderCreateDialog;
 class DirectoryCreateDialog;
 class EditorResourceTooltipPlugin;
@@ -398,6 +398,8 @@ public:
 	void create_directory(const String &p_path, const String &p_base_dir);
 
 	ScriptCreateDialog *get_script_create_dialog() const;
+
+	SceneCreateDialog *get_scene_create_dialog() const;
 
 	void fix_dependencies(const String &p_for_file);
 	void update_all();

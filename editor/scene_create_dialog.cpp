@@ -61,10 +61,10 @@ void SceneCreateDialog::_notification(int p_what) {
 	}
 }
 
-void SceneCreateDialog::config(const String &p_dir) {
+void SceneCreateDialog::config(const String &p_dir, const String &p_name) {
 	directory = p_dir;
 	root_name_edit->set_text("");
-	scene_name_edit->set_text("");
+	scene_name_edit->set_text(p_name);
 	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred();
 	validation_panel->update();
 }
