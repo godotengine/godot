@@ -43,6 +43,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/slider.h"
@@ -2845,7 +2846,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	inline_color_options->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	inline_color_options->set_fit_to_longest_item(false);
 	inline_color_options->connect("item_selected", callable_mp(this, &ScriptTextEditor::_update_color_text).unbind(1));
-	inline_color_picker->get_slider(ColorPicker::SLIDER_COUNT)->get_parent()->add_sibling(inline_color_options);
+	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 

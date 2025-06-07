@@ -88,6 +88,8 @@ class ColorPicker : public VBoxContainer {
 	friend class ColorPickerShapeCircle;
 	friend class ColorPickerShapeVHSCircle;
 	friend class ColorPickerShapeOKHSLCircle;
+	friend class ColorPickerShapeOKHSRectangle;
+	friend class ColorPickerShapeOKHLRectangle;
 
 	friend class ColorModeRGB;
 	friend class ColorModeHSV;
@@ -113,19 +115,49 @@ public:
 		SHAPE_VHS_CIRCLE,
 		SHAPE_OKHSL_CIRCLE,
 		SHAPE_NONE,
+		SHAPE_OK_HS_RECTANGLE,
+		SHAPE_OK_HL_RECTANGLE,
 
 		SHAPE_MAX
 	};
 
-	static const int SLIDER_COUNT = 3;
+private:
+	// Ideally, `SHAPE_NONE` should be -1 so that we don't need to convert shape type to index.
+	// In order to avoid breaking compatibility, we have to use these methods for conversion.
+	inline int get_current_shape_index() {
+		return shape_to_index(current_shape);
+	}
+
+	static inline int shape_to_index(PickerShapeType p_shape) {
+		if (p_shape == SHAPE_NONE) {
+			return -1;
+		}
+		if (p_shape > SHAPE_NONE) {
+			return p_shape - 1;
+		}
+		return p_shape;
+	}
+
+	static inline PickerShapeType index_to_shape(int p_index) {
+		if (p_index == -1) {
+			return SHAPE_NONE;
+		}
+		if (p_index >= SHAPE_NONE) {
+			return (PickerShapeType)(p_index + 1);
+		}
+		return (PickerShapeType)p_index;
+	}
+
+public:
+	static const int MODE_SLIDER_COUNT = 3;
+
 	enum SLIDER_EXTRA {
-		SLIDER_INTENSITY = 3,
+		SLIDER_INTENSITY = MODE_SLIDER_COUNT,
 		SLIDER_ALPHA,
 
 		SLIDER_MAX
 	};
 
-private:
 	enum class MenuOption {
 		MENU_SAVE,
 		MENU_SAVE_AS,
@@ -134,9 +166,12 @@ private:
 		MENU_CLEAR,
 	};
 
+private:
 	static inline Ref<Shader> wheel_shader;
 	static inline Ref<Shader> circle_shader;
 	static inline Ref<Shader> circle_ok_color_shader;
+	static inline Ref<Shader> rectangle_ok_color_hs_shader;
+	static inline Ref<Shader> rectangle_ok_color_hl_shader;
 	static inline List<Color> preset_cache;
 	static inline List<Color> recent_preset_cache;
 
@@ -144,7 +179,7 @@ private:
 	Object *editor_settings = nullptr;
 #endif
 
-	int current_slider_count = SLIDER_COUNT;
+	int current_slider_count = MODE_SLIDER_COUNT;
 
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 1.0 / 2;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 30;
@@ -394,6 +429,7 @@ public:
 	void _quick_open_palette_file_selected(const String &p_path);
 #endif
 
+	GridContainer *get_slider_container();
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
 
