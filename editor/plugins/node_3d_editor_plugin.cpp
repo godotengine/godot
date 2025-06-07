@@ -1990,6 +1990,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						ruler_start_point->set_visible(false);
 						ruler_end_point->set_visible(false);
 						ruler_label->set_visible(false);
+						ruler_label_x->set_visible(false);
+						ruler_label_y->set_visible(false);
+						ruler_label_z->set_visible(false);
+						ruler_label_x_z->set_visible(false);
+						angle_label_theta_1->set_visible(false);
+						angle_label_theta_2->set_visible(false);
+						angle_label_phi_1->set_visible(false);
+						angle_label_phi_2->set_visible(false);
 						collision_reposition = false;
 						break;
 					}
@@ -3004,17 +3012,168 @@ void Node3DEditorViewport::_notification(int p_what) {
 				Vector3 end_pos = ruler_end_point->get_global_position();
 
 				geometry->clear_surfaces();
+				geometry_x->clear_surfaces();
+				geometry_y->clear_surfaces();
+				geometry_z->clear_surfaces();
+				geometry_x_z->clear_surfaces();
+
 				geometry->surface_begin(Mesh::PRIMITIVE_LINES);
 				geometry->surface_add_vertex(start_pos);
 				geometry->surface_add_vertex(end_pos);
+
+				// Add vertices for helper lines
+				float min_y = MIN(start_pos.y, end_pos.y);
+				// XZ helper line
+				if (abs(start_pos.z - end_pos.z) > 0.0001 && abs(start_pos.x - end_pos.x) > 0.0001) {
+					geometry_x_z->surface_begin(Mesh::PRIMITIVE_LINES);
+					geometry_x_z->surface_add_vertex(Vector3(start_pos.x, min_y, start_pos.z));
+					geometry_x_z->surface_add_vertex(Vector3(end_pos.x, min_y, end_pos.z));
+					geometry_x_z->surface_end();
+				}
+
+				// Y helper line
+				geometry_y->surface_begin(Mesh::PRIMITIVE_LINES);
+				if (start_pos.y > end_pos.y) {
+					geometry_y->surface_add_vertex(start_pos);
+					geometry_y->surface_add_vertex(Vector3(start_pos.x, min_y, start_pos.z));
+				} else {
+					geometry_y->surface_add_vertex(end_pos);
+					geometry_y->surface_add_vertex(Vector3(end_pos.x, min_y, end_pos.z));
+				}
+				geometry_y->surface_end();
+
+				// X helper line
+				geometry_x->surface_begin(Mesh::PRIMITIVE_LINES);
+				geometry_x->surface_add_vertex(Vector3(start_pos.x, min_y, start_pos.z));
+				geometry_x->surface_add_vertex(Vector3(end_pos.x, min_y, start_pos.z));
+				geometry_x->surface_end();
+
+				// Z helper line
+				geometry_z->surface_begin(Mesh::PRIMITIVE_LINES);
+				geometry_z->surface_add_vertex(Vector3(end_pos.x, min_y, end_pos.z));
+				geometry_z->surface_add_vertex(Vector3(end_pos.x, min_y, start_pos.z));
+				geometry_z->surface_end();
+
 				geometry->surface_end();
 
+				// Calculate ruler measurements
 				float distance = start_pos.distance_to(end_pos);
-				ruler_label->set_text(TS->format_number(vformat("%.3f m", distance)));
+				float distance_x = abs(end_pos.x - start_pos.x);
+				float distance_y = abs(end_pos.y - start_pos.y);
+				float distance_z = abs(end_pos.z - start_pos.z);
+				float distance_x_z = sqrt(distance_x * distance_x + distance_z * distance_z);
 
+				// Calculate angles
+				float angle_theta_1;
+				if (start_pos.y > end_pos.y) {
+					angle_theta_1 = atan(distance_x_z / distance_y) * 180 / Math::PI;
+				} else {
+					angle_theta_1 = atan(distance_y / distance_x_z) * 180 / Math::PI;
+				}
+				float angle_theta_2 = 90 - angle_theta_1;
+				float angle_phi_1 = atan(distance_z / distance_x) * 180 / Math::PI;
+				float angle_phi_2 = 90 - angle_phi_1;
+
+				// Set label value
+				ruler_label->set_text(TS->format_number(vformat("r: %.3f m", distance)));
+				ruler_label_x->set_text(TS->format_number(vformat("x: %.3f m", distance_x)));
+				ruler_label_y->set_text(TS->format_number(vformat("y: %.3f m", distance_y)));
+				ruler_label_z->set_text(TS->format_number(vformat("z: %.3f m", distance_z)));
+				ruler_label_x_z->set_text(TS->format_number(vformat("x-z: %.3f m", distance_x_z)));
+
+				angle_label_theta_1->set_text(TS->format_number(vformat("%.3f%c", angle_theta_1, 176)));
+				angle_label_theta_2->set_text(TS->format_number(vformat("%.3f%c", angle_theta_2, 176)));
+				angle_label_phi_1->set_text(TS->format_number(vformat("%.3f%c", angle_phi_1, 176)));
+				angle_label_phi_2->set_text(TS->format_number(vformat("%.3f%c", angle_phi_2, 176)));
+
+				// Calculate label position
 				Vector3 center = (start_pos + end_pos) / 2;
 				Vector2 screen_position = camera->unproject_position(center) - (ruler_label->get_custom_minimum_size() / 2);
+
+				Vector3 diff = (end_pos - start_pos) / 2;
+
+				Vector3 x_center = Vector3(start_pos.x + diff.x, min_y, start_pos.z);
+				Vector3 y_center = Vector3(end_pos.x, start_pos.y + diff.y, end_pos.z);
+				if (start_pos.y > end_pos.y) {
+					y_center = Vector3(start_pos.x, start_pos.y + diff.y, start_pos.z);
+				}
+				Vector3 z_center = Vector3(end_pos.x, min_y, start_pos.z + diff.z);
+				Vector3 x_z_center = Vector3(start_pos.x + diff.x, min_y, start_pos.z + diff.z);
+
+				const float angle_label_offset = 0.15f;
+
+				Vector3 label_pos_theta_1 = angle_label_offset * (y_center - start_pos) + start_pos;
+				Vector3 label_pos_theta_2 = angle_label_offset * (x_z_center - end_pos) + end_pos;
+				Vector3 label_pos_phi_1 = angle_label_offset * (x_center - Vector3(start_pos.x, min_y, start_pos.z)) + Vector3(start_pos.x, min_y, start_pos.z);
+				Vector3 label_pos_phi_2 = angle_label_offset * (z_center - Vector3(end_pos.x, min_y, end_pos.z)) + Vector3(end_pos.x, min_y, end_pos.z);
+
+				Vector2 x_screen_pos = camera->unproject_position(x_center) - (ruler_label_x->get_custom_minimum_size() / 2);
+				Vector2 y_screen_pos = camera->unproject_position(y_center) - (ruler_label_y->get_custom_minimum_size() / 2);
+				Vector2 z_screen_pos = camera->unproject_position(z_center) - (ruler_label_z->get_custom_minimum_size() / 2);
+				Vector2 x_z_screen_pos = camera->unproject_position(x_z_center) - (ruler_label_x_z->get_custom_minimum_size() / 2);
+
+				Vector2 angle_theta_1_screen_pos = camera->unproject_position(label_pos_theta_1) - (angle_label_theta_1->get_custom_minimum_size() / 2);
+				Vector2 angle_theta_2_screen_pos = camera->unproject_position(label_pos_theta_2) - (angle_label_theta_2->get_custom_minimum_size() / 2);
+				Vector2 angle_phi_1_screen_pos = camera->unproject_position(label_pos_phi_1) - (angle_label_phi_1->get_custom_minimum_size() / 2);
+				Vector2 angle_phi_2_screen_pos = camera->unproject_position(label_pos_phi_2) - (angle_label_phi_2->get_custom_minimum_size() / 2);
+
+				// Set labels position
 				ruler_label->set_position(screen_position);
+				ruler_label_x->set_position(x_screen_pos);
+				ruler_label_y->set_position(y_screen_pos);
+				ruler_label_z->set_position(z_screen_pos);
+				ruler_label_x_z->set_position(x_z_screen_pos);
+				angle_label_theta_1->set_position(angle_theta_1_screen_pos);
+				angle_label_theta_2->set_position(angle_theta_2_screen_pos);
+				angle_label_phi_1->set_position(angle_phi_1_screen_pos);
+				angle_label_phi_2->set_position(angle_phi_2_screen_pos);
+
+				// Hide angle label on 0 or 90(on 2d plane)
+				if (angle_theta_1 <= 0.0001 || abs(90.0 - angle_theta_1) <= 0.0001) {
+					angle_label_theta_1->set_visible(false);
+				} else {
+					angle_label_theta_2->set_visible(true);
+				}
+				if (angle_theta_2 <= 0.0001 || abs(90.0 - angle_theta_2) <= 0.0001) {
+					angle_label_theta_2->set_visible(false);
+				} else {
+					angle_label_theta_1->set_visible(true);
+				}
+				if (angle_phi_1 <= 0.0001 || abs(90.0 - angle_phi_1) <= 0.0001) {
+					angle_label_phi_1->set_visible(false);
+				} else {
+					angle_label_phi_1->set_visible(true);
+				}
+				if (angle_phi_2 <= 0.0001 || abs(90.0 - angle_phi_2) <= 0.0001) {
+					angle_label_phi_2->set_visible(false);
+				} else {
+					angle_label_phi_2->set_visible(true);
+				}
+
+				// Hide XZ label when stacking over
+				if (distance_x <= 0.0001 || distance_z <= 0.0001 || distance_y <= 0.0001) {
+					ruler_label_x_z->set_visible(false);
+				} else {
+					ruler_label_x_z->set_visible(true);
+				}
+
+				// Hide measurement label on 0
+				if (distance_x <= 0.0001) {
+					ruler_label_x->set_visible(false);
+				} else {
+					ruler_label_x->set_visible(true);
+				}
+				if (distance_y <= 0.0001) {
+					ruler_label_y->set_visible(false);
+				} else {
+					ruler_label_y->set_visible(true);
+				}
+				if (distance_z <= 0.0001) {
+					ruler_label_z->set_visible(false);
+				} else {
+					ruler_label_z->set_visible(true);
+				}
+
 			}
 
 			real_t delta = get_process_delta_time();
@@ -3263,6 +3422,15 @@ void Node3DEditorViewport::_notification(int p_what) {
 						ruler_start_point->set_visible(true);
 						ruler_end_point->set_visible(true);
 						ruler_label->set_visible(true);
+						ruler_label_x->set_visible(true);
+						ruler_label_y->set_visible(true);
+						ruler_label_z->set_visible(true);
+						ruler_label_x_z->set_visible(true);
+
+						angle_label_theta_1->set_visible(true);
+						angle_label_theta_2->set_visible(true);
+						angle_label_phi_1->set_visible(true);
+						angle_label_phi_2->set_visible(true);
 					}
 				}
 			}
@@ -3340,6 +3508,55 @@ void Node3DEditorViewport::_notification(int p_what) {
 			ruler_label->add_theme_constant_override("outline_size", 4 * EDSCALE);
 			ruler_label->add_theme_font_size_override(SceneStringName(font_size), 15 * EDSCALE);
 			ruler_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			ruler_label_x->add_theme_color_override(SceneStringName(font_color), Color(0.96, 0.20, 0.32, 1.0));
+			ruler_label_x->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5));
+			ruler_label_x->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			ruler_label_x->add_theme_font_size_override(SceneStringName(font_size), 10 * EDSCALE);
+			ruler_label_x->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			ruler_label_y->add_theme_color_override(SceneStringName(font_color), Color(0.53, 0.84, 0.01, 1.0));
+			ruler_label_y->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5));
+			ruler_label_y->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			ruler_label_y->add_theme_font_size_override(SceneStringName(font_size), 10 * EDSCALE);
+			ruler_label_y->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			ruler_label_z->add_theme_color_override(SceneStringName(font_color), Color(0.16, 0.55, 0.96, 1.0));
+			ruler_label_z->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5));
+			ruler_label_z->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			ruler_label_z->add_theme_font_size_override(SceneStringName(font_size), 10 * EDSCALE);
+			ruler_label_z->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			ruler_label_x_z->add_theme_color_override(SceneStringName(font_color), Color(0.98, 0.616, 0.149, 1.0));
+			ruler_label_x_z->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5));
+			ruler_label_x_z->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			ruler_label_x_z->add_theme_font_size_override(SceneStringName(font_size), 10 * EDSCALE);
+			ruler_label_x_z->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			angle_label_theta_1->add_theme_color_override(SceneStringName(font_color), Color(1.0, 0.9, 0.0, 1.0));
+			angle_label_theta_1->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5));
+			angle_label_theta_1->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			angle_label_theta_1->add_theme_font_size_override(SceneStringName(font_size), 10 * EDSCALE);
+			angle_label_theta_1->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			angle_label_theta_2->add_theme_color_override(SceneStringName(font_color), Color(1.0, 0.9, 0.0, 1.0));
+			angle_label_theta_2->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5));
+			angle_label_theta_2->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			angle_label_theta_2->add_theme_font_size_override(SceneStringName(font_size), 10 * EDSCALE);
+			angle_label_theta_2->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			angle_label_phi_1->add_theme_color_override(SceneStringName(font_color), Color(0.98, 0.616, 0.149, 1.0));
+			angle_label_phi_1->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5));
+			angle_label_phi_1->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			angle_label_phi_1->add_theme_font_size_override(SceneStringName(font_size), 10 * EDSCALE);
+			angle_label_phi_1->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			angle_label_phi_2->add_theme_color_override(SceneStringName(font_color), Color(0.98, 0.616, 0.149, 1.0));
+			angle_label_phi_2->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5));
+			angle_label_phi_2->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			angle_label_phi_2->add_theme_font_size_override(SceneStringName(font_size), 10 * EDSCALE);
+			angle_label_phi_2->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -5928,6 +6145,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ruler_end_point = memnew(Node3D);
 	ruler_end_point->set_visible(false);
 
+	// Ruler material
 	ruler_material.instantiate();
 	ruler_material->set_albedo(Color(1.0, 0.9, 0.0, 1.0));
 	ruler_material->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
@@ -5942,7 +6160,71 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ruler_material_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
 	ruler_material_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
 
+	// X materials (Red)
+	ruler_material_x.instantiate();
+	ruler_material_x->set_albedo(Color(0.96, 0.20, 0.32, 1.0));
+	ruler_material_x->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_x->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_x->set_depth_draw_mode(BaseMaterial3D::DEPTH_DRAW_DISABLED);
+
+	ruler_material_x_xray.instantiate();
+	ruler_material_x_xray->set_albedo(Color(0.96, 0.20, 0.32, 0.15));
+	ruler_material_x_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_x_xray->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_x_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	ruler_material_x_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+	ruler_material_x_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
+
+	// Y materials (Green)
+	ruler_material_y.instantiate();
+	ruler_material_y->set_albedo(Color(0.53, 0.84, 0.01, 1.0));
+	ruler_material_y->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_y->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_y->set_depth_draw_mode(BaseMaterial3D::DEPTH_DRAW_DISABLED);
+
+	ruler_material_y_xray.instantiate();
+	ruler_material_y_xray->set_albedo(Color(0.53, 0.84, 0.01, 0.15));
+	ruler_material_y_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_y_xray->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_y_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	ruler_material_y_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+	ruler_material_y_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
+
+	// Z materials (Blue)
+	ruler_material_z.instantiate();
+	ruler_material_z->set_albedo(Color(0.16, 0.55, 0.96, 1.0));
+	ruler_material_z->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_z->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_z->set_depth_draw_mode(BaseMaterial3D::DEPTH_DRAW_DISABLED);
+
+	ruler_material_z_xray.instantiate();
+	ruler_material_z_xray->set_albedo(Color(0.16, 0.55, 0.96, 0.15));
+	ruler_material_z_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_z_xray->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_z_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	ruler_material_z_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+	ruler_material_z_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
+
+	// XZ materials (Orange)
+	ruler_material_x_z.instantiate();
+	ruler_material_x_z->set_albedo(Color(0.98, 0.616, 0.149, 1.0));
+	ruler_material_x_z->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_x_z->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_x_z->set_depth_draw_mode(BaseMaterial3D::DEPTH_DRAW_DISABLED);
+
+	ruler_material_x_z_xray.instantiate();
+	ruler_material_x_z_xray->set_albedo(Color(0.98, 0.616, 0.149, 0.15));
+	ruler_material_x_z_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_x_z_xray->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_x_z_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	ruler_material_x_z_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+	ruler_material_x_z_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
+
 	geometry.instantiate();
+	geometry_x.instantiate();
+	geometry_y.instantiate();
+	geometry_z.instantiate();
+	geometry_x_z.instantiate();
 
 	ruler_line = memnew(MeshInstance3D);
 	ruler_line->set_mesh(geometry);
@@ -5952,15 +6234,92 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ruler_line_xray->set_mesh(geometry);
 	ruler_line_xray->set_material_override(ruler_material_xray);
 
+	// X helper line in Red
+	ruler_line_x = memnew(MeshInstance3D);
+	ruler_line_x->set_mesh(geometry_x);
+	ruler_line_x->set_material_override(ruler_material_x);
+
+	ruler_line_x_xray = memnew(MeshInstance3D);
+	ruler_line_x_xray->set_mesh(geometry_x);
+	ruler_line_x_xray->set_material_override(ruler_material_x_xray);
+
+	// Y helper line in Green
+	ruler_line_y = memnew(MeshInstance3D);
+	ruler_line_y->set_mesh(geometry_y);
+	ruler_line_y->set_material_override(ruler_material_y);
+
+	ruler_line_y_xray = memnew(MeshInstance3D);
+	ruler_line_y_xray->set_mesh(geometry_y);
+	ruler_line_y_xray->set_material_override(ruler_material_y_xray);
+
+	// Z helper line in Blue
+	ruler_line_z = memnew(MeshInstance3D);
+	ruler_line_z->set_mesh(geometry_z);
+	ruler_line_z->set_material_override(ruler_material_z);
+
+	ruler_line_z_xray = memnew(MeshInstance3D);
+	ruler_line_z_xray->set_mesh(geometry_z);
+	ruler_line_z_xray->set_material_override(ruler_material_z_xray);
+
+	// XZ helper line in Orange
+	ruler_line_x_z = memnew(MeshInstance3D);
+	ruler_line_x_z->set_mesh(geometry_x_z);
+	ruler_line_x_z->set_material_override(ruler_material_x_z);
+
+	ruler_line_x_z_xray = memnew(MeshInstance3D);
+	ruler_line_x_z_xray->set_mesh(geometry_x_z);
+	ruler_line_x_z_xray->set_material_override(ruler_material_x_z_xray);
+
 	ruler_label = memnew(Label);
 	ruler_label->set_visible(false);
+
+	ruler_label_x = memnew(Label);
+	ruler_label_x->set_visible(false);
+
+	ruler_label_y = memnew(Label);
+	ruler_label_y->set_visible(false);
+
+	ruler_label_z = memnew(Label);
+	ruler_label_z->set_visible(false);
+
+	ruler_label_x_z = memnew(Label);
+	ruler_label_x_z->set_visible(false);
+
+	angle_label_theta_1 = memnew(Label);
+	angle_label_theta_1->set_visible(false);
+
+	angle_label_theta_2 = memnew(Label);
+	angle_label_theta_2->set_visible(false);
+
+	angle_label_phi_1 = memnew(Label);
+	angle_label_phi_1->set_visible(false);
+
+	angle_label_phi_2 = memnew(Label);
+	angle_label_phi_2->set_visible(false);
 
 	ruler->add_child(ruler_start_point);
 	ruler->add_child(ruler_end_point);
 	ruler->add_child(ruler_line);
 	ruler->add_child(ruler_line_xray);
+	ruler->add_child(ruler_line_x);
+	ruler->add_child(ruler_line_x_xray);
+	ruler->add_child(ruler_line_y);
+	ruler->add_child(ruler_line_y_xray);
+	ruler->add_child(ruler_line_z);
+	ruler->add_child(ruler_line_z_xray);
+	ruler->add_child(ruler_line_x_z);
+	ruler->add_child(ruler_line_x_z_xray);
 
 	viewport->add_child(ruler_label);
+	viewport->add_child(ruler_label_x);
+	viewport->add_child(ruler_label_y);
+	viewport->add_child(ruler_label_z);
+	viewport->add_child(ruler_label_x_z);
+
+	viewport->add_child(angle_label_theta_1);
+	viewport->add_child(angle_label_theta_2);
+	viewport->add_child(angle_label_phi_1);
+	viewport->add_child(angle_label_phi_2);
 
 	view_type = VIEW_TYPE_USER;
 	_update_name();
