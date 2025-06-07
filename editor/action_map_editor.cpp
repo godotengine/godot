@@ -33,6 +33,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/event_listener_line_edit.h"
+#include "editor/gui/editor_event_search_bar.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
@@ -223,9 +224,8 @@ void ActionMapEditor::_tree_item_activated() {
 	_tree_button_pressed(item, 2, BUTTON_EDIT_EVENT, MouseButton::LEFT);
 }
 
-void ActionMapEditor::set_show_builtin_actions(bool p_show) {
+void ActionMapEditor::_set_show_builtin_actions(bool p_show) {
 	show_builtin_actions = p_show;
-	show_builtin_actions_checkbutton->set_pressed(p_show);
 	EditorSettings::get_singleton()->set_project_metadata("project_settings", "show_builtin_actions", show_builtin_actions);
 
 	// Prevent unnecessary updates of action list when cache is empty.
@@ -234,14 +234,17 @@ void ActionMapEditor::set_show_builtin_actions(bool p_show) {
 	}
 }
 
-void ActionMapEditor::_search_term_updated(const String &) {
-	update_action_list();
-}
-
-void ActionMapEditor::_search_by_event(const Ref<InputEvent> &p_event) {
-	if (p_event.is_null() || (p_event->is_pressed() && !p_event->is_echo())) {
-		update_action_list();
+void ActionMapEditor::_on_search_bar_value_changed() {
+	if (action_list_search_bar->is_searching()) {
+		show_builtin_actions_checkbutton->set_pressed_no_signal(true);
+		show_builtin_actions_checkbutton->set_disabled(true);
+		show_builtin_actions_checkbutton->set_tooltip_text(TTRC("Built-in actions are always shown when searching."));
+	} else {
+		show_builtin_actions_checkbutton->set_pressed_no_signal(show_builtin_actions);
+		show_builtin_actions_checkbutton->set_disabled(false);
+		show_builtin_actions_checkbutton->set_tooltip_text(String());
 	}
+	update_action_list();
 }
 
 Variant ActionMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -371,7 +374,6 @@ void ActionMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
@@ -386,12 +388,10 @@ void ActionMapEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::STRING, "relative_to"), PropertyInfo(Variant::BOOL, "before")));
-	ADD_SIGNAL(MethodInfo(SNAME("filter_focused")));
-	ADD_SIGNAL(MethodInfo(SNAME("filter_unfocused")));
 }
 
 LineEdit *ActionMapEditor::get_search_box() const {
-	return action_list_search;
+	return action_list_search_bar->get_name_search_box();
 }
 
 LineEdit *ActionMapEditor::get_path_box() const {
@@ -403,7 +403,7 @@ InputEventConfigurationDialog *ActionMapEditor::get_configuration_dialog() {
 }
 
 bool ActionMapEditor::_should_display_action(const String &p_name, const Array &p_events) const {
-	const Ref<InputEvent> search_ev = action_list_search_by_event->get_event();
+	const Ref<InputEvent> search_ev = action_list_search_bar->get_event();
 	bool event_match = true;
 	if (search_ev.is_valid()) {
 		event_match = false;
@@ -415,7 +415,7 @@ bool ActionMapEditor::_should_display_action(const String &p_name, const Array &
 		}
 	}
 
-	return event_match && action_list_search->get_text().is_subsequence_ofn(p_name);
+	return event_match && action_list_search_bar->get_name().is_subsequence_ofn(p_name);
 }
 
 void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_infos) {
@@ -426,15 +426,13 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 	action_tree->clear();
 	TreeItem *root = action_tree->create_item();
 
-	for (int i = 0; i < actions_cache.size(); i++) {
-		ActionInfo action_info = actions_cache[i];
-
+	for (const ActionInfo &action_info : actions_cache) {
 		const Array events = action_info.action["events"];
 		if (!_should_display_action(action_info.name, events)) {
 			continue;
 		}
 
-		if (!action_info.editable && !show_builtin_actions) {
+		if (!action_info.editable && !action_list_search_bar->is_searching() && !show_builtin_actions) {
 			continue;
 		}
 
@@ -448,6 +446,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		action_item->set_meta("__name", action_info.name);
 
 		// First Column - Action Name
+		action_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		action_item->set_text(0, action_info.name);
 		action_item->set_editable(0, action_info.editable);
 		action_item->set_icon(0, action_info.icon);
@@ -464,13 +463,13 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			bool events_eq = Shortcut::is_event_array_equal(action_info.action_initial["events"], action_info.action["events"]);
 			bool action_eq = deadzone_eq && events_eq;
 			action_item->set_meta("__action_initial", action_info.action_initial);
-			action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("ReloadSmall")), BUTTON_REVERT_ACTION, action_eq, action_eq ? TTRC("Cannot Revert - Action is same as initial") : TTRC("Revert Action"));
+			action_item->add_button(2, get_editor_theme_icon(SNAME("ReloadSmall")), BUTTON_REVERT_ACTION, action_eq, action_eq ? TTRC("Cannot Revert - Action is same as initial") : TTRC("Revert Action"));
 		}
-		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Add")), BUTTON_ADD_EVENT, false, TTRC("Add Event"));
-		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTRC("Remove Action") : TTRC("Cannot Remove Action"));
+		action_item->add_button(2, get_editor_theme_icon(SNAME("Add")), BUTTON_ADD_EVENT, false, TTRC("Add Event"));
+		action_item->add_button(2, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTRC("Remove Action") : TTRC("Cannot Remove Action"));
 
-		action_item->set_custom_bg_color(0, action_tree->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
-		action_item->set_custom_bg_color(1, action_tree->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		action_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		action_item->set_custom_bg_color(1, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 		for (int evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
 			Ref<InputEvent> event = events[evnt_idx];
@@ -481,6 +480,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			TreeItem *event_item = action_tree->create_item(action_item);
 
 			// First Column - Text
+			event_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			event_item->set_text(0, EventListenerLineEdit::get_event_text(event, true));
 			event_item->set_meta("__event", event);
 			event_item->set_meta("__index", evnt_idx);
@@ -489,60 +489,43 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
 				if (k->get_physical_keycode() == Key::NONE && k->get_keycode() == Key::NONE && k->get_key_label() != Key::NONE) {
-					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardLabel")));
+					event_item->set_icon(0, get_editor_theme_icon(SNAME("KeyboardLabel")));
 				} else if (k->get_keycode() != Key::NONE) {
-					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("Keyboard")));
+					event_item->set_icon(0, get_editor_theme_icon(SNAME("Keyboard")));
 				} else if (k->get_physical_keycode() != Key::NONE) {
-					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardPhysical")));
+					event_item->set_icon(0, get_editor_theme_icon(SNAME("KeyboardPhysical")));
 				} else {
-					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardError")));
+					event_item->set_icon(0, get_editor_theme_icon(SNAME("KeyboardError")));
 				}
 			}
 
 			Ref<InputEventMouseButton> mb = event;
 			if (mb.is_valid()) {
-				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("Mouse")));
+				event_item->set_icon(0, get_editor_theme_icon(SNAME("Mouse")));
 			}
 
 			Ref<InputEventJoypadButton> jb = event;
 			if (jb.is_valid()) {
-				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("JoyButton")));
+				event_item->set_icon(0, get_editor_theme_icon(SNAME("JoyButton")));
 			}
 
 			Ref<InputEventJoypadMotion> jm = event;
 			if (jm.is_valid()) {
-				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("JoyAxis")));
+				event_item->set_icon(0, get_editor_theme_icon(SNAME("JoyAxis")));
 			}
 
 			// Third Column - Buttons
-			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_EVENT, false, TTRC("Edit Event"), TTRC("Edit Event"));
-			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTRC("Remove Event"), TTRC("Remove Event"));
+			event_item->add_button(2, get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_EVENT, false, TTRC("Edit Event"), TTRC("Edit Event"));
+			event_item->add_button(2, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTRC("Remove Event"), TTRC("Remove Event"));
 			event_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}
 	}
-
-	// Update UI.
-	clear_all_search->set_disabled(action_list_search->get_text().is_empty() && action_list_search_by_event->get_event().is_null());
 }
 
 void ActionMapEditor::show_message(const String &p_message) {
 	message->set_text(p_message);
 	message->popup_centered();
-}
-
-void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
-	memdelete(action_list_search);
-	action_list_search = p_searchbox;
-	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
-}
-
-void ActionMapEditor::_on_filter_focused() {
-	emit_signal(SNAME("filter_focused"));
-}
-
-void ActionMapEditor::_on_filter_unfocused() {
-	emit_signal(SNAME("filter_unfocused"));
 }
 
 ActionMapEditor::ActionMapEditor() {
@@ -551,32 +534,9 @@ ActionMapEditor::ActionMapEditor() {
 	main_vbox->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	add_child(main_vbox);
 
-	HBoxContainer *top_hbox = memnew(HBoxContainer);
-	main_vbox->add_child(top_hbox);
-
-	action_list_search = memnew(LineEdit);
-	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list_search->set_placeholder(TTRC("Filter by Name"));
-	action_list_search->set_accessibility_name(TTRC("Filter by Name"));
-	action_list_search->set_clear_button_enabled(true);
-	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
-	top_hbox->add_child(action_list_search);
-
-	action_list_search_by_event = memnew(EventListenerLineEdit);
-	action_list_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list_search_by_event->set_stretch_ratio(0.75);
-	action_list_search_by_event->set_accessibility_name(TTRC("Action Event"));
-	action_list_search_by_event->connect("event_changed", callable_mp(this, &ActionMapEditor::_search_by_event));
-	action_list_search_by_event->connect(SceneStringName(focus_entered), callable_mp(this, &ActionMapEditor::_on_filter_focused));
-	action_list_search_by_event->connect(SceneStringName(focus_exited), callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
-	top_hbox->add_child(action_list_search_by_event);
-
-	clear_all_search = memnew(Button);
-	clear_all_search->set_text(TTRC("Clear All"));
-	clear_all_search->set_tooltip_text(TTRC("Clear all search filters."));
-	clear_all_search->connect(SceneStringName(pressed), callable_mp(action_list_search_by_event, &EventListenerLineEdit::clear_event));
-	clear_all_search->connect(SceneStringName(pressed), callable_mp(action_list_search, &LineEdit::clear));
-	top_hbox->add_child(clear_all_search);
+	action_list_search_bar = memnew(EditorEventSearchBar);
+	action_list_search_bar->connect(SceneStringName(value_changed), callable_mp(this, &ActionMapEditor::_on_search_bar_value_changed));
+	main_vbox->add_child(action_list_search_bar);
 
 	// Adding Action line edit + button
 	add_hbox = memnew(HBoxContainer);
@@ -603,7 +563,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
 	show_builtin_actions_checkbutton->set_text(TTRC("Show Built-in Actions"));
-	show_builtin_actions_checkbutton->connect(SceneStringName(toggled), callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
+	show_builtin_actions_checkbutton->connect(SceneStringName(toggled), callable_mp(this, &ActionMapEditor::_set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
 
 	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
