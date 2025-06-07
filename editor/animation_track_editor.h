@@ -603,7 +603,6 @@ public:
 	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
 	int _get_theme_font_height(float p_scale) const;
 	float _get_pixels_sec(const int p_index, bool ignore_moving_selection = false) const;
-	String make_method_text(const Dictionary &d);
 
 public:
 	AnimationTrackEdit();
@@ -616,6 +615,7 @@ public:
 	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
 	virtual AnimationTrackEdit *create_audio_track_edit();
 	virtual AnimationTrackEdit *create_animation_track_edit(Object *p_object);
+	virtual AnimationTrackEdit *create_method_track_edit();
 };
 
 class AnimationTrackKeyEdit;
