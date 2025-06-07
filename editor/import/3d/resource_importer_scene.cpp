@@ -1366,10 +1366,10 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale, int p_extract_mat, const String &p_path) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps, p_applied_root_scale);
+		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps, p_applied_root_scale, p_extract_mat, p_path);
 		if (!r) {
 			i--; //was erased
 		}
@@ -1520,6 +1520,20 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					Ref<Material> mat = m->get_surface_material(i);
 					if (mat.is_valid()) {
 						String mat_id = mat->get_meta("import_id", mat->get_name());
+						if (p_extract_mat != 0) {
+							String path = p_path.path_join(mat_id.validate_filename() + ".material");
+							Dictionary matdata = p_material_data[mat_id];
+							matdata["use_external/enabled"] = true;
+							matdata["use_external/path"] = path;
+							if (!FileAccess::exists(path) || p_extract_mat == 2 /*overwrite*/) {
+								ResourceSaver::save(mat, path);
+							}
+
+							Ref<Material> external_mat = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
+							if (external_mat.is_valid()) {
+								m->set_surface_material(i, external_mat);
+							}
+						}
 
 						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
@@ -2434,6 +2448,8 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/remove_immutable_tracks"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import_rest_as_RESET"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "import_script/path", PROPERTY_HINT_FILE, script_ext_hint), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/extract", PROPERTY_HINT_ENUM, "Keep Internal,Extract Once,Extract and Overwrite"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "materials/extract_path", PROPERTY_HINT_DIR, ""), ""));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
 
@@ -3100,13 +3116,26 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		mesh_data = subresources["meshes"];
 	}
 
+	int extract_mat = 0;
+	if (p_options.has("materials/extract")) {
+		extract_mat = p_options["materials/extract"];
+	}
+
+	String spath = p_source_file.get_base_dir();
+	if (p_options.has("materials/extract_path")) {
+		String extpath = p_options["materials/extract_path"];
+		if (!extpath.is_empty()) {
+			spath = extpath;
+		}
+	}
+
 	float fps = 30;
 	if (p_options.has(SNAME("animation/fps"))) {
 		fps = (float)p_options[SNAME("animation/fps")];
 	}
 	bool remove_immutable_tracks = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
 	_pre_fix_animations(scene, scene, node_data, animation_data, fps);
-	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0);
+	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0, extract_mat, spath);
 	_post_fix_animations(scene, scene, node_data, animation_data, fps, remove_immutable_tracks);
 
 	String root_type = p_options["nodes/root_type"];
