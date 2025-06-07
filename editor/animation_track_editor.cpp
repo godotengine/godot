@@ -2858,12 +2858,14 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		}
 	}
 
+	/*
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
 		int limit = timeline->get_name_limit();
 		int limit_end = get_size().width - timeline->get_buttons_width();
 
 		draw_key__type_method(p_index, limit, limit_end);
 	}
+	*/
 
 	Rect2 region;
 	region.size = texture->get_size();
@@ -2901,69 +2903,7 @@ int AnimationTrackEdit::find_closest_key(const Point2 &p_pos) const {
 	return key_idx;
 }
 
-StringName AnimationTrackEdit::get_edit_name__type_method(const int p_index) {
-	Dictionary d = animation->track_get_key_value(track, p_index);
-	String method_name = make_method_text(d);
-	return method_name;
-}
-
-void AnimationTrackEdit::draw_key__type_method(int p_index, int p_clip_left, int p_clip_right) {
-	String method_name = get_edit_name__type_method(p_index);
-
-	Rect2 rect = get_global_key_rect(p_index);
-
-	if (rect.position.x + rect.size.x < p_clip_left) {
-		return;
-	}
-
-	if (rect.position.x > p_clip_right) {
-		return;
-	}
-
-	float clip_r = p_clip_right - REGION_FONT_MARGIN;
-	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-		Rect2 rect_next = get_global_key_rect(p_index + 1);
-		clip_r = MIN(rect_next.position.x - REGION_FONT_MARGIN, clip_r);
-	}
-
-	float text_pos = rect.position.x + rect.size.width + REGION_FONT_MARGIN;
-	float max_width = MAX(0.0, clip_r - text_pos);
-	if (max_width > 0) {
-		const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-		color.a = 0.5;
-
-		String edit_name = animationTrackDrawUtils->_make_text_clipped(method_name, font, font_size, max_width);
-
-		int f_h = int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
-		draw_string(font, Vector2(text_pos, f_h), edit_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
-	}
-}
-
 // Helper.
-
-String AnimationTrackEdit::make_method_text(const Dictionary &d) {
-	String text;
-
-	if (d.has("method")) {
-		text += String(d["method"]);
-	}
-	text += "(";
-	Vector<Variant> args;
-	if (d.has("args")) {
-		args = d["args"];
-	}
-	for (int i = 0; i < args.size(); i++) {
-		if (i > 0) {
-			text += ", ";
-		}
-		text += args[i].get_construct_string();
-	}
-	text += ")";
-
-	return text;
-}
 
 void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	Rect2 rect = get_global_key_rect(p_index);
@@ -4005,7 +3945,13 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 	return nullptr;
 }
 
-///////////////////////////////////////
+AnimationTrackEdit *AnimationTrackEditPlugin::create_method_track_edit() {
+	if (get_script_instance()) {
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_method_track_edit").operator Object *());
+	}
+	return nullptr;
+}
+		///////////////////////////////////////
 
 void AnimationTrackEditGroup::_notification(int p_what) {
 	switch (p_what) {
@@ -4638,7 +4584,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 	}
 
 	insert_data.push_back(p_id);
-
+	
 	// Without queue, commit immediately.
 	if (!insert_queue) {
 		commit_insert_queue();
@@ -5389,6 +5335,15 @@ void AnimationTrackEditor::_update_tracks() {
 					if (track_edit) {
 						break;
 					}
+				}
+			}
+		}
+
+		if (animation->track_get_type(i) == Animation::TYPE_METHOD) {
+			for (int j = 0; j < track_edit_plugins.size(); j++) {
+				track_edit = track_edit_plugins.write[j]->create_method_track_edit();
+				if (track_edit) {
+					break;
 				}
 			}
 		}
