@@ -652,9 +652,8 @@ void NavigationAgent2D::set_velocity(const Vector2 p_velocity) {
 	velocity_submitted = true;
 }
 
-void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
-	const Vector2 new_safe_velocity = Vector2(p_new_velocity.x, p_new_velocity.z);
-	safe_velocity = new_safe_velocity;
+void NavigationAgent2D::_avoidance_done(Vector2 p_new_velocity) {
+	safe_velocity = p_new_velocity;
 	emit_signal(SNAME("velocity_computed"), safe_velocity);
 }
 
