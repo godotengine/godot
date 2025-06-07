@@ -45,6 +45,8 @@
 /// BOOL ///
 
 AnimationTrackEditBool::AnimationTrackEditBool() {
+	key_pivot.x = 0.5;
+	key_pivot.y = 0.5;
 }
 
 int AnimationTrackEditBool::get_key_width(const int p_index) const {
@@ -55,10 +57,6 @@ int AnimationTrackEditBool::get_key_width(const int p_index) const {
 int AnimationTrackEditBool::get_key_height(const int p_index) const {
 	Ref<Texture2D> texture = get_theme_icon(SNAME("checked"), SNAME("CheckBox"));
 	return texture->get_height();
-}
-
-Rect2 AnimationTrackEditBool::get_key_rect(const int p_index) const {
-	return AnimationTrackEdit::get_key_rect(p_index);
 }
 
 void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
@@ -93,6 +91,8 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 /// COLOR ///
 
 AnimationTrackEditColor::AnimationTrackEditColor() {
+	key_pivot.x = 0.5;
+	key_pivot.y = 0.5;
 }
 
 int AnimationTrackEditColor::get_key_width(const int p_index) const {
@@ -101,10 +101,6 @@ int AnimationTrackEditColor::get_key_width(const int p_index) const {
 
 int AnimationTrackEditColor::get_key_height(const int p_index) const {
 	return _get_theme_font_height(0.8);
-}
-
-Rect2 AnimationTrackEditColor::get_key_rect(const int p_index) const {
-	return AnimationTrackEdit::get_key_rect(p_index);
 }
 
 void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
@@ -188,6 +184,8 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 /// SPRITE FRAME / FRAME_COORDS ///
 
 AnimationTrackEditSpriteFrame::AnimationTrackEditSpriteFrame() {
+	key_pivot.x = 0.0;
+	key_pivot.y = 0.5;
 }
 
 int AnimationTrackEditSpriteFrame::get_key_width(const int p_index) const {
@@ -196,14 +194,6 @@ int AnimationTrackEditSpriteFrame::get_key_width(const int p_index) const {
 
 int AnimationTrackEditSpriteFrame::get_key_height(const int p_index) const {
 	return _get_theme_font_height(2.0);
-}
-
-Rect2 AnimationTrackEditSpriteFrame::get_key_rect(const int p_index) const {
-	int width = get_key_width(p_index);
-	int height = get_key_height(p_index);
-	Rect2 rect = Rect2(0, -height / 2, width, height);
-
-	return rect;
 }
 
 Ref<Resource> AnimationTrackEditSpriteFrame::get_resource(const int p_index) const {
@@ -335,14 +325,22 @@ void AnimationTrackEditSpriteFrame::set_as_coords() {
 /// SUB ANIMATION ///
 
 AnimationTrackEditSubAnim::AnimationTrackEditSubAnim() {
+	key_pivot.x = 0.0;
+	key_pivot.y = 0.5;
 }
 
-int AnimationTrackEditSubAnim::get_key_width(const int p_index) const {
-	return _get_theme_font_height(1.5);
-}
+bool AnimationTrackEditSubAnim::has_valid_key(const int p_index) const {
+	Ref<Resource> resource = get_resource(p_index);
+	if (!resource.is_valid()) {
+		return false;
+	}
 
-int AnimationTrackEditSubAnim::get_key_height(const int p_index) const {
-	return _get_theme_font_height(1.5);
+	StringName edit_name = get_edit_name(p_index);
+	if (edit_name.is_empty() || edit_name == "[stop]") {
+		return false;
+	}
+
+	return true;
 }
 
 void AnimationTrackEditSubAnim::get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
@@ -410,6 +408,8 @@ StringName AnimationTrackEditSubAnim::get_edit_name(const int p_index) const {
 //// VOLUME DB ////
 
 AnimationTrackEditVolumeDB::AnimationTrackEditVolumeDB() {
+	key_pivot.x = 0.5;
+	key_pivot.y = 0.5;
 }
 
 int AnimationTrackEditVolumeDB::get_key_width(const int p_index) const {
@@ -474,15 +474,18 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 /// AUDIO ///
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
+	key_pivot.x = 0.0;
+	key_pivot.y = 0.5;
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
 }
 
-int AnimationTrackEditTypeAudio::get_key_width(const int p_index) const {
-	return _get_theme_font_height(1.5);
-}
+bool AnimationTrackEditTypeAudio::has_valid_key(const int p_index) const {
+	Ref<Resource> resource = get_resource(p_index);
+	if (!resource.is_valid()) {
+		return false;
+	}
 
-int AnimationTrackEditTypeAudio::get_key_height(const int p_index) const {
-	return _get_theme_font_height(1.5);
+	return true;
 }
 
 void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
@@ -538,15 +541,18 @@ void AnimationTrackEditTypeAudio::set_end_offset(const int p_index, const float 
 /// AUDIO ///
 
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
+	key_pivot.x = 0.0;
+	key_pivot.y = 0.5;
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditAudio::_preview_changed));
 }
 
-int AnimationTrackEditAudio::get_key_width(const int p_index) const {
-	return _get_theme_font_height(1.5);
-}
+bool AnimationTrackEditAudio::has_valid_key(const int p_index) const {
+	Ref<Resource> resource = get_resource(p_index);
+	if (!resource.is_valid()) {
+		return false;
+	}
 
-int AnimationTrackEditAudio::get_key_height(const int p_index) const {
-	return _get_theme_font_height(1.5);
+	return true;
 }
 
 void AnimationTrackEditAudio::_preview_changed(ObjectID p_which) {
@@ -585,15 +591,23 @@ float AnimationTrackEditAudio::get_length(const int p_index) const {
 /// TYPE ANIMATION ///
 
 AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
+	key_pivot.x = 0.0;
+	key_pivot.y = 0.5;
 	AnimationPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAnimation::_preview_changed));
 }
 
-int AnimationTrackEditTypeAnimation::get_key_width(const int p_index) const {
-	return _get_theme_font_height(1.5);
-}
+bool AnimationTrackEditTypeAnimation::has_valid_key(const int p_index) const {
+	Ref<Resource> resource = get_resource(p_index);
+	if (!resource.is_valid()) {
+		return false;
+	}
 
-int AnimationTrackEditTypeAnimation::get_key_height(const int p_index) const {
-	return _get_theme_font_height(1.5);
+	StringName edit_name = get_edit_name(p_index);
+	if (edit_name.is_empty() || edit_name == "[stop]") {
+		return false;
+	}
+
+	return true;
 }
 
 void AnimationTrackEditTypeAnimation::_preview_changed(ObjectID p_which) {
@@ -679,49 +693,7 @@ StringName AnimationTrackEditTypeAnimation::get_edit_name(const int p_index) con
 
 /// KEY ///
 
-bool AnimationTrackEditKey::__has_valid_key(const int p_index) const {
-	Ref<Resource> resource = get_resource(p_index);
-	if (!resource.is_valid()) {
-		return false;
-	}
-
-	StringName edit_name = get_edit_name(p_index);
-	if (edit_name.is_empty() || edit_name == "[stop]") {
-		return false;
-	}
-
-	return true;
-}
-
 int AnimationTrackEditKey::get_key_width(const int p_index) const {
-	/*
-	float start_ofs = get_start_offset(p_index);
-	float end_ofs = get_end_offset(p_index);
-	float len = get_length(p_index);
-
-	float anim_len = len - start_ofs - end_ofs;
-	if (anim_len < 0) {
-		WARN_PRINT("anim_len < 0");
-		anim_len = 0;
-	}
-
-	if (!len_resizing) {
-		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-			anim_len = MIN(anim_len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
-		}
-	}
-	float scale = get_timeline()->get_zoom_scale();
-	float pixel_len = anim_len * scale;
-	return pixel_len;
-	*/
-	return _get_theme_font_height(1.0);
-}
-
-int AnimationTrackEditKey::get_key_height(const int p_index) const {
-	return _get_theme_font_height(1.0);
-}
-
-float AnimationTrackEditKey::__get_key_width(const int p_index) const {
 	float start_ofs = get_start_offset(p_index);
 	float end_ofs = get_end_offset(p_index);
 	float len = get_length(p_index);
@@ -741,14 +713,8 @@ float AnimationTrackEditKey::__get_key_width(const int p_index) const {
 	return anim_len * scale;
 }
 
-Rect2 AnimationTrackEditKey::get_key_rect(const int p_index) const {
-	if (!__has_valid_key(p_index)) {
-		return AnimationTrackEdit::get_key_rect(p_index);
-	}
-
-	int width = __get_key_width(p_index);
-	int height = get_key_height(p_index);
-	return Rect2(0.0, -height * key_pivot, width, height);
+int AnimationTrackEditKey::get_key_height(const int p_index) const {
+	return _get_theme_font_height(1.0);
 }
 
 int AnimationTrackEditKey::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_clip_left, const int p_clip_right) {

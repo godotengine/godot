@@ -2803,13 +2803,13 @@ int AnimationKeyEdit::get_key_height(const int p_index) const {
 }
 
 Rect2 AnimationKeyEdit::get_key_rect(const int p_index) const {
-	if (animation.is_null()) {
+	if (!has_valid_key(p_index)) {
 		return Rect2();
 	}
 
 	int width = get_key_width(p_index);
 	int height = get_key_height(p_index);
-	Rect2 rect = Rect2(-width / 2, -height * key_pivot, width, height);
+	Rect2 rect = Rect2(-width * key_pivot.x, -height * key_pivot.y, width, height);
 
 	return rect;
 }
@@ -3968,7 +3968,8 @@ void AnimationTrackEdit::_bind_methods() {
 }
 
 AnimationTrackEdit::AnimationTrackEdit() {
-	key_pivot = 0.5;
+	key_pivot.x = 0.5;
+	key_pivot.y = 0.5;
 	track_alignment = 0.5;
 	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
 	animationTrackDrawUtils->canvas_item = this;
@@ -9791,7 +9792,8 @@ void AnimationMarkerEdit::_marker_rename_new_name_changed(const String &p_text) 
 }
 
 AnimationMarkerEdit::AnimationMarkerEdit() {
-	key_pivot = 1.0;
+	key_pivot.x = 0.5;
+	key_pivot.y = 1.0;
 	track_alignment = 1.0;
 	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
 	animationTrackDrawUtils->canvas_item = this;
