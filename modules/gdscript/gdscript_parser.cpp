@@ -1609,7 +1609,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_abstract, bool p_
 	return enum_node;
 }
 
-void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type) {
+void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type, int p_signature_start) {
 	if (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE) && !is_at_end()) {
 		bool default_used = false;
 		do {
@@ -1660,14 +1660,29 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 		current_class->has_static_data = true;
 	}
 
+#ifdef TOOLS_ENABLED
+	if (p_type == "function" && p_signature_start != -1) {
+		int signature_end_pos = tokenizer->get_current_position() - 1;
+		String source_code = tokenizer->get_source_code();
+		p_function->signature = source_code.substr(p_signature_start, signature_end_pos - p_signature_start);
+	}
+#endif // TOOLS_ENABLED
+
 	// TODO: Improve token consumption so it synchronizes to a statement boundary. This way we can get into the function body with unrecognized tokens.
 	consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":" after %s declaration.)", p_type));
 }
 
 GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_abstract, bool p_is_static) {
 	FunctionNode *function = alloc_node<FunctionNode>();
+	function->is_static = p_is_static;
 
 	make_completion_context(COMPLETION_OVERRIDE_METHOD, function);
+
+#ifdef TOOLS_ENABLED
+	// The signature is something like `(a: int, b: int = 0) -> void`.
+	// We start one token earlier, since the parser looks one token ahead.
+	const int signature_start_pos = tokenizer->get_current_position();
+#endif // TOOLS_ENABLED
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after "func".)")) {
 		complete_extents(function);
@@ -1678,7 +1693,6 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_abstract,
 	current_function = function;
 
 	function->identifier = parse_identifier();
-	function->is_static = p_is_static;
 
 	SuiteNode *body = alloc_node<SuiteNode>();
 
@@ -1687,13 +1701,18 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_abstract,
 
 	push_multiline(true);
 	consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected opening "(" after function name.)");
-	parse_function_signature(function, body, "function");
+
+#ifdef TOOLS_ENABLED
+	parse_function_signature(function, body, "function", signature_start_pos);
+#else // !TOOLS_ENABLED
+	parse_function_signature(function, body, "function", -1);
+#endif // TOOLS_ENABLED
 
 	current_suite = previous_suite;
 
 #ifdef TOOLS_ENABLED
 	function->min_local_doc_line = previous.end_line + 1;
-#endif
+#endif // TOOLS_ENABLED
 
 	function->body = parse_suite("function declaration", body);
 
@@ -3621,7 +3640,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	SuiteNode *previous_suite = current_suite;
 	current_suite = body;
 
-	parse_function_signature(function, body, "lambda");
+	parse_function_signature(function, body, "lambda", -1);
 
 	current_suite = previous_suite;
 
