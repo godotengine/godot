@@ -61,6 +61,7 @@ class Window;
 
 class AudioStreamImportSettingsDialog;
 class AudioStreamPreviewGenerator;
+class AnimationPreviewGenerator;
 class BackgroundProgress;
 class DependencyEditor;
 class DependencyErrorDialog;
@@ -415,6 +416,7 @@ private:
 	EditorMainScreen *editor_main_screen = nullptr;
 
 	AudioStreamPreviewGenerator *audio_preview_gen = nullptr;
+	AnimationPreviewGenerator *anim_preview_gen = nullptr;
 	ProgressDialog *progress_dialog = nullptr;
 	BackgroundProgress *progress_hb = nullptr;
 

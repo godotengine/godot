@@ -55,6 +55,57 @@ class TextureRect;
 class ViewPanner;
 class EditorValidationPanel;
 
+class AnimationTrackDrawUtils : public Object {
+	GDCLASS(AnimationTrackDrawUtils, Object);
+
+public:
+	CanvasItem *canvas_item;
+
+public:
+	void _draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right);
+	void _draw_grid_clipped(const Rect2 &p_rect, const Color &p_color, int p_raster_size, int p_clip_left, int p_clip_right);
+	void _draw_line_clipped(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
+	void _draw_vertical_line_clipped(const Point2 &p_from, float p_length, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
+	void _draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
+	String _make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width);
+};
+
+class AnimationKeyEdit : public Control { //XXX
+	GDCLASS(AnimationKeyEdit, Control);
+
+protected:
+	Vector2 key_pivot;
+	float track_alignment = 0.0;
+
+	Ref<Animation> animation;
+	bool read_only = false;
+
+	Ref<Texture2D> type_icon;
+	Ref<Texture2D> selected_icon;
+
+	//AnimationTimelineEdit *timeline = nullptr;
+	//AnimationTrackEditor *editor = nullptr;
+
+public:
+	virtual bool has_valid_key(const int p_index) const;
+
+	virtual int get_key_width(const int p_index) const;
+	virtual int get_key_height(const int p_index) const;
+	virtual Rect2 get_key_rect(const int p_index) const;
+
+	virtual bool is_key_selectable_by_distance() const;
+
+	virtual Rect2 get_global_key_rect(const int p_index, bool ignore_moving_selection = false) const;
+
+public:
+	virtual float _get_pixels_sec(const int p_index, bool ignore_moving_selection = false) const = 0;
+
+//public:
+//	virtual float get_key_time(const int p_index) const = 0;
+//	virtual bool is_key_selected(const int p_index) const = 0;
+//	virtual int get_key_count() const = 0;
+};
+
 class AnimationTrackKeyEdit : public Object {
 	GDCLASS(AnimationTrackKeyEdit, Object);
 
@@ -274,7 +325,7 @@ public:
 	AnimationTimelineEdit();
 };
 
-class AnimationMarkerEdit : public Control {
+class AnimationMarkerEdit : public AnimationKeyEdit { //XXX
 	GDCLASS(AnimationMarkerEdit, Control);
 	friend class AnimationTimelineEdit;
 
@@ -290,12 +341,6 @@ class AnimationMarkerEdit : public Control {
 	float play_position_pos = 0.0f;
 
 	HashSet<StringName> selection;
-
-	Ref<Animation> animation;
-	bool read_only = false;
-
-	Ref<Texture2D> type_icon;
-	Ref<Texture2D> selected_icon;
 
 	PopupMenu *menu = nullptr;
 
@@ -372,14 +417,21 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
+	bool has_marker(String p_name);
+	int get_marker_index(const StringName marker) const;
+	StringName get_marker_name(const int p_index) const;
+	double get_global_marker_time(int p_index) const;
+	int find_closest_key(const Point2 &p_pos) const;
+	float get_global_marker_pos(const StringName marker) const;
+
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	virtual int get_key_height() const;
-	virtual Rect2 get_key_rect(float p_pixels_sec) const;
-	virtual bool is_key_selectable_by_distance() const;
-	virtual void draw_key(const StringName &p_name, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
+	virtual void draw_key(const StringName &p_name, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	virtual void draw_bg(int p_clip_left, int p_clip_right);
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
+
+	// helper
+	float _get_pixels_sec(const int p_index, bool ignore_moving_selection = false) const;
 
 	Ref<Animation> get_animation() const;
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
@@ -404,10 +456,14 @@ public:
 	// For use by AnimationTrackEditor.
 	void _clear_selection(bool p_update);
 
+public:
+	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
+
+public:
 	AnimationMarkerEdit();
 };
 
-class AnimationTrackEdit : public Control {
+class AnimationTrackEdit : public AnimationKeyEdit { //XXX
 	GDCLASS(AnimationTrackEdit, Control);
 	friend class AnimationTimelineEdit;
 
@@ -442,8 +498,6 @@ class AnimationTrackEdit : public Control {
 	float play_position_pos = 0.0f;
 	NodePath node_path;
 
-	Ref<Animation> animation;
-	bool read_only = false;
 	int track = 0;
 
 	Rect2 check_rect;
@@ -454,9 +508,6 @@ class AnimationTrackEdit : public Control {
 	Rect2 interp_mode_rect;
 	Rect2 loop_wrap_rect;
 	Rect2 remove_rect;
-
-	Ref<Texture2D> type_icon;
-	Ref<Texture2D> selected_icon;
 
 	PopupMenu *menu = nullptr;
 
@@ -501,7 +552,22 @@ protected:
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	Node *get_root() const { return root; }
+
 public:
+	bool has_marker(String p_name);
+	int get_marker_index(const StringName marker) const;
+	StringName get_marker_name(const int p_index) const;
+	double get_global_marker_time(const int p_index) const;
+	bool has_key(int p_index);
+	float get_global_time(float p_time) const;
+	void draw_markers(float p_clip_left, float p_clip_right);
+	bool is_marker_selected(const StringName &p_marker) const;
+
+	StringName get_edit_name__type_method(const int p_index);
+	void draw_key__type_method(int p_index, int p_clip_left, int p_clip_right);
+	int find_closest_key(const Point2 &p_pos) const;
+
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
@@ -509,17 +575,10 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	virtual int get_key_height() const;
-	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
-	virtual bool is_key_selectable_by_distance() const;
 	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	virtual void draw_bg(int p_clip_left, int p_clip_right);
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
-
-	//helper
-	void draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region);
-	void draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled = true);
 
 	int get_track() const;
 	Ref<Animation> get_animation() const;
@@ -540,6 +599,13 @@ public:
 	void set_in_group(bool p_enable);
 	void append_to_selection(const Rect2 &p_box, bool p_deselection);
 
+public:
+	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
+	int _get_theme_font_height(float p_scale) const;
+	float _get_pixels_sec(const int p_index, bool ignore_moving_selection = false) const;
+	String make_method_text(const Dictionary &d);
+
+public:
 	AnimationTrackEdit();
 };
 
@@ -574,6 +640,12 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
+	double get_global_marker_time(const int p_index) const;
+	float get_global_time(float p_time) const;
+	StringName get_marker_name(const int p_index) const;
+	void draw_markers(float p_clip_left, float p_clip_right);
+
+public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
 	virtual Size2 get_minimum_size() const override;
 	void set_timeline(AnimationTimelineEdit *p_timeline);
@@ -581,6 +653,10 @@ public:
 	void set_editor(AnimationTrackEditor *p_editor);
 	String get_node_name() const;
 
+public:
+	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
+
+public:
 	AnimationTrackEditGroup();
 };
 
