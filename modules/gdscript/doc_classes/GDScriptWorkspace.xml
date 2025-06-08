@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptWorkspace" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Workspace related language server functionality.
+	</brief_description>
+	<description>
+		Provides language server functionality related to the workspace.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="apply_new_signal" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="void" />
+			<param index="0" name="obj" type="Object" />
+			<param index="1" name="function" type="String" />
+			<param index="2" name="args" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="didDeleteFiles" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="void" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="generate_script_api">
+			<return type="Dictionary" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the interface of the script in a machine-readable format.
+			</description>
+		</method>
+		<method name="get_file_path">
+			<return type="String" />
+			<param index="0" name="uri" type="String" />
+			<description>
+				Converts a URI to a file path.
+			</description>
+		</method>
+		<method name="get_file_uri" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Converts a file path to a URI.
+			</description>
+		</method>
+		<method name="parse_local_script" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="parse_script" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="content" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="publish_diagnostics" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
