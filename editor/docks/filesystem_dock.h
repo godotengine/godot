@@ -253,6 +253,10 @@ private:
 
 	HashSet<String> cached_valid_conversion_targets;
 
+	Vector<String> prev_selection;
+
+	void _update_selection_changed();
+
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
