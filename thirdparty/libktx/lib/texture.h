@@ -8,7 +8,7 @@
 
 /**
  * @internal
- * @file texture.h
+ * @file
  * @~English
  *
  * @brief Declare internal ktxTexture functions for sharing between
@@ -90,7 +90,8 @@ void ktxTexture_rowInfo(ktxTexture* This, ktx_uint32_t level,
                         ktx_uint32_t* numRows, ktx_uint32_t* rowBytes,
                         ktx_uint32_t* rowPadding);
 KTX_error_code
-ktxTexture_construct(ktxTexture* This, ktxTextureCreateInfo* createInfo,
+ktxTexture_construct(ktxTexture* This,
+                     const ktxTextureCreateInfo* const createInfo,
                      ktxFormatSize* formatSize);
 
 KTX_error_code

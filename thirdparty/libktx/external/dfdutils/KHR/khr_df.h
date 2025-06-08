@@ -1,6 +1,6 @@
-/* The Khronos Data Format Specification (version 1.3) */
+/* The Khronos Data Format Specification (version 1.4.0) */
 /*
-** Copyright 2015-2020 The Khronos Group Inc.
+** Copyright 2015-2025 The Khronos Group Inc.
 ** SPDX-License-Identifier: Apache-2.0
 */
 
@@ -101,7 +101,7 @@ typedef enum _khr_df_mask_e {
     ((BDB)[KHR_DF_WORD_ ## X] = \
      ((BDB)[KHR_DF_WORD_ ## X] & \
       ~((KHR_DF_MASK_ ## X) << (KHR_DF_SHIFT_ ## X))) | \
-     (((val) & (KHR_DF_MASK_ ## X)) << (KHR_DF_SHIFT_ ## X)))
+     (((uint32_t)(val) & (KHR_DF_MASK_ ## X)) << (KHR_DF_SHIFT_ ## X)))
 
 /* Offsets relative to the start of a sample */
 typedef enum _khr_df_sampleword_e {
@@ -135,14 +135,14 @@ typedef enum _khr_df_sampleshift_e {
 
 typedef enum _khr_df_samplemask_e {
     KHR_DF_SAMPLEMASK_BITOFFSET = 0xFFFFU,
-    KHR_DF_SAMPLEMASK_BITLENGTH = 0xFF,
-    KHR_DF_SAMPLEMASK_CHANNELID = 0xF,
+    KHR_DF_SAMPLEMASK_BITLENGTH = 0xFFU,
+    KHR_DF_SAMPLEMASK_CHANNELID = 0xFU,
     /* N.B. Qualifiers are defined as an offset into a byte */
-    KHR_DF_SAMPLEMASK_QUALIFIERS = 0xF0,
-    KHR_DF_SAMPLEMASK_SAMPLEPOSITION0 = 0xFF,
-    KHR_DF_SAMPLEMASK_SAMPLEPOSITION1 = 0xFF,
-    KHR_DF_SAMPLEMASK_SAMPLEPOSITION2 = 0xFF,
-    KHR_DF_SAMPLEMASK_SAMPLEPOSITION3 = 0xFF,
+    KHR_DF_SAMPLEMASK_QUALIFIERS = 0xF0U,
+    KHR_DF_SAMPLEMASK_SAMPLEPOSITION0 = 0xFFU,
+    KHR_DF_SAMPLEMASK_SAMPLEPOSITION1 = 0xFFU,
+    KHR_DF_SAMPLEMASK_SAMPLEPOSITION2 = 0xFFU,
+    KHR_DF_SAMPLEMASK_SAMPLEPOSITION3 = 0xFFU,
     /* ISO C restricts enum values to range of int hence the
        cast. We do it verbosely instead of using -1 to ensure
        it is a 32-bit value even if int is 64 bits. */
@@ -169,7 +169,7 @@ typedef enum _khr_df_samplemask_e {
             ((S) * KHR_DF_WORD_SAMPLEWORDS) + \
             KHR_DF_SAMPLEWORD_ ## X] & \
       ~((uint32_t)(KHR_DF_SAMPLEMASK_ ## X) << (KHR_DF_SAMPLESHIFT_ ## X))) | \
-     (((val) & (uint32_t)(KHR_DF_SAMPLEMASK_ ## X)) << (KHR_DF_SAMPLESHIFT_ ## X)))
+     (((uint32_t)(val) & (uint32_t)(KHR_DF_SAMPLEMASK_ ## X)) << (KHR_DF_SAMPLESHIFT_ ## X)))
 
 /* Helper macro:
    Number of samples in basic descriptor block BDB */
@@ -213,7 +213,8 @@ typedef enum _khr_df_versionnumber_e {
     KHR_DF_VERSIONNUMBER_1_1 = 0U, /* Version 1.1 did not bump the version number */
     KHR_DF_VERSIONNUMBER_1_2 = 1U, /* Version 1.2 increased the version number */
     KHR_DF_VERSIONNUMBER_1_3 = 2U, /* Version 1.3 increased the version number */
-    KHR_DF_VERSIONNUMBER_LATEST = KHR_DF_VERSIONNUMBER_1_3,
+    KHR_DF_VERSIONNUMBER_1_4 = 2U, /* Version 1.4.0 did not bump the block version number */
+    KHR_DF_VERSIONNUMBER_LATEST = KHR_DF_VERSIONNUMBER_1_4,
     KHR_DF_VERSIONNUMBER_MAX = 0xFFFFU
 } khr_df_versionnumber_e;
 
@@ -273,11 +274,15 @@ typedef enum _khr_df_model_e {
     KHR_DF_MODEL_DXT4          = 130U,
     KHR_DF_MODEL_DXT5          = 130U,
     KHR_DF_MODEL_BC3           = 130U,
-    /* BC4 - single channel interpolated 8-bit data */
+    /* ATI1n/DXT5A/BC4 - single channel interpolated 8-bit data */
     /* (The UNORM/SNORM variation is recorded in the channel data) */
+    KHR_DF_MODEL_ATI1N         = 131U,
+    KHR_DF_MODEL_DXT5A         = 131U,
     KHR_DF_MODEL_BC4           = 131U,
-    /* BC5 - two channel interpolated 8-bit data */
+    /* ATI2n_XY/DXN/BC5 - two channel interpolated 8-bit data */
     /* (The UNORM/SNORM variation is recorded in the channel data) */
+    KHR_DF_MODEL_ATI2N_XY      = 132U,
+    KHR_DF_MODEL_DXN           = 132U,
     KHR_DF_MODEL_BC5           = 132U,
     /* BC6H - DX11 format for 16-bit float channels */
     KHR_DF_MODEL_BC6H          = 133U,
@@ -502,7 +507,6 @@ typedef enum _khr_df_model_channels_e {
     KHR_DF_CHANNEL_PVRTC2_DATA  = 0U,
     KHR_DF_CHANNEL_PVRTC2_COLOR = 0U,
     /* MODEL UASTC */
-    KHR_DF_CHANNEL_UASTC_DATA  = 0U,
     KHR_DF_CHANNEL_UASTC_RGB   = 0U,
     KHR_DF_CHANNEL_UASTC_RGBA  = 3U,
     KHR_DF_CHANNEL_UASTC_RRR   = 4U,
@@ -538,6 +542,8 @@ typedef enum _khr_df_primaries_e {
     KHR_DF_PRIMARIES_BT601_SMPTE = 3U,
     /* Color primaries of ITU-R BT.2020 */
     KHR_DF_PRIMARIES_BT2020      = 4U,
+    /* ITU-R BT.2100 uses the same primaries as BT.2020 */
+    KHR_DF_PRIMARIES_BT2100      = 4U,
     /* CIE theoretical color coordinate space */
     KHR_DF_PRIMARIES_CIEXYZ      = 5U,
     /* Academy Color Encoding System primaries */
@@ -559,49 +565,78 @@ typedef enum _khr_df_primaries_e {
    ("gamma correction"). Most transfer functions are not a pure
    power function and also include a linear element.
    LAB and related absolute color representations should use
-   KHR_DF_TRANSFER_UNSPECIFIED. */
+   KHR_DF_TRANSFER_UNSPECIFIED.
+   These encodings indicate that the representation has had
+   the corresponding transfer function applied relative to a
+   linear representation; hence to process the linear intensity
+   represented by the value, a corresponding inverse transform
+   must be applied. */
 typedef enum _khr_df_transfer_e {
     /* No transfer function defined */
     KHR_DF_TRANSFER_UNSPECIFIED = 0U,
     /* Linear transfer function (value proportional to intensity) */
     KHR_DF_TRANSFER_LINEAR      = 1U,
-    /* Perceptually-linear transfer function of sRGH (~2.4) */
+    /* Perceptually-linear transfer function of sRGB (~2.2); also used for scRGB */
     KHR_DF_TRANSFER_SRGB        = 2U,
+    KHR_DF_TRANSFER_SRGB_EOTF   = 2U,
+    KHR_DF_TRANSFER_SCRGB       = 2U,
+    KHR_DF_TRANSFER_SCRGB_EOTF  = 2U,
     /* Perceptually-linear transfer function of ITU BT.601, BT.709 and BT.2020 (~1/.45) */
     KHR_DF_TRANSFER_ITU         = 3U,
-    /* SMTPE170M (digital NTSC) defines an alias for the ITU transfer function (~1/.45) */
-    KHR_DF_TRANSFER_SMTPE170M   = 3U,
+    KHR_DF_TRANSFER_ITU_OETF    = 3U,
+    KHR_DF_TRANSFER_BT601       = 3U,
+    KHR_DF_TRANSFER_BT601_OETF  = 3U,
+    KHR_DF_TRANSFER_BT709       = 3U,
+    KHR_DF_TRANSFER_BT709_OETF  = 3U,
+    KHR_DF_TRANSFER_BT2020      = 3U,
+    KHR_DF_TRANSFER_BT2020_OETF = 3U,
+    /* SMTPE170M (digital NTSC) defines an alias for the ITU transfer function (~1/.45) and a linear OOTF */
+    KHR_DF_TRANSFER_SMTPE170M      = 3U,
+    KHR_DF_TRANSFER_SMTPE170M_OETF = 3U,
+    KHR_DF_TRANSFER_SMTPE170M_EOTF = 3U,
     /* Perceptually-linear gamma function of original NTSC (simple 2.2 gamma) */
     KHR_DF_TRANSFER_NTSC        = 4U,
+    KHR_DF_TRANSFER_NTSC_EOTF   = 4U,
     /* Sony S-log used by Sony video cameras */
     KHR_DF_TRANSFER_SLOG        = 5U,
+    KHR_DF_TRANSFER_SLOG_OETF   = 5U,
     /* Sony S-log 2 used by Sony video cameras */
     KHR_DF_TRANSFER_SLOG2       = 6U,
+    KHR_DF_TRANSFER_SLOG2_OETF  = 6U,
     /* ITU BT.1886 EOTF */
     KHR_DF_TRANSFER_BT1886      = 7U,
-    /* ITU BT.2100 HLG OETF */
+    KHR_DF_TRANSFER_BT1886_EOTF = 7U,
+    /* ITU BT.2100 HLG OETF (typical scene-referred content), linear light normalized 0..1 */
     KHR_DF_TRANSFER_HLG_OETF    = 8U,
-    /* ITU BT.2100 HLG EOTF */
+    /* ITU BT.2100 HLG EOTF (nominal HDR display of HLG content), linear light normalized 0..1 */
     KHR_DF_TRANSFER_HLG_EOTF    = 9U,
-    /* ITU BT.2100 PQ EOTF */
+    /* ITU BT.2100 PQ EOTF (typical HDR display-referred PQ content) */
     KHR_DF_TRANSFER_PQ_EOTF     = 10U,
-    /* ITU BT.2100 PQ OETF */
+    /* ITU BT.2100 PQ OETF (nominal scene described by PQ HDR content) */
     KHR_DF_TRANSFER_PQ_OETF     = 11U,
     /* DCI P3 transfer function */
     KHR_DF_TRANSFER_DCIP3       = 12U,
+    KHR_DF_TRANSFER_DCIP3_EOTF  = 12U,
     /* Legacy PAL OETF */
     KHR_DF_TRANSFER_PAL_OETF    = 13U,
     /* Legacy PAL 625-line EOTF */
     KHR_DF_TRANSFER_PAL625_EOTF = 14U,
     /* Legacy ST240 transfer function */
     KHR_DF_TRANSFER_ST240       = 15U,
+    KHR_DF_TRANSFER_ST240_OETF  = 15U,
+    KHR_DF_TRANSFER_ST240_EOTF  = 15U,
     /* ACEScc transfer function */
     KHR_DF_TRANSFER_ACESCC      = 16U,
+    KHR_DF_TRANSFER_ACESCC_OETF = 16U,
     /* ACEScct transfer function */
-    KHR_DF_TRANSFER_ACESCCT     = 17U,
+    KHR_DF_TRANSFER_ACESCCT      = 17U,
+    KHR_DF_TRANSFER_ACESCCT_OETF = 17U,
     /* Adobe RGB (1998) transfer function */
-    KHR_DF_TRANSFER_ADOBERGB    = 18U,
-    KHR_DF_TRANSFER_MAX         = 0xFFU
+    KHR_DF_TRANSFER_ADOBERGB      = 18U,
+    KHR_DF_TRANSFER_ADOBERGB_EOTF = 18U,
+    /* Legacy ITU BT.2100 HLG OETF (typical scene-referred content), linear light normalized 0..12 */
+    KHR_DF_TRANSFER_HLG_UNNORMALIZED_OETF = 19U,
+    KHR_DF_TRANSFER_MAX                   = 0xFFU
 } khr_df_transfer_e;
 
 typedef enum _khr_df_flags_e {
