@@ -532,7 +532,7 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 
 	HSlider *slider = memnew(HSlider);
 	slider->set_v_size_flags(SIZE_SHRINK_CENTER);
-	slider->set_focus_mode(FOCUS_NONE);
+	slider->set_focus_mode(FOCUS_ACCESSIBILITY);
 	gc->add_child(slider);
 
 	SpinBox *val = memnew(SpinBox);
