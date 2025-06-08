@@ -46,6 +46,16 @@ constexpr const char *const NAV_MESH_CELL_SIZE_HINT = "0.001,100,0.001,or_greate
 constexpr float EDGE_CONNECTION_MARGIN = 0.25f;
 constexpr float LINK_CONNECTION_RADIUS = 1.0f;
 
+// Agent.
+
+constexpr float AVOIDANCE_AGENT_HEIGHT = 1.0;
+constexpr float AVOIDANCE_AGENT_RADIUS = 0.5;
+constexpr float AVOIDANCE_AGENT_MAX_SPEED = 10.0;
+constexpr float AVOIDANCE_AGENT_TIME_HORIZON_AGENTS = 1.0;
+constexpr float AVOIDANCE_AGENT_TIME_HORIZON_OBSTACLES = 0.0;
+constexpr int AVOIDANCE_AGENT_MAX_NEIGHBORS = 10;
+constexpr float AVOIDANCE_AGENT_NEIGHBOR_DISTANCE = 50.0;
+
 } //namespace NavigationDefaults3D
 
 namespace NavigationDefaults2D {
@@ -61,5 +71,14 @@ constexpr const char *const NAV_MESH_CELL_SIZE_HINT = "0.001,100,0.001,or_greate
 
 constexpr float EDGE_CONNECTION_MARGIN = 1.0f;
 constexpr float LINK_CONNECTION_RADIUS = 4.0f;
+
+// Agent.
+
+constexpr float AVOIDANCE_AGENT_RADIUS = 10.0;
+constexpr float AVOIDANCE_AGENT_MAX_SPEED = 100.0;
+constexpr float AVOIDANCE_AGENT_TIME_HORIZON_AGENTS = 1.0;
+constexpr float AVOIDANCE_AGENT_TIME_HORIZON_OBSTACLES = 0.0;
+constexpr int AVOIDANCE_AGENT_MAX_NEIGHBORS = 10;
+constexpr float AVOIDANCE_AGENT_NEIGHBOR_DISTANCE = 500.0;
 
 } //namespace NavigationDefaults2D
