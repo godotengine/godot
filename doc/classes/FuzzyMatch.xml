@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FuzzyMatch" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Result returned by [FuzzySearch] containing match information.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_matched_substrings">
+			<return type="Vector2i[]" />
+			<description>
+				Returns each matched substring interval of [member target]. The [member Vector2i.x] component is the start of the interval and the [member Vector2i.y] component is the length, corresponding to the arguments for [method String.substr].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="original_index" type="int" setter="set_original_index" getter="get_original_index" default="-1">
+			The original index of [member target] in the provided array of targets when using [method FuzzySearch.search_all] otherwise -1.
+		</member>
+		<member name="score" type="float" setter="set_score" getter="get_score" default="0.0">
+			Match score determined by [FuzzySearch]. Scores are not normalized and generally should not be directly compared between different queries.
+		</member>
+		<member name="target" type="String" setter="set_target" getter="get_target" default="&quot;&quot;">
+			Target string which was matched against.
+		</member>
+	</members>
+</class>

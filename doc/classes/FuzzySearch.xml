@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FuzzySearch" inherits="RefCounted" experimental="The available options and handling of results may change in the future." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides efficient fuzzy string searching and matching capabilities.
+	</brief_description>
+	<description>
+		The fuzzy search algorithm is designed to find target strings which mostly match a query string while allowing for breaks, typos, and out of order matches.
+		[codeblocks]
+		[gdscript]
+		var items := ["Potion of Healing", "Greater Health Potion", "Poison Vial"]
+
+		var fuzzy := FuzzySearch.new()
+		fuzzy.query = "health potion"
+
+		for result in fuzzy.search_all(items):
+			# Prints "Greater Health Potion", "Potion of Healing"
+			print(result.target)
+		[/gdscript]
+		[csharp]
+		string[] items = ["Potion of Healing", "Greater Health Potion", "Poison Vial"];
+
+		FuzzySearch fuzzy = new() { Query = "health potion" };
+
+		foreach (var result in fuzzy.SearchAll(items))
+		{
+			// Prints "Greater Health Potion", "Potion of Healing"
+			GD.Print(result.Target);
+		}
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="search" qualifiers="const">
+			<return type="FuzzyMatch" />
+			<param index="0" name="target" type="String" />
+			<description>
+				Searches the [param target] for [member query], returning a [FuzzyMatch] instance on success or [code]null[/code] otherwise.
+			</description>
+		</method>
+		<method name="search_all" qualifiers="const">
+			<return type="FuzzyMatch[]" />
+			<param index="0" name="targets" type="PackedStringArray" />
+			<description>
+				Searches all of [param targets] for [member query] and returns up to the top [member max_results] scoring values. The results are sorted by score in descending order. Low quality results are removed if [member filter_low_scores] is true.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="case_sensitive" type="bool" setter="set_case_sensitive" getter="get_case_sensitive" default="false">
+			Whether the [member query] character casing should be matched exactly or not.
+		</member>
+		<member name="filter_cutoff" type="float" setter="set_filter_cutoff" getter="get_filter_cutoff" default="30.0">
+			Minimum score for filtering results returned by [method search_all]. Value should be less than 100.
+		</member>
+		<member name="filter_factor" type="float" setter="set_filter_factor" getter="get_filter_factor" default="0.1">
+			Biases the filtering cutoff score between the average score and max score. Value should be between 0 and 1.
+		</member>
+		<member name="filter_low_scores" type="bool" setter="set_filter_low_scores" getter="get_filter_low_scores" default="true">
+			If true, lower quality matches are not returned by [method search_all]. The default filtering behavior is tuned to keep exact matches and reject significantly broken up matches. Setting this to false can potentially improve results when searching a small number of items.
+		</member>
+		<member name="max_misses" type="int" setter="set_max_misses" getter="get_max_misses" default="2">
+			Maximum number of non-matched characters in [member query] before skipping a target as non-matching. This option is ignored if [member use_exact_tokens] is true.
+		</member>
+		<member name="max_results" type="int" setter="set_max_results" getter="get_max_results" default="100">
+			Maximum number of results which can be returned by [method search_all].
+		</member>
+		<member name="query" type="String" setter="set_query" getter="get_query" default="&quot;&quot;">
+			The target string to search for. Tokens are determined by splitting this value on spaces.
+		</member>
+		<member name="use_exact_tokens" type="bool" setter="set_use_exact_tokens" getter="get_use_exact_tokens" default="false">
+			If true, only targets which contain each token as a non-overlapping substring are returned. Gaps and missed characters are not considered valid matches, but [member case_sensitive] is still used.
+		</member>
+	</members>
+</class>
