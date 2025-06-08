@@ -67,14 +67,6 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 		return;
 	}
 
-	if (rect.position.x + rect.size.x < p_clip_left) {
-		return;
-	}
-
-	if (rect.position.x > p_clip_right) {
-		return;
-	}
-
 	bool checked = get_animation()->track_get_key_value(get_track(), p_index);
 	Ref<Texture2D> texture = get_theme_icon(checked ? "checked" : "unchecked", "CheckBox");
 
@@ -105,14 +97,6 @@ int AnimationTrackEditTypeMethod::get_key_height(const int p_index) const {
 
 void AnimationTrackEditTypeMethod::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Rect2 rect = get_global_key_rect(p_index);
-
-	if (rect.position.x + rect.size.x < p_clip_left) {
-		return;
-	}
-
-	if (rect.position.x > p_clip_right) {
-		return;
-	}
 
 	float clip_r = p_clip_right - REGION_FONT_MARGIN;
 	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
@@ -380,14 +364,6 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 	}
 
 	Rect2 rect = get_global_key_rect(p_index);
-
-	if (rect.position.x + rect.size.x < p_clip_left) {
-		return;
-	}
-
-	if (rect.position.x > p_clip_right) {
-		return;
-	}
 
 	Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	Color bg = accent;

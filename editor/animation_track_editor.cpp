@@ -2414,40 +2414,11 @@ void AnimationTrackEdit::_notification(int p_what) {
 				}
 			}
 
-			// Marker overlays.
+			// Draw.
 
-			{
-				draw_markers(limit, limit_end);
-			}
-
-			// Keyframes.
-
+			draw_markers(limit, limit_end);
 			draw_bg(limit, limit_end);
-
-			{
-				float scale = timeline->get_zoom_scale();
-
-				for (int i = 0; i < animation->track_get_key_count(track); i++) {
-					float offset = _get_pixels_sec(i);
-					if (i < animation->track_get_key_count(track) - 1) {
-						float offset_n = _get_pixels_sec(i + 1);
-						float offset_last = limit_end;
-						if (i < animation->track_get_key_count(track) - 2) {
-							offset_last = _get_pixels_sec(i + 2);
-						}
-						int limit_string = (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) ? int(offset_last) : int(offset_n);
-						if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-							limit_string = int(MAX(limit_end, offset_last));
-						}
-						draw_key_link(i, scale, int(offset), int(offset_n), limit, limit_end);
-						draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, MIN(limit_string, limit_end));
-						continue;
-					}
-
-					draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
-				}
-			}
-
+			draw_timeline(limit, limit_end);
 			draw_fg(limit, limit_end);
 
 			// Buttons.
@@ -2651,6 +2622,30 @@ void AnimationTrackEdit::_notification(int p_what) {
 	}
 }
 
+void AnimationTrackEdit::draw_timeline(float p_clip_left, float p_clip_right) {
+	float scale = timeline->get_zoom_scale();
+
+	const int key_count = animation->track_get_key_count(track);
+	for (int i = 0; i < key_count; i++) {
+		const Rect2 rect = get_global_key_rect(i);
+
+		if (i < key_count - 1) {
+			const Rect2 next_rect = get_global_key_rect(i + 1);
+			draw_key_link(i, scale, rect.position.x, next_rect.position.x, p_clip_left, p_clip_right);
+		}
+
+		if (rect.position.x > p_clip_right) {
+			break;
+		}
+
+		if (rect.position.x + rect.size.x < p_clip_left) {
+			continue;
+		}
+
+		draw_key(i, scale, rect.position.x, editor->is_key_selected(track, i), p_clip_left, p_clip_right);
+	}
+}
+
 void AnimationTrackEdit::draw_markers(float p_clip_left, float p_clip_right) {
 	float scale = timeline->get_zoom_scale();
 
@@ -2828,20 +2823,7 @@ bool AnimationKeyEdit::is_key_selectable_by_distance() const {
 }
 
 void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	if (animation.is_null()) {
-		return;
-	}
-
 	Rect2 rect = AnimationTrackEdit::get_global_key_rect(p_index);
-
-	if (rect.position.x + rect.size.x < p_clip_left) {
-		return;
-	}
-
-	if (rect.position.x > p_clip_right) {
-		return;
-	}
-
 	Ref<Texture2D> texture = p_selected ? selected_icon : type_icon;
 
 	if (animation->track_get_type(track) == Animation::TYPE_VALUE && !Math::is_equal_approx(animation->track_get_key_transition(track, p_index), real_t(1.0))) {
@@ -2857,15 +2839,6 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 			texture = get_editor_theme_icon(SNAME("KeyInvalid"));
 		}
 	}
-
-	/*
-	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-		int limit = timeline->get_name_limit();
-		int limit_end = get_size().width - timeline->get_buttons_width();
-
-		draw_key__type_method(p_index, limit, limit_end);
-	}
-	*/
 
 	Rect2 region;
 	region.size = texture->get_size();
@@ -9102,10 +9075,23 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 			{
 				float scale = timeline->get_zoom_scale();
+				float clip_left = limit;
+				float clip_right = limit_end;
 
 				PackedStringArray names = animation->get_marker_names();
 				for (int i = 0; i < names.size(); i++) {
 					StringName marker_name = names[i];
+
+					Rect2 rect = get_global_key_rect(i);
+
+					if (rect.position.x + rect.size.x < clip_left) {
+						continue;
+					}
+
+					if (rect.position.x > clip_right) {
+						continue; //TOOD: make return maybe
+					}
+
 					float offset = get_global_marker_pos(marker_name);
 					bool is_selected = is_marker_selected(marker_name);
 					draw_key(marker_name, i, scale, int(offset), is_selected, limit, limit_end);
@@ -9407,20 +9393,7 @@ bool AnimationTrackEdit::is_marker_selected(const StringName &p_marker) const {
 }
 
 void AnimationMarkerEdit::draw_key(const StringName &p_name, int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-	if (animation.is_null()) {
-		return;
-	}
-
 	Rect2 rect = get_global_key_rect(p_index);
-
-	if (rect.position.x + rect.size.x < p_clip_left) {
-		return;
-	}
-
-	if (rect.position.x > p_clip_right) {
-		return;
-	}
-
 	Ref<Texture2D> texture = p_selected ? selected_icon : type_icon;
 
 	// Don't apply custom marker color when the key is selected.
