@@ -87,5 +87,10 @@
 				Emitted when an external [param resource] had its file removed.
 			</description>
 		</signal>
+		<signal name="selection_changed">
+			<description>
+				Emitted when the selection changes. Use [method EditorInterface.get_selected_paths] in the connected method to get the selected paths.
+			</description>
+		</signal>
 	</signals>
 </class>
