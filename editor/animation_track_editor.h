@@ -564,9 +564,8 @@ public:
 	void draw_markers(float p_clip_left, float p_clip_right);
 	bool is_marker_selected(const StringName &p_marker) const;
 
-	StringName get_edit_name__type_method(const int p_index);
-	void draw_key__type_method(int p_index, int p_clip_left, int p_clip_right);
 	int find_closest_key(const Point2 &p_pos) const;
+	void draw_timeline(float p_clip_left, float p_clip_right);
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
