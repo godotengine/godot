@@ -64,6 +64,8 @@ private:
 	int _max_fps = 0;
 	int _audio_output_latency = 0;
 	double _time_scale = 1.0;
+	double _time_scale_game = 1.0;
+	double _time_scale_user = 1.0;
 	uint64_t _physics_frames = 0;
 	int max_physics_steps_per_frame = 8;
 	double _physics_interpolation_fraction = 0.0f;
@@ -100,6 +102,9 @@ private:
 	bool frame_server_synced = false;
 
 	bool freeze_time_scale = false;
+
+protected:
+	void _update_time_scale();
 
 public:
 	static Engine *get_singleton();
@@ -209,6 +214,9 @@ public:
 	void set_freeze_time_scale(bool p_frozen);
 	void set_embedded_in_editor(bool p_enabled);
 	bool is_embedded_in_editor() const;
+
+	void set_time_scale_user(double p_scale);
+	double get_time_scale_user();
 
 	Engine();
 	virtual ~Engine();
