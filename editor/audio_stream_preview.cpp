@@ -214,23 +214,26 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 void AudioStreamPreview::create_key_region_data(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
 	float preview_len = get_length();
 	float pixel_begin = rect.position.x;
+
 	float from_x = rect.position.x;
-	float to_x = from_x + rect.size.x;
+	float to_x = rect.position.x + rect.size.x;
 
-	int pixel_len = preview_len * p_pixels_sec;
+	float pixel_len = preview_len * p_pixels_sec;
 
-	for (int i = from_x; i < to_x; i++) {
-		float ofs = (i - pixel_begin) * preview_len / pixel_len;
-		float ofs_n = ((i + 1) - pixel_begin) * preview_len / pixel_len;
+	for (int i = 0; i < points.size(); i++) {
+		int pixel_idx = i / 2;
+		bool is_min = (i % 2 == 0);
+
+		float pixel_x = from_x + pixel_idx;
+		float ofs = (pixel_x - pixel_begin) * preview_len / pixel_len;
+		float ofs_n = (pixel_x + 1 - pixel_begin) * preview_len / pixel_len;
 		ofs += start_ofs;
 		ofs_n += start_ofs;
 
-		float max = get_max(ofs, ofs_n) * 0.5 + 0.5;
-		float min = get_min(ofs, ofs_n) * 0.5 + 0.5;
+		float value = is_min ? get_min(ofs, ofs_n) : get_max(ofs, ofs_n);
+		value = value * 0.5f + 0.5f;
 
-		int idx = i - from_x;
-		points.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-		points.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+		points.write[i] = Vector2(pixel_x, rect.position.y + value * rect.size.y);
 	}
 }
 
