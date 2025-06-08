@@ -261,6 +261,9 @@ protected:
 	void _notification(int p_what);
 
 public:
+	double _get_timeline_pos(const double pos) const;
+
+public:
 	int get_name_limit() const;
 	int get_buttons_width() const;
 
@@ -312,20 +315,37 @@ public:
 	virtual int get_key_count() const = 0;
 	virtual double get_key_time(const int p_index) const = 0;
 
-	virtual int get_key_width(const int p_index) const;
-	virtual int get_key_height(const int p_index) const;
-	virtual Rect2 get_key_rect(const int p_index) const;
+	virtual float get_key_width(const int p_index) const;
+	virtual float get_key_height(const int p_index) const;
+
+	void _draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) = 0;
 
 	virtual bool is_key_selectable_by_distance() const;
 
-	virtual Rect2 get_global_key_rect(const int p_index, bool p_ignore_moving_selection = false) const;
+	Rect2 get_global_key_rect(const int p_index, bool p_ignore_moving_selection = false) const;
+	Rect2 get_key_rect(const int p_index) const;
 
 public:
+	bool has_valid_track() const;
+
+public:
+	Rect2 _get_key_rect(const int p_index) const;
 	float _get_pixels_sec(const int p_index, bool p_ignore_moving_selection = false) const;
+	float _get_local_time(const int p_index, float offset = 0) const;
+	void _draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
 
 public:
 	Rect2 _to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection = false) const;
 	Rect2 _to_local_key_rect(const int p_index, const Rect2 &p_global_rect, bool p_ignore_moving_selection) const;
+	//void _draw_simple_key_at_time(const double p_time, const float p_clip_left, const float p_clip_right, const bool p_selected = false, const bool p_hovering = false);
+	//Rect2 _get_global_key_rect_at_time(const double p_time, const bool p_selected = false) const;
+
+public:
+	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
+
+public:
+	AnimationKeyEdit();
 };
 
 
@@ -430,7 +450,7 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	virtual void draw_key(const StringName &p_name, const int p_index, const float p_pixels_sec, const int p_x, const bool p_selected, const float p_clip_left, const float p_clip_right);
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 	virtual void draw_bg(const float p_clip_left, const float p_clip_right);
 	virtual void draw_fg(const float p_clip_left, const float p_clip_right);
 
@@ -457,9 +477,6 @@ public:
 
 	// For use by AnimationTrackEditor.
 	void _clear_selection(bool p_update);
-
-public:
-	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
 
 public:
 	AnimationMarkerEdit();
@@ -576,7 +593,7 @@ public:
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	virtual void draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right);
-	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 	virtual void draw_bg(const float p_clip_left, const float p_clip_right);
 	virtual void draw_fg(const float p_clip_left, const float p_clip_right);
@@ -601,7 +618,6 @@ public:
 	void append_to_selection(const Rect2 &p_box, bool p_deselection);
 
 public:
-	AnimationTrackDrawUtils *animationTrackDrawUtils = nullptr;
 	int _get_theme_font_height(float p_scale) const;
 
 public:
@@ -800,6 +816,8 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
+
+	//void _draw_key_type(const int p_index, const AnimationTrackEdit &key);
 
 	//selection
 
