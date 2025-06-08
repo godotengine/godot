@@ -54,7 +54,7 @@ TileMapLayer *TileMapLayerSubEditorPlugin::_get_edited_layer() const {
 
 void TileMapLayerSubEditorPlugin::draw_tile_coords_over_viewport(Control *p_overlay, const TileMapLayer *p_edited_layer, Ref<TileSet> p_tile_set, bool p_show_rectangle_size, const Vector2i &p_rectangle_origin) {
 	Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
-	String text = p_tile_set->local_to_map(p_edited_layer->get_local_mouse_position());
+	String text = String(p_tile_set->local_to_map(p_edited_layer->get_local_mouse_position()));
 
 	if (p_show_rectangle_size) {
 		Vector2i rect_size = p_tile_set->local_to_map(p_edited_layer->get_local_mouse_position()) - p_tile_set->local_to_map(p_rectangle_origin);
