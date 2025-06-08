@@ -145,6 +145,7 @@ ivec3 multiview_uv(ivec2 uv) {
 }
 layout(location = 11) out vec4 combined_projected;
 #else // USE_MULTIVIEW
+#define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
@@ -919,6 +920,7 @@ ivec3 multiview_uv(ivec2 uv) {
 }
 layout(location = 11) in vec4 combined_projected;
 #else // USE_MULTIVIEW
+#define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
