@@ -2928,9 +2928,9 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					float h = animation->bezier_track_get_key_value(track, key_idx);
 					text += TTR("Value:") + " " + rtos(h) + "\n";
 					Vector2 ih = animation->bezier_track_get_key_in_handle(track, key_idx);
-					text += TTR("In-Handle:") + " " + ih + "\n";
+					text += TTR("In-Handle:") + " " + String(ih) + "\n";
 					Vector2 oh = animation->bezier_track_get_key_out_handle(track, key_idx);
-					text += TTR("Out-Handle:") + " " + oh + "\n";
+					text += TTR("Out-Handle:") + " " + String(oh) + "\n";
 					int hm = animation->bezier_track_get_key_handle_mode(track, key_idx);
 					switch (hm) {
 						case Animation::HANDLE_MODE_FREE: {

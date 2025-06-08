@@ -260,9 +260,9 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			x.type = type_vec2;
 			y.type = type_vec2;
 			origin.type = type_vec2;
-			x.value = transform.columns[0];
-			y.value = transform.columns[1];
-			origin.value = transform.columns[2];
+			x.value = String(transform.columns[0]);
+			y.value = String(transform.columns[1]);
+			origin.value = String(transform.columns[2]);
 			x.variablesReference = parse_variant(transform.columns[0]);
 			y.variablesReference = parse_variant(transform.columns[1]);
 			origin.variablesReference = parse_variant(transform.columns[2]);
@@ -280,7 +280,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			d.type = Variant::get_type_name(Variant::FLOAT);
 			normal.type = Variant::get_type_name(Variant::VECTOR3);
 			d.value = rtos(plane.d);
-			normal.value = plane.normal;
+			normal.value = String(plane.normal);
 			normal.variablesReference = parse_variant(plane.normal);
 
 			Array arr = { d.to_json(), normal.to_json() };
@@ -318,8 +318,8 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.name = "size";
 			position.type = type_vec3;
 			size.type = type_vec3;
-			position.value = aabb.position;
-			size.value = aabb.size;
+			position.value = String(aabb.position);
+			size.value = String(aabb.size);
 			position.variablesReference = parse_variant(aabb.position);
 			size.variablesReference = parse_variant(aabb.size);
 
@@ -338,9 +338,9 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			x.type = type_vec3;
 			y.type = type_vec3;
 			z.type = type_vec3;
-			x.value = basis.rows[0];
-			y.value = basis.rows[1];
-			z.value = basis.rows[2];
+			x.value = String(basis.rows[0]);
+			y.value = String(basis.rows[1]);
+			z.value = String(basis.rows[2]);
 			x.variablesReference = parse_variant(basis.rows[0]);
 			y.variablesReference = parse_variant(basis.rows[1]);
 			z.variablesReference = parse_variant(basis.rows[2]);
@@ -357,8 +357,8 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			origin.name = "origin";
 			basis.type = Variant::get_type_name(Variant::BASIS);
 			origin.type = Variant::get_type_name(Variant::VECTOR3);
-			basis.value = transform.basis;
-			origin.value = transform.origin;
+			basis.value = String(transform.basis);
+			origin.value = String(transform.origin);
 			basis.variablesReference = parse_variant(transform.basis);
 			origin.variablesReference = parse_variant(transform.origin);
 
@@ -560,7 +560,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::VECTOR2);
-				var.value = array[i];
+				var.value = String(array[i]);
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
 			}
@@ -581,7 +581,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::VECTOR3);
-				var.value = array[i];
+				var.value = String(array[i]);
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
 			}
@@ -602,7 +602,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::COLOR);
-				var.value = array[i];
+				var.value = String(array[i]);
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
 			}
@@ -624,7 +624,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::VECTOR4);
-				var.value = array[i];
+				var.value = String(array[i]);
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());
 			}

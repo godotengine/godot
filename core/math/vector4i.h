@@ -132,7 +132,7 @@ struct [[nodiscard]] Vector4i {
 	constexpr bool operator>(const Vector4i &p_v) const;
 	constexpr bool operator>=(const Vector4i &p_v) const;
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector4() const;
 
 	constexpr Vector4i() :
