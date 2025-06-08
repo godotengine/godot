@@ -453,6 +453,8 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+    _update_focus();
+
 	// Mouse events
 	const Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
@@ -490,6 +492,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void ViewportRotationControl::_update_focus() {
+
 	int original_focus = focused_axis;
 	focused_axis = -2;
 	Vector2 mouse_pos = get_local_mouse_position();
@@ -501,10 +504,16 @@ void ViewportRotationControl::_update_focus() {
 	Vector<Axis2D> axes;
 	_get_sorted_axis(axes);
 
+    bool revert_focus = Input::get_singleton()->is_key_pressed(Key::SHIFT);
+
 	for (int i = 0; i < axes.size(); i++) {
 		const Axis2D &axis = axes[i];
 		if (mouse_pos.distance_to(axis.screen_point) < AXIS_CIRCLE_RADIUS) {
-			focused_axis = axis.axis;
+            if (!revert_focus) {
+                focused_axis = axis.axis;
+            } else {
+                focused_axis = (axis.axis + 3) % axes.size();
+            }
 		}
 	}
 
