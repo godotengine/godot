@@ -172,6 +172,13 @@ class GameView : public VBoxContainer {
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
 
+	int const DEFAULT_TIME_SCALE_INDEX = 5;
+	Array time_scale_range = { 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 4.0f, 8.0f, 16.0f };
+	int time_scale_index = DEFAULT_TIME_SCALE_INDEX;
+
+	MenuButton *speed_state_button = nullptr;
+	Button *reset_speed_button = nullptr;
+
 	void _sessions_changed();
 
 	void _update_debugger_buttons();
@@ -184,6 +191,10 @@ class GameView : public VBoxContainer {
 	void _select_mode_pressed(int p_option);
 	void _embed_options_menu_menu_id_pressed(int p_id);
 	void _size_mode_button_pressed(int size_mode);
+
+	void _reset_time_scales();
+	void _update_time_scales();
+	void _speed_state_menu_pressed(int p_id);
 
 	void _play_pressed();
 	static void _instance_starting_static(int p_idx, List<String> &r_arguments);

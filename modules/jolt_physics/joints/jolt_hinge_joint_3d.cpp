@@ -49,8 +49,8 @@ constexpr double HINGE_DEFAULT_RELAXATION = 1.0;
 double estimate_physics_step() {
 	Engine *engine = Engine::get_singleton();
 
-	const double step = 1.0 / engine->get_physics_ticks_per_second();
-	const double step_scaled = step * engine->get_time_scale();
+	const double step = 1.0 / engine->get_user_physics_ticks_per_second();
+	const double step_scaled = step * engine->get_effective_time_scale();
 
 	return step_scaled;
 }
