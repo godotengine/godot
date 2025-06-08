@@ -102,6 +102,9 @@ class NavigationAgent2D : public Node {
 #ifdef DEBUG_ENABLED
 	// Debug properties internal only
 	bool debug_path_dirty = true;
+	RID debug_path_segments_mesh_rid;
+	RID debug_path_point_mesh_rid;
+	RID debug_path_points_multimesh_rid;
 	RID debug_path_instance;
 #endif // DEBUG_ENABLED
 

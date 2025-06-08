@@ -167,7 +167,7 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_use_custom"), "set_debug_use_custom", "get_debug_use_custom");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_path_custom_color"), "set_debug_path_custom_color", "get_debug_path_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "0,50,0.01,or_greater,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_line_width", PROPERTY_HINT_RANGE, "-1,50,0.01,or_greater,suffix:px"), "set_debug_path_custom_line_width", "get_debug_path_custom_line_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_line_width", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_debug_path_custom_line_width", "get_debug_path_custom_line_width");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
@@ -326,6 +326,16 @@ NavigationAgent2D::NavigationAgent2D() {
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationAgent2D::_navigation_debug_changed));
+
+	ERR_FAIL_NULL(RS::get_singleton());
+	RenderingServer *rs = RS::get_singleton();
+
+	debug_path_instance = rs->canvas_item_create();
+	debug_path_segments_mesh_rid = rs->mesh_create();
+	debug_path_point_mesh_rid = rs->mesh_create();
+	debug_path_points_multimesh_rid = rs->multimesh_create();
+
+	rs->multimesh_set_mesh(debug_path_points_multimesh_rid, debug_path_point_mesh_rid);
 #endif // DEBUG_ENABLED
 }
 
@@ -337,10 +347,12 @@ NavigationAgent2D::~NavigationAgent2D() {
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationAgent2D::_navigation_debug_changed));
 
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	if (debug_path_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_instance);
-	}
+	ERR_FAIL_NULL(RS::get_singleton());
+	RenderingServer *rs = RS::get_singleton();
+	rs->free(debug_path_instance);
+	rs->free(debug_path_points_multimesh_rid);
+	rs->free(debug_path_point_mesh_rid);
+	rs->free(debug_path_segments_mesh_rid);
 #endif // DEBUG_ENABLED
 }
 
@@ -996,12 +1008,9 @@ float NavigationAgent2D::get_debug_path_custom_point_size() const {
 
 void NavigationAgent2D::set_debug_path_custom_line_width(float p_line_width) {
 #ifdef DEBUG_ENABLED
-	if (Math::is_equal_approx(debug_path_custom_line_width, p_line_width)) {
-		return;
+	if (p_line_width != -1.0) {
+		WARN_DEPRECATED_MSG(R"(NavigationAgent2D "debug_path_custom_line_width" property is deprecated and has no effect.)");
 	}
-
-	debug_path_custom_line_width = p_line_width;
-	debug_path_dirty = true;
 #endif // DEBUG_ENABLED
 }
 
@@ -1020,11 +1029,12 @@ void NavigationAgent2D::_update_debug_path() {
 	}
 	debug_path_dirty = false;
 
-	if (!debug_path_instance.is_valid()) {
-		debug_path_instance = RenderingServer::get_singleton()->canvas_item_create();
-	}
+	RenderingServer *rs = RS::get_singleton();
+	ERR_FAIL_NULL(rs);
 
-	RenderingServer::get_singleton()->canvas_item_clear(debug_path_instance);
+	rs->canvas_item_clear(debug_path_instance);
+	rs->mesh_clear(debug_path_segments_mesh_rid);
+	rs->multimesh_set_visible_instances(debug_path_points_multimesh_rid, 0);
 
 	if (!(debug_enabled && NavigationServer2D::get_singleton()->get_debug_navigation_enable_agent_paths())) {
 		return;
@@ -1034,13 +1044,14 @@ void NavigationAgent2D::_update_debug_path() {
 		return;
 	}
 
-	RenderingServer::get_singleton()->canvas_item_set_parent(debug_path_instance, agent_parent->get_canvas());
-	RenderingServer::get_singleton()->canvas_item_set_z_index(debug_path_instance, RS::CANVAS_ITEM_Z_MAX - 1);
-	RenderingServer::get_singleton()->canvas_item_set_visible(debug_path_instance, agent_parent->is_visible_in_tree());
+	rs->canvas_item_set_parent(debug_path_instance, agent_parent->get_canvas());
+	rs->canvas_item_set_z_index(debug_path_instance, RS::CANVAS_ITEM_Z_MAX - 1);
+	rs->canvas_item_set_visible(debug_path_instance, agent_parent->is_visible_in_tree());
 
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();
+	const int navigation_path_size = navigation_path.size();
 
-	if (navigation_path.size() <= 1) {
+	if (navigation_path_size <= 1) {
 		return;
 	}
 
@@ -1049,11 +1060,16 @@ void NavigationAgent2D::_update_debug_path() {
 		debug_path_color = debug_path_custom_color;
 	}
 
-	Vector<Color> debug_path_colors;
-	debug_path_colors.resize(navigation_path.size());
-	debug_path_colors.fill(debug_path_color);
+	rs->canvas_item_set_self_modulate(debug_path_instance, debug_path_color);
 
-	RenderingServer::get_singleton()->canvas_item_add_polyline(debug_path_instance, navigation_path, debug_path_colors, debug_path_custom_line_width, false);
+	{
+		Array mesh_arrays;
+		mesh_arrays.resize(RS::ARRAY_MAX);
+		mesh_arrays[RS::ARRAY_VERTEX] = navigation_path;
+
+		rs->mesh_add_surface_from_arrays(debug_path_segments_mesh_rid, RS::PRIMITIVE_LINE_STRIP, mesh_arrays, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+		rs->canvas_item_add_mesh(debug_path_instance, debug_path_segments_mesh_rid, Transform2D());
+	}
 
 	if (debug_path_custom_point_size <= 0.0) {
 		return;
@@ -1067,10 +1083,70 @@ void NavigationAgent2D::_update_debug_path() {
 		half_point_size = debug_path_custom_point_size * 0.5;
 	}
 
-	for (int i = 0; i < navigation_path.size(); i++) {
-		const Vector2 &vert = navigation_path[i];
-		Rect2 path_point_rect = Rect2(vert.x - half_point_size, vert.y - half_point_size, point_size, point_size);
-		RenderingServer::get_singleton()->canvas_item_add_rect(debug_path_instance, path_point_rect, debug_path_color);
+	{
+		rs->mesh_clear(debug_path_point_mesh_rid);
+
+		Vector<Vector2> vertex_array;
+		vertex_array.resize(4);
+		Vector2 *vertex_array_ptrw = vertex_array.ptrw();
+		vertex_array_ptrw[0] = Vector2(-1.0, -1.0) * half_point_size;
+		vertex_array_ptrw[1] = Vector2(1.0, -1.0) * half_point_size;
+		vertex_array_ptrw[2] = Vector2(1.0, 1.0) * half_point_size;
+		vertex_array_ptrw[3] = Vector2(-1.0, 1.0) * half_point_size;
+
+		Vector<Vector2> uv_array;
+		uv_array.resize(4);
+		Vector2 *uv_array_ptrw = uv_array.ptrw();
+		uv_array_ptrw[0] = Vector2(0.0, 0.0);
+		uv_array_ptrw[1] = Vector2(1.0, 0.0);
+		uv_array_ptrw[2] = Vector2(1.0, 1.0);
+		uv_array_ptrw[3] = Vector2(0.0, 1.0);
+
+		Vector<int> index_array;
+		index_array.resize(6);
+		int *index_array_ptrw = index_array.ptrw();
+		index_array_ptrw[0] = 0;
+		index_array_ptrw[1] = 1;
+		index_array_ptrw[2] = 3;
+		index_array_ptrw[3] = 1;
+		index_array_ptrw[4] = 2;
+		index_array_ptrw[5] = 3;
+
+		Array mesh_arrays;
+		mesh_arrays.resize(RS::ARRAY_MAX);
+		mesh_arrays[RS::ARRAY_VERTEX] = vertex_array;
+		mesh_arrays[RS::ARRAY_TEX_UV] = uv_array;
+		mesh_arrays[RS::ARRAY_INDEX] = index_array;
+
+		rs->mesh_add_surface_from_arrays(debug_path_point_mesh_rid, RS::PRIMITIVE_TRIANGLES, mesh_arrays, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 	}
+
+	if (rs->multimesh_get_instance_count(debug_path_points_multimesh_rid) != int(navigation_path_size)) {
+		rs->multimesh_allocate_data(debug_path_points_multimesh_rid, navigation_path_size, RS::MULTIMESH_TRANSFORM_2D);
+	}
+
+	Vector<float> multimesh_buffer;
+	multimesh_buffer.resize(8 * navigation_path_size);
+	float *multimesh_buffer_ptrw = multimesh_buffer.ptrw();
+
+	const Vector2 *point_ptr = navigation_path.ptr();
+
+	for (int i = 0; i < navigation_path_size; i++) {
+		const Vector2 &point = point_ptr[i];
+
+		multimesh_buffer_ptrw[i * 8 + 0] = 1.0;
+		multimesh_buffer_ptrw[i * 8 + 1] = 0.0;
+		multimesh_buffer_ptrw[i * 8 + 2] = 0;
+		multimesh_buffer_ptrw[i * 8 + 3] = point[0];
+		multimesh_buffer_ptrw[i * 8 + 4] = 0.0;
+		multimesh_buffer_ptrw[i * 8 + 5] = 1.0;
+		multimesh_buffer_ptrw[i * 8 + 6] = 0;
+		multimesh_buffer_ptrw[i * 8 + 7] = point[1];
+	}
+
+	rs->multimesh_set_buffer(debug_path_points_multimesh_rid, multimesh_buffer);
+	rs->multimesh_set_visible_instances(debug_path_points_multimesh_rid, navigation_path_size);
+
+	rs->canvas_item_add_multimesh(debug_path_instance, debug_path_points_multimesh_rid);
 }
 #endif // DEBUG_ENABLED
