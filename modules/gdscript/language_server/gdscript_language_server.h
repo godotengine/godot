@@ -37,8 +37,6 @@
 class GDScriptLanguageServer : public EditorPlugin {
 	GDCLASS(GDScriptLanguageServer, EditorPlugin);
 
-	GDScriptLanguageProtocol protocol;
-
 	Thread thread;
 	bool thread_running = false;
 	bool started = false;
