@@ -2489,8 +2489,11 @@ void RichTextLabel::_notification(int p_what) {
 			while (ofs.y < size.height - v_limit && from_line < to_line) {
 				MutexLock lock(main->lines[from_line].text_buf->get_mutex());
 
-				visible_paragraph_count++;
-				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, vsep, theme_cache.default_color, theme_cache.outline_size, theme_cache.font_outline_color, theme_cache.font_shadow_color, theme_cache.shadow_outline_size, shadow_ofs, processed_glyphs);
+				int drawn_lines = _draw_line(main, from_line, ofs, text_rect.size.x, vsep, theme_cache.default_color, theme_cache.outline_size, theme_cache.font_outline_color, theme_cache.font_shadow_color, theme_cache.shadow_outline_size, shadow_ofs, processed_glyphs);
+				visible_line_count += drawn_lines;
+				if (drawn_lines > 0) {
+					visible_paragraph_count++;
+				}
 				ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * (theme_cache.line_separation + vsep);
 				from_line++;
 			}
@@ -6245,7 +6248,15 @@ void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 }
 
 int RichTextLabel::get_paragraph_count() const {
-	return main->lines.size();
+	int para_count = 0;
+	int to_line = main->first_invalid_line.load();
+	for (int i = 0; i < to_line; i++) {
+		if ((visible_characters >= 0) && main->lines[i].char_offset >= visible_characters) {
+			break;
+		}
+		para_count++;
+	}
+	return para_count;
 }
 
 int RichTextLabel::get_visible_paragraph_count() const {
@@ -6320,7 +6331,13 @@ int RichTextLabel::get_line_count() const {
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
 		MutexLock lock(main->lines[i].text_buf->get_mutex());
-		line_count += main->lines[i].text_buf->get_line_count();
+		for (int j = 0; j < main->lines[i].text_buf->get_line_count(); j++) {
+			RID rid = main->lines[i].text_buf->get_line_rid(j);
+			if ((visible_characters >= 0) && main->lines[i].char_offset + TS->shaped_text_get_range(rid).x >= visible_characters) {
+				break;
+			}
+			line_count++;
+		}
 	}
 	return line_count;
 }
