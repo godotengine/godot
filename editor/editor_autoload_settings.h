@@ -78,9 +78,11 @@ class EditorAutoloadSettings : public VBoxContainer {
 
 	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 
+	void _autoload_add_pressed();
 	void _autoload_add_index_pressed(int p_index);
 	void _autoload_add();
 	void _autoload_add_scene();
+
 	void _autoload_selected();
 	void _autoload_edited();
 	void _autoload_button_pressed(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);

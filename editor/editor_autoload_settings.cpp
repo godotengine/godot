@@ -169,6 +169,13 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	return true;
 }
 
+void EditorAutoloadSettings::_autoload_add_pressed() {
+	if (!autoload_add_path->get_text().is_empty()) {
+		add_autoload->get_popup()->hide();
+		_autoload_add();
+	}
+}
+
 void EditorAutoloadSettings::_autoload_add_index_pressed(int p_index) {
 	switch (p_index) {
 	case 0: // Script
@@ -1001,6 +1008,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	add_autoload = memnew(MenuButton);
 	add_autoload->set_text(TTRC("Add"));
+	add_autoload->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_autoload_add_pressed));
 	add_autoload->get_popup()->connect("index_pressed", callable_mp(this, &EditorAutoloadSettings::_autoload_add_index_pressed));
 	//add_autoload->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_autoload_add));
 	// The button will be enabled once a valid name is entered (either automatically or manually).
