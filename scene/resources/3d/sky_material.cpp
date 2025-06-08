@@ -295,10 +295,21 @@ void ProceduralSkyMaterial::_update_shader(bool p_use_debanding, bool p_use_sky_
 	int index = int(p_use_debanding) + int(p_use_sky_cover) * 2;
 	if (shader_cache[index].is_null()) {
 		shader_cache[index] = RS::get_singleton()->shader_create();
+		bool is_compat = RS::get_singleton()->get_current_rendering_method() == "gl_compatibility";
+		String sky_cover_code = vformat(R"(
+		vec4 sky_cover_texture = texture(sky_cover, SKY_COORDS);
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s sky += srgb_to_linear(sky_cover_texture.rgb * sky_cover_modulate.rgb) * sky_cover_texture.a * sky_cover_modulate.a;
+//#else
+		%s sky += sky_cover_texture.rgb * sky_cover_modulate.rgb * sky_cover_texture.a * sky_cover_modulate.a;
+//#endif
+)",
+				is_compat ? "" : "//", is_compat ? "//" : "");
 
 		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 		RS::get_singleton()->shader_set_code(shader_cache[index], vformat(R"(
 // NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
+// Uncomment preprocessor directives and code for similar results in all renderers.
 
 shader_type sky;
 %s
@@ -316,62 +327,104 @@ uniform float exposure : hint_range(0, 128) = 1.0;
 uniform sampler2D sky_cover : filter_linear, source_color, hint_default_black;
 uniform vec4 sky_cover_modulate : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 
+vec3 linear_to_srgb(vec3 color) {
+	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+	return max(vec3(1.055) * pow(color, vec3(0.416666667)) - vec3(0.055), vec3(0.0));
+}
+
+vec3 srgb_to_linear(vec3 color) {
+	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
+}
+
 void sky() {
 	float v_angle = clamp(EYEDIR.y, -1.0, 1.0);
-	vec3 sky = mix(sky_top_color.rgb, sky_horizon_color.rgb, clamp(pow(1.0 - v_angle, inv_sky_curve), 0.0, 1.0));
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	%s vec3 sky = mix(srgb_to_linear(sky_top_color.rgb), srgb_to_linear(sky_horizon_color.rgb), clamp(pow(1.0 - v_angle, inv_sky_curve), 0.0, 1.0));
+//#else
+	%s vec3 sky = mix(sky_top_color.rgb, sky_horizon_color.rgb, clamp(pow(1.0 - v_angle, inv_sky_curve), 0.0, 1.0));
+//#endif
 
 	if (LIGHT0_ENABLED) {
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s vec3 light_color = srgb_to_linear(LIGHT0_COLOR);
+//#else
+		%s vec3 light_color = LIGHT0_COLOR;
+//#endif
 		float sun_angle = dot(LIGHT0_DIRECTION, EYEDIR);
 		float sun_size = cos(LIGHT0_SIZE);
 		if (sun_angle > sun_size) {
-			sky = LIGHT0_COLOR * LIGHT0_ENERGY;
+			sky = light_color * LIGHT0_ENERGY;
 		} else if (sun_angle > sun_angle_max) {
 			float c2 = (sun_size - sun_angle) / (sun_size - sun_angle_max);
-			sky = mix(sky, LIGHT0_COLOR * LIGHT0_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
+			sky = mix(sky, light_color * LIGHT0_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
 
 	if (LIGHT1_ENABLED) {
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s vec3 light_color = srgb_to_linear(LIGHT1_COLOR);
+//#else
+		%s vec3 light_color = LIGHT1_COLOR;
+//#endif
 		float sun_angle = dot(LIGHT1_DIRECTION, EYEDIR);
 		float sun_size = cos(LIGHT1_SIZE);
 		if (sun_angle > sun_size) {
-			sky = LIGHT1_COLOR * LIGHT1_ENERGY;
+			sky = light_color * LIGHT1_ENERGY;
 		} else if (sun_angle > sun_angle_max) {
 			float c2 = (sun_size - sun_angle) / (sun_size - sun_angle_max);
-			sky = mix(sky, LIGHT1_COLOR * LIGHT1_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
+			sky = mix(sky, light_color * LIGHT1_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
 
 	if (LIGHT2_ENABLED) {
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s vec3 light_color = srgb_to_linear(LIGHT2_COLOR);
+//#else
+		%s vec3 light_color = LIGHT2_COLOR;
+//#endif
 		float sun_angle = dot(LIGHT2_DIRECTION, EYEDIR);
 		float sun_size = cos(LIGHT2_SIZE);
 		if (sun_angle > sun_size) {
-			sky = LIGHT2_COLOR * LIGHT2_ENERGY;
+			sky = light_color * LIGHT2_ENERGY;
 		} else if (sun_angle > sun_angle_max) {
 			float c2 = (sun_size - sun_angle) / (sun_size - sun_angle_max);
-			sky = mix(sky, LIGHT2_COLOR * LIGHT2_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
+			sky = mix(sky, light_color * LIGHT2_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
 
 	if (LIGHT3_ENABLED) {
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s vec3 light_color = srgb_to_linear(LIGHT3_COLOR);
+//#else
+		%s vec3 light_color = LIGHT3_COLOR;
+//#endif
 		float sun_angle = dot(LIGHT3_DIRECTION, EYEDIR);
 		float sun_size = cos(LIGHT3_SIZE);
 		if (sun_angle > sun_size) {
-			sky = LIGHT3_COLOR * LIGHT3_ENERGY;
+			sky = light_color * LIGHT3_ENERGY;
 		} else if (sun_angle > sun_angle_max) {
 			float c2 = (sun_size - sun_angle) / (sun_size - sun_angle_max);
-			sky = mix(sky, LIGHT3_COLOR * LIGHT3_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
+			sky = mix(sky, light_color * LIGHT3_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
 
 	%s
-	%s
-	vec3 ground = mix(ground_bottom_color.rgb, ground_horizon_color.rgb, clamp(pow(1.0 + v_angle, inv_ground_curve), 0.0, 1.0));
+
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	%s vec3 ground = mix(srgb_to_linear(ground_bottom_color.rgb), srgb_to_linear(ground_horizon_color.rgb), clamp(pow(1.0 + v_angle, inv_ground_curve), 0.0, 1.0));
+//#else
+	%s vec3 ground = mix(ground_bottom_color.rgb, ground_horizon_color.rgb, clamp(pow(1.0 + v_angle, inv_ground_curve), 0.0, 1.0));
+//#endif
 
 	COLOR = mix(ground, sky, step(0.0, EYEDIR.y)) * exposure;
+
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	%s COLOR = linear_to_srgb(COLOR);
+//#endif
 }
 )",
-																		  p_use_debanding ? "render_mode use_debanding;" : "", p_use_sky_cover ? "vec4 sky_cover_texture = texture(sky_cover, SKY_COORDS);" : "", p_use_sky_cover ? "sky += (sky_cover_texture.rgb * sky_cover_modulate.rgb) * sky_cover_texture.a * sky_cover_modulate.a;" : ""));
+																		  p_use_debanding ? "render_mode use_debanding;" : "", is_compat ? "" : "//", is_compat ? "//" : "", is_compat ? "" : "//", is_compat ? "//" : "", is_compat ? "" : "//", is_compat ? "//" : "", is_compat ? "" : "//", is_compat ? "//" : "", is_compat ? "" : "//", is_compat ? "//" : "", p_use_sky_cover ? sky_cover_code : "", is_compat ? "" : "//", is_compat ? "//" : "", is_compat ? "" : "//"));
 	}
 }
 
@@ -724,10 +777,12 @@ void PhysicalSkyMaterial::_update_shader(bool p_use_debanding, bool p_use_night_
 	int index = int(p_use_debanding) + int(p_use_night_sky) * 2;
 	if (shader_cache[index].is_null()) {
 		shader_cache[index] = RS::get_singleton()->shader_create();
+		bool is_compat = RS::get_singleton()->get_current_rendering_method() == "gl_compatibility";
 
 		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 		RS::get_singleton()->shader_set_code(shader_cache[index], vformat(R"(
 // NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
+// Uncomment preprocessor directives and code for similar results in all renderers.
 
 shader_type sky;
 %s
@@ -751,6 +806,16 @@ const vec3 UP = vec3( 0.0, 1.0, 0.0 );
 const float rayleigh_zenith_size = 8.4e3;
 const float mie_zenith_size = 1.25e3;
 
+vec3 linear_to_srgb(vec3 color) {
+	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+	return max(vec3(1.055) * pow(color, vec3(0.416666667)) - vec3(0.055), vec3(0.0));
+}
+
+vec3 srgb_to_linear(vec3 color) {
+	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
+}
+
 float henyey_greenstein(float cos_theta, float g) {
 	const float k = 0.0795774715459;
 	return k * (1.0 - g * g) / (pow(1.0 + g * g - 2.0 * g * cos_theta, 1.5));
@@ -764,9 +829,18 @@ void sky() {
 
 		// Rayleigh coefficients.
 		float rayleigh_coefficient = rayleigh - ( 1.0 * ( 1.0 - sun_fade ) );
-		vec3 rayleigh_beta = rayleigh_coefficient * rayleigh_color.rgb * 0.0001;
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s vec3 rayleigh_beta = rayleigh_coefficient * srgb_to_linear(rayleigh_color.rgb) * 0.0001;
+//#else
+		%s vec3 rayleigh_beta = rayleigh_coefficient * rayleigh_color.rgb * 0.0001;
+//#endif
+
 		// mie coefficients from Preetham
-		vec3 mie_beta = turbidity * mie * mie_color.rgb * 0.000434;
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s vec3 mie_beta = turbidity * mie * srgb_to_linear(mie_color.rgb) * 0.000434;
+//#else
+		%s vec3 mie_beta = turbidity * mie * mie_color.rgb * 0.000434;
+//#endif
 
 		// Optical length.
 		float zenith = max(0.0, dot(UP, EYEDIR));
@@ -791,18 +865,32 @@ void sky() {
 		Lin *= mix(vec3(1.0), pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * extinction, vec3(0.5)), clamp(pow(1.0 - zenith_angle, 5.0), 0.0, 1.0));
 
 		// Hack in the ground color.
-		Lin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s Lin *= mix(srgb_to_linear(ground_color.rgb), vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));
+//#else
+		%s Lin *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));
+//#endif
 
 		// Solar disk and out-scattering.
 		float sunAngularDiameterCos = cos(LIGHT0_SIZE * sun_disk_scale);
 		float sunAngularDiameterCos2 = cos(LIGHT0_SIZE * sun_disk_scale * 0.5);
 		float sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos2, cos_theta);
-		vec3 L0 = (sun_energy * extinction) * sundisk * LIGHT0_COLOR;
-		%s
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s vec3 L0 = (sun_energy * extinction) * sundisk * srgb_to_linear(LIGHT0_COLOR);
+		%s %s
+//#else
+		%s vec3 L0 = (sun_energy * extinction) * sundisk * LIGHT0_COLOR;
+		%s %s
+//#endif
 
 		vec3 color = Lin + L0;
 		COLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));
 		COLOR *= exposure;
+
+//#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		%s COLOR = linear_to_srgb(COLOR);
+//#endif
+
 	} else {
 		// There is no sun, so display night_sky and nothing else.
 		%s
@@ -810,7 +898,7 @@ void sky() {
 	}
 }
 )",
-																		  p_use_debanding ? "render_mode use_debanding;" : "", p_use_night_sky ? "L0 += texture(night_sky, SKY_COORDS).xyz * extinction;" : "", p_use_night_sky ? "COLOR = texture(night_sky, SKY_COORDS).xyz;" : ""));
+																		  p_use_debanding ? "render_mode use_debanding;" : "", is_compat ? "" : "//", is_compat ? "//" : "", is_compat ? "" : "//", is_compat ? "//" : "", is_compat ? "" : "//", is_compat ? "//" : "", is_compat ? "" : "//", (p_use_night_sky && !is_compat) ? "//" : "", p_use_night_sky ? "L0 += srgb_to_linear(texture(night_sky, SKY_COORDS).xyz) * extinction;" : "", is_compat ? "//" : "", (p_use_night_sky && is_compat) ? "//" : "", p_use_night_sky ? "L0 += texture(night_sky, SKY_COORDS).xyz * extinction;" : "", is_compat ? "" : "//", p_use_night_sky ? "COLOR = texture(night_sky, SKY_COORDS).xyz;" : ""));
 	}
 }
 
