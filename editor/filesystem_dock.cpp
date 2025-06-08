@@ -680,6 +680,7 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 	if (!updating_tree && display_mode != DISPLAY_MODE_TREE_ONLY) {
 		_update_file_list(false);
 	}
+	emit_signal(SNAME("selection_changed"));
 }
 
 Vector<String> FileSystemDock::get_selected_paths() const {
@@ -3563,6 +3564,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 
 void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
+	emit_signal(SNAME("selection_changed"));
 }
 
 void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -3628,6 +3630,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
 	file_list_popup->popup();
+	emit_signal(SNAME("selection_changed"));
 }
 
 void FileSystemDock::select_file(const String &p_file) {
@@ -3647,6 +3650,7 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 	// Update the import dock.
 	import_dock_needs_update = true;
 	callable_mp(this, &FileSystemDock::_update_import_dock).call_deferred();
+	emit_signal(SNAME("selection_changed"));
 }
 
 void FileSystemDock::_tree_mouse_exited() {
@@ -4022,6 +4026,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
 	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
 	ADD_SIGNAL(MethodInfo("folder_color_changed"));
+	ADD_SIGNAL(MethodInfo("selection_changed"));
 
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
