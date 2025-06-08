@@ -81,6 +81,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 	void _autoload_add_pressed();
 	void _autoload_add_index_pressed(int p_index);
 	void _autoload_add();
+	void _autoload_add_script();
 	void _autoload_add_scene();
 
 	void _autoload_selected();
