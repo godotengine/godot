@@ -4225,6 +4225,13 @@ Node::Node() {
 
 	data.ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
 	data.ready_first = true;
+
+	data.auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
+	data.is_auto_translating = true;
+	data.is_auto_translate_dirty = true;
+
+	data.is_translation_domain_inherited = true;
+	data.is_translation_domain_dirty = true;
 }
 
 Node::~Node() {
