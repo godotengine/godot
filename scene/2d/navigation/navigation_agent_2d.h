@@ -204,7 +204,7 @@ public:
 
 	void set_velocity_forced(const Vector2 p_velocity);
 
-	void _avoidance_done(Vector3 p_new_velocity);
+	void _avoidance_done(Vector2 p_new_velocity);
 
 	PackedStringArray get_configuration_warnings() const override;
 
