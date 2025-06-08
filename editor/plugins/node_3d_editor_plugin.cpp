@@ -3002,7 +3002,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 				// Calculate ruler label position
 				float distance = start_pos.distance_to(end_pos);
-				ruler_label->set_text(TS->format_number(vformat("r: %.3f m", distance)));
+				ruler_label->set_text(TS->format_number(vformat("%.3f m", distance)));
 				Vector3 center = (start_pos + end_pos) / 2;
 				Vector2 screen_position = camera->unproject_position(center) - (ruler_label->get_custom_minimum_size() / 2);
 				ruler_label->set_position(screen_position);
@@ -3011,6 +3011,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 				// Add vertices for helper lines
 				if (show_components) {
+					ruler_label->set_text(TS->format_number(vformat("r: %.3f m", distance)));
 					float min_y = MIN(start_pos.y, end_pos.y);
 					// XZ helper line
 					if (abs(start_pos.z - end_pos.z) > 0.0001 && abs(start_pos.x - end_pos.x) > 0.0001) {
