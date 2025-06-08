@@ -56,12 +56,12 @@ private:
 	float len_resizing_rel = 0.0f;
 	bool over_drag_position = false;
 
-	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_clip_left, const int p_clip_right);
+	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const int p_index, const Rect2 p_global_rect, const int p_clip_left, const int p_clip_right);
 
 	Vector2 _calc_key_region(const float start_ofs, const float end_ofs, const float len, const int p_index, const int p_x) const;
-	Vector2 _clip_key_region(Vector2 region, int p_clip_left, int p_clip_right);
-	Vector2 _calc_key_region_shift(Vector2 &orig_region, Vector2 &region);
-	bool _is_key_region_outside(const Vector2 &region, int p_clip_left, int p_clip_right);
+	Vector2 _clip_key_region(Vector2 region, const int p_clip_left, const int p_clip_right);
+	Vector2 _calc_key_region_shift(const Vector2 &orig_region, const Vector2 &region) const;
+	bool _is_key_region_outside(const Vector2 &region, const int p_clip_left, const int p_clip_right) const;
 
 public:
 	void set_node(Object *p_object);
@@ -73,7 +73,7 @@ public:
 public:
 	virtual int get_key_width(const int p_index) const override;
 	virtual int get_key_height(const int p_index) const override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 protected:
 	virtual Ref<Resource> get_resource(const int p_index) const { return nullptr; } // resource of the key (AudioStream, Animation, ...)
@@ -187,7 +187,7 @@ private:
 public:
 	virtual int get_key_width(const int p_index) const override;
 	virtual int get_key_height(const int p_index) const override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 public:
 	AnimationTrackEditBool();
@@ -199,7 +199,7 @@ class AnimationTrackEditTypeMethod : public AnimationTrackEdit {
 public:
 	virtual int get_key_width(const int p_index) const override;
 	virtual int get_key_height(const int p_index) const override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 public:
 	StringName get_edit_name(const int p_index) const; //name of the key
@@ -218,10 +218,10 @@ class AnimationTrackEditColor : public AnimationTrackEdit {
 public:
 	virtual int get_key_width(const int p_index) const override;
 	virtual int get_key_height(const int p_index) const override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 protected:
-	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key_link(int p_index, float p_pixels_sec, float p_x, float p_next_x, float p_clip_left, float p_clip_right) override;
 
 public:
 	AnimationTrackEditColor();
@@ -235,8 +235,8 @@ private:
 	bool is_coords = false;
 
 	//Helper
-	Rect2 _create_texture_region_sprite(int p_index, Object *object, const Ref<Texture2D> texture);
-	Rect2 _create_region_animated_sprite(int p_index, Object *object, const Ref<Texture2D> texture);
+	Rect2 _create_texture_region_sprite(int p_index, Object *object, const Ref<Texture2D> texture) const;
+	Rect2 _create_region_animated_sprite(int p_index, Object *object, const Ref<Texture2D> texture) const;
 
 public:
 	void set_node(Object *p_object);
@@ -248,7 +248,7 @@ public:
 public:
 	virtual int get_key_width(const int p_index) const override;
 	virtual int get_key_height(const int p_index) const override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 protected:
 	Ref<Resource> get_resource(const int p_index) const;
@@ -263,12 +263,12 @@ class AnimationTrackEditVolumeDB : public AnimationTrackEdit {
 public:
 	virtual int get_key_width(const int p_index) const override;
 	virtual int get_key_height(const int p_index) const override;
-	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 protected:
-	virtual void draw_bg(int p_clip_left, int p_clip_right) override;
-	virtual void draw_fg(int p_clip_left, int p_clip_right) override;
-	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) override;
+	virtual void draw_bg(const float p_clip_left, const float p_clip_right) override;
+	virtual void draw_fg(const float p_clip_left, const float p_clip_right) override;
+	virtual void draw_key_link(int p_index, float p_pixels_sec, float p_x, float p_next_x, float p_clip_left, float p_clip_right) override;
 
 public:
 	AnimationTrackEditVolumeDB();
