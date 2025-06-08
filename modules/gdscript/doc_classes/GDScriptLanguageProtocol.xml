@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptLanguageProtocol" inherits="JSONRPC" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		GDScript language server.
+	</brief_description>
+	<description>
+		Provides access to certain features that are implemented in the language server.
+		[b]Note:[/b] This class is not a language server client that can be used to access LSP functionality. It only provides access to a limited set of features that is implemented using the same technical foundation as the language server.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_text_document" deprecated="[GDScriptTextDocument] is deprecated.">
+			<return type="GDScriptTextDocument" />
+			<description>
+				Returns the language server's [GDScriptTextDocument] instance.
+			</description>
+		</method>
+		<method name="get_workspace">
+			<return type="GDScriptWorkspace" />
+			<description>
+				Returns the language server's [GDScriptWorkspace] instance.
+			</description>
+		</method>
+		<method name="initialize" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Dictionary" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="initialized" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="void" />
+			<param index="0" name="params" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="is_initialized" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the language server was initialized by a language server client, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_smart_resolve_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the language server is providing the smart resolve feature, [code]false[/code] otherwise. The feature can be configured through the editor settings.
+			</description>
+		</method>
+		<method name="notify_client" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="void" />
+			<param index="0" name="method" type="String" />
+			<param index="1" name="params" type="Variant" default="null" />
+			<param index="2" name="client_id" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="on_client_connected" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="int" enum="Error" />
+			<description>
+			</description>
+		</method>
+		<method name="on_client_disconnected" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="void" />
+			<param index="0" name="client_id" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

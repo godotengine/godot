@@ -37,8 +37,6 @@
 class GDScriptLanguageServer : public EditorPlugin {
 	GDCLASS(GDScriptLanguageServer, EditorPlugin);
 
-	GDScriptLanguageProtocol protocol;
-
 	Thread thread;
 	bool thread_running = false;
 	// There is no notification when the editor is initialized. We need to poll till we attempted to start the server.
