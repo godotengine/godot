@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptTextDocument" inherits="RefCounted" deprecated="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Document related language server functionality.
+	</brief_description>
+	<description>
+		Provides language server functionality related to documents.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="codeLens" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Array" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="colorPresentation" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Array" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="completion" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Array" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="declaration" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Variant" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="definition" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Array" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="didChange" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="void" />
+			<param index="0" name="params" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="didClose" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="void" />
+			<param index="0" name="params" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="didOpen" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="void" />
+			<param index="0" name="params" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="didSave" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="void" />
+			<param index="0" name="params" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="documentLink" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Array" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="documentSymbol" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Array" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="foldingRange" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Array" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="hover" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Variant" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="nativeSymbol" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Variant" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="prepareRename" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Variant" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="references" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Array" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="rename" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Dictionary" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="resolve" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Dictionary" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="show_native_symbol_in_editor" deprecated="Use [method ScriptEditor.goto_help] instead.">
+			<return type="void" />
+			<param index="0" name="symbol_id" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="signatureHelp" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="Variant" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="willSaveWaitUntil" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
+			<return type="void" />
+			<param index="0" name="params" type="Variant" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
