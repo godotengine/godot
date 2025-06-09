@@ -73,6 +73,11 @@ void CameraFeedWeb::_on_denied_callback(void *context) {
 bool CameraFeedWeb::activate_feed() {
 	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
 
+	// Initialize image when activating the feed
+	if (image.is_null()) {
+		image.instantiate();
+	}
+
 	int width = parameters.get(KEY_WIDTH, 0);
 	int height = parameters.get(KEY_HEIGHT, 0);
 	// Firefox ESR (128.11.0esr) does not implement MediaStreamTrack.getCapabilities(), so 'formats' will be empty.
@@ -87,6 +92,9 @@ bool CameraFeedWeb::activate_feed() {
 
 void CameraFeedWeb::deactivate_feed() {
 	CameraDriverWeb::get_singleton()->stop_stream(device_id);
+	// Release the image when deactivating the feed
+	image.unref();
+	data.clear();
 }
 
 bool CameraFeedWeb::set_format(int p_index, const Dictionary &p_parameters) {
@@ -124,8 +132,6 @@ CameraFeedWeb::CameraFeedWeb(const CameraInfo &info) {
 	feed_format.height = info.capability.height;
 	feed_format.format = String("RGBA");
 	formats.append(feed_format);
-
-	image.instantiate();
 }
 
 CameraFeedWeb::~CameraFeedWeb() {
