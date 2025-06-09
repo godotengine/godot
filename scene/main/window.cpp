@@ -1430,7 +1430,12 @@ void Window::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_WINDOW);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, tr_title);
+			if (accessibility_name.is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, tr_title);
+			} else {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, accessibility_name);
+			}
+			DisplayServer::get_singleton()->accessibility_update_set_description(ae, accessibility_description);
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_MODAL, exclusive);
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Window::_accessibility_action_grab_focus));
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !visible);
@@ -2212,7 +2217,33 @@ Rect2i Window::get_usable_parent_rect() const {
 	return parent_rect;
 }
 
+void Window::set_accessibility_name(const String &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	if (accessibility_name != p_name) {
+		accessibility_name = p_name;
+		queue_accessibility_update();
+		update_configuration_warnings();
+	}
+}
+
+String Window::get_accessibility_name() const {
+	return tr(accessibility_name);
+}
+
+void Window::set_accessibility_description(const String &p_description) {
+	ERR_MAIN_THREAD_GUARD;
+	if (accessibility_description != p_description) {
+		accessibility_description = p_description;
+		queue_accessibility_update();
+	}
+}
+
+String Window::get_accessibility_description() const {
+	return tr(accessibility_description);
+}
+
 void Window::accessibility_announcement(const String &p_announcement) {
+	ERR_MAIN_THREAD_GUARD;
 	announcement = p_announcement;
 	queue_accessibility_update();
 }
@@ -3198,6 +3229,11 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_window_id"), &Window::get_window_id);
 
+	ClassDB::bind_method(D_METHOD("set_accessibility_name", "name"), &Window::set_accessibility_name);
+	ClassDB::bind_method(D_METHOD("get_accessibility_name"), &Window::get_accessibility_name);
+	ClassDB::bind_method(D_METHOD("set_accessibility_description", "description"), &Window::set_accessibility_description);
+	ClassDB::bind_method(D_METHOD("get_accessibility_description"), &Window::get_accessibility_description);
+
 	ClassDB::bind_static_method("Window", D_METHOD("get_focused_window"), &Window::get_focused_window);
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Window::set_layout_direction);
@@ -3273,6 +3309,10 @@ void Window::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");
 #endif
+
+	ADD_GROUP("Accessibility", "accessibility_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_name"), "set_accessibility_name", "get_accessibility_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_description"), "set_accessibility_description", "get_accessibility_description");
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");

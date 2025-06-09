@@ -85,6 +85,13 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="_get_accessibility_container_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Override this method to return a human-readable description of the position of the child [param node] in the custom container, added to the [member accessibility_name].
+			</description>
+		</method>
 		<method name="_get_drag_data" qualifiers="virtual">
 			<return type="Variant" />
 			<param index="0" name="at_position" type="Vector2" />
@@ -962,6 +969,27 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_controls_nodes" type="NodePath[]" setter="set_accessibility_controls_nodes" getter="get_accessibility_controls_nodes" default="[]">
+			The paths to the nodes which are controlled by this node.
+		</member>
+		<member name="accessibility_described_by_nodes" type="NodePath[]" setter="set_accessibility_described_by_nodes" getter="get_accessibility_described_by_nodes" default="[]">
+			The paths to the nodes which are describing this node.
+		</member>
+		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
+			The human-readable node description that is reported to assistive apps.
+		</member>
+		<member name="accessibility_flow_to_nodes" type="NodePath[]" setter="set_accessibility_flow_to_nodes" getter="get_accessibility_flow_to_nodes" default="[]">
+			The paths to the nodes which this node flows into.
+		</member>
+		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
+			The paths to the nodes which label this node.
+		</member>
+		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="DisplayServer.AccessibilityLiveMode" default="0">
+			The mode with which a live region updates. A live region is a [Node] that is updated as a result of an external event when the user's focus may be elsewhere.
+		</member>
+		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
+			The human-readable node name that is reported to assistive apps.
+		</member>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
