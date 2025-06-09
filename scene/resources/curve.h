@@ -184,6 +184,8 @@ class Curve2D : public Resource {
 		Vector2 point;
 	};
 
+	bool closed = false;
+
 	mutable bool baked_cache_dirty = false;
 	mutable PackedVector2Array baked_point_cache;
 	mutable PackedVector2Array baked_forward_vector_cache;
@@ -237,6 +239,9 @@ public:
 
 	Vector2 sample(int p_index, real_t p_offset) const;
 	Vector2 samplef(real_t p_findex) const;
+	void set_closed(bool p_closed);
+
+	bool is_closed() const;
 
 	void set_bake_interval(real_t p_tolerance);
 	real_t get_bake_interval() const;
@@ -336,8 +341,8 @@ public:
 
 	Vector3 sample(int p_index, real_t p_offset) const;
 	Vector3 samplef(real_t p_findex) const;
-
 	void set_closed(bool p_closed);
+
 	bool is_closed() const;
 	void set_bake_interval(real_t p_tolerance);
 	real_t get_bake_interval() const;
