@@ -40,4 +40,4 @@
 	_load_assemblies(p_resource_dir_path);
 
 	return true;
-#endif 
+#endif
