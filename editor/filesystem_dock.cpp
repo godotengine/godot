@@ -2271,6 +2271,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 #endif
 
 			List<String> terminal_emulator_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
+			bool append_default_args = true;
+
 #ifdef LINUXBSD_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
 			// Use `String.ends_with()` so that installations in non-default paths
@@ -2284,11 +2286,20 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					terminal_emulator_args.push_back("-cd");
 				} else if (chosen_terminal_emulator.ends_with("xfce4-terminal")) {
 					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("lxterminal")) {
+					terminal_emulator_args.push_back("--working-directory={directory}");
+					append_default_args = false;
+				} else if (chosen_terminal_emulator.ends_with("kitty")) {
+					terminal_emulator_args.push_back("--directory");
+				} else if (chosen_terminal_emulator.ends_with("alacritty")) {
+					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("xterm")) {
+					terminal_emulator_args.push_back("-e");
+					terminal_emulator_args.push_back("cd '{directory}' && exec $SHELL");
+					append_default_args = false;
 				}
 			}
 #endif
-
-			bool append_default_args = true;
 
 #ifdef WINDOWS_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
