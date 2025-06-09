@@ -47,27 +47,68 @@ const uint64_t GODOT_VERSION_TIMESTAMP = {git_timestamp};
 
 
 def encryption_key_builder(target, source, env):
-    src = source[0].read() or "0" * 64
+    src_key = source[0].read() or "0" * 64
+    xor_mask = source[1].read() or "0" * 2
+
     try:
-        buffer = bytes.fromhex(src)
-        if len(buffer) != 32:
+        if len(xor_mask) != 2:
+            raise ValueError
+        else:
+            xor_mask = int(xor_mask)
+    except ValueError:
+        methods.print_error(
+            f'Invalid XOR Bitmask, not 2 hexadecimal characters: "{xor_mask}".\n'
+            "Unset `GODOT_XOR_BITMASK` in your environment "
+            "or make sure that it contains exactly 2 hexadecimal characters."
+        )
+        raise
+
+    try:
+        original_key = bytes.fromhex(src_key)
+        if len(original_key) != 32:
             raise ValueError
     except ValueError:
         methods.print_error(
-            f'Invalid AES256 encryption key, not 64 hexadecimal characters: "{src}".\n'
+            f'Invalid AES256 encryption key, not 64 hexadecimal characters: "{src_key}".\n'
             "Unset `SCRIPT_AES256_ENCRYPTION_KEY` in your environment "
             "or make sure that it contains exactly 64 hexadecimal characters."
         )
         raise
+
+    obfuscated_key = [b ^ xor_mask for b in original_key]
+    key_string = ", ".join(f"0x{b:02X}" for b in obfuscated_key)
 
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
             f"""\
 #include "core/config/project_settings.h"
 
-uint8_t script_encryption_key[32] = {{
-	{methods.format_buffer(buffer, 1)}
-}};"""
+static const uint8_t obfuscated_script_encryption_key[32] = {{
+    {key_string}
+}};
+
+uint8_t script_encryption_key[32];
+
+static void decrypt_script_encryption_key() {{
+    const uint8_t xor_mask = 0x{xor_mask:02X};
+    for (int i = 0; i < 32; ++i) {{
+        script_encryption_key[i] = obfuscated_script_encryption_key[i] ^ xor_mask;
+    }}
+}}
+
+#if defined(_MSC_VER)
+// MSVC-compatible static initializer
+struct ScriptKeyInitializer {{
+    ScriptKeyInitializer() {{ decrypt_script_encryption_key(); }}
+}};
+static ScriptKeyInitializer _script_key_initializer;
+#else
+// GCC/Clang-compatible constructor attribute
+__attribute__((constructor)) static void _script_key_initializer() {{
+    decrypt_script_encryption_key();
+}}
+#endif
+"""
         )
 
 
