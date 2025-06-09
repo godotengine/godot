@@ -78,7 +78,7 @@ def build_mono_wasm(godot_dir, output_dir, debug=False):
         # Create wrapper JS file for initialization
         with open(os.path.join(mono_wasm_dir, "godot-mono-support.js"), "w") as f:
             f.write("""
-// Godot Mono WebAssembly suppor
+// Godot Mono WebAssembly support
 var GodotMonoSupport = {
     // Initialize Mono runtime
     init: function() {
@@ -115,7 +115,7 @@ def prepare_export_template(godot_dir, output_dir, debug=False):
         print("Did you build Godot with 'scons platform=web target=template_release module_mono_enabled=yes'?")
         return False
 
-    # Copy to outpu
+    # Copy to output
     output_template = os.path.join(output_dir, f"godot.web.{template_type}.zip")
     shutil.copy(godot_template_dir, output_template)
     print(f"Copied template to {output_template}")

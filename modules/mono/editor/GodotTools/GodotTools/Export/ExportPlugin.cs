@@ -4,7 +4,7 @@ using System.Linq;
 using Godot;
 using GodotTools.Export;
 
-namespace GodotTools.Expor
+namespace GodotTools.Export
 {
     public class ExportPlugin : EditorExportPlugin
     {
