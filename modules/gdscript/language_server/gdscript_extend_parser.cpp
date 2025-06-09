@@ -253,7 +253,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	}
 	r_symbol.detail = "class " + r_symbol.name;
 	{
-		String doc = p_class->doc_data.description;
+		String doc = p_class->doc_data.brief;
 		if (!p_class->doc_data.description.is_empty()) {
 			doc += "\n\n" + p_class->doc_data.description;
 		}
