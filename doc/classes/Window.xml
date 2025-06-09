@@ -997,10 +997,10 @@
 			The color of the title's text outline.
 		</theme_item>
 		<theme_item name="close_h_offset" data_type="constant" type="int" default="18">
-			Horizontal position offset of the close button.
+			Horizontal position offset of the close button, relative to the end of the title bar, towards the beginning of the title bar.
 		</theme_item>
 		<theme_item name="close_v_offset" data_type="constant" type="int" default="24">
-			Vertical position offset of the close button.
+			Vertical position offset of the close button, relative to the bottom of the title bar, towards the top of the title bar.
 		</theme_item>
 		<theme_item name="resize_margin" data_type="constant" type="int" default="4">
 			Defines the outside margin at which the window border can be grabbed with mouse and resized.
