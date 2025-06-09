@@ -193,8 +193,10 @@ Transform3D Transform3D::operator*(const Transform3D &p_transform) const {
 }
 
 Transform3D::operator String() const {
-	return "[X: " + basis.get_column(0).operator String() +
-			", Y: " + basis.get_column(1).operator String() +
-			", Z: " + basis.get_column(2).operator String() +
-			", O: " + origin.operator String() + "]";
+	return String::concat(
+			"[X: ", basis.get_column(0).operator String(),
+			", Y: ", basis.get_column(1).operator String(),
+			", Z: ", basis.get_column(2).operator String(),
+			", O: ", origin.operator String(),
+			"]");
 }

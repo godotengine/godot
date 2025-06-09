@@ -207,7 +207,11 @@ bool Vector2::is_finite() const {
 }
 
 Vector2::operator String() const {
-	return "(" + String::num_real(x, true) + ", " + String::num_real(y, true) + ")";
+	return String::concat(
+			"(",
+			String::num_real(x, true), ", ",
+			String::num_real(y, true),
+			")");
 }
 
 Vector2::operator Vector2i() const {
