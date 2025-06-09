@@ -45,6 +45,8 @@
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/best_fit_normal.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/integrate_dfg.glsl.gen.h"
 
+#include "deferred_render_lighting.h"
+
 #define RB_SCOPE_FORWARD_CLUSTERED SNAME("forward_clustered")
 
 #define RB_TEX_SPECULAR SNAME("specular")
@@ -53,6 +55,11 @@
 #define RB_TEX_NORMAL_ROUGHNESS_MSAA SNAME("normal_roughness_msaa")
 #define RB_TEX_VOXEL_GI SNAME("voxel_gi")
 #define RB_TEX_VOXEL_GI_MSAA SNAME("voxel_gi_msaa")
+
+#define RB_TEX_DR_ALBEDO SNAME("dr_albedo")
+#define RB_TEX_DR_NORMAL SNAME("dr_normal")
+#define RB_TEX_DR_POSITION SNAME("dr_position")
+#define RB_TEX_DR_ORM SNAME("dr_orm")
 
 namespace RendererSceneRenderImplementation {
 
@@ -85,6 +92,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	/* Scene Shader */
 
 	SceneShaderForwardClustered scene_shader;
+
+	/* Deferred Renderer lighting */
+	RendererRD::DeferredRendererLighting *dr_lighting = nullptr;
 
 public:
 	/* Framebuffer */
@@ -137,6 +147,20 @@ public:
 		RID get_voxelgi() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_VOXEL_GI); }
 		RID get_voxelgi(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_VOXEL_GI, p_layer, 0); }
 		RID get_voxelgi_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_VOXEL_GI_MSAA, p_layer, 0); }
+
+		void ensure_deferred_render_textures();
+		bool has_dr_albedo() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ALBEDO); }
+		RID get_dr_albedo() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ALBEDO); }
+		RID get_dr_albedo(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ALBEDO, p_layer, 0); }
+		bool has_dr_normal() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_NORMAL); }
+		RID get_dr_normal() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_NORMAL); }
+		RID get_dr_normal(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_NORMAL, p_layer, 0); }
+		bool has_dr_position() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_POSITION); }
+		RID get_dr_position() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_POSITION); }
+		RID get_dr_position(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_POSITION, p_layer, 0); }
+		bool has_dr_orm() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ORM); }
+		RID get_dr_orm() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ORM); }
+		RID get_dr_orm(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DR_ORM, p_layer, 0); }
 
 		void ensure_fsr2(RendererRD::FSR2Effect *p_effect);
 		RendererRD::FSR2Context *get_fsr2_context() const { return fsr2_context; }
@@ -205,6 +229,7 @@ private:
 		COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 1,
 		COLOR_PASS_FLAG_MULTIVIEW = 1 << 2,
 		COLOR_PASS_FLAG_MOTION_VECTORS = 1 << 3,
+		COLOR_PASS_FLAG_DEFERRED_RENDERER = 1 << 4,
 	};
 
 	struct GeometryInstanceSurfaceDataCache;
@@ -820,6 +845,8 @@ public:
 	virtual bool free(RID p_rid) override;
 
 	virtual void update() override;
+
+	virtual void init() override;
 
 	RenderForwardClustered();
 	~RenderForwardClustered();

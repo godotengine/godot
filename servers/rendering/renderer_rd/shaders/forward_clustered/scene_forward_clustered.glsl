@@ -981,7 +981,15 @@ layout(location = 1) out uvec2 voxel_gi_buffer;
 #endif //MODE_RENDER_NORMAL
 #else // RENDER DEPTH
 
-#ifdef MODE_SEPARATE_SPECULAR
+#ifdef MODE_DEFERRED_RENDERER
+
+layout(location = 0) out vec4 ambient_out;
+layout(location = 1) out vec4 albedo_out;
+layout(location = 2) out vec4 position_out;
+layout(location = 3) out vec4 normal_out;
+layout(location = 4) out vec4 orm_out;
+
+#elif defined(MODE_SEPARATE_SPECULAR)
 
 layout(location = 0) out vec4 diffuse_buffer; //diffuse (rgb) and roughness
 layout(location = 1) out vec4 specular_buffer; //specular and SSS (subsurface scatter)
@@ -1095,7 +1103,7 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 
 #endif //!MODE_RENDER DEPTH
 
-#if defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_MATERIAL)
+#if defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_MATERIAL) || defined(MODE_DEFERRED_RENDERER)
 // https://advances.realtimerendering.com/s2010/Kaplanyan-CryEngine3(SIGGRAPH%202010%20Advanced%20RealTime%20Rendering%20Course).pdf
 vec3 encode24(vec3 v) {
 	// Unsigned normal (handles most symmetry)
@@ -2069,7 +2077,7 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 // LIGHTING
-#if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+#if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && !defined(MODE_DEFERRED_RENDERER)
 
 #ifdef USE_VERTEX_LIGHTING
 	diffuse_light += diffuse_light_interp.rgb;
@@ -2605,7 +2613,7 @@ void fragment_shader(in SceneData scene_data) {
 		}
 	}
 #endif // !USE_VERTEX_LIGHTING
-#endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+#endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && !defined(MODE_DEFERRED_RENDERER)
 
 #ifdef USE_SHADOW_TO_OPACITY
 #ifndef MODE_RENDER_DEPTH
@@ -2809,21 +2817,44 @@ void fragment_shader(in SceneData scene_data) {
 	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 #endif //!FOG_DISABLED
 
-#else //MODE_SEPARATE_SPECULAR
+#else // MODE_SEPARATE_SPECULAR
 
 	alpha *= scene_data.pass_alpha_multiplier;
+
+#ifdef MODE_DEFERRED_RENDERER
+	// Note, opaque only so alpha shouldn't matter/be set.
+
+#ifdef MODE_UNSHADED
+	ambient_out = vec4(albedo, alpha);
+	albedo_out = vec4(0.0); // we use albedo_out.w to test for unshaded.
+	orm_out = vec4(0.0, 0.0, 0.0, 0.0);
+	normal_out = vec4(encode24(normal) * 0.5 + 0.5, 1.0);
+#else // MODE_UNSHADED
+	ambient_out = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
+	albedo_out = vec4(albedo, 1.0);
+	orm_out = unpackUnorm4x8(orms);
+	normal_out = vec4(encode24(normal) * 0.5 + 0.5, 0.0);
+#endif //MODE_UNSHADED
+
+	// Store our position in view space (with possibly our LIGHT_VERTEX code applied).
+	// This is an RGBA16 SFLOAT buffer so we should hold enough precision.
+	position_out = vec4(vertex, 0.0);
+
+#else // MODE_DEFERRED_RENDERER
 
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
 #else
 	frag_color = vec4(emission + ambient_light + diffuse_light + direct_specular_light + indirect_specular_light, alpha);
 //frag_color = vec4(1.0);
-#endif //USE_NO_SHADING
+#endif //MODE_UNSHADED
 
 #ifndef FOG_DISABLED
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 #endif //!FOG_DISABLED
+
+#endif // MODE_DEFERRED_RENDERER
 
 #endif //MODE_SEPARATE_SPECULAR
 

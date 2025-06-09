@@ -282,6 +282,10 @@ uint16_t SceneShaderForwardClustered::ShaderData::_get_shader_version(PipelineVe
 				shader_flags |= SHADER_COLOR_PASS_FLAG_MULTIVIEW;
 			}
 
+			if (p_color_pass_flags & PIPELINE_COLOR_PASS_FLAG_DEFERRED_RENDERER) {
+				shader_flags |= SHADER_COLOR_PASS_FLAG_DEFERRED_RENDERER;
+			}
+
 			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_COLOR_PASS + shader_flags;
 		} break;
 		default: {
@@ -311,6 +315,7 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	RD::PipelineColorBlendState blend_state_color_blend;
 	blend_state_color_blend.attachments = { blend_attachment, RD::PipelineColorBlendState::Attachment(), RD::PipelineColorBlendState::Attachment() };
 	RD::PipelineColorBlendState blend_state_color_opaque = RD::PipelineColorBlendState::create_disabled(3);
+	RD::PipelineColorBlendState blend_state_color_opaque_deferred = RD::PipelineColorBlendState::create_disabled(6);
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness = RD::PipelineColorBlendState::create_disabled(1);
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness_giprobe = RD::PipelineColorBlendState::create_disabled(2);
 
@@ -356,7 +361,11 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 				depth_stencil_state.enable_depth_write = false; //alpha does not draw depth
 			}
 		} else {
-			blend_state = blend_state_color_opaque;
+			if (p_pipeline_key.color_pass_flags & PIPELINE_COLOR_PASS_FLAG_DEFERRED_RENDERER) {
+				blend_state = blend_state_color_opaque_deferred;
+			} else {
+				blend_state = blend_state_color_opaque;
+			}
 
 			if (depth_pre_pass_enabled) {
 				// We already have a depth from the depth pre-pass, there is no need to write it again.
@@ -563,6 +572,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 			"\n#define USE_LIGHTMAP\n", // SHADER_COLOR_PASS_FLAG_LIGHTMAP
 			"\n#define USE_MULTIVIEW\n", // SHADER_COLOR_PASS_FLAG_MULTIVIEW
 			"\n#define MOTION_VECTORS\n", // SHADER_COLOR_PASS_FLAG_MOTION_VECTORS
+			"\n#define MODE_DEFERRED_RENDERER\n", // SHADER_COLOR_PASS_FLAG_DEFERRED_RENDERER
 		};
 
 		for (int i = 0; i < SHADER_COLOR_PASS_FLAG_COUNT; i++) {
