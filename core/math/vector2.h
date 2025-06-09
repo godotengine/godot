@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Vector2i;
@@ -184,6 +185,12 @@ struct [[nodiscard]] Vector2 {
 
 	operator String() const;
 	operator Vector2i() const;
+
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		return hash_fmix32(h);
+	}
 
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
 	constexpr Vector2() :

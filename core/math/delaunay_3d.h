@@ -33,6 +33,7 @@
 #include "core/math/aabb.h"
 #include "core/math/projection.h"
 #include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"

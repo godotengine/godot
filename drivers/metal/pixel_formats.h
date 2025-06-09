@@ -60,6 +60,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 #include "servers/rendering/rendering_device.h"
 
 #import <Metal/Metal.h>
+#include <iterator>
 
 #pragma mark -
 #pragma mark Metal format capabilities
