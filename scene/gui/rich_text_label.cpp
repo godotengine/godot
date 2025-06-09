@@ -6248,15 +6248,7 @@ void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 }
 
 int RichTextLabel::get_paragraph_count() const {
-	int para_count = 0;
-	int to_line = main->first_invalid_line.load();
-	for (int i = 0; i < to_line; i++) {
-		if ((visible_characters >= 0) && main->lines[i].char_offset >= visible_characters) {
-			break;
-		}
-		para_count++;
-	}
-	return para_count;
+	return main->lines.size();
 }
 
 int RichTextLabel::get_visible_paragraph_count() const {
