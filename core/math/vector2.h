@@ -182,7 +182,7 @@ struct [[nodiscard]] Vector2 {
 	Vector2 clampf(real_t p_min, real_t p_max) const;
 	real_t aspect() const { return width / height; }
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector2i() const;
 
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)

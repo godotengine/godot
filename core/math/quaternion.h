@@ -115,7 +115,7 @@ struct [[nodiscard]] Quaternion {
 	constexpr bool operator==(const Quaternion &p_quaternion) const;
 	constexpr bool operator!=(const Quaternion &p_quaternion) const;
 
-	operator String() const;
+	explicit operator String() const;
 
 	constexpr Quaternion() :
 			x(0), y(0), z(0), w(1) {}
