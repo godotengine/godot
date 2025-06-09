@@ -71,7 +71,6 @@
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
-#include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server_dummy.h"
@@ -4855,11 +4854,9 @@ bool Main::iteration() {
 	}
 
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	bool skip_delay = scene_tree && scene_tree->is_accessibility_enabled();
+	bool wake_for_events = scene_tree && scene_tree->is_accessibility_enabled();
 
-	if (!skip_delay) {
-		OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
-	}
+	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw(), wake_for_events);
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {

@@ -128,12 +128,12 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 				[codeblock]
 				func get_clicked_tile_power():
-				    var clicked_cell = tile_map.local_to_map(tile_map.get_local_mouse_position())
-				    var data = tile_map.get_cell_tile_data(0, clicked_cell)
-				    if data:
-				        return data.get_custom_data("power")
-				    else:
-				        return 0
+					var clicked_cell = tile_map.local_to_map(tile_map.get_local_mouse_position())
+					var data = tile_map.get_cell_tile_data(0, clicked_cell)
+					if data:
+						return data.get_custom_data("power")
+					else:
+						return 0
 				[/codeblock]
 				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies. See [method TileSet.map_tile_proxy].
 			</description>

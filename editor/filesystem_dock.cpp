@@ -2204,9 +2204,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (external_program.is_empty()) {
 				OS::get_singleton()->shell_open(file);
 			} else {
-				List<String> args;
-				args.push_back(file);
-				OS::get_singleton()->create_process(external_program, args);
+				List<String> paths;
+				paths.push_back(file);
+				OS::get_singleton()->open_with_program(external_program, paths);
 			}
 		} break;
 
@@ -4140,7 +4140,7 @@ FileSystemDock::FileSystemDock() {
 	button_hist_prev = memnew(Button);
 	button_hist_prev->set_flat(true);
 	button_hist_prev->set_disabled(true);
-	button_hist_prev->set_focus_mode(FOCUS_NONE);
+	button_hist_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_prev->set_tooltip_text(TTRC("Go to previous selected folder/file."));
 	button_hist_prev->set_accessibility_name(TTRC("Previous"));
 	nav_hbc->add_child(button_hist_prev);
@@ -4148,7 +4148,7 @@ FileSystemDock::FileSystemDock() {
 	button_hist_next = memnew(Button);
 	button_hist_next->set_flat(true);
 	button_hist_next->set_disabled(true);
-	button_hist_next->set_focus_mode(FOCUS_NONE);
+	button_hist_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_next->set_tooltip_text(TTRC("Go to next selected folder/file."));
 	button_hist_next->set_accessibility_name(TTRC("Next"));
 	nav_hbc->add_child(button_hist_next);
@@ -4162,7 +4162,7 @@ FileSystemDock::FileSystemDock() {
 
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));
-	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
+	button_toggle_display_mode->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_accessibility_name(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");

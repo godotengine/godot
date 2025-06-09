@@ -48,8 +48,8 @@
 				[b]Note:[/b] The dependencies are returned with slices separated by [code]::[/code]. You can use [method String.get_slice] to get their components.
 				[codeblock]
 				for dependency in ResourceLoader.get_dependencies(path):
-				    print(dependency.get_slice("::", 0)) # Prints the UID.
-				    print(dependency.get_slice("::", 2)) # Prints the path.
+					print(dependency.get_slice("::", 0)) # Prints the UID.
+					print(dependency.get_slice("::", 2)) # Prints the path.
 				[/codeblock]
 			</description>
 		</method>
@@ -97,7 +97,7 @@
 				Loads a resource at the given [param path], caching the result for further access.
 				The registered [ResourceFormatLoader]s are queried sequentially to find the first one which can handle the file's extension, and then attempt loading. If loading fails, the remaining ResourceFormatLoaders are also attempted.
 				An optional [param type_hint] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
-				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
+				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource.
 				Returns an empty resource if no [ResourceFormatLoader] could handle the file, and prints an error if no file is found at the specified path.
 				GDScript has a simplified [method @GDScript.load] built-in method which can be used in most situations, leaving the use of [ResourceLoader] for more advanced scenarios.
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
@@ -117,7 +117,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="progress" type="Array" default="[]" />
 			<description>
-				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [param path]. See [enum ThreadLoadStatus] for possible return values.
+				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [param path].
 				An array variable can optionally be passed via [param progress], and will return a one-element array containing the ratio of completion of the threaded loading (between [code]0.0[/code] and [code]1.0[/code]).
 				[b]Note:[/b] The recommended way of using this method is to call it during different frames (e.g., in [method Node._process], instead of a loop).
 			</description>
@@ -130,7 +130,7 @@
 			<param index="3" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
 			<description>
 				Loads the resource using threads. If [param use_sub_threads] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
-				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
+				The [param cache_mode] parameter defines whether and how the cache should be used or updated when loading the resource.
 			</description>
 		</method>
 		<method name="remove_resource_format_loader">

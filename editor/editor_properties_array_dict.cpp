@@ -1353,7 +1353,7 @@ void EditorPropertyDictionary::update_property() {
 					}
 					new_prop->set_read_only(true);
 					new_prop->set_selectable(false);
-					new_prop->set_focus_mode(Control::FOCUS_NONE);
+					new_prop->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 					new_prop->set_draw_background(false);
 					new_prop->set_use_folding(is_using_folding());
 					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);

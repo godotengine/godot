@@ -52,41 +52,37 @@
 #include <xcb/xcb.h>
 #endif  // XR_USE_PLATFORM_XCB
 
-#ifdef XR_USE_GRAPHICS_API_OPENGL
-#if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
-#include <GL/glx.h>
-#endif  // (XR_USE_PLATFORM_XLIB || XR_USE_PLATFORM_XCB)
-#ifdef XR_USE_PLATFORM_XCB
-#include <xcb/glx.h>
-#endif  // XR_USE_PLATFORM_XCB
-#ifdef XR_USE_PLATFORM_MACOS
-#include <OpenCL/cl_gl_ext.h>
-#endif  // XR_USE_PLATFORM_MACOS
-#endif  // XR_USE_GRAPHICS_API_OPENGL
-
-#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
-#ifdef GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
+#if defined(XR_USE_GRAPHICS_API_OPENGL_ES) || defined(XR_USE_PLATFORM_EGL) || defined(XR_USE_PLATFORM_ANDROID)
+#ifdef XRDEPENDENCIES_USE_GLAD
+#include <glad/egl.h>
 #else
 #include <EGL/egl.h>
 #endif
-#endif  // XR_USE_GRAPHICS_API_OPENGL_ES
+#endif  // XR_USE_GRAPHICS_API_OPENGL_ES || XR_USE_PLATFORM_EGL || XR_USE_PLATFORM_ANDROID
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL) && (defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB))
+#ifdef XRDEPENDENCIES_USE_GLAD
+#include <glad/glx.h>
+#else
+#include <GL/glx.h>
+#endif
+#endif  // XR_USE_GRAPHICS_API_OPENGL && XR_USE_PLATFORM_XLIB || XR_USE_PLATFORM_XCB
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL) && defined(XR_USE_PLATFORM_XCB)
+#include <xcb/glx.h>
+#endif  // XR_USE_GRAPHICS_API_OPENGL && XR_USE_PLATFORM_XCB
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL) && defined(XR_USE_PLATFORM_MACOS) && !defined(XRDEPENDENCIES_USE_GLAD)
+#include <OpenCL/cl_gl_ext.h>
+#endif  // XR_USE_GRAPHICS_API_OPENGL && XR_USE_PLATFORM_MACOS && !XRDEPENDENCIES_USE_GLAD
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 #include <vulkan/vulkan.h>
 #endif  // XR_USE_GRAPHICS_API_VULKAN
 
 #ifdef XR_USE_PLATFORM_WAYLAND
-#include "wayland-client.h"
+#include <wayland-client.h>
 #endif  // XR_USE_PLATFORM_WAYLAND
-
-#ifdef XR_USE_PLATFORM_EGL
-#ifdef GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
-#else
-#include <EGL/egl.h>
-#endif
-#endif  // XR_USE_PLATFORM_EGL
 
 #if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
 #ifdef Success
@@ -101,3 +97,7 @@
 #undef None
 #endif  // None
 #endif  // defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
+
+#ifdef XR_USE_TIMESPEC
+#include <time.h>
+#endif  // XR_USE_TIMESPEC

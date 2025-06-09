@@ -8,7 +8,7 @@
 
 /**
  * @internal
- * @file basis_transcode.cpp
+ * @file
  * @~English
  *
  * @brief Functions for transcoding Basis Universal BasisLZ/ETC1S and UASTC textures.
@@ -494,6 +494,11 @@ ktxTexture2_transcodeLzEtc1s(ktxTexture2* This,
     uint32_t& imageCount = firstImages[This->numLevels];
 
     if (BGD_TABLES_ADDR(0, bgdh, imageCount) + bgdh.tablesByteLength > priv._sgdByteLength) {
+        // Compiler will not allow `goto cleanup;` because "jump bypasses variable initialization."
+        // The static initializations below this and before the loop are presumably the issue
+        // as the compiler is,presumably, inserting code to destruct those at the end of the
+        // function.
+        delete[] firstImages;
         return KTX_FILE_DATA_ERROR;
     }
     // FIXME: Do more validation.

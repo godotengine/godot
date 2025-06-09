@@ -576,7 +576,7 @@ void CSGShape3D::update_shape() {
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
-	OAHashMap<Vector3, Vector3> vec_map;
+	AHashMap<Vector3, Vector3> vec_map;
 
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
@@ -594,13 +594,12 @@ void CSGShape3D::update_shape() {
 
 			for (int j = 0; j < 3; j++) {
 				Vector3 v = n->faces[i].vertices[j];
-				Vector3 add;
-				if (vec_map.lookup(v, add)) {
-					add += p.normal;
+				Vector3 *vec = vec_map.getptr(v);
+				if (vec) {
+					*vec += p.normal;
 				} else {
-					add = p.normal;
+					vec_map.insert(v, p.normal);
 				}
-				vec_map.set(v, add);
 			}
 		}
 
@@ -655,8 +654,11 @@ void CSGShape3D::update_shape() {
 
 				Vector3 normal = p.normal;
 
-				if (n->faces[i].smooth && vec_map.lookup(v, normal)) {
-					normal.normalize();
+				if (n->faces[i].smooth) {
+					Vector3 *ptr = vec_map.getptr(v);
+					if (ptr) {
+						normal = ptr->normalized();
+					}
 				}
 
 				if (n->faces[i].invert) {

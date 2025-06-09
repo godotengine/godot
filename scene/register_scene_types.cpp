@@ -235,6 +235,7 @@
 #include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/modifier_bone_target_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
@@ -646,6 +647,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Marker3D);
+	GDREGISTER_CLASS(ModifierBoneTarget3D);
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 	GDREGISTER_CLASS(RetargetModifier3D);

@@ -5226,7 +5226,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				ScaleTrack *st = static_cast<ScaleTrack *>(t);
 				st->scales.clear();
 				st->compressed_track = i;
-				print_line("Scale Bounds " + itos(i) + ": " + track_bounds[i]);
+				print_line("Scale Bounds " + itos(i) + ": " + String(track_bounds[i]));
 			} break;
 			case TYPE_BLEND_SHAPE: {
 				BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(t);
@@ -5675,6 +5675,20 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 bool Animation::is_variant_interpolatable(const Variant p_value) {
 	Variant::Type type = p_value.get_type();
 	return (type >= Variant::BOOL && type <= Variant::STRING_NAME) || type == Variant::ARRAY || type >= Variant::PACKED_INT32_ARRAY; // PackedByteArray is unsigned, so it would be better to ignore since blending uses float.
+}
+
+bool Animation::validate_type_match(const Variant &p_from, Variant &r_to) {
+	if (p_from.get_type() != r_to.get_type()) {
+		// Cast r_to between double and int to avoid minor annoyances.
+		if (p_from.get_type() == Variant::FLOAT && r_to.get_type() == Variant::INT) {
+			r_to = double(r_to);
+		} else if (p_from.get_type() == Variant::INT && r_to.get_type() == Variant::FLOAT) {
+			r_to = int(r_to);
+		} else {
+			ERR_FAIL_V_MSG(false, "Type mismatch between initial and final value: " + Variant::get_type_name(p_from.get_type()) + " and " + Variant::get_type_name(r_to.get_type()));
+		}
+	}
+	return true;
 }
 
 Variant Animation::cast_to_blendwise(const Variant p_value) {

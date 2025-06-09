@@ -135,6 +135,7 @@ static const char *token_names[] = {
 	";", // SEMICOLON,
 	".", // PERIOD,
 	"..", // PERIOD_PERIOD,
+	"...", // PERIOD_PERIOD_PERIOD,
 	":", // COLON,
 	"$", // DOLLAR,
 	"->", // FORWARD_ARROW,
@@ -329,9 +330,6 @@ char32_t GDScriptTokenizerText::_advance() {
 	_current++;
 	column++;
 	position++;
-	if (column > rightmost_column) {
-		rightmost_column = column;
-	}
 	if (unlikely(_is_at_end())) {
 		// Add extra newline even if it's not there, to satisfy the parser.
 		newline(true);
@@ -367,8 +365,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 	token.end_line = line;
 	token.start_column = start_column;
 	token.end_column = column;
-	token.leftmost_column = leftmost_column;
-	token.rightmost_column = rightmost_column;
 	token.source = String::utf32(Span(_start, _current - _start));
 
 	if (p_type != Token::ERROR && cursor_line > -1) {
@@ -671,8 +667,6 @@ void GDScriptTokenizerText::newline(bool p_make_token) {
 		newline.end_line = line;
 		newline.start_column = column - 1;
 		newline.end_column = column;
-		newline.leftmost_column = newline.start_column;
-		newline.rightmost_column = newline.end_column;
 		pending_newline = true;
 		last_token = newline;
 		last_newline = newline;
@@ -681,7 +675,6 @@ void GDScriptTokenizerText::newline(bool p_make_token) {
 	// Increment line/column counters.
 	line++;
 	column = 1;
-	leftmost_column = 1;
 }
 
 GDScriptTokenizer::Token GDScriptTokenizerText::number() {
@@ -718,9 +711,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 	if (base != 10 && is_underscore(_peek())) { // Disallow `0x_` and `0b_`.
 		Token error = make_error(vformat(R"(Unexpected underscore after "0%c".)", _peek(-1)));
 		error.start_column = column;
-		error.leftmost_column = column;
 		error.end_column = column + 1;
-		error.rightmost_column = column + 1;
 		push_error(error);
 		has_error = true;
 	}
@@ -730,9 +721,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 			if (previous_was_underscore) {
 				Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 				error.start_column = column;
-				error.leftmost_column = column;
 				error.end_column = column + 1;
-				error.rightmost_column = column + 1;
 				push_error(error);
 			}
 			previous_was_underscore = true;
@@ -750,25 +739,19 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 		} else if (base == 10) {
 			Token error = make_error("Cannot use a decimal point twice in a number.");
 			error.start_column = column;
-			error.leftmost_column = column;
 			error.end_column = column + 1;
-			error.rightmost_column = column + 1;
 			push_error(error);
 			has_error = true;
 		} else if (base == 16) {
 			Token error = make_error("Cannot use a decimal point in a hexadecimal number.");
 			error.start_column = column;
-			error.leftmost_column = column;
 			error.end_column = column + 1;
-			error.rightmost_column = column + 1;
 			push_error(error);
 			has_error = true;
 		} else {
 			Token error = make_error("Cannot use a decimal point in a binary number.");
 			error.start_column = column;
-			error.leftmost_column = column;
 			error.end_column = column + 1;
-			error.rightmost_column = column + 1;
 			push_error(error);
 			has_error = true;
 		}
@@ -779,9 +762,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 			if (is_underscore(_peek())) { // Disallow `10._`, but allow `10.`.
 				Token error = make_error(R"(Unexpected underscore after decimal point.)");
 				error.start_column = column;
-				error.leftmost_column = column;
 				error.end_column = column + 1;
-				error.rightmost_column = column + 1;
 				push_error(error);
 				has_error = true;
 			}
@@ -791,9 +772,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 					if (previous_was_underscore) {
 						Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 						error.start_column = column;
-						error.leftmost_column = column;
 						error.end_column = column + 1;
-						error.rightmost_column = column + 1;
 						push_error(error);
 					}
 					previous_was_underscore = true;
@@ -816,9 +795,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 			if (!is_digit(_peek())) {
 				Token error = make_error(R"(Expected exponent value after "e".)");
 				error.start_column = column;
-				error.leftmost_column = column;
 				error.end_column = column + 1;
-				error.rightmost_column = column + 1;
 				push_error(error);
 			}
 			previous_was_underscore = false;
@@ -827,9 +804,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 					if (previous_was_underscore) {
 						Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 						error.start_column = column;
-						error.leftmost_column = column;
 						error.end_column = column + 1;
-						error.rightmost_column = column + 1;
 						push_error(error);
 					}
 					previous_was_underscore = true;
@@ -845,9 +820,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 		// No digits in hex or bin literal.
 		Token error = make_error(vformat(R"(Expected %s digit after "0%c".)", (base == 16 ? "hexadecimal" : "binary"), (base == 16 ? 'x' : 'b')));
 		error.start_column = column;
-		error.leftmost_column = column;
 		error.end_column = column + 1;
-		error.rightmost_column = column + 1;
 		return error;
 	}
 
@@ -855,9 +828,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 	if (!has_error && has_decimal && _peek() == '.' && _peek(1) != '.') {
 		Token error = make_error("Cannot use a decimal point twice in a number.");
 		error.start_column = column;
-		error.leftmost_column = column;
 		error.end_column = column + 1;
-		error.rightmost_column = column + 1;
 		push_error(error);
 		has_error = true;
 	} else if (is_unicode_identifier_start(_peek()) || is_unicode_identifier_continue(_peek())) {
@@ -936,9 +907,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 				error = make_error("Invisible text direction control character present in the string, escape it (\"\\u" + String::num_int64(ch, 16) + "\") to avoid confusion.");
 			}
 			error.start_column = column;
-			error.leftmost_column = error.start_column;
 			error.end_column = column + 1;
-			error.rightmost_column = error.end_column;
 			push_error(error);
 		}
 
@@ -1032,9 +1001,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 								// Make error, but keep parsing the string.
 								Token error = make_error("Invalid hexadecimal digit in unicode escape sequence.");
 								error.start_column = column;
-								error.leftmost_column = error.start_column;
 								error.end_column = column + 1;
-								error.rightmost_column = error.end_column;
 								push_error(error);
 								valid_escape = false;
 								break;
@@ -1063,7 +1030,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 					default:
 						Token error = make_error("Invalid escape in string.");
 						error.start_column = column - 2;
-						error.leftmost_column = error.start_column;
 						push_error(error);
 						valid_escape = false;
 						break;
@@ -1078,7 +1044,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 						} else {
 							Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate.");
 							error.start_column = column - 2;
-							error.leftmost_column = error.start_column;
 							push_error(error);
 							valid_escape = false;
 							prev = 0;
@@ -1087,7 +1052,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 						if (prev == 0) {
 							Token error = make_error("Invalid UTF-16 sequence in string, unpaired trail surrogate.");
 							error.start_column = column - 2;
-							error.leftmost_column = error.start_column;
 							push_error(error);
 							valid_escape = false;
 						} else {
@@ -1098,7 +1062,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 					if (prev != 0) {
 						Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate.");
 						error.start_column = prev_pos;
-						error.leftmost_column = error.start_column;
 						push_error(error);
 						prev = 0;
 					}
@@ -1112,7 +1075,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 			if (prev != 0) {
 				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
 				error.start_column = prev_pos;
-				error.leftmost_column = error.start_column;
 				push_error(error);
 				prev = 0;
 			}
@@ -1135,7 +1097,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 			if (prev != 0) {
 				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
 				error.start_column = prev_pos;
-				error.leftmost_column = error.start_column;
 				push_error(error);
 				prev = 0;
 			}
@@ -1149,7 +1110,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 	if (prev != 0) {
 		Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
 		error.start_column = prev_pos;
-		error.leftmost_column = error.start_column;
 		push_error(error);
 		prev = 0;
 	}
@@ -1273,8 +1233,6 @@ void GDScriptTokenizerText::check_indent() {
 			Token error = make_error("Mixed use of tabs and spaces for indentation.");
 			error.start_line = line;
 			error.start_column = 1;
-			error.leftmost_column = 1;
-			error.rightmost_column = column;
 			push_error(error);
 		}
 
@@ -1293,8 +1251,6 @@ void GDScriptTokenizerText::check_indent() {
 					_get_indent_char_name(current_indent_char), _get_indent_char_name(indent_char)));
 			error.start_line = line;
 			error.start_column = 1;
-			error.leftmost_column = 1;
-			error.rightmost_column = column;
 			push_error(error);
 		}
 
@@ -1328,9 +1284,7 @@ void GDScriptTokenizerText::check_indent() {
 				Token error = make_error("Unindent doesn't match the previous indentation level.");
 				error.start_line = line;
 				error.start_column = 1;
-				error.leftmost_column = 1;
 				error.end_column = column + 1;
-				error.rightmost_column = column + 1;
 				push_error(error);
 				// Still, we'll be lenient and keep going, so keep this level in the stack.
 				indent_stack.push_back(indent_count);
@@ -1431,14 +1385,11 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 	_start = _current;
 	start_line = line;
 	start_column = column;
-	leftmost_column = column;
-	rightmost_column = column;
 
 	if (pending_indents != 0) {
 		// Adjust position for indent.
 		_start -= start_column - 1;
 		start_column = 1;
-		leftmost_column = 1;
 		if (pending_indents > 0) {
 			// Indents.
 			pending_indents--;
@@ -1448,7 +1399,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			pending_indents++;
 			Token dedent = make_token(Token::DEDENT);
 			dedent.end_column += 1;
-			dedent.rightmost_column += 1;
 			return dedent;
 		}
 	}
@@ -1552,6 +1502,10 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 		case '.':
 			if (_peek() == '.') {
 				_advance();
+				if (_peek() == '.') {
+					_advance();
+					return make_token(Token::PERIOD_PERIOD_PERIOD);
+				}
 				return make_token(Token::PERIOD_PERIOD);
 			} else if (is_digit(_peek())) {
 				// Number starting with '.'.
