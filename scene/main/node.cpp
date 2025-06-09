@@ -3315,6 +3315,7 @@ Node::Node() {
 	data.unhandled_key_input = false;
 	data.pause_mode = PAUSE_MODE_INHERIT;
 	data.physics_interpolation_mode = PHYSICS_INTERPOLATION_MODE_INHERIT;
+	data.ancestry = 0;
 	data.pause_owner = nullptr;
 	data.network_master = 1; //server by default
 	data.path_cache = nullptr;

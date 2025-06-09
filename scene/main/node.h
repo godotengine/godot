@@ -66,6 +66,13 @@ public:
 		PHYSICS_INTERPOLATION_MODE_ON
 	};
 
+	enum AncestralClass : unsigned int {
+		ANCESTRAL_CLASS_NODE_2D = 1 << 0,
+		ANCESTRAL_CLASS_SPATIAL = 1 << 1,
+		ANCESTRAL_CLASS_CANVAS_ITEM = 1 << 2,
+		ANCESTRAL_CLASS_VISUAL_INSTANCE = 1 << 3
+	};
+
 	enum DuplicateFlags {
 
 		DUPLICATE_SIGNALS = 1,
@@ -142,6 +149,7 @@ private:
 		// Keep bitpacked values together to get better packing
 		PauseMode pause_mode : 2;
 		PhysicsInterpolationMode physics_interpolation_mode : 2;
+		uint32_t ancestry : 4;
 
 		// variables used to properly sort the node when processing, ignored otherwise
 		//should move all the stuff below to bits
@@ -260,6 +268,7 @@ protected:
 	void _add_child_nocheck(Node *p_child, const StringName &p_name);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
+	void _define_ancestry(AncestralClass p_class) { data.ancestry |= p_class; }
 	void _set_physics_interpolated_client_side(bool p_enable);
 	bool _is_physics_interpolated_client_side() const { return data.physics_interpolated_client_side; }
 	void _set_physics_interpolation_reset_requested(bool p_enable);
@@ -343,6 +352,7 @@ public:
 	NodePath get_path() const;
 	NodePath get_path_to(const Node *p_node) const;
 	Node *find_common_parent_with(const Node *p_node) const;
+	bool test_ancestry(AncestralClass p_class) const { return data.ancestry & p_class; }
 
 	void add_to_group(const StringName &p_identifier, bool p_persistent = false);
 	void remove_from_group(const StringName &p_identifier);
