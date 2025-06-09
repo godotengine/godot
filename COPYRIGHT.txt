@@ -169,21 +169,21 @@ Comment: Temporal Anti-Aliasing resolve implementation
 Copyright: 2016, Panos Karabelas
 License: Expat
 
-Files: thirdparty/accesskit/*
-Comment: AccessKit
-Copyright: 2023, The AccessKit Authors.
-License: Expat
-
 Files: servers/rendering/renderer_rd/shaders/smaa_blending.glsl
  servers/rendering/renderer_rd/shaders/smaa_weight_calculation.glsl
  servers/rendering/renderer_rd/shaders/smaa_edge_detection.glsl
  thirdparty/smaa/*
 Comment: Subpixel Morphological Antialiasing
-Copyright: 2013 Jorge Jimenez (jorge@iryoku.com)
- 2013 Jose I. Echevarria (joseignacioechevarria@gmail.com)
- 2013 Belen Masia (bmasia@unizar.es)
- 2013 Fernando Navarro (fernandn@microsoft.com)
- 2013 Diego Gutierrez (diegog@unizar.es)
+Copyright: 2013, Jorge Jimenez
+ 2013, Jose I. Echevarria
+ 2013, Belen Masia
+ 2013, Fernando Navarro
+ 2013, Diego Gutierrez
+License: Expat
+
+Files: thirdparty/accesskit/*
+Comment: AccessKit
+Copyright: 2023, The AccessKit Authors.
 License: Expat
 
 Files: thirdparty/amd-fsr/*
@@ -305,7 +305,7 @@ Comment: Graphite engine
 Copyright: 2010, SIL International
 License: Expat
 
-Files: thirdparty/grisu2/grisu2.h
+Files: thirdparty/grisu2/*
 Comment: Grisu2 float serialization algorithm
 Copyright: 2009, Florian Loitsch
  2018-2023, The simdjson authors
@@ -551,6 +551,11 @@ Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.
 License: Apache-2.0
 
+Files: thirdparty/swappy-frame-pacing/*
+Comment: Swappy
+Copyright: 2019, The Android Open Source Project
+License: Apache-2.0
+
 Files: thirdparty/thorvg/*
 Comment: ThorVG
 Copyright: 2020-2024, The ThorVG Project
@@ -599,15 +604,15 @@ Copyright: 2008-2012, Kristian Høgsberg
 License: Expat
 
 Files: thirdparty/wayland-protocols/*
-Comment: Wayland protocols that add functionality not available in the core protocol
+Comment: Wayland protocols
 Copyright: 2008-2013, Kristian Høgsberg
   2010-2013, Intel Corporation
-  2013,      Rafael Antognolli
-  2013,      Jasper St. Pierre
-  2014,      Jonas Ådahl
-  2014,      Jason Ekstrand
+  2013, Rafael Antognolli
+  2013, Jasper St. Pierre
+  2014, Jonas Ådahl
+  2014, Jason Ekstrand
   2014-2015, Collabora, Ltd.
-  2015,      Red Hat Inc.
+  2015, Red Hat Inc.
 License: Expat
 
 Files: thirdparty/wslay/*

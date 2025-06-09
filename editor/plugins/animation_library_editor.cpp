@@ -43,6 +43,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/line_edit.h"
+#include "scene/resources/packed_scene.h"
 
 void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
 	mixer = Object::cast_to<AnimationMixer>(p_mixer);
@@ -360,10 +361,16 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 	switch (file_dialog_action) {
 		case FILE_DIALOG_ACTION_OPEN_LIBRARY: {
 			for (const String &path : p_paths) {
-				Ref<AnimationLibrary> al = ResourceLoader::load(path);
-				if (al.is_null()) {
+				const Ref<Resource> res = ResourceLoader::load(path);
+				const Ref<AnimationLibrary> anim_library = res;
+				if (anim_library.is_null()) {
 					show_error_diag = true;
-					error_dialog->set_text(TTR("Some AnimationLibrary files were invalid."));
+					const Ref<PackedScene> scene = res;
+					if (scene.is_valid()) {
+						error_dialog->set_text(TTR("The file you selected is an imported scene from a 3D model such as glTF or FBX.\n\nIn Godot, 3D models can be imported as either scenes or animation libraries, which is why they show up here.\n\nIf you want to use animations from this 3D model, open the Advanced Import Settings\ndialog and save the animations using Actions... -> Set Animation Save Paths,\nor import the whole scene as a single AnimationLibrary in the Import dock."));
+					} else {
+						error_dialog->set_text(TTR("The file you selected is not a valid AnimationLibrary.\n\nIf the animations you want are inside of this file, save them to a separate file first."));
+					}
 					continue;
 				}
 
@@ -371,7 +378,7 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 				mixer->get_animation_library_list(&libs);
 				bool is_already_added = false;
 				for (const StringName &K : libs) {
-					if (mixer->get_animation_library(K) == al) {
+					if (mixer->get_animation_library(K) == anim_library) {
 						// Prioritize the "invalid" error message.
 						if (!show_error_diag) {
 							show_error_diag = true;
@@ -399,7 +406,7 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 					has_created_action = true;
 					undo_redo->create_action(p_paths.size() > 1 ? TTR("Add Animation Libraries") : vformat(TTR("Add Animation Library: %s"), name));
 				}
-				undo_redo->add_do_method(mixer, "add_animation_library", name, al);
+				undo_redo->add_do_method(mixer, "add_animation_library", name, anim_library);
 				undo_redo->add_undo_method(mixer, "remove_animation_library", name);
 			}
 		} break;

@@ -34,6 +34,7 @@
 #include "scene/gui/dialogs.h"
 
 class CheckButton;
+class EditorEventSearchBar;
 class EventListenerLineEdit;
 class InputEventConfigurationDialog;
 class PanelContainer;
@@ -54,10 +55,8 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	LineEdit *search_box = nullptr;
 	CheckButton *advanced_switch = nullptr;
-	LineEdit *shortcut_search_box = nullptr;
-	EventListenerLineEdit *shortcut_search_by_event = nullptr;
 	SectionedInspector *inspector = nullptr;
-	Button *clear_all_search = nullptr;
+	EditorEventSearchBar *shortcut_search_bar = nullptr;
 
 	// Shortcuts
 	enum ShortcutButton {
@@ -109,8 +108,6 @@ class EditorSettingsDialog : public AcceptDialog {
 	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
 	String _get_shortcut_button_string(const String &p_shortcut_name);
 
-	void _filter_shortcuts(const String &p_filter);
-	void _filter_shortcuts_by_event(const Ref<InputEvent> &p_event);
 	bool _should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const;
 
 	void _update_shortcuts();

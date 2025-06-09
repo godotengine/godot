@@ -1543,14 +1543,14 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 }
 
 bool DisplayServerWayland::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
 	WindowID window_id = MAIN_WINDOW_ID;
 	// TODO: Use window IDs for multiwindow support.
-
 	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
-#ifdef DBUS_ENABLED
 	return portal_desktop->color_picker((ws ? ws->exported_handle : String()), p_callback);
-#endif
+#else
 	return false;
+#endif
 }
 
 void DisplayServerWayland::try_suspend() {
