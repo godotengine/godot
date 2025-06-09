@@ -337,7 +337,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 	sw.pending_window_update = false;
 
 	RS::get_singleton()->canvas_item_clear(sw.canvas_item);
-	Rect2i r = Rect2i(p_window->get_position(), p_window->get_size());
+	const Rect2i r = Rect2i(p_window->get_position(), p_window->get_size());
 
 	if (!p_window->get_flag(Window::FLAG_BORDERLESS)) {
 		Ref<StyleBox> panel = gui.subwindow_focused == p_window ? p_window->theme_cache.embedded_border : p_window->theme_cache.embedded_unfocused_border;
@@ -351,18 +351,21 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int close_h_ofs = p_window->theme_cache.close_h_offset;
 		int close_v_ofs = p_window->theme_cache.close_v_offset;
 
-		TextLine title_text = TextLine(p_window->get_translated_title(), title_font, font_size);
-		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
-		title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-		int x = (r.size.width - title_text.get_size().x) / 2;
-		int y = (-title_height - title_text.get_size().y) / 2;
+		const real_t title_space = r.size.width - panel->get_minimum_size().x - close_h_ofs;
+		if (title_space > 0) {
+			TextLine title_text = TextLine(p_window->get_translated_title(), title_font, font_size);
+			title_text.set_width(title_space);
+			title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+			int x = (r.size.width - title_text.get_size().x) / 2;
+			int y = (-title_height - title_text.get_size().y) / 2;
 
-		Color font_outline_color = p_window->theme_cache.title_outline_modulate;
-		int outline_size = p_window->theme_cache.title_outline_size;
-		if (outline_size > 0 && font_outline_color.a > 0) {
-			title_text.draw_outline(sw.canvas_item, r.position + Point2(x, y), outline_size, font_outline_color);
+			Color font_outline_color = p_window->theme_cache.title_outline_modulate;
+			int outline_size = p_window->theme_cache.title_outline_size;
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				title_text.draw_outline(sw.canvas_item, r.position + Point2(x, y), outline_size, font_outline_color);
+			}
+			title_text.draw(sw.canvas_item, r.position + Point2(x, y), title_color);
 		}
-		title_text.draw(sw.canvas_item, r.position + Point2(x, y), title_color);
 
 		bool pressed = gui.subwindow_focused == sw.window && gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE && gui.subwindow_drag_close_inside;
 		Ref<Texture2D> close_icon = pressed ? p_window->theme_cache.close_pressed : p_window->theme_cache.close;
