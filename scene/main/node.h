@@ -118,7 +118,7 @@ public:
 		INTERNAL_MODE_BACK,
 	};
 
-	enum AutoTranslateMode {
+	enum AutoTranslateMode : unsigned int {
 		AUTO_TRANSLATE_MODE_INHERIT,
 		AUTO_TRANSLATE_MODE_ALWAYS,
 		AUTO_TRANSLATE_MODE_DISABLED,
@@ -219,6 +219,7 @@ private:
 		// Keep bitpacked values together to get better packing.
 		ProcessMode process_mode : 3;
 		PhysicsInterpolationMode physics_interpolation_mode : 2;
+		AutoTranslateMode auto_translate_mode : 2;
 
 		bool physics_process : 1;
 		bool process : 1;
@@ -259,12 +260,11 @@ private:
 		bool ready_notified : 1;
 		bool ready_first : 1;
 
-		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
-		mutable bool is_auto_translating = true;
-		mutable bool is_auto_translate_dirty = true;
+		mutable bool is_auto_translating : 1;
+		mutable bool is_auto_translate_dirty : 1;
 
-		mutable bool is_translation_domain_inherited = true;
-		mutable bool is_translation_domain_dirty = true;
+		mutable bool is_translation_domain_inherited : 1;
+		mutable bool is_translation_domain_dirty : 1;
 
 		mutable NodePath *path_cache = nullptr;
 
