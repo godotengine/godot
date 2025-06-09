@@ -383,8 +383,8 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 			case ITEM_IMAGE: {
 				ItemImage *img = static_cast<ItemImage *>(it);
 				Size2 img_size = img->size;
-				if (img->size_in_percent) {
-					img_size = _get_image_size(img->image, p_width * img->rq_size.width / 100.f, p_width * img->rq_size.height / 100.f, img->region);
+				if (img->width_in_percent || img->height_in_percent) {
+					img_size = _get_image_size(img->image, img->width_in_percent ? (p_width * img->rq_size.width / 100.f) : img->rq_size.width, img->height_in_percent ? (p_width * img->rq_size.height / 100.f) : img->rq_size.height, img->region);
 					l.text_buf->resize_object(it->rid, img_size, img->inline_align);
 				}
 			} break;
@@ -591,8 +591,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 			case ITEM_IMAGE: {
 				ItemImage *img = static_cast<ItemImage *>(it);
 				Size2 img_size = img->size;
-				if (img->size_in_percent) {
-					img_size = _get_image_size(img->image, p_width * img->rq_size.width / 100.f, p_width * img->rq_size.height / 100.f, img->region);
+				if (img->width_in_percent || img->height_in_percent) {
+					img_size = _get_image_size(img->image, img->width_in_percent ? (p_width * img->rq_size.width / 100.f) : img->rq_size.width, img->height_in_percent ? (p_width * img->rq_size.height / 100.f) : img->rq_size.height, img->region);
 				}
 				l.text_buf->add_object(it->rid, img_size, img->inline_align, 1);
 				txt += String::chr(0xfffc);
@@ -2350,6 +2350,21 @@ void RichTextLabel::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_stop_thread();
 			main->first_invalid_font_line.store(0); // Invalidate all lines.
+			for (const RID &E : hr_list) {
+				Item *it = items.get_or_null(E);
+				if (it) {
+					ItemImage *img = static_cast<ItemImage *>(it);
+					if (img) {
+						if (img->image.is_valid()) {
+							img->image->disconnect_changed(callable_mp(this, &RichTextLabel::_texture_changed));
+						}
+						img->image = theme_cache.horizontal_rule;
+						if (img->image.is_valid()) {
+							img->image->connect_changed(callable_mp(this, &RichTextLabel::_texture_changed).bind(img->rid), CONNECT_REFERENCE_COUNTED);
+						}
+					}
+				}
+			}
 			_invalidate_accessibility();
 			queue_accessibility_update();
 			queue_redraw();
@@ -3956,7 +3971,50 @@ Size2 RichTextLabel::_get_image_size(const Ref<Texture2D> &p_image, int p_width,
 	return ret;
 }
 
-void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, const Variant &p_key, bool p_pad, const String &p_tooltip, bool p_size_in_percent, const String &p_alt_text) {
+void RichTextLabel::add_hr(int p_width, int p_height, const Color &p_color, HorizontalAlignment p_alignment, bool p_width_in_percent, bool p_height_in_percent) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	if (current->type == ITEM_TABLE) {
+		return;
+	}
+
+	ERR_FAIL_COND(p_width < 0);
+	ERR_FAIL_COND(p_height < 0);
+
+	ItemParagraph *p_item = memnew(ItemParagraph);
+	p_item->owner = get_instance_id();
+	p_item->rid = items.make_rid(p_item);
+	p_item->alignment = p_alignment;
+	_add_item(p_item, true, true);
+
+	ItemImage *item = memnew(ItemImage);
+	item->owner = get_instance_id();
+	item->rid = items.make_rid(item);
+
+	item->image = theme_cache.horizontal_rule;
+	item->color = p_color;
+	item->inline_align = INLINE_ALIGNMENT_CENTER;
+	item->rq_size = Size2(p_width, p_height);
+	item->size = _get_image_size(theme_cache.horizontal_rule, p_width, p_height, Rect2());
+	item->width_in_percent = p_width_in_percent;
+	item->height_in_percent = p_height_in_percent;
+
+	item->image->connect_changed(callable_mp(this, &RichTextLabel::_texture_changed).bind(item->rid), CONNECT_REFERENCE_COUNTED);
+
+	_add_item(item, false);
+	hr_list.insert(item->rid);
+
+	if (current->type == ITEM_FRAME) {
+		current_frame = static_cast<ItemFrame *>(current)->parent_frame;
+	}
+	current = current->parent;
+	if (!parsing_bbcode.load() && !tag_stack.is_empty()) {
+		tag_stack.pop_back();
+	}
+}
+
+void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, const Variant &p_key, bool p_pad, const String &p_tooltip, bool p_width_in_percent, bool p_height_in_percent, const String &p_alt_text) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3987,7 +4045,8 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_
 	item->rq_size = Size2(p_width, p_height);
 	item->region = p_region;
 	item->size = _get_image_size(p_image, p_width, p_height, p_region);
-	item->size_in_percent = p_size_in_percent;
+	item->width_in_percent = p_width_in_percent;
+	item->height_in_percent = p_height_in_percent;
 	item->pad = p_pad;
 	item->key = p_key;
 	item->tooltip = p_tooltip;
@@ -3999,7 +4058,7 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_
 	update_configuration_warnings();
 }
 
-void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, bool p_pad, const String &p_tooltip, bool p_size_in_percent) {
+void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, bool p_pad, const String &p_tooltip, bool p_width_in_percent, bool p_height_in_percent) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -4060,9 +4119,10 @@ void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask>
 					}
 				}
 				if (p_mask & UPDATE_WIDTH_IN_PERCENT) {
-					if (item->size_in_percent != p_size_in_percent) {
+					if (item->width_in_percent != p_width_in_percent || item->height_in_percent != p_height_in_percent) {
 						reshape = true;
-						item->size_in_percent = p_size_in_percent;
+						item->width_in_percent = p_width_in_percent;
+						item->height_in_percent = p_height_in_percent;
 					}
 				}
 				if (p_mask & UPDATE_SIZE) {
@@ -5680,6 +5740,43 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			pos = end;
 			tag_stack.push_front(bbcode_name);
+		} else if (tag.begins_with("hr")) {
+			HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
+			OptionMap::Iterator align_option = bbcode_options.find("align");
+			if (align_option) {
+				if (align_option->value == "l" || align_option->value == "left") {
+					alignment = HORIZONTAL_ALIGNMENT_LEFT;
+				} else if (align_option->value == "c" || align_option->value == "center") {
+					alignment = HORIZONTAL_ALIGNMENT_CENTER;
+				} else if (align_option->value == "r" || align_option->value == "right") {
+					alignment = HORIZONTAL_ALIGNMENT_RIGHT;
+				}
+			}
+
+			Color color = theme_cache.default_color;
+			OptionMap::Iterator color_option = bbcode_options.find("color");
+			if (color_option) {
+				color = Color::from_string(color_option->value, color);
+			}
+			int width = 90;
+			bool width_in_percent = true;
+			OptionMap::Iterator width_option = bbcode_options.find("width");
+			if (width_option) {
+				width = width_option->value.to_int();
+				width_in_percent = (width_option->value.ends_with("%"));
+			}
+
+			int height = 2;
+			bool height_in_percent = false;
+			OptionMap::Iterator height_option = bbcode_options.find("height");
+			if (height_option) {
+				height = height_option->value.to_int();
+				height_in_percent = (height_option->value.ends_with("%"));
+			}
+
+			add_hr(width, height, color, alignment, width_in_percent, height_in_percent);
+
+			pos = brk_end + 1;
 		} else if (tag.begins_with("img")) {
 			int alignment = INLINE_ALIGNMENT_CENTER;
 			if (tag.begins_with("img=")) {
@@ -5751,7 +5848,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				int height = 0;
 				bool pad = false;
 				String tooltip;
-				bool size_in_percent = false;
+				bool width_in_percent = false;
+				bool height_in_percent = false;
 				if (!bbcode_value.is_empty()) {
 					int sep = bbcode_value.find_char('x');
 					if (sep == -1) {
@@ -5797,7 +5895,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					if (width_option) {
 						width = width_option->value.to_int();
 						if (width_option->value.ends_with("%")) {
-							size_in_percent = true;
+							width_in_percent = true;
 						}
 					}
 
@@ -5805,7 +5903,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					if (height_option) {
 						height = height_option->value.to_int();
 						if (height_option->value.ends_with("%")) {
-							size_in_percent = true;
+							height_in_percent = true;
 						}
 					}
 
@@ -5820,7 +5918,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 
-				add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, size_in_percent, alt_text);
+				add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, width_in_percent, height_in_percent, alt_text);
 			}
 
 			pos = end;
@@ -7223,8 +7321,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parsed_text"), &RichTextLabel::get_parsed_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
-	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "size_in_percent", "alt_text"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "size_in_percent"), &RichTextLabel::update_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_hr", "width", "height", "color", "alignment", "width_in_percent", "height_in_percent"), &RichTextLabel::add_hr, DEFVAL(90), DEFVAL(2), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(HORIZONTAL_ALIGNMENT_CENTER), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "width_in_percent", "height_in_percent", "alt_text"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(false), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "width_in_percent", "height_in_percent"), &RichTextLabel::update_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph", "no_invalidate"), &RichTextLabel::remove_paragraph, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("invalidate_paragraph", "paragraph"), &RichTextLabel::invalidate_paragraph);
@@ -7471,6 +7570,8 @@ void RichTextLabel::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, focus_style, "focus");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, progress_bg_style, "background", "ProgressBar");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, progress_fg_style, "fill", "ProgressBar");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, RichTextLabel, horizontal_rule, "horizontal_rule");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, line_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, paragraph_separation);
