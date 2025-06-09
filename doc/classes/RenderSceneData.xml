@@ -4,8 +4,8 @@
 		Abstract render data object, holds scene data related to rendering a single frame of a viewport.
 	</brief_description>
 	<description>
-		Abstract scene data object, exists for the duration of rendering a single viewport.
-		[b]Note:[/b] This is an internal rendering server object, do not instantiate this from script.
+		Abstract scene data object, exists for the duration of rendering a single viewport. See also [RenderSceneDataRD], [RenderData], and [RenderDataRD].
+		[b]Note:[/b] This is an internal rendering server object. Do not instantiate this class from a script.
 	</description>
 	<tutorials>
 	</tutorials>
