@@ -5,8 +5,10 @@
 	</brief_description>
 	<description>
 		This texture class allows you to use a 2D texture created directly on the [RenderingDevice] as a texture for materials, meshes, etc.
+		[b]Note:[/b] [Texture2DRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [Texture2D] instead.
 	</description>
 	<tutorials>
+		<link title="Compute Texture demo">https://godotengine.org/asset-library/asset/2764</link>
 	</tutorials>
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
