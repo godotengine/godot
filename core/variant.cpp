@@ -2160,9 +2160,9 @@ Variant::Variant(const Object *p_object) {
 	Object *obj = const_cast<Object *>(p_object);
 
 	memnew_placement(_data._mem, ObjData);
-	Reference *ref = Object::cast_to<Reference>(obj);
-	if (unlikely(ref)) {
-		*reinterpret_cast<Ref<Reference> *>(_get_obj().ref.get_data()) = Ref<Reference>(ref);
+
+	if (obj && obj->has_ancestry(Object::AncestralClass::REFERENCE)) {
+		*reinterpret_cast<Ref<Reference> *>(_get_obj().ref.get_data()) = Ref<Reference>((Reference *)obj);
 		_get_obj().rc = nullptr;
 	} else {
 		_get_obj().rc = likely(obj) ? obj->_use_rc() : nullptr;

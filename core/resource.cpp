@@ -381,6 +381,7 @@ void Resource::_bind_methods() {
 
 Resource::Resource() :
 		remapped_list(this) {
+	_define_ancestry(AncestralClass::RESOURCE);
 #ifdef TOOLS_ENABLED
 	last_modified_time = 0;
 	import_last_modified_time = 0;

@@ -428,6 +428,29 @@ public:
 		CONNECT_REFERENCE_COUNTED = 8,
 	};
 
+	// Store on each object a bitfield to quickly test whether it is derived from some "key" classes
+	// that are commonly tested in performance sensitive code.
+	// Ensure unsigned to bitpack.
+	enum class AncestralClass : unsigned int {
+		REFERENCE = 1 << 0,
+		NODE = 1 << 1,
+		RESOURCE = 1 << 2,
+		SCRIPT = 1 << 3,
+
+		CANVAS_ITEM = 1 << 4,
+		CONTROL = 1 << 5,
+		NODE_2D = 1 << 6,
+		COLLISION_OBJECT_2D = 1 << 7,
+		AREA_2D = 1 << 8,
+
+		SPATIAL = 1 << 9,
+		VISUAL_INSTANCE = 1 << 10,
+		GEOMETRY_INSTANCE = 1 << 11,
+		COLLISION_OBJECT = 1 << 12,
+		PHYSICS_BODY = 1 << 13,
+		MESH_INSTANCE = 1 << 14,
+	};
+
 	struct Connection {
 		Object *source;
 		StringName signal;
@@ -491,20 +514,24 @@ private:
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
 #endif
-	bool _block_signals;
 	int _predelete_ok;
 	Set<Object *> change_receptors;
 	ObjectID _instance_id;
 	std::atomic<ObjectRC *> _rc;
-	bool _predelete();
-	void _postinitialize();
-	bool _can_translate;
-	bool _emitting;
+
+	uint32_t _ancestry : 15;
+	bool _block_signals : 1;
+	bool _can_translate : 1;
+	bool _emitting : 1;
 #ifdef TOOLS_ENABLED
-	bool _edited;
+	bool _edited : 1;
 	uint32_t _edited_version;
 	Set<String> editor_section_folding;
 #endif
+
+	bool _predelete();
+	void _postinitialize();
+
 	ScriptInstance *script_instance;
 	RefPtr script;
 	Dictionary metadata;
@@ -586,6 +613,7 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 	void _disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, bool p_force = false);
+	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
 
 public: //should be protected, but bug in clang++
 	static void initialize_class();
@@ -659,6 +687,8 @@ public:
 
 	virtual bool is_class(const String &p_class) const { return (p_class == "Object"); }
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
+
+	bool has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
 
 	_FORCE_INLINE_ const StringName &get_class_name() const {
 		if (!_class_ptr) {

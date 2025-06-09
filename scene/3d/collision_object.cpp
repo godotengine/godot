@@ -541,6 +541,8 @@ uint32_t CollisionObject::shape_find_owner(int p_shape_index) const {
 }
 
 CollisionObject::CollisionObject(RID p_rid, bool p_area) {
+	_define_ancestry(AncestralClass::COLLISION_OBJECT);
+
 	rid = p_rid;
 	area = p_area;
 	capture_input_on_drag = false;
@@ -578,6 +580,8 @@ String CollisionObject::get_configuration_warning() const {
 }
 
 CollisionObject::CollisionObject() {
+	_define_ancestry(AncestralClass::COLLISION_OBJECT);
+
 	capture_input_on_drag = false;
 	ray_pickable = true;
 	set_notify_transform(true);

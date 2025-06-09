@@ -3291,6 +3291,8 @@ String Node::_get_name_num_separator() {
 }
 
 Node::Node() {
+	_define_ancestry(AncestralClass::NODE);
+
 	data.pos = -1;
 	data.depth = -1;
 	data.blocked = 0;
