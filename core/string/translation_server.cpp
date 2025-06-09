@@ -567,6 +567,13 @@ void TranslationServer::get_argument_options(const StringName &p_function, int p
 			target_hash_map = &script_map;
 		} else if (pf == "get_country_name") {
 			target_hash_map = &country_name_map;
+		} else if (pf == "get_or_add_domain") {
+			if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_domains")) {
+				PackedStringArray domains = GLOBAL_GET("internationalization/locale/translations_domains");
+				for (String &E : domains) {
+					r_options->push_back(E.quote());
+				}
+			}
 		}
 
 		if (target_hash_map) {
