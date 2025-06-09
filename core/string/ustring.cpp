@@ -912,7 +912,14 @@ String String::get_slice(const String &p_splitter, int p_slice) const {
 	int prev_pos = 0;
 	//int slices=1;
 	if (p_slice < 0) {
-		return "";
+		while ((pos = text.find(p_splitter, pos)) != std::string::npos) {
+			count++;
+			pos += p_splitter.length();
+		}
+		p_slice = count + p_slice + 1;
+		if (p_slice > count) {
+			return "";
+		}
 	}
 	if (find(p_splitter) == -1) {
 		return *this;
