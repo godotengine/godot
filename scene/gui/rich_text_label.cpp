@@ -6247,16 +6247,20 @@ void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 	queue_accessibility_update();
 }
 
-int RichTextLabel::get_paragraph_count() const {
-	int para_count = 0;
-	int to_line = main->first_invalid_line.load();
-	for (int i = 0; i < to_line; i++) {
-		if ((visible_characters >= 0) && main->lines[i].char_offset >= visible_characters) {
-			break;
+int RichTextLabel::get_paragraph_count(bool p_skip_invisible_characters) const {
+	if (p_skip_invisible_characters) {
+		int para_count = 0;
+		int to_line = main->first_invalid_line.load();
+		for (int i = 0; i < to_line; i++) {
+			if ((visible_characters >= 0) && main->lines[i].char_offset >= visible_characters) {
+				break;
+			}
+			para_count++;
 		}
-		para_count++;
+		return para_count;
+	} else {
+		return main->lines.size();
 	}
-	return para_count;
 }
 
 int RichTextLabel::get_visible_paragraph_count() const {
@@ -7347,7 +7351,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_range", "line"), &RichTextLabel::get_line_range);
 	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &RichTextLabel::get_visible_line_count);
 
-	ClassDB::bind_method(D_METHOD("get_paragraph_count"), &RichTextLabel::get_paragraph_count);
+	ClassDB::bind_method(D_METHOD("get_paragraph_count", "skip_invisible_characters"), &RichTextLabel::get_paragraph_count, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_visible_paragraph_count"), &RichTextLabel::get_visible_paragraph_count);
 
 	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);

@@ -143,6 +143,7 @@ protected:
 	void _set_table_column_expand_bind_compat_101482(int p_column, bool p_expand, int p_ratio);
 	void _push_underline_bind_compat_106300();
 	void _push_strikethrough_bind_compat_106300();
+	int _get_paragraph_count_bind_compat_107321() const;
 
 	static void _bind_compatibility_methods();
 #endif
@@ -842,7 +843,7 @@ public:
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
 	void scroll_to_paragraph(int p_paragraph);
-	int get_paragraph_count() const;
+	int get_paragraph_count(bool p_skip_invisible_characters = false) const;
 	int get_visible_paragraph_count() const;
 
 	float get_line_offset(int p_line);

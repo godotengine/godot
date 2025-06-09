@@ -74,6 +74,10 @@ void RichTextLabel::_push_strikethrough_bind_compat_106300() {
 	push_strikethrough(Color(0, 0, 0, 0));
 }
 
+int RichTextLabel::_get_paragraph_count_bind_compat_107321() const {
+	return get_paragraph_count(false);
+}
+
 void RichTextLabel::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::_push_font_bind_compat_79053);
 	ClassDB::bind_compatibility_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::_set_table_column_expand_bind_compat_79053);
@@ -86,6 +90,7 @@ void RichTextLabel::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("remove_paragraph", "paragraph"), &RichTextLabel::_remove_paragraph_bind_compat_91098);
 	ClassDB::bind_compatibility_method(D_METHOD("push_underline"), &RichTextLabel::_push_underline_bind_compat_106300);
 	ClassDB::bind_compatibility_method(D_METHOD("push_strikethrough"), &RichTextLabel::_push_strikethrough_bind_compat_106300);
+	ClassDB::bind_compatibility_method(D_METHOD("get_paragraph_count"), &RichTextLabel::_get_paragraph_count_bind_compat_107321);
 }
 
 #endif // DISABLE_DEPRECATED
