@@ -2264,10 +2264,9 @@ void AnimationTrackEdit::_notification(int p_what) {
 			if (animation.is_null()) {
 				return;
 			}
-			ERR_FAIL_INDEX(track, animation->get_track_count());
 
 			type_icon = _get_key_type_icon();
-			selected_icon = get_editor_theme_icon(SNAME("KeySelected"));
+			selected_icon = _get_key_type_icon_selected();
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -2640,13 +2639,6 @@ void AnimationTrackEdit::draw_timeline(const float p_clip_left, const float p_cl
 
 		bool selected = editor->is_key_selected(track, i);
 
-		//bool valid_key = has_valid_key(i);
-		//if (!valid_key) {
-		//	double key_time = get_key_time(i);
-		//	_draw_simple_key_at_time(key_time, p_clip_left, p_clip_right); //p_selected, p_hovering);
-		//	continue;
-		//}
-
 		if (i < key_count - 1) {
 			const Rect2 next_rect = get_global_key_rect(i + 1);
 			draw_key_link(i, scale, global_rect.position.x, next_rect.position.x, p_clip_left, p_clip_right);
@@ -2801,10 +2793,10 @@ bool AnimationTrackEdit::has_key(const int p_index) {
 
 /// KEY EDIT ///
 
-AnimationKeyEdit::AnimationKeyEdit() {
-	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
-	animationTrackDrawUtils->canvas_item = this;
-}
+//AnimationKeyEdit::AnimationKeyEdit() {
+//	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
+//	animationTrackDrawUtils->canvas_item = this;
+//}
 
 bool AnimationKeyEdit::has_valid_track() const {
 	if (animation.is_null()) {
@@ -2818,13 +2810,15 @@ bool AnimationKeyEdit::has_valid_track() const {
 	return true;
 }
 
-bool AnimationKeyEdit::has_valid_key(const int p_index) const {
-	if (!type_icon.is_valid()) {
+/*
+bool AnimationKeyIconEdit::has_valid_key(const int p_index) const {
+	if (!icon.is_valid()) {
 		return false;
 	}
 
 	return true;
 }
+*/
 
 int AnimationTrackEdit::get_key_count() const {
 	if (animation.is_null()) {
@@ -2844,14 +2838,22 @@ int AnimationMarkerEdit::get_key_count() const {
 }
 
 float AnimationKeyEdit::get_key_width(const int p_index) const {
-	return type_icon->get_width();
+	return _get_key_type_icon()->get_width();
 }
 
 float AnimationKeyEdit::get_key_height(const int p_index) const {
-	return type_icon->get_height();
+	return _get_key_type_icon()->get_height();
 }
 
-void AnimationKeyEdit::_draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
+bool AnimationKeyEdit::has_valid_key(const int p_index) const {
+	if (!_get_key_type_icon().is_valid()) {
+		return false;
+	}
+
+	return true;
+}
+
+void KeyEdit::_draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
 	if (has_valid_key(p_index)) {
 		draw_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
 		return;
@@ -2860,24 +2862,8 @@ void AnimationKeyEdit::_draw_key(const int p_index, const Rect2 &p_global_rect, 
 	_draw_default_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
 }
 
-void AnimationKeyEdit::_draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
+void KeyEdit::_draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
 	Ref<Texture2D> texture = p_selected ? selected_icon : type_icon;
-
-	if (animation->track_get_type(track) == Animation::TYPE_VALUE && !Math::is_equal_approx(animation->track_get_key_transition(track, p_index), real_t(1.0))) {
-		// Use a different icon for keys with non-linear easing.
-		texture = get_editor_theme_icon(p_selected ? SNAME("KeyEasedSelected") : SNAME("KeyValueEased"));
-	}
-
-	/*
-	// Override type icon for invalid value keys, unless selected.
-	if (!p_selected && animation->track_get_type(track) == Animation::TYPE_VALUE) {
-		const Variant &v = animation->track_get_key_value(track, p_index);
-		Variant::Type valid_type = Variant::NIL;
-		if (!_is_value_key_valid(v, valid_type)) {
-			texture = get_editor_theme_icon(SNAME("KeyInvalid"));
-		}
-	}
-	*/
 
 	Rect2 region;
 	region.size = texture->get_size();
@@ -2890,9 +2876,13 @@ void AnimationKeyEdit::_draw_default_key(const int p_index, const Rect2 &p_globa
 	animationTrackDrawUtils->_draw_texture_region_clipped(texture, p_global_rect, region, p_clip_left, p_clip_right, color);
 }
 
-Rect2 AnimationKeyEdit::get_key_rect(const int p_index) const {
+Rect2 KeyEdit::get_key_rect(const int p_index) const {
 	if (has_valid_key(p_index)) {
-		return _get_key_rect(p_index);
+		float width = get_key_width(p_index);
+		float height = get_key_height(p_index);
+		Rect2 rect = Rect2(-width * key_pivot.x, -height * key_pivot.y, width, height);
+
+		return rect;
 	}
 
 	Ref<Texture2D> texture = type_icon;
@@ -2906,30 +2896,12 @@ Rect2 AnimationKeyEdit::get_key_rect(const int p_index) const {
 	return Rect2(-width * key_pivot.x, -height * key_pivot.y, width, height);
 }
 
-Rect2 AnimationKeyEdit::_get_key_rect(const int p_index) const {
-	float width = get_key_width(p_index);
-	float height = get_key_height(p_index);
-	Rect2 rect = Rect2(-width * key_pivot.x, -height * key_pivot.y, width, height);
-
-	return rect;
-}
-
-Rect2 AnimationKeyEdit::get_global_key_rect(const int p_index, bool p_ignore_moving_selection) const {
+Rect2 KeyEdit::get_global_key_rect(const int p_index, bool p_ignore_moving_selection) const {
 	Rect2 local_rect = get_key_rect(p_index);
 	return _to_global_key_rect(p_index, local_rect, p_ignore_moving_selection);
 }
 
-/*
-Rect2 AnimationKeyEdit::_get_global_key_rect(const int p_index, bool p_ignore_moving_selection = false) const {
-	if (has_valid_key(p_index)) {
-		return get_global_key_rect(p_index, p_ignore_moving_selection);
-	}
-
-	return _get_global_key_rect_at_time(get_key_time(p_index));
-}
-*/
-
-Rect2 AnimationKeyEdit::_to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection) const {
+Rect2 KeyEdit::_to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection) const {
 	Rect2 global_rect = Rect2(p_local_rect);
 
 	float offset = _get_pixels_sec(p_index, p_ignore_moving_selection);
@@ -2939,7 +2911,7 @@ Rect2 AnimationKeyEdit::_to_global_key_rect(const int p_index, const Rect2 &p_lo
 	return global_rect;
 }
 
-Rect2 AnimationKeyEdit::_to_local_key_rect(const int p_index, const Rect2 &p_global_rect, bool p_ignore_moving_selection) const {
+Rect2 KeyEdit::_to_local_key_rect(const int p_index, const Rect2 &p_global_rect, bool p_ignore_moving_selection) const {
 	Rect2 local_rect = Rect2(p_global_rect);
 
 	float p_x = ((get_key_time(p_index) - timeline->get_value()) * timeline->get_zoom_scale()) + timeline->get_name_limit();
@@ -2949,11 +2921,25 @@ Rect2 AnimationKeyEdit::_to_local_key_rect(const int p_index, const Rect2 &p_glo
 	return local_rect;
 }
 
-float AnimationKeyEdit::_get_pixels_sec(const int p_index, bool ignore_moving_selection) const {
+KeyEdit::KeyEdit() {
+	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
+	animationTrackDrawUtils->canvas_item = this;
+}
+
+bool AnimationTrackEdit::is_key_selected(const int p_index) const {
+	return editor->is_key_selected(track, p_index);
+}
+
+bool AnimationMarkerEdit::is_key_selected(const int p_index) const {
+	StringName marker = get_marker_name(p_index);
+	return editor->is_marker_selected(marker);
+}
+
+float KeyEdit::_get_pixels_sec(const int p_index, bool ignore_moving_selection) const {
 	float local_time = _get_local_time(p_index);
 
 	if (!ignore_moving_selection) {
-		if (editor->is_key_selected(track, p_index) && editor->is_moving_selection()) {
+		if (is_key_selected(p_index) && editor->is_moving_selection()) {
 			local_time += editor->get_moving_selection_offset();
 		}
 	}
@@ -2964,7 +2950,7 @@ float AnimationKeyEdit::_get_pixels_sec(const int p_index, bool ignore_moving_se
 	return local_time * scale + limit;
 }
 
-float AnimationKeyEdit::_get_local_time(const int p_index, float offset) const {
+float KeyEdit::_get_local_time(const int p_index, float offset) const {
 	return (get_key_time(p_index) + offset) - timeline->get_value();
 }
 
@@ -2978,7 +2964,7 @@ double AnimationMarkerEdit::get_key_time(const int p_index) const {
 	return animation->get_marker_time(marker_name);
 }
 
-bool AnimationKeyEdit::is_key_selectable_by_distance() const {
+bool KeyEdit::is_key_selectable_by_distance() const {
 	return true;
 }
 
@@ -3008,44 +2994,6 @@ void AnimationTrackEdit::draw_key(const int p_index, const Rect2 &p_global_rect,
 	Color color = p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : Color(1, 1, 1);
 	animationTrackDrawUtils->_draw_texture_region_clipped(texture, p_global_rect, region, p_clip_left, p_clip_right, color);
 }
-
-/*
-void AnimationKeyEdit::_draw_simple_key_at_time(const double p_time, const float p_clip_left, const float p_clip_right, const bool p_selected, const bool p_hovering) {
-	double timeline_pos = timeline->_get_timeline_pos(p_time);
-
-	Ref<Texture2D> texture = p_selected ? selected_icon : type_icon;
-
-	Rect2 region;
-	region.size = texture->get_size();
-
-	Rect2 global_rect = _get_global_key_rect_at_time(p_time);
-
-	Color color = p_hovering ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : Color(1, 1, 1);
-	animationTrackDrawUtils->_draw_texture_region_clipped(texture, global_rect, region, p_clip_left, p_clip_right, color);
-}
-*/
-
-/*
-Rect2 AnimationKeyEdit::_get_global_key_rect_at_time(const double p_time, const bool p_selected) const {
-	double timeline_pos = timeline->_get_timeline_pos(p_time);
-
-	Ref<Texture2D> texture = p_selected ? selected_icon : type_icon;
-
-	Rect2 region;
-	region.size = texture->get_size();
-
-	float width = region.size.x;
-	float height = region.size.y;
-
-	Rect2 global_rect = Rect2(-width * key_pivot.x, -height * key_pivot.y, width, height);
-
-	double offset = timeline->_get_timeline_pos(p_time);
-	global_rect.position.x += offset;
-	global_rect.position.y += get_size().height * track_alignment;
-
-	return global_rect;
-}
-*/
 
 int AnimationTrackEdit::find_closest_key(const Point2 &p_pos) const {
 	int key_idx = -1;
@@ -3123,7 +3071,7 @@ Ref<Animation> AnimationTrackEdit::get_animation() const {
 	return animation;
 }
 
-void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only) {
+void AnimationKeyEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only) {
 	animation = p_animation;
 	read_only = p_read_only;
 
@@ -3134,10 +3082,10 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 
 	node_path = animation->track_get_path(p_track);
 	type_icon = _get_key_type_icon();
-	selected_icon = get_editor_theme_icon(SNAME("KeySelected"));
+	selected_icon = _get_key_type_icon_selected();
 }
 
-NodePath AnimationTrackEdit::get_path() const {
+NodePath AnimationKeyEdit::get_path() const {
 	return node_path;
 }
 
@@ -3248,6 +3196,18 @@ Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
 		get_editor_theme_icon(SNAME("KeyAnimation"))
 	};
 	return type_icons[animation->track_get_type(track)];
+}
+
+Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon_selected() const {
+	return get_editor_theme_icon(SNAME("KeySelected"));
+}
+
+Ref<Texture2D> AnimationMarkerEdit::_get_key_type_icon() const {
+	return get_editor_theme_icon(SNAME("Marker"));
+}
+
+Ref<Texture2D> AnimationMarkerEdit::_get_key_type_icon_selected() const {
+	return get_editor_theme_icon(SNAME("MarkerSelected"));
 }
 
 Control::CursorShape AnimationTrackEdit::get_cursor_shape(const Point2 &p_pos) const {
@@ -9161,8 +9121,8 @@ void AnimationMarkerEdit::_notification(int p_what) {
 				return;
 			}
 
-			type_icon = get_editor_theme_icon(SNAME("Marker"));
-			selected_icon = get_editor_theme_icon(SNAME("MarkerSelected"));
+			type_icon = _get_key_type_icon();
+			selected_icon = _get_key_type_icon_selected();
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -9580,8 +9540,8 @@ void AnimationMarkerEdit::set_animation(const Ref<Animation> &p_animation, bool 
 	}
 	animation = p_animation;
 	read_only = p_read_only;
-	type_icon = get_editor_theme_icon(SNAME("Marker"));
-	selected_icon = get_editor_theme_icon(SNAME("MarkerSelected"));
+	type_icon = _get_key_type_icon();
+	selected_icon = _get_key_type_icon_selected();
 
 	queue_redraw();
 }
