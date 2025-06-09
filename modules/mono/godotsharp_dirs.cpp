@@ -42,7 +42,7 @@
 #include "editor/editor_paths.h"
 #endif
 
-namespace GodotSharpDirs {
+namespace GodotSharpDirs{
 
 String _get_expected_build_config() {
 #ifdef TOOLS_ENABLED
@@ -121,7 +121,7 @@ String _get_platform_name() {
 }
 #endif
 
-class _GodotSharpDirs {
+class _GodotSharpDirs{
 public:
 	String res_metadata_dir;
 	String res_temp_assemblies_dir;
@@ -224,8 +224,8 @@ private:
 	}
 
 public:
-	static _GodotSharpDirs &get_singleton() {
-		static _GodotSharpDirs singleton;
+	static _GodotSharpDirs&get_singleton() {
+		static _GodotSharpDirssingleton;
 		return singleton;
 	}
 };
@@ -256,4 +256,4 @@ String get_data_editor_tools_dir() {
 }
 #endif
 
-} // namespace GodotSharpDirs 
+} // namespace GodotSharpDirs
