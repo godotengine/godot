@@ -851,7 +851,7 @@ Files extracted from the upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.47 (858912260ca616f4c23f7fb61c89228c353eb124, 2025)
+- Version: 1.1.48 (6eed4f4d6dd17c10acc11c0a3b1f55d9eabe1593, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -874,10 +874,6 @@ Exclude:
 - All following files (and their `.license` files):
   `*.{def,expsym,in,json,map,pom,rc,txt}`
 - All dotfiles
-
-Patches:
-
-- `0001-glad-egl.patch` (GH-98824)
 
 
 ## pcre2
