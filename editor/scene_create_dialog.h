@@ -45,6 +45,7 @@ class SceneCreateDialog : public ConfirmationDialog {
 	GDCLASS(SceneCreateDialog, ConfirmationDialog);
 
 	enum {
+		MSG_ID_DIR,
 		MSG_ID_PATH,
 		MSG_ID_ROOT,
 	};
@@ -74,6 +75,8 @@ private:
 	Button *select_node_button = nullptr;
 	CreateDialog *select_node_dialog = nullptr;
 
+	Label *directory_edit_label = nullptr;
+	LineEdit *directory_edit = nullptr;
 	LineEdit *scene_name_edit = nullptr;
 	OptionButton *scene_extension_picker = nullptr;
 	LineEdit *root_name_edit = nullptr;
@@ -89,7 +92,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void config(const String &p_dir, const String &p_name = "");
+	void config(const String &p_dir, const String &p_name = "", bool p_can_edit_dir = false);
 
 	String get_scene_path() const;
 	Node *create_scene_root();

@@ -178,12 +178,12 @@ void EditorAutoloadSettings::_autoload_add_pressed() {
 
 void EditorAutoloadSettings::_autoload_add_index_pressed(int p_index) {
 	switch (p_index) {
-	case 0: // Script button
-		_autoload_add_script();
-		break;
-	case 1: // Scene button
-		_autoload_add_scene();
-		break;
+		case 0: // Script button
+			_autoload_add_script();
+			break;
+		case 1: // Scene button
+			_autoload_add_scene();
+			break;
 	}
 }
 
@@ -209,14 +209,13 @@ void EditorAutoloadSettings::_autoload_add_script() {
 	dialog->popup_centered();
 }
 
-
 void EditorAutoloadSettings::_autoload_add_scene() {
 	SceneCreateDialog *dialog = FileSystemDock::get_singleton()->get_scene_create_dialog();
 	String fpath = path;
 	if (!fpath.ends_with("/")) {
 		fpath = fpath.get_base_dir();
 	}
-	dialog->config(fpath, vformat("%s", autoload_add_name->get_text()));
+	dialog->config(fpath, vformat("%s", autoload_add_name->get_text()), true);
 	dialog->popup_centered();
 }
 
@@ -659,14 +658,13 @@ void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
 }
 
 void EditorAutoloadSettings::_scene_created() {
-	SceneCreateDialog* scene_dialog = FileSystemDock::get_singleton()->get_scene_create_dialog();
+	SceneCreateDialog *scene_dialog = FileSystemDock::get_singleton()->get_scene_create_dialog();
 	String file_path = scene_dialog->get_scene_path();
 	path = file_path.get_base_dir();
 	autoload_add_path->set_text(file_path);
 	autoload_add_name->set_text(file_path.get_file().get_basename().to_pascal_case());
 	_autoload_add();
 }
-
 
 LineEdit *EditorAutoloadSettings::get_path_box() const {
 	return autoload_add_path;
