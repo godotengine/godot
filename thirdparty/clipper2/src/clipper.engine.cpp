@@ -1,6 +1,6 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  4 May 2025                                                      *
+* Date      :  30 May 2025                                                     *
 * Website   :  https://www.angusj.com                                          *
 * Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  This is the main polygon clipping module                        *
@@ -2119,10 +2119,9 @@ namespace Clipper2Lib {
       e->prev_in_sel = e->prev_in_ael;
       e->next_in_sel = e->next_in_ael;
       e->jump = e->next_in_sel;
-      if (e->join_with == JoinWith::Left)
-        e->curr_x = e->prev_in_ael->curr_x; // also avoids complications
-      else
-        e->curr_x = TopX(*e, top_y);
+      // it is safe to ignore 'joined' edges here because
+      // if necessary they will be split in IntersectEdges()
+      e->curr_x = TopX(*e, top_y);
       e = e->next_in_ael;
     }
   }
