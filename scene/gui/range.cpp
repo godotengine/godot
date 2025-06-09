@@ -135,8 +135,12 @@ void Range::set_value(double p_val) {
 }
 
 void Range::_set_value_no_signal(double p_val) {
-	if (shared->step > 0) {
-		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
+	shared->val = _calc_value(p_val, shared->step);
+}
+
+double Range::_calc_value(double p_val, double p_step) const {
+	if (p_step > 0) {
+		p_val = Math::round((p_val - shared->min) / p_step) * p_step + shared->min;
 	}
 
 	if (_rounded_values) {
@@ -150,12 +154,7 @@ void Range::_set_value_no_signal(double p_val) {
 	if (!shared->allow_lesser && p_val < shared->min) {
 		p_val = shared->min;
 	}
-
-	if (shared->val == p_val) {
-		return;
-	}
-
-	shared->val = p_val;
+	return p_val;
 }
 
 void Range::set_value_no_signal(double p_val) {
