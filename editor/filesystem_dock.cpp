@@ -534,6 +534,7 @@ void FileSystemDock::_notification(int p_what) {
 			current_path_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
 
 			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
+			thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
 
 			set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
 
@@ -633,6 +634,12 @@ void FileSystemDock::_notification(int p_what) {
 			bool new_always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
+				do_redraw = true;
+			}
+
+			int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
+			if (new_thumbnail_size_setting != thumbnail_size_setting) {
+				thumbnail_size_setting = new_thumbnail_size_setting;
 				do_redraw = true;
 			}
 
@@ -938,8 +945,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	String directory = current_path;
 	String file = "";
 
-	int thumbnail_size = EDITOR_GET("docks/filesystem/thumbnail_size");
-	thumbnail_size *= EDSCALE;
+	int thumbnail_size = thumbnail_size_setting * EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
 	Ref<Texture2D> file_thumbnail;
 	Ref<Texture2D> file_thumbnail_broken;

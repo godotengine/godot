@@ -203,6 +203,7 @@ private:
 	CreateDialog *new_resource_dialog = nullptr;
 
 	bool always_show_folders = false;
+	int thumbnail_size_setting = 0;
 
 	bool editor_is_dark_theme = false;
 
