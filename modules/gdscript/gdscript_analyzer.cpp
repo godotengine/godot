@@ -1805,7 +1805,8 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		int default_par_count = 0;
 		BitField<MethodFlags> method_flags = {};
 		StringName native_base;
-		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
+		GDScriptParser::Node::AccessLevel acceess_level = GDScriptParser::Node::PUBLIC;
+		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, acceess_level, &native_base)) {
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
 
 			if (p_function->return_type != nullptr) {
@@ -1922,6 +1923,27 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	} else if (p_function->get_datatype().is_hard_type() && (p_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_function->get_datatype().builtin_type != Variant::NIL)) {
 		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
 			push_error(R"(Not all code paths return a value.)", p_function);
+		}
+	}
+
+	if (p_function->must_call_super) {
+		if (p_is_lambda) {
+			push_error(R"(Cannot be used in lambda expressions)", p_function);
+		} else {
+			if (p_function->body->statements.size() == 0) {
+				push_error(R"(Must call the base class function)", p_function);
+				return;
+			}
+			GDScriptParser::Node *node = p_function->body->statements[0];
+			bool is_super = false;
+			if (node->type == GDScriptParser::Node::Type::CALL) {
+				GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(node);
+				if (!call_node->is_super) {
+					push_error(R"(Must call the base class function)", p_function);
+				}
+			} else {
+				push_error(R"(Must call the base class function)", p_function);
+			}
 		}
 	}
 
@@ -2277,7 +2299,8 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			List<GDScriptParser::DataType> par_types;
 			int default_arg_count = 0;
 			BitField<MethodFlags> method_flags = {};
-			if (get_function_signature(p_for->list, false, list_type, CoreStringName(_iter_get), return_type, par_types, default_arg_count, method_flags)) {
+			GDScriptParser::Node::AccessLevel access_level = GDScriptParser::Node::PUBLIC;
+			if (get_function_signature(p_for->list, false, list_type, CoreStringName(_iter_get), return_type, par_types, default_arg_count, method_flags, access_level)) {
 				variable_type = return_type;
 				variable_type.type_source = list_type.type_source;
 			} else if (!list_type.is_hard_type()) {
@@ -3570,6 +3593,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	BitField<MethodFlags> method_flags = {};
 	GDScriptParser::DataType return_type;
 	List<GDScriptParser::DataType> par_types;
+	GDScriptParser::Node::AccessLevel access_level = GDScriptParser::Node::PUBLIC;
 
 	bool is_constructor = (base_type.is_meta_type || (p_call->callee && p_call->callee->type == GDScriptParser::Node::IDENTIFIER)) && p_call->function_name == SNAME("new");
 
@@ -3584,12 +3608,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 	}
 
-	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags)) {
+	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags, access_level)) {
 		// If the method is implemented in the class hierarchy, the virtual flag will not be set for that MethodInfo and the search stops there.
 		// Virtual check only possible for super() calls because class hierarchy is known. Node/Objects may have scripts attached we don't know of at compile-time.
 		p_call->is_static = method_flags.has_flag(METHOD_FLAG_STATIC);
 		if (p_call->is_super && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
 			push_error(vformat(R"*(Cannot call the parent class' virtual function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
+		} else if (p_call->is_super && access_level < GDScriptParser::Node::AccessLevel::PROTECTED) {
+			push_error(R"(Access restricted.)", p_call);
 		}
 
 		// If the function requires typed arrays we must make literals be typed.
@@ -3630,7 +3656,12 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			base_type.is_meta_type = false; // For `to_string()`.
 			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance instead.)*", p_call->function_name, base_type.to_string()), p_call);
 		} else if (is_self && !p_call->is_static) {
+			if (access_level < GDScriptParser::Node::AccessLevel::PROTECTED) {
+				push_error(R"(Access restricted.)", p_call);
+			}
 			mark_lambda_use_self();
+		} else if (!is_self && access_level < GDScriptParser::Node::AccessLevel::PUBLIC) {
+			push_error(R"(Access restricted.)", p_call);
 		}
 
 		if (!p_is_root && !p_is_await && return_type.is_hard_type() && return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
@@ -4171,6 +4202,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					if (is_base && (!base.is_meta_type || member.variable->is_static)) {
 						p_identifier->set_datatype(member.get_datatype());
 						p_identifier->source = member.variable->is_static ? GDScriptParser::IdentifierNode::STATIC_VARIABLE : GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
+						p_identifier->is_base = is_base;
 						p_identifier->variable_source = member.variable;
 						member.variable->usages += 1;
 						return;
@@ -4446,6 +4478,18 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 				push_error(vformat(R"*(Cannot access %s "%s" from the static function "%s()".)*", source_type, p_identifier->name, parent_function->identifier->name), p_identifier);
 			} else {
 				push_error(vformat(R"*(Cannot access %s "%s" from a static variable initializer.)*", source_type, p_identifier->name), p_identifier);
+			}
+		} else if (!static_context && source_is_instance_variable) {
+			switch (p_identifier->variable_source->access_level) {
+				case GDScriptParser::Node::AccessLevel::PRIVATE: {
+					if (p_identifier->is_base || p_identifier->source != GDScriptParser::IdentifierNode::MEMBER_VARIABLE) {
+						push_error(R"(Access restricted.)", p_identifier);
+					}
+				} break;
+				case GDScriptParser::Node::AccessLevel::PROTECTED: {
+				} break;
+				default:
+					break;
 			}
 		}
 
@@ -4781,6 +4825,18 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					p_subscript->reduced_value = value;
 					result_type = type_from_variant(value, p_subscript);
 				}
+			}
+		}
+
+		for (GDScriptParser::ClassNode::Member member : base_type.class_type->members) {
+			if (member.get_name() == p_subscript->attribute->name) {
+				for (GDScriptParser::AnnotationNode *annotation : member.get_source_node()->annotations) {
+					if (annotation->name == "@protected" || annotation->name == "@protected") {
+						push_error(R"(Access restricted.)", p_subscript);
+						break;
+					}
+				}
+				break;
 			}
 		}
 
@@ -5709,7 +5765,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	return result;
 }
 
-bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class) {
+bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, GDScriptParser::Node::AccessLevel &access_level, StringName *r_native_class) {
 	r_method_flags = METHOD_FLAGS_DEFAULT;
 	r_default_arg_count = 0;
 	if (r_native_class) {
@@ -5811,6 +5867,7 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		r_return_type = p_is_constructor ? p_base_type : found_function->get_datatype();
 		r_return_type.is_meta_type = false;
 		r_return_type.is_coroutine = found_function->is_coroutine;
+		access_level = found_function->access_level;
 
 		return true;
 	}
