@@ -203,10 +203,11 @@ private:
 		float color[3];
 		float size;
 
-		uint32_t enabled; // For use by SkyShaders
-		uint32_t bake_mode;
+		uint32_t enabled : 1; // For use by SkyShaders
+		uint32_t bake_mode : 2;
 		float shadow_opacity;
 		float specular;
+		uint32_t mask;
 	};
 	static_assert(sizeof(DirectionalLightData) % 16 == 0, "DirectionalLightData size must be a multiple of 16 bytes");
 

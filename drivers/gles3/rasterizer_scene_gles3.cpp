@@ -1712,6 +1712,8 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 
 				light_data.specular = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR);
 
+				light_data.mask = light_storage->light_get_cull_mask(base);
+
 				light_data.shadow_opacity = (p_using_shadows && light_storage->light_has_shadow(base))
 						? light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_OPACITY)
 						: 0.0;
@@ -3428,6 +3430,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						// Render directional lights.
 
 						uint32_t shadow_id = MAX_DIRECTIONAL_LIGHTS - 1 - (pass - int32_t(inst->light_passes.size()));
+						if (!(scene_state.directional_lights[shadow_id].mask & inst->layer_mask)) {
+							// Disable additive lighting when masks are not overlapping.
+							spec_constants &= ~SceneShaderGLES3::USE_ADDITIVE_LIGHTING;
+						}
 						if (pass == 0 && inst->lightmap_instance.is_valid() && scene_state.directional_lights[shadow_id].bake_mode == RenderingServer::LIGHT_BAKE_STATIC) {
 							// Disable additive lighting with a static light and a lightmap.
 							spec_constants &= ~SceneShaderGLES3::USE_ADDITIVE_LIGHTING;
@@ -3674,6 +3680,8 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 			if (p_pass_mode == PASS_MODE_MATERIAL) {
 				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::UV_OFFSET, p_params->uv_offset, shader->version, instance_variant, spec_constants);
+			} else if (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LAYER_MASK, inst->layer_mask, shader->version, instance_variant, spec_constants);
 			}
 
 			// Can be index count or vertex count
