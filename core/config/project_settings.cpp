@@ -1312,6 +1312,10 @@ void ProjectSettings::refresh_global_class_list() {
 	}
 }
 
+void ProjectSettings::ignore_global_class_list() {
+	is_global_class_list_loaded = true;
+}
+
 TypedArray<Dictionary> ProjectSettings::get_global_class_list() {
 	if (is_global_class_list_loaded) {
 		return global_class_list;
