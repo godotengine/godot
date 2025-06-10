@@ -223,6 +223,22 @@ String DisplayServerWayland::get_name() const {
 	return "Wayland";
 }
 
+void DisplayServerWayland::set_session(const String &p_name) {
+	DisplayServer::set_session(p_name);
+
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.set_session_path(get_session_path());
+}
+
+void DisplayServerWayland::set_session_path(const String &p_path) {
+	DisplayServer::set_session_path(p_path);
+
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.set_session_path(get_session_path());
+}
+
 #ifdef SPEECHD_ENABLED
 
 void DisplayServerWayland::initialize_tts() const {
@@ -1001,6 +1017,26 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 	if (wd.visible) {
 		wayland_thread.window_set_title(p_window_id, wd.title);
 	}
+}
+
+void DisplayServerWayland::window_set_session_id(const String &p_id, DisplayServer::WindowID p_window_id) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+
+	WindowData &wd = windows[p_window_id];
+
+	wd.session_id = p_id;
+
+	wayland_thread.window_set_session_id(p_window_id, p_id);
+}
+
+String DisplayServerWayland::window_get_session_id(DisplayServer::WindowID p_window_id) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_COND_V(!windows.has(p_window_id), String());
+
+	return windows[p_window_id].session_id;
 }
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window_id) {

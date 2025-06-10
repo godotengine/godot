@@ -8560,6 +8560,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(open_imported);
 
 	quick_open_dialog = memnew(EditorQuickOpenDialog);
+	quick_open_dialog->set_session_id("QuickOpen");
 	gui_base->add_child(quick_open_dialog);
 
 	quick_open_color_palette = memnew(EditorQuickOpenDialog);

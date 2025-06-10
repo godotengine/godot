@@ -52,6 +52,8 @@ DisplayServer::AccessibilityMode DisplayServer::accessibility_mode = DisplayServ
 
 bool DisplayServer::hidpi_allowed = false;
 
+String DisplayServer::session_path = "user://godot_window_state.cfg";
+
 bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
 
@@ -411,6 +413,18 @@ Dictionary DisplayServer::global_menu_get_system_menu_roots() const {
 
 #endif
 
+void DisplayServer::set_session(const String &p_name) {
+	session_path = "user://" + p_name + ".cfg";
+}
+
+void DisplayServer::set_session_path(const String &p_path) {
+	session_path = p_path;
+}
+
+String DisplayServer::get_session_path() {
+	return session_path;
+}
+
 bool DisplayServer::tts_is_speaking() const {
 	WARN_PRINT("TTS is not supported by this display server.");
 	return false;
@@ -614,6 +628,14 @@ void DisplayServer::delete_sub_window(WindowID p_id) {
 
 void DisplayServer::window_set_exclusive(WindowID p_window, bool p_exclusive) {
 	// Do nothing, if not supported.
+}
+
+void DisplayServer::window_set_session_id(const String &p_session_id, WindowID p_window) {
+	// Do nothing, if the DisplayServer does not use this
+}
+
+String DisplayServer::window_get_session_id(WindowID p_window) const {
+	return String();
 }
 
 void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {

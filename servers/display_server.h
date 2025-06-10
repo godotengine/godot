@@ -46,6 +46,7 @@ class DisplayServer : public Object {
 
 	static DisplayServer *singleton;
 	static bool hidpi_allowed;
+	static String session_path;
 
 #ifndef DISABLE_DEPRECATED
 	mutable HashMap<String, RID> menu_names;
@@ -234,6 +235,10 @@ public:
 
 	virtual Dictionary global_menu_get_system_menu_roots() const;
 #endif
+
+	virtual void set_session(const String &p_name);
+	virtual void set_session_path(const String &p_path);
+	virtual String get_session_path();
 
 	struct TTSUtterance {
 		String text;
@@ -470,6 +475,9 @@ public:
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const { return Size2i(); }
+
+	virtual void window_set_session_id(const String &p_session_id, WindowID p_window = MAIN_WINDOW_ID);
+	virtual String window_get_session_id(WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
 
