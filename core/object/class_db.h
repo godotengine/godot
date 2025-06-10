@@ -542,13 +542,8 @@ public:
 
 #ifdef DEBUG_ENABLED
 
-template <typename... P>
-_FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
-	return Vector<Error>({ p_args... });
-}
-
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) \
-	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__));
+	::ClassDB::set_method_error_return_values(get_class_static(), m_method, Vector<Error>{ __VA_ARGS__ });
 
 #else
 
