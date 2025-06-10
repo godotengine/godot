@@ -36,9 +36,9 @@
 
 #include "core/os/os.h"
 #include "drivers/png/image_loader_png.h"
-#include "editor/editor_resource_preview.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
+#include "editor/inspector/editor_resource_preview.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/main/window.h"

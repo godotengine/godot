@@ -30,8 +30,8 @@
 
 #include "editor_toaster.h"
 
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
