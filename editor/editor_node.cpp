@@ -1575,7 +1575,7 @@ void EditorNode::save_resource(const Ref<Resource> &p_resource) {
 	if (path.is_resource_file() && !FileAccess::exists(path + ".import")) {
 		save_resource_in_path(p_resource, p_resource->get_path());
 	} else {
-		save_resource_as(p_resource);
+		save_resource_as(p_resource, "");
 	}
 }
 

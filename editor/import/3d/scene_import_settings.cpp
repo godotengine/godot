@@ -37,10 +37,13 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/plugins/material_editor_plugin.h"
+#include "editor/plugins/mesh_editor_plugin.h"
 #include "editor/plugins/skeleton_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
@@ -72,6 +75,12 @@ class SceneImportSettingsData : public Object {
 			// SceneImportSettings must decide if a new collider should be generated or not.
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE) {
 				SceneImportSettingsDialog::get_singleton()->request_generate_collider();
+			}
+
+			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MATERIAL) {
+				if (p_name == SNAME("custom")) {
+					SceneImportSettingsDialog::get_singleton()->_update_mesh_materials();
+				}
 			}
 
 			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
@@ -218,7 +227,7 @@ void SceneImportSettingsDialog::_set_default(const StringName &p_name, const Var
 	scene_import_settings_data->_set(p_name, p_value);
 }
 
-void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent) {
+String SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent, const String &p_surface_name) {
 	String import_id;
 	bool has_import_id = false;
 
@@ -248,7 +257,7 @@ void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material>
 	}
 
 	MaterialData &material_data = material_map[import_id];
-	ERR_FAIL_COND(p_material != material_data.material);
+	ERR_FAIL_COND_V(p_material != material_data.material, String());
 
 	Variant value;
 	if (_get_current("materials/extract", value) && (int)value != 0) {
@@ -271,10 +280,12 @@ void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material>
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("StandardMaterial3D"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
-	if (p_material->get_name().is_empty()) {
-		item->set_text(0, TTR("<Unnamed Material>"));
-	} else {
+	if (!p_material->get_name().is_empty()) {
 		item->set_text(0, p_material->get_name());
+	} else if (!p_surface_name.is_empty()) {
+		item->set_text(0, p_surface_name);
+	} else {
+		item->set_text(0, TTR("<Unnamed Material>"));
 	}
 	item->set_icon(0, icon);
 
@@ -282,6 +293,7 @@ void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material>
 	item->set_meta("import_id", import_id);
 	item->set_tooltip_text(0, vformat(TTR("Import ID: %s"), import_id));
 	item->set_selectable(0, true);
+	material_data.name = item->get_text(0);
 
 	if (p_tree == scene_tree) {
 		material_data.scene_node = item;
@@ -292,11 +304,13 @@ void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material>
 	}
 
 	if (created) {
-		_fill_material(material_tree, p_material, material_tree->get_root());
+		(void)_fill_material(material_tree, p_material, material_tree->get_root());
 	}
+
+	return import_id;
 }
 
-void SceneImportSettingsDialog::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent) {
+String SceneImportSettingsDialog::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent) {
 	String import_id;
 
 	bool has_import_id = false;
@@ -306,10 +320,14 @@ void SceneImportSettingsDialog::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh
 	} else if (!p_mesh->get_name().is_empty()) {
 		import_id = p_mesh->get_name();
 		has_import_id = true;
+	} else if (unnamed_mesh_name_map.has(p_mesh)) {
+		import_id = unnamed_mesh_name_map[p_mesh];
 	} else {
 		import_id = "@MESH:" + itos(mesh_set.size());
+		unnamed_mesh_name_map[p_mesh] = import_id;
 	}
 
+	bool mesh_created = false;
 	if (!mesh_map.has(import_id)) {
 		MeshData md;
 		md.has_import_id = has_import_id;
@@ -318,6 +336,7 @@ void SceneImportSettingsDialog::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh
 		_load_default_subresource_settings(md.settings, "meshes", import_id, ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH);
 
 		mesh_map[import_id] = md;
+		mesh_created = true;
 	}
 
 	MeshData &mesh_data = mesh_map[import_id];
@@ -326,6 +345,7 @@ void SceneImportSettingsDialog::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_mesh->get_name());
+	mesh_data.name = p_mesh->get_name();
 	item->set_icon(0, icon);
 
 	bool created = false;
@@ -350,14 +370,20 @@ void SceneImportSettingsDialog::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		Ref<Material> mat = p_mesh->surface_get_material(i);
+		String id;
 		if (mat.is_valid()) {
-			_fill_material(p_tree, mat, item);
+			id = _fill_material(p_tree, mat, item, mesh_data.name + ", Surface " + itos(i + 1));
+		}
+		if (mesh_created) {
+			mesh_data.material_surface_ids.push_back(id);
 		}
 	}
 
 	if (created) {
-		_fill_mesh(mesh_tree, p_mesh, mesh_tree->get_root());
+		(void)_fill_mesh(mesh_tree, p_mesh, mesh_tree->get_root());
 	}
+
+	return import_id;
 }
 
 void SceneImportSettingsDialog::_fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent) {
@@ -389,13 +415,6 @@ void SceneImportSettingsDialog::_fill_animation(Tree *p_tree, const Ref<Animatio
 void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	String import_id;
 
-	if (p_node->has_meta("import_id")) {
-		import_id = p_node->get_meta("import_id");
-	} else {
-		import_id = "PATH:" + String(scene->get_path_to(p_node));
-		p_node->set_meta("import_id", import_id);
-	}
-
 	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
 	if (src_mesh_node) {
@@ -416,6 +435,13 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		p_node->replace_by(mesh_node);
 		memdelete(p_node);
 		p_node = mesh_node;
+	}
+
+	if (p_node->has_meta("import_id")) {
+		import_id = p_node->get_meta("import_id");
+	} else {
+		import_id = "PATH:" + String(scene->get_path_to(p_node));
+		p_node->set_meta("import_id", import_id);
 	}
 
 	String type = p_node->get_class();
@@ -494,7 +520,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
 		if (!editing_animation) {
-			_fill_mesh(scene_tree, mesh_node->get_mesh(), item);
+			node_data.mesh_id = _fill_mesh(scene_tree, mesh_node->get_mesh(), item);
 		}
 
 		// Add the collider view.
@@ -557,6 +583,7 @@ void SceneImportSettingsDialog::_update_scene() {
 	mesh_tree->create_item();
 
 	_fill_scene(scene, nullptr);
+	_update_mesh_materials();
 }
 
 void SceneImportSettingsDialog::_update_view_gizmos() {
@@ -680,26 +707,7 @@ void SceneImportSettingsDialog::_update_camera() {
 	float rot_y = cam_rot_y;
 	float zoom = cam_zoom;
 
-	if (selected_type == "Node" || selected_type == "Animation" || selected_type.is_empty()) {
-		camera_aabb = contents_aabb;
-	} else {
-		if (mesh_preview->get_mesh().is_valid()) {
-			camera_aabb = mesh_preview->get_transform().xform(mesh_preview->get_mesh()->get_aabb());
-		} else {
-			camera_aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
-		}
-		if (selected_type == "Mesh" && mesh_map.has(selected_id)) {
-			const MeshData &md = mesh_map[selected_id];
-			rot_x = md.cam_rot_x;
-			rot_y = md.cam_rot_y;
-			zoom = md.cam_zoom;
-		} else if (selected_type == "Material" && material_map.has(selected_id)) {
-			const MaterialData &md = material_map[selected_id];
-			rot_x = md.cam_rot_x;
-			rot_y = md.cam_rot_y;
-			zoom = md.cam_zoom;
-		}
-	}
+	camera_aabb = contents_aabb;
 
 	Vector3 center = camera_aabb.get_center();
 	float camera_size = camera_aabb.get_longest_axis_size();
@@ -725,6 +733,22 @@ void SceneImportSettingsDialog::_load_default_subresource_settings(HashMap<Strin
 			} else {
 				ResourceImporterScene::get_scene_singleton()->get_internal_import_options(p_category, &options);
 			}
+
+			if (p_category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MATERIAL) {
+				if (d.has("use_external/enabled")) { // Old file, move to new format.
+					bool use_external = d["use_external/enabled"];
+					if (use_external && d.has("use_external/path")) {
+						String path = d["use_external/path"];
+						Ref<Material> material = ResourceLoader::load(path, "Material");
+						if (material.is_valid()) {
+							d["custom"] = material;
+							d.erase("use_external/enabled");
+							d.erase("use_external/path");
+						}
+					}
+				}
+			}
+
 			for (const ResourceImporterScene::ImportOption &E : options) {
 				String key = E.option.name;
 				if (d.has(key)) {
@@ -761,8 +785,8 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		data_mode->set_current_tab(0);
 	}
 
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), editing_animation);
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), editing_animation);
+	batch_menu->get_popup()->set_item_disabled(batch_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), editing_animation);
+	batch_menu->get_popup()->set_item_disabled(batch_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), editing_animation);
 
 	base_path = p_path;
 
@@ -770,11 +794,10 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 	animation_map.clear();
 	material_map.clear();
 	unnamed_material_name_map.clear();
+	unnamed_mesh_name_map.clear();
 	mesh_map.clear();
 	node_map.clear();
 	defaults.clear();
-
-	mesh_preview->hide();
 
 	selected_id = "";
 	selected_type = "";
@@ -812,7 +835,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 
 	_update_scene();
 
-	base_viewport->add_child(scene);
+	scene_viewport->add_child(scene);
 
 	inspector->edit(nullptr);
 
@@ -828,6 +851,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 	if (main_settings.has("animation/import_rest_as_RESET")) {
 		previous_rest_as_reset = main_settings["animation/import_rest_as_RESET"];
 	}
+	set_exclusive(false);
 	popup_centered_ratio();
 	_update_view_gizmos();
 	_update_camera();
@@ -861,13 +885,9 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 
 	bones_mesh_preview->hide();
 	if (p_type == "Node") {
-		node_selected->hide(); // Always hide just in case.
-		mesh_preview->hide();
+		mesh_editor->hide();
+		material_editor->hide();
 		_reset_animation();
-
-		if (Object::cast_to<Node3D>(scene)) {
-			Object::cast_to<Node3D>(scene)->show();
-		}
 		material_tree->deselect_all();
 		mesh_tree->deselect_all();
 		NodeData &nd = node_map[p_id];
@@ -907,12 +927,10 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		}
 	} else if (p_type == "Animation") {
 		node_selected->hide(); // Always hide just in case.
-		mesh_preview->hide();
+		mesh_editor->hide();
+		material_editor->hide();
 		_reset_animation(p_id);
 
-		if (Object::cast_to<Node3D>(scene)) {
-			Object::cast_to<Node3D>(scene)->show();
-		}
 		material_tree->deselect_all();
 		mesh_tree->deselect_all();
 		AnimationData &ad = animation_map[p_id];
@@ -923,9 +941,8 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
 		node_selected->hide();
-		if (Object::cast_to<Node3D>(scene)) {
-			Object::cast_to<Node3D>(scene)->hide();
-		}
+		material_editor->hide();
+		mesh_editor->show();
 
 		MeshData &md = mesh_map[p_id];
 		if (md.mesh_node != nullptr) {
@@ -941,8 +958,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 			}
 		}
 
-		mesh_preview->set_mesh(md.mesh);
-		mesh_preview->show();
+		mesh_editor->edit(md.mesh);
 		_reset_animation();
 
 		material_tree->deselect_all();
@@ -951,17 +967,13 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH;
 	} else if (p_type == "Material") {
 		node_selected->hide();
-		if (Object::cast_to<Node3D>(scene)) {
-			Object::cast_to<Node3D>(scene)->hide();
-		}
-
-		mesh_preview->show();
+		material_editor->show();
+		mesh_editor->hide();
 		_reset_animation();
 
 		MaterialData &md = material_map[p_id];
 
-		material_preview->set_material(md.material);
-		mesh_preview->set_mesh(material_preview);
+		material_editor->edit(md.material, Ref<Environment>());
 
 		if (p_from != mesh_tree) {
 			md.mesh_node->uncollapse_tree();
@@ -1228,6 +1240,11 @@ void SceneImportSettingsDialog::_cleanup() {
 	set_process(false);
 }
 
+void SceneImportSettingsDialog::_popup_menu_pressed(int p_id) {
+	String id = pick_menu->get_item_metadata(p_id);
+	_select(nullptr, pick_list_type, id);
+}
+
 void SceneImportSettingsDialog::_on_light_1_switch_pressed() {
 	light1->set_visible(light_1_switch->is_pressed());
 }
@@ -1264,22 +1281,161 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 		(*rot_y) -= mm->get_relative().x * 0.01 * EDSCALE;
 		(*rot_x) = CLAMP((*rot_x), -Math::PI / 2, Math::PI / 2);
 		_update_camera();
+		dragging = true;
 	}
 	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
 		DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CursorShape::CURSOR_ARROW);
 	}
 	Ref<InputEventMouseButton> mb = p_input;
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
+		if (mb->is_pressed()) {
+			dragging = false;
+		} else if (!dragging) {
+			// Okay select something
+
+			Vector3 ray_from = camera->project_ray_origin(mb->get_position());
+			Vector3 ray_dir = camera->project_ray_normal(mb->get_position());
+
+			Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(ray_from, ray_from + ray_dir * 10000, scene_viewport->find_world_3d()->get_scenario());
+
+			if (instances.is_empty()) {
+				return;
+			}
+
+			Vector<MeshInstanceSort> mesh_instances;
+			for (int i = 0; i < instances.size(); i++) {
+				MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(instances[i]));
+				if (mi) {
+					if (!mi->has_meta("import_id")) {
+						continue; // Not an imported mesh, ignore.
+					}
+					Ref<Mesh> mesh = mi->get_mesh();
+					if (mesh.is_valid()) {
+						Ref<TriangleMesh> tm = mesh->generate_triangle_mesh();
+
+						Vector3 local_pos = mi->get_global_transform().affine_inverse().xform(ray_from);
+						Vector3 local_dir = mi->get_global_transform().affine_inverse().basis.xform(ray_dir).normalized();
+						int surf_index;
+						Vector3 p;
+						Vector3 n;
+						if (tm->intersect_ray(local_pos, local_dir, p, n, &surf_index)) {
+							MeshInstanceSort misort;
+							misort.mesh_instance = mi;
+							misort.surface_index = surf_index;
+							misort.point_d = ray_dir.dot(p);
+							mesh_instances.push_back(misort);
+						}
+					}
+				}
+			}
+
+			if (mesh_instances.is_empty()) {
+				return;
+			}
+
+			mesh_instances.sort();
+
+			Vector<String> pick_list;
+			Vector<String> pick_names;
+
+			if (tool_buttons[TOOL_SELECT_OBJECT]->is_pressed()) {
+				pick_list_type = "Node";
+				for (int i = 0; i < mesh_instances.size(); i++) {
+					if (!mesh_instances[i].mesh_instance->has_meta("import_id")) {
+						continue;
+					}
+					String import_id = mesh_instances[i].mesh_instance->get_meta("import_id");
+					if (!node_map.has(import_id)) {
+						continue;
+					}
+					pick_list.push_back(import_id);
+					pick_names.push_back(mesh_instances[i].mesh_instance->get_name());
+				}
+			} else if (tool_buttons[TOOL_SELECT_MESH]->is_pressed()) {
+				pick_list_type = "Mesh";
+				for (int i = 0; i < mesh_instances.size(); i++) {
+					if (!mesh_instances[i].mesh_instance->has_meta("import_id")) {
+						continue;
+					}
+
+					String import_id = mesh_instances[i].mesh_instance->get_meta("import_id");
+					if (!node_map.has(import_id)) {
+						continue;
+					}
+
+					NodeData &nd = node_map[import_id];
+					if (!mesh_map.has(nd.mesh_id)) {
+						continue;
+					}
+
+					pick_list.push_back(nd.mesh_id);
+					pick_names.push_back(mesh_map[nd.mesh_id].name);
+				}
+
+			} else if (tool_buttons[TOOL_SELECT_MATERIAL]->is_pressed()) {
+				pick_list_type = "Material";
+				for (int i = 0; i < mesh_instances.size(); i++) {
+					if (!mesh_instances[i].mesh_instance->has_meta("import_id")) {
+						continue;
+					}
+
+					String import_id = mesh_instances[i].mesh_instance->get_meta("import_id");
+					if (!node_map.has(import_id)) {
+						continue;
+					}
+
+					NodeData &nd = node_map[import_id];
+					if (!mesh_map.has(nd.mesh_id)) {
+						continue;
+					}
+
+					if (mesh_instances[i].surface_index < 0 || mesh_instances[i].surface_index >= mesh_map[nd.mesh_id].material_surface_ids.size()) {
+						continue;
+					}
+
+					String material_id = mesh_map[nd.mesh_id].material_surface_ids[mesh_instances[i].surface_index];
+					if (!material_map.has(material_id)) {
+						continue;
+					}
+					pick_list.push_back(material_id);
+					pick_names.push_back(material_map[material_id].name);
+				}
+			}
+
+			if (pick_list.is_empty()) {
+				return;
+			}
+
+			if (tool_buttons[TOOL_SELECT]->is_pressed()) {
+				_select(nullptr, pick_list_type, pick_list[0]);
+			} else {
+				pick_menu->clear();
+				for (int i = 0; i < pick_names.size(); i++) {
+					pick_menu->add_item(pick_names[i], i);
+					pick_menu->set_item_metadata(i, pick_list[i]);
+				}
+
+				Vector2 pos = vp_container->get_screen_rect().position;
+				pos += mb->get_position();
+				pick_menu->set_size(Vector2(0, 0));
+				pick_menu->set_position(pos);
+				pick_menu->popup();
+			}
+		}
+	}
+
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-		(*zoom) *= 1.1;
-		if ((*zoom) > 10.0) {
-			(*zoom) = 10.0;
+		cam_zoom *= 1.1;
+		if (cam_zoom > 10.0) {
+			cam_zoom = 10.0;
 		}
 		_update_camera();
 	}
+
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-		(*zoom) /= 1.1;
-		if ((*zoom) < 0.1) {
-			(*zoom) = 0.1;
+		cam_zoom /= 1.1;
+		if (cam_zoom < 0.1) {
+			cam_zoom = 0.1;
 		}
 		_update_camera();
 	}
@@ -1383,11 +1539,11 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			action_menu->begin_bulk_theme_override();
-			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(hover), get_theme_stylebox(SceneStringName(hover), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
-			action_menu->end_bulk_theme_override();
+			batch_menu->begin_bulk_theme_override();
+			batch_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
+			batch_menu->add_theme_style_override(SceneStringName(hover), get_theme_stylebox(SceneStringName(hover), "Button"));
+			batch_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
+			batch_menu->end_bulk_theme_override();
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
 				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
@@ -1401,6 +1557,31 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 			light_rotate_switch->set_button_icon(theme_cache.rotate_icon);
 
 			animation_toggle_skeleton_visibility->set_button_icon(get_editor_theme_icon(SNAME("SkeletonPreview")));
+
+			for (int i = 0; i < TOOL_MAX; i++) {
+				static const char *icons[TOOL_MAX] = {
+					"ToolSelect",
+					"ListSelect",
+					"NodeSelect",
+					"MeshSelect",
+					"MaterialSelect",
+					"StandardMaterial3D",
+				};
+				tool_buttons[i]->set_button_icon(get_editor_theme_icon(icons[i]));
+			}
+
+			tool_buttons[TOOL_PREVIEW_MATERIALS]->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.5));
+			tool_buttons[TOOL_PREVIEW_MATERIALS]->add_theme_color_override("icon_pressed_color", Color(1, 1, 1, 1.0));
+
+			Ref<LabelSettings> ls;
+			ls.instantiate();
+			// Needs to be high contrast over checkered background, not depend on theme
+			ls->set_font_color(Color(1, 1, 1));
+			ls->set_font(get_theme_font("bold", EditorStringName(EditorFonts)));
+			ls->set_outline_color(Color(0, 0, 0));
+			ls->set_outline_size(4);
+			me_label->set_label_settings(ls);
+
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1697,6 +1878,58 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 	}
 }
 
+void SceneImportSettingsDialog::_tool_pressed(int p_tool) {
+	switch (p_tool) {
+		case TOOL_SELECT: {
+			tool_buttons[TOOL_SELECT]->set_pressed(true);
+			tool_buttons[TOOL_SELECT_LIST]->set_pressed(false);
+		} break;
+		case TOOL_SELECT_LIST: {
+			tool_buttons[TOOL_SELECT]->set_pressed(false);
+			tool_buttons[TOOL_SELECT_LIST]->set_pressed(true);
+		} break;
+		case TOOL_SELECT_OBJECT: {
+			tool_buttons[TOOL_SELECT_OBJECT]->set_pressed(true);
+			tool_buttons[TOOL_SELECT_MESH]->set_pressed(false);
+			tool_buttons[TOOL_SELECT_MATERIAL]->set_pressed(false);
+		} break;
+		case TOOL_SELECT_MESH: {
+			tool_buttons[TOOL_SELECT_OBJECT]->set_pressed(false);
+			tool_buttons[TOOL_SELECT_MESH]->set_pressed(true);
+			tool_buttons[TOOL_SELECT_MATERIAL]->set_pressed(false);
+		} break;
+		case TOOL_SELECT_MATERIAL: {
+			tool_buttons[TOOL_SELECT_OBJECT]->set_pressed(false);
+			tool_buttons[TOOL_SELECT_MESH]->set_pressed(false);
+			tool_buttons[TOOL_SELECT_MATERIAL]->set_pressed(true);
+		} break;
+		case TOOL_PREVIEW_MATERIALS: {
+			_update_mesh_materials();
+		} break;
+	}
+}
+
+void SceneImportSettingsDialog::_update_mesh_materials() {
+	for (KeyValue<String, MeshData> &K : mesh_map) {
+		for (int i = 0; i < K.value.material_surface_ids.size(); i++) {
+			String mid = K.value.material_surface_ids[i];
+			Ref<Material> mat;
+			if (material_map.has(mid)) {
+				MaterialData &material = material_map[mid];
+				mat = material.material;
+				if (tool_buttons[TOOL_PREVIEW_MATERIALS]->is_pressed() && material.settings.has("custom")) {
+					Ref<Material> custom = material.settings["custom"];
+					if (custom.is_valid()) {
+						mat = custom;
+					}
+				}
+			}
+
+			K.value.mesh->surface_set_material(i, mat);
+		}
+	}
+}
+
 SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	singleton = this;
 
@@ -1705,19 +1938,47 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	HBoxContainer *menu_hb = memnew(HBoxContainer);
 	main_vb->add_child(menu_hb);
 
-	action_menu = memnew(MenuButton);
-	action_menu->set_text(TTR("Actions..."));
+	String tool_tooltips[TOOL_MAX] = {
+		TTR("Select an object/mesh/material by clicking with the right mouse button."),
+		TTR("Show the list of objects/meshes/materiales at the mouse position by clicking with the right mouse button."),
+		TTR("Click to select nodes."),
+		TTR("Click to select meshes."),
+		TTR("Click to select materials."),
+		TTR("Show customized materiales (if pressed), or otherwise the original materials that came with the asset."),
+	};
+
+	for (int i = 0; i < TOOL_MAX; i++) {
+		if (i == TOOL_SELECT_OBJECT || i == TOOL_PREVIEW_MATERIALS) {
+			menu_hb->add_child(memnew(VSeparator));
+		}
+		tool_buttons[i] = memnew(Button);
+		tool_buttons[i]->set_flat(true);
+		tool_buttons[i]->set_toggle_mode(true);
+		tool_buttons[i]->connect("pressed", callable_mp(this, &SceneImportSettingsDialog::_tool_pressed).bind(i));
+		tool_buttons[i]->set_focus_mode(Control::FOCUS_NONE);
+		tool_buttons[i]->set_tooltip_text(tool_tooltips[i]);
+		menu_hb->add_child(tool_buttons[i]);
+	}
+
+	tool_buttons[TOOL_SELECT]->set_pressed(true);
+	tool_buttons[TOOL_SELECT_OBJECT]->set_pressed(true);
+	tool_buttons[TOOL_PREVIEW_MATERIALS]->set_pressed(true);
+
+	menu_hb->add_child(memnew(VSeparator));
+	batch_menu = memnew(MenuButton);
+	batch_menu->set_text(TTR("Batch..."));
+	batch_menu->set_tooltip_text(TTR("Batch operations for all nodes/meshes/materials/animations/etc."));
 	// Style the MenuButton like a regular Button to make it more noticeable.
-	action_menu->set_flat(false);
-	action_menu->set_focus_mode(Control::FOCUS_ALL);
-	menu_hb->add_child(action_menu);
+	batch_menu->set_flat(false);
+	batch_menu->set_focus_mode(Control::FOCUS_ALL);
+	menu_hb->add_child(batch_menu);
 
-	action_menu->get_popup()->add_item(TTR("Extract Materials"), ACTION_EXTRACT_MATERIALS);
-	action_menu->get_popup()->add_separator();
-	action_menu->get_popup()->add_item(TTR("Set Animation Save Paths"), ACTION_CHOOSE_ANIMATION_SAVE_PATHS);
-	action_menu->get_popup()->add_item(TTR("Set Mesh Save Paths"), ACTION_CHOOSE_MESH_SAVE_PATHS);
+	batch_menu->get_popup()->add_item(TTR("Extract Materials"), ACTION_EXTRACT_MATERIALS);
+	batch_menu->get_popup()->add_separator();
+	batch_menu->get_popup()->add_item(TTR("Set Animation Save Paths"), ACTION_CHOOSE_ANIMATION_SAVE_PATHS);
+	batch_menu->get_popup()->add_item(TTR("Set Mesh Save Paths"), ACTION_CHOOSE_MESH_SAVE_PATHS);
 
-	action_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &SceneImportSettingsDialog::_menu_callback));
+	batch_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &SceneImportSettingsDialog::_menu_callback));
 
 	tree_split = memnew(HSplitContainer);
 	main_vb->add_child(tree_split);
@@ -1727,6 +1988,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	tree_split->add_child(data_mode);
 	data_mode->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	data_mode->set_theme_type_variation("TabContainerOdd");
+	data_mode->connect("tab_changed", callable_mp(this, &SceneImportSettingsDialog::_update_camera));
 
 	property_split = memnew(HSplitContainer);
 	tree_split->add_child(property_split);
@@ -1759,15 +2021,15 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	vp_vb->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
 	property_split->add_child(vp_vb);
 
-	SubViewportContainer *vp_container = memnew(SubViewportContainer);
+	vp_container = memnew(SubViewportContainer);
 	vp_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vp_container->set_custom_minimum_size(Size2(10, 10));
 	vp_container->set_stretch(true);
 	vp_container->connect(SceneStringName(gui_input), callable_mp(this, &SceneImportSettingsDialog::_viewport_input));
 	vp_vb->add_child(vp_container);
 
-	base_viewport = memnew(SubViewport);
-	vp_container->add_child(base_viewport);
+	scene_viewport = memnew(SubViewport);
+	vp_container->add_child(scene_viewport);
 
 	animation_preview = memnew(PanelContainer);
 	animation_preview->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1814,7 +2076,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 	animation_toggle_skeleton_visibility->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_animation_update_skeleton_visibility));
 
-	base_viewport->set_use_own_world_3d(true);
+	scene_viewport->set_use_own_world_3d(true);
 
 	HBoxContainer *viewport_hbox = memnew(HBoxContainer);
 	vp_container->add_child(viewport_hbox);
@@ -1854,7 +2116,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	vb_light->add_child(light_2_switch);
 
 	camera = memnew(Camera3D);
-	base_viewport->add_child(camera);
+	scene_viewport->add_child(camera);
 	camera->make_current();
 
 	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
@@ -1925,16 +2187,8 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 		node_selected = memnew(MeshInstance3D);
 		node_selected->set_mesh(selection_mesh);
 		node_selected->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
-		base_viewport->add_child(node_selected);
+		scene_viewport->add_child(node_selected);
 		node_selected->hide();
-	}
-
-	{
-		mesh_preview = memnew(MeshInstance3D);
-		base_viewport->add_child(mesh_preview);
-		mesh_preview->hide();
-
-		material_preview.instantiate();
 	}
 
 	{
@@ -1948,17 +2202,36 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 		bones_mesh_preview = memnew(MeshInstance3D);
 		bones_mesh_preview->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 		bones_mesh_preview->set_skeleton_path(NodePath());
-		base_viewport->add_child(bones_mesh_preview);
+		scene_viewport->add_child(bones_mesh_preview);
 	}
+
+	VSplitContainer *inspector_vb = memnew(VSplitContainer);
+	property_split->add_child(inspector_vb);
+
+	mesh_editor = memnew(MeshEditor);
+	inspector_vb->add_child(mesh_editor);
+	mesh_editor->hide();
+
+	material_editor = memnew(MaterialEditor);
+	inspector_vb->add_child(material_editor);
+
+	me_label = memnew(Label);
+	me_label->set_text(TTR("Original"));
+	material_editor->add_child(me_label);
+	me_label->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	me_label->set_vertical_alignment(VERTICAL_ALIGNMENT_BOTTOM);
+	me_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+	material_editor->hide();
 
 	inspector = memnew(EditorInspector);
 	inspector->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	inspector->connect(SNAME("property_edited"), callable_mp(this, &SceneImportSettingsDialog::_inspector_property_edited));
+	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	// Display the same tooltips as in the Import dock.
 	inspector->set_object_class(ResourceImporterScene::get_class_static());
 	inspector->set_use_doc_hints(true);
 
-	property_split->add_child(inspector);
+	inspector_vb->add_child(inspector);
 
 	scene_import_settings_data = memnew(SceneImportSettingsData);
 
@@ -2010,6 +2283,10 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	update_view_timer->set_one_shot(true);
 	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
+
+	pick_menu = memnew(PopupMenu);
+	add_child(pick_menu);
+	pick_menu->connect("id_pressed", callable_mp(this, &SceneImportSettingsDialog::_popup_menu_pressed));
 }
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {

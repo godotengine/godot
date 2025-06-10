@@ -49,6 +49,9 @@
 class EditorFileDialog;
 class EditorInspector;
 class SceneImportSettingsData;
+class MeshEditor;
+class MaterialEditor;
+class SubViewportContainer;
 
 class SceneImportSettingsDialog : public ConfirmationDialog {
 	GDCLASS(SceneImportSettingsDialog, ConfirmationDialog)
@@ -59,6 +62,12 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		ACTION_EXTRACT_MATERIALS,
 		ACTION_CHOOSE_MESH_SAVE_PATHS,
 		ACTION_CHOOSE_ANIMATION_SAVE_PATHS,
+	};
+
+	enum TabType {
+		TAB_NODES,
+		TAB_MESHES,
+		TAB_MATERIALS
 	};
 
 	Node *scene = nullptr;
@@ -72,7 +81,25 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	EditorInspector *inspector = nullptr;
 
-	SubViewport *base_viewport = nullptr;
+	SubViewportContainer *vp_container = nullptr;
+	SubViewport *scene_viewport = nullptr;
+
+	struct MeshInstanceSort {
+		MeshInstance3D *mesh_instance;
+		float point_d;
+		int surface_index;
+		bool operator<(const MeshInstanceSort &b) const {
+			return point_d < b.point_d;
+		}
+	};
+
+	String pick_list_type;
+
+	PopupMenu *pick_menu = nullptr;
+
+	MeshEditor *mesh_editor = nullptr;
+	MaterialEditor *material_editor = nullptr;
+	Label *me_label = nullptr;
 
 	Camera3D *camera = nullptr;
 	Ref<CameraAttributesPractical> camera_attributes;
@@ -96,9 +123,6 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	DirectionalLight3D *light2 = nullptr;
 	Ref<ArrayMesh> selection_mesh;
 	MeshInstance3D *node_selected = nullptr;
-
-	MeshInstance3D *mesh_preview = nullptr;
-	Ref<SphereMesh> material_preview;
 
 	AnimationPlayer *animation_player = nullptr;
 	List<Skeleton3D *> skeletons;
@@ -132,10 +156,14 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		float cam_rot_y = -Math::PI / 4;
 		float cam_zoom = 1;
 
+		String name;
+
 		HashMap<StringName, Variant> settings;
 	};
+
 	HashMap<String, MaterialData> material_map;
 	HashMap<Ref<Material>, String> unnamed_material_name_map;
+	HashMap<Ref<Mesh>, String> unnamed_mesh_name_map;
 
 	struct MeshData {
 		bool has_import_id;
@@ -146,6 +174,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		float cam_rot_x = -Math::PI / 4;
 		float cam_rot_y = -Math::PI / 4;
 		float cam_zoom = 1;
+		String name;
+		Vector<String> material_surface_ids;
 		HashMap<StringName, Variant> settings;
 	};
 	HashMap<String, MeshData> mesh_map;
@@ -160,14 +190,15 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	struct NodeData {
 		Node *node = nullptr;
 		TreeItem *scene_node = nullptr;
+		String mesh_id;
 		HashMap<StringName, Variant> settings;
 	};
 	HashMap<String, NodeData> node_map;
 
 	bool _get_current(const StringName &p_name, Variant &r_ret) const;
 	void _set_default(const StringName &p_name, const Variant &p_value);
-	void _fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent);
-	void _fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent);
+	String _fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent, const String &p_surface_name = "");
+	String _fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent);
 	void _fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent);
 	void _fill_scene(Node *p_node, TreeItem *p_parent_item);
 
@@ -208,7 +239,20 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	String base_path;
 
-	MenuButton *action_menu = nullptr;
+	enum Tool {
+		TOOL_SELECT,
+		TOOL_SELECT_LIST,
+		TOOL_SELECT_OBJECT,
+		TOOL_SELECT_MESH,
+		TOOL_SELECT_MATERIAL,
+		TOOL_PREVIEW_MATERIALS,
+		TOOL_MAX
+	};
+
+	Button *tool_buttons[TOOL_MAX] = {};
+	void _tool_pressed(int p_tool);
+
+	MenuButton *batch_menu = nullptr;
 
 	ConfirmationDialog *external_paths = nullptr;
 	Tree *external_path_tree = nullptr;
@@ -221,6 +265,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _save_dir_callback(const String &p_path);
 
 	int current_action = 0;
+	bool dragging = false;
 
 	Vector<TreeItem *> save_path_items;
 
@@ -232,11 +277,14 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Dictionary base_subresource_settings;
 
 	void _load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
+	void _popup_menu_pressed(int p_id);
 
 	bool editing_animation = false;
 	bool generate_collider = false;
 
 	Timer *update_view_timer = nullptr;
+	void _update_mesh_materials();
+	friend class SceneImportSettingsData;
 
 protected:
 	virtual void _update_theme_item_cache() override;
