@@ -1870,90 +1870,112 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		int default_par_count = 0;
 		BitField<MethodFlags> method_flags = {};
 		StringName native_base;
-		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
-			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
+		
+		if (!p_is_lambda) {
+			bool is_overriding = get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base);
+			
+			if (is_overriding) {
+				bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
 
-			if (p_function->return_type != nullptr) {
-				// Check return type covariance.
-				GDScriptParser::DataType return_type = p_function->get_datatype();
-				if (return_type.is_variant()) {
-					// `is_type_compatible()` returns `true` if one of the types is `Variant`.
-					// Don't allow an explicitly specified `Variant` if the parent return type is narrower.
-					valid = valid && parent_return_type.is_variant();
-				} else if (return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
-					// `is_type_compatible()` returns `true` if target is an `Object` and source is `null`.
-					// Don't allow `void` if the parent return type is a hard non-`void` type.
-					if (parent_return_type.is_hard_type() && !(parent_return_type.kind == GDScriptParser::DataType::BUILTIN && parent_return_type.builtin_type == Variant::NIL)) {
-						valid = false;
-					}
-				} else {
-					valid = valid && is_type_compatible(parent_return_type, return_type);
-				}
-			}
-
-			int parent_min_argc = parameters_types.size() - default_par_count;
-			int parent_max_argc = (method_flags & METHOD_FLAG_VARARG) ? INT_MAX : parameters_types.size();
-			int current_min_argc = p_function->parameters.size() - default_value_count;
-			int current_max_argc = p_function->is_vararg() ? INT_MAX : p_function->parameters.size();
-
-			// `[current_min_argc..current_max_argc]` must include `[parent_min_argc..parent_max_argc]`.
-			valid = valid && current_min_argc <= parent_min_argc && parent_max_argc <= current_max_argc;
-
-			if (valid) {
-				int i = 0;
-				for (const GDScriptParser::DataType &parent_par_type : parameters_types) {
-					if (i >= p_function->parameters.size()) {
-						break;
-					}
-					const GDScriptParser::DataType &current_par_type = p_function->parameters[i]->datatype;
-					i++;
-					// Check parameter type contravariance.
-					if (parent_par_type.is_variant() && parent_par_type.is_hard_type()) {
+				if (p_function->return_type != nullptr) {
+					// Check return type covariance.
+					GDScriptParser::DataType return_type = p_function->get_datatype();
+					if (return_type.is_variant()) {
 						// `is_type_compatible()` returns `true` if one of the types is `Variant`.
-						// Don't allow narrowing a hard `Variant`.
-						valid = valid && current_par_type.is_variant();
+						// Don't allow an explicitly specified `Variant` if the parent return type is narrower.
+						valid = valid && parent_return_type.is_variant();
+					} else if (return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
+						// `is_type_compatible()` returns `true` if target is an `Object` and source is `null`.
+						// Don't allow `void` if the parent return type is a hard non-`void` type.
+						if (parent_return_type.is_hard_type() && !(parent_return_type.kind == GDScriptParser::DataType::BUILTIN && parent_return_type.builtin_type == Variant::NIL)) {
+							valid = false;
+						}
 					} else {
-						valid = valid && is_type_compatible(current_par_type, parent_par_type);
+						valid = valid && is_type_compatible(parent_return_type, return_type);
 					}
 				}
+
+				int parent_min_argc = parameters_types.size() - default_par_count;
+				int parent_max_argc = (method_flags & METHOD_FLAG_VARARG) ? INT_MAX : parameters_types.size();
+				int current_min_argc = p_function->parameters.size() - default_value_count;
+				int current_max_argc = p_function->is_vararg() ? INT_MAX : p_function->parameters.size();
+
+				// `[current_min_argc..current_max_argc]` must include `[parent_min_argc..parent_max_argc]`.
+				valid = valid && current_min_argc <= parent_min_argc && parent_max_argc <= current_max_argc;
+
+				if (valid) {
+					int i = 0;
+					for (const GDScriptParser::DataType &parent_par_type : parameters_types) {
+						if (i >= p_function->parameters.size()) {
+							break;
+						}
+						const GDScriptParser::DataType &current_par_type = p_function->parameters[i]->datatype;
+						i++;
+						// Check parameter type contravariance.
+						if (parent_par_type.is_variant() && parent_par_type.is_hard_type()) {
+							// `is_type_compatible()` returns `true` if one of the types is `Variant`.
+							// Don't allow narrowing a hard `Variant`.
+							valid = valid && current_par_type.is_variant();
+						} else {
+							valid = valid && is_type_compatible(current_par_type, parent_par_type);
+						}
+					}
+				}
+
+				if (!valid) {
+					// Compute parent signature as a string to show in the error message.
+					String parent_signature = String(function_name) + "(";
+					int j = 0;
+					for (const GDScriptParser::DataType &par_type : parameters_types) {
+						if (j > 0) {
+							parent_signature += ", ";
+						}
+						String parameter = par_type.to_string();
+						if (parameter == "null") {
+							parameter = "Variant";
+						}
+						parent_signature += parameter;
+						if (j >= parameters_types.size() - default_par_count) {
+							parent_signature += " = <default>";
+						}
+
+						j++;
+					}
+					if (method_flags & METHOD_FLAG_VARARG) {
+						if (!parameters_types.is_empty()) {
+							parent_signature += ", ";
+						}
+						parent_signature += "...";
+					}
+					parent_signature += ") -> ";
+
+					const String return_type = parent_return_type.to_string_strict();
+					if (return_type == "null") {
+						parent_signature += "void";
+					} else {
+						parent_signature += return_type;
+					}
+
+					// (Non-)virtual methods overriding warnings
+					if (base_type.class_type != nullptr && base_type.class_type->has_function(p_function->identifier->name)) {
+						GDScriptParser::FunctionNode *parent_func = base_type.class_type->get_member(p_function->identifier->name).function;
+						if (parent_func->is_abstract) {
+							push_error(R"(The usage of the annotation '@virtual' conflicts with an abstract method. Either remove the '@virtual' annotation or 'abstract' keyword from the method declaration.)");
+							return;
+						}
+						if (!parent_func->is_annotated_virtual) {
+							parser->push_warning(p_function, GDScriptWarning::OVERRIDE_NON_VIRTUAL_METHOD, function_name);
+						} else if (!p_function->is_annotated_overriding) {
+							parser->push_warning(p_function, GDScriptWarning::OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION, function_name);
+						}
+					}
+
+					push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
+				}
+			} else if (p_function->is_annotated_overriding) {
+				parser->push_warning(p_function, GDScriptWarning::OVERRIDE_INEXISTENT_METHOD_FROM_BASE, function_name);
 			}
-
-			if (!valid) {
-				// Compute parent signature as a string to show in the error message.
-				String parent_signature = String(function_name) + "(";
-				int j = 0;
-				for (const GDScriptParser::DataType &par_type : parameters_types) {
-					if (j > 0) {
-						parent_signature += ", ";
-					}
-					String parameter = par_type.to_string();
-					if (parameter == "null") {
-						parameter = "Variant";
-					}
-					parent_signature += parameter;
-					if (j >= parameters_types.size() - default_par_count) {
-						parent_signature += " = <default>";
-					}
-
-					j++;
-				}
-				if (method_flags & METHOD_FLAG_VARARG) {
-					if (!parameters_types.is_empty()) {
-						parent_signature += ", ";
-					}
-					parent_signature += "...";
-				}
-				parent_signature += ") -> ";
-
-				const String return_type = parent_return_type.to_string_strict();
-				if (return_type == "null") {
-					parent_signature += "void";
-				} else {
-					parent_signature += return_type;
-				}
-
-				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
-			}
+			
 #ifdef DEBUG_ENABLED
 			if (native_base != StringName()) {
 				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, native_base);
