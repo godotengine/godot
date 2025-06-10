@@ -102,6 +102,9 @@ public:
 	virtual RID region_create() = 0;
 	virtual uint32_t region_get_iteration_id(RID p_region) const = 0;
 
+	virtual void region_set_use_async_iterations(RID p_region, bool p_enabled) = 0;
+	virtual bool region_get_use_async_iterations(RID p_region) const = 0;
+
 	virtual void region_set_enabled(RID p_region, bool p_enabled) = 0;
 	virtual bool region_get_enabled(RID p_region) const = 0;
 

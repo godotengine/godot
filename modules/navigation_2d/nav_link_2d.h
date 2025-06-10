@@ -34,7 +34,10 @@
 #include "nav_base_2d.h"
 #include "nav_utils_2d.h"
 
-struct NavLinkIteration2D : NavBaseIteration2D {
+class NavLinkIteration2D : public NavBaseIteration2D {
+	GDCLASS(NavLinkIteration2D, NavBaseIteration2D);
+
+public:
 	bool bidirectional = true;
 	Vector2 start_position;
 	Vector2 end_position;
@@ -42,6 +45,11 @@ struct NavLinkIteration2D : NavBaseIteration2D {
 	Vector2 get_start_position() const { return start_position; }
 	Vector2 get_end_position() const { return end_position; }
 	bool is_bidirectional() const { return bidirectional; }
+
+	virtual ~NavLinkIteration2D() override {
+		navmesh_polygons.clear();
+		internal_connections.clear();
+	}
 };
 
 #include "core/templates/self_list.h"
@@ -53,11 +61,19 @@ class NavLink2D : public NavBase2D {
 	Vector2 end_position;
 	bool enabled = true;
 
-	bool link_dirty = true;
-
 	SelfList<NavLink2D> sync_dirty_request_list_element;
 
 	uint32_t iteration_id = 0;
+
+	mutable RWLock iteration_rwlock;
+	Ref<NavLinkIteration2D> iteration;
+
+	bool iteration_dirty = true;
+	bool iteration_building = false;
+	bool iteration_ready = false;
+
+	void _build_iteration();
+	void _sync_iteration();
 
 public:
 	NavLink2D();
@@ -78,12 +94,12 @@ public:
 		return bidirectional;
 	}
 
-	void set_start_position(const Vector2 &p_position);
+	void set_start_position(Vector2 p_position);
 	Vector2 get_start_position() const {
 		return start_position;
 	}
 
-	void set_end_position(const Vector2 &p_position);
+	void set_end_position(Vector2 p_position);
 	Vector2 get_end_position() const {
 		return end_position;
 	}
@@ -94,10 +110,9 @@ public:
 	virtual void set_travel_cost(real_t p_travel_cost) override;
 	virtual void set_owner_id(ObjectID p_owner_id) override;
 
-	bool is_dirty() const;
-	void sync();
+	bool sync();
 	void request_sync();
 	void cancel_sync_request();
 
-	void get_iteration_update(NavLinkIteration2D &r_iteration);
+	Ref<NavLinkIteration2D> get_iteration();
 };
