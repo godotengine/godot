@@ -1,8 +1,8 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  17 September 2024                                               *
+* Date      :  30 May 2025                                                     *
 * Website   :  https://www.angusj.com                                          *
-* Copyright :  Angus Johnson 2010-2024                                         *
+* Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  This is the main polygon clipping module                        *
 * License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
@@ -478,8 +478,7 @@ namespace Clipper2Lib {
   inline void SetOwner(OutRec* outrec, OutRec* new_owner)
   {
     //precondition1: new_owner is never null
-    while (new_owner->owner && !new_owner->owner->pts)
-      new_owner->owner = new_owner->owner->owner;
+    new_owner->owner = GetRealOutRec(new_owner->owner);
     OutRec* tmp = new_owner;
     while (tmp && tmp != outrec) tmp = tmp->owner;
     if (tmp) new_owner->owner = outrec->owner;
@@ -532,9 +531,9 @@ namespace Clipper2Lib {
         val = 1 - val; // toggle val
       else
       {
-        double d = CrossProduct(op2->prev->pt, op2->pt, pt);
-        if (d == 0) return PointInPolygonResult::IsOn;
-        if ((d < 0) == is_above) val = 1 - val;
+        int i = CrossProductSign(op2->prev->pt, op2->pt, pt);
+        if (i == 0) return PointInPolygonResult::IsOn;
+        if ((i < 0) == is_above) val = 1 - val;
       }
       is_above = !is_above;
       op2 = op2->next;
@@ -542,9 +541,9 @@ namespace Clipper2Lib {
 
     if (is_above != starting_above)
     {
-      double d = CrossProduct(op2->prev->pt, op2->pt, pt);
-      if (d == 0) return PointInPolygonResult::IsOn;
-      if ((d < 0) == is_above) val = 1 - val;
+      int i = CrossProductSign(op2->prev->pt, op2->pt, pt);
+      if (i == 0) return PointInPolygonResult::IsOn;
+      if ((i < 0) == is_above) val = 1 - val;
     }
 
     if (val == 0) return PointInPolygonResult::IsOutside;
@@ -574,29 +573,30 @@ namespace Clipper2Lib {
     return result;
   }
 
-  inline bool Path1InsidePath2(OutPt* op1, OutPt* op2)
+  inline bool Path2ContainsPath1(OutPt* op1, OutPt* op2)
   {
-    // we need to make some accommodation for rounding errors
-    // so we won't jump if the first vertex is found outside
-    PointInPolygonResult result;
-    int outside_cnt = 0;
+    // this function accommodates rounding errors that 
+    // can cause path micro intersections
+    PointInPolygonResult pip = PointInPolygonResult::IsOn;
     OutPt* op = op1;
-    do
-    {
-      result = PointInOpPolygon(op->pt, op2);
-      if (result == PointInPolygonResult::IsOutside) ++outside_cnt;
-      else if (result == PointInPolygonResult::IsInside) --outside_cnt;
+    do {
+      switch (PointInOpPolygon(op->pt, op2))
+      {
+      case PointInPolygonResult::IsOutside:
+        if (pip == PointInPolygonResult::IsOutside) return false;
+        pip = PointInPolygonResult::IsOutside;
+        break;
+      case PointInPolygonResult::IsInside:
+        if (pip == PointInPolygonResult::IsInside) return true;
+        pip = PointInPolygonResult::IsInside;
+        break;
+      default: break;
+      }
       op = op->next;
-    } while (op != op1 && std::abs(outside_cnt) < 2);
-    if (std::abs(outside_cnt) > 1) return (outside_cnt < 0);
-    // since path1's location is still equivocal, check its midpoint
-    Point64 mp = GetBounds(GetCleanPath(op1)).MidPoint();
-    Path64 path2 = GetCleanPath(op2);
-    return PointInPolygon(mp, path2) != PointInPolygonResult::IsOutside;
+    } while (op != op1);
+    // result unclear, so try again using cleaned paths
+    return Path2ContainsPath1(GetCleanPath(op1), GetCleanPath(op2)); // (#973)
   }
-
-  //------------------------------------------------------------------------------
-  //------------------------------------------------------------------------------
 
   void AddLocMin(LocalMinimaList& list,
     Vertex& vert, PathType polytype, bool is_open)
@@ -1122,21 +1122,19 @@ namespace Clipper2Lib {
         return newcomer.curr_x > resident.curr_x;
 
     //get the turning direction  a1.top, a2.bot, a2.top
-    double d = CrossProduct(resident.top, newcomer.bot, newcomer.top);
-    if (d != 0) return d < 0;
+    int i = CrossProductSign(resident.top, newcomer.bot, newcomer.top);
+    if (i != 0) return i < 0;
 
     //edges must be collinear to get here
     //for starting open paths, place them according to
     //the direction they're about to turn
     if (!IsMaxima(resident) && (resident.top.y > newcomer.top.y))
     {
-      return CrossProduct(newcomer.bot,
-        resident.top, NextVertex(resident)->pt) <= 0;
+      return (CrossProductSign(newcomer.bot, resident.top, NextVertex(resident)->pt) <= 0);
     }
     else if (!IsMaxima(newcomer) && (newcomer.top.y > resident.top.y))
     {
-      return CrossProduct(newcomer.bot,
-        newcomer.top, NextVertex(newcomer)->pt) >= 0;
+      return (CrossProductSign(newcomer.bot, newcomer.top, NextVertex(newcomer)->pt) >= 0);
     }
 
     int64_t y = newcomer.bot.y;
@@ -1151,7 +1149,7 @@ namespace Clipper2Lib {
       resident.bot, resident.top)) return true;
     else
       //compare turning direction of the alternate bound
-      return (CrossProduct(PrevPrevVertex(resident)->pt,
+      return (CrossProductSign(PrevPrevVertex(resident)->pt,
         newcomer.bot, PrevPrevVertex(newcomer)->pt) > 0) == newcomerIsLeft;
   }
 
@@ -1561,7 +1559,7 @@ namespace Clipper2Lib {
     FixSelfIntersects(outrec);
   }
 
-  void ClipperBase::DoSplitOp(OutRec* outrec, OutPt* splitOp)
+  void ClipperBase::DoSplitOp (OutRec* outrec, OutPt* splitOp)
   {
     // splitOp.prev -> splitOp &&
     // splitOp.next -> splitOp.next.next are intersecting
@@ -1626,7 +1624,7 @@ namespace Clipper2Lib {
 
       if (using_polytree_)
       {
-        if (Path1InsidePath2(prevOp, newOp))
+        if (Path2ContainsPath1(prevOp, newOp))
         {
           newOr->splits = new OutRecList();
           newOr->splits->emplace_back(outrec);
@@ -1648,19 +1646,32 @@ namespace Clipper2Lib {
   void ClipperBase::FixSelfIntersects(OutRec* outrec)
   {
     OutPt* op2 = outrec->pts;
+    if (op2->prev == op2->next->next) 
+      return; // because triangles can't self-intersect
     for (; ; )
     {
-      // triangles can't self-intersect
-      if (op2->prev == op2->next->next) break;
       if (SegmentsIntersect(op2->prev->pt,
         op2->pt, op2->next->pt, op2->next->next->pt))
       {
-        if (op2 == outrec->pts || op2->next == outrec->pts)
-          outrec->pts = outrec->pts->prev;
-        DoSplitOp(outrec, op2);
-        if (!outrec->pts) break;
-        op2 = outrec->pts;
-        continue;
+        if (SegmentsIntersect(op2->prev->pt,
+          op2->pt, op2->next->next->pt, op2->next->next->next->pt))
+        {
+          // adjacent intersections (ie a micro self-intersections)
+          op2 = DuplicateOp(op2, false);
+          op2->pt = op2->next->next->next->pt;
+          op2 = op2->next;
+        }
+        else
+        {
+          if (op2 == outrec->pts || op2->next == outrec->pts)
+            outrec->pts = outrec->pts->prev;
+          DoSplitOp(outrec, op2);
+          if (!outrec->pts) break;
+          op2 = outrec->pts;
+          if (op2->prev == op2->next->next)
+            break; // again, because triangles can't self-intersect
+          continue;
+        }
       }
       else
         op2 = op2->next;
@@ -2108,10 +2119,9 @@ namespace Clipper2Lib {
       e->prev_in_sel = e->prev_in_ael;
       e->next_in_sel = e->next_in_ael;
       e->jump = e->next_in_sel;
-      if (e->join_with == JoinWith::Left)
-        e->curr_x = e->prev_in_ael->curr_x; // also avoids complications
-      else
-        e->curr_x = TopX(*e, top_y);
+      // it is safe to ignore 'joined' edges here because
+      // if necessary they will be split in IntersectEdges()
+      e->curr_x = TopX(*e, top_y);
       e = e->next_in_ael;
     }
   }
@@ -2258,14 +2268,12 @@ namespace Clipper2Lib {
 
   void MoveSplits(OutRec* fromOr, OutRec* toOr)
   {
-    if (!fromOr->splits) return;
     if (!toOr->splits) toOr->splits = new OutRecList();
     OutRecList::iterator orIter = fromOr->splits->begin();
     for (; orIter != fromOr->splits->end(); ++orIter)
       toOr->splits->emplace_back(*orIter);
     fromOr->splits->clear();
   }
-
 
   void ClipperBase::ProcessHorzJoins()
   {
@@ -2295,8 +2303,8 @@ namespace Clipper2Lib {
         }
 
         if (using_polytree_) //#498, #520, #584, D#576, #618
-        {
-          if (Path1InsidePath2(or1->pts, or2->pts))
+        {          
+          if (Path2ContainsPath1(or1->pts, or2->pts))
           {
             //swap or1's & or2's pts
             OutPt* tmp = or1->pts;
@@ -2307,7 +2315,7 @@ namespace Clipper2Lib {
             //or2 is now inside or1
             or2->owner = or1;
           }
-          else if (Path1InsidePath2(or2->pts, or1->pts))
+          else if (Path2ContainsPath1(or2->pts, or1->pts))
           {
             or2->owner = or1;
           }
@@ -2320,13 +2328,14 @@ namespace Clipper2Lib {
         else
           or2->owner = or1;
       }
-      else
+      else // joining, not splitting
       {
         or2->pts = nullptr;
         if (using_polytree_)
         {
           SetOwner(or2, or1);
-          MoveSplits(or2, or1); //#618
+          if (or2->splits) 
+            MoveSplits(or2, or1); //#618
         }
         else
           or2->owner = or1;
@@ -2932,20 +2941,24 @@ namespace Clipper2Lib {
   {
     for (auto split : *splits)
     {
+      if (!split->pts && split->splits &&
+        CheckSplitOwner(outrec, split->splits)) return true; //#942
       split = GetRealOutRec(split);
-      if(!split || split == outrec || split->recursive_split == outrec) continue;
+      if (!split || split == outrec || split->recursive_split == outrec) continue;
       split->recursive_split = outrec; // prevent infinite loops
 
       if (split->splits && CheckSplitOwner(outrec, split->splits))
-          return true;
-      else if (CheckBounds(split) &&
-        IsValidOwner(outrec, split) &&
-        split->bounds.Contains(outrec->bounds) &&
-        Path1InsidePath2(outrec->pts, split->pts))
-      {
-        outrec->owner = split; //found in split
-        return true;
-      }
+        return true;    
+
+      if (!CheckBounds(split) || !split->bounds.Contains(outrec->bounds) ||
+        !Path2ContainsPath1(outrec->pts, split->pts)) continue;
+     
+      if (!IsValidOwner(outrec, split)) // split is owned by outrec! (#957)
+          split->owner = outrec->owner;
+
+      outrec->owner = split;
+      return true;
+      
     }
     return false;
   }
@@ -2962,7 +2975,7 @@ namespace Clipper2Lib {
       if (outrec->owner->splits && CheckSplitOwner(outrec, outrec->owner->splits)) break;
       if (outrec->owner->pts && CheckBounds(outrec->owner) &&
         outrec->owner->bounds.Contains(outrec->bounds) &&
-        Path1InsidePath2(outrec->pts, outrec->owner->pts)) break;
+        Path2ContainsPath1(outrec->pts, outrec->owner->pts)) break;
       outrec->owner = outrec->owner->owner;
     }
 
@@ -3025,6 +3038,7 @@ namespace Clipper2Lib {
     {
       OutRec* outrec = outrec_list_[i];
       if (!outrec || !outrec->pts) continue;
+
       if (outrec->is_open)
       {
         Path64 path;

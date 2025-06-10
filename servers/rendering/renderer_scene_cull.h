@@ -504,10 +504,10 @@ public:
 				case Dependency::DEPENDENCY_CHANGED_PARTICLES:
 				case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
 				case Dependency::DEPENDENCY_CHANGED_DECAL:
-				case Dependency::DEPENDENCY_CHANGED_LIGHT:
-				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
+				case Dependency::DEPENDENCY_CHANGED_LIGHT: {
 					singleton->_instance_queue_update(instance, true, true);
 				} break;
+				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE:
 				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR:
 				case Dependency::DEPENDENCY_CHANGED_CULL_MASK: {
 					//requires repairing

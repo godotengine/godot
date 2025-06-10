@@ -120,7 +120,7 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 		return false;
 	}
 
-	int32_t increment = (src_mix_rate * MIX_FRAC_LEN) / target_mix_rate;
+	int32_t increment = (src_mix_rate * MIX_FRAC_LEN * playback_speed) / target_mix_rate;
 	int read_space = get_reader_space();
 	int target_todo = MIN(get_num_of_ready_frames(), p_frames);
 
@@ -178,7 +178,7 @@ int AudioRBResampler::get_num_of_ready_frames() {
 Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_mix_rate, int p_buffer_msec, int p_minbuff_needed) {
 	ERR_FAIL_COND_V(p_channels != 1 && p_channels != 2 && p_channels != 4 && p_channels != 6 && p_channels != 8, ERR_INVALID_PARAMETER);
 
-	int desired_rb_bits = nearest_shift(MAX((p_buffer_msec / 1000.0) * p_src_mix_rate, p_minbuff_needed));
+	int desired_rb_bits = nearest_shift((uint32_t)MAX((p_buffer_msec / 1000.0) * p_src_mix_rate, p_minbuff_needed));
 
 	bool recreate = !rb;
 
@@ -226,6 +226,14 @@ void AudioRBResampler::clear() {
 	rb_read_pos.set(0);
 	rb_write_pos.set(0);
 	read_buf = nullptr;
+}
+
+void AudioRBResampler::set_playback_speed(double p_playback_speed) {
+	playback_speed = p_playback_speed;
+}
+
+double AudioRBResampler::get_playback_speed() const {
+	return playback_speed;
 }
 
 AudioRBResampler::AudioRBResampler() {

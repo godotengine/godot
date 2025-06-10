@@ -805,6 +805,21 @@ typedef struct {
 	const char *string; // (e.g. "Godot v3.1.4.stable.official.mono")
 } GDExtensionGodotVersion2;
 
+/* Called when starting the main loop. */
+typedef void (*GDExtensionMainLoopStartupCallback)();
+
+/* Called when shutting down the main loop. */
+typedef void (*GDExtensionMainLoopShutdownCallback)();
+
+/* Called for every frame iteration of the main loop. */
+typedef void (*GDExtensionMainLoopFrameCallback)();
+
+typedef struct {
+	GDExtensionMainLoopStartupCallback startup_func;
+	GDExtensionMainLoopShutdownCallback shutdown_func;
+	GDExtensionMainLoopFrameCallback frame_func;
+} GDExtensionMainLoopCallbacks;
+
 /**
  * @name get_godot_version
  * @since 4.1
@@ -3131,6 +3146,17 @@ typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)(const 
  * @param p_callback The callback to retrieve the list of classes used.
  */
 typedef void (*GDExtensionInterfaceEditorRegisterGetClassesUsedCallback)(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
+
+/**
+ * @name register_main_loop_callbacks
+ * @since 4.5
+ *
+ * Registers callbacks to be called at different phases of the main loop.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_callback A pointer to the structure that contains the callbacks.
+ */
+typedef void (*GDExtensionInterfaceRegisterMainLoopCallbacks)(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks);
 
 #ifdef __cplusplus
 }

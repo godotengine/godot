@@ -63,9 +63,10 @@ class VideoStreamPlayer : public Control {
 	bool paused_from_tree = false;
 	bool autoplay = false;
 	float volume = 1.0;
-	double last_audio_time = 0.0;
+	float speed_scale = 1.0;
 	bool expand = false;
 	bool loop = false;
+	bool first_frame = false;
 	int buffering_ms = 500;
 	int audio_track = 0;
 	int bus_index = 0;
@@ -106,6 +107,9 @@ public:
 
 	void set_volume_db(float p_db);
 	float get_volume_db() const;
+
+	void set_speed_scale(float p_speed_scale);
+	float get_speed_scale() const;
 
 	String get_stream_name() const;
 	double get_stream_length() const;

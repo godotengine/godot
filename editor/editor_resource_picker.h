@@ -75,6 +75,7 @@ class EditorResourcePicker : public HBoxContainer {
 		OBJ_MENU_SAVE_AS,
 		OBJ_MENU_COPY,
 		OBJ_MENU_PASTE,
+		OBJ_MENU_PASTE_AS_UNIQUE,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM,
 
 		TYPE_BASE_ID = 100,

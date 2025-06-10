@@ -160,7 +160,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	}
 
 	if (version.is_null()) {
-		version = SceneShaderForwardClustered::singleton->shader.version_create();
+		version = SceneShaderForwardClustered::singleton->shader.version_create(false);
 	}
 
 	depth_draw = DepthDraw(depth_drawi);
@@ -227,6 +227,14 @@ RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_s
 		return SceneShaderForwardClustered::singleton->shader.version_get_native_source_code(version);
 	} else {
 		return RS::ShaderNativeSourceCode();
+	}
+}
+
+Pair<ShaderRD *, RID> SceneShaderForwardClustered::ShaderData::get_native_shader_and_version() const {
+	if (version.is_valid()) {
+		return { &SceneShaderForwardClustered::singleton->shader, version };
+	} else {
+		return {};
 	}
 }
 
@@ -686,14 +694,14 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["EYE_OFFSET"] = "eye_offset";
 
 		//for light
-		actions.renames["VIEW"] = "view";
-		actions.renames["SPECULAR_AMOUNT"] = "specular_amount";
-		actions.renames["LIGHT_COLOR"] = "light_color";
+		actions.renames["VIEW"] = "view_highp";
+		actions.renames["SPECULAR_AMOUNT"] = "specular_amount_highp";
+		actions.renames["LIGHT_COLOR"] = "light_color_highp";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
-		actions.renames["LIGHT"] = "light";
-		actions.renames["ATTENUATION"] = "attenuation";
-		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
-		actions.renames["SPECULAR_LIGHT"] = "specular_light";
+		actions.renames["LIGHT"] = "light_highp";
+		actions.renames["ATTENUATION"] = "attenuation_highp";
+		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light_highp";
+		actions.renames["SPECULAR_LIGHT"] = "specular_light_highp";
 
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
@@ -789,7 +797,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 		actions.instance_uniform_index_variable = "instances.data[instance_index_interp].instance_uniforms_ofs";
 
-		actions.check_multiview_samplers = RendererCompositorRD::get_singleton()->is_xr_enabled(); // Make sure we check sampling multiview textures.
+		actions.check_multiview_samplers = true;
 
 		compiler.initialize(actions);
 	}
@@ -899,6 +907,10 @@ void SceneShaderForwardClustered::set_default_specialization(const ShaderSpecial
 	for (SelfList<ShaderData> *E = shader_list.first(); E; E = E->next()) {
 		E->self()->pipeline_hash_map.clear_pipelines();
 	}
+}
+
+void SceneShaderForwardClustered::enable_multiview_shader_group() {
+	shader.enable_group(SHADER_GROUP_MULTIVIEW);
 }
 
 void SceneShaderForwardClustered::enable_advanced_shader_group(bool p_needs_multiview) {

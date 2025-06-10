@@ -21,6 +21,12 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Όλα τα αναγνωρισμένα"
 
+msgid "Save"
+msgstr "Αποθήκευση"
+
+msgid "Clear"
+msgstr "Εκκαθάριση"
+
 msgid "Add current color as a preset."
 msgstr "Προσθήκη τρέχοντος χρώματος στα προκαθορισμένα."
 
@@ -32,9 +38,6 @@ msgstr "Άνοιγμα"
 
 msgid "Select Current Folder"
 msgstr "Επιλογή τρέχοντα φακέλου"
-
-msgid "Save"
-msgstr "Αποθήκευση"
 
 msgid "Select This Folder"
 msgstr "Επιλογή αυτού του φακέλου"
@@ -69,11 +72,11 @@ msgstr "Διαδρομή:"
 msgid "Refresh files."
 msgstr "Ανανέωση αρχείων."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Εναλλαγή ορατότητας κρυφών αρχείων."
-
 msgid "Directories & Files:"
 msgstr "Φάκελοι & Αρχεία:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Εναλλαγή ορατότητας κρυφών αρχείων."
 
 msgid "File:"
 msgstr "Αρχείο:"
@@ -107,9 +110,6 @@ msgstr "Επικόλληση"
 
 msgid "Select All"
 msgstr "Επιλογή όλων"
-
-msgid "Clear"
-msgstr "Εκκαθάριση"
 
 msgid "Undo"
 msgstr "Αναίρεση"

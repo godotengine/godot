@@ -47,6 +47,8 @@ class VBoxContainer;
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
 
+	inline static constexpr int MAX_RECENTS = 20;
+
 	struct Option {
 		String name;
 		Vector<String> values;
@@ -121,6 +123,11 @@ public:
 		FILE_MODE_SAVE_FILE,
 	};
 
+	enum DisplayMode {
+		DISPLAY_THUMBNAILS,
+		DISPLAY_LIST,
+	};
+
 	enum ItemMenu {
 		ITEM_MENU_COPY_PATH,
 		ITEM_MENU_SHOW_IN_EXPLORER,
@@ -142,8 +149,12 @@ private:
 	bool show_hidden_files = false;
 	bool use_native_dialog = false;
 
+	inline static LocalVector<String> global_favorites;
+	inline static LocalVector<String> global_recents;
+
 	Access access = ACCESS_RESOURCES;
 	FileMode mode = FILE_MODE_SAVE_FILE;
+	DisplayMode display_mode = DISPLAY_THUMBNAILS;
 	FileSortOption file_sort = FileSortOption::NAME;
 	Ref<DirAccess> dir_access;
 
@@ -179,10 +190,18 @@ private:
 	HBoxContainer *shortcuts_container = nullptr;
 
 	Button *refresh_button = nullptr;
+	Button *favorite_button = nullptr;
 	Button *make_dir_button = nullptr;
 	Button *show_hidden = nullptr;
+	Button *thumbnail_mode_button = nullptr;
+	Button *list_mode_button = nullptr;
 	Button *show_filename_filter_button = nullptr;
 	MenuButton *file_sort_button = nullptr;
+
+	Button *fav_up_button = nullptr;
+	Button *fav_down_button = nullptr;
+	ItemList *favorite_list = nullptr;
+	ItemList *recent_list = nullptr;
 
 	ItemList *file_list = nullptr;
 	Label *message = nullptr;
@@ -205,16 +224,25 @@ private:
 	ConfirmationDialog *confirm_save = nullptr;
 
 	struct ThemeCache {
+		int thumbnail_size = 64;
+
 		Ref<Texture2D> parent_folder;
 		Ref<Texture2D> forward_folder;
 		Ref<Texture2D> back_folder;
 		Ref<Texture2D> reload;
 		Ref<Texture2D> toggle_hidden;
 		Ref<Texture2D> toggle_filename_filter;
+		Ref<Texture2D> thumbnail_mode;
+		Ref<Texture2D> list_mode;
 		Ref<Texture2D> folder;
 		Ref<Texture2D> file;
 		Ref<Texture2D> create_folder;
 		Ref<Texture2D> sort;
+		Ref<Texture2D> favorite;
+		Ref<Texture2D> favorite_up;
+		Ref<Texture2D> favorite_down;
+		Ref<Texture2D> file_thumbnail;
+		Ref<Texture2D> folder_thumbnail;
 
 		Color folder_icon_color;
 		Color file_icon_color;
@@ -264,6 +292,18 @@ private:
 	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
 	void _sort_option_selected(int p_option);
+
+	void _favorite_selected(int p_item);
+	void _favorite_pressed();
+	void _favorite_move_up();
+	void _favorite_move_down();
+	void _update_favorite_list();
+	void _update_fav_buttons();
+
+	void _recent_selected(int p_item);
+	void _save_to_recent();
+	void _update_recent_list();
+	bool _path_matches_access(const String &p_path) const;
 
 	void _invalidate();
 	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
@@ -343,6 +383,9 @@ public:
 	void set_file_mode(FileMode p_mode);
 	FileMode get_file_mode() const;
 
+	void set_display_mode(DisplayMode p_mode);
+	DisplayMode get_display_mode() const;
+
 	VBoxContainer *get_vbox() { return main_vbox; }
 	LineEdit *get_line_edit() { return filename_edit; }
 
@@ -366,3 +409,4 @@ public:
 
 VARIANT_ENUM_CAST(FileDialog::FileMode);
 VARIANT_ENUM_CAST(FileDialog::Access);
+VARIANT_ENUM_CAST(FileDialog::DisplayMode);

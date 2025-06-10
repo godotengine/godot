@@ -46,47 +46,38 @@ void MacOSTerminalLogger::log_error(const char *p_function, const char *p_file, 
 		err_details = p_code;
 	}
 
-	const char *indent = "";
+	const char *bold_color;
+	const char *normal_color;
 	switch (p_type) {
 		case ERR_WARNING:
-			indent = "     ";
-			os_log_error(OS_LOG_DEFAULT,
-					"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
-					err_details, p_function, p_file, p_line);
-			logf_error("\E[1;33mWARNING:\E[0;93m %s\n", err_details);
-			logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", indent, p_function, p_file, p_line);
+			bold_color = "\E[1;33m";
+			normal_color = "\E[0;93m";
 			break;
 		case ERR_SCRIPT:
-			indent = "          ";
-			os_log_error(OS_LOG_DEFAULT,
-					"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-					err_details, p_function, p_file, p_line);
-			logf_error("\E[1;35mSCRIPT ERROR:\E[0;95m %s\n", err_details);
-			logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", indent, p_function, p_file, p_line);
+			bold_color = "\E[1;35m";
+			normal_color = "\E[0;95m";
 			break;
 		case ERR_SHADER:
-			indent = "          ";
-			os_log_error(OS_LOG_DEFAULT,
-					"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-					err_details, p_function, p_file, p_line);
-			logf_error("\E[1;36mSHADER ERROR:\E[0;96m %s\n", err_details);
-			logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", indent, p_function, p_file, p_line);
+			bold_color = "\E[1;36m";
+			normal_color = "\E[0;96m";
 			break;
 		case ERR_ERROR:
 		default:
-			indent = "   ";
-			os_log_error(OS_LOG_DEFAULT,
-					"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-					err_details, p_function, p_file, p_line);
-			logf_error("\E[1;31mERROR:\E[0;91m %s\n", err_details);
-			logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", indent, p_function, p_file, p_line);
+			bold_color = "\E[1;31m";
+			normal_color = "\E[0;91m";
 			break;
 	}
+
+	os_log_error(OS_LOG_DEFAULT,
+			"%{public}s: %{public}s\nat: %{public}s (%{public}s:%i)",
+			error_type_string(p_type), err_details, p_function, p_file, p_line);
+	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
+	logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", error_type_indent(p_type), p_function, p_file, p_line);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
 		if (!backtrace->is_empty()) {
 			os_log_error(OS_LOG_DEFAULT, "%{public}s", backtrace->format().utf8().get_data());
-			logf_error("\E[0;90m%s\E[0m\n", backtrace->format(strlen(indent)).utf8().get_data());
+			logf_error("\E[0;90m%s\E[0m\n", backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data());
 		}
 	}
 }

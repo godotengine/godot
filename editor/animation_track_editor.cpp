@@ -44,6 +44,7 @@
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
@@ -1443,7 +1444,8 @@ int AnimationTimelineEdit::get_buttons_width() const {
 int AnimationTimelineEdit::get_name_limit() const {
 	Ref<Texture2D> hsize_icon = get_editor_theme_icon(SNAME("Hsize"));
 
-	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width() + 8 * EDSCALE);
+	int filter_track_width = filter_track->is_visible() ? filter_track->get_custom_minimum_size().width : 0;
+	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width() + filter_track_width + 16 * EDSCALE);
 
 	limit = MIN(limit, get_size().width - get_buttons_width() - 1);
 
@@ -1941,10 +1943,10 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
-			int hsize_icon_width = get_editor_theme_icon(SNAME("Hsize"))->get_width();
-			add_track_hb->set_size(Size2(name_limit - ((hsize_icon_width + 16) * EDSCALE), 0));
 			// Make sure name_limit is clamped to the range that UI allows.
 			name_limit = get_name_limit();
+			int hsize_icon_width = get_editor_theme_icon(SNAME("Hsize"))->get_width();
+			add_track_hb->set_size(Size2(name_limit - ((hsize_icon_width + 16) * EDSCALE), 0));
 			queue_redraw();
 			emit_signal(SNAME("name_limit_changed"));
 			play_position->queue_redraw();
@@ -2023,6 +2025,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	add_track_hb->add_child(add_track);
 	filter_track = memnew(LineEdit);
 	filter_track->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter_track->set_custom_minimum_size(Vector2(120 * EDSCALE, 0));
 	filter_track->set_placeholder(TTR("Filter Tracks"));
 	filter_track->set_tooltip_text(TTR("Filter tracks by entering part of their node name or property."));
 	filter_track->connect(SceneStringName(text_changed), callable_mp((AnimationTrackEditor *)this, &AnimationTrackEditor::_on_filter_updated));
@@ -2801,6 +2804,13 @@ Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
 	return type_icons[animation->track_get_type(track)];
 }
 
+Control::CursorShape AnimationTrackEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (command_or_control_pressed && animation->track_get_type(track) == Animation::TYPE_METHOD && hovering_key_idx != -1) {
+		return Control::CURSOR_POINTING_HAND;
+	}
+	return get_default_cursor_shape();
+}
+
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	if (check_rect.has_point(p_pos)) {
 		return TTR("Toggle this track on/off.");
@@ -2918,9 +2928,9 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					float h = animation->bezier_track_get_key_value(track, key_idx);
 					text += TTR("Value:") + " " + rtos(h) + "\n";
 					Vector2 ih = animation->bezier_track_get_key_in_handle(track, key_idx);
-					text += TTR("In-Handle:") + " " + ih + "\n";
+					text += TTR("In-Handle:") + " " + String(ih) + "\n";
 					Vector2 oh = animation->bezier_track_get_key_out_handle(track, key_idx);
-					text += TTR("Out-Handle:") + " " + oh + "\n";
+					text += TTR("Out-Handle:") + " " + String(oh) + "\n";
 					int hm = animation->bezier_track_get_key_handle_mode(track, key_idx);
 					switch (hm) {
 						case Animation::HANDLE_MODE_FREE: {
@@ -3144,6 +3154,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		if (mb->is_command_or_control_pressed() && _lookup_key(hovering_key_idx)) {
+			accept_event();
+			return;
+		}
+
 		if (_try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), true)) {
 			accept_event();
 		}
@@ -3164,6 +3179,13 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
 
 				menu->clear();
+				if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
+					if (hovering_key_idx != -1) {
+						lookup_key_idx = hovering_key_idx;
+						menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), vformat("%s (%s)", TTR("Go to Definition"), animation->method_track_get_name(track, lookup_key_idx)), MENU_KEY_LOOKUP);
+						menu->add_separator();
+					}
+				}
 				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key..."), MENU_KEY_INSERT);
 				if (selected || editor->is_selection_active()) {
 					menu->add_separator();
@@ -3246,6 +3268,8 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		const int previous_hovering_key_idx = hovering_key_idx;
+
+		command_or_control_pressed = mm->is_command_or_control_pressed();
 
 		// Hovering compressed keyframes for editing is not possible.
 		if (!animation->track_is_compressed(track)) {
@@ -3387,6 +3411,45 @@ bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggre
 				}
 				return true;
 			}
+		}
+	}
+	return false;
+}
+
+bool AnimationTrackEdit::_lookup_key(int p_key_idx) const {
+	if (p_key_idx < 0 || p_key_idx >= animation->track_get_key_count(track)) {
+		return false;
+	}
+
+	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
+		Node *target = root->get_node_or_null(animation->track_get_path(track));
+		if (target) {
+			StringName method = animation->method_track_get_name(track, p_key_idx);
+			// First, check every script in the inheritance chain.
+			bool found_in_script = false;
+			Ref<Script> target_script_ref = target->get_script();
+			Script *target_script = target_script_ref.ptr();
+			while (target_script) {
+				if (target_script->has_method(method)) {
+					found_in_script = true;
+					// Tell ScriptEditor to show the method's line.
+					ScriptEditor::get_singleton()->script_goto_method(target_script, animation->method_track_get_name(track, p_key_idx));
+					break;
+				}
+				target_script = target_script->get_base_script().ptr();
+			}
+
+			if (!found_in_script) {
+				// Not found in script, so it must be a native method.
+				if (ClassDB::has_method(target->get_class_name(), method)) {
+					// Show help page instead.
+					ScriptEditor::get_singleton()->goto_help(vformat("class_method:%s:%s", target->get_class_name(), method));
+				} else {
+					// Still not found, which means the target doesn't have this method. Warn the user.
+					WARN_PRINT_ED(TTR(vformat("Failed to lookup method: \"%s\"", method)));
+				}
+			}
+			return true;
 		}
 	}
 	return false;
@@ -3552,6 +3615,9 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_KEY_DELETE: {
 			emit_signal(SNAME("delete_request"));
 
+		} break;
+		case MENU_KEY_LOOKUP: {
+			_lookup_key(lookup_key_idx);
 		} break;
 		case MENU_USE_BLEND_ENABLED:
 		case MENU_USE_BLEND_DISABLED: {
@@ -4397,17 +4463,8 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	String path = root->get_path_to(p_node, true);
 
 	// Get the value from the subpath.
-	Variant value = p_node;
-	Vector<String> property_path = p_property.split(":");
-	for (const String &E : property_path) {
-		if (value.get_type() == Variant::OBJECT) {
-			Object *obj = value;
-			value = obj->get(E);
-		} else {
-			value = Variant();
-			break;
-		}
-	}
+	Vector<StringName> subpath = NodePath(p_property).get_as_property_path().get_subnames();
+	Variant value = p_node->get_indexed(subpath);
 
 	if (Object::cast_to<AnimationPlayer>(p_node) && p_property == "current_animation") {
 		if (p_node == AnimationPlayerEditor::get_singleton()->get_player()) {
@@ -4644,30 +4701,6 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 		}
 	}
 
-	for (int i = 0; i < leftover_path.size() - 1; i++) {
-		bool valid;
-		property_info_base = property_info_base.get_named(leftover_path[i], valid);
-	}
-
-	// Hack for the fact that bezier tracks leftover paths can reference
-	// the individual components for types like vectors.
-	if (property_info_base.is_null()) {
-		if (res.is_valid()) {
-			property_info_base = res;
-		} else if (node) {
-			property_info_base = node;
-		}
-
-		if (leftover_path.size()) {
-			leftover_path.remove_at(leftover_path.size() - 1);
-		}
-
-		for (int i = 0; i < leftover_path.size() - 1; i++) {
-			bool valid;
-			property_info_base = property_info_base.get_named(leftover_path[i], valid);
-		}
-	}
-
 	if (property_info_base.is_null()) {
 		WARN_PRINT(vformat("Could not determine track hint for '%s:%s' because its base property is null.",
 				String(path.get_concatenated_names()), String(path.get_concatenated_subnames())));
@@ -4724,6 +4757,9 @@ static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool
 			subindices.push_back(":y");
 			subindices.push_back(":z");
 			subindices.push_back(":d");
+		} break;
+		case Variant::NIL: {
+			subindices.push_back(""); // Hack: it is probably float since non-numeric types are filtered in the selection window.
 		} break;
 		default: {
 			if (r_valid) {
@@ -4816,6 +4852,9 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 	}
 
 	undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, value);
+	if (!created && p_id.type == Animation::TYPE_BEZIER) {
+		undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), p_id.track_idx, time, (Animation::HandleMode)bezier_key_mode->get_selected_id(), Animation::HANDLE_SET_MODE_AUTO);
+	}
 
 	if (created) {
 		// Just remove the track.
@@ -6252,10 +6291,15 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 }
 
 void AnimationTrackEditor::_bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode) {
-	if (!p_anim) {
-		return;
-	}
+	ERR_FAIL_NULL(p_anim);
 	p_anim->bezier_track_set_key_handle_mode(p_track, p_index, p_mode, p_set_mode);
+}
+
+void AnimationTrackEditor::_bezier_track_set_key_handle_mode_at_time(Animation *p_anim, int p_track, float p_time, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode) {
+	ERR_FAIL_NULL(p_anim);
+	int index = p_anim->track_find_key(p_track, p_time, Animation::FIND_MODE_APPROX);
+	ERR_FAIL_COND(index < 0);
+	_bezier_track_set_key_handle_mode(p_anim, p_track, index, p_mode, p_set_mode);
 }
 
 void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, int p_track) {
@@ -7635,6 +7679,7 @@ void AnimationTrackEditor::_bind_methods() {
 	ClassDB::bind_method("_clear_selection", &AnimationTrackEditor::_clear_selection);
 
 	ClassDB::bind_method(D_METHOD("_bezier_track_set_key_handle_mode", "animation", "track_idx", "key_idx", "key_handle_mode", "key_handle_set_mode"), &AnimationTrackEditor::_bezier_track_set_key_handle_mode, DEFVAL(Animation::HANDLE_SET_MODE_NONE));
+	ClassDB::bind_method(D_METHOD("_bezier_track_set_key_handle_mode_at_time", "animation", "track_idx", "time", "key_handle_mode", "key_handle_set_mode"), &AnimationTrackEditor::_bezier_track_set_key_handle_mode_at_time, DEFVAL(Animation::HANDLE_SET_MODE_NONE));
 
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "timeline_only"), PropertyInfo(Variant::BOOL, "update_position_only")));
 	ADD_SIGNAL(MethodInfo("keying_changed"));
@@ -7805,6 +7850,21 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	spacer->set_mouse_filter(MOUSE_FILTER_PASS);
 	spacer->set_h_size_flags(SIZE_EXPAND_FILL);
 	bottom_hf->add_child(spacer);
+
+	Label *bezier_key_default_label = memnew(Label);
+	bezier_key_default_label->set_text(TTR("Bezier Default Mode:"));
+	bottom_hf->add_child(bezier_key_default_label);
+
+	bezier_key_mode = memnew(OptionButton);
+	bezier_key_mode->add_item(TTR("Free"));
+	bezier_key_mode->add_item(TTR("Linear"));
+	bezier_key_mode->add_item(TTR("Balanced"));
+	bezier_key_mode->add_item(TTR("Mirrored"));
+	bezier_key_mode->set_tooltip_text(TTR("Set the default behavior of new bezier keys."));
+	bezier_key_mode->select(2);
+
+	bottom_hf->add_child(bezier_key_mode);
+	bottom_hf->add_child(memnew(VSeparator));
 
 	bezier_edit_icon = memnew(Button);
 	bezier_edit_icon->set_flat(true);

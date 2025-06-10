@@ -40,6 +40,9 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#ifdef __linux__
+#include <sys/statfs.h>
+#endif
 #include <sys/statvfs.h>
 #include <cerrno>
 #include <cstdio>
@@ -516,7 +519,166 @@ uint64_t DirAccessUnix::get_space_left() {
 }
 
 String DirAccessUnix::get_filesystem_type() const {
+#ifdef __linux__
+	struct statfs fs;
+	if (statfs(current_dir.utf8().get_data(), &fs) != 0) {
+		return "";
+	}
+	switch (fs.f_type) {
+		case 0x0000adf5:
+			return "ADFS";
+		case 0x0000adff:
+			return "AFFS";
+		case 0x5346414f:
+			return "AFS";
+		case 0x00000187:
+			return "AUTOFS";
+		case 0x00c36400:
+			return "CEPH";
+		case 0x73757245:
+			return "CODA";
+		case 0x28cd3d45:
+			return "CRAMFS";
+		case 0x453dcd28:
+			return "CRAMFS";
+		case 0x64626720:
+			return "DEBUGFS";
+		case 0x73636673:
+			return "SECURITYFS";
+		case 0xf97cff8c:
+			return "SELINUX";
+		case 0x43415d53:
+			return "SMACK";
+		case 0x858458f6:
+			return "RAMFS";
+		case 0x01021994:
+			return "TMPFS";
+		case 0x958458f6:
+			return "HUGETLBFS";
+		case 0x73717368:
+			return "SQUASHFS";
+		case 0x0000f15f:
+			return "ECRYPTFS";
+		case 0x00414a53:
+			return "EFS";
+		case 0xe0f5e1e2:
+			return "EROFS";
+		case 0x0000ef53:
+			return "EXTFS";
+		case 0xabba1974:
+			return "XENFS";
+		case 0x9123683e:
+			return "BTRFS";
+		case 0x00003434:
+			return "NILFS";
+		case 0xf2f52010:
+			return "F2FS";
+		case 0xf995e849:
+			return "HPFS";
+		case 0x00009660:
+			return "ISOFS";
+		case 0x000072b6:
+			return "JFFS2";
+		case 0x58465342:
+			return "XFS";
+		case 0x6165676c:
+			return "PSTOREFS";
+		case 0xde5e81e4:
+			return "EFIVARFS";
+		case 0x00c0ffee:
+			return "HOSTFS";
+		case 0x794c7630:
+			return "OVERLAYFS";
+		case 0x65735546:
+			return "FUSE";
+		case 0xca451a4e:
+			return "BCACHEFS";
+		case 0x00004d44:
+			return "FAT32";
+		case 0x2011bab0:
+			return "EXFAT";
+		case 0x0000564c:
+			return "NCP";
+		case 0x00006969:
+			return "NFS";
+		case 0x7461636f:
+			return "OCFS2";
+		case 0x00009fa1:
+			return "OPENPROM";
+		case 0x0000002f:
+			return "QNX4";
+		case 0x68191122:
+			return "QNX6";
+		case 0x6b414653:
+			return "AFS";
+		case 0x52654973:
+			return "REISERFS";
+		case 0x0000517b:
+			return "SMB";
+		case 0xff534d42:
+			return "CIFS";
+		case 0x0027e0eb:
+			return "CGROUP";
+		case 0x63677270:
+			return "CGROUP2";
+		case 0x07655821:
+			return "RDTGROUP";
+		case 0x74726163:
+			return "TRACEFS";
+		case 0x01021997:
+			return "V9FS";
+		case 0x62646576:
+			return "BDEVFS";
+		case 0x64646178:
+			return "DAXFS";
+		case 0x42494e4d:
+			return "BINFMTFS";
+		case 0x00001cd1:
+			return "DEVPTS";
+		case 0x6c6f6f70:
+			return "BINDERFS";
+		case 0x0bad1dea:
+			return "FUTEXFS";
+		case 0x50495045:
+			return "PIPEFS";
+		case 0x00009fa0:
+			return "PROC";
+		case 0x534f434b:
+			return "SOCKFS";
+		case 0x62656572:
+			return "SYSFS";
+		case 0x00009fa2:
+			return "USBDEVICE";
+		case 0x11307854:
+			return "MTD_INODE";
+		case 0x09041934:
+			return "ANON_INODE";
+		case 0x73727279:
+			return "BTRFS";
+		case 0x6e736673:
+			return "NSFS";
+		case 0xcafe4a11:
+			return "BPF_FS";
+		case 0x5a3c69f0:
+			return "AAFS";
+		case 0x5a4f4653:
+			return "ZONEFS";
+		case 0x15013346:
+			return "UDF";
+		case 0x444d4142:
+			return "DMA_BUF";
+		case 0x454d444d:
+			return "DEVMEM";
+		case 0x5345434d:
+			return "SECRETMEM";
+		case 0x50494446:
+			return "PID_FS";
+		default:
+			return "";
+	}
+#else
 	return ""; //TODO this should be implemented
+#endif
 }
 
 bool DirAccessUnix::is_hidden(const String &p_name) {

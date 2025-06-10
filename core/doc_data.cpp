@@ -127,6 +127,13 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 		p_method.qualifiers = "virtual";
 	}
 
+	if (p_methodinfo.flags & METHOD_FLAG_VIRTUAL_REQUIRED) {
+		if (!p_method.qualifiers.is_empty()) {
+			p_method.qualifiers += " ";
+		}
+		p_method.qualifiers += "required";
+	}
+
 	if (p_methodinfo.flags & METHOD_FLAG_CONST) {
 		if (!p_method.qualifiers.is_empty()) {
 			p_method.qualifiers += " ";

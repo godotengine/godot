@@ -223,7 +223,7 @@ struct [[nodiscard]] Rect2i {
 		return position + size;
 	}
 
-	operator String() const;
+	explicit operator String() const;
 	operator Rect2() const;
 
 	Rect2i() = default;

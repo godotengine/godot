@@ -13,32 +13,32 @@
 		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
-		<method name="_get_aabb" qualifiers="virtual const">
+		<method name="_get_aabb" qualifiers="virtual required const">
 			<return type="AABB" />
 			<description>
 				Virtual method to override the [AABB] for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_get_blend_shape_count" qualifiers="virtual const">
+		<method name="_get_blend_shape_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Virtual method to override the number of blend shapes for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_get_blend_shape_name" qualifiers="virtual const">
+		<method name="_get_blend_shape_name" qualifiers="virtual required const">
 			<return type="StringName" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the retrieval of blend shape names for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_get_surface_count" qualifiers="virtual const">
+		<method name="_get_surface_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Virtual method to override the surface count for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_set_blend_shape_name" qualifiers="virtual">
+		<method name="_set_blend_shape_name" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="name" type="StringName" />
@@ -46,63 +46,63 @@
 				Virtual method to override the names of blend shapes for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_array_index_len" qualifiers="virtual const">
+		<method name="_surface_get_array_index_len" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface array index length for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_array_len" qualifiers="virtual const">
+		<method name="_surface_get_array_len" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface array length for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_arrays" qualifiers="virtual const">
+		<method name="_surface_get_arrays" qualifiers="virtual required const">
 			<return type="Array" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface arrays for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_blend_shape_arrays" qualifiers="virtual const">
+		<method name="_surface_get_blend_shape_arrays" qualifiers="virtual required const">
 			<return type="Array[]" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the blend shape arrays for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_format" qualifiers="virtual const">
+		<method name="_surface_get_format" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface format for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_lods" qualifiers="virtual const">
+		<method name="_surface_get_lods" qualifiers="virtual required const">
 			<return type="Dictionary" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface LODs for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_material" qualifiers="virtual const">
+		<method name="_surface_get_material" qualifiers="virtual required const">
 			<return type="Material" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface material for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_primitive_type" qualifiers="virtual const">
+		<method name="_surface_get_primitive_type" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface primitive type for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_set_material" qualifiers="virtual">
+		<method name="_surface_set_material" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="material" type="Material" />

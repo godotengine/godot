@@ -94,6 +94,7 @@ class EditorHelp : public VBoxContainer {
 	};
 
 	bool select_locked = false;
+	bool update_pending = false;
 
 	String prev_search;
 
@@ -301,6 +302,7 @@ class EditorHelpBit : public VBoxContainer {
 		DocType doc_type;
 		String value;
 		Vector<ArgumentData> arguments;
+		ArgumentData rest_argument;
 		String qualifiers;
 		String resource_path;
 	};

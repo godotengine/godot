@@ -589,7 +589,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="mode" type="int" enum="TreeItem.TreeCellMode" />
 			<description>
-				Sets the given column's cell mode to [param mode]. This determines how the cell is displayed and edited. See [enum TreeCellMode] constants for details.
+				Sets the given column's cell mode to [param mode]. This determines how the cell is displayed and edited.
 			</description>
 		</method>
 		<method name="set_checked">
@@ -822,7 +822,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="text_alignment" type="int" enum="HorizontalAlignment" />
 			<description>
-				Sets the given column's text alignment. See [enum HorizontalAlignment] for possible values.
+				Sets the given column's text alignment to [param text_alignment].
 			</description>
 		</method>
 		<method name="set_text_direction">

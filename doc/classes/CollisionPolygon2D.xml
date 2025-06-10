@@ -11,10 +11,10 @@
 	</tutorials>
 	<members>
 		<member name="build_mode" type="int" setter="set_build_mode" getter="get_build_mode" enum="CollisionPolygon2D.BuildMode" default="0">
-			Collision build mode. Use one of the [enum BuildMode] constants.
+			Collision build mode.
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
-			If [code]true[/code], no collisions will be detected.
+			If [code]true[/code], no collisions will be detected. This property should be changed with [method Object.set_deferred].
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
 			If [code]true[/code], only edges that face up, relative to [CollisionPolygon2D]'s rotation, will collide with other objects.

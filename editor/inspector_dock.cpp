@@ -722,7 +722,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_new_button->set_accessibility_name(TTRC("New Resource"));
 	general_options_hb->add_child(resource_new_button);
 	resource_new_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_new_resource));
-	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_new_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	resource_load_button = memnew(Button);
 	resource_load_button->set_theme_type_variation("FlatMenuButton");
@@ -730,7 +730,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_load_button->set_accessibility_name(TTRC("Load Resource"));
 	general_options_hb->add_child(resource_load_button);
 	resource_load_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_open_resource_selector));
-	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_load_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	resource_save_button = memnew(MenuButton);
 	resource_save_button->set_flat(false);
@@ -741,7 +741,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_save_button->get_popup()->add_item(TTRC("Save"), RESOURCE_SAVE);
 	resource_save_button->get_popup()->add_item(TTRC("Save As..."), RESOURCE_SAVE_AS);
 	resource_save_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
-	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_save_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	resource_save_button->set_disabled(true);
 
 	resource_extra_button = memnew(MenuButton);

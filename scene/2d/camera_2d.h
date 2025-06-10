@@ -122,7 +122,6 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 #ifdef TOOLS_ENABLED
@@ -202,6 +201,7 @@ public:
 	Vector2 get_zoom() const;
 
 	Point2 get_camera_screen_center() const;
+	real_t get_screen_rotation() const;
 
 	void set_custom_viewport(Node *p_viewport);
 	Node *get_custom_viewport() const;

@@ -37,9 +37,11 @@ class Button;
 class ConfigFile;
 class Control;
 class PopupMenu;
+class TabBar;
 class TabContainer;
 class VBoxContainer;
 class WindowWrapper;
+class StyleBoxFlat;
 
 class DockSplitContainer : public SplitContainer {
 	GDCLASS(DockSplitContainer, SplitContainer);
@@ -52,9 +54,13 @@ protected:
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+
+public:
+	DockSplitContainer();
 };
 
 class DockContextPopup;
+class EditorDockDragHint;
 
 class EditorDockManager : public Object {
 	GDCLASS(EditorDockManager, Object);
@@ -75,6 +81,7 @@ public:
 
 private:
 	friend class DockContextPopup;
+	friend class EditorDockDragHint;
 
 	struct DockInfo {
 		String title;
@@ -98,7 +105,9 @@ private:
 
 	Vector<WindowWrapper *> dock_windows;
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
+	EditorDockDragHint *dock_drag_rects[DOCK_SLOT_MAX];
 	HashMap<Control *, DockInfo> all_docks;
+	Control *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
 
 	DockContextPopup *dock_context_popup = nullptr;
@@ -106,6 +115,8 @@ private:
 	Vector<Control *> docks_menu_docks;
 	Control *closed_dock_parent = nullptr;
 
+	Control *_get_dock_tab_dragged();
+	void _dock_drag_stopped();
 	void _dock_split_dragged(int p_offset);
 	void _dock_container_gui_input(const Ref<InputEvent> &p_input, TabContainer *p_dock_container);
 	void _bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, Control *p_dock, Button *p_bottom_button);
@@ -164,9 +175,40 @@ public:
 	EditorDockManager();
 };
 
+class EditorDockDragHint : public Control {
+	GDCLASS(EditorDockDragHint, Control);
+
+private:
+	EditorDockManager *dock_manager = nullptr;
+	EditorDockManager::DockSlot occupied_slot = EditorDockManager::DOCK_SLOT_MAX;
+	TabBar *drop_tabbar = nullptr;
+
+	Color valid_drop_color;
+	Ref<StyleBoxFlat> dock_drop_highlight;
+	bool can_drop_dock = false;
+	bool mouse_inside = false;
+	bool mouse_inside_tabbar = false;
+
+	void _drag_move_tab(int p_from_index, int p_to_index);
+	void _drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
+
+protected:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	void _notification(int p_what);
+	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	void drop_data(const Point2 &p_point, const Variant &p_data) override;
+
+public:
+	void set_slot(EditorDockManager::DockSlot p_slot);
+
+	EditorDockDragHint();
+};
+
 class DockContextPopup : public PopupPanel {
 	GDCLASS(DockContextPopup, PopupPanel);
 
+private:
 	VBoxContainer *dock_select_popup_vb = nullptr;
 
 	Button *make_float_button = nullptr;

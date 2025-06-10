@@ -431,12 +431,18 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	Vector2 p2 = Vector2(flip_x ? p_screen_rect.position.x : screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y);
 	Vector2 size = p2 - p1;
 
-	Rect2 screenrect = Rect2(p1 / p_screen_rect.size, (size) / p_screen_rect.size);
+	Rect2 screenrect = Rect2(Vector2(flip_x ? 1.0 : 0.0, flip_y ? 1.0 : 0.0), Vector2(flip_x ? -1.0 : 1.0, flip_y ? -1.0 : 1.0));
 
-	glViewport(0, 0, Math::abs(size.x), Math::abs(size.y));
+	glViewport(int(MIN(p1.x, p2.x)), int(MIN(p1.y, p2.y)), Math::abs(size.x), Math::abs(size.y));
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, rt->color);
+	GLenum target = rt->view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+	glBindTexture(target, rt->color);
+	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glDisable(GL_CULL_FACE);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ZERO);
 

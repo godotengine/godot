@@ -100,6 +100,8 @@ static func print_property_extended_info(property: Dictionary, base: Object = nu
 
 static func get_method_signature(method: Dictionary, is_signal: bool = false) -> String:
 	var result: String = ""
+	if method.flags & METHOD_FLAG_VIRTUAL_REQUIRED:
+		result += "abstract "
 	if method.flags & METHOD_FLAG_STATIC:
 		result += "static "
 	result += ("signal " if is_signal else "func ") + method.name + "("
@@ -114,6 +116,10 @@ static func get_method_signature(method: Dictionary, is_signal: bool = false) ->
 		result += arg.name + ": " + get_type(arg)
 		if i >= mandatory_argc:
 			result += " = " + var_to_str(default_args[i - mandatory_argc])
+
+	if method.flags & METHOD_FLAG_VARARG:
+		# `MethodInfo` does not support the rest parameter name.
+		result += "...args" if args.is_empty() else ", ...args"
 
 	result += ")"
 	if is_signal:

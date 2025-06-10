@@ -62,6 +62,7 @@ class EmbeddedProcessMacOS final : public EmbeddedProcessBase {
 		IN_PROGRESS,
 		COMPLETED,
 		FAILED,
+		CLOSED,
 	};
 
 	DisplayServerMacOS *ds = nullptr;

@@ -74,55 +74,51 @@ private:
 	static void _next_frame();
 
 	/// Message handler function for parse_message.
-	typedef Error (*ParseMessageFunc)(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select);
-	static HashMap<String, ParseMessageFunc> parse_message_handlers;
-	static void _init_parse_message_handlers();
+	typedef Error (*ParseMessageFunc)(const Array &p_args);
+	static HashMap<String, ParseMessageFunc> message_handlers;
+	static void _init_message_handlers();
 
-#define HANDLER(name) static Error _msg_##name(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select)
-
-	HANDLER(setup_scene);
-	HANDLER(setup_embedded_shortcuts);
-	HANDLER(request_scene_tree);
-	HANDLER(save_node);
-	HANDLER(inspect_objects);
-	HANDLER(clear_selection);
-	HANDLER(suspend_changed);
-	HANDLER(next_frame);
-	HANDLER(debug_mute_audio);
-	HANDLER(override_cameras);
-	HANDLER(transform_camera_2d);
+	static Error _msg_setup_scene(const Array &p_args);
+	static Error _msg_setup_embedded_shortcuts(const Array &p_args);
+	static Error _msg_request_scene_tree(const Array &p_args);
+	static Error _msg_save_node(const Array &p_args);
+	static Error _msg_inspect_objects(const Array &p_args);
+	static Error _msg_clear_selection(const Array &p_args);
+	static Error _msg_suspend_changed(const Array &p_args);
+	static Error _msg_next_frame(const Array &p_args);
+	static Error _msg_debug_mute_audio(const Array &p_args);
+	static Error _msg_override_cameras(const Array &p_args);
+	static Error _msg_transform_camera_2d(const Array &p_args);
 #ifndef _3D_DISABLED
-	HANDLER(transform_camera_3d);
+	static Error _msg_transform_camera_3d(const Array &p_args);
 #endif
-	HANDLER(set_object_property);
-	HANDLER(set_object_property_field);
-	HANDLER(reload_cached_files);
-	HANDLER(live_set_root);
-	HANDLER(live_node_path);
-	HANDLER(live_res_path);
-	HANDLER(live_node_prop_res);
-	HANDLER(live_node_prop);
-	HANDLER(live_res_prop_res);
-	HANDLER(live_res_prop);
-	HANDLER(live_node_call);
-	HANDLER(live_res_call);
-	HANDLER(live_create_node);
-	HANDLER(live_instantiate_node);
-	HANDLER(live_remove_node);
-	HANDLER(live_remove_and_keep_node);
-	HANDLER(live_restore_node);
-	HANDLER(live_duplicate_node);
-	HANDLER(live_reparent_node);
-	HANDLER(runtime_node_select_setup);
-	HANDLER(runtime_node_select_set_type);
-	HANDLER(runtime_node_select_set_mode);
-	HANDLER(runtime_node_select_set_visible);
-	HANDLER(runtime_node_select_reset_camera_2d);
+	static Error _msg_set_object_property(const Array &p_args);
+	static Error _msg_set_object_property_field(const Array &p_args);
+	static Error _msg_reload_cached_files(const Array &p_args);
+	static Error _msg_live_set_root(const Array &p_args);
+	static Error _msg_live_node_path(const Array &p_args);
+	static Error _msg_live_res_path(const Array &p_args);
+	static Error _msg_live_node_prop_res(const Array &p_args);
+	static Error _msg_live_node_prop(const Array &p_args);
+	static Error _msg_live_res_prop_res(const Array &p_args);
+	static Error _msg_live_res_prop(const Array &p_args);
+	static Error _msg_live_node_call(const Array &p_args);
+	static Error _msg_live_res_call(const Array &p_args);
+	static Error _msg_live_create_node(const Array &p_args);
+	static Error _msg_live_instantiate_node(const Array &p_args);
+	static Error _msg_live_remove_node(const Array &p_args);
+	static Error _msg_live_remove_and_keep_node(const Array &p_args);
+	static Error _msg_live_restore_node(const Array &p_args);
+	static Error _msg_live_duplicate_node(const Array &p_args);
+	static Error _msg_live_reparent_node(const Array &p_args);
+	static Error _msg_runtime_node_select_setup(const Array &p_args);
+	static Error _msg_runtime_node_select_set_type(const Array &p_args);
+	static Error _msg_runtime_node_select_set_mode(const Array &p_args);
+	static Error _msg_runtime_node_select_set_visible(const Array &p_args);
+	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
 #ifndef _3D_DISABLED
-	HANDLER(runtime_node_select_reset_camera_3d);
+	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
 #endif
-
-#undef HANDLER
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);

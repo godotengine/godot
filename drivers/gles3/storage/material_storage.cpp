@@ -872,7 +872,11 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						E->value = global_textures_pass;
 					}
 
-					textures.push_back(v->override.get_type() != Variant::NIL ? v->override : v->value);
+					if (v->override.get_type() == Variant::RID && ((RID)v->override).is_valid()) {
+						textures.push_back(v->override);
+					} else if (v->value.get_type() == Variant::RID && ((RID)v->value).is_valid()) {
+						textures.push_back(v->value);
+					}
 				}
 
 			} else {
@@ -2164,7 +2168,7 @@ RID MaterialStorage::shader_allocate() {
 	return shader_owner.allocate_rid();
 }
 
-void MaterialStorage::shader_initialize(RID p_rid) {
+void MaterialStorage::shader_initialize(RID p_rid, bool p_embedded) {
 	Shader shader;
 	shader.data = nullptr;
 	shader.mode = RS::SHADER_MAX;

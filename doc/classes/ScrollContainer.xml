@@ -47,7 +47,7 @@
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
-			Controls whether horizontal scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
+			Controls whether horizontal scrollbar can be used and when it should be visible.
 		</member>
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 			Deadzone for touch scrolling. Lower deadzone makes the scrolling more sensitive.
@@ -57,7 +57,7 @@
 			[b]Note:[/b] If you are setting this value in the [method Node._ready] function or earlier, it needs to be wrapped with [method Object.set_deferred], since scroll bar's [member Range.max_value] is not initialized yet.
 			[codeblock]
 			func _ready():
-			    set_deferred("scroll_horizontal", 600)
+				set_deferred("scroll_horizontal", 600)
 			[/codeblock]
 		</member>
 		<member name="scroll_horizontal_custom_step" type="float" setter="set_horizontal_custom_step" getter="get_horizontal_custom_step" default="-1.0">
@@ -68,14 +68,14 @@
 			[b]Note:[/b] Setting it early needs to be deferred, just like in [member scroll_horizontal].
 			[codeblock]
 			func _ready():
-			    set_deferred("scroll_vertical", 600)
+				set_deferred("scroll_vertical", 600)
 			[/codeblock]
 		</member>
 		<member name="scroll_vertical_custom_step" type="float" setter="set_vertical_custom_step" getter="get_vertical_custom_step" default="-1.0">
 			Overrides the [member ScrollBar.custom_step] used when clicking the internal scroll bar's vertical increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
 		</member>
 		<member name="vertical_scroll_mode" type="int" setter="set_vertical_scroll_mode" getter="get_vertical_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
-			Controls whether vertical scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
+			Controls whether vertical scrollbar can be used and when it should be visible.
 		</member>
 	</members>
 	<signals>

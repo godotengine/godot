@@ -2370,7 +2370,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			if ((select_mode == SELECT_ROW && selected_item == p_item) || p_item->cells[i].selected || !p_item->has_meta("__focus_rect")) {
+			if ((select_mode != SELECT_SINGLE && selected_item == p_item) || p_item->cells[i].selected || !p_item->has_meta("__focus_rect")) {
 				Rect2i r = cell_rect;
 
 				if (select_mode != SELECT_ROW) {
@@ -4221,6 +4221,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void Tree::_determine_hovered_item() {
+	hovered_update_queued = false;
+
 	Ref<StyleBox> bg = theme_cache.panel_style;
 	bool rtl = is_layout_rtl();
 
@@ -4306,6 +4308,14 @@ void Tree::_determine_hovered_item() {
 	if (whole_needs_redraw || header_hover_needs_redraw || item_hover_needs_redraw) {
 		queue_redraw();
 	}
+}
+
+void Tree::_queue_update_hovered_item() {
+	if (hovered_update_queued) {
+		return;
+	}
+	hovered_update_queued = true;
+	callable_mp(this, &Tree::_determine_hovered_item).call_deferred();
 }
 
 bool Tree::edit_selected(bool p_force_edit) {
@@ -5128,9 +5138,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
 			ti = create_item(root, p_index);
 		}
 	}
-
-	_determine_hovered_item();
-
+	_queue_update_hovered_item();
 	queue_accessibility_update();
 	return ti;
 }
@@ -6647,6 +6655,14 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_pressed);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_hover);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, title_button_color);
+
+	ADD_CLASS_DEPENDENCY("HScrollBar");
+	ADD_CLASS_DEPENDENCY("HSlider");
+	ADD_CLASS_DEPENDENCY("LineEdit");
+	ADD_CLASS_DEPENDENCY("Popup");
+	ADD_CLASS_DEPENDENCY("TextEdit");
+	ADD_CLASS_DEPENDENCY("Timer");
+	ADD_CLASS_DEPENDENCY("VScrollBar");
 }
 
 Tree::Tree() {

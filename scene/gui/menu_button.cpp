@@ -134,6 +134,7 @@ void MenuButton::_notification(int p_what) {
 			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 		} break;
@@ -193,6 +194,8 @@ void MenuButton::_bind_methods() {
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
+
+	ADD_CLASS_DEPENDENCY("PopupMenu");
 
 	PopupMenu::Item defaults(true);
 

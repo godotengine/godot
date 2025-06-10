@@ -410,8 +410,16 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	}
 
 	if (self->reloadable && p_extension_funcs->recreate_instance_func == nullptr) {
-		ERR_PRINT(vformat("Extension marked as reloadable, but attempted to register class '%s' which doesn't support reloading. Perhaps your language binding don't support it? Reloading disabled for this extension.", class_name));
-		self->reloadable = false;
+		bool can_create_class = (bool)p_extension_funcs->create_instance_func;
+#ifndef DISABLE_DEPRECATED
+		if (!can_create_class && p_deprecated_funcs) {
+			can_create_class = (bool)p_deprecated_funcs->create_instance_func;
+		}
+#endif
+		if (can_create_class) {
+			ERR_PRINT(vformat("Extension marked as reloadable, but attempted to register class '%s' which doesn't support reloading. Perhaps your language binding don't support it? Reloading disabled for this extension.", class_name));
+			self->reloadable = false;
+		}
 	}
 
 	extension->gdextension.library = self;
@@ -686,6 +694,13 @@ void GDExtension::_register_get_classes_used_callback(GDExtensionClassLibraryPtr
 #endif
 }
 
+void GDExtension::_register_main_loop_callbacks(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks) {
+	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
+	self->startup_callback = p_callbacks->startup_func;
+	self->shutdown_callback = p_callbacks->shutdown_func;
+	self->frame_callback = p_callbacks->frame_func;
+}
+
 void GDExtension::register_interface_function(const StringName &p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
 	ERR_FAIL_COND_MSG(gdextension_interface_functions.has(p_function_name), vformat("Attempt to register interface function '%s', which appears to be already registered.", p_function_name));
 	gdextension_interface_functions.insert(p_function_name, p_function_pointer);
@@ -805,6 +820,7 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_unregister_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_unregister_extension_class);
 	register_interface_function("get_library_path", (GDExtensionInterfaceFunctionPtr)&GDExtension::_get_library_path);
 	register_interface_function("editor_register_get_classes_used_callback", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_get_classes_used_callback);
+	register_interface_function("register_main_loop_callbacks", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_main_loop_callbacks);
 }
 
 void GDExtension::finalize_gdextensions() {
@@ -862,6 +878,19 @@ String GDExtensionResourceLoader::get_resource_type(const String &p_path) const 
 }
 
 #ifdef TOOLS_ENABLED
+void GDExtensionResourceLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+	Ref<GDExtension> gdext = ResourceLoader::load(p_path);
+	if (gdext.is_null()) {
+		return;
+	}
+
+	for (const StringName class_name : gdext->get_classes_used()) {
+		if (ClassDB::class_exists(class_name)) {
+			r_classes->insert(class_name);
+		}
+	}
+}
+
 bool GDExtension::has_library_changed() const {
 	return loader->has_library_changed();
 }

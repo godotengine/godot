@@ -31,6 +31,7 @@
 #include "editor/event_listener_line_edit.h"
 
 #include "core/input/input_map.h"
+#include "scene/gui/dialogs.h"
 
 // Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
 static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
@@ -162,9 +163,10 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	Ref<InputEvent> event_to_check = p_event;
+
 	// Allow releasing focus by holding "ui_cancel" action.
-	bool accept_release = false;
-	uint64_t hold_to_unfocus_timeout = 3000;
+	const uint64_t hold_to_unfocus_timeout = 3000;
 	if (p_event->is_action_pressed(SNAME("ui_cancel"), true, true)) {
 		if ((OS::get_singleton()->get_ticks_msec() - hold_next) < hold_to_unfocus_timeout) {
 			hold_next = 0;
@@ -172,20 +174,23 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			next->grab_focus();
 		} else {
 			hold_next = OS::get_singleton()->get_ticks_msec();
+			hold_event = p_event;
 		}
 		accept_event();
 		return;
-	} else if (p_event->is_action_released(SNAME("ui_cancel"), true)) {
-		accept_release = true;
 	}
-	hold_next = 0;
+	if (p_event->is_action_released(SNAME("ui_cancel"), true)) {
+		event_to_check = hold_event;
+		hold_next = 0;
+		hold_event = Ref<InputEvent>();
+	}
 
 	accept_event();
-	if (!(p_event->is_pressed() || accept_release) || p_event->is_echo() || p_event->is_match(event) || !_is_event_allowed(p_event)) {
+	if (!event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
 		return;
 	}
 
-	event = p_event;
+	event = event_to_check;
 	set_text(get_event_text(event, false));
 	emit_signal("event_changed", event);
 }
@@ -194,15 +199,6 @@ void EventListenerLineEdit::_on_text_changed(const String &p_text) {
 	if (p_text.is_empty()) {
 		clear_event();
 	}
-}
-
-void EventListenerLineEdit::_on_focus() {
-	set_placeholder(TTR("Listening for Input"));
-}
-
-void EventListenerLineEdit::_on_unfocus() {
-	ignore_next_event = true;
-	set_placeholder(TTR("Filter by Event"));
 }
 
 Ref<InputEvent> EventListenerLineEdit::get_event() const {
@@ -239,21 +235,43 @@ void EventListenerLineEdit::_notification(int p_what) {
 
 			DisplayServer::get_singleton()->accessibility_update_set_extra_info(ae, vformat(TTR("Listening for Input. Hold %s to release focus."), InputMap::get_singleton()->get_action_description("ui_cancel")));
 		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			set_right_icon(get_editor_theme_icon(SNAME("Keyboard")));
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect(SceneStringName(text_changed), callable_mp(this, &EventListenerLineEdit::_on_text_changed));
-			connect(SceneStringName(focus_entered), callable_mp(this, &EventListenerLineEdit::_on_focus));
-			connect(SceneStringName(focus_exited), callable_mp(this, &EventListenerLineEdit::_on_unfocus));
-			set_right_icon(get_editor_theme_icon(SNAME("Keyboard")));
 			set_clear_button_enabled(true);
+		} break;
+
+		case NOTIFICATION_FOCUS_ENTER: {
+			AcceptDialog *dialog = Object::cast_to<AcceptDialog>(get_window());
+			if (dialog) {
+				dialog->set_close_on_escape(false);
+			}
+
+			set_placeholder(TTRC("Listening for Input"));
+		} break;
+
+		case NOTIFICATION_FOCUS_EXIT: {
+			AcceptDialog *dialog = Object::cast_to<AcceptDialog>(get_window());
+			if (dialog) {
+				dialog->set_close_on_escape(true);
+			}
+
+			ignore_next_event = true;
+			set_placeholder(TTRC("Filter by Event"));
 		} break;
 	}
 }
 
 void EventListenerLineEdit::_bind_methods() {
+	// `event` is either null or a valid InputEvent that is pressed and non-echo.
 	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 }
 
 EventListenerLineEdit::EventListenerLineEdit() {
 	set_caret_blink_enabled(false);
-	set_placeholder(TTR("Filter by Event"));
+	set_placeholder(TTRC("Filter by Event"));
 }

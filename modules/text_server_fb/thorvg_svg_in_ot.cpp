@@ -170,8 +170,14 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			String *p_xml = &xml_body_temp;
 			int64_t tag_count = -1;
 
+			bool is_in_defs = false;
 			while (parser->read() == OK) {
-				if (parser->has_attribute("id")) {
+				if (parser->get_node_type() == XMLParser::NODE_ELEMENT && parser->get_node_name().to_lower() == "defs") {
+					is_in_defs = true;
+				} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name().to_lower() == "defs") {
+					is_in_defs = false;
+				}
+				if (!is_in_defs && parser->has_attribute("id")) {
 					const String &gl_name = parser->get_named_attribute_value("id");
 					if (gl_name.begins_with("glyph")) {
 #ifdef GDEXTENSION

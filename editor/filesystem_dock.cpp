@@ -2204,9 +2204,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (external_program.is_empty()) {
 				OS::get_singleton()->shell_open(file);
 			} else {
-				List<String> args;
-				args.push_back(file);
-				OS::get_singleton()->create_process(external_program, args);
+				List<String> paths;
+				paths.push_back(file);
+				OS::get_singleton()->open_with_program(external_program, paths);
 			}
 		} break;
 
@@ -2271,6 +2271,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 #endif
 
 			List<String> terminal_emulator_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
+			bool append_default_args = true;
+
 #ifdef LINUXBSD_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
 			// Use `String.ends_with()` so that installations in non-default paths
@@ -2284,11 +2286,20 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					terminal_emulator_args.push_back("-cd");
 				} else if (chosen_terminal_emulator.ends_with("xfce4-terminal")) {
 					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("lxterminal")) {
+					terminal_emulator_args.push_back("--working-directory={directory}");
+					append_default_args = false;
+				} else if (chosen_terminal_emulator.ends_with("kitty")) {
+					terminal_emulator_args.push_back("--directory");
+				} else if (chosen_terminal_emulator.ends_with("alacritty")) {
+					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("xterm")) {
+					terminal_emulator_args.push_back("-e");
+					terminal_emulator_args.push_back("cd '{directory}' && exec $SHELL");
+					append_default_args = false;
 				}
 			}
 #endif
-
-			bool append_default_args = true;
 
 #ifdef WINDOWS_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
@@ -2594,6 +2605,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			ScriptEditor::get_singleton()->open_text_file_create_dialog(dir);
 		} break;
+		case FILE_MENU_RUN_SCRIPT: {
+			if (p_selected.size() == 1) {
+				const String &fpath = p_selected[0];
+				Ref<Script> scr = ResourceLoader::load(fpath);
+				ERR_FAIL_COND(scr.is_null());
+				EditorNode::get_singleton()->run_editor_script(scr);
+			}
+		} break;
 
 		case EXTRA_FOCUS_PATH: {
 			focus_on_filter();
@@ -2605,7 +2624,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		default: {
 			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
 				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
-					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, p_selected);
+					// For create new file option, pass the path location of mouse click position instead, to plugin callback.
+					String fpath = current_path;
+					if (!fpath.ends_with("/")) {
+						fpath = fpath.get_base_dir();
+					}
+					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, { fpath });
 				}
 			} else if (p_option >= CONVERT_BASE_ID) {
 				selected_conversion_id = p_option - CONVERT_BASE_ID;
@@ -3279,6 +3303,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open"), FILE_MENU_OPEN);
+
+			String type = EditorFileSystem::get_singleton()->get_file_type(filenames[0]);
+			if (ClassDB::is_parent_class(type, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(filenames[0]);
+				if (scr.is_valid()) {
+					if (ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
+						p_popup->add_icon_item(get_editor_theme_icon(SNAME("MainPlay")), TTRC("Run"), FILE_MENU_RUN_SCRIPT);
+					}
+				}
+			}
 			p_popup->add_separator();
 		}
 
@@ -3524,6 +3558,8 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(tree_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
@@ -3594,6 +3630,8 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(file_list_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
@@ -4113,7 +4151,7 @@ FileSystemDock::FileSystemDock() {
 	button_hist_prev = memnew(Button);
 	button_hist_prev->set_flat(true);
 	button_hist_prev->set_disabled(true);
-	button_hist_prev->set_focus_mode(FOCUS_NONE);
+	button_hist_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_prev->set_tooltip_text(TTRC("Go to previous selected folder/file."));
 	button_hist_prev->set_accessibility_name(TTRC("Previous"));
 	nav_hbc->add_child(button_hist_prev);
@@ -4121,7 +4159,7 @@ FileSystemDock::FileSystemDock() {
 	button_hist_next = memnew(Button);
 	button_hist_next->set_flat(true);
 	button_hist_next->set_disabled(true);
-	button_hist_next->set_focus_mode(FOCUS_NONE);
+	button_hist_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_next->set_tooltip_text(TTRC("Go to next selected folder/file."));
 	button_hist_next->set_accessibility_name(TTRC("Next"));
 	nav_hbc->add_child(button_hist_next);
@@ -4135,7 +4173,7 @@ FileSystemDock::FileSystemDock() {
 
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));
-	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
+	button_toggle_display_mode->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_accessibility_name(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");

@@ -61,7 +61,7 @@ subject to the following restrictions:
 #include "core/error/error_macros.h"
 #include "core/math/aabb.h"
 #include "core/math/math_defs.h"
-#include "core/templates/oa_hash_map.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/paged_allocator.h"
 
 //#define DEBUG_CONVEX_HULL
@@ -2267,7 +2267,7 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 
 	// Copy the edges over. There's two "half-edges" for every edge, so we pick only one of them.
 	r_mesh.edges.resize(ch.edges.size() / 2);
-	OAHashMap<uint64_t, int32_t> edge_map(ch.edges.size() * 4); // The higher the capacity, the faster the insert
+	AHashMap<uint64_t, int32_t> edge_map(ch.edges.size() * 4); // The higher the capacity, the faster the insert
 
 	uint32_t edges_copied = 0;
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
@@ -2292,11 +2292,11 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 			uint64_t key = b;
 			key <<= 32;
 			key |= a;
-			int32_t index;
-			if (!edge_map.lookup(key, index)) {
+			int32_t *index_ptr = edge_map.getptr(key);
+			if (!index_ptr) {
 				ERR_PRINT("Invalid edge");
 			} else {
-				r_mesh.edges[index].face_b = edge_faces[i];
+				r_mesh.edges[*index_ptr].face_b = edge_faces[i];
 			}
 		}
 	}

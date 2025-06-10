@@ -34,7 +34,7 @@
 #include "core/string/ustring.h"
 
 Rect2i::operator String() const {
-	return "[P: " + position.operator String() + ", S: " + size + "]";
+	return "[P: " + String(position) + ", S: " + String(size) + "]";
 }
 
 Rect2i::operator Rect2() const {

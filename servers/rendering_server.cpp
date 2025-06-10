@@ -1022,6 +1022,7 @@ uint32_t RenderingServer::mesh_surface_get_format_attribute_stride(BitField<Arra
 	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, 0, offsets, vstr, ntstr, astr, sstr);
 	return astr;
 }
+
 uint32_t RenderingServer::mesh_surface_get_format_skin_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
 	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
@@ -1031,6 +1032,19 @@ uint32_t RenderingServer::mesh_surface_get_format_skin_stride(BitField<ArrayForm
 	uint32_t sstr;
 	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, 0, offsets, vstr, ntstr, astr, sstr);
 	return sstr;
+}
+
+uint32_t RenderingServer::mesh_surface_get_format_index_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
+	if (!(p_format & ARRAY_FORMAT_INDEX)) {
+		return 0;
+	}
+
+	// Determine whether using 16 or 32 bits indices.
+	if (p_vertex_len <= (1 << 16) && p_vertex_len > 0) {
+		return 2;
+	} else {
+		return 4;
+	}
 }
 
 void RenderingServer::mesh_surface_make_offsets_from_format(uint64_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t &r_vertex_element_size, uint32_t &r_normal_element_size, uint32_t &r_attrib_element_size, uint32_t &r_skin_element_size) const {
@@ -2243,6 +2257,8 @@ void RenderingServer::_bind_methods() {
 	BIND_CONSTANT(ARRAY_WEIGHTS_SIZE);
 	BIND_CONSTANT(CANVAS_ITEM_Z_MIN);
 	BIND_CONSTANT(CANVAS_ITEM_Z_MAX);
+	BIND_CONSTANT(CANVAS_LAYER_MIN);
+	BIND_CONSTANT(CANVAS_LAYER_MAX);
 	BIND_CONSTANT(MAX_GLOW_LEVELS);
 	BIND_CONSTANT(MAX_CURSORS);
 	BIND_CONSTANT(MAX_2D_DIRECTIONAL_LIGHTS);
@@ -2337,6 +2353,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_normal_tangent_stride", "format", "vertex_count"), &RenderingServer::mesh_surface_get_format_normal_tangent_stride);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_attribute_stride", "format", "vertex_count"), &RenderingServer::mesh_surface_get_format_attribute_stride);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_skin_stride", "format", "vertex_count"), &RenderingServer::mesh_surface_get_format_skin_stride);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_index_stride", "format", "vertex_count"), &RenderingServer::mesh_surface_get_format_index_stride);
 	ClassDB::bind_method(D_METHOD("mesh_add_surface", "mesh", "surface"), &RenderingServer::_mesh_add_surface);
 	ClassDB::bind_method(D_METHOD("mesh_add_surface_from_arrays", "mesh", "primitive", "arrays", "blend_shapes", "lods", "compress_format"), &RenderingServer::mesh_add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("mesh_get_blend_shape_count", "mesh"), &RenderingServer::mesh_get_blend_shape_count);
@@ -2357,6 +2374,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_vertex_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_vertex_region);
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_attribute_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_attribute_region);
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_skin_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_skin_region);
+	ClassDB::bind_method(D_METHOD("mesh_surface_update_index_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_index_region);
 
 	ClassDB::bind_method(D_METHOD("mesh_set_shadow_mesh", "mesh", "shadow_mesh"), &RenderingServer::mesh_set_shadow_mesh);
 
@@ -2914,6 +2932,7 @@ void RenderingServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_DISABLED);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_FXAA);
+	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_SMAA);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW);
@@ -3675,6 +3694,8 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/enabled", true);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"), 0.25);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.18);
+
+	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/quality/smaa_edge_detection_threshold", PROPERTY_HINT_RANGE, "0.01,0.2,0.01"), 0.05);
 
 	{
 		String mode_hints;

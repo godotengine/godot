@@ -230,14 +230,11 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	SymCleanup(process);
 
-	if (ScriptServer::are_languages_initialized()) {
-		Vector<Ref<ScriptBacktrace>> script_backtraces = ScriptServer::capture_script_backtraces(false);
-		for (const Ref<ScriptBacktrace> &backtrace : script_backtraces) {
-			if (!backtrace->is_empty()) {
-				print_error(backtrace->format());
-				print_error(vformat("-- END OF %s BACKTRACE --", backtrace->get_language_name().to_upper()));
-				print_error("================================================================");
-			}
+	for (const Ref<ScriptBacktrace> &backtrace : ScriptServer::capture_script_backtraces(false)) {
+		if (!backtrace->is_empty()) {
+			print_error(backtrace->format());
+			print_error(vformat("-- END OF %s BACKTRACE --", backtrace->get_language_name().to_upper()));
+			print_error("================================================================");
 		}
 	}
 

@@ -30,7 +30,10 @@
 
 #include "add_metadata_dialog.h"
 
+#include "editor/gui/editor_validation_panel.h"
+#include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/line_edit.h"
 
 AddMetadataDialog::AddMetadataDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -46,7 +49,7 @@ AddMetadataDialog::AddMetadataDialog() {
 	hbc->add_child(add_meta_name);
 	hbc->add_child(memnew(Label(TTR("Type:"))));
 
-	add_meta_type = memnew(OptionButton);
+	add_meta_type = memnew(EditorVariantTypeOptionButton);
 	add_meta_type->set_accessibility_name(TTRC("Type:"));
 
 	hbc->add_child(add_meta_type);
@@ -73,19 +76,8 @@ void AddMetadataDialog::_complete_init(const StringName &p_title) {
 
 	set_title(vformat(TTR("Add Metadata Property for \"%s\""), p_title));
 
-	// Skip if we already completed the initialization.
-	if (add_meta_type->get_item_count()) {
-		return;
-	}
-
-	// Theme icons can be retrieved only the Window has been initialized.
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
-			continue; //not editable by inspector.
-		}
-		String type = i == Variant::OBJECT ? String("Resource") : Variant::get_type_name(Variant::Type(i));
-
-		add_meta_type->add_icon_item(get_editor_theme_icon(type), type, i);
+	if (add_meta_type->get_item_count() == 0) {
+		add_meta_type->populate({ Variant::NIL }, { { Variant::OBJECT, "Resource" } });
 	}
 }
 
@@ -103,7 +95,7 @@ StringName AddMetadataDialog::get_meta_name() {
 Variant AddMetadataDialog::get_meta_defval() {
 	Variant defval;
 	Callable::CallError ce;
-	Variant::construct(Variant::Type(add_meta_type->get_selected_id()), defval, nullptr, 0, ce);
+	Variant::construct(add_meta_type->get_selected_type(), defval, nullptr, 0, ce);
 	return defval;
 }
 

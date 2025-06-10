@@ -397,6 +397,12 @@ void TextServerAdvanced::_free_rid(const RID &p_rid) {
 		MutexLock ftlock(ft_mutex);
 
 		FontAdvanced *fd = font_owner.get_or_null(p_rid);
+		for (const KeyValue<Vector2i, FontForSizeAdvanced *> &ffsd : fd->cache) {
+			OversamplingLevel *ol = oversampling_levels.getptr(ffsd.value->viewport_oversampling);
+			if (ol != nullptr) {
+				ol->fonts.erase(ffsd.value);
+			}
+		}
 		{
 			MutexLock lock(fd->mutex);
 			font_owner.free(p_rid);
@@ -847,17 +853,17 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		// Could not find texture to fit, create one.
 		int texsize = MAX(p_data->size.x * 0.125, 256);
 
-		texsize = next_power_of_2(texsize);
+		texsize = next_power_of_2((uint32_t)texsize);
 		if (p_msdf) {
 			texsize = MIN(texsize, 2048);
 		} else {
 			texsize = MIN(texsize, 1024);
 		}
 		if (mw > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2(mw);
+			texsize = next_power_of_2((uint32_t)mw);
 		}
 		if (mh > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2(mh);
+			texsize = next_power_of_2((uint32_t)mh);
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
@@ -1829,6 +1835,18 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 			}
 			p_font_data->face_init = true;
 		}
+
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+		if (p_font_data->font_name == ".Apple Color Emoji UI" || p_font_data->font_name == "Apple Color Emoji") {
+			// The baseline offset is missing from the Apple Color Emoji UI font data, so add it manually.
+			// This issue doesn't occur with other system emoji fonts.
+			if (!FT_Load_Glyph(fd->face, FT_Get_Char_Index(fd->face, 0x1F92E), FT_LOAD_DEFAULT | FT_LOAD_COLOR)) {
+				if (fd->face->glyph->metrics.horiBearingY == fd->face->glyph->metrics.height) {
+					p_font_data->baseline_offset = 0.15;
+				}
+			}
+		}
+#endif
 
 		// Write variations.
 		if (fd->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {

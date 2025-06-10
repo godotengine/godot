@@ -1206,7 +1206,8 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 	Rect2i rect(0, 0, 0, 0);
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_COND_V(p_screen < 0, rect);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
 
 	// Using Xinerama Extension.
 	bool found = false;
@@ -1294,9 +1295,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
-
-	// Check if screen is valid.
-	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i(0, 0, 0, 0));
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
 
 	bool is_multiscreen = screen_count > 1;
 
@@ -1600,7 +1599,8 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
 	//Get physical monitor Dimensions through XRandR and calculate dpi
 	Size2i sc = screen_get_size(p_screen);
@@ -1677,18 +1677,9 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	ERR_FAIL_COND_V(p_screen < 0, Ref<Image>());
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Ref<Image>());
 
 	if (xwayland) {
 		return Ref<Image>();
@@ -1794,7 +1785,8 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), SCREEN_REFRESH_RATE_FALLBACK);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	//Use xrandr to get screen refresh rate.
 	if (xrandr_ext_ok) {
@@ -1902,7 +1894,7 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, V
 void DisplayServerX11::show_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
-	const WindowData &wd = windows[p_id];
+	WindowData &wd = windows[p_id];
 	popup_open(p_id);
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
@@ -1910,6 +1902,76 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 	_validate_mode_on_map(p_id);
+
+	if (p_id == MAIN_WINDOW_ID) {
+		// Get main window size for boot splash drawing.
+		bool get_config_event = false;
+
+		// Search the X11 event queue for ConfigureNotify events and process all that are currently queued early.
+		{
+			MutexLock mutex_lock(events_mutex);
+
+			for (uint32_t event_index = 0; event_index < polled_events.size(); ++event_index) {
+				XEvent &config_event = polled_events[event_index];
+				if (config_event.type == ConfigureNotify) {
+					_window_changed(&config_event);
+					get_config_event = true;
+				}
+			}
+			XEvent config_event;
+			while (XCheckTypedEvent(x11_display, ConfigureNotify, &config_event)) {
+				_window_changed(&config_event);
+				get_config_event = true;
+			}
+		}
+
+		// Estimate maximize/full screen window size, ConfigureNotify may arrive only after maximize animation is finished.
+		if (!get_config_event && (wd.maximized || wd.fullscreen)) {
+			int screen = window_get_current_screen(p_id);
+			Size2i sz;
+			if (wd.maximized) {
+				sz = screen_get_usable_rect(screen).size;
+				if (!wd.borderless) {
+					Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+					if (prop != None) {
+						Atom type;
+						int format;
+						unsigned long len;
+						unsigned long remaining;
+						unsigned char *data = nullptr;
+						if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+							if (format == 32 && len == 4 && data) {
+								long *extents = (long *)data;
+								sz.width -= extents[0] + extents[1]; // left, right
+								sz.height -= extents[2] + extents[3]; // top, bottom
+							}
+							XFree(data);
+						}
+					}
+				}
+			} else {
+				sz = screen_get_size(screen);
+			}
+			if (sz == Size2i()) {
+				return;
+			}
+
+			wd.size = sz;
+#if defined(RD_ENABLED)
+			if (rendering_context) {
+				rendering_context->window_set_size(p_id, sz.width, sz.height);
+			}
+#endif
+#if defined(GLES3_ENABLED)
+			if (gl_manager) {
+				gl_manager->window_resize(p_id, sz.width, sz.height);
+			}
+			if (gl_manager_egl) {
+				gl_manager_egl->window_resize(p_id, sz.width, sz.height);
+			}
+#endif
+		}
+	}
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
@@ -2175,7 +2237,7 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 		return 0;
 	}
 
-	ERR_FAIL_COND_V(!windows.has(p_window), 0);
+	ERR_FAIL_COND_V(!windows.has(p_window), INVALID_SCREEN);
 	const WindowData &wd = windows[p_window];
 
 	const Rect2i window_rect(wd.position, wd.size);
@@ -2211,14 +2273,15 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX(p_screen, get_screen_count());
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	if (window_get_current_screen(p_window) == p_screen) {
 		return;
 	}
+	WindowData &wd = windows[p_window];
 
 	if (wd.embed_parent) {
 		print_line("Embedded window can't be moved to another screen.");
@@ -3628,6 +3691,7 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 }
 
 bool DisplayServerX11::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
 	WindowID window_id = last_focused_window;
 
 	if (!windows.has(window_id)) {
@@ -3636,6 +3700,9 @@ bool DisplayServerX11::color_picker(const Callable &p_callback) {
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
 	return portal_desktop->color_picker(xid, p_callback);
+#else
+	return false;
+#endif
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {

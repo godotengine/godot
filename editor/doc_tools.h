@@ -55,6 +55,6 @@ public:
 	Error save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_use_relative_schema = true);
 
 	Error _load(Ref<XMLParser> parser);
-	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size);
-	Error load_xml(const uint8_t *p_data, int p_size);
+	Error load_compressed(const uint8_t *p_data, int64_t p_compressed_size, int64_t p_uncompressed_size);
+	Error load_xml(const uint8_t *p_data, int64_t p_size);
 };

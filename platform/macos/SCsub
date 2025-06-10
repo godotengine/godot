@@ -11,6 +11,7 @@ files = [
     "godot_application_delegate.mm",
     "crash_handler_macos.mm",
     "macos_terminal_logger.mm",
+    "display_server_macos_base.mm",
     "display_server_embedded.mm",
     "display_server_macos.mm",
     "embedded_debugger.mm",

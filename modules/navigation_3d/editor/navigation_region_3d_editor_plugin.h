@@ -36,6 +36,7 @@
 
 class AcceptDialog;
 class Button;
+class ConfirmationDialog;
 class HBoxContainer;
 class Label;
 class NavigationRegion3D;
@@ -46,23 +47,38 @@ class NavigationRegion3DEditor : public Control {
 	GDCLASS(NavigationRegion3DEditor, Control);
 
 	AcceptDialog *err_dialog = nullptr;
+	ConfirmationDialog *multibake_dialog = nullptr;
 
 	HBoxContainer *bake_hbox = nullptr;
 	Button *button_bake = nullptr;
 	Button *button_reset = nullptr;
 	Label *bake_info = nullptr;
 
-	NavigationRegion3D *node = nullptr;
+	LocalVector<NavigationRegion3D *> selected_regions;
+
+	LocalVector<NavigationRegion3D *> regions_to_bake;
+	LocalVector<NavigationRegion3D *> regions_with_navmesh_to_bake;
+
+	int processed_regions_to_bake_count = 0;
+	int processed_regions_to_bake_count_max = 0;
+	bool region_baking_canceled = false;
+	NavigationRegion3D *currently_baking_region = nullptr;
+
+	bool bake_in_process = false;
 
 	void _bake_pressed();
 	void _clear_pressed();
+
+	void _on_navmesh_multibake_confirmed();
+	void _on_navmesh_multibake_canceled();
+	void _process_regions_to_bake();
 
 protected:
 	void _node_removed(Node *p_node);
 	void _notification(int p_what);
 
 public:
-	void edit(NavigationRegion3D *p_nav_region);
+	void edit(LocalVector<NavigationRegion3D *> p_regions);
 	NavigationRegion3DEditor();
 };
 

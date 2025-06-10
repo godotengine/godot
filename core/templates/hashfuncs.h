@@ -389,6 +389,13 @@ struct HashMapHasherDefault {
 		h = hash_murmur3_one_real(p_vec.w, h);
 		return hash_fmix32(h);
 	}
+	static _FORCE_INLINE_ uint32_t hash(const Color &p_vec) {
+		uint32_t h = hash_murmur3_one_float(p_vec.r);
+		h = hash_murmur3_one_float(p_vec.g, h);
+		h = hash_murmur3_one_float(p_vec.b, h);
+		h = hash_murmur3_one_float(p_vec.a, h);
+		return hash_fmix32(h);
+	}
 	static _FORCE_INLINE_ uint32_t hash(const Rect2i &p_rect) {
 		uint32_t h = hash_murmur3_one_32(uint32_t(p_rect.position.x));
 		h = hash_murmur3_one_32(uint32_t(p_rect.position.y), h);

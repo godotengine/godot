@@ -304,9 +304,21 @@ void Dictionary::clear() {
 	_p->variant_map.clear();
 }
 
+struct _DictionaryVariantSort {
+	_FORCE_INLINE_ bool operator()(const KeyValue<Variant, Variant> &p_l, const KeyValue<Variant, Variant> &p_r) const {
+		bool valid = false;
+		Variant res;
+		Variant::evaluate(Variant::OP_LESS, p_l.key, p_r.key, res, valid);
+		if (!valid) {
+			res = false;
+		}
+		return res;
+	}
+};
+
 void Dictionary::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
-	_p->variant_map.sort();
+	_p->variant_map.sort_custom<_DictionaryVariantSort>();
 }
 
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
@@ -569,7 +581,11 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 }
 
 Dictionary Dictionary::duplicate(bool p_deep) const {
-	return recursive_duplicate(p_deep, 0);
+	return recursive_duplicate(p_deep, RESOURCE_DEEP_DUPLICATE_NONE, 0);
+}
+
+Dictionary Dictionary::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode) const {
+	return recursive_duplicate(true, p_deep_subresources_mode, 0);
 }
 
 void Dictionary::make_read_only() {
@@ -581,7 +597,7 @@ bool Dictionary::is_read_only() const {
 	return _p->read_only != nullptr;
 }
 
-Dictionary Dictionary::recursive_duplicate(bool p_deep, int recursion_count) const {
+Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const {
 	Dictionary n;
 	n._p->typed_key = _p->typed_key;
 	n._p->typed_value = _p->typed_value;
@@ -592,9 +608,16 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, int recursion_count) con
 	}
 
 	if (p_deep) {
+		bool is_call_chain_end = recursion_count == 0;
+
 		recursion_count++;
 		for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-			n[E.key.recursive_duplicate(true, recursion_count)] = E.value.recursive_duplicate(true, recursion_count);
+			n[E.key.recursive_duplicate(true, p_deep_subresources_mode, recursion_count)] = E.value.recursive_duplicate(true, p_deep_subresources_mode, recursion_count);
+		}
+
+		// Variant::recursive_duplicate() may have created a remap cache by now.
+		if (is_call_chain_end) {
+			Resource::_teardown_duplicate_from_variant();
 		}
 	} else {
 		for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
@@ -641,6 +664,10 @@ bool Dictionary::is_typed_key() const {
 
 bool Dictionary::is_typed_value() const {
 	return _p->typed_value.type != Variant::NIL;
+}
+
+bool Dictionary::is_same_instance(const Dictionary &p_other) const {
+	return _p == p_other._p;
 }
 
 bool Dictionary::is_same_typed(const Dictionary &p_other) const {

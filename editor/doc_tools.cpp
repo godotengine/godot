@@ -141,7 +141,7 @@ static void merge_constructors(Vector<DocData::MethodDoc> &p_to, const Vector<Do
 				// the arguments so we make sure they are different.
 				int64_t arg_count = from.arguments.size();
 				Vector<bool> arg_used;
-				arg_used.resize_zeroed(arg_count);
+				arg_used.resize_initialized(arg_count);
 				// Also there is no guarantee that argument ordering will match,
 				// so we have to check one by one so we make sure we have an exact match.
 				for (int64_t arg_i = 0; arg_i < arg_count; ++arg_i) {
@@ -1798,10 +1798,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 	return OK;
 }
 
-Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size) {
+Error DocTools::load_compressed(const uint8_t *p_data, int64_t p_compressed_size, int64_t p_uncompressed_size) {
 	Vector<uint8_t> data;
 	data.resize(p_uncompressed_size);
-	int ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
+	const int64_t ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
 	ERR_FAIL_COND_V_MSG(ret == -1, ERR_FILE_CORRUPT, "Compressed file is corrupt.");
 	class_list.clear();
 
@@ -1816,7 +1816,7 @@ Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, in
 	return OK;
 }
 
-Error DocTools::load_xml(const uint8_t *p_data, int p_size) {
+Error DocTools::load_xml(const uint8_t *p_data, int64_t p_size) {
 	Ref<XMLParser> parser = memnew(XMLParser);
 	Error err = parser->_open_buffer(p_data, p_size);
 	if (err) {

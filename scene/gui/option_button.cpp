@@ -314,6 +314,10 @@ void OptionButton::set_item_count(int p_count) {
 		return;
 	}
 
+	if (current > p_count - 1) {
+		_select(p_count - 1, false);
+	}
+
 	popup->set_item_count(p_count);
 
 	if (p_count > count_old) {
@@ -621,6 +625,8 @@ void OptionButton::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &OptionButton::_dummy_setter, &OptionButton::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &OptionButton::_dummy_setter, &OptionButton::is_item_separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);
+
+	ADD_CLASS_DEPENDENCY("PopupMenu");
 }
 
 void OptionButton::set_disable_shortcuts(bool p_disabled) {

@@ -3129,6 +3129,13 @@ void GraphEdit::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, port_hotzone_inner_extent);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, port_hotzone_outer_extent);
+
+	ADD_CLASS_DEPENDENCY("Button");
+	ADD_CLASS_DEPENDENCY("GraphFrame");
+	ADD_CLASS_DEPENDENCY("GraphNode");
+	ADD_CLASS_DEPENDENCY("HScrollBar");
+	ADD_CLASS_DEPENDENCY("SpinBox");
+	ADD_CLASS_DEPENDENCY("VScrollBar");
 }
 
 GraphEdit::GraphEdit() {
@@ -3245,7 +3252,7 @@ GraphEdit::GraphEdit() {
 	toggle_grid_button->set_pressed(true);
 	toggle_grid_button->set_tooltip_text(ETR("Toggle the visual grid."));
 	toggle_grid_button->set_accessibility_name(ETR("Grid"));
-	toggle_grid_button->set_focus_mode(FOCUS_NONE);
+	toggle_grid_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	menu_hbox->add_child(toggle_grid_button);
 	toggle_grid_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_show_grid_toggled));
 
@@ -3256,7 +3263,7 @@ GraphEdit::GraphEdit() {
 	toggle_snapping_button->set_tooltip_text(ETR("Toggle snapping to the grid."));
 	toggle_snapping_button->set_accessibility_name(ETR("Snap to Grid"));
 	toggle_snapping_button->set_pressed(snapping_enabled);
-	toggle_snapping_button->set_focus_mode(FOCUS_NONE);
+	toggle_snapping_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	menu_hbox->add_child(toggle_snapping_button);
 	toggle_snapping_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_snapping_toggled));
 
@@ -3280,7 +3287,7 @@ GraphEdit::GraphEdit() {
 	minimap_button->set_tooltip_text(ETR("Toggle the graph minimap."));
 	minimap_button->set_accessibility_name(ETR("Minimap"));
 	minimap_button->set_pressed(show_grid);
-	minimap_button->set_focus_mode(FOCUS_NONE);
+	minimap_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	menu_hbox->add_child(minimap_button);
 	minimap_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_minimap_toggled));
 
@@ -3289,7 +3296,7 @@ GraphEdit::GraphEdit() {
 	arrange_button->set_visible(show_arrange_button);
 	arrange_button->set_accessibility_name(ETR("Auto Arrange"));
 	arrange_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::arrange_nodes));
-	arrange_button->set_focus_mode(FOCUS_NONE);
+	arrange_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	menu_hbox->add_child(arrange_button);
 	arrange_button->set_tooltip_text(ETR("Automatically arrange selected nodes."));
 

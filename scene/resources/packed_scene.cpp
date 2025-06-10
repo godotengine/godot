@@ -356,17 +356,17 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					} else {
 						Variant value = props[nprops[j].value];
 
-						// Making sure that instances of inherited scenes don't share the same
-						// reference between them.
-						if (is_inherited_scene) {
-							value = value.duplicate(true);
-						}
-
 						if (value.get_type() == Variant::OBJECT) {
 							//handle resources that are local to scene by duplicating them if needed
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
 								value = make_local_resource(value, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
+							}
+						} else {
+							// Making sure that instances of inherited scenes don't share the same
+							// reference between them.
+							if (is_inherited_scene) {
+								value = value.duplicate(true);
 							}
 						}
 
@@ -592,20 +592,21 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		Callable callable(cto, snames[c.method]);
 		if (c.unbinds > 0) {
 			callable = callable.unbind(c.unbinds);
-		} else if (!c.binds.is_empty()) {
-			Vector<Variant> binds;
-			if (c.binds.size()) {
-				binds.resize(c.binds.size());
+		} else {
+			Array binds;
+			if (c.flags & CONNECT_APPEND_SOURCE_OBJECT) {
+				binds.push_back(cfrom);
+			}
+
+			if (!c.binds.is_empty()) {
 				for (int j = 0; j < c.binds.size(); j++) {
-					binds.write[j] = props[c.binds[j]];
+					binds.push_back(props[c.binds[j]]);
 				}
 			}
 
-			const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * binds.size());
-			for (int j = 0; j < binds.size(); j++) {
-				argptrs[j] = &binds[j];
+			if (!binds.is_empty()) {
+				callable = callable.bindv(binds);
 			}
-			callable = callable.bindp(argptrs, binds.size());
 		}
 
 		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags | (p_edit_state == GEN_EDIT_STATE_MAIN ? 0 : CONNECT_INHERITED));
@@ -1079,6 +1080,12 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(c.callable.get_custom());
 				if (ccb) {
 					binds = ccb->get_binds();
+
+					// The source object may already be bound, ignore it to avoid saving the source object.
+					if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == binds[0])) {
+						binds.remove_at(0);
+					}
+
 					base_callable = ccb->get_callable();
 				}
 

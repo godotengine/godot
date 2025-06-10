@@ -503,23 +503,51 @@ int DisplayServerEmbedded::get_primary_screen() const {
 }
 
 Point2i DisplayServerEmbedded::screen_get_position(int p_screen) const {
-	return Size2i();
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
+	return Point2i(0, 0);
 }
 
 Size2i DisplayServerEmbedded::screen_get_size(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	return window_get_size(MAIN_WINDOW_ID);
 }
 
 Rect2i DisplayServerEmbedded::screen_get_usable_rect(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	return 96;
 }
 
 float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	p_screen = _get_screen_index(p_screen);
 	NSArray *screenArray = [NSScreen screens];
@@ -556,7 +584,10 @@ void DisplayServerEmbedded::window_set_title(const String &p_title, WindowID p_w
 }
 
 int DisplayServerEmbedded::window_get_current_screen(WindowID p_window) const {
-	return SCREEN_OF_MAIN_WINDOW;
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+
+	return 0;
 }
 
 void DisplayServerEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {

@@ -395,6 +395,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 		_folder_line_edit = memnew(LineEdit);
 		_folder_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		_folder_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
 		hbc->add_child(_folder_line_edit);
 
 		Button *folder_button = memnew(Button);

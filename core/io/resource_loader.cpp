@@ -296,7 +296,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
 		bool is_remapped_load = original_path == parent_task_path;
 		if (E && !is_remapped_load) {
-			E->value.sub_tasks.insert(p_original_path);
+			E->value.sub_tasks.insert(original_path);
 		}
 	}
 	load_paths_stack.push_back(original_path);
@@ -565,6 +565,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 
 Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user) {
 	String local_path = _validate_local_path(p_path);
+	ERR_FAIL_COND_V(local_path.is_empty(), Ref<ResourceLoader::LoadToken>());
 
 	bool ignoring_cache = p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 

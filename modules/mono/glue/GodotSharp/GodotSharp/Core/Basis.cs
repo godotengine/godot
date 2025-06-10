@@ -718,6 +718,20 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns this basis with each axis scaled by the corresponding component in the given <paramref name="scale"/>. The basis matrix's columns are multiplied by <paramref name="scale"/>'s components. This operation is a local scale (relative to self).
+        /// </summary>
+        /// <param name="scale">The scale to introduce.</param>
+        /// <returns>The scaled basis matrix.</returns>
+        public readonly Basis ScaledLocal(Vector3 scale)
+        {
+            Basis b = this;
+            b.Row0 *= scale;
+            b.Row1 *= scale;
+            b.Row2 *= scale;
+            return b;
+        }
+
+        /// <summary>
         /// Assuming that the matrix is a proper rotation matrix, slerp performs
         /// a spherical-linear interpolation with another rotation matrix.
         /// </summary>

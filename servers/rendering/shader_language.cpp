@@ -2339,7 +2339,7 @@ Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_vector_transform(const Vect
 
 	uint32_t ret_size = get_datatype_component_count(p_ret_type);
 	Vector<Scalar> value;
-	value.resize_zeroed(ret_size);
+	value.resize_initialized(ret_size);
 
 	Scalar *w = value.ptrw();
 	switch (p_ret_type) {
@@ -8532,7 +8532,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					DataType data_type;
 					bool is_const;
 
-					_find_identifier(p_block, false, p_function_info, tk.text, &data_type, nullptr, &is_const);
+					bool found = _find_identifier(p_block, false, p_function_info, tk.text, &data_type, nullptr, &is_const);
+					if (!found) {
+						_set_error(vformat(RTR("Undefined identifier '%s' in a case label."), String(tk.text)));
+						return ERR_PARSE_ERROR;
+					}
 					if (is_const && data_type == p_block->expected_type) {
 						correct_constant_expression = true;
 					}
@@ -9159,10 +9163,6 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 	uint64_t max_uniform_buffer_size = 65536;
 	int uniform_buffer_exceeded_line = -1;
 	bool check_device_limit_warnings = check_warnings && HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
-	// Can be false for internal shaders created in the process of initializing the engine.
-	if (RSG::utilities) {
-		max_uniform_buffer_size = RSG::utilities->get_maximum_uniform_buffer_size();
-	}
 #endif // DEBUG_ENABLED
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 

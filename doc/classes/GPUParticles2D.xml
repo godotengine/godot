@@ -73,7 +73,7 @@
 			[b]Note:[/b] Particles always have a spherical collision shape.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles2D.DrawOrder" default="1">
-			Particle draw order. Uses [enum DrawOrder] values.
+			Particle draw order.
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
 			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle unless all active particles have finished processing. Use the [signal finished] signal to be notified once all active particles finish processing.

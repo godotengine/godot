@@ -296,7 +296,7 @@
 			Ellipsis character used for text clipping.
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
-			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
+			Line fill alignment rules.
 		</member>
 		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="0.0">
 			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
@@ -314,7 +314,7 @@
 			If set to [code]true[/code] text will display invalid characters.
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
-			Sets the clipping behavior when the text exceeds the paragraph's set width. See [enum TextServer.OverrunBehavior] for a description of all modes.
+			The clipping behavior when the text exceeds the paragraph's set width.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="-1.0">
 			Paragraph width.
