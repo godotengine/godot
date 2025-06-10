@@ -272,7 +272,7 @@
 				[b]Note:[/b] You must implement [method _get_plugin_name] for the state to be stored and restored correctly.
 				[codeblock]
 				func _get_state():
-					var state = {"zoom": zoom, "preferred_color": my_color}
+					var state = { "zoom": zoom, "preferred_color": my_color }
 					return state
 				[/codeblock]
 			</description>
