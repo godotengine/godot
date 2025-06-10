@@ -201,6 +201,23 @@ class SceneImportSettingsData : public Object {
 	}
 };
 
+bool SceneImportSettingsDialog::_get_current(const StringName &p_name, Variant &r_ret) const {
+	if (scene_import_settings_data->_get(p_name, r_ret)) {
+		return true;
+	}
+	if (defaults.has(p_name)) {
+		r_ret = defaults[p_name];
+		return true;
+	}
+	return false;
+}
+
+void SceneImportSettingsDialog::_set_default(const StringName &p_name, const Variant &p_value) {
+	defaults[p_name] = p_value;
+	scene_import_settings_data->defaults[p_name] = p_value;
+	scene_import_settings_data->_set(p_name, p_value);
+}
+
 void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent) {
 	String import_id;
 	bool has_import_id = false;
@@ -232,6 +249,24 @@ void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material>
 
 	MaterialData &material_data = material_map[import_id];
 	ERR_FAIL_COND(p_material != material_data.material);
+
+	Variant value;
+	if (_get_current("materials/extract", value) && (int)value != 0) {
+		String spath = base_path.get_base_dir();
+		if (_get_current("materials/extract_path", value)) {
+			String extpath = value;
+			if (!extpath.is_empty()) {
+				spath = extpath;
+			}
+		}
+
+		String ext = ResourceImporterScene::material_extension[_get_current("materials/extract_format", value) ? (int)value : 0];
+		String path = spath.path_join(import_id.validate_filename() + ext);
+		String uid_path = ResourceUID::path_to_uid(path);
+		material_data.settings["use_external/enabled"] = true;
+		material_data.settings["use_external/path"] = uid_path;
+		material_data.settings["use_external/fallback_path"] = path;
+	}
 
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("StandardMaterial3D"));
 
@@ -1002,6 +1037,30 @@ void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name)
 			animation_loop_mode = static_cast<Animation::LoopMode>((int)settings[p_name]);
 		} else {
 			animation_loop_mode = Animation::LoopMode::LOOP_NONE;
+		}
+	}
+	if ((p_name == "use_external/enabled") || (p_name == "use_external/path") || (p_name == "use_external/fallback_path")) {
+		MaterialData &material_data = material_map[selected_id];
+		String spath = base_path.get_base_dir();
+		Variant value;
+		if (_get_current("materials/extract_path", value)) {
+			String extpath = value;
+			if (!extpath.is_empty()) {
+				spath = extpath;
+			}
+		}
+		String opath = material_data.settings.has("use_external/path") ? (String)material_data.settings["use_external/path"] : String();
+		if (opath.begins_with("uid://")) {
+			opath = ResourceUID::uid_to_path(opath);
+		}
+		String ext = ResourceImporterScene::material_extension[_get_current("materials/extract_format", value) ? (int)value : 0];
+		String npath = spath.path_join(selected_id.validate_filename() + ext);
+
+		if (!material_data.settings.has("use_external/enabled") || (bool)material_data.settings["use_external/enabled"] == false || opath != npath) {
+			if (_get_current("materials/extract", value) && (int)value != 0) {
+				print_line("Material settings changed, automatic material extraction disabled.");
+			}
+			_set_default("materials/extract", 0);
 		}
 	}
 }
