@@ -159,7 +159,6 @@ void DisplayServerMacOSBase::tts_stop() {
 
 DisplayServerMacOSBase::DisplayServerMacOSBase() {
 	// Init TTS
-	print_line("init tts");
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
 		initialize_tts();
