@@ -150,12 +150,6 @@ static void _add_qualifiers_to_rt(const String &p_qualifiers, RichTextLabel *p_r
 			hint = TTR("This method is called by the engine.\nIt can be overridden to customize built-in behavior.");
 		} else if (qualifier == "required") {
 			hint = TTR("This method is required to be overridden when extending its base class.");
-		} else if (qualifier == "virtual_annotated") {
-			hint = TTR("This method is annotated to be allowed be overridden to customize user-defined behavior.");
-			qualifier = "virtual";
-		} else if (qualifier == "virtual_annotated_underscored") {
-			hint = TTR("This method is annotated to be called by user-defined behavior.\nIt can be overridden to customize new behavior.");
-			qualifier = "virtual";
 		} else if (qualifier == "const") {
 			hint = TTR("This method has no side effects.\nIt does not modify the object in any way.");
 		} else if (qualifier == "static") {

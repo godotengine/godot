@@ -167,7 +167,7 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The method "%s()" overrides a non-virtual method from the base class. This may cause unexpected and unsafe behaviors.)*", symbols[0]);
 		case OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION:
 			CHECK_SYMBOLS(1);
-			return vformat(R"*(The method "%s()" overrides a virtual method from the base class without the "@override" annotation. Annotating the method with the annotation can better help you understand and clarify the code structure.)*", symbols[0]);
+			return vformat(R"*(The method "%s()" overrides a virtual or an abstract method from the base class without the "@override" annotation. Annotating the method with the annotation can better help you understand and clarify the code structure.)*", symbols[0]);
 		case OVERRIDE_INEXISTENT_METHOD_FROM_BASE:
 			CHECK_SYMBOLS(1);
 			return vformat(R"*(The method "%s()" is annotated with the "@override" annotation, but the method is not found in the base class. Consider removing the "@override" annotation in this case.)*", symbols[0]);

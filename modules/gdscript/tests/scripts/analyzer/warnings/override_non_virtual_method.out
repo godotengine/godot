@@ -1,4 +1,5 @@
 GDTEST_OK
 ~~ WARNING at line 10: (OVERRIDE_NON_VIRTUAL_METHOD) The method "test()" overrides a non-virtual method from the base class. This may cause unexpected and unsafe behaviors.
-~~ WARNING at line 14: (OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION) The method "test()" overrides a virtual method from the base class without the "@override" annotation. Annotating the method with the annotation can better help you understand and clarify the code structure.
+~~ WARNING at line 14: (OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION) The method "test()" overrides a virtual or an abstract method from the base class without the "@override" annotation. Annotating the method with the annotation can better help you understand and clarify the code structure.
 ~~ WARNING at line 23: (OVERRIDE_INEXISTENT_METHOD_FROM_BASE) The method "test_()" is annotated with the "@override" annotation, but the method is not found in the base class. Consider removing the "@override" annotation in this case.
+~~ WARNING at line 31: (OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION) The method "test()" overrides a virtual or an abstract method from the base class without the "@override" annotation. Annotating the method with the annotation can better help you understand and clarify the code structure.
