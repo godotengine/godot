@@ -9,12 +9,15 @@
 	</description>
 	<tutorials>
 		<link title="Using InputEvent: Actions">$DOCS_URL/tutorials/inputs/inputevent.html#actions</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<members>
 		<member name="action" type="StringName" setter="set_action" getter="get_action" default="&amp;&quot;&quot;">
-			The action's name. Actions are accessed via this [String].
+			The action's name. This is usually the name of an existing action in the [InputMap] which you want this custom event to match.
+		</member>
+		<member name="event_index" type="int" setter="set_event_index" getter="get_event_index" default="-1">
+			The real event index in action this event corresponds to (from events defined for this action in the [InputMap]). If [code]-1[/code], a unique ID will be used and actions pressed with this ID will need to be released with another [InputEventAction].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the action's state is pressed. If [code]false[/code], the action's state is released.

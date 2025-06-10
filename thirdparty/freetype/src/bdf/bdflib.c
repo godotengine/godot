@@ -864,14 +864,8 @@
 
     p = font->user_props + font->nuser_props;
 
-    n = ft_strlen( name ) + 1;
-    if ( n > FT_LONG_MAX )
-      return FT_THROW( Invalid_Argument );
-
-    if ( FT_QALLOC( p->name, n ) )
+    if ( FT_STRDUP( p->name, name ) )
       goto Exit;
-
-    FT_MEM_COPY( (char *)p->name, name, n );
 
     p->format     = format;
     p->builtin    = 0;
@@ -1442,10 +1436,8 @@
         goto Exit;
       }
 
-      if ( FT_QALLOC( p->glyph_name, slen + 1 ) )
+      if ( FT_DUP( p->glyph_name, s, slen + 1 ) )
         goto Exit;
-
-      FT_MEM_COPY( p->glyph_name, s, slen + 1 );
 
       p->flags |= BDF_GLYPH_;
 
@@ -2051,9 +2043,8 @@
       /* Allowing multiple `FONT' lines (which is invalid) doesn't hurt... */
       FT_FREE( p->font->name );
 
-      if ( FT_QALLOC( p->font->name, slen + 1 ) )
+      if ( FT_DUP( p->font->name, s, slen + 1 ) )
         goto Exit;
-      FT_MEM_COPY( p->font->name, s, slen + 1 );
 
       /* If the font name is an XLFD name, set the spacing to the one in  */
       /* the font name.  If there is no spacing fall back on the default. */

@@ -83,6 +83,11 @@ public:
         const char* featureDesc);
     virtual void ppRequireExtensions(const TSourceLoc&, int numExtensions, const char* const extensions[],
         const char* featureDesc);
+    template<typename Container>
+    constexpr void ppRequireExtensions(const TSourceLoc& loc, Container extensions, const char* featureDesc) {
+        ppRequireExtensions(loc, static_cast<int>(extensions.size()), extensions.data(), featureDesc);
+    }
+
     virtual TExtensionBehavior getExtensionBehavior(const char*);
     virtual bool extensionTurnedOn(const char* const extension);
     virtual bool extensionsTurnedOn(int numExtensions, const char* const extensions[]);

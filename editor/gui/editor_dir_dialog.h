@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DIR_DIALOG_H
-#define EDITOR_DIR_DIALOG_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -53,10 +52,10 @@ class EditorDirDialog : public ConfirmationDialog {
 
 	void _item_collapsed(Object *p_item);
 	void _item_activated();
-	void _update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
+	void _update_dir(const Color &p_default_folder_color, const Dictionary &p_assigned_folder_colors, const HashMap<String, Color> &p_folder_colors, bool p_is_dark_theme, TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
 
 	void _make_dir();
-	void _make_dir_confirm(const String &p_path);
+	void _make_dir_confirm(const String &p_path, const String &p_base_dir);
 
 	void _copy_pressed();
 	void ok_pressed() override;
@@ -73,5 +72,3 @@ public:
 
 	EditorDirDialog();
 };
-
-#endif // EDITOR_DIR_DIALOG_H

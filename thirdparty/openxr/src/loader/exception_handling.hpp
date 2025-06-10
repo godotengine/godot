@@ -1,8 +1,8 @@
-// Copyright (c) 2019-2023, The Khronos Group Inc.
+// Copyright (c) 2019-2025 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Initial Author: Ryan Pavlik <ryan.pavlik@collabora.com>
+// Initial Author: Rylie Pavlik <rylie.pavlik@collabora.com>
 //
 // Provides protection for C ABI functions if standard library functions may throw.
 

@@ -6,6 +6,7 @@
 
 // This work is based on:
 // John McDonald, Mark Kilgard. Crack-Free Point-Normal Triangles using Adjacent Edge Normals. 2010
+// John Hable. Variable Rate Shading with Visibility Buffer Rendering. 2024
 namespace meshopt
 {
 
@@ -575,4 +576,100 @@ void meshopt_generateTessellationIndexBuffer(unsigned int* destination, const un
 
 		memcpy(destination + i * 4, patch, sizeof(patch));
 	}
+}
+
+size_t meshopt_generateProvokingIndexBuffer(unsigned int* destination, unsigned int* reorder, const unsigned int* indices, size_t index_count, size_t vertex_count)
+{
+	assert(index_count % 3 == 0);
+
+	meshopt_Allocator allocator;
+
+	unsigned int* remap = allocator.allocate<unsigned int>(vertex_count);
+	memset(remap, -1, vertex_count * sizeof(unsigned int));
+
+	// compute vertex valence; this is used to prioritize least used corner
+	// note: we use 8-bit counters for performance; for outlier vertices the valence is incorrect but that just affects the heuristic
+	unsigned char* valence = allocator.allocate<unsigned char>(vertex_count);
+	memset(valence, 0, vertex_count);
+
+	for (size_t i = 0; i < index_count; ++i)
+	{
+		unsigned int index = indices[i];
+		assert(index < vertex_count);
+
+		valence[index]++;
+	}
+
+	unsigned int reorder_offset = 0;
+
+	// assign provoking vertices; leave the rest for the next pass
+	for (size_t i = 0; i < index_count; i += 3)
+	{
+		unsigned int a = indices[i + 0], b = indices[i + 1], c = indices[i + 2];
+		assert(a < vertex_count && b < vertex_count && c < vertex_count);
+
+		// try to rotate triangle such that provoking vertex hasn't been seen before
+		// if multiple vertices are new, prioritize the one with least valence
+		// this reduces the risk that a future triangle will have all three vertices seen
+		unsigned int va = remap[a] == ~0u ? valence[a] : ~0u;
+		unsigned int vb = remap[b] == ~0u ? valence[b] : ~0u;
+		unsigned int vc = remap[c] == ~0u ? valence[c] : ~0u;
+
+		if (vb != ~0u && vb <= va && vb <= vc)
+		{
+			// abc -> bca
+			unsigned int t = a;
+			a = b, b = c, c = t;
+		}
+		else if (vc != ~0u && vc <= va && vc <= vb)
+		{
+			// abc -> cab
+			unsigned int t = c;
+			c = b, b = a, a = t;
+		}
+
+		unsigned int newidx = reorder_offset;
+
+		// now remap[a] = ~0u or all three vertices are old
+		// recording remap[a] makes it possible to remap future references to the same index, conserving space
+		if (remap[a] == ~0u)
+			remap[a] = newidx;
+
+		// we need to clone the provoking vertex to get a unique index
+		// if all three are used the choice is arbitrary since no future triangle will be able to reuse any of these
+		reorder[reorder_offset++] = a;
+
+		// note: first vertex is final, the other two will be fixed up in next pass
+		destination[i + 0] = newidx;
+		destination[i + 1] = b;
+		destination[i + 2] = c;
+
+		// update vertex valences for corner heuristic
+		valence[a]--;
+		valence[b]--;
+		valence[c]--;
+	}
+
+	// remap or clone non-provoking vertices (iterating to skip provoking vertices)
+	int step = 1;
+
+	for (size_t i = 1; i < index_count; i += step, step ^= 3)
+	{
+		unsigned int index = destination[i];
+
+		if (remap[index] == ~0u)
+		{
+			// we haven't seen the vertex before as a provoking vertex
+			// to maintain the reference to the original vertex we need to clone it
+			unsigned int newidx = reorder_offset;
+
+			remap[index] = newidx;
+			reorder[reorder_offset++] = index;
+		}
+
+		destination[i] = remap[index];
+	}
+
+	assert(reorder_offset <= vertex_count + index_count / 3);
+	return reorder_offset;
 }

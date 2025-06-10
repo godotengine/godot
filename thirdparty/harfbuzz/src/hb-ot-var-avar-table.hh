@@ -57,7 +57,7 @@ struct avarV2Tail
 
   protected:
   Offset32To<DeltaSetIndexMap>	varIdxMap;	/* Offset from the beginning of 'avar' table. */
-  Offset32To<VariationStore>	varStore;	/* Offset from the beginning of 'avar' table. */
+  Offset32To<ItemVariationStore>	varStore;	/* Offset from the beginning of 'avar' table. */
 
   public:
   DEFINE_SIZE_STATIC (8);
@@ -80,7 +80,7 @@ struct AxisValueMap
 
   bool is_outside_axis_range (const Triple& axis_range) const
   {
-    float from_coord = coords[0].to_float ();
+    double from_coord = (double) coords[0].to_float ();
     return !axis_range.contains (from_coord);
   }
 
@@ -100,8 +100,8 @@ struct AxisValueMap
     float from_coord = coords[0].to_float ();
     float to_coord = coords[1].to_float ();
 
-    from_coord = renormalizeValue (from_coord, unmapped_range, triple_distances);
-    to_coord = renormalizeValue (to_coord, axis_range, triple_distances);
+    from_coord = renormalizeValue ((double) from_coord, unmapped_range, triple_distances);
+    to_coord = renormalizeValue ((double) to_coord, axis_range, triple_distances);
 
     coords[0].set_float (from_coord);
     coords[1].set_float (to_coord);
@@ -197,7 +197,7 @@ struct SegmentMaps : Array16Of<AxisValueMap>
     unmapped_val.set_int (unmap (val.to_int ()));
     float unmapped_max = unmapped_val.to_float ();
 
-    return Triple{unmapped_min, unmapped_middle, unmapped_max};
+    return Triple{(double) unmapped_min, (double) unmapped_middle, (double) unmapped_max};
   }
 
   bool subset (hb_subset_context_t *c, hb_tag_t axis_tag) const
@@ -230,7 +230,7 @@ struct SegmentMaps : Array16Of<AxisValueMap>
        * duplicates here */
       if (mapping.must_include ())
         continue;
-      value_mappings.push (std::move (mapping));
+      value_mappings.push (mapping);
     }
 
     AxisValueMap m;
@@ -273,6 +273,7 @@ struct avar
   {
     TRACE_SANITIZE (this);
     if (!(version.sanitize (c) &&
+	  hb_barrier () &&
 	  (version.major == 1
 #ifndef HB_NO_AVAR2
 	   || version.major == 2
@@ -293,6 +294,7 @@ struct avar
 #ifndef HB_NO_AVAR2
     if (version.major < 2)
       return_trace (true);
+    hb_barrier ();
 
     const auto &v2 = * (const avarV2Tail *) map;
     if (unlikely (!v2.sanitize (c, this)))
@@ -316,6 +318,7 @@ struct avar
 #ifndef HB_NO_AVAR2
     if (version.major < 2)
       return;
+    hb_barrier ();
 
     for (; count < axisCount; count++)
       map = &StructAfter<SegmentMaps> (*map);
@@ -340,7 +343,7 @@ struct avar
     for (unsigned i = 0; i < coords_length; i++)
       coords[i] = out[i];
 
-    OT::VariationStore::destroy_cache (var_store_cache);
+    OT::ItemVariationStore::destroy_cache (var_store_cache);
 #endif
   }
 

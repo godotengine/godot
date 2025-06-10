@@ -17,10 +17,10 @@ namespace GodotTools.Build
 {
     public static class BuildSystem
     {
-        private static Process LaunchBuild(BuildInfo buildInfo, Action<string> stdOutHandler,
-            Action<string> stdErrHandler)
+        private static Process LaunchBuild(BuildInfo buildInfo, Action<string?>? stdOutHandler,
+            Action<string?>? stdErrHandler)
         {
-            string dotnetPath = DotNetFinder.FindDotNetExe();
+            string? dotnetPath = DotNetFinder.FindDotNetExe();
 
             if (dotnetPath == null)
                 throw new FileNotFoundException("Cannot find the dotnet executable.");
@@ -67,7 +67,7 @@ namespace GodotTools.Build
             return process;
         }
 
-        public static int Build(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        public static int Build(BuildInfo buildInfo, Action<string?>? stdOutHandler, Action<string?>? stdErrHandler)
         {
             using (var process = LaunchBuild(buildInfo, stdOutHandler, stdErrHandler))
             {
@@ -77,8 +77,8 @@ namespace GodotTools.Build
             }
         }
 
-        public static async Task<int> BuildAsync(BuildInfo buildInfo, Action<string> stdOutHandler,
-            Action<string> stdErrHandler)
+        public static async Task<int> BuildAsync(BuildInfo buildInfo, Action<string?>? stdOutHandler,
+            Action<string?>? stdErrHandler)
         {
             using (var process = LaunchBuild(buildInfo, stdOutHandler, stdErrHandler))
             {
@@ -88,10 +88,10 @@ namespace GodotTools.Build
             }
         }
 
-        private static Process LaunchPublish(BuildInfo buildInfo, Action<string> stdOutHandler,
-            Action<string> stdErrHandler)
+        private static Process LaunchPublish(BuildInfo buildInfo, Action<string?>? stdOutHandler,
+            Action<string?>? stdErrHandler)
         {
-            string dotnetPath = DotNetFinder.FindDotNetExe();
+            string? dotnetPath = DotNetFinder.FindDotNetExe();
 
             if (dotnetPath == null)
                 throw new FileNotFoundException("Cannot find the dotnet executable.");
@@ -137,7 +137,7 @@ namespace GodotTools.Build
             return process;
         }
 
-        public static int Publish(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        public static int Publish(BuildInfo buildInfo, Action<string?>? stdOutHandler, Action<string?>? stdErrHandler)
         {
             using (var process = LaunchPublish(buildInfo, stdOutHandler, stdErrHandler))
             {
@@ -297,7 +297,7 @@ namespace GodotTools.Build
         }
 
         private static Process DoGenerateXCFramework(List<string> outputPaths, string xcFrameworkPath,
-            Action<string> stdOutHandler, Action<string> stdErrHandler)
+            Action<string?>? stdOutHandler, Action<string?>? stdErrHandler)
         {
             if (Directory.Exists(xcFrameworkPath))
             {
@@ -341,7 +341,7 @@ namespace GodotTools.Build
             return process;
         }
 
-        public static int GenerateXCFramework(List<string> outputPaths, string xcFrameworkPath, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        public static int GenerateXCFramework(List<string> outputPaths, string xcFrameworkPath, Action<string?>? stdOutHandler, Action<string?>? stdErrHandler)
         {
             using (var process = DoGenerateXCFramework(outputPaths, xcFrameworkPath, stdOutHandler, stdErrHandler))
             {

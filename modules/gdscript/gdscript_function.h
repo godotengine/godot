@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_FUNCTION_H
-#define GDSCRIPT_FUNCTION_H
+#pragma once
 
 #include "gdscript_utility_functions.h"
 
@@ -78,17 +77,52 @@ public:
 				if (valid && builtin_type == Variant::ARRAY && has_container_element_type(0)) {
 					Array array = p_variant;
 					if (array.is_typed()) {
-						GDScriptDataType array_container_type = get_container_element_type(0);
+						const GDScriptDataType &elem_type = container_element_types[0];
 						Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
 						StringName array_native_type = array.get_typed_class_name();
 						Ref<Script> array_script_type_ref = array.get_typed_script();
 
 						if (array_script_type_ref.is_valid()) {
-							valid = (array_container_type.kind == SCRIPT || array_container_type.kind == GDSCRIPT) && array_container_type.script_type == array_script_type_ref.ptr();
+							valid = (elem_type.kind == SCRIPT || elem_type.kind == GDSCRIPT) && elem_type.script_type == array_script_type_ref.ptr();
 						} else if (array_native_type != StringName()) {
-							valid = array_container_type.kind == NATIVE && array_container_type.native_type == array_native_type;
+							valid = elem_type.kind == NATIVE && elem_type.native_type == array_native_type;
 						} else {
-							valid = array_container_type.kind == BUILTIN && array_container_type.builtin_type == array_builtin_type;
+							valid = elem_type.kind == BUILTIN && elem_type.builtin_type == array_builtin_type;
+						}
+					} else {
+						valid = false;
+					}
+				} else if (valid && builtin_type == Variant::DICTIONARY && has_container_element_types()) {
+					Dictionary dictionary = p_variant;
+					if (dictionary.is_typed()) {
+						if (dictionary.is_typed_key()) {
+							GDScriptDataType key = get_container_element_type_or_variant(0);
+							Variant::Type key_builtin_type = (Variant::Type)dictionary.get_typed_key_builtin();
+							StringName key_native_type = dictionary.get_typed_key_class_name();
+							Ref<Script> key_script_type_ref = dictionary.get_typed_key_script();
+
+							if (key_script_type_ref.is_valid()) {
+								valid = (key.kind == SCRIPT || key.kind == GDSCRIPT) && key.script_type == key_script_type_ref.ptr();
+							} else if (key_native_type != StringName()) {
+								valid = key.kind == NATIVE && key.native_type == key_native_type;
+							} else {
+								valid = key.kind == BUILTIN && key.builtin_type == key_builtin_type;
+							}
+						}
+
+						if (valid && dictionary.is_typed_value()) {
+							GDScriptDataType value = get_container_element_type_or_variant(1);
+							Variant::Type value_builtin_type = (Variant::Type)dictionary.get_typed_value_builtin();
+							StringName value_native_type = dictionary.get_typed_value_class_name();
+							Ref<Script> value_script_type_ref = dictionary.get_typed_value_script();
+
+							if (value_script_type_ref.is_valid()) {
+								valid = (value.kind == SCRIPT || value.kind == GDSCRIPT) && value.script_type == value_script_type_ref.ptr();
+							} else if (value_native_type != StringName()) {
+								valid = value.kind == NATIVE && value.native_type == value_native_type;
+							} else {
+								valid = value.kind == BUILTIN && value.builtin_type == value_builtin_type;
+							}
 						}
 					} else {
 						valid = false;
@@ -147,6 +181,29 @@ public:
 		return false;
 	}
 
+	bool can_contain_object() const {
+		if (has_type && kind == BUILTIN) {
+			switch (builtin_type) {
+				case Variant::ARRAY:
+					if (has_container_element_type(0)) {
+						return container_element_types[0].can_contain_object();
+					}
+					return true;
+				case Variant::DICTIONARY:
+					if (has_container_element_types()) {
+						return get_container_element_type_or_variant(0).can_contain_object() || get_container_element_type_or_variant(1).can_contain_object();
+					}
+					return true;
+				case Variant::NIL:
+				case Variant::OBJECT:
+					return true;
+				default:
+					return false;
+			}
+		}
+		return true;
+	}
+
 	void set_container_element_type(int p_index, const GDScriptDataType &p_element_type) {
 		ERR_FAIL_COND(p_index < 0);
 		while (p_index >= container_element_types.size()) {
@@ -201,6 +258,7 @@ public:
 		OPCODE_OPERATOR_VALIDATED,
 		OPCODE_TYPE_TEST_BUILTIN,
 		OPCODE_TYPE_TEST_ARRAY,
+		OPCODE_TYPE_TEST_DICTIONARY,
 		OPCODE_TYPE_TEST_NATIVE,
 		OPCODE_TYPE_TEST_SCRIPT,
 		OPCODE_SET_KEYED,
@@ -218,10 +276,12 @@ public:
 		OPCODE_SET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_GET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_ASSIGN,
+		OPCODE_ASSIGN_NULL,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
 		OPCODE_ASSIGN_TYPED_BUILTIN,
 		OPCODE_ASSIGN_TYPED_ARRAY,
+		OPCODE_ASSIGN_TYPED_DICTIONARY,
 		OPCODE_ASSIGN_TYPED_NATIVE,
 		OPCODE_ASSIGN_TYPED_SCRIPT,
 		OPCODE_CAST_TO_BUILTIN,
@@ -232,6 +292,7 @@ public:
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_TYPED_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
+		OPCODE_CONSTRUCT_TYPED_DICTIONARY,
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
@@ -244,6 +305,8 @@ public:
 		OPCODE_CALL_METHOD_BIND_RET,
 		OPCODE_CALL_BUILTIN_STATIC,
 		OPCODE_CALL_NATIVE_STATIC,
+		OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN,
+		OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN,
 		OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN,
 		OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN,
 		OPCODE_AWAIT,
@@ -258,6 +321,7 @@ public:
 		OPCODE_RETURN,
 		OPCODE_RETURN_TYPED_BUILTIN,
 		OPCODE_RETURN_TYPED_ARRAY,
+		OPCODE_RETURN_TYPED_DICTIONARY,
 		OPCODE_RETURN_TYPED_NATIVE,
 		OPCODE_RETURN_TYPED_SCRIPT,
 		OPCODE_ITERATE_BEGIN,
@@ -279,7 +343,9 @@ public:
 		OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY,
 		OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,
 		OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_VECTOR4_ARRAY,
 		OPCODE_ITERATE_BEGIN_OBJECT,
+		OPCODE_ITERATE_BEGIN_RANGE,
 		OPCODE_ITERATE,
 		OPCODE_ITERATE_INT,
 		OPCODE_ITERATE_FLOAT,
@@ -299,7 +365,9 @@ public:
 		OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,
 		OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,
 		OPCODE_ITERATE_PACKED_COLOR_ARRAY,
+		OPCODE_ITERATE_PACKED_VECTOR4_ARRAY,
 		OPCODE_ITERATE_OBJECT,
+		OPCODE_ITERATE_RANGE,
 		OPCODE_STORE_GLOBAL,
 		OPCODE_STORE_NAMED_GLOBAL,
 		OPCODE_TYPE_ADJUST_BOOL,
@@ -339,6 +407,7 @@ public:
 		OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY,
 		OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY,
 		OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY,
+		OPCODE_TYPE_ADJUST_PACKED_VECTOR4_ARRAY,
 		OPCODE_ASSERT,
 		OPCODE_BREAKPOINT,
 		OPCODE_LINE,
@@ -389,6 +458,7 @@ private:
 	GDScript *_script = nullptr;
 	int _initial_line = 0;
 	int _argument_count = 0;
+	int _vararg_index = -1;
 	int _stack_size = 0;
 	int _instruction_args_size = 0;
 
@@ -484,7 +554,8 @@ private:
 	} profile;
 #endif
 
-	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
+	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
+	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
@@ -499,7 +570,6 @@ public:
 #endif
 		Vector<uint8_t> stack;
 		int stack_size = 0;
-		uint32_t alloca_size = 0;
 		int ip = 0;
 		int line = 0;
 		int defarg = 0;
@@ -510,7 +580,9 @@ public:
 	_FORCE_INLINE_ StringName get_source() const { return source; }
 	_FORCE_INLINE_ GDScript *get_script() const { return _script; }
 	_FORCE_INLINE_ bool is_static() const { return _static; }
+	_FORCE_INLINE_ bool is_vararg() const { return _vararg_index >= 0; }
 	_FORCE_INLINE_ MethodInfo get_method_info() const { return method_info; }
+	_FORCE_INLINE_ int get_argument_count() const { return _argument_count; }
 	_FORCE_INLINE_ Variant get_rpc_config() const { return rpc_config; }
 	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
 
@@ -547,11 +619,16 @@ public:
 	bool is_valid(bool p_extended_check = false) const;
 	Variant resume(const Variant &p_arg = Variant());
 
+#ifdef DEBUG_ENABLED
+	// Returns a human-readable representation of the function.
+	String get_readable_function() {
+		return state.function_name;
+	}
+#endif
+
 	void _clear_stack();
 	void _clear_connections();
 
 	GDScriptFunctionState();
 	~GDScriptFunctionState();
 };
-
-#endif // GDSCRIPT_FUNCTION_H

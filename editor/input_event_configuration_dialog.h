@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_EVENT_CONFIGURATION_DIALOG_H
-#define INPUT_EVENT_CONFIGURATION_DIALOG_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -86,7 +85,12 @@ private:
 #else
 	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Meta" };
 #endif
-	String mods_tip[MOD_MAX] = { "Alt or Option key", "Shift key", "Control key", "Meta/Windows or Command key" };
+	String mods_tip[MOD_MAX] = {
+		TTRC("Alt or Option key"),
+		TTRC("Shift key"),
+		TTRC("Control key"),
+		TTRC("Meta/Windows or Command key"),
+	};
 
 	CheckBox *mod_checkboxes[MOD_MAX];
 	CheckBox *autoremap_command_or_control_checkbox = nullptr;
@@ -99,17 +103,21 @@ private:
 
 	OptionButton *key_mode = nullptr;
 
+	HBoxContainer *location_container = nullptr;
+	OptionButton *key_location = nullptr;
+
 	void _set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection = true);
 	void _on_listen_input_changed(const Ref<InputEvent> &p_event);
-	void _on_listen_focus_changed();
 
 	void _search_term_updated(const String &p_term);
 	void _update_input_list();
+	void _input_list_item_activated();
 	void _input_list_item_selected();
 
 	void _mod_toggled(bool p_checked, int p_index);
 	void _autoremap_command_or_control_toggled(bool p_checked);
 	void _key_mode_selected(int p_mode);
+	void _key_location_selected(int p_location);
 
 	void _device_selection_changed(int p_option_button_index);
 	void _set_current_device(int p_device);
@@ -128,5 +136,3 @@ public:
 
 	InputEventConfigurationDialog();
 };
-
-#endif // INPUT_EVENT_CONFIGURATION_DIALOG_H

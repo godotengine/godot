@@ -4,7 +4,7 @@
  *
  *   FreeType high-level API and common types (specification only).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1322,9 +1322,13 @@ FT_BEGIN_HEADER
    *   FT_FACE_FLAG_KERNING ::
    *     The face contains kerning information.  If set, the kerning distance
    *     can be retrieved using the function @FT_Get_Kerning.  Otherwise the
-   *     function always returns the vector (0,0).  Note that FreeType
-   *     doesn't handle kerning data from the SFNT 'GPOS' table (as present
-   *     in many OpenType fonts).
+   *     function always returns the vector (0,0).
+   *
+   *     Note that for TrueType fonts only, FreeType supports both the 'kern'
+   *     table and the basic, pair-wise kerning feature from the 'GPOS' table
+   *     (with `TT_CONFIG_OPTION_GPOS_KERNING` enabled), though FreeType does
+   *     not support the more advanced GPOS layout features; use a library
+   *     like HarfBuzz for those instead.
    *
    *   FT_FACE_FLAG_FAST_GLYPHS ::
    *     THIS FLAG IS DEPRECATED.  DO NOT USE OR TEST IT.
@@ -3767,86 +3771,17 @@ FT_BEGIN_HEADER
    *     pixels and use the @FT_PIXEL_MODE_LCD_V mode.
    *
    *   FT_RENDER_MODE_SDF ::
-   *     This mode corresponds to 8-bit, single-channel signed distance field
-   *     (SDF) bitmaps.  Each pixel in the SDF grid is the value from the
-   *     pixel's position to the nearest glyph's outline.  The distances are
-   *     calculated from the center of the pixel and are positive if they are
-   *     filled by the outline (i.e., inside the outline) and negative
-   *     otherwise.  Check the note below on how to convert the output values
-   *     to usable data.
+   *     The positive (unsigned) 8-bit bitmap values can be converted to the
+   *     single-channel signed distance field (SDF) by subtracting 128, with
+   *     the positive and negative results corresponding to the inside and
+   *     the outside of a glyph contour, respectively.  The distance units are
+   *     arbitrarily determined by an adjustable @spread property.
    *
    * @note:
-   *   The selected render mode only affects vector glyphs of a font.
+   *   The selected render mode only affects scalable vector glyphs of a font.
    *   Embedded bitmaps often have a different pixel mode like
    *   @FT_PIXEL_MODE_MONO.  You can use @FT_Bitmap_Convert to transform them
    *   into 8-bit pixmaps.
-   *
-   *   For @FT_RENDER_MODE_SDF the output bitmap buffer contains normalized
-   *   distances that are packed into unsigned 8-bit values.  To get pixel
-   *   values in floating point representation use the following pseudo-C
-   *   code for the conversion.
-   *
-   *   ```
-   *   // Load glyph and render using FT_RENDER_MODE_SDF,
-   *   // then use the output buffer as follows.
-   *
-   *   ...
-   *   FT_Byte  buffer = glyph->bitmap->buffer;
-   *
-   *
-   *   for pixel in buffer
-   *   {
-   *     // `sd` is the signed distance and `spread` is the current spread;
-   *     // the default spread is 2 and can be changed.
-   *
-   *     float  sd = (float)pixel - 128.0f;
-   *
-   *
-   *     // Convert to pixel values.
-   *     sd = ( sd / 128.0f ) * spread;
-   *
-   *     // Store `sd` in a buffer or use as required.
-   *   }
-   *
-   *   ```
-   *
-   *   FreeType has two rasterizers for generating SDF, namely:
-   *
-   *   1. `sdf` for generating SDF directly from glyph's outline, and
-   *
-   *   2. `bsdf` for generating SDF from rasterized bitmaps.
-   *
-   *   Depending on the glyph type (i.e., outline or bitmap), one of the two
-   *   rasterizers is chosen at runtime and used for generating SDFs.  To
-   *   force the use of `bsdf` you should render the glyph with any of the
-   *   FreeType's other rendering modes (e.g., `FT_RENDER_MODE_NORMAL`) and
-   *   then re-render with `FT_RENDER_MODE_SDF`.
-   *
-   *   There are some issues with stability and possible failures of the SDF
-   *   renderers (specifically `sdf`).
-   *
-   *   1. The `sdf` rasterizer is sensitive to really small features (e.g.,
-   *      sharp turns that are less than 1~pixel) and imperfections in the
-   *      glyph's outline, causing artifacts in the final output.
-   *
-   *   2. The `sdf` rasterizer has limited support for handling intersecting
-   *      contours and *cannot* handle self-intersecting contours whatsoever.
-   *      Self-intersection happens when a single connected contour
-   *      intersects itself at some point; having these in your font
-   *      definitely poses a problem to the rasterizer and cause artifacts,
-   *      too.
-   *
-   *   3. Generating SDF for really small glyphs may result in undesirable
-   *      output; the pixel grid (which stores distance information) becomes
-   *      too coarse.
-   *
-   *   4. Since the output buffer is normalized, precision at smaller spreads
-   *      is greater than precision at larger spread values because the
-   *      output range of [0..255] gets mapped to a smaller SDF range.  A
-   *      spread of~2 should be sufficient in most cases.
-   *
-   *   Points (1) and (2) can be avoided by using the `bsdf` rasterizer,
-   *   which is more stable than the `sdf` rasterizer in general.
    *
    */
   typedef enum  FT_Render_Mode_
@@ -4058,9 +3993,26 @@ FT_BEGIN_HEADER
    *   out of the scope of this API function -- they can be implemented
    *   through format-specific interfaces.
    *
-   *   Kerning for OpenType fonts implemented in a 'GPOS' table is not
-   *   supported; use @FT_HAS_KERNING to find out whether a font has data
-   *   that can be extracted with `FT_Get_Kerning`.
+   *   Note that, for TrueType fonts only, this can extract data from both
+   *   the 'kern' table and the basic, pair-wise kerning feature from the
+   *   GPOS table (with `TT_CONFIG_OPTION_GPOS_KERNING` enabled), though
+   *   FreeType does not support the more advanced GPOS layout features; use
+   *   a library like HarfBuzz for those instead.  If a font has both a
+   *   'kern' table and kern features of a GPOS table, the 'kern' table will
+   *   be used.
+   *
+   *   Also note for right-to-left scripts, the functionality may differ for
+   *   fonts with GPOS tables vs. 'kern' tables.  For GPOS, right-to-left
+   *   fonts typically use both a placement offset and an advance for pair
+   *   positioning, which this API does not support, so it would output
+   *   kerning values of zero; though if the right-to-left font used only
+   *   advances in GPOS pair positioning, then this API could output kerning
+   *   values for it, but it would use `left_glyph` to mean the first glyph
+   *   for that case.  Whereas 'kern' tables are always advance-only and
+   *   always store the left glyph first.
+   *
+   *   Use @FT_HAS_KERNING to find out whether a font has data that can be
+   *   extracted with `FT_Get_Kerning`.
    */
   FT_EXPORT( FT_Error )
   FT_Get_Kerning( FT_Face     face,
@@ -5222,7 +5174,7 @@ FT_BEGIN_HEADER
    */
 #define FREETYPE_MAJOR  2
 #define FREETYPE_MINOR  13
-#define FREETYPE_PATCH  2
+#define FREETYPE_PATCH  3
 
 
   /**************************************************************************

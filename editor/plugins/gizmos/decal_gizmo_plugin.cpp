@@ -33,23 +33,18 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/decal.h"
 
 DecalGizmoPlugin::DecalGizmoPlugin() {
 	helper.instantiate();
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/decal", Color(0.6, 0.5, 1.0));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/decal");
 
 	create_icon_material("decal_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoDecal"), EditorStringName(EditorIcons)));
 
 	create_material("decal_material", gizmo_color);
 
 	create_handle_material("handles");
-}
-
-DecalGizmoPlugin::~DecalGizmoPlugin() {
 }
 
 bool DecalGizmoPlugin::has_gizmo(Node3D *p_spatial) {

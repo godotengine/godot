@@ -50,11 +50,14 @@ const int num_taps[5] = { 3, 5, 12, 0, 0 };
 //
 #define SSAO_DETAIL_AO_ENABLE_AT_QUALITY_PRESET (1) // whether to use detail; to disable simply set to 99 or similar
 //
-#define SSAO_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2) // !!warning!! the MIP generation on the C++ side will be enabled on quality preset 2 regardless of this value, so if changing here, change the C++ side too
+// WARNING: The MIP generation on the C++ side will be enabled on quality preset 2 regardless of
+// this value, so if changing here, change the C++ side too.
+#define SSAO_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2)
 #define SSAO_DEPTH_MIPS_GLOBAL_OFFSET (-4.3) // best noise/quality/performance tradeoff, found empirically
 //
-// !!warning!! the edge handling is hard-coded to 'disabled' on quality level 0, and enabled above, on the C++ side; while toggling it here will work for
-// testing purposes, it will not yield performance gains (or correct results)
+// WARNING: The edge handling is hard-coded to 'disabled' on quality level 0, and enabled above,
+// on the C++ side; while toggling it here will work for testing purposes, it will not yield
+// performance gains (or correct results).
 #define SSAO_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET (1)
 //
 #define SSAO_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET (1)
@@ -192,9 +195,9 @@ void SSAO_tap_inner(const int p_quality_level, inout float r_obscurance_sum, ino
 	float weight = 1.0;
 
 	if (p_quality_level >= SSAO_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {
-		float reduct = max(0, -hit_delta.z);
-		reduct = clamp(reduct * params.neg_inv_radius + 2.0, 0.0, 1.0);
-		weight = SSAO_HALOING_REDUCTION_AMOUNT * reduct + (1.0 - SSAO_HALOING_REDUCTION_AMOUNT);
+		float reduce = max(0, -hit_delta.z);
+		reduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);
+		weight = SSAO_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSAO_HALOING_REDUCTION_AMOUNT);
 	}
 	weight *= p_weight_mod;
 	r_obscurance_sum += obscurance * weight;

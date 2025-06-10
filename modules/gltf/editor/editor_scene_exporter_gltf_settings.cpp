@@ -34,20 +34,33 @@ const uint32_t PROP_EDITOR_SCRIPT_VAR = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_S
 
 bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Variant &p_value) {
 	String name_str = String(p_name);
-	if (name_str.contains("/")) {
+	if (name_str.contains_char('/')) {
 		return _set_extension_setting(name_str, p_value);
 	}
 	if (p_name == StringName("image_format")) {
 		_document->set_image_format(p_value);
-		emit_signal("property_list_changed");
+		emit_signal(CoreStringName(property_list_changed));
 		return true;
 	}
 	if (p_name == StringName("lossy_quality")) {
 		_document->set_lossy_quality(p_value);
 		return true;
 	}
+	if (p_name == StringName("fallback_image_format")) {
+		_document->set_fallback_image_format(p_value);
+		emit_signal(CoreStringName(property_list_changed));
+		return true;
+	}
+	if (p_name == StringName("fallback_image_quality")) {
+		_document->set_fallback_image_quality(p_value);
+		return true;
+	}
 	if (p_name == StringName("root_node_mode")) {
 		_document->set_root_node_mode((GLTFDocument::RootNodeMode)(int64_t)p_value);
+		return true;
+	}
+	if (p_name == StringName("visibility_mode")) {
+		_document->set_visibility_mode((GLTFDocument::VisibilityMode)(int64_t)p_value);
 		return true;
 	}
 	return false;
@@ -55,7 +68,7 @@ bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Varia
 
 bool EditorSceneExporterGLTFSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	String name_str = String(p_name);
-	if (name_str.contains("/")) {
+	if (name_str.contains_char('/')) {
 		return _get_extension_setting(name_str, r_ret);
 	}
 	if (p_name == StringName("image_format")) {
@@ -66,8 +79,20 @@ bool EditorSceneExporterGLTFSettings::_get(const StringName &p_name, Variant &r_
 		r_ret = _document->get_lossy_quality();
 		return true;
 	}
+	if (p_name == StringName("fallback_image_format")) {
+		r_ret = _document->get_fallback_image_format();
+		return true;
+	}
+	if (p_name == StringName("fallback_image_quality")) {
+		r_ret = _document->get_fallback_image_quality();
+		return true;
+	}
 	if (p_name == StringName("root_node_mode")) {
 		r_ret = _document->get_root_node_mode();
+		return true;
+	}
+	if (p_name == StringName("visibility_mode")) {
+		r_ret = _document->get_visibility_mode();
 		return true;
 	}
 	return false;
@@ -76,12 +101,28 @@ bool EditorSceneExporterGLTFSettings::_get(const StringName &p_name, Variant &r_
 void EditorSceneExporterGLTFSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (PropertyInfo prop : _property_list) {
 		if (prop.name == "lossy_quality") {
-			String image_format = get("image_format");
-			bool is_image_format_lossy = image_format == "JPEG" || image_format.findn("Lossy") != -1;
+			const String image_format = get("image_format");
+			const bool is_image_format_lossy = image_format == "JPEG" || image_format.containsn("Lossy");
 			prop.usage = is_image_format_lossy ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
+		}
+		if (prop.name == "fallback_image_format") {
+			const String image_format = get("image_format");
+			const bool is_image_format_extension = image_format != "None" && image_format != "PNG" && image_format != "JPEG";
+			prop.usage = is_image_format_extension ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
+		}
+		if (prop.name == "fallback_image_quality") {
+			const String image_format = get("image_format");
+			const bool is_image_format_extension = image_format != "None" && image_format != "PNG" && image_format != "JPEG";
+			const String fallback_format = get("fallback_image_format");
+			prop.usage = (is_image_format_extension && fallback_format != "None") ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
 		}
 		p_list->push_back(prop);
 	}
+}
+
+void EditorSceneExporterGLTFSettings::_on_extension_property_list_changed() {
+	generate_property_list(_document);
+	emit_signal(CoreStringName(property_list_changed));
 }
 
 bool EditorSceneExporterGLTFSettings::_set_extension_setting(const String &p_name_str, const Variant &p_value) {
@@ -112,7 +153,7 @@ String get_friendly_config_prefix(Ref<GLTFDocumentExtension> p_extension) {
 		return config_prefix;
 	}
 	const String class_name = p_extension->get_class_name();
-	config_prefix = class_name.trim_prefix("GLTFDocumentExtension").capitalize();
+	config_prefix = class_name.trim_prefix("GLTFDocumentExtension").trim_suffix("GLTFDocumentExtension").capitalize();
 	if (!config_prefix.is_empty()) {
 		return config_prefix;
 	}
@@ -123,13 +164,32 @@ String get_friendly_config_prefix(Ref<GLTFDocumentExtension> p_extension) {
 	return "Unknown GLTFDocumentExtension";
 }
 
+bool is_any_node_invisible(Node *p_node) {
+	if (p_node->has_method("is_visible")) {
+		bool visible = p_node->call("is_visible");
+		if (!visible) {
+			return true;
+		}
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		if (is_any_node_invisible(p_node->get_child(i))) {
+			return true;
+		}
+	}
+	return false;
+}
+
 // Run this before popping up the export settings, because the extensions may have changed.
-void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p_document) {
+void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p_document, Node *p_root) {
 	_property_list.clear();
 	_document = p_document;
 	String image_format_hint_string = "None,PNG,JPEG";
 	// Add properties from all document extensions.
 	for (Ref<GLTFDocumentExtension> &extension : GLTFDocument::get_all_gltf_document_extensions()) {
+		const Callable on_prop_changed = callable_mp(this, &EditorSceneExporterGLTFSettings::_on_extension_property_list_changed);
+		if (!extension->is_connected(CoreStringName(property_list_changed), on_prop_changed)) {
+			extension->connect(CoreStringName(property_list_changed), on_prop_changed);
+		}
 		const String config_prefix = get_friendly_config_prefix(extension);
 		_config_name_to_extension_map[config_prefix] = extension;
 		// If the extension allows saving in different image formats, add to the enum.
@@ -157,8 +217,17 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 	_property_list.push_back(image_format_prop);
 	PropertyInfo lossy_quality_prop = PropertyInfo(Variant::FLOAT, "lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01");
 	_property_list.push_back(lossy_quality_prop);
+	PropertyInfo fallback_image_format_prop = PropertyInfo(Variant::STRING, "fallback_image_format", PROPERTY_HINT_ENUM, "None,PNG,JPEG");
+	_property_list.push_back(fallback_image_format_prop);
+	PropertyInfo fallback_image_quality_prop = PropertyInfo(Variant::FLOAT, "fallback_image_quality", PROPERTY_HINT_RANGE, "0,1,0.01");
+	_property_list.push_back(fallback_image_quality_prop);
 	PropertyInfo root_node_mode_prop = PropertyInfo(Variant::INT, "root_node_mode", PROPERTY_HINT_ENUM, "Single Root,Keep Root,Multi Root");
 	_property_list.push_back(root_node_mode_prop);
+	// If the scene contains any non-visible nodes, show the visibility mode setting.
+	if (p_root != nullptr && is_any_node_invisible(p_root)) {
+		PropertyInfo visibility_mode_prop = PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Include & Required,Include & Optional,Exclude");
+		_property_list.push_back(visibility_mode_prop);
+	}
 }
 
 String EditorSceneExporterGLTFSettings::get_copyright() const {
@@ -173,4 +242,16 @@ void EditorSceneExporterGLTFSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_copyright"), &EditorSceneExporterGLTFSettings::get_copyright);
 	ClassDB::bind_method(D_METHOD("set_copyright", "copyright"), &EditorSceneExporterGLTFSettings::set_copyright);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "copyright", PROPERTY_HINT_PLACEHOLDER_TEXT, "Example: 2014 Godette"), "set_copyright", "get_copyright");
+
+	ClassDB::bind_method(D_METHOD("get_bake_fps"), &EditorSceneExporterGLTFSettings::get_bake_fps);
+	ClassDB::bind_method(D_METHOD("set_bake_fps", "bake_fps"), &EditorSceneExporterGLTFSettings::set_bake_fps);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_fps"), "set_bake_fps", "get_bake_fps");
+}
+
+double EditorSceneExporterGLTFSettings::get_bake_fps() const {
+	return _bake_fps;
+}
+
+void EditorSceneExporterGLTFSettings::set_bake_fps(const double p_bake_fps) {
+	_bake_fps = p_bake_fps;
 }

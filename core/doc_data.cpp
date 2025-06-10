@@ -31,10 +31,26 @@
 #include "doc_data.h"
 
 String DocData::get_default_value_string(const Variant &p_value) {
-	if (p_value.get_type() == Variant::ARRAY) {
-		return Variant(Array(p_value, 0, StringName(), Variant())).get_construct_string().replace("\n", " ");
+	const Variant::Type type = p_value.get_type();
+	if (type == Variant::ARRAY) {
+		return Variant(Array(p_value, 0, StringName(), Variant())).get_construct_string().replace_char('\n', ' ');
+	} else if (type == Variant::DICTIONARY) {
+		return Variant(Dictionary(p_value, 0, StringName(), Variant(), 0, StringName(), Variant())).get_construct_string().replace_char('\n', ' ');
+	} else if (type == Variant::INT) {
+		return itos(p_value);
+	} else if (type == Variant::FLOAT) {
+		// Since some values are 32-bit internally, use 32-bit for all
+		// documentation values to avoid garbage digits at the end.
+		const String s = String::num_scientific((float)p_value);
+		// Use float literals for floats in the documentation for clarity.
+		if (s != "inf" && s != "-inf" && s != "nan") {
+			if (!s.contains_char('.') && !s.contains_char('e')) {
+				return s + ".0";
+			}
+		}
+		return s;
 	} else {
-		return p_value.get_construct_string().replace("\n", " ");
+		return p_value.get_construct_string().replace_char('\n', ' ');
 	}
 }
 
@@ -49,7 +65,7 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 	} else if (p_retinfo.type == Variant::INT && p_retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 		p_method.return_enum = p_retinfo.class_name;
 		if (p_method.return_enum.begins_with("_")) { //proxy class
-			p_method.return_enum = p_method.return_enum.substr(1, p_method.return_enum.length());
+			p_method.return_enum = p_method.return_enum.substr(1);
 		}
 		p_method.return_is_bitfield = p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 		p_method.return_type = "int";
@@ -57,6 +73,8 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 		p_method.return_type = p_retinfo.class_name;
 	} else if (p_retinfo.type == Variant::ARRAY && p_retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 		p_method.return_type = p_retinfo.hint_string + "[]";
+	} else if (p_retinfo.type == Variant::DICTIONARY && p_retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+		p_method.return_type = "Dictionary[" + p_retinfo.hint_string.replace(";", ", ") + "]";
 	} else if (p_retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 		p_method.return_type = p_retinfo.hint_string;
 	} else if (p_retinfo.type == Variant::NIL && p_retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -81,7 +99,7 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 	} else if (p_arginfo.type == Variant::INT && p_arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 		p_argument.enumeration = p_arginfo.class_name;
 		if (p_argument.enumeration.begins_with("_")) { //proxy class
-			p_argument.enumeration = p_argument.enumeration.substr(1, p_argument.enumeration.length());
+			p_argument.enumeration = p_argument.enumeration.substr(1);
 		}
 		p_argument.is_bitfield = p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 		p_argument.type = "int";
@@ -89,6 +107,8 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 		p_argument.type = p_arginfo.class_name;
 	} else if (p_arginfo.type == Variant::ARRAY && p_arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 		p_argument.type = p_arginfo.hint_string + "[]";
+	} else if (p_arginfo.type == Variant::DICTIONARY && p_arginfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+		p_argument.type = "Dictionary[" + p_arginfo.hint_string.replace(";", ", ") + "]";
 	} else if (p_arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 		p_argument.type = p_arginfo.hint_string;
 	} else if (p_arginfo.type == Variant::NIL) {
@@ -99,34 +119,19 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 	}
 }
 
-void DocData::property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_property, const ScriptMemberInfo &p_memberinfo) {
-	p_property.name = p_memberinfo.propinfo.name;
-	p_property.description = p_memberinfo.doc_string;
-
-	if (p_memberinfo.propinfo.type == Variant::OBJECT) {
-		p_property.type = p_memberinfo.propinfo.class_name;
-	} else if (p_memberinfo.propinfo.type == Variant::NIL && p_memberinfo.propinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-		p_property.type = "Variant";
-	} else {
-		p_property.type = Variant::get_type_name(p_memberinfo.propinfo.type);
-	}
-
-	p_property.setter = p_memberinfo.setter;
-	p_property.getter = p_memberinfo.getter;
-
-	if (p_memberinfo.has_default_value && p_memberinfo.default_value.get_type() != Variant::OBJECT) {
-		p_property.default_value = get_default_value_string(p_memberinfo.default_value);
-	}
-
-	p_property.overridden = false;
-}
-
 void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc) {
 	p_method.name = p_methodinfo.name;
 	p_method.description = p_desc;
 
 	if (p_methodinfo.flags & METHOD_FLAG_VIRTUAL) {
 		p_method.qualifiers = "virtual";
+	}
+
+	if (p_methodinfo.flags & METHOD_FLAG_VIRTUAL_REQUIRED) {
+		if (!p_method.qualifiers.is_empty()) {
+			p_method.qualifiers += " ";
+		}
+		p_method.qualifiers += "required";
 	}
 
 	if (p_methodinfo.flags & METHOD_FLAG_CONST) {
@@ -152,25 +157,14 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 
 	return_doc_from_retinfo(p_method, p_methodinfo.return_val);
 
-	for (int i = 0; i < p_methodinfo.arguments.size(); i++) {
+	for (int64_t i = 0; i < p_methodinfo.arguments.size(); ++i) {
 		DocData::ArgumentDoc argument;
 		argument_doc_from_arginfo(argument, p_methodinfo.arguments[i]);
-		int default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());
+		int64_t default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());
 		if (default_arg_index >= 0) {
 			Variant default_arg = p_methodinfo.default_arguments[default_arg_index];
 			argument.default_value = get_default_value_string(default_arg);
 		}
 		p_method.arguments.push_back(argument);
 	}
-}
-
-void DocData::constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc) {
-	p_const.name = p_name;
-	p_const.value = p_value;
-	p_const.is_value_valid = (p_value.get_type() != Variant::OBJECT);
-	p_const.description = p_desc;
-}
-
-void DocData::signal_doc_from_methodinfo(DocData::MethodDoc &p_signal, const MethodInfo &p_methodinfo, const String &p_desc) {
-	return method_doc_from_methodinfo(p_signal, p_methodinfo, p_desc);
 }

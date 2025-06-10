@@ -4,7 +4,7 @@
  *
  *   FreeType PFR glyph loader (body).
  *
- * Copyright (C) 2002-2023 by
+ * Copyright (C) 2002-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -108,7 +108,7 @@
 
     /* don't add empty contours */
     if ( last >= first )
-      outline->contours[outline->n_contours++] = (short)last;
+      outline->contours[outline->n_contours++] = (FT_UShort)last;
 
     glyph->path_begun = 0;
   }
@@ -178,8 +178,8 @@
     error = FT_GLYPHLOADER_CHECK_POINTS( loader, 3, 0 );
     if ( !error )
     {
-      FT_Vector*  vec = outline->points         + outline->n_points;
-      FT_Byte*    tag = (FT_Byte*)outline->tags + outline->n_points;
+      FT_Vector*  vec = outline->points + outline->n_points;
+      FT_Byte*    tag = outline->tags   + outline->n_points;
 
 
       vec[0] = *control1;
@@ -189,7 +189,7 @@
       tag[1] = FT_CURVE_TAG_CUBIC;
       tag[2] = FT_CURVE_TAG_ON;
 
-      outline->n_points = (FT_Short)( outline->n_points + 3 );
+      outline->n_points += 3;
     }
 
   Exit:

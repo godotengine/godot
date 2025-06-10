@@ -11,6 +11,7 @@ class InnerClass:
 		var e2: InnerClass.MyEnum
 		var e3: EnumTypecheckOuterClass.InnerClass.MyEnum
 
+		@warning_ignore("unassigned_variable")
 		print("Self ", e1, e2, e3)
 		e1 = MyEnum.V1
 		e2 = MyEnum.V1
@@ -48,6 +49,7 @@ func test_outer_from_outer():
 	var e1: MyEnum
 	var e2: EnumTypecheckOuterClass.MyEnum
 
+	@warning_ignore("unassigned_variable")
 	print("Self ", e1, e2)
 	e1 = MyEnum.V1
 	e2 = MyEnum.V1
@@ -66,6 +68,7 @@ func test_inner_from_outer():
 	var e1: InnerClass.MyEnum
 	var e2: EnumTypecheckOuterClass.InnerClass.MyEnum
 
+	@warning_ignore("unassigned_variable")
 	print("Inner ", e1, e2)
 	e1 = InnerClass.MyEnum.V1
 	e2 = InnerClass.MyEnum.V1

@@ -1,0 +1,119 @@
+# Latvian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-11-16 07:52+0000\n"
+"Last-Translator: Peter Lauris <peterlauris@gmail.com>\n"
+"Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/lv/>\n"
+"Language: lv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
+"19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
+"X-Generator: Weblate 5.2\n"
+
+msgid "All Recognized"
+msgstr "Viss atpazīts"
+
+msgid "Add current color as a preset."
+msgstr "Pievienot pašreizējo krāsu kā iepriekšnoteiktu krāsu."
+
+msgid "Open"
+msgstr "Atvērt"
+
+msgid "Select Current Folder"
+msgstr "Izvēlēties pašreizējo mapi"
+
+msgid "Save"
+msgstr "Saglabāt"
+
+msgid "Select This Folder"
+msgstr "Izvēlēties Šo Mapi"
+
+msgid "Open a File"
+msgstr "Atvērt failu"
+
+msgid "Open File(s)"
+msgstr "Atvērt failu(s)"
+
+msgid "Open a Directory"
+msgstr "Atvērt mapi"
+
+msgid "Open a File or Directory"
+msgstr "Atvērt failu vai mapi"
+
+msgid "Save a File"
+msgstr "Saglabāt failu"
+
+msgid "Go to previous folder."
+msgstr "Doties uz iepriekšējo mapi."
+
+msgid "Go to next folder."
+msgstr "Doties uz nākamo mapi."
+
+msgid "Go to parent folder."
+msgstr "Atvērt mātes mapi."
+
+msgid "Path:"
+msgstr "Ceļš:"
+
+msgid "Refresh files."
+msgstr "Atjaunot failus."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Pārslēgt slēpto failu redzamību."
+
+msgid "Directories & Files:"
+msgstr "Mapes & Faili:"
+
+msgid "File:"
+msgstr "Fails:"
+
+msgid "Create Folder"
+msgstr "Izveidot mapi"
+
+msgid "Name:"
+msgstr "Nosaukums:"
+
+msgid "Could not create folder."
+msgstr "Neizdevās izveidot mapi."
+
+msgid "Zoom Out"
+msgstr "Attālināt"
+
+msgid "Zoom Reset"
+msgstr "Atiestatīt Tuvinājumu"
+
+msgid "Zoom In"
+msgstr "Palielināt"
+
+msgid "Cut"
+msgstr "Izgriezt"
+
+msgid "Copy"
+msgstr "Kopēt"
+
+msgid "Paste"
+msgstr "Ielīmēt"
+
+msgid "Select All"
+msgstr "Izvēlēties visu"
+
+msgid "Clear"
+msgstr "Notīrīt"
+
+msgid "Undo"
+msgstr "Atsaukt"
+
+msgid "Redo"
+msgstr "Pārtaisīt"
+
+msgid "(Other)"
+msgstr "(Cits(i))"

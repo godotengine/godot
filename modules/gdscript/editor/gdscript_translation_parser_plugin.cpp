@@ -39,7 +39,7 @@ void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<Strin
 	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);
 }
 
-Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
+Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
 	// Extract all translatable strings using the parsed tree from GDScriptParser.
 	// The strategy is to find all ExpressionNode and AssignmentNode from the tree and extract strings if relevant, i.e
 	// Search strings in ExpressionNode -> CallNode -> tr(), set_text(), set_placeholder() etc.
@@ -47,34 +47,96 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 
 	Error err;
 	Ref<Resource> loaded_res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
-	if (err) {
-		ERR_PRINT("Failed to load " + p_path);
-		return err;
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Failed to load " + p_path);
 
-	ids = r_ids;
-	ids_ctx_plural = r_ids_ctx_plural;
+	translations = r_translations;
+
 	Ref<GDScript> gdscript = loaded_res;
 	String source_code = gdscript->get_source_code();
 
 	GDScriptParser parser;
 	err = parser.parse(source_code, p_path, false);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to parse GDScript with GDScriptParser.");
+	ERR_FAIL_COND_V_MSG(err, err, "Failed to parse GDScript with GDScriptParser.");
 
 	GDScriptAnalyzer analyzer(&parser);
 	err = analyzer.analyze();
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to analyze GDScript with GDScriptAnalyzer.");
+	ERR_FAIL_COND_V_MSG(err, err, "Failed to analyze GDScript with GDScriptAnalyzer.");
+
+	comment_data = &parser.comment_data;
 
 	// Traverse through the parsed tree from GDScriptParser.
 	GDScriptParser::ClassNode *c = parser.get_tree();
 	_traverse_class(c);
+
+	comment_data = nullptr;
 
 	return OK;
 }
 
 bool GDScriptEditorTranslationParserPlugin::_is_constant_string(const GDScriptParser::ExpressionNode *p_expression) {
 	ERR_FAIL_NULL_V(p_expression, false);
-	return p_expression->is_constant && (p_expression->reduced_value.get_type() == Variant::STRING || p_expression->reduced_value.get_type() == Variant::STRING_NAME);
+	return p_expression->is_constant && p_expression->reduced_value.is_string();
+}
+
+String GDScriptEditorTranslationParserPlugin::_parse_comment(int p_line, bool &r_skip) const {
+	// Parse inline comment.
+	if (comment_data->has(p_line)) {
+		const String stripped_comment = comment_data->get(p_line).comment.trim_prefix("#").strip_edges();
+
+		if (stripped_comment.begins_with("TRANSLATORS:")) {
+			return stripped_comment.trim_prefix("TRANSLATORS:").strip_edges(true, false);
+		}
+		if (stripped_comment == "NO_TRANSLATE" || stripped_comment.begins_with("NO_TRANSLATE:")) {
+			r_skip = true;
+			return String();
+		}
+	}
+
+	// Parse multiline comment.
+	String multiline_comment;
+	for (int line = p_line - 1; comment_data->has(line) && comment_data->get(line).new_line; line--) {
+		const String stripped_comment = comment_data->get(line).comment.trim_prefix("#").strip_edges();
+
+		if (stripped_comment.is_empty()) {
+			continue;
+		}
+
+		if (multiline_comment.is_empty()) {
+			multiline_comment = stripped_comment;
+		} else {
+			multiline_comment = stripped_comment + "\n" + multiline_comment;
+		}
+
+		if (stripped_comment.begins_with("TRANSLATORS:")) {
+			return multiline_comment.trim_prefix("TRANSLATORS:").strip_edges(true, false);
+		}
+		if (stripped_comment == "NO_TRANSLATE" || stripped_comment.begins_with("NO_TRANSLATE:")) {
+			r_skip = true;
+			return String();
+		}
+	}
+
+	return String();
+}
+
+void GDScriptEditorTranslationParserPlugin::_add_id(const String &p_id, int p_line) {
+	bool skip = false;
+	const String comment = _parse_comment(p_line, skip);
+	if (skip) {
+		return;
+	}
+
+	translations->push_back({ p_id, String(), String(), comment });
+}
+
+void GDScriptEditorTranslationParserPlugin::_add_id_ctx_plural(const Vector<String> &p_id_ctx_plural, int p_line) {
+	bool skip = false;
+	const String comment = _parse_comment(p_line, skip);
+	if (skip) {
+		return;
+	}
+
+	translations->push_back({ p_id_ctx_plural[0], p_id_ctx_plural[1], p_id_ctx_plural[2], comment });
 }
 
 void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser::ClassNode *p_class) {
@@ -197,11 +259,7 @@ void GDScriptEditorTranslationParserPlugin::_assess_expression(const GDScriptPar
 			_assess_expression(binary_op_node->right_operand);
 		} break;
 		case GDScriptParser::Node::CALL: {
-			const GDScriptParser::CallNode *call_node = static_cast<const GDScriptParser::CallNode *>(p_expression);
-			_extract_from_call(call_node);
-			for (int i = 0; i < call_node->arguments.size(); i++) {
-				_assess_expression(call_node->arguments[i]);
-			}
+			_assess_call(static_cast<const GDScriptParser::CallNode *>(p_expression));
 		} break;
 		case GDScriptParser::Node::CAST: {
 			_assess_expression(static_cast<const GDScriptParser::CastNode *>(p_expression)->operand);
@@ -241,6 +299,9 @@ void GDScriptEditorTranslationParserPlugin::_assess_expression(const GDScriptPar
 }
 
 void GDScriptEditorTranslationParserPlugin::_assess_assignment(const GDScriptParser::AssignmentNode *p_assignment) {
+	_assess_expression(p_assignment->assignee);
+	_assess_expression(p_assignment->assigned_value);
+
 	// Extract the translatable strings coming from assignments. For example, get_node("Label").text = "____"
 
 	StringName assignee_name;
@@ -257,27 +318,19 @@ void GDScriptEditorTranslationParserPlugin::_assess_assignment(const GDScriptPar
 
 	if (assignee_name != StringName() && assignment_patterns.has(assignee_name) && _is_constant_string(p_assignment->assigned_value)) {
 		// If the assignment is towards one of the extract patterns (text, tooltip_text etc.), and the value is a constant string, we collect the string.
-		ids->push_back(p_assignment->assigned_value->reduced_value);
-	} else if (assignee_name == fd_filters && p_assignment->assigned_value->type == GDScriptParser::Node::CALL) {
-		// FileDialog.filters accepts assignment in the form of PackedStringArray. For example,
-		// get_node("FileDialog").filters = PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]).
-
-		const GDScriptParser::CallNode *call_node = static_cast<const GDScriptParser::CallNode *>(p_assignment->assigned_value);
-		if (!call_node->arguments.is_empty() && call_node->arguments[0]->type == GDScriptParser::Node::ARRAY) {
-			const GDScriptParser::ArrayNode *array_node = static_cast<const GDScriptParser::ArrayNode *>(call_node->arguments[0]);
-
-			// Extract the name in "extension ; name" of PackedStringArray.
-			for (int i = 0; i < array_node->elements.size(); i++) {
-				_extract_fd_constant_strings(array_node->elements[i]);
-			}
-		}
-	} else {
-		// If the assignee is not in extract patterns or the assigned_value is not a constant string, try to see if the assigned_value contains tr().
-		_assess_expression(p_assignment->assigned_value);
+		_add_id(p_assignment->assigned_value->reduced_value, p_assignment->assigned_value->start_line);
+	} else if (assignee_name == fd_filters) {
+		// Extract from `get_node("FileDialog").filters = <filter array>`.
+		_extract_fd_filter_array(p_assignment->assigned_value);
 	}
 }
 
-void GDScriptEditorTranslationParserPlugin::_extract_from_call(const GDScriptParser::CallNode *p_call) {
+void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::CallNode *p_call) {
+	_assess_expression(p_call->callee);
+	for (int i = 0; i < p_call->arguments.size(); i++) {
+		_assess_expression(p_call->arguments[i]);
+	}
+
 	// Extract the translatable strings coming from function calls. For example:
 	// tr("___"), get_node("Label").set_text("____"), get_node("LineEdit").set_placeholder("____").
 
@@ -288,8 +341,8 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(const GDScriptPar
 	id_ctx_plural.resize(3);
 	bool extract_id_ctx_plural = true;
 
-	if (function_name == tr_func) {
-		// Extract from tr(id, ctx).
+	if (function_name == tr_func || function_name == atr_func) {
+		// Extract from `tr(id, ctx)` or `atr(id, ctx)`.
 		for (int i = 0; i < p_call->arguments.size(); i++) {
 			if (_is_constant_string(p_call->arguments[i])) {
 				id_ctx_plural.write[i] = p_call->arguments[i]->reduced_value;
@@ -299,10 +352,10 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(const GDScriptPar
 			}
 		}
 		if (extract_id_ctx_plural) {
-			ids_ctx_plural->push_back(id_ctx_plural);
+			_add_id_ctx_plural(id_ctx_plural, p_call->start_line);
 		}
-	} else if (function_name == trn_func) {
-		// Extract from tr_n(id, plural, n, ctx).
+	} else if (function_name == trn_func || function_name == atrn_func) {
+		// Extract from `tr_n(id, plural, n, ctx)` or `atr_n(id, plural, n, ctx)`.
 		Vector<int> indices;
 		indices.push_back(0);
 		indices.push_back(3);
@@ -319,52 +372,56 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(const GDScriptPar
 			}
 		}
 		if (extract_id_ctx_plural) {
-			ids_ctx_plural->push_back(id_ctx_plural);
+			_add_id_ctx_plural(id_ctx_plural, p_call->start_line);
 		}
 	} else if (first_arg_patterns.has(function_name)) {
-		if (_is_constant_string(p_call->arguments[0])) {
-			ids->push_back(p_call->arguments[0]->reduced_value);
+		if (!p_call->arguments.is_empty() && _is_constant_string(p_call->arguments[0])) {
+			_add_id(p_call->arguments[0]->reduced_value, p_call->arguments[0]->start_line);
 		}
 	} else if (second_arg_patterns.has(function_name)) {
-		if (_is_constant_string(p_call->arguments[1])) {
-			ids->push_back(p_call->arguments[1]->reduced_value);
+		if (p_call->arguments.size() > 1 && _is_constant_string(p_call->arguments[1])) {
+			_add_id(p_call->arguments[1]->reduced_value, p_call->arguments[1]->start_line);
 		}
 	} else if (function_name == fd_add_filter) {
 		// Extract the 'JPE Images' in this example - get_node("FileDialog").add_filter("*.jpg; JPE Images").
-		_extract_fd_constant_strings(p_call->arguments[0]);
-	} else if (function_name == fd_set_filter && p_call->arguments[0]->type == GDScriptParser::Node::CALL) {
-		// FileDialog.set_filters() accepts assignment in the form of PackedStringArray. For example,
-		// get_node("FileDialog").set_filters( PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"])).
-
-		const GDScriptParser::CallNode *call_node = static_cast<const GDScriptParser::CallNode *>(p_call->arguments[0]);
-		if (call_node->arguments[0]->type == GDScriptParser::Node::ARRAY) {
-			const GDScriptParser::ArrayNode *array_node = static_cast<const GDScriptParser::ArrayNode *>(call_node->arguments[0]);
-			for (int i = 0; i < array_node->elements.size(); i++) {
-				_extract_fd_constant_strings(array_node->elements[i]);
-			}
+		if (!p_call->arguments.is_empty()) {
+			_extract_fd_filter_string(p_call->arguments[0], p_call->arguments[0]->start_line);
 		}
-	}
-
-	if (p_call->callee && p_call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
-		const GDScriptParser::SubscriptNode *subscript_node = static_cast<const GDScriptParser::SubscriptNode *>(p_call->callee);
-		if (subscript_node->base && subscript_node->base->type == GDScriptParser::Node::CALL) {
-			const GDScriptParser::CallNode *call_node = static_cast<const GDScriptParser::CallNode *>(subscript_node->base);
-			_extract_from_call(call_node);
+	} else if (function_name == fd_set_filter) {
+		// Extract from `get_node("FileDialog").set_filters(<filter array>)`.
+		if (!p_call->arguments.is_empty()) {
+			_extract_fd_filter_array(p_call->arguments[0]);
 		}
 	}
 }
 
-void GDScriptEditorTranslationParserPlugin::_extract_fd_constant_strings(const GDScriptParser::ExpressionNode *p_expression) {
+void GDScriptEditorTranslationParserPlugin::_extract_fd_filter_string(const GDScriptParser::ExpressionNode *p_expression, int p_line) {
 	// Extract the name in "extension ; name".
-
 	if (_is_constant_string(p_expression)) {
-		String arg_val = p_expression->reduced_value;
-		PackedStringArray arr = arg_val.split(";", true);
-		if (arr.size() != 2) {
-			ERR_PRINT("Argument for setting FileDialog has bad format.");
-			return;
+		PackedStringArray arr = p_expression->reduced_value.operator String().split(";", true);
+		ERR_FAIL_COND_MSG(arr.size() != 2, "Argument for setting FileDialog has bad format.");
+		_add_id(arr[1].strip_edges(), p_line);
+	}
+}
+
+void GDScriptEditorTranslationParserPlugin::_extract_fd_filter_array(const GDScriptParser::ExpressionNode *p_expression) {
+	const GDScriptParser::ArrayNode *array_node = nullptr;
+
+	if (p_expression->type == GDScriptParser::Node::ARRAY) {
+		// Extract from `["*.png ; PNG Images","*.gd ; GDScript Files"]` (implicit cast to `PackedStringArray`).
+		array_node = static_cast<const GDScriptParser::ArrayNode *>(p_expression);
+	} else if (p_expression->type == GDScriptParser::Node::CALL) {
+		// Extract from `PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"])`.
+		const GDScriptParser::CallNode *call_node = static_cast<const GDScriptParser::CallNode *>(p_expression);
+		if (call_node->get_callee_type() == GDScriptParser::Node::IDENTIFIER && call_node->function_name == SNAME("PackedStringArray") && !call_node->arguments.is_empty() && call_node->arguments[0]->type == GDScriptParser::Node::ARRAY) {
+			array_node = static_cast<const GDScriptParser::ArrayNode *>(call_node->arguments[0]);
 		}
-		ids->push_back(arr[1].strip_edges());
+	}
+
+	if (array_node) {
+		for (int i = 0; i < array_node->elements.size(); i++) {
+			_extract_fd_filter_string(array_node->elements[i], array_node->elements[i]->start_line);
+		}
 	}
 }
 

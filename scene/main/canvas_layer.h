@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CANVAS_LAYER_H
-#define CANVAS_LAYER_H
+#pragma once
 
 #include "scene/main/node.h"
 
@@ -37,10 +36,10 @@ class Viewport;
 class CanvasLayer : public Node {
 	GDCLASS(CanvasLayer, Node);
 
-	bool locrotscale_dirty = false;
-	Vector2 ofs;
-	Size2 scale = Vector2(1, 1);
-	real_t rot = 0.0;
+	mutable bool locrotscale_dirty = false;
+	mutable Vector2 ofs;
+	mutable Size2 scale = Vector2(1, 1);
+	mutable real_t rot = 0.0;
 	int layer = 1;
 	Transform2D transform;
 	RID canvas;
@@ -58,13 +57,12 @@ class CanvasLayer : public Node {
 	float follow_viewport_scale = 1.0;
 
 	void _update_xform();
-	void _update_locrotscale();
+	void _update_locrotscale() const;
 	void _update_follow_viewport(bool p_force_exit = false);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void update_draw_order();
@@ -111,5 +109,3 @@ public:
 	CanvasLayer();
 	~CanvasLayer();
 };
-
-#endif // CANVAS_LAYER_H

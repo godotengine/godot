@@ -28,17 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
-#define TEXTURE_LAYERED_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
+class ColorChannelSelector;
+
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);
+
+	struct ThemeCache {
+		Color outline_color;
+	} theme_cache;
 
 	SpinBox *layer = nullptr;
 	Label *info = nullptr;
@@ -53,18 +58,27 @@ class TextureLayeredEditor : public Control {
 
 	bool setting = false;
 
+	ColorChannelSelector *channel_selector = nullptr;
+
+	void _draw_outline();
+
 	void _make_shaders();
-	void _update_material();
+	void _update_material(bool p_texture_changed);
 
 	void _layer_changed(double) {
 		if (!setting) {
-			_update_material();
+			_update_material(false);
 		}
 	}
+
 	void _texture_changed();
 
 	void _texture_rect_update_area();
 	void _texture_rect_draw();
+
+	void _update_gui();
+
+	void on_selected_channels_changed();
 
 protected:
 	void _notification(int p_what);
@@ -72,8 +86,8 @@ protected:
 
 public:
 	void edit(Ref<TextureLayered> p_texture);
+
 	TextureLayeredEditor();
-	~TextureLayeredEditor();
 };
 
 class EditorInspectorPluginLayeredTexture : public EditorInspectorPlugin {
@@ -88,9 +102,7 @@ class TextureLayeredEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureLayeredEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "TextureLayered"; }
+	virtual String get_plugin_name() const override { return "TextureLayered"; }
 
 	TextureLayeredEditorPlugin();
 };
-
-#endif // TEXTURE_LAYERED_EDITOR_PLUGIN_H

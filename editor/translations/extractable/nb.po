@@ -1,0 +1,103 @@
+# Norwegian Bokmål translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-11-06 00:35+0000\n"
+"Last-Translator: Fragment Ventures <lasse@fragmentventures.com>\n"
+"Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
+"engine/godot/nb_NO/>\n"
+"Language: nb\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.2-dev\n"
+
+msgid "All Recognized"
+msgstr "Alle gjenkjente"
+
+msgid "Network"
+msgstr "Nettverk"
+
+msgid "Open"
+msgstr "Åpne"
+
+msgid "Select Current Folder"
+msgstr "Velg Gjeldende Mappe"
+
+msgid "Save"
+msgstr "Lagre"
+
+msgid "Open a File"
+msgstr "Åpne en fil"
+
+msgid "Open File(s)"
+msgstr "Åpne fil(er)"
+
+msgid "Open a Directory"
+msgstr "Åpne ei mappe"
+
+msgid "Open a File or Directory"
+msgstr "Åpne ei fil eller mappe"
+
+msgid "Save a File"
+msgstr "Lagre ei fil"
+
+msgid "Go to parent folder."
+msgstr "Gå til ovennevnt mappe."
+
+msgid "Path:"
+msgstr "Filbane:"
+
+msgid "Directories & Files:"
+msgstr "Mapper og Filer:"
+
+msgid "File:"
+msgstr "Fil:"
+
+msgid "Create Folder"
+msgstr "Opprett mappe"
+
+msgid "Name:"
+msgstr "Navn:"
+
+msgid "Could not create folder."
+msgstr "Kunne ikke opprette mappe."
+
+msgid "Zoom Out"
+msgstr "Zoom ut"
+
+msgid "Zoom Reset"
+msgstr "Tilbakestill forstørring"
+
+msgid "Zoom In"
+msgstr "Forstørr"
+
+msgid "Cut"
+msgstr "Kutt"
+
+msgid "Copy"
+msgstr "Kopier"
+
+msgid "Paste"
+msgstr "Lim inn"
+
+msgid "Select All"
+msgstr "Velg alle"
+
+msgid "Clear"
+msgstr "Tøm"
+
+msgid "Undo"
+msgstr "Angre"
+
+msgid "Redo"
+msgstr "Gjør om"
+
+msgid "(Other)"
+msgstr "(Annet)"

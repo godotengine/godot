@@ -651,7 +651,7 @@ struct hb_font_t
   {
     if (get_glyph_name (glyph, s, size)) return;
 
-    if (size && snprintf (s, size, "gid%u", glyph) < 0)
+    if (size && snprintf (s, size, "gid%" PRIu32, glyph) < 0)
       *s = '\0';
   }
 

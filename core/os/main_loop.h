@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MAIN_LOOP_H
-#define MAIN_LOOP_H
+#pragma once
 
 #include "core/input/input_event.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -62,12 +61,12 @@ public:
 	};
 
 	virtual void initialize();
+	virtual void iteration_prepare() {}
 	virtual bool physics_process(double p_time);
+	virtual void iteration_end() {}
 	virtual bool process(double p_time);
 	virtual void finalize();
 
 	MainLoop() {}
 	virtual ~MainLoop() {}
 };
-
-#endif // MAIN_LOOP_H

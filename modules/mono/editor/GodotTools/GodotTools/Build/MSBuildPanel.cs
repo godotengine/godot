@@ -5,8 +5,6 @@ using GodotTools.Internals;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 
-#nullable enable
-
 namespace GodotTools.Build
 {
     public partial class MSBuildPanel : MarginContainer, ISerializationListener
@@ -89,7 +87,10 @@ namespace GodotTools.Build
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
 
             if (Internal.IsAssembliesReloadingNeeded())
+            {
+                BuildManager.UpdateLastValidBuildDateTime();
                 Internal.ReloadAssemblies(softReload: false);
+            }
         }
 
         private void RebuildProject()
@@ -107,7 +108,10 @@ namespace GodotTools.Build
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
 
             if (Internal.IsAssembliesReloadingNeeded())
+            {
+                BuildManager.UpdateLastValidBuildDateTime();
                 Internal.ReloadAssemblies(softReload: false);
+            }
         }
 
         private void CleanProject()
@@ -177,7 +181,7 @@ namespace GodotTools.Build
             }
         }
 
-        private void StdOutputReceived(string text)
+        private void StdOutputReceived(string? text)
         {
             lock (_pendingBuildLogTextLock)
             {
@@ -187,7 +191,7 @@ namespace GodotTools.Build
             }
         }
 
-        private void StdErrorReceived(string text)
+        private void StdErrorReceived(string? text)
         {
             lock (_pendingBuildLogTextLock)
             {

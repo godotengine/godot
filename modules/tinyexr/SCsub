@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -16,7 +17,7 @@ thirdparty_sources = [
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_tinyexr.Prepend(CPPPATH=[thirdparty_dir])
+env_tinyexr.Prepend(CPPEXTPATH=[thirdparty_dir])
 
 # Enable threaded loading with C++11.
 env_tinyexr.Append(CPPDEFINES=["TINYEXR_USE_THREAD"])

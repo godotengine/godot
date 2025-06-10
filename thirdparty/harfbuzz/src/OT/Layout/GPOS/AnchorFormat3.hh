@@ -38,9 +38,15 @@ struct AnchorFormat3
     *y = font->em_fscale_y (yCoordinate);
 
     if ((font->x_ppem || font->num_coords) && xDeviceTable.sanitize (&c->sanitizer, this))
+    {
+      hb_barrier ();
       *x += (this+xDeviceTable).get_x_delta (font, c->var_store, c->var_store_cache);
+    }
     if ((font->y_ppem || font->num_coords) && yDeviceTable.sanitize (&c->sanitizer, this))
+    {
+      hb_barrier ();
       *y += (this+yDeviceTable).get_y_delta (font, c->var_store, c->var_store_cache);
+    }
   }
 
   bool subset (hb_subset_context_t *c) const

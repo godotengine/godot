@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFObjectModelProperty" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Describes how to access a property as defined in the glTF object model.
+	</brief_description>
+	<description>
+		GLTFObjectModelProperty defines a mapping between a property in the glTF object model and a NodePath in the Godot scene tree. This can be used to animate properties in a glTF file using the [code]KHR_animation_pointer[/code] extension, or to access them through an engine-agnostic script such as a behavior graph as defined by the [code]KHR_interactivity[/code] extension.
+		The glTF property is identified by JSON pointer(s) stored in [member json_pointers], while the Godot property it maps to is defined by [member node_paths]. In most cases [member json_pointers] and [member node_paths] will each only have one item, but in some cases a single glTF JSON pointer will map to multiple Godot properties, or a single Godot property will be mapped to multiple glTF JSON pointers, or it might be a many-to-many relationship.
+		[Expression] objects can be used to define conversions between the data, such as when glTF defines an angle in radians and Godot uses degrees. The [member object_model_type] property defines the type of data stored in the glTF file as defined by the object model, see [enum GLTFObjectModelType] for possible values.
+	</description>
+	<tutorials>
+		<link title="GLTF Object Model">https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/ObjectModel.adoc</link>
+		<link title="KHR_animation_pointer GLTF extension">https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_animation_pointer</link>
+	</tutorials>
+	<methods>
+		<method name="append_node_path">
+			<return type="void" />
+			<param index="0" name="node_path" type="NodePath" />
+			<description>
+				Appends a [NodePath] to [member node_paths]. This can be used by [GLTFDocumentExtension] classes to define how a glTF object model property maps to a Godot property, or multiple Godot properties. Prefer using [method append_path_to_property] for simple cases. Be sure to also call [method set_types] once (the order does not matter).
+			</description>
+		</method>
+		<method name="append_path_to_property">
+			<return type="void" />
+			<param index="0" name="node_path" type="NodePath" />
+			<param index="1" name="prop_name" type="StringName" />
+			<description>
+				High-level wrapper over [method append_node_path] that handles the most common cases. It constructs a new [NodePath] using [param node_path] as a base and appends [param prop_name] to the subpath. Be sure to also call [method set_types] once (the order does not matter).
+			</description>
+		</method>
+		<method name="get_accessor_type" qualifiers="const">
+			<return type="int" enum="GLTFAccessor.GLTFAccessorType" />
+			<description>
+				The GLTF accessor type associated with this property's [member object_model_type]. See [member GLTFAccessor.accessor_type] for possible values, and see [enum GLTFObjectModelType] for how the object model type maps to accessor types.
+			</description>
+		</method>
+		<method name="has_json_pointers" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member json_pointers] is not empty. This is used during export to determine if a [GLTFObjectModelProperty] can handle converting a Godot property to a glTF object model property.
+			</description>
+		</method>
+		<method name="has_node_paths" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member node_paths] is not empty. This is used during import to determine if a [GLTFObjectModelProperty] can handle converting a glTF object model property to a Godot property.
+			</description>
+		</method>
+		<method name="set_types">
+			<return type="void" />
+			<param index="0" name="variant_type" type="int" enum="Variant.Type" />
+			<param index="1" name="obj_model_type" type="int" enum="GLTFObjectModelProperty.GLTFObjectModelType" />
+			<description>
+				Sets the [member variant_type] and [member object_model_type] properties. This is a convenience method to set both properties at once, since they are almost always known at the same time. This method should be called once. Calling it again with the same values will have no effect.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="gltf_to_godot_expression" type="Expression" setter="set_gltf_to_godot_expression" getter="get_gltf_to_godot_expression">
+			If set, this [Expression] will be used to convert the property value from the glTF object model to the value expected by the Godot property. This is useful when the glTF object model uses a different unit system, or when the data needs to be transformed in some way. If [code]null[/code], the value will be copied as-is.
+		</member>
+		<member name="godot_to_gltf_expression" type="Expression" setter="set_godot_to_gltf_expression" getter="get_godot_to_gltf_expression">
+			If set, this [Expression] will be used to convert the property value from the Godot property to the value expected by the glTF object model. This is useful when the glTF object model uses a different unit system, or when the data needs to be transformed in some way. If [code]null[/code], the value will be copied as-is.
+		</member>
+		<member name="json_pointers" type="PackedStringArray[]" setter="set_json_pointers" getter="get_json_pointers" default="[]">
+			The glTF object model JSON pointers used to identify the property in the glTF object model. In most cases, there will be only one item in this array, but specific cases may require multiple pointers. The items are themselves arrays which represent the JSON pointer split into its components.
+		</member>
+		<member name="node_paths" type="NodePath[]" setter="set_node_paths" getter="get_node_paths" default="[]">
+			An array of [NodePath]s that point to a property, or multiple properties, in the Godot scene tree. On import, this will either be set by [GLTFDocument], or by a [GLTFDocumentExtension] class. For simple cases, use [method append_path_to_property] to add properties to this array.
+			In most cases [member node_paths] will only have one item, but in some cases a single glTF JSON pointer will map to multiple Godot properties. For example, a [GLTFCamera] or [GLTFLight] used on multiple glTF nodes will be represented by multiple Godot nodes.
+		</member>
+		<member name="object_model_type" type="int" setter="set_object_model_type" getter="get_object_model_type" enum="GLTFObjectModelProperty.GLTFObjectModelType" default="0">
+			The type of data stored in the glTF file as defined by the object model. This is a superset of the available accessor types, and determines the accessor type.
+		</member>
+		<member name="variant_type" type="int" setter="set_variant_type" getter="get_variant_type" enum="Variant.Type" default="0">
+			The type of data stored in the Godot property. This is the type of the property that the [member node_paths] point to.
+		</member>
+	</members>
+	<constants>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_UNKNOWN" value="0" enum="GLTFObjectModelType">
+			Unknown or not set object model type. If the object model type is set to this value, the real type still needs to be determined.
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_BOOL" value="1" enum="GLTFObjectModelType">
+			Object model type "bool". Represented in the glTF JSON as a boolean, and encoded in a [GLTFAccessor] as "SCALAR". When encoded in an accessor, a value of [code]0[/code] is [code]false[/code], and any other value is [code]true[/code].
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT" value="2" enum="GLTFObjectModelType">
+			Object model type "float". Represented in the glTF JSON as a number, and encoded in a [GLTFAccessor] as "SCALAR".
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT_ARRAY" value="3" enum="GLTFObjectModelType">
+			Object model type "float[lb][rb]". Represented in the glTF JSON as an array of numbers, and encoded in a [GLTFAccessor] as "SCALAR".
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT2" value="4" enum="GLTFObjectModelType">
+			Object model type "float2". Represented in the glTF JSON as an array of two numbers, and encoded in a [GLTFAccessor] as "VEC2".
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT3" value="5" enum="GLTFObjectModelType">
+			Object model type "float3". Represented in the glTF JSON as an array of three numbers, and encoded in a [GLTFAccessor] as "VEC3".
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT4" value="6" enum="GLTFObjectModelType">
+			Object model type "float4". Represented in the glTF JSON as an array of four numbers, and encoded in a [GLTFAccessor] as "VEC4".
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT2X2" value="7" enum="GLTFObjectModelType">
+			Object model type "float2x2". Represented in the glTF JSON as an array of four numbers, and encoded in a [GLTFAccessor] as "MAT2".
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT3X3" value="8" enum="GLTFObjectModelType">
+			Object model type "float3x3". Represented in the glTF JSON as an array of nine numbers, and encoded in a [GLTFAccessor] as "MAT3".
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT4X4" value="9" enum="GLTFObjectModelType">
+			Object model type "float4x4". Represented in the glTF JSON as an array of sixteen numbers, and encoded in a [GLTFAccessor] as "MAT4".
+		</constant>
+		<constant name="GLTF_OBJECT_MODEL_TYPE_INT" value="10" enum="GLTFObjectModelType">
+			Object model type "int". Represented in the glTF JSON as a number, and encoded in a [GLTFAccessor] as "SCALAR". The range of values is limited to signed integers. For [code]KHR_interactivity[/code], only 32-bit integers are supported.
+		</constant>
+	</constants>
+</class>

@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_3D_EDITOR_GIZMOS_H
-#define NODE_3D_EDITOR_GIZMOS_H
+#pragma once
 
+#include "core/math/dynamic_bvh.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/local_vector.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -57,7 +56,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	bool selected;
 
 	Vector<Vector3> collision_segments;
-	Ref<TriangleMesh> collision_mesh;
+	LocalVector<Ref<TriangleMesh>> collision_meshes;
 
 	Vector<Vector3> handles;
 	Vector<int> handle_ids;
@@ -72,7 +71,11 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	Vector<Instance> instances;
 	Node3D *spatial_node = nullptr;
 
+	DynamicBVH::ID bvh_node_id;
+
 	void _set_node_3d(Node *p_node) { set_node_3d(Object::cast_to<Node3D>(p_node)); }
+
+	void _update_bvh();
 
 protected:
 	static void _bind_methods();
@@ -152,7 +155,7 @@ public:
 
 protected:
 	int current_state;
-	List<EditorNode3DGizmo *> current_gizmos;
+	HashSet<EditorNode3DGizmo *> current_gizmos;
 	HashMap<String, Vector<Ref<StandardMaterial3D>>> materials;
 
 	static void _bind_methods();
@@ -217,5 +220,3 @@ public:
 	EditorNode3DGizmoPlugin();
 	virtual ~EditorNode3DGizmoPlugin();
 };
-
-#endif // NODE_3D_EDITOR_GIZMOS_H

@@ -1,0 +1,115 @@
+# Malay translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-03-01 21:04+0000\n"
+"Last-Translator: ghakindye vv <ghaffur2013@gmail.com>\n"
+"Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
+"ms/>\n"
+"Language: ms\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "All Recognized"
+msgstr "Semua Dikenali"
+
+msgid "Network"
+msgstr "Rangkaian"
+
+msgid "Open"
+msgstr "Buka"
+
+msgid "Select Current Folder"
+msgstr "Pilih Folder Semasa"
+
+msgid "Save"
+msgstr "Simpan"
+
+msgid "Select This Folder"
+msgstr "Pilih Folder Ini"
+
+msgid "Open a File"
+msgstr "Buka Fail"
+
+msgid "Open File(s)"
+msgstr "Buka Fail"
+
+msgid "Open a Directory"
+msgstr "Buka Direktori"
+
+msgid "Open a File or Directory"
+msgstr "Buka Fail atau Direktori"
+
+msgid "Save a File"
+msgstr "Simpan Fail"
+
+msgid "Go to previous folder."
+msgstr "Pergi ke folder sebelumnya."
+
+msgid "Go to next folder."
+msgstr "Pergi ke folder seterusnya."
+
+msgid "Go to parent folder."
+msgstr "Pergi ke folder induk."
+
+msgid "Path:"
+msgstr "Laluan:"
+
+msgid "Refresh files."
+msgstr "Muat semula fail."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Togol keterlihatan fail tersembunyi."
+
+msgid "Directories & Files:"
+msgstr "Direktori & Fail:"
+
+msgid "File:"
+msgstr "Fail:"
+
+msgid "Create Folder"
+msgstr "Cipta Folder"
+
+msgid "Name:"
+msgstr "Nama:"
+
+msgid "Could not create folder."
+msgstr "Tidak dapat mencipta folder."
+
+msgid "Zoom Out"
+msgstr "Zum Keluar"
+
+msgid "Zoom Reset"
+msgstr "Zum Set Semula"
+
+msgid "Zoom In"
+msgstr "Zum Masuk"
+
+msgid "Cut"
+msgstr "Potong"
+
+msgid "Copy"
+msgstr "Salin"
+
+msgid "Paste"
+msgstr "Tampal"
+
+msgid "Select All"
+msgstr "Pilih Semua"
+
+msgid "Clear"
+msgstr "Kosongkan"
+
+msgid "Undo"
+msgstr "Buat Asal"
+
+msgid "Redo"
+msgstr "Buat Semula"

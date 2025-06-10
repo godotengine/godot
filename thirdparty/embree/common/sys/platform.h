@@ -3,7 +3,9 @@
 
 #pragma once
 
+#if !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <cstddef>
 #include <cassert>
@@ -18,6 +20,30 @@
 #include <cstring>
 #include <stdint.h>
 #include <functional>
+#include <mutex>
+
+#if defined(EMBREE_SYCL_SUPPORT)
+
+#define __SYCL_USE_NON_VARIADIC_SPIRV_OCL_PRINTF__
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-W#pragma-messages"
+
+#include <sycl/sycl.hpp>
+
+#pragma clang diagnostic pop
+
+#include "sycl.h"
+
+#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
+#define CONSTANT __attribute__((opencl_constant))
+#else
+#define CONSTANT
+#endif
+
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// detect platform
@@ -115,7 +141,7 @@
 #else
 #define __restrict__           //__restrict // causes issues with MSVC
 #endif
-#if !defined(__thread)
+#if !defined(__thread) && !defined(__INTEL_LLVM_COMPILER)
 #define __thread               __declspec(thread)
 #endif
 #if !defined(__aligned)
@@ -148,6 +174,10 @@
   #define MAYBE_UNUSED
 #endif
 
+#if !defined(_unused)
+#define _unused(x) ((void)(x))
+#endif
+
 #if defined(_MSC_VER) && (_MSC_VER < 1900) // before VS2015 deleted functions are not supported properly
   #define DELETED
 #else
@@ -155,7 +185,7 @@
 #endif
 
 #if !defined(likely)
-#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) || defined(__SYCL_DEVICE_ONLY__)
 #define   likely(expr) (expr)
 #define unlikely(expr) (expr)
 #else
@@ -171,26 +201,24 @@
 /* debug printing macros */
 #define STRING(x) #x
 #define TOSTRING(x) STRING(x)
-#define PING embree_cout << __FILE__ << " (" << __LINE__ << "): " << __FUNCTION__ << embree_endl
+#define PING embree_cout_uniform << __FILE__ << " (" << __LINE__ << "): " << __FUNCTION__ << embree_endl
 #define PRINT(x) embree_cout << STRING(x) << " = " << (x) << embree_endl
 #define PRINT2(x,y) embree_cout << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << embree_endl
 #define PRINT3(x,y,z) embree_cout << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << embree_endl
 #define PRINT4(x,y,z,w) embree_cout << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
 
+#define UPRINT(x) embree_cout_uniform << STRING(x) << " = " << (x) << embree_endl
+#define UPRINT2(x,y) embree_cout_uniform << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << embree_endl
+#define UPRINT3(x,y,z) embree_cout_uniform << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << embree_endl
+#define UPRINT4(x,y,z,w) embree_cout_uniform << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
+
 #if defined(DEBUG) // only report file and line in debug mode
-  // -- GODOT start --
-  // #define THROW_RUNTIME_ERROR(str)
-  //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
   #define THROW_RUNTIME_ERROR(str) \
     printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
-  // -- GODOT end --
+    //throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
 #else
-  // -- GODOT start --
-  // #define THROW_RUNTIME_ERROR(str)
-  //   throw std::runtime_error(str);
   #define THROW_RUNTIME_ERROR(str) \
-    abort();
-  // -- GODOT end --
+    abort(); //throw std::runtime_error(str);
 #endif
 
 #define FATAL(x)   THROW_RUNTIME_ERROR(x)
@@ -323,13 +351,209 @@ __forceinline std::string toString(long long value) {
 #define DISABLE_DEPRECATED_WARNING __pragma(warning (disable: 4996)) // warning: function was declared deprecated
 #define ENABLE_DEPRECATED_WARNING  __pragma(warning (enable : 4996)) // warning: function was declared deprecated
 #endif
+ 
+////////////////////////////////////////////////////////////////////////////////
+/// SYCL specific
+////////////////////////////////////////////////////////////////////////////////
 
-/* embree output stream */
+
+#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
+
+#define sycl_printf0(format, ...) {               \
+    static const CONSTANT char fmt[] = format;               \
+    if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))       \
+      sycl::ext::oneapi::experimental::printf(fmt, __VA_ARGS__ );  \
+  }
+
+#define sycl_printf0_(format) {               \
+    static const CONSTANT char fmt[] = format;               \
+    if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))       \
+      sycl::ext::oneapi::experimental::printf(fmt);                \
+  }
+
+#else
+
+#define sycl_printf0(format, ...) {                          \
+    static const CONSTANT char fmt[] = format;               \
+    sycl::ext::oneapi::experimental::printf(fmt, __VA_ARGS__ );    \
+  }
+
+#define sycl_printf0_(format) {                              \
+    static const CONSTANT char fmt[] = format;               \
+    sycl::ext::oneapi::experimental::printf(fmt);                  \
+  }
+
+#endif
+
+#define sycl_printf(format, ...) {               \
+    static const CONSTANT char fmt[] = format;               \
+    sycl::ext::oneapi::experimental::printf(fmt, __VA_ARGS__ );    \
+  }
+
+#define sycl_printf_(format) {               \
+    static const CONSTANT char fmt[] = format;               \
+    sycl::ext::oneapi::experimental::printf(fmt);                  \
+  }
+
+#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
+
+namespace embree
+{
+  struct sycl_ostream_ {
+    sycl_ostream_ (bool uniform) : uniform(uniform) {}
+    bool uniform = false;
+  };
+  struct sycl_endl_ {};
+
+#define embree_ostream embree::sycl_ostream_
+#define embree_cout embree::sycl_ostream_(false)
+#define embree_cout_uniform embree::sycl_ostream_(true)
+#define embree_endl embree::sycl_endl_()
+  
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, int   i)
+  {
+    if (cout.uniform) {
+      if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+        sycl_printf("%i",i);
+    }
+    else
+      sycl_printf("%i ",i);
+    
+    return cout;
+  }
+  
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, unsigned int i)
+  {
+    if (cout.uniform) {
+      if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+        sycl_printf("%u",i);
+    } else
+      sycl_printf("%u ",i);
+
+    return cout;
+  }
+
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, float f)
+  {
+    if (cout.uniform) {
+      if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+        sycl_printf("%f",f);
+    } else
+      sycl_printf("%f ",f);
+
+    return cout;
+  }
+
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, double d)
+  {
+    if (cout.uniform) {
+      if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+        sycl_printf("%f",d);
+    } else
+      sycl_printf("%f ",d);
+
+    return cout;
+  }
+
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, uint64_t l)
+  {
+    if (cout.uniform) {
+      if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+        sycl_printf("%lu",l);
+    } else
+      sycl_printf("%lu ",l);
+    
+    return cout;
+  }
+
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, long l)
+  {
+    if (cout.uniform) {
+      if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+        sycl_printf("%l",l);
+    } else
+      sycl_printf("%l ",l);
+    
+    return cout;
+  }
+  
+    
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, void* p)
+  {
+    if (cout.uniform) {
+      if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+        sycl_printf("%p",p);
+    } else
+      sycl_printf("%p ",p);
+    
+    return cout;
+  }
+
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, const char* c)
+  {
+     if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+       sycl_printf("%s",c);
+     return cout;
+  }
+
+  inline sycl_ostream_ operator <<(sycl_ostream_ cout, sycl_endl_)
+  {
+    if (get_sub_group_local_id() == sycl::ctz(intel_sub_group_ballot(true)))
+      sycl_printf_("\n");
+    return cout;
+  }
+}
+
+#else
+
 #define embree_ostream std::ostream&
 #define embree_cout std::cout
 #define embree_cout_uniform std::cout
 #define embree_endl std::endl
-  
+
+#endif
+
+#if defined(EMBREE_SYCL_SUPPORT)
+
+  /* printing out sycle vector types */
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::float4& v) {
+    return out << "(" << v.x() << "," << v.y() << "," << v.z() << "," << v.w() << ")";
+  }
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::float3& v) {
+    return out << "(" << v.x() << "," << v.y() << "," << v.z()  << ")";
+  }
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::float2& v) {
+    return out << "(" << v.x() << "," << v.y()  << ")";
+  }
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::int4& v) {
+    return out << "(" << v.x() << "," << v.y() << "," << v.z() << "," << v.w() << ")";
+  }
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::int3& v) {
+    return out << "(" << v.x() << "," << v.y() << "," << v.z()  << ")";
+  }
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::int2& v) {
+    return out << "(" << v.x() << "," << v.y()  << ")";
+  }
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::uint4& v) {
+    return out << "(" << v.x() << "," << v.y() << "," << v.z() << "," << v.w() << ")";
+  }
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::uint3& v) {
+    return out << "(" << v.x() << "," << v.y() << "," << v.z()  << ")";
+  }
+  __forceinline embree_ostream operator<<(embree_ostream out, const sycl::uint2& v) {
+    return out << "(" << v.x() << "," << v.y()  << ")";
+  }
+
+#endif
+
+inline void tab(std::ostream& cout, int n) {
+  for (int i=0; i<n; i++) cout << "  ";
+}
+
+inline std::string tab(int depth) {
+  return std::string(2*depth,' ');
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Some macros for static profiling
 ////////////////////////////////////////////////////////////////////////////////

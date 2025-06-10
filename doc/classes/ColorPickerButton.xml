@@ -9,8 +9,8 @@
 		[b]Note:[/b] By default, the button may not be wide enough for the color preview swatch to be visible. Make sure to set [member Control.custom_minimum_size] to a big enough value to give the button enough space.
 	</description>
 	<tutorials>
-		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>
-		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/517</link>
+		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/2768</link>
+		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/2767</link>
 	</tutorials>
 	<methods>
 		<method name="get_picker">
@@ -29,11 +29,14 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(0, 0, 0, 1)">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(0, 0, 0, 1)" keywords="colour">
 			The currently selected color.
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
 			If [code]true[/code], the alpha channel in the displayed [ColorPicker] will be visible.
+		</member>
+		<member name="edit_intensity" type="bool" setter="set_edit_intensity" getter="is_editing_intensity" default="true">
+			If [code]true[/code], the intensity slider in the displayed [ColorPicker] will be visible.
 		</member>
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>

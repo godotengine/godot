@@ -82,7 +82,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #  endif
 # endif
 
-static sljit_u8* SLJIT_FUNC FF_FUN(sljit_u8 *str_end, sljit_u8 *str_ptr, sljit_uw offs1, sljit_uw offs2, sljit_uw chars)
+#if (defined(__GNUC__) && defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__ ) \
+	|| (defined(__clang__) \
+	&& ((__clang_major__ == 3 && __clang_minor__ >= 3) || (__clang_major__ > 3)))
+__attribute__((no_sanitize_address))
+#endif
+static sljit_u8* SLJIT_FUNC FF_FUN(sljit_u8 *str_end, sljit_u8 **str_ptr, sljit_uw offs1, sljit_uw offs2, sljit_uw chars)
 #undef FF_FUN
 {
 quad_word qw;
@@ -171,7 +176,7 @@ else
   }
 # endif
 
-str_ptr += IN_UCHARS(offs1);
+*str_ptr += IN_UCHARS(offs1);
 #endif
 
 #if PCRE2_CODE_UNIT_WIDTH != 8
@@ -183,24 +188,24 @@ restart:;
 #endif
 
 #if defined(FFCPS)
-if (str_ptr >= str_end)
+if (*str_ptr >= str_end)
   return NULL;
-sljit_u8 *p1 = str_ptr - diff;
+sljit_u8 *p1 = *str_ptr - diff;
 #endif
-sljit_s32 align_offset = ((uint64_t)str_ptr & 0xf);
-str_ptr = (sljit_u8 *) ((uint64_t)str_ptr & ~0xf);
-vect_t data = VLD1Q(str_ptr);
+sljit_s32 align_offset = ((uint64_t)*str_ptr & 0xf);
+*str_ptr = (sljit_u8 *) ((uint64_t)*str_ptr & ~0xf);
+vect_t data = VLD1Q(*str_ptr);
 #if PCRE2_CODE_UNIT_WIDTH != 8
 data = VANDQ(data, char_mask);
 #endif
- 
+
 #if defined(FFCS)
 vect_t eq = VCEQQ(data, vc1);
 
 #elif defined(FFCS_2)
 vect_t eq1 = VCEQQ(data, vc1);
 vect_t eq2 = VCEQQ(data, vc2);
-vect_t eq = VORRQ(eq1, eq2);    
+vect_t eq = VORRQ(eq1, eq2);
 
 #elif defined(FFCS_MASK)
 vect_t eq = VORRQ(data, vmask);
@@ -212,16 +217,16 @@ vect_t prev_data = data;
 # endif
 
 vect_t data2;
-if (p1 < str_ptr)
+if (p1 < *str_ptr)
   {
-  data2 = VLD1Q(str_ptr - diff);
+  data2 = VLD1Q(*str_ptr - diff);
 #if PCRE2_CODE_UNIT_WIDTH != 8
   data2 = VANDQ(data2, char_mask);
 #endif
   }
 else
   data2 = shift_left_n_lanes(data, offs1 - offs2);
- 
+
 if (compare1_type == compare_match1)
   data = VCEQQ(data, cmp1a);
 else
@@ -242,12 +247,12 @@ if (align_offset < 8)
   qw.dw[0] >>= align_offset * 8;
   if (qw.dw[0])
     {
-    str_ptr += align_offset + __builtin_ctzll(qw.dw[0]) / 8;
+    *str_ptr += align_offset + __builtin_ctzll(qw.dw[0]) / 8;
     goto match;
     }
   if (qw.dw[1])
     {
-    str_ptr += 8 + __builtin_ctzll(qw.dw[1]) / 8;
+    *str_ptr += 8 + __builtin_ctzll(qw.dw[1]) / 8;
     goto match;
     }
   }
@@ -256,15 +261,15 @@ else
   qw.dw[1] >>= (align_offset - 8) * 8;
   if (qw.dw[1])
     {
-    str_ptr += align_offset + __builtin_ctzll(qw.dw[1]) / 8;
+    *str_ptr += align_offset + __builtin_ctzll(qw.dw[1]) / 8;
     goto match;
     }
   }
-str_ptr += 16;
+*str_ptr += 16;
 
-while (str_ptr < str_end)
+while (*str_ptr < str_end)
   {
-  vect_t orig_data = VLD1Q(str_ptr);
+  vect_t orig_data = VLD1Q(*str_ptr);
 #if PCRE2_CODE_UNIT_WIDTH != 8
   orig_data = VANDQ(orig_data, char_mask);
 #endif
@@ -276,7 +281,7 @@ while (str_ptr < str_end)
 #elif defined(FFCS_2)
   eq1 = VCEQQ(data, vc1);
   eq2 = VCEQQ(data, vc2);
-  eq = VORRQ(eq1, eq2);    
+  eq = VORRQ(eq1, eq2);
 
 #elif defined(FFCS_MASK)
   eq = VORRQ(data, vmask);
@@ -287,7 +292,7 @@ while (str_ptr < str_end)
 # if defined (FFCPS_DIFF1)
   data2 = VEXTQ(prev_data, data, VECTOR_FACTOR - 1);
 # else
-  data2 = VLD1Q(str_ptr - diff);
+  data2 = VLD1Q(*str_ptr - diff);
 #  if PCRE2_CODE_UNIT_WIDTH != 8
   data2 = VANDQ(data2, char_mask);
 #  endif
@@ -312,11 +317,11 @@ while (str_ptr < str_end)
 
   VST1Q(qw.mem, eq);
   if (qw.dw[0])
-    str_ptr += __builtin_ctzll(qw.dw[0]) / 8;
+    *str_ptr += __builtin_ctzll(qw.dw[0]) / 8;
   else if (qw.dw[1])
-    str_ptr += 8 + __builtin_ctzll(qw.dw[1]) / 8;
+    *str_ptr += 8 + __builtin_ctzll(qw.dw[1]) / 8;
   else {
-    str_ptr += 16;
+    *str_ptr += 16;
 #if defined (FFCPS_DIFF1)
     prev_data = orig_data;
 #endif
@@ -324,24 +329,24 @@ while (str_ptr < str_end)
   }
 
 match:;
-  if (str_ptr >= str_end)
+  if (*str_ptr >= str_end)
     /* Failed match. */
     return NULL;
 
 #if defined(FF_UTF)
-  if (utf_continue((PCRE2_SPTR)str_ptr - offs1))
+  if (utf_continue((PCRE2_SPTR)*str_ptr - offs1))
     {
     /* Not a match. */
-    str_ptr += IN_UCHARS(1);
+    *str_ptr += IN_UCHARS(1);
     goto restart;
     }
 #endif
 
   /* Match. */
 #if defined (FFCPS)
-  str_ptr -= IN_UCHARS(offs1);
+  *str_ptr -= IN_UCHARS(offs1);
 #endif
-  return str_ptr;
+  return *str_ptr;
   }
 
 /* Failed match. */

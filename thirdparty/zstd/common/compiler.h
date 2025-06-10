@@ -11,6 +11,8 @@
 #ifndef ZSTD_COMPILER_H
 #define ZSTD_COMPILER_H
 
+#include <stddef.h>
+
 #include "portability_macros.h"
 
 /*-*******************************************************
@@ -25,7 +27,7 @@
 #  define INLINE_KEYWORD
 #endif
 
-#if defined(__GNUC__) || defined(__ICCARM__)
+#if defined(__GNUC__) || defined(__IAR_SYSTEMS_ICC__)
 #  define FORCE_INLINE_ATTR __attribute__((always_inline))
 #elif defined(_MSC_VER)
 #  define FORCE_INLINE_ATTR __forceinline
@@ -51,12 +53,19 @@
 #  define WIN_CDECL
 #endif
 
+/* UNUSED_ATTR tells the compiler it is okay if the function is unused. */
+#if defined(__GNUC__) || defined(__IAR_SYSTEMS_ICC__)
+#  define UNUSED_ATTR __attribute__((unused))
+#else
+#  define UNUSED_ATTR
+#endif
+
 /**
  * FORCE_INLINE_TEMPLATE is used to define C "templates", which take constant
  * parameters. They must be inlined for the compiler to eliminate the constant
  * branches.
  */
-#define FORCE_INLINE_TEMPLATE static INLINE_KEYWORD FORCE_INLINE_ATTR
+#define FORCE_INLINE_TEMPLATE static INLINE_KEYWORD FORCE_INLINE_ATTR UNUSED_ATTR
 /**
  * HINT_INLINE is used to help the compiler generate better code. It is *not*
  * used for "templates", so it can be tweaked based on the compilers
@@ -71,21 +80,37 @@
 #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 8 && __GNUC__ < 5
 #  define HINT_INLINE static INLINE_KEYWORD
 #else
-#  define HINT_INLINE static INLINE_KEYWORD FORCE_INLINE_ATTR
+#  define HINT_INLINE FORCE_INLINE_TEMPLATE
 #endif
 
-/* UNUSED_ATTR tells the compiler it is okay if the function is unused. */
+/* "soft" inline :
+ * The compiler is free to select if it's a good idea to inline or not.
+ * The main objective is to silence compiler warnings
+ * when a defined function in included but not used.
+ *
+ * Note : this macro is prefixed `MEM_` because it used to be provided by `mem.h` unit.
+ * Updating the prefix is probably preferable, but requires a fairly large codemod,
+ * since this name is used everywhere.
+ */
+#ifndef MEM_STATIC  /* already defined in Linux Kernel mem.h */
 #if defined(__GNUC__)
-#  define UNUSED_ATTR __attribute__((unused))
+#  define MEM_STATIC static __inline UNUSED_ATTR
+#elif defined(__IAR_SYSTEMS_ICC__)
+#  define MEM_STATIC static inline UNUSED_ATTR
+#elif defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */)
+#  define MEM_STATIC static inline
+#elif defined(_MSC_VER)
+#  define MEM_STATIC static __inline
 #else
-#  define UNUSED_ATTR
+#  define MEM_STATIC static  /* this version may generate warnings for unused static functions; disable the relevant warning */
+#endif
 #endif
 
 /* force no inlining */
 #ifdef _MSC_VER
 #  define FORCE_NOINLINE static __declspec(noinline)
 #else
-#  if defined(__GNUC__) || defined(__ICCARM__)
+#  if defined(__GNUC__) || defined(__IAR_SYSTEMS_ICC__)
 #    define FORCE_NOINLINE static __attribute__((__noinline__))
 #  else
 #    define FORCE_NOINLINE static
@@ -94,7 +119,7 @@
 
 
 /* target attribute */
-#if defined(__GNUC__) || defined(__ICCARM__)
+#if defined(__GNUC__) || defined(__IAR_SYSTEMS_ICC__)
 #  define TARGET_ATTRIBUTE(target) __attribute__((__target__(target)))
 #else
 #  define TARGET_ATTRIBUTE(target)
@@ -109,10 +134,10 @@
 /* prefetch
  * can be disabled, by declaring NO_PREFETCH build macro */
 #if defined(NO_PREFETCH)
-#  define PREFETCH_L1(ptr)  (void)(ptr)  /* disabled */
-#  define PREFETCH_L2(ptr)  (void)(ptr)  /* disabled */
+#  define PREFETCH_L1(ptr)  do { (void)(ptr); } while (0)  /* disabled */
+#  define PREFETCH_L2(ptr)  do { (void)(ptr); } while (0)  /* disabled */
 #else
-#  if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_I86))  /* _mm_prefetch() is not defined outside of x86/x64 */
+#  if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_I86)) && !defined(_M_ARM64EC)  /* _mm_prefetch() is not defined outside of x86/x64 */
 #    include <mmintrin.h>   /* https://msdn.microsoft.com/fr-fr/library/84szxsww(v=vs.90).aspx */
 #    define PREFETCH_L1(ptr)  _mm_prefetch((const char*)(ptr), _MM_HINT_T0)
 #    define PREFETCH_L2(ptr)  _mm_prefetch((const char*)(ptr), _MM_HINT_T1)
@@ -120,24 +145,25 @@
 #    define PREFETCH_L1(ptr)  __builtin_prefetch((ptr), 0 /* rw==read */, 3 /* locality */)
 #    define PREFETCH_L2(ptr)  __builtin_prefetch((ptr), 0 /* rw==read */, 2 /* locality */)
 #  elif defined(__aarch64__)
-#    define PREFETCH_L1(ptr)  __asm__ __volatile__("prfm pldl1keep, %0" ::"Q"(*(ptr)))
-#    define PREFETCH_L2(ptr)  __asm__ __volatile__("prfm pldl2keep, %0" ::"Q"(*(ptr)))
+#    define PREFETCH_L1(ptr)  do { __asm__ __volatile__("prfm pldl1keep, %0" ::"Q"(*(ptr))); } while (0)
+#    define PREFETCH_L2(ptr)  do { __asm__ __volatile__("prfm pldl2keep, %0" ::"Q"(*(ptr))); } while (0)
 #  else
-#    define PREFETCH_L1(ptr) (void)(ptr)  /* disabled */
-#    define PREFETCH_L2(ptr) (void)(ptr)  /* disabled */
+#    define PREFETCH_L1(ptr) do { (void)(ptr); } while (0)  /* disabled */
+#    define PREFETCH_L2(ptr) do { (void)(ptr); } while (0)  /* disabled */
 #  endif
 #endif  /* NO_PREFETCH */
 
 #define CACHELINE_SIZE 64
 
-#define PREFETCH_AREA(p, s)  {            \
-    const char* const _ptr = (const char*)(p);  \
-    size_t const _size = (size_t)(s);     \
-    size_t _pos;                          \
-    for (_pos=0; _pos<_size; _pos+=CACHELINE_SIZE) {  \
-        PREFETCH_L2(_ptr + _pos);         \
-    }                                     \
-}
+#define PREFETCH_AREA(p, s)                              \
+    do {                                                 \
+        const char* const _ptr = (const char*)(p);       \
+        size_t const _size = (size_t)(s);                \
+        size_t _pos;                                     \
+        for (_pos=0; _pos<_size; _pos+=CACHELINE_SIZE) { \
+            PREFETCH_L2(_ptr + _pos);                    \
+        }                                                \
+    } while (0)
 
 /* vectorization
  * older GCC (pre gcc-4.3 picked as the cutoff) uses a different syntax,
@@ -166,9 +192,9 @@
 #endif
 
 #if __has_builtin(__builtin_unreachable) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)))
-#  define ZSTD_UNREACHABLE { assert(0), __builtin_unreachable(); }
+#  define ZSTD_UNREACHABLE do { assert(0), __builtin_unreachable(); } while (0)
 #else
-#  define ZSTD_UNREACHABLE { assert(0); }
+#  define ZSTD_UNREACHABLE do { assert(0); } while (0)
 #endif
 
 /* disable warnings */
@@ -181,30 +207,21 @@
 #  pragma warning(disable : 4324)        /* disable: C4324: padded structure */
 #endif
 
-/*Like DYNAMIC_BMI2 but for compile time determination of BMI2 support*/
-#ifndef STATIC_BMI2
-#  if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_I86))
-#    ifdef __AVX2__  //MSVC does not have a BMI2 specific flag, but every CPU that supports AVX2 also supports BMI2
-#       define STATIC_BMI2 1
-#    endif
-#  elif defined(__BMI2__) && defined(__x86_64__) && defined(__GNUC__)
-#    define STATIC_BMI2 1
-#  endif
-#endif
-
-#ifndef STATIC_BMI2
-    #define STATIC_BMI2 0
-#endif
-
 /* compile time determination of SIMD support */
 #if !defined(ZSTD_NO_INTRINSICS)
-#  if defined(__SSE2__) || defined(_M_AMD64) || (defined (_M_IX86) && defined(_M_IX86_FP) && (_M_IX86_FP >= 2))
+#  if defined(__AVX2__)
+#    define ZSTD_ARCH_X86_AVX2
+#  endif
+#  if defined(__SSE2__) || defined(_M_X64) || (defined (_M_IX86) && defined(_M_IX86_FP) && (_M_IX86_FP >= 2))
 #    define ZSTD_ARCH_X86_SSE2
 #  endif
 #  if defined(__ARM_NEON) || defined(_M_ARM64)
 #    define ZSTD_ARCH_ARM_NEON
 #  endif
 #
+#  if defined(ZSTD_ARCH_X86_AVX2)
+#    include <immintrin.h>
+#  endif
 #  if defined(ZSTD_ARCH_X86_SSE2)
 #    include <emmintrin.h>
 #  elif defined(ZSTD_ARCH_ARM_NEON)
@@ -249,8 +266,14 @@
 #endif
 
 /*-**************************************************************
-*  Alignment check
+*  Alignment
 *****************************************************************/
+
+/* @return 1 if @u is a 2^n value, 0 otherwise
+ * useful to check a value is valid for alignment restrictions */
+MEM_STATIC int ZSTD_isPower2(size_t u) {
+    return (u & (u-1)) == 0;
+}
 
 /* this test was initially positioned in mem.h,
  * but this file is removed (or replaced) for linux kernel
@@ -277,9 +300,92 @@
 # endif
 #endif /* ZSTD_ALIGNOF */
 
+#ifndef ZSTD_ALIGNED
+/* C90-compatible alignment macro (GCC/Clang). Adjust for other compilers if needed. */
+# if defined(__GNUC__) || defined(__clang__)
+#  define ZSTD_ALIGNED(a) __attribute__((aligned(a)))
+# elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) /* C11 */
+#  define ZSTD_ALIGNED(a) _Alignas(a)
+#elif defined(_MSC_VER)
+#  define ZSTD_ALIGNED(n) __declspec(align(n))
+# else
+   /* this compiler will require its own alignment instruction */
+#  define ZSTD_ALIGNED(...)
+# endif
+#endif /* ZSTD_ALIGNED */
+
+
 /*-**************************************************************
 *  Sanitizer
 *****************************************************************/
+
+/**
+ * Zstd relies on pointer overflow in its decompressor.
+ * We add this attribute to functions that rely on pointer overflow.
+ */
+#ifndef ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
+#  if __has_attribute(no_sanitize)
+#    if !defined(__clang__) && defined(__GNUC__) && __GNUC__ < 8
+       /* gcc < 8 only has signed-integer-overlow which triggers on pointer overflow */
+#      define ZSTD_ALLOW_POINTER_OVERFLOW_ATTR __attribute__((no_sanitize("signed-integer-overflow")))
+#    else
+       /* older versions of clang [3.7, 5.0) will warn that pointer-overflow is ignored. */
+#      define ZSTD_ALLOW_POINTER_OVERFLOW_ATTR __attribute__((no_sanitize("pointer-overflow")))
+#    endif
+#  else
+#    define ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
+#  endif
+#endif
+
+/**
+ * Helper function to perform a wrapped pointer difference without triggering
+ * UBSAN.
+ *
+ * @returns lhs - rhs with wrapping
+ */
+MEM_STATIC
+ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
+ptrdiff_t ZSTD_wrappedPtrDiff(unsigned char const* lhs, unsigned char const* rhs)
+{
+    return lhs - rhs;
+}
+
+/**
+ * Helper function to perform a wrapped pointer add without triggering UBSAN.
+ *
+ * @return ptr + add with wrapping
+ */
+MEM_STATIC
+ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
+unsigned char const* ZSTD_wrappedPtrAdd(unsigned char const* ptr, ptrdiff_t add)
+{
+    return ptr + add;
+}
+
+/**
+ * Helper function to perform a wrapped pointer subtraction without triggering
+ * UBSAN.
+ *
+ * @return ptr - sub with wrapping
+ */
+MEM_STATIC
+ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
+unsigned char const* ZSTD_wrappedPtrSub(unsigned char const* ptr, ptrdiff_t sub)
+{
+    return ptr - sub;
+}
+
+/**
+ * Helper function to add to a pointer that works around C's undefined behavior
+ * of adding 0 to NULL.
+ *
+ * @returns `ptr + add` except it defines `NULL + 0 == NULL`.
+ */
+MEM_STATIC
+unsigned char* ZSTD_maybeNullPtrAdd(unsigned char* ptr, ptrdiff_t add)
+{
+    return add > 0 ? ptr + add : ptr;
+}
 
 /* Issue #3240 reports an ASAN failure on an llvm-mingw build. Out of an
  * abundance of caution, disable our custom poisoning on mingw. */

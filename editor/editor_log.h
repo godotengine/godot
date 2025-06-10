@@ -28,18 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_LOG_H
-#define EDITOR_LOG_H
+#pragma once
 
 #include "core/os/thread.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/texture_button.h"
-#include "scene/gui/texture_rect.h"
 
 class UndoRedo;
 
@@ -64,7 +59,7 @@ private:
 
 		LogMessage() {}
 
-		LogMessage(const String p_text, MessageType p_type, bool p_clear) :
+		LogMessage(const String &p_text, MessageType p_type, bool p_clear) :
 				text(p_text),
 				type(p_type),
 				clear(p_clear) {
@@ -92,17 +87,16 @@ private:
 		MessageType type;
 		Button *toggle_button = nullptr;
 
-		void initialize_button(const String &p_tooltip, Callable p_toggled_callback) {
+		void initialize_button(const String &p_name, const String &p_tooltip, Callable p_toggled_callback) {
 			toggle_button = memnew(Button);
 			toggle_button->set_toggle_mode(true);
 			toggle_button->set_pressed(true);
 			toggle_button->set_text(itos(message_count));
-			toggle_button->set_tooltip_text(TTR(p_tooltip));
-			// Don't tint the icon even when in "pressed" state.
-			toggle_button->add_theme_color_override("icon_color_pressed", Color(1, 1, 1, 1));
-			toggle_button->set_focus_mode(FOCUS_NONE);
+			toggle_button->set_accessibility_name(TTRGET(p_name));
+			toggle_button->set_tooltip_text(TTRGET(p_tooltip));
+			toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 			// When toggled call the callback and pass the MessageType this button is for.
-			toggle_button->connect("toggled", p_toggled_callback.bind(type));
+			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
 		}
 
 		int get_message_count() {
@@ -128,6 +122,8 @@ private:
 		}
 	};
 
+	int line_limit = 10000;
+
 	Vector<LogMessage> messages;
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
 	HashMap<MessageType, LogFilter *> type_filter_map;
@@ -143,26 +139,25 @@ private:
 	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
 
-	// Reference to the "Output" button on the toolbar so we can update it's icon when
-	// Warnings or Errors are encounetered.
+	// Reference to the "Output" button on the toolbar so we can update its icon when warnings or errors are encountered.
 	Button *tool_button = nullptr;
 
-	bool is_loading_state = false; // Used to disable saving requests while loading (some signals from buttons will try trigger a save, which happens during loading).
+	bool is_loading_state = false; // Used to disable saving requests while loading (some signals from buttons will try to trigger a save, which happens during loading).
 	Timer *save_state_timer = nullptr;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 
 	ErrorHandlerList eh;
 
-	Thread::ID current;
-
 	//void _dragged(const Point2& p_ofs);
+	void _meta_clicked(const String &p_meta);
 	void _clear_request();
 	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();
 	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
+	bool _check_display_message(LogMessage &p_message);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _set_search_visible(bool p_visible);
@@ -178,6 +173,7 @@ private:
 	void _load_state();
 
 	void _update_theme();
+	void _editor_settings_changed();
 
 protected:
 	void _notification(int p_what);
@@ -195,5 +191,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(EditorLog::MessageType);
-
-#endif // EDITOR_LOG_H

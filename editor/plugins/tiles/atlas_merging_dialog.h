@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ATLAS_MERGING_DIALOG_H
-#define ATLAS_MERGING_DIALOG_H
+#pragma once
 
 #include "editor/editor_properties.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class EditorFileDialog;
 class EditorPropertyVector2i;
@@ -44,7 +43,7 @@ class AtlasMergingDialog : public ConfirmationDialog {
 	GDCLASS(AtlasMergingDialog, ConfirmationDialog);
 
 private:
-	int commited_actions_count = 0;
+	int committed_actions_count = 0;
 	bool delete_original_atlases = true;
 	Ref<TileSetAtlasSource> merged;
 	LocalVector<HashMap<Vector2i, Vector2i>> merged_mapping;
@@ -64,9 +63,9 @@ private:
 
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 
-	void _generate_merged(Vector<Ref<TileSetAtlasSource>> p_atlas_sources, int p_max_columns);
+	void _generate_merged(const Vector<Ref<TileSetAtlasSource>> &p_atlas_sources, int p_max_columns);
 	void _update_texture();
-	void _merge_confirmed(String p_path);
+	void _merge_confirmed(const String &p_path);
 
 protected:
 	virtual void ok_pressed() override;
@@ -83,5 +82,3 @@ public:
 
 	AtlasMergingDialog();
 };
-
-#endif // ATLAS_MERGING_DIALOG_H

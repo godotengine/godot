@@ -111,6 +111,13 @@
 				Returns the title of the tab at index [param tab_idx].
 			</description>
 		</method>
+		<method name="get_tab_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the tooltip text of the tab at index [param tab_idx].
+			</description>
+		</method>
 		<method name="is_tab_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="tab_idx" type="int" />
@@ -224,13 +231,28 @@
 				Sets a [param title] for the tab at index [param tab_idx].
 			</description>
 		</method>
+		<method name="set_tab_tooltip">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets a [param tooltip] for tab at index [param tab_idx].
+				[b]Note:[/b] By default, if the [param tooltip] is empty and the tab text is truncated (not all characters fit into the tab), the title will be displayed as a tooltip. To hide the tooltip, assign [code]" "[/code] as the [param tooltip] text.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
 			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
 		</member>
-		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
-			Select tab at index [code]tab_idx[/code].
+		<member name="close_with_middle_mouse" type="bool" setter="set_close_with_middle_mouse" getter="get_close_with_middle_mouse" default="true">
+			If [code]true[/code], middle clicking on the mouse will fire the [signal tab_close_pressed] signal.
+		</member>
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
+			The index of the current selected tab. A value of [code]-1[/code] means that no tab is selected and can only be set when [member deselect_enabled] is [code]true[/code] or if all tabs are hidden or disabled.
+		</member>
+		<member name="deselect_enabled" type="bool" setter="set_deselect_enabled" getter="get_deselect_enabled" default="false">
+			If [code]true[/code], all tabs can be deselected so that no tab is selected. Click on the current tab to deselect it.
 		</member>
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
@@ -249,10 +271,10 @@
 			If [code]true[/code], enables selecting a tab with the right mouse button.
 		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
-			Sets the position at which tabs will be placed. See [enum AlignmentMode] for details.
+			The position at which tabs will be placed.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
-			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
+			When the close button will appear on the tabs.
 		</member>
 		<member name="tab_count" type="int" setter="set_tab_count" getter="get_tab_count" default="0">
 			The number of tabs currently in the bar.
@@ -290,7 +312,7 @@
 		<signal name="tab_close_pressed">
 			<param index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab's close button is pressed.
+				Emitted when a tab's close button is pressed or when middle-clicking on a tab, if [member close_with_middle_mouse] is enabled.
 				[b]Note:[/b] Tabs are not removed automatically once the close button is pressed, this behavior needs to be programmed manually. For example:
 				[codeblocks]
 				[gdscript]
@@ -357,7 +379,7 @@
 		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Font color of the currently hovered tab. Does not apply to the selected tab.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the tab name.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
@@ -375,6 +397,9 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the tab text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="tab_separation" data_type="constant" type="int" default="0">
+			The space between tabs in the tab bar.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			The font used to draw tab names.

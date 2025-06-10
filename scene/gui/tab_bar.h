@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TAB_BAR_H
-#define TAB_BAR_H
+#pragma once
 
 #include "scene/gui/control.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
 
 class TabBar : public Control {
@@ -54,7 +54,11 @@ public:
 
 private:
 	struct Tab {
+		mutable RID accessibility_item_element;
+		mutable bool accessibility_item_dirty = true;
+
 		String text;
+		String tooltip;
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -65,6 +69,8 @@ private:
 
 		bool disabled = false;
 		bool hidden = false;
+		bool truncated = false;
+
 		Variant metadata;
 		int ofs_cache = 0;
 		int size_cache = 0;
@@ -77,7 +83,12 @@ private:
 		Tab() {
 			text_buf.instantiate();
 		}
+
+		Tab(bool p_dummy) {}
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	int offset = 0;
 	int max_drawn_tab = 0;
@@ -85,18 +96,21 @@ private:
 	bool buttons_visible = false;
 	bool missing_right = false;
 	Vector<Tab> tabs;
-	int current = 0;
-	int previous = 0;
+	int current = -1;
+	int previous = -1;
 	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
+	bool tab_style_v_flip = false;
 
 	bool select_with_rmb = false;
+	bool deselect_enabled = false;
 
 	int cb_hover = -1;
 	bool cb_pressing = false;
 	CloseButtonDisplayPolicy cb_displaypolicy = CLOSE_BUTTON_SHOW_NEVER;
+	bool close_with_middle_mouse = true;
 
 	int hover = -1; // Hovered tab.
 	int max_width = 0;
@@ -106,12 +120,17 @@ private:
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 
+	static const int CURRENT_TAB_UNINITIALIZED = -2;
+	bool initialized = false;
+	int queued_current = CURRENT_TAB_UNINITIALIZED;
+
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
 	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
 
 	struct ThemeCache {
 		int h_separation = 0;
+		int tab_separation = 0;
 		int icon_max_width = 0;
 
 		Ref<StyleBox> tab_unselected_style;
@@ -145,6 +164,7 @@ private:
 	int get_tab_width(int p_idx) const;
 	Size2 _get_tab_icon_size(int p_idx) const;
 	void _ensure_no_over_offset();
+	bool _can_deselect() const;
 
 	void _update_hover();
 	void _update_cache(bool p_update_hover = true);
@@ -154,12 +174,18 @@ private:
 	void _shape(int p_tab);
 	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus);
 
+	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
+	void _accessibility_action_focus(const Variant &p_data, int p_index);
+
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -169,14 +195,21 @@ protected:
 	void _move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
 public:
+	RID get_tab_accessibility_element(int p_tab) const;
+	virtual RID get_focused_accessibility_element() const override;
+
 	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
 	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
 	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
+	void _draw_tab_drop(RID p_canvas_item);
 
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
+
+	void set_tab_tooltip(int p_tab, const String &p_tooltip);
+	String get_tab_tooltip(int p_tab) const;
 
 	void set_tab_text_direction(int p_tab, TextDirection p_text_direction);
 	TextDirection get_tab_text_direction(int p_tab) const;
@@ -203,6 +236,7 @@ public:
 	Ref<Texture2D> get_tab_button_icon(int p_tab) const;
 
 	int get_tab_idx_at_point(const Point2 &p_point) const;
+	int get_closest_tab_idx_to_point(const Point2 &p_point) const;
 
 	void set_tab_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_tab_alignment() const;
@@ -210,10 +244,15 @@ public:
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
+	void set_tab_style_v_flip(bool p_tab_style_v_flip);
+
 	void move_tab(int p_from, int p_to);
 
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
 	CloseButtonDisplayPolicy get_tab_close_display_policy() const;
+
+	void set_close_with_middle_mouse(bool p_scroll_close);
+	bool get_close_with_middle_mouse() const;
 
 	void set_tab_count(int p_count);
 	int get_tab_count() const;
@@ -223,9 +262,13 @@ public:
 	int get_previous_tab() const;
 	int get_hovered_tab() const;
 
+	int get_previous_available(int p_idx = -1) const;
+	int get_next_available(int p_idx = -1) const;
+
 	bool select_previous_available();
 	bool select_next_available();
 
+	void set_tab_offset(int p_offset);
 	int get_tab_offset() const;
 	bool get_offset_buttons_visible() const;
 
@@ -247,6 +290,9 @@ public:
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
 
+	void set_deselect_enabled(bool p_enabled);
+	bool get_deselect_enabled() const;
+
 	void ensure_tab_visible(int p_idx);
 
 	void set_max_tab_width(int p_width);
@@ -260,5 +306,3 @@ public:
 
 VARIANT_ENUM_CAST(TabBar::AlignmentMode);
 VARIANT_ENUM_CAST(TabBar::CloseButtonDisplayPolicy);
-
-#endif // TAB_BAR_H

@@ -30,18 +30,16 @@
 
 #include "editor_scene_exporter_gltf_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor_scene_exporter_gltf_settings.h"
 
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/3d/scene_import_settings.h"
+#include "editor/themes/editor_scale.h"
 
-String SceneExporterGLTFPlugin::get_name() const {
+String SceneExporterGLTFPlugin::get_plugin_name() const {
 	return "ConvertGLTF2";
 }
 
@@ -88,7 +86,7 @@ void SceneExporterGLTFPlugin::_popup_gltf_export_dialog() {
 	}
 	_file_dialog->set_current_file(filename + String(".gltf"));
 	// Generate and refresh the export settings.
-	_export_settings->generate_property_list(_gltf_document);
+	_export_settings->generate_property_list(_gltf_document, root);
 	_settings_inspector->edit(nullptr);
 	_settings_inspector->edit(_export_settings.ptr());
 	// Show the file dialog.
@@ -107,6 +105,7 @@ void SceneExporterGLTFPlugin::_export_scene_as_gltf(const String &p_file_path) {
 	state->set_copyright(_export_settings->get_copyright());
 	int32_t flags = 0;
 	flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+	state->set_bake_fps(_export_settings->get_bake_fps());
 	Error err = _gltf_document->append_from_scene(root, state, flags);
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
@@ -117,5 +116,3 @@ void SceneExporterGLTFPlugin::_export_scene_as_gltf(const String &p_file_path) {
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }
-
-#endif // TOOLS_ENABLED

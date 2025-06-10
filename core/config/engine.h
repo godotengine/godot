@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ENGINE_H
-#define ENGINE_H
+#pragma once
 
 #include "core/os/main_loop.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
-#include "core/templates/vector.h"
 
 template <typename T>
 class TypedArray;
@@ -72,6 +70,10 @@ private:
 	bool abort_on_gpu_errors = false;
 	bool use_validation_layers = false;
 	bool generate_spirv_debug_info = false;
+	bool extra_gpu_memory_tracking = false;
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	bool accurate_breadcrumbs = false;
+#endif
 	int32_t gpu_idx = -1;
 
 	uint64_t _process_frames = 0;
@@ -83,11 +85,21 @@ private:
 	bool editor_hint = false;
 	bool project_manager_hint = false;
 	bool extension_reloading = false;
+	bool embedded_in_editor = false;
+	bool recovery_mode_hint = false;
 
-	static Engine *singleton;
+	bool _print_header = true;
+
+	static inline Engine *singleton = nullptr;
 
 	String write_movie_path;
 	String shader_cache_path;
+
+	static constexpr int SERVER_SYNC_FRAME_COUNT_WARNING = 5;
+	int server_syncs = 0;
+	bool frame_server_synced = false;
+
+	bool freeze_time_scale = false;
 
 public:
 	static Engine *get_singleton();
@@ -120,9 +132,15 @@ public:
 
 	void set_time_scale(double p_scale);
 	double get_time_scale() const;
+	double get_unfrozen_time_scale() const;
+
+	void set_print_to_stdout(bool p_enabled);
+	bool is_printing_to_stdout() const;
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
+	void print_header(const String &p_string) const;
+	void print_header_rich(const String &p_string) const;
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
@@ -144,6 +162,9 @@ public:
 
 	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) { extension_reloading = p_enabled; }
 	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return extension_reloading; }
+
+	_FORCE_INLINE_ void set_recovery_mode_hint(bool p_enabled) { recovery_mode_hint = p_enabled; }
+	_FORCE_INLINE_ bool is_recovery_mode_hint() const { return recovery_mode_hint; }
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
@@ -153,6 +174,9 @@ public:
 
 	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return false; }
+
+	_FORCE_INLINE_ void set_recovery_mode_hint(bool p_enabled) {}
+	_FORCE_INLINE_ bool is_recovery_mode_hint() const { return false; }
 #endif
 
 	Dictionary get_version_info() const;
@@ -173,10 +197,19 @@ public:
 	bool is_abort_on_gpu_errors_enabled() const;
 	bool is_validation_layers_enabled() const;
 	bool is_generate_spirv_debug_info_enabled() const;
+	bool is_extra_gpu_memory_tracking_enabled() const;
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	bool is_accurate_breadcrumbs_enabled() const;
+#endif
 	int32_t get_gpu_index() const;
 
-	Engine();
-	virtual ~Engine() {}
-};
+	void increment_frames_drawn();
+	bool notify_frame_server_synced();
 
-#endif // ENGINE_H
+	void set_freeze_time_scale(bool p_frozen);
+	void set_embedded_in_editor(bool p_enabled);
+	bool is_embedded_in_editor() const;
+
+	Engine();
+	virtual ~Engine();
+};

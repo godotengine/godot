@@ -5,13 +5,15 @@ plugins {
 
 ext {
     PUBLISH_ARTIFACT_ID = 'godot'
+    TOOLS_PUBLISH_ARTIFACT_ID = 'godot-tools'
 }
 
 apply from: "../scripts/publish-module.gradle"
 
 dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+
+    testImplementation "junit:junit:4.13.2"
 }
 
 def pathToRootDir = "../../../../"
@@ -39,13 +41,18 @@ android {
         jvmTarget = versions.javaVersion
     }
 
+    buildFeatures {
+        aidl = true
+        buildConfig = true
+    }
+
     buildTypes {
         dev {
             initWith debug
         }
     }
 
-    flavorDimensions "products"
+    flavorDimensions = ["products"]
     productFlavors {
         editor {}
         template {}
@@ -70,6 +77,7 @@ android {
         main {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDirs = ['src']
+            test.java.srcDirs = ['srcTest/java']
             res.srcDirs = ['res']
             aidl.srcDirs = ['aidl']
             assets.srcDirs = ['assets']
@@ -97,9 +105,10 @@ android {
         }
 
         boolean devBuild = buildType == "dev"
+        boolean debugSymbols = devBuild
         boolean runTests = devBuild
-        boolean productionBuild = !devBuild
         boolean storeRelease = buildType == "release"
+        boolean productionBuild = storeRelease
 
         def sconsTarget = flavorName
         if (sconsTarget == "template") {
@@ -113,7 +122,7 @@ android {
                 case "dev":
                 default:
                     sconsTarget += "_debug"
-                    break;
+                    break
             }
         }
 
@@ -164,7 +173,7 @@ android {
             def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
             tasks.create(name: taskName, type: Exec) {
                 executable sconsExecutableFile.absolutePath
-                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "debug_symbols=${debugSymbols}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
             }
 
             // Schedule the tasks so the generated libs are present before the aar file is packaged.
@@ -174,6 +183,10 @@ android {
 
     publishing {
         singleVariant("templateRelease") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+        singleVariant("editorRelease") {
             withSourcesJar()
             withJavadocJar()
         }

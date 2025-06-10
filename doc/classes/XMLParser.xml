@@ -6,34 +6,34 @@
 	<description>
 		Provides a low-level interface for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files. This class can serve as base to make custom XML parsers.
 		To parse XML, you must open a file with the [method open] method or a buffer with the [method open_buffer] method. Then, the [method read] method must be called to parse the next nodes. Most of the methods take into consideration the currently parsed node.
-		Here is an example of using [XMLParser] to parse a SVG file (which is based on XML), printing each element and its attributes as a dictionary:
+		Here is an example of using [XMLParser] to parse an SVG file (which is based on XML), printing each element and its attributes as a dictionary:
 		[codeblocks]
 		[gdscript]
 		var parser = XMLParser.new()
 		parser.open("path/to/file.svg")
 		while parser.read() != ERR_FILE_EOF:
-		    if parser.get_node_type() == XMLParser.NODE_ELEMENT:
-		        var node_name = parser.get_node_name()
-		        var attributes_dict = {}
-		        for idx in range(parser.get_attribute_count()):
-		            attributes_dict[parser.get_attribute_name(idx)] = parser.get_attribute_value(idx)
-		        print("The ", node_name, " element has the following attributes: ", attributes_dict)
+			if parser.get_node_type() == XMLParser.NODE_ELEMENT:
+				var node_name = parser.get_node_name()
+				var attributes_dict = {}
+				for idx in range(parser.get_attribute_count()):
+					attributes_dict[parser.get_attribute_name(idx)] = parser.get_attribute_value(idx)
+				print("The ", node_name, " element has the following attributes: ", attributes_dict)
 		[/gdscript]
 		[csharp]
 		var parser = new XmlParser();
 		parser.Open("path/to/file.svg");
 		while (parser.Read() != Error.FileEof)
 		{
-		    if (parser.GetNodeType() == XmlParser.NodeType.Element)
-		    {
-		        var nodeName = parser.GetNodeName();
-		        var attributesDict = new Godot.Collections.Dictionary();
-		        for (int idx = 0; idx &lt; parser.GetAttributeCount(); idx++)
-		        {
-		            attributesDict[parser.GetAttributeName(idx)] = parser.GetAttributeValue(idx);
-		        }
-		        GD.Print($"The {nodeName} element has the following attributes: {attributesDict}");
-		    }
+			if (parser.GetNodeType() == XmlParser.NodeType.Element)
+			{
+				var nodeName = parser.GetNodeName();
+				var attributesDict = new Godot.Collections.Dictionary();
+				for (int idx = 0; idx &lt; parser.GetAttributeCount(); idx++)
+				{
+					attributesDict[parser.GetAttributeName(idx)] = parser.GetAttributeValue(idx);
+				}
+				GD.Print($"The {nodeName} element has the following attributes: {attributesDict}");
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -91,7 +91,8 @@
 		<method name="get_node_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of an element node. This method will raise an error if the currently parsed node is not of [constant NODE_ELEMENT] or [constant NODE_ELEMENT_END] type.
+				Returns the name of a node. This method will raise an error if the currently parsed node is a text node.
+				[b]Note:[/b] The content of a [constant NODE_CDATA] node and the comment string of a [constant NODE_COMMENT] node are also considered names.
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">

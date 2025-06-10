@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Texture3D" inherits="Texture" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for 3-dimensionnal textures.
+		Base class for 3-dimensional textures.
 	</brief_description>
 	<description>
 		Base class for [ImageTexture3D] and [CompressedTexture3D]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. [Texture3D] is the base class for all 3-dimensional texture types. See also [TextureLayered].
@@ -11,37 +11,37 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_data" qualifiers="virtual const">
+		<method name="_get_data" qualifiers="virtual required const">
 			<return type="Image[]" />
 			<description>
 				Called when the [Texture3D]'s data is queried.
 			</description>
 		</method>
-		<method name="_get_depth" qualifiers="virtual const">
+		<method name="_get_depth" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture3D]'s depth is queried.
 			</description>
 		</method>
-		<method name="_get_format" qualifiers="virtual const">
+		<method name="_get_format" qualifiers="virtual required const">
 			<return type="int" enum="Image.Format" />
 			<description>
 				Called when the [Texture3D]'s format is queried.
 			</description>
 		</method>
-		<method name="_get_height" qualifiers="virtual const">
+		<method name="_get_height" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture3D]'s height is queried.
 			</description>
 		</method>
-		<method name="_get_width" qualifiers="virtual const">
+		<method name="_get_width" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture3D]'s width is queried.
 			</description>
 		</method>
-		<method name="_has_mipmaps" qualifiers="virtual const">
+		<method name="_has_mipmaps" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 				Called when the presence of mipmaps in the [Texture3D] is queried.
@@ -68,7 +68,7 @@
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<description>
-				Returns the current format being used by this texture. See [enum Image.Format] for details.
+				Returns the current format being used by this texture.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">

@@ -30,7 +30,7 @@
 
 #include "websocket_peer.h"
 
-WebSocketPeer *(*WebSocketPeer::_create)() = nullptr;
+WebSocketPeer *(*WebSocketPeer::_create)(bool p_notify_postinitialize) = nullptr;
 
 WebSocketPeer::WebSocketPeer() {
 }
@@ -70,6 +70,9 @@ void WebSocketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_queued_packets", "buffer_size"), &WebSocketPeer::set_max_queued_packets);
 	ClassDB::bind_method(D_METHOD("get_max_queued_packets"), &WebSocketPeer::get_max_queued_packets);
 
+	ClassDB::bind_method(D_METHOD("set_heartbeat_interval", "interval"), &WebSocketPeer::set_heartbeat_interval);
+	ClassDB::bind_method(D_METHOD("get_heartbeat_interval"), &WebSocketPeer::get_heartbeat_interval);
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "supported_protocols"), "set_supported_protocols", "get_supported_protocols");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "handshake_headers"), "set_handshake_headers", "get_handshake_headers");
 
@@ -77,6 +80,8 @@ void WebSocketPeer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outbound_buffer_size"), "set_outbound_buffer_size", "get_outbound_buffer_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_queued_packets"), "set_max_queued_packets", "get_max_queued_packets");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "heartbeat_interval"), "set_heartbeat_interval", "get_heartbeat_interval");
 
 	BIND_ENUM_CONSTANT(WRITE_MODE_TEXT);
 	BIND_ENUM_CONSTANT(WRITE_MODE_BINARY);
@@ -150,4 +155,13 @@ void WebSocketPeer::set_max_queued_packets(int p_max_queued_packets) {
 
 int WebSocketPeer::get_max_queued_packets() const {
 	return max_queued_packets;
+}
+
+double WebSocketPeer::get_heartbeat_interval() const {
+	return heartbeat_interval_msec / 1000.0;
+}
+
+void WebSocketPeer::set_heartbeat_interval(double p_interval) {
+	ERR_FAIL_COND(p_interval < 0);
+	heartbeat_interval_msec = p_interval * 1000.0;
 }

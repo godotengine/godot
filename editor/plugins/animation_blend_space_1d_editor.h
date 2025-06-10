@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_BLEND_SPACE_1D_EDITOR_H
-#define ANIMATION_BLEND_SPACE_1D_EDITOR_H
+#pragma once
 
-#include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/gui/graph_edit.h"
-#include "scene/gui/popup.h"
 
 class Button;
 class CheckBox;
@@ -137,5 +135,3 @@ public:
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeBlendSpace1DEditor();
 };
-
-#endif // ANIMATION_BLEND_SPACE_1D_EDITOR_H

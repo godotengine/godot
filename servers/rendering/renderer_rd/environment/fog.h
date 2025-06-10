@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FOG_RD_H
-#define FOG_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -203,6 +202,7 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		FogShaderData() {}
 		virtual ~FogShaderData();
@@ -233,7 +233,7 @@ public:
 
 	/* FOG VOLUMES */
 
-	bool owns_fog_volume(RID p_rid) { return fog_volume_owner.owns(p_rid); };
+	bool owns_fog_volume(RID p_rid) { return fog_volume_owner.owns(p_rid); }
 
 	virtual RID fog_volume_allocate() override;
 	virtual void fog_volume_initialize(RID p_rid) override;
@@ -250,7 +250,7 @@ public:
 
 	/* FOG VOLUMES INSTANCE */
 
-	bool owns_fog_volume_instance(RID p_rid) { return fog_volume_instance_owner.owns(p_rid); };
+	bool owns_fog_volume_instance(RID p_rid) { return fog_volume_instance_owner.owns(p_rid); }
 
 	RID fog_volume_instance_create(RID p_fog_volume);
 	void fog_instance_free(RID p_rid);
@@ -316,8 +316,8 @@ public:
 
 		int last_shadow_filter = -1;
 
-		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
-		virtual void free_data() override{};
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
+		virtual void free_data() override {}
 
 		bool sync_gi_dependent_sets_validity(bool p_ensure_freed = false);
 
@@ -355,5 +355,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // FOG_RD_H

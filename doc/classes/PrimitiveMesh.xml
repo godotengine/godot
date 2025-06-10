@@ -12,12 +12,14 @@
 		<method name="_create_mesh_array" qualifiers="virtual const">
 			<return type="Array" />
 			<description>
+				Override this method to customize how this primitive mesh should be generated. Should return an [Array] where each element is another Array of values required for the mesh (see the [enum Mesh.ArrayType] constants).
 			</description>
 		</method>
 		<method name="get_mesh_arrays" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns mesh arrays used to constitute surface of [Mesh]. The result can be passed to [method ArrayMesh.add_surface_from_arrays] to create a new surface. For example:
+				Returns the mesh arrays used to make up the surface of this primitive mesh.
+				[b]Example:[/b] Pass the result to [method ArrayMesh.add_surface_from_arrays] to create a new surface:
 				[codeblocks]
 				[gdscript]
 				var c = CylinderMesh.new()
@@ -32,6 +34,12 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="request_update">
+			<return type="void" />
+			<description>
+				Request an update of this primitive mesh based on its properties.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="add_uv2" type="bool" setter="set_add_uv2" getter="get_add_uv2" default="false">
@@ -41,7 +49,7 @@
 			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when using a shader to offset vertices.
 		</member>
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
-			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
+			If [code]true[/code], the order of the vertices in each triangle is reversed, resulting in the backside of the mesh being drawn.
 			This gives the same result as using [constant BaseMaterial3D.CULL_FRONT] in [member BaseMaterial3D.cull_mode].
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">

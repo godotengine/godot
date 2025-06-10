@@ -31,12 +31,25 @@
 #include "editor_locale_dialog.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_scale.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
+
+void EditorLocaleDialog::_notification(int p_what) {
+	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		// TRANSLATORS: This is the label for a list of writing systems.
+		script_label1->set_text(TTR("Script:", "Locale"));
+		// TRANSLATORS: This refers to a writing system.
+		script_label2->set_text(TTR("Script", "Locale"));
+
+		script_list->set_accessibility_name(TTR("Script", "Locale"));
+		script_code->set_accessibility_name(TTR("Script", "Locale"));
+	}
+}
 
 void EditorLocaleDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("locale_selected", PropertyInfo(Variant::STRING, "locale")));
@@ -241,7 +254,7 @@ void EditorLocaleDialog::_update_tree() {
 
 	int filter = SHOW_ALL_LOCALES;
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/locale_filter_mode")) {
-		filter = GLOBAL_GET("internationalization/locale/locale_filter_mode");
+		filter = GLOBAL_GET_CACHED(int, "internationalization/locale/locale_filter_mode");
 	}
 	Array f_lang_all;
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/language_filter")) {
@@ -294,7 +307,7 @@ void EditorLocaleDialog::_update_tree() {
 
 	if (!is_edit_mode) {
 		TreeItem *t = script_list->create_item(s_root);
-		t->set_text(0, TTR("[Default]"));
+		t->set_text(0, TTRC("[Default]"));
 		t->set_metadata(0, "");
 	}
 
@@ -322,7 +335,7 @@ void EditorLocaleDialog::_update_tree() {
 
 	if (!is_edit_mode) {
 		TreeItem *t = cnt_list->create_item(c_root);
-		t->set_text(0, "[Default]");
+		t->set_text(0, TTRC("[Default]"));
 		t->set_metadata(0, "");
 	}
 
@@ -388,34 +401,35 @@ void EditorLocaleDialog::popup_locale_dialog() {
 }
 
 EditorLocaleDialog::EditorLocaleDialog() {
-	set_title(TTR("Select a Locale"));
+	set_title(TTRC("Select a Locale"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	{
 		HBoxContainer *hb_filter = memnew(HBoxContainer);
 		{
 			filter_mode = memnew(OptionButton);
-			filter_mode->add_item(TTR("Show All Locales"), SHOW_ALL_LOCALES);
+			filter_mode->set_accessibility_name(TTRC("Locale Filter"));
+			filter_mode->add_item(TTRC("Show All Locales"), SHOW_ALL_LOCALES);
 			filter_mode->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
+			filter_mode->add_item(TTRC("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
 			filter_mode->select(0);
-			filter_mode->connect("item_selected", callable_mp(this, &EditorLocaleDialog::_filter_mode_changed));
+			filter_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorLocaleDialog::_filter_mode_changed));
 			hb_filter->add_child(filter_mode);
 		}
 		{
 			edit_filters = memnew(CheckButton);
-			edit_filters->set_text(TTR("Edit Filters"));
+			edit_filters->set_text(TTRC("Edit Filters"));
 			edit_filters->set_toggle_mode(true);
 			edit_filters->set_pressed(false);
-			edit_filters->connect("toggled", callable_mp(this, &EditorLocaleDialog::_edit_filters));
+			edit_filters->connect(SceneStringName(toggled), callable_mp(this, &EditorLocaleDialog::_edit_filters));
 			hb_filter->add_child(edit_filters);
 		}
 		{
 			advanced = memnew(CheckButton);
-			advanced->set_text(TTR("Advanced"));
+			advanced->set_text(TTRC("Advanced"));
 			advanced->set_toggle_mode(true);
 			advanced->set_pressed(false);
-			advanced->connect("toggled", callable_mp(this, &EditorLocaleDialog::_toggle_advanced));
+			advanced->connect(SceneStringName(toggled), callable_mp(this, &EditorLocaleDialog::_toggle_advanced));
 			hb_filter->add_child(advanced);
 		}
 		vb->add_child(hb_filter);
@@ -428,11 +442,13 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			vb_lang_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			{
 				Label *lang_lbl = memnew(Label);
-				lang_lbl->set_text(TTR("Language:"));
+				lang_lbl->set_text(TTRC("Language:"));
 				vb_lang_list->add_child(lang_lbl);
 			}
 			{
 				lang_list = memnew(Tree);
+				lang_list->set_accessibility_name(TTRC("Language"));
+				lang_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				lang_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				lang_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
 				lang_list->set_columns(1);
@@ -445,13 +461,13 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			vb_script_list = memnew(VBoxContainer);
 			vb_script_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			{
-				Label *script_lbl = memnew(Label);
-				// TRANSLATORS: This is the label for a list of writing systems.
-				script_lbl->set_text(TTR("Script:", "Locale"));
-				vb_script_list->add_child(script_lbl);
+				script_label1 = memnew(Label);
+				script_label1->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+				vb_script_list->add_child(script_label1);
 			}
 			{
 				script_list = memnew(Tree);
+				script_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				script_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
 				script_list->set_columns(1);
@@ -465,11 +481,13 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			vb_cnt_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			{
 				Label *cnt_lbl = memnew(Label);
-				cnt_lbl->set_text(TTR("Country:"));
+				cnt_lbl->set_text(TTRC("Country:"));
 				vb_cnt_list->add_child(cnt_lbl);
 			}
 			{
 				cnt_list = memnew(Tree);
+				cnt_list->set_accessibility_name(TTRC("Country"));
+				cnt_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				cnt_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				cnt_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
 				cnt_list->set_columns(1);
@@ -489,13 +507,13 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				vb_language->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 				{
 					Label *language_lbl = memnew(Label);
-					language_lbl->set_text(TTR("Language"));
+					language_lbl->set_text(TTRC("Language"));
 					vb_language->add_child(language_lbl);
 				}
 				{
 					lang_code = memnew(LineEdit);
 					lang_code->set_max_length(3);
-					lang_code->set_tooltip_text("Language");
+					lang_code->set_accessibility_name("Language");
 					vb_language->add_child(lang_code);
 				}
 				hb_locale->add_child(vb_language);
@@ -504,15 +522,13 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				VBoxContainer *vb_script = memnew(VBoxContainer);
 				vb_script->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 				{
-					Label *script_lbl = memnew(Label);
-					// TRANSLATORS: This refers to a writing system.
-					script_lbl->set_text(TTR("Script", "Locale"));
-					vb_script->add_child(script_lbl);
+					script_label2 = memnew(Label);
+					script_label2->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+					vb_script->add_child(script_label2);
 				}
 				{
 					script_code = memnew(LineEdit);
 					script_code->set_max_length(4);
-					script_code->set_tooltip_text("Script");
 					vb_script->add_child(script_code);
 				}
 				hb_locale->add_child(vb_script);
@@ -522,7 +538,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				vb_country->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 				{
 					Label *country_lbl = memnew(Label);
-					country_lbl->set_text(TTR("Country"));
+					country_lbl->set_text(TTRC("Country"));
 					vb_country->add_child(country_lbl);
 				}
 				{
@@ -538,14 +554,14 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				vb_variant->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 				{
 					Label *variant_lbl = memnew(Label);
-					variant_lbl->set_text(TTR("Variant"));
+					variant_lbl->set_text(TTRC("Variant"));
 					vb_variant->add_child(variant_lbl);
 				}
 				{
 					variant_code = memnew(LineEdit);
 					variant_code->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					variant_code->set_placeholder("Variant");
-					variant_code->set_tooltip_text("Variant");
+					variant_code->set_accessibility_name("Variant");
 					vb_variant->add_child(variant_code);
 				}
 				hb_locale->add_child(vb_variant);
@@ -556,5 +572,5 @@ EditorLocaleDialog::EditorLocaleDialog() {
 	add_child(vb);
 	_update_tree();
 
-	set_ok_button_text(TTR("Select"));
+	set_ok_button_text(TTRC("Select"));
 }

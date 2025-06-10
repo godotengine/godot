@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_EDITOR_PLUGIN_H
-#define AUDIO_STREAM_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
@@ -89,5 +88,3 @@ class AudioStreamEditorPlugin : public EditorPlugin {
 public:
 	AudioStreamEditorPlugin();
 };
-
-#endif // AUDIO_STREAM_EDITOR_PLUGIN_H

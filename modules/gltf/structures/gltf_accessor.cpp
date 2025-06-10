@@ -29,8 +29,30 @@
 /**************************************************************************/
 
 #include "gltf_accessor.h"
+#include "gltf_accessor.compat.inc"
 
 void GLTFAccessor::_bind_methods() {
+	BIND_ENUM_CONSTANT(TYPE_SCALAR);
+	BIND_ENUM_CONSTANT(TYPE_VEC2);
+	BIND_ENUM_CONSTANT(TYPE_VEC3);
+	BIND_ENUM_CONSTANT(TYPE_VEC4);
+	BIND_ENUM_CONSTANT(TYPE_MAT2);
+	BIND_ENUM_CONSTANT(TYPE_MAT3);
+	BIND_ENUM_CONSTANT(TYPE_MAT4);
+
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_NONE);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SIGNED_BYTE);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_UNSIGNED_BYTE);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SIGNED_SHORT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_UNSIGNED_SHORT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SIGNED_INT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_UNSIGNED_INT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SINGLE_FLOAT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_DOUBLE_FLOAT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_HALF_FLOAT);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SIGNED_LONG);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_UNSIGNED_LONG);
+
 	ClassDB::bind_method(D_METHOD("get_buffer_view"), &GLTFAccessor::get_buffer_view);
 	ClassDB::bind_method(D_METHOD("set_buffer_view", "buffer_view"), &GLTFAccessor::set_buffer_view);
 	ClassDB::bind_method(D_METHOD("get_byte_offset"), &GLTFAccessor::get_byte_offset);
@@ -41,6 +63,8 @@ void GLTFAccessor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normalized", "normalized"), &GLTFAccessor::set_normalized);
 	ClassDB::bind_method(D_METHOD("get_count"), &GLTFAccessor::get_count);
 	ClassDB::bind_method(D_METHOD("set_count", "count"), &GLTFAccessor::set_count);
+	ClassDB::bind_method(D_METHOD("get_accessor_type"), &GLTFAccessor::get_accessor_type);
+	ClassDB::bind_method(D_METHOD("set_accessor_type", "accessor_type"), &GLTFAccessor::set_accessor_type);
 	ClassDB::bind_method(D_METHOD("get_type"), &GLTFAccessor::get_type);
 	ClassDB::bind_method(D_METHOD("set_type", "type"), &GLTFAccessor::set_type);
 	ClassDB::bind_method(D_METHOD("get_min"), &GLTFAccessor::get_min);
@@ -65,7 +89,8 @@ void GLTFAccessor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "component_type"), "set_component_type", "get_component_type"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalized"), "set_normalized", "get_normalized"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "count"), "set_count", "get_count"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // GLTFType
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "accessor_type"), "set_accessor_type", "get_accessor_type"); // GLTFAccessor::GLTFAccessorType
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_type", "get_type"); // Deprecated, int for GLTFAccessor::GLTFAccessorType
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "min"), "set_min", "get_min"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "max"), "set_max", "get_max"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_count"), "set_sparse_count", "get_sparse_count"); // int
@@ -76,7 +101,7 @@ void GLTFAccessor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_values_byte_offset"), "set_sparse_values_byte_offset", "get_sparse_values_byte_offset"); // int
 }
 
-GLTFBufferViewIndex GLTFAccessor::get_buffer_view() {
+GLTFBufferViewIndex GLTFAccessor::get_buffer_view() const {
 	return buffer_view;
 }
 
@@ -84,23 +109,23 @@ void GLTFAccessor::set_buffer_view(GLTFBufferViewIndex p_buffer_view) {
 	buffer_view = p_buffer_view;
 }
 
-int GLTFAccessor::get_byte_offset() {
+int64_t GLTFAccessor::get_byte_offset() const {
 	return byte_offset;
 }
 
-void GLTFAccessor::set_byte_offset(int p_byte_offset) {
+void GLTFAccessor::set_byte_offset(int64_t p_byte_offset) {
 	byte_offset = p_byte_offset;
 }
 
-int GLTFAccessor::get_component_type() {
+GLTFAccessor::GLTFComponentType GLTFAccessor::get_component_type() const {
 	return component_type;
 }
 
-void GLTFAccessor::set_component_type(int p_component_type) {
-	component_type = p_component_type;
+void GLTFAccessor::set_component_type(GLTFComponentType p_component_type) {
+	component_type = (GLTFComponentType)p_component_type;
 }
 
-bool GLTFAccessor::get_normalized() {
+bool GLTFAccessor::get_normalized() const {
 	return normalized;
 }
 
@@ -108,23 +133,31 @@ void GLTFAccessor::set_normalized(bool p_normalized) {
 	normalized = p_normalized;
 }
 
-int GLTFAccessor::get_count() {
+int64_t GLTFAccessor::get_count() const {
 	return count;
 }
 
-void GLTFAccessor::set_count(int p_count) {
+void GLTFAccessor::set_count(int64_t p_count) {
 	count = p_count;
 }
 
-int GLTFAccessor::get_type() {
-	return (int)type;
+GLTFAccessor::GLTFAccessorType GLTFAccessor::get_accessor_type() const {
+	return accessor_type;
 }
 
-void GLTFAccessor::set_type(int p_type) {
-	type = (GLTFType)p_type; // TODO: Register enum
+void GLTFAccessor::set_accessor_type(GLTFAccessorType p_accessor_type) {
+	accessor_type = p_accessor_type;
 }
 
-Vector<double> GLTFAccessor::get_min() {
+int GLTFAccessor::get_type() const {
+	return (int)accessor_type;
+}
+
+void GLTFAccessor::set_type(int p_accessor_type) {
+	accessor_type = (GLTFAccessorType)p_accessor_type; // TODO: Register enum
+}
+
+Vector<double> GLTFAccessor::get_min() const {
 	return min;
 }
 
@@ -132,7 +165,7 @@ void GLTFAccessor::set_min(Vector<double> p_min) {
 	min = p_min;
 }
 
-Vector<double> GLTFAccessor::get_max() {
+Vector<double> GLTFAccessor::get_max() const {
 	return max;
 }
 
@@ -140,50 +173,50 @@ void GLTFAccessor::set_max(Vector<double> p_max) {
 	max = p_max;
 }
 
-int GLTFAccessor::get_sparse_count() {
+int64_t GLTFAccessor::get_sparse_count() const {
 	return sparse_count;
 }
 
-void GLTFAccessor::set_sparse_count(int p_sparse_count) {
+void GLTFAccessor::set_sparse_count(int64_t p_sparse_count) {
 	sparse_count = p_sparse_count;
 }
 
-int GLTFAccessor::get_sparse_indices_buffer_view() {
+GLTFBufferViewIndex GLTFAccessor::get_sparse_indices_buffer_view() const {
 	return sparse_indices_buffer_view;
 }
 
-void GLTFAccessor::set_sparse_indices_buffer_view(int p_sparse_indices_buffer_view) {
+void GLTFAccessor::set_sparse_indices_buffer_view(GLTFBufferViewIndex p_sparse_indices_buffer_view) {
 	sparse_indices_buffer_view = p_sparse_indices_buffer_view;
 }
 
-int GLTFAccessor::get_sparse_indices_byte_offset() {
+int64_t GLTFAccessor::get_sparse_indices_byte_offset() const {
 	return sparse_indices_byte_offset;
 }
 
-void GLTFAccessor::set_sparse_indices_byte_offset(int p_sparse_indices_byte_offset) {
+void GLTFAccessor::set_sparse_indices_byte_offset(int64_t p_sparse_indices_byte_offset) {
 	sparse_indices_byte_offset = p_sparse_indices_byte_offset;
 }
 
-int GLTFAccessor::get_sparse_indices_component_type() {
+GLTFAccessor::GLTFComponentType GLTFAccessor::get_sparse_indices_component_type() const {
 	return sparse_indices_component_type;
 }
 
-void GLTFAccessor::set_sparse_indices_component_type(int p_sparse_indices_component_type) {
-	sparse_indices_component_type = p_sparse_indices_component_type;
+void GLTFAccessor::set_sparse_indices_component_type(GLTFComponentType p_sparse_indices_component_type) {
+	sparse_indices_component_type = (GLTFComponentType)p_sparse_indices_component_type;
 }
 
-int GLTFAccessor::get_sparse_values_buffer_view() {
+GLTFBufferViewIndex GLTFAccessor::get_sparse_values_buffer_view() const {
 	return sparse_values_buffer_view;
 }
 
-void GLTFAccessor::set_sparse_values_buffer_view(int p_sparse_values_buffer_view) {
+void GLTFAccessor::set_sparse_values_buffer_view(GLTFBufferViewIndex p_sparse_values_buffer_view) {
 	sparse_values_buffer_view = p_sparse_values_buffer_view;
 }
 
-int GLTFAccessor::get_sparse_values_byte_offset() {
+int64_t GLTFAccessor::get_sparse_values_byte_offset() const {
 	return sparse_values_byte_offset;
 }
 
-void GLTFAccessor::set_sparse_values_byte_offset(int p_sparse_values_byte_offset) {
+void GLTFAccessor::set_sparse_values_byte_offset(int64_t p_sparse_values_byte_offset) {
 	sparse_values_byte_offset = p_sparse_values_byte_offset;
 }

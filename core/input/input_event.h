@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_EVENT_H
-#define INPUT_EVENT_H
+#pragma once
 
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
@@ -62,8 +61,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const int DEVICE_ID_EMULATION;
-	static const int DEVICE_ID_INTERNAL;
+	static constexpr int DEVICE_ID_EMULATION = -1;
+	static constexpr int DEVICE_ID_INTERNAL = -2;
 
 	void set_device(int p_device);
 	int get_device() const;
@@ -89,6 +88,8 @@ public:
 	virtual bool is_action_type() const;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
+
+	virtual InputEventType get_type() const { return InputEventType::INVALID; }
 
 	InputEvent() {}
 };
@@ -157,6 +158,7 @@ class InputEventKey : public InputEventWithModifiers {
 	Key physical_keycode = Key::NONE;
 	Key key_label = Key::NONE;
 	uint32_t unicode = 0; ///unicode
+	KeyLocation location = KeyLocation::UNSPECIFIED;
 
 	bool echo = false; /// true if this is an echo key
 
@@ -178,6 +180,9 @@ public:
 	void set_unicode(char32_t p_unicode);
 	char32_t get_unicode() const;
 
+	void set_location(KeyLocation p_key_location);
+	KeyLocation get_location() const;
+
 	void set_echo(bool p_enable);
 	virtual bool is_echo() const override;
 
@@ -193,10 +198,13 @@ public:
 	virtual String as_text_physical_keycode() const;
 	virtual String as_text_keycode() const;
 	virtual String as_text_key_label() const;
+	virtual String as_text_location() const;
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
 	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
+
+	InputEventType get_type() const final override { return InputEventType::KEY; }
 
 	InputEventKey() {}
 };
@@ -204,7 +212,7 @@ public:
 class InputEventMouse : public InputEventWithModifiers {
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
-	BitField<MouseButtonMask> button_mask;
+	BitField<MouseButtonMask> button_mask = MouseButtonMask::NONE;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -257,6 +265,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MOUSE_BUTTON; }
+
 	InputEventMouseButton() {}
 };
 
@@ -266,7 +276,9 @@ class InputEventMouseMotion : public InputEventMouse {
 	Vector2 tilt;
 	float pressure = 0;
 	Vector2 relative;
+	Vector2 screen_relative;
 	Vector2 velocity;
+	Vector2 screen_velocity;
 	bool pen_inverted = false;
 
 protected:
@@ -285,14 +297,22 @@ public:
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
 
+	void set_relative_screen_position(const Vector2 &p_relative);
+	Vector2 get_relative_screen_position() const;
+
 	void set_velocity(const Vector2 &p_velocity);
 	Vector2 get_velocity() const;
+
+	void set_screen_velocity(const Vector2 &p_velocity);
+	Vector2 get_screen_velocity() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
+
+	InputEventType get_type() const final override { return InputEventType::MOUSE_MOTION; }
 
 	InputEventMouseMotion() {}
 };
@@ -320,6 +340,8 @@ public:
 	virtual String to_string() override;
 
 	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value);
+
+	InputEventType get_type() const final override { return InputEventType::JOY_MOTION; }
 
 	InputEventJoypadMotion() {}
 };
@@ -351,6 +373,8 @@ public:
 
 	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index);
 
+	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
+
 	InputEventJoypadButton() {}
 };
 
@@ -380,6 +404,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::SCREEN_TOUCH; }
+
 	InputEventScreenTouch() {}
 };
 
@@ -388,7 +414,9 @@ class InputEventScreenDrag : public InputEventFromWindow {
 	int index = 0;
 	Vector2 pos;
 	Vector2 relative;
+	Vector2 screen_relative;
 	Vector2 velocity;
+	Vector2 screen_velocity;
 	Vector2 tilt;
 	float pressure = 0;
 	bool pen_inverted = false;
@@ -415,14 +443,22 @@ public:
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
 
+	void set_relative_screen_position(const Vector2 &p_relative);
+	Vector2 get_relative_screen_position() const;
+
 	void set_velocity(const Vector2 &p_velocity);
 	Vector2 get_velocity() const;
+
+	void set_screen_velocity(const Vector2 &p_velocity);
+	Vector2 get_screen_velocity() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
+
+	InputEventType get_type() const final override { return InputEventType::SCREEN_DRAG; }
 
 	InputEventScreenDrag() {}
 };
@@ -432,6 +468,7 @@ class InputEventAction : public InputEvent {
 
 	StringName action;
 	float strength = 1.0f;
+	int event_index = -1;
 
 protected:
 	static void _bind_methods();
@@ -445,6 +482,9 @@ public:
 	void set_strength(float p_strength);
 	float get_strength() const;
 
+	void set_event_index(int p_index);
+	int get_event_index() const;
+
 	virtual bool is_action(const StringName &p_action) const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
@@ -454,6 +494,8 @@ public:
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::ACTION; }
 
 	InputEventAction() {}
 };
@@ -486,6 +528,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MAGNIFY_GESTURE; }
+
 	InputEventMagnifyGesture() {}
 };
 
@@ -503,6 +547,8 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::PAN_GESTURE; }
 
 	InputEventPanGesture() {}
 };
@@ -550,6 +596,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MIDI; }
+
 	InputEventMIDI() {}
 };
 
@@ -568,7 +616,7 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::SHORTCUT; }
+
 	InputEventShortcut();
 };
-
-#endif // INPUT_EVENT_H

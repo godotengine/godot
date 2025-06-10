@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Godot.SourceGenerators
 {
-    static class ExtensionMethods
+    internal static class ExtensionMethods
     {
         public static bool TryGetGlobalAnalyzerProperty(
             this GeneratorExecutionContext context, string property, out string? value
@@ -155,9 +155,35 @@ namespace Godot.SourceGenerators
             };
         }
 
+        public static string GetAccessibilityKeyword(this INamedTypeSymbol namedTypeSymbol)
+        {
+            if (namedTypeSymbol.DeclaredAccessibility == Accessibility.NotApplicable)
+            {
+                // Accessibility not specified. Get the default accessibility.
+                return namedTypeSymbol.ContainingSymbol switch
+                {
+                    null or INamespaceSymbol => "internal",
+                    ITypeSymbol { TypeKind: TypeKind.Class or TypeKind.Struct } => "private",
+                    ITypeSymbol { TypeKind: TypeKind.Interface } => "public",
+                    _ => "",
+                };
+            }
+
+            return namedTypeSymbol.DeclaredAccessibility switch
+            {
+                Accessibility.Private => "private",
+                Accessibility.Protected => "protected",
+                Accessibility.Internal => "internal",
+                Accessibility.ProtectedAndInternal => "private",
+                Accessibility.ProtectedOrInternal => "private",
+                Accessibility.Public => "public",
+                _ => "",
+            };
+        }
+
         public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
         {
-            return symbol.IsGenericType ?
+            return symbol.IsGenericType && symbol.TypeParameters.Length > 0 ?
                 string.Concat(symbol.Name, "<", string.Join(", ", symbol.TypeParameters), ">") :
                 symbol.Name;
         }
@@ -208,7 +234,17 @@ namespace Godot.SourceGenerators
 
                 if (child.IsNode)
                 {
-                    FullQualifiedSyntax(child.AsNode()!, sm, sb, isFirstNode: innerIsFirstNode);
+                    var childNode = child.AsNode()!;
+
+                    if (node is InterpolationSyntax && childNode is ExpressionSyntax)
+                    {
+                        ParenEnclosedFullQualifiedSyntax(childNode, sm, sb, isFirstNode: innerIsFirstNode);
+                    }
+                    else
+                    {
+                        FullQualifiedSyntax(childNode, sm, sb, isFirstNode: innerIsFirstNode);
+                    }
+
                     innerIsFirstNode = false;
                 }
                 else
@@ -220,6 +256,13 @@ namespace Godot.SourceGenerators
                 {
                     sb.Append(child.GetTrailingTrivia());
                 }
+            }
+
+            static void ParenEnclosedFullQualifiedSyntax(SyntaxNode node, SemanticModel sm, StringBuilder sb, bool isFirstNode)
+            {
+                sb.Append(SyntaxFactory.Token(SyntaxKind.OpenParenToken));
+                FullQualifiedSyntax(node, sm, sb, isFirstNode);
+                sb.Append(SyntaxFactory.Token(SyntaxKind.CloseParenToken));
             }
         }
 
@@ -243,6 +286,12 @@ namespace Godot.SourceGenerators
 
         public static bool IsGodotGlobalClassAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.GlobalClassAttr;
+
+        public static bool IsGodotExportToolButtonAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportToolButtonAttr;
+
+        public static bool IsGodotToolAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ToolAttr;
 
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SystemFlagsAttr;
@@ -327,6 +376,11 @@ namespace Godot.SourceGenerators
 
                 yield return new GodotFieldData(field, marshalType.Value);
             }
+        }
+
+        public static Location? FirstLocationWithSourceTreeOrDefault(this IEnumerable<Location> locations)
+        {
+            return locations.FirstOrDefault(location => location.SourceTree != null) ?? locations.FirstOrDefault();
         }
 
         public static string Path(this Location location)

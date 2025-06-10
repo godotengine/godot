@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GROUPS_EDITOR_H
-#define GROUPS_EDITOR_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -78,14 +77,14 @@ class GroupsEditor : public VBoxContainer {
 	Button *add = nullptr;
 	Tree *tree = nullptr;
 
-	HashMap<Node *, HashMap<StringName, bool>> scene_groups_cache;
+	HashMap<ObjectID, HashMap<StringName, bool>> scene_groups_cache;
 	HashMap<StringName, bool> scene_groups_for_caching;
 
 	HashMap<StringName, bool> scene_groups;
 	HashMap<StringName, String> global_groups;
 
-	void _update_scene_groups(Node *p_node);
-	void _cache_scene_groups(Node *p_node);
+	void _update_scene_groups(const ObjectID &p_id);
+	void _cache_scene_groups(const ObjectID &p_id);
 
 	void _show_add_group_dialog();
 	void _show_rename_group_dialog();
@@ -138,7 +137,4 @@ public:
 	void set_current(Node *p_node);
 
 	GroupsEditor();
-	~GroupsEditor();
 };
-
-#endif // GROUPS_EDITOR_H

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="IP" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="IP" inherits="Object" keywords="dns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Internet protocol (IP) support functions such as DNS resolution.
 	</brief_description>
@@ -36,10 +36,10 @@
 				Each adapter is a dictionary of the form:
 				[codeblock]
 				{
-				    "index": "1", # Interface index.
-				    "name": "eth0", # Interface name.
-				    "friendly": "Ethernet One", # A friendly name (might be empty).
-				    "addresses": ["192.168.1.101"], # An array of IP addresses associated to this interface.
+					"index": "1", # Interface index.
+					"name": "eth0", # Interface name.
+					"friendly": "Ethernet One", # A friendly name (might be empty).
+					"addresses": ["192.168.1.101"], # An array of IP addresses associated to this interface.
 				}
 				[/codeblock]
 			</description>
@@ -65,7 +65,7 @@
 				Returns a queued hostname's status as a [enum ResolverStatus] constant, given its queue [param id].
 			</description>
 		</method>
-		<method name="resolve_hostname">
+		<method name="resolve_hostname" keywords="dns">
 			<return type="String" />
 			<param index="0" name="host" type="String" />
 			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />

@@ -28,17 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SETTINGS_DIALOG_H
-#define EDITOR_SETTINGS_DIALOG_H
+#pragma once
 
-#include "editor/action_map_editor.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_sectioned_inspector.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/texture_rect.h"
+
+class CheckButton;
+class EditorEventSearchBar;
+class EventListenerLineEdit;
+class InputEventConfigurationDialog;
+class PanelContainer;
+class SectionedInspector;
+class TabContainer;
+class TextureRect;
+class Tree;
+class TreeItem;
 
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
@@ -50,9 +54,9 @@ class EditorSettingsDialog : public AcceptDialog {
 	Control *tab_shortcuts = nullptr;
 
 	LineEdit *search_box = nullptr;
-	LineEdit *shortcut_search_box = nullptr;
-	EventListenerLineEdit *shortcut_search_by_event = nullptr;
+	CheckButton *advanced_switch = nullptr;
 	SectionedInspector *inspector = nullptr;
+	EditorEventSearchBar *shortcut_search_bar = nullptr;
 
 	// Shortcuts
 	enum ShortcutButton {
@@ -86,7 +90,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	void _event_config_confirmed();
 
-	void _create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed);
+	TreeItem *_create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed);
 	Array _event_list_to_array_helper(const List<Ref<InputEvent>> &p_events);
 	void _update_builtin_action(const String &p_name, const Array &p_events);
 	void _update_shortcut_events(const String &p_path, const Array &p_events);
@@ -98,13 +102,18 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();
 
-	void _filter_shortcuts(const String &p_filter);
-	void _filter_shortcuts_by_event(const Ref<InputEvent> &p_event);
-	bool _should_display_shortcut(const String &p_name, const Array &p_events) const;
+	void _advanced_toggled(bool p_button_pressed);
+
+	void _update_dynamic_property_hints();
+	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
+	String _get_shortcut_button_string(const String &p_shortcut_name);
+
+	bool _should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const;
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
 	void _shortcut_cell_double_clicked();
+	static void _set_shortcut_input(const String &p_name, Ref<InputEventKey> &p_event);
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 
@@ -122,9 +131,48 @@ protected:
 
 public:
 	void popup_edit_settings();
+	static void update_navigation_preset();
 
 	EditorSettingsDialog();
-	~EditorSettingsDialog();
 };
 
-#endif // EDITOR_SETTINGS_DIALOG_H
+class EditorSettingsPropertyWrapper : public EditorProperty {
+	GDCLASS(EditorSettingsPropertyWrapper, EditorProperty);
+
+	String property;
+	EditorProperty *editor_property = nullptr;
+
+	BoxContainer *container = nullptr;
+
+	HBoxContainer *override_info = nullptr;
+	Label *override_label = nullptr;
+	Button *goto_button = nullptr;
+	Button *remove_button = nullptr;
+
+	bool requires_restart = false;
+
+	void _update_override();
+	void _create_override();
+	void _remove_override();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	static inline Callable restart_request_callback;
+
+	virtual void update_property() override;
+	void setup(const String &p_property, EditorProperty *p_editor_property, bool p_requires_restart);
+};
+
+class EditorSettingsInspectorPlugin : public EditorInspectorPlugin {
+	GDCLASS(EditorSettingsInspectorPlugin, EditorInspectorPlugin);
+
+	Object *current_object = nullptr;
+
+public:
+	SectionedInspector *inspector = nullptr;
+
+	virtual bool can_handle(Object *p_object) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
+};

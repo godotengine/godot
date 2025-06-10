@@ -23,7 +23,7 @@
 			<param index="2" name="duration" type="float" default="1.0" />
 			<param index="3" name="at_position" type="int" default="-1" />
 			<description>
-				Adds a frame to the [param anim] animation. If [param at_position] is [code]-1[/code], the frame will be added to the end of the animation.
+				Adds a frame to the [param anim] animation. If [param at_position] is [code]-1[/code], the frame will be added to the end of the animation. [param duration] specifies the relative duration, see [method get_frame_duration] for details.
 			</description>
 		</method>
 		<method name="clear">
@@ -37,6 +37,14 @@
 			<return type="void" />
 			<description>
 				Removes all animations. An empty [code]default[/code] animation will be created.
+			</description>
+		</method>
+		<method name="duplicate_animation">
+			<return type="void" />
+			<param index="0" name="anim_from" type="StringName" />
+			<param index="1" name="anim_to" type="StringName" />
+			<description>
+				Duplicates the animation [param anim_from] to a new animation named [param anim_to]. Fails if [param anim_to] already exists, or if [param anim_from] does not exist.
 			</description>
 		</method>
 		<method name="get_animation_loop" qualifiers="const">
@@ -139,7 +147,7 @@
 			<param index="2" name="texture" type="Texture2D" />
 			<param index="3" name="duration" type="float" default="1.0" />
 			<description>
-				Sets the [param texture] and the [param duration] of the frame [param idx] in the [param anim] animation.
+				Sets the [param texture] and the [param duration] of the frame [param idx] in the [param anim] animation. [param duration] specifies the relative duration, see [method get_frame_duration] for details.
 			</description>
 		</method>
 	</methods>

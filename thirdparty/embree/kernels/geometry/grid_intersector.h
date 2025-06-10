@@ -35,20 +35,20 @@ namespace embree
       typedef Grid1Precalculations<GridSOAIntersector1::Precalculations> Precalculations;
 
       /*! Intersect a ray with the primitive. */
-      static __forceinline void intersect(Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive* prim, size_t ty, size_t& lazy_node) 
+      static __forceinline void intersect(Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive* prim, size_t ty, size_t& lazy_node) 
       {
         GridSOAIntersector1::intersect(pre,ray,context,prim,lazy_node);
       }
-      static __forceinline void intersect(Precalculations& pre, RayHit& ray, IntersectContext* context, size_t ty0, const Primitive* prim, size_t ty, size_t& lazy_node) {
+      static __forceinline void intersect(Precalculations& pre, RayHit& ray, RayQueryContext* context, size_t ty0, const Primitive* prim, size_t ty, size_t& lazy_node) {
         intersect(pre,ray,context,prim,ty,lazy_node);
       }
       
       /*! Test if the ray is occluded by the primitive */
-      static __forceinline bool occluded(Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
+      static __forceinline bool occluded(Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
       {
         GridSOAIntersector1::occluded(pre,ray,context,prim,lazy_node);
       }
-      static __forceinline bool occluded(Precalculations& pre, Ray& ray, IntersectContext* context, size_t ty0, const Primitive* prim, size_t ty, size_t& lazy_node) {
+      static __forceinline bool occluded(Precalculations& pre, Ray& ray, RayQueryContext* context, size_t ty0, const Primitive* prim, size_t ty, size_t& lazy_node) {
         return occluded(pre,ray,context,prim,ty,lazy_node);
       }
       
@@ -70,22 +70,22 @@ namespace embree
       typedef SubdivPatch1PrecalculationsK<K,typename GridSOAIntersectorK<K>::Precalculations> Precalculations;
       
       
-      static __forceinline void intersect(const vbool<K>& valid, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
+      static __forceinline void intersect(const vbool<K>& valid, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
       {
         GridSOAIntersectorK<K>::intersect(valid,pre,ray,context,prim,lazy_node);
       }
       
-      static __forceinline vbool<K> occluded(const vbool<K>& valid, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
       {
         GridSOAIntersectorK<K>::occluded(valid,pre,ray,context,prim,lazy_node);
       }
       
-      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
+      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
       {
         GridSOAIntersectorK<K>::intersect(pre,ray,k,context,prim,lazy_node);
       }
       
-      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
+      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t ty, size_t& lazy_node)
       {
         GridSOAIntersectorK<K>::occluded(pre,ray,k,context,prim,lazy_node);
       }

@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_LIBRARY_EDITOR_H
-#define ANIMATION_LIBRARY_EDITOR_H
+#pragma once
 
-#include "editor/animation_track_editor.h"
-#include "editor/editor_plugin.h"
+#include "core/io/config_file.h"
+#include "core/templates/vector.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -80,6 +80,9 @@ class AnimationLibraryEditor : public AcceptDialog {
 	StringName file_dialog_animation;
 	StringName file_dialog_library;
 
+	Button *new_library_button = nullptr;
+	Button *load_library_button = nullptr;
+
 	AcceptDialog *error_dialog = nullptr;
 	bool adding_animation = false;
 	StringName adding_animation_to_library;
@@ -97,8 +100,13 @@ class AnimationLibraryEditor : public AcceptDialog {
 	void _add_library_validate(const String &p_name);
 	void _add_library_confirm();
 	void _load_library();
-	void _load_file(String p_path);
+	void _load_file(const String &p_path);
 	void _load_files(const PackedStringArray &p_paths);
+
+	void _save_mixer_lib_folding(TreeItem *p_item);
+	Vector<uint64_t> _load_mixer_libs_folding();
+	void _load_config_libs_folding(Vector<uint64_t> &p_lib_ids, ConfigFile *p_config, String p_section);
+	String _get_mixer_signature() const;
 
 	void _item_renamed();
 	void _button_pressed(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
@@ -108,7 +116,9 @@ class AnimationLibraryEditor : public AcceptDialog {
 	bool updating = false;
 
 protected:
+	void _notification(int p_what);
 	void _update_editor(Object *p_mixer);
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:
@@ -117,5 +127,3 @@ public:
 	void update_tree();
 	AnimationLibraryEditor();
 };
-
-#endif // ANIMATION_LIBRARY_EDITOR_H

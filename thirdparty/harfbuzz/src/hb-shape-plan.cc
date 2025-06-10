@@ -209,7 +209,7 @@ hb_shape_plan_create (hb_face_t                     *face,
  * @num_coords: The number of variation-space coordinates
  * @shaper_list: (array zero-terminated=1): List of shapers to try
  *
- * The variable-font version of #hb_shape_plan_create. 
+ * The variable-font version of #hb_shape_plan_create.
  * Constructs a shaping plan for a combination of @face, @user_features, @props,
  * and @shaper_list, plus the variation-space coordinates @coords.
  *
@@ -233,7 +233,7 @@ hb_shape_plan_create2 (hb_face_t                     *face,
 		  num_coords,
 		  shaper_list);
 
-  if (unlikely (props->direction == HB_DIRECTION_INVALID))
+  if (unlikely (!HB_DIRECTION_IS_VALID (props->direction)))
     return hb_shape_plan_get_empty ();
 
   hb_shape_plan_t *shape_plan;
@@ -331,7 +331,7 @@ hb_shape_plan_destroy (hb_shape_plan_t *shape_plan)
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the given shaping plan. 
+ * Attaches a user-data key/data pair to the given shaping plan.
  *
  * Return value: `true` if success, `false` otherwise.
  *
@@ -352,7 +352,7 @@ hb_shape_plan_set_user_data (hb_shape_plan_t    *shape_plan,
  * @shape_plan: A shaping plan
  * @key: The user-data key to query
  *
- * Fetches the user data associated with the specified key, 
+ * Fetches the user data associated with the specified key,
  * attached to the specified shaping plan.
  *
  * Return value: (transfer none): A pointer to the user data
@@ -501,7 +501,7 @@ hb_shape_plan_create_cached (hb_face_t                     *face,
  * @num_coords: The number of variation-space coordinates
  * @shaper_list: (array zero-terminated=1): List of shapers to try
  *
- * The variable-font version of #hb_shape_plan_create_cached. 
+ * The variable-font version of #hb_shape_plan_create_cached.
  * Creates a cached shaping plan suitable for reuse, for a combination
  * of @face, @user_features, @props, and @shaper_list, plus the
  * variation-space coordinates @coords.

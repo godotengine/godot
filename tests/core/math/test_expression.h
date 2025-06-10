@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_EXPRESSION_H
-#define TEST_EXPRESSION_H
+#pragma once
 
 #include "core/math/expression.h"
 
@@ -122,11 +121,67 @@ TEST_CASE("[Expression] Floating-point arithmetic") {
 			"Float multiplication-addition-subtraction-division should return the expected result.");
 }
 
+TEST_CASE("[Expression] Floating-point notation") {
+	Expression expression;
+
+	CHECK_MESSAGE(
+			expression.parse("2.") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(2.0),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("(2.)") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(2.0),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse(".3") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(0.3),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("2.+5.") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(7.0),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse(".3-.8") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(-0.5),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("2.+.2") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(2.2),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse(".0*0.") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(0.0),
+			"The expression should return the expected result.");
+}
+
 TEST_CASE("[Expression] Scientific notation") {
 	Expression expression;
 
 	CHECK_MESSAGE(
 			expression.parse("2.e5") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("2.E5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
 			double(expression.execute()) == doctest::Approx(200'000),
@@ -159,6 +214,15 @@ TEST_CASE("[Expression] Underscored numeric literals") {
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
 			expression.parse("0xff_99_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0Xff_99_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0b10_11_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0B10_11_00") == OK,
 			"The expression should parse successfully.");
 }
 
@@ -257,15 +321,11 @@ TEST_CASE("[Expression] Boolean expressions") {
 TEST_CASE("[Expression] Expressions with variables") {
 	Expression expression;
 
-	PackedStringArray parameter_names;
-	parameter_names.push_back("foo");
-	parameter_names.push_back("bar");
+	PackedStringArray parameter_names = { "foo", "bar" };
 	CHECK_MESSAGE(
 			expression.parse("foo + bar + 50", parameter_names) == OK,
 			"The expression should parse successfully.");
-	Array values;
-	values.push_back(60);
-	values.push_back(20);
+	Array values = { 60, 20 };
 	CHECK_MESSAGE(
 			int(expression.execute(values)) == 130,
 			"The expression should return the expected value.");
@@ -276,9 +336,7 @@ TEST_CASE("[Expression] Expressions with variables") {
 	CHECK_MESSAGE(
 			expression.parse("foo + bar + 50", parameter_names_invalid) == OK,
 			"The expression should parse successfully.");
-	Array values_invalid;
-	values_invalid.push_back(60);
-	values_invalid.push_back(20);
+	Array values_invalid = { 60, 20 };
 	// Invalid parameters will parse successfully but print an error message when executing.
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
@@ -287,31 +345,21 @@ TEST_CASE("[Expression] Expressions with variables") {
 	ERR_PRINT_ON;
 
 	// Mismatched argument count (more values than parameters).
-	PackedStringArray parameter_names_mismatch;
-	parameter_names_mismatch.push_back("foo");
-	parameter_names_mismatch.push_back("bar");
+	PackedStringArray parameter_names_mismatch = { "foo", "bar" };
 	CHECK_MESSAGE(
 			expression.parse("foo + bar + 50", parameter_names_mismatch) == OK,
 			"The expression should parse successfully.");
-	Array values_mismatch;
-	values_mismatch.push_back(60);
-	values_mismatch.push_back(20);
-	values_mismatch.push_back(110);
+	Array values_mismatch = { 60, 20, 110 };
 	CHECK_MESSAGE(
 			int(expression.execute(values_mismatch)) == 130,
 			"The expression should return the expected value.");
 
 	// Mismatched argument count (more parameters than values).
-	PackedStringArray parameter_names_mismatch2;
-	parameter_names_mismatch2.push_back("foo");
-	parameter_names_mismatch2.push_back("bar");
-	parameter_names_mismatch2.push_back("baz");
+	PackedStringArray parameter_names_mismatch2 = { "foo", "bar", "baz" };
 	CHECK_MESSAGE(
 			expression.parse("foo + bar + baz + 50", parameter_names_mismatch2) == OK,
 			"The expression should parse successfully.");
-	Array values_mismatch2;
-	values_mismatch2.push_back(60);
-	values_mismatch2.push_back(20);
+	Array values_mismatch2 = { 60, 20 };
 	// Having more parameters than values will parse successfully but print an
 	// error message when executing.
 	ERR_PRINT_OFF;
@@ -440,5 +488,3 @@ TEST_CASE("[Expression] Unusual expressions") {
 	//		"`(-9223372036854775807 - 1) / -1` should return the expected result.");
 }
 } // namespace TestExpression
-
-#endif // TEST_EXPRESSION_H

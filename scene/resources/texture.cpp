@@ -34,13 +34,13 @@
 
 int Texture2D::get_width() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	GDVIRTUAL_CALL(_get_width, ret);
 	return ret;
 }
 
 int Texture2D::get_height() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	GDVIRTUAL_CALL(_get_height, ret);
 	return ret;
 }
 
@@ -133,37 +133,37 @@ TypedArray<Image> Texture3D::_get_datai() const {
 
 Image::Format Texture3D::get_format() const {
 	Image::Format ret = Image::FORMAT_MAX;
-	GDVIRTUAL_REQUIRED_CALL(_get_format, ret);
+	GDVIRTUAL_CALL(_get_format, ret);
 	return ret;
 }
 
 int Texture3D::get_width() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	GDVIRTUAL_CALL(_get_width, ret);
 	return ret;
 }
 
 int Texture3D::get_height() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	GDVIRTUAL_CALL(_get_height, ret);
 	return ret;
 }
 
 int Texture3D::get_depth() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_depth, ret);
+	GDVIRTUAL_CALL(_get_depth, ret);
 	return ret;
 }
 
 bool Texture3D::has_mipmaps() const {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret);
+	GDVIRTUAL_CALL(_has_mipmaps, ret);
 	return ret;
 }
 
 Vector<Ref<Image>> Texture3D::get_data() const {
 	TypedArray<Image> ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_data, ret);
+	GDVIRTUAL_CALL(_get_data, ret);
 	Vector<Ref<Image>> data;
 	data.resize(ret.size());
 	for (int i = 0; i < data.size(); i++) {
@@ -198,43 +198,43 @@ Ref<Resource> Texture3D::create_placeholder() const {
 
 Image::Format TextureLayered::get_format() const {
 	Image::Format ret = Image::FORMAT_MAX;
-	GDVIRTUAL_REQUIRED_CALL(_get_format, ret);
+	GDVIRTUAL_CALL(_get_format, ret);
 	return ret;
 }
 
 TextureLayered::LayeredType TextureLayered::get_layered_type() const {
 	uint32_t ret = LAYERED_TYPE_2D_ARRAY;
-	GDVIRTUAL_REQUIRED_CALL(_get_layered_type, ret);
+	GDVIRTUAL_CALL(_get_layered_type, ret);
 	return (LayeredType)ret;
 }
 
 int TextureLayered::get_width() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	GDVIRTUAL_CALL(_get_width, ret);
 	return ret;
 }
 
 int TextureLayered::get_height() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	GDVIRTUAL_CALL(_get_height, ret);
 	return ret;
 }
 
 int TextureLayered::get_layers() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_layers, ret);
+	GDVIRTUAL_CALL(_get_layers, ret);
 	return ret;
 }
 
 bool TextureLayered::has_mipmaps() const {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret);
+	GDVIRTUAL_CALL(_has_mipmaps, ret);
 	return ret;
 }
 
 Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
 	Ref<Image> ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_layer_data, p_layer, ret);
+	GDVIRTUAL_CALL(_get_layer_data, p_layer, ret);
 	return ret;
 }
 

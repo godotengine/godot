@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_BLEND_SPACE_1D_H
-#define ANIMATION_BLEND_SPACE_1D_H
+#pragma once
 
 #include "scene/animation/animation_tree.h"
 
@@ -68,7 +67,6 @@ protected:
 
 	StringName blend_position = "blend_position";
 	StringName closest = "closest";
-	StringName length_internal = "length_internal";
 
 	BlendMode blend_mode = BLEND_MODE_INTERPOLATED;
 
@@ -114,7 +112,7 @@ public:
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	String get_caption() const override;
 
 	Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
@@ -124,5 +122,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationNodeBlendSpace1D::BlendMode)
-
-#endif // ANIMATION_BLEND_SPACE_1D_H

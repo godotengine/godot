@@ -30,6 +30,7 @@
 
 #include "websocket_multiplayer_peer.h"
 
+#include "core/io/stream_peer_tls.h"
 #include "core/os/os.h"
 
 WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {
@@ -124,7 +125,7 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 		current_packet.data = nullptr;
 	}
 
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), ERR_UNAVAILABLE);
 
 	current_packet = incoming_packets.front()->get();
 	incoming_packets.pop_front();
@@ -164,7 +165,7 @@ void WebSocketMultiplayerPeer::set_target_peer(int p_target_peer) {
 }
 
 int WebSocketMultiplayerPeer::get_packet_peer() const {
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), 1);
 
 	return incoming_packets.front()->get().source;
 }

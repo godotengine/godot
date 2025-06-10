@@ -30,14 +30,14 @@
 
 #include "callable.h"
 
-#include "callable_bind.h"
-#include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/variant/callable_bind.h"
+#include "core/variant/variant_callable.h"
 
 void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
-	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount);
+	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
 }
 
 void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
@@ -92,10 +92,31 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 		r_call_error.expected = 0;
 		return ERR_UNCONFIGURED;
 	} else if (!is_custom()) {
-		r_call_error.error = CallError::CALL_ERROR_INVALID_METHOD;
-		r_call_error.argument = 0;
-		r_call_error.expected = 0;
-		return ERR_UNCONFIGURED;
+		Object *obj = ObjectDB::get_instance(ObjectID(object));
+#ifdef DEBUG_ENABLED
+		if (!obj || !obj->is_class("Node")) {
+			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_call_error.argument = 0;
+			r_call_error.expected = 0;
+			return ERR_UNCONFIGURED;
+		}
+#endif
+
+		int argcount = p_argcount + 2;
+		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		const Variant args[2] = { p_id, method };
+
+		argptrs[0] = &args[0];
+		argptrs[1] = &args[1];
+		for (int i = 0; i < p_argcount; ++i) {
+			argptrs[i + 2] = p_arguments[i];
+		}
+
+		CallError tmp; // TODO: Check `tmp`?
+		Error err = (Error)obj->callp(SNAME("rpc_id"), argptrs, argcount, tmp).operator int64_t();
+
+		r_call_error.error = Callable::CallError::CALL_OK;
+		return err;
 	} else {
 		return custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
 	}
@@ -163,6 +184,20 @@ StringName Callable::get_method() const {
 	return method;
 }
 
+int Callable::get_argument_count(bool *r_is_valid) const {
+	if (is_custom()) {
+		bool valid = false;
+		return custom->get_argument_count(r_is_valid ? *r_is_valid : valid);
+	} else if (is_valid()) {
+		return get_object()->get_method_argument_count(method, r_is_valid);
+	} else {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+}
+
 int Callable::get_bound_arguments_count() const {
 	if (!is_null() && is_custom()) {
 		return custom->get_bound_arguments_count();
@@ -171,25 +206,31 @@ int Callable::get_bound_arguments_count() const {
 	}
 }
 
-void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments, int &r_argcount) const {
+void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments) const {
 	if (!is_null() && is_custom()) {
-		custom->get_bound_arguments(r_arguments, r_argcount);
+		custom->get_bound_arguments(r_arguments);
 	} else {
 		r_arguments.clear();
-		r_argcount = 0;
 	}
 }
 
 Array Callable::get_bound_arguments() const {
 	Vector<Variant> arr;
-	int ac;
-	get_bound_arguments_ref(arr, ac);
+	get_bound_arguments_ref(arr);
 	Array ret;
 	ret.resize(arr.size());
 	for (int i = 0; i < arr.size(); i++) {
 		ret[i] = arr[i];
 	}
 	return ret;
+}
+
+int Callable::get_unbound_arguments_count() const {
+	if (!is_null() && is_custom()) {
+		return custom->get_unbound_arguments_count();
+	} else {
+		return 0;
+	}
 }
 
 CallableCustom *Callable::get_custom() const {
@@ -280,30 +321,32 @@ bool Callable::operator<(const Callable &p_callable) const {
 }
 
 void Callable::operator=(const Callable &p_callable) {
+	CallableCustom *cleanup_ref = nullptr;
 	if (is_custom()) {
 		if (p_callable.is_custom()) {
 			if (custom == p_callable.custom) {
 				return;
 			}
 		}
-
-		if (custom->ref_count.unref()) {
-			memdelete(custom);
-		}
+		cleanup_ref = custom;
+		custom = nullptr;
 	}
 
 	if (p_callable.is_custom()) {
 		method = StringName();
-		if (!p_callable.custom->ref_count.ref()) {
-			object = 0;
-		} else {
-			object = 0;
+		object = 0;
+		if (p_callable.custom->ref_count.ref()) {
 			custom = p_callable.custom;
 		}
 	} else {
 		method = p_callable.method;
 		object = p_callable.object;
 	}
+
+	if (cleanup_ref != nullptr && cleanup_ref->ref_count.unref()) {
+		memdelete(cleanup_ref);
+	}
+	cleanup_ref = nullptr;
 }
 
 Callable::operator String() const {
@@ -318,8 +361,12 @@ Callable::operator String() const {
 		if (base) {
 			String class_name = base->get_class();
 			Ref<Script> script = base->get_script();
-			if (script.is_valid() && script->get_path().is_resource_file()) {
-				class_name += "(" + script->get_path().get_file() + ")";
+			if (script.is_valid()) {
+				if (!script->get_global_name().is_empty()) {
+					class_name += "(" + script->get_global_name() + ")";
+				} else if (script->get_path().is_resource_file()) {
+					class_name += "(" + script->get_path().get_file() + ")";
+				}
 			}
 			return class_name + "::" + String(method);
 		} else {
@@ -328,14 +375,27 @@ Callable::operator String() const {
 	}
 }
 
-Callable::Callable(const Object *p_object, const StringName &p_method) {
-	if (p_method == StringName()) {
-		object = 0;
-		ERR_FAIL_MSG("Method argument to Callable constructor must be a non-empty string");
+Callable Callable::create(const Variant &p_variant, const StringName &p_method) {
+	ERR_FAIL_COND_V_MSG(p_method == StringName(), Callable(), "Method argument to Callable::create method must be a non-empty string.");
+
+	switch (p_variant.get_type()) {
+		case Variant::NIL:
+			return Callable(ObjectID(), p_method);
+		case Variant::OBJECT:
+			return Callable(p_variant.operator ObjectID(), p_method);
+		default:
+			return Callable(memnew(VariantCallable(p_variant, p_method)));
 	}
-	if (p_object == nullptr) {
+}
+
+Callable::Callable(const Object *p_object, const StringName &p_method) {
+	if (unlikely(p_method == StringName())) {
 		object = 0;
-		ERR_FAIL_MSG("Object argument to Callable constructor must be non-null");
+		ERR_FAIL_MSG("Method argument to Callable constructor must be a non-empty string.");
+	}
+	if (unlikely(p_object == nullptr)) {
+		object = 0;
+		ERR_FAIL_MSG("Object argument to Callable constructor must be non-null.");
 	}
 
 	object = p_object->get_instance_id();
@@ -343,9 +403,9 @@ Callable::Callable(const Object *p_object, const StringName &p_method) {
 }
 
 Callable::Callable(ObjectID p_object, const StringName &p_method) {
-	if (p_method == StringName()) {
+	if (unlikely(p_method == StringName())) {
 		object = 0;
-		ERR_FAIL_MSG("Method argument to Callable constructor must be a non-empty string");
+		ERR_FAIL_MSG("Method argument to Callable constructor must be a non-empty string.");
 	}
 
 	object = p_object;
@@ -353,9 +413,9 @@ Callable::Callable(ObjectID p_object, const StringName &p_method) {
 }
 
 Callable::Callable(CallableCustom *p_custom) {
-	if (p_custom->referenced) {
+	if (unlikely(p_custom->referenced)) {
 		object = 0;
-		ERR_FAIL_MSG("Callable custom is already referenced");
+		ERR_FAIL_MSG("Callable custom is already referenced.");
 	}
 	p_custom->referenced = true;
 	object = 0; //ensure object is all zero, since pointer may be 32 bits
@@ -380,6 +440,7 @@ Callable::~Callable() {
 	if (is_custom()) {
 		if (custom->ref_count.unref()) {
 			memdelete(custom);
+			custom = nullptr;
 		}
 	}
 }
@@ -404,13 +465,21 @@ const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
 }
 
+int CallableCustom::get_argument_count(bool &r_is_valid) const {
+	r_is_valid = false;
+	return 0;
+}
+
 int CallableCustom::get_bound_arguments_count() const {
 	return 0;
 }
 
-void CallableCustom::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
-	r_arguments = Vector<Variant>();
-	r_argcount = 0;
+void CallableCustom::get_bound_arguments(Vector<Variant> &r_arguments) const {
+	r_arguments.clear();
+}
+
+int CallableCustom::get_unbound_arguments_count() const {
+	return 0;
 }
 
 CallableCustom::CallableCustom() {
@@ -488,6 +557,13 @@ bool Signal::is_connected(const Callable &p_callable) const {
 	ERR_FAIL_NULL_V(obj, false);
 
 	return obj->is_connected(name, p_callable);
+}
+
+bool Signal::has_connections() const {
+	Object *obj = get_object();
+	ERR_FAIL_NULL_V(obj, false);
+
+	return obj->has_connections(name);
 }
 
 Array Signal::get_connections() const {

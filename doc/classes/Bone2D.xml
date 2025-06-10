@@ -15,7 +15,7 @@
 		<method name="apply_rest">
 			<return type="void" />
 			<description>
-				Stores the node's current transforms in [member rest].
+				Resets the bone to the rest pose. This is equivalent to setting [member Node2D.transform] to [member rest].
 			</description>
 		</method>
 		<method name="get_autocalculate_length_and_angle" qualifiers="const">

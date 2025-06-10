@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONFIG_FILE_H
-#define CONFIG_FILE_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
@@ -41,8 +40,6 @@ class ConfigFile : public RefCounted {
 
 	HashMap<String, HashMap<String, Variant>> values;
 
-	PackedStringArray _get_sections() const;
-	PackedStringArray _get_section_keys(const String &p_section) const;
 	Error _internal_load(const String &p_path, Ref<FileAccess> f);
 	Error _internal_save(Ref<FileAccess> file);
 
@@ -53,13 +50,13 @@ protected:
 
 public:
 	void set_value(const String &p_section, const String &p_key, const Variant &p_value);
-	Variant get_value(const String &p_section, const String &p_key, Variant p_default = Variant()) const;
+	Variant get_value(const String &p_section, const String &p_key, const Variant &p_default = Variant()) const;
 
 	bool has_section(const String &p_section) const;
 	bool has_section_key(const String &p_section, const String &p_key) const;
 
-	void get_sections(List<String> *r_sections) const;
-	void get_section_keys(const String &p_section, List<String> *r_keys) const;
+	Vector<String> get_sections() const;
+	Vector<String> get_section_keys(const String &p_section) const;
 
 	void erase_section(const String &p_section);
 	void erase_section_key(const String &p_section, const String &p_key);
@@ -78,5 +75,3 @@ public:
 	Error save_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
 	Error save_encrypted_pass(const String &p_path, const String &p_pass);
 };
-
-#endif // CONFIG_FILE_H

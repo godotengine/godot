@@ -28,14 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SECTIONED_INSPECTOR_H
-#define EDITOR_SECTIONED_INSPECTOR_H
+#pragma once
 
-#include "editor/editor_inspector.h"
 #include "scene/gui/split_container.h"
-#include "scene/gui/tree.h"
 
+class CheckButton;
+class EditorInspector;
+class LineEdit;
 class SectionedInspectorFilter;
+class Tree;
+class TreeItem;
 
 class SectionedInspector : public HSplitContainer {
 	GDCLASS(SectionedInspector, HSplitContainer);
@@ -48,6 +50,7 @@ class SectionedInspector : public HSplitContainer {
 	HashMap<String, TreeItem *> section_map;
 	EditorInspector *inspector = nullptr;
 	LineEdit *search_box = nullptr;
+	CheckButton *advanced_toggle = nullptr;
 
 	String selected_category;
 
@@ -57,9 +60,15 @@ class SectionedInspector : public HSplitContainer {
 	void _section_selected();
 
 	void _search_changed(const String &p_what);
+	void _advanced_toggled(bool p_toggled_on);
+
+protected:
+	void _notification(int p_notification);
 
 public:
 	void register_search_box(LineEdit *p_box);
+	void register_advanced_toggle(CheckButton *p_toggle);
+
 	EditorInspector *get_inspector();
 	void edit(Object *p_object);
 	String get_full_item_path(const String &p_item);
@@ -67,11 +76,8 @@ public:
 	void set_current_section(const String &p_section);
 	String get_current_section() const;
 
-	void set_restrict_to_basic_settings(bool p_restrict);
 	void update_category_list();
 
 	SectionedInspector();
 	~SectionedInspector();
 };
-
-#endif // EDITOR_SECTIONED_INSPECTOR_H

@@ -61,11 +61,8 @@ subject to the following restrictions:
 #include "core/error/error_macros.h"
 #include "core/math/aabb.h"
 #include "core/math/math_defs.h"
-#include "core/os/memory.h"
-#include "core/templates/oa_hash_map.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/paged_allocator.h"
-
-#include <string.h>
 
 //#define DEBUG_CONVEX_HULL
 //#define SHOW_ITERATIONS
@@ -77,19 +74,21 @@ subject to the following restrictions:
 
 #ifdef DEBUG_ENABLED
 #define CHULL_ASSERT(m_cond)                                     \
-	do {                                                         \
+	if constexpr (true) {                                        \
 		if (unlikely(!(m_cond))) {                               \
 			ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed."); \
 		}                                                        \
-	} while (0)
+	} else                                                       \
+		((void)0)
 #else
 #define CHULL_ASSERT(m_cond) \
-	do {                     \
-	} while (0)
+	if constexpr (true) {    \
+	} else                   \
+		((void)0)
 #endif
 
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 // Convex hull implementation based on Preparata and Hong
@@ -202,7 +201,7 @@ public:
 		static Int128 mul(uint64_t a, uint64_t b);
 
 		Int128 operator-() const {
-			return Int128((uint64_t) - (int64_t)low, ~high + (low == 0));
+			return Int128(uint64_t(-int64_t(low)), ~high + (low == 0));
 		}
 
 		Int128 operator+(const Int128 &b) const {
@@ -344,31 +343,31 @@ public:
 		Rational128(int64_t p_value) {
 			if (p_value > 0) {
 				sign = 1;
-				this->numerator = p_value;
+				numerator = p_value;
 			} else if (p_value < 0) {
 				sign = -1;
-				this->numerator = -p_value;
+				numerator = -p_value;
 			} else {
 				sign = 0;
-				this->numerator = (uint64_t)0;
+				numerator = (uint64_t)0;
 			}
-			this->denominator = (uint64_t)1;
+			denominator = (uint64_t)1;
 			is_int_64 = true;
 		}
 
 		Rational128(const Int128 &p_numerator, const Int128 &p_denominator) {
 			sign = p_numerator.get_sign();
 			if (sign >= 0) {
-				this->numerator = p_numerator;
+				numerator = p_numerator;
 			} else {
-				this->numerator = -p_numerator;
+				numerator = -p_numerator;
 			}
 			int32_t dsign = p_denominator.get_sign();
 			if (dsign >= 0) {
-				this->denominator = p_denominator;
+				denominator = p_denominator;
 			} else {
 				sign = -sign;
-				this->denominator = -p_denominator;
+				denominator = -p_denominator;
 			}
 			is_int_64 = false;
 		}
@@ -2150,10 +2149,11 @@ static int32_t get_vertex_copy(ConvexHullInternal::Vertex *p_vertex, LocalVector
 }
 
 real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, real_t p_shrink, real_t p_shrink_clamp) {
+	vertices.clear();
+	edges.clear();
+	faces.clear();
+
 	if (p_count <= 0) {
-		vertices.clear();
-		edges.clear();
-		faces.clear();
 		return 0;
 	}
 
@@ -2162,15 +2162,8 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 
 	real_t shift = 0;
 	if ((p_shrink > 0) && ((shift = hull.shrink(p_shrink, p_shrink_clamp)) < 0)) {
-		vertices.clear();
-		edges.clear();
-		faces.clear();
 		return shift;
 	}
-
-	vertices.clear();
-	edges.clear();
-	faces.clear();
 
 	LocalVector<ConvexHullInternal::Vertex *> old_vertices;
 	get_vertex_copy(hull.vertex_list, old_vertices);
@@ -2244,7 +2237,7 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh) {
 	r_mesh = Geometry3D::MeshData(); // clear
 
-	if (p_points.size() == 0) {
+	if (p_points.is_empty()) {
 		return FAILED; // matches QuickHull
 	}
 
@@ -2274,7 +2267,7 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 
 	// Copy the edges over. There's two "half-edges" for every edge, so we pick only one of them.
 	r_mesh.edges.resize(ch.edges.size() / 2);
-	OAHashMap<uint64_t, int32_t> edge_map(ch.edges.size() * 4); // The higher the capacity, the faster the insert
+	AHashMap<uint64_t, int32_t> edge_map(ch.edges.size() * 4); // The higher the capacity, the faster the insert
 
 	uint32_t edges_copied = 0;
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
@@ -2299,11 +2292,11 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 			uint64_t key = b;
 			key <<= 32;
 			key |= a;
-			int32_t index;
-			if (!edge_map.lookup(key, index)) {
+			int32_t *index_ptr = edge_map.getptr(key);
+			if (!index_ptr) {
 				ERR_PRINT("Invalid edge");
 			} else {
-				r_mesh.edges[index].face_b = edge_faces[i];
+				r_mesh.edges[*index_ptr].face_b = edge_faces[i];
 			}
 		}
 	}

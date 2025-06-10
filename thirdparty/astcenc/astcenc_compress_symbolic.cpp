@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2023 Arm Limited
+// Copyright 2011-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -247,7 +247,7 @@ static bool realign_weights_decimated(
 		}
 
 		// Create an unquantized weight grid for this decimation level
-		alignas(ASTCENC_VECALIGN) float uq_weightsf[BLOCK_MAX_WEIGHTS];
+		ASTCENC_ALIGNAS float uq_weightsf[BLOCK_MAX_WEIGHTS];
 		for (unsigned int we_idx = 0; we_idx < weight_count; we_idx += ASTCENC_SIMD_WIDTH)
 		{
 			vint unquant_value(dec_weights_uquant + we_idx);
@@ -467,7 +467,7 @@ static float compress_symbolic_block_for_partition_1plane(
 
 		qwt_bitcounts[i] = static_cast<int8_t>(bitcount);
 
-		alignas(ASTCENC_VECALIGN) float dec_weights_uquantf[BLOCK_MAX_WEIGHTS];
+		ASTCENC_ALIGNAS float dec_weights_uquantf[BLOCK_MAX_WEIGHTS];
 
 		// Generate the optimized set of weights for the weight mode
 		compute_quantized_weights_for_decimation(
@@ -830,7 +830,7 @@ static float compress_symbolic_block_for_partition_2planes(
 		unsigned int decimation_mode = bm.decimation_mode;
 		const auto& di = bsd.get_decimation_info(decimation_mode);
 
-		alignas(ASTCENC_VECALIGN) float dec_weights_uquantf[BLOCK_MAX_WEIGHTS];
+		ASTCENC_ALIGNAS float dec_weights_uquantf[BLOCK_MAX_WEIGHTS];
 
 		// Generate the optimized set of weights for the mode
 		compute_quantized_weights_for_decimation(
@@ -1163,7 +1163,7 @@ static float prepare_block_statistics(
 void compress_block(
 	const astcenc_contexti& ctx,
 	const image_block& blk,
-	physical_compressed_block& pcb,
+	uint8_t pcb[16],
 	compression_working_buffers& tmpbuf)
 {
 	astcenc_profile decode_mode = ctx.config.profile;
@@ -1280,11 +1280,12 @@ void compress_block(
 		1.0f
 	};
 
-	static const float errorval_overshoot = 1.0f / ctx.config.tune_mse_overshoot;
+	const float errorval_overshoot = 1.0f / ctx.config.tune_mse_overshoot;
 
-	// Only enable MODE0 fast path (trial 0) if 2D, and more than 25 texels
+	// Only enable MODE0 fast path if enabled
+	// Never enable for 3D blocks as no "always" block modes are available
 	int start_trial = 1;
-	if ((bsd.texel_count >= TUNE_MIN_TEXELS_MODE0_FASTPATH) && (bsd.zdim == 1))
+ 	if ((ctx.config.tune_search_mode0_enable >= TUNE_MIN_SEARCH_MODE0) && (bsd.zdim == 1))
 	{
 		start_trial = 0;
 	}

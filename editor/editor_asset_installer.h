@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_ASSET_INSTALLER_H
-#define EDITOR_ASSET_INSTALLER_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -88,7 +87,7 @@ class EditorAssetInstaller : public ConfirmationDialog {
 	void _toggle_source_tree(bool p_visible, bool p_scroll_to_error = false);
 
 	void _item_checked_cbk();
-	void _check_propagated_to_item(Object *p_obj, int p_column);
+	bool _fix_conflicted_indeterminate_state(TreeItem *p_item, int p_column);
 	bool _is_item_checked(const String &p_source_path) const;
 
 	void _install_asset();
@@ -96,7 +95,6 @@ class EditorAssetInstaller : public ConfirmationDialog {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	void open_asset(const String &p_path, bool p_autoskip_toplevel = false);
@@ -106,5 +104,3 @@ public:
 
 	EditorAssetInstaller();
 };
-
-#endif // EDITOR_ASSET_INSTALLER_H

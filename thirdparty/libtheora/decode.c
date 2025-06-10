@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009,2025           *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id$
 
  ********************************************************************/
 
@@ -147,7 +147,7 @@ static const unsigned char OC_INTERNAL_DCT_TOKEN_EXTRA_BITS[15]={
  ((_eobs)<<OC_DCT_CW_EOB_SHIFT| \
  (_rlen)<<OC_DCT_CW_RLEN_SHIFT| \
  (_flip)<<OC_DCT_CW_FLIP_BIT| \
- (_mag)-(_flip)<<OC_DCT_CW_MAG_SHIFT)
+ ((_mag)-(_flip))*(1<<OC_DCT_CW_MAG_SHIFT))
 
 /*A special code word value that signals the end of the frame (a long EOB run
    of zero).*/
@@ -1755,13 +1755,13 @@ static void oc_dec_deblock_frag_rows(oc_dec_ctx *_dec,
       flimit=(qstep*3)>>2;
       oc_filter_hedge(dst+x,dst_ystride,src+x-src_ystride,src_ystride,
        qstep,flimit,variance,variance+nhfrags);
-      oc_filter_vedge(dst+x-(dst_ystride<<2)-4,dst_ystride,
+      oc_filter_vedge(dst+x-(dst_ystride*4)-4,dst_ystride,
        qstep,flimit,variance-1);
       variance++;
       dc_qi++;
     }
-    dst+=dst_ystride<<3;
-    src+=src_ystride<<3;
+    dst+=dst_ystride*8;
+    src+=src_ystride*8;
   }
   /*And finally, handle the last row in the frame, if it's in the range.*/
   if(!notdone){
@@ -1777,7 +1777,7 @@ static void oc_dec_deblock_frag_rows(oc_dec_ctx *_dec,
     for(x=8;x<width;x+=8){
       qstep=_dec->pp_dc_scale[*dc_qi++];
       flimit=(qstep*3)>>2;
-      oc_filter_vedge(dst+x-(dst_ystride<<3)-4,dst_ystride,
+      oc_filter_vedge(dst+x-(dst_ystride*8)-4,dst_ystride,
        qstep,flimit,variance++);
     }
   }
@@ -1952,7 +1952,7 @@ static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,th_img_plane *_img,
       frag++;
       variance++;
     }
-    idata+=ystride<<3;
+    idata+=ystride*8;
   }
 }
 
@@ -2101,7 +2101,7 @@ static void oc_render_telemetry(th_dec_ctx *_dec,th_ycbcr_buffer _ycbcr,
   hdec=!(_dec->state.info.pixel_fmt&1);
   vdec=!(_dec->state.info.pixel_fmt&2);
   /*Lazy data buffer init.
-    We could try to re-use the post-processing buffer, which would save
+    We could try to reuse the post-processing buffer, which would save
      memory, but complicate the allocation logic there.
     I don't think anyone cares about memory usage when using telemetry; it is
      not meant for embedded devices.*/
@@ -2674,10 +2674,10 @@ static void oc_render_telemetry(th_dec_ctx *_dec,th_ycbcr_buffer _ycbcr,
           u_row[x>>1]=OC_CLAMP255(u);
           v_row[x>>1]=OC_CLAMP255(v);
         }
-        y_row+=_ycbcr[0].stride<<1;
+        y_row+=_ycbcr[0].stride*2;
         u_row+=_ycbcr[1].stride;
         v_row+=_ycbcr[2].stride;
-        rgb_row+=cstride<<1;
+        rgb_row+=cstride*2;
       }
     }break;
     case TH_PF_422:{

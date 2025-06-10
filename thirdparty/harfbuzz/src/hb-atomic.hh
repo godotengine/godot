@@ -118,12 +118,12 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
  */
 #ifndef _hb_compiler_memory_r_barrier
 #if defined(__ATOMIC_ACQUIRE) // gcc-like
-#define _hb_compiler_memory_r_barrier() asm volatile("": : :"memory")
+static inline void _hb_compiler_memory_r_barrier () { asm volatile("": : :"memory"); }
 #elif !defined(_MSC_VER)
 #include <atomic>
 #define _hb_compiler_memory_r_barrier() std::atomic_signal_fence (std::memory_order_acquire)
 #else
-#define _hb_compiler_memory_r_barrier() do {} while (0)
+static inline void _hb_compiler_memory_r_barrier () {}
 #endif
 #endif
 
@@ -212,11 +212,18 @@ struct hb_atomic_ptr_t
   T *get_acquire () const { return (T *) hb_atomic_ptr_impl_get ((void **) &v); }
   bool cmpexch (const T *old, T *new_) const { return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_); }
 
+  operator bool () const { return get_acquire () != nullptr; }
   T * operator -> () const                    { return get_acquire (); }
   template <typename C> operator C * () const { return get_acquire (); }
 
   T *v = nullptr;
 };
+
+static inline bool hb_barrier ()
+{
+  _hb_compiler_memory_r_barrier ();
+  return true;
+}
 
 
 #endif /* HB_ATOMIC_HH */

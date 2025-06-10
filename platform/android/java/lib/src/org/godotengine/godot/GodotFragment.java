@@ -30,6 +30,7 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.utils.BenchmarkUtils;
 
@@ -38,9 +39,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Messenger;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -147,6 +150,13 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@CallSuper
 	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		godot.onConfigurationChanged(newConfig);
+	}
+
+	@CallSuper
+	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCallback != null) {
@@ -178,7 +188,12 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		final Activity activity = getActivity();
 		mCurrentIntent = activity.getIntent();
 
-		godot = new Godot(requireContext());
+		if (parentHost != null) {
+			godot = parentHost.getGodot();
+		}
+		if (godot == null) {
+			godot = new Godot(requireContext());
+		}
 		performEngineInitialization();
 		BenchmarkUtils.endBenchmarkMeasure("Startup", "GodotFragment::onCreate");
 	}
@@ -195,19 +210,19 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			if (godotContainerLayout == null) {
 				throw new IllegalStateException("Unable to initialize engine render view");
 			}
+		} catch (IllegalStateException e) {
+			Log.e(TAG, "Engine initialization failed", e);
+			final String errorMessage = TextUtils.isEmpty(e.getMessage())
+					? getString(R.string.error_engine_setup_message)
+					: e.getMessage();
+			godot.alert(errorMessage, getString(R.string.text_error_title), godot::destroyAndKillProcess);
 		} catch (IllegalArgumentException ignored) {
 			final Activity activity = getActivity();
 			Intent notifierIntent = new Intent(activity, activity.getClass());
 			notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-			PendingIntent pendingIntent;
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				pendingIntent = PendingIntent.getActivity(activity, 0,
-						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-			} else {
-				pendingIntent = PendingIntent.getActivity(activity, 0,
-						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-			}
+			PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0,
+					notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 			int startResult;
 			try {
@@ -310,7 +325,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	}
 
 	public void onBackPressed() {
-		godot.onBackPressed(this);
+		godot.onBackPressed();
 	}
 
 	/**
@@ -453,7 +468,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		if (parentHost != null) {
 			return parentHost.onNewGodotInstanceRequested(args);
 		}
-		return 0;
+		return -1;
 	}
 
 	@Override
@@ -463,5 +478,36 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			return parentHost.getHostPlugins(engine);
 		}
 		return Collections.emptySet();
+	}
+
+	@Override
+	public Error signApk(@NonNull String inputPath, @NonNull String outputPath, @NonNull String keystorePath, @NonNull String keystoreUser, @NonNull String keystorePassword) {
+		if (parentHost != null) {
+			return parentHost.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword);
+		}
+		return Error.ERR_UNAVAILABLE;
+	}
+
+	@Override
+	public Error verifyApk(@NonNull String apkPath) {
+		if (parentHost != null) {
+			return parentHost.verifyApk(apkPath);
+		}
+		return Error.ERR_UNAVAILABLE;
+	}
+
+	@Override
+	public boolean supportsFeature(String featureTag) {
+		if (parentHost != null) {
+			return parentHost.supportsFeature(featureTag);
+		}
+		return false;
+	}
+
+	@Override
+	public void onEditorWorkspaceSelected(String workspace) {
+		if (parentHost != null) {
+			parentHost.onEditorWorkspaceSelected(workspace);
+		}
 	}
 }

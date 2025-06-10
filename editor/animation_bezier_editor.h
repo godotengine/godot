@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_BEZIER_EDITOR_H
-#define ANIMATION_BEZIER_EDITOR_H
+#pragma once
 
 #include "animation_track_editor.h"
 #include "core/templates/hashfuncs.h"
@@ -42,6 +41,9 @@ class AnimationBezierTrackEdit : public Control {
 	enum {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
+		MENU_KEY_CUT,
+		MENU_KEY_COPY,
+		MENU_KEY_PASTE,
 		MENU_KEY_DELETE,
 		MENU_KEY_SET_HANDLE_FREE,
 		MENU_KEY_SET_HANDLE_LINEAR,
@@ -98,12 +100,16 @@ class AnimationBezierTrackEdit : public Control {
 	void _menu_selected(int p_index);
 
 	void _play_position_draw();
+	bool _is_track_displayed(int p_track_index);
+	bool _is_track_curves_displayed(int p_track_index);
 
 	Vector2 insert_at_pos;
 
 	typedef Pair<int, int> IntPair;
 
 	bool moving_selection_attempt = false;
+	bool moving_inserted_key = false;
+	Point2 moving_selection_mouse_begin;
 	IntPair select_single_attempt;
 	bool moving_selection = false;
 	int moving_selection_from_key = 0;
@@ -116,6 +122,15 @@ class AnimationBezierTrackEdit : public Control {
 	bool box_selecting_add = false;
 	Vector2 box_selection_from;
 	Vector2 box_selection_to;
+
+	Rect2 selection_rect;
+	Rect2 selection_handles_rect;
+
+	bool scaling_selection = false;
+	Vector2i scaling_selection_handles;
+	Vector2 scaling_selection_scale = Vector2(1, 1);
+	Vector2 scaling_selection_offset;
+	Point2 scaling_selection_pivot;
 
 	int moving_handle = 0; //0 no move -1 or +1 out, 2 both (drawing only)
 	int moving_handle_key = 0;
@@ -138,7 +153,8 @@ class AnimationBezierTrackEdit : public Control {
 
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
-	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos);
+	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos, bool p_single);
+	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 	void _change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto = false);
 
 	Vector2 menu_insert_key;
@@ -184,33 +200,38 @@ class AnimationBezierTrackEdit : public Control {
 	void _draw_track(int p_track, const Color &p_color);
 
 	float _bezier_h_to_pixel(float p_h);
+	void _zoom_vertically(real_t p_minimum_value, real_t p_maximum_value);
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
+	static float get_bezier_key_value(Array p_bezier_key_array);
+
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	Ref<Animation> get_animation() const;
 
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
 	void set_filtered(bool p_filtered);
+	void auto_fit_vertically();
 
 	void set_play_position(real_t p_pos);
 	void update_play_position();
 
-	void duplicate_selection();
+	void duplicate_selected_keys(real_t p_ofs, bool p_ofs_valid);
+	void copy_selected_keys(bool p_cut);
+	void paste_keys(real_t p_ofs, bool p_ofs_valid);
 	void delete_selection();
 
-	void _bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
+	void _bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode, Animation::HandleSetMode p_handle_set_mode = Animation::HANDLE_SET_MODE_NONE);
 
 	AnimationBezierTrackEdit();
 };
-
-#endif // ANIMATION_BEZIER_EDITOR_H

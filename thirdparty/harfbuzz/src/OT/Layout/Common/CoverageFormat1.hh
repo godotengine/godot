@@ -103,6 +103,8 @@ struct CoverageFormat1_3
         intersect_glyphs << glyphArray[i];
   }
 
+  unsigned cost () const { return hb_bit_storage ((unsigned) glyphArray.len); /* bsearch cost */ }
+
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const
   { return glyphs->add_sorted_array (glyphArray.as_array ()); }

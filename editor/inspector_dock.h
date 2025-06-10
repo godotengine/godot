@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INSPECTOR_DOCK_H
-#define INSPECTOR_DOCK_H
+#pragma once
 
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
@@ -113,8 +112,8 @@ class InspectorDock : public VBoxContainer {
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
-	void _open_resource_selector() { _load_resource(); }; // just used to call from arg-less signal
-	void _resource_file_selected(String p_file);
+	void _open_resource_selector() { _load_resource(); } // just used to call from arg-less signal
+	void _resource_file_selected(const String &p_file);
 	void _save_resource(bool save_as);
 	void _unref_resource();
 	void _copy_resource();
@@ -125,6 +124,7 @@ class InspectorDock : public VBoxContainer {
 	void _info_pressed();
 	void _resource_created();
 	void _resource_selected(const Ref<Resource> &p_res, const String &p_property);
+	void _files_moved(const String &p_old_file, const String &p_new_file);
 	void _edit_forward();
 	void _edit_back();
 	void _menu_collapseall();
@@ -132,6 +132,8 @@ class InspectorDock : public VBoxContainer {
 	void _menu_expand_revertable();
 	void _select_history(int p_idx);
 	void _prepare_history();
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 private:
 	static InspectorDock *singleton;
@@ -162,5 +164,3 @@ public:
 	InspectorDock(EditorData &p_editor_data);
 	~InspectorDock();
 };
-
-#endif // INSPECTOR_DOCK_H

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2020 The Khronos Group Inc.
+// Copyright (c) 2014-2024 The Khronos Group Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and/or associated documentation files (the "Materials"),
@@ -174,6 +174,8 @@ enum ExecutionMode {
     ExecutionModeStencilRefUnchangedBackAMD = 5082,
     ExecutionModeStencilRefGreaterBackAMD = 5083,
     ExecutionModeStencilRefLessBackAMD = 5084,
+    ExecutionModeQuadDerivativesKHR = 5088,
+    ExecutionModeRequireFullQuadsKHR = 5089,
     ExecutionModeOutputLinesEXT = 5269,
     ExecutionModeOutputLinesNV = 5269,
     ExecutionModeOutputPrimitivesEXT = 5270,
@@ -198,6 +200,7 @@ enum ExecutionMode {
     ExecutionModeNoGlobalOffsetINTEL = 5895,
     ExecutionModeNumSIMDWorkitemsINTEL = 5896,
     ExecutionModeSchedulerTargetFmaxMhzINTEL = 5903,
+    ExecutionModeMaximallyReconvergesKHR = 6023,
     ExecutionModeStreamingInterfaceINTEL = 6154,
     ExecutionModeNamedBarrierCountINTEL = 6417,
     ExecutionModeMax = 0x7fffffff,
@@ -513,6 +516,9 @@ enum Decoration {
     DecorationMaxByteOffsetId = 47,
     DecorationNoSignedWrap = 4469,
     DecorationNoUnsignedWrap = 4470,
+    DecorationWeightTextureQCOM = 4487,
+    DecorationBlockMatchTextureQCOM = 4488,
+    DecorationBlockMatchSamplerQCOM = 4499,
     DecorationExplicitInterpAMD = 4999,
     DecorationOverrideCoverageNV = 5248,
     DecorationPassthroughNV = 5250,
@@ -718,6 +724,8 @@ enum BuiltIn {
     BuiltInHitKindNV = 5333,
     BuiltInCurrentRayTimeNV = 5334,
     BuiltInHitTriangleVertexPositionsKHR = 5335,
+    BuiltInHitMicroTriangleVertexPositionsNV = 5337,
+    BuiltInHitMicroTriangleVertexBarycentricsNV = 5344,
     BuiltInIncomingRayFlagsKHR = 5351,
     BuiltInIncomingRayFlagsNV = 5351,
     BuiltInRayGeometryIndexKHR = 5352,
@@ -725,6 +733,8 @@ enum BuiltIn {
     BuiltInSMCountNV = 5375,
     BuiltInWarpIDNV = 5376,
     BuiltInSMIDNV = 5377,
+    BuiltInHitKindFrontFacingMicroTriangleNV = 5405,
+    BuiltInHitKindBackFacingMicroTriangleNV = 5406,
     BuiltInCullMaskKHR = 6021,
     BuiltInMax = 0x7fffffff,
 };
@@ -1023,6 +1033,10 @@ enum Capability {
     CapabilityRayQueryKHR = 4472,
     CapabilityRayTraversalPrimitiveCullingKHR = 4478,
     CapabilityRayTracingKHR = 4479,
+    CapabilityTextureSampleWeightedQCOM = 4484,
+    CapabilityTextureBoxFilterQCOM = 4485,
+    CapabilityTextureBlockMatchQCOM = 4486,
+    CapabilityTextureBlockMatch2QCOM = 4498,
     CapabilityFloat16ImageAMD = 5008,
     CapabilityImageGatherBiasLodAMD = 5009,
     CapabilityFragmentMaskAMD = 5010,
@@ -1030,6 +1044,7 @@ enum Capability {
     CapabilityImageReadWriteLodAMD = 5015,
     CapabilityInt64ImageEXT = 5016,
     CapabilityShaderClockKHR = 5055,
+    CapabilityQuadControlKHR = 5087,
     CapabilitySampleMaskOverrideCoverageNV = 5249,
     CapabilityGeometryShaderPassthroughNV = 5251,
     CapabilityShaderViewportIndexLayerEXT = 5254,
@@ -1089,10 +1104,13 @@ enum Capability {
     CapabilityFragmentShaderPixelInterlockEXT = 5378,
     CapabilityDemoteToHelperInvocation = 5379,
     CapabilityDemoteToHelperInvocationEXT = 5379,
+    CapabilityDisplacementMicromapNV = 5380,
     CapabilityRayTracingOpacityMicromapEXT = 5381,
     CapabilityShaderInvocationReorderNV = 5383,
     CapabilityBindlessTextureNV = 5390,
     CapabilityRayQueryPositionFetchKHR = 5391,
+    CapabilityAtomicFloat16VectorNV = 5404,
+    CapabilityRayTracingDisplacementMicromapNV = 5409,
     CapabilitySubgroupShuffleINTEL = 5568,
     CapabilitySubgroupBufferBlockIOINTEL = 5569,
     CapabilitySubgroupImageBlockIOINTEL = 5570,
@@ -1263,26 +1281,26 @@ enum PackedVectorFormat {
 };
 
 enum CooperativeMatrixOperandsShift {
-    CooperativeMatrixOperandsMatrixASignedComponentsShift = 0,
-    CooperativeMatrixOperandsMatrixBSignedComponentsShift = 1,
-    CooperativeMatrixOperandsMatrixCSignedComponentsShift = 2,
-    CooperativeMatrixOperandsMatrixResultSignedComponentsShift = 3,
-    CooperativeMatrixOperandsSaturatingAccumulationShift = 4,
+    CooperativeMatrixOperandsMatrixASignedComponentsKHRShift = 0,
+    CooperativeMatrixOperandsMatrixBSignedComponentsKHRShift = 1,
+    CooperativeMatrixOperandsMatrixCSignedComponentsKHRShift = 2,
+    CooperativeMatrixOperandsMatrixResultSignedComponentsKHRShift = 3,
+    CooperativeMatrixOperandsSaturatingAccumulationKHRShift = 4,
     CooperativeMatrixOperandsMax = 0x7fffffff,
 };
 
 enum CooperativeMatrixOperandsMask {
     CooperativeMatrixOperandsMaskNone = 0,
-    CooperativeMatrixOperandsMatrixASignedComponentsMask = 0x00000001,
-    CooperativeMatrixOperandsMatrixBSignedComponentsMask = 0x00000002,
-    CooperativeMatrixOperandsMatrixCSignedComponentsMask = 0x00000004,
-    CooperativeMatrixOperandsMatrixResultSignedComponentsMask = 0x00000008,
-    CooperativeMatrixOperandsSaturatingAccumulationMask = 0x00000010,
+    CooperativeMatrixOperandsMatrixASignedComponentsKHRMask = 0x00000001,
+    CooperativeMatrixOperandsMatrixBSignedComponentsKHRMask = 0x00000002,
+    CooperativeMatrixOperandsMatrixCSignedComponentsKHRMask = 0x00000004,
+    CooperativeMatrixOperandsMatrixResultSignedComponentsKHRMask = 0x00000008,
+    CooperativeMatrixOperandsSaturatingAccumulationKHRMask = 0x00000010,
 };
 
 enum CooperativeMatrixLayout {
-    CooperativeMatrixLayoutCooperativeMatrixRowMajorKHR = 0,
-    CooperativeMatrixLayoutCooperativeMatrixColumnMajorKHR = 1,
+    CooperativeMatrixLayoutRowMajorKHR = 0,
+    CooperativeMatrixLayoutColumnMajorKHR = 1,
     CooperativeMatrixLayoutMax = 0x7fffffff,
 };
 
@@ -1678,6 +1696,14 @@ enum Op {
     OpRayQueryConfirmIntersectionKHR = 4476,
     OpRayQueryProceedKHR = 4477,
     OpRayQueryGetIntersectionTypeKHR = 4479,
+    OpImageSampleWeightedQCOM = 4480,
+    OpImageBoxFilterQCOM = 4481,
+    OpImageBlockMatchSSDQCOM = 4482,
+    OpImageBlockMatchSADQCOM = 4483,
+    OpImageBlockMatchWindowSSDQCOM = 4500,
+    OpImageBlockMatchWindowSADQCOM = 4501,
+    OpImageBlockMatchGatherSSDQCOM = 4502,
+    OpImageBlockMatchGatherSADQCOM = 4503,
     OpGroupIAddNonUniformAMD = 5000,
     OpGroupFAddNonUniformAMD = 5001,
     OpGroupFMinNonUniformAMD = 5002,
@@ -1689,6 +1715,8 @@ enum Op {
     OpFragmentMaskFetchAMD = 5011,
     OpFragmentFetchAMD = 5012,
     OpReadClockKHR = 5056,
+    OpGroupNonUniformQuadAllKHR = 5110,
+    OpGroupNonUniformQuadAnyKHR = 5111,
     OpHitObjectRecordHitMotionNV = 5249,
     OpHitObjectRecordHitWithIndexMotionNV = 5250,
     OpHitObjectRecordMissMotionNV = 5251,
@@ -1727,6 +1755,8 @@ enum Op {
     OpSetMeshOutputsEXT = 5295,
     OpGroupNonUniformPartitionNV = 5296,
     OpWritePackedPrimitiveIndices4x8NV = 5299,
+    OpFetchMicroTriangleVertexPositionNV = 5300,
+    OpFetchMicroTriangleVertexBarycentricNV = 5301,
     OpReportIntersectionKHR = 5334,
     OpReportIntersectionNV = 5334,
     OpIgnoreIntersectionNV = 5335,
@@ -2395,6 +2425,14 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpRayQueryConfirmIntersectionKHR: *hasResult = false; *hasResultType = false; break;
     case OpRayQueryProceedKHR: *hasResult = true; *hasResultType = true; break;
     case OpRayQueryGetIntersectionTypeKHR: *hasResult = true; *hasResultType = true; break;
+    case OpImageSampleWeightedQCOM: *hasResult = true; *hasResultType = true; break;
+    case OpImageBoxFilterQCOM: *hasResult = true; *hasResultType = true; break;
+    case OpImageBlockMatchSSDQCOM: *hasResult = true; *hasResultType = true; break;
+    case OpImageBlockMatchSADQCOM: *hasResult = true; *hasResultType = true; break;
+    case OpImageBlockMatchWindowSSDQCOM: *hasResult = true; *hasResultType = true; break;
+    case OpImageBlockMatchWindowSADQCOM: *hasResult = true; *hasResultType = true; break;
+    case OpImageBlockMatchGatherSSDQCOM: *hasResult = true; *hasResultType = true; break;
+    case OpImageBlockMatchGatherSADQCOM: *hasResult = true; *hasResultType = true; break;
     case OpGroupIAddNonUniformAMD: *hasResult = true; *hasResultType = true; break;
     case OpGroupFAddNonUniformAMD: *hasResult = true; *hasResultType = true; break;
     case OpGroupFMinNonUniformAMD: *hasResult = true; *hasResultType = true; break;
@@ -2406,6 +2444,8 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpFragmentMaskFetchAMD: *hasResult = true; *hasResultType = true; break;
     case OpFragmentFetchAMD: *hasResult = true; *hasResultType = true; break;
     case OpReadClockKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupNonUniformQuadAllKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupNonUniformQuadAnyKHR: *hasResult = true; *hasResultType = true; break;
     case OpHitObjectRecordHitMotionNV: *hasResult = false; *hasResultType = false; break;
     case OpHitObjectRecordHitWithIndexMotionNV: *hasResult = false; *hasResultType = false; break;
     case OpHitObjectRecordMissMotionNV: *hasResult = false; *hasResultType = false; break;

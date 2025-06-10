@@ -38,10 +38,17 @@
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
+		<method name="is_input_loop_broken_at_end" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="input" type="int" />
+			<description>
+				Returns whether the animation breaks the loop at the end of the loop cycle for transition.
+			</description>
+		</method>
 		<method name="is_input_reset" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="input" type="int" />
@@ -64,6 +71,14 @@
 				Enables or disables auto-advance for the given [param input] index. If enabled, state changes to the next input after playing the animation once. If enabled for the last input state, it loops to the first.
 			</description>
 		</method>
+		<method name="set_input_break_loop_at_end">
+			<return type="void" />
+			<param index="0" name="input" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], breaks the loop at the end of the loop cycle for transition, even if the animation is looping.
+			</description>
+		</method>
 		<method name="set_input_reset">
 			<return type="void" />
 			<param index="0" name="input" type="int" />
@@ -81,10 +96,11 @@
 			The number of enabled input ports for this animation node.
 		</member>
 		<member name="xfade_curve" type="Curve" setter="set_xfade_curve" getter="get_xfade_curve">
-			Determines how cross-fading between animations is eased. If empty, the transition will be linear.
+			Determines how cross-fading between animations is eased. If empty, the transition will be linear. Should be a unit [Curve].
 		</member>
 		<member name="xfade_time" type="float" setter="set_xfade_time" getter="get_xfade_time" default="0.0">
 			Cross-fading time (in seconds) between each animation connected to the inputs.
+			[b]Note:[/b] [AnimationNodeTransition] transitions the current state immediately after the start of the fading. The precise remaining time can only be inferred from the main animation. When [AnimationNodeOutput] is considered as the most upstream, so the [member xfade_time] is not scaled depending on the downstream delta. See also [member AnimationNodeOneShot.fadeout_time].
 		</member>
 	</members>
 </class>

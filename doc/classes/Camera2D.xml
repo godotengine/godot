@@ -7,12 +7,11 @@
 		Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem]-based nodes.
 		Cameras register themselves in the nearest [Viewport] node (when ascending the tree). Only one camera can be active per viewport. If no viewport is available ascending the tree, the camera will register in the global viewport.
 		This node is intended to be a simple helper to get things going quickly, but more functionality may be desired to change how the camera works. To make your own custom camera node, inherit it from [Node2D] and change the transform of the canvas by setting [member Viewport.canvas_transform] in [Viewport] (you can obtain the current [Viewport] by using [method Node.get_viewport]).
-		Note that the [Camera2D] node's [code]position[/code] doesn't represent the actual position of the screen, which may differ due to applied smoothing or limits. You can use [method get_screen_center_position] to get the real position.
+		Note that the [Camera2D] node's [member Node2D.global_position] doesn't represent the actual position of the screen, which may differ due to applied smoothing or limits. You can use [method get_screen_center_position] to get the real position. Same for the node's [member Node2D.global_rotation] which may be different due to applied rotation smoothing. You can use [method get_screen_rotation] to get the current rotation of the screen.
 	</description>
 	<tutorials>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
-		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
-		<link title="2D HDR Demo">https://godotengine.org/asset-library/asset/110</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/2718</link>
 	</tutorials>
 	<methods>
 		<method name="align">
@@ -46,6 +45,13 @@
 			<description>
 				Returns the center of the screen from this camera's point of view, in global coordinates.
 				[b]Note:[/b] The exact targeted position of the camera may be different. See [method get_target_position].
+			</description>
+		</method>
+		<method name="get_screen_rotation" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the current screen rotation from this camera's point of view.
+				[b]Note:[/b] The screen rotation can be different from [member Node2D.global_rotation] if the camera is rotating smoothly due to [member rotation_smoothing_enabled].
 			</description>
 		</method>
 		<method name="get_target_position" qualifiers="const">
@@ -93,7 +99,7 @@
 	</methods>
 	<members>
 		<member name="anchor_mode" type="int" setter="set_anchor_mode" getter="get_anchor_mode" enum="Camera2D.AnchorMode" default="1">
-			The Camera2D's anchor point. See [enum AnchorMode] constants.
+			The Camera2D's anchor point.
 		</member>
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
 			The custom [Viewport] node attached to the [Camera2D]. If [code]null[/code] or not a [Viewport], uses the default viewport instead.
@@ -143,6 +149,9 @@
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit" default="10000000">
 			Bottom scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
+		<member name="limit_enabled" type="bool" setter="set_limit_enabled" getter="is_limit_enabled" default="true">
+			If [code]true[/code], the limits will be enabled. Disabling this will allow the camera to focus anywhere, when the four [code]limit_*[/code] properties will not work.
+		</member>
 		<member name="limit_left" type="int" setter="set_limit" getter="get_limit" default="-10000000">
 			Left scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
@@ -167,7 +176,7 @@
 			Speed in pixels per second of the camera's smoothing effect when [member position_smoothing_enabled] is [code]true[/code].
 		</member>
 		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="Camera2D.Camera2DProcessCallback" default="1">
-			The camera's process callback. See [enum Camera2DProcessCallback].
+			The camera's process callback.
 		</member>
 		<member name="rotation_smoothing_enabled" type="bool" setter="set_rotation_smoothing_enabled" getter="is_rotation_smoothing_enabled" default="false">
 			If [code]true[/code], the camera's view smoothly rotates, via asymptotic smoothing, to align with its target rotation at [member rotation_smoothing_speed].
@@ -177,7 +186,7 @@
 			The angular, asymptotic speed of the camera's rotation smoothing effect when [member rotation_smoothing_enabled] is [code]true[/code].
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" default="Vector2(1, 1)">
-			The camera's zoom. A zoom of [code]Vector(2, 2)[/code] doubles the size seen in the viewport. A zoom of [code]Vector(0.5, 0.5)[/code] halves the size seen in the viewport.
+			The camera's zoom. Higher values are more zoomed in. For example, a zoom of [code]Vector2(2.0, 2.0)[/code] will be twice as zoomed in on each axis (the view covers an area four times smaller). In contrast, a zoom of [code]Vector2(0.5, 0.5)[/code] will be twice as zoomed out on each axis (the view covers an area four times larger). The X and Y components should generally always be set to the same value, unless you wish to stretch the camera view.
 			[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [Camera2D] zoom into account. This means that zooming in/out will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated unless the font is part of a [CanvasLayer] that makes it ignore camera zoom. To ensure text remains crisp regardless of zoom, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
 		</member>
 	</members>

@@ -12,10 +12,6 @@
  * You may select, at your option, one of the above-listed licenses.
 ****************************************************************** */
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #ifndef HUF_H_298734234
 #define HUF_H_298734234
 
@@ -24,7 +20,6 @@ extern "C" {
 #include "mem.h"          /* U32 */
 #define FSE_STATIC_LINKING_ONLY
 #include "fse.h"
-
 
 /* ***   Tool functions *** */
 #define HUF_BLOCKSIZE_MAX (128 * 1024)   /**< maximum input size for a single block compressed with HUF_compress */
@@ -197,8 +192,21 @@ size_t HUF_readCTable (HUF_CElt* CTable, unsigned* maxSymbolValuePtr, const void
 
 /** HUF_getNbBitsFromCTable() :
  *  Read nbBits from CTable symbolTable, for symbol `symbolValue` presumed <= HUF_SYMBOLVALUE_MAX
- *  Note 1 : is not inlined, as HUF_CElt definition is private */
+ *  Note 1 : If symbolValue > HUF_readCTableHeader(symbolTable).maxSymbolValue, returns 0
+ *  Note 2 : is not inlined, as HUF_CElt definition is private
+ */
 U32 HUF_getNbBitsFromCTable(const HUF_CElt* symbolTable, U32 symbolValue);
+
+typedef struct {
+    BYTE tableLog;
+    BYTE maxSymbolValue;
+    BYTE unused[sizeof(size_t) - 2];
+} HUF_CTableHeader;
+
+/** HUF_readCTableHeader() :
+ *  @returns The header from the CTable specifying the tableLog and the maxSymbolValue.
+ */
+HUF_CTableHeader HUF_readCTableHeader(HUF_CElt const* ctable);
 
 /*
  * HUF_decompress() does the following:
@@ -267,7 +275,3 @@ size_t HUF_readDTableX2_wksp(HUF_DTable* DTable, const void* src, size_t srcSize
 #endif
 
 #endif   /* HUF_H_298734234 */
-
-#if defined (__cplusplus)
-}
-#endif

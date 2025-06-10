@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLATFORM_GL_H
-#define PLATFORM_GL_H
+#pragma once
 
 #ifndef GLES_API_ENABLED
 #define GLES_API_ENABLED // Allow using GLES.
 #endif
 
-#include "platform/web/godot_webgl2.h"
+// Make using *glGetProcAddress() an error on the web.
+#define glGetProcAddress(n) static_assert(false, "Usage of glGetProcessAddress() on the web is a bug.")
+#define eglGetProcAddress(n) static_assert(false, "Usage of eglGetProcessAddress() on the web is a bug.")
 
-#endif // PLATFORM_GL_H
+#include "platform/web/godot_webgl2.h"

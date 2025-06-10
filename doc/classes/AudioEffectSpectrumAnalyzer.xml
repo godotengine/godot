@@ -5,11 +5,11 @@
 	</brief_description>
 	<description>
 		This audio effect does not affect sound output, but can be used for real-time audio visualizations.
+		This resource configures an [AudioEffectSpectrumAnalyzerInstance], which performs the actual analysis at runtime. An instance can be obtained with [method AudioServer.get_bus_effect_instance].
 		See also [AudioStreamGenerator] for procedurally generating sounds.
 	</description>
 	<tutorials>
-		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
-		<link title="Godot 3.2 will get new audio features">https://godotengine.org/article/godot-32-will-get-new-audio-features</link>
+		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="2.0">

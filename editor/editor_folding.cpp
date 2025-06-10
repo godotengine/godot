@@ -65,7 +65,7 @@ void EditorFolding::_set_unfolds(Object *p_object, const Vector<String> &p_unfol
 	const String *r = p_unfolds.ptr();
 	p_object->editor_clear_section_folding();
 	for (int i = 0; i < uc; i++) {
-		p_object->editor_set_section_unfold(r[i], true);
+		p_object->editor_set_section_unfold(r[i], true, true);
 	}
 }
 
@@ -93,7 +93,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 		if (!p_node->get_owner()) {
 			return; //not owned, bye
 		}
-		if (p_node->get_owner() != p_root && !p_root->is_editable_instance(p_node)) {
+		if (p_node->get_owner() != p_root && !p_root->is_editable_instance(p_node->get_owner())) {
 			return;
 		}
 	}
@@ -249,7 +249,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, HashSet<Ref<Resource>> 
 					}
 				}
 			} else { //path
-				int last = E.name.rfind("/");
+				int last = E.name.rfind_char('/');
 				if (last != -1) {
 					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E.name);
 					if (can_revert) {
@@ -293,7 +293,4 @@ void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, HashSet<Ref<Res
 void EditorFolding::unfold_scene(Node *p_scene) {
 	HashSet<Ref<Resource>> resources;
 	_do_node_unfolds(p_scene, p_scene, resources);
-}
-
-EditorFolding::EditorFolding() {
 }

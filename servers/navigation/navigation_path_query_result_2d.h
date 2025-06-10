@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_PATH_QUERY_RESULT_2D_H
-#define NAVIGATION_PATH_QUERY_RESULT_2D_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "servers/navigation/navigation_utilities.h"
@@ -47,8 +46,8 @@ protected:
 
 public:
 	enum PathSegmentType {
-		PATH_SEGMENT_TYPE_REGION = 0,
-		PATH_SEGMENT_TYPE_LINK = 1,
+		PATH_SEGMENT_TYPE_REGION = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION,
+		PATH_SEGMENT_TYPE_LINK = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK,
 	};
 
 	void set_path(const Vector<Vector2> &p_path);
@@ -64,8 +63,8 @@ public:
 	const Vector<int64_t> &get_path_owner_ids() const;
 
 	void reset();
+
+	void set_data(const LocalVector<Vector2> &p_path, const LocalVector<int32_t> &p_path_types, const LocalVector<RID> &p_path_rids, const LocalVector<int64_t> &p_path_owner_ids);
 };
 
 VARIANT_ENUM_CAST(NavigationPathQueryResult2D::PathSegmentType);
-
-#endif // NAVIGATION_PATH_QUERY_RESULT_2D_H

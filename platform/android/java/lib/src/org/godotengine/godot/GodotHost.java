@@ -30,9 +30,12 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
 
 import android.app.Activity;
+
+import androidx.annotation.NonNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -89,7 +92,7 @@ public interface GodotHost {
 	 * @return the id of the new instance. See {@code onGodotForceQuit}
 	 */
 	default int onNewGodotInstanceRequested(String[] args) {
-		return 0;
+		return -1;
 	}
 
 	/**
@@ -108,4 +111,43 @@ public interface GodotHost {
 	default Set<GodotPlugin> getHostPlugins(Godot engine) {
 		return Collections.emptySet();
 	}
+
+	/**
+	 * Signs the given Android apk
+	 *
+	 * @param inputPath Path to the apk that should be signed
+	 * @param outputPath Path for the signed output apk; can be the same as inputPath
+	 * @param keystorePath Path to the keystore to use for signing the apk
+	 * @param keystoreUser Keystore user credential
+	 * @param keystorePassword Keystore password credential
+	 *
+	 * @return {@link Error#OK} if signing is successful
+	 */
+	default Error signApk(@NonNull String inputPath, @NonNull String outputPath, @NonNull String keystorePath, @NonNull String keystoreUser, @NonNull String keystorePassword) {
+		return Error.ERR_UNAVAILABLE;
+	}
+
+	/**
+	 * Verifies the given Android apk is signed
+	 *
+	 * @param apkPath Path to the apk that should be verified
+	 * @return {@link Error#OK} if verification was successful
+	 */
+	default Error verifyApk(@NonNull String apkPath) {
+		return Error.ERR_UNAVAILABLE;
+	}
+
+	/**
+	 * Returns whether the given feature tag is supported.
+	 *
+	 * @see <a href="https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html">Feature tags</a>
+	 */
+	default boolean supportsFeature(String featureTag) {
+		return false;
+	}
+
+	/**
+	 * Invoked on the render thread when an editor workspace has been selected.
+	 */
+	default void onEditorWorkspaceSelected(String workspace) {}
 }

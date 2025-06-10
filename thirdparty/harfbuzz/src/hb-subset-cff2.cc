@@ -248,7 +248,7 @@ struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs
 struct cff2_private_blend_encoder_param_t
 {
   cff2_private_blend_encoder_param_t (hb_serialize_context_t *c,
-				      const CFF2VariationStore *varStore,
+				      const CFF2ItemVariationStore *varStore,
 				      hb_array_t<int> normalized_coords) :
     c (c), varStore (varStore), normalized_coords (normalized_coords) {}
 
@@ -284,7 +284,7 @@ struct cff2_private_blend_encoder_param_t
   unsigned ivs = 0;
   unsigned region_count = 0;
   hb_vector_t<float> scalars;
-  const	 CFF2VariationStore *varStore = nullptr;
+  const	 CFF2ItemVariationStore *varStore = nullptr;
   hb_array_t<int> normalized_coords;
 };
 
@@ -378,7 +378,7 @@ struct cff2_private_dict_blend_opset_t : dict_opset_t
 struct cff2_private_dict_op_serializer_t : op_serializer_t
 {
   cff2_private_dict_op_serializer_t (bool desubroutinize_, bool drop_hints_, bool pinned_,
-				     const CFF::CFF2VariationStore* varStore_,
+				     const CFF::CFF2ItemVariationStore* varStore_,
 				     hb_array_t<int> normalized_coords_)
     : desubroutinize (desubroutinize_), drop_hints (drop_hints_), pinned (pinned_),
       varStore (varStore_), normalized_coords (normalized_coords_) {}
@@ -416,7 +416,7 @@ struct cff2_private_dict_op_serializer_t : op_serializer_t
   const bool desubroutinize;
   const bool drop_hints;
   const bool pinned;
-  const CFF::CFF2VariationStore* varStore;
+  const CFF::CFF2ItemVariationStore* varStore;
   hb_array_t<int> normalized_coords;
 };
 
@@ -438,6 +438,12 @@ struct cff2_subset_plan
     pinned = (bool) plan->normalized_coords;
     desubroutinize = plan->flags & HB_SUBSET_FLAGS_DESUBROUTINIZE ||
 		     pinned; // For instancing we need this path
+
+ #ifdef HB_EXPERIMENTAL_API
+    min_charstrings_off_size = (plan->flags & HB_SUBSET_FLAGS_IFTB_REQUIREMENTS) ? 4 : 0;
+ #else
+    min_charstrings_off_size = 0;
+ #endif
 
     if (desubroutinize)
     {
@@ -510,14 +516,45 @@ struct cff2_subset_plan
 
   bool	    drop_hints = false;
   bool	    desubroutinize = false;
+
+  unsigned  min_charstrings_off_size = 0;
 };
 } // namespace OT
+
+static bool _serialize_cff2_charstrings (hb_serialize_context_t *c,
+			     cff2_subset_plan &plan,
+			     const OT::cff2::accelerator_subset_t  &acc)
+{
+  c->push ();
+
+  unsigned data_size = 0;
+  unsigned total_size = CFF2CharStrings::total_size (plan.subset_charstrings, &data_size, plan.min_charstrings_off_size);
+  if (unlikely (!c->start_zerocopy (total_size)))
+    return false;
+
+  auto *cs = c->start_embed<CFF2CharStrings> ();
+  if (unlikely (!cs->serialize (c, plan.subset_charstrings, &data_size, plan.min_charstrings_off_size)))
+  {
+    c->pop_discard ();
+    return false;
+  }
+
+  plan.info.char_strings_link = c->pop_pack (false);
+  return true;
+}
 
 bool
 OT::cff2::accelerator_subset_t::serialize (hb_serialize_context_t *c,
 					   struct cff2_subset_plan &plan,
 					   hb_array_t<int> normalized_coords) const
 {
+  /* push charstrings onto the object stack first which will ensure it packs as the last
+     object in the table. Keeping the chastrings last satisfies the requirements for patching
+     via IFTB. If this ordering needs to be changed in the future, charstrings should be left
+     at the end whenever HB_SUBSET_FLAGS_ITFB_REQUIREMENTS is enabled. */
+  if (!_serialize_cff2_charstrings(c, plan, *this))
+    return false;
+
   /* private dicts & local subrs */
   hb_vector_t<table_info_t>  private_dict_infos;
   if (unlikely (!private_dict_infos.resize (plan.subset_fdcount))) return false;
@@ -556,25 +593,6 @@ OT::cff2::accelerator_subset_t::serialize (hb_serialize_context_t *c,
     }
   }
 
-  /* CharStrings */
-  {
-    c->push ();
-
-    unsigned data_size = 0;
-    unsigned total_size = CFF2CharStrings::total_size (plan.subset_charstrings, &data_size);
-    if (unlikely (!c->start_zerocopy (total_size)))
-       return false;
-
-    auto *cs = c->start_embed<CFF2CharStrings> ();
-    if (likely (cs->serialize (c, plan.subset_charstrings, &data_size)))
-      plan.info.char_strings_link = c->pop_pack (false);
-    else
-    {
-      c->pop_discard ();
-      return false;
-    }
-  }
-
   /* FDSelect */
   if (fdSelect != &Null (CFF2FDSelect))
   {
@@ -610,10 +628,10 @@ OT::cff2::accelerator_subset_t::serialize (hb_serialize_context_t *c,
   }
 
   /* variation store */
-  if (varStore != &Null (CFF2VariationStore) &&
+  if (varStore != &Null (CFF2ItemVariationStore) &&
       !plan.pinned)
   {
-    auto *dest = c->push<CFF2VariationStore> ();
+    auto *dest = c->push<CFF2ItemVariationStore> ();
     if (unlikely (!dest->serialize (c, varStore)))
     {
       c->pop_discard ();

@@ -625,6 +625,9 @@ hb_script_get_horizontal_direction (hb_script_t script)
     /* Unicode-14.0 additions */
     case HB_SCRIPT_OLD_UYGHUR:
 
+    /* Unicode-16.0 additions */
+    case HB_SCRIPT_GARAY:
+
       return HB_DIRECTION_RTL;
 
 
@@ -996,7 +999,7 @@ hb_feature_to_string (hb_feature_t *feature,
   if (feature->value > 1)
   {
     s[len++] = '=';
-    len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%u", feature->value));
+    len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%" PRIu32, feature->value));
   }
   assert (len < ARRAY_LENGTH (s));
   len = hb_min (len, size - 1);

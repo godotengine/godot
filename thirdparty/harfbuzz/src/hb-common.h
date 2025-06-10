@@ -47,14 +47,10 @@
 # endif /* !__cplusplus */
 #endif
 
-#if defined (_SVR4) || defined (SVR4) || defined (__OpenBSD__) || \
-    defined (_sgi) || defined (__sun) || defined (sun) || \
-    defined (__digital__) || defined (__HP_cc)
-#  include <inttypes.h>
-#elif defined (_AIX)
+#if defined (_AIX)
 #  include <sys/inttypes.h>
 #elif defined (_MSC_VER) && _MSC_VER < 1600
-/* VS 2010 (_MSC_VER 1600) has stdint.h */
+/* VS 2010 (_MSC_VER 1600) has stdint.h   */
 typedef __int8 int8_t;
 typedef unsigned __int8 uint8_t;
 typedef __int16 int16_t;
@@ -63,10 +59,11 @@ typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;
-#elif defined (__KERNEL__)
-#  include <linux/types.h>
-#else
+#elif defined (_MSC_VER) && _MSC_VER < 1800
+/* VS 2013 (_MSC_VER 1800) has inttypes.h */
 #  include <stdint.h>
+#else
+#  include <inttypes.h>
 #endif
 
 #if defined(__GNUC__) && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
@@ -507,6 +504,13 @@ hb_language_matches (hb_language_t language,
  * @HB_SCRIPT_MATH: `Zmth`, Since: 3.4.0
  * @HB_SCRIPT_KAWI: `Kawi`, Since: 5.2.0
  * @HB_SCRIPT_NAG_MUNDARI: `Nagm`, Since: 5.2.0
+ * @HB_SCRIPT_GARAY: `Gara`, Since: 10.0.0
+ * @HB_SCRIPT_GURUNG_KHEMA: `Gukh`, Since: 10.0.0
+ * @HB_SCRIPT_KIRAT_RAI: `Krai`, Since: 10.0.0
+ * @HB_SCRIPT_OL_ONAL: `Onao`, Since: 10.0.0
+ * @HB_SCRIPT_SUNUWAR: `Sunu`, Since: 10.0.0
+ * @HB_SCRIPT_TODHRI: `Todr`, Since: 10.0.0
+ * @HB_SCRIPT_TULU_TIGALARI: `Tutg`, Since: 10.0.0
  * @HB_SCRIPT_INVALID: No script set
  *
  * Data type for scripts. Each #hb_script_t's value is an #hb_tag_t corresponding
@@ -733,6 +737,17 @@ typedef enum
    */
   HB_SCRIPT_KAWI			= HB_TAG ('K','a','w','i'), /*15.0*/
   HB_SCRIPT_NAG_MUNDARI			= HB_TAG ('N','a','g','m'), /*15.0*/
+
+  /*
+   * Since 10.0.0
+   */
+  HB_SCRIPT_GARAY			= HB_TAG ('G','a','r','a'), /*16.0*/
+  HB_SCRIPT_GURUNG_KHEMA		= HB_TAG ('G','u','k','h'), /*16.0*/
+  HB_SCRIPT_KIRAT_RAI			= HB_TAG ('K','r','a','i'), /*16.0*/
+  HB_SCRIPT_OL_ONAL			= HB_TAG ('O','n','a','o'), /*16.0*/
+  HB_SCRIPT_SUNUWAR			= HB_TAG ('S','u','n','u'), /*16.0*/
+  HB_SCRIPT_TODHRI			= HB_TAG ('T','o','d','r'), /*16.0*/
+  HB_SCRIPT_TULU_TIGALARI		= HB_TAG ('T','u','t','g'), /*16.0*/
 
   /* No script set. */
   HB_SCRIPT_INVALID			= HB_TAG_NONE,

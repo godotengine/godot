@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,24 @@ pcre2test.c with CODE_UNIT_WIDTH == 0. */
 #error The use of both EBCDIC and SUPPORT_UNICODE is not supported.
 #endif
 
+/* When compiling one of the libraries, the value of PCRE2_CODE_UNIT_WIDTH must
+be 8, 16, or 32. AutoTools and CMake ensure that this is always the case, but
+other other building methods may not, so here is a check. It is cut out when
+building pcre2test, bcause that sets the value to zero. No other source should
+be including this file. There is no explicit way of forcing a compile to be
+abandoned, but trying to include a non-existent file seems cleanest. Otherwise
+there will be many irrelevant consequential errors. */
+
+#if (!defined PCRE2_BUILDING_PCRE2TEST && !defined PCRE2_DFTABLES) && \
+  (!defined PCRE2_CODE_UNIT_WIDTH ||     \
+    (PCRE2_CODE_UNIT_WIDTH != 8 &&       \
+     PCRE2_CODE_UNIT_WIDTH != 16 &&      \
+     PCRE2_CODE_UNIT_WIDTH != 32))
+#error PCRE2_CODE_UNIT_WIDTH must be defined as 8, 16, or 32.
+#include <AbandonCompile>
+#endif
+
+
 /* Standard C headers */
 
 #include <ctype.h>
@@ -69,6 +87,12 @@ typedef int BOOL;
 #define FALSE   0
 #define TRUE    1
 #endif
+
+/* Helper macro for static (compile-time) assertions. Can be used inside
+functions, or at the top-level of a file. */
+#define STATIC_ASSERT_JOIN(a,b) a ## b
+#define STATIC_ASSERT(cond, msg) \
+  typedef int STATIC_ASSERT_JOIN(static_assertion_,msg)[(cond)?1:-1]
 
 /* Valgrind (memcheck) support */
 
@@ -119,20 +143,20 @@ only if it is not already set. */
 #ifndef PCRE2_EXP_DECL
 #  ifdef _WIN32
 #    ifndef PCRE2_STATIC
-#      define PCRE2_EXP_DECL       extern __declspec(dllexport)
-#      define PCRE2_EXP_DEFN       __declspec(dllexport)
+#      define PCRE2_EXP_DECL		extern __declspec(dllexport)
+#      define PCRE2_EXP_DEFN		__declspec(dllexport)
 #    else
-#      define PCRE2_EXP_DECL       extern
+#      define PCRE2_EXP_DECL		extern PCRE2_EXPORT
 #      define PCRE2_EXP_DEFN
 #    endif
 #  else
 #    ifdef __cplusplus
-#      define PCRE2_EXP_DECL       extern "C"
+#      define PCRE2_EXP_DECL		extern "C" PCRE2_EXPORT
 #    else
-#      define PCRE2_EXP_DECL       extern
+#      define PCRE2_EXP_DECL		extern PCRE2_EXPORT
 #    endif
 #    ifndef PCRE2_EXP_DEFN
-#      define PCRE2_EXP_DEFN       PCRE2_EXP_DECL
+#      define PCRE2_EXP_DEFN		PCRE2_EXP_DECL
 #    endif
 #  endif
 #endif
@@ -156,8 +180,8 @@ pcre2_match() because of the way it backtracks. */
 #define PCRE2_SPTR CUSTOM_SUBJECT_PTR
 #endif
 
-/* When checking for integer overflow in pcre2_compile(), we need to handle
-large integers. If a 64-bit integer type is available, we can use that.
+/* When checking for integer overflow, we need to handle large integers.
+If a 64-bit integer type is available, we can use that.
 Otherwise we have to cast to double, which of course requires floating point
 arithmetic. Handle this by defining a macro for the appropriate type. */
 
@@ -505,29 +529,29 @@ start/end of string field names are. */
 three must not be changed, because whichever is set is actually the number of
 bytes in a code unit in that mode. */
 
-#define PCRE2_MODE8         0x00000001  /* compiled in 8 bit mode */
-#define PCRE2_MODE16        0x00000002  /* compiled in 16 bit mode */
-#define PCRE2_MODE32        0x00000004  /* compiled in 32 bit mode */
-#define PCRE2_FIRSTSET      0x00000010  /* first_code unit is set */
-#define PCRE2_FIRSTCASELESS 0x00000020  /* caseless first code unit */
-#define PCRE2_FIRSTMAPSET   0x00000040  /* bitmap of first code units is set */
-#define PCRE2_LASTSET       0x00000080  /* last code unit is set */
-#define PCRE2_LASTCASELESS  0x00000100  /* caseless last code unit */
-#define PCRE2_STARTLINE     0x00000200  /* start after \n for multiline */
-#define PCRE2_JCHANGED      0x00000400  /* j option used in pattern */
-#define PCRE2_HASCRORLF     0x00000800  /* explicit \r or \n in pattern */
-#define PCRE2_HASTHEN       0x00001000  /* pattern contains (*THEN) */
-#define PCRE2_MATCH_EMPTY   0x00002000  /* pattern can match empty string */
-#define PCRE2_BSR_SET       0x00004000  /* BSR was set in the pattern */
-#define PCRE2_NL_SET        0x00008000  /* newline was set in the pattern */
-#define PCRE2_NOTEMPTY_SET  0x00010000  /* (*NOTEMPTY) used        ) keep */
-#define PCRE2_NE_ATST_SET   0x00020000  /* (*NOTEMPTY_ATSTART) used) together */
-#define PCRE2_DEREF_TABLES  0x00040000  /* release character tables */
-#define PCRE2_NOJIT         0x00080000  /* (*NOJIT) used */
-#define PCRE2_HASBKPORX     0x00100000  /* contains \P, \p, or \X */
-#define PCRE2_DUPCAPUSED    0x00200000  /* contains (?| */
-#define PCRE2_HASBKC        0x00400000  /* contains \C */
-#define PCRE2_HASACCEPT     0x00800000  /* contains (*ACCEPT) */
+#define PCRE2_MODE8         0x00000001u /* compiled in 8 bit mode */
+#define PCRE2_MODE16        0x00000002u /* compiled in 16 bit mode */
+#define PCRE2_MODE32        0x00000004u /* compiled in 32 bit mode */
+#define PCRE2_FIRSTSET      0x00000010u /* first_code unit is set */
+#define PCRE2_FIRSTCASELESS 0x00000020u /* caseless first code unit */
+#define PCRE2_FIRSTMAPSET   0x00000040u /* bitmap of first code units is set */
+#define PCRE2_LASTSET       0x00000080u /* last code unit is set */
+#define PCRE2_LASTCASELESS  0x00000100u /* caseless last code unit */
+#define PCRE2_STARTLINE     0x00000200u /* start after \n for multiline */
+#define PCRE2_JCHANGED      0x00000400u /* j option used in pattern */
+#define PCRE2_HASCRORLF     0x00000800u /* explicit \r or \n in pattern */
+#define PCRE2_HASTHEN       0x00001000u /* pattern contains (*THEN) */
+#define PCRE2_MATCH_EMPTY   0x00002000u /* pattern can match empty string */
+#define PCRE2_BSR_SET       0x00004000u /* BSR was set in the pattern */
+#define PCRE2_NL_SET        0x00008000u /* newline was set in the pattern */
+#define PCRE2_NOTEMPTY_SET  0x00010000u /* (*NOTEMPTY) used        ) keep */
+#define PCRE2_NE_ATST_SET   0x00020000u /* (*NOTEMPTY_ATSTART) used) together */
+#define PCRE2_DEREF_TABLES  0x00040000u /* release character tables */
+#define PCRE2_NOJIT         0x00080000u /* (*NOJIT) used */
+#define PCRE2_HASBKPORX     0x00100000u /* contains \P, \p, or \X */
+#define PCRE2_DUPCAPUSED    0x00200000u /* contains (?| */
+#define PCRE2_HASBKC        0x00400000u /* contains \C */
+#define PCRE2_HASACCEPT     0x00800000u /* contains (*ACCEPT) */
 
 #define PCRE2_MODE_MASK     (PCRE2_MODE8 | PCRE2_MODE16 | PCRE2_MODE32)
 
@@ -555,6 +579,16 @@ modes. */
 #else
 #define REQ_CU_MAX       2000
 #endif
+
+/* The maximum nesting depth for Unicode character class sets.
+Currently fixed. Warning: the interpreter relies on this so it can encode
+the operand stack in a uint32_t. A nesting limit of 15 implies (15*2+1)=31
+stack operands required, due to the fact that we have two (and only two)
+levels of operator precedence. In the UTS#18 syntax, you can write 'x&&y[z]'
+and in Perl syntax you can write '(?[ x - y & (z) ])', both of which imply
+pushing the match results for x & y to the stack. */
+
+#define ECLASS_NEST_LIMIT  15
 
 /* Offsets for the bitmap tables in the cbits set of tables. Each table
 contains a set of bits for a class map. Some classes are built by combining
@@ -591,6 +625,13 @@ total length of the tables. */
 #define ctypes_offset (cbits_offset + cbit_length)  /* Character types */
 #define TABLES_LENGTH (ctypes_offset + 256)
 
+/* Private flags used in compile_context.optimization_flags */
+
+#define PCRE2_OPTIM_AUTO_POSSESS    0x00000001u
+#define PCRE2_OPTIM_DOTSTAR_ANCHOR  0x00000002u
+#define PCRE2_OPTIM_START_OPTIMIZE  0x00000004u
+
+#define PCRE2_OPTIMIZATION_ALL      0x00000007u
 
 /* -------------------- Character and string names ------------------------ */
 
@@ -897,6 +938,7 @@ a positive value. */
 #define STRING_naplb0                "naplb\0"
 #define STRING_nla0                  "nla\0"
 #define STRING_nlb0                  "nlb\0"
+#define STRING_scs0                  "scs\0"
 #define STRING_sr0                   "sr\0"
 #define STRING_asr0                  "asr\0"
 #define STRING_positive_lookahead0   "positive_lookahead\0"
@@ -907,6 +949,7 @@ a positive value. */
 #define STRING_negative_lookbehind0  "negative_lookbehind\0"
 #define STRING_script_run0           "script_run\0"
 #define STRING_atomic_script_run     "atomic_script_run"
+#define STRING_scan_substring0       "scan_substring\0"
 
 #define STRING_alpha0                "alpha\0"
 #define STRING_lower0                "lower\0"
@@ -947,6 +990,8 @@ a positive value. */
 #define STRING_NO_START_OPT_RIGHTPAR      "NO_START_OPT)"
 #define STRING_NOTEMPTY_RIGHTPAR          "NOTEMPTY)"
 #define STRING_NOTEMPTY_ATSTART_RIGHTPAR  "NOTEMPTY_ATSTART)"
+#define STRING_CASELESS_RESTRICT_RIGHTPAR "CASELESS_RESTRICT)"
+#define STRING_TURKISH_CASING_RIGHTPAR    "TURKISH_CASING)"
 #define STRING_LIMIT_HEAP_EQ              "LIMIT_HEAP="
 #define STRING_LIMIT_MATCH_EQ             "LIMIT_MATCH="
 #define STRING_LIMIT_DEPTH_EQ             "LIMIT_DEPTH="
@@ -1198,6 +1243,7 @@ only. */
 #define STRING_naplb0                STR_n STR_a STR_p STR_l STR_b "\0"
 #define STRING_nla0                  STR_n STR_l STR_a "\0"
 #define STRING_nlb0                  STR_n STR_l STR_b "\0"
+#define STRING_scs0                  STR_s STR_c STR_s "\0"
 #define STRING_sr0                   STR_s STR_r "\0"
 #define STRING_asr0                  STR_a STR_s STR_r "\0"
 #define STRING_positive_lookahead0   STR_p STR_o STR_s STR_i STR_t STR_i STR_v STR_e STR_UNDERSCORE STR_l STR_o STR_o STR_k STR_a STR_h STR_e STR_a STR_d "\0"
@@ -1208,6 +1254,7 @@ only. */
 #define STRING_negative_lookbehind0  STR_n STR_e STR_g STR_a STR_t STR_i STR_v STR_e STR_UNDERSCORE STR_l STR_o STR_o STR_k STR_b STR_e STR_h STR_i STR_n STR_d "\0"
 #define STRING_script_run0           STR_s STR_c STR_r STR_i STR_p STR_t STR_UNDERSCORE STR_r STR_u STR_n "\0"
 #define STRING_atomic_script_run     STR_a STR_t STR_o STR_m STR_i STR_c STR_UNDERSCORE STR_s STR_c STR_r STR_i STR_p STR_t STR_UNDERSCORE STR_r STR_u STR_n
+#define STRING_scan_substring0       STR_s STR_c STR_a STR_n STR_UNDERSCORE STR_s STR_u STR_b STR_s STR_t STR_r STR_i STR_n STR_g "\0"
 
 #define STRING_alpha0                STR_a STR_l STR_p STR_h STR_a "\0"
 #define STRING_lower0                STR_l STR_o STR_w STR_e STR_r "\0"
@@ -1248,6 +1295,8 @@ only. */
 #define STRING_NO_START_OPT_RIGHTPAR      STR_N STR_O STR_UNDERSCORE STR_S STR_T STR_A STR_R STR_T STR_UNDERSCORE STR_O STR_P STR_T STR_RIGHT_PARENTHESIS
 #define STRING_NOTEMPTY_RIGHTPAR          STR_N STR_O STR_T STR_E STR_M STR_P STR_T STR_Y STR_RIGHT_PARENTHESIS
 #define STRING_NOTEMPTY_ATSTART_RIGHTPAR  STR_N STR_O STR_T STR_E STR_M STR_P STR_T STR_Y STR_UNDERSCORE STR_A STR_T STR_S STR_T STR_A STR_R STR_T STR_RIGHT_PARENTHESIS
+#define STRING_CASELESS_RESTRICT_RIGHTPAR STR_C STR_A STR_S STR_E STR_L STR_E STR_S STR_S STR_UNDERSCORE STR_R STR_E STR_S STR_T STR_R STR_I STR_C STR_T STR_RIGHT_PARENTHESIS
+#define STRING_TURKISH_CASING_RIGHTPAR    STR_T STR_U STR_R STR_K STR_I STR_S STR_H STR_UNDERSCORE STR_C STR_A STR_S STR_I STR_N STR_G STR_RIGHT_PARENTHESIS
 #define STRING_LIMIT_HEAP_EQ              STR_L STR_I STR_M STR_I STR_T STR_UNDERSCORE STR_H STR_E STR_A STR_P STR_EQUALS_SIGN
 #define STRING_LIMIT_MATCH_EQ             STR_L STR_I STR_M STR_I STR_T STR_UNDERSCORE STR_M STR_A STR_T STR_C STR_H STR_EQUALS_SIGN
 #define STRING_LIMIT_DEPTH_EQ             STR_L STR_I STR_M STR_I STR_T STR_UNDERSCORE STR_D STR_E STR_P STR_T STR_H STR_EQUALS_SIGN
@@ -1272,21 +1321,22 @@ only. */
 changed, the autopossessifying table in pcre2_auto_possess.c must be updated to
 match. */
 
-#define PT_ANY        0    /* Any property - matches all chars */
-#define PT_LAMP       1    /* L& - the union of Lu, Ll, Lt */
-#define PT_GC         2    /* Specified general characteristic (e.g. L) */
-#define PT_PC         3    /* Specified particular characteristic (e.g. Lu) */
-#define PT_SC         4    /* Script only (e.g. Han) */
-#define PT_SCX        5    /* Script extensions (includes SC) */
-#define PT_ALNUM      6    /* Alphanumeric - the union of L and N */
-#define PT_SPACE      7    /* Perl space - general category Z plus 9,10,12,13 */
-#define PT_PXSPACE    8    /* POSIX space - Z plus 9,10,11,12,13 */
-#define PT_WORD       9    /* Word - L plus N plus underscore */
-#define PT_CLIST     10    /* Pseudo-property: match character list */
-#define PT_UCNC      11    /* Universal Character nameable character */
-#define PT_BIDICL    12    /* Specified bidi class */
-#define PT_BOOL      13    /* Boolean property */
-#define PT_TABSIZE   14    /* Size of square table for autopossessify tests */
+#define PT_LAMP       0    /* L& - the union of Lu, Ll, Lt */
+#define PT_GC         1    /* Specified general characteristic (e.g. L) */
+#define PT_PC         2    /* Specified particular characteristic (e.g. Lu) */
+#define PT_SC         3    /* Script only (e.g. Han) */
+#define PT_SCX        4    /* Script extensions (includes SC) */
+#define PT_ALNUM      5    /* Alphanumeric - the union of L and N */
+#define PT_SPACE      6    /* Perl space - general category Z plus 9,10,12,13 */
+#define PT_PXSPACE    7    /* POSIX space - Z plus 9,10,11,12,13 */
+#define PT_WORD       8    /* Word - L, N, Mn, or Pc */
+#define PT_CLIST      9    /* Pseudo-property: match character list */
+#define PT_UCNC      10    /* Universal Character nameable character */
+#define PT_BIDICL    11    /* Specified bidi class */
+#define PT_BOOL      12    /* Boolean property */
+#define PT_ANY       13    /* Must be the last entry!
+                              Any property - matches all chars */
+#define PT_TABSIZE PT_ANY  /* Size of square table for autopossessify tests */
 
 /* The following special properties are used only in XCLASS items, when POSIX
 classes are specified and PCRE2_UCP is set - in other words, for Unicode
@@ -1297,6 +1347,7 @@ table. */
 #define PT_PXGRAPH   14    /* [:graph:] - characters that mark the paper */
 #define PT_PXPRINT   15    /* [:print:] - [:graph:] plus non-control spaces */
 #define PT_PXPUNCT   16    /* [:punct:] - punctuation characters */
+#define PT_PXXDIGIT  17    /* [:xdigit:] - hex digits */
 
 /* This value is used when parsing \p and \P escapes to indicate that neither
 \p{script:...} nor \p{scx:...} has been encountered. */
@@ -1315,6 +1366,94 @@ contain characters with values greater than 255. */
 #define XCL_RANGE    2     /* A range (two multibyte chars) follows */
 #define XCL_PROP     3     /* Unicode property (2-byte property code follows) */
 #define XCL_NOTPROP  4     /* Unicode inverted property (ditto) */
+/* This value represents the beginning of character lists. The value
+is 16 bit long, and stored as a high and low byte pair in 8 bit mode.
+The lower 12 bit contains information about character lists (see later). */
+#define XCL_LIST     (sizeof(PCRE2_UCHAR) == 1 ? 0x10 : 0x1000)
+
+/* When a character class contains many characters/ranges,
+they are stored in character lists. There are four character
+lists which contain characters/ranges within a given range.
+
+The name, character range and item size for each list:
+Low16    [0x100 - 0x7fff]            16 bit items
+High16   [0x8000 - 0xffff]           16 bit items
+Low32    [0x10000 - 0x7fffffff]      32 bit items
+High32   [0x80000000 - 0xffffffff]   32 bit items
+
+The Low32 character list is used only when utf encoding or 32 bit
+character width is enabled, and the High32 character is used only
+when 32 bit character width is enabled.
+
+Each character list contain items. The lowest bit represents that
+an item is the beginning of a range (bit is cleared), or not (bit
+is set). The other bits represent the character shifted left by
+one, so its highest bit is discarded. Due to the layout of character
+lists, the highest bit of a character is always known:
+
+Low16 and Low32: the highest bit is always zero
+High16 and High32: the highest bit is always one
+
+The items are ordered in increasing order, so binary search can be
+used to find the lower bound of an input character. The lower bound
+is the highest item, which value is less or equal than the input
+character. If the lower bit of the item is cleard, or the character
+stored in the item equals to the input character, the input
+character is in the character list. */
+
+/* Character list constants. */
+#define XCL_CHAR_LIST_LOW_16_START 0x100
+#define XCL_CHAR_LIST_LOW_16_END 0x7fff
+#define XCL_CHAR_LIST_LOW_16_ADD 0x0
+
+#define XCL_CHAR_LIST_HIGH_16_START 0x8000
+#define XCL_CHAR_LIST_HIGH_16_END 0xffff
+#define XCL_CHAR_LIST_HIGH_16_ADD 0x8000
+
+#define XCL_CHAR_LIST_LOW_32_START 0x10000
+#define XCL_CHAR_LIST_LOW_32_END 0x7fffffff
+#define XCL_CHAR_LIST_LOW_32_ADD 0x0
+
+#define XCL_CHAR_LIST_HIGH_32_START 0x80000000
+#define XCL_CHAR_LIST_HIGH_32_END 0xffffffff
+#define XCL_CHAR_LIST_HIGH_32_ADD 0x80000000
+
+/* Mask for getting the descriptors of character list ranges.
+Each descriptor has XCL_TYPE_BIT_LEN bits, and can be processed
+by XCL_BEGIN_WITH_RANGE and XCL_ITEM_COUNT_MASK macros. */
+#define XCL_TYPE_MASK 0xfff
+#define XCL_TYPE_BIT_LEN 3
+/* If this bit is set, the first item of the character list is the
+end of a range, which started before the starting character of the
+character list. */
+#define XCL_BEGIN_WITH_RANGE 0x4
+/* Number of items in the character list: 0, 1, or 2. The value 3
+represents that the item count is stored at the begining of the
+character list. The item count has the same width as the items
+in the character list (e.g. 16 bit for Low16 and High16 lists). */
+#define XCL_ITEM_COUNT_MASK 0x3
+/* Shift and flag for constructing character list items. The XCL_CHAR_END
+is set, when the item is not the beginning of a range. The XCL_CHAR_SHIFT
+can be used to encode / decode the character value stored in an item. */
+#define XCL_CHAR_END 0x1
+#define XCL_CHAR_SHIFT 1
+
+/* Flag bits for an extended class (OP_ECLASS), which is used for complex
+character matches such as [\p{Greek} && \p{Ll}]. */
+
+#define ECL_MAP     0x01  /* Flag: a 32-byte map is present */
+
+/* Type tags for the items stored in an extended class (OP_ECLASS). These items
+follow the OP_ECLASS's flag char and bitmap, and represent a Reverse Polish
+Notation list of operands and operators manipulating a stack of bits. */
+
+#define ECL_AND     1 /* Pop two from the stack, AND, and push result. */
+#define ECL_OR      2 /* Pop two from the stack, OR, and push result. */
+#define ECL_XOR     3 /* Pop two from the stack, XOR, and push result. */
+#define ECL_NOT     4 /* Pop one from the stack, NOT, and push result. */
+#define ECL_XCLASS  5 /* XCLASS nested within ECLASS; match and push result. */
+#define ECL_ANY     6 /* Temporary, only used during compilation. */
+#define ECL_NONE    7 /* Temporary, only used during compilation. */
 
 /* These are escaped items that aren't just an encoding of a particular data
 value such as \n. They must have non-zero values, as check_escape() returns 0
@@ -1327,6 +1466,12 @@ mode rather than an escape sequence. It is also used for [^] in JavaScript
 compatibility mode, and for \C in non-utf mode. In non-DOTALL mode, "." behaves
 like \N.
 
+ESC_ub is a special return from check_escape() when, in BSUX mode, \u{ is not
+followed by hex digits and }, in which case it should mean a literal "u"
+followed by a literal "{". This hack is necessary for cases like \u{ 12}
+because without it, this is interpreted as u{12} now that spaces are allowed in
+quantifiers.
+
 Negative numbers are used to encode a backreference (\1, \2, \3, etc.) in
 check_escape(). There are tests in the code for an escape greater than ESC_b
 and less than ESC_Z to detect the types that may be repeated. These are the
@@ -1336,7 +1481,7 @@ consume a character, that code will have to change. */
 enum { ESC_A = 1, ESC_G, ESC_K, ESC_B, ESC_b, ESC_D, ESC_d, ESC_S, ESC_s,
        ESC_W, ESC_w, ESC_N, ESC_dum, ESC_C, ESC_P, ESC_p, ESC_R, ESC_H,
        ESC_h, ESC_V, ESC_v, ESC_X, ESC_Z, ESC_z,
-       ESC_E, ESC_Q, ESC_g, ESC_k };
+       ESC_E, ESC_Q, ESC_g, ESC_k, ESC_ub };
 
 
 /********************** Opcode definitions ******************/
@@ -1372,8 +1517,8 @@ enum {
   OP_SOD,            /* 1 Start of data: \A */
   OP_SOM,            /* 2 Start of match (subject + offset): \G */
   OP_SET_SOM,        /* 3 Set start of match (\K) */
-  OP_NOT_WORD_BOUNDARY,  /*  4 \B */
-  OP_WORD_BOUNDARY,      /*  5 \b */
+  OP_NOT_WORD_BOUNDARY,  /*  4 \B -- see also OP_NOT_UCP_WORD_BOUNDARY */
+  OP_WORD_BOUNDARY,      /*  5 \b -- see also OP_UCP_WORD_BOUNDARY */
   OP_NOT_DIGIT,          /*  6 \D */
   OP_DIGIT,              /*  7 \d */
   OP_NOT_WHITESPACE,     /*  8 \S */
@@ -1530,95 +1675,105 @@ enum {
                               character > 255 is encountered. */
   OP_XCLASS,         /* 112 Extended class for handling > 255 chars within the
                               class. This does both positive and negative. */
-  OP_REF,            /* 113 Match a back reference, casefully */
-  OP_REFI,           /* 114 Match a back reference, caselessly */
-  OP_DNREF,          /* 115 Match a duplicate name backref, casefully */
-  OP_DNREFI,         /* 116 Match a duplicate name backref, caselessly */
-  OP_RECURSE,        /* 117 Match a numbered subpattern (possibly recursive) */
-  OP_CALLOUT,        /* 118 Call out to external function if provided */
-  OP_CALLOUT_STR,    /* 119 Call out with string argument */
+  OP_ECLASS,         /* 113 Really-extended class, for handling logical
+                              expressions computed over characters. */
+  OP_REF,            /* 114 Match a back reference, casefully */
+  OP_REFI,           /* 115 Match a back reference, caselessly */
+  OP_DNREF,          /* 116 Match a duplicate name backref, casefully */
+  OP_DNREFI,         /* 117 Match a duplicate name backref, caselessly */
+  OP_RECURSE,        /* 118 Match a numbered subpattern (possibly recursive) */
+  OP_CALLOUT,        /* 119 Call out to external function if provided */
+  OP_CALLOUT_STR,    /* 120 Call out with string argument */
 
-  OP_ALT,            /* 120 Start of alternation */
-  OP_KET,            /* 121 End of group that doesn't have an unbounded repeat */
-  OP_KETRMAX,        /* 122 These two must remain together and in this */
-  OP_KETRMIN,        /* 123 order. They are for groups the repeat for ever. */
-  OP_KETRPOS,        /* 124 Possessive unlimited repeat. */
+  OP_ALT,            /* 121 Start of alternation */
+  OP_KET,            /* 122 End of group that doesn't have an unbounded repeat */
+  OP_KETRMAX,        /* 123 These two must remain together and in this */
+  OP_KETRMIN,        /* 124 order. They are for groups the repeat for ever. */
+  OP_KETRPOS,        /* 125 Possessive unlimited repeat. */
 
   /* The assertions must come before BRA, CBRA, ONCE, and COND. */
 
-  OP_REVERSE,        /* 125 Move pointer back - used in lookbehind assertions */
-  OP_ASSERT,         /* 126 Positive lookahead */
-  OP_ASSERT_NOT,     /* 127 Negative lookahead */
-  OP_ASSERTBACK,     /* 128 Positive lookbehind */
-  OP_ASSERTBACK_NOT, /* 129 Negative lookbehind */
-  OP_ASSERT_NA,      /* 130 Positive non-atomic lookahead */
-  OP_ASSERTBACK_NA,  /* 131 Positive non-atomic lookbehind */
+  OP_REVERSE,        /* 126 Move pointer back - used in lookbehind assertions */
+  OP_VREVERSE,       /* 127 Move pointer back - variable */
+  OP_ASSERT,         /* 128 Positive lookahead */
+  OP_ASSERT_NOT,     /* 129 Negative lookahead */
+  OP_ASSERTBACK,     /* 130 Positive lookbehind */
+  OP_ASSERTBACK_NOT, /* 131 Negative lookbehind */
+  OP_ASSERT_NA,      /* 132 Positive non-atomic lookahead */
+  OP_ASSERTBACK_NA,  /* 133 Positive non-atomic lookbehind */
+  OP_ASSERT_SCS,     /* 134 Scan substring */
 
   /* ONCE, SCRIPT_RUN, BRA, BRAPOS, CBRA, CBRAPOS, and COND must come
   immediately after the assertions, with ONCE first, as there's a test for >=
   ONCE for a subpattern that isn't an assertion. The POS versions must
   immediately follow the non-POS versions in each case. */
 
-  OP_ONCE,           /* 132 Atomic group, contains captures */
-  OP_SCRIPT_RUN,     /* 133 Non-capture, but check characters' scripts */
-  OP_BRA,            /* 134 Start of non-capturing bracket */
-  OP_BRAPOS,         /* 135 Ditto, with unlimited, possessive repeat */
-  OP_CBRA,           /* 136 Start of capturing bracket */
-  OP_CBRAPOS,        /* 137 Ditto, with unlimited, possessive repeat */
-  OP_COND,           /* 138 Conditional group */
+  OP_ONCE,           /* 135 Atomic group, contains captures */
+  OP_SCRIPT_RUN,     /* 136 Non-capture, but check characters' scripts */
+  OP_BRA,            /* 137 Start of non-capturing bracket */
+  OP_BRAPOS,         /* 138 Ditto, with unlimited, possessive repeat */
+  OP_CBRA,           /* 139 Start of capturing bracket */
+  OP_CBRAPOS,        /* 140 Ditto, with unlimited, possessive repeat */
+  OP_COND,           /* 141 Conditional group */
 
   /* These five must follow the previous five, in the same order. There's a
   check for >= SBRA to distinguish the two sets. */
 
-  OP_SBRA,           /* 139 Start of non-capturing bracket, check empty  */
-  OP_SBRAPOS,        /* 149 Ditto, with unlimited, possessive repeat */
-  OP_SCBRA,          /* 141 Start of capturing bracket, check empty */
-  OP_SCBRAPOS,       /* 142 Ditto, with unlimited, possessive repeat */
-  OP_SCOND,          /* 143 Conditional group, check empty */
+  OP_SBRA,           /* 142 Start of non-capturing bracket, check empty  */
+  OP_SBRAPOS,        /* 143 Ditto, with unlimited, possessive repeat */
+  OP_SCBRA,          /* 144 Start of capturing bracket, check empty */
+  OP_SCBRAPOS,       /* 145 Ditto, with unlimited, possessive repeat */
+  OP_SCOND,          /* 146 Conditional group, check empty */
 
   /* The next two pairs must (respectively) be kept together. */
 
-  OP_CREF,           /* 144 Used to hold a capture number as condition */
-  OP_DNCREF,         /* 145 Used to point to duplicate names as a condition */
-  OP_RREF,           /* 146 Used to hold a recursion number as condition */
-  OP_DNRREF,         /* 147 Used to point to duplicate names as a condition */
-  OP_FALSE,          /* 148 Always false (used by DEFINE and VERSION) */
-  OP_TRUE,           /* 149 Always true (used by VERSION) */
+  OP_CREF,           /* 147 Used to hold a capture number as condition */
+  OP_DNCREF,         /* 148 Used to point to duplicate names as a condition */
+  OP_RREF,           /* 149 Used to hold a recursion number as condition */
+  OP_DNRREF,         /* 150 Used to point to duplicate names as a condition */
+  OP_FALSE,          /* 151 Always false (used by DEFINE and VERSION) */
+  OP_TRUE,           /* 152 Always true (used by VERSION) */
 
-  OP_BRAZERO,        /* 150 These two must remain together and in this */
-  OP_BRAMINZERO,     /* 151 order. */
-  OP_BRAPOSZERO,     /* 152 */
+  OP_BRAZERO,        /* 153 These two must remain together and in this */
+  OP_BRAMINZERO,     /* 154 order. */
+  OP_BRAPOSZERO,     /* 155 */
 
   /* These are backtracking control verbs */
 
-  OP_MARK,           /* 153 always has an argument */
-  OP_PRUNE,          /* 154 */
-  OP_PRUNE_ARG,      /* 155 same, but with argument */
-  OP_SKIP,           /* 156 */
-  OP_SKIP_ARG,       /* 157 same, but with argument */
-  OP_THEN,           /* 158 */
-  OP_THEN_ARG,       /* 159 same, but with argument */
-  OP_COMMIT,         /* 160 */
-  OP_COMMIT_ARG,     /* 161 same, but with argument */
+  OP_MARK,           /* 156 always has an argument */
+  OP_PRUNE,          /* 157 */
+  OP_PRUNE_ARG,      /* 158 same, but with argument */
+  OP_SKIP,           /* 159 */
+  OP_SKIP_ARG,       /* 160 same, but with argument */
+  OP_THEN,           /* 161 */
+  OP_THEN_ARG,       /* 162 same, but with argument */
+  OP_COMMIT,         /* 163 */
+  OP_COMMIT_ARG,     /* 164 same, but with argument */
 
   /* These are forced failure and success verbs. FAIL and ACCEPT do accept an
   argument, but these cases can be compiled as, for example, (*MARK:X)(*FAIL)
   without the need for a special opcode. */
 
-  OP_FAIL,           /* 162 */
-  OP_ACCEPT,         /* 163 */
-  OP_ASSERT_ACCEPT,  /* 164 Used inside assertions */
-  OP_CLOSE,          /* 165 Used before OP_ACCEPT to close open captures */
+  OP_FAIL,           /* 165 */
+  OP_ACCEPT,         /* 166 */
+  OP_ASSERT_ACCEPT,  /* 167 Used inside assertions */
+  OP_CLOSE,          /* 168 Used before OP_ACCEPT to close open captures */
 
   /* This is used to skip a subpattern with a {0} quantifier */
 
-  OP_SKIPZERO,       /* 166 */
+  OP_SKIPZERO,       /* 169 */
 
   /* This is used to identify a DEFINE group during compilation so that it can
   be checked for having only one branch. It is changed to OP_FALSE before
   compilation finishes. */
 
-  OP_DEFINE,         /* 167 */
+  OP_DEFINE,         /* 170 */
+
+  /* These opcodes replace their normal counterparts in UCP mode when
+  PCRE2_EXTRA_ASCII_BSW is not set. */
+
+  OP_NOT_UCP_WORD_BOUNDARY, /* 171 */
+  OP_UCP_WORD_BOUNDARY,     /* 172 */
 
   /* This is not an opcode, but is used to check that tables indexed by opcode
   are the correct length, in order to catch updating errors - there have been
@@ -1661,25 +1816,27 @@ some cases doesn't actually use these names at all). */
   "*+","++", "?+", "{",                                           \
   "*", "*?", "+", "+?", "?", "??", "{", "{",                      \
   "*+","++", "?+", "{",                                           \
-  "class", "nclass", "xclass", "Ref", "Refi", "DnRef", "DnRefi",  \
+  "class", "nclass", "xclass", "eclass",                          \
+  "Ref", "Refi", "DnRef", "DnRefi",                               \
   "Recurse", "Callout", "CalloutStr",                             \
   "Alt", "Ket", "KetRmax", "KetRmin", "KetRpos",                  \
-  "Reverse", "Assert", "Assert not",                              \
+  "Reverse", "VReverse", "Assert", "Assert not",                  \
   "Assert back", "Assert back not",                               \
   "Non-atomic assert", "Non-atomic assert back",                  \
+  "Scan substring",                                               \
   "Once",                                                         \
   "Script run",                                                   \
   "Bra", "BraPos", "CBra", "CBraPos",                             \
   "Cond",                                                         \
   "SBra", "SBraPos", "SCBra", "SCBraPos",                         \
   "SCond",                                                        \
-  "Cond ref", "Cond dnref", "Cond rec", "Cond dnrec",             \
+  "Capture ref", "Capture dnref", "Cond rec", "Cond dnrec",       \
   "Cond false", "Cond true",                                      \
   "Brazero", "Braminzero", "Braposzero",                          \
   "*MARK", "*PRUNE", "*PRUNE", "*SKIP", "*SKIP",                  \
   "*THEN", "*THEN", "*COMMIT", "*COMMIT", "*FAIL",                \
   "*ACCEPT", "*ASSERT_ACCEPT",                                    \
-  "Close", "Skip zero", "Define"
+  "Close", "Skip zero", "Define", "\\B (ucp)", "\\b (ucp)"
 
 
 /* This macro defines the length of fixed length operations in the compiled
@@ -1734,10 +1891,11 @@ in UTF-8 mode. The code that uses this table must know about such things. */
   1+(32/sizeof(PCRE2_UCHAR)),    /* CLASS                                  */ \
   1+(32/sizeof(PCRE2_UCHAR)),    /* NCLASS                                 */ \
   0,                             /* XCLASS - variable length               */ \
+  0,                             /* ECLASS - variable length               */ \
   1+IMM2_SIZE,                   /* REF                                    */ \
-  1+IMM2_SIZE,                   /* REFI                                   */ \
+  1+IMM2_SIZE+1,                 /* REFI                                   */ \
   1+2*IMM2_SIZE,                 /* DNREF                                  */ \
-  1+2*IMM2_SIZE,                 /* DNREFI                                 */ \
+  1+2*IMM2_SIZE+1,               /* DNREFI                                 */ \
   1+LINK_SIZE,                   /* RECURSE                                */ \
   1+2*LINK_SIZE+1,               /* CALLOUT                                */ \
   0,                             /* CALLOUT_STR - variable length          */ \
@@ -1746,13 +1904,15 @@ in UTF-8 mode. The code that uses this table must know about such things. */
   1+LINK_SIZE,                   /* KetRmax                                */ \
   1+LINK_SIZE,                   /* KetRmin                                */ \
   1+LINK_SIZE,                   /* KetRpos                                */ \
-  1+LINK_SIZE,                   /* Reverse                                */ \
+  1+IMM2_SIZE,                   /* Reverse                                */ \
+  1+2*IMM2_SIZE,                 /* VReverse                               */ \
   1+LINK_SIZE,                   /* Assert                                 */ \
   1+LINK_SIZE,                   /* Assert not                             */ \
   1+LINK_SIZE,                   /* Assert behind                          */ \
   1+LINK_SIZE,                   /* Assert behind not                      */ \
   1+LINK_SIZE,                   /* NA Assert                              */ \
   1+LINK_SIZE,                   /* NA Assert behind                       */ \
+  1+LINK_SIZE,                   /* Scan substring                         */ \
   1+LINK_SIZE,                   /* ONCE                                   */ \
   1+LINK_SIZE,                   /* SCRIPT_RUN                             */ \
   1+LINK_SIZE,                   /* BRA                                    */ \
@@ -1775,11 +1935,17 @@ in UTF-8 mode. The code that uses this table must know about such things. */
   1, 3,                          /* COMMIT, COMMIT_ARG                     */ \
   1, 1, 1,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */ \
   1+IMM2_SIZE, 1,                /* CLOSE, SKIPZERO                        */ \
-  1                              /* DEFINE                                 */
+  1,                             /* DEFINE                                 */ \
+  1, 1                           /* \B and \b in UCP mode                  */
 
 /* A magic value for OP_RREF to indicate the "any recursion" condition. */
 
 #define RREF_ANY  0xffff
+
+/* Constants used by OP_REFI and OP_DNREFI to control matching behaviour. */
+
+#define REFI_FLAG_CASELESS_RESTRICT  0x1
+#define REFI_FLAG_TURKISH_CASING     0x2
 
 
 /* ---------- Private structures that are mode-independent. ---------- */
@@ -1856,6 +2022,14 @@ typedef struct {
 #define UCD_SCRIPTX(ch)     UCD_SCRIPTX_PROP(GET_UCD(ch))
 #define UCD_BPROPS(ch)      UCD_BPROPS_PROP(GET_UCD(ch))
 #define UCD_BIDICLASS(ch)   UCD_BIDICLASS_PROP(GET_UCD(ch))
+#define UCD_ANY_I(ch) \
+  /* match any of the four characters 'i', 'I', U+0130, U+0131 */ \
+  (((uint32_t)(ch) | 0x20u) == 0x69u || ((uint32_t)(ch) | 1u) == 0x0131u)
+#define UCD_DOTTED_I(ch) \
+  ((uint32_t)(ch) == 0x69u || (uint32_t)(ch) == 0x0130u)
+#define UCD_FOLD_I_TURKISH(ch) \
+  ((uint32_t)(ch) == 0x0130u ?   0x69u : \
+   (uint32_t)(ch) ==   0x49u ? 0x0131u : (uint32_t)(ch))
 
 /* The "scriptx" and bprops fields contain offsets into vectors of 32-bit words
 that form a bitmap representing a list of scripts or boolean properties. These
@@ -1921,6 +2095,9 @@ extern const uint8_t          PRIV(utf8_table4)[];
 #define _pcre2_vspace_list             PCRE2_SUFFIX(_pcre2_vspace_list_)
 #define _pcre2_ucd_boolprop_sets       PCRE2_SUFFIX(_pcre2_ucd_boolprop_sets_)
 #define _pcre2_ucd_caseless_sets       PCRE2_SUFFIX(_pcre2_ucd_caseless_sets_)
+#define _pcre2_ucd_turkish_dotted_i_caseset  PCRE2_SUFFIX(_pcre2_ucd_turkish_dotted_i_caseset_)
+#define _pcre2_ucd_nocase_ranges       PCRE2_SUFFIX(_pcre2_ucd_nocase_ranges_)
+#define _pcre2_ucd_nocase_ranges_size  PCRE2_SUFFIX(_pcre2_ucd_nocase_ranges_size_)
 #define _pcre2_ucd_digit_sets          PCRE2_SUFFIX(_pcre2_ucd_digit_sets_)
 #define _pcre2_ucd_script_sets         PCRE2_SUFFIX(_pcre2_ucd_script_sets_)
 #define _pcre2_ucd_records             PCRE2_SUFFIX(_pcre2_ucd_records_)
@@ -1937,14 +2114,17 @@ extern const uint8_t          PRIV(utf8_table4)[];
 extern const uint8_t                   PRIV(OP_lengths)[];
 extern const uint32_t                  PRIV(callout_end_delims)[];
 extern const uint32_t                  PRIV(callout_start_delims)[];
-extern const pcre2_compile_context     PRIV(default_compile_context);
-extern const pcre2_convert_context     PRIV(default_convert_context);
-extern const pcre2_match_context       PRIV(default_match_context);
+extern pcre2_compile_context           PRIV(default_compile_context);
+extern pcre2_convert_context           PRIV(default_convert_context);
+extern pcre2_match_context             PRIV(default_match_context);
 extern const uint8_t                   PRIV(default_tables)[];
 extern const uint32_t                  PRIV(hspace_list)[];
 extern const uint32_t                  PRIV(vspace_list)[];
 extern const uint32_t                  PRIV(ucd_boolprop_sets)[];
 extern const uint32_t                  PRIV(ucd_caseless_sets)[];
+extern const uint32_t                  PRIV(ucd_turkish_dotted_i_caseset);
+extern const uint32_t                  PRIV(ucd_nocase_ranges)[];
+extern const uint32_t                  PRIV(ucd_nocase_ranges_size);
 extern const uint32_t                  PRIV(ucd_digit_sets)[];
 extern const uint32_t                  PRIV(ucd_script_sets)[];
 extern const ucd_record                PRIV(ucd_records)[];
@@ -2005,11 +2185,12 @@ is available. */
 #define _pcre2_valid_utf             PCRE2_SUFFIX(_pcre2_valid_utf_)
 #define _pcre2_was_newline           PCRE2_SUFFIX(_pcre2_was_newline_)
 #define _pcre2_xclass                PCRE2_SUFFIX(_pcre2_xclass_)
+#define _pcre2_eclass                PCRE2_SUFFIX(_pcre2_eclass_)
 
 extern int          _pcre2_auto_possessify(PCRE2_UCHAR *,
                       const compile_block *);
 extern int          _pcre2_check_escape(PCRE2_SPTR *, PCRE2_SPTR, uint32_t *,
-                      int *, uint32_t, uint32_t, BOOL, compile_block *);
+                      int *, uint32_t, uint32_t, uint32_t, BOOL, compile_block *);
 extern PCRE2_SPTR   _pcre2_extuni(uint32_t, PCRE2_SPTR, PCRE2_SPTR, PCRE2_SPTR,
                       BOOL, int *);
 extern PCRE2_SPTR   _pcre2_find_bracket(PCRE2_SPTR, BOOL, int);
@@ -2032,7 +2213,9 @@ extern int          _pcre2_study(pcre2_real_code *);
 extern int          _pcre2_valid_utf(PCRE2_SPTR, PCRE2_SIZE, PCRE2_SIZE *);
 extern BOOL         _pcre2_was_newline(PCRE2_SPTR, uint32_t, PCRE2_SPTR,
                       uint32_t *, BOOL);
-extern BOOL         _pcre2_xclass(uint32_t, PCRE2_SPTR, BOOL);
+extern BOOL         _pcre2_xclass(uint32_t, PCRE2_SPTR, const uint8_t *, BOOL);
+extern BOOL         _pcre2_eclass(uint32_t, PCRE2_SPTR, PCRE2_SPTR,
+                      const uint8_t *, BOOL);
 
 /* This function is needed only when memmove() is not available. */
 
@@ -2042,6 +2225,11 @@ extern void *       _pcre2_memmove(void *, const void *, size_t);
 #endif
 
 #endif  /* PCRE2_CODE_UNIT_WIDTH */
+
+extern BOOL         PRIV(ckd_smul)(PCRE2_SIZE *, int, int);
+
+#include "pcre2_util.h"
+
 #endif  /* PCRE2_INTERNAL_H_IDEMPOTENT_GUARD */
 
 /* End of pcre2_internal.h */

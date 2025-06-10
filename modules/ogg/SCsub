@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -17,7 +18,7 @@ if env["builtin_libogg"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_ogg.Prepend(CPPPATH=[thirdparty_dir])
+    env_ogg.Prepend(CPPEXTPATH=[thirdparty_dir])
 
     env_thirdparty = env_ogg.Clone()
     env_thirdparty.disable_warnings()

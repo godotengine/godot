@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EXPRESSION_H
-#define EXPRESSION_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 
@@ -243,7 +242,7 @@ private:
 		}
 	};
 
-	template <class T>
+	template <typename T>
 	T *alloc_node() {
 		T *node = memnew(T);
 		node->next = nodes;
@@ -264,12 +263,10 @@ protected:
 
 public:
 	Error parse(const String &p_expression, const Vector<String> &p_input_names = Vector<String>());
-	Variant execute(Array p_inputs = Array(), Object *p_base = nullptr, bool p_show_error = true, bool p_const_calls_only = false);
+	Variant execute(const Array &p_inputs = Array(), Object *p_base = nullptr, bool p_show_error = true, bool p_const_calls_only = false);
 	bool has_execute_failed() const;
 	String get_error_text() const;
 
 	Expression() {}
 	~Expression();
 };
-
-#endif // EXPRESSION_H

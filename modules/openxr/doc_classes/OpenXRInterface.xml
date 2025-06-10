@@ -23,7 +23,7 @@
 				Returns display refresh rates supported by the current HMD. Only returned if this feature is supported by the OpenXR runtime and after the interface has been initialized.
 			</description>
 		</method>
-		<method name="get_hand_joint_angular_velocity" qualifiers="const">
+		<method name="get_hand_joint_angular_velocity" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_angular_velocity] obtained from [method XRServer.get_tracker] instead.">
 			<return type="Vector3" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -31,7 +31,7 @@
 				If handtracking is enabled, returns the angular velocity of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D]!
 			</description>
 		</method>
-		<method name="get_hand_joint_flags" qualifiers="const">
+		<method name="get_hand_joint_flags" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_flags] obtained from [method XRServer.get_tracker] instead.">
 			<return type="int" enum="OpenXRInterface.HandJointFlags" is_bitfield="true" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -39,7 +39,7 @@
 				If handtracking is enabled, returns flags that inform us of the validity of the tracking data.
 			</description>
 		</method>
-		<method name="get_hand_joint_linear_velocity" qualifiers="const">
+		<method name="get_hand_joint_linear_velocity" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_linear_velocity] obtained from [method XRServer.get_tracker] instead.">
 			<return type="Vector3" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -47,7 +47,7 @@
 				If handtracking is enabled, returns the linear velocity of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D] without worldscale applied!
 			</description>
 		</method>
-		<method name="get_hand_joint_position" qualifiers="const">
+		<method name="get_hand_joint_position" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_transform] obtained from [method XRServer.get_tracker] instead.">
 			<return type="Vector3" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -55,7 +55,7 @@
 				If handtracking is enabled, returns the position of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D] without worldscale applied!
 			</description>
 		</method>
-		<method name="get_hand_joint_radius" qualifiers="const">
+		<method name="get_hand_joint_radius" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_radius] obtained from [method XRServer.get_tracker] instead.">
 			<return type="float" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -63,12 +63,19 @@
 				If handtracking is enabled, returns the radius of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is without worldscale applied!
 			</description>
 		</method>
-		<method name="get_hand_joint_rotation" qualifiers="const">
+		<method name="get_hand_joint_rotation" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_transform] obtained from [method XRServer.get_tracker] instead.">
 			<return type="Quaternion" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
 			<description>
 				If handtracking is enabled, returns the rotation of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR.
+			</description>
+		</method>
+		<method name="get_hand_tracking_source" qualifiers="const" deprecated="Use [member XRHandTracker.hand_tracking_source] obtained from [method XRServer.get_tracker] instead.">
+			<return type="int" enum="OpenXRInterface.HandTrackedSource" />
+			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
+			<description>
+				If handtracking is enabled and hand tracking source is supported, gets the source of the hand tracking data for [param hand].
 			</description>
 		</method>
 		<method name="get_motion_range" qualifiers="const">
@@ -99,6 +106,13 @@
 				[b]Note:[/b] This feature is only available on the compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
 			</description>
 		</method>
+		<method name="is_hand_interaction_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OpenXR's hand interaction profile is supported and enabled.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
 		<method name="is_hand_tracking_supported">
 			<return type="bool" />
 			<description>
@@ -112,6 +126,20 @@
 			<param index="1" name="active" type="bool" />
 			<description>
 				Sets the given action set as active or inactive.
+			</description>
+		</method>
+		<method name="set_cpu_level">
+			<return type="void" />
+			<param index="0" name="level" type="int" enum="OpenXRInterface.PerfSettingsLevel" />
+			<description>
+				Sets the CPU performance level of the OpenXR device.
+			</description>
+		</method>
+		<method name="set_gpu_level">
+			<return type="void" />
+			<param index="0" name="level" type="int" enum="OpenXRInterface.PerfSettingsLevel" />
+			<description>
+				Sets the GPU performance level of the OpenXR device.
 			</description>
 		</method>
 		<method name="set_motion_range">
@@ -138,11 +166,47 @@
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
 		</member>
+		<member name="vrs_min_radius" type="float" setter="set_vrs_min_radius" getter="get_vrs_min_radius" default="20.0">
+			The minimum radius around the focal point where full quality is guaranteed if VRS is used as a percentage of screen size.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
+		<member name="vrs_strength" type="float" setter="set_vrs_strength" getter="get_vrs_strength" default="1.0">
+			The strength used to calculate the VRS density map. The greater this value, the more noticeable VRS is. This improves performance at the cost of quality.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
 	</members>
 	<signals>
+		<signal name="cpu_level_changed">
+			<param index="0" name="sub_domain" type="int" />
+			<param index="1" name="from_level" type="int" />
+			<param index="2" name="to_level" type="int" />
+			<description>
+				Informs the device CPU performance level has changed in the specified subdomain.
+			</description>
+		</signal>
+		<signal name="gpu_level_changed">
+			<param index="0" name="sub_domain" type="int" />
+			<param index="1" name="from_level" type="int" />
+			<param index="2" name="to_level" type="int" />
+			<description>
+				Informs the device GPU performance level has changed in the specified subdomain.
+			</description>
+		</signal>
+		<signal name="instance_exiting">
+			<description>
+				Informs our OpenXR instance is exiting.
+			</description>
+		</signal>
 		<signal name="pose_recentered">
 			<description>
 				Informs the user queued a recenter of the player position.
+			</description>
+		</signal>
+		<signal name="refresh_rate_changed">
+			<param index="0" name="refresh_rate" type="float" />
+			<description>
+				Informs the user the HMD refresh rate has changed.
+				[b]Note:[/b] Only emitted if XR runtime supports the refresh rate extension.
 			</description>
 		</signal>
 		<signal name="session_begun">
@@ -153,6 +217,11 @@
 		<signal name="session_focussed">
 			<description>
 				Informs our OpenXR session now has focus.
+			</description>
+		</signal>
+		<signal name="session_loss_pending">
+			<description>
+				Informs our OpenXR session is in the process of being lost.
 			</description>
 		</signal>
 		<signal name="session_stopping">
@@ -177,10 +246,25 @@
 			Maximum value for the hand enum.
 		</constant>
 		<constant name="HAND_MOTION_RANGE_UNOBSTRUCTED" value="0" enum="HandMotionRange">
+			Full hand range, if user closes their hands, we make a full fist.
 		</constant>
 		<constant name="HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER" value="1" enum="HandMotionRange">
+			Conform to controller, if user closes their hands, the tracked data conforms to the shape of the controller.
 		</constant>
 		<constant name="HAND_MOTION_RANGE_MAX" value="2" enum="HandMotionRange">
+			Maximum value for the motion range enum.
+		</constant>
+		<constant name="HAND_TRACKED_SOURCE_UNKNOWN" value="0" enum="HandTrackedSource">
+			The source of hand tracking data is unknown (the extension is likely unsupported).
+		</constant>
+		<constant name="HAND_TRACKED_SOURCE_UNOBSTRUCTED" value="1" enum="HandTrackedSource">
+			The source of hand tracking is unobstructed, this means that an accurate method of hand tracking is used, e.g. optical hand tracking, data gloves, etc.
+		</constant>
+		<constant name="HAND_TRACKED_SOURCE_CONTROLLER" value="2" enum="HandTrackedSource">
+			The source of hand tracking is a controller, bone positions are inferred from controller inputs.
+		</constant>
+		<constant name="HAND_TRACKED_SOURCE_MAX" value="3" enum="HandTrackedSource">
+			Represents the size of the [enum HandTrackedSource] enum.
 		</constant>
 		<constant name="HAND_JOINT_PALM" value="0" enum="HandJoints">
 			Palm joint.
@@ -201,67 +285,97 @@
 			Thumb tip joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_METACARPAL" value="6" enum="HandJoints">
-			Index metacarpal joint.
+			Index finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_PROXIMAL" value="7" enum="HandJoints">
-			Index proximal joint.
+			Index finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_INTERMEDIATE" value="8" enum="HandJoints">
-			Index intermediate joint.
+			Index finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_DISTAL" value="9" enum="HandJoints">
-			Index distal joint.
+			Index finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_TIP" value="10" enum="HandJoints">
-			Index tip joint.
+			Index finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_METACARPAL" value="11" enum="HandJoints">
-			Middle metacarpal joint.
+			Middle finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_PROXIMAL" value="12" enum="HandJoints">
-			Middle proximal joint.
+			Middle finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_INTERMEDIATE" value="13" enum="HandJoints">
-			Middle intermediate joint.
+			Middle finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_DISTAL" value="14" enum="HandJoints">
-			Middle distal joint.
+			Middle finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_TIP" value="15" enum="HandJoints">
-			Middle tip joint.
+			Middle finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_METACARPAL" value="16" enum="HandJoints">
-			Ring metacarpal joint.
+			Ring finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_PROXIMAL" value="17" enum="HandJoints">
-			Ring proximal joint.
+			Ring finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_INTERMEDIATE" value="18" enum="HandJoints">
-			Ring intermediate joint.
+			Ring finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_DISTAL" value="19" enum="HandJoints">
-			Ring distal joint.
+			Ring finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_TIP" value="20" enum="HandJoints">
-			Ring tip joint.
+			Ring finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_METACARPAL" value="21" enum="HandJoints">
-			Little metacarpal joint.
+			Pinky finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_PROXIMAL" value="22" enum="HandJoints">
-			Little proximal joint.
+			Pinky finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_INTERMEDIATE" value="23" enum="HandJoints">
-			Little intermediate joint.
+			Pinky finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_DISTAL" value="24" enum="HandJoints">
-			Little distal joint.
+			Pinky finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_TIP" value="25" enum="HandJoints">
-			Little tip joint.
+			Pinky finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_MAX" value="26" enum="HandJoints">
-			Maximum value for the hand joint enum.
+			Represents the size of the [enum HandJoints] enum.
+		</constant>
+		<constant name="PERF_SETTINGS_LEVEL_POWER_SAVINGS" value="0" enum="PerfSettingsLevel">
+			The application has entered a non-XR section (head-locked / static screen), during which power savings are to be prioritized.
+		</constant>
+		<constant name="PERF_SETTINGS_LEVEL_SUSTAINED_LOW" value="1" enum="PerfSettingsLevel">
+			The application has entered a low and stable complexity section, during which reducing power is more important than occasional late rendering frames.
+		</constant>
+		<constant name="PERF_SETTINGS_LEVEL_SUSTAINED_HIGH" value="2" enum="PerfSettingsLevel">
+			The application has entered a high or dynamic complexity section, during which the XR Runtime strives for consistent XR compositing and frame rendering within a thermally sustainable range.
+		</constant>
+		<constant name="PERF_SETTINGS_LEVEL_BOOST" value="3" enum="PerfSettingsLevel">
+			The application has entered a section with very high complexity, during which the XR Runtime is allowed to step up beyond the thermally sustainable range.
+		</constant>
+		<constant name="PERF_SETTINGS_SUB_DOMAIN_COMPOSITING" value="0" enum="PerfSettingsSubDomain">
+			The compositing performance within the runtime has reached a new level.
+		</constant>
+		<constant name="PERF_SETTINGS_SUB_DOMAIN_RENDERING" value="1" enum="PerfSettingsSubDomain">
+			The application rendering performance has reached a new level.
+		</constant>
+		<constant name="PERF_SETTINGS_SUB_DOMAIN_THERMAL" value="2" enum="PerfSettingsSubDomain">
+			The temperature of the device has reached a new level.
+		</constant>
+		<constant name="PERF_SETTINGS_NOTIF_LEVEL_NORMAL" value="0" enum="PerfSettingsNotificationLevel">
+			The sub-domain has reached a level where no further actions other than currently applied are necessary.
+		</constant>
+		<constant name="PERF_SETTINGS_NOTIF_LEVEL_WARNING" value="1" enum="PerfSettingsNotificationLevel">
+			The sub-domain has reached an early warning level where the application should start proactive mitigation actions.
+		</constant>
+		<constant name="PERF_SETTINGS_NOTIF_LEVEL_IMPAIRED" value="2" enum="PerfSettingsNotificationLevel">
+			The sub-domain has reached a critical level where the application should start drastic mitigation actions.
 		</constant>
 		<constant name="HAND_JOINT_NONE" value="0" enum="HandJointFlags" is_bitfield="true">
 			No flags are set.

@@ -10,24 +10,43 @@
 
 #include "../common/portability_macros.h"
 
+#if defined(__ELF__) && defined(__GNUC__)
 /* Stack marking
  * ref: https://wiki.gentoo.org/wiki/Hardened/GNU_stack_quickstart
  */
-#if defined(__ELF__) && defined(__GNUC__)
 .section .note.GNU-stack,"",%progbits
+
+#if defined(__aarch64__)
+/* Mark that this assembly supports BTI & PAC, because it is empty for aarch64.
+ * See: https://github.com/facebook/zstd/issues/3841
+ * See: https://gcc.godbolt.org/z/sqr5T4ffK
+ * See: https://lore.kernel.org/linux-arm-kernel/20200429211641.9279-8-broonie@kernel.org/
+ * See: https://reviews.llvm.org/D62609
+ */
+.pushsection .note.gnu.property, "a"
+.p2align 3
+.long 4                 /* size of the name - "GNU\0" */
+.long 0x10              /* size of descriptor */
+.long 0x5               /* NT_GNU_PROPERTY_TYPE_0 */
+.asciz "GNU"
+.long 0xc0000000        /* pr_type - GNU_PROPERTY_AARCH64_FEATURE_1_AND */
+.long 4                 /* pr_datasz - 4 bytes */
+.long 3                 /* pr_data - GNU_PROPERTY_AARCH64_FEATURE_1_BTI | GNU_PROPERTY_AARCH64_FEATURE_1_PAC */
+.p2align 3              /* pr_padding - bring everything to 8 byte alignment */
+.popsection
+#endif
+
 #endif
 
 #if ZSTD_ENABLE_ASM_X86_64_BMI2
 
 /* Calling convention:
  *
- * %rdi contains the first argument: HUF_DecompressAsmArgs*.
+ * %rdi (or %rcx on Windows) contains the first argument: HUF_DecompressAsmArgs*.
  * %rbp isn't maintained (no frame pointer).
  * %rsp contains the stack pointer that grows down.
  *      No red-zone is assumed, only addresses >= %rsp are used.
  * All register contents are preserved.
- *
- * TODO: Support Windows calling convention.
  */
 
 ZSTD_HIDE_ASM_FUNCTION(HUF_decompress4X1_usingDTable_internal_fast_asm_loop)
@@ -116,7 +135,11 @@ HUF_decompress4X1_usingDTable_internal_fast_asm_loop:
     push %r15
 
     /* Read HUF_DecompressAsmArgs* args from %rax */
+#if defined(_WIN32)
+    movq %rcx, %rax
+#else
     movq %rdi, %rax
+#endif
     movq  0(%rax), %ip0
     movq  8(%rax), %ip1
     movq 16(%rax), %ip2
@@ -131,7 +154,7 @@ HUF_decompress4X1_usingDTable_internal_fast_asm_loop:
     movq 88(%rax), %bits3
     movq 96(%rax), %dtable
     push %rax      /* argument */
-    push 104(%rax) /* ilimit */
+    push 104(%rax) /* ilowest */
     push 112(%rax) /* oend */
     push %olimit   /* olimit space */
 
@@ -156,11 +179,11 @@ HUF_decompress4X1_usingDTable_internal_fast_asm_loop:
     shrq $2, %r15
 
     movq %ip0,     %rax /* rax = ip0 */
-    movq 40(%rsp), %rdx /* rdx = ilimit */
-    subq %rdx,     %rax /* rax = ip0 - ilimit */
-    movq %rax,     %rbx /* rbx = ip0 - ilimit */
+    movq 40(%rsp), %rdx /* rdx = ilowest */
+    subq %rdx,     %rax /* rax = ip0 - ilowest */
+    movq %rax,     %rbx /* rbx = ip0 - ilowest */
 
-    /* rdx = (ip0 - ilimit) / 7 */
+    /* rdx = (ip0 - ilowest) / 7 */
     movabsq $2635249153387078803, %rdx
     mulq %rdx
     subq %rdx, %rbx
@@ -183,9 +206,8 @@ HUF_decompress4X1_usingDTable_internal_fast_asm_loop:
 
     /* If (op3 + 20 > olimit) */
     movq %op3, %rax    /* rax = op3 */
-    addq $20,  %rax    /* rax = op3 + 20 */
-    cmpq %rax, %olimit /* op3 + 20 > olimit */
-    jb .L_4X1_exit
+    cmpq %rax, %olimit /* op3 == olimit */
+    je .L_4X1_exit
 
     /* If (ip1 < ip0) go to exit */
     cmpq %ip0, %ip1
@@ -316,7 +338,7 @@ HUF_decompress4X1_usingDTable_internal_fast_asm_loop:
     /* Restore stack (oend & olimit) */
     pop %rax /* olimit */
     pop %rax /* oend */
-    pop %rax /* ilimit */
+    pop %rax /* ilowest */
     pop %rax /* arg */
 
     /* Save ip / op / bits */
@@ -371,7 +393,12 @@ HUF_decompress4X2_usingDTable_internal_fast_asm_loop:
     push %r14
     push %r15
 
+    /* Read HUF_DecompressAsmArgs* args from %rax */
+#if defined(_WIN32)
+    movq %rcx, %rax
+#else
     movq %rdi, %rax
+#endif
     movq  0(%rax), %ip0
     movq  8(%rax), %ip1
     movq 16(%rax), %ip2
@@ -387,7 +414,7 @@ HUF_decompress4X2_usingDTable_internal_fast_asm_loop:
     movq 96(%rax), %dtable
     push %rax      /* argument */
     push %rax      /* olimit */
-    push 104(%rax) /* ilimit */
+    push 104(%rax) /* ilowest */
 
     movq 112(%rax), %rax
     push %rax /* oend3 */
@@ -414,9 +441,9 @@ HUF_decompress4X2_usingDTable_internal_fast_asm_loop:
 
     /* We can consume up to 7 input bytes each iteration. */
     movq %ip0,     %rax  /* rax = ip0 */
-    movq 40(%rsp), %rdx  /* rdx = ilimit */
-    subq %rdx,     %rax  /* rax = ip0 - ilimit */
-    movq %rax,    %r15   /* r15 = ip0 - ilimit */
+    movq 40(%rsp), %rdx  /* rdx = ilowest */
+    subq %rdx,     %rax  /* rax = ip0 - ilowest */
+    movq %rax,    %r15   /* r15 = ip0 - ilowest */
 
     /* rdx = rax / 7 */
     movabsq $2635249153387078803, %rdx
@@ -426,7 +453,7 @@ HUF_decompress4X2_usingDTable_internal_fast_asm_loop:
     addq %r15, %rdx
     shrq $2, %rdx
 
-    /* r15 = (ip0 - ilimit) / 7 */
+    /* r15 = (ip0 - ilowest) / 7 */
     movq %rdx, %r15
 
     /* r15 = min(r15, min(oend0 - op0, oend1 - op1, oend2 - op2, oend3 - op3) / 10) */
@@ -467,9 +494,8 @@ HUF_decompress4X2_usingDTable_internal_fast_asm_loop:
 
     /* If (op3 + 10 > olimit) */
     movq %op3, %rax    /* rax = op3 */
-    addq $10,  %rax    /* rax = op3 + 10 */
-    cmpq %rax, %olimit /* op3 + 10 > olimit */
-    jb .L_4X2_exit
+    cmpq %rax, %olimit /* op3 == olimit */
+    je .L_4X2_exit
 
     /* If (ip1 < ip0) go to exit */
     cmpq %ip0, %ip1
@@ -537,7 +563,7 @@ HUF_decompress4X2_usingDTable_internal_fast_asm_loop:
     pop %rax /* oend1 */
     pop %rax /* oend2 */
     pop %rax /* oend3 */
-    pop %rax /* ilimit */
+    pop %rax /* ilowest */
     pop %rax /* olimit */
     pop %rax /* arg */
 

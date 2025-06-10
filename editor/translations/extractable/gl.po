@@ -1,0 +1,113 @@
+# Galician translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2023-12-11 21:00+0000\n"
+"Last-Translator: Carlos Cortes Garcia <carlos.cortes.games@gmail.com>\n"
+"Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
+"godot/gl/>\n"
+"Language: gl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.3-dev\n"
+
+msgid "All Recognized"
+msgstr "Todos Recoñecidos"
+
+msgid "Open"
+msgstr "Abrir"
+
+msgid "Select Current Folder"
+msgstr "Seleccionar Cartafol Actual"
+
+msgid "Save"
+msgstr "Gardar"
+
+msgid "Select This Folder"
+msgstr "Seleccionar Este Cartafol"
+
+msgid "Open a File"
+msgstr "Abrir un Arquivo"
+
+msgid "Open File(s)"
+msgstr "Abrir Arquivo(s)"
+
+msgid "Open a Directory"
+msgstr "Abrir un Directorio"
+
+msgid "Open a File or Directory"
+msgstr "Abrir un Arquivo ou Directorio"
+
+msgid "Save a File"
+msgstr "Gardar un Arquivo"
+
+msgid "Go to previous folder."
+msgstr "Ir ao cartafol anterior."
+
+msgid "Go to next folder."
+msgstr "Ir ao cartafol seguinte."
+
+msgid "Go to parent folder."
+msgstr "Ir ao cartafol padre."
+
+msgid "Path:"
+msgstr "Ruta:"
+
+msgid "Refresh files."
+msgstr "Actualizar Arquivos."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Amosar/Ocultar arquivos ocultos."
+
+msgid "Directories & Files:"
+msgstr "Directorios e Arquivos:"
+
+msgid "File:"
+msgstr "Arquivo:"
+
+msgid "Create Folder"
+msgstr "Crear Cartafol"
+
+msgid "Name:"
+msgstr "Nome:"
+
+msgid "Could not create folder."
+msgstr "Non se puido crear cartafol."
+
+msgid "Zoom Out"
+msgstr "Diminuír Zoom"
+
+msgid "Zoom Reset"
+msgstr "Restablecer Zoom"
+
+msgid "Zoom In"
+msgstr "Aumentar Zoom"
+
+msgid "Cut"
+msgstr "Cortar"
+
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Paste"
+msgstr "Pegar"
+
+msgid "Select All"
+msgstr "Seleccionar Todo"
+
+msgid "Clear"
+msgstr "Limpar"
+
+msgid "Undo"
+msgstr "Desfacer"
+
+msgid "Redo"
+msgstr "Refacer"
+
+msgid "(Other)"
+msgstr "(Outros)"

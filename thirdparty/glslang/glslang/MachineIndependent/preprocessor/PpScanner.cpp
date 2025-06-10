@@ -220,7 +220,9 @@ int TPpContext::lFloatConst(int len, int ch, TPpToken* ppToken)
             }
             if (ch >= '0' && ch <= '9') {
                 while (ch >= '0' && ch <= '9') {
-                    exponent = exponent * 10 + (ch - '0');
+                    if (exponent < 500) {
+                        exponent = exponent * 10 + (ch - '0');
+                    }
                     saveName(ch);
                     ch = getChar();
                 }

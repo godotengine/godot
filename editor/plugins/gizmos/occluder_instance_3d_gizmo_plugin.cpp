@@ -36,7 +36,7 @@
 #include "scene/3d/occluder_instance_3d.h"
 
 OccluderInstance3DGizmoPlugin::OccluderInstance3DGizmoPlugin() {
-	create_material("line_material", EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/occluder", Color(0.8, 0.5, 1)));
+	create_material("line_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/occluder"));
 	create_handle_material("handles");
 }
 
@@ -163,9 +163,9 @@ void OccluderInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo,
 		if (p_id == 2) {
 			Vector2 s = Vector2(intersection.x, intersection.y) * 2.0f;
 			if (snap_enabled) {
-				s = s.snapped(Vector2(snap, snap));
+				s = s.snappedf(snap);
 			}
-			s = s.max(Vector2(0.001, 0.001));
+			s = s.maxf(0.001);
 			qo->set_size(s);
 		} else {
 			float d = intersection[p_id];
@@ -242,7 +242,7 @@ void OccluderInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Ref<Occluder3D> o = occluder_instance->get_occluder();
 
-	if (!o.is_valid()) {
+	if (o.is_null()) {
 		return;
 	}
 

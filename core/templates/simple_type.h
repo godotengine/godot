@@ -28,29 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SIMPLE_TYPE_H
-#define SIMPLE_TYPE_H
+#pragma once
 
-/* Batch of specializations to obtain the actual simple type */
+#include <type_traits>
 
-template <class T>
-struct GetSimpleTypeT {
-	typedef T type_t;
-};
-
-template <class T>
-struct GetSimpleTypeT<T &> {
-	typedef T type_t;
-};
-
-template <class T>
-struct GetSimpleTypeT<T const> {
-	typedef T type_t;
-};
-
-template <class T>
-struct GetSimpleTypeT<T const &> {
-	typedef T type_t;
-};
-
-#endif // SIMPLE_TYPE_H
+template <typename T>
+using GetSimpleTypeT = typename std::remove_cv_t<std::remove_reference_t<T>>;

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GROUP_SETTINGS_EDITOR_H
-#define GROUP_SETTINGS_EDITOR_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -90,6 +89,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	LineEdit *get_name_box() const;
 	void show_message(const String &p_message);
 
 	void remove_references(const StringName &p_name);
@@ -103,5 +103,3 @@ public:
 
 	GroupSettingsEditor();
 };
-
-#endif // GROUP_SETTINGS_EDITOR_H

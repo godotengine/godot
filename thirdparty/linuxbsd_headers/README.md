@@ -11,7 +11,10 @@ readability.
 - Version: 1.1.3-5
 - License: LGPL-2.1+
 
-Patches in the `patches` directory should be re-applied after updates.
+Patches:
+
+- `0001-musl-standard-poll.patch` (GH-71934)
+- `0002-freebsd-sys-endian.patch` (GH-100047)
 
 
 ## dbus
@@ -26,6 +29,13 @@ Patches in the `patches` directory should be re-applied after updates.
 - Upstream: https://www.freedesktop.org/wiki/Software/fontconfig/
 - Version: 2.12.6
 - License: fontconfig
+
+
+## libdecor
+
+- Upstream: https://gitlab.freedesktop.org/libdecor/libdecor/
+- Version: 0.2.2
+- License: MIT
 
 
 ## pulse
@@ -47,6 +57,13 @@ Patches in the `patches` directory should be re-applied after updates.
 - Upstream: https://www.freedesktop.org/wiki/Software/systemd/
 - Version: 237
 - License: LGPL-2.1+
+
+
+## wayland
+
+- Upstream: https://gitlab.freedesktop.org/wayland/wayland
+- Version: 1.21.0 (8135e856ebd79872f886466e9cee39affb7d9ee8, 2022)
+- License: MIT
 
 
 ## X11

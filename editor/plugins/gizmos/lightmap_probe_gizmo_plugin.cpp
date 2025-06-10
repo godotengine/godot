@@ -33,13 +33,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/lightmap_probe.h"
 
 LightmapProbeGizmoPlugin::LightmapProbeGizmoPlugin() {
 	create_icon_material("lightmap_probe_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoLightmapProbe"), EditorStringName(EditorIcons)));
 
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/lightprobe_lines", Color(0.5, 0.6, 1));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/lightprobe_lines");
 
 	gizmo_color.a = 0.3;
 	create_material("lightprobe_lines", gizmo_color);
@@ -67,14 +66,14 @@ void LightmapProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	int stack_count = 8;
 	int sector_count = 16;
 
-	float sector_step = (Math_PI * 2.0) / sector_count;
-	float stack_step = Math_PI / stack_count;
+	float sector_step = (Math::PI * 2.0) / sector_count;
+	float stack_step = Math::PI / stack_count;
 
 	Vector<Vector3> vertices;
 	float radius = 0.2;
 
 	for (int i = 0; i <= stack_count; ++i) {
-		float stack_angle = Math_PI / 2 - i * stack_step; // starting from pi/2 to -pi/2
+		float stack_angle = Math::PI / 2 - i * stack_step; // starting from pi/2 to -pi/2
 		float xy = radius * Math::cos(stack_angle); // r * cos(u)
 		float z = radius * Math::sin(stack_angle); // r * sin(u)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,10 @@
  * SOFTWARE.
  */
 
+#include <cstring>
 #include "tvgCommon.h"
 #include "tvgSaveModule.h"
+#include "tvgPaint.h"
 
 #ifdef THORVG_TVG_SAVER_SUPPORT
     #include "tvgTvgSaver.h"
@@ -37,9 +39,12 @@
 struct Saver::Impl
 {
     SaveModule* saveModule = nullptr;
+    Paint* bg = nullptr;
+
     ~Impl()
     {
         delete(saveModule);
+        delete(bg);
     }
 };
 
@@ -118,9 +123,9 @@ Result Saver::save(std::unique_ptr<Paint> paint, const string& path, bool compre
     auto p = paint.release();
     if (!p) return Result::MemoryCorruption;
 
-    //Already on saving an other resource.
+    //Already on saving another resource.
     if (pImpl->saveModule) {
-        delete(p);
+        if (P(p)->refCnt == 0) delete(p);
         return Result::InsufficientCondition;
     }
 
@@ -129,43 +134,55 @@ Result Saver::save(std::unique_ptr<Paint> paint, const string& path, bool compre
             pImpl->saveModule = saveModule;
             return Result::Success;
         } else {
-            delete(p);
+            if (P(p)->refCnt == 0) delete(p);
             delete(saveModule);
             return Result::Unknown;
         }
     }
-    delete(p);
+    if (P(p)->refCnt == 0) delete(p);
     return Result::NonSupport;
 }
 
 
-Result Saver::save(std::unique_ptr<Animation> animation, const string& path, uint32_t quality, uint32_t fps) noexcept
+Result Saver::background(unique_ptr<Paint> paint) noexcept
+{
+    delete(pImpl->bg);
+    pImpl->bg = paint.release();
+
+    return Result::Success;
+}
+
+
+Result Saver::save(unique_ptr<Animation> animation, const string& path, uint32_t quality, uint32_t fps) noexcept
 {
     auto a = animation.release();
     if (!a) return Result::MemoryCorruption;
 
-    if (mathZero(a->totalFrame())) {
-        delete(a);
+    //animation holds the picture, it must be 1 at the bottom.
+    auto remove = PP(a->picture())->refCnt <= 1 ? true : false;
+
+    if (tvg::zero(a->totalFrame())) {
+        if (remove) delete(a);
         return Result::InsufficientCondition;
     }
 
-    //Already on saving an other resource.
+    //Already on saving another resource.
     if (pImpl->saveModule) {
-        delete(a);
+        if (remove) delete(a);
         return Result::InsufficientCondition;
     }
 
     if (auto saveModule = _find(path)) {
-        if (saveModule->save(a, path, quality, fps)) {
+        if (saveModule->save(a, pImpl->bg, path, quality, fps)) {
             pImpl->saveModule = saveModule;
             return Result::Success;
         } else {
-            delete(a);
+            if (remove) delete(a);
             delete(saveModule);
             return Result::Unknown;
         }
     }
-    delete(a);
+    if (remove) delete(a);
     return Result::NonSupport;
 }
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_TRACK_EDITOR_PLUGINS_H
-#define ANIMATION_TRACK_EDITOR_PLUGINS_H
+#pragma once
 
 #include "editor/animation_track_editor.h"
 
@@ -63,9 +62,6 @@ class AnimationTrackEditAudio : public AnimationTrackEdit {
 
 	void _preview_changed(ObjectID p_which);
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
@@ -91,8 +87,6 @@ public:
 
 	void set_node(Object *p_object);
 	void set_as_coords();
-
-	AnimationTrackEditSpriteFrame() {}
 };
 
 class AnimationTrackEditSubAnim : public AnimationTrackEdit {
@@ -120,9 +114,6 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEdit {
 	float len_resizing_from_px = 0.0f;
 	float len_resizing_rel = 0.0f;
 	bool over_drag_position = false;
-
-protected:
-	static void _bind_methods();
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -152,7 +143,6 @@ public:
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 	void set_node(Object *p_object);
-	AnimationTrackEditTypeAnimation();
 };
 
 class AnimationTrackEditVolumeDB : public AnimationTrackEdit {
@@ -173,5 +163,3 @@ public:
 	virtual AnimationTrackEdit *create_audio_track_edit() override;
 	virtual AnimationTrackEdit *create_animation_track_edit(Object *p_object) override;
 };
-
-#endif // ANIMATION_TRACK_EDITOR_PLUGINS_H

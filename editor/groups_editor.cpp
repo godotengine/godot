@@ -31,12 +31,13 @@
 #include "groups_editor.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/project_settings_editor.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/grid_container.h"
@@ -157,10 +158,14 @@ void GroupsEditor::_update_groups() {
 
 	_load_scene_groups(scene_root_node);
 
-	for (const KeyValue<StringName, bool> &E : scene_groups) {
-		if (global_groups.has(E.key)) {
-			scene_groups.erase(E.key);
+	for (HashMap<StringName, bool>::Iterator E = scene_groups.begin(); E;) {
+		HashMap<StringName, bool>::Iterator next = E;
+		++next;
+
+		if (global_groups.has(E->key)) {
+			scene_groups.erase(E->key);
 		}
+		E = next;
 	}
 
 	updating_groups = false;
@@ -196,9 +201,9 @@ void GroupsEditor::_update_tree() {
 	TreeItem *root = tree->create_item();
 
 	TreeItem *local_root = tree->create_item(root);
-	local_root->set_text(0, "Scene Groups");
+	local_root->set_text(0, TTR("Scene Groups"));
 	local_root->set_icon(0, get_editor_theme_icon(SNAME("PackedScene")));
-	local_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+	local_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 	local_root->set_selectable(0, false);
 
 	List<StringName> scene_keys;
@@ -233,9 +238,9 @@ void GroupsEditor::_update_tree() {
 	keys.sort_custom<NoCaseComparator>();
 
 	TreeItem *global_root = tree->create_item(root);
-	global_root->set_text(0, "Global Groups");
+	global_root->set_text(0, TTR("Global Groups"));
 	global_root->set_icon(0, get_editor_theme_icon(SNAME("Environment")));
-	global_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+	global_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 	global_root->set_selectable(0, false);
 
 	for (const StringName &E : keys) {
@@ -270,24 +275,31 @@ void GroupsEditor::_queue_update_groups_and_tree() {
 
 void GroupsEditor::_update_groups_and_tree() {
 	update_groups_and_tree_queued = false;
+	// The scene_root_node could be unset before we actually run this code because this is queued with call_deferred().
+	// In that case NOTIFICATION_VISIBILITY_CHANGED will call this function again soon.
+	if (!scene_root_node) {
+		return;
+	}
 	_update_groups();
 	_update_tree();
 }
 
-void GroupsEditor::_update_scene_groups(Node *p_node) {
-	if (scene_groups_cache.has(p_node)) {
-		scene_groups = scene_groups_cache[p_node];
-		scene_groups_cache.erase(p_node);
+void GroupsEditor::_update_scene_groups(const ObjectID &p_id) {
+	HashMap<ObjectID, HashMap<StringName, bool>>::Iterator I = scene_groups_cache.find(p_id);
+	if (I) {
+		scene_groups = I->value;
+		scene_groups_cache.remove(I);
 	} else {
 		scene_groups = HashMap<StringName, bool>();
 	}
 }
 
-void GroupsEditor::_cache_scene_groups(Node *p_node) {
+void GroupsEditor::_cache_scene_groups(const ObjectID &p_id) {
 	const int edited_scene_count = EditorNode::get_editor_data().get_edited_scene_count();
 	for (int i = 0; i < edited_scene_count; i++) {
-		if (p_node == EditorNode::get_editor_data().get_edited_scene_root(i)) {
-			scene_groups_cache[p_node] = scene_groups_for_caching;
+		Node *edited_scene_root = EditorNode::get_editor_data().get_edited_scene_root(i);
+		if (edited_scene_root && p_id == edited_scene_root->get_instance_id()) {
+			scene_groups_cache[p_id] = scene_groups_for_caching;
 			break;
 		}
 	}
@@ -305,7 +317,7 @@ void GroupsEditor::set_current(Node *p_node) {
 
 	if (scene_tree->get_edited_scene_root() != scene_root_node) {
 		scene_root_node = scene_tree->get_edited_scene_root();
-		_update_scene_groups(scene_root_node);
+		_update_scene_groups(scene_root_node->get_instance_id());
 		_update_groups();
 	}
 
@@ -361,7 +373,8 @@ void GroupsEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			filter->set_right_icon(get_editor_theme_icon("Search"));
-			add->set_icon(get_editor_theme_icon("Add"));
+			add->set_button_icon(get_editor_theme_icon("Add"));
+			_update_tree();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (groups_dirty && is_visible_in_tree()) {
@@ -600,7 +613,7 @@ void GroupsEditor::_show_add_group_dialog() {
 	if (!add_group_dialog) {
 		add_group_dialog = memnew(ConfirmationDialog);
 		add_group_dialog->set_title(TTR("Create New Group"));
-		add_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_add));
+		add_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_add));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		add_group_dialog->add_child(vbc);
@@ -620,6 +633,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_group_name = memnew(LineEdit);
 		add_group_name->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
 		add_group_name->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_group_name->set_accessibility_name(TTRC("Name"));
 		hbc->add_child(add_group_name);
 
 		global_group_button = memnew(CheckButton);
@@ -633,9 +647,10 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_group_description = memnew(LineEdit);
 		add_group_description->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_group_description->set_editable(false);
+		add_group_description->set_accessibility_name(TTRC("Description"));
 		gc->add_child(add_group_description);
 
-		global_group_button->connect("toggled", callable_mp(add_group_description, &LineEdit::set_editable));
+		global_group_button->connect(SceneStringName(toggled), callable_mp(add_group_description, &LineEdit::set_editable));
 
 		add_group_dialog->register_text_enter(add_group_name);
 		add_group_dialog->register_text_enter(add_group_description);
@@ -645,7 +660,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_add));
 		add_validation_panel->set_accept_button(add_group_dialog->get_ok_button());
 
-		add_group_name->connect("text_changed", callable_mp(add_validation_panel, &EditorValidationPanel::update).unbind(1));
+		add_group_name->connect(SceneStringName(text_changed), callable_mp(add_validation_panel, &EditorValidationPanel::update).unbind(1));
 
 		vbc->add_child(add_validation_panel);
 
@@ -666,7 +681,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 	if (!rename_group_dialog) {
 		rename_group_dialog = memnew(ConfirmationDialog);
 		rename_group_dialog->set_title(TTR("Rename Group"));
-		rename_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_rename));
+		rename_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_rename));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		rename_group_dialog->add_child(vbc);
@@ -686,7 +701,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_rename));
 		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
 
-		rename_group->connect("text_changed", callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
+		rename_group->connect(SceneStringName(text_changed), callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
 
 		vbc->add_child(rename_validation_panel);
 
@@ -722,10 +737,11 @@ void GroupsEditor::_show_rename_group_dialog() {
 void GroupsEditor::_show_remove_group_dialog() {
 	if (!remove_group_dialog) {
 		remove_group_dialog = memnew(ConfirmationDialog);
-		remove_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_delete));
+		remove_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_delete));
 
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		remove_label = memnew(Label);
+		remove_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		vbox->add_child(remove_label);
 
 		remove_check_box = memnew(CheckBox);
@@ -781,6 +797,9 @@ void GroupsEditor::_groups_gui_input(Ref<InputEvent> p_event) {
 			_menu_id_pressed(DELETE_GROUP);
 		} else if (ED_IS_SHORTCUT("groups_editor/rename", p_event)) {
 			_menu_id_pressed(RENAME_GROUP);
+		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			filter->grab_focus();
+			filter->select_all();
 		} else {
 			return;
 		}
@@ -803,7 +822,7 @@ void GroupsEditor::_bind_methods() {
 void GroupsEditor::_node_removed(Node *p_node) {
 	if (scene_root_node == p_node) {
 		scene_groups_for_caching = scene_groups;
-		callable_mp(this, &GroupsEditor::_cache_scene_groups).call_deferred(p_node);
+		callable_mp(this, &GroupsEditor::_cache_scene_groups).call_deferred(p_node->get_instance_id());
 		scene_root_node = nullptr;
 	}
 
@@ -816,42 +835,42 @@ GroupsEditor::GroupsEditor() {
 	node = nullptr;
 	scene_tree = SceneTree::get_singleton();
 
-	ED_SHORTCUT("groups_editor/delete", TTR("Delete"), Key::KEY_DELETE);
-	ED_SHORTCUT("groups_editor/rename", TTR("Rename"), Key::F2);
+	ED_SHORTCUT("groups_editor/delete", TTRC("Delete"), Key::KEY_DELETE);
+	ED_SHORTCUT("groups_editor/rename", TTRC("Rename"), Key::F2);
 	ED_SHORTCUT_OVERRIDE("groups_editor/rename", "macos", Key::ENTER);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 
 	add = memnew(Button);
-	add->set_flat(true);
+	add->set_theme_type_variation("FlatMenuButton");
+	add->set_accessibility_name(TTRC("Add Group"));
 	add->set_tooltip_text(TTR("Add a new group."));
-	add->connect("pressed", callable_mp(this, &GroupsEditor::_show_add_group_dialog));
+	add->connect(SceneStringName(pressed), callable_mp(this, &GroupsEditor::_show_add_group_dialog));
 	hbc->add_child(add);
 
 	filter = memnew(LineEdit);
 	filter->set_clear_button_enabled(true);
 	filter->set_placeholder(TTR("Filter Groups"));
+	filter->set_accessibility_name(TTRC("Filter Groups"));
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->connect("text_changed", callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
 	hbc->add_child(filter);
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 	tree->set_select_mode(Tree::SelectMode::SELECT_SINGLE);
 	tree->connect("button_clicked", callable_mp(this, &GroupsEditor::_modify_group));
 	tree->connect("item_mouse_selected", callable_mp(this, &GroupsEditor::_item_mouse_selected));
-	tree->connect("gui_input", callable_mp(this, &GroupsEditor::_groups_gui_input));
+	tree->connect(SceneStringName(gui_input), callable_mp(this, &GroupsEditor::_groups_gui_input));
 	add_child(tree);
 
 	menu = memnew(PopupMenu);
-	menu->connect("id_pressed", callable_mp(this, &GroupsEditor::_menu_id_pressed));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GroupsEditor::_menu_id_pressed));
 	tree->add_child(menu);
 
 	ProjectSettingsEditor::get_singleton()->get_group_settings()->connect("group_changed", callable_mp(this, &GroupsEditor::_update_groups_and_tree));
-}
-
-GroupsEditor::~GroupsEditor() {
 }
