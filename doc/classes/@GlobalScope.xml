@@ -1425,13 +1425,13 @@
 			<description>
 				Returns the internal type of the given [param variable], using the [enum Variant.Type] values.
 				[codeblock]
-				  var json = JSON.new()
-				  json.parse('["a", "b", "c"]')
-				  var result = json.get_data()
-				  if typeof(result) == TYPE_ARRAY:
-				      print(result[0]) # Prints "a"
-				  else:
-					  print("Unexpected result!")
+				var json = JSON.new()
+				json.parse('["a", "b", "c"]')
+				var result = json.get_data()
+				if typeof(result) == TYPE_ARRAY:
+					print(result[0]) # Prints "a"
+				else:
+					print("Unexpected result!")
 				[/codeblock]
 				See also [method type_string].
 			</description>
