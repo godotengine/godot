@@ -223,6 +223,9 @@ public:
 public:
 	StringName get_edit_name(const int p_index) const; //name of the key
 
+protected:
+	virtual void draw_key_link(int p_index, float p_pixels_sec, float p_x, float p_next_x, float p_clip_left, float p_clip_right) override;
+
 private:
 	// Helper
 	String _make_method_text(const Dictionary &d) const;

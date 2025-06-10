@@ -113,6 +113,10 @@ void AnimationTrackEditTypeMethod::draw_key(const int p_index, const Rect2 &p_gl
 	AnimationTrackEdit::draw_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
 }
 
+void AnimationTrackEditTypeMethod::draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right) {
+
+}
+
 StringName AnimationTrackEditTypeMethod::get_edit_name(const int p_index) const {
 	Dictionary d = animation->track_get_key_value(get_track(), p_index);
 	String method_name = _make_method_text(d);
@@ -186,8 +190,8 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, flo
 				(get_animation()->value_track_get_update_mode(get_track()) == Animation::UPDATE_CONTINUOUS ||
 						get_animation()->value_track_get_update_mode(get_track()) == Animation::UPDATE_CAPTURE) &&
 				!Math::is_zero_approx(get_animation()->track_get_key_transition(get_track(), p_index))) {
-			float start_time = get_animation()->track_get_key_time(get_track(), p_index);
-			float end_time = get_animation()->track_get_key_time(get_track(), p_index + 1);
+			float start_time = get_key_time(p_index);
+			float end_time = get_key_time(p_index + 1);
 
 			Color color_next = get_animation()->value_track_interpolate(get_track(), end_time);
 
@@ -205,7 +209,7 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, flo
 			color_samples.append(color_samples[0]);
 		}
 	} else {
-		color_samples.append(get_animation()->track_get_key_value(get_track(), p_index + 1));
+		color_samples.append(get_key_value(p_index + 1));
 	}
 
 	for (int i = 0; i < color_samples.size() - 1; i++) {
@@ -487,10 +491,6 @@ void AnimationTrackEditVolumeDB::draw_fg(const float p_clip_left, const float p_
 }
 
 void AnimationTrackEditVolumeDB::draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right) {
-	if (p_x > p_clip_right || p_next_x < p_clip_left) {
-		return;
-	}
-
 	float db = get_animation()->track_get_key_value(get_track(), p_index);
 	float db_n = get_animation()->track_get_key_value(get_track(), p_index + 1);
 

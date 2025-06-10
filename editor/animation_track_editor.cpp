@@ -2261,12 +2261,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 void AnimationTrackEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			if (animation.is_null()) {
-				return;
-			}
-
-			type_icon = _get_key_type_icon();
-			selected_icon = _get_key_type_icon_selected();
+			_update_key_type_icon();
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -2641,7 +2636,9 @@ void AnimationTrackEdit::draw_timeline(const float p_clip_left, const float p_cl
 
 		if (i < key_count - 1) {
 			const Rect2 next_rect = get_global_key_rect(i + 1);
-			draw_key_link(i, scale, global_rect.position.x, next_rect.position.x, p_clip_left, p_clip_right);
+			if (global_rect.position.x <= p_clip_right && next_rect.position.x >= p_clip_left) {
+				draw_key_link(i, scale, global_rect.position.x, next_rect.position.x, p_clip_left, p_clip_right);
+			}
 		}
 
 		if (global_rect.position.x > p_clip_right) {
@@ -2652,7 +2649,7 @@ void AnimationTrackEdit::draw_timeline(const float p_clip_left, const float p_cl
 			continue;
 		}
 
-		_draw_key(i, global_rect, selected, p_clip_left, p_clip_right);
+		try_draw_key(i, global_rect, selected, p_clip_left, p_clip_right);
 
 		if (selected) {
 			animationTrackDrawUtils->_draw_rect_clipped(global_rect, accent_color, false, p_clip_left, p_clip_right);
@@ -2853,7 +2850,7 @@ bool AnimationKeyEdit::has_valid_key(const int p_index) const {
 	return true;
 }
 
-void KeyEdit::_draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
+void KeyEdit::try_draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
 	if (has_valid_key(p_index)) {
 		draw_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
 		return;
@@ -2872,7 +2869,7 @@ void KeyEdit::_draw_default_key(const int p_index, const Rect2 &p_global_rect, c
 	// The color multiplier is chosen to work with both dark and light editor themes,
 	// and on both unselected and selected key icons.
 	//Color color = p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : Color(1, 1, 1);
-	Color color = Color(1, 1, 1);
+	Color color = p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : Color(1, 1, 1);
 	animationTrackDrawUtils->_draw_texture_region_clipped(texture, p_global_rect, region, p_clip_left, p_clip_right, color);
 }
 
@@ -3023,7 +3020,15 @@ int AnimationTrackEdit::find_closest_key(const Point2 &p_pos) const {
 
 // Helper.
 
-void AnimationTrackEdit::draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right) {
+Variant AnimationTrackEdit::get_key_value(const int p_index) const {
+	return animation->track_get_key_value(track, p_index);
+}
+
+Variant AnimationMarkerEdit::get_key_value(const int p_index) const {
+	return get_marker_name(p_index);
+}
+
+void KeyEdit::draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right) {
 	Rect2 rect = get_global_key_rect(p_index);
 	Rect2 next_rect = get_global_key_rect(p_index + 1);
 
@@ -3035,9 +3040,9 @@ void AnimationTrackEdit::draw_key_link(const int p_index, const float p_pixels_s
 		return;
 	}
 
-	Variant current = animation->track_get_key_value(get_track(), p_index);
-	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
-	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD) {
+	Variant current = get_key_value(p_index);
+	Variant next = get_key_value(p_index + 1);
+	if (current != next) {
 		return;
 	}
 
@@ -3067,25 +3072,38 @@ int AnimationTrackEdit::get_track() const {
 	return track;
 }
 
-Ref<Animation> AnimationTrackEdit::get_animation() const {
+Ref<Animation> AnimationKeyEdit::get_animation() const {
 	return animation;
 }
 
-void AnimationKeyEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only) {
+void AnimationKeyEdit::set_animation(const Ref<Animation> &p_animation, bool p_read_only) {
+	if (animation.is_valid()) {
+		_clear_selection_for_anim(animation);
+	}
+
 	animation = p_animation;
 	read_only = p_read_only;
 
-	track = p_track;
-	queue_redraw();
-
-	ERR_FAIL_INDEX(track, animation->get_track_count());
-
-	node_path = animation->track_get_path(p_track);
-	type_icon = _get_key_type_icon();
-	selected_icon = _get_key_type_icon_selected();
+	_update_key_type_icon();
 }
 
-NodePath AnimationKeyEdit::get_path() const {
+void AnimationTrackEdit::set_track(const int p_track) {
+	ERR_FAIL_COND(animation.is_null());
+
+	track = p_track;
+	node_path = animation->track_get_path(p_track);
+
+	_update_key_type_icon();
+}
+
+void KeyEdit::_update_key_type_icon() {
+	type_icon = _get_key_type_icon();
+	selected_icon = _get_key_type_icon_selected();
+
+	queue_redraw();
+}
+
+NodePath AnimationTrackEdit::get_path() const {
 	return node_path;
 }
 
@@ -3095,12 +3113,11 @@ Size2 AnimationTrackEdit::get_minimum_size() const {
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	const int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
-	int p_index = -1;
 	float p_pixels_sec = 0;
 
 	int max_h = MAX(texture->get_height(), font->get_height(font_size));
 	if (has_valid_track()) {
-		max_h = MAX(max_h, get_key_height(p_index));
+		max_h = MAX(max_h, get_key_height(-1));
 	}
 
 	return Vector2(1, max_h + separation);
@@ -3184,6 +3201,10 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 }
 
 Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
+	if (track == -1) {
+		return get_editor_theme_icon(SNAME("KeyInvalid"));
+	}
+
 	const Ref<Texture2D> type_icons[9] = {
 		get_editor_theme_icon(SNAME("KeyValue")),
 		get_editor_theme_icon(SNAME("KeyTrackPosition")),
@@ -3199,6 +3220,10 @@ Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
 }
 
 Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon_selected() const {
+	if (track == -1) {
+		return get_editor_theme_icon(SNAME("KeyInvalid"));
+	}
+
 	return get_editor_theme_icon(SNAME("KeySelected"));
 }
 
@@ -3429,7 +3454,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (icon_rect.has_point(pos)) {
 				EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 				editor_selection->clear();
-				Node *n = root->get_node_or_null(node_path);
+				Node *n = root->get_node_or_null(get_path());
 				if (n) {
 					editor_selection->add_node(n);
 				}
@@ -5386,8 +5411,6 @@ void AnimationTrackEditor::_update_tracks() {
 	AnimationTrackEdit *selected_track_edit = nullptr;
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
-		AnimationTrackEdit *track_edit = nullptr;
-
 		// Find hint and info for plugin.
 
 		if (use_filter) {
@@ -5413,77 +5436,10 @@ void AnimationTrackEditor::_update_tracks() {
 			}
 		}
 
-		if (animation->track_get_type(i) == Animation::TYPE_VALUE) {
-			NodePath path = animation->track_get_path(i);
-
-			if (root && root->has_node_and_resource(path)) {
-				Ref<Resource> res;
-				NodePath base_path;
-				Vector<StringName> leftover_path;
-				Node *node = root->get_node_and_resource(path, res, leftover_path, true);
-				PropertyInfo pinfo = _find_hint_for_track(i, base_path);
-
-				Object *object = node;
-				if (res.is_valid()) {
-					object = res.ptr();
-				}
-
-				if (object && !leftover_path.is_empty()) {
-					if (pinfo.name.is_empty()) {
-						pinfo.name = leftover_path[leftover_path.size() - 1];
-					}
-
-					for (int j = 0; j < track_edit_plugins.size(); j++) {
-						track_edit = track_edit_plugins.write[j]->create_value_track_edit(object, pinfo.type, pinfo.name, pinfo.hint, pinfo.hint_string, pinfo.usage);
-						if (track_edit) {
-							break;
-						}
-					}
-				}
-			}
+		AnimationTrackEdit *track_edit = create_track_edit_by_plugin(i);
+		if (track_edit != nullptr) {
+			track_edits.push_back(track_edit);
 		}
-		if (animation->track_get_type(i) == Animation::TYPE_AUDIO) {
-			for (int j = 0; j < track_edit_plugins.size(); j++) {
-				track_edit = track_edit_plugins.write[j]->create_audio_track_edit();
-				if (track_edit) {
-					break;
-				}
-			}
-		}
-
-		if (animation->track_get_type(i) == Animation::TYPE_ANIMATION) {
-			NodePath path = animation->track_get_path(i);
-
-			Node *node = nullptr;
-			if (root) {
-				node = root->get_node_or_null(path);
-			}
-
-			if (node && Object::cast_to<AnimationPlayer>(node)) {
-				for (int j = 0; j < track_edit_plugins.size(); j++) {
-					track_edit = track_edit_plugins.write[j]->create_animation_track_edit(node);
-					if (track_edit) {
-						break;
-					}
-				}
-			}
-		}
-
-		if (animation->track_get_type(i) == Animation::TYPE_METHOD) {
-			for (int j = 0; j < track_edit_plugins.size(); j++) {
-				track_edit = track_edit_plugins.write[j]->create_method_track_edit();
-				if (track_edit) {
-					break;
-				}
-			}
-		}
-
-		if (track_edit == nullptr) {
-			// No valid plugin_found.
-			track_edit = memnew(AnimationTrackEdit);
-		}
-
-		track_edits.push_back(track_edit);
 
 		if (use_grouping) {
 			String base_path = String(animation->track_get_path(i));
@@ -5525,7 +5481,8 @@ void AnimationTrackEditor::_update_tracks() {
 
 		track_edit->set_timeline(timeline);
 		track_edit->set_root(root);
-		track_edit->set_animation_and_track(animation, i, file_read_only);
+		track_edit->set_animation(animation, file_read_only);
+		track_edit->set_track(i);
 		track_edit->set_play_position(timeline->get_play_position());
 		track_edit->set_editor(this);
 
@@ -5590,6 +5547,82 @@ void AnimationTrackEditor::_update_tracks() {
 	if (selected_track_edit != nullptr) {
 		selected_track_edit->grab_focus();
 	}
+}
+
+AnimationTrackEdit* AnimationTrackEditor::create_track_edit_by_plugin(const int p_index) {
+	AnimationTrackEdit *track_edit = nullptr;
+
+	if (animation->track_get_type(p_index) == Animation::TYPE_VALUE) {
+		NodePath path = animation->track_get_path(p_index);
+
+		if (root && root->has_node_and_resource(path)) {
+			Ref<Resource> res;
+			NodePath base_path;
+			Vector<StringName> leftover_path;
+			Node *node = root->get_node_and_resource(path, res, leftover_path, true);
+			PropertyInfo pinfo = _find_hint_for_track(p_index, base_path);
+
+			Object *object = node;
+			if (res.is_valid()) {
+				object = res.ptr();
+			}
+
+			if (object && !leftover_path.is_empty()) {
+				if (pinfo.name.is_empty()) {
+					pinfo.name = leftover_path[leftover_path.size() - 1];
+				}
+
+				for (int j = 0; j < track_edit_plugins.size(); j++) {
+					track_edit = track_edit_plugins.write[j]->create_value_track_edit(object, pinfo.type, pinfo.name, pinfo.hint, pinfo.hint_string, pinfo.usage);
+					if (track_edit) {
+						break;
+					}
+				}
+			}
+		}
+	}
+	if (animation->track_get_type(p_index) == Animation::TYPE_AUDIO) {
+		for (int j = 0; j < track_edit_plugins.size(); j++) {
+			track_edit = track_edit_plugins.write[j]->create_audio_track_edit();
+			if (track_edit) {
+				break;
+			}
+		}
+	}
+
+	if (animation->track_get_type(p_index) == Animation::TYPE_ANIMATION) {
+		NodePath path = animation->track_get_path(p_index);
+
+		Node *node = nullptr;
+		if (root) {
+			node = root->get_node_or_null(path);
+		}
+
+		if (node && Object::cast_to<AnimationPlayer>(node)) {
+			for (int j = 0; j < track_edit_plugins.size(); j++) {
+				track_edit = track_edit_plugins.write[j]->create_animation_track_edit(node);
+				if (track_edit) {
+					break;
+				}
+			}
+		}
+	}
+
+	if (animation->track_get_type(p_index) == Animation::TYPE_METHOD) {
+		for (int j = 0; j < track_edit_plugins.size(); j++) {
+			track_edit = track_edit_plugins.write[j]->create_method_track_edit();
+			if (track_edit) {
+				break;
+			}
+		}
+	}
+
+	if (track_edit == nullptr) {
+		// No valid plugin_found.
+		track_edit = memnew(AnimationTrackEdit);
+	}
+
+	return track_edit;
 }
 
 void AnimationTrackEditor::_redraw_tracks() {
@@ -5682,34 +5715,52 @@ void AnimationTrackEditor::_update_nearest_fps_label() {
 	}
 }
 
+bool AnimationTrackEditor::_check_animation_needs_update() {
+	bool track_needs_update = track_edits.size() != animation->get_track_count();
+	if (track_needs_update) {
+		return true;
+	}
+
+	for (int i = 0; i < track_edits.size(); i++) {
+		track_needs_update = _check_track_needs_update(i);
+		if (track_needs_update) {
+			return true;
+		}
+	}
+
+	return track_needs_update;
+}
+
+bool AnimationTrackEditor::_check_track_needs_update(const int track) {
+	NodePath track_nodePath = track_edits[track]->get_path();
+	NodePath animation_nodePath = animation->track_get_path(track);
+
+	if (track_nodePath != animation_nodePath) {
+		String a = String(track_nodePath);
+		String b = String(animation_nodePath);
+		WARN_PRINT(a + " - " + b);
+
+		return true;
+	}
+
+	return false;
+}
+
 void AnimationTrackEditor::_animation_update() {
 	timeline->queue_redraw();
 	timeline->update_values();
-
-	bool same = true;
 
 	if (animation.is_null()) {
 		return;
 	}
 
-	if (track_edits.size() == animation->get_track_count()) {
-		// Check tracks are the same.
-
-		for (int i = 0; i < track_edits.size(); i++) {
-			if (track_edits[i]->get_path() != animation->track_get_path(i)) {
-				same = false;
-				break;
-			}
-		}
+	// Check tracks are the same.
+	bool tracks_needs_update = _check_animation_needs_update();
+	if (tracks_needs_update) {
+		_update_tracks();
 	} else {
-		same = false;
-	}
-
-	if (same) {
 		_redraw_tracks();
 		_redraw_groups();
-	} else {
-		_update_tracks();
 	}
 
 	bezier_edit->queue_redraw();
@@ -6521,6 +6572,14 @@ void AnimationTrackEditor::_move_selection_commit() {
 void AnimationTrackEditor::_move_selection_cancel() {
 	moving_selection = false;
 	_redraw_tracks();
+}
+
+bool KeyEdit::is_moving_selection() const {
+	return moving_selection;
+}
+
+float KeyEdit::get_moving_selection_offset() const {
+	return moving_selection_offset;
 }
 
 bool AnimationTrackEditor::is_moving_selection() const {
@@ -9117,12 +9176,7 @@ void AnimationMarkerEdit::_bind_methods() {
 void AnimationMarkerEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			if (animation.is_null()) {
-				return;
-			}
-
-			type_icon = _get_key_type_icon();
-			selected_icon = _get_key_type_icon_selected();
+			_update_key_type_icon();
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -9206,7 +9260,7 @@ void AnimationMarkerEdit::_notification(int p_what) {
 					}
 
 					bool is_selected = is_marker_selected(marker_name);
-					_draw_key(i, global_rect, is_selected, limit, limit_end);
+					try_draw_key(i, global_rect, is_selected, limit, limit_end);
 
 					const int font_size = 12 * EDSCALE;
 					Size2 string_size = font->get_string_size(marker_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size);
@@ -9532,18 +9586,6 @@ void AnimationMarkerEdit::draw_fg(const float p_clip_left, const float p_clip_ri
 
 Ref<Animation> AnimationMarkerEdit::get_animation() const {
 	return animation;
-}
-
-void AnimationMarkerEdit::set_animation(const Ref<Animation> &p_animation, bool p_read_only) {
-	if (animation.is_valid()) {
-		_clear_selection_for_anim(animation);
-	}
-	animation = p_animation;
-	read_only = p_read_only;
-	type_icon = _get_key_type_icon();
-	selected_icon = _get_key_type_icon_selected();
-
-	queue_redraw();
 }
 
 Size2 AnimationMarkerEdit::get_minimum_size() const {
