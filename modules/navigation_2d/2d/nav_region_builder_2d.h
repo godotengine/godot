@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_base_iteration_2d.h                                               */
+/*  nav_region_builder_2d.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,37 +32,17 @@
 
 #include "../nav_utils_2d.h"
 
-#include "core/object/ref_counted.h"
-#include "servers/navigation/navigation_utilities.h"
+struct NavRegionIterationBuild2D;
 
-class NavBaseIteration2D : public RefCounted {
-	GDCLASS(NavBaseIteration2D, RefCounted);
+class NavRegionBuilder2D {
+	static void _build_step_process_navmesh_data(NavRegionIterationBuild2D &r_build);
+	static void _build_step_find_edge_connection_pairs(NavRegionIterationBuild2D &r_build);
+	static void _build_step_merge_edge_connection_pairs(NavRegionIterationBuild2D &r_build);
+	static void _build_update_iteration(NavRegionIterationBuild2D &r_build);
 
 public:
-	bool enabled = true;
-	uint32_t navigation_layers = 1;
-	real_t enter_cost = 0.0;
-	real_t travel_cost = 1.0;
-	NavigationUtilities::PathSegmentType owner_type;
-	ObjectID owner_object_id;
-	RID owner_rid;
-	bool owner_use_edge_connections = false;
-	LocalVector<Nav2D::Polygon> navmesh_polygons;
-	LocalVector<LocalVector<Nav2D::Connection>> internal_connections;
+	static Nav2D::PointKey get_point_key(const Vector2 &p_pos, const Vector2 &p_cell_size);
+	static Nav2D::EdgeKey get_edge_key(const Vector2 &p_vertex1, const Vector2 &p_vertex2, const Vector2 &p_cell_size);
 
-	bool get_enabled() const { return enabled; }
-	NavigationUtilities::PathSegmentType get_type() const { return owner_type; }
-	RID get_self() const { return owner_rid; }
-	ObjectID get_owner_id() const { return owner_object_id; }
-	uint32_t get_navigation_layers() const { return navigation_layers; }
-	real_t get_enter_cost() const { return enter_cost; }
-	real_t get_travel_cost() const { return travel_cost; }
-	bool get_use_edge_connections() const { return owner_use_edge_connections; }
-	const LocalVector<Nav2D::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
-	const LocalVector<LocalVector<Nav2D::Connection>> &get_internal_connections() const { return internal_connections; }
-
-	virtual ~NavBaseIteration2D() {
-		navmesh_polygons.clear();
-		internal_connections.clear();
-	}
+	static void build_iteration(NavRegionIterationBuild2D &r_build);
 };
