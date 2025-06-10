@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  movie_writer.h                                                        */
+/*  rgb2yuv.h                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,62 +30,47 @@
 
 #pragma once
 
-#include "core/io/image.h"
-#include "core/templates/local_vector.h"
-#include "servers/audio_server.h"
+#include "core/typedefs.h"
 
-class MovieWriter : public Object {
-	GDCLASS(MovieWriter, Object);
+// For reference, see:
+// - https://stackoverflow.com/a/9467305
+// - https://en.wikipedia.org/wiki/YCbCr#Approximate_8-bit_matrices_for_BT.601
 
-	uint64_t fps = 0;
-	uint64_t mix_rate = 0;
-	uint32_t audio_channels = 0;
+static void _rgb2yuv420(uint8_t *y, uint8_t *u, uint8_t *v, uint8_t *rgb, size_t width, size_t height, size_t pixel_size) {
+	size_t uvpos = 0;
+	size_t i = 0;
+	for (size_t line = 0; line < height; line += 2) {
+		for (size_t x = 0; x < width; x += 2) {
+			uint8_t r = rgb[pixel_size * i];
+			uint8_t g = rgb[pixel_size * i + 1];
+			uint8_t b = rgb[pixel_size * i + 2];
 
-	float cpu_time = 0.0f;
-	float gpu_time = 0.0f;
-	uint64_t encoding_time_usec = 0;
+			y[i++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16;
 
-	String project_name;
+			u[uvpos] = ((-38 * r + -74 * g + 112 * b) >> 8) + 128;
+			v[uvpos] = ((112 * r + -94 * g + -18 * b) >> 8) + 128;
+			uvpos++;
 
-	LocalVector<int32_t> audio_mix_buffer;
+			r = rgb[pixel_size * i];
+			g = rgb[pixel_size * i + 1];
+			b = rgb[pixel_size * i + 2];
 
-	enum {
-		MAX_WRITERS = 8
-	};
-	static MovieWriter *writers[];
-	static uint32_t writer_count;
+			y[i++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16;
+		}
+		for (size_t x = 0; x < width; x += 1) {
+			uint8_t r = rgb[pixel_size * i];
+			uint8_t g = rgb[pixel_size * i + 1];
+			uint8_t b = rgb[pixel_size * i + 2];
 
-protected:
-	virtual uint32_t get_audio_mix_rate() const;
-	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const;
+			y[i++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16;
+		}
+	}
+}
 
-	virtual Error write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
-	virtual Error write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data);
-	virtual void write_end();
+static void rgb2yuv420(uint8_t *y, uint8_t *u, uint8_t *v, uint8_t *rgb, size_t width, size_t height) {
+	_rgb2yuv420(y, u, v, rgb, width, height, 3);
+}
 
-	GDVIRTUAL0RC_REQUIRED(uint32_t, _get_audio_mix_rate)
-	GDVIRTUAL0RC_REQUIRED(AudioServer::SpeakerMode, _get_audio_speaker_mode)
-
-	GDVIRTUAL1RC_REQUIRED(bool, _handles_file, const String &)
-	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_supported_extensions)
-
-	GDVIRTUAL3R_REQUIRED(Error, _write_begin, const Size2i &, uint32_t, const String &)
-	GDVIRTUAL2R_REQUIRED(Error, _write_frame, const Ref<Image> &, GDExtensionConstPtr<int32_t>)
-	GDVIRTUAL0_REQUIRED(_write_end)
-
-	static void _bind_methods();
-
-public:
-	virtual bool handles_file(const String &p_path) const;
-	virtual void get_supported_extensions(List<String> *r_extensions) const;
-
-	static void add_writer(MovieWriter *p_writer);
-	static MovieWriter *find_writer_for_file(const String &p_file);
-
-	void begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
-	void add_frame();
-
-	static void set_extensions_hint();
-
-	void end();
-};
+static void rgba2yuv420(uint8_t *y, uint8_t *u, uint8_t *v, uint8_t *rgba, size_t width, size_t height) {
+	_rgb2yuv420(y, u, v, rgba, width, height, 4);
+}
