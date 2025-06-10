@@ -35,7 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/text_edit.h"
 

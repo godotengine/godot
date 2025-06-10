@@ -33,11 +33,11 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/object/script_language.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/plugins/editor_plugin.h"
-#include "editor/project_settings_editor.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 

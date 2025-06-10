@@ -34,7 +34,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/object/ref_counted.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/compressed_texture.h"

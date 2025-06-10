@@ -32,8 +32,8 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_fonts.h"
 #include "editor/themes/editor_icons.h"

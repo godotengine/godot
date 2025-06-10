@@ -37,7 +37,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
 

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/embedded_process.h"
+#include "editor/run/embedded_process.h"
 
 class DisplayServerMacOS;
 class EmbeddedProcessMacOS;

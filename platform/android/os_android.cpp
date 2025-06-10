@@ -45,7 +45,7 @@
 #include "drivers/unix/file_access_unix.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/plugins/game_view_plugin.h"
+#include "editor/run/game_view_plugin.h"
 #endif
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
