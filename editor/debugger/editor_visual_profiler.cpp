@@ -31,9 +31,9 @@
 #include "editor_visual_profiler.h"
 
 #include "core/io/image.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_run_bar.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/flow_container.h"
 #include "scene/resources/image_texture.h"

@@ -32,9 +32,9 @@
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/inspector_dock.h"
 #include "scene/debugger/scene_debugger.h"
 
 bool EditorDebuggerRemoteObjects::_set(const StringName &p_name, const Variant &p_value) {

@@ -44,7 +44,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 // This function is used to determine that a type is "built-in" as opposed to native

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/game_view_plugin.h"
+#include "editor/run/game_view_plugin.h"
 
 class EmbeddedProcessMacOS;
 

@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/scene/2d/abstract_polygon_2d_editor.h"
 
 class AcceptDialog;
 class HBoxContainer;

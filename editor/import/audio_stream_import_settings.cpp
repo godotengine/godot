@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "audio_stream_import_settings.h"
-#include "editor/audio_stream_preview.h"
-#include "editor/editor_file_system.h"
+
+#include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 
