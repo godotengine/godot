@@ -60,6 +60,11 @@ struct DirectionalLightData {
 	vec4 direction_energy;
 	vec4 color_size;
 	bool enabled;
+	uint bake_mode;
+	float shadow_opacity;
+	float specular;
+	vec3 pad;
+	uint mask;
 };
 
 layout(std140) uniform DirectionalLights { //ubo:4
