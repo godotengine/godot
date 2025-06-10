@@ -100,7 +100,7 @@ void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binorm
 layout(location = 0) out vec3 vertex_interp;
 
 #ifdef NORMAL_USED
-layout(location = 1) out hvec3 normal_interp;
+layout(location = 1) out vec3 normal_interp;
 #endif
 
 #if defined(COLOR_USED)
@@ -116,8 +116,8 @@ layout(location = 4) out vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 5) out hvec3 tangent_interp;
-layout(location = 6) out hvec3 binormal_interp;
+layout(location = 5) out vec3 tangent_interp;
+layout(location = 6) out vec3 binormal_interp;
 #endif
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 layout(location = 7) out hvec4 diffuse_light_interp;
@@ -496,16 +496,18 @@ void vertex_shader(in vec3 vertex,
 	// Normalize TBN vectors before interpolation, per MikkTSpace.
 	// See: http://www.mikktspace.com/
 #ifdef NORMAL_USED
-	normal_interp = hvec3(normalize(normal_highp));
+	normal_interp = normalize(normal_highp);
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) || defined(BENT_NORMAL_MAP_USED)
-	tangent_interp = hvec3(normalize(tangent_highp));
-	binormal_interp = hvec3(normalize(binormal_highp));
+	tangent_interp = normalize(tangent_highp);
+	binormal_interp = normalize(binormal_highp);
 #endif
 
 // VERTEX LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
+	hvec3 normal = hvec3(normal_interp);
+
 #ifdef USE_MULTIVIEW
 	hvec3 view = hvec3(-normalize(vertex_interp - eye_offset));
 #else
@@ -523,7 +525,7 @@ void vertex_shader(in vec3 vertex,
 			break;
 		}
 
-		light_process_omni_vertex(light_index, vertex, view, normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
+		light_process_omni_vertex(light_index, vertex, view, normal, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 
 	uint spot_light_count = sc_spot_lights(8);
@@ -534,7 +536,7 @@ void vertex_shader(in vec3 vertex,
 			break;
 		}
 
-		light_process_spot_vertex(light_index, vertex, view, normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
+		light_process_spot_vertex(light_index, vertex, view, normal, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 
 	uint directional_lights_count = sc_directional_lights(scene_directional_light_count);
@@ -552,13 +554,13 @@ void vertex_shader(in vec3 vertex,
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 			if (i == 0) {
-				light_compute_vertex(normal_interp, hvec3(directional_lights.data[0].direction), view,
+				light_compute_vertex(normal, hvec3(directional_lights.data[0].direction), view,
 						hvec3(directional_lights.data[0].color * directional_lights.data[0].energy),
 						true, roughness,
 						directional_diffuse,
 						directional_specular);
 			} else {
-				light_compute_vertex(normal_interp, hvec3(directional_lights.data[i].direction), view,
+				light_compute_vertex(normal, hvec3(directional_lights.data[i].direction), view,
 						hvec3(directional_lights.data[i].color * directional_lights.data[i].energy),
 						true, roughness,
 						diffuse_light_interp.rgb,
@@ -788,7 +790,8 @@ void main() {
 layout(location = 0) in vec3 vertex_interp;
 
 #ifdef NORMAL_USED
-layout(location = 1) in hvec3 normal_interp;
+// Intentionally kept at full precision to avoid visible corruption on Adreno (See #107364).
+layout(location = 1) in vec3 normal_interp;
 #endif
 
 #if defined(COLOR_USED)
@@ -804,8 +807,9 @@ layout(location = 4) in vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 5) in hvec3 tangent_interp;
-layout(location = 6) in hvec3 binormal_interp;
+// Intentionally kept at full precision to avoid visible corruption on Adreno (See #107364).
+layout(location = 5) in vec3 tangent_interp;
+layout(location = 6) in vec3 binormal_interp;
 #endif
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
@@ -1093,15 +1097,15 @@ void main() {
 	float alpha_highp = 1.0;
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) || defined(BENT_NORMAL_MAP_USED)
-	vec3 binormal_highp = vec3(binormal_interp);
-	vec3 tangent_highp = vec3(tangent_interp);
+	vec3 binormal_highp = binormal_interp;
+	vec3 tangent_highp = tangent_interp;
 #else // TANGENT_USED || NORMAL_MAP_USED || LIGHT_ANISOTROPY_USED || BENT_NORMAL_MAP_USED
 	vec3 binormal_highp = vec3(0.0);
 	vec3 tangent_highp = vec3(0.0);
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal_highp = vec3(normal_interp);
+	vec3 normal_highp = normal_interp;
 #if defined(DO_SIDE_CHECK)
 	if (!gl_FrontFacing) {
 		normal_highp = -normal_highp;
