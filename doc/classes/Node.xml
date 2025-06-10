@@ -239,6 +239,12 @@
 				This function ensures that the calling of this function will succeed, no matter whether it's being done from a thread or not. If called from a thread that is not allowed to call the function, the call will become deferred. Otherwise, the call will go through directly.
 			</description>
 		</method>
+		<method name="can_auto_translate" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this node can automatically translate messages depending on the current locale. See [member auto_translate_mode], [method atr], and [method atr_n].
+			</description>
+		</method>
 		<method name="can_process" qualifiers="const">
 			<return type="bool" />
 			<description>

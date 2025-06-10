@@ -587,7 +587,7 @@
 		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the window will be on top of all other windows. Does not work if [member transient] is enabled.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] instead.">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] and [method Node.can_auto_translate] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
 		</member>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
