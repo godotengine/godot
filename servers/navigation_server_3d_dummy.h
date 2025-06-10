@@ -191,6 +191,7 @@ public:
 	void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override { return false; }
+	String get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const override { return ""; }
 #endif // _3D_DISABLED
 
 	RID source_geometry_parser_create() override { return RID(); }

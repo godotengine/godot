@@ -45,9 +45,25 @@ RWLock NavMeshGenerator3D::generator_parsers_rwlock;
 bool NavMeshGenerator3D::use_threads = true;
 bool NavMeshGenerator3D::baking_use_multiple_threads = true;
 bool NavMeshGenerator3D::baking_use_high_priority_threads = true;
-HashSet<Ref<NavigationMesh>> NavMeshGenerator3D::baking_navmeshes;
+HashMap<Ref<NavigationMesh>, NavMeshGenerator3D::NavMeshGeneratorTask3D *> NavMeshGenerator3D::baking_navmeshes;
 HashMap<WorkerThreadPool::TaskID, NavMeshGenerator3D::NavMeshGeneratorTask3D *> NavMeshGenerator3D::generator_tasks;
 LocalVector<NavMeshGeometryParser3D *> NavMeshGenerator3D::generator_parsers;
+
+static const char *_navmesh_bake_state_msgs[(size_t)NavMeshGenerator3D::NavMeshBakeState::BAKE_STATE_MAX] = {
+	"",
+	"Setting up configuration...",
+	"Calculating grid size...",
+	"Creating heightfield...",
+	"Marking walkable triangles...",
+	"Constructing compact heightfield...", // step 5
+	"Eroding walkable area...",
+	"Sample partitioning...",
+	"Creating contours...",
+	"Creating polymesh...",
+	"Converting to native navigation mesh...", // step 10
+	"Baking cleanup...",
+	"Baking finished.",
+};
 
 NavMeshGenerator3D *NavMeshGenerator3D::get_singleton() {
 	return singleton;
@@ -158,10 +174,15 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
 	}
 	baking_navmesh_mutex.lock();
-	baking_navmeshes.insert(p_navigation_mesh);
+	NavMeshGeneratorTask3D generator_task;
+	baking_navmeshes.insert(p_navigation_mesh, &generator_task);
 	baking_navmesh_mutex.unlock();
 
-	generator_bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data);
+	generator_task.navigation_mesh = p_navigation_mesh;
+	generator_task.source_geometry_data = p_source_geometry_data;
+	generator_task.status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
+
+	generator_bake_from_source_geometry_data(&generator_task);
 
 	baking_navmesh_mutex.lock();
 	baking_navmeshes.erase(p_navigation_mesh);
@@ -197,16 +218,16 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 		return;
 	}
 	baking_navmesh_mutex.lock();
-	baking_navmeshes.insert(p_navigation_mesh);
+	NavMeshGeneratorTask3D *generator_task = memnew(NavMeshGeneratorTask3D);
+	baking_navmeshes.insert(p_navigation_mesh, generator_task);
 	baking_navmesh_mutex.unlock();
 
-	MutexLock generator_task_lock(generator_task_mutex);
-	NavMeshGeneratorTask3D *generator_task = memnew(NavMeshGeneratorTask3D);
 	generator_task->navigation_mesh = p_navigation_mesh;
 	generator_task->source_geometry_data = p_source_geometry_data;
 	generator_task->callback = p_callback;
 	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
 	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, SNAME("NavMeshGeneratorBake3D"));
+	MutexLock generator_task_lock(generator_task_mutex);
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
 }
 
@@ -215,10 +236,21 @@ bool NavMeshGenerator3D::is_baking(Ref<NavigationMesh> p_navigation_mesh) {
 	return baking_navmeshes.has(p_navigation_mesh);
 }
 
+String NavMeshGenerator3D::get_baking_state_msg(Ref<NavigationMesh> p_navigation_mesh) {
+	String bake_state_msg;
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	if (baking_navmeshes.has(p_navigation_mesh)) {
+		bake_state_msg = _navmesh_bake_state_msgs[baking_navmeshes[p_navigation_mesh]->bake_state];
+	} else {
+		bake_state_msg = _navmesh_bake_state_msgs[NavMeshBakeState::BAKE_STATE_NONE];
+	}
+	return bake_state_msg;
+}
+
 void NavMeshGenerator3D::generator_thread_bake(void *p_arg) {
 	NavMeshGeneratorTask3D *generator_task = static_cast<NavMeshGeneratorTask3D *>(p_arg);
 
-	generator_bake_from_source_geometry_data(generator_task->navigation_mesh, generator_task->source_geometry_data);
+	generator_bake_from_source_geometry_data(generator_task);
 
 	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED;
 }
@@ -269,7 +301,10 @@ void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<Navigati
 	}
 }
 
-void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data) {
+void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGeneratorTask3D *p_generator_task) {
+	Ref<NavigationMesh> p_navigation_mesh = p_generator_task->navigation_mesh;
+	const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data = p_generator_task->source_geometry_data;
+
 	if (p_navigation_mesh.is_null() || p_source_geometry_data.is_null()) {
 		return;
 	}
@@ -294,10 +329,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	rcPolyMeshDetail *detail_mesh = nullptr;
 	rcContext ctx;
 
-	// added to keep track of steps, no functionality right now
-	String bake_state = "";
-
-	bake_state = "Setting up Configuration..."; // step #1
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_CONFIGURATION; // step #1
 
 	const float *verts = source_geometry_vertices.ptr();
 	const int nverts = source_geometry_vertices.size() / 3;
@@ -373,7 +405,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		cfg.bmax[2] = cfg.bmin[2] + baking_aabb.size[2];
 	}
 
-	bake_state = "Calculating grid size..."; // step #2
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_CALC_GRID_SIZE; // step #2
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
 	// ~30000000 seems to be around sweetspot where Editor baking breaks
@@ -387,13 +419,13 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		return;
 	}
 
-	bake_state = "Creating heightfield..."; // step #3
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_CREATE_HEIGHTFIELD; // step #3
 	hf = rcAllocHeightfield();
 
 	ERR_FAIL_NULL(hf);
 	ERR_FAIL_COND(!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch));
 
-	bake_state = "Marking walkable triangles..."; // step #4
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_MARK_WALKABLE_TRIANGLES; // step #4
 	{
 		Vector<unsigned char> tri_areas;
 		tri_areas.resize(ntris);
@@ -416,7 +448,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *hf);
 	}
 
-	bake_state = "Constructing compact heightfield..."; // step #5
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_CONSTRUCT_COMPACT_HEIGHTFIELD; // step #5
 
 	chf = rcAllocCompactHeightfield();
 
@@ -443,7 +475,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		}
 	}
 
-	bake_state = "Eroding walkable area..."; // step #6
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_ERODE_WALKABLE_AREA; // step #6
 
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
 
@@ -464,7 +496,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		}
 	}
 
-	bake_state = "Partitioning..."; // step #7
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_SAMPLE_PARTITIONING; // step #7
 
 	if (p_navigation_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_WATERSHED) {
 		ERR_FAIL_COND(!rcBuildDistanceField(&ctx, *chf));
@@ -475,14 +507,14 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		ERR_FAIL_COND(!rcBuildLayerRegions(&ctx, *chf, cfg.borderSize, cfg.minRegionArea));
 	}
 
-	bake_state = "Creating contours..."; // step #8
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_CREATING_CONTOURS; // step #8
 
 	cset = rcAllocContourSet();
 
 	ERR_FAIL_NULL(cset);
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
-	bake_state = "Creating polymesh..."; // step #9
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_CREATING_POLYMESH; // step #9
 
 	poly_mesh = rcAllocPolyMesh();
 	ERR_FAIL_NULL(poly_mesh);
@@ -497,7 +529,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	rcFreeContourSet(cset);
 	cset = nullptr;
 
-	bake_state = "Converting to native navigation mesh..."; // step #10
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_CONVERTING_NATIVE_NAVMESH; // step #10
 
 	Vector<Vector3> nav_vertices;
 	Vector<Vector<int>> nav_polygons;
@@ -544,14 +576,14 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	p_navigation_mesh->set_data(nav_vertices, nav_polygons);
 
-	bake_state = "Cleanup..."; // step #11
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_BAKE_CLEANUP; // step #11
 
 	rcFreePolyMesh(poly_mesh);
 	poly_mesh = nullptr;
 	rcFreePolyMeshDetail(detail_mesh);
 	detail_mesh = nullptr;
 
-	bake_state = "Baking finished."; // step #12
+	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_BAKE_FINISHED; // step #12
 }
 
 bool NavMeshGenerator3D::generator_emit_callback(const Callable &p_callback) {
