@@ -131,7 +131,7 @@ struct PtrToArgStringConvertByReference {
 	// No EncodeT because direct pointer conversion not possible.
 	_FORCE_INLINE_ static void encode(const T &p_vec, void *p_ptr) {
 		String *arr = reinterpret_cast<String *>(p_ptr);
-		*arr = p_vec;
+		*arr = String(p_vec);
 	}
 };
 
