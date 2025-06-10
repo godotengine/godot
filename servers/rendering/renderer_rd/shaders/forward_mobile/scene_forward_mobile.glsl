@@ -1577,7 +1577,7 @@ void main() {
 		float lod;
 		half blend = half(modf(roughness_lod, lod));
 		hvec3 clearcoat_sample_a = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod)).rgb);
-		hvec3 clearcoat_sample_b = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP)), vec4(ref_vec, lod + 1)).rgb);
+		hvec3 clearcoat_sample_b = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod + 1)).rgb);
 		hvec3 clearcoat_light = mix(clearcoat_sample_a, clearcoat_sample_b, blend);
 
 #else
