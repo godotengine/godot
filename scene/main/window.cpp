@@ -1366,7 +1366,13 @@ void Window::set_force_native(bool p_force_native) {
 	if (is_visible() && !is_in_edited_scene_root()) {
 		ERR_FAIL_MSG("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
+	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+		return;
+	}
 	force_native = p_force_native;
+	if (!is_in_edited_scene_root() && get_tree()->get_root()->is_embedding_subwindows()) {
+		set_embedding_subwindows(force_native);
+	}
 }
 
 bool Window::get_force_native() const {
