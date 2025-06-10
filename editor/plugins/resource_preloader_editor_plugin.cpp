@@ -31,13 +31,13 @@
 #include "resource_preloader_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 void ResourcePreloaderEditor::_notification(int p_what) {
