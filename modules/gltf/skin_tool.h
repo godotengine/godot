@@ -90,7 +90,7 @@ public:
 			Vector<Ref<GLTFNode>> &r_nodes,
 			Vector<Ref<GLTFSkeleton>> &r_skeletons,
 			const Vector<GLTFNodeIndex> &p_single_skeleton_root,
-			bool p_turn_non_joint_descendants_into_bones = false);
+			bool p_turn_non_joint_descendants_into_bones);
 	static Error _create_skeletons(
 			HashSet<String> &r_unique_names,
 			Vector<Ref<GLTFSkin>> &r_skins,
