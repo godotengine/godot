@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "editor/plugins/editor_plugin.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/spring_bone_collision_3d.h"
 #include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/resources/surface_tool.h"

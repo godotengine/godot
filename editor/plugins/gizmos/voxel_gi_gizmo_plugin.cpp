@@ -31,9 +31,9 @@
 #include "voxel_gi_gizmo_plugin.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/voxel_gi.h"
 
 VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {

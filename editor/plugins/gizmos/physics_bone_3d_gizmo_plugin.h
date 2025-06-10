@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "editor/plugins/3d/node_3d_editor_gizmos.h"
 
 class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(PhysicalBone3DGizmoPlugin, EditorNode3DGizmoPlugin);
