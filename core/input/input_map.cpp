@@ -583,6 +583,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_backspace_word.macos", inputs);
+	default_builtin_cache.insert("ui_text_backspace_word.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_backspace_all_to_left", inputs);
@@ -590,6 +591,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_backspace_all_to_left.macos", inputs);
+	default_builtin_cache.insert("ui_text_backspace_all_to_left.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
@@ -602,6 +604,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_delete_word.macos", inputs);
+	default_builtin_cache.insert("ui_text_delete_word.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_delete_all_to_right", inputs);
@@ -609,6 +612,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_delete_all_to_right.macos", inputs);
+	default_builtin_cache.insert("ui_text_delete_all_to_right.web_macos", inputs);
 
 	// Text Caret Movement Left/Right
 
@@ -623,6 +627,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_caret_word_left.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_word_left.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT));
@@ -635,6 +640,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_caret_word_right.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_word_right.web_macos", inputs);
 
 	// Text Caret Movement Up/Down
 
@@ -657,6 +663,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::HOME));
 	default_builtin_cache.insert("ui_text_caret_line_start.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_line_start.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::END));
@@ -667,6 +674,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::END));
 	default_builtin_cache.insert("ui_text_caret_line_end.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_line_end.web_macos", inputs);
 
 	// Text Caret Movement Page Up/Down
 
@@ -688,6 +696,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::HOME | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_start.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_document_start.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::END | KeyModifierMask::CMD_OR_CTRL));
@@ -697,6 +706,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::END | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_document_end.web_macos", inputs);
 
 	// Text Caret Addition Below/Above
 
@@ -707,6 +717,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_add_below.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_add_below.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
@@ -715,6 +726,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::O | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_add_above.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_add_above.web_macos", inputs);
 
 	// Text Scrolling
 
@@ -725,6 +737,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_scroll_up.macos", inputs);
+	default_builtin_cache.insert("ui_text_scroll_up.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL));
@@ -733,6 +746,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_scroll_down.macos", inputs);
+	default_builtin_cache.insert("ui_text_scroll_down.web_macos", inputs);
 
 	// Text Misc
 
@@ -747,6 +761,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::G | KeyModifierMask::CTRL | KeyModifierMask::META));
 	default_builtin_cache.insert("ui_text_select_word_under_caret.macos", inputs);
+	default_builtin_cache.insert("ui_text_select_word_under_caret.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::D | KeyModifierMask::CMD_OR_CTRL));
@@ -794,6 +809,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_graph_follow_left.macos", inputs);
+	default_builtin_cache.insert("ui_graph_follow_left.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL));
@@ -802,6 +818,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_graph_follow_right.macos", inputs);
+	default_builtin_cache.insert("ui_graph_follow_right.web_macos", inputs);
 
 	// ///// UI File Dialog Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
