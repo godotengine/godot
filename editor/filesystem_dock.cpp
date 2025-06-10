@@ -2270,6 +2270,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			String chosen_terminal_emulator = terminal_emulators[0];
 #endif
 
+			bool append_default_args = true;
+			
 			List<String> terminal_emulator_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
 #ifdef LINUXBSD_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
@@ -2284,11 +2286,18 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					terminal_emulator_args.push_back("-cd");
 				} else if (chosen_terminal_emulator.ends_with("xfce4-terminal")) {
 					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("lxterminal")) {
+					terminal_emulator_args.push_back("--working-directory={directory}");
+					append_default_args = false;
+				} else if (chosen_terminal_emulator.ends_with("alacritty")) {
+					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("kitty")) {
+					// nothing needs to be done
+				} else if (chosen_terminal_emulator.ends_with("xterm")) {
+					// TODO: make this work
 				}
 			}
 #endif
-
-			bool append_default_args = true;
 
 #ifdef WINDOWS_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
