@@ -63,6 +63,7 @@ float get_gizmo_handle_scale(const String &p_gizmo_handle_name, float p_gizmo_ha
 			gizmo_to_scale.insert("EditorCurveHandle");
 			gizmo_to_scale.insert("EditorPathSharpHandle");
 			gizmo_to_scale.insert("EditorPathSmoothHandle");
+			gizmo_to_scale.insert("EditorControlAnchor");
 		}
 
 		if (gizmo_to_scale.has(p_gizmo_handle_name)) {
