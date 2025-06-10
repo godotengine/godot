@@ -421,7 +421,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
 	RBSet<_VCSort> vclist;
-	HashMap<String, Vector<_VCSort>> setting_overrides;
+	HashMap<String, LocalVector<_VCSort>> setting_overrides;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -464,10 +464,11 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		int dot = vc.name.rfind_char('.');
-		if (dot != -1 && !custom_prop_info.has(vc.name)) {
+		if (dot != -1) {
 			StringName n = vc.name.substr(0, dot);
-			if (props.has(n)) { // Property is an override.
-				setting_overrides[n].append(vc);
+			if (props.has(n)) {
+				// Property is an override.
+				setting_overrides[n].push_back(vc);
 			} else {
 				vclist.insert(vc);
 			}
@@ -502,6 +503,12 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			for (const _VCSort &over : setting_overrides.get(base.name)) {
 				if (custom_prop_info.has(over.name)) {
 					PropertyInfo pi = custom_prop_info[over.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else if (custom_prop_info.has(base.name)) {
+					// Fallback to base property info.
+					PropertyInfo pi = custom_prop_info[base.name];
 					pi.name = over.name;
 					pi.usage = over.flags;
 					p_list->push_back(pi);
