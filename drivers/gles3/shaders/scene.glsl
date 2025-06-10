@@ -291,19 +291,19 @@ struct DirectionalLightData {
 	mediump float energy;
 	mediump vec3 color;
 	mediump float size;
-	lowp uint unused;
-	lowp uint bake_mode;
+	lowp uint enabled_bake_mode;
 	mediump float shadow_opacity;
 	mediump float specular;
+	highp uint mask;
 };
 
 layout(std140) uniform DirectionalLights { // ubo:7
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
-#define LIGHT_BAKE_DISABLED 0u
-#define LIGHT_BAKE_STATIC 1u
-#define LIGHT_BAKE_DYNAMIC 2u
+#define DIRECTIONAL_LIGHT_ENABLED uint(1 << 0)
+#define DIRECTIONAL_LIGHT_BAKE_STATIC uint(1 << 1)
+#define DIRECTIONAL_LIGHT_BAKE_DYNAMIC uint(1 << 2)
 #endif // !DISABLE_LIGHT_DIRECTIONAL
 
 // Omni and spot light data.
@@ -466,6 +466,7 @@ uniform highp vec3 compressed_aabb_position;
 uniform highp vec3 compressed_aabb_size;
 uniform highp vec4 uv_scale;
 uniform highp uint instance_offset;
+uniform highp uint layer_mask;
 
 #if defined(RENDER_MOTION_VECTORS)
 uniform highp mat4 prev_world_transform;
@@ -815,8 +816,11 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 #ifdef BASE_PASS
 #ifndef DISABLE_LIGHT_DIRECTIONAL
 	for (uint i = uint(0); i < scene_data_input.directional_light_count; i++) {
+		if (!bool(directional_lights[i].mask & layer_mask)) {
+			continue;
+		}
 #if defined(USE_LIGHTMAP) && !defined(DISABLE_LIGHTMAP)
-		if (directional_lights[i].bake_mode == LIGHT_BAKE_STATIC) {
+		if (bool(directional_lights[i].enabled_bake_mode & DIRECTIONAL_LIGHT_BAKE_STATIC)) {
 			continue;
 		}
 #endif
@@ -847,9 +851,11 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	additive_specular_light_interp = vec3(0.0);
 #if !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
 
-	light_compute(normal_interp, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, roughness,
-			additive_diffuse_light_interp.rgb,
-			additive_specular_light_interp.rgb);
+	if (bool(directional_lights[directional_shadow_index].mask & layer_mask)) {
+		light_compute(normal_interp, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, roughness,
+				additive_diffuse_light_interp.rgb,
+				additive_specular_light_interp.rgb);
+	}
 #endif // !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
 
 #ifdef ADDITIVE_OMNI
@@ -1188,11 +1194,12 @@ multiview_data_block;
 
 uniform highp mat4 world_transform;
 uniform highp uint instance_offset;
+uniform highp uint layer_mask;
 uniform highp uint model_flags;
 
-#define LIGHT_BAKE_DISABLED 0u
-#define LIGHT_BAKE_STATIC 1u
-#define LIGHT_BAKE_DYNAMIC 2u
+#define DIRECTIONAL_LIGHT_ENABLED uint(1 << 0)
+#define DIRECTIONAL_LIGHT_BAKE_STATIC uint(1 << 1)
+#define DIRECTIONAL_LIGHT_BAKE_DYNAMIC uint(1 << 2)
 
 #ifndef MODE_RENDER_DEPTH
 #ifdef USE_VERTEX_LIGHTING
@@ -1213,10 +1220,10 @@ struct DirectionalLightData {
 	mediump float energy;
 	mediump vec3 color;
 	mediump float size;
-	lowp uint unused;
-	lowp uint bake_mode;
+	lowp uint enabled_bake_mode;
 	mediump float shadow_opacity;
 	mediump float specular;
+	highp uint mask;
 };
 
 layout(std140) uniform DirectionalLights { // ubo:7
@@ -2373,8 +2380,11 @@ void main() {
 
 #ifndef DISABLE_LIGHT_DIRECTIONAL
 	for (uint i = uint(0); i < scene_data_block.data.directional_light_count; i++) {
+		if (!bool(directional_lights[i].mask & layer_mask)) {
+			continue;
+		}
 #if defined(USE_LIGHTMAP) && !defined(DISABLE_LIGHTMAP)
-		if (directional_lights[i].bake_mode == LIGHT_BAKE_STATIC) {
+		if (bool(directional_lights[i].enabled_bake_mode & DIRECTIONAL_LIGHT_BAKE_STATIC)) {
 			continue;
 		}
 #endif
@@ -2692,26 +2702,30 @@ void main() {
 #endif // SHADOWS_DISABLED
 
 #ifndef USE_VERTEX_LIGHTING
-	light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, directional_shadow, f0, roughness, metallic, directional_lights[directional_shadow_index].specular, albedo, alpha, screen_uv,
+	if (bool(directional_lights[directional_shadow_index].mask & layer_mask)) {
+		light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, directional_shadow, f0, roughness, metallic, directional_lights[directional_shadow_index].specular, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
-			backlight,
+				backlight,
 #endif
 #ifdef LIGHT_RIM_USED
-			rim, rim_tint,
+				rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-			clearcoat, clearcoat_roughness, geo_normal,
+				clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
-			binormal,
-			tangent, anisotropy,
+				binormal,
+				tangent, anisotropy,
 #endif
-			diffuse_light,
-			specular_light);
-#else
-	// Just apply shadows to vertex lighting.
-	diffuse_light *= directional_shadow;
-	specular_light *= directional_shadow;
+				diffuse_light,
+				specular_light);
+	} else {
+#endif // !USE_VERTEX_LIGHTING
+	   // Just apply shadows to vertex lighting.
+		diffuse_light *= directional_shadow;
+		specular_light *= directional_shadow;
+#ifndef USE_VERTEX_LIGHTING
+	}
 #endif // !USE_VERTEX_LIGHTING
 #endif // !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
 
