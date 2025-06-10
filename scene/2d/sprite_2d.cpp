@@ -484,7 +484,9 @@ void Sprite2D::_texture_changed() {
 }
 
 void Sprite2D::_emit_region_rect_enabled() {
-	emit_signal("_editor_region_rect_enabled");
+	if (Engine::get_singleton()->is_editor_hint()) {
+		emit_signal("_editor_region_rect_enabled");
+	}
 }
 
 void Sprite2D::_bind_methods() {
@@ -550,7 +552,7 @@ void Sprite2D::_bind_methods() {
 }
 
 Sprite2D::Sprite2D() {
-#ifdef TOOLS_ENABLED
-	add_user_signal(MethodInfo("_editor_region_rect_enabled"));
-#endif
+	if (Engine::get_singleton()->is_editor_hint()) {
+		add_user_signal(MethodInfo("_editor_region_rect_enabled"));
+	}
 }
