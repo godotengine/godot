@@ -57,6 +57,9 @@ void RenderingServerDefault::_free(RID p_rid) {
 	if (RSG::scene->free(p_rid)) {
 		return;
 	}
+	if (RSG::mesh_rasterizer->free(p_rid)) {
+		return;
+	}
 }
 
 /* EVENT QUEUING */
@@ -229,6 +232,7 @@ void RenderingServerDefault::_init() {
 	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
 	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
+	RSG::mesh_rasterizer = RSG::rasterizer->get_mesh_rasterizer();
 	RSG::gi = RSG::rasterizer->get_gi();
 	RSG::fog = RSG::rasterizer->get_fog();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
