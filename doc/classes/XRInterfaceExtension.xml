@@ -46,10 +46,27 @@
 				Return color texture into which to render (if applicable).
 			</description>
 		</method>
+		<method name="_get_color_texture2" qualifiers="virtual">
+			<return type="RID" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_depth_texture" qualifiers="virtual">
 			<return type="RID" />
 			<description>
 				Return depth texture into which to render (if applicable).
+			</description>
+		</method>
+		<method name="_get_depth_texture2" qualifiers="virtual">
+			<return type="RID" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_layer_count" qualifiers="virtual">
+			<return type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="_get_name" qualifiers="virtual const">
@@ -84,6 +101,12 @@
 			<return type="Vector2" />
 			<description>
 				Returns the size of our render target for this interface, this overrides the size of the [Viewport] marked as the xr viewport.
+			</description>
+		</method>
+		<method name="_get_render_target_size2" qualifiers="virtual">
+			<return type="Vector2" />
+			<param index="0" name="layer" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="_get_suggested_pose_names" qualifiers="virtual const">
@@ -125,10 +148,22 @@
 				Return velocity texture into which to render (if applicable).
 			</description>
 		</method>
+		<method name="_get_velocity_texture2" qualifiers="virtual">
+			<return type="RID" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_view_count" qualifiers="virtual">
 			<return type="int" />
 			<description>
 				Returns the number of views this interface requires, 1 for mono, 2 for stereoscopic.
+			</description>
+		</method>
+		<method name="_get_view_count2" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="layer" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="_get_vrs_texture" qualifiers="virtual">
@@ -239,11 +274,13 @@
 		</method>
 		<method name="get_color_texture">
 			<return type="RID" />
+			<param index="0" name="layer" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="get_depth_texture">
 			<return type="RID" />
+			<param index="0" name="layer" type="int" default="0" />
 			<description>
 			</description>
 		</method>
@@ -256,6 +293,7 @@
 		</method>
 		<method name="get_velocity_texture">
 			<return type="RID" />
+			<param index="0" name="layer" type="int" default="0" />
 			<description>
 			</description>
 		</method>

@@ -41,6 +41,22 @@ public:
 	struct CanvasBase {
 	};
 
+	class ViewportLayer {
+	public:
+		Size2i internal_size;
+		Size2i size;
+		uint32_t view_count = 1;
+		uint32_t jitter_phase_count = 0;
+
+		RID render_target;
+		RID render_target_texture;
+
+		Ref<RenderSceneBuffers> render_buffers;
+
+		ViewportLayer();
+		~ViewportLayer();
+	};
+
 	struct Viewport {
 		RID self;
 		RID parent;
@@ -48,9 +64,8 @@ public:
 		// use xr interface to override camera positioning and projection matrices and control output
 		bool use_xr = false;
 
-		Size2i internal_size;
-		Size2i size;
-		uint32_t view_count;
+		LocalVector<ViewportLayer> viewport_layers;
+
 		RID camera;
 		RID scenario;
 
@@ -60,11 +75,7 @@ public:
 		float texture_mipmap_bias = 0.0f;
 		RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RenderingServer::VIEWPORT_ANISOTROPY_4X;
 		bool fsr_enabled = false;
-		uint32_t jitter_phase_count = 0;
 		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
-		RID render_target;
-		RID render_target_texture;
-		Ref<RenderSceneBuffers> render_buffers;
 
 		RS::ViewportMSAA msaa_2d = RenderingServer::VIEWPORT_MSAA_DISABLED;
 		RS::ViewportMSAA msaa_3d = RenderingServer::VIEWPORT_MSAA_DISABLED;
@@ -153,7 +164,8 @@ public:
 		RenderingMethod::RenderInfo render_info;
 
 		Viewport() {
-			view_count = 1;
+			viewport_layers.resize(1);
+
 			update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
 			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;
@@ -201,10 +213,10 @@ public:
 
 private:
 	Vector<Viewport *> _sort_active_viewports();
-	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
 	bool _viewport_requires_motion_vectors(Viewport *p_viewport);
 	void _viewport_set_force_motion_vectors(Viewport *p_viewport, bool p_force_motion_vectors);
-	void _configure_3d_render_buffers(Viewport *p_viewport);
+	void _configure_all_3d_render_buffers(Viewport *p_viewport);
+	void _configure_3d_render_buffers(Viewport *p_viewport, ViewportLayer *p_viewport_layer);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);
 
@@ -218,7 +230,8 @@ public:
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
 
-	void viewport_set_size(RID p_viewport, int p_width, int p_height);
+	void viewport_set_layer_count(RID p_viewport, uint32_t p_layer_count);
+	void viewport_set_size(RID p_viewport, uint32_t p_layer, int p_width, int p_height, int p_view_count);
 
 	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);
@@ -238,8 +251,8 @@ public:
 
 	void viewport_set_clear_mode(RID p_viewport, RS::ViewportClearMode p_clear_mode);
 
-	RID viewport_get_render_target(RID p_viewport) const;
-	RID viewport_get_texture(RID p_viewport) const;
+	RID viewport_get_render_target(RID p_viewport, uint32_t p_layer = 0) const;
+	RID viewport_get_texture(RID p_viewport, uint32_t p_layer = 0) const;
 	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
 
 	void viewport_set_prev_camera_data(RID p_viewport, const RendererSceneRender::CameraData *p_camera_data);

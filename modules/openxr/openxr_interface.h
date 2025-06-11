@@ -176,18 +176,18 @@ public:
 	float get_vrs_strength() const;
 	void set_vrs_strength(float p_vrs_strength);
 
-	virtual Size2 get_render_target_size() override;
-	virtual uint32_t get_view_count() override;
+	virtual Size2 get_render_target_size(uint32_t p_layer = 0) override;
+	virtual uint32_t get_view_count(uint32_t p_layer = 0) override;
 	virtual Transform3D get_camera_transform() override;
-	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
-	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual Transform3D get_transform_for_view(uint32_t p_layer, uint32_t p_view, const Transform3D &p_cam_transform) override;
+	virtual Projection get_projection_for_view(uint32_t p_layer, uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 
 	virtual Rect2i get_render_region() override;
 
-	virtual RID get_color_texture() override;
-	virtual RID get_depth_texture() override;
-	virtual RID get_velocity_texture() override;
-	virtual RID get_velocity_depth_texture() override;
+	virtual RID get_color_texture(uint32_t p_layer = 0) override;
+	virtual RID get_depth_texture(uint32_t p_layer = 0) override;
+	virtual RID get_velocity_texture(uint32_t p_layer = 0) override;
+	virtual RID get_velocity_depth_texture(uint32_t p_layer = 0) override;
 	virtual Size2i get_velocity_target_size() override;
 
 	virtual void process() override;
