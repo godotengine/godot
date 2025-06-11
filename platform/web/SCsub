@@ -40,6 +40,7 @@ sys_env.AddJSLibraries(
     [
         "js/libs/library_godot_audio.js",
         "js/libs/library_godot_display.js",
+        "js/libs/library_godot_emscripten.js",
         "js/libs/library_godot_fetch.js",
         "js/libs/library_godot_webmidi.js",
         "js/libs/library_godot_os.js",
