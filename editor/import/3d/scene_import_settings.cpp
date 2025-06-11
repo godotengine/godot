@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/plugins/skeleton_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
@@ -638,6 +639,63 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 	generate_collider = false;
 }
 
+void SceneImportSettingsDialog::_update_view_type_name() {
+	String name;
+	switch (view_type) {
+		case VIEW_TYPE_USER: {
+			if (orthogonal) {
+				name = TTR("Orthogonal");
+			} else {
+				name = TTR("Perspective");
+			}
+		} break;
+		case VIEW_TYPE_TOP: {
+			if (orthogonal) {
+				name = TTR("Top Orthogonal");
+			} else {
+				name = TTR("Top Perspective");
+			}
+		} break;
+		case VIEW_TYPE_BOTTOM: {
+			if (orthogonal) {
+				name = TTR("Bottom Orthogonal");
+			} else {
+				name = TTR("Bottom Perspective");
+			}
+		} break;
+		case VIEW_TYPE_LEFT: {
+			if (orthogonal) {
+				name = TTR("Left Orthogonal");
+			} else {
+				name = TTR("Left Perspective");
+			}
+		} break;
+		case VIEW_TYPE_RIGHT: {
+			if (orthogonal) {
+				name = TTR("Right Orthogonal");
+			} else {
+				name = TTR("Right Perspective");
+			}
+		} break;
+		case VIEW_TYPE_FRONT: {
+			if (orthogonal) {
+				name = TTR("Front Orthogonal");
+			} else {
+				name = TTR("Front Perspective");
+			}
+		} break;
+		case VIEW_TYPE_REAR: {
+			if (orthogonal) {
+				name = TTR("Rear Orthogonal");
+			} else {
+				name = TTR("Rear Perspective");
+			}
+		} break;
+	}
+	view_display_menu->set_text(name);
+	view_display_menu->reset_size();
+}
+
 void SceneImportSettingsDialog::_update_camera() {
 	AABB camera_aabb;
 
@@ -672,13 +730,13 @@ void SceneImportSettingsDialog::_update_camera() {
 	current_camera_view = GLOBAL_GET("editor/import/camera_view");
 	Transform3D xf;
 	if (current_camera_view == 0) {
-		WARN_PRINT("Camera set to orthogonal");
+		print_line("Camera set to orthogonal");
 		camera->set_orthogonal(camera_size * zoom, 0.0001, camera_size * 2);
 		xf.basis = Basis(Vector3(0, 1, 0), rot_y) * Basis(Vector3(1, 0, 0), rot_x);
 		xf.origin = center;
 		xf.translate_local(0, 0, camera_size);
 	} else {
-		WARN_PRINT("Camera set to perspective");
+		print_line("Camera set to perspective");
 		camera->set_perspective(camera_size * 2, 0.0001, camera_size * zoom * 12);
 		xf.basis = Basis(Vector3(0, 1, 0), rot_y) * Basis(Vector3(1, 0, 0), rot_x);
 		xf.origin = center;
@@ -687,6 +745,67 @@ void SceneImportSettingsDialog::_update_camera() {
 
 	camera->set_transform(xf);
 }
+
+void SceneImportSettingsDialog::_view_menu_option(int p_option) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	switch (p_option) {
+		case VIEW_TOP: {
+			cam_rot_y = 0;
+			cam_rot_x = Math::PI / 2.0;
+			view_type = VIEW_TYPE_TOP;
+			//_set_auto_orthogonal();
+			_update_view_type_name();
+		} break;
+		case VIEW_BOTTOM: {
+			cam_rot_y = 0;
+			cam_rot_x = -Math::PI / 2.0;
+			view_type = VIEW_TYPE_BOTTOM;
+			_update_view_type_name();
+		} break;
+		case VIEW_LEFT: {
+			cam_rot_x = 0;
+			cam_rot_y = Math::PI / 2.0;
+			view_type = VIEW_TYPE_LEFT;
+			_update_view_type_name();
+		} break;
+		case VIEW_RIGHT: {
+			cam_rot_x = 0;
+			cam_rot_y = -Math::PI / 2.0;
+			view_type = VIEW_TYPE_RIGHT;
+			_update_view_type_name();
+		} break;
+		case VIEW_FRONT: {
+			cam_rot_x = 0;
+			cam_rot_y = 0;
+			view_type = VIEW_TYPE_FRONT;
+			_update_view_type_name();
+		} break;
+		case VIEW_REAR: {
+			cam_rot_x = 0;
+			cam_rot_y = Math::PI;
+			view_type = VIEW_TYPE_REAR;
+			_update_view_type_name();
+		} break;
+		case VIEW_PERSPECTIVE: {
+			view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE), true);
+			view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL), false);
+			orthogonal = false;
+			_update_camera();
+			_update_view_type_name();
+		} break;
+		case VIEW_ORTHOGONAL: {
+			view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE), false);
+			view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL), true);
+			orthogonal = true;
+			_update_camera();
+			_update_view_type_name();
+		} break;
+		case VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL: {
+			_view_menu_option(orthogonal ? VIEW_PERSPECTIVE : VIEW_ORTHOGONAL);
+		} break;
+	}
+}
+
 
 void SceneImportSettingsDialog::_load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category) {
 	if (base_subresource_settings.has(p_type)) {
@@ -1348,6 +1467,25 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 			}
 			animation_stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 
+			view_display_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+
+			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
+			view_display_menu->begin_bulk_theme_override();
+			view_display_menu->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			view_display_menu->add_theme_style_override("normal_mirrored", information_3d_stylebox);
+			view_display_menu->add_theme_style_override(SceneStringName(hover), information_3d_stylebox);
+			view_display_menu->add_theme_style_override("hover_mirrored", information_3d_stylebox);
+			view_display_menu->add_theme_style_override("hover_pressed", information_3d_stylebox);
+			view_display_menu->add_theme_style_override("hover_pressed_mirrored", information_3d_stylebox);
+			view_display_menu->add_theme_style_override(SceneStringName(pressed), information_3d_stylebox);
+			view_display_menu->add_theme_style_override("pressed_mirrored", information_3d_stylebox);
+			view_display_menu->add_theme_style_override("focus", information_3d_stylebox);
+			view_display_menu->add_theme_style_override("focus_mirrored", information_3d_stylebox);
+			view_display_menu->add_theme_style_override("disabled", information_3d_stylebox);
+			view_display_menu->add_theme_style_override("disabled_mirrored", information_3d_stylebox);
+			view_display_menu->end_bulk_theme_override();
+
 			light_1_switch->set_button_icon(theme_cache.light_1_icon);
 			light_2_switch->set_button_icon(theme_cache.light_2_icon);
 			light_rotate_switch->set_button_icon(theme_cache.rotate_icon);
@@ -1652,6 +1790,14 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	singleton = this;
 
+	ED_SHORTCUT("spatial_editor/bottom_view", TTRC("Bottom View"), KeyModifierMask::ALT + Key::KP_7);
+	ED_SHORTCUT("spatial_editor/top_view", TTRC("Top View"), Key::KP_7);
+	ED_SHORTCUT("spatial_editor/rear_view", TTRC("Rear View"), KeyModifierMask::ALT + Key::KP_1);
+	ED_SHORTCUT("spatial_editor/front_view", TTRC("Front View"), Key::KP_1);
+	ED_SHORTCUT("spatial_editor/left_view", TTRC("Left View"), KeyModifierMask::ALT + Key::KP_3);
+	ED_SHORTCUT("spatial_editor/right_view", TTRC("Right View"), Key::KP_3);
+	ED_SHORTCUT("spatial_editor/switch_perspective_orthogonal", TTRC("Switch Perspective/Orthogonal View"), Key::KP_5);
+
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 	HBoxContainer *menu_hb = memnew(HBoxContainer);
@@ -1771,6 +1917,37 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	HBoxContainer *viewport_hbox = memnew(HBoxContainer);
 	vp_container->add_child(viewport_hbox);
 	viewport_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
+
+	VBoxContainer *vb_display_menu = memnew(VBoxContainer);
+	vb_display_menu->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	viewport_hbox->add_child(vb_display_menu);
+
+	view_display_menu = memnew(MenuButton);
+	view_display_menu->set_flat(false);
+	view_display_menu->set_h_size_flags(0);
+	view_display_menu->set_shortcut_context(this);
+	view_display_menu->set_accessibility_name(TTRC("View"));
+	// TODO: Remove name later
+	//view_display_menu->set_name(TTRC("View"));
+	view_display_menu->set_text(TTRC("View"));
+	vb_display_menu->add_child(view_display_menu);
+
+	view_display_menu->get_popup()->set_hide_on_checkable_item_selection(false);
+
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/left_view"), VIEW_LEFT);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/right_view"), VIEW_RIGHT);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/front_view"), VIEW_FRONT);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/rear_view"), VIEW_REAR);
+	view_display_menu->get_popup()->add_separator();
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal"), VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL);
+	view_display_menu->get_popup()->add_radio_check_item(TTR("Perspective"), VIEW_PERSPECTIVE);
+	view_display_menu->get_popup()->add_radio_check_item(TTR("Orthogonal"), VIEW_ORTHOGONAL);
+	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE), true);
+
+	view_display_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &SceneImportSettingsDialog::_view_menu_option));
+	view_display_menu->set_disable_shortcuts(true);
 
 	viewport_hbox->add_spacer();
 
