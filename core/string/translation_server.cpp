@@ -391,6 +391,13 @@ PackedStringArray TranslationServer::get_loaded_locales() const {
 
 void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
 	main_domain->add_translation(p_translation);
+
+	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_domains")) {
+		const Vector<String> &translation_domains = GLOBAL_GET("internationalization/locale/translations_domains");
+		for (String domain_name : translation_domains) {
+			get_or_add_domain(domain_name)->add_translation(p_translation);
+		}
+	}
 }
 
 void TranslationServer::remove_translation(const Ref<Translation> &p_translation) {
