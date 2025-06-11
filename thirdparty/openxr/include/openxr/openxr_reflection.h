@@ -143,6 +143,10 @@ XR_ENUM_STR(XrResult);
     _(XR_ERROR_SPACE_CLOUD_STORAGE_DISABLED_FB, -1000169004) \
     _(XR_ERROR_PASSTHROUGH_COLOR_LUT_BUFFER_SIZE_MISMATCH_META, -1000266000) \
     _(XR_ENVIRONMENT_DEPTH_NOT_AVAILABLE_META, 1000291000) \
+    _(XR_ERROR_RENDER_MODEL_ID_INVALID_EXT, -1000300000) \
+    _(XR_ERROR_RENDER_MODEL_ASSET_UNAVAILABLE_EXT, -1000300001) \
+    _(XR_ERROR_RENDER_MODEL_GLTF_EXTENSION_REQUIRED_EXT, -1000300002) \
+    _(XR_ERROR_NOT_INTERACTION_RENDER_MODEL_EXT, -1000301000) \
     _(XR_ERROR_HINT_ALREADY_SET_QCOM, -1000306000) \
     _(XR_ERROR_NOT_AN_ANCHOR_HTC, -1000319000) \
     _(XR_ERROR_SPATIAL_ENTITY_ID_INVALID_BD, -1000389000) \
@@ -169,6 +173,14 @@ XR_ENUM_STR(XrResult);
     _(XR_COLOCATION_DISCOVERY_ALREADY_ADVERTISING_META, 1000571003) \
     _(XR_COLOCATION_DISCOVERY_ALREADY_DISCOVERING_META, 1000571004) \
     _(XR_ERROR_SPACE_GROUP_NOT_FOUND_META, -1000572002) \
+    _(XR_ERROR_SPATIAL_CAPABILITY_UNSUPPORTED_EXT, -1000740001) \
+    _(XR_ERROR_SPATIAL_ENTITY_ID_INVALID_EXT, -1000740002) \
+    _(XR_ERROR_SPATIAL_BUFFER_ID_INVALID_EXT, -1000740003) \
+    _(XR_ERROR_SPATIAL_COMPONENT_UNSUPPORTED_FOR_CAPABILITY_EXT, -1000740004) \
+    _(XR_ERROR_SPATIAL_CAPABILITY_CONFIGURATION_INVALID_EXT, -1000740005) \
+    _(XR_ERROR_SPATIAL_COMPONENT_NOT_ENABLED_EXT, -1000740006) \
+    _(XR_ERROR_SPATIAL_PERSISTENCE_SCOPE_UNSUPPORTED_EXT, -1000763001) \
+    _(XR_ERROR_SPATIAL_PERSISTENCE_SCOPE_INCOMPATIBLE_EXT, -1000781001) \
     _(XR_RESULT_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrStructureType(_) \
@@ -524,6 +536,21 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META, 1000291005) \
     _(XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META, 1000291006) \
     _(XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META, 1000291007) \
+    _(XR_TYPE_RENDER_MODEL_CREATE_INFO_EXT, 1000300000) \
+    _(XR_TYPE_RENDER_MODEL_PROPERTIES_GET_INFO_EXT, 1000300001) \
+    _(XR_TYPE_RENDER_MODEL_PROPERTIES_EXT, 1000300002) \
+    _(XR_TYPE_RENDER_MODEL_SPACE_CREATE_INFO_EXT, 1000300003) \
+    _(XR_TYPE_RENDER_MODEL_STATE_GET_INFO_EXT, 1000300004) \
+    _(XR_TYPE_RENDER_MODEL_STATE_EXT, 1000300005) \
+    _(XR_TYPE_RENDER_MODEL_ASSET_CREATE_INFO_EXT, 1000300006) \
+    _(XR_TYPE_RENDER_MODEL_ASSET_DATA_GET_INFO_EXT, 1000300007) \
+    _(XR_TYPE_RENDER_MODEL_ASSET_DATA_EXT, 1000300008) \
+    _(XR_TYPE_RENDER_MODEL_ASSET_PROPERTIES_GET_INFO_EXT, 1000300009) \
+    _(XR_TYPE_RENDER_MODEL_ASSET_PROPERTIES_EXT, 1000300010) \
+    _(XR_TYPE_INTERACTION_RENDER_MODEL_IDS_ENUMERATE_INFO_EXT, 1000301000) \
+    _(XR_TYPE_INTERACTION_RENDER_MODEL_SUBACTION_PATH_INFO_EXT, 1000301001) \
+    _(XR_TYPE_EVENT_DATA_INTERACTION_RENDER_MODELS_CHANGED_EXT, 1000301002) \
+    _(XR_TYPE_INTERACTION_RENDER_MODEL_TOP_LEVEL_USER_PATH_GET_INFO_EXT, 1000301003) \
     _(XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC, 1000317001) \
     _(XR_TYPE_PASSTHROUGH_COLOR_HTC, 1000317002) \
     _(XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC, 1000317003) \
@@ -580,6 +607,9 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SYSTEM_SPATIAL_MESH_PROPERTIES_BD, 1000393000) \
     _(XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_SPATIAL_MESH_BD, 1000393001) \
     _(XR_TYPE_FUTURE_POLL_RESULT_PROGRESS_BD, 1000394001) \
+    _(XR_TYPE_SYSTEM_SPATIAL_PLANE_PROPERTIES_BD, 1000396000) \
+    _(XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_PLANE_ORIENTATION_BD, 1000396001) \
+    _(XR_TYPE_SENSE_DATA_FILTER_PLANE_ORIENTATION_BD, 1000396002) \
     _(XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT, 1000428000) \
     _(XR_TYPE_HAND_TRACKING_DATA_SOURCE_STATE_EXT, 1000428001) \
     _(XR_TYPE_PLANE_DETECTOR_CREATE_INFO_EXT, 1000429001) \
@@ -630,6 +660,47 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SHARE_SPACES_RECIPIENT_GROUPS_META, 1000572000) \
     _(XR_TYPE_SPACE_GROUP_UUID_FILTER_INFO_META, 1000572001) \
     _(XR_TYPE_SYSTEM_SPATIAL_ENTITY_GROUP_SHARING_PROPERTIES_META, 1000572100) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_COMPONENT_TYPES_EXT, 1000740000) \
+    _(XR_TYPE_SPATIAL_CONTEXT_CREATE_INFO_EXT, 1000740001) \
+    _(XR_TYPE_CREATE_SPATIAL_CONTEXT_COMPLETION_EXT, 1000740002) \
+    _(XR_TYPE_SPATIAL_DISCOVERY_SNAPSHOT_CREATE_INFO_EXT, 1000740003) \
+    _(XR_TYPE_CREATE_SPATIAL_DISCOVERY_SNAPSHOT_COMPLETION_INFO_EXT, 1000740004) \
+    _(XR_TYPE_CREATE_SPATIAL_DISCOVERY_SNAPSHOT_COMPLETION_EXT, 1000740005) \
+    _(XR_TYPE_SPATIAL_COMPONENT_DATA_QUERY_CONDITION_EXT, 1000740006) \
+    _(XR_TYPE_SPATIAL_COMPONENT_DATA_QUERY_RESULT_EXT, 1000740007) \
+    _(XR_TYPE_SPATIAL_BUFFER_GET_INFO_EXT, 1000740008) \
+    _(XR_TYPE_SPATIAL_COMPONENT_BOUNDED_2D_LIST_EXT, 1000740009) \
+    _(XR_TYPE_SPATIAL_COMPONENT_BOUNDED_3D_LIST_EXT, 1000740010) \
+    _(XR_TYPE_SPATIAL_COMPONENT_PARENT_LIST_EXT, 1000740011) \
+    _(XR_TYPE_SPATIAL_COMPONENT_MESH_3D_LIST_EXT, 1000740012) \
+    _(XR_TYPE_SPATIAL_ENTITY_FROM_ID_CREATE_INFO_EXT, 1000740013) \
+    _(XR_TYPE_SPATIAL_UPDATE_SNAPSHOT_CREATE_INFO_EXT, 1000740014) \
+    _(XR_TYPE_EVENT_DATA_SPATIAL_DISCOVERY_RECOMMENDED_EXT, 1000740015) \
+    _(XR_TYPE_SPATIAL_FILTER_TRACKING_STATE_EXT, 1000740016) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_PLANE_TRACKING_EXT, 1000741000) \
+    _(XR_TYPE_SPATIAL_COMPONENT_PLANE_ALIGNMENT_LIST_EXT, 1000741001) \
+    _(XR_TYPE_SPATIAL_COMPONENT_MESH_2D_LIST_EXT, 1000741002) \
+    _(XR_TYPE_SPATIAL_COMPONENT_POLYGON_2D_LIST_EXT, 1000741003) \
+    _(XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL_LIST_EXT, 1000741004) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_QR_CODE_EXT, 1000743000) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_MICRO_QR_CODE_EXT, 1000743001) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_ARUCO_MARKER_EXT, 1000743002) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_APRIL_TAG_EXT, 1000743003) \
+    _(XR_TYPE_SPATIAL_MARKER_SIZE_EXT, 1000743004) \
+    _(XR_TYPE_SPATIAL_MARKER_STATIC_OPTIMIZATION_EXT, 1000743005) \
+    _(XR_TYPE_SPATIAL_COMPONENT_MARKER_LIST_EXT, 1000743006) \
+    _(XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_ANCHOR_EXT, 1000762000) \
+    _(XR_TYPE_SPATIAL_COMPONENT_ANCHOR_LIST_EXT, 1000762001) \
+    _(XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_EXT, 1000762002) \
+    _(XR_TYPE_SPATIAL_PERSISTENCE_CONTEXT_CREATE_INFO_EXT, 1000763000) \
+    _(XR_TYPE_CREATE_SPATIAL_PERSISTENCE_CONTEXT_COMPLETION_EXT, 1000763001) \
+    _(XR_TYPE_SPATIAL_CONTEXT_PERSISTENCE_CONFIG_EXT, 1000763002) \
+    _(XR_TYPE_SPATIAL_DISCOVERY_PERSISTENCE_UUID_FILTER_EXT, 1000763003) \
+    _(XR_TYPE_SPATIAL_COMPONENT_PERSISTENCE_LIST_EXT, 1000763004) \
+    _(XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT, 1000781000) \
+    _(XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT, 1000781001) \
+    _(XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT, 1000781002) \
+    _(XR_TYPE_UNPERSIST_SPATIAL_ENTITY_COMPLETION_EXT, 1000781003) \
     _(XR_STRUCTURE_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrFormFactor(_) \
@@ -719,6 +790,8 @@ XR_ENUM_STR(XrResult);
     _(XR_OBJECT_TYPE_FACE_TRACKER2_FB, 1000287012) \
     _(XR_OBJECT_TYPE_ENVIRONMENT_DEPTH_PROVIDER_META, 1000291000) \
     _(XR_OBJECT_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_META, 1000291001) \
+    _(XR_OBJECT_TYPE_RENDER_MODEL_EXT, 1000300000) \
+    _(XR_OBJECT_TYPE_RENDER_MODEL_ASSET_EXT, 1000300001) \
     _(XR_OBJECT_TYPE_PASSTHROUGH_HTC, 1000317000) \
     _(XR_OBJECT_TYPE_BODY_TRACKER_HTC, 1000320000) \
     _(XR_OBJECT_TYPE_BODY_TRACKER_BD, 1000385000) \
@@ -728,6 +801,10 @@ XR_ENUM_STR(XrResult);
     _(XR_OBJECT_TYPE_PLANE_DETECTOR_EXT, 1000429000) \
     _(XR_OBJECT_TYPE_WORLD_MESH_DETECTOR_ML, 1000474000) \
     _(XR_OBJECT_TYPE_FACIAL_EXPRESSION_CLIENT_ML, 1000482000) \
+    _(XR_OBJECT_TYPE_SPATIAL_ENTITY_EXT, 1000740000) \
+    _(XR_OBJECT_TYPE_SPATIAL_CONTEXT_EXT, 1000740001) \
+    _(XR_OBJECT_TYPE_SPATIAL_SNAPSHOT_EXT, 1000740002) \
+    _(XR_OBJECT_TYPE_SPATIAL_PERSISTENCE_CONTEXT_EXT, 1000763000) \
     _(XR_OBJECT_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrLoaderInterfaceStructs(_) \
@@ -1683,6 +1760,7 @@ XR_ENUM_STR(XrResult);
     _(XR_SPATIAL_ENTITY_COMPONENT_TYPE_POLYGON_BD, 3) \
     _(XR_SPATIAL_ENTITY_COMPONENT_TYPE_BOUNDING_BOX_3D_BD, 4) \
     _(XR_SPATIAL_ENTITY_COMPONENT_TYPE_TRIANGLE_MESH_BD, 5) \
+    _(XR_SPATIAL_ENTITY_COMPONENT_TYPE_PLANE_ORIENTATION_BD, 1000396000) \
     _(XR_SPATIAL_ENTITY_COMPONENT_TYPE_MAX_ENUM_BD, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrSemanticLabelBD(_) \
@@ -1717,6 +1795,7 @@ XR_ENUM_STR(XrResult);
     _(XR_SENSE_DATA_PROVIDER_TYPE_ANCHOR_BD, 1000390000) \
     _(XR_SENSE_DATA_PROVIDER_TYPE_SCENE_BD, 1000392000) \
     _(XR_SENSE_DATA_PROVIDER_TYPE_MESH_BD, 1000393000) \
+    _(XR_SENSE_DATA_PROVIDER_TYPE_PLANE_BD, 1000396000) \
     _(XR_SENSE_DATA_PROVIDER_TYPE_MAX_ENUM_BD, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrSenseDataProviderStateBD(_) \
@@ -1734,6 +1813,13 @@ XR_ENUM_STR(XrResult);
     _(XR_SPATIAL_MESH_LOD_MEDIUM_BD, 1) \
     _(XR_SPATIAL_MESH_LOD_FINE_BD, 2) \
     _(XR_SPATIAL_MESH_LOD_MAX_ENUM_BD, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrPlaneOrientationBD(_) \
+    _(XR_PLANE_ORIENTATION_HORIZONTAL_UPWARD_BD, 0) \
+    _(XR_PLANE_ORIENTATION_HORIZONTAL_DOWNWARD_BD, 1) \
+    _(XR_PLANE_ORIENTATION_VERTICAL_BD, 2) \
+    _(XR_PLANE_ORIENTATION_ARBITRARY_BD, 3) \
+    _(XR_PLANE_ORIENTATION_MAX_ENUM_BD, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrHandTrackingDataSourceEXT(_) \
     _(XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT, 1) \
@@ -1850,6 +1936,108 @@ XR_ENUM_STR(XrResult);
     _(XR_FACIAL_BLEND_SHAPE_UPPER_LIP_RAISER_R_ML, 44) \
     _(XR_FACIAL_BLEND_SHAPE_TONGUE_OUT_ML, 45) \
     _(XR_FACIAL_BLEND_SHAPE_MAX_ENUM_ML, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialCapabilityEXT(_) \
+    _(XR_SPATIAL_CAPABILITY_PLANE_TRACKING_EXT, 1000741000) \
+    _(XR_SPATIAL_CAPABILITY_MARKER_TRACKING_QR_CODE_EXT, 1000743000) \
+    _(XR_SPATIAL_CAPABILITY_MARKER_TRACKING_MICRO_QR_CODE_EXT, 1000743001) \
+    _(XR_SPATIAL_CAPABILITY_MARKER_TRACKING_ARUCO_MARKER_EXT, 1000743002) \
+    _(XR_SPATIAL_CAPABILITY_MARKER_TRACKING_APRIL_TAG_EXT, 1000743003) \
+    _(XR_SPATIAL_CAPABILITY_ANCHOR_EXT, 1000762000) \
+    _(XR_SPATIAL_CAPABILITY_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialCapabilityFeatureEXT(_) \
+    _(XR_SPATIAL_CAPABILITY_FEATURE_MARKER_TRACKING_FIXED_SIZE_MARKERS_EXT, 1000743000) \
+    _(XR_SPATIAL_CAPABILITY_FEATURE_MARKER_TRACKING_STATIC_MARKERS_EXT, 1000743001) \
+    _(XR_SPATIAL_CAPABILITY_FEATURE_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialComponentTypeEXT(_) \
+    _(XR_SPATIAL_COMPONENT_TYPE_BOUNDED_2D_EXT, 1) \
+    _(XR_SPATIAL_COMPONENT_TYPE_BOUNDED_3D_EXT, 2) \
+    _(XR_SPATIAL_COMPONENT_TYPE_PARENT_EXT, 3) \
+    _(XR_SPATIAL_COMPONENT_TYPE_MESH_3D_EXT, 4) \
+    _(XR_SPATIAL_COMPONENT_TYPE_PLANE_ALIGNMENT_EXT, 1000741000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_MESH_2D_EXT, 1000741001) \
+    _(XR_SPATIAL_COMPONENT_TYPE_POLYGON_2D_EXT, 1000741002) \
+    _(XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT, 1000741003) \
+    _(XR_SPATIAL_COMPONENT_TYPE_MARKER_EXT, 1000743000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_ANCHOR_EXT, 1000762000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_PERSISTENCE_EXT, 1000763000) \
+    _(XR_SPATIAL_COMPONENT_TYPE_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialEntityTrackingStateEXT(_) \
+    _(XR_SPATIAL_ENTITY_TRACKING_STATE_STOPPED_EXT, 1) \
+    _(XR_SPATIAL_ENTITY_TRACKING_STATE_PAUSED_EXT, 2) \
+    _(XR_SPATIAL_ENTITY_TRACKING_STATE_TRACKING_EXT, 3) \
+    _(XR_SPATIAL_ENTITY_TRACKING_STATE_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialBufferTypeEXT(_) \
+    _(XR_SPATIAL_BUFFER_TYPE_UNKNOWN_EXT, 0) \
+    _(XR_SPATIAL_BUFFER_TYPE_STRING_EXT, 1) \
+    _(XR_SPATIAL_BUFFER_TYPE_UINT8_EXT, 2) \
+    _(XR_SPATIAL_BUFFER_TYPE_UINT16_EXT, 3) \
+    _(XR_SPATIAL_BUFFER_TYPE_UINT32_EXT, 4) \
+    _(XR_SPATIAL_BUFFER_TYPE_FLOAT_EXT, 5) \
+    _(XR_SPATIAL_BUFFER_TYPE_VECTOR2F_EXT, 6) \
+    _(XR_SPATIAL_BUFFER_TYPE_VECTOR3F_EXT, 7) \
+    _(XR_SPATIAL_BUFFER_TYPE_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialPlaneAlignmentEXT(_) \
+    _(XR_SPATIAL_PLANE_ALIGNMENT_HORIZONTAL_UPWARD_EXT, 0) \
+    _(XR_SPATIAL_PLANE_ALIGNMENT_HORIZONTAL_DOWNWARD_EXT, 1) \
+    _(XR_SPATIAL_PLANE_ALIGNMENT_VERTICAL_EXT, 2) \
+    _(XR_SPATIAL_PLANE_ALIGNMENT_ARBITRARY_EXT, 3) \
+    _(XR_SPATIAL_PLANE_ALIGNMENT_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialPlaneSemanticLabelEXT(_) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL_UNCATEGORIZED_EXT, 1) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL_FLOOR_EXT, 2) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL_WALL_EXT, 3) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL_CEILING_EXT, 4) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL_TABLE_EXT, 5) \
+    _(XR_SPATIAL_PLANE_SEMANTIC_LABEL_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialMarkerArucoDictEXT(_) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_4X4_50_EXT, 1) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_4X4_100_EXT, 2) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_4X4_250_EXT, 3) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_4X4_1000_EXT, 4) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_5X5_50_EXT, 5) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_5X5_100_EXT, 6) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_5X5_250_EXT, 7) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_5X5_1000_EXT, 8) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_6X6_50_EXT, 9) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_6X6_100_EXT, 10) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_6X6_250_EXT, 11) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_6X6_1000_EXT, 12) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_7X7_50_EXT, 13) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_7X7_100_EXT, 14) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_7X7_250_EXT, 15) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_7X7_1000_EXT, 16) \
+    _(XR_SPATIAL_MARKER_ARUCO_DICT_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialMarkerAprilTagDictEXT(_) \
+    _(XR_SPATIAL_MARKER_APRIL_TAG_DICT_16H5_EXT, 1) \
+    _(XR_SPATIAL_MARKER_APRIL_TAG_DICT_25H9_EXT, 2) \
+    _(XR_SPATIAL_MARKER_APRIL_TAG_DICT_36H10_EXT, 3) \
+    _(XR_SPATIAL_MARKER_APRIL_TAG_DICT_36H11_EXT, 4) \
+    _(XR_SPATIAL_MARKER_APRIL_TAG_DICT_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialPersistenceScopeEXT(_) \
+    _(XR_SPATIAL_PERSISTENCE_SCOPE_SYSTEM_MANAGED_EXT, 1) \
+    _(XR_SPATIAL_PERSISTENCE_SCOPE_LOCAL_ANCHORS_EXT, 1000781000) \
+    _(XR_SPATIAL_PERSISTENCE_SCOPE_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialPersistenceContextResultEXT(_) \
+    _(XR_SPATIAL_PERSISTENCE_CONTEXT_RESULT_SUCCESS_EXT, 0) \
+    _(XR_SPATIAL_PERSISTENCE_CONTEXT_RESULT_ENTITY_NOT_TRACKING_EXT, -1000781001) \
+    _(XR_SPATIAL_PERSISTENCE_CONTEXT_RESULT_PERSIST_UUID_NOT_FOUND_EXT, -1000781002) \
+    _(XR_SPATIAL_PERSISTENCE_CONTEXT_RESULT_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSpatialPersistenceStateEXT(_) \
+    _(XR_SPATIAL_PERSISTENCE_STATE_LOADED_EXT, 1) \
+    _(XR_SPATIAL_PERSISTENCE_STATE_NOT_FOUND_EXT, 2) \
+    _(XR_SPATIAL_PERSISTENCE_STATE_MAX_ENUM_EXT, 0x7FFFFFFF)
 
 #define XR_LIST_BITS_XrInstanceCreateFlags(_)
 
@@ -5155,6 +5343,107 @@ XR_ENUM_STR(XrResult);
     _(supportsEnvironmentDepth) \
     _(supportsHandRemoval) \
 
+/// Calls your macro with the name of each member of XrRenderModelCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(renderModelId) \
+    _(gltfExtensionCount) \
+    _(gltfExtensions) \
+
+/// Calls your macro with the name of each member of XrRenderModelPropertiesGetInfoEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelPropertiesGetInfoEXT(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrRenderModelPropertiesEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelPropertiesEXT(_) \
+    _(type) \
+    _(next) \
+    _(cacheId) \
+    _(animatableNodeCount) \
+
+/// Calls your macro with the name of each member of XrRenderModelSpaceCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelSpaceCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(renderModel) \
+
+/// Calls your macro with the name of each member of XrRenderModelStateGetInfoEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelStateGetInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(displayTime) \
+
+/// Calls your macro with the name of each member of XrRenderModelNodeStateEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelNodeStateEXT(_) \
+    _(nodePose) \
+    _(isVisible) \
+
+/// Calls your macro with the name of each member of XrRenderModelStateEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelStateEXT(_) \
+    _(type) \
+    _(next) \
+    _(nodeStateCount) \
+    _(nodeStates) \
+
+/// Calls your macro with the name of each member of XrRenderModelAssetCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelAssetCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(cacheId) \
+
+/// Calls your macro with the name of each member of XrRenderModelAssetDataGetInfoEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelAssetDataGetInfoEXT(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrRenderModelAssetDataEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelAssetDataEXT(_) \
+    _(type) \
+    _(next) \
+    _(bufferCapacityInput) \
+    _(bufferCountOutput) \
+    _(buffer) \
+
+/// Calls your macro with the name of each member of XrRenderModelAssetPropertiesGetInfoEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelAssetPropertiesGetInfoEXT(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrRenderModelAssetNodePropertiesEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelAssetNodePropertiesEXT(_) \
+    _(uniqueName) \
+
+/// Calls your macro with the name of each member of XrRenderModelAssetPropertiesEXT, in order.
+#define XR_LIST_STRUCT_XrRenderModelAssetPropertiesEXT(_) \
+    _(type) \
+    _(next) \
+    _(nodePropertyCount) \
+    _(nodeProperties) \
+
+/// Calls your macro with the name of each member of XrInteractionRenderModelIdsEnumerateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrInteractionRenderModelIdsEnumerateInfoEXT(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrInteractionRenderModelSubactionPathInfoEXT, in order.
+#define XR_LIST_STRUCT_XrInteractionRenderModelSubactionPathInfoEXT(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrInteractionRenderModelTopLevelUserPathGetInfoEXT, in order.
+#define XR_LIST_STRUCT_XrInteractionRenderModelTopLevelUserPathGetInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(topLevelUserPathCount) \
+    _(topLevelUserPaths) \
+
+/// Calls your macro with the name of each member of XrEventDataInteractionRenderModelsChangedEXT, in order.
+#define XR_LIST_STRUCT_XrEventDataInteractionRenderModelsChangedEXT(_) \
+    _(type) \
+    _(next) \
+
 /// Calls your macro with the name of each member of XrPassthroughCreateInfoHTC, in order.
 #define XR_LIST_STRUCT_XrPassthroughCreateInfoHTC(_) \
     _(type) \
@@ -5586,6 +5875,25 @@ XR_ENUM_STR(XrResult);
     _(isSupported) \
     _(progressPercentage) \
 
+/// Calls your macro with the name of each member of XrSystemSpatialPlanePropertiesBD, in order.
+#define XR_LIST_STRUCT_XrSystemSpatialPlanePropertiesBD(_) \
+    _(type) \
+    _(next) \
+    _(supportsSpatialPlane) \
+
+/// Calls your macro with the name of each member of XrSpatialEntityComponentDataPlaneOrientationBD, in order.
+#define XR_LIST_STRUCT_XrSpatialEntityComponentDataPlaneOrientationBD(_) \
+    _(type) \
+    _(next) \
+    _(orientation) \
+
+/// Calls your macro with the name of each member of XrSenseDataFilterPlaneOrientationBD, in order.
+#define XR_LIST_STRUCT_XrSenseDataFilterPlaneOrientationBD(_) \
+    _(type) \
+    _(next) \
+    _(orientationCount) \
+    _(orientations) \
+
 /// Calls your macro with the name of each member of XrHandTrackingDataSourceInfoEXT, in order.
 #define XR_LIST_STRUCT_XrHandTrackingDataSourceInfoEXT(_) \
     _(type) \
@@ -5968,6 +6276,346 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(groupUuid) \
 
+/// Calls your macro with the name of each member of XrSpatialCapabilityComponentTypesEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityComponentTypesEXT(_) \
+    _(type) \
+    _(next) \
+    _(componentTypeCapacityInput) \
+    _(componentTypeCountOutput) \
+    _(componentTypes) \
+
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationBaseHeaderEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationBaseHeaderEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+
+/// Calls your macro with the name of each member of XrSpatialContextCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialContextCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(capabilityConfigCount) \
+    _(capabilityConfigs) \
+
+/// Calls your macro with the name of each member of XrCreateSpatialContextCompletionEXT, in order.
+#define XR_LIST_STRUCT_XrCreateSpatialContextCompletionEXT(_) \
+    _(type) \
+    _(next) \
+    _(futureResult) \
+    _(spatialContext) \
+
+/// Calls your macro with the name of each member of XrSpatialDiscoverySnapshotCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialDiscoverySnapshotCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(componentTypeCount) \
+    _(componentTypes) \
+
+/// Calls your macro with the name of each member of XrCreateSpatialDiscoverySnapshotCompletionInfoEXT, in order.
+#define XR_LIST_STRUCT_XrCreateSpatialDiscoverySnapshotCompletionInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(baseSpace) \
+    _(time) \
+    _(future) \
+
+/// Calls your macro with the name of each member of XrCreateSpatialDiscoverySnapshotCompletionEXT, in order.
+#define XR_LIST_STRUCT_XrCreateSpatialDiscoverySnapshotCompletionEXT(_) \
+    _(type) \
+    _(next) \
+    _(futureResult) \
+    _(snapshot) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentDataQueryConditionEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentDataQueryConditionEXT(_) \
+    _(type) \
+    _(next) \
+    _(componentTypeCount) \
+    _(componentTypes) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentDataQueryResultEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentDataQueryResultEXT(_) \
+    _(type) \
+    _(next) \
+    _(entityIdCapacityInput) \
+    _(entityIdCountOutput) \
+    _(entityIds) \
+    _(entityStateCapacityInput) \
+    _(entityStateCountOutput) \
+    _(entityStates) \
+
+/// Calls your macro with the name of each member of XrSpatialBufferEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialBufferEXT(_) \
+    _(bufferId) \
+    _(bufferType) \
+
+/// Calls your macro with the name of each member of XrSpatialBufferGetInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialBufferGetInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(bufferId) \
+
+/// Calls your macro with the name of each member of XrSpatialBounded2DDataEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialBounded2DDataEXT(_) \
+    _(center) \
+    _(extents) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentBounded2DListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentBounded2DListEXT(_) \
+    _(type) \
+    _(next) \
+    _(boundCount) \
+    _(bounds) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentBounded3DListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentBounded3DListEXT(_) \
+    _(type) \
+    _(next) \
+    _(boundCount) \
+    _(bounds) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentParentListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentParentListEXT(_) \
+    _(type) \
+    _(next) \
+    _(parentCount) \
+    _(parents) \
+
+/// Calls your macro with the name of each member of XrSpatialMeshDataEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialMeshDataEXT(_) \
+    _(origin) \
+    _(vertexBuffer) \
+    _(indexBuffer) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentMesh3DListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentMesh3DListEXT(_) \
+    _(type) \
+    _(next) \
+    _(meshCount) \
+    _(meshes) \
+
+/// Calls your macro with the name of each member of XrSpatialEntityFromIdCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialEntityFromIdCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(entityId) \
+
+/// Calls your macro with the name of each member of XrSpatialUpdateSnapshotCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialUpdateSnapshotCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(entityCount) \
+    _(entities) \
+    _(componentTypeCount) \
+    _(componentTypes) \
+    _(baseSpace) \
+    _(time) \
+
+/// Calls your macro with the name of each member of XrEventDataSpatialDiscoveryRecommendedEXT, in order.
+#define XR_LIST_STRUCT_XrEventDataSpatialDiscoveryRecommendedEXT(_) \
+    _(type) \
+    _(next) \
+    _(spatialContext) \
+
+/// Calls your macro with the name of each member of XrSpatialFilterTrackingStateEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialFilterTrackingStateEXT(_) \
+    _(type) \
+    _(next) \
+    _(trackingState) \
+
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationPlaneTrackingEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationPlaneTrackingEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentPlaneAlignmentListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentPlaneAlignmentListEXT(_) \
+    _(type) \
+    _(next) \
+    _(planeAlignmentCount) \
+    _(planeAlignments) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentMesh2DListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentMesh2DListEXT(_) \
+    _(type) \
+    _(next) \
+    _(meshCount) \
+    _(meshes) \
+
+/// Calls your macro with the name of each member of XrSpatialPolygon2DDataEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialPolygon2DDataEXT(_) \
+    _(origin) \
+    _(vertexBuffer) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentPolygon2DListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentPolygon2DListEXT(_) \
+    _(type) \
+    _(next) \
+    _(polygonCount) \
+    _(polygons) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentPlaneSemanticLabelListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentPlaneSemanticLabelListEXT(_) \
+    _(type) \
+    _(next) \
+    _(semanticLabelCount) \
+    _(semanticLabels) \
+
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationQrCodeEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationQrCodeEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationMicroQrCodeEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationMicroQrCodeEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationArucoMarkerEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationArucoMarkerEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+    _(arUcoDict) \
+
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationAprilTagEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationAprilTagEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+    _(aprilDict) \
+
+/// Calls your macro with the name of each member of XrSpatialMarkerSizeEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialMarkerSizeEXT(_) \
+    _(type) \
+    _(next) \
+    _(markerSideLength) \
+
+/// Calls your macro with the name of each member of XrSpatialMarkerStaticOptimizationEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialMarkerStaticOptimizationEXT(_) \
+    _(type) \
+    _(next) \
+    _(optimizeForStaticMarker) \
+
+/// Calls your macro with the name of each member of XrSpatialMarkerDataEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialMarkerDataEXT(_) \
+    _(capability) \
+    _(markerId) \
+    _(data) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentMarkerListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentMarkerListEXT(_) \
+    _(type) \
+    _(next) \
+    _(markerCount) \
+    _(markers) \
+
+/// Calls your macro with the name of each member of XrSpatialCapabilityConfigurationAnchorEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialCapabilityConfigurationAnchorEXT(_) \
+    _(type) \
+    _(next) \
+    _(capability) \
+    _(enabledComponentCount) \
+    _(enabledComponents) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentAnchorListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentAnchorListEXT(_) \
+    _(type) \
+    _(next) \
+    _(locationCount) \
+    _(locations) \
+
+/// Calls your macro with the name of each member of XrSpatialAnchorCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialAnchorCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(baseSpace) \
+    _(time) \
+    _(pose) \
+
+/// Calls your macro with the name of each member of XrSpatialPersistenceContextCreateInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialPersistenceContextCreateInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(scope) \
+
+/// Calls your macro with the name of each member of XrCreateSpatialPersistenceContextCompletionEXT, in order.
+#define XR_LIST_STRUCT_XrCreateSpatialPersistenceContextCompletionEXT(_) \
+    _(type) \
+    _(next) \
+    _(futureResult) \
+    _(createResult) \
+    _(persistenceContext) \
+
+/// Calls your macro with the name of each member of XrSpatialContextPersistenceConfigEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialContextPersistenceConfigEXT(_) \
+    _(type) \
+    _(next) \
+    _(persistenceContextCount) \
+    _(persistenceContexts) \
+
+/// Calls your macro with the name of each member of XrSpatialDiscoveryPersistenceUuidFilterEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialDiscoveryPersistenceUuidFilterEXT(_) \
+    _(type) \
+    _(next) \
+    _(persistedUuidCount) \
+    _(persistedUuids) \
+
+/// Calls your macro with the name of each member of XrSpatialPersistenceDataEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialPersistenceDataEXT(_) \
+    _(persistUuid) \
+    _(persistState) \
+
+/// Calls your macro with the name of each member of XrSpatialComponentPersistenceListEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialComponentPersistenceListEXT(_) \
+    _(type) \
+    _(next) \
+    _(persistDataCount) \
+    _(persistData) \
+
+/// Calls your macro with the name of each member of XrSpatialEntityPersistInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialEntityPersistInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(spatialContext) \
+    _(spatialEntityId) \
+
+/// Calls your macro with the name of each member of XrPersistSpatialEntityCompletionEXT, in order.
+#define XR_LIST_STRUCT_XrPersistSpatialEntityCompletionEXT(_) \
+    _(type) \
+    _(next) \
+    _(futureResult) \
+    _(persistResult) \
+    _(persistUuid) \
+
+/// Calls your macro with the name of each member of XrSpatialEntityUnpersistInfoEXT, in order.
+#define XR_LIST_STRUCT_XrSpatialEntityUnpersistInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(persistUuid) \
+
+/// Calls your macro with the name of each member of XrUnpersistSpatialEntityCompletionEXT, in order.
+#define XR_LIST_STRUCT_XrUnpersistSpatialEntityCompletionEXT(_) \
+    _(type) \
+    _(next) \
+    _(futureResult) \
+    _(unpersistResult) \
+
 
 
 /// Calls your macro with the structure type name and the XrStructureType constant for
@@ -6305,6 +6953,21 @@ XR_ENUM_STR(XrResult);
     _(XrEnvironmentDepthImageMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META) \
     _(XrEnvironmentDepthHandRemovalSetInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META) \
     _(XrSystemEnvironmentDepthPropertiesMETA, XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META) \
+    _(XrRenderModelCreateInfoEXT, XR_TYPE_RENDER_MODEL_CREATE_INFO_EXT) \
+    _(XrRenderModelPropertiesGetInfoEXT, XR_TYPE_RENDER_MODEL_PROPERTIES_GET_INFO_EXT) \
+    _(XrRenderModelPropertiesEXT, XR_TYPE_RENDER_MODEL_PROPERTIES_EXT) \
+    _(XrRenderModelSpaceCreateInfoEXT, XR_TYPE_RENDER_MODEL_SPACE_CREATE_INFO_EXT) \
+    _(XrRenderModelStateGetInfoEXT, XR_TYPE_RENDER_MODEL_STATE_GET_INFO_EXT) \
+    _(XrRenderModelStateEXT, XR_TYPE_RENDER_MODEL_STATE_EXT) \
+    _(XrRenderModelAssetCreateInfoEXT, XR_TYPE_RENDER_MODEL_ASSET_CREATE_INFO_EXT) \
+    _(XrRenderModelAssetDataGetInfoEXT, XR_TYPE_RENDER_MODEL_ASSET_DATA_GET_INFO_EXT) \
+    _(XrRenderModelAssetDataEXT, XR_TYPE_RENDER_MODEL_ASSET_DATA_EXT) \
+    _(XrRenderModelAssetPropertiesGetInfoEXT, XR_TYPE_RENDER_MODEL_ASSET_PROPERTIES_GET_INFO_EXT) \
+    _(XrRenderModelAssetPropertiesEXT, XR_TYPE_RENDER_MODEL_ASSET_PROPERTIES_EXT) \
+    _(XrInteractionRenderModelIdsEnumerateInfoEXT, XR_TYPE_INTERACTION_RENDER_MODEL_IDS_ENUMERATE_INFO_EXT) \
+    _(XrInteractionRenderModelSubactionPathInfoEXT, XR_TYPE_INTERACTION_RENDER_MODEL_SUBACTION_PATH_INFO_EXT) \
+    _(XrInteractionRenderModelTopLevelUserPathGetInfoEXT, XR_TYPE_INTERACTION_RENDER_MODEL_TOP_LEVEL_USER_PATH_GET_INFO_EXT) \
+    _(XrEventDataInteractionRenderModelsChangedEXT, XR_TYPE_EVENT_DATA_INTERACTION_RENDER_MODELS_CHANGED_EXT) \
     _(XrPassthroughCreateInfoHTC, XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC) \
     _(XrPassthroughColorHTC, XR_TYPE_PASSTHROUGH_COLOR_HTC) \
     _(XrPassthroughMeshTransformInfoHTC, XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC) \
@@ -6362,6 +7025,9 @@ XR_ENUM_STR(XrResult);
     _(XrSystemSpatialMeshPropertiesBD, XR_TYPE_SYSTEM_SPATIAL_MESH_PROPERTIES_BD) \
     _(XrSenseDataProviderCreateInfoSpatialMeshBD, XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_SPATIAL_MESH_BD) \
     _(XrFuturePollResultProgressBD, XR_TYPE_FUTURE_POLL_RESULT_PROGRESS_BD) \
+    _(XrSystemSpatialPlanePropertiesBD, XR_TYPE_SYSTEM_SPATIAL_PLANE_PROPERTIES_BD) \
+    _(XrSpatialEntityComponentDataPlaneOrientationBD, XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_PLANE_ORIENTATION_BD) \
+    _(XrSenseDataFilterPlaneOrientationBD, XR_TYPE_SENSE_DATA_FILTER_PLANE_ORIENTATION_BD) \
     _(XrHandTrackingDataSourceInfoEXT, XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT) \
     _(XrHandTrackingDataSourceStateEXT, XR_TYPE_HAND_TRACKING_DATA_SOURCE_STATE_EXT) \
     _(XrSystemPlaneDetectionPropertiesEXT, XR_TYPE_SYSTEM_PLANE_DETECTION_PROPERTIES_EXT) \
@@ -6414,6 +7080,47 @@ XR_ENUM_STR(XrResult);
     _(XrSystemSpatialEntityGroupSharingPropertiesMETA, XR_TYPE_SYSTEM_SPATIAL_ENTITY_GROUP_SHARING_PROPERTIES_META) \
     _(XrShareSpacesRecipientGroupsMETA, XR_TYPE_SHARE_SPACES_RECIPIENT_GROUPS_META) \
     _(XrSpaceGroupUuidFilterInfoMETA, XR_TYPE_SPACE_GROUP_UUID_FILTER_INFO_META) \
+    _(XrSpatialCapabilityComponentTypesEXT, XR_TYPE_SPATIAL_CAPABILITY_COMPONENT_TYPES_EXT) \
+    _(XrSpatialContextCreateInfoEXT, XR_TYPE_SPATIAL_CONTEXT_CREATE_INFO_EXT) \
+    _(XrCreateSpatialContextCompletionEXT, XR_TYPE_CREATE_SPATIAL_CONTEXT_COMPLETION_EXT) \
+    _(XrSpatialDiscoverySnapshotCreateInfoEXT, XR_TYPE_SPATIAL_DISCOVERY_SNAPSHOT_CREATE_INFO_EXT) \
+    _(XrCreateSpatialDiscoverySnapshotCompletionInfoEXT, XR_TYPE_CREATE_SPATIAL_DISCOVERY_SNAPSHOT_COMPLETION_INFO_EXT) \
+    _(XrCreateSpatialDiscoverySnapshotCompletionEXT, XR_TYPE_CREATE_SPATIAL_DISCOVERY_SNAPSHOT_COMPLETION_EXT) \
+    _(XrSpatialComponentDataQueryConditionEXT, XR_TYPE_SPATIAL_COMPONENT_DATA_QUERY_CONDITION_EXT) \
+    _(XrSpatialComponentDataQueryResultEXT, XR_TYPE_SPATIAL_COMPONENT_DATA_QUERY_RESULT_EXT) \
+    _(XrSpatialBufferGetInfoEXT, XR_TYPE_SPATIAL_BUFFER_GET_INFO_EXT) \
+    _(XrSpatialComponentBounded2DListEXT, XR_TYPE_SPATIAL_COMPONENT_BOUNDED_2D_LIST_EXT) \
+    _(XrSpatialComponentBounded3DListEXT, XR_TYPE_SPATIAL_COMPONENT_BOUNDED_3D_LIST_EXT) \
+    _(XrSpatialComponentParentListEXT, XR_TYPE_SPATIAL_COMPONENT_PARENT_LIST_EXT) \
+    _(XrSpatialComponentMesh3DListEXT, XR_TYPE_SPATIAL_COMPONENT_MESH_3D_LIST_EXT) \
+    _(XrSpatialEntityFromIdCreateInfoEXT, XR_TYPE_SPATIAL_ENTITY_FROM_ID_CREATE_INFO_EXT) \
+    _(XrSpatialUpdateSnapshotCreateInfoEXT, XR_TYPE_SPATIAL_UPDATE_SNAPSHOT_CREATE_INFO_EXT) \
+    _(XrEventDataSpatialDiscoveryRecommendedEXT, XR_TYPE_EVENT_DATA_SPATIAL_DISCOVERY_RECOMMENDED_EXT) \
+    _(XrSpatialFilterTrackingStateEXT, XR_TYPE_SPATIAL_FILTER_TRACKING_STATE_EXT) \
+    _(XrSpatialCapabilityConfigurationPlaneTrackingEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_PLANE_TRACKING_EXT) \
+    _(XrSpatialComponentPlaneAlignmentListEXT, XR_TYPE_SPATIAL_COMPONENT_PLANE_ALIGNMENT_LIST_EXT) \
+    _(XrSpatialComponentMesh2DListEXT, XR_TYPE_SPATIAL_COMPONENT_MESH_2D_LIST_EXT) \
+    _(XrSpatialComponentPolygon2DListEXT, XR_TYPE_SPATIAL_COMPONENT_POLYGON_2D_LIST_EXT) \
+    _(XrSpatialComponentPlaneSemanticLabelListEXT, XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL_LIST_EXT) \
+    _(XrSpatialCapabilityConfigurationQrCodeEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_QR_CODE_EXT) \
+    _(XrSpatialCapabilityConfigurationMicroQrCodeEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_MICRO_QR_CODE_EXT) \
+    _(XrSpatialCapabilityConfigurationArucoMarkerEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_ARUCO_MARKER_EXT) \
+    _(XrSpatialCapabilityConfigurationAprilTagEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_APRIL_TAG_EXT) \
+    _(XrSpatialMarkerSizeEXT, XR_TYPE_SPATIAL_MARKER_SIZE_EXT) \
+    _(XrSpatialMarkerStaticOptimizationEXT, XR_TYPE_SPATIAL_MARKER_STATIC_OPTIMIZATION_EXT) \
+    _(XrSpatialComponentMarkerListEXT, XR_TYPE_SPATIAL_COMPONENT_MARKER_LIST_EXT) \
+    _(XrSpatialCapabilityConfigurationAnchorEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_ANCHOR_EXT) \
+    _(XrSpatialComponentAnchorListEXT, XR_TYPE_SPATIAL_COMPONENT_ANCHOR_LIST_EXT) \
+    _(XrSpatialAnchorCreateInfoEXT, XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_EXT) \
+    _(XrSpatialPersistenceContextCreateInfoEXT, XR_TYPE_SPATIAL_PERSISTENCE_CONTEXT_CREATE_INFO_EXT) \
+    _(XrCreateSpatialPersistenceContextCompletionEXT, XR_TYPE_CREATE_SPATIAL_PERSISTENCE_CONTEXT_COMPLETION_EXT) \
+    _(XrSpatialContextPersistenceConfigEXT, XR_TYPE_SPATIAL_CONTEXT_PERSISTENCE_CONFIG_EXT) \
+    _(XrSpatialDiscoveryPersistenceUuidFilterEXT, XR_TYPE_SPATIAL_DISCOVERY_PERSISTENCE_UUID_FILTER_EXT) \
+    _(XrSpatialComponentPersistenceListEXT, XR_TYPE_SPATIAL_COMPONENT_PERSISTENCE_LIST_EXT) \
+    _(XrSpatialEntityPersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT) \
+    _(XrPersistSpatialEntityCompletionEXT, XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT) \
+    _(XrSpatialEntityUnpersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT) \
+    _(XrUnpersistSpatialEntityCompletionEXT, XR_TYPE_UNPERSIST_SPATIAL_ENTITY_COMPLETION_EXT) \
 
 
 #if defined(XR_USE_GRAPHICS_API_D3D11)
@@ -6739,6 +7446,8 @@ XR_ENUM_STR(XrResult);
     _(XR_META_spatial_entity_sharing, 291) \
     _(XR_META_environment_depth, 292) \
     _(XR_EXT_uuid, 300) \
+    _(XR_EXT_render_model, 301) \
+    _(XR_EXT_interaction_render_model, 302) \
     _(XR_EXT_hand_interaction, 303) \
     _(XR_QCOM_tracking_optimization_settings, 307) \
     _(XR_HTC_passthrough, 318) \
@@ -6755,6 +7464,7 @@ XR_ENUM_STR(XrResult);
     _(XR_BD_spatial_scene, 393) \
     _(XR_BD_spatial_mesh, 394) \
     _(XR_BD_future_progress, 395) \
+    _(XR_BD_spatial_plane, 397) \
     _(XR_EXT_local_floor, 427) \
     _(XR_EXT_hand_tracking_data_source, 429) \
     _(XR_EXT_plane_detection, 430) \
@@ -6773,7 +7483,13 @@ XR_ENUM_STR(XrResult);
     _(XR_META_colocation_discovery, 572) \
     _(XR_META_spatial_entity_group_sharing, 573) \
     _(XR_KHR_maintenance1, 711) \
+    _(XR_EXT_spatial_entity, 741) \
+    _(XR_EXT_spatial_plane_tracking, 742) \
+    _(XR_EXT_spatial_marker_tracking, 744) \
     _(XR_LOGITECH_mx_ink_stylus_interaction, 746) \
+    _(XR_EXT_spatial_anchor, 763) \
+    _(XR_EXT_spatial_persistence, 764) \
+    _(XR_EXT_spatial_persistence_operations, 782) \
 
 
 
@@ -7607,6 +8323,32 @@ XR_ENUM_STR(XrResult);
     _(SetEnvironmentDepthHandRemovalMETA, META_environment_depth) \
 
 
+/// For every function defined by XR_EXT_render_model in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_render_model(_) \
+    _(CreateRenderModelEXT, EXT_render_model) \
+    _(DestroyRenderModelEXT, EXT_render_model) \
+    _(GetRenderModelPropertiesEXT, EXT_render_model) \
+    _(CreateRenderModelSpaceEXT, EXT_render_model) \
+    _(CreateRenderModelAssetEXT, EXT_render_model) \
+    _(DestroyRenderModelAssetEXT, EXT_render_model) \
+    _(GetRenderModelAssetDataEXT, EXT_render_model) \
+    _(GetRenderModelAssetPropertiesEXT, EXT_render_model) \
+    _(GetRenderModelStateEXT, EXT_render_model) \
+
+
+/// For every function defined by XR_EXT_interaction_render_model in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_interaction_render_model(_) \
+    _(EnumerateInteractionRenderModelIdsEXT, EXT_interaction_render_model) \
+    _(EnumerateRenderModelSubactionPathsEXT, EXT_interaction_render_model) \
+    _(GetRenderModelPoseTopLevelUserPathEXT, EXT_interaction_render_model) \
+
+
 /// For every function defined by XR_QCOM_tracking_optimization_settings in this version of the spec,
 /// calls your macro with the function name and extension name.
 /// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
@@ -7809,6 +8551,63 @@ XR_ENUM_STR(XrResult);
     _(StopColocationDiscoveryMETA, META_colocation_discovery) \
     _(StartColocationAdvertisementMETA, META_colocation_discovery) \
     _(StopColocationAdvertisementMETA, META_colocation_discovery) \
+
+
+/// For every function defined by XR_EXT_spatial_entity in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_spatial_entity(_) \
+    _(EnumerateSpatialCapabilitiesEXT, EXT_spatial_entity) \
+    _(EnumerateSpatialCapabilityComponentTypesEXT, EXT_spatial_entity) \
+    _(EnumerateSpatialCapabilityFeaturesEXT, EXT_spatial_entity) \
+    _(CreateSpatialContextAsyncEXT, EXT_spatial_entity) \
+    _(CreateSpatialContextCompleteEXT, EXT_spatial_entity) \
+    _(DestroySpatialContextEXT, EXT_spatial_entity) \
+    _(CreateSpatialDiscoverySnapshotAsyncEXT, EXT_spatial_entity) \
+    _(CreateSpatialDiscoverySnapshotCompleteEXT, EXT_spatial_entity) \
+    _(QuerySpatialComponentDataEXT, EXT_spatial_entity) \
+    _(DestroySpatialSnapshotEXT, EXT_spatial_entity) \
+    _(CreateSpatialEntityFromIdEXT, EXT_spatial_entity) \
+    _(DestroySpatialEntityEXT, EXT_spatial_entity) \
+    _(CreateSpatialUpdateSnapshotEXT, EXT_spatial_entity) \
+    _(GetSpatialBufferStringEXT, EXT_spatial_entity) \
+    _(GetSpatialBufferUint8EXT, EXT_spatial_entity) \
+    _(GetSpatialBufferUint16EXT, EXT_spatial_entity) \
+    _(GetSpatialBufferUint32EXT, EXT_spatial_entity) \
+    _(GetSpatialBufferFloatEXT, EXT_spatial_entity) \
+    _(GetSpatialBufferVector2fEXT, EXT_spatial_entity) \
+    _(GetSpatialBufferVector3fEXT, EXT_spatial_entity) \
+
+
+/// For every function defined by XR_EXT_spatial_anchor in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_spatial_anchor(_) \
+    _(CreateSpatialAnchorEXT, EXT_spatial_anchor) \
+
+
+/// For every function defined by XR_EXT_spatial_persistence in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_spatial_persistence(_) \
+    _(EnumerateSpatialPersistenceScopesEXT, EXT_spatial_persistence) \
+    _(CreateSpatialPersistenceContextAsyncEXT, EXT_spatial_persistence) \
+    _(CreateSpatialPersistenceContextCompleteEXT, EXT_spatial_persistence) \
+    _(DestroySpatialPersistenceContextEXT, EXT_spatial_persistence) \
+
+
+/// For every function defined by XR_EXT_spatial_persistence_operations in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_spatial_persistence_operations(_) \
+    _(PersistSpatialEntityAsyncEXT, EXT_spatial_persistence_operations) \
+    _(PersistSpatialEntityCompleteEXT, EXT_spatial_persistence_operations) \
+    _(UnpersistSpatialEntityAsyncEXT, EXT_spatial_persistence_operations) \
+    _(UnpersistSpatialEntityCompleteEXT, EXT_spatial_persistence_operations) \
 
 
 
