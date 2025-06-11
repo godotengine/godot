@@ -119,9 +119,9 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx, bool p_ignore
 			items[i].button->set_pressed_no_signal(i == p_idx);
 			items[i].control->set_visible(i == p_idx);
 		}
-		if (EditorDebuggerNode::get_singleton() == items[p_idx].control) {
+		if (Object::cast_to<MarginContainer>(items[p_idx].control)) {
 			// This is the debug panel which uses tabs, so the top section should be smaller.
-			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
+			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanelNoMargin"), EditorStringName(EditorStyles)));
 		} else {
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		}
