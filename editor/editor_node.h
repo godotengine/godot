@@ -54,6 +54,7 @@ class PanelContainer;
 class RichTextLabel;
 class SubViewport;
 class TextureProgressBar;
+class Translation;
 class Tree;
 class VBoxContainer;
 class VSplitContainer;
@@ -455,6 +456,9 @@ private:
 	bool waiting_for_first_scan = true;
 	bool load_editor_layout_done = false;
 
+	HashSet<Ref<Translation>> tracked_translations;
+	bool pending_translation_notification = false;
+
 	int current_menu_option = 0;
 
 	SubViewport *scene_root = nullptr; // Root of the scene being edited.
@@ -619,6 +623,9 @@ private:
 	void _update_from_settings();
 	void _gdextensions_reloaded();
 	void _update_translations();
+	void _translation_resources_changed();
+	void _queue_translation_notification();
+	void _propagate_translation_notification();
 
 	void _renderer_selected(int);
 	void _update_renderer_color();

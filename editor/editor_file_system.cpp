@@ -2982,6 +2982,13 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 	}
 
+	for (const String &path : gen_files) {
+		Ref<Resource> cached = ResourceCache::get_ref(path);
+		if (cached.is_valid()) {
+			cached->reload_from_file();
+		}
+	}
+
 	if (ResourceUID::get_singleton()->has_id(uid)) {
 		ResourceUID::get_singleton()->set_id(uid, p_file);
 	} else {

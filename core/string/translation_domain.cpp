@@ -255,6 +255,20 @@ PackedStringArray TranslationDomain::get_loaded_locales() const {
 	return locales;
 }
 
+// Translation objects that could potentially be used for the given locale.
+HashSet<Ref<Translation>> TranslationDomain::get_potential_translations(const String &p_locale) const {
+	HashSet<Ref<Translation>> res;
+
+	for (const Ref<Translation> &E : translations) {
+		ERR_CONTINUE(E.is_null());
+
+		if (TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale()) > 0) {
+			res.insert(E);
+		}
+	}
+	return res;
+}
+
 Ref<Translation> TranslationDomain::get_translation_object(const String &p_locale) const {
 	Ref<Translation> res;
 	int best_score = 0;

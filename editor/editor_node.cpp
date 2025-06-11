@@ -566,15 +566,55 @@ void EditorNode::_update_translations() {
 	main->clear();
 	TranslationServer::get_singleton()->load_translations();
 
-	if (main->is_enabled() && !main->get_loaded_locales().has(main->get_locale_override())) {
-		// Translations for the current preview locale is removed.
-		main->set_enabled(false);
-		main->set_locale_override(String());
-		scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-		emit_signal(SNAME("preview_locale_changed"));
-	} else {
-		scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
+	if (main->is_enabled()) {
+		// Check for the exact locale.
+		// `get_potential_translations("zh_CN")` could return translations for "zh".
+		if (main->get_loaded_locales().has(main->get_locale_override())) {
+			// The set of translation resources for the current locale changed.
+			const HashSet<Ref<Translation>> translations = main->get_potential_translations(main->get_locale_override());
+			if (translations != tracked_translations) {
+				_translation_resources_changed();
+			}
+		} else {
+			// Translations for the current preview locale is removed.
+			main->set_enabled(false);
+			main->set_locale_override(String());
+			_translation_resources_changed();
+		}
 	}
+}
+
+void EditorNode::_translation_resources_changed() {
+	for (const Ref<Translation> &E : tracked_translations) {
+		E->disconnect_changed(callable_mp(this, &EditorNode::_queue_translation_notification));
+	}
+	tracked_translations.clear();
+
+	const Ref<TranslationDomain> main = TranslationServer::get_singleton()->get_main_domain();
+	if (main->is_enabled()) {
+		const HashSet<Ref<Translation>> translations = main->get_potential_translations(main->get_locale_override());
+		tracked_translations.reserve(translations.size());
+		for (const Ref<Translation> &translation : translations) {
+			translation->connect_changed(callable_mp(this, &EditorNode::_queue_translation_notification));
+			tracked_translations.insert(translation);
+		}
+	}
+
+	_queue_translation_notification();
+	emit_signal(SNAME("preview_locale_changed"));
+}
+
+void EditorNode::_queue_translation_notification() {
+	if (pending_translation_notification) {
+		return;
+	}
+	pending_translation_notification = true;
+	callable_mp(this, &EditorNode::_propagate_translation_notification).call_deferred();
+}
+
+void EditorNode::_propagate_translation_notification() {
+	pending_translation_notification = false;
+	scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 void EditorNode::_update_theme(bool p_skip_creation) {
@@ -4056,14 +4096,7 @@ void EditorNode::set_preview_locale(const String &p_locale) {
 	main_domain->set_enabled(!p_locale.is_empty());
 	main_domain->set_locale_override(p_locale);
 
-	if (prev_locale.is_empty() == p_locale.is_empty()) {
-		// Switching between different locales.
-		scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
-	} else {
-		// Switching between on/off.
-		scene_root->set_auto_translate_mode(p_locale.is_empty() ? AUTO_TRANSLATE_MODE_DISABLED : AUTO_TRANSLATE_MODE_ALWAYS);
-	}
-	emit_signal(SNAME("preview_locale_changed"));
+	_translation_resources_changed();
 }
 
 Dictionary EditorNode::_get_main_scene_state() {
@@ -7850,7 +7883,7 @@ EditorNode::EditorNode() {
 	editor_main_screen->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(SubViewport);
-	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	scene_root->set_translation_domain(StringName());
 	scene_root->set_embedding_subwindows(true);
 	scene_root->set_disable_3d(true);
