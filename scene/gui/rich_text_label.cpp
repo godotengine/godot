@@ -7058,6 +7058,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 	if (visible_ratio != p_ratio) {
 		_stop_thread();
 
+		int prev_vc = visible_characters;
 		if (p_ratio >= 1.0) {
 			visible_characters = -1;
 			visible_ratio = 1.0;
@@ -7069,10 +7070,44 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 			visible_ratio = p_ratio;
 		}
 
-		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			main->first_invalid_line.store(0); //  Invalidate all lines..
-			_invalidate_accessibility();
-			_validate_line_caches();
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters != prev_vc) {
+			int new_vc = (visible_characters < 0) ? get_total_character_count() : visible_characters;
+			int old_vc = (prev_vc < 0) ? get_total_character_count() : prev_vc;
+			int to_line = main->first_invalid_line.load();
+			int old_from_l = to_line;
+			int new_from_l = to_line;
+			for (int i = 0; i < to_line; i++) {
+				const Line &l = main->lines[i];
+				if (l.char_offset <= old_vc && l.char_offset + l.char_count > old_vc) {
+					old_from_l = i;
+				}
+				if (l.char_offset <= new_vc && l.char_offset + l.char_count > new_vc) {
+					new_from_l = i;
+				}
+			}
+			Rect2 text_rect = _get_text_rect();
+			int first_invalid = MIN(new_from_l, old_from_l);
+			int second_invalid = MAX(new_from_l, old_from_l);
+
+			float total_height = (first_invalid == 0) ? 0 : _calculate_line_vertical_offset(main->lines[first_invalid - 1]);
+			if (first_invalid < to_line) {
+				int total_chars = main->lines[first_invalid].char_offset;
+				total_height = _shape_line(main, first_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+			}
+			if (first_invalid != second_invalid) {
+				for (int i = first_invalid + 1; i < second_invalid; i++) {
+					main->lines[i].offset.y = total_height;
+					total_height = _calculate_line_vertical_offset(main->lines[i]);
+				}
+				if (second_invalid < to_line) {
+					int total_chars = main->lines[second_invalid].char_offset;
+					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+				}
+			}
+			for (int i = second_invalid + 1; i < to_line; i++) {
+				main->lines[i].offset.y = total_height;
+				total_height = _calculate_line_vertical_offset(main->lines[i]);
+			}
 		}
 		queue_redraw();
 	}
@@ -7497,6 +7532,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 	if (visible_characters != p_visible) {
 		_stop_thread();
 
+		int prev_vc = visible_characters;
 		visible_characters = p_visible;
 		if (p_visible == -1) {
 			visible_ratio = 1;
@@ -7506,10 +7542,44 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 				visible_ratio = (float)p_visible / (float)total_char_count;
 			}
 		}
-		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			main->first_invalid_line.store(0); // Invalidate all lines.
-			_invalidate_accessibility();
-			_validate_line_caches();
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters != prev_vc) {
+			int new_vc = (visible_characters < 0) ? get_total_character_count() : visible_characters;
+			int old_vc = (prev_vc < 0) ? get_total_character_count() : prev_vc;
+			int to_line = main->first_invalid_line.load();
+			int old_from_l = to_line;
+			int new_from_l = to_line;
+			for (int i = 0; i < to_line; i++) {
+				const Line &l = main->lines[i];
+				if (l.char_offset <= old_vc && l.char_offset + l.char_count > old_vc) {
+					old_from_l = i;
+				}
+				if (l.char_offset <= new_vc && l.char_offset + l.char_count > new_vc) {
+					new_from_l = i;
+				}
+			}
+			Rect2 text_rect = _get_text_rect();
+			int first_invalid = MIN(new_from_l, old_from_l);
+			int second_invalid = MAX(new_from_l, old_from_l);
+
+			float total_height = (first_invalid == 0) ? 0 : _calculate_line_vertical_offset(main->lines[first_invalid - 1]);
+			if (first_invalid < to_line) {
+				int total_chars = main->lines[first_invalid].char_offset;
+				total_height = _shape_line(main, first_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+			}
+			if (first_invalid != second_invalid) {
+				for (int i = first_invalid + 1; i < second_invalid; i++) {
+					main->lines[i].offset.y = total_height;
+					total_height = _calculate_line_vertical_offset(main->lines[i]);
+				}
+				if (second_invalid < to_line) {
+					int total_chars = main->lines[second_invalid].char_offset;
+					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+				}
+			}
+			for (int i = second_invalid + 1; i < to_line; i++) {
+				main->lines[i].offset.y = total_height;
+				total_height = _calculate_line_vertical_offset(main->lines[i]);
+			}
 		}
 		queue_redraw();
 	}
