@@ -45,8 +45,9 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_play_area_mode, "mode");
 	GDVIRTUAL_BIND(_get_play_area);
 
-	GDVIRTUAL_BIND(_get_render_target_size);
-	GDVIRTUAL_BIND(_get_view_count);
+	GDVIRTUAL_BIND(_get_layer_count);
+	GDVIRTUAL_BIND(_get_render_target_size2, "layer");
+	GDVIRTUAL_BIND(_get_view_count2, "layer");
 	GDVIRTUAL_BIND(_get_camera_transform);
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
@@ -74,18 +75,26 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_camera_feed_id);
 
 	// override output methods
-	GDVIRTUAL_BIND(_get_color_texture);
-	GDVIRTUAL_BIND(_get_depth_texture);
-	GDVIRTUAL_BIND(_get_velocity_texture);
+	GDVIRTUAL_BIND(_get_color_texture2, "layer");
+	GDVIRTUAL_BIND(_get_depth_texture2, "layer");
+	GDVIRTUAL_BIND(_get_velocity_texture2, "layer");
 
-	ClassDB::bind_method(D_METHOD("get_color_texture"), &XRInterfaceExtension::get_color_texture);
-	ClassDB::bind_method(D_METHOD("get_depth_texture"), &XRInterfaceExtension::get_depth_texture);
-	ClassDB::bind_method(D_METHOD("get_velocity_texture"), &XRInterfaceExtension::get_velocity_texture);
+	ClassDB::bind_method(D_METHOD("get_color_texture", "layer"), &XRInterfaceExtension::get_color_texture, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_depth_texture", "layer"), &XRInterfaceExtension::get_depth_texture, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_velocity_texture", "layer"), &XRInterfaceExtension::get_velocity_texture, DEFVAL(0));
 
 	// helper methods
 	ClassDB::bind_method(D_METHOD("add_blit", "render_target", "src_rect", "dst_rect", "use_layer", "layer", "apply_lens_distortion", "eye_center", "k1", "k2", "upscale", "aspect_ratio"), &XRInterfaceExtension::add_blit);
 	ClassDB::bind_method(D_METHOD("get_render_target_texture", "render_target"), &XRInterfaceExtension::get_render_target_texture);
 	// ClassDB::bind_method(D_METHOD("get_render_target_depth", "render_target"), &XRInterfaceExtension::get_render_target_depth);
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND(_get_render_target_size);
+	GDVIRTUAL_BIND(_get_view_count);
+	GDVIRTUAL_BIND(_get_color_texture);
+	GDVIRTUAL_BIND(_get_depth_texture);
+	GDVIRTUAL_BIND(_get_velocity_texture);
+#endif
 }
 
 StringName XRInterfaceExtension::get_name() const {
@@ -194,15 +203,47 @@ int XRInterfaceExtension::get_camera_feed_id() {
 	return feed_id;
 }
 
-Size2 XRInterfaceExtension::get_render_target_size() {
+uint32_t XRInterfaceExtension::get_layer_count() {
+	uint32_t layer_count = 1;
+	GDVIRTUAL_CALL(_get_layer_count, layer_count);
+	return layer_count;
+}
+
+Size2 XRInterfaceExtension::get_render_target_size(uint32_t p_layer) {
 	Size2 size;
+
+	if (GDVIRTUAL_CALL(_get_render_target_size2, p_layer, size)) {
+		return size;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_layer > 0) {
+		return size;
+	}
+
+	// Fall back on old implementation
 	GDVIRTUAL_CALL(_get_render_target_size, size);
+#endif
+
 	return size;
 }
 
-uint32_t XRInterfaceExtension::get_view_count() {
+uint32_t XRInterfaceExtension::get_view_count(uint32_t p_layer) {
 	uint32_t view_count = 1;
+
+	if (GDVIRTUAL_CALL(_get_view_count2, p_layer, view_count)) {
+		return view_count;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_layer > 0) {
+		return 0;
+	}
+
+	// Fall back on old implementation
 	GDVIRTUAL_CALL(_get_view_count, view_count);
+#endif
+
 	return view_count;
 }
 
@@ -212,15 +253,41 @@ Transform3D XRInterfaceExtension::get_camera_transform() {
 	return transform;
 }
 
-Transform3D XRInterfaceExtension::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
+Transform3D XRInterfaceExtension::get_transform_for_view(uint32_t p_layer, uint32_t p_view, const Transform3D &p_cam_transform) {
 	Transform3D transform;
+
+	if (GDVIRTUAL_CALL(_get_transform_for_view2, p_layer, p_view, p_cam_transform, transform)) {
+		return transform;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_layer > 0) {
+		return Transform3D();
+	}
+
 	GDVIRTUAL_CALL(_get_transform_for_view, p_view, p_cam_transform, transform);
+#endif
+
 	return transform;
 }
 
-Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_layer, uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	Projection cm;
 	PackedFloat64Array arr;
+
+	if (GDVIRTUAL_CALL(_get_projection_for_view2, p_layer, p_view, p_aspect, p_z_near, p_z_far, arr)) {
+		ERR_FAIL_COND_V_MSG(arr.size() != 16, Projection(), "Projection matrix must contain 16 floats");
+		real_t *m = (real_t *)cm.columns;
+		for (int i = 0; i < 16; i++) {
+			m[i] = arr[i];
+		}
+		return cm;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_layer > 0) {
+		return Projection();
+	}
 
 	if (GDVIRTUAL_CALL(_get_projection_for_view, p_view, p_aspect, p_z_near, p_z_far, arr)) {
 		ERR_FAIL_COND_V_MSG(arr.size() != 16, Projection(), "Projection matrix must contain 16 floats");
@@ -230,6 +297,7 @@ Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double
 		}
 		return cm;
 	}
+#endif
 
 	return Projection();
 }
@@ -251,21 +319,57 @@ XRInterface::VRSTextureFormat XRInterfaceExtension::get_vrs_texture_format() {
 	return vrs_texture_format;
 }
 
-RID XRInterfaceExtension::get_color_texture() {
+RID XRInterfaceExtension::get_color_texture(uint32_t p_layer) {
 	RID texture;
+
+	if (GDVIRTUAL_CALL(_get_color_texture2, p_layer, texture)) {
+		return texture;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_layer > 0) {
+		return RID();
+	}
+
 	GDVIRTUAL_CALL(_get_color_texture, texture);
+#endif
+
 	return texture;
 }
 
-RID XRInterfaceExtension::get_depth_texture() {
+RID XRInterfaceExtension::get_depth_texture(uint32_t p_layer) {
 	RID texture;
+
+	if (GDVIRTUAL_CALL(_get_depth_texture2, p_layer, texture)) {
+		return texture;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_layer > 0) {
+		return RID();
+	}
+
 	GDVIRTUAL_CALL(_get_depth_texture, texture);
+#endif
+
 	return texture;
 }
 
-RID XRInterfaceExtension::get_velocity_texture() {
+RID XRInterfaceExtension::get_velocity_texture(uint32_t p_layer) {
 	RID texture;
+
+	if (GDVIRTUAL_CALL(_get_velocity_texture2, p_layer, texture)) {
+		return texture;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_layer > 0) {
+		return RID();
+	}
+
 	GDVIRTUAL_CALL(_get_velocity_texture, texture);
+#endif
+
 	return texture;
 }
 
