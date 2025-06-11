@@ -1496,34 +1496,37 @@ void Node3DEditorViewport::_transform_gizmo_apply(Node3D *p_node, const Transfor
 		return;
 	}
 
+	// Always use local coords for scaling
+	if (_edit.mode == TransformMode::TRANSFORM_SCALE) {
+		p_node->set_transform(p_transform);
+		return;
+	}
+
 	if (p_local) {
 		p_node->set_transform(p_transform);
-	} else {
+		return;
+	}
+
+	if (!p_local) {
 		p_node->set_global_transform(p_transform);
+		return;
 	}
 }
 
 Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal) {
 	switch (p_mode) {
 		case TRANSFORM_SCALE: {
+			Vector3 motion_scaled = p_motion * p_original_local.basis.get_scale();
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
-				p_motion.snapf(p_extra);
+				motion_scaled.snapf(p_extra);
 			}
+
+			// Should always scale in local space, for better UX
 			Transform3D s;
-			if (p_local) {
-				s.basis = p_original_local.basis.scaled_local(p_motion + Vector3(1, 1, 1));
-				s.origin = p_original_local.origin;
-			} else {
-				s.basis.scale(p_motion + Vector3(1, 1, 1));
-				Transform3D base = Transform3D(Basis(), _edit.center);
-				s = base * (s * (base.inverse() * p_original));
-
-				// Recalculate orthogonalized scale without moving origin.
-				if (p_orthogonal) {
-					s.basis = p_original.basis.scaled_orthogonal(p_motion + Vector3(1, 1, 1));
-				}
-			}
-
+			Basis scaled_basis = p_original_local.basis.scaled_local(p_motion + Vector3(1, 1, 1));
+			Basis unit_basis = scaled_basis.orthogonalized().orthonormalized();
+			s.basis = unit_basis.scaled_local(p_original_local.basis.get_scale() + motion_scaled);
+			s.origin = p_original.origin;
 			return s;
 		}
 		case TRANSFORM_TRANSLATE: {
@@ -5286,7 +5289,9 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			// TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 			set_message(TTR("Scaling:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
-			if (local_coords) {
+
+			// Always use local coords if transform mode is set to scale
+			if (local_coords || _edit.mode == TransformMode::TRANSFORM_SCALE) {
 				// TODO: needed?
 				motion = _edit.original.basis.inverse().xform(motion);
 			}
@@ -6358,6 +6363,10 @@ void Node3DEditor::update_transform_gizmo() {
 			}
 			gizmo_center += xf.origin;
 			if (count == selection.size() - 1 && local_gizmo_coords) {
+				gizmo_basis = xf.basis;
+			}
+			// Always use local coords for scale
+			if (get_tool_mode() == ToolMode::TOOL_MODE_SCALE) {
 				gizmo_basis = xf.basis;
 			}
 			count++;
