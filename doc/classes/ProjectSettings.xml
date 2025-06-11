@@ -42,10 +42,10 @@
 
 				var propertyInfo = new Godot.Collections.Dictionary
 				{
-					{"name", "category/propertyName"},
-					{"type", (int)Variant.Type.Int},
-					{"hint", (int)PropertyHint.Enum},
-					{"hint_string", "one,two,three"},
+					{ "name", "category/propertyName" },
+					{ "type", (int)Variant.Type.Int },
+					{ "hint", (int)PropertyHint.Enum },
+					{ "hint_string", "one,two,three" },
 				};
 
 				ProjectSettings.AddPropertyInfo(propertyInfo);
