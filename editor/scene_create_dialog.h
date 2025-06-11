@@ -61,7 +61,6 @@ public:
 	};
 
 private:
-	String directory;
 	String scene_name;
 	String root_name;
 
@@ -75,13 +74,17 @@ private:
 	Button *select_node_button = nullptr;
 	CreateDialog *select_node_dialog = nullptr;
 
+	bool can_edit_directory = false;
 	Label *directory_edit_label = nullptr;
 	LineEdit *directory_edit = nullptr;
+	Button *directory_button = nullptr;
+	HBoxContainer *directory_container = nullptr;
 	LineEdit *scene_name_edit = nullptr;
 	OptionButton *scene_extension_picker = nullptr;
 	LineEdit *root_name_edit = nullptr;
 
 	EditorValidationPanel *validation_panel = nullptr;
+	EditorFileDialog *file_browse = nullptr;
 
 	void accept_create();
 	void browse_types();
@@ -96,6 +99,9 @@ public:
 
 	String get_scene_path() const;
 	Node *create_scene_root();
+
+	void _browse_directory();
+	void _dir_selected(const String &p_file);
 
 	SceneCreateDialog();
 };
