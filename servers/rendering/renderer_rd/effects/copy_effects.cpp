@@ -303,6 +303,15 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 			}
 		}
 	}
+
+	{
+		// Initialize Spherical Harmonics computation.
+		Vector<String> sh_from_cubemap_modes;
+		sh_from_cubemap_modes.push_back("");
+		sh_from_cubemap.shader.initialize(sh_from_cubemap_modes);
+		sh_from_cubemap.shader_version = sh_from_cubemap.shader.version_create();
+		sh_from_cubemap.compute_pipeline = RD::get_singleton()->compute_pipeline_create(sh_from_cubemap.shader.version_get_shader(sh_from_cubemap.shader_version, 0));
+	}
 }
 
 CopyEffects::~CopyEffects() {
@@ -317,6 +326,11 @@ CopyEffects::~CopyEffects() {
 		roughness.compute_shader.version_free(roughness.shader_version);
 	}
 
+	if (RD::get_singleton()->uniform_set_is_valid(sh_from_cubemap.uniform_set)) {
+		RD::get_singleton()->free(sh_from_cubemap.uniform_set);
+	}
+
+	sh_from_cubemap.shader.version_free(sh_from_cubemap.shader_version);
 	copy.shader.version_free(copy.shader_version);
 	specular_merge.shader.version_free(specular_merge.shader_version);
 
@@ -1308,4 +1322,39 @@ void CopyEffects::merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_b
 	RD::get_singleton()->draw_list_end();
 
 	RD::get_singleton()->draw_command_end_label();
+}
+
+void CopyEffects::calculate_sh_from_cubemap(RID p_src_cubemap_texture, RID p_output_storage_buffer, bool p_compute_l2) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD *rd = RD::get_singleton();
+	rd->draw_command_begin_label("Spherical Harmonics from Cubemap");
+
+	RD::Uniform u_src_cubemap(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0u, Vector<RID>({ default_sampler, p_src_cubemap_texture }));
+	RD::Uniform u_sh_coeffs_output(RD::UNIFORM_TYPE_STORAGE_BUFFER, 1u, p_output_storage_buffer);
+
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
+	uniforms.push_back(u_src_cubemap);
+	uniforms.push_back(u_sh_coeffs_output);
+
+	RID shader = sh_from_cubemap.shader.version_get_shader(sh_from_cubemap.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	// Only 1 uint32_t is needed, but we need to send 16 bytes of padding.
+	const uint32_t compute_geomerics_l1[4] = { !p_compute_l2, 0u, 0u, 0u };
+
+	RD::ComputeListID compute_list = rd->compute_list_begin();
+	rd->compute_list_bind_compute_pipeline(compute_list, sh_from_cubemap.compute_pipeline);
+	rd->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache_vec(shader, 0, uniforms), 0);
+	rd->compute_list_set_push_constant(compute_list, &compute_geomerics_l1, sizeof(compute_geomerics_l1));
+	rd->compute_list_dispatch_threads(compute_list, p_compute_l2 ? 2048u : 1024u, 1u, 1u);
+	rd->compute_list_end();
+
+	rd->draw_command_end_label();
 }
