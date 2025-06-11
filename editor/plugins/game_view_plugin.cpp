@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -225,6 +226,61 @@ void GameViewDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("session_stopped"));
 }
 
+bool GameViewDebugger::add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect) {
+	bool found = false;
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			ScreenshotCB sd;
+			sd.cb = p_callaback;
+			sd.rect = p_rect;
+			screenshot_callbacks[scr_rq_id] = sd;
+
+			Array arr;
+			arr.append(scr_rq_id);
+			I->send_message("scene:rq_screenshot", arr);
+			scr_rq_id++;
+			found = true;
+		}
+	}
+	return found;
+}
+
+bool GameViewDebugger::_msg_get_screenshot(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 4, false, "get_screenshot: invalid number of arguments");
+
+	int64_t id = p_args[0];
+	int64_t w = p_args[1];
+	int64_t h = p_args[2];
+	const String &path = p_args[3];
+
+	if (screenshot_callbacks.has(id)) {
+		if (screenshot_callbacks[id].cb.is_valid()) {
+			screenshot_callbacks[id].cb.call(w, h, path, screenshot_callbacks[id].rect);
+		}
+		screenshot_callbacks.erase(id);
+	}
+	return true;
+}
+
+bool GameViewDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
+	Ref<EditorDebuggerSession> session = get_session(p_session);
+	ERR_FAIL_COND_V(session.is_null(), true);
+
+	if (p_message == "game_view:get_screenshot") {
+		return _msg_get_screenshot(p_data);
+	} else {
+		// Any other messages with this prefix should be ignored.
+		WARN_PRINT("GameViewDebugger unknown message: " + p_message);
+		return false;
+	}
+
+	return true;
+}
+
+bool GameViewDebugger::has_capture(const String &p_capture) const {
+	return p_capture == "game_view";
+}
+
 GameViewDebugger::GameViewDebugger() {
 	EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &GameViewDebugger::_feature_profile_changed));
 
@@ -285,6 +341,23 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 	}
 
 	_update_arguments_for_instance(p_idx, r_arguments);
+}
+
+bool GameView::_instance_rq_screenshot_static(const Callable &p_callback) {
+	ERR_FAIL_NULL_V(singleton, false);
+	return singleton->_instance_rq_screenshot(p_callback);
+}
+
+bool GameView::_instance_rq_screenshot(const Callable &p_callback) {
+	if (debugger.is_null() || window_wrapper->get_window_enabled() || !embedded_process || !embedded_process->is_embedding_completed()) {
+		return false;
+	}
+	Rect2 r = embedded_process->get_adjusted_embedded_window_rect(embedded_process->get_rect());
+	r.position += embedded_process->get_global_position();
+#ifndef MACOS_ENABLED
+	r.position -= embedded_process->get_window()->get_position();
+#endif
+	return debugger->add_screenshot_callback(p_callback, r);
 }
 
 void GameView::_show_update_window_wrapper() {
@@ -756,6 +829,7 @@ void GameView::_notification(int p_what) {
 				EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
 				EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &GameView::_stop_pressed));
 				EditorRun::instance_starting_callback = _instance_starting_static;
+				EditorRun::instance_rq_screenshot_callback = _instance_rq_screenshot_static;
 
 				// Listen for project settings changes to update the window size and aspect ratio.
 				ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &GameView::_editor_or_project_settings_changed));

@@ -32,9 +32,11 @@
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
+#include "core/os/time.h"
 #include "core/templates/local_vector.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
@@ -423,6 +425,46 @@ Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_arg
 
 // endregion
 
+// region Embedded process screenshot.
+
+Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+
+	Viewport *viewport = SceneTree::get_singleton()->get_root();
+	ERR_FAIL_NULL_V_MSG(viewport, ERR_UNCONFIGURED, "Cannot get a viewport from the main screen.");
+	Ref<ViewportTexture> texture = viewport->get_texture();
+	ERR_FAIL_COND_V_MSG(texture.is_null(), ERR_UNCONFIGURED, "Cannot get a viewport texture from the main screen.");
+	Ref<Image> img = texture->get_image();
+	ERR_FAIL_COND_V_MSG(img.is_null(), ERR_UNCONFIGURED, "Cannot get an image from a viewport texture of the main screen.");
+	img->clear_mipmaps();
+
+	const String TEMP_DIR = OS::get_singleton()->get_temp_path();
+	uint32_t suffix_i = 0;
+	String path;
+	while (true) {
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
+		datetime += itos(Time::get_singleton()->get_ticks_usec());
+		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
+		path = TEMP_DIR.path_join("scr-" + suffix + ".png");
+		if (!DirAccess::exists(path)) {
+			break;
+		}
+		suffix_i += 1;
+	}
+	img->save_png(path);
+
+	Array arr;
+	arr.append(p_args[0]);
+	arr.append(img->get_width());
+	arr.append(img->get_height());
+	arr.append(path);
+	EngineDebugger::get_singleton()->send_message("game_view:get_screenshot", arr);
+
+	return OK;
+}
+
+// endregion
+
 HashMap<String, SceneDebugger::ParseMessageFunc> SceneDebugger::message_handlers;
 
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
@@ -490,6 +532,7 @@ void SceneDebugger::_init_message_handlers() {
 #ifndef _3D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
 #endif
+	message_handlers["rq_screenshot"] = _msg_rq_screenshot;
 }
 
 void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
