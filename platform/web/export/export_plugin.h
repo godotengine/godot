@@ -59,6 +59,8 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 
 	Ref<EditorHTTPServer> server;
 
+	bool _should_update_export_options = false;
+
 	String _get_template_name(bool p_extension, bool p_thread_support, bool p_debug) const {
 		String name = "web";
 		if (p_extension) {
@@ -115,10 +117,19 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	Error _start_server(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
 	Error _stop_server();
 
+	bool _get_preset_threads_enabled(const Ref<EditorExportPreset> &p_preset) const;
+
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
+	virtual bool should_update_export_options() override {
+		if (!_should_update_export_options) {
+			return false;
+		}
+		_should_update_export_options = false;
+		return true;
+	}
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 
 	virtual String get_name() const override;
@@ -144,6 +155,10 @@ public:
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
+	}
+
+	virtual void export_option_set(const String &p_edited_property) override {
+		_should_update_export_options = p_edited_property == "variant/thread_support";
 	}
 
 	String get_debug_protocol() const override { return "ws://"; }
