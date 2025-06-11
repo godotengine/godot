@@ -614,20 +614,18 @@ void ScriptTextEditor::_update_background_color() {
 	// Set the warning background.
 	if (warning_line_color.a != 0.0) {
 		for (const ScriptLanguage::Warning &warning : warnings) {
-			int folder_line_header = te->get_folded_line_header(warning.end_line - 2);
-			bool is_folded = folder_line_header != (warning.end_line - 2);
+			int warning_start_line = CLAMP(warning.start_line - 1, 0, te->get_line_count() - 1);
+			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
+			int folded_line_header = te->get_folded_line_header(warning_start_line);
 
-			if (is_folded) {
-				te->set_line_background_color(folder_line_header, warning_line_color);
-			} else if (warning.end_line - warning.start_line > 0 && warning.end_line - warning.start_line < 20) {
-				// If the warning spans below 20 lines (arbitrary), set the background color for all lines.
-				// (W.end_line - W.start_line > 0) ensures that we set the background for single line warnings.
-				for (int i = warning.start_line - 1; i < warning.end_line - 1; i++) {
+			// If the warning highlight is too long, only highlight the start line.
+			const int warning_max_lines = 20;
+
+			te->set_line_background_color(folded_line_header, warning_line_color);
+			if (warning_end_line - warning_start_line < warning_max_lines) {
+				for (int i = warning_start_line + 1; i <= warning_end_line; i++) {
 					te->set_line_background_color(i, warning_line_color);
 				}
-			} else {
-				// Otherwise, just set the background color for the start line of the warning.
-				te->set_line_background_color(warning.start_line - 1, warning_line_color);
 			}
 		}
 	}
@@ -635,14 +633,10 @@ void ScriptTextEditor::_update_background_color() {
 	// Set the error background.
 	if (marked_line_color.a != 0.0) {
 		for (const ScriptLanguage::ScriptError &error : errors) {
-			int folder_line_header = te->get_folded_line_header(error.line - 1);
-			bool is_folded_code = folder_line_header != (error.line - 1);
+			int error_line = CLAMP(error.line - 1, 0, te->get_line_count() - 1);
+			int folded_line_header = te->get_folded_line_header(error_line);
 
-			if (is_folded_code) {
-				te->set_line_background_color(folder_line_header, marked_line_color);
-			} else {
-				te->set_line_background_color(error.line - 1, marked_line_color);
-			}
+			te->set_line_background_color(folded_line_header, marked_line_color);
 		}
 	}
 }
