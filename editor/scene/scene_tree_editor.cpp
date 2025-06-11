@@ -31,7 +31,6 @@
 #include "scene_tree_editor.h"
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -1682,7 +1681,7 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 
 	if (new_name.is_empty()) {
 		// If name is still empty, fallback to class name.
-		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+		if (EDITOR_GET("naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
 			new_name = Node::adjust_name_casing(p_node->get_class());
 		} else {
 			new_name = p_node->get_class();

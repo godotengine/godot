@@ -164,11 +164,15 @@ public:
 	static const int CONFIG_VERSION = 5;
 
 #ifdef TOOLS_ENABLED
+	Object *editor_settings = nullptr;
 	HashMap<String, PropertyInfo> editor_settings_info;
+	HashMap<String, Array> pending_editor_settings;
 #endif
+	HashMap<String, Variant> editor_fallbacks;
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
+	Variant get_editor_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
 	TypedArray<Dictionary> get_global_class_list();
 	void refresh_global_class_list();
 	void store_global_class_list(const Array &p_classes);
@@ -260,12 +264,16 @@ public:
 // Not a macro any longer.
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
 Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
+Variant _GLOBAL_EDITOR_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_basic = false);
+Variant _GLOBAL_EDITOR_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p_restart_if_changed = false, bool p_basic = false);
 
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
 #define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
 #define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
+#define GLOBAL_EDITOR_DEF(m_var, m_value) _GLOBAL_EDITOR_DEF(m_var, m_value)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
+#define GLOBAL_EDITOR_GET(m_var) ProjectSettings::get_singleton()->get_editor_setting(m_var)
 
 #define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
 #define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
