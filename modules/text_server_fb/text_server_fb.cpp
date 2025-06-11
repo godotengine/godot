@@ -50,6 +50,7 @@ using namespace godot;
 // Headers for building as built-in module.
 
 #include "core/config/project_settings.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
@@ -4469,6 +4470,19 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 			break;
 		}
 	}
+#ifdef DEBUG_ENABLED
+	if (!Engine::get_singleton()->is_project_manager_hint()) {
+		const String &fn = f.is_valid() ? _font_get_name(f) : String();
+		if ((sys_fb_warn == 2 || (EngineDebugger::get_singleton() && sys_fb_warn == 1)) && !sys_fb_warn_list.has(fn + p_text)) {
+			sys_fb_warn_list.insert(fn + p_text);
+			if (fn.is_empty()) {
+				WARN_PRINT(vformat("System fallback failed to find font to display text \"%s...\", it might be invisible or have a different look in the exported project.", p_text));
+			} else {
+				WARN_PRINT(vformat("System fallback font \"%s\" was used to display text \"%s...\", it might be invisible or have a different look in the exported project.", fn, p_text));
+			}
+		}
+	}
+#endif
 	return f;
 }
 
@@ -5187,10 +5201,16 @@ PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_str
 
 void TextServerFallback::_update_settings() {
 	lcd_subpixel_layout.set((TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout"));
+#ifdef DEBUG_ENABLED
+	sys_fb_warn = (int)GLOBAL_GET("debug/settings/ui/show_system_font_fallback_warnings");
+#endif
 }
 
 TextServerFallback::TextServerFallback() {
 	_insert_feature_sets();
+#ifdef DEBUG_ENABLED
+	sys_fb_warn = (int)GLOBAL_GET("debug/settings/ui/show_system_font_fallback_warnings");
+#endif
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerFallback::_update_settings));
 }
 

@@ -694,6 +694,11 @@ class TextServerAdvanced : public TextServerExtension {
 
 	Mutex ft_mutex;
 
+#ifdef DEBUG_ENABLED
+	int sys_fb_warn = 0;
+	HashSet<String> sys_fb_warn_list;
+#endif
+
 	// HarfBuzz bitmap font interface.
 
 	static hb_font_funcs_t *funcs;
