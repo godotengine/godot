@@ -91,6 +91,7 @@ private:
 	MeshInstance3D *fallback = nullptr;
 	bool should_update_fallback_mesh = false;
 	bool openxr_session_running = false;
+	bool registered = false;
 
 	OpenXRViewportCompositionLayerProvider::SwapchainState *swapchain_state = nullptr;
 

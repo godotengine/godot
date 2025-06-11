@@ -134,15 +134,29 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 		int current_bone = -1;
 		int prev_bone = -1;
 		int joint_end = p_simulator->get_joint_count(i) - 1;
+		bool is_extended = p_simulator->is_end_bone_extended(i) && p_simulator->get_end_bone_length(i) > 0;
 		for (int j = 0; j <= joint_end; j++) {
 			current_bone = p_simulator->get_joint_bone(i, j);
+			Transform3D global_pose = p_skeleton->get_bone_global_rest(current_bone);
 			if (j > 0) {
 				Transform3D parent_global_pose = p_skeleton->get_bone_global_rest(prev_bone);
-				Transform3D global_pose = p_skeleton->get_bone_global_rest(current_bone);
 				draw_line(surface_tool, parent_global_pose.origin, global_pose.origin, bone_color);
 				draw_sphere(surface_tool, global_pose.basis, global_pose.origin, p_simulator->get_joint_radius(i, j - 1), bone_color);
+
+				// Draw rotation axis vector if not ROTATION_AXIS_ALL.
+				if (j != joint_end || (j == joint_end && is_extended)) {
+					SpringBoneSimulator3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
+					if (rotation_axis != SpringBoneSimulator3D::ROTATION_AXIS_ALL) {
+						Vector3 axis_vector = p_simulator->get_joint_rotation_axis_vector(i, j);
+						if (!axis_vector.is_zero_approx()) {
+							float line_length = p_simulator->get_joint_radius(i, j - 1) * 2.0;
+							Vector3 axis = global_pose.basis.xform(axis_vector.normalized()) * line_length;
+							draw_line(surface_tool, global_pose.origin - axis, global_pose.origin + axis, bone_color);
+						}
+					}
+				}
 			}
-			if (j == joint_end && p_simulator->is_end_bone_extended(i) && p_simulator->get_end_bone_length(i) > 0) {
+			if (j == joint_end && is_extended) {
 				Vector3 axis = p_simulator->get_end_bone_axis(current_bone, p_simulator->get_end_bone_direction(i));
 				if (axis.is_zero_approx()) {
 					continue;
@@ -150,7 +164,6 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 				bones[0] = current_bone;
 				surface_tool->set_bones(bones);
 				surface_tool->set_weights(weights);
-				Transform3D global_pose = p_skeleton->get_bone_global_rest(current_bone);
 				axis = global_pose.xform(axis * p_simulator->get_end_bone_length(i));
 				draw_line(surface_tool, global_pose.origin, axis, bone_color);
 				draw_sphere(surface_tool, global_pose.basis, axis, p_simulator->get_joint_radius(i, j), bone_color);
@@ -158,6 +171,18 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 				bones[0] = current_bone;
 				surface_tool->set_bones(bones);
 				surface_tool->set_weights(weights);
+				if (j == 0) {
+					// Draw rotation axis vector if not ROTATION_AXIS_ALL.
+					SpringBoneSimulator3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
+					if (rotation_axis != SpringBoneSimulator3D::ROTATION_AXIS_ALL) {
+						Vector3 axis_vector = p_simulator->get_joint_rotation_axis_vector(i, j);
+						if (!axis_vector.is_zero_approx()) {
+							float line_length = p_simulator->get_joint_radius(i, j) * 2.0;
+							Vector3 axis = global_pose.basis.xform(axis_vector.normalized()) * line_length;
+							draw_line(surface_tool, global_pose.origin - axis, global_pose.origin + axis, bone_color);
+						}
+					}
+				}
 			}
 			prev_bone = current_bone;
 		}
@@ -171,7 +196,7 @@ void SpringBoneSimulator3DGizmoPlugin::draw_sphere(Ref<SurfaceTool> &p_surface_t
 	static const Vector3 VECTOR3_UP = Vector3(0, 1, 0);
 	static const Vector3 VECTOR3_FORWARD = Vector3(0, 0, 1);
 	static const int STEP = 16;
-	static const float SPPI = Math_TAU / (float)STEP;
+	static const float SPPI = Math::TAU / (float)STEP;
 
 	for (int i = 1; i <= STEP; i++) {
 		p_surface_tool->set_color(p_color);
@@ -302,7 +327,7 @@ void SpringBoneCollision3DGizmoPlugin::draw_sphere(Ref<SurfaceTool> &p_surface_t
 	static const Vector3 VECTOR3_UP = Vector3(0, 1, 0);
 	static const Vector3 VECTOR3_FORWARD = Vector3(0, 0, 1);
 	static const int STEP = 16;
-	static const float SPPI = Math_TAU / (float)STEP;
+	static const float SPPI = Math::TAU / (float)STEP;
 
 	for (int i = 1; i <= STEP; i++) {
 		p_surface_tool->set_color(p_color);
@@ -330,8 +355,8 @@ void SpringBoneCollision3DGizmoPlugin::draw_capsule(Ref<SurfaceTool> &p_surface_
 	static const Vector3 VECTOR3_FORWARD = Vector3(0, 0, 1);
 	static const int STEP = 16;
 	static const int HALF_STEP = 8;
-	static const float SPPI = Math_TAU / (float)STEP;
-	static const float HALF_PI = Math_PI * 0.5;
+	static const float SPPI = Math::TAU / (float)STEP;
+	static const float HALF_PI = Math::PI * 0.5;
 
 	Vector3 top = VECTOR3_UP * (p_height * 0.5 - p_radius);
 	Vector3 bottom = -top;
@@ -376,7 +401,7 @@ void SpringBoneCollision3DGizmoPlugin::draw_capsule(Ref<SurfaceTool> &p_surface_
 
 void SpringBoneCollision3DGizmoPlugin::draw_plane(Ref<SurfaceTool> &p_surface_tool, const Color &p_color) {
 	static const Vector3 VECTOR3_UP = Vector3(0, 1, 0);
-	static const float HALF_PI = Math_PI * 0.5;
+	static const float HALF_PI = Math::PI * 0.5;
 	static const float ARROW_LENGTH = 0.3;
 	static const float ARROW_HALF_WIDTH = 0.05;
 	static const float ARROW_TOP_HALF_WIDTH = 0.1;

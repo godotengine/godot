@@ -145,6 +145,16 @@ void DisplayServerAndroid::emit_system_theme_changed() {
 	}
 }
 
+void DisplayServerAndroid::set_hardware_keyboard_connection_change_callback(const Callable &p_callable) {
+	hardware_keyboard_connection_changed = p_callable;
+}
+
+void DisplayServerAndroid::emit_hardware_keyboard_connection_changed(bool p_connected) {
+	if (hardware_keyboard_connection_changed.is_valid()) {
+		hardware_keyboard_connection_changed.call_deferred(p_connected);
+	}
+}
+
 void DisplayServerAndroid::clipboard_set(const String &p_text) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL(godot_java);
@@ -254,6 +264,10 @@ bool DisplayServerAndroid::screen_is_kept_on() const {
 }
 
 void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL(godot_io_java);
 
@@ -261,12 +275,23 @@ void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientati
 }
 
 DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_LANDSCAPE);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, SCREEN_LANDSCAPE);
 
 	const int orientation = godot_io_java->get_screen_orientation();
 	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
 	return (ScreenOrientation)orientation;
+}
+
+int DisplayServerAndroid::get_display_rotation() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 0);
+
+	return godot_io_java->get_display_rotation();
 }
 
 int DisplayServerAndroid::get_screen_count() const {
@@ -278,26 +303,46 @@ int DisplayServerAndroid::get_primary_screen() const {
 }
 
 Point2i DisplayServerAndroid::screen_get_position(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
 	return Point2i(0, 0);
 }
 
 Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	return OS_Android::get_singleton()->get_display_size();
 }
 
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	Size2i display_size = OS_Android::get_singleton()->get_display_size();
 	return Rect2i(0, 0, display_size.width, display_size.height);
 }
 
 int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 160);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_NULL_V(godot_io_java, 0);
+	ERR_FAIL_NULL_V(godot_io_java, 160);
 
 	return godot_io_java->get_screen_dpi();
 }
 
 float DisplayServerAndroid::screen_get_scale(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, 1.0f);
 
@@ -315,6 +360,10 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 }
 
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	if (!godot_io_java) {
 		ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
@@ -470,7 +519,8 @@ void DisplayServerAndroid::window_set_title(const String &p_title, DisplayServer
 }
 
 int DisplayServerAndroid::window_get_current_screen(DisplayServer::WindowID p_window) const {
-	return SCREEN_OF_MAIN_WINDOW;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	return 0;
 }
 
 void DisplayServerAndroid::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {

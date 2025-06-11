@@ -45,12 +45,12 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/dtls_server.h"
+#include "core/io/file_access_encrypted.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/missing_resource.h"
-#include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
@@ -70,6 +70,7 @@
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/object/class_db.h"
+#include "core/object/script_backtrace.h"
 #include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
 #include "core/object/worker_thread_pool.h"
@@ -78,6 +79,9 @@
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
+#ifndef DISABLE_DEPRECATED
+#include "core/io/packed_data_container.h"
+#endif
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -91,19 +95,19 @@ static Ref<GDExtensionResourceLoader> resource_loader_gdextension;
 static Ref<ResourceFormatSaverJSON> resource_saver_json;
 static Ref<ResourceFormatLoaderJSON> resource_loader_json;
 
-static core_bind::ResourceLoader *_resource_loader = nullptr;
-static core_bind::ResourceSaver *_resource_saver = nullptr;
-static core_bind::OS *_os = nullptr;
-static core_bind::Engine *_engine = nullptr;
-static core_bind::special::ClassDB *_classdb = nullptr;
-static core_bind::Marshalls *_marshalls = nullptr;
-static core_bind::EngineDebugger *_engine_debugger = nullptr;
+static CoreBind::ResourceLoader *_resource_loader = nullptr;
+static CoreBind::ResourceSaver *_resource_saver = nullptr;
+static CoreBind::OS *_os = nullptr;
+static CoreBind::Engine *_engine = nullptr;
+static CoreBind::Special::ClassDB *_classdb = nullptr;
+static CoreBind::Marshalls *_marshalls = nullptr;
+static CoreBind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
 static Time *_time = nullptr;
 
-static core_bind::Geometry2D *_geometry_2d = nullptr;
-static core_bind::Geometry3D *_geometry_3d = nullptr;
+static CoreBind::Geometry2D *_geometry_2d = nullptr;
+static CoreBind::Geometry3D *_geometry_3d = nullptr;
 
 static WorkerThreadPool *worker_thread_pool = nullptr;
 
@@ -136,8 +140,10 @@ void register_core_types() {
 
 	CoreStringNames::create();
 
-	resource_format_po.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_po);
+	if (GD_IS_CLASS_ENABLED(Translation)) {
+		resource_format_po.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_po);
+	}
 
 	resource_saver_binary.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
@@ -150,14 +156,16 @@ void register_core_types() {
 	resource_format_importer_saver.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_format_importer_saver);
 
-	resource_format_image.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_image);
+	if (GD_IS_CLASS_ENABLED(Image)) {
+		resource_format_image.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_image);
+	}
 
 	GDREGISTER_CLASS(Object);
 
 	GDREGISTER_ABSTRACT_CLASS(Script);
 	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
-
+	GDREGISTER_CLASS(ScriptBacktrace);
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
 	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
@@ -218,16 +226,21 @@ void register_core_types() {
 	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
 	ClassDB::register_custom_instance_class<DTLSServer>();
 
-	resource_format_saver_crypto.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
-	resource_format_loader_crypto.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+	if (GD_IS_CLASS_ENABLED(Crypto)) {
+		resource_format_saver_crypto.instantiate();
+		ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
 
-	resource_loader_json.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_json);
+		resource_format_loader_crypto.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+	}
 
-	resource_saver_json.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_saver_json);
+	if (GD_IS_CLASS_ENABLED(JSON)) {
+		resource_saver_json.instantiate();
+		ResourceSaver::add_resource_format_saver(resource_saver_json);
+
+		resource_loader_json.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_json);
+	}
 
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
@@ -241,9 +254,10 @@ void register_core_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(FileAccess);
 	GDREGISTER_ABSTRACT_CLASS(DirAccess);
-	GDREGISTER_CLASS(core_bind::Thread);
-	GDREGISTER_CLASS(core_bind::Mutex);
-	GDREGISTER_CLASS(core_bind::Semaphore);
+	GDREGISTER_CLASS(CoreBind::Thread);
+	GDREGISTER_CLASS(CoreBind::Mutex);
+	GDREGISTER_CLASS(CoreBind::Semaphore);
+	GDREGISTER_VIRTUAL_CLASS(CoreBind::Logger);
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
@@ -252,13 +266,15 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(PCKPacker);
 
-	GDREGISTER_CLASS(PackedDataContainer);
-	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
 	GDREGISTER_CLASS(AStar3D);
 	GDREGISTER_CLASS(AStar2D);
 	GDREGISTER_CLASS(AStarGrid2D);
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
+#ifndef DISABLE_DEPRECATED
+	GDREGISTER_CLASS(PackedDataContainer);
+	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
+#endif
 
 	GDREGISTER_ABSTRACT_CLASS(ImageFormatLoader);
 	GDREGISTER_CLASS(ImageFormatLoaderExtension);
@@ -276,21 +292,23 @@ void register_core_types() {
 
 	gdextension_manager = memnew(GDExtensionManager);
 
-	resource_loader_gdextension.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
+	if (GD_IS_CLASS_ENABLED(GDExtension)) {
+		resource_loader_gdextension.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
+	}
 
 	ip = IP::create();
 
-	_geometry_2d = memnew(core_bind::Geometry2D);
-	_geometry_3d = memnew(core_bind::Geometry3D);
+	_geometry_2d = memnew(CoreBind::Geometry2D);
+	_geometry_3d = memnew(CoreBind::Geometry3D);
 
-	_resource_loader = memnew(core_bind::ResourceLoader);
-	_resource_saver = memnew(core_bind::ResourceSaver);
-	_os = memnew(core_bind::OS);
-	_engine = memnew(core_bind::Engine);
-	_classdb = memnew(core_bind::special::ClassDB);
-	_marshalls = memnew(core_bind::Marshalls);
-	_engine_debugger = memnew(core_bind::EngineDebugger);
+	_resource_loader = memnew(CoreBind::ResourceLoader);
+	_resource_saver = memnew(CoreBind::ResourceSaver);
+	_os = memnew(CoreBind::OS);
+	_engine = memnew(CoreBind::Engine);
+	_classdb = memnew(CoreBind::Special::ClassDB);
+	_marshalls = memnew(CoreBind::Marshalls);
+	_engine_debugger = memnew(CoreBind::EngineDebugger);
 
 	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
 	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
@@ -312,14 +330,14 @@ void register_core_settings() {
 }
 
 void register_early_core_singletons() {
-	GDREGISTER_CLASS(core_bind::Engine);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", core_bind::Engine::get_singleton()));
+	GDREGISTER_CLASS(CoreBind::Engine);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", CoreBind::Engine::get_singleton()));
 
 	GDREGISTER_CLASS(ProjectSettings);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 
-	GDREGISTER_CLASS(core_bind::OS);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", core_bind::OS::get_singleton()));
+	GDREGISTER_CLASS(CoreBind::OS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", CoreBind::OS::get_singleton()));
 
 	GDREGISTER_CLASS(Time);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
@@ -329,29 +347,29 @@ void register_core_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Core", "Register Singletons");
 
 	GDREGISTER_ABSTRACT_CLASS(IP);
-	GDREGISTER_CLASS(core_bind::Geometry2D);
-	GDREGISTER_CLASS(core_bind::Geometry3D);
-	GDREGISTER_CLASS(core_bind::ResourceLoader);
-	GDREGISTER_CLASS(core_bind::ResourceSaver);
-	GDREGISTER_CLASS(core_bind::special::ClassDB);
-	GDREGISTER_CLASS(core_bind::Marshalls);
+	GDREGISTER_CLASS(CoreBind::Geometry2D);
+	GDREGISTER_CLASS(CoreBind::Geometry3D);
+	GDREGISTER_CLASS(CoreBind::ResourceLoader);
+	GDREGISTER_CLASS(CoreBind::ResourceSaver);
+	GDREGISTER_CLASS(CoreBind::Special::ClassDB);
+	GDREGISTER_CLASS(CoreBind::Marshalls);
 	GDREGISTER_CLASS(TranslationServer);
 	GDREGISTER_ABSTRACT_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
-	GDREGISTER_CLASS(core_bind::EngineDebugger);
+	GDREGISTER_CLASS(CoreBind::EngineDebugger);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", core_bind::Geometry2D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", core_bind::Geometry3D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", core_bind::ResourceLoader::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", core_bind::ResourceSaver::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", CoreBind::Geometry2D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", CoreBind::Geometry3D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", CoreBind::ResourceLoader::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", CoreBind::ResourceSaver::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", core_bind::Marshalls::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", CoreBind::Marshalls::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", core_bind::EngineDebugger::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", CoreBind::EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
@@ -408,8 +426,10 @@ void unregister_core_types() {
 		memdelete(ip);
 	}
 
-	ResourceLoader::remove_resource_format_loader(resource_format_image);
-	resource_format_image.unref();
+	if (GD_IS_CLASS_ENABLED(Image)) {
+		ResourceLoader::remove_resource_format_loader(resource_format_image);
+		resource_format_image.unref();
+	}
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_binary);
 	resource_saver_binary.unref();
@@ -423,22 +443,31 @@ void unregister_core_types() {
 	ResourceSaver::remove_resource_format_saver(resource_format_importer_saver);
 	resource_format_importer_saver.unref();
 
-	ResourceLoader::remove_resource_format_loader(resource_format_po);
-	resource_format_po.unref();
+	if (GD_IS_CLASS_ENABLED(Translation)) {
+		ResourceLoader::remove_resource_format_loader(resource_format_po);
+		resource_format_po.unref();
+	}
 
-	ResourceSaver::remove_resource_format_saver(resource_format_saver_crypto);
-	resource_format_saver_crypto.unref();
-	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
-	resource_format_loader_crypto.unref();
+	if (GD_IS_CLASS_ENABLED(Crypto)) {
+		ResourceSaver::remove_resource_format_saver(resource_format_saver_crypto);
+		resource_format_saver_crypto.unref();
 
-	ResourceSaver::remove_resource_format_saver(resource_saver_json);
-	resource_saver_json.unref();
+		ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
+		resource_format_loader_crypto.unref();
+	}
 
-	ResourceLoader::remove_resource_format_loader(resource_loader_json);
-	resource_loader_json.unref();
+	if (GD_IS_CLASS_ENABLED(JSON)) {
+		ResourceSaver::remove_resource_format_saver(resource_saver_json);
+		resource_saver_json.unref();
 
-	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
-	resource_loader_gdextension.unref();
+		ResourceLoader::remove_resource_format_loader(resource_loader_json);
+		resource_loader_json.unref();
+	}
+
+	if (GD_IS_CLASS_ENABLED(GDExtension)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
+		resource_loader_gdextension.unref();
+	}
 
 	ResourceLoader::finalize();
 
@@ -454,6 +483,8 @@ void unregister_core_types() {
 	ClassDB::cleanup();
 	CoreStringNames::free();
 	StringName::cleanup();
+
+	FileAccessEncrypted::deinitialize();
 
 	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Types");
 }

@@ -123,7 +123,7 @@
 	</methods>
 	<members>
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access" default="0">
-			The file system access scope. See [enum Access] constants.
+			The file system access scope.
 			[b]Warning:[/b] In Web builds, FileDialog cannot access the host file system. In sandboxed Linux and macOS environments, [member use_native_dialog] is automatically used to allow limited access to host file system.
 		</member>
 		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
@@ -137,8 +137,11 @@
 			The currently selected file path of the file dialog.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="FileDialog.DisplayMode" default="0">
+			Display mode of the dialog's file list.
+		</member>
 		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="FileDialog.FileMode" default="4">
-			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode].
+			The dialog's open or save mode, which affects the selection behavior.
 		</member>
 		<member name="filename_filter" type="String" setter="set_filename_filter" getter="get_filename_filter" default="&quot;&quot;">
 			The filter for file names (case-insensitive). When set to a non-empty string, only files that contains the substring will be shown. [member filename_filter] can be edited by the user with the filter button at the top of the file dialog.
@@ -151,7 +154,6 @@
 		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true">
 			If [code]true[/code], changing the [member file_mode] property will set the window title accordingly (e.g. setting [member file_mode] to [constant FILE_MODE_OPEN_FILE] will change the window title to "Open a File").
 		</member>
-		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" overrides="AcceptDialog" default="&quot;Save&quot;" />
 		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
 			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
 		</member>
@@ -224,6 +226,12 @@
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
 			The dialog allows accessing files on the whole file system.
 		</constant>
+		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
+			The dialog displays files as a grid of thumbnails. Use [theme_item thumbnail_size] to adjust their size.
+		</constant>
+		<constant name="DISPLAY_LIST" value="1" enum="DisplayMode">
+			The dialog displays files as a list of filenames.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="file_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.25)">
@@ -235,26 +243,53 @@
 		<theme_item name="folder_icon_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The color modulation applied to the folder icon.
 		</theme_item>
+		<theme_item name="thumbnail_size" data_type="constant" type="int" default="64">
+			The size of thumbnail icons when [constant DISPLAY_THUMBNAILS] is enabled.
+		</theme_item>
 		<theme_item name="back_folder" data_type="icon" type="Texture2D">
 			Custom icon for the back arrow.
 		</theme_item>
 		<theme_item name="create_folder" data_type="icon" type="Texture2D">
 			Custom icon for the create folder button.
 		</theme_item>
+		<theme_item name="favorite" data_type="icon" type="Texture2D">
+			Custom icon for favorite folder button.
+		</theme_item>
+		<theme_item name="favorite_down" data_type="icon" type="Texture2D">
+			Custom icon for button to move down a favorite entry.
+		</theme_item>
+		<theme_item name="favorite_up" data_type="icon" type="Texture2D">
+			Custom icon for button to move up a favorite entry.
+		</theme_item>
 		<theme_item name="file" data_type="icon" type="Texture2D">
 			Custom icon for files.
+		</theme_item>
+		<theme_item name="file_thumbnail" data_type="icon" type="Texture2D">
+			Icon for files when in thumbnail mode.
 		</theme_item>
 		<theme_item name="folder" data_type="icon" type="Texture2D">
 			Custom icon for folders.
 		</theme_item>
+		<theme_item name="folder_thumbnail" data_type="icon" type="Texture2D">
+			Icon for folders when in thumbnail mode.
+		</theme_item>
 		<theme_item name="forward_folder" data_type="icon" type="Texture2D">
 			Custom icon for the forward arrow.
+		</theme_item>
+		<theme_item name="list_mode" data_type="icon" type="Texture2D">
+			Icon for the button that enables list mode.
 		</theme_item>
 		<theme_item name="parent_folder" data_type="icon" type="Texture2D">
 			Custom icon for the parent folder arrow.
 		</theme_item>
 		<theme_item name="reload" data_type="icon" type="Texture2D">
 			Custom icon for the reload button.
+		</theme_item>
+		<theme_item name="sort" data_type="icon" type="Texture2D">
+			Custom icon for the sorting options menu.
+		</theme_item>
+		<theme_item name="thumbnail_mode" data_type="icon" type="Texture2D">
+			Icon for the button that enables thumbnail mode.
 		</theme_item>
 		<theme_item name="toggle_filename_filter" data_type="icon" type="Texture2D">
 			Custom icon for the toggle button for the filter for file names.

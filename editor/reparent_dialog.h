@@ -52,5 +52,4 @@ public:
 	void set_current(const HashSet<Node *> &p_selection);
 
 	ReparentDialog();
-	~ReparentDialog();
 };

@@ -37,6 +37,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/line_edit.h"
 
 bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
 	for (int i = 0; i < p_terms.size(); i++) {
@@ -328,6 +329,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	vbox->add_child(hbox);
 
 	search_box = memnew(LineEdit);
+	search_box->set_accessibility_name(TTRC("Search"));
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_clear_button_enabled(true);
@@ -339,21 +341,24 @@ EditorHelpSearch::EditorHelpSearch() {
 	case_sensitive_button = memnew(Button);
 	case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
 	case_sensitive_button->set_tooltip_text(TTR("Case Sensitive"));
+	case_sensitive_button->set_accessibility_name(TTRC("Case Sensitive"));
 	case_sensitive_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
-	case_sensitive_button->set_focus_mode(Control::FOCUS_NONE);
+	case_sensitive_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(Button);
 	hierarchy_button->set_theme_type_variation(SceneStringName(FlatButton));
 	hierarchy_button->set_tooltip_text(TTR("Show Hierarchy"));
+	hierarchy_button->set_accessibility_name(TTRC("Show Hierarchy"));
 	hierarchy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
-	hierarchy_button->set_focus_mode(Control::FOCUS_NONE);
+	hierarchy_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	hbox->add_child(hierarchy_button);
 
 	filter_combo = memnew(OptionButton);
+	filter_combo->set_accessibility_name(TTRC("Filter"));
 	filter_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	filter_combo->set_stretch_ratio(0); // Fixed width.
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
@@ -372,6 +377,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
+	results_tree->set_accessibility_name(TTRC("Search Results"));
 	results_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
@@ -535,6 +541,7 @@ TreeItem *EditorHelpSearch::Runner::_create_category_item(TreeItem *p_parent, co
 	TreeItem *item = nullptr;
 	if (_find_or_create_item(p_parent, item_meta, item)) {
 		item->set_icon(0, ui_service->get_editor_theme_icon(p_icon));
+		item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 		item->set_text(0, p_text);
 		item->set_metadata(0, item_meta);
 	}

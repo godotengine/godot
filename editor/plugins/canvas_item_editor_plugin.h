@@ -67,8 +67,6 @@ public:
 	List<Dictionary> pre_drag_bones_undo_state;
 
 	Dictionary undo_state;
-
-	CanvasItemEditorSelectedItem() {}
 };
 
 class CanvasItemEditor : public VBoxContainer {
@@ -254,10 +252,12 @@ private:
 	bool key_scale = false;
 
 	bool pan_pressed = false;
-	Vector2 temp_pivot = Vector2(INFINITY, INFINITY);
+	Vector2 temp_pivot = Vector2(Math::INF, Math::INF);
 
 	bool ruler_tool_active = false;
 	Point2 ruler_tool_origin;
+	real_t ruler_width_scaled = 16.0;
+	int ruler_font_size = 8;
 	Point2 node_create_position;
 
 	MenuOption last_option;
@@ -602,7 +602,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_plugin_name() const override { return "2D"; }
+	virtual String get_plugin_name() const override { return TTRC("2D"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -614,7 +614,6 @@ public:
 	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
 
 	CanvasItemEditorPlugin();
-	~CanvasItemEditorPlugin();
 };
 
 class CanvasItemEditorViewport : public Control {

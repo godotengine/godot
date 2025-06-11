@@ -463,13 +463,13 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		tile_data->get_property_list(&list);
 
 		HashMap<String, int> counts; // Counts the number of time a property appears (useful for groups that may appear more than once)
-		for (List<PropertyInfo>::Element *E_property = list.front(); E_property; E_property = E_property->next()) {
+		for (const PropertyInfo &property : list) {
 			// Don't show category for TileData.
-			if (E_property->get().usage & PROPERTY_USAGE_CATEGORY) {
+			if (property.usage & PROPERTY_USAGE_CATEGORY) {
 				continue;
 			}
 
-			const String &property_string = E_property->get().name;
+			const String &property_string = property.name;
 			if (!tile_data->is_allowing_transform() && (property_string == "flip_h" || property_string == "flip_v" || property_string == "transpose")) {
 				continue;
 			}
@@ -480,7 +480,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 				counts[property_string] += 1;
 			}
 
-			PropertyInfo stored_property_info = E_property->get();
+			PropertyInfo stored_property_info = property;
 			stored_property_info.usage |= PROPERTY_USAGE_STORAGE; // Ignore the storage flag in comparing properties.
 
 			PropertyId id = { counts[property_string], property_string };
@@ -894,10 +894,9 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 
 	// Get the correct editor for the TileData's property.
 	if (current_tile_data_editor) {
-		current_tile_data_editor_toolbar = current_tile_data_editor->get_toolbar();
 		current_property = property;
 		current_tile_data_editor->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
-		current_tile_data_editor_toolbar->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
+		current_tile_data_editor->get_toolbar()->set_visible(tools_button_group->get_pressed_button() == tool_paint_button);
 	}
 }
 
@@ -968,7 +967,15 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 	if (tile_set.is_null()) {
 		return;
 	} else {
-		tile_create_help->set_visible(tools_button_group->get_pressed_button() == tool_setup_atlas_source_button);
+		if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
+			help_label->set_visible(true);
+			help_label->set_text(TTR("Hold Ctrl to create multiple tiles.") + "\n" + TTR("Hold Shift to create big tiles."));
+		} else if (tools_button_group->get_pressed_button() == tool_select_button) {
+			help_label->set_visible(true);
+			help_label->set_text(TTRC("Hold Shift to select multiple regions."));
+		} else {
+			help_label->set_visible(false);
+		}
 	}
 
 	if (tools_button_group->get_pressed_button() != tool_paint_button) {
@@ -1023,6 +1030,10 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 
 void TileSetAtlasSourceEditor::_update_toolbar() {
 	// Show the tools and settings.
+	Control *current_tile_data_editor_toolbar = nullptr;
+	if (current_tile_data_editor) {
+		current_tile_data_editor_toolbar = current_tile_data_editor->get_toolbar();
+	}
 	if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
 		if (current_tile_data_editor_toolbar) {
 			current_tile_data_editor_toolbar->hide();
@@ -1465,9 +1476,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
 				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
-				Array array;
-				array.push_back(drag_start_tile_shape.position);
-				array.push_back(0);
+				Array array = { drag_start_tile_shape.position, 0 };
 				undo_redo->add_undo_method(this, "_set_selection_from_array", array);
 				undo_redo->commit_action(false);
 			}
@@ -1565,9 +1574,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
 				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
-				Array array;
-				array.push_back(drag_start_tile_shape.position);
-				array.push_back(0);
+				Array array = { drag_start_tile_shape.position, 0 };
 				undo_redo->add_undo_method(this, "_set_selection_from_array", array);
 				undo_redo->commit_action(false);
 			}
@@ -1656,9 +1663,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 		case TILE_CREATE: {
 			undo_redo->create_action(TTR("Create a tile"));
 			undo_redo->add_do_method(tile_set_atlas_source, "create_tile", menu_option_coords);
-			Array array;
-			array.push_back(menu_option_coords);
-			array.push_back(0);
+			Array array = { menu_option_coords, 0 };
 			undo_redo->add_do_method(this, "_set_selection_from_array", array);
 			undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", menu_option_coords);
 			undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
@@ -2573,6 +2578,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
+	tile_inspector_no_tile_selected_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	tile_inspector_no_tile_selected_label->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	tile_inspector_no_tile_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	tile_inspector_no_tile_selected_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -2666,6 +2672,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(middle_space);
 
 	tool_tile_id_label = memnew(Label);
+	tool_tile_id_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	tool_tile_id_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	tool_settings->add_child(tool_tile_id_label);
 	_update_tile_id_label();
@@ -2685,18 +2692,13 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view->connect("transform_changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_view_transform_changed).unbind(2));
 	right_panel->add_child(tile_atlas_view);
 
-	tile_create_help = memnew(VBoxContainer);
-	tile_atlas_view->add_child(tile_create_help);
-	tile_create_help->set_mouse_filter(MOUSE_FILTER_IGNORE);
-
-	Label *help_label = memnew(Label(TTR("Hold Ctrl to create multiple tiles.")));
-	tile_create_help->add_child(help_label);
-
-	help_label = memnew(Label(TTR("Hold Shift to create big tiles.")));
-	tile_create_help->add_child(help_label);
-
-	tile_create_help->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT, Control::PRESET_MODE_MINSIZE, 8);
-	tile_create_help->set_grow_direction_preset(Control::PRESET_BOTTOM_LEFT);
+	help_label = memnew(Label);
+	help_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	help_label->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	help_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	help_label->set_vertical_alignment(VERTICAL_ALIGNMENT_BOTTOM);
+	help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	tile_atlas_view->add_child(help_label);
 
 	base_tile_popup_menu = memnew(PopupMenu);
 	base_tile_popup_menu->add_shortcut(ED_GET_SHORTCUT("tiles_editor/delete"), TILE_DELETE);
@@ -2768,7 +2770,7 @@ TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {
 
 void EditorPropertyTilePolygon::_add_focusable_children(Node *p_node) {
 	Control *control = Object::cast_to<Control>(p_node);
-	if (control && control->get_focus_mode() != Control::FOCUS_NONE) {
+	if (control && control->get_focus_mode_with_override() != Control::FOCUS_NONE) {
 		add_focusable(control);
 	}
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -2801,11 +2803,9 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 		}
 	} else {
 		// Multiple array of vertices or OccluderPolygon2D.
-		Vector<String> changed_properties;
-		Array values;
+		Vector<String> changed_properties = { count_property };
 		int count = generic_tile_polygon_editor->get_polygon_count();
-		changed_properties.push_back(count_property);
-		values.push_back(count);
+		Array values = { count };
 		for (int i = 0; i < count; i++) {
 			changed_properties.push_back(vformat(element_pattern, i));
 			if (base_type.is_empty()) {
@@ -2939,8 +2939,7 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 		if (components[1] == "polygons_count") {
 			EditorPropertyTilePolygon *ep = memnew(EditorPropertyTilePolygon);
 			ep->setup_multiple_mode(vformat("physics_layer_%d/polygons", layer_index), vformat("physics_layer_%d/polygons_count", layer_index), vformat("physics_layer_%d/polygon_%%d/points", layer_index), "");
-			Vector<String> properties;
-			properties.push_back(p_path);
+			Vector<String> properties = { p_path };
 			int count = p_object->get(vformat("physics_layer_%d/polygons_count", layer_index));
 			for (int i = 0; i < count; i++) {
 				properties.push_back(vformat(vformat("physics_layer_%d/polygon_%d/points", layer_index, i)));

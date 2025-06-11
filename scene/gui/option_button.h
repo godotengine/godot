@@ -79,6 +79,7 @@ class OptionButton : public Button {
 protected:
 	Size2 get_minimum_size() const override;
 	virtual void _queue_update_size_cache() override;
+	virtual String _get_translated_text(const String &p_text) const override;
 
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -105,6 +106,7 @@ public:
 	void set_item_metadata(int p_idx, const Variant &p_metadata);
 	void set_item_disabled(int p_idx, bool p_disabled);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
+	void set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode);
 
 	String get_item_text(int p_idx) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
@@ -114,6 +116,7 @@ public:
 	bool is_item_disabled(int p_idx) const;
 	bool is_item_separator(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
+	AutoTranslateMode get_item_auto_translate_mode(int p_idx) const;
 
 	bool has_selectable_items() const;
 	int get_selectable_item(bool p_from_last = false) const;

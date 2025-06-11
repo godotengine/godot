@@ -1,34 +1,24 @@
 #define M_PI 3.14159265359
+#define M_TAU 6.28318530718
 #define ROUGHNESS_MAX_LOD 5
 
 #define MAX_VOXEL_GI_INSTANCES 8
 #define MAX_VIEWS 2
 
-#ifndef MOLTENVK_USED
-#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
-
 #extension GL_KHR_shader_subgroup_ballot : enable
 #extension GL_KHR_shader_subgroup_arithmetic : enable
-
-#define USE_SUBGROUPS
-#endif
-#endif // MOLTENVK_USED
-
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
 
 #include "../cluster_data_inc.glsl"
 #include "../decal_data_inc.glsl"
 #include "../scene_data_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
 #endif
 
-#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
+#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
 #define TANGENT_USED
 #endif
 
@@ -280,6 +270,8 @@ layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAP
 
 layout(set = 0, binding = 15) uniform texture2D best_fit_normal_texture;
 
+layout(set = 0, binding = 16) uniform texture2D dfg;
+
 /* Set 1: Render Pass (changes per render pass) */
 
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
@@ -452,6 +444,18 @@ vec4 normal_roughness_compatibility(vec4 p_normal_roughness) {
 	}
 	roughness /= (127.0 / 255.0);
 	return vec4(normalize(p_normal_roughness.xyz * 2.0 - 1.0) * 0.5 + 0.5, roughness);
+}
+
+// https://google.github.io/filament/Filament.html#toc5.3.4.7
+// Note: The roughness value is inverted
+vec3 prefiltered_dfg(float lod, float NoV) {
+	return textureLod(sampler2D(dfg, SAMPLER_LINEAR_CLAMP), vec2(NoV, 1.0 - lod), 0.0).rgb;
+}
+
+// Compute multiscatter compensation
+// https://google.github.io/filament/Filament.html#listing_energycompensationimpl
+vec3 get_energy_compensation(vec3 f0, float env) {
+	return 1.0 + f0 * (1.0 / env - 1.0);
 }
 
 /* Set 2 Skeleton & Instancing (can change per item) */

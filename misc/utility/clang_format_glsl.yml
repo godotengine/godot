@@ -9,6 +9,10 @@ AlignTrailingComments:
   OverEmptyLines: 0
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortFunctionsOnASingleLine: Inline
+AttributeMacros:
+  - _ALWAYS_INLINE_
+  - _FORCE_INLINE_
+  - _NO_INLINE_
 BreakConstructorInitializers: AfterColon
 ColumnLimit: 0
 ConstructorInitializerIndentWidth: 8

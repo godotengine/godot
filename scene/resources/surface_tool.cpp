@@ -645,7 +645,7 @@ Array SurfaceTool::commit_to_arrays() {
 			case Mesh::ARRAY_BONES: {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 				Vector<int> array;
-				array.resize_zeroed(varr_len * count);
+				array.resize_initialized(varr_len * count);
 				int *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
@@ -668,7 +668,7 @@ Array SurfaceTool::commit_to_arrays() {
 				Vector<float> array;
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 
-				array.resize_zeroed(varr_len * count);
+				array.resize_initialized(varr_len * count);
 				float *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
@@ -772,7 +772,7 @@ void SurfaceTool::index() {
 }
 
 void SurfaceTool::deindex() {
-	if (index_array.size() == 0) {
+	if (index_array.is_empty()) {
 		return; //nothing to deindex
 	}
 
@@ -1020,7 +1020,7 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform) {
 	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
 
-	if (vertex_array.size() == 0) {
+	if (vertex_array.is_empty()) {
 		primitive = p_existing->surface_get_primitive_type(p_surface);
 		format = 0;
 	}

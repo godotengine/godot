@@ -37,6 +37,7 @@
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/line_edit.h"
 #include "scene/resources/packed_scene.h"
 
 void GroupSettingsEditor::_notification(int p_what) {
@@ -404,10 +405,11 @@ void GroupSettingsEditor::_show_remove_dialog() {
 
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		remove_label = memnew(Label);
+		remove_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		vbox->add_child(remove_label);
 
 		remove_check_box = memnew(CheckBox);
-		remove_check_box->set_text(TTR("Delete references from all scenes"));
+		remove_check_box->set_text(TTRC("Delete references from all scenes"));
 		vbox->add_child(remove_check_box);
 
 		remove_dialog->add_child(vbox);
@@ -430,14 +432,14 @@ void GroupSettingsEditor::_show_remove_dialog() {
 void GroupSettingsEditor::_show_rename_dialog() {
 	if (!rename_group_dialog) {
 		rename_group_dialog = memnew(ConfirmationDialog);
-		rename_group_dialog->set_title(TTR("Rename Group"));
+		rename_group_dialog->set_title(TTRC("Rename Group"));
 		rename_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupSettingsEditor::_confirm_rename));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		rename_group_dialog->add_child(vbc);
 
 		HBoxContainer *hbc = memnew(HBoxContainer);
-		hbc->add_child(memnew(Label(TTR("Name:"))));
+		hbc->add_child(memnew(Label(TTRC("Name:"))));
 
 		rename_group = memnew(LineEdit);
 		rename_group->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
@@ -456,7 +458,7 @@ void GroupSettingsEditor::_show_rename_dialog() {
 		vbc->add_child(rename_validation_panel);
 
 		rename_check_box = memnew(CheckBox);
-		rename_check_box->set_text(TTR("Rename references in all scenes"));
+		rename_check_box->set_text(TTRC("Rename references in all scenes"));
 		vbc->add_child(rename_check_box);
 
 		add_child(rename_group_dialog);
@@ -493,28 +495,30 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	add_child(hbc);
 
 	Label *l = memnew(Label);
-	l->set_text(TTR("Name:"));
+	l->set_text(TTRC("Name:"));
 	hbc->add_child(l);
 
 	group_name = memnew(LineEdit);
 	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	group_name->set_clear_button_enabled(true);
+	group_name->set_accessibility_name(TTRC("Group Name"));
 	group_name->connect(SceneStringName(text_changed), callable_mp(this, &GroupSettingsEditor::_group_name_text_changed));
 	group_name->connect(SceneStringName(text_submitted), callable_mp(this, &GroupSettingsEditor::_text_submitted));
 	hbc->add_child(group_name);
 
 	l = memnew(Label);
-	l->set_text(TTR("Description:"));
+	l->set_text(TTRC("Description:"));
 	hbc->add_child(l);
 
 	group_description = memnew(LineEdit);
 	group_description->set_clear_button_enabled(true);
+	group_description->set_accessibility_name(TTRC("Group Description"));
 	group_description->set_h_size_flags(SIZE_EXPAND_FILL);
 	group_description->connect(SceneStringName(text_submitted), callable_mp(this, &GroupSettingsEditor::_text_submitted));
 	hbc->add_child(group_description);
 
 	add_button = memnew(Button);
-	add_button->set_text(TTR("Add"));
+	add_button->set_text(TTRC("Add"));
 	add_button->set_disabled(true);
 	add_button->connect(SceneStringName(pressed), callable_mp(this, &GroupSettingsEditor::_add_group));
 	hbc->add_child(add_button);
@@ -528,8 +532,8 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	tree->set_columns(3);
 	tree->set_column_titles_visible(true);
 
-	tree->set_column_title(0, TTR("Name"));
-	tree->set_column_title(1, TTR("Description"));
+	tree->set_column_title(0, TTRC("Name"));
+	tree->set_column_title(1, TTRC("Description"));
 	tree->set_column_expand(2, false);
 
 	tree->connect("item_edited", callable_mp(this, &GroupSettingsEditor::_item_edited));

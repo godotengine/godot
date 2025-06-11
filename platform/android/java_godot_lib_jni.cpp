@@ -51,9 +51,9 @@
 #include "main/main.h"
 #include "servers/rendering_server.h"
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 #include "servers/xr_server.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -79,7 +79,6 @@ enum StartupStep {
 
 static SafeNumeric<int> step; // Shared between UI and render threads
 
-static Size2 new_size;
 static Vector3 accelerometer;
 static Vector3 gravity;
 static Vector3 magnetometer;
@@ -277,7 +276,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		// Unlike PCVR, there's no additional 2D screen onto which to render the boot logo,
 		// so we skip this step if xr is enabled.
 		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
-			xr_enabled = GLOBAL_GET("xr/shaders/enabled");
+			xr_enabled = GLOBAL_GET_CACHED(bool, "xr/shaders/enabled");
 		} else {
 			xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 		}
@@ -399,7 +398,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 	AndroidInputHandler::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = AndroidInputHandler::JOY_EVENT_HAT;
-	BitField<HatMask> hat;
+	BitField<HatMask> hat = HatMask::CENTER;
 	if (p_hat_x != 0) {
 		if (p_hat_x < 0) {
 			hat.set_flag(HatMask::LEFT);
@@ -546,6 +545,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onNightModeChanged(JN
 	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
 	if (ds) {
 		ds->emit_system_theme_changed();
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hardwareKeyboardConnected(JNIEnv *env, jclass clazz, jboolean p_connected) {
+	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->emit_hardware_keyboard_connection_changed(p_connected);
 	}
 }
 

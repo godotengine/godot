@@ -33,9 +33,6 @@
 #include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 
-EditorImportPlugin::EditorImportPlugin() {
-}
-
 String EditorImportPlugin::get_importer_name() const {
 	String ret;
 	if (GDVIRTUAL_CALL(_get_importer_name, ret)) {
@@ -69,7 +66,7 @@ String EditorImportPlugin::get_preset_name(int p_idx) const {
 	if (GDVIRTUAL_CALL(_get_preset_name, p_idx, ret)) {
 		return ret;
 	}
-	ERR_FAIL_V_MSG(String(), "Unimplemented _get_preset_name in add-on.");
+	ERR_FAIL_V_MSG(itos(p_idx), "Unimplemented _get_preset_name in add-on.");
 }
 
 int EditorImportPlugin::get_preset_count() const {
@@ -77,7 +74,7 @@ int EditorImportPlugin::get_preset_count() const {
 	if (GDVIRTUAL_CALL(_get_preset_count, ret)) {
 		return ret;
 	}
-	ERR_FAIL_V_MSG(-1, "Unimplemented _get_preset_count in add-on.");
+	return 0;
 }
 
 String EditorImportPlugin::get_save_extension() const {
@@ -101,7 +98,7 @@ float EditorImportPlugin::get_priority() const {
 	if (GDVIRTUAL_CALL(_get_priority, ret)) {
 		return ret;
 	}
-	ERR_FAIL_V_MSG(-1, "Unimplemented _get_priority in add-on.");
+	return 1.0;
 }
 
 int EditorImportPlugin::get_import_order() const {
@@ -109,7 +106,7 @@ int EditorImportPlugin::get_import_order() const {
 	if (GDVIRTUAL_CALL(_get_import_order, ret)) {
 		return ret;
 	}
-	ERR_FAIL_V_MSG(-1, "Unimplemented _get_import_order in add-on.");
+	return IMPORT_ORDER_DEFAULT;
 }
 
 int EditorImportPlugin::get_format_version() const {
@@ -121,9 +118,7 @@ int EditorImportPlugin::get_format_version() const {
 }
 
 void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
-	Array needed;
-	needed.push_back("name");
-	needed.push_back("default_value");
+	Array needed = { "name", "default_value" };
 	TypedArray<Dictionary> options;
 	if (GDVIRTUAL_CALL(_get_import_options, p_path, p_preset, options)) {
 		for (int i = 0; i < options.size(); i++) {
@@ -167,8 +162,7 @@ bool EditorImportPlugin::get_option_visibility(const String &p_path, const Strin
 	if (GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, d, visible)) {
 		return visible;
 	}
-
-	ERR_FAIL_V_MSG(false, "Unimplemented _get_option_visibility in add-on.");
+	return true;
 }
 
 Error EditorImportPlugin::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {

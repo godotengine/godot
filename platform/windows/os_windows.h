@@ -50,7 +50,7 @@
 
 #include <io.h>
 #include <shellapi.h>
-#include <stdio.h>
+#include <cstdio>
 
 #define WIN32_LEAN_AND_MEAN
 #include <dwrite.h>
@@ -136,6 +136,9 @@ class OS_Windows : public OS {
 
 	bool is_using_con_wrapper() const;
 
+	HashMap<String, int> encodings;
+	void _init_encodings();
+
 	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual void initialize() override;
@@ -190,7 +193,7 @@ public:
 
 	virtual Error set_cwd(const String &p_cwd) override;
 
-	virtual void add_frame_delay(bool p_can_draw) override;
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
 
@@ -241,6 +244,9 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
+	virtual String multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const override;
+	virtual PackedByteArray string_to_multibyte(const String &p_encoding, const String &p_string) const override;
+
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;
 	virtual void initialize_debugging() override;
@@ -251,8 +257,10 @@ public:
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
 
+#ifdef TOOLS_ENABLED
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;
 	virtual bool _test_create_rendering_device(const String &p_display_driver) const override;
+#endif
 
 	HINSTANCE get_hinstance() { return hInstance; }
 	OS_Windows(HINSTANCE _hInstance);

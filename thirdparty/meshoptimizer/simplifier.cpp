@@ -437,8 +437,13 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 	{
 		// vertex_lock may lock any wedge, not just the primary vertex, so we need to lock the primary vertex and relock any wedges
 		for (size_t i = 0; i < vertex_count; ++i)
-			if (vertex_lock[sparse_remap ? sparse_remap[i] : i])
+		{
+			unsigned int ri = sparse_remap ? sparse_remap[i] : unsigned(i);
+			assert(vertex_lock[ri] <= 1); // values other than 0/1 are reserved for future use
+
+			if (vertex_lock[ri])
 				result[remap[i]] = Kind_Locked;
+		}
 
 		for (size_t i = 0; i < vertex_count; ++i)
 			if (result[remap[i]] == Kind_Locked)
@@ -1026,7 +1031,7 @@ static size_t pickEdgeCollapses(Collapse* collapses, size_t collapse_capacity, c
 	return collapse_count;
 }
 
-static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const Vector3* vertex_positions, const float* vertex_attributes, const Quadric* vertex_quadrics, const Quadric* attribute_quadrics, const QuadricGrad* attribute_gradients, size_t attribute_count, const unsigned int* remap)
+static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const Vector3* vertex_positions, const float* vertex_attributes, const Quadric* vertex_quadrics, const Quadric* attribute_quadrics, const QuadricGrad* attribute_gradients, size_t attribute_count, const unsigned int* remap, const unsigned int* wedge, const unsigned char* vertex_kind, const unsigned int* loop, const unsigned int* loopback)
 {
 	for (size_t i = 0; i < collapse_count; ++i)
 	{
@@ -1041,7 +1046,7 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const 
 		unsigned int j1 = c.bidi ? i0 : i1;
 
 		float ei = quadricError(vertex_quadrics[remap[i0]], vertex_positions[i1]);
-		float ej = quadricError(vertex_quadrics[remap[j0]], vertex_positions[j1]);
+		float ej = c.bidi ? quadricError(vertex_quadrics[remap[j0]], vertex_positions[j1]) : FLT_MAX;
 
 #if TRACE >= 3
 		float di = ei, dj = ej;
@@ -1049,9 +1054,25 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const 
 
 		if (attribute_count)
 		{
-			// note: ideally we would evaluate max/avg of attribute errors for seam edges, but it's not clear if it's worth the extra cost
 			ei += quadricError(attribute_quadrics[i0], &attribute_gradients[i0 * attribute_count], attribute_count, vertex_positions[i1], &vertex_attributes[i1 * attribute_count]);
-			ej += quadricError(attribute_quadrics[j0], &attribute_gradients[j0 * attribute_count], attribute_count, vertex_positions[j1], &vertex_attributes[j1 * attribute_count]);
+			ej += c.bidi ? quadricError(attribute_quadrics[j0], &attribute_gradients[j0 * attribute_count], attribute_count, vertex_positions[j1], &vertex_attributes[j1 * attribute_count]) : 0;
+
+			// note: seam edges need to aggregate attribute errors between primary and secondary edges, as attribute quadrics are separate
+			if (vertex_kind[i0] == Kind_Seam)
+			{
+				// for seam collapses we need to find the seam pair; this is a bit tricky since we need to rely on edge loops as target vertex may be locked (and thus have more than two wedges)
+				unsigned int s0 = wedge[i0];
+				unsigned int s1 = loop[i0] == i1 ? loopback[s0] : loop[s0];
+
+				assert(s0 != i0 && wedge[s0] == i0);
+				assert(s1 != ~0u && remap[s1] == remap[i1]);
+
+				// note: this should never happen due to the assertion above, but when disabled if we ever hit this case we'll get a memory safety issue; for now play it safe
+				s1 = (s1 != ~0u) ? s1 : wedge[i1];
+
+				ei += quadricError(attribute_quadrics[s0], &attribute_gradients[s0 * attribute_count], attribute_count, vertex_positions[s1], &vertex_attributes[s1 * attribute_count]);
+				ej += c.bidi ? quadricError(attribute_quadrics[s1], &attribute_gradients[s1 * attribute_count], attribute_count, vertex_positions[s0], &vertex_attributes[s0 * attribute_count]) : 0;
+			}
 		}
 
 		// pick edge direction with minimal error
@@ -1206,7 +1227,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* 
 		}
 		else if (kind == Kind_Seam)
 		{
-			// for seam collapses we need to move the seam pair together; this is a bit tricky to compute since we need to rely on edge loops as target vertex may be locked (and thus have more than two wedges)
+			// for seam collapses we need to move the seam pair together; this is a bit tricky since we need to rely on edge loops as target vertex may be locked (and thus have more than two wedges)
 			unsigned int s0 = wedge[i0];
 			unsigned int s1 = loop[i0] == i1 ? loopback[s0] : loop[s0];
 			assert(s0 != i0 && wedge[s0] == i0);
@@ -1964,7 +1985,7 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 		printf("pass %d:%c", int(pass_count++), TRACE >= 2 ? '\n' : ' ');
 #endif
 
-		rankEdgeCollapses(edge_collapses, edge_collapse_count, vertex_positions, vertex_attributes, vertex_quadrics, attribute_quadrics, attribute_gradients, attribute_count, remap);
+		rankEdgeCollapses(edge_collapses, edge_collapse_count, vertex_positions, vertex_attributes, vertex_quadrics, attribute_quadrics, attribute_gradients, attribute_count, remap, wedge, vertex_kind, loop, loopback);
 
 		sortEdgeCollapses(collapse_order, edge_collapses, edge_collapse_count);
 
@@ -2048,7 +2069,7 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 
 	// result_error is quadratic; we need to remap it back to linear
 	if (out_result_error)
-		*out_result_error = sqrtf(vertex_error) * error_scale;
+		*out_result_error = sqrtf(result_error) * error_scale;
 
 	return result_count;
 }

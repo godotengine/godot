@@ -47,6 +47,7 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
@@ -250,7 +251,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	picker_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
 	MarginContainer *preview_body = memnew(MarginContainer);
-	preview_body->set_custom_minimum_size(Size2(480, 0) * EDSCALE);
+	preview_body->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	preview_body->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(preview_body);
 
@@ -290,7 +291,6 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 void DefaultThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 		} break;
@@ -491,7 +491,6 @@ void SceneThemeEditorPreview::_reload_scene() {
 
 void SceneThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			reload_scene_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 		} break;

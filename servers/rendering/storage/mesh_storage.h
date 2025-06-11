@@ -56,6 +56,7 @@ public:
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
+	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
@@ -75,6 +76,8 @@ public:
 
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
+
+	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) = 0;
 
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) = 0;
 

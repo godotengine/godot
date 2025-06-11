@@ -35,9 +35,14 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
+class OS_MacOS_NSApp;
+
 @interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate>
-- (void)forceUnbundledWindowActivationHackStep1;
-- (void)forceUnbundledWindowActivationHackStep2;
-- (void)forceUnbundledWindowActivationHackStep3;
-- (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
+
+- (GodotApplicationDelegate *)initWithOS:(OS_MacOS_NSApp *)os;
+
+- (bool)getHighContrast;
+- (bool)getReduceMotion;
+- (bool)getReduceTransparency;
+- (bool)getVoiceOver;
 @end

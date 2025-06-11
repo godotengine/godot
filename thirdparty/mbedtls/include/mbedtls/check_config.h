@@ -247,6 +247,9 @@
 #if defined(MBEDTLS_TEST_CONSTANT_FLOW_MEMSAN) &&  !defined(MBEDTLS_HAS_MEMSAN)
 #error "MBEDTLS_TEST_CONSTANT_FLOW_MEMSAN requires building with MemorySanitizer"
 #endif
+#if defined(MBEDTLS_HAS_MEMSAN) && defined(MBEDTLS_HAVE_ASM)
+#error "MemorySanitizer does not support assembly implementation"
+#endif
 #undef MBEDTLS_HAS_MEMSAN // temporary macro defined above
 
 #if defined(MBEDTLS_CCM_C) && \
@@ -736,6 +739,11 @@
 #if defined(MBEDTLS_PSA_INJECT_ENTROPY) &&              \
     defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
 #error "MBEDTLS_PSA_INJECT_ENTROPY is not compatible with MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG"
+#endif
+
+#if defined(MBEDTLS_PSA_KEY_STORE_DYNAMIC) &&           \
+    defined(MBEDTLS_PSA_STATIC_KEY_SLOTS)
+#error "MBEDTLS_PSA_KEY_STORE_DYNAMIC and MBEDTLS_PSA_STATIC_KEY_SLOTS cannot be defined simultaneously"
 #endif
 
 #if defined(MBEDTLS_PSA_ITS_FILE_C) && \

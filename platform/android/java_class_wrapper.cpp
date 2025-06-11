@@ -1002,7 +1002,7 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 		strsig += "Ljava/lang/Double;";
 	} else {
 		//a class likely
-		strsig += "L" + str_type.replace(".", "/") + ";";
+		strsig += "L" + str_type.replace_char('.', '/') + ";";
 		t |= JavaClass::ARG_TYPE_CLASS;
 	}
 
@@ -1078,7 +1078,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			if (java_class_wrapped.is_valid()) {
 				String cn = java_class_wrapped->get_java_class_name();
-				if (cn == "org/godotengine/godot/Dictionary" || cn == "java.util.HashMap") {
+				if (cn == "org.godotengine.godot.Dictionary" || cn == "java.util.HashMap") {
 					var = _jobject_to_variant(env, obj);
 				} else {
 					Ref<JavaObject> ret = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
@@ -1442,7 +1442,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 					if (java_class_wrapped.is_valid()) {
 						String cn = java_class_wrapped->get_java_class_name();
-						if (cn == "org/godotengine/godot/Dictionary" || cn == "java.util.HashMap") {
+						if (cn == "org.godotengine.godot.Dictionary" || cn == "java.util.HashMap") {
 							ret[i] = _jobject_to_variant(env, obj);
 						} else {
 							Ref<JavaObject> java_obj_wrapped = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
@@ -1462,7 +1462,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 }
 
 Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_private_methods_access) {
-	String class_name_dots = p_class.replace("/", ".");
+	String class_name_dots = p_class.replace_char('/', '.');
 	if (class_cache.has(class_name_dots)) {
 		return class_cache[class_name_dots];
 	}
@@ -1470,7 +1470,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
 
-	jclass bclass = env->FindClass(class_name_dots.replace(".", "/").utf8().get_data());
+	jclass bclass = env->FindClass(class_name_dots.replace_char('.', '/').utf8().get_data());
 	ERR_FAIL_NULL_V_MSG(bclass, Ref<JavaClass>(), vformat("Java class '%s' not found.", p_class));
 
 	jobjectArray constructors = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredConstructors);
@@ -1600,9 +1600,12 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 				if (_new != existing) {
 					this_valid = false;
 					break;
+				} else if ((_new == Variant::OBJECT || _new == Variant::ARRAY) && E->get().param_sigs[j] != mi.param_sigs[j]) {
+					this_valid = false;
+					break;
 				}
 				new_likeliness += new_l;
-				existing_likeliness = existing_l;
+				existing_likeliness += existing_l;
 			}
 
 			if (!this_valid) {

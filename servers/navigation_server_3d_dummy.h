@@ -70,6 +70,9 @@ public:
 	bool map_get_use_async_iterations(RID p_map) const override { return false; }
 
 	RID region_create() override { return RID(); }
+	uint32_t region_get_iteration_id(RID p_region) const override { return 0; }
+	void region_set_use_async_iterations(RID p_region, bool p_enabled) override {}
+	bool region_get_use_async_iterations(RID p_region) const override { return false; }
 	void region_set_enabled(RID p_region, bool p_enabled) override {}
 	bool region_get_enabled(RID p_region) const override { return false; }
 	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
@@ -101,6 +104,7 @@ public:
 	AABB region_get_bounds(RID p_region) const override { return AABB(); }
 
 	RID link_create() override { return RID(); }
+	uint32_t link_get_iteration_id(RID p_link) const override { return 0; }
 	void link_set_map(RID p_link, RID p_map) override {}
 	RID link_get_map(RID p_link) const override { return RID(); }
 	void link_set_enabled(RID p_link, bool p_enabled) override {}
@@ -187,6 +191,7 @@ public:
 	void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override { return false; }
+	String get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const override { return ""; }
 #endif // _3D_DISABLED
 
 	RID source_geometry_parser_create() override { return RID(); }
@@ -196,7 +201,8 @@ public:
 
 	void free(RID p_object) override {}
 	void set_active(bool p_active) override {}
-	void process(real_t delta_time) override {}
+	void process(double p_delta_time) override {}
+	void physics_process(double p_delta_time) override {}
 	void init() override {}
 	void sync() override {}
 	void finish() override {}

@@ -32,11 +32,8 @@
 
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/soft_body_3d.h"
+#include "scene/3d/physics/soft_body_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
-
-MeshInstance3DGizmoPlugin::MeshInstance3DGizmoPlugin() {
-}
 
 bool MeshInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<MeshInstance3D>(p_spatial) != nullptr && Object::cast_to<SoftBody3D>(p_spatial) == nullptr;

@@ -68,6 +68,11 @@ struct CustomExportData {
 	Vector<String> libs;
 };
 
+struct MetadataInfo {
+	String name;
+	String value;
+};
+
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation);
 
 String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation);
@@ -95,7 +100,7 @@ Error store_string_at_path(const String &p_path, const String &p_data);
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
 
 // Creates strings.xml files inside the gradle project for different locales.
-Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name, const String &p_gradle_build_dir);
+Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames);
 
 String bool_to_string(bool v);
 
@@ -105,4 +110,4 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset);
 
 String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug);
 
-String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug);
+String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata);

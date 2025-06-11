@@ -205,6 +205,7 @@ const GodotInputGamepads = {
 		sample: function () {
 			const pads = GodotInputGamepads.get_pads();
 			const samples = [];
+			let active = 0;
 			for (let i = 0; i < pads.length; i++) {
 				const pad = pads[i];
 				if (!pad) {
@@ -224,8 +225,10 @@ const GodotInputGamepads = {
 					s.axes.push(pad.axes[a]);
 				}
 				samples.push(s);
+				active++;
 			}
 			GodotInputGamepads.samples = samples;
+			return active;
 		},
 
 		init: function (onchange) {
@@ -512,9 +515,9 @@ const GodotInput = {
 			const rel_pos_x = evt.movementX * rw;
 			const rel_pos_y = evt.movementY * rh;
 			const modifiers = GodotInput.getModifiers(evt);
-			func(pos[0], pos[1], rel_pos_x, rel_pos_y, modifiers);
+			func(pos[0], pos[1], rel_pos_x, rel_pos_y, modifiers, evt.pressure);
 		}
-		GodotEventListeners.add(window, 'mousemove', move_cb, false);
+		GodotEventListeners.add(window, 'pointermove', move_cb, false);
 	},
 
 	godot_js_input_mouse_wheel_cb__proxy: 'sync',
@@ -651,8 +654,7 @@ const GodotInput = {
 	godot_js_input_gamepad_sample__proxy: 'sync',
 	godot_js_input_gamepad_sample__sig: 'i',
 	godot_js_input_gamepad_sample: function () {
-		GodotInputGamepads.sample();
-		return 0;
+		return GodotInputGamepads.sample();
 	},
 
 	godot_js_input_gamepad_sample_get__proxy: 'sync',

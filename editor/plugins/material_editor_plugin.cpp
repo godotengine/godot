@@ -62,7 +62,7 @@ void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 			const real_t limit = Math::deg_to_rad(80.0);
 			rot = rot.clampf(-limit, limit);
 		} else {
-			rot.x = CLAMP(rot.x, -Math_PI / 2, Math_PI / 2);
+			rot.x = CLAMP(rot.x, -Math::PI / 2, Math::PI / 2);
 		}
 		_update_rotation();
 		_store_rotation_metadata();
@@ -230,6 +230,7 @@ MaterialEditor::MaterialEditor() {
 	layout_error->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	error_label = memnew(Label);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_label->set_text(TTR("Preview is not available for this shader mode."));
 	error_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
@@ -310,18 +311,21 @@ MaterialEditor::MaterialEditor() {
 	sphere_switch = memnew(Button);
 	sphere_switch->set_theme_type_variation("PreviewLightButton");
 	sphere_switch->set_toggle_mode(true);
+	sphere_switch->set_accessibility_name(TTRC("Sphere"));
 	vb_shape->add_child(sphere_switch);
 	sphere_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_sphere_switch_pressed));
 
 	box_switch = memnew(Button);
 	box_switch->set_theme_type_variation("PreviewLightButton");
 	box_switch->set_toggle_mode(true);
+	box_switch->set_accessibility_name(TTRC("Box"));
 	vb_shape->add_child(box_switch);
 	box_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_box_switch_pressed));
 
 	quad_switch = memnew(Button);
 	quad_switch->set_theme_type_variation("PreviewLightButton");
 	quad_switch->set_toggle_mode(true);
+	quad_switch->set_accessibility_name(TTRC("Quad"));
 	vb_shape->add_child(quad_switch);
 	quad_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_quad_switch_pressed));
 
@@ -334,6 +338,7 @@ MaterialEditor::MaterialEditor() {
 	light_1_switch->set_theme_type_variation("PreviewLightButton");
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
+	light_1_switch->set_accessibility_name(TTRC("First Light"));
 	vb_light->add_child(light_1_switch);
 	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_1_switch_pressed));
 
@@ -341,6 +346,7 @@ MaterialEditor::MaterialEditor() {
 	light_2_switch->set_theme_type_variation("PreviewLightButton");
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
+	light_2_switch->set_accessibility_name(TTRC("Second Light"));
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_2_switch_pressed));
 

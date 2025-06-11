@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_base_scene_state" qualifiers="const">
+			<return type="SceneState" />
+			<description>
+				Returns the [SceneState] of the scene that this scene inherits from, or [code]null[/code] if it doesn't inherit from any scene.
+			</description>
+		</method>
 		<method name="get_connection_binds" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="idx" type="int" />
@@ -153,6 +159,12 @@
 			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the type of the node at [param idx].
+			</description>
+		</method>
+		<method name="get_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the resource path to the represented [PackedScene].
 			</description>
 		</method>
 		<method name="is_node_instance_placeholder" qualifiers="const">

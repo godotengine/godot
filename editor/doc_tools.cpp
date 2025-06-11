@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "core/doc_data.h"
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_importer.h"
@@ -140,7 +141,7 @@ static void merge_constructors(Vector<DocData::MethodDoc> &p_to, const Vector<Do
 				// the arguments so we make sure they are different.
 				int64_t arg_count = from.arguments.size();
 				Vector<bool> arg_used;
-				arg_used.resize_zeroed(arg_count);
+				arg_used.resize_initialized(arg_count);
 				// Also there is no guarantee that argument ordering will match,
 				// so we have to check one by one so we make sure we have an exact match.
 				for (int64_t arg_i = 0; arg_i < arg_count; ++arg_i) {
@@ -178,10 +179,8 @@ static void merge_methods(Vector<DocData::MethodDoc> &p_to, const Vector<DocData
 	DocData::MethodDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::MethodDoc, MethodCompare> search_array;
-
 	for (const DocData::MethodDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect<MethodCompare>(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -206,10 +205,8 @@ static void merge_constants(Vector<DocData::ConstantDoc> &p_to, const Vector<Doc
 	const DocData::ConstantDoc *from_ptr = p_from.ptr();
 	int64_t from_size = p_from.size();
 
-	SearchArray<DocData::ConstantDoc> search_array;
-
 	for (DocData::ConstantDoc &to : p_to) {
-		int64_t found = search_array.bisect(from_ptr, from_size, to, true);
+		int64_t found = p_from.span().bisect(to, true);
 
 		if (found >= from_size) {
 			continue;
@@ -234,10 +231,8 @@ static void merge_properties(Vector<DocData::PropertyDoc> &p_to, const Vector<Do
 	DocData::PropertyDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::PropertyDoc> search_array;
-
 	for (const DocData::PropertyDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -262,10 +257,8 @@ static void merge_theme_properties(Vector<DocData::ThemeItemDoc> &p_to, const Ve
 	DocData::ThemeItemDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::ThemeItemDoc> search_array;
-
 	for (const DocData::ThemeItemDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -290,10 +283,8 @@ static void merge_operators(Vector<DocData::MethodDoc> &p_to, const Vector<DocDa
 	DocData::MethodDoc *to_ptrw = p_to.ptrw();
 	int64_t to_size = p_to.size();
 
-	SearchArray<DocData::MethodDoc, OperatorCompare> search_array;
-
 	for (const DocData::MethodDoc &from : p_from) {
-		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+		int64_t found = p_to.span().bisect(from, true);
 
 		if (found >= to_size) {
 			continue;
@@ -394,9 +385,9 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 		// Cannot get default value of classes that can't be instantiated
 		List<StringName> inheriting_classes;
 		ClassDB::get_direct_inheriters_from_class(p_class_name, &inheriting_classes);
-		for (List<StringName>::Element *E2 = inheriting_classes.front(); E2; E2 = E2->next()) {
-			if (ClassDB::can_instantiate(E2->get())) {
-				default_value = ClassDB::class_get_default_property_value(E2->get(), p_property_name, &r_default_value_valid);
+		for (const StringName &class_name : inheriting_classes) {
+			if (ClassDB::can_instantiate(class_name)) {
+				default_value = ClassDB::class_get_default_property_value(class_name, p_property_name, &r_default_value_valid);
 				if (r_default_value_valid) {
 					break;
 				}
@@ -628,7 +619,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					// Don't skip parametric setters and getters, i.e. method which require
 					// one or more parameters to define what property should be set or retrieved.
 					// E.g. CPUParticles3D::set_param(Parameter param, float value).
-					if (E.arguments.size() == 0 /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
+					if (E.arguments.is_empty() /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
 						continue;
 					}
 				}
@@ -657,10 +648,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			ClassDB::get_signal_list(name, &signal_list, true);
 
 			if (signal_list.size()) {
-				for (List<MethodInfo>::Element *EV = signal_list.front(); EV; EV = EV->next()) {
+				for (const MethodInfo &mi : signal_list) {
 					DocData::MethodDoc signal;
-					signal.name = EV->get().name;
-					for (const PropertyInfo &arginfo : EV->get().arguments) {
+					signal.name = mi.name;
+					for (const PropertyInfo &arginfo : mi.arguments) {
 						DocData::ArgumentDoc argument;
 						DocData::argument_doc_from_arginfo(argument, arginfo);
 
@@ -940,7 +931,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
 			Variant value = Variant::get_constant_value(Variant::Type(i), E);
-			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace("\n", " ");
+			constant.value = DocData::get_default_value_string(value);
 			constant.is_value_valid = true;
 			constant.type = Variant::get_type_name(value.get_type());
 			c.constants.push_back(constant);
@@ -1807,10 +1798,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 	return OK;
 }
 
-Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size) {
+Error DocTools::load_compressed(const uint8_t *p_data, int64_t p_compressed_size, int64_t p_uncompressed_size) {
 	Vector<uint8_t> data;
 	data.resize(p_uncompressed_size);
-	int ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
+	const int64_t ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
 	ERR_FAIL_COND_V_MSG(ret == -1, ERR_FILE_CORRUPT, "Compressed file is corrupt.");
 	class_list.clear();
 
@@ -1825,7 +1816,7 @@ Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, in
 	return OK;
 }
 
-Error DocTools::load_xml(const uint8_t *p_data, int p_size) {
+Error DocTools::load_xml(const uint8_t *p_data, int64_t p_size) {
 	Ref<XMLParser> parser = memnew(XMLParser);
 	Error err = parser->_open_buffer(p_data, p_size);
 	if (err) {

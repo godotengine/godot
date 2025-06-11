@@ -62,6 +62,9 @@ class SectionedInspector : public HSplitContainer {
 	void _search_changed(const String &p_what);
 	void _advanced_toggled(bool p_toggled_on);
 
+protected:
+	void _notification(int p_notification);
+
 public:
 	void register_search_box(LineEdit *p_box);
 	void register_advanced_toggle(CheckButton *p_toggle);

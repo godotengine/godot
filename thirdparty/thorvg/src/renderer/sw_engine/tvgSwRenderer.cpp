@@ -118,51 +118,41 @@ struct SwShapeTask : SwTask
 
         auto strokeWidth = validStrokeWidth();
         SwBBox renderRegion{};
-        auto visibleFill = false;
-
-        //This checks also for the case, if the invisible shape turned to visible by alpha.
-        auto prepareShape = false;
-        if (!shapePrepared(&shape) && (flags & RenderUpdateFlag::Color)) prepareShape = true;
+        auto updateShape = flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Transform | RenderUpdateFlag::Clip);
+        auto updateFill = false;
 
         //Shape
-        if (flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Transform) || prepareShape) {
+        if (updateShape || flags & (RenderUpdateFlag::Color | RenderUpdateFlag::Gradient)) {
             uint8_t alpha = 0;
             rshape->fillColor(nullptr, nullptr, nullptr, &alpha);
-            alpha = MULTIPLY(alpha, opacity);
-            visibleFill = (alpha > 0 || rshape->fill);
-            shapeReset(&shape);
-            if (visibleFill || clipper) {
-                if (!shapePrepare(&shape, rshape, transform, bbox, renderRegion, mpool, tid, clips.count > 0 ? true : false)) {
-                    visibleFill = false;
+            updateFill = (MULTIPLY(alpha, opacity) || rshape->fill);
+            if (updateShape) shapeReset(&shape);
+            if (updateFill || clipper) {
+                if (shapePrepare(&shape, rshape, transform, bbox, renderRegion, mpool, tid, clips.count > 0 ? true : false)) {
+                    if (!shapeGenRle(&shape, rshape, antialiasing(strokeWidth))) goto err;
+                } else {
+                    updateFill = false;
                     renderRegion.reset();
                 }
             }
         }
         //Fill
-        if (flags & (RenderUpdateFlag::Path |RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
-            if (visibleFill || clipper) {
-                if (!shapeGenRle(&shape, rshape, antialiasing(strokeWidth))) goto err;
-            }
+        if (updateFill) {
             if (auto fill = rshape->fill) {
                 auto ctable = (flags & RenderUpdateFlag::Gradient) ? true : false;
                 if (ctable) shapeResetFill(&shape);
                 if (!shapeGenFillColors(&shape, fill, transform, surface, opacity, ctable)) goto err;
-            } else {
-                shapeDelFill(&shape);
             }
         }
         //Stroke
-        if (flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Stroke | RenderUpdateFlag::Transform)) {
+        if (updateShape || flags & RenderUpdateFlag::Stroke) {
             if (strokeWidth > 0.0f) {
                 shapeResetStroke(&shape, rshape, transform);
-
                 if (!shapeGenStrokeRle(&shape, rshape, transform, bbox, renderRegion, mpool, tid)) goto err;
                 if (auto fill = rshape->strokeFill()) {
                     auto ctable = (flags & RenderUpdateFlag::GradientStroke) ? true : false;
                     if (ctable) shapeResetStrokeFill(&shape);
                     if (!shapeGenStrokeFillColors(&shape, fill, transform, surface, opacity, ctable)) goto err;
-                } else {
-                    shapeDelStrokeFill(&shape);
                 }
             } else {
                 shapeDelStroke(&shape);
@@ -186,6 +176,7 @@ struct SwShapeTask : SwTask
     err:
         bbox.reset();
         shapeReset(&shape);
+        rleReset(shape.strokeRle);
         shapeDelOutline(&shape, mpool, tid);
     }
 

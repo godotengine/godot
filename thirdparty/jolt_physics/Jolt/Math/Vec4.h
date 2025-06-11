@@ -38,6 +38,9 @@ public:
 	/// Vector with all zeros
 	static JPH_INLINE Vec4		sZero();
 
+	/// Vector with all ones
+	static JPH_INLINE Vec4		sOne();
+
 	/// Vector with all NaN's
 	static JPH_INLINE Vec4		sNaN();
 

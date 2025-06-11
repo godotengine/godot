@@ -36,13 +36,13 @@
 		<method name="get_encrypt_directory" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], PCK directory encryption is enabled in the export dialog.
+				Returns [code]true[/code] if PCK directory encryption is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_encrypt_pck" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], PCK encryption is enabled in the export dialog.
+				Returns [code]true[/code] if PCK encryption is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_encryption_ex_filter" qualifiers="const">
@@ -121,6 +121,13 @@
 				Returns export preset name.
 			</description>
 		</method>
+		<method name="get_project_setting">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the value of the setting identified by [param name] using export preset feature tag overrides instead of current OS features.
+			</description>
+		</method>
 		<method name="get_script_export_mode" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -140,7 +147,7 @@
 			<return type="bool" />
 			<param index="0" name="property" type="StringName" />
 			<description>
-				Returns [code]true[/code] if preset has specified property.
+				Returns [code]true[/code] if the preset has the property named [param property].
 			</description>
 		</method>
 		<method name="has_export_file">

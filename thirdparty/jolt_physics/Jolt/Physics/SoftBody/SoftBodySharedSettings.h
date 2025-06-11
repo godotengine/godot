@@ -111,6 +111,12 @@ public:
 	/// Restore a shape and materials. Pass in an empty map in ioSettingsMap / ioMaterialMap or reuse the same map while reading multiple settings objects from the same stream in order to restore duplicates.
 	static SettingsResult sRestoreWithMaterials(StreamIn &inStream, IDToSharedSettingsMap &ioSettingsMap, IDToMaterialMap &ioMaterialMap);
 
+	/// Create a cube. This can be used to create a simple soft body for testing purposes.
+	/// It will contain edge constraints, volume constraints and faces.
+	/// @param inGridSize Number of points along each axis
+	/// @param inGridSpacing Distance between points
+	static Ref<SoftBodySharedSettings> sCreateCube(uint inGridSize, float inGridSpacing);
+
 	/// A vertex is a particle, the data in this structure is only used during creation of the soft body and not during simulation
 	struct JPH_EXPORT Vertex
 	{

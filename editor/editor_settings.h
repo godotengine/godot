@@ -191,7 +191,7 @@ public:
 
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
-	float get_auto_display_scale() const;
+	static float get_auto_display_scale();
 
 	void _add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut);
 	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
@@ -204,9 +204,7 @@ public:
 
 	void notify_changes();
 
-#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	EditorSettings();
 };

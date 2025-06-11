@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
+#include "scene/property_utils.h"
 
 void ResourceLoaderText::_printerr() {
 	ERR_PRINT(vformat("%s:%d - Parse Error: %s.", res_path, lines, error_text));
@@ -1223,14 +1224,9 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			return error;
 		}
 
-		if (!next_tag.fields.has("type")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'type' in external resource tag";
-			_printerr();
-			return error;
+		if (next_tag.fields.has("type")) {
+			r_classes->insert(next_tag.fields["type"]);
 		}
-
-		r_classes->insert(next_tag.fields["type"]);
 
 		while (true) {
 			String assign;
@@ -1447,9 +1443,9 @@ bool ResourceFormatLoaderText::handles_type(const String &p_type) const {
 }
 
 void ResourceFormatLoaderText::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
-	String ext = p_path.get_extension().to_lower();
-	if (ext == "tscn") {
-		r_classes->insert("PackedScene");
+	const String type = get_resource_type(p_path);
+	if (!type.is_empty()) {
+		r_classes->insert(type);
 	}
 
 	// ...for anything else must test...
@@ -1905,18 +1901,18 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
-		for (List<PropertyInfo>::Element *PE = property_list.front(); PE; PE = PE->next()) {
-			if (skip_editor && PE->get().name.begins_with("__editor")) {
+		for (const PropertyInfo &pi : property_list) {
+			if (skip_editor && pi.name.begins_with("__editor")) {
 				continue;
 			}
-			if (PE->get().name == META_PROPERTY_MISSING_RESOURCES) {
+			if (pi.name == META_PROPERTY_MISSING_RESOURCES) {
 				continue;
 			}
 
-			if (PE->get().usage & PROPERTY_USAGE_STORAGE || missing_resource_properties.has(PE->get().name)) {
-				String name = PE->get().name;
+			if (pi.usage & PROPERTY_USAGE_STORAGE || missing_resource_properties.has(pi.name)) {
+				String name = pi.name;
 				Variant value;
-				if (PE->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+				if (pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
 					NonPersistentKey npk;
 					npk.base = res;
 					npk.property = name;
@@ -1927,21 +1923,21 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 					value = res->get(name);
 				}
 
-				if (PE->get().type == Variant::OBJECT && missing_resource_properties.has(PE->get().name)) {
+				if (pi.type == Variant::OBJECT && missing_resource_properties.has(pi.name)) {
 					// Was this missing resource overridden? If so do not save the old value.
 					Ref<Resource> ures = value;
 					if (ures.is_null()) {
-						value = missing_resource_properties[PE->get().name];
+						value = missing_resource_properties[pi.name];
 					}
 				}
 
-				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
+				Variant default_value = PropertyUtils::get_property_default_value(res.ptr(), name);
 
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					continue;
 				}
 
-				if (PE->get().type == Variant::OBJECT && value.is_zero() && !(PE->get().usage & PROPERTY_USAGE_STORE_IF_NULL)) {
+				if (pi.type == Variant::OBJECT && value.is_zero() && !(pi.usage & PROPERTY_USAGE_STORE_IF_NULL)) {
 					continue;
 				}
 

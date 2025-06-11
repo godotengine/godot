@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from emscripten_helpers import (
     add_js_externs,
     add_js_libraries,
+    add_js_post,
     add_js_pre,
     create_engine_file,
     create_template_zip,
@@ -57,6 +58,7 @@ def get_opts():
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
             False,
         ),
+        BoolVariable("wasm_simd", "Use WebAssembly SIMD to improve CPU performance", True),
     ]
 
 
@@ -98,7 +100,10 @@ def library_emitter(target, source, env):
 
 
 def configure(env: "SConsEnvironment"):
-    env.Append(LIBEMITTER=library_emitter)
+    env.Append(LIBEMITTER=[library_emitter])
+
+    env["EXPORTED_FUNCTIONS"] = ["_main"]
+    env["EXPORTED_RUNTIME_METHODS"] = []
 
     # Validate arch.
     supported_arches = ["wasm32"]
@@ -129,6 +134,10 @@ def configure(env: "SConsEnvironment"):
 
     ## Copy env variables.
     env["ENV"] = os.environ
+
+    # This makes `wasm-ld` treat all warnings as errors.
+    if env["werror"]:
+        env.Append(LINKFLAGS=["-Wl,--fatal-warnings"])
 
     # LTO
 
@@ -164,12 +173,14 @@ def configure(env: "SConsEnvironment"):
         jscc = env.Builder(generator=run_closure_compiler, suffix=".cc.js", src_suffix=".js")
         env.Append(BUILDERS={"BuildJS": jscc})
 
-    # Add helper method for adding libraries, externs, pre-js.
+    # Add helper method for adding libraries, externs, pre-js, post-js.
     env["JS_LIBS"] = []
     env["JS_PRE"] = []
+    env["JS_POST"] = []
     env["JS_EXTERNS"] = []
     env.AddMethod(add_js_libraries, "AddJSLibraries")
     env.AddMethod(add_js_pre, "AddJSPre")
+    env.AddMethod(add_js_post, "AddJSPost")
     env.AddMethod(add_js_externs, "AddJSExterns")
 
     # Add method that joins/compiles our Engine files.
@@ -236,12 +247,12 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
-        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=8"])
+        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE='Module[\"emscriptenPoolSize\"]||8'"])
         env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
         if not env["dlink_enabled"]:
             # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
             # Not needed (and potentially dangerous) when dlink_enabled=yes, since we set EXPORT_ALL=1 in that case.
-            env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=['__emscripten_thread_crashed','_main']"])
+            env["EXPORTED_FUNCTIONS"] += ["__emscripten_thread_crashed"]
 
     elif env["proxy_to_pthread"]:
         print_warning('"threads=no" support requires "proxy_to_pthread=no", disabling proxy to pthread.')
@@ -268,9 +279,13 @@ def configure(env: "SConsEnvironment"):
     if env["proxy_to_pthread"]:
         env.Append(LINKFLAGS=["-sPROXY_TO_PTHREAD=1"])
         env.Append(CPPDEFINES=["PROXY_TO_PTHREAD_ENABLED"])
-        env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
+        env["EXPORTED_RUNTIME_METHODS"] += ["_emscripten_proxy_main"]
         # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
         env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
+
+    # Enable WebAssembly SIMD
+    if env["wasm_simd"]:
+        env.Append(CCFLAGS=["-msimd128"])
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-sENVIRONMENT=web,worker"])
@@ -291,7 +306,13 @@ def configure(env: "SConsEnvironment"):
     env.Append(LINKFLAGS=["-sINVOKE_RUN=0"])
 
     # callMain for manual start, cwrap for the mono version.
-    env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
+    # Make sure also to have those memory-related functions available.
+    heap_arrays = [f"HEAP{heap_type}{heap_size}" for heap_size in [8, 16, 32, 64] for heap_type in ["", "U"]] + [
+        "HEAPF32",
+        "HEAPF64",
+    ]
+    env["EXPORTED_RUNTIME_METHODS"] += ["callMain", "cwrap"] + heap_arrays
+    env["EXPORTED_FUNCTIONS"] += ["_malloc", "_free"]
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-sEXIT_RUNTIME=1"])

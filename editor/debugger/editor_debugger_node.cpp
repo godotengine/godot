@@ -67,6 +67,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 
 	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
 	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
+	add_theme_constant_override("margin_bottom", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_BOTTOM));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tabs_visible(false);
@@ -116,6 +117,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated).bind(id));
 	node->connect("remote_objects_updated", callable_mp(this, &EditorDebuggerNode::_remote_objects_updated).bind(id));
 	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated).bind(id));
+	node->connect("remote_objects_requested", callable_mp(this, &EditorDebuggerNode::_remote_objects_requested).bind(id));
 	node->connect("set_breakpoint", callable_mp(this, &EditorDebuggerNode::_breakpoint_set_in_tree).bind(id));
 	node->connect("clear_breakpoints", callable_mp(this, &EditorDebuggerNode::_breakpoints_cleared_in_tree).bind(id));
 	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
@@ -327,11 +329,12 @@ void EditorDebuggerNode::_notification(int p_what) {
 			}
 
 			if (tabs->get_tab_count() > 1) {
-				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
-				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
-
 				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
+
+			add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
+			add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
+			add_theme_constant_override("margin_bottom", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_BOTTOM));
 
 			remote_scene_tree->update_icon_max_width();
 		} break;
@@ -523,7 +526,7 @@ void EditorDebuggerNode::_debug_data(const String &p_msg, const Array &p_data, i
 
 void EditorDebuggerNode::set_script_debug_button(MenuButton *p_button) {
 	script_menu = p_button;
-	script_menu->set_text(TTR("Debug"));
+	script_menu->set_text(TTRC("Debug"));
 	script_menu->set_switch_on_hover(true);
 	PopupMenu *p = script_menu->get_popup();
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/step_into"), DEBUG_STEP);
@@ -679,8 +682,6 @@ void EditorDebuggerNode::request_remote_tree() {
 }
 
 void EditorDebuggerNode::set_remote_selection(const TypedArray<int64_t> &p_ids) {
-	remote_scene_tree->select_nodes(p_ids);
-
 	stop_waiting_inspection();
 	get_current_debugger()->request_remote_objects(p_ids);
 }
@@ -869,6 +870,17 @@ void EditorDebuggerNode::live_debug_reparent_node(const NodePath &p_at, const No
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_reparent_node(p_at, p_new_place, p_new_name, p_at_pos);
 	});
+}
+
+void EditorDebuggerNode::set_debug_mute_audio(bool p_mute) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->set_debug_mute_audio(p_mute);
+	});
+	debug_mute_audio = p_mute;
+}
+
+bool EditorDebuggerNode::get_debug_mute_audio() const {
+	return debug_mute_audio;
 }
 
 void EditorDebuggerNode::set_camera_override(CameraOverride p_override) {

@@ -35,6 +35,7 @@
 
 class Button;
 class EditorSpinSlider;
+class EditorVariantTypePopupMenu;
 class MarginContainer;
 
 class EditorPropertyArrayObject : public RefCounted {
@@ -53,8 +54,6 @@ public:
 
 	void set_array(const Variant &p_array);
 	Variant get_array();
-
-	EditorPropertyArrayObject();
 };
 
 class EditorPropertyDictionaryObject : public RefCounted {
@@ -88,8 +87,6 @@ public:
 	String get_label_for_index(int p_index);
 	String get_property_name_for_index(int p_index);
 	String get_key_name_for_index(int p_index);
-
-	EditorPropertyDictionaryObject();
 };
 
 class EditorPropertyArray : public EditorProperty {
@@ -112,7 +109,7 @@ class EditorPropertyArray : public EditorProperty {
 		}
 	};
 
-	PopupMenu *change_type = nullptr;
+	EditorVariantTypePopupMenu *change_type = nullptr;
 
 	bool preview_value = false;
 	int page_length = 20;
@@ -225,7 +222,7 @@ class EditorPropertyDictionary : public EditorProperty {
 		}
 	};
 
-	PopupMenu *change_type = nullptr;
+	EditorVariantTypePopupMenu *change_type = nullptr;
 	bool updating = false;
 
 	bool preview_value = false;

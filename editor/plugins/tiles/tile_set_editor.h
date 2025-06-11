@@ -44,8 +44,8 @@ class SplitContainer;
 class EditorFileDialog;
 class EditorInspectorPlugin;
 
-class TileSetEditor : public Control {
-	GDCLASS(TileSetEditor, Control);
+class TileSetEditor : public MarginContainer {
+	GDCLASS(TileSetEditor, MarginContainer);
 
 	static TileSetEditor *singleton;
 

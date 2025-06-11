@@ -184,7 +184,6 @@ void EditorPropertyRootMotion::setup(const NodePath &p_base_hint) {
 
 void EditorPropertyRootMotion::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Ref<Texture2D> t = get_editor_theme_icon(SNAME("Clear"));
 			clear->set_button_icon(t);
@@ -196,12 +195,14 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 	assign = memnew(Button);
+	assign->set_accessibility_name(TTRC("Assign"));
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_assign));
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
+	clear->set_accessibility_name(TTRC("Clear"));
 	clear->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_clear));
 	hbc->add_child(clear);
 

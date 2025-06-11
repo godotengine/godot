@@ -394,6 +394,7 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	if (p_expand) {
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	}
+	p_control->set_accessibility_name(p_label);
 
 	return mc;
 }

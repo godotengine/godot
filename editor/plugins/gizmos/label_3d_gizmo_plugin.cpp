@@ -32,9 +32,6 @@
 
 #include "scene/3d/label_3d.h"
 
-Label3DGizmoPlugin::Label3DGizmoPlugin() {
-}
-
 bool Label3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<Label3D>(p_spatial) != nullptr;
 }

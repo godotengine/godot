@@ -200,12 +200,14 @@ class AnimationTimelineEdit : public Range {
 	Range *h_scroll = nullptr;
 	float play_position_pos = 0.0f;
 
+	HBoxContainer *add_track_hb = nullptr;
 	HBoxContainer *len_hb = nullptr;
 	EditorSpinSlider *length = nullptr;
 	Button *loop = nullptr;
 	TextureRect *time_icon = nullptr;
 
 	MenuButton *add_track = nullptr;
+	LineEdit *filter_track = nullptr;
 	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
 	HScrollBar *hscroll = nullptr;
 
@@ -403,7 +405,6 @@ public:
 	void _clear_selection(bool p_update);
 
 	AnimationMarkerEdit();
-	~AnimationMarkerEdit();
 };
 
 class AnimationTrackEdit : public Control {
@@ -428,6 +429,7 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_PASTE,
 		MENU_KEY_ADD_RESET,
 		MENU_KEY_DELETE,
+		MENU_KEY_LOOKUP,
 		MENU_USE_BLEND_ENABLED,
 		MENU_USE_BLEND_DISABLED,
 	};
@@ -445,6 +447,7 @@ class AnimationTrackEdit : public Control {
 	int track = 0;
 
 	Rect2 check_rect;
+	Rect2 icon_rect;
 	Rect2 path_rect;
 
 	Rect2 update_mode_rect;
@@ -473,6 +476,9 @@ class AnimationTrackEdit : public Control {
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 
+	int lookup_key_idx = -1;
+	bool _lookup_key(int p_key_idx) const;
+
 	Ref<Texture2D> _get_key_type_icon() const;
 
 	mutable int dropping_at = 0;
@@ -483,6 +489,8 @@ class AnimationTrackEdit : public Control {
 	float moving_selection_mouse_begin_x = 0.0f;
 	int select_single_attempt = -1;
 	bool moving_selection = false;
+
+	bool command_or_control_pressed = false;
 
 	bool in_group = false;
 	AnimationTrackEditor *editor = nullptr;
@@ -498,6 +506,7 @@ public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	virtual int get_key_height() const;
@@ -570,6 +579,7 @@ public:
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_root(Node *p_root);
 	void set_editor(AnimationTrackEditor *p_editor);
+	String get_node_name() const;
 
 	AnimationTrackEditGroup();
 };
@@ -608,6 +618,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	OptionButton *snap_mode = nullptr;
 	Button *auto_fit = nullptr;
 	Button *auto_fit_bezier = nullptr;
+	OptionButton *bezier_key_mode = nullptr;
 
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
@@ -757,6 +768,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
 	void _bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
+	void _bezier_track_set_key_handle_mode_at_time(Animation *p_anim, int p_track, float p_time, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
 
 	////////////// edit menu stuff
 
@@ -802,9 +814,14 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _anim_paste_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
+	void _toggle_function_names();
+	Button *function_name_toggler = nullptr;
+
 	void _view_group_toggle();
+
 	Button *view_group = nullptr;
 	Button *selected_filter = nullptr;
+	Button *alphabetic_sorting = nullptr;
 
 	void _auto_fit();
 	void _auto_fit_bezier();
@@ -939,14 +956,17 @@ public:
 	bool is_snap_keys_enabled() const;
 	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
+	void _on_filter_updated(const String &p_filter);
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
 	bool is_grouping_tracks();
+	bool is_sorting_alphabetically();
 	PackedStringArray get_selected_section() const;
 	bool is_marker_selected(const StringName &p_marker) const;
 	bool is_marker_moving_selection() const;
 	float get_marker_moving_selection_offset() const;
+	bool is_function_name_pressed();
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
 	void goto_prev_step(bool p_from_mouse_event);
@@ -983,7 +1003,6 @@ class AnimationTrackKeyEditEditor : public EditorProperty {
 
 public:
 	AnimationTrackKeyEditEditor(Ref<Animation> p_animation, int p_track, real_t p_key_ofs, bool p_use_fps);
-	~AnimationTrackKeyEditEditor();
 };
 
 // AnimationMarkerKeyEditEditorPlugin
@@ -1001,5 +1020,4 @@ class AnimationMarkerKeyEditEditor : public EditorProperty {
 
 public:
 	AnimationMarkerKeyEditEditor(Ref<Animation> p_animation, const StringName &p_name, bool p_use_fps);
-	~AnimationMarkerKeyEditEditor();
 };

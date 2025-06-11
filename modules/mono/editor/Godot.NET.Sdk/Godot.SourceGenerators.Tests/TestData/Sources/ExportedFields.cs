@@ -9,7 +9,7 @@ public partial class ExportedFields : GodotObject
     [Export] private SByte _fieldSByte = 10;
     [Export] private Int16 _fieldInt16 = 10;
     [Export] private Int32 _fieldInt32 = 10;
-    [Export] private Int64 _fieldInt64 = 10;
+    [Export] private Int64 _fieldInt64 = -10_000;
     [Export] private Byte _fieldByte = 10;
     [Export] private UInt16 _fieldUInt16 = 10;
     [Export] private UInt32 _fieldUInt32 = 10;

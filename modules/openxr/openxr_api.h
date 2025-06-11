@@ -31,7 +31,6 @@
 #pragma once
 
 #include "action_map/openxr_action.h"
-#include "extensions/openxr_composition_layer_provider.h"
 #include "extensions/openxr_extension_wrapper.h"
 #include "util.h"
 
@@ -74,6 +73,7 @@ public:
 		bool acquire(bool &p_should_render);
 		bool release();
 		RID get_image();
+		RID get_density_map();
 	};
 
 private:
@@ -94,10 +94,13 @@ private:
 	Vector<CharString> enabled_extensions;
 
 	// composition layer providers
-	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
+	Vector<OpenXRExtensionWrapper *> composition_layer_providers;
 
 	// projection views extensions
 	Vector<OpenXRExtensionWrapper *> projection_views_extensions;
+
+	// frame info extensions
+	Vector<OpenXRExtensionWrapper *> frame_info_extensions;
 
 	// view configuration
 	LocalVector<XrViewConfigurationType> supported_view_configuration_types;
@@ -154,6 +157,7 @@ private:
 
 	bool play_space_is_dirty = true;
 	XrSpace play_space = XR_NULL_HANDLE;
+	XrSpace custom_play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
 
@@ -466,6 +470,7 @@ public:
 	bool set_requested_reference_space(XrReferenceSpaceType p_requested_reference_space);
 	XrReferenceSpaceType get_requested_reference_space() const { return requested_reference_space; }
 	XrReferenceSpaceType get_reference_space() const { return reference_space; }
+	void set_custom_play_space(XrSpace p_custom_space);
 
 	void set_submit_depth_buffer(bool p_submit_depth_buffer);
 	bool get_submit_depth_buffer() const { return submit_depth_buffer; }
@@ -497,6 +502,7 @@ public:
 	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
+	RID get_density_map_texture();
 	void set_velocity_texture(RID p_render_target);
 	RID get_velocity_texture();
 	void set_velocity_depth_texture(RID p_render_target);
@@ -577,11 +583,14 @@ public:
 	XRPose::TrackingConfidence get_action_pose(RID p_action, RID p_tracker, Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool trigger_haptic_pulse(RID p_action, RID p_tracker, float p_frequency, float p_amplitude, XrDuration p_duration_ns);
 
-	void register_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
-	void unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
+	void register_composition_layer_provider(OpenXRExtensionWrapper *p_extension);
+	void unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension);
 
 	void register_projection_views_extension(OpenXRExtensionWrapper *p_extension);
 	void unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension);
+
+	void register_frame_info_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 
 	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;

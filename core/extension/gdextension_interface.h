@@ -34,15 +34,16 @@
  * Together with the JSON file, you should be able to generate any binder.
  */
 
+#ifndef __cplusplus
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef __cplusplus
 typedef uint32_t char32_t;
 typedef uint16_t char16_t;
-#endif
+#else
+#include <cstddef>
+#include <cstdint>
 
-#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -399,6 +400,9 @@ typedef struct {
 } GDExtensionClassCreationInfo4;
 
 typedef void *GDExtensionClassLibraryPtr;
+
+/* Passed a pointer to a PackedStringArray that should be filled with the classes that may be used by the GDExtension. */
+typedef void (*GDExtensionEditorGetClassesUsedCallback)(GDExtensionTypePtr p_packed_string_array);
 
 /* Method */
 
@@ -800,6 +804,21 @@ typedef struct {
 	uint64_t timestamp; // Git commit date UNIX timestamp in seconds, or 0 if unavailable.
 	const char *string; // (e.g. "Godot v3.1.4.stable.official.mono")
 } GDExtensionGodotVersion2;
+
+/* Called when starting the main loop. */
+typedef void (*GDExtensionMainLoopStartupCallback)();
+
+/* Called when shutting down the main loop. */
+typedef void (*GDExtensionMainLoopShutdownCallback)();
+
+/* Called for every frame iteration of the main loop. */
+typedef void (*GDExtensionMainLoopFrameCallback)();
+
+typedef struct {
+	GDExtensionMainLoopStartupCallback startup_func;
+	GDExtensionMainLoopShutdownCallback shutdown_func;
+	GDExtensionMainLoopFrameCallback frame_func;
+} GDExtensionMainLoopCallbacks;
 
 /**
  * @name get_godot_version
@@ -2382,6 +2401,7 @@ typedef GDExtensionVariantPtr (*GDExtensionInterfaceArrayOperatorIndexConst)(GDE
 /**
  * @name array_ref
  * @since 4.1
+ * @deprecated in Godot 4.5. use `Array::operator=` instead.
  *
  * Sets an Array to be a reference to another Array object.
  *
@@ -3110,6 +3130,33 @@ typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8Chars)(const char *
  * @param p_size The number of bytes (not code units).
  */
 typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)(const char *p_data, GDExtensionInt p_size);
+
+/**
+ * @name editor_register_get_classes_used_callback
+ * @since 4.5
+ *
+ * Registers a callback that Godot can call to get the list of all classes (from ClassDB) that may be used by the calling GDExtension.
+ *
+ * This is used by the editor to generate a build profile (in "Tools" > "Engine Compilation Configuration Editor..." > "Detect from project"),
+ * in order to recompile Godot with only the classes used.
+ * In the provided callback, the GDExtension should provide the list of classes that _may_ be used statically, thus the time of invocation shouldn't matter.
+ * If a GDExtension doesn't register a callback, Godot will assume that it could be using any classes.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_callback The callback to retrieve the list of classes used.
+ */
+typedef void (*GDExtensionInterfaceEditorRegisterGetClassesUsedCallback)(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
+
+/**
+ * @name register_main_loop_callbacks
+ * @since 4.5
+ *
+ * Registers callbacks to be called at different phases of the main loop.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_callback A pointer to the structure that contains the callbacks.
+ */
+typedef void (*GDExtensionInterfaceRegisterMainLoopCallbacks)(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks);
 
 #ifdef __cplusplus
 }

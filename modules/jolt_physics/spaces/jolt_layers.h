@@ -38,8 +38,6 @@
 #include "Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h"
 #include "Jolt/Physics/Collision/ObjectLayer.h"
 
-#include <stdint.h>
-
 class JoltLayers final
 		: public JPH::BroadPhaseLayerInterface,
 		  public JPH::ObjectLayerPairFilter,

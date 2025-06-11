@@ -72,8 +72,8 @@ Error ENetConnection::create_host(int p_max_peers, int p_max_channels, int p_in_
 
 void ENetConnection::destroy() {
 	ERR_FAIL_NULL_MSG(host, "Host already destroyed.");
-	for (List<Ref<ENetPacketPeer>>::Element *E = peers.front(); E; E = E->next()) {
-		E->get()->_on_disconnect();
+	for (const Ref<ENetPacketPeer> &peer : peers) {
+		peer->_on_disconnect();
 	}
 	peers.clear();
 	enet_host_destroy(host);
@@ -320,14 +320,10 @@ Error ENetConnection::_create(ENetAddress *p_address, int p_max_peers, int p_max
 }
 
 Array ENetConnection::_service(int p_timeout) {
-	Array out;
 	Event event;
 	Ref<ENetPacketPeer> peer;
 	EventType ret = service(p_timeout, event);
-	out.push_back(ret);
-	out.push_back(event.peer);
-	out.push_back(event.data);
-	out.push_back(event.channel_id);
+	Array out = { ret, event.peer, event.data, event.channel_id };
 	if (event.packet && event.peer.is_valid()) {
 		event.peer->_queue_packet(event.packet);
 	}
@@ -426,11 +422,11 @@ size_t ENetConnection::Compressor::enet_compress(void *context, const ENetBuffer
 		compressor->src_mem.resize(inLimit);
 	}
 
-	int total = inLimit;
-	int ofs = 0;
+	size_t total = inLimit;
+	size_t ofs = 0;
 	while (total) {
 		for (size_t i = 0; i < inBufferCount; i++) {
-			int to_copy = MIN(total, int(inBuffers[i].dataLength));
+			const size_t to_copy = MIN(total, inBuffers[i].dataLength);
 			memcpy(&compressor->src_mem.write[ofs], inBuffers[i].data, to_copy);
 			ofs += to_copy;
 			total -= to_copy;
@@ -454,28 +450,29 @@ size_t ENetConnection::Compressor::enet_compress(void *context, const ENetBuffer
 		}
 	}
 
-	int req_size = Compression::get_max_compressed_buffer_size(ofs, mode);
+	const int64_t req_size = Compression::get_max_compressed_buffer_size(ofs, mode);
 	if (compressor->dst_mem.size() < req_size) {
 		compressor->dst_mem.resize(req_size);
 	}
-	int ret = Compression::compress(compressor->dst_mem.ptrw(), compressor->src_mem.ptr(), ofs, mode);
+	const int64_t ret = Compression::compress(compressor->dst_mem.ptrw(), compressor->src_mem.ptr(), ofs, mode);
 
 	if (ret < 0) {
 		return 0;
 	}
 
-	if (ret > int(outLimit)) {
+	const size_t ret_size = size_t(ret);
+	if (ret_size > outLimit) {
 		return 0; // Do not bother
 	}
 
-	memcpy(outData, compressor->dst_mem.ptr(), ret);
+	memcpy(outData, compressor->dst_mem.ptr(), ret_size);
 
 	return ret;
 }
 
 size_t ENetConnection::Compressor::enet_decompress(void *context, const enet_uint8 *inData, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
 	Compressor *compressor = (Compressor *)(context);
-	int ret = -1;
+	int64_t ret = -1;
 	switch (compressor->mode) {
 		case COMPRESS_FASTLZ: {
 			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_FASTLZ);

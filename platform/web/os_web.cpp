@@ -46,7 +46,7 @@
 
 #include <dlfcn.h>
 #include <emscripten.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());
@@ -129,7 +129,7 @@ Error OS_Web::kill(const ProcessID &p_pid) {
 }
 
 int OS_Web::get_process_id() const {
-	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the Web platform.");
+	return 0;
 }
 
 bool OS_Web::is_process_running(const ProcessID &p_pid) const {
@@ -146,6 +146,14 @@ int OS_Web::get_processor_count() const {
 
 String OS_Web::get_unique_id() const {
 	ERR_FAIL_V_MSG("", "OS::get_unique_id() is not available on the Web platform.");
+}
+
+int OS_Web::get_default_thread_pool_size() const {
+#ifdef THREADS_ENABLED
+	return godot_js_os_thread_pool_size_get();
+#else // No threads.
+	return 1;
+#endif
 }
 
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
@@ -172,9 +180,9 @@ String OS_Web::get_name() const {
 	return "Web";
 }
 
-void OS_Web::add_frame_delay(bool p_can_draw) {
+void OS_Web::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 #ifndef PROXY_TO_PTHREAD_ENABLED
-	OS::add_frame_delay(p_can_draw);
+	OS::add_frame_delay(p_can_draw, p_wake_for_events);
 #endif
 }
 
@@ -184,7 +192,7 @@ void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 
 String OS_Web::get_user_data_dir(const String &p_user_dir) const {
 	String userfs = "/userfs";
-	return userfs.path_join(p_user_dir).replace("\\", "/");
+	return userfs.path_join(p_user_dir).replace_char('\\', '/');
 }
 
 String OS_Web::get_cache_path() const {

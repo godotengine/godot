@@ -71,9 +71,6 @@ static psa_status_t mbedtls_cipher_validate_values(
 #if !defined(PSA_WANT_ALG_OFB)
     MBEDTLS_ASSUME(alg != PSA_ALG_OFB);
 #endif
-#if !defined(PSA_WANT_ALG_XTS)
-    MBEDTLS_ASSUME(alg != PSA_ALG_XTS);
-#endif
 #if !defined(PSA_WANT_ALG_ECB_NO_PADDING)
     MBEDTLS_ASSUME(alg != PSA_ALG_ECB_NO_PADDING);
 #endif

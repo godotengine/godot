@@ -34,12 +34,16 @@
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
 #include "core/string/translation_server.h"
 #include "core/string/ucaps.h"
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
+
+#include "thirdparty/grisu2/grisu2.h"
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
@@ -54,11 +58,6 @@ static const int MAX_DECIMALS = 32;
 static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
 	return (is_ascii_upper_case(c) ? (c + ('a' - 'A')) : c);
 }
-
-const char CharString::_null = 0;
-const char16_t Char16String::_null = 0;
-const char32_t String::_null = 0;
-const char32_t String::_replacement_char = 0xfffd;
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
@@ -87,135 +86,6 @@ bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 		return false;
 	}
 }
-
-/*************************************************************************/
-/*  Char16String                                                         */
-/*************************************************************************/
-
-bool Char16String::operator<(const Char16String &p_right) const {
-	if (length() == 0) {
-		return p_right.length() != 0;
-	}
-
-	return is_str_less(get_data(), p_right.get_data());
-}
-
-Char16String &Char16String::operator+=(char16_t p_char) {
-	const int lhs_len = length();
-	resize(lhs_len + 2);
-
-	char16_t *dst = ptrw();
-	dst[lhs_len] = p_char;
-	dst[lhs_len + 1] = 0;
-
-	return *this;
-}
-
-void Char16String::operator=(const char16_t *p_cstr) {
-	copy_from(p_cstr);
-}
-
-const char16_t *Char16String::get_data() const {
-	if (size()) {
-		return &operator[](0);
-	} else {
-		return u"";
-	}
-}
-
-void Char16String::copy_from(const char16_t *p_cstr) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	const char16_t *s = p_cstr;
-	for (; *s; s++) {
-	}
-	size_t len = s - p_cstr;
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	Error err = resize(++len); // include terminating null char
-
-	ERR_FAIL_COND_MSG(err != OK, "Failed to copy char16_t string.");
-
-	memcpy(ptrw(), p_cstr, len * sizeof(char16_t));
-}
-
-/*************************************************************************/
-/*  CharString                                                           */
-/*************************************************************************/
-
-bool CharString::operator<(const CharString &p_right) const {
-	if (length() == 0) {
-		return p_right.length() != 0;
-	}
-
-	return is_str_less(get_data(), p_right.get_data());
-}
-
-bool CharString::operator==(const CharString &p_right) const {
-	if (length() == 0) {
-		// True if both have length 0, false if only p_right has a length
-		return p_right.length() == 0;
-	} else if (p_right.length() == 0) {
-		// False due to unequal length
-		return false;
-	}
-
-	return strcmp(ptr(), p_right.ptr()) == 0;
-}
-
-CharString &CharString::operator+=(char p_char) {
-	const int lhs_len = length();
-	resize(lhs_len + 2);
-
-	char *dst = ptrw();
-	dst[lhs_len] = p_char;
-	dst[lhs_len + 1] = 0;
-
-	return *this;
-}
-
-void CharString::operator=(const char *p_cstr) {
-	copy_from(p_cstr);
-}
-
-const char *CharString::get_data() const {
-	if (size()) {
-		return &operator[](0);
-	} else {
-		return "";
-	}
-}
-
-void CharString::copy_from(const char *p_cstr) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	size_t len = strlen(p_cstr);
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	Error err = resize(++len); // include terminating null char
-
-	ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
-
-	memcpy(ptrw(), p_cstr, len);
-}
-
-/*************************************************************************/
-/*  String                                                               */
-/*************************************************************************/
 
 Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path, String &r_fragment) const {
 	// Splits the URL into scheme, host, port, path, fragment. Strip credentials when present.
@@ -299,17 +169,17 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 	return OK;
 }
 
-void String::parse_latin1(const Span<char> &p_cstr) {
-	if (p_cstr.size() == 0) {
-		resize(0);
+void String::append_latin1(const Span<char> &p_cstr) {
+	if (p_cstr.is_empty()) {
 		return;
 	}
 
-	resize(p_cstr.size() + 1); // include 0
+	const int prev_length = length();
+	resize(prev_length + p_cstr.size() + 1); // include 0
 
 	const char *src = p_cstr.ptr();
 	const char *end = src + p_cstr.size();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + prev_length;
 
 	for (; src < end; ++src, ++dst) {
 		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
@@ -318,16 +188,16 @@ void String::parse_latin1(const Span<char> &p_cstr) {
 	*dst = 0;
 }
 
-void String::parse_utf32(const Span<char32_t> &p_cstr) {
-	if (p_cstr.size() == 0) {
-		resize(0);
+void String::append_utf32(const Span<char32_t> &p_cstr) {
+	if (p_cstr.is_empty()) {
 		return;
 	}
 
-	resize(p_cstr.size() + 1);
+	const int prev_length = length();
+	resize(prev_length + p_cstr.size() + 1);
 	const char32_t *src = p_cstr.ptr();
 	const char32_t *end = p_cstr.ptr() + p_cstr.size();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + prev_length;
 
 	// Copy the string, and check for UTF-32 problems.
 	for (; src < end; ++src, ++dst) {
@@ -365,6 +235,24 @@ String String::operator+(const String &p_str) const {
 	return res;
 }
 
+String String::operator+(const char *p_str) const {
+	String res = *this;
+	res += p_str;
+	return res;
+}
+
+String String::operator+(const wchar_t *p_str) const {
+	String res = *this;
+	res += p_str;
+	return res;
+}
+
+String String::operator+(const char32_t *p_str) const {
+	String res = *this;
+	res += p_str;
+	return res;
+}
+
 String String::operator+(char32_t p_char) const {
 	String res = *this;
 	res += p_char;
@@ -394,55 +282,16 @@ String operator+(char32_t p_chr, const String &p_str) {
 }
 
 String &String::operator+=(const String &p_str) {
-	const int lhs_len = length();
-	if (lhs_len == 0) {
+	if (is_empty()) {
 		*this = p_str;
 		return *this;
 	}
-
-	const int rhs_len = p_str.length();
-	if (rhs_len == 0) {
-		return *this;
-	}
-
-	resize(lhs_len + rhs_len + 1);
-
-	const char32_t *src = p_str.ptr();
-	char32_t *dst = ptrw() + lhs_len;
-
-	// Don't copy the terminating null with `memcpy` to avoid undefined behavior when string is being added to itself (it would overlap the destination).
-	memcpy(dst, src, rhs_len * sizeof(char32_t));
-	*(dst + rhs_len) = _null;
-
+	append_utf32(p_str);
 	return *this;
 }
 
 String &String::operator+=(const char *p_str) {
-	if (!p_str || p_str[0] == 0) {
-		return *this;
-	}
-
-	const int lhs_len = length();
-	const size_t rhs_len = strlen(p_str);
-
-	resize(lhs_len + rhs_len + 1);
-
-	char32_t *dst = ptrw() + lhs_len;
-
-	for (size_t i = 0; i <= rhs_len; i++) {
-#if CHAR_MIN == 0
-		uint8_t c = p_str[i];
-#else
-		uint8_t c = p_str[i] >= 0 ? p_str[i] : uint8_t(256 + p_str[i]);
-#endif
-		if (c == 0 && i < rhs_len) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
-		} else {
-			dst[i] = c;
-		}
-	}
-
+	append_latin1(p_str);
 	return *this;
 }
 
@@ -458,32 +307,12 @@ String &String::operator+=(const wchar_t *p_str) {
 }
 
 String &String::operator+=(const char32_t *p_str) {
-	*this += String(p_str);
+	append_utf32(Span(p_str, strlen(p_str)));
 	return *this;
 }
 
 String &String::operator+=(char32_t p_char) {
-	if (p_char == 0) {
-		print_unicode_error("NUL character", true);
-		return *this;
-	}
-
-	const int lhs_len = length();
-	resize(lhs_len + 2);
-	char32_t *dst = ptrw();
-
-	if ((p_char & 0xfffff800) == 0xd800) {
-		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
-		dst[lhs_len] = _replacement_char;
-	} else if (p_char > 0x10ffff) {
-		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
-		dst[lhs_len] = _replacement_char;
-	} else {
-		dst[lhs_len] = p_char;
-	}
-
-	dst[lhs_len + 1] = 0;
-
+	append_utf32(Span(&p_char, 1));
 	return *this;
 }
 
@@ -622,7 +451,7 @@ bool String::operator<(const char *p_str) const {
 	if (is_empty()) {
 		return true;
 	}
-	return is_str_less(get_data(), p_str);
+	return str_compare(get_data(), p_str) < 0;
 }
 
 bool String::operator<(const wchar_t *p_str) const {
@@ -635,10 +464,10 @@ bool String::operator<(const wchar_t *p_str) const {
 
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return is_str_less(get_data(), String::utf16((const char16_t *)p_str).get_data());
+	return str_compare(get_data(), String::utf16((const char16_t *)p_str).get_data()) < 0;
 #else
 	// wchar_t is 32-bit
-	return is_str_less(get_data(), (const char32_t *)p_str);
+	return str_compare(get_data(), (const char32_t *)p_str) < 0;
 #endif
 }
 
@@ -650,7 +479,7 @@ bool String::operator<(const char32_t *p_str) const {
 		return true;
 	}
 
-	return is_str_less(get_data(), p_str);
+	return str_compare(get_data(), p_str) < 0;
 }
 
 bool String::operator<(const String &p_str) const {
@@ -916,19 +745,14 @@ signed char String::filenocasecmp_to(const String &p_str) const {
 	return naturalnocasecmp_to_base(this_str, that_str);
 }
 
-const char32_t *String::get_data() const {
-	static const char32_t zero = 0;
-	return size() ? &operator[](0) : &zero;
-}
-
-String String::_camelcase_to_underscore() const {
-	const char32_t *cstr = get_data();
-	String new_string;
-	int start_index = 0;
-
+String String::_separate_compound_words() const {
 	if (length() == 0) {
 		return *this;
 	}
+
+	const char32_t *cstr = get_data();
+	int start_index = 0;
+	String new_string;
 
 	bool is_prev_upper = is_unicode_upper_case(cstr[0]);
 	bool is_prev_lower = is_unicode_lower_case(cstr[0]);
@@ -950,7 +774,7 @@ String String::_camelcase_to_underscore() const {
 		const bool cond_d = (is_prev_upper || is_prev_lower) && is_curr_digit; // A2, a2
 
 		if (cond_a || cond_b || cond_c || cond_d) {
-			new_string += substr(start_index, i - start_index) + "_";
+			new_string += substr(start_index, i - start_index) + " ";
 			start_index = i;
 		}
 
@@ -960,40 +784,72 @@ String String::_camelcase_to_underscore() const {
 	}
 
 	new_string += substr(start_index, size() - start_index);
+
+	for (int i = 0; i < new_string.size(); i++) {
+		const bool whitespace = is_whitespace(new_string[i]);
+		const bool underscore = is_underscore(new_string[i]);
+		const bool hyphen = is_hyphen(new_string[i]);
+
+		if (whitespace || underscore || hyphen) {
+			new_string[i] = ' ';
+		}
+	}
+
 	return new_string.to_lower();
 }
 
 String String::capitalize() const {
-	String aux = _camelcase_to_underscore().replace("_", " ").strip_edges();
-	String cap;
-	for (int i = 0; i < aux.get_slice_count(" "); i++) {
-		String slice = aux.get_slicec(' ', i);
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
 		if (slice.length() > 0) {
 			slice[0] = _find_upper(slice[0]);
 			if (i > 0) {
-				cap += " ";
+				ret += " ";
 			}
-			cap += slice;
+			ret += slice;
 		}
 	}
-
-	return cap;
+	return ret;
 }
 
 String String::to_camel_case() const {
-	String s = to_pascal_case();
-	if (!s.is_empty()) {
-		s[0] = _find_lower(s[0]);
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
+		if (slice.length() > 0) {
+			if (i == 0) {
+				slice[0] = _find_lower(slice[0]);
+			} else {
+				slice[0] = _find_upper(slice[0]);
+			}
+			ret += slice;
+		}
 	}
-	return s;
+	return ret;
 }
 
 String String::to_pascal_case() const {
-	return capitalize().remove_char(' ');
+	String words = _separate_compound_words().strip_edges();
+	String ret;
+	for (int i = 0; i < words.get_slice_count(" "); i++) {
+		String slice = words.get_slicec(' ', i);
+		if (slice.length() > 0) {
+			slice[0] = _find_upper(slice[0]);
+			ret += slice;
+		}
+	}
+	return ret;
 }
 
 String String::to_snake_case() const {
-	return _camelcase_to_underscore().replace(" ", "_").strip_edges();
+	return _separate_compound_words().replace_char(' ', '_');
+}
+
+String String::to_kebab_case() const {
+	return _separate_compound_words().replace_char(' ', '-');
 }
 
 String String::get_with_code_lines() const {
@@ -1586,7 +1442,7 @@ String String::num(double p_num, int p_decimals) {
 	}
 
 	if (Math::is_inf(p_num)) {
-		if (signbit(p_num)) {
+		if (std::signbit(p_num)) {
 			return "-inf";
 		} else {
 			return "inf";
@@ -1599,7 +1455,7 @@ String String::num(double p_num, int p_decimals) {
 		if (abs_num > 10) {
 			// We want to align the digits to the above reasonable default, so we only
 			// need to subtract log10 for numbers with a positive power of ten.
-			p_decimals -= (int)floor(log10(abs_num));
+			p_decimals -= (int)std::floor(std::log10(abs_num));
 		}
 	}
 	if (p_decimals > MAX_DECIMALS) {
@@ -1698,7 +1554,7 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = ABS(n % base);
+		int mod = Math::abs(n % base);
 		if (mod >= 10) {
 			char a = (capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
@@ -1765,7 +1621,7 @@ String String::num_real(double p_num, bool p_trailing) {
 	// to subtract log10 for numbers with a positive power of ten magnitude.
 	const double abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
-		decimals -= (int)floor(log10(abs_num));
+		decimals -= (int)std::floor(std::log10(abs_num));
 	}
 
 	return num(p_num, decimals);
@@ -1788,7 +1644,7 @@ String String::num_real(float p_num, bool p_trailing) {
 	// to subtract log10 for numbers with a positive power of ten magnitude.
 	const float abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
-		decimals -= (int)floor(log10(abs_num));
+		decimals -= (int)std::floor(std::log10(abs_num));
 	}
 	return num(p_num, decimals);
 }
@@ -1797,28 +1653,18 @@ String String::num_scientific(double p_num) {
 	if (Math::is_nan(p_num) || Math::is_inf(p_num)) {
 		return num(p_num, 0);
 	}
+	char buffer[256];
+	char *last = grisu2::to_chars(buffer, p_num);
+	return String::ascii(Span(buffer, last - buffer));
+}
 
-	char buf[256];
-
-#if defined(__GNUC__) || defined(_MSC_VER)
-
-#if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
-	// MinGW requires _set_output_format() to conform to C99 output for printf
-	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
-#endif
-	snprintf(buf, 256, "%lg", p_num);
-
-#if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
-	_set_output_format(old_exponent_format);
-#endif
-
-#else
-	sprintf(buf, "%.16lg", p_num);
-#endif
-
-	buf[255] = 0;
-
-	return buf;
+String String::num_scientific(float p_num) {
+	if (Math::is_nan(p_num) || Math::is_inf(p_num)) {
+		return num(p_num, 0);
+	}
+	char buffer[256];
+	char *last = grisu2::to_chars(buffer, p_num);
+	return String::ascii(Span(buffer, last - buffer));
 }
 
 String String::md5(const uint8_t *p_md5) {
@@ -1903,17 +1749,17 @@ CharString String::ascii(bool p_allow_extended) const {
 	return cs;
 }
 
-Error String::parse_ascii(const Span<char> &p_range) {
-	if (p_range.size() == 0) {
-		resize(0);
+Error String::append_ascii(const Span<char> &p_range) {
+	if (p_range.is_empty()) {
 		return OK;
 	}
 
-	resize(p_range.size() + 1); // Include \0
+	const int prev_length = length();
+	resize(prev_length + p_range.size() + 1); // Include \0
 
 	const char *src = p_range.ptr();
 	const char *end = src + p_range.size();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + prev_length;
 	bool decode_failed = false;
 
 	for (; src < end; ++src, ++dst) {
@@ -1931,22 +1777,10 @@ Error String::parse_ascii(const Span<char> &p_range) {
 	return decode_failed ? ERR_INVALID_DATA : OK;
 }
 
-String String::utf8(const char *p_utf8, int p_len) {
-	String ret;
-	ret.parse_utf8(p_utf8, p_len);
-
-	return ret;
-}
-
-Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
+Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	if (!p_utf8) {
 		return ERR_INVALID_DATA;
 	}
-
-	String aux;
-
-	int cstr_size = 0;
-	int str_size = 0;
 
 	/* HANDLE BOM (Byte Order Mark) */
 	if (p_len < 0 || p_len >= 3) {
@@ -1960,191 +1794,201 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 		}
 	}
 
-	bool decode_error = false;
-	bool decode_failed = false;
-	{
-		const char *ptrtmp = p_utf8;
-		const char *ptrtmp_limit = p_len >= 0 ? &p_utf8[p_len] : nullptr;
-		int skip = 0;
-		uint8_t c_start = 0;
-		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
-#if CHAR_MIN == 0
-			uint8_t c = *ptrtmp;
-#else
-			uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
-#endif
-
-			if (skip == 0) {
-				if (p_skip_cr && c == '\r') {
-					ptrtmp++;
-					continue;
-				}
-				/* Determine the number of characters in sequence */
-				if ((c & 0x80) == 0) {
-					skip = 0;
-				} else if ((c & 0xe0) == 0xc0) {
-					skip = 1;
-				} else if ((c & 0xf0) == 0xe0) {
-					skip = 2;
-				} else if ((c & 0xf8) == 0xf0) {
-					skip = 3;
-				} else if ((c & 0xfc) == 0xf8) {
-					skip = 4;
-				} else if ((c & 0xfe) == 0xfc) {
-					skip = 5;
-				} else {
-					skip = 0;
-					print_unicode_error(vformat("Invalid UTF-8 leading byte (%x)", c), true);
-					decode_failed = true;
-				}
-				c_start = c;
-
-				if (skip == 1 && (c & 0x1e) == 0) {
-					print_unicode_error(vformat("Overlong encoding (%x ...)", c));
-					decode_error = true;
-				}
-				str_size++;
-			} else {
-				if ((c_start == 0xe0 && skip == 2 && c < 0xa0) || (c_start == 0xf0 && skip == 3 && c < 0x90) || (c_start == 0xf8 && skip == 4 && c < 0x88) || (c_start == 0xfc && skip == 5 && c < 0x84)) {
-					print_unicode_error(vformat("Overlong encoding (%x %x ...)", c_start, c));
-					decode_error = true;
-				}
-				if (c < 0x80 || c > 0xbf) {
-					print_unicode_error(vformat("Invalid UTF-8 continuation byte (%x ... %x ...)", c_start, c), true);
-					decode_failed = true;
-					skip = 0;
-				} else {
-					--skip;
-				}
-			}
-
-			cstr_size++;
-			ptrtmp++;
-		}
-
-		if (skip) {
-			print_unicode_error(vformat("Missing %d UTF-8 continuation byte(s)", skip), true);
-			decode_failed = true;
-		}
+	if (p_len < 0) {
+		p_len = strlen(p_utf8);
 	}
 
-	if (str_size == 0) {
-		clear();
-		return OK; // empty string
-	}
+	const int prev_length = length();
+	// If all utf8 characters maps to ASCII, then the max size will be p_len, and we add +1 for the null termination.
+	resize(prev_length + p_len + 1);
+	char32_t *dst = ptrw() + prev_length;
 
-	resize(str_size + 1);
-	char32_t *dst = ptrw();
-	dst[str_size] = 0;
+	Error result = Error::OK;
 
-	int skip = 0;
-	uint32_t unichar = 0;
-	while (cstr_size) {
-#if CHAR_MIN == 0
-		uint8_t c = *p_utf8;
-#else
-		uint8_t c = *p_utf8 >= 0 ? *p_utf8 : uint8_t(256 + *p_utf8);
-#endif
+	const uint8_t *ptrtmp = (uint8_t *)p_utf8;
+	const uint8_t *ptr_limit = (uint8_t *)p_utf8 + p_len;
 
-		if (skip == 0) {
-			if (p_skip_cr && c == '\r') {
-				p_utf8++;
-				continue;
+	while (ptrtmp < ptr_limit && *ptrtmp) {
+		uint8_t c = *ptrtmp;
+
+		if (p_skip_cr && c == '\r') {
+			++ptrtmp;
+			continue;
+		}
+		uint32_t unicode = _replacement_char;
+		uint32_t size = 1;
+
+		if ((c & 0b10000000) == 0) {
+			unicode = c;
+			if (unicode > 0x7F) {
+				unicode = _replacement_char;
+				print_unicode_error(vformat("Invalid unicode codepoint (%d)", unicode), true);
+				result = Error::ERR_INVALID_DATA;
 			}
-			/* Determine the number of characters in sequence */
-			if ((c & 0x80) == 0) {
-				*(dst++) = c;
-				unichar = 0;
-				skip = 0;
-			} else if ((c & 0xe0) == 0xc0) {
-				unichar = (0xff >> 3) & c;
-				skip = 1;
-			} else if ((c & 0xf0) == 0xe0) {
-				unichar = (0xff >> 4) & c;
-				skip = 2;
-			} else if ((c & 0xf8) == 0xf0) {
-				unichar = (0xff >> 5) & c;
-				skip = 3;
-			} else if ((c & 0xfc) == 0xf8) {
-				unichar = (0xff >> 6) & c;
-				skip = 4;
-			} else if ((c & 0xfe) == 0xfc) {
-				unichar = (0xff >> 7) & c;
-				skip = 5;
+		} else if ((c & 0b11100000) == 0b11000000) {
+			if (ptrtmp + 1 >= ptr_limit) {
+				print_unicode_error(vformat("Missing %x UTF-8 continuation byte", c), true);
+				result = Error::ERR_INVALID_DATA;
 			} else {
-				*(dst++) = _replacement_char;
-				unichar = 0;
-				skip = 0;
+				uint8_t c2 = *(ptrtmp + 1);
+
+				if ((c2 & 0b11000000) == 0b10000000) {
+					unicode = (uint32_t)((c & 0b00011111) << 6) | (uint32_t)(c2 & 0b00111111);
+
+					if (unicode < 0x80) {
+						unicode = _replacement_char;
+						print_unicode_error(vformat("Overlong encoding (%x %x)", c, c2));
+						result = Error::ERR_INVALID_DATA;
+					} else if (unicode > 0x7FF) {
+						unicode = _replacement_char;
+						print_unicode_error(vformat("Invalid unicode codepoint (%d)", unicode), true);
+						result = Error::ERR_INVALID_DATA;
+					} else {
+						size = 2;
+					}
+				} else {
+					print_unicode_error(vformat("Byte %x is not a correct continuation byte after %x", c2, c));
+					result = Error::ERR_INVALID_DATA;
+				}
+			}
+		} else if ((c & 0b11110000) == 0b11100000) {
+			uint32_t range_min = (c == 0xE0) ? 0xA0 : 0x80;
+			uint32_t range_max = (c == 0xED) ? 0x9F : 0xBF;
+			uint8_t c2 = (ptrtmp + 1) < ptr_limit ? *(ptrtmp + 1) : 0;
+			uint8_t c3 = (ptrtmp + 2) < ptr_limit ? *(ptrtmp + 2) : 0;
+			bool c2_valid = c2 && (c2 >= range_min) && (c2 <= range_max);
+			bool c3_valid = c3 && ((c3 & 0b11000000) == 0b10000000);
+
+			if (c2_valid && c3_valid) {
+				unicode = (uint32_t)((c & 0b00001111) << 12) | (uint32_t)((c2 & 0b00111111) << 6) | (uint32_t)(c3 & 0b00111111);
+
+				if (unicode < 0x800) {
+					unicode = _replacement_char;
+					print_unicode_error(vformat("Overlong encoding (%x %x %x)", c, c2, c3));
+					result = Error::ERR_INVALID_DATA;
+				} else if (unicode > 0xFFFF) {
+					unicode = _replacement_char;
+					print_unicode_error(vformat("Invalid unicode codepoint (%d)", unicode), true);
+					result = Error::ERR_INVALID_DATA;
+				} else {
+					size = 3;
+				}
+			} else {
+				if (c2 == 0) {
+					print_unicode_error(vformat("Missing %x UTF-8 continuation byte", c), true);
+				} else if (c2_valid == false) {
+					print_unicode_error(vformat("Byte %x is not a correct continuation byte after %x", c2, c));
+				} else if (c3 == 0) {
+					print_unicode_error(vformat("Missing %x %x UTF-8 continuation byte", c, c2), true);
+				} else {
+					print_unicode_error(vformat("Byte %x is not a correct continuation byte after %x %x", c3, c, c2));
+					// The unicode specification, in paragraphe 3.9 "Unicode Encoding Forms" Conformance
+					// state : "Only when a sequence of two or three bytes is a truncated version of a sequence which is
+					// otherwise well-formed to that point, is more than one byte replaced with a single U+FFFD"
+					// So here we replace the first 2 bytes with one single replacement_char.
+					size = 2;
+				}
+
+				result = Error::ERR_INVALID_DATA;
+			}
+		} else if ((c & 0b11111000) == 0b11110000) {
+			uint32_t range_min = (c == 0xF0) ? 0x90 : 0x80;
+			uint32_t range_max = (c == 0xF4) ? 0x8F : 0xBF;
+
+			uint8_t c2 = ((ptrtmp + 1) < ptr_limit) ? *(ptrtmp + 1) : 0;
+			uint8_t c3 = ((ptrtmp + 2) < ptr_limit) ? *(ptrtmp + 2) : 0;
+			uint8_t c4 = ((ptrtmp + 3) < ptr_limit) ? *(ptrtmp + 3) : 0;
+
+			bool c2_valid = c2 && (c2 >= range_min) && (c2 <= range_max);
+			bool c3_valid = c3 && ((c3 & 0b11000000) == 0b10000000);
+			bool c4_valid = c4 && ((c4 & 0b11000000) == 0b10000000);
+
+			if (c2_valid && c3_valid && c4_valid) {
+				unicode = (uint32_t)((c & 0b00000111) << 18) | (uint32_t)((c2 & 0b00111111) << 12) | (uint32_t)((c3 & 0b00111111) << 6) | (uint32_t)(c4 & 0b00111111);
+
+				if (unicode < 0x10000) {
+					unicode = _replacement_char;
+					print_unicode_error(vformat("Overlong encoding (%x %x %x %x)", c, c2, c3, c4));
+					result = Error::ERR_INVALID_DATA;
+				} else if (unicode > 0x10FFFF) {
+					unicode = _replacement_char;
+					print_unicode_error(vformat("Invalid unicode codepoint (%d)", unicode), true);
+					result = Error::ERR_INVALID_DATA;
+				} else {
+					size = 4;
+				}
+			} else {
+				if (c2 == 0) {
+					print_unicode_error(vformat("Missing %x UTF-8 continuation byte", c), true);
+				} else if (c2_valid == false) {
+					print_unicode_error(vformat("Byte %x is not a correct continuation byte after %x", c2, c));
+				} else if (c3 == 0) {
+					print_unicode_error(vformat("Missing %x %x UTF-8 continuation byte", c, c2), true);
+				} else if (c3_valid == false) {
+					print_unicode_error(vformat("Byte %x is not a correct continuation byte after %x %x", c3, c, c2));
+					size = 2;
+				} else if (c4 == 0) {
+					print_unicode_error(vformat("Missing %x %x %x UTF-8 continuation byte", c, c2, c3), true);
+				} else {
+					print_unicode_error(vformat("Byte %x is not a correct continuation byte after %x %x %x", c4, c, c2, c3));
+					size = 3;
+				}
+
+				result = Error::ERR_INVALID_DATA;
 			}
 		} else {
-			if (c < 0x80 || c > 0xbf) {
-				*(dst++) = _replacement_char;
-				skip = 0;
-			} else {
-				unichar = (unichar << 6) | (c & 0x3f);
-				--skip;
-				if (skip == 0) {
-					if (unichar == 0) {
-						print_unicode_error("NUL character", true);
-						decode_failed = true;
-						unichar = _replacement_char;
-					} else if ((unichar & 0xfffff800) == 0xd800) {
-						print_unicode_error(vformat("Unpaired surrogate (%x)", unichar), true);
-						decode_failed = true;
-						unichar = _replacement_char;
-					} else if (unichar > 0x10ffff) {
-						print_unicode_error(vformat("Invalid unicode codepoint (%x)", unichar), true);
-						decode_failed = true;
-						unichar = _replacement_char;
-					}
-					*(dst++) = unichar;
-				}
-			}
+			print_unicode_error(vformat("Invalid UTF-8 leading byte (%x)", c), true);
+			result = Error::ERR_INVALID_DATA;
 		}
 
-		cstr_size--;
-		p_utf8++;
-	}
-	if (skip) {
-		*(dst++) = 0x20;
+		(*dst++) = unicode;
+		ptrtmp += size;
 	}
 
-	if (decode_failed) {
-		return ERR_INVALID_DATA;
-	} else if (decode_error) {
-		return ERR_PARSE_ERROR;
-	} else {
-		return OK;
-	}
+	(*dst++) = 0;
+	resize(prev_length + dst - ptr());
+
+	return result;
 }
 
-CharString String::utf8() const {
+CharString String::utf8(Vector<uint8_t> *r_ch_length_map) const {
 	int l = length();
 	if (!l) {
 		return CharString();
+	}
+
+	uint8_t *map_ptr = nullptr;
+	if (r_ch_length_map) {
+		r_ch_length_map->resize(l);
+		map_ptr = r_ch_length_map->ptrw();
 	}
 
 	const char32_t *d = &operator[](0);
 	int fl = 0;
 	for (int i = 0; i < l; i++) {
 		uint32_t c = d[i];
+		int ch_w = 1;
 		if (c <= 0x7f) { // 7 bits.
-			fl += 1;
+			ch_w = 1;
 		} else if (c <= 0x7ff) { // 11 bits
-			fl += 2;
+			ch_w = 2;
 		} else if (c <= 0xffff) { // 16 bits
-			fl += 3;
+			ch_w = 3;
 		} else if (c <= 0x001fffff) { // 21 bits
-			fl += 4;
+			ch_w = 4;
 		} else if (c <= 0x03ffffff) { // 26 bits
-			fl += 5;
+			ch_w = 5;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x)", c));
 		} else if (c <= 0x7fffffff) { // 31 bits
-			fl += 6;
+			ch_w = 6;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x)", c));
 		} else {
-			fl += 1;
+			ch_w = 1;
 			print_unicode_error(vformat("Invalid unicode codepoint (%x), cannot represent as UTF-8", c), true);
+		}
+		fl += ch_w;
+		if (map_ptr) {
+			map_ptr[i] = ch_w;
 		}
 	}
 
@@ -2202,14 +2046,7 @@ CharString String::utf8() const {
 	return utf8s;
 }
 
-String String::utf16(const char16_t *p_utf16, int p_len) {
-	String ret;
-	ret.parse_utf16(p_utf16, p_len, true);
-
-	return ret;
-}
-
-Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_little_endian) {
+Error String::append_utf16(const char16_t *p_utf16, int p_len, bool p_default_little_endian) {
 	if (!p_utf16) {
 		return ERR_INVALID_DATA;
 	}
@@ -2286,8 +2123,9 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_lit
 		return OK; // empty string
 	}
 
-	resize(str_size + 1);
-	char32_t *dst = ptrw();
+	const int prev_length = length();
+	resize(prev_length + str_size + 1);
+	char32_t *dst = ptrw() + prev_length;
 	dst[str_size] = 0;
 
 	bool skip = false;
@@ -3329,14 +3167,20 @@ int String::find(const char *p_str, int p_from) const {
 }
 
 int String::find_char(char32_t p_char, int p_from) const {
-	return _cowdata.find(p_char, p_from);
+	if (p_from < 0) {
+		p_from = length() + p_from;
+	}
+	if (p_from < 0 || p_from >= length()) {
+		return -1;
+	}
+	return span().find(p_char, p_from);
 }
 
 int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	if (p_from < 0) {
 		return -1;
 	}
-	if (p_keys.size() == 0) {
+	if (p_keys.is_empty()) {
 		return -1;
 	}
 
@@ -3566,7 +3410,13 @@ int String::rfind(const char *p_str, int p_from) const {
 }
 
 int String::rfind_char(char32_t p_char, int p_from) const {
-	return _cowdata.rfind(p_char, p_from);
+	if (p_from < 0) {
+		p_from = length() + p_from;
+	}
+	if (p_from < 0 || p_from >= length()) {
+		return -1;
+	}
+	return span().rfind(p_char, p_from);
 }
 
 int String::rfindn(const String &p_str, int p_from) const {
@@ -3966,34 +3816,28 @@ bool String::matchn(const String &p_wildcard) const {
 }
 
 String String::format(const Variant &values, const String &placeholder) const {
-	String new_string = String(ptr());
+	String new_string = *this;
 
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
 
 		for (int i = 0; i < values_arr.size(); i++) {
-			String i_as_str = String::num_int64(i);
-
 			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
 				Array value_arr = values_arr[i];
 
 				if (value_arr.size() == 2) {
-					Variant v_key = value_arr[0];
-					String key = v_key;
-
-					Variant v_val = value_arr[1];
-					String val = v_val;
+					String key = value_arr[0];
+					String val = value_arr[1];
 
 					new_string = new_string.replace(placeholder.replace("_", key), val);
 				} else {
-					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
+					ERR_PRINT(vformat("Invalid format: the inner Array at index %d needs to contain only 2 elements, as a key-value pair.", i).ascii().get_data());
 				}
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
-				Variant v_val = values_arr[i];
-				String val = v_val;
+				String val = values_arr[i];
 
 				if (placeholder.contains_char('_')) {
-					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
+					new_string = new_string.replace(placeholder.replace("_", String::num_int64(i)), val);
 				} else {
 					new_string = new_string.replace_first(placeholder, val);
 				}
@@ -4218,6 +4062,117 @@ String String::replace_first(const char *p_key, const char *p_with) const {
 	}
 
 	return *this;
+}
+
+String String::replace_char(char32_t p_key, char32_t p_with) const {
+	ERR_FAIL_COND_V_MSG(p_with == 0, *this, "`with` must not be the NUL character.");
+
+	if (p_key == 0) {
+		return *this;
+	}
+
+	int len = length();
+	if (len == 0) {
+		return *this;
+	}
+
+	int index = 0;
+	const char32_t *old_ptr = ptr();
+	for (; index < len; ++index) {
+		if (old_ptr[index] == p_key) {
+			break;
+		}
+	}
+
+	// If no occurrence of `key` was found, return this.
+	if (index == len) {
+		return *this;
+	}
+
+	// If we found at least one occurrence of `key`, create new string.
+	String new_string;
+	new_string.resize(len + 1);
+	char32_t *new_ptr = new_string.ptrw();
+
+	// Copy part of input before `key`.
+	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+
+	new_ptr[index] = p_with;
+
+	// Copy or replace rest of input.
+	for (++index; index < len; ++index) {
+		if (old_ptr[index] == p_key) {
+			new_ptr[index] = p_with;
+		} else {
+			new_ptr[index] = old_ptr[index];
+		}
+	}
+
+	new_ptr[index] = _null;
+
+	return new_string;
+}
+
+template <class T>
+static String _replace_chars_common(const String &p_this, const T *p_keys, int p_keys_len, char32_t p_with) {
+	ERR_FAIL_COND_V_MSG(p_with == 0, p_this, "`with` must not be the NUL character.");
+
+	// Delegate if p_keys is a single element.
+	if (p_keys_len == 1) {
+		return p_this.replace_char(*p_keys, p_with);
+	} else if (p_keys_len == 0) {
+		return p_this;
+	}
+
+	int len = p_this.length();
+	if (len == 0) {
+		return p_this;
+	}
+
+	int index = 0;
+	const char32_t *old_ptr = p_this.ptr();
+	for (; index < len; ++index) {
+		if (_contains_char(old_ptr[index], p_keys, p_keys_len)) {
+			break;
+		}
+	}
+
+	// If no occurrence of `keys` was found, return this.
+	if (index == len) {
+		return p_this;
+	}
+
+	// If we found at least one occurrence of `keys`, create new string.
+	String new_string;
+	new_string.resize(len + 1);
+	char32_t *new_ptr = new_string.ptrw();
+
+	// Copy part of input before `key`.
+	memcpy(new_ptr, old_ptr, index * sizeof(char32_t));
+
+	new_ptr[index] = p_with;
+
+	// Copy or replace rest of input.
+	for (++index; index < len; ++index) {
+		const char32_t old_char = old_ptr[index];
+		if (_contains_char(old_char, p_keys, p_keys_len)) {
+			new_ptr[index] = p_with;
+		} else {
+			new_ptr[index] = old_char;
+		}
+	}
+
+	new_ptr[index] = 0;
+
+	return new_string;
+}
+
+String String::replace_chars(const String &p_keys, char32_t p_with) const {
+	return _replace_chars_common(*this, p_keys.ptr(), p_keys.length(), p_with);
+}
+
+String String::replace_chars(const char *p_keys, char32_t p_with) const {
+	return _replace_chars_common(*this, p_keys, strlen(p_keys), p_with);
 }
 
 String String::replacen(const String &p_key, const String &p_with) const {
@@ -4502,7 +4457,7 @@ String String::simplify_path() const {
 		}
 	}
 
-	s = s.replace("\\", "/");
+	s = s.replace_char('\\', '/');
 	while (true) { // in case of using 2 or more slash
 		String compare = s.replace("//", "/");
 		if (s == compare) {
@@ -4706,9 +4661,8 @@ String String::uri_encode() const {
 			res += ord;
 		} else {
 			char p[4] = { '%', 0, 0, 0 };
-			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-			p[1] = hex[ord >> 4];
-			p[2] = hex[ord & 0xF];
+			p[1] = hex_char_table_upper[ord >> 4];
+			p[2] = hex_char_table_upper[ord & 0xF];
 			res += p;
 		}
 	}
@@ -4733,6 +4687,29 @@ String String::uri_decode() const {
 			}
 		} else if (src[i] == '+') {
 			res += ' ';
+		} else {
+			res += src[i];
+		}
+	}
+	return String::utf8(res);
+}
+
+String String::uri_file_decode() const {
+	CharString src = utf8();
+	CharString res;
+	for (int i = 0; i < src.length(); ++i) {
+		if (src[i] == '%' && i + 2 < src.length()) {
+			char ord1 = src[i + 1];
+			if (is_digit(ord1) || is_ascii_upper_case(ord1)) {
+				char ord2 = src[i + 2];
+				if (is_digit(ord2) || is_ascii_upper_case(ord2)) {
+					char bytes[3] = { (char)ord1, (char)ord2, 0 };
+					res += (char)strtol(bytes, nullptr, 16);
+					i += 2;
+				}
+			} else {
+				res += src[i];
+			}
 		} else {
 			res += src[i];
 		}
@@ -5123,8 +5100,8 @@ bool String::is_valid_float() const {
 
 String String::path_to_file(const String &p_path) const {
 	// Don't get base dir for src, this is expected to be a dir already.
-	String src = replace("\\", "/");
-	String dst = p_path.replace("\\", "/").get_base_dir();
+	String src = replace_char('\\', '/');
+	String dst = p_path.replace_char('\\', '/').get_base_dir();
 	String rel = src.path_to(dst);
 	if (rel == dst) { // failed
 		return p_path;
@@ -5134,8 +5111,8 @@ String String::path_to_file(const String &p_path) const {
 }
 
 String String::path_to(const String &p_path) const {
-	String src = replace("\\", "/");
-	String dst = p_path.replace("\\", "/");
+	String src = replace_char('\\', '/');
+	String dst = p_path.replace_char('\\', '/');
 	if (!src.ends_with("/")) {
 		src += "/";
 	}
@@ -5563,7 +5540,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					// Get basic number.
 					String str;
 					if (!as_unsigned) {
-						str = String::num_int64(ABS(value), base, capitalize);
+						str = String::num_int64(Math::abs(value), base, capitalize);
 					} else {
 						uint64_t uvalue = *((uint64_t *)&value);
 						// In unsigned hex, if the value fits in 32 bits, trim it down to that.
@@ -5611,7 +5588,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					double value = values[value_index];
-					bool is_negative = signbit(value);
+					bool is_negative = std::signbit(value);
 					String str = String::num(Math::abs(value), min_decimals);
 					const bool is_finite = Math::is_finite(value);
 
@@ -5963,6 +5940,10 @@ Vector<uint8_t> String::to_wchar_buffer() const {
 #else
 	return to_utf32_buffer();
 #endif
+}
+
+Vector<uint8_t> String::to_multibyte_char_buffer(const String &p_encoding) const {
+	return OS::get_singleton()->string_to_multibyte(p_encoding, *this);
 }
 
 #ifdef TOOLS_ENABLED

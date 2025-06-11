@@ -700,10 +700,10 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 					sky_light_data.energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
 				}
 
-				Color linear_col = light_storage->light_get_color(base);
-				sky_light_data.color[0] = linear_col.r;
-				sky_light_data.color[1] = linear_col.g;
-				sky_light_data.color[2] = linear_col.b;
+				Color srgb_col = light_storage->light_get_color(base);
+				sky_light_data.color[0] = srgb_col.r;
+				sky_light_data.color[1] = srgb_col.g;
+				sky_light_data.color[2] = srgb_col.b;
 
 				sky_light_data.enabled = true;
 
@@ -1047,26 +1047,29 @@ Ref<Image> RasterizerSceneGLES3::sky_bake_panorama(RID p_sky, float p_energy, bo
 	glDeleteFramebuffers(1, &rad_fbo);
 	// Create a dummy texture so we can use texture_2d_get.
 	RID tex_rid = GLES3::TextureStorage::get_singleton()->texture_allocate();
-	GLES3::Texture texture;
-	texture.width = p_size.width;
-	texture.height = p_size.height;
-	texture.alloc_width = p_size.width;
-	texture.alloc_height = p_size.height;
-	texture.format = Image::FORMAT_RGBAF;
-	texture.real_format = Image::FORMAT_RGBAF;
-	texture.gl_format_cache = GL_RGBA;
-	texture.gl_type_cache = GL_FLOAT;
-	texture.type = GLES3::Texture::TYPE_2D;
-	texture.target = GL_TEXTURE_2D;
-	texture.active = true;
-	texture.tex_id = rad_tex;
-	texture.is_render_target = true;
+	{
+		GLES3::Texture texture;
+		texture.width = p_size.width;
+		texture.height = p_size.height;
+		texture.alloc_width = p_size.width;
+		texture.alloc_height = p_size.height;
+		texture.format = Image::FORMAT_RGBAF;
+		texture.real_format = Image::FORMAT_RGBAF;
+		texture.gl_format_cache = GL_RGBA;
+		texture.gl_type_cache = GL_FLOAT;
+		texture.type = GLES3::Texture::TYPE_2D;
+		texture.target = GL_TEXTURE_2D;
+		texture.active = true;
+		texture.tex_id = rad_tex;
+		texture.is_render_target = true; // HACK: Prevent TextureStorage from retaining a cached copy of the texture.
+		GLES3::TextureStorage::get_singleton()->texture_2d_initialize_from_texture(tex_rid, texture);
+	}
 
-	GLES3::TextureStorage::get_singleton()->texture_2d_initialize_from_texture(tex_rid, texture);
 	Ref<Image> img = GLES3::TextureStorage::get_singleton()->texture_2d_get(tex_rid);
 	GLES3::Utilities::get_singleton()->texture_free_data(rad_tex);
 
-	texture.is_render_target = false;
+	GLES3::Texture &texture = *GLES3::TextureStorage::get_singleton()->get_texture(tex_rid);
+	texture.is_render_target = false; // HACK: Avoid an error when freeing the texture.
 	texture.tex_id = 0;
 	GLES3::TextureStorage::get_singleton()->texture_free(tex_rid);
 
@@ -1672,7 +1675,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 				if (is_using_physical_light_units()) {
 					light_data.energy *= light_storage->light_get_param(base, RS::LIGHT_PARAM_INTENSITY);
 				} else {
-					light_data.energy *= Math_PI;
+					light_data.energy *= Math::PI;
 				}
 
 				if (p_render_data->camera_attributes.is_valid()) {
@@ -1862,14 +1865,14 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 
 			// Convert from Luminous Power to Luminous Intensity
 			if (type == RS::LIGHT_OMNI) {
-				energy *= 1.0 / (Math_PI * 4.0);
+				energy *= 1.0 / (Math::PI * 4.0);
 			} else {
 				// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 				// We make this assumption to keep them easy to control.
-				energy *= 1.0 / Math_PI;
+				energy *= 1.0 / Math::PI;
 			}
 		} else {
-			energy *= Math_PI;
+			energy *= Math::PI;
 		}
 
 		if (p_render_data->camera_attributes.is_valid()) {
@@ -3218,11 +3221,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
 					} else {
-						if (inst->omni_light_gl_cache.size() == 0) {
+						if (inst->omni_light_gl_cache.is_empty()) {
 							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
 						}
 
-						if (inst->spot_light_gl_cache.size() == 0) {
+						if (inst->spot_light_gl_cache.is_empty()) {
 							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 						}
 
@@ -3230,7 +3233,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 						}
 
-						if (inst->reflection_probe_rid_cache.size() == 0) {
+						if (inst->reflection_probe_rid_cache.is_empty()) {
 							// We don't have any probes.
 							spec_constants |= SceneShaderGLES3::DISABLE_REFLECTION_PROBE;
 						} else if (inst->reflection_probe_rid_cache.size() > 1) {
@@ -4224,6 +4227,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		global_defines += "\n#define MAX_ROUGHNESS_LOD " + itos(sky_globals.roughness_layers - 1) + ".0\n";
 		if (config->force_vertex_shading) {
 			global_defines += "\n#define USE_VERTEX_LIGHTING\n";
+		}
+		if (!config->specular_occlusion) {
+			global_defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
 		}
 		material_storage->shaders.scene_shader.initialize(global_defines);
 		scene_globals.shader_default_version = material_storage->shaders.scene_shader.version_create();

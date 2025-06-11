@@ -101,35 +101,40 @@ public:
 
 private:
 	enum FileMenu {
-		FILE_OPEN,
-		FILE_INHERIT,
-		FILE_MAIN_SCENE,
-		FILE_INSTANTIATE,
-		FILE_ADD_FAVORITE,
-		FILE_REMOVE_FAVORITE,
-		FILE_SHOW_IN_FILESYSTEM,
-		FILE_DEPENDENCIES,
-		FILE_OWNERS,
-		FILE_MOVE,
-		FILE_RENAME,
-		FILE_REMOVE,
-		FILE_DUPLICATE,
-		FILE_REIMPORT,
-		FILE_NEW,
-		FILE_SHOW_IN_EXPLORER,
-		FILE_OPEN_EXTERNAL,
-		FILE_OPEN_IN_TERMINAL,
-		FILE_COPY_PATH,
-		FILE_COPY_ABSOLUTE_PATH,
-		FILE_COPY_NAME,
-		FILE_COPY_UID,
-		FOLDER_EXPAND_ALL,
-		FOLDER_COLLAPSE_ALL,
-		FILE_NEW_RESOURCE,
-		FILE_NEW_TEXTFILE,
-		FILE_NEW_FOLDER,
-		FILE_NEW_SCRIPT,
-		FILE_NEW_SCENE,
+		FILE_MENU_OPEN,
+		FILE_MENU_INHERIT,
+		FILE_MENU_MAIN_SCENE,
+		FILE_MENU_INSTANTIATE,
+		FILE_MENU_ADD_FAVORITE,
+		FILE_MENU_REMOVE_FAVORITE,
+		FILE_MENU_SHOW_IN_FILESYSTEM,
+		FILE_MENU_DEPENDENCIES,
+		FILE_MENU_OWNERS,
+		FILE_MENU_MOVE,
+		FILE_MENU_RENAME,
+		FILE_MENU_REMOVE,
+		FILE_MENU_DUPLICATE,
+		FILE_MENU_REIMPORT,
+		FILE_MENU_NEW,
+		FILE_MENU_SHOW_IN_EXPLORER,
+		FILE_MENU_OPEN_EXTERNAL,
+		FILE_MENU_OPEN_IN_TERMINAL,
+		FILE_MENU_COPY_PATH,
+		FILE_MENU_COPY_ABSOLUTE_PATH,
+		FILE_MENU_COPY_UID,
+		FILE_MENU_EXPAND_ALL,
+		FILE_MENU_COLLAPSE_ALL,
+		FILE_MENU_NEW_RESOURCE,
+		FILE_MENU_NEW_TEXTFILE,
+		FILE_MENU_NEW_FOLDER,
+		FILE_MENU_NEW_SCRIPT,
+		FILE_MENU_NEW_SCENE,
+		FILE_MENU_RUN_SCRIPT,
+		FILE_MENU_MAX,
+		// Extra shortcuts that don't exist in the menu.
+		EXTRA_FOCUS_PATH,
+		EXTRA_FOCUS_FILTER,
+
 		CONVERT_BASE_ID = 1000,
 	};
 
@@ -250,7 +255,7 @@ private:
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
 	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true);
-	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
+	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false, bool p_grab_focus = false);
 	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
@@ -302,6 +307,7 @@ private:
 	void _file_list_rmb_option(int p_option);
 	void _generic_rmb_option_selected(int p_option);
 	void _file_option(int p_option, const Vector<String> &p_selected);
+	int _get_menu_option_from_key(const Ref<InputEventKey> &p_key);
 
 	void _fw_history();
 	void _bw_history();

@@ -36,8 +36,11 @@
 #include "servers/camera_server.h"
 
 class CameraMacOS : public CameraServer {
+	GDSOFTCLASS(CameraMacOS, CameraServer);
+
 public:
-	CameraMacOS();
+	CameraMacOS() = default;
 
 	void update_feeds();
+	void set_monitoring_feeds(bool p_monitoring_feeds) override;
 };

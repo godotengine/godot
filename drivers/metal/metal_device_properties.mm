@@ -50,6 +50,8 @@
 
 #import "metal_device_properties.h"
 
+#include "servers/rendering/renderer_rd/effects/metal_fx.h"
+
 #import <Metal/Metal.h>
 #import <MetalFX/MetalFX.h>
 #import <spirv_cross.hpp>
@@ -63,7 +65,7 @@
 #define MTLGPUFamilyApple9 (MTLGPUFamily)1009
 #endif
 
-API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
+API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(1.0))
 MTLGPUFamily &operator--(MTLGPUFamily &p_family) {
 	p_family = static_cast<MTLGPUFamily>(static_cast<int>(p_family) - 1);
 	if (p_family < MTLGPUFamilyApple1) {
@@ -126,56 +128,17 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 
 	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
 		features.metal_fx_spatial = [MTLFXSpatialScalerDescriptor supportsDevice:p_device];
+#ifdef METAL_MFXTEMPORAL_ENABLED
 		features.metal_fx_temporal = [MTLFXTemporalScalerDescriptor supportsDevice:p_device];
+#else
+		features.metal_fx_temporal = false;
+#endif
 	}
 
 	MTLCompileOptions *opts = [MTLCompileOptions new];
 	features.mslVersionEnum = opts.languageVersion; // By default, Metal uses the most recent language version.
-
-#define setMSLVersion(m_maj, m_min) \
-	features.mslVersion = SPIRV_CROSS_NAMESPACE::CompilerMSL::Options::make_msl_version(m_maj, m_min)
-
-	switch (features.mslVersionEnum) {
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 150000 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000 || __TV_OS_VERSION_MAX_ALLOWED >= 180000
-		case MTLLanguageVersion3_2:
-			setMSLVersion(3, 2);
-			break;
-#endif
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 || __TV_OS_VERSION_MAX_ALLOWED >= 170000
-		case MTLLanguageVersion3_1:
-			setMSLVersion(3, 1);
-			break;
-#endif
-		case MTLLanguageVersion3_0:
-			setMSLVersion(3, 0);
-			break;
-		case MTLLanguageVersion2_4:
-			setMSLVersion(2, 4);
-			break;
-		case MTLLanguageVersion2_3:
-			setMSLVersion(2, 3);
-			break;
-		case MTLLanguageVersion2_2:
-			setMSLVersion(2, 2);
-			break;
-		case MTLLanguageVersion2_1:
-			setMSLVersion(2, 1);
-			break;
-		case MTLLanguageVersion2_0:
-			setMSLVersion(2, 0);
-			break;
-		case MTLLanguageVersion1_2:
-			setMSLVersion(1, 2);
-			break;
-		case MTLLanguageVersion1_1:
-			setMSLVersion(1, 1);
-			break;
-#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
-		case MTLLanguageVersion1_0:
-			setMSLVersion(1, 0);
-			break;
-#endif
-	}
+	features.mslVersionMajor = (opts.languageVersion >> 0x10) & 0xff;
+	features.mslVersionMinor = (opts.languageVersion >> 0x00) & 0xff;
 }
 
 void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
@@ -324,6 +287,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 
 	limits.maxDrawIndexedIndexValue = std::numeric_limits<uint32_t>::max() - 1;
 
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
 		limits.temporalScalerInputContentMinScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMinScaleForDevice:p_device];
 		limits.temporalScalerInputContentMaxScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMaxScaleForDevice:p_device];
@@ -332,6 +296,11 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 		limits.temporalScalerInputContentMinScale = 1.0;
 		limits.temporalScalerInputContentMaxScale = 3.0;
 	}
+#else
+	// Defaults taken from macOS 14+
+	limits.temporalScalerInputContentMinScale = 1.0;
+	limits.temporalScalerInputContentMaxScale = 3.0;
+#endif
 }
 
 MetalDeviceProperties::MetalDeviceProperties(id<MTLDevice> p_device) {

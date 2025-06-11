@@ -1014,15 +1014,15 @@ void BodyManager::Draw(const DrawSettings &inDrawSettings, const PhysicsSettings
 
 			// Draw the results of GetSupportFunction
 			if (inDrawSettings.mDrawGetSupportFunction)
-				body->mShape->DrawGetSupportFunction(inRenderer, body->GetCenterOfMassTransform(), Vec3::sReplicate(1.0f), color, inDrawSettings.mDrawSupportDirection);
+				body->mShape->DrawGetSupportFunction(inRenderer, body->GetCenterOfMassTransform(), Vec3::sOne(), color, inDrawSettings.mDrawSupportDirection);
 
 			// Draw the results of GetSupportingFace
 			if (inDrawSettings.mDrawGetSupportingFace)
-				body->mShape->DrawGetSupportingFace(inRenderer, body->GetCenterOfMassTransform(), Vec3::sReplicate(1.0f));
+				body->mShape->DrawGetSupportingFace(inRenderer, body->GetCenterOfMassTransform(), Vec3::sOne());
 
 			// Draw the shape
 			if (inDrawSettings.mDrawShape)
-				body->mShape->Draw(inRenderer, body->GetCenterOfMassTransform(), Vec3::sReplicate(1.0f), color, inDrawSettings.mDrawShapeColor == EShapeColor::MaterialColor, inDrawSettings.mDrawShapeWireframe || is_sensor);
+				body->mShape->Draw(inRenderer, body->GetCenterOfMassTransform(), Vec3::sOne(), color, inDrawSettings.mDrawShapeColor == EShapeColor::MaterialColor, inDrawSettings.mDrawShapeWireframe || is_sensor);
 
 			// Draw bounding box
 			if (inDrawSettings.mDrawBoundingBox)
@@ -1146,9 +1146,7 @@ void BodyManager::ValidateActiveBodyBounds()
 		for (BodyID *id = mActiveBodies[type], *id_end = mActiveBodies[type] + mNumActiveBodies[type].load(memory_order_relaxed); id < id_end; ++id)
 		{
 			const Body *body = mBodies[id->GetIndex()];
-			AABox cached = body->GetWorldSpaceBounds();
-			AABox calculated = body->GetShape()->GetWorldSpaceBounds(body->GetCenterOfMassTransform(), Vec3::sReplicate(1.0f));
-			JPH_ASSERT(cached == calculated);
+			body->ValidateCachedBounds();
 		}
 }
 #endif // JPH_DEBUG

@@ -43,8 +43,7 @@ void AudioStreamEditor::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			AudioStreamPreviewGenerator::get_singleton()->connect(SNAME("preview_updated"), callable_mp(this, &AudioStreamEditor::_preview_changed));
 		} break;
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			Ref<Font> font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 
 			_current_label->add_theme_font_override(SceneStringName(font), font);
@@ -243,15 +242,17 @@ AudioStreamEditor::AudioStreamEditor() {
 	_play_button = memnew(Button);
 	hbox->add_child(_play_button);
 	_play_button->set_flat(true);
-	_play_button->set_focus_mode(Control::FOCUS_NONE);
+	_play_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamEditor::_play));
 	_play_button->set_shortcut(ED_SHORTCUT("audio_stream_editor/audio_preview_play_pause", TTRC("Audio Preview Play/Pause"), Key::SPACE));
+	_play_button->set_accessibility_name(TTRC("Play"));
 
 	_stop_button = memnew(Button);
 	hbox->add_child(_stop_button);
 	_stop_button->set_flat(true);
-	_stop_button->set_focus_mode(Control::FOCUS_NONE);
+	_stop_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamEditor::_stop));
+	_stop_button->set_accessibility_name(TTRC("Stop"));
 
 	_current_label = memnew(Label);
 	_current_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);

@@ -14,10 +14,10 @@ from pathlib import Path
 from typing import Generator, List, Optional, Union, cast
 
 from misc.utility.color import print_error, print_info, print_warning
+from platform_methods import detect_arch
 
 # Get the "Godot" folder name ahead of time
-base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
-base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
+base_folder = Path(__file__).resolve().parent
 
 compiler_version_cache = None
 
@@ -68,7 +68,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
             return False
 
         # Add all the gen.cpp files in the SCU directory
-        add_source_files_orig(self, sources, subdir + "scu/scu_*.gen.cpp", True)
+        add_source_files_orig(self, sources, subdir + ".scu/scu_*.gen.cpp", True)
         return True
     return False
 
@@ -83,34 +83,45 @@ def add_source_files(self, sources, files, allow_gen=False):
     return True
 
 
+def redirect_emitter(target, source, env):
+    """
+    Emitter to automatically redirect object/library build files to the `bin/obj` directory,
+    retaining subfolder structure. External build files will attempt to retain subfolder
+    structure relative to their environment's parent directory, sorted under `bin/obj/external`.
+    If `redirect_build_objects` is `False`, or an external build file isn't relative to the
+    passed environment, this emitter does nothing.
+    """
+    if not env["redirect_build_objects"]:
+        return target, source
+
+    redirected_targets = []
+    for item in target:
+        if base_folder in (path := Path(item.get_abspath()).resolve()).parents:
+            item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
+        elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
+            item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
+        else:
+            print_warning(f'Failed to redirect "{path}"')
+        redirected_targets.append(item)
+    return redirected_targets, source
+
+
 def disable_warnings(self):
     # 'self' is the environment
     if self.msvc and not using_clang(self):
-        # We have to remove existing warning level defines before appending /w,
-        # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
-        WARN_FLAGS = ["/Wall", "/W4", "/W3", "/W2", "/W1", "/W0"]
-        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if x not in WARN_FLAGS]
-        self["CFLAGS"] = [x for x in self["CFLAGS"] if x not in WARN_FLAGS]
-        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if x not in WARN_FLAGS]
-        self.AppendUnique(CCFLAGS=["/w"])
+        self["WARNLEVEL"] = "/w"
     else:
-        self.AppendUnique(CCFLAGS=["-w"])
+        self["WARNLEVEL"] = "-w"
 
 
 def force_optimization_on_debug(self):
     # 'self' is the environment
     if self["target"] == "template_release":
         return
-
-    if self.msvc:
-        # We have to remove existing optimization level defines before appending /O2,
-        # otherwise we get: "warning D9025 : overriding '/0d' with '/02'"
-        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not x.startswith("/O")]
-        self["CFLAGS"] = [x for x in self["CFLAGS"] if not x.startswith("/O")]
-        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if not x.startswith("/O")]
-        self.AppendUnique(CCFLAGS=["/O2"])
+    elif self.msvc:
+        self["OPTIMIZELEVEL"] = "/O2"
     else:
-        self.AppendUnique(CCFLAGS=["-O3"])
+        self["OPTIMIZELEVEL"] = "-O3"
 
 
 def add_module_version_string(self, s):
@@ -150,7 +161,7 @@ def get_version_info(module_version_string="", silent=False):
 
 
 def get_git_info():
-    os.chdir(base_folder_path)
+    os.chdir(base_folder)
 
     # Parse Git hash if we're in a Git repo.
     git_hash = ""
@@ -406,9 +417,9 @@ def use_windows_spawn_fix(self, platform=None):
 
 
 def no_verbose(env):
-    from misc.utility.color import Ansi
+    from misc.utility.color import Ansi, is_stdout_color
 
-    colors = [Ansi.BLUE, Ansi.BOLD, Ansi.REGULAR, Ansi.RESET]
+    colors = [Ansi.BLUE, Ansi.BOLD, Ansi.REGULAR, Ansi.RESET] if is_stdout_color() else ["", "", "", ""]
 
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.
@@ -598,17 +609,41 @@ def Run(env, function):
     return Action(function, "$GENCOMSTR")
 
 
+def detect_darwin_toolchain_path(env):
+    var_name = "APPLE_TOOLCHAIN_PATH"
+    if not env[var_name]:
+        try:
+            xcode_path = subprocess.check_output(["xcode-select", "-p"]).strip().decode("utf-8")
+            if xcode_path:
+                env[var_name] = xcode_path + "/Toolchains/XcodeDefault.xctoolchain"
+        except (subprocess.CalledProcessError, OSError):
+            print_error("Failed to find SDK path while running 'xcode-select -p'.")
+            raise
+
+
 def detect_darwin_sdk_path(platform, env):
     sdk_name = ""
+
     if platform == "macos":
         sdk_name = "macosx"
         var_name = "MACOS_SDK_PATH"
+
     elif platform == "ios":
         sdk_name = "iphoneos"
         var_name = "IOS_SDK_PATH"
+
     elif platform == "iossimulator":
         sdk_name = "iphonesimulator"
         var_name = "IOS_SDK_PATH"
+
+    elif platform == "visionos":
+        sdk_name = "xros"
+        var_name = "VISIONOS_SDK_PATH"
+
+    elif platform == "visionossimulator":
+        sdk_name = "xrsimulator"
+        var_name = "VISIONOS_SDK_PATH"
+
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
 
@@ -618,7 +653,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            print_error("Failed to find SDK path while running 'xcrun --sdk {} --show-sdk-path'.".format(sdk_name))
             raise
 
 
@@ -775,7 +810,7 @@ def show_progress(env):
     if env["ninja"]:
         return
 
-    NODE_COUNT_FILENAME = f"{base_folder_path}.scons_node_count"
+    NODE_COUNT_FILENAME = base_folder / ".scons_node_count"
 
     class ShowProgress:
         def __init__(self):
@@ -1045,8 +1080,22 @@ def generate_vs_project(env, original_args, project_name="godot"):
     platform = env["platform"]
     target = env["target"]
     arch = env["arch"]
+    host_arch = detect_arch()
+
+    host_platform = "windows"
+    if (
+        sys.platform.startswith("linux")
+        or sys.platform.startswith("dragonfly")
+        or sys.platform.startswith("freebsd")
+        or sys.platform.startswith("netbsd")
+        or sys.platform.startswith("openbsd")
+    ):
+        host_platform = "linuxbsd"
+    elif sys.platform == "darwin":
+        host_platform = "macos"
 
     vs_configuration = {}
+    host_vs_configuration = {}
     common_build_prefix = []
     confs = []
     for x in sorted(glob.glob("platform/*")):
@@ -1075,6 +1124,12 @@ def generate_vs_project(env, original_args, project_name="godot"):
             if platform == platform_name:
                 common_build_prefix = msvs.get_build_prefix(env)
                 vs_configuration = vsconf
+            if platform_name == host_platform:
+                host_vs_configuration = vsconf
+                for a in vsconf["arches"]:
+                    if host_arch == a["architecture"]:
+                        host_arch = a["platform"]
+                        break
         except Exception:
             pass
 
@@ -1232,29 +1287,29 @@ def generate_vs_project(env, original_args, project_name="godot"):
             properties.append(
                 "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
             )
-        output = f"bin\\godot{env['PROGSUFFIX']}"
+        output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
 
-        props_template = props_template.replace("%%VSCONF%%", vsconf)
         props_template = props_template.replace("%%CONDITION%%", condition)
         props_template = props_template.replace("%%PROPERTIES%%", "\n    ".join(properties))
         props_template = props_template.replace("%%EXTRA_ITEMS%%", "\n    ".join(extraItems))
 
         props_template = props_template.replace("%%OUTPUT%%", output)
 
-        proplist = [format_key_value(v) for v in list(env["CPPDEFINES"])]
+        proplist = [format_key_value(j) for j in list(env["CPPDEFINES"])]
         proplist += [format_key_value(j) for j in env.get("VSHINT_DEFINES", [])]
         props_template = props_template.replace("%%DEFINES%%", ";".join(proplist))
 
         proplist = [str(j) for j in env["CPPPATH"]]
         proplist += [str(j) for j in env.get("VSHINT_INCLUDES", [])]
+        proplist += [str(j) for j in get_default_include_paths(env)]
         props_template = props_template.replace("%%INCLUDES%%", ";".join(proplist))
 
-        proplist = env["CCFLAGS"]
-        proplist += [x for x in env["CXXFLAGS"] if not x.startswith("$")]
-        proplist += [str(j) for j in env.get("VSHINT_OPTIONS", [])]
+        proplist = [env.subst("$CCFLAGS")]
+        proplist += [env.subst("$CXXFLAGS")]
+        proplist += [env.subst("$VSHINT_OPTIONS")]
         props_template = props_template.replace("%%OPTIONS%%", " ".join(proplist))
 
         # Windows allows us to have spaces in paths, so we need
@@ -1285,17 +1340,17 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         commands = "scons"
         if len(common_build_prefix) == 0:
-            commands = "echo Starting SCons &amp;&amp; cmd /V /C " + commands
+            commands = "echo Starting SCons &amp; " + commands
         else:
-            common_build_prefix[0] = "echo Starting SCons &amp;&amp; cmd /V /C " + common_build_prefix[0]
+            common_build_prefix[0] = "echo Starting SCons &amp; " + common_build_prefix[0]
 
-        cmd = " ^&amp; ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
+        cmd = " ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
         props_template = props_template.replace("%%BUILD%%", cmd)
 
-        cmd = " ^&amp; ".join(common_build_prefix + [" ".join([commands] + cmd_rebuild)])
+        cmd = " ".join(common_build_prefix + [" ".join([commands] + cmd_rebuild)])
         props_template = props_template.replace("%%REBUILD%%", cmd)
 
-        cmd = " ^&amp; ".join(common_build_prefix + [" ".join([commands] + cmd_clean)])
+        cmd = " ".join(common_build_prefix + [" ".join([commands] + cmd_clean)])
         props_template = props_template.replace("%%CLEAN%%", cmd)
 
         with open(
@@ -1326,18 +1381,45 @@ def generate_vs_project(env, original_args, project_name="godot"):
     section2 = []
     for conf in confs:
         godot_platform = conf["platform"]
+        has_editor = "editor" in conf["targets"]
+
+        # Skip any platforms that can build the editor and don't match the host platform.
+        #
+        # When both Windows and Mac define an editor target, it's defined as platform+target+arch (windows+editor+x64 for example).
+        # VS only supports two attributes, a "Configuration" and a "Platform", and we currently map our target to the Configuration
+        # (i.e. editor/template_debug/template_release), and our architecture to the "Platform" (i.e. x64, arm64, etc).
+        # Those two are not enough to disambiguate multiple godot targets for different godot platforms with the same architecture,
+        # i.e. editor|x64 would currently match both windows editor intel 64 and linux editor intel 64.
+        #
+        # TODO: More work is needed in order to support generating VS projects that unambiguously support all platform+target+arch variations.
+        # The VS "Platform" has to be a known architecture that VS recognizes, so we can only play around with the "Configuration" part of the combo.
+        if has_editor and godot_platform != host_vs_configuration["platform"]:
+            continue
+
         for p in conf["arches"]:
             sln_plat = p["platform"]
             proj_plat = sln_plat
             godot_arch = p["architecture"]
 
-            # Redirect editor configurations for non-Windows platforms to the Windows one, so the solution has all the permutations
-            # and VS doesn't complain about missing project configurations.
+            # Redirect editor configurations for platforms that don't support the editor target to the default editor target on the
+            # active host platform, so the solution has all the permutations and VS doesn't complain about missing project configurations.
             # These configurations are disabled, so they show up but won't build.
-            if godot_platform != "windows":
+            if not has_editor:
                 section1 += [f"editor|{sln_plat} = editor|{proj_plat}"]
-                section2 += [
-                    f"{{{proj_uuid}}}.editor|{proj_plat}.ActiveCfg = editor|{proj_plat}",
+                section2 += [f"{{{proj_uuid}}}.editor|{proj_plat}.ActiveCfg = editor|{host_arch}"]
+
+                configurations += [
+                    f'<ProjectConfiguration Include="editor|{proj_plat}">',
+                    "  <Configuration>editor</Configuration>",
+                    f"  <Platform>{proj_plat}</Platform>",
+                    "</ProjectConfiguration>",
+                ]
+
+                properties += [
+                    f"<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='editor|{proj_plat}'\">",
+                    "  <GodotConfiguration>editor</GodotConfiguration>",
+                    f"  <GodotPlatform>{proj_plat}</GodotPlatform>",
+                    "</PropertyGroup>",
                 ]
 
             for t in conf["targets"]:
@@ -1360,21 +1442,6 @@ def generate_vs_project(env, original_args, project_name="godot"):
                     f"  <GodotPlatform>{proj_plat}</GodotPlatform>",
                     "</PropertyGroup>",
                 ]
-
-                if godot_platform != "windows":
-                    configurations += [
-                        f'<ProjectConfiguration Include="editor|{proj_plat}">',
-                        "  <Configuration>editor</Configuration>",
-                        f"  <Platform>{proj_plat}</Platform>",
-                        "</ProjectConfiguration>",
-                    ]
-
-                    properties += [
-                        f"<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='editor|{proj_plat}'\">",
-                        "  <GodotConfiguration>editor</GodotConfiguration>",
-                        f"  <GodotPlatform>{proj_plat}</GodotPlatform>",
-                        "</PropertyGroup>",
-                    ]
 
                 p = f"{project_name}.{godot_platform}.{godot_target}.{godot_arch}.generated.props"
                 imports += [
@@ -1481,15 +1548,15 @@ def generated_wrapper(
     unassigned, the value is determined by file extension.
     """
 
-    if guard is None:
-        guard = path.endswith((".h", ".hh", ".hpp", ".hxx", ".inc"))
-
     with open(path, "wt", encoding="utf-8", newline="\n") as file:
-        file.write(generate_copyright_header(path))
-        file.write("\n/* THIS FILE IS GENERATED. EDITS WILL BE LOST. */\n\n")
+        if not path.endswith(".out"):  # For test output, we only care about the content.
+            file.write(generate_copyright_header(path))
+            file.write("\n/* THIS FILE IS GENERATED. EDITS WILL BE LOST. */\n\n")
 
-        if guard:
-            file.write("#pragma once\n\n")
+            if guard is None:
+                guard = path.endswith((".h", ".hh", ".hpp", ".hxx", ".inc"))
+            if guard:
+                file.write("#pragma once\n\n")
 
         with StringIO(newline="\n") as str_io:
             yield str_io
@@ -1584,3 +1651,18 @@ def to_raw_cstring(value: Union[str, List[str]]) -> str:
     else:
         # Wrap multiple segments in parenthesis to suppress `string-concatenation` warnings on clang.
         return "({})".format(" ".join(f'R"<!>({segment.decode()})<!>"' for segment in split))
+
+
+def get_default_include_paths(env):
+    if env.msvc:
+        return []
+    compiler = env.subst("$CXX")
+    target = os.path.join(env.Dir("#main").abspath, "main.cpp")
+    args = [compiler, target, "-x", "c++", "-v"]
+    ret = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    output = ret.stdout
+    match = re.search(r"#include <\.\.\.> search starts here:([\S\s]*)End of search list.", output)
+    if not match:
+        print_warning("Failed to find the include paths in the compiler output.")
+        return []
+    return [x.strip() for x in match[1].strip().splitlines()]

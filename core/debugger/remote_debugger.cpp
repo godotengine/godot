@@ -95,10 +95,7 @@ public:
 };
 
 Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
-	Array msg;
-	msg.push_back(p_message);
-	msg.push_back(Thread::get_caller_id());
-	msg.push_back(p_data);
+	Array msg = { p_message, Thread::get_caller_id(), p_data };
 	Error err = peer->put_message(msg);
 	if (err != OK) {
 		n_messages_dropped++;
@@ -235,9 +232,7 @@ void RemoteDebugger::flush_output() {
 			types.push_back(MESSAGE_TYPE_LOG);
 		}
 
-		Array arr;
-		arr.push_back(strings);
-		arr.push_back(types);
+		Array arr = { strings, types };
 		_put_msg("output", arr);
 		output_strings.clear();
 	}
@@ -418,11 +413,12 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	const String error_str = script_lang ? script_lang->debug_get_error() : "";
 
 	if (can_break) {
-		Array msg;
-		msg.push_back(p_can_continue);
-		msg.push_back(error_str);
-		msg.push_back(script_lang->debug_get_stack_level_count() > 0);
-		msg.push_back(Thread::get_caller_id());
+		Array msg = {
+			p_can_continue,
+			error_str,
+			script_lang->debug_get_stack_level_count() > 0,
+			Thread::get_caller_id()
+		};
 		if (allow_focus_steal_fn) {
 			allow_focus_steal_fn();
 		}
@@ -514,8 +510,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_lang->debug_get_globals(&globals, &globals_vals);
 				ERR_FAIL_COND(globals.size() != globals_vals.size());
 
-				Array var_size;
-				var_size.push_back(local_vals.size() + member_vals.size() + globals_vals.size());
+				Array var_size = { local_vals.size() + member_vals.size() + globals_vals.size() };
 				send_message("stack_frame_vars", var_size);
 				_send_stack_vars(locals, local_vals, 0);
 				_send_stack_vars(members, member_vals, 1);
@@ -538,7 +533,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_skip_breakpoints(data[0]);
 			} else if (command == "set_ignore_error_breaks") {
-				ERR_FAIL_COND(data.size() < 1);
+				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_ignore_error_breaks(data[0]);
 			} else if (command == "evaluate") {
 				String expression_str = data[0];
@@ -549,25 +544,60 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 					break;
 				}
 
+				PackedStringArray input_names;
+				Array input_vals;
+
 				List<String> locals;
 				List<Variant> local_vals;
-
 				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
 				ERR_FAIL_COND(locals.size() != local_vals.size());
 
-				PackedStringArray locals_vector;
 				for (const String &S : locals) {
-					locals_vector.append(S);
+					input_names.append(S);
 				}
 
-				Array local_vals_array;
 				for (const Variant &V : local_vals) {
-					local_vals_array.append(V);
+					input_vals.append(V);
+				}
+
+				List<String> globals;
+				List<Variant> globals_vals;
+				script_debugger->get_break_language()->debug_get_globals(&globals, &globals_vals);
+				ERR_FAIL_COND(globals.size() != globals_vals.size());
+
+				for (const String &S : globals) {
+					input_names.append(S);
+				}
+
+				for (const Variant &V : globals_vals) {
+					input_vals.append(V);
+				}
+
+				List<StringName> native_types;
+				ClassDB::get_class_list(&native_types);
+				for (const StringName &E : native_types) {
+					if (!ClassDB::is_class_exposed(E) || !Engine::get_singleton()->has_singleton(E) || Engine::get_singleton()->is_singleton_editor_only(E)) {
+						continue;
+					}
+
+					input_names.append(E);
+					input_vals.append(Engine::get_singleton()->get_singleton_object(E));
+				}
+
+				List<StringName> user_types;
+				ScriptServer::get_global_class_list(&user_types);
+				for (const StringName &S : user_types) {
+					String scr_path = ScriptServer::get_global_class_path(S);
+					Ref<Script> scr = ResourceLoader::load(scr_path, "Script");
+					ERR_CONTINUE_MSG(scr.is_null(), vformat(R"(Could not load the global class %s from resource path: "%s".)", S, scr_path));
+
+					input_names.append(S);
+					input_vals.append(scr);
 				}
 
 				Expression expression;
-				expression.parse(expression_str, locals_vector);
-				const Variant return_val = expression.execute(local_vals_array, breaked_instance->get_owner());
+				expression.parse(expression_str, input_names);
+				const Variant return_val = expression.execute(input_vals, breaked_instance->get_owner());
 
 				DebuggerMarshalls::ScriptStackVariable stvar;
 				stvar.name = expression_str;
@@ -680,7 +710,7 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
 		script_debugger->set_skip_breakpoints(p_data[0]);
 	} else if (p_cmd == "set_ignore_error_breaks") {
-		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
 		script_debugger->set_ignore_error_breaks(p_data[0]);
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());

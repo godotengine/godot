@@ -468,7 +468,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
 						in_function_declaration = true;
 					}
-				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::CONST)) {
+				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::TK_CONST)) {
 					in_var_const_declaration = true;
 				}
 
@@ -492,7 +492,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				k--;
 			}
 
-			if (str[k] == '.') {
+			if (str[k] == '.' && (k < 1 || str[k - 1] != '.')) {
 				in_member_variable = true;
 			}
 		}
@@ -756,13 +756,11 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	/* Reserved words. */
 	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
-	List<String> keyword_list;
-	gdscript->get_reserved_words(&keyword_list);
-	for (const String &E : keyword_list) {
-		if (gdscript->is_control_flow_keyword(E)) {
-			reserved_keywords[StringName(E)] = control_flow_keyword_color;
+	for (const String &keyword : gdscript->get_reserved_words()) {
+		if (gdscript->is_control_flow_keyword(keyword)) {
+			reserved_keywords[StringName(keyword)] = control_flow_keyword_color;
 		} else {
-			reserved_keywords[StringName(E)] = keyword_color;
+			reserved_keywords[StringName(keyword)] = keyword_color;
 		}
 	}
 
@@ -783,9 +781,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* Comments */
 	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
-	List<String> comments;
-	gdscript->get_comment_delimiters(&comments);
-	for (const String &comment : comments) {
+	for (const String &comment : gdscript->get_comment_delimiters()) {
 		String beg = comment.get_slicec(' ', 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, comment_color, end.is_empty());
@@ -793,9 +789,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* Doc comments */
 	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
-	List<String> doc_comments;
-	gdscript->get_doc_comment_delimiters(&doc_comments);
-	for (const String &doc_comment : doc_comments) {
+	for (const String &doc_comment : gdscript->get_doc_comment_delimiters()) {
 		String beg = doc_comment.get_slicec(' ', 0);
 		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, doc_comment_color, end.is_empty());

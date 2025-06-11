@@ -421,12 +421,12 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 		if ((dp_count || skin.is_valid()) && (missing_trails || no_materials)) {
 			warnings.push_back(RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
 		}
-		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
 			warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile renderers."));
 		}
 	}
 
-	if (sub_emitter != NodePath() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+	if (sub_emitter != NodePath() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
 		warnings.push_back(RTR("Particle sub-emitters are only available when using the Forward+ or Mobile renderers."));
 	}
 
@@ -842,7 +842,7 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime,View Depth"), "set_draw_order", "get_draw_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Z-Billboard,Y to Velocity,Z-Billboard + Y to Velocity"), "set_transform_align", "get_transform_align");
 	ADD_GROUP("Trails", "trail_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_GROUP("Process Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");

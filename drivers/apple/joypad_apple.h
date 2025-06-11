@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
 
 #define Key _QKey
 #import <GameController/GameController.h>
@@ -45,7 +46,12 @@ struct GameController {
 	RumbleContext *rumble_context API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) = nil;
 	NSInteger ff_effect_timestamp = 0;
 	bool force_feedback = false;
-	bool nintendo_button_layout = false;
+	bool double_nintendo_joycon_layout = false;
+	bool single_nintendo_joycon_layout = false;
+
+	uint32_t axis_changed_mask = 0;
+	static_assert(static_cast<uint32_t>(JoyAxis::MAX) < 32, "JoyAxis::MAX must be less than 32");
+	double axis_value[(int)JoyAxis::MAX];
 
 	GameController(int p_joy_id, GCController *p_controller);
 	~GameController();

@@ -30,7 +30,7 @@
 
 #include "soft_body_3d_gizmo_plugin.h"
 
-#include "scene/3d/soft_body_3d.h"
+#include "scene/3d/physics/soft_body_3d.h"
 
 SoftBody3DGizmoPlugin::SoftBody3DGizmoPlugin() {
 	Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();

@@ -89,12 +89,12 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				if (get_focus_mode() != FOCUS_NONE) {
+				if (get_focus_mode_with_override() != FOCUS_NONE) {
 					grab_focus();
 				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				if (get_focus_mode() != FOCUS_NONE) {
+				if (get_focus_mode_with_override() != FOCUS_NONE) {
 					grab_focus();
 				}
 				set_value(get_value() - get_step());
@@ -237,7 +237,13 @@ void Slider::_notification(int p_what) {
 					}
 				}
 			}
+		} break;
 
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SLIDER);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

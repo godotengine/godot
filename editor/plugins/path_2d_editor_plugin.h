@@ -96,6 +96,10 @@ class Path2DEditor : public HBoxContainer {
 	Vector2 edge_point;
 	Vector2 original_mouse_pos;
 
+	// Number of control points in range of the last click.
+	// 0, 1, or 2.
+	int control_points_in_range = 0;
+
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);
 	void _cancel_current_action();
@@ -108,6 +112,19 @@ class Path2DEditor : public HBoxContainer {
 	void _clear_curve_points(Path2D *p_path2d);
 	void _restore_curve_points(Path2D *p_path2d, const PackedVector2Array &p_points);
 
+	RID debug_mesh_rid;
+	RID debug_handle_mesh_rid;
+	RID debug_handle_multimesh_rid;
+
+	RID debug_handle_curve_multimesh_rid;
+	RID debug_handle_sharp_multimesh_rid;
+	RID debug_handle_smooth_multimesh_rid;
+
+	LocalVector<Vector2> debug_handle_lines;
+	LocalVector<Transform2D> debug_handle_curve_transforms;
+	LocalVector<Transform2D> debug_handle_sharp_transforms;
+	LocalVector<Transform2D> debug_handle_smooth_transforms;
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
@@ -118,6 +135,7 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_path2d);
 	Path2DEditor();
+	~Path2DEditor();
 };
 
 class Path2DEditorPlugin : public EditorPlugin {
@@ -136,5 +154,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	Path2DEditorPlugin();
-	~Path2DEditorPlugin();
 };

@@ -103,7 +103,7 @@ void PrimitiveMesh::_update() const {
 		Vector<Vector2> uv = arr[RS::ARRAY_TEX_UV];
 		Vector<Vector2> uv2 = arr[RS::ARRAY_TEX_UV2];
 
-		if (uv.size() > 0 && uv2.size() == 0) {
+		if (uv.size() > 0 && uv2.is_empty()) {
 			Vector2 uv2_scale = get_uv2_scale();
 			uv2.resize(uv.size());
 
@@ -362,7 +362,7 @@ PrimitiveMesh::PrimitiveMesh() {
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
-	texel_size = float(GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size"));
+	texel_size = float(GLOBAL_GET_CACHED(float, "rendering/lightmapping/primitive_meshes/texel_size"));
 	if (texel_size <= 0.0) {
 		texel_size = 0.2;
 	}
@@ -389,7 +389,7 @@ void CapsuleMesh::_update_lightmap_size() {
 		Size2i _lightmap_size_hint;
 		float padding = get_uv2_padding();
 
-		float radial_length = radius * Math_PI * 0.5; // circumference of 90 degree bend
+		float radial_length = radius * Math::PI * 0.5; // circumference of 90 degree bend
 		float vertical_length = radial_length * 2 + (height - 2.0 * radius); // total vertical length
 
 		_lightmap_size_hint.x = MAX(1.0, 4.0 * radial_length / texel_size) + padding;
@@ -413,21 +413,30 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 	float twothirds = 2.0 / 3.0;
 
 	// Only used if we calculate UV2
-	float radial_width = 2.0 * radius * Math_PI;
+	float radial_width = 2.0 * radius * Math::PI;
 	float radial_h = radial_width / (radial_width + p_uv2_padding);
-	float radial_length = radius * Math_PI * 0.5; // circumference of 90 degree bend
+	float radial_length = radius * Math::PI * 0.5; // circumference of 90 degree bend
 	float vertical_length = radial_length * 2 + (height - 2.0 * radius) + p_uv2_padding; // total vertical length
 	float radial_v = radial_length / vertical_length; // v size of top and bottom section
 	float height_v = (height - 2.0 * radius) / vertical_length; // v size of height section
 
-	// note, this has been aligned with our collision shape but I've left the descriptions as top/middle/bottom
-
-	Vector<Vector3> points;
-	Vector<Vector3> normals;
-	Vector<float> tangents;
-	Vector<Vector2> uvs;
-	Vector<Vector2> uv2s;
-	Vector<int> indices;
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (rings + 2) * (radial_segments + 1) * 2;
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<Vector2> uv2s;
+	if (p_add_uv2) {
+		uv2s.reserve(num_points);
+	}
+	LocalVector<int> indices;
+	indices.reserve((rings + 1) * (radial_segments) * 6 * 2);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -435,6 +444,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 	tangents.push_back(m_y);            \
 	tangents.push_back(m_z);            \
 	tangents.push_back(m_d);
+
+	// Note, this has been aligned with our collision shape but I've left the descriptions as top/middle/bottom.
 
 	/* top hemisphere */
 	thisrow = 0;
@@ -447,8 +458,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			w = 1.0;
 			y = 0.0;
 		} else {
-			w = Math::sin(0.5 * Math_PI * v);
-			y = Math::cos(0.5 * Math_PI * v);
+			w = Math::sin(0.5 * Math::PI * v);
+			y = Math::cos(0.5 * Math::PI * v);
 		}
 
 		for (i = 0; i <= radial_segments; i++) {
@@ -459,8 +470,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 				x = 0.0;
 				z = 1.0;
 			} else {
-				x = -Math::sin(u * Math_TAU);
-				z = Math::cos(u * Math_TAU);
+				x = -Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
 			}
 
 			Vector3 p = Vector3(x * w, y, -z * w);
@@ -506,8 +517,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 				x = 0.0;
 				z = 1.0;
 			} else {
-				x = -Math::sin(u * Math_TAU);
-				z = Math::cos(u * Math_TAU);
+				x = -Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
 			}
 
 			Vector3 p = Vector3(x * radius, y, -z * radius);
@@ -546,8 +557,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			w = 0.0;
 			y = -1.0;
 		} else {
-			w = Math::cos(0.5 * Math_PI * v);
-			y = -Math::sin(0.5 * Math_PI * v);
+			w = Math::cos(0.5 * Math::PI * v);
+			y = -Math::sin(0.5 * Math::PI * v);
 		}
 
 		for (i = 0; i <= radial_segments; i++) {
@@ -558,8 +569,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 				x = 0.0;
 				z = 1.0;
 			} else {
-				x = -Math::sin(u * Math_TAU);
-				z = Math::cos(u * Math_TAU);
+				x = -Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
 			}
 
 			Vector3 p = Vector3(x * w, y, -z * w);
@@ -587,14 +598,14 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void CapsuleMesh::_bind_methods() {
@@ -678,8 +689,6 @@ int CapsuleMesh::get_rings() const {
 	return rings;
 }
 
-CapsuleMesh::CapsuleMesh() {}
-
 /**
   BoxMesh
 */
@@ -731,14 +740,23 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 
 	Vector3 start_pos = size * -0.5;
 
-	// set our bounding box
-
-	Vector<Vector3> points;
-	Vector<Vector3> normals;
-	Vector<float> tangents;
-	Vector<Vector2> uvs;
-	Vector<Vector2> uv2s;
-	Vector<int> indices;
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (subdivide_h + 2) * (subdivide_w + 2) * 6;
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<Vector2> uv2s;
+	if (p_add_uv2) {
+		uv2s.reserve(num_points);
+	}
+	LocalVector<int> indices;
+	indices.reserve((subdivide_h + 1) * (subdivide_w + 1) * 6 * 6);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -936,14 +954,14 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void BoxMesh::_bind_methods() {
@@ -1016,8 +1034,6 @@ int BoxMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-BoxMesh::BoxMesh() {}
-
 /**
 	CylinderMesh
 */
@@ -1028,8 +1044,8 @@ void CylinderMesh::_update_lightmap_size() {
 		Size2i _lightmap_size_hint;
 		float padding = get_uv2_padding();
 
-		float top_circumference = top_radius * Math_PI * 2.0;
-		float bottom_circumference = bottom_radius * Math_PI * 2.0;
+		float top_circumference = top_radius * Math::PI * 2.0;
+		float bottom_circumference = bottom_radius * Math::PI * 2.0;
 
 		float _width = MAX(top_circumference, bottom_circumference) / texel_size + padding;
 		_width = MAX(_width, (((top_radius + bottom_radius) / texel_size) + padding) * 2.0); // this is extremely unlikely to be larger, will only happen if padding is larger then our diameter.
@@ -1055,8 +1071,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	float x, y, z, u, v, radius, radius_h;
 
 	// Only used if we calculate UV2
-	float top_circumference = top_radius * Math_PI * 2.0;
-	float bottom_circumference = bottom_radius * Math_PI * 2.0;
+	float top_circumference = top_radius * Math::PI * 2.0;
+	float bottom_circumference = bottom_radius * Math::PI * 2.0;
 	float vertical_length = height + MAX(2.0 * top_radius, 2.0 * bottom_radius) + (2.0 * p_uv2_padding);
 	float height_v = height / vertical_length;
 	float padding_v = p_uv2_padding / vertical_length;
@@ -1067,12 +1083,23 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	float bottom_h = bottom_circumference / horizontal_length;
 	float padding_h = p_uv2_padding / horizontal_length;
 
-	Vector<Vector3> points;
-	Vector<Vector3> normals;
-	Vector<float> tangents;
-	Vector<Vector2> uvs;
-	Vector<Vector2> uv2s;
-	Vector<int> indices;
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (rings + 2) * (radial_segments + 1) + 4 + 2 * radial_segments;
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<Vector2> uv2s;
+	if (p_add_uv2) {
+		uv2s.reserve(num_points);
+	}
+	LocalVector<int> indices;
+	indices.reserve((rings + 1) * (radial_segments) * 6 + 6 * radial_segments);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1102,8 +1129,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 				x = 0.0;
 				z = 1.0;
 			} else {
-				x = Math::sin(u * Math_TAU);
-				z = Math::cos(u * Math_TAU);
+				x = Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
 			}
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
@@ -1159,8 +1186,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 				x = 0.0;
 				z = 1.0;
 			} else {
-				x = Math::sin(r * Math_TAU);
-				z = Math::cos(r * Math_TAU);
+				x = Math::sin(r * Math::TAU);
+				z = Math::cos(r * Math::TAU);
 			}
 
 			u = ((x + 1.0) * 0.25);
@@ -1206,8 +1233,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 				x = 0.0;
 				z = 1.0;
 			} else {
-				x = Math::sin(r * Math_TAU);
-				z = Math::cos(r * Math_TAU);
+				x = Math::sin(r * Math::TAU);
+				z = Math::cos(r * Math::TAU);
 			}
 
 			u = 0.5 + ((x + 1.0) * 0.25);
@@ -1231,14 +1258,14 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		}
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void CylinderMesh::_bind_methods() {
@@ -1364,8 +1391,6 @@ bool CylinderMesh::is_cap_bottom() const {
 	return cap_bottom;
 }
 
-CylinderMesh::CylinderMesh() {}
-
 /**
   PlaneMesh
 */
@@ -1398,11 +1423,19 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 		normal = Vector3(0.0, 0.0, 1.0);
 	}
 
-	Vector<Vector3> points;
-	Vector<Vector3> normals;
-	Vector<float> tangents;
-	Vector<Vector2> uvs;
-	Vector<int> indices;
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (subdivide_d + 2) * (subdivide_w + 2);
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<int> indices;
+	indices.reserve((subdivide_d + 1) * (subdivide_w + 1) * 6);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1456,11 +1489,11 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void PlaneMesh::_bind_methods() {
@@ -1550,8 +1583,6 @@ PlaneMesh::Orientation PlaneMesh::get_orientation() const {
 	return orientation;
 }
 
-PlaneMesh::PlaneMesh() {}
-
 /**
   PrismMesh
 */
@@ -1599,14 +1630,27 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 
 	Vector3 start_pos = size * -0.5;
 
-	// set our bounding box
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (subdivide_h + 2) * (subdivide_w + 2) * 2 + (subdivide_h + 2) * (subdivide_d + 2) * 2 + (subdivide_d + 2) * (subdivide_w + 2);
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<Vector2> uv2s;
+	if (_add_uv2) {
+		uv2s.reserve(num_points);
+	}
 
-	Vector<Vector3> points;
-	Vector<Vector3> normals;
-	Vector<float> tangents;
-	Vector<Vector2> uvs;
-	Vector<Vector2> uv2s;
-	Vector<int> indices;
+	int num_indices = (subdivide_h + 1) * (subdivide_w + 1) * 12 + (subdivide_w + 1) * 6;
+	num_indices += (subdivide_h + 1) * (subdivide_d + 1) * 12;
+	num_indices += (subdivide_d + 1) * (subdivide_w + 1) * 6;
+	LocalVector<int> indices;
+	indices.reserve(num_indices);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1817,14 +1861,14 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void PrismMesh::_bind_methods() {
@@ -1909,8 +1953,6 @@ int PrismMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-PrismMesh::PrismMesh() {}
-
 /**
   SphereMesh
 */
@@ -1921,9 +1963,9 @@ void SphereMesh::_update_lightmap_size() {
 		Size2i _lightmap_size_hint;
 		float padding = get_uv2_padding();
 
-		float _width = radius * Math_TAU;
+		float _width = radius * Math::TAU;
 		_lightmap_size_hint.x = MAX(1.0, (_width / texel_size) + padding);
-		float _height = (is_hemisphere ? 1.0 : 0.5) * height * Math_PI; // note, with hemisphere height is our radius, while with a full sphere it is the diameter..
+		float _height = (is_hemisphere ? 1.0 : 0.5) * height * Math::PI; // note, with hemisphere height is our radius, while with a full sphere it is the diameter..
 		_lightmap_size_hint.y = MAX(1.0, (_height / texel_size) + padding);
 
 		set_lightmap_size_hint(_lightmap_size_hint);
@@ -1944,20 +1986,29 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	float scale = height / radius * (is_hemisphere ? 1.0 : 0.5);
 
 	// Only used if we calculate UV2
-	float circumference = radius * Math_TAU;
+	float circumference = radius * Math::TAU;
 	float horizontal_length = circumference + p_uv2_padding;
 	float center_h = 0.5 * circumference / horizontal_length;
 
-	float height_v = scale * Math_PI / ((scale * Math_PI) + p_uv2_padding / radius);
+	float height_v = scale * Math::PI / ((scale * Math::PI) + p_uv2_padding / radius);
 
-	// set our bounding box
-
-	Vector<Vector3> points;
-	Vector<Vector3> normals;
-	Vector<float> tangents;
-	Vector<Vector2> uvs;
-	Vector<Vector2> uv2s;
-	Vector<int> indices;
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (rings + 2) * (radial_segments + 1);
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<Vector2> uv2s;
+	if (p_add_uv2) {
+		uv2s.reserve(num_points);
+	}
+	LocalVector<int> indices;
+	indices.reserve((rings + 1) * (radial_segments) * 6);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1977,8 +2028,8 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 			w = 0.0;
 			y = -1.0;
 		} else {
-			w = Math::sin(Math_PI * v);
-			y = Math::cos(Math_PI * v);
+			w = Math::sin(Math::PI * v);
+			y = Math::cos(Math::PI * v);
 		}
 
 		for (i = 0; i <= radial_segments; i++) {
@@ -1989,8 +2040,8 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 				x = 0.0;
 				z = 1.0;
 			} else {
-				x = Math::sin(u * Math_TAU);
-				z = Math::cos(u * Math_TAU);
+				x = Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
 			}
 
 			if (is_hemisphere && y < 0.0) {
@@ -2025,14 +2076,14 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void SphereMesh::_bind_methods() {
@@ -2120,8 +2171,6 @@ bool SphereMesh::get_is_hemisphere() const {
 	return is_hemisphere;
 }
 
-SphereMesh::SphereMesh() {}
-
 /**
   TorusMesh
 */
@@ -2141,9 +2190,9 @@ void TorusMesh::_update_lightmap_size() {
 
 		float radius = (max_radius - min_radius) * 0.5;
 
-		float _width = max_radius * Math_TAU;
+		float _width = max_radius * Math::TAU;
 		_lightmap_size_hint.x = MAX(1.0, (_width / texel_size) + padding);
-		float _height = radius * Math_TAU;
+		float _height = radius * Math::TAU;
 		_lightmap_size_hint.y = MAX(1.0, (_height / texel_size) + padding);
 
 		set_lightmap_size_hint(_lightmap_size_hint);
@@ -2153,12 +2202,25 @@ void TorusMesh::_update_lightmap_size() {
 void TorusMesh::_create_mesh_array(Array &p_arr) const {
 	// set our bounding box
 
-	Vector<Vector3> points;
-	Vector<Vector3> normals;
-	Vector<float> tangents;
-	Vector<Vector2> uvs;
-	Vector<Vector2> uv2s;
-	Vector<int> indices;
+	bool _add_uv2 = get_add_uv2();
+
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (rings + 1) * (ring_segments + 1);
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<Vector2> uv2s;
+	if (_add_uv2) {
+		uv2s.reserve(num_points);
+	}
+	LocalVector<int> indices;
+	indices.reserve(rings * ring_segments * 6);
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
 	tangents.push_back(m_x);            \
@@ -2178,26 +2240,25 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 	float radius = (max_radius - min_radius) * 0.5;
 
 	// Only used if we calculate UV2
-	bool _add_uv2 = get_add_uv2();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
-	float horizontal_total = max_radius * Math_TAU + _uv2_padding;
-	float max_h = max_radius * Math_TAU / horizontal_total;
-	float delta_h = (max_radius - min_radius) * Math_TAU / horizontal_total;
+	float horizontal_total = max_radius * Math::TAU + _uv2_padding;
+	float max_h = max_radius * Math::TAU / horizontal_total;
+	float delta_h = (max_radius - min_radius) * Math::TAU / horizontal_total;
 
-	float height_v = radius * Math_TAU / (radius * Math_TAU + _uv2_padding);
+	float height_v = radius * Math::TAU / (radius * Math::TAU + _uv2_padding);
 
 	for (int i = 0; i <= rings; i++) {
 		int prevrow = (i - 1) * (ring_segments + 1);
 		int thisrow = i * (ring_segments + 1);
 		float inci = float(i) / rings;
-		float angi = inci * Math_TAU;
+		float angi = inci * Math::TAU;
 
 		Vector2 normali = (i == rings) ? Vector2(0.0, -1.0) : Vector2(-Math::sin(angi), -Math::cos(angi));
 
 		for (int j = 0; j <= ring_segments; j++) {
 			float incj = float(j) / ring_segments;
-			float angj = incj * Math_TAU;
+			float angj = incj * Math::TAU;
 
 			Vector2 normalj = (j == ring_segments) ? Vector2(-1.0, 0.0) : Vector2(-Math::cos(angj), Math::sin(angj));
 			Vector2 normalk = normalj * radius + Vector2(min_radius + radius, 0);
@@ -2226,14 +2287,14 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 		}
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = uv2s;
+		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void TorusMesh::_bind_methods() {
@@ -2304,8 +2365,6 @@ void TorusMesh::set_ring_segments(const int p_ring_segments) {
 int TorusMesh::get_ring_segments() const {
 	return ring_segments;
 }
-
-TorusMesh::TorusMesh() {}
 
 /**
   PointMesh
@@ -2443,13 +2502,26 @@ Transform3D TubeTrailMesh::get_builtin_bind_pose(int p_index) const {
 void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 	// Seeing use case for TubeTrailMesh, no need to do anything more then default UV2 calculation
 
-	PackedVector3Array points;
-	PackedVector3Array normals;
-	PackedFloat32Array tangents;
-	PackedVector2Array uvs;
-	PackedInt32Array bone_indices;
-	PackedFloat32Array bone_weights;
-	PackedInt32Array indices;
+	int total_rings = section_rings * sections;
+	float depth = section_length * sections;
+
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (total_rings + 1) * (radial_steps + 1) + 4 + radial_steps * 2;
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<int> bone_indices;
+	bone_indices.reserve(num_points * 4);
+	LocalVector<float> bone_weights;
+	bone_weights.reserve(num_points * 4);
+	LocalVector<int> indices;
+	indices.reserve(total_rings * radial_steps * 6 + radial_steps * 6);
 
 	int point = 0;
 
@@ -2461,9 +2533,6 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 
 	int thisrow = 0;
 	int prevrow = 0;
-
-	int total_rings = section_rings * sections;
-	float depth = section_length * sections;
 
 	for (int j = 0; j <= total_rings; j++) {
 		float v = j;
@@ -2486,8 +2555,8 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 			float x = 0.0;
 			float z = 1.0;
 			if (i < radial_steps) {
-				x = Math::sin(u * Math_TAU);
-				z = Math::cos(u * Math_TAU);
+				x = Math::sin(u * Math::TAU);
+				z = Math::cos(u * Math::TAU);
 			}
 
 			Vector3 p = Vector3(x * r, y, z * r);
@@ -2559,8 +2628,8 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 				float x = 0.0;
 				float z = 1.0;
 				if (i < radial_steps) {
-					x = Math::sin(r * Math_TAU);
-					z = Math::cos(r * Math_TAU);
+					x = Math::sin(r * Math::TAU);
+					z = Math::cos(r * Math::TAU);
 				}
 
 				float u = ((x + 1.0) * 0.25);
@@ -2628,8 +2697,8 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 				float x = 0.0;
 				float z = 1.0;
 				if (i < radial_steps) {
-					x = Math::sin(r * Math_TAU);
-					z = Math::cos(r * Math_TAU);
+					x = Math::sin(r * Math::TAU);
+					z = Math::cos(r * Math::TAU);
 				}
 
 				float u = 0.5 + ((x + 1.0) * 0.25);
@@ -2661,13 +2730,13 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 		}
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
-	p_arr[RS::ARRAY_BONES] = bone_indices;
-	p_arr[RS::ARRAY_WEIGHTS] = bone_weights;
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RS::ARRAY_BONES] = Vector<int>(bone_indices);
+	p_arr[RS::ARRAY_WEIGHTS] = Vector<float>(bone_weights);
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void TubeTrailMesh::_bind_methods() {
@@ -2809,22 +2878,33 @@ Transform3D RibbonTrailMesh::get_builtin_bind_pose(int p_index) const {
 void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 	// Seeing use case of ribbon trail mesh, no need to implement special UV2 calculation
 
-	PackedVector3Array points;
-	PackedVector3Array normals;
-	PackedFloat32Array tangents;
-	PackedVector2Array uvs;
-	PackedInt32Array bone_indices;
-	PackedFloat32Array bone_weights;
-	PackedInt32Array indices;
+	int total_segments = section_segments * sections;
+	float depth = section_length * sections;
+
+	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
+	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
+	int num_points = (total_segments + 1) * 2;
+	num_points *= shape == SHAPE_CROSS ? 2 : 1;
+	LocalVector<Vector3> points;
+	points.reserve(num_points);
+	LocalVector<Vector3> normals;
+	normals.reserve(num_points);
+	LocalVector<float> tangents;
+	tangents.reserve(num_points * 4);
+	LocalVector<Vector2> uvs;
+	uvs.reserve(num_points);
+	LocalVector<int> bone_indices;
+	bone_indices.reserve(num_points * 4);
+	LocalVector<float> bone_weights;
+	bone_weights.reserve(num_points * 4);
+	LocalVector<int> indices;
+	indices.reserve(total_segments * 6 * (shape == SHAPE_CROSS ? 2 : 1));
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
 	tangents.push_back(m_x);            \
 	tangents.push_back(m_y);            \
 	tangents.push_back(m_z);            \
 	tangents.push_back(m_d);
-
-	int total_segments = section_segments * sections;
-	float depth = section_length * sections;
 
 	for (int j = 0; j <= total_segments; j++) {
 		float v = j;
@@ -2913,13 +2993,13 @@ void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 		}
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = points;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
-	p_arr[RS::ARRAY_BONES] = bone_indices;
-	p_arr[RS::ARRAY_WEIGHTS] = bone_weights;
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RS::ARRAY_BONES] = Vector<int>(bone_indices);
+	p_arr[RS::ARRAY_WEIGHTS] = Vector<float>(bone_weights);
+	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void RibbonTrailMesh::_bind_methods() {
@@ -2972,7 +3052,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 	PackedInt32Array contours = d["contours"];
 	bool orientation = d["orientation"];
 
-	if (points.size() < 3 || contours.size() < 1) {
+	if (points.size() < 3 || contours.is_empty()) {
 		return; // No full contours, only glyph control points (or nothing), ignore.
 	}
 
@@ -2984,11 +3064,11 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 		Vector<ContourPoint> polygon;
 
 		for (int32_t j = start; j <= end; j++) {
-			if (points[j].z == TextServer::CONTOUR_CURVE_TAG_ON) {
+			if (points[j].z == (real_t)TextServer::CONTOUR_CURVE_TAG_ON) {
 				// Point on the curve.
 				Vector2 p = Vector2(points[j].x, points[j].y) * pixel_size;
 				polygon.push_back(ContourPoint(p, true));
-			} else if (points[j].z == TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
+			} else if (points[j].z == (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
 				// Conic Bezier arc.
 				int32_t next = (j == end) ? start : (j + 1);
 				int32_t prev = (j == start) ? end : (j - 1);
@@ -2997,16 +3077,16 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				Vector2 p2;
 
 				// For successive conic OFF points add a virtual ON point in the middle.
-				if (points[prev].z == TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
+				if (points[prev].z == (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
 					p0 = (Vector2(points[prev].x, points[prev].y) + Vector2(points[j].x, points[j].y)) / 2.0;
-				} else if (points[prev].z == TextServer::CONTOUR_CURVE_TAG_ON) {
+				} else if (points[prev].z == (real_t)TextServer::CONTOUR_CURVE_TAG_ON) {
 					p0 = Vector2(points[prev].x, points[prev].y);
 				} else {
 					ERR_FAIL_MSG(vformat("Invalid conic arc point sequence at %d:%d", i, j));
 				}
-				if (points[next].z == TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
+				if (points[next].z == (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
 					p2 = (Vector2(points[j].x, points[j].y) + Vector2(points[next].x, points[next].y)) / 2.0;
-				} else if (points[next].z == TextServer::CONTOUR_CURVE_TAG_ON) {
+				} else if (points[next].z == (real_t)TextServer::CONTOUR_CURVE_TAG_ON) {
 					p2 = Vector2(points[next].x, points[next].y);
 				} else {
 					ERR_FAIL_MSG(vformat("Invalid conic arc point sequence at %d:%d", i, j));
@@ -3024,7 +3104,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 					polygon.push_back(ContourPoint(p, false));
 					t += step;
 				}
-			} else if (points[j].z == TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC) {
+			} else if (points[j].z == (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC) {
 				// Cubic Bezier arc.
 				int32_t cur = j;
 				int32_t next1 = (j == end) ? start : (j + 1);
@@ -3032,7 +3112,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				int32_t prev = (j == start) ? end : (j - 1);
 
 				// There must be exactly two OFF points and two ON points for each cubic arc.
-				if (points[prev].z != TextServer::CONTOUR_CURVE_TAG_ON) {
+				if (points[prev].z != (real_t)TextServer::CONTOUR_CURVE_TAG_ON) {
 					cur = (cur == 0) ? end : cur - 1;
 					next1 = (next1 == 0) ? end : next1 - 1;
 					next2 = (next2 == 0) ? end : next2 - 1;
@@ -3040,10 +3120,10 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				} else {
 					j++;
 				}
-				ERR_FAIL_COND_MSG(points[prev].z != TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, prev));
-				ERR_FAIL_COND_MSG(points[cur].z != TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, cur));
-				ERR_FAIL_COND_MSG(points[next1].z != TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, next1));
-				ERR_FAIL_COND_MSG(points[next2].z != TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, next2));
+				ERR_FAIL_COND_MSG(points[prev].z != (real_t)TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, prev));
+				ERR_FAIL_COND_MSG(points[cur].z != (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, cur));
+				ERR_FAIL_COND_MSG(points[next1].z != (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, next1));
+				ERR_FAIL_COND_MSG(points[next2].z != (real_t)TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, next2));
 
 				Vector2 p0 = Vector2(points[prev].x, points[prev].y);
 				Vector2 p1 = Vector2(points[cur].x, points[cur].y);
@@ -3105,14 +3185,13 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 		ERR_FAIL_MSG("Convex decomposing failed. Make sure the font doesn't contain self-intersecting lines, as these are not supported in TextMesh.");
 	}
 	List<TPPLPoly> out_tris;
-	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		if (tpart.Triangulate_OPT(&(I->get()), &out_tris) == 0) {
+	for (TPPLPoly &tp : out_poly) {
+		if (tpart.Triangulate_OPT(&tp, &out_tris) == 0) {
 			ERR_FAIL_MSG("Triangulation failed. Make sure the font doesn't contain self-intersecting lines, as these are not supported in TextMesh.");
 		}
 	}
 
-	for (List<TPPLPoly>::Element *I = out_tris.front(); I; I = I->next()) {
-		TPPLPoly &tp = I->get();
+	for (const TPPLPoly &tp : out_tris) {
 		ERR_FAIL_COND(tp.GetNumPoints() != 3); // Triangles only.
 
 		for (int i = 0; i < 3; i++) {
@@ -3249,8 +3328,8 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 	Vector<Vector2> uvs;
 	Vector<int32_t> indices;
 
-	Vector2 min_p = Vector2(INFINITY, INFINITY);
-	Vector2 max_p = Vector2(-INFINITY, -INFINITY);
+	Vector2 min_p = Vector2(Math::INF, Math::INF);
+	Vector2 max_p = Vector2(-Math::INF, -Math::INF);
 
 	int32_t p_size = 0;
 	int32_t i_size = 0;

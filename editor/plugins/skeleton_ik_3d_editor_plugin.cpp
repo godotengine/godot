@@ -83,5 +83,3 @@ SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
 	skeleton_ik = nullptr;
 }
-
-SkeletonIK3DEditorPlugin::~SkeletonIK3DEditorPlugin() {}

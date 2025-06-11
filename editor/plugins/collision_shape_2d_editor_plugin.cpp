@@ -184,7 +184,8 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 					Vector2 normal = world_boundary->get_normal();
 					world_boundary->set_distance(p_point.dot(normal) / normal.length_squared());
 				} else {
-					world_boundary->set_normal(p_point.normalized());
+					real_t dir = world_boundary->get_distance() < 0 ? -1 : 1;
+					world_boundary->set_normal(p_point.normalized() * dir);
 				}
 			}
 		} break;
@@ -663,7 +664,4 @@ void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin() {
 	collision_shape_2d_editor = memnew(CollisionShape2DEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(collision_shape_2d_editor);
-}
-
-CollisionShape2DEditorPlugin::~CollisionShape2DEditorPlugin() {
 }

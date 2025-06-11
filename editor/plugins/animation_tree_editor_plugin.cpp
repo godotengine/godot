@@ -99,7 +99,7 @@ void AnimationTreeEditor::_update_path() {
 	b->set_toggle_mode(true);
 	b->set_button_group(group);
 	b->set_pressed(true);
-	b->set_focus_mode(FOCUS_NONE);
+	b->set_focus_mode(FOCUS_ACCESSIBILITY);
 	b->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(-1));
 	path_hb->add_child(b);
 	for (int i = 0; i < button_path.size(); i++) {
@@ -110,7 +110,7 @@ void AnimationTreeEditor::_update_path() {
 		b->set_button_group(group);
 		path_hb->add_child(b);
 		b->set_pressed(true);
-		b->set_focus_mode(FOCUS_NONE);
+		b->set_focus_mode(FOCUS_ACCESSIBILITY);
 		b->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(i));
 	}
 }
@@ -307,7 +307,4 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 
 	button = EditorNode::get_bottom_panel()->add_item(TTR("AnimationTree"), anim_tree_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTRC("Toggle AnimationTree Bottom Panel")));
 	button->hide();
-}
-
-AnimationTreeEditorPlugin::~AnimationTreeEditorPlugin() {
 }

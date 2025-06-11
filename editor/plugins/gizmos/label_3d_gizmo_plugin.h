@@ -41,6 +41,4 @@ public:
 	int get_priority() const override;
 	bool can_be_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	Label3DGizmoPlugin();
 };

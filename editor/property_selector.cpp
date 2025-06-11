@@ -81,7 +81,7 @@ void PropertySelector::_update_search() {
 	TreeItem *root = search_options->create_item();
 
 	// Allow using spaces in place of underscores in the search string (makes the search more fault-tolerant).
-	const String search_text = search_box->get_text().replace(" ", "_");
+	const String search_text = search_box->get_text().replace_char(' ', '_');
 
 	if (properties) {
 		List<PropertyInfo> props;
@@ -180,7 +180,7 @@ void PropertySelector::_update_search() {
 			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
-			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
+			Ref<Script> script_ref = ObjectDB::get_ref<Script>(script);
 			if (script_ref.is_valid()) {
 				if (script_ref->is_built_in()) {
 					script_ref->reload(true);
@@ -287,7 +287,15 @@ void PropertySelector::_update_search() {
 				}
 			}
 
+			if (mi.flags & METHOD_FLAG_VARARG) {
+				desc += mi.arguments.is_empty() ? "..." : ", ...";
+			}
+
 			desc += ")";
+
+			if (mi.flags & METHOD_FLAG_VARARG) {
+				desc += " vararg";
+			}
 
 			if (mi.flags & METHOD_FLAG_CONST) {
 				desc += " const";

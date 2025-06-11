@@ -57,10 +57,6 @@ void Sprite2DEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void Sprite2DEditor::edit(Sprite2D *p_sprite) {
-	node = p_sprite;
-}
-
 Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float epsilon = 2.0) {
 	int size = points.size();
 	ERR_FAIL_COND_V(size < 2, Vector<Vector2>());
@@ -449,6 +445,21 @@ void Sprite2DEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node
 	p_new_node->set_owner(get_tree()->get_edited_scene_root());
 }
 
+void Sprite2DEditor::_sync_sprite_resize_mode() {
+	if (node != nullptr) {
+		node->_editor_set_dragging_to_resize_rect(resize_region_rect->is_pressed());
+	}
+}
+
+void Sprite2DEditor::_update_sprite_resize_mode_button() {
+	if (node == nullptr) {
+		return;
+	}
+	resize_region_rect->set_disabled(!node->is_region_enabled());
+	resize_region_rect->set_pressed(node->_editor_is_dragging_to_resiz_rect());
+	resize_region_rect->set_tooltip_text(node->is_region_enabled() ? "" : TTRC("Sprite's region needs to be enabled in the inspector."));
+}
+
 void Sprite2DEditor::_debug_uv_input(const Ref<InputEvent> &p_input) {
 	if (panner->gui_input(p_input, debug_uv->get_global_rect())) {
 		accept_event();
@@ -572,6 +583,8 @@ void Sprite2DEditor::_notification(int p_what) {
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_COLLISION_POLY_2D, get_editor_theme_icon(SNAME("CollisionPolygon2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D, get_editor_theme_icon(SNAME("LightOccluder2D")));
+
+			resize_region_rect->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
 		} break;
 	}
 }
@@ -580,12 +593,37 @@ void Sprite2DEditor::_bind_methods() {
 	ClassDB::bind_method("_add_as_sibling_or_child", &Sprite2DEditor::_add_as_sibling_or_child);
 }
 
+void Sprite2DEditor::edit(Sprite2D *p_sprite) {
+	Callable callback_update_button = callable_mp(this, &Sprite2DEditor::_update_sprite_resize_mode_button);
+	StringName signal_name = SNAME("_editor_region_rect_enabled");
+
+	if (node != nullptr && node->is_connected(signal_name, callback_update_button)) {
+		node->disconnect(signal_name, callback_update_button);
+	}
+
+	node = p_sprite;
+
+	if (node != nullptr && !node->is_connected(signal_name, callback_update_button)) {
+		node->connect(signal_name, callback_update_button);
+	}
+
+	_update_sprite_resize_mode_button();
+}
+
 Sprite2DEditor::Sprite2DEditor() {
+	// Top HBoxContainer definition
+	top_hb = memnew(HBoxContainer);
+
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(top_hb);
+
+	// Options definition
 	options = memnew(MenuButton);
 
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
+	top_hb->add_child(options);
 
 	options->set_text(TTR("Sprite2D"));
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButton");
 
 	options->get_popup()->add_item(TTR("Convert to MeshInstance2D"), MENU_OPTION_CONVERT_TO_MESH_2D);
 	options->get_popup()->add_item(TTR("Convert to Polygon2D"), MENU_OPTION_CONVERT_TO_POLYGON_2D);
@@ -595,6 +633,18 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Sprite2DEditor::_menu_option));
 
+	// Resize region rect definition
+	resize_region_rect = memnew(Button);
+
+	resize_region_rect->set_theme_type_variation("FlatMenuButton");
+	resize_region_rect->set_toggle_mode(true);
+	resize_region_rect->set_shortcut(ED_SHORTCUT("canvas_item_editor/resize_region_rect", TTRC("Drag to Resize Region Rect"), KeyModifierMask::CMD_OR_CTRL | Key::R));
+
+	resize_region_rect->connect(SceneStringName(pressed), callable_mp(this, &Sprite2DEditor::_sync_sprite_resize_mode));
+
+	top_hb->add_child(resize_region_rect);
+
+	// Other elements definition
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
 
@@ -633,6 +683,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	simplification->set_max(10.00);
 	simplification->set_step(0.01);
 	simplification->set_value(2);
+	simplification->set_accessibility_name(TTRC("Simplification"));
 	hb->add_child(simplification);
 	hb->add_spacer();
 	hb->add_child(memnew(Label(TTR("Shrink (Pixels):"))));
@@ -641,6 +692,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	shrink_pixels->set_max(10);
 	shrink_pixels->set_step(1);
 	shrink_pixels->set_value(0);
+	shrink_pixels->set_accessibility_name(TTRC("Shrink"));
 	hb->add_child(shrink_pixels);
 	hb->add_spacer();
 	hb->add_child(memnew(Label(TTR("Grow (Pixels):"))));
@@ -649,6 +701,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	grow_pixels->set_max(10);
 	grow_pixels->set_step(1);
 	grow_pixels->set_value(2);
+	grow_pixels->set_accessibility_name(TTRC("Grow"));
 	hb->add_child(grow_pixels);
 	hb->add_spacer();
 	update_preview = memnew(Button);
@@ -670,9 +723,9 @@ bool Sprite2DEditorPlugin::handles(Object *p_object) const {
 
 void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		sprite_editor->options->show();
+		sprite_editor->top_hb->show();
 	} else {
-		sprite_editor->options->hide();
+		sprite_editor->top_hb->hide();
 		sprite_editor->edit(nullptr);
 	}
 }
@@ -680,10 +733,7 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
+
 	make_visible(false);
-
 	//sprite_editor->options->hide();
-}
-
-Sprite2DEditorPlugin::~Sprite2DEditorPlugin() {
 }

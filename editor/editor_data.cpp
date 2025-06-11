@@ -598,8 +598,7 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 	List<PropertyInfo> pinfo;
 	p_object->get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		PropertyInfo pi = E->get();
+	for (const PropertyInfo &pi : pinfo) {
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
 			Object *prop = ClassDB::instantiate(pi.class_name);
 			p_object->set(pi.name, prop);
@@ -1025,10 +1024,12 @@ String EditorData::script_class_get_icon_path(const String &p_class, bool *r_val
 		}
 		HashMap<StringName, String>::ConstIterator E = _script_class_icon_paths.find(current);
 		if ((bool)E) {
-			if (r_valid && !E->value.is_empty()) {
-				*r_valid = true;
+			if (r_valid) {
+				*r_valid = !E->value.is_empty();
+				return E->value;
+			} else if (!E->value.is_empty()) {
+				return E->value;
 			}
-			return E->value;
 		}
 		current = ScriptServer::get_global_class_base(current);
 	}
@@ -1115,10 +1116,13 @@ Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
 
 Ref<Texture2D> EditorData::get_script_icon(const String &p_script_path) {
 	// Take from the local cache, if available.
-	if (_script_icon_cache.has(p_script_path)) {
-		// Can be an empty value if we can't resolve any icon for this script.
-		// An empty value is still cached to avoid unnecessary attempts at resolving it again.
-		return _script_icon_cache[p_script_path];
+	{
+		Ref<Texture2D> *icon = _script_icon_cache.getptr(p_script_path);
+		if (icon) {
+			// Can be an empty value if we can't resolve any icon for this script.
+			// An empty value is still cached to avoid unnecessary attempts at resolving it again.
+			return *icon;
+		}
 	}
 
 	// Fast path in case the whole hierarchy is made of global classes.
@@ -1252,7 +1256,10 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
 	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
-	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
+	ClassDB::bind_method(D_METHOD("get_top_selected_nodes"), &EditorSelection::get_top_selected_nodes);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::get_top_selected_nodes);
+#endif // DISABLE_DEPRECATED
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 }
 
@@ -1265,7 +1272,7 @@ void EditorSelection::_update_node_list() {
 		return;
 	}
 
-	selected_node_list.clear();
+	top_selected_node_list.clear();
 
 	// If the selection does not have the parent of the selected node, then add the node to the node list.
 	// However, if the parent is already selected, then adding this node is redundant as
@@ -1285,7 +1292,7 @@ void EditorSelection::_update_node_list() {
 		if (skip) {
 			continue;
 		}
-		selected_node_list.push_back(E.key);
+		top_selected_node_list.push_back(E.key);
 	}
 
 	node_list_changed = true;
@@ -1309,10 +1316,10 @@ void EditorSelection::_emit_change() {
 	emitted = false;
 }
 
-TypedArray<Node> EditorSelection::_get_transformable_selected_nodes() {
+TypedArray<Node> EditorSelection::get_top_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (const Node *E : selected_node_list) {
+	for (const Node *E : top_selected_node_list) {
 		ret.push_back(E);
 	}
 
@@ -1329,13 +1336,13 @@ TypedArray<Node> EditorSelection::get_selected_nodes() {
 	return ret;
 }
 
-List<Node *> &EditorSelection::get_selected_node_list() {
+const List<Node *> &EditorSelection::get_top_selected_node_list() {
 	if (changed) {
 		update();
 	} else {
 		_update_node_list();
 	}
-	return selected_node_list;
+	return top_selected_node_list;
 }
 
 List<Node *> EditorSelection::get_full_selected_node_list() {
@@ -1354,9 +1361,6 @@ void EditorSelection::clear() {
 
 	changed = true;
 	node_list_changed = true;
-}
-
-EditorSelection::EditorSelection() {
 }
 
 EditorSelection::~EditorSelection() {

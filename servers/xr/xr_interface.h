@@ -76,12 +76,19 @@ public:
 		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
 		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
 		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space */
+		XR_PLAY_AREA_CUSTOM = 0x7FFFFFFF, /* Used to denote that a custom, possibly non-standard, play area is being used */
 	};
 
 	enum EnvironmentBlendMode {
 		XR_ENV_BLEND_MODE_OPAQUE, /* You cannot see the real world, VR like */
 		XR_ENV_BLEND_MODE_ADDITIVE, /* You can see the real world, AR like */
 		XR_ENV_BLEND_MODE_ALPHA_BLEND, /* Real world is passed through where alpha channel is 0.0 and gradually blends to opaque for value 1.0. */
+	};
+
+	enum VRSTextureFormat {
+		XR_VRS_TEXTURE_FORMAT_UNIFIED,
+		XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE,
+		XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP,
 	};
 
 protected:
@@ -158,6 +165,7 @@ public:
 
 	/** VRS **/
 	virtual RID get_vrs_texture(); /* obtain VRS texture */
+	virtual VRSTextureFormat get_vrs_texture_format() { return XR_VRS_TEXTURE_FORMAT_UNIFIED; }
 
 	XRInterface();
 	~XRInterface();
@@ -167,3 +175,4 @@ VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 VARIANT_ENUM_CAST(XRInterface::EnvironmentBlendMode);
+VARIANT_ENUM_CAST(XRInterface::VRSTextureFormat);

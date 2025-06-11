@@ -35,8 +35,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-#include <stdint.h> // INT32_MAX
-
 #include <functiondiscoverykeys.h>
 
 #include <wrl/client.h>
@@ -128,11 +126,7 @@ static bool default_input_device_changed = false;
 static int output_reinit_countdown = 0;
 static int input_reinit_countdown = 0;
 
-// Silence warning due to a COM API weirdness (GH-35194).
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness (GH-35194).
 
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
@@ -198,9 +192,7 @@ public:
 	}
 };
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 static CMMNotificationClient notif_client;
 
@@ -458,7 +450,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		// so we need to select the closest multiple to the user-specified latency.
 		UINT32 desired_period_frames = target_latency_ms * mix_rate / 1000;
 		UINT32 period_frames = (desired_period_frames / fundamental_period_frames) * fundamental_period_frames;
-		if (ABS((int64_t)period_frames - (int64_t)desired_period_frames) > ABS((int64_t)(period_frames + fundamental_period_frames) - (int64_t)desired_period_frames)) {
+		if (Math::abs((int64_t)period_frames - (int64_t)desired_period_frames) > Math::abs((int64_t)(period_frames + fundamental_period_frames) - (int64_t)desired_period_frames)) {
 			period_frames = period_frames + fundamental_period_frames;
 		}
 		period_frames = CLAMP(period_frames, min_period_frames, max_period_frames);

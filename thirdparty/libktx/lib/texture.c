@@ -8,7 +8,7 @@
 
 /**
  * @internal
- * @file texture.c
+ * @file
  * @~English
  *
  * @brief ktxTexture implementation.
@@ -81,7 +81,8 @@ static ktx_uint32_t padRow(ktx_uint32_t* rowBytes);
  * @exception KTX_OUT_OF_MEMORY Not enough memory for the texture.
  */
 KTX_error_code
-ktxTexture_construct(ktxTexture* This, ktxTextureCreateInfo* createInfo,
+ktxTexture_construct(ktxTexture* This,
+                     const ktxTextureCreateInfo* const createInfo,
                      ktxFormatSize* formatSize)
 {
     DECLARE_PROTECTED(ktxTexture);
@@ -828,7 +829,7 @@ ktxTexture_rowInfo(ktxTexture* This, ktx_uint32_t level,
 /**
  * @memberof ktxTexture
  * @~English
- * @brief Return pitch betweeb rows of a texture image level in bytes.
+ * @brief Return pitch between rows of a texture image level in bytes.
  *
  * For uncompressed textures the pitch is the number of bytes between
  * rows of texels. For compressed textures it is the number of bytes

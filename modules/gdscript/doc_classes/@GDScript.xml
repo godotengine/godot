@@ -87,13 +87,13 @@
 				Returns an array of dictionaries representing the current call stack. See also [method print_stack].
 				[codeblock]
 				func _ready():
-				    foo()
+					foo()
 
 				func foo():
-				    bar()
+					bar()
 
 				func bar():
-				    print(get_stack())
+					print(get_stack())
 				[/codeblock]
 				Starting from [code]_ready()[/code], [code]bar()[/code] would print:
 				[codeblock lang=text]
@@ -107,13 +107,13 @@
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
-				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
+				Returns the passed [param instance] converted to a [Dictionary]. Can be useful for serializing.
 				[codeblock]
 				var foo = "bar"
 				func _ready():
-				    var d = inst_to_dict(self)
-				    print(d.keys())
-				    print(d.values())
+					var d = inst_to_dict(self)
+					print(d.keys())
+					print(d.values())
 				[/codeblock]
 				Prints out:
 				[codeblock lang=text]
@@ -133,7 +133,7 @@
 				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
-				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need dynamic type checking.
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need to check the type dynamically.
 				[b]Examples:[/b]
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
@@ -232,7 +232,7 @@
 				[codeblock]
 				var array = [3, 6, 9]
 				for i in range(array.size() - 1, -1, -1):
-				    print(array[i])
+					print(array[i])
 				[/codeblock]
 				Output:
 				[codeblock lang=text]
@@ -243,7 +243,7 @@
 				To iterate over [float], convert them in the loop.
 				[codeblock]
 				for i in range (3, 0, -1):
-				    print(i / 10.0)
+					print(i / 10.0)
 				[/codeblock]
 				Output:
 				[codeblock lang=text]
@@ -277,7 +277,8 @@
 			[b]Warning:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
 		</constant>
 		<constant name="NAN" value="nan">
-			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			"Not a Number", an invalid floating-point value. It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			[constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). Due to this, you must use [method @GlobalScope.is_nan] to check whether a number is equal to [constant NAN].
 			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>
@@ -700,14 +701,14 @@
 				var randomize_color_action = randomize_color
 
 				func hello():
-				    print("Hello world!")
+					print("Hello world!")
 
 				func randomize_color():
-				    var undo_redo = EditorInterface.get_editor_undo_redo()
-				    undo_redo.create_action("Randomized Sprite2D Color")
-				    undo_redo.add_do_property(self, &amp;"self_modulate", Color(randf(), randf(), randf()))
-				    undo_redo.add_undo_property(self, &amp;"self_modulate", self_modulate)
-				    undo_redo.commit_action()
+					var undo_redo = EditorInterface.get_editor_undo_redo()
+					undo_redo.create_action("Randomized Sprite2D Color")
+					undo_redo.add_do_property(self, &amp;"self_modulate", Color(randf(), randf(), randf()))
+					undo_redo.add_undo_property(self, &amp;"self_modulate", self_modulate)
+					undo_redo.commit_action()
 				[/codeblock]
 				[b]Note:[/b] The property is exported without the [constant PROPERTY_USAGE_STORAGE] flag because a [Callable] cannot be properly serialized and stored in a file.
 				[b]Note:[/b] In an exported project neither [EditorInterface] nor [EditorUndoRedoManager] exist, which may cause some scripts to break. To prevent this, you can use [method Engine.get_singleton] and omit the static type from the variable declaration:
@@ -790,10 +791,10 @@
 				Mark the following statement to ignore the specified [param warning]. See [url=$DOCS_URL/tutorials/scripting/gdscript/warning_system.html]GDScript warning system[/url].
 				[codeblock]
 				func test():
-				    print("hello")
-				    return
-				    @warning_ignore("unreachable_code")
-				    print("unreachable")
+					print("hello")
+					return
+					@warning_ignore("unreachable_code")
+					print("unreachable")
 				[/codeblock]
 				See also [annotation @warning_ignore_start] and [annotation @warning_ignore_restore].
 			</description>
@@ -813,12 +814,12 @@
 				Starts ignoring the listed warning types until the end of the file or the [annotation @warning_ignore_restore] annotation with the given warning type.
 				[codeblock]
 				func test():
-				    var a = 1 # Warning (if enabled in the Project Settings).
-				    @warning_ignore_start("unused_variable")
-				    var b = 2 # No warning.
-				    var c = 3 # No warning.
-				    @warning_ignore_restore("unused_variable")
-				    var d = 4 # Warning (if enabled in the Project Settings).
+					var a = 1 # Warning (if enabled in the Project Settings).
+					@warning_ignore_start("unused_variable")
+					var b = 2 # No warning.
+					var c = 3 # No warning.
+					@warning_ignore_restore("unused_variable")
+					var d = 4 # Warning (if enabled in the Project Settings).
 				[/codeblock]
 				[b]Note:[/b] To suppress a single warning, use [annotation @warning_ignore] instead.
 				[b]Note:[/b] Unlike most other annotations, arguments of the [annotation @warning_ignore_start] annotation must be string literals (constant expressions are not supported).

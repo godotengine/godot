@@ -34,7 +34,7 @@
 
 #include "core/os/os.h"
 
-#include <errno.h>
+#include <cerrno>
 
 MIDIDriverALSAMidi::InputConnection::InputConnection(int p_device_index,
 		snd_rawmidi_t *p_rawmidi) :

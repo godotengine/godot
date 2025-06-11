@@ -43,8 +43,6 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
-#include <string.h>
-
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;
 	void *token;
@@ -873,75 +871,78 @@ static GDExtensionPtrUtilityFunction gdextension_variant_get_ptr_utility_functio
 
 static void gdextension_string_new_with_latin1_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
 	String *dest = memnew_placement(r_dest, String);
-	dest->parse_latin1(Span<char>(p_contents, p_contents ? strlen(p_contents) : 0));
+	dest->append_latin1(Span<char>(p_contents, p_contents ? strlen(p_contents) : 0));
 }
 
 static void gdextension_string_new_with_utf8_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
 	String *dest = memnew_placement(r_dest, String);
-	dest->parse_utf8(p_contents);
+	dest->append_utf8(p_contents);
 }
 
 static void gdextension_string_new_with_utf16_chars(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents) {
 	String *dest = memnew_placement(r_dest, String);
-	dest->parse_utf16(p_contents);
+	dest->append_utf16(p_contents);
 }
 
 static void gdextension_string_new_with_utf32_chars(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents) {
 	String *dest = memnew_placement(r_dest, String);
-	dest->parse_utf32(Span(p_contents, p_contents ? strlen(p_contents) : 0));
+	dest->append_utf32(Span(p_contents, p_contents ? strlen(p_contents) : 0));
 }
 
 static void gdextension_string_new_with_wide_chars(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents) {
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit (UTF-16).
 		String *dest = memnew_placement(r_dest, String);
-		dest->parse_utf16((const char16_t *)p_contents);
+		dest->append_utf16((const char16_t *)p_contents);
 	} else {
 		// wchar_t is 32 bit (UTF-32).
 		String *string = memnew_placement(r_dest, String);
-		string->parse_utf32(Span((const char32_t *)p_contents, p_contents ? strlen(p_contents) : 0));
+		string->append_utf32(Span((const char32_t *)p_contents, p_contents ? strlen(p_contents) : 0));
 	}
 }
 
 static void gdextension_string_new_with_latin1_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	const size_t string_length = p_contents ? (p_size < 0 ? strlen(p_contents) : strnlen(p_contents, p_size)) : 0;
 	String *dest = memnew_placement(r_dest, String);
-	dest->parse_latin1(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_size) : 0));
+	dest->append_latin1(Span(p_contents, string_length));
 }
 
 static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
 	String *dest = memnew_placement(r_dest, String);
-	dest->parse_utf8(p_contents, p_size);
+	dest->append_utf8(p_contents, p_size);
 }
 
 static GDExtensionInt gdextension_string_new_with_utf8_chars_and_len2(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
 	String *dest = memnew_placement(r_dest, String);
-	return (GDExtensionInt)dest->parse_utf8(p_contents, p_size);
+	return (GDExtensionInt)dest->append_utf8(p_contents, p_size);
 }
 
 static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count) {
 	String *dest = memnew_placement(r_dest, String);
-	dest->parse_utf16(p_contents, p_char_count);
+	dest->append_utf16(p_contents, p_char_count);
 }
 
 static GDExtensionInt gdextension_string_new_with_utf16_chars_and_len2(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count, GDExtensionBool p_default_little_endian) {
 	String *dest = memnew_placement(r_dest, String);
-	return (GDExtensionInt)dest->parse_utf16(p_contents, p_char_count, p_default_little_endian);
+	return (GDExtensionInt)dest->append_utf16(p_contents, p_char_count, p_default_little_endian);
 }
 
 static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
+	const size_t string_length = p_contents ? (p_char_count < 0 ? strlen(p_contents) : strnlen(p_contents, p_char_count)) : 0;
 	String *string = memnew_placement(r_dest, String);
-	string->parse_utf32(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_char_count) : 0));
+	string->append_utf32(Span(p_contents, string_length));
 }
 
 static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit (UTF-16).
 		String *dest = memnew_placement(r_dest, String);
-		dest->parse_utf16((const char16_t *)p_contents, p_char_count);
+		dest->append_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
 		// wchar_t is 32 bit (UTF-32).
+		const size_t string_length = p_contents ? (p_char_count < 0 ? strlen(p_contents) : strnlen((const char32_t *)p_contents, p_char_count)) : 0;
 		String *string = memnew_placement(r_dest, String);
-		string->parse_utf32(Span((const char32_t *)p_contents, p_contents ? _strlen_clipped((const char32_t *)p_contents, p_char_count) : 0));
+		string->append_utf32(Span((const char32_t *)p_contents, string_length));
 	}
 }
 
@@ -1052,16 +1053,12 @@ static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializ
 }
 
 static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {
-	String tmp;
-	tmp.parse_utf8(p_contents);
-
+	String tmp = String::utf8(p_contents);
 	memnew_placement(r_dest, StringName(tmp));
 }
 
 static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size) {
-	String tmp;
-	tmp.parse_utf8(p_contents, p_size);
-
+	String tmp = String::utf8(p_contents, p_size);
 	memnew_placement(r_dest, StringName(tmp));
 }
 
@@ -1280,11 +1277,13 @@ static GDExtensionVariantPtr gdextension_array_operator_index_const(GDExtensionC
 	return (GDExtensionVariantPtr)&self->operator[](p_index);
 }
 
+#ifndef DISABLE_DEPRECATED
 void gdextension_array_ref(GDExtensionTypePtr p_self, GDExtensionConstTypePtr p_from) {
 	Array *self = (Array *)p_self;
 	const Array *from = (const Array *)p_from;
-	self->_ref(*from);
+	self->Array::operator=(*from);
 }
+#endif // DISABLE_DEPRECATED
 
 void gdextension_array_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
 	Array *self = reinterpret_cast<Array *>(p_self);
@@ -1801,7 +1800,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_operator_index);
 	REGISTER_INTERFACE_FUNC(array_operator_index_const);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(array_ref);
+#endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(array_set_typed);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index_const);

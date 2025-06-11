@@ -111,5 +111,4 @@ public:
 	virtual void make_visible(bool visible) override;
 
 	CollisionShape2DEditorPlugin();
-	~CollisionShape2DEditorPlugin();
 };

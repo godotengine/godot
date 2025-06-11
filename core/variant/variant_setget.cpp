@@ -29,8 +29,9 @@
 /**************************************************************************/
 
 #include "variant_setget.h"
-
 #include "variant_callable.h"
+
+#include "core/io/resource.h"
 
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);
@@ -1379,8 +1380,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 #endif
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
-			Array ref;
-			ref.push_back(r_iter);
+			Array ref = { r_iter };
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
 			Variant ret = _get_obj().obj->callp(CoreStringName(_iter_init), refp, 1, ce);
@@ -1614,8 +1614,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 #endif
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
-			Array ref;
-			ref.push_back(r_iter);
+			Array ref = { r_iter };
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
 			Variant ret = _get_obj().obj->callp(CoreStringName(_iter_next), refp, 1, ce);
@@ -1835,6 +1834,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1846,6 +1846,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedByteArray of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1857,6 +1858,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int32_t idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedInt32Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1868,6 +1870,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int64_t idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedInt64Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1879,6 +1882,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedFloat32Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1890,6 +1894,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedFloat64Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1901,6 +1906,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedStringArray of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1912,6 +1918,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedVector2Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1923,6 +1930,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedVector3Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1934,6 +1942,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedColorArray of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1945,6 +1954,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
+				ERR_PRINT(vformat("iter_get: Index %d is out of bounds for PackedVector4Array of size %d.", idx, arr->size()));
 				r_valid = false;
 				return Variant();
 			}
@@ -1960,26 +1970,33 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 }
 
 Variant Variant::duplicate(bool p_deep) const {
-	return recursive_duplicate(p_deep, 0);
+	return recursive_duplicate(p_deep, RESOURCE_DEEP_DUPLICATE_NONE, 0);
 }
 
-Variant Variant::recursive_duplicate(bool p_deep, int recursion_count) const {
+Variant Variant::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode) const {
+	ERR_FAIL_INDEX_V(p_deep_subresources_mode, RESOURCE_DEEP_DUPLICATE_MAX, Variant());
+	return recursive_duplicate(true, p_deep_subresources_mode, 0);
+}
+
+Variant Variant::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const {
 	switch (type) {
 		case OBJECT: {
-			/*  breaks stuff :(
-			if (p_deep && !_get_obj().ref.is_null()) {
-				Ref<Resource> resource = _get_obj().ref;
-				if (resource.is_valid()) {
-					return resource->duplicate(true);
-				}
+			// If the root target of duplicate() is a Resource, we can't early-reject because that
+			// resource itself must be duplicated, much as if Resource::duplicate() had been called.
+			if (p_deep_subresources_mode == RESOURCE_DEEP_DUPLICATE_NONE && recursion_count > 0) {
+				return *this;
 			}
-			*/
-			return *this;
+			Resource *res = Object::cast_to<Resource>(_get_obj().obj);
+			if (res) {
+				return res->_duplicate_from_variant(p_deep, p_deep_subresources_mode, recursion_count);
+			} else {
+				return *this;
+			}
 		} break;
 		case DICTIONARY:
-			return operator Dictionary().recursive_duplicate(p_deep, recursion_count);
+			return operator Dictionary().recursive_duplicate(p_deep, p_deep_subresources_mode, recursion_count);
 		case ARRAY:
-			return operator Array().recursive_duplicate(p_deep, recursion_count);
+			return operator Array().recursive_duplicate(p_deep, p_deep_subresources_mode, recursion_count);
 		case PACKED_BYTE_ARRAY:
 			return operator Vector<uint8_t>().duplicate();
 		case PACKED_INT32_ARRAY:

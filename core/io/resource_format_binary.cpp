@@ -36,6 +36,7 @@
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
+#include "scene/resources/packed_scene.h"
 
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)
@@ -162,9 +163,7 @@ StringName ResourceLoaderBinary::_get_string() {
 			return StringName();
 		}
 		f->get_buffer((uint8_t *)&str_buf[0], len);
-		String s;
-		s.parse_utf8(&str_buf[0], len);
-		return s;
+		return String::utf8(&str_buf[0], len);
 	}
 
 	return string_map[id];
@@ -918,9 +917,7 @@ static String get_ustring(Ref<FileAccess> f) {
 	Vector<char> str_buf;
 	str_buf.resize(len);
 	f->get_buffer((uint8_t *)&str_buf[0], len);
-	String s;
-	s.parse_utf8(&str_buf[0], len);
-	return s;
+	return String::utf8(&str_buf[0], len);
 }
 
 String ResourceLoaderBinary::get_unicode_string() {
@@ -932,9 +929,7 @@ String ResourceLoaderBinary::get_unicode_string() {
 		return String();
 	}
 	f->get_buffer((uint8_t *)&str_buf[0], len);
-	String s;
-	s.parse_utf8(&str_buf[0], len);
-	return s;
+	return String::utf8(&str_buf[0], len);
 }
 
 void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes) {
@@ -943,11 +938,10 @@ void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringN
 		return;
 	}
 
-	for (int i = 0; i < internal_resources.size(); i++) {
-		p_f->seek(internal_resources[i].offset);
+	for (const IntResource &res : internal_resources) {
+		p_f->seek(res.offset);
 		String t = get_unicode_string();
-		ERR_FAIL_COND(p_f->get_error() != OK);
-		if (t != String()) {
+		if (!p_f->get_error() && t != String() && ClassDB::class_exists(t)) {
 			p_classes->insert(t);
 		}
 	}
@@ -1201,7 +1195,7 @@ String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
 		return "";
 	}
 
-	get_unicode_string(); // type
+	_ALLOW_DISCARD_ get_unicode_string(); // type
 
 	f->get_64(); // Metadata offset
 	uint32_t flags = f->get_32();
@@ -1348,13 +1342,10 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	bool use_real64 = f->get_32();
 
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
-#ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
-#else
+
 	fw->store_32(big_endian);
-#endif
-	fw->set_big_endian(big_endian != 0);
 	fw->store_32(use_real64); //use real64
+	fw->set_big_endian(big_endian != 0);
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -1527,6 +1518,37 @@ void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
 	loader.get_classes_used(f, r_classes);
+
+	// Fetch the nodes inside scene files.
+	if (loader.type == "PackedScene") {
+		ERR_FAIL_COND(loader.load() != OK);
+
+		Ref<SceneState> state = Ref<PackedScene>(loader.get_resource())->get_state();
+		for (int i = 0; i < state->get_node_count(); i++) {
+			const StringName node_name = state->get_node_type(i);
+			if (ClassDB::class_exists(node_name)) {
+				r_classes->insert(node_name);
+			}
+
+			// Fetch the values of properties in the node.
+			for (int j = 0; j < state->get_node_property_count(i); j++) {
+				const Variant var = state->get_node_property_value(i, j);
+				if (var.get_type() != Variant::OBJECT) {
+					continue;
+				}
+
+				const Object *obj = var.get_validated_object();
+				if (obj == nullptr) {
+					continue;
+				}
+
+				const StringName obj_name = obj->get_class_name();
+				if (ClassDB::class_exists(obj_name)) {
+					r_classes->insert(obj_name);
+				}
+			}
+		}
+	}
 }
 
 String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const {
@@ -2174,12 +2196,12 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	if (big_endian) {
 		f->store_32(1);
-		f->set_big_endian(true);
 	} else {
 		f->store_32(0);
 	}
-
 	f->store_32(0); //64 bits file, false for now
+	f->set_big_endian(big_endian);
+
 	f->store_32(GODOT_VERSION_MAJOR);
 	f->store_32(GODOT_VERSION_MINOR);
 	f->store_32(FORMAT_VERSION);
@@ -2418,13 +2440,10 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 	big_endian = f->get_32();
 	bool use_real64 = f->get_32();
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
-#ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
-#else
+
 	fw->store_32(big_endian);
-#endif
-	fw->set_big_endian(big_endian != 0);
 	fw->store_32(use_real64); //use real64
+	fw->set_big_endian(big_endian != 0);
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -2517,8 +2536,6 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p
 		p_extensions->push_back("res");
 	}
 }
-
-ResourceFormatSaverBinary *ResourceFormatSaverBinary::singleton = nullptr;
 
 ResourceFormatSaverBinary::ResourceFormatSaverBinary() {
 	singleton = this;
