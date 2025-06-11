@@ -1994,6 +1994,8 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	ERR_MAIN_THREAD_GUARD;
 	emit_signal(SNAME("about_to_popup"));
 
+	_pre_popup();
+
 	if (!get_embedder() && get_flag(FLAG_POPUP)) {
 		// Send a focus-out notification when opening a Window Manager Popup.
 		SceneTree *scene_tree = get_tree();
