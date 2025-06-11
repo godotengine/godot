@@ -211,7 +211,7 @@ void OpenXRViewportCompositionLayerProvider::set_viewport(RID p_viewport, Size2i
 	if (subviewport.viewport != p_viewport) {
 		if (subviewport.viewport.is_valid()) {
 			RID rt = rs->viewport_get_render_target(subviewport.viewport);
-			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
+			RSG::texture_storage->render_target_set_override(rt, 0, RID(), RID(), RID(), RID());
 		}
 
 		subviewport.viewport = p_viewport;
@@ -333,7 +333,7 @@ void OpenXRViewportCompositionLayerProvider::on_pre_render() {
 			if (update_and_acquire_swapchain(update_mode == RS::VIEWPORT_UPDATE_ONCE)) {
 				// Render to our XR swapchain image.
 				RID rt = rs->viewport_get_render_target(subviewport.viewport);
-				RSG::texture_storage->render_target_set_override(rt, get_current_swapchain_texture(), RID(), RID(), RID());
+				RSG::texture_storage->render_target_set_override(rt, 0, get_current_swapchain_texture(), RID(), RID(), RID());
 			}
 		}
 	}

@@ -341,7 +341,7 @@ void MobileVRInterface::set_vrs_strength(float p_vrs_strength) {
 	xr_vrs.set_vrs_strength(p_vrs_strength);
 }
 
-uint32_t MobileVRInterface::get_view_count() {
+uint32_t MobileVRInterface::get_view_count(uint32_t p_layer) {
 	// needs stereo...
 	return 2;
 }
@@ -431,8 +431,10 @@ bool MobileVRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return p_mode == XR_PLAY_AREA_3DOF;
 }
 
-Size2 MobileVRInterface::get_render_target_size() {
+Size2 MobileVRInterface::get_render_target_size(uint32_t p_layer) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(p_layer > 0, Size2());
 
 	// we use half our window size
 	Size2 target_size = DisplayServer::get_singleton()->window_get_size();
@@ -464,8 +466,9 @@ Transform3D MobileVRInterface::get_camera_transform() {
 	return transform_for_eye;
 }
 
-Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
+Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_layer, uint32_t p_view, const Transform3D &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V(p_layer > 0, Transform3D());
 
 	Transform3D transform_for_eye;
 
@@ -498,8 +501,9 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	return transform_for_eye;
 }
 
-Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+Projection MobileVRInterface::get_projection_for_view(uint32_t p_layer, uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V(p_layer > 0, Projection());
 
 	Projection eye;
 
@@ -580,7 +584,7 @@ RID MobileVRInterface::get_vrs_texture() {
 	uint32_t view_count = get_view_count();
 
 	for (uint32_t v = 0; v < view_count; v++) {
-		Projection cm = get_projection_for_view(v, aspect_ratio, 0.1, 1000.0);
+		Projection cm = get_projection_for_view(0, v, aspect_ratio, 0.1, 1000.0);
 		Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
 
 		eye_foci.push_back(Vector2(center.x, center.y));

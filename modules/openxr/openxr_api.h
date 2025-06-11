@@ -146,6 +146,12 @@ private:
 
 	LocalVector<XrViewConfigurationView> view_configuration_views;
 
+	enum OpenXRLayers {
+		OPENXR_LAYER_PRIMARY,
+		OPENXR_LAYER_SECONDARY,
+		OPENXR_LAYER_MAX
+	};
+
 	enum OpenXRSwapChainTypes {
 		OPENXR_SWAPCHAIN_COLOR,
 		OPENXR_SWAPCHAIN_DEPTH,
@@ -260,8 +266,8 @@ private:
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool obtain_swapchain_formats();
-	bool create_main_swapchains(Size2i p_size);
-	void free_main_swapchains();
+	bool create_main_swapchains(uint32_t p_layer, Size2i p_size);
+	void free_main_swapchains(uint32_t p_layer);
 	void destroy_session();
 
 	// action map
@@ -359,8 +365,8 @@ private:
 			nullptr // views
 		};
 
-		Size2i main_swapchain_size;
-		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
+		Size2i main_swapchain_size[OPENXR_LAYER_MAX];
+		OpenXRSwapChainInfo main_swapchains[OPENXR_LAYER_MAX][OPENXR_SWAPCHAIN_MAX];
 	} render_state;
 
 	static void _allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer);
@@ -466,7 +472,10 @@ public:
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
-	uint32_t get_view_count();
+	uint32_t get_layer_count();
+	uint32_t get_view_offset(uint32_t p_layer = 0);
+	uint32_t get_view_count(uint32_t p_layer = 0);
+
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
@@ -493,18 +502,18 @@ public:
 
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
 
-	Size2 get_recommended_target_size();
+	Size2 get_recommended_target_size(uint32_t p_layer);
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
-	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
-	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
+	bool get_view_transform(uint32_t p_layers, uint32_t p_view, Transform3D &r_transform);
+	bool get_view_projection(uint32_t p_layers, uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
 	Vector2 get_eye_focus(uint32_t p_view, float p_aspect);
 	bool process();
 
 	void pre_render();
 	bool pre_draw_viewport(RID p_render_target);
-	XrSwapchain get_color_swapchain();
-	RID get_color_texture();
-	RID get_depth_texture();
+	XrSwapchain get_color_swapchain(uint32_t p_layer = 0);
+	RID get_color_texture(uint32_t p_layer = 0);
+	RID get_depth_texture(uint32_t p_layer = 0);
 	RID get_density_map_texture();
 	void set_velocity_texture(RID p_render_target);
 	RID get_velocity_texture();

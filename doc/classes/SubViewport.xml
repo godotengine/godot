@@ -36,6 +36,9 @@
 		<member name="size_2d_override_stretch" type="bool" setter="set_size_2d_override_stretch" getter="is_size_2d_override_stretch_enabled" default="false">
 			If [code]true[/code], the 2D size override affects stretch as well.
 		</member>
+		<member name="view_count" type="int" setter="set_view_count" getter="get_view_count" default="1">
+			The number of views we're rendering. If larger than [code]1[/code] this will enable multiview rendering for stereoscopic or multiscopic views.
+		</member>
 	</members>
 	<constants>
 		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
