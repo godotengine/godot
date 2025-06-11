@@ -259,7 +259,7 @@ PackedStringArray IP::_get_local_addresses() const {
 	List<IPAddress> ip_addresses;
 	get_local_addresses(&ip_addresses);
 	for (const IPAddress &E : ip_addresses) {
-		addresses.push_back(E);
+		addresses.push_back(String(E));
 	}
 
 	return addresses;
