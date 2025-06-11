@@ -100,6 +100,11 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	Dictionary shortcut_settings;
 	shortcut_settings["editor/suspend_resume_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
 	shortcut_settings["editor/next_frame_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/next_frame_embedded_project"));
+	shortcut_settings["editor/game_view_input_override"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/game_view_input_override"));
+	shortcut_settings["editor/game_view_2d_selection_override"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/game_view_2d_selection_override"));
+	shortcut_settings["editor/game_view_3d_selection_override"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/game_view_3d_selection_override"));
+	shortcut_settings["editor/game_view_toggle_game_audio"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/game_view_toggle_game_audio"));
+	shortcut_settings["editor/game_view_toggle_camera_override"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/game_view_toggle_camera_override"));
 
 	p_session->send_message("scene:setup_embedded_shortcuts", { shortcut_settings });
 
@@ -440,6 +445,21 @@ void GameView::_handle_shortcut_requested(int p_embed_action) {
 		} break;
 		case ScriptEditorDebugger::EMBED_NEXT_FRAME: {
 			debugger->next_frame();
+		} break;
+		case ScriptEditorDebugger::EMBED_INPUT_OVERRIDE: {
+			_node_type_pressed(RuntimeNodeSelect::NODE_TYPE_NONE);
+		} break;
+		case ScriptEditorDebugger::EMBED_2D_SELECTION_OVERRIDE: {
+			_node_type_pressed(RuntimeNodeSelect::NODE_TYPE_2D);
+		} break;
+		case ScriptEditorDebugger::EMBED_3D_SELECTION_OVERRIDE: {
+			_node_type_pressed(RuntimeNodeSelect::NODE_TYPE_3D);
+		} break;
+		case ScriptEditorDebugger::EMBED_TOGGLE_GAME_AUDIO: {
+			_debug_mute_audio_button_pressed();
+		} break;
+		case ScriptEditorDebugger::EMBED_TOGGLE_CAMERA_OVERRIDE: {
+			camera_override_button->set_pressed(!camera_override_button->is_pressed());
 		} break;
 	}
 }
@@ -983,7 +1003,8 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	suspend_button->set_toggle_mode(true);
 	suspend_button->set_theme_type_variation(SceneStringName(FlatButton));
 	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_suspend_button_toggled));
-	suspend_button->set_accessibility_name(TTRC("Suspend"));
+	suspend_button->set_tooltip_text(TTRC("Suspend/Resume Embedded Project"));
+	suspend_button->set_accessibility_name(TTRC("Suspend/Resume Embedded Project"));
 	ED_SHORTCUT("editor/suspend_resume_embedded_project", TTRC("Suspend/Resume Embedded Project"), Key::F9);
 	ED_SHORTCUT_OVERRIDE("editor/suspend_resume_embedded_project", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
 	suspend_button->set_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
@@ -1005,6 +1026,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_theme_type_variation(SceneStringName(FlatButton));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_NONE));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_tooltip_text(TTRC("Allow game input."));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_shortcut(ED_SHORTCUT("editor/game_view_input_override", TTRC("Select Game View Input")));
 
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D] = memnew(Button);
 	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]);
@@ -1013,6 +1035,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_theme_type_variation(SceneStringName(FlatButton));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_2D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_tooltip_text(TTRC("Disable game input and allow to select Node2Ds, Controls, and manipulate the 2D camera."));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_shortcut(ED_SHORTCUT("editor/game_view_2d_selection_override", TTRC("Select Game View 2D")));
 
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D] = memnew(Button);
 	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
@@ -1021,6 +1044,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_theme_type_variation(SceneStringName(FlatButton));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_tooltip_text(TTRC("Disable game input and allow to select Node3Ds and manipulate the 3D camera."));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_shortcut(ED_SHORTCUT("editor/game_view_3d_selection_override", TTRC("Select Game View 3D")));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -1060,6 +1084,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	debug_mute_audio_button->set_theme_type_variation("FlatButton");
 	debug_mute_audio_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_debug_mute_audio_button_pressed));
 	debug_mute_audio_button->set_tooltip_text(debug_mute_audio ? TTRC("Unmute game audio.") : TTRC("Mute game audio."));
+	debug_mute_audio_button->set_shortcut(ED_SHORTCUT("editor/game_view_toggle_game_audio", "Toggle Game View Audio"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -1070,6 +1095,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	camera_override_button->set_tooltip_text(TTRC("Override the in-game camera."));
 	camera_override_button->set_accessibility_name(TTRC("Override In-game Camera"));
 	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_camera_override_button_toggled));
+	camera_override_button->set_shortcut(ED_SHORTCUT("editor/game_view_toggle_camera_override", TTRC("Override Game View Camera")));
 
 	camera_override_menu = memnew(MenuButton);
 	main_menu_hbox->add_child(camera_override_menu);
