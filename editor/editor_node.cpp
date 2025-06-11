@@ -1958,7 +1958,7 @@ void EditorNode::_save_scene_silently() {
 	// when Save on Focus Loss kicks in.
 	Node *scene = editor_data.get_edited_scene_root();
 	if (scene && !scene->get_scene_file_path().is_empty() && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
-		_save_scene(scene->get_scene_file_path());
+		_save_scene(scene->get_scene_file_path(), -1, false);
 		save_editor_layout_delayed();
 	}
 }
@@ -1986,23 +1986,29 @@ static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Re
 	}
 }
 
-void EditorNode::_save_scene(String p_file, int idx) {
+void EditorNode::_save_scene(String p_file, int idx, bool show_progress) {
 	ERR_FAIL_COND_MSG(!saving_scene.is_empty() && saving_scene == p_file, "Scene saved while already being saved!");
 
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
-	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 3));
-	save_scene_progress->step(TTR("Analyzing"), 0);
+	if (show_progress) {
+		save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 3));
+		save_scene_progress->step(TTR("Analyzing"), 0);
+	}
 
 	if (!scene) {
 		show_accept(TTR("This operation can't be done without a tree root."), TTR("OK"));
-		_close_save_scene_progress();
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
 		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
-		_close_save_scene_progress();
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
 	}
 
@@ -2014,7 +2020,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
 
-	save_scene_progress->step(TTR("Packing Scene"), 1);
+	if (show_progress) {
+		save_scene_progress->step(TTR("Packing Scene"), 1);
+	}
 
 	Ref<PackedScene> sdata;
 
@@ -2036,11 +2044,15 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (err != OK) {
 		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
-		_close_save_scene_progress();
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
 	}
 
-	save_scene_progress->step(TTR("Saving scene"), 2);
+	if (show_progress) {
+		save_scene_progress->step(TTR("Saving scene"), 2);
+	}
 
 	int flg = 0;
 	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
@@ -2054,7 +2066,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	emit_signal(SNAME("scene_saved"), p_file);
 	editor_data.notify_scene_saved(p_file);
 
-	save_scene_progress->step(TTR("Saving external resources"), 3);
+	if (show_progress) {
+		save_scene_progress->step(TTR("Saving external resources"), 3);
+	}
 
 	_save_external_resources();
 	saving_scene = p_file; // Some editors may save scenes of built-in resources as external data, so avoid saving this scene again.
@@ -2080,7 +2094,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 	_update_unsaved_cache();
-	_close_save_scene_progress();
+	if (show_progress) {
+		_close_save_scene_progress();
+	}
 }
 
 void EditorNode::save_all_scenes() {
