@@ -783,8 +783,11 @@ void AnimationLibraryEditor::update_tree() {
 			for (const uint64_t &lib_id : collapsed_lib_ids) {
 				Object *lib_obj = ObjectDB::get_instance(ObjectID(lib_id));
 				AnimationLibrary *cur_lib = Object::cast_to<AnimationLibrary>(lib_obj);
-				StringName M = mixer->get_animation_library_name(cur_lib);
+				if (cur_lib == nullptr) {
+					continue;
+				}
 
+				StringName M = mixer->get_animation_library_name(cur_lib);
 				if (M == K) {
 					libitem->set_collapsed_recursive(true);
 				}
