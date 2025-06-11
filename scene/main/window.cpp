@@ -290,6 +290,11 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = hint_string;
 	}
+
+	if (p_property.name == "title") {
+		p_property.hint = PROPERTY_HINT_PLACEHOLDER_TEXT;
+		p_property.hint_string = default_title;
+	}
 }
 
 //
@@ -303,9 +308,51 @@ Window *Window::get_from_id(DisplayServer::WindowID p_window_id) {
 
 void Window::set_title(const String &p_title) {
 	ERR_MAIN_THREAD_GUARD;
-
+	if (title == p_title) {
+		return;
+	}
 	title = p_title;
-	tr_title = atr(p_title);
+	_update_title();
+}
+
+void Window::set_default_title(const String &p_title) {
+	ERR_MAIN_THREAD_GUARD;
+	if (default_title == p_title) {
+		return;
+	}
+	default_title = p_title;
+	if (title.is_empty()) {
+		_update_title();
+	}
+	notify_property_list_changed();
+}
+
+String Window::get_title() const {
+	ERR_READ_THREAD_GUARD_V(String());
+	return title;
+}
+
+String Window::get_translated_title() const {
+	ERR_READ_THREAD_GUARD_V(String());
+	return tr_title;
+}
+
+void Window::_settings_changed() {
+	if (visible && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE && is_in_edited_scene_root()) {
+		Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+		position = (screen_size - size) / 2;
+		if (embedder) {
+			embedder->_sub_window_update(this);
+		}
+	}
+}
+
+void Window::_update_title() {
+	String title_text = title;
+	if (title_text.is_empty()) {
+		title_text = default_title;
+	}
+	tr_title = atr(title_text);
 
 #ifdef DEBUG_ENABLED
 	if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
@@ -338,26 +385,6 @@ void Window::set_title(const String &p_title) {
 	}
 #endif
 	queue_accessibility_update();
-}
-
-String Window::get_title() const {
-	ERR_READ_THREAD_GUARD_V(String());
-	return title;
-}
-
-String Window::get_translated_title() const {
-	ERR_READ_THREAD_GUARD_V(String());
-	return tr_title;
-}
-
-void Window::_settings_changed() {
-	if (visible && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE && is_in_edited_scene_root()) {
-		Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
-		position = (screen_size - size) / 2;
-		if (embedder) {
-			embedder->_sub_window_update(this);
-		}
-	}
 }
 
 void Window::set_initial_position(Window::WindowInitialPosition p_initial_position) {
@@ -701,7 +728,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
-	_update_window_size();
+	_update_title();
 
 	if (transient_parent) {
 		for (const Window *E : transient_children) {
@@ -1594,27 +1621,7 @@ void Window::_notification(int p_what) {
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
 
-			tr_title = atr(title);
-#ifdef DEBUG_ENABLED
-			if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-				// Append a suffix to the window title to denote that the project is running
-				// from a debug build (including the editor, excluding the project manager).
-				// Since this results in lower performance, this should be clearly presented
-				// to the user.
-				tr_title = vformat("%s (DEBUG)", tr_title);
-			}
-#endif
-
-			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
-				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
-				if (keep_title_visible) {
-					Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
-					Size2i size_limit = get_clamped_minimum_size();
-					if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
-						_update_window_size();
-					}
-				}
-			}
+			_update_title();
 			queue_accessibility_update();
 		} break;
 
