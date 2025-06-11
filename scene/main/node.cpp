@@ -1368,6 +1368,13 @@ StringName Node::get_translation_domain() const {
 	return _translation_domain;
 }
 
+StringName Node::get_translation_domain_explicit() const {
+	if (data.is_translation_domain_inherited) {
+		return "";
+	}
+	return _translation_domain;
+}
+
 void Node::set_translation_domain(const StringName &p_domain) {
 	ERR_THREAD_GUARD
 
@@ -1390,6 +1397,10 @@ void Node::set_translation_domain_inherited() {
 	data.is_translation_domain_inherited = true;
 	data.is_translation_domain_dirty = true;
 	_propagate_translation_domain_dirty();
+}
+
+bool Node::is_translation_domain_inherited() const {
+	return data.is_translation_domain_inherited;
 }
 
 void Node::_propagate_translation_domain_dirty() {
@@ -3794,6 +3805,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_auto_translate_mode"), &Node::get_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("can_auto_translate"), &Node::can_auto_translate);
 	ClassDB::bind_method(D_METHOD("set_translation_domain_inherited"), &Node::set_translation_domain_inherited);
+	ClassDB::bind_method(D_METHOD("is_translation_domain_inherited"), &Node::is_translation_domain_inherited);
+	ClassDB::bind_method(D_METHOD("get_translation_domain_explicit"), &Node::get_translation_domain_explicit);
 
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
@@ -3998,6 +4011,9 @@ void Node::_bind_methods() {
 
 	ADD_GROUP("Auto Translate", "auto_translate_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
+
+	ADD_GROUP("Translation Domain", "translation_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "translation_custom_domain", PROPERTY_HINT_TRANSLATION_DOMAIN_NAME), "set_translation_domain", "get_translation_domain_explicit");
 
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");

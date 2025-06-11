@@ -1026,6 +1026,19 @@
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
 			</description>
 		</method>
+		<method name="is_translation_domain_inherited">
+			<return type="bool" />
+			<description>
+				Checks if the current node inherits its translation domain from the parent.
+			</description>
+		</method>
+		<method name="get_translation_domain_explicit" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of the explicitly set translation domain. Always returns an empty string if the translation domain is inherited from the parent.
+				See also [method Object.get_translation_domain].
+			</description>
+		</method>
 		<method name="update_configuration_warnings">
 			<return type="void" />
 			<description>

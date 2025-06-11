@@ -3673,6 +3673,21 @@ static EditorProperty *get_input_action_editor(const String &p_hint_text, bool i
 	return editor;
 }
 
+static EditorProperty *get_translation_domain_editor(const String &p_hint_text, bool is_string_name) {
+	EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
+	Vector<String> options;
+
+	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_domains")) {
+		PackedStringArray domains = GLOBAL_GET("internationalization/locale/translations_domains");
+		for (String &domain_name : domains) {
+			options.push_back(domain_name);
+		}
+	}
+
+	editor->setup(options, is_string_name, false);
+	return editor;
+}
+
 EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
 
@@ -3788,6 +3803,8 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				return get_input_action_editor(p_hint_text, false);
+			} else if (p_hint == PROPERTY_HINT_TRANSLATION_DOMAIN_NAME) {
+				return get_translation_domain_editor(p_hint_text, false);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
 				return editor;
@@ -3943,6 +3960,8 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				return get_input_action_editor(p_hint_text, true);
+			} else if (p_hint == PROPERTY_HINT_TRANSLATION_DOMAIN_NAME) {
+				return get_translation_domain_editor(p_hint_text, true);
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
