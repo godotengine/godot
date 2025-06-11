@@ -1280,10 +1280,10 @@ void Node3D::_update_visibility_parent(bool p_update_root) {
 			return;
 		}
 		Node *parent = get_node_or_null(visibility_parent_path);
-		ERR_FAIL_NULL_MSG(parent, "Can't find visibility parent node at path: " + visibility_parent_path);
+		ERR_FAIL_NULL_MSG(parent, "Can't find visibility parent node at path: " + String(visibility_parent_path));
 		ERR_FAIL_COND_MSG(parent == this, "The visibility parent can't be the same node.");
 		GeometryInstance3D *gi = Object::cast_to<GeometryInstance3D>(parent);
-		ERR_FAIL_NULL_MSG(gi, "The visibility parent node must be a GeometryInstance3D, at path: " + visibility_parent_path);
+		ERR_FAIL_NULL_MSG(gi, "The visibility parent node must be a GeometryInstance3D, at path: " + String(visibility_parent_path));
 		new_parent = gi ? gi->get_instance() : RID();
 	} else if (data.parent) {
 		new_parent = data.parent->data.visibility_parent;

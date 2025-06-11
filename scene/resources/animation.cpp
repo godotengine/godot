@@ -1215,7 +1215,7 @@ Vector3 Animation::position_track_interpolate(int p_track, double p_time, bool p
 	Vector3 ret = Vector3(0, 0, 0);
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
 	bool err = try_position_track_interpolate(p_track, p_time, &ret, p_backward);
-	ERR_FAIL_COND_V_MSG(err, ret, "3D Position Track: '" + tracks[p_track]->path + "' is unavailable.");
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Position Track: '" + String(tracks[p_track]->path) + "' is unavailable.");
 	return ret;
 }
 
@@ -1295,7 +1295,7 @@ Quaternion Animation::rotation_track_interpolate(int p_track, double p_time, boo
 	Quaternion ret = Quaternion(0, 0, 0, 1);
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
 	bool err = try_rotation_track_interpolate(p_track, p_time, &ret, p_backward);
-	ERR_FAIL_COND_V_MSG(err, ret, "3D Rotation Track: '" + tracks[p_track]->path + "' is unavailable.");
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Rotation Track: '" + String(tracks[p_track]->path) + "' is unavailable.");
 	return ret;
 }
 
@@ -1375,7 +1375,7 @@ Vector3 Animation::scale_track_interpolate(int p_track, double p_time, bool p_ba
 	Vector3 ret = Vector3(1, 1, 1);
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
 	bool err = try_scale_track_interpolate(p_track, p_time, &ret, p_backward);
-	ERR_FAIL_COND_V_MSG(err, ret, "3D Scale Track: '" + tracks[p_track]->path + "' is unavailable.");
+	ERR_FAIL_COND_V_MSG(err, ret, "3D Scale Track: '" + String(tracks[p_track]->path) + "' is unavailable.");
 	return ret;
 }
 
@@ -1455,7 +1455,7 @@ float Animation::blend_shape_track_interpolate(int p_track, double p_time, bool 
 	float ret = 0;
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ret);
 	bool err = try_blend_shape_track_interpolate(p_track, p_time, &ret, p_backward);
-	ERR_FAIL_COND_V_MSG(err, ret, "Blend Shape Track: '" + tracks[p_track]->path + "' is unavailable.");
+	ERR_FAIL_COND_V_MSG(err, ret, "Blend Shape Track: '" + String(tracks[p_track]->path) + "' is unavailable.");
 	return ret;
 }
 

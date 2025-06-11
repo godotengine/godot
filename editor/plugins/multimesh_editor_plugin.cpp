@@ -222,9 +222,9 @@ void MultiMeshEditor::_browsed(const NodePath &p_path) {
 	NodePath path = node->get_path_to(get_node(p_path));
 
 	if (browsing_source) {
-		mesh_source->set_text(path);
+		mesh_source->set_text(String(path));
 	} else {
-		surface_source->set_text(path);
+		surface_source->set_text(String(path));
 	}
 }
 

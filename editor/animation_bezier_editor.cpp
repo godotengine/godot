@@ -328,7 +328,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					continue;
 				}
 
-				String base_path = animation->track_get_path(i);
+				String base_path = String(animation->track_get_path(i));
 				int end = base_path.find_char(':');
 				if (end != -1) {
 					base_path = base_path.substr(0, end + 1);
@@ -405,7 +405,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 					int current_track = tracks[i];
 
-					String path = animation->track_get_path(current_track);
+					String path = String(animation->track_get_path(current_track));
 					path = path.replace_first(base_path, "");
 
 					Color cc = color;
@@ -763,7 +763,7 @@ bool AnimationBezierTrackEdit::_is_track_displayed(int p_track_index) {
 	}
 
 	if (is_filtered) {
-		String path = animation->track_get_path(p_track_index);
+		String path = String(animation->track_get_path(p_track_index));
 		if (root && root->has_node(path)) {
 			Node *node = root->get_node(path);
 			if (!node) {
@@ -899,7 +899,7 @@ void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 	if (animation.is_null()) {
 		return;
 	}
-	String base_path = animation->track_get_path(selected_track);
+	String base_path = String(animation->track_get_path(selected_track));
 	if (is_filtered) {
 		if (root && root->has_node(base_path)) {
 			Node *node = root->get_node(base_path);
@@ -909,7 +909,7 @@ void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 						continue;
 					}
 
-					base_path = animation->track_get_path(i);
+					base_path = String(animation->track_get_path(i));
 					if (root && root->has_node(base_path)) {
 						node = root->get_node(base_path);
 						if (!node) {
