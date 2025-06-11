@@ -397,6 +397,19 @@ uint32_t GodotNavigationServer3D::region_get_iteration_id(RID p_region) const {
 	return region->get_iteration_id();
 }
 
+COMMAND_2(region_set_use_async_iterations, RID, p_region, bool, p_enabled) {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL(region);
+	region->set_use_async_iterations(p_enabled);
+}
+
+bool GodotNavigationServer3D::region_get_use_async_iterations(RID p_region) const {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, false);
+
+	return region->get_use_async_iterations();
+}
+
 COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
@@ -1204,6 +1217,14 @@ void GodotNavigationServer3D::bake_from_source_geometry_data_async(const Ref<Nav
 
 bool GodotNavigationServer3D::is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const {
 	return NavMeshGenerator3D::get_singleton()->is_baking(p_navigation_mesh);
+}
+
+String GodotNavigationServer3D::get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const {
+#ifdef _3D_DISABLED
+	return "";
+#else
+	return NavMeshGenerator3D::get_singleton()->get_baking_state_msg(p_navigation_mesh);
+#endif // _3D_DISABLED
 }
 
 COMMAND_1(free, RID, p_object) {

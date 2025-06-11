@@ -231,6 +231,8 @@ ClosestPointQueryResult NavMap3D::get_closest_point_info(const Vector3 &p_point)
 }
 
 void NavMap3D::add_region(NavRegion3D *p_region) {
+	DEV_ASSERT(!regions.has(p_region));
+
 	regions.push_back(p_region);
 	iteration_dirty = true;
 }
@@ -242,6 +244,8 @@ void NavMap3D::remove_region(NavRegion3D *p_region) {
 }
 
 void NavMap3D::add_link(NavLink3D *p_link) {
+	DEV_ASSERT(!links.has(p_link));
+
 	links.push_back(p_link);
 	iteration_dirty = true;
 }
@@ -365,49 +369,22 @@ void NavMap3D::_build_iteration() {
 	iteration_build.edge_connection_margin = get_edge_connection_margin();
 	iteration_build.link_connection_radius = get_link_connection_radius();
 
-	uint32_t enabled_region_count = 0;
-	uint32_t enabled_link_count = 0;
+	next_map_iteration.clear();
 
-	for (NavRegion3D *region : regions) {
-		if (!region->get_enabled()) {
-			continue;
-		}
-		enabled_region_count++;
-	}
-	for (NavLink3D *link : links) {
-		if (!link->get_enabled()) {
-			continue;
-		}
-		enabled_link_count++;
-	}
-
-	next_map_iteration.region_ptr_to_region_id.clear();
-
-	next_map_iteration.region_iterations.clear();
-	next_map_iteration.link_iterations.clear();
-
-	next_map_iteration.region_iterations.resize(enabled_region_count);
-	next_map_iteration.link_iterations.resize(enabled_link_count);
+	next_map_iteration.region_iterations.resize(regions.size());
+	next_map_iteration.link_iterations.resize(links.size());
 
 	uint32_t region_id_count = 0;
 	uint32_t link_id_count = 0;
 
 	for (NavRegion3D *region : regions) {
-		if (!region->get_enabled()) {
-			continue;
-		}
-		NavRegionIteration3D &region_iteration = next_map_iteration.region_iterations[region_id_count];
-		region_iteration.id = region_id_count++;
-		region->get_iteration_update(region_iteration);
-		next_map_iteration.region_ptr_to_region_id[region] = (uint32_t)region_iteration.id;
+		const Ref<NavRegionIteration3D> region_iteration = region->get_iteration();
+		next_map_iteration.region_iterations[region_id_count++] = region_iteration;
+		next_map_iteration.region_ptr_to_region_iteration[region] = region_iteration;
 	}
 	for (NavLink3D *link : links) {
-		if (!link->get_enabled()) {
-			continue;
-		}
-		NavLinkIteration3D &link_iteration = next_map_iteration.link_iterations[link_id_count];
-		link_iteration.id = link_id_count++;
-		link->get_iteration_update(link_iteration);
+		const Ref<NavLinkIteration3D> link_iteration = link->get_iteration();
+		next_map_iteration.link_iterations[link_id_count++] = link_iteration;
 	}
 
 	next_map_iteration.map_up = get_up();
@@ -435,9 +412,6 @@ void NavMap3D::_sync_iteration() {
 		return;
 	}
 
-	performance_data.pm_polygon_count = iteration_build.performance_data.pm_polygon_count;
-	performance_data.pm_edge_count = iteration_build.performance_data.pm_edge_count;
-	performance_data.pm_edge_merge_count = iteration_build.performance_data.pm_edge_merge_count;
 	performance_data.pm_edge_connection_count = iteration_build.performance_data.pm_edge_connection_count;
 	performance_data.pm_edge_free_count = iteration_build.performance_data.pm_edge_free_count;
 
@@ -458,6 +432,8 @@ void NavMap3D::sync() {
 	performance_data.pm_agent_count = agents.size();
 	performance_data.pm_link_count = links.size();
 	performance_data.pm_obstacle_count = obstacles.size();
+
+	_sync_async_tasks();
 
 	_sync_dirty_map_update_requests();
 
@@ -482,6 +458,16 @@ void NavMap3D::sync() {
 	map_settings_dirty = false;
 
 	_sync_avoidance();
+
+	performance_data.pm_polygon_count = 0;
+	performance_data.pm_edge_count = 0;
+	performance_data.pm_edge_merge_count = 0;
+
+	for (NavRegion3D *region : regions) {
+		performance_data.pm_polygon_count += region->get_pm_polygon_count();
+		performance_data.pm_edge_count += region->get_pm_edge_count();
+		performance_data.pm_edge_merge_count += region->get_pm_edge_merge_count();
+	}
 }
 
 void NavMap3D::_sync_avoidance() {
@@ -671,9 +657,9 @@ int NavMap3D::get_region_connections_count(NavRegion3D *p_region) const {
 
 	GET_MAP_ITERATION_CONST();
 
-	HashMap<NavRegion3D *, uint32_t>::ConstIterator found_id = map_iteration.region_ptr_to_region_id.find(p_region);
+	HashMap<NavRegion3D *, Ref<NavRegionIteration3D>>::ConstIterator found_id = map_iteration.region_ptr_to_region_iteration.find(p_region);
 	if (found_id) {
-		HashMap<uint32_t, LocalVector<Edge::Connection>>::ConstIterator found_connections = map_iteration.external_region_connections.find(found_id->value);
+		HashMap<const NavBaseIteration3D *, LocalVector<Connection>>::ConstIterator found_connections = map_iteration.external_region_connections.find(found_id->value.ptr());
 		if (found_connections) {
 			return found_connections->value.size();
 		}
@@ -687,9 +673,9 @@ Vector3 NavMap3D::get_region_connection_pathway_start(NavRegion3D *p_region, int
 
 	GET_MAP_ITERATION_CONST();
 
-	HashMap<NavRegion3D *, uint32_t>::ConstIterator found_id = map_iteration.region_ptr_to_region_id.find(p_region);
+	HashMap<NavRegion3D *, Ref<NavRegionIteration3D>>::ConstIterator found_id = map_iteration.region_ptr_to_region_iteration.find(p_region);
 	if (found_id) {
-		HashMap<uint32_t, LocalVector<Edge::Connection>>::ConstIterator found_connections = map_iteration.external_region_connections.find(found_id->value);
+		HashMap<const NavBaseIteration3D *, LocalVector<Connection>>::ConstIterator found_connections = map_iteration.external_region_connections.find(found_id->value.ptr());
 		if (found_connections) {
 			ERR_FAIL_INDEX_V(p_connection_id, int(found_connections->value.size()), Vector3());
 			return found_connections->value[p_connection_id].pathway_start;
@@ -704,9 +690,9 @@ Vector3 NavMap3D::get_region_connection_pathway_end(NavRegion3D *p_region, int p
 
 	GET_MAP_ITERATION_CONST();
 
-	HashMap<NavRegion3D *, uint32_t>::ConstIterator found_id = map_iteration.region_ptr_to_region_id.find(p_region);
+	HashMap<NavRegion3D *, Ref<NavRegionIteration3D>>::ConstIterator found_id = map_iteration.region_ptr_to_region_iteration.find(p_region);
 	if (found_id) {
-		HashMap<uint32_t, LocalVector<Edge::Connection>>::ConstIterator found_connections = map_iteration.external_region_connections.find(found_id->value);
+		HashMap<const NavBaseIteration3D *, LocalVector<Connection>>::ConstIterator found_connections = map_iteration.external_region_connections.find(found_id->value.ptr());
 		if (found_connections) {
 			ERR_FAIL_INDEX_V(p_connection_id, int(found_connections->value.size()), Vector3());
 			return found_connections->value[p_connection_id].pathway_end;
@@ -720,56 +706,60 @@ void NavMap3D::add_region_sync_dirty_request(SelfList<NavRegion3D> *p_sync_reque
 	if (p_sync_request->in_list()) {
 		return;
 	}
-	sync_dirty_requests.regions.add(p_sync_request);
+	RWLockWrite write_lock(sync_dirty_requests.regions.rwlock);
+	sync_dirty_requests.regions.list.add(p_sync_request);
 }
 
 void NavMap3D::add_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request) {
 	if (p_sync_request->in_list()) {
 		return;
 	}
-	sync_dirty_requests.links.add(p_sync_request);
+	RWLockWrite write_lock(sync_dirty_requests.links.rwlock);
+	sync_dirty_requests.links.list.add(p_sync_request);
 }
 
 void NavMap3D::add_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request) {
 	if (p_sync_request->in_list()) {
 		return;
 	}
-	sync_dirty_requests.agents.add(p_sync_request);
+	sync_dirty_requests.agents.list.add(p_sync_request);
 }
 
 void NavMap3D::add_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_request) {
 	if (p_sync_request->in_list()) {
 		return;
 	}
-	sync_dirty_requests.obstacles.add(p_sync_request);
+	sync_dirty_requests.obstacles.list.add(p_sync_request);
 }
 
 void NavMap3D::remove_region_sync_dirty_request(SelfList<NavRegion3D> *p_sync_request) {
 	if (!p_sync_request->in_list()) {
 		return;
 	}
-	sync_dirty_requests.regions.remove(p_sync_request);
+	RWLockWrite write_lock(sync_dirty_requests.regions.rwlock);
+	sync_dirty_requests.regions.list.remove(p_sync_request);
 }
 
 void NavMap3D::remove_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request) {
 	if (!p_sync_request->in_list()) {
 		return;
 	}
-	sync_dirty_requests.links.remove(p_sync_request);
+	RWLockWrite write_lock(sync_dirty_requests.links.rwlock);
+	sync_dirty_requests.links.list.remove(p_sync_request);
 }
 
 void NavMap3D::remove_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request) {
 	if (!p_sync_request->in_list()) {
 		return;
 	}
-	sync_dirty_requests.agents.remove(p_sync_request);
+	sync_dirty_requests.agents.list.remove(p_sync_request);
 }
 
 void NavMap3D::remove_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_request) {
 	if (!p_sync_request->in_list()) {
 		return;
 	}
-	sync_dirty_requests.obstacles.remove(p_sync_request);
+	sync_dirty_requests.obstacles.list.remove(p_sync_request);
 }
 
 void NavMap3D::_sync_dirty_map_update_requests() {
@@ -781,41 +771,69 @@ void NavMap3D::_sync_dirty_map_update_requests() {
 		iteration_dirty = true;
 	}
 
-	if (!iteration_dirty) {
-		iteration_dirty = sync_dirty_requests.regions.first() || sync_dirty_requests.links.first();
-	}
-
 	// Sync NavRegions.
-	for (SelfList<NavRegion3D> *element = sync_dirty_requests.regions.first(); element; element = element->next()) {
-		element->self()->sync();
+	RWLockWrite write_lock_regions(sync_dirty_requests.regions.rwlock);
+	for (SelfList<NavRegion3D> *element = sync_dirty_requests.regions.list.first(); element; element = element->next()) {
+		bool requires_map_update = element->self()->sync();
+		if (requires_map_update) {
+			iteration_dirty = true;
+		}
 	}
-	sync_dirty_requests.regions.clear();
+	sync_dirty_requests.regions.list.clear();
 
 	// Sync NavLinks.
-	for (SelfList<NavLink3D> *element = sync_dirty_requests.links.first(); element; element = element->next()) {
-		element->self()->sync();
+	RWLockWrite write_lock_links(sync_dirty_requests.links.rwlock);
+	for (SelfList<NavLink3D> *element = sync_dirty_requests.links.list.first(); element; element = element->next()) {
+		bool requires_map_update = element->self()->sync();
+		if (requires_map_update) {
+			iteration_dirty = true;
+		}
 	}
-	sync_dirty_requests.links.clear();
+	sync_dirty_requests.links.list.clear();
 }
 
 void NavMap3D::_sync_dirty_avoidance_update_requests() {
 	// Sync NavAgents.
 	if (!agents_dirty) {
-		agents_dirty = sync_dirty_requests.agents.first();
+		agents_dirty = sync_dirty_requests.agents.list.first();
 	}
-	for (SelfList<NavAgent3D> *element = sync_dirty_requests.agents.first(); element; element = element->next()) {
+	for (SelfList<NavAgent3D> *element = sync_dirty_requests.agents.list.first(); element; element = element->next()) {
 		element->self()->sync();
 	}
-	sync_dirty_requests.agents.clear();
+	sync_dirty_requests.agents.list.clear();
 
 	// Sync NavObstacles.
 	if (!obstacles_dirty) {
-		obstacles_dirty = sync_dirty_requests.obstacles.first();
+		obstacles_dirty = sync_dirty_requests.obstacles.list.first();
 	}
-	for (SelfList<NavObstacle3D> *element = sync_dirty_requests.obstacles.first(); element; element = element->next()) {
+	for (SelfList<NavObstacle3D> *element = sync_dirty_requests.obstacles.list.first(); element; element = element->next()) {
 		element->self()->sync();
 	}
-	sync_dirty_requests.obstacles.clear();
+	sync_dirty_requests.obstacles.list.clear();
+}
+
+void NavMap3D::add_region_async_thread_join_request(SelfList<NavRegion3D> *p_async_request) {
+	if (p_async_request->in_list()) {
+		return;
+	}
+	RWLockWrite write_lock(async_dirty_requests.regions.rwlock);
+	async_dirty_requests.regions.list.add(p_async_request);
+}
+
+void NavMap3D::remove_region_async_thread_join_request(SelfList<NavRegion3D> *p_async_request) {
+	if (!p_async_request->in_list()) {
+		return;
+	}
+	RWLockWrite write_lock(async_dirty_requests.regions.rwlock);
+	async_dirty_requests.regions.list.remove(p_async_request);
+}
+
+void NavMap3D::_sync_async_tasks() {
+	// Sync NavRegions that run async thread tasks.
+	RWLockWrite write_lock_regions(async_dirty_requests.regions.rwlock);
+	for (SelfList<NavRegion3D> *element = async_dirty_requests.regions.list.first(); element; element = element->next()) {
+		element->self()->sync_async_tasks();
+	}
 }
 
 void NavMap3D::set_use_async_iterations(bool p_enabled) {
@@ -869,5 +887,10 @@ NavMap3D::~NavMap3D() {
 	if (iteration_build_thread_task_id != WorkerThreadPool::INVALID_TASK_ID) {
 		WorkerThreadPool::get_singleton()->wait_for_task_completion(iteration_build_thread_task_id);
 		iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	}
+
+	RWLockWrite write_lock(iteration_slot_rwlock);
+	for (NavMapIteration3D &iteration_slot : iteration_slots) {
+		iteration_slot.clear();
 	}
 }

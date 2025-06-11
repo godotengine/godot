@@ -1178,6 +1178,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_outline_size", "RichTextLabel", Math::round(1 * scale));
 
 	theme->set_constant(SceneStringName(line_separation), "RichTextLabel", 0);
+	theme->set_constant(SceneStringName(paragraph_separation), "RichTextLabel", 0);
 	theme->set_constant("table_h_separation", "RichTextLabel", Math::round(3 * scale));
 	theme->set_constant("table_v_separation", "RichTextLabel", Math::round(3 * scale));
 

@@ -41,6 +41,9 @@ class CollisionPolygon2DEditor : public AbstractPolygon2DEditor {
 protected:
 	virtual Node2D *_get_node() const override;
 	virtual void _set_node(Node *p_polygon) override;
+
+public:
+	CollisionPolygon2DEditor();
 };
 
 class CollisionPolygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
