@@ -2933,22 +2933,24 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_LIGHT) && (idata.flags & InstanceData::FLAG_GEOM_LIGHTING_DIRTY)) {
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						ERR_FAIL_NULL(geom->geometry_instance);
-						//	clear any existing light instances for this mesh and return the max count per-mesh, and total (per-scene).
+						// Clear any existing light instances for this mesh and return the max count per-mesh, and total (per-scene).
 						Pair<uint32_t, uint32_t> max_per_mesh_total = geom->geometry_instance->clear_light_instances();
 						if ((max_per_mesh_total.first > 0) && (max_per_mesh_total.second > 0)) {
-							//	Run through all M lights, but use a heap to keep track of the best N
+							// Run through all M lights, but use a heap to keep track of the best N
 							uint32_t omni_count = 0, spot_count = 0;
-							LocalVector<Pair<float, uint32_t>> omni_score_idx, spot_score_idx; //	score, index into the light array
-							SortArray<Pair<float, uint32_t>> heapify; //	SortArray has heap functionality in it
+							// Score, index into the light array.
+							LocalVector<Pair<float, uint32_t>> omni_score_idx, spot_score_idx;
+							// SortArray has heap functionality in it.
+							SortArray<Pair<float, uint32_t>> heapify;
 							bool omni_needs_heap = true, spot_needs_heap = true;
 							Vector3 mesh_center = idata.instance->transformed_aabb.get_center();
-							//	Run through all lights in the scene (there might be more than max_renderable_lights)
+							// Run through all lights in the scene (there might be more than max_renderable_lights).
 							uint32_t total_omni_count = 0, total_spot_count = 0;
 							for (const Instance *E : geom->lights) {
 								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
 								if (((RS::LIGHT_OMNI == light_type) && (total_omni_count++ < max_per_mesh_total.second)) ||
 										((RS::LIGHT_SPOT == light_type) && (total_spot_count++ < max_per_mesh_total.second))) {
-									//	Cull
+									// Perform culling.
 									if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
 										continue;
 									}
@@ -2957,22 +2959,22 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 									}
 
 									InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
-									//	Large scores are worse, so linear with distance, inverse with energy and range
+									// Large scores are worse, so linear with distance, inverse with energy and range.
 									Vector3 light_center = E->transformed_aabb.get_center();
 									float light_range_energy =
 											RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_RANGE) *
 											RSG::light_storage->light_get_param(E->base, RS::LightParam::LIGHT_PARAM_ENERGY);
 									float light_inst_score = mesh_center.distance_to(light_center) / MAX(0.01f, light_range_energy);
-									//	Keep the best per-light-type
+									// Keep the "best" lights on a per-light-type basis.
 									switch (light_type) {
 										case RS::LIGHT_OMNI: {
 											if (omni_count < max_per_mesh_total.first) {
-												//	We have room to just add it, and track the score and where it goes
+												// We have room to just add it, and track the score and where it goes.
 												omni_score_idx.push_back(Pair(light_inst_score, omni_count));
 												geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_count++);
 											} else {
 												if (omni_needs_heap) {
-													//	We need to make this a heap one time
+													// We need to make this a heap one time.
 													heapify.make_heap(0, omni_count, &omni_score_idx[0]);
 													omni_needs_heap = false;
 												}
@@ -2985,12 +2987,12 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 										} break;
 										case RS::LIGHT_SPOT: {
 											if (spot_count < max_per_mesh_total.first) {
-												//	We have room to just add it, and track the score and where it goes
+												// We have room to just add it, and track the score and where it goes.
 												spot_score_idx.push_back(Pair(light_inst_score, spot_count));
 												geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_count++);
 											} else {
 												if (spot_needs_heap) {
-													//	We need to make this a heap one time
+													// We need to make this a heap one time.
 													heapify.make_heap(0, spot_count, &spot_score_idx[0]);
 													spot_needs_heap = false;
 												}
