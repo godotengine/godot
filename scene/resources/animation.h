@@ -540,6 +540,10 @@ public:
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests.
 
+	// Helper functions for Rotation.
+	static double interpolate_via_rest(double p_from, double p_to, double p_weight, double p_rest = 0.0); // Deterministic slerp to prevent to cross the inverted rest axis.
+	static Quaternion interpolate_via_rest(const Quaternion &p_from, const Quaternion &p_to, real_t p_weight, const Quaternion &p_rest = Quaternion()); // Deterministic slerp to prevent to cross the inverted rest axis.
+
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
 	static bool validate_type_match(const Variant &p_from, Variant &r_to);
