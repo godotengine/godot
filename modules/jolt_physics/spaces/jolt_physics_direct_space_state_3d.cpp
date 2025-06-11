@@ -464,8 +464,6 @@ JoltPhysicsDirectSpaceState3D::JoltPhysicsDirectSpaceState3D(JoltSpace3D *p_spac
 bool JoltPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_ray must not be called while the physics space is being stepped.");
 
-	space->try_optimize();
-
 	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude, p_parameters.pick_ray);
 
 	const JPH::RVec3 from = to_jolt_r(p_parameters.from);
@@ -531,8 +529,6 @@ int JoltPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_para
 		return 0;
 	}
 
-	space->try_optimize();
-
 	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude);
 	JoltQueryCollectorAnyMulti<JPH::CollidePointCollector, 32> collector(p_result_max);
 	space->get_narrow_phase_query().CollidePoint(to_jolt_r(p_parameters.position), collector, query_filter, query_filter, query_filter);
@@ -568,8 +564,6 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_para
 	if (p_result_max == 0) {
 		return 0;
 	}
-
-	space->try_optimize();
 
 	JoltShape3D *shape = JoltPhysicsServer3D::get_singleton()->get_shape(p_parameters.shape_rid);
 	ERR_FAIL_NULL_V(shape, 0);
@@ -623,8 +617,6 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "cast_motion must not be called while the physics space is being stepped.");
 	ERR_FAIL_COND_V_MSG(r_info != nullptr, false, "Providing rest info as part of cast_motion is not supported when using Jolt Physics.");
 
-	space->try_optimize();
-
 	JoltShape3D *shape = JoltPhysicsServer3D::get_singleton()->get_shape(p_parameters.shape_rid);
 	ERR_FAIL_NULL_V(shape, false);
 
@@ -658,8 +650,6 @@ bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_param
 	if (p_result_max == 0) {
 		return false;
 	}
-
-	space->try_optimize();
 
 	JoltShape3D *shape = JoltPhysicsServer3D::get_singleton()->get_shape(p_parameters.shape_rid);
 	ERR_FAIL_NULL_V(shape, false);
@@ -728,8 +718,6 @@ bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_param
 bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "get_rest_info must not be called while the physics space is being stepped.");
 
-	space->try_optimize();
-
 	JoltShape3D *shape = JoltPhysicsServer3D::get_singleton()->get_shape(p_parameters.shape_rid);
 	ERR_FAIL_NULL_V(shape, false);
 
@@ -784,8 +772,6 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 
 Vector3 JoltPhysicsDirectSpaceState3D::get_closest_point_to_object_volume(RID p_object, Vector3 p_point) const {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), Vector3(), "get_closest_point_to_object_volume must not be called while the physics space is being stepped.");
-
-	space->try_optimize();
 
 	JoltPhysicsServer3D *physics_server = JoltPhysicsServer3D::get_singleton();
 	JoltObject3D *object = physics_server->get_area(p_object);
@@ -869,8 +855,6 @@ bool JoltPhysicsDirectSpaceState3D::body_test_motion(const JoltBody3D &p_body, c
 
 	Vector3 scale;
 	JoltMath::decompose(transform, scale);
-
-	space->try_optimize();
 
 	Vector3 recovery;
 	const bool recovered = _body_motion_recover(p_body, transform, margin, p_parameters.exclude_bodies, p_parameters.exclude_objects, recovery);

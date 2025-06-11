@@ -78,6 +78,8 @@ class JoltSpace3D {
 	void _pre_step(float p_step);
 	void _post_step(float p_step);
 
+	void _try_optimize();
+
 public:
 	explicit JoltSpace3D(JPH::JobSystem *p_job_system);
 	~JoltSpace3D();
@@ -129,8 +131,6 @@ public:
 	JPH::Body *add_soft_body(const JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping = false);
 
 	void remove_body(const JPH::BodyID &p_body_id);
-
-	void try_optimize();
 
 	void enqueue_call_queries(SelfList<JoltBody3D> *p_body);
 	void enqueue_call_queries(SelfList<JoltArea3D> *p_area);

@@ -94,6 +94,14 @@ void JoltSpace3D::_post_step(float p_step) {
 	}
 }
 
+void JoltSpace3D::_try_optimize() {
+	// This is a mostly arbitrary number based on internal details about the kind of broad phase structure that Jolt uses under the hood.
+	if (unlikely(bodies_added_since_optimizing >= 256)) {
+		physics_system->OptimizeBroadPhase();
+		bodies_added_since_optimizing = 0;
+	}
+}
+
 JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system) :
 		job_system(p_job_system),
 		temp_allocator(new JoltTempAllocator()),
@@ -400,6 +408,8 @@ JPH::Body *JoltSpace3D::add_rigid_body(const JoltObject3D &p_object, const JPH::
 	body_iface.AddBody(jolt_body->GetID(), p_sleeping ? JPH::EActivation::DontActivate : JPH::EActivation::Activate);
 	bodies_added_since_optimizing += 1;
 
+	_try_optimize();
+
 	return jolt_body;
 }
 
@@ -418,6 +428,8 @@ JPH::Body *JoltSpace3D::add_soft_body(const JoltObject3D &p_object, const JPH::S
 	body_iface.AddBody(jolt_body->GetID(), p_sleeping ? JPH::EActivation::DontActivate : JPH::EActivation::Activate);
 	bodies_added_since_optimizing += 1;
 
+	_try_optimize();
+
 	return jolt_body;
 }
 
@@ -426,22 +438,6 @@ void JoltSpace3D::remove_body(const JPH::BodyID &p_body_id) {
 
 	body_iface.RemoveBody(p_body_id);
 	body_iface.DestroyBody(p_body_id);
-}
-
-void JoltSpace3D::try_optimize() {
-	// This makes assumptions about the underlying acceleration structure of Jolt's broad-phase, which currently uses a
-	// quadtree, and which gets walked with a fixed-size node stack of 128. This means that when the quadtree is
-	// completely unbalanced, as is the case if we add bodies one-by-one without ever stepping the simulation, like in
-	// the editor viewport, we would exceed this stack size (resulting in an incomplete search) as soon as we perform a
-	// physics query after having added somewhere in the order of 128 * 3 bodies. We leave a hefty margin just in case.
-
-	if (likely(bodies_added_since_optimizing < 128)) {
-		return;
-	}
-
-	physics_system->OptimizeBroadPhase();
-
-	bodies_added_since_optimizing = 0;
 }
 
 void JoltSpace3D::enqueue_call_queries(SelfList<JoltBody3D> *p_body) {
