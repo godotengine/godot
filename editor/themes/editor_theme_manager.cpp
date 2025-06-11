@@ -1972,11 +1972,8 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		// Bottom panel.
 		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
 		style_bottom_panel->set_corner_radius_all(p_config.corner_radius * EDSCALE);
-		Ref<StyleBoxFlat> style_bottom_panel_no_margin = style_bottom_panel->duplicate();
-		style_bottom_panel_no_margin->set_content_margin(SIDE_TOP, 0);
 
 		p_theme->set_stylebox("BottomPanel", EditorStringName(EditorStyles), style_bottom_panel);
-		p_theme->set_stylebox("BottomPanelNoMargin", EditorStringName(EditorStyles), style_bottom_panel_no_margin);
 		p_theme->set_type_variation("BottomPanelButton", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "BottomPanelButton", menu_transparent_style);
 		p_theme->set_stylebox(SceneStringName(pressed), "BottomPanelButton", menu_transparent_style);
