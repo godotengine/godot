@@ -1486,7 +1486,7 @@ String Node::prevalidate_child_name(Node *p_child, StringName p_name) {
 #endif
 
 String Node::adjust_name_casing(const String &p_name) {
-	switch (GLOBAL_GET("editor/naming/node_name_casing").operator int()) {
+	switch (GLOBAL_EDITOR_GET("naming/node_name_casing").operator int()) {
 		case NAME_CASING_PASCAL_CASE:
 			return p_name.to_pascal_case();
 		case NAME_CASING_CAMEL_CASE:
@@ -3704,8 +3704,8 @@ RID Node::get_accessibility_element() const {
 }
 
 void Node::_bind_methods() {
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"), 0);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case,kebab-case"), NAME_CASING_PASCAL_CASE);
+	GLOBAL_EDITOR_DEF(PropertyInfo(Variant::INT, "naming/node_name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"), 0);
+	GLOBAL_EDITOR_DEF(PropertyInfo(Variant::INT, "naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case,kebab-case"), NAME_CASING_PASCAL_CASE);
 
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
 	ClassDB::bind_static_method("Node", D_METHOD("get_orphan_node_ids"), &Node::get_orphan_node_ids);
@@ -4027,7 +4027,7 @@ void Node::_bind_methods() {
 }
 
 String Node::_get_name_num_separator() {
-	switch (GLOBAL_GET("editor/naming/node_name_num_separator").operator int()) {
+	switch (GLOBAL_EDITOR_GET("naming/node_name_num_separator").operator int()) {
 		case 0:
 			return "";
 		case 1:

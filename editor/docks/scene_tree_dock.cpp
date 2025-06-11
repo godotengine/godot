@@ -1545,7 +1545,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			add_root_node(new_node);
 
-			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+			if (GLOBAL_EDITOR_GET("naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
 				new_node->set_name(Node::adjust_name_casing(new_node->get_name()));
 			}
 
@@ -2948,7 +2948,7 @@ Node *SceneTreeDock::_do_create(Node *p_parent) {
 	ERR_FAIL_NULL_V(child, nullptr);
 
 	String new_name = p_parent->validate_child_name(child);
-	if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+	if (GLOBAL_EDITOR_GET("naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
 		new_name = adjust_name_casing(new_name);
 	}
 	child->set_name(new_name);
