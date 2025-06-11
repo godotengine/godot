@@ -1642,7 +1642,7 @@ String Variant::stringify(int recursion_count) const {
 		case STRING_NAME:
 			return operator StringName();
 		case NODE_PATH:
-			return operator NodePath();
+			return String(operator NodePath());
 		case COLOR:
 			return String(operator Color());
 		case DICTIONARY: {
