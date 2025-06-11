@@ -271,12 +271,9 @@ String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 
 void GDScriptTokenizerText::set_source_code(const String &p_source_code) {
 	source = p_source_code;
-	if (source.is_empty()) {
-		_source = U"";
-	} else {
-		_source = source.ptr();
-	}
+	_source = source.get_data();
 	_current = _source;
+	_start = _source;
 	line = 1;
 	column = 1;
 	length = p_source_code.length();
