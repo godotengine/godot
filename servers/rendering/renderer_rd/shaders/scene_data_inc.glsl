@@ -73,4 +73,10 @@ struct SceneData {
 	float IBL_exposure_normalization;
 	uint camera_visible_layers;
 	float pass_alpha_multiplier;
+
+#ifdef REFERENCE_SH_IMPL
+	mediump vec4 ambient_sh_coeffs[3];
+#else
+	mediump vec4 ambient_sh_coeffs[5];
+#endif
 };
