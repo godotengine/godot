@@ -2683,6 +2683,17 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS;
 	}
 
+	if (p_material->shader_data->stencil_enabled) {
+		if (p_material->shader_data->stencil_flags & SceneShaderForwardMobile::ShaderData::STENCIL_FLAG_READ) {
+			// Stencil materials which read from the stencil buffer must be in the alpha pass.
+			// This is critical to preserve compatibility once we'll have the compositor.
+			if (!(flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA)) {
+				String shader_path = p_material->shader_data->path.is_empty() ? "" : "(" + p_material->shader_data->path + ")";
+				ERR_PRINT_ED(vformat("Attempting to use a shader %s that reads stencil but is not in the alpha queue. Ensure the material uses alpha blending or has depth_draw disabled or depth_test disabled.", shader_path));
+			}
+		}
+	}
+
 	SceneShaderForwardMobile::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
 	if (p_material->shader_data->uses_shared_shadow_material()) {
