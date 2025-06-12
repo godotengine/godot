@@ -824,7 +824,7 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 		// routine.
 
 		// TODO: Consider something more efficient, I think.
-		uint32_t *args_buf = (uint32_t *)calloc(SNOOP_MSG_SIZE, sizeof *args_buf);
+		uint32_t *args_buf = (uint32_t *)calloc(msg_buf.size(), sizeof *args_buf);
 
 		// FIXME: Cleanup.
 		for (size_t global_name = 0; global_name < registry_globals.size(); ++global_name) {
@@ -919,7 +919,7 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 
 				registry_globals_names[instance_gid] = global_name;
 
-				uint32_t *args_buf = (uint32_t *)calloc(SNOOP_MSG_SIZE, sizeof *args_buf);
+				uint32_t *args_buf = (uint32_t *)calloc(msg_buf.size(), sizeof *args_buf);
 
 				uint32_t *write_head = args_buf;
 
@@ -1959,7 +1959,6 @@ bool WaylandEmbedderProxy::handle_sock(int p_fd, int p_id) {
 		info.direction = p_id >= 0 ? ProxyDirection::COMPOSITOR : ProxyDirection::CLIENT;
 	}
 
-	//CRASH_COND(info.size > SNOOP_MAX_MSG_SIZE);
 	if (msg_buf.size() < info.words()) {
 		msg_buf.resize(info.words());
 	}

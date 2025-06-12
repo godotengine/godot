@@ -81,14 +81,6 @@
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
 
-// FIXME: Figure out if there's a limit and where.
-#define SNOOP_MAX_MSG_SIZE 65536
-
-// Size is in 32-bit words.
-// FIXME: I think we might need to resize this dynamically, to a somewhat
-// arbitrary limit (if any).
-#define SNOOP_MSG_SIZE 4096 / 4
-
 // FIXME: I think we might need to resize this dynamically, to a somewhat
 // arbitrary limit (if any).
 #define SNOOP_ANCILLARY_SIZE 4096
