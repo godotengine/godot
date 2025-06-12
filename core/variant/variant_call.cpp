@@ -685,7 +685,7 @@ struct _VariantCall {
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
 			CharString cs;
-			cs.resize(p_instance->size() + 1);
+			cs.resize_uninitialized(p_instance->size() + 1);
 			memcpy(cs.ptrw(), r, p_instance->size());
 			cs[(int)p_instance->size()] = 0;
 
