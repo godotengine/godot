@@ -1011,25 +1011,29 @@ class Godot(private val context: Context) {
 	@Keep
 	private fun vibrate(durationMs: Int, amplitude: Int) {
 		if (durationMs > 0 && requestPermission("VIBRATE")) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				if (amplitude <= -1) {
-					vibratorService.vibrate(
-						VibrationEffect.createOneShot(
-							durationMs.toLong(),
-							VibrationEffect.DEFAULT_AMPLITUDE
+			try {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					if (amplitude <= -1) {
+						vibratorService.vibrate(
+							VibrationEffect.createOneShot(
+								durationMs.toLong(),
+								VibrationEffect.DEFAULT_AMPLITUDE
+							)
 						)
-					)
+					} else {
+						vibratorService.vibrate(
+							VibrationEffect.createOneShot(
+								durationMs.toLong(),
+								amplitude
+							)
+						)
+					}
 				} else {
-					vibratorService.vibrate(
-						VibrationEffect.createOneShot(
-							durationMs.toLong(),
-							amplitude
-						)
-					)
+					// deprecated in API 26
+					vibratorService.vibrate(durationMs.toLong())
 				}
-			} else {
-				// deprecated in API 26
-				vibratorService.vibrate(durationMs.toLong())
+			} catch (e: SecurityException) {
+				Log.w(TAG, "SecurityException: VIBRATE permission not found. Make sure it is declared in the manifest or enabled in the export preset.")
 			}
 		}
 	}
