@@ -622,7 +622,7 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 	}
 
 	if (p_update_selection) {
-		RuntimeNodeSelect::get_singleton()->_set_selected_nodes(nodes);
+		RuntimeNodeSelect::get_singleton()->_set_selected_nodes(Vector<Node *>(nodes));
 	}
 
 	if (objs_missing) {
@@ -2008,7 +2008,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 	}
 
-	_set_selected_nodes(nodes);
+	_set_selected_nodes(Vector<Node *>(nodes));
 }
 
 void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
