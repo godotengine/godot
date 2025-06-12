@@ -1745,8 +1745,12 @@ void fragment() {)";
 	if (features[FEATURE_BENT_NORMAL_MAPPING]) {
 		code += R"(
 	// Bent Normal Map: Enabled
-	BENT_NORMAL_MAP = texture(texture_bent_normal, base_uv).rgb;
 )";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "	BENT_NORMAL_MAP = triplanar_texture(texture_bent_normal, uv1_power_normal, uv1_triplanar_pos).rgb;\n";
+		} else {
+			code += "	BENT_NORMAL_MAP = texture(texture_bent_normal, base_uv).rgb;\n";
+		}
 	}
 
 	if (features[FEATURE_EMISSION]) {
