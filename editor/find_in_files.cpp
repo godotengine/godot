@@ -718,19 +718,21 @@ FindInFilesPanel::FindInFilesPanel() {
 		hbc->add_child(_status_label);
 
 		_refresh_button = memnew(Button);
-		_refresh_button->set_text(TTR("Refresh"));
+		_refresh_button->set_tooltip_text(TTRC("Refresh"));
+		_refresh_button->set_accessibility_name(TTRC("Refresh"));
 		_refresh_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_refresh_button_clicked));
 		_refresh_button->hide();
 		hbc->add_child(_refresh_button);
 
 		_cancel_button = memnew(Button);
-		_cancel_button->set_text(TTR("Cancel"));
+		_cancel_button->set_text(TTRC("Cancel"));
 		_cancel_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_cancel_button_clicked));
 		_cancel_button->hide();
 		hbc->add_child(_cancel_button);
 
 		_close_button = memnew(Button);
-		_close_button->set_text(TTR("Close"));
+		_close_button->set_tooltip_text(TTRC("Close"));
+		_close_button->set_accessibility_name(TTRC("Close"));
 		_close_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_close_button_clicked));
 		hbc->add_child(_close_button);
 
@@ -837,6 +839,12 @@ void FindInFilesPanel::_notification(int p_what) {
 			_search_text_label->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
 			_results_display->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 			_results_display->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
+
+			_refresh_button->set_theme_type_variation("FlatMenuButton");
+			_refresh_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
+
+			_close_button->set_theme_type_variation("FlatMenuButton");
+			_close_button->set_button_icon(get_editor_theme_icon(SNAME("GuiClose")));
 
 			// Rebuild search tree.
 			if (!_finder->get_search_text().is_empty()) {
