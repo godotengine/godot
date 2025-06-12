@@ -541,14 +541,13 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_hb->add_theme_constant_override("separation", 4 * EDSCALE);
 	loop = memnew(CheckBox);
 	loop->set_text(TTR("Enable"));
-	loop->set_accessibility_name(TTRC("Enable looping"));
 	loop->set_tooltip_text(TTR("Enable looping."));
 	loop->connect(SceneStringName(toggled), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop);
 	loop_hb->add_spacer();
 	loop_hb->add_child(memnew(Label(TTR("Offset:"))));
 	loop_offset = memnew(SpinBox);
-	loop_offset->set_accessibility_name(TTRC("Loop Offset"));
+	loop_offset->set_accessibility_name(TTRC("Offset:"));
 	loop_offset->set_max(10000);
 	loop_offset->set_step(0.001);
 	loop_offset->set_suffix("s");
@@ -568,7 +567,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	bpm_edit = memnew(SpinBox);
 	bpm_edit->set_max(400);
 	bpm_edit->set_step(0.01);
-	bpm_edit->set_accessibility_name(TTRC("BPM"));
+	bpm_edit->set_accessibility_name(TTRC("BPM:"));
 	bpm_edit->set_tooltip_text(TTR("Configure the Beats Per Measure (tempo) used for the interactive streams.\nThis is required in order to configure beat information."));
 	bpm_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bpm_edit);
@@ -580,7 +579,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	beats_edit = memnew(SpinBox);
 	beats_edit->set_tooltip_text(TTR("Configure the amount of Beats used for music-aware looping. If zero, it will be autodetected from the length.\nIt is recommended to set this value (either manually or by clicking on a beat number in the preview) to ensure looping works properly."));
 	beats_edit->set_max(99999);
-	beats_edit->set_accessibility_name(TTRC("Beat Count"));
+	beats_edit->set_accessibility_name(TTRC("Beat Count:"));
 	beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_edit);
 	bar_beats_label = memnew(Label(TTR("Bar Beats:")));
@@ -589,7 +588,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	bar_beats_edit->set_tooltip_text(TTR("Configure the Beats Per Bar. This used for music-aware transitions between AudioStreams."));
 	bar_beats_edit->set_min(2);
 	bar_beats_edit->set_max(32);
-	bar_beats_edit->set_accessibility_name(TTRC("Bar Beats"));
+	bar_beats_edit->set_accessibility_name(TTRC("Bar Beats:"));
 	bar_beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bar_beats_edit);
 	main_vbox->add_margin_child(TTR("Music Playback:"), interactive_hb);

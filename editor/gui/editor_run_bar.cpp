@@ -552,7 +552,6 @@ EditorRunBar::EditorRunBar() {
 		recovery_mode_reload_button->set_theme_type_variation("RunBarButton");
 		recovery_mode_reload_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		recovery_mode_reload_button->set_tooltip_text(TTR("Disable recovery mode and reload the project."));
-		recovery_mode_reload_button->set_accessibility_name(TTRC("Disable Recovery Mode"));
 		recovery_mode_reload_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::recovery_mode_reload_project));
 
 		recovery_mode_panel = memnew(PanelContainer);
@@ -575,7 +574,6 @@ EditorRunBar::EditorRunBar() {
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	play_button->set_tooltip_text(TTRC("Run the project's default scene."));
-	play_button->set_accessibility_name(TTRC("Run Default Scene"));
 	play_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::play_main_scene).bind(false));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTRC("Run Project"), Key::F5);
@@ -588,7 +586,6 @@ EditorRunBar::EditorRunBar() {
 	pause_button->set_toggle_mode(true);
 	pause_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	pause_button->set_tooltip_text(TTRC("Pause the running project's execution for debugging."));
-	pause_button->set_accessibility_name(TTRC("Pause"));
 	pause_button->set_disabled(true);
 
 	ED_SHORTCUT("editor/pause_running_project", TTRC("Pause Running Project"), Key::F7);
@@ -600,7 +597,6 @@ EditorRunBar::EditorRunBar() {
 	stop_button->set_theme_type_variation("RunBarButton");
 	stop_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	stop_button->set_tooltip_text(TTRC("Stop the currently running project."));
-	stop_button->set_accessibility_name(TTRC("Stop"));
 	stop_button->set_disabled(true);
 	stop_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::stop_playing));
 
@@ -639,7 +635,6 @@ EditorRunBar::EditorRunBar() {
 	play_scene_button->set_theme_type_variation("RunBarButton");
 	play_scene_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	play_scene_button->set_tooltip_text(TTRC("Run the currently edited scene."));
-	play_scene_button->set_accessibility_name(TTRC("Run Edited Scene"));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTRC("Run Current Scene"), Key::F6);
 	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
@@ -661,7 +656,6 @@ EditorRunBar::EditorRunBar() {
 	play_custom_scene_button->set_theme_type_variation("RunBarButton");
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	play_custom_scene_button->set_tooltip_text(TTRC("Run a specific scene."));
-	play_custom_scene_button->set_accessibility_name(TTRC("Run Specific Scene"));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTRC("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);

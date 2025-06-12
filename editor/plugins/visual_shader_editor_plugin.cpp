@@ -6810,7 +6810,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_tools = memnew(MenuButton);
 	filter_hbox->add_child(preview_tools);
 	preview_tools->set_tooltip_text(TTR("Options"));
-	preview_tools->set_accessibility_name(TTRC("Options"));
 	preview_tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_preview_tools_menu_option));
 	preview_tools->get_popup()->add_item(TTR("Copy Parameters From Material"), COPY_PARAMS_FROM_MATERIAL);
 	preview_tools->get_popup()->add_item(TTR("Paste Parameters To Material"), PASTE_PARAMS_TO_MATERIAL);
@@ -6860,12 +6859,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	node_filter->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_sbox_input));
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
-	node_filter->set_accessibility_name(TTRC("Search"));
 
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
 	tools->set_tooltip_text(TTR("Options"));
-	tools->set_accessibility_name(TTRC("Options"));
 	tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);

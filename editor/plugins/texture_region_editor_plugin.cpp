@@ -1154,7 +1154,7 @@ TextureRegionEditor::TextureRegionEditor() {
 
 	snap_mode_button = memnew(OptionButton);
 	hb_tools->add_child(snap_mode_button);
-	snap_mode_button->set_accessibility_name(TTRC("Snap Mode"));
+	snap_mode_button->set_accessibility_name(TTRC("Snap Mode:"));
 	snap_mode_button->add_item(TTR("None"), 0);
 	snap_mode_button->add_item(TTR("Pixel Snap"), 1);
 	snap_mode_button->add_item(TTR("Grid Snap"), 2);
@@ -1256,21 +1256,18 @@ TextureRegionEditor::TextureRegionEditor() {
 	zoom_out = memnew(Button);
 	zoom_out->set_flat(true);
 	zoom_out->set_tooltip_text(TTR("Zoom Out"));
-	zoom_out->set_accessibility_name(TTRC("Zoom Out"));
 	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_out));
 	zoom_hb->add_child(zoom_out);
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
 	zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
-	zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_reset));
 	zoom_hb->add_child(zoom_reset);
 
 	zoom_in = memnew(Button);
 	zoom_in->set_flat(true);
 	zoom_in->set_tooltip_text(TTR("Zoom In"));
-	zoom_in->set_accessibility_name(TTRC("Zoom In"));
 	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_in));
 	zoom_hb->add_child(zoom_in);
 
