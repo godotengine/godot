@@ -239,7 +239,7 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 }
 
 Vector<uint8_t> AudioStreamMP3::get_data() const {
-	return data;
+	return Vector<uint8_t>(data);
 }
 
 void AudioStreamMP3::set_loop(bool p_enable) {

@@ -665,7 +665,7 @@ String GDScriptWorkspace::get_file_uri(const String &p_path) const {
 	}
 
 	// Always return file URI's with authority part (encoding drive letters with leading slash), to maintain compat with RFC-1738 which required it.
-	return "file:///" + String("/").join(encoded_parts);
+	return "file:///" + String("/").join(Vector<String>(encoded_parts));
 }
 
 void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
