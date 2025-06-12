@@ -33,6 +33,7 @@
 #include "core/os/thread.h"
 #include "editor/doc_tools.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
@@ -48,6 +49,17 @@ class FindBar : public HBoxContainer {
 	Button *find_next = nullptr;
 	Label *matches_label = nullptr;
 	Button *hide_button = nullptr;
+	CheckBox *case_sensitive = nullptr;
+	CheckBox *whole_words = nullptr;
+
+	enum {
+		SEARCH_MATCH_CASE = 1 << 0,
+		SEARCH_WHOLE_WORDS = 1 << 1,
+		SEARCH_BACKWARDS = 1 << 2,
+		SEARCH_CONTINUE = 1 << 3,
+	};
+
+	uint32_t flags = 0;
 
 	RichTextLabel *rich_text_label = nullptr;
 
@@ -58,20 +70,25 @@ class FindBar : public HBoxContainer {
 	virtual void input(const Ref<InputEvent> &p_event) override;
 
 	void _hide_bar();
+	void _search_options_changed(bool p_pressed);
 
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 
-	void _update_results_count(bool p_search_previous);
+	void _update_results_count(bool p_search_previous, bool p_search_match_case, bool p_search_whole_words);
 	void _update_matches_label();
+
+	void _update_flags(bool p_direction_backwards, bool p_continue = true);
 
 protected:
 	void _notification(int p_what);
 
-	bool _search(bool p_search_previous = false);
+	bool _search();
 
 public:
 	void set_rich_text_label(RichTextLabel *p_rich_text_label);
+	bool is_case_sensitive() const;
+	bool is_whole_words() const;
 
 	void popup_search();
 
