@@ -60,6 +60,14 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 	emit_signal("extension_loaded", p_extension);
 #endif
 
+	if (startup_callback_called) {
+		// Extension is loading after the startup callback has already been called,
+		// so we call it now for this extension to make sure it doesn't miss it.
+		if (p_extension->startup_callback) {
+			p_extension->startup_callback();
+		}
+	}
+
 	return LOAD_STATUS_OK;
 }
 
@@ -76,9 +84,23 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 		}
 	}
 
+	if (!shutdown_callback_called) {
+		// Extension is unloading before the shutdown callback has been called,
+		// which means the engine hasn't shutdown yet but we want to make sure
+		// to call the shutdown callback so it doesn't miss it.
+		if (p_extension->shutdown_callback) {
+			p_extension->shutdown_callback();
+		}
+	}
+
 	for (const KeyValue<String, String> &kv : p_extension->class_icon_paths) {
 		gdextension_class_icon_paths.erase(kv.key);
 	}
+
+	// Clear main loop callbacks.
+	p_extension->startup_callback = nullptr;
+	p_extension->shutdown_callback = nullptr;
+	p_extension->frame_callback = nullptr;
 
 	return LOAD_STATUS_OK;
 }
@@ -385,6 +407,37 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 #endif
 
 	return needs_restart;
+}
+
+void GDExtensionManager::startup() {
+	startup_callback_called = true;
+
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->startup_callback) {
+			extension->startup_callback();
+		}
+	}
+}
+
+void GDExtensionManager::shutdown() {
+	shutdown_callback_called = true;
+
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->shutdown_callback) {
+			extension->shutdown_callback();
+		}
+	}
+}
+
+void GDExtensionManager::frame() {
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->frame_callback) {
+			extension->frame_callback();
+		}
+	}
 }
 
 GDExtensionManager *GDExtensionManager::get_singleton() {

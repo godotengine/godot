@@ -55,6 +55,7 @@
 #include "core/templates/pair.h"
 #include "core/templates/rid.h"
 #include "core/typedefs.h"
+#include "core/variant/callable.h"
 
 #ifdef _MSC_VER
 #include <intrin.h> // Needed for `__umulh` below.
@@ -342,6 +343,7 @@ struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const ObjectID &p_id) { return hash_one_uint64(p_id); }
+	static _FORCE_INLINE_ uint32_t hash(const Callable &p_callable) { return p_callable.hash(); }
 
 	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int) { return hash_one_uint64(p_int); }
 	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash_one_uint64(uint64_t(p_int)); }
@@ -387,6 +389,13 @@ struct HashMapHasherDefault {
 		h = hash_murmur3_one_real(p_vec.y, h);
 		h = hash_murmur3_one_real(p_vec.z, h);
 		h = hash_murmur3_one_real(p_vec.w, h);
+		return hash_fmix32(h);
+	}
+	static _FORCE_INLINE_ uint32_t hash(const Color &p_vec) {
+		uint32_t h = hash_murmur3_one_float(p_vec.r);
+		h = hash_murmur3_one_float(p_vec.g, h);
+		h = hash_murmur3_one_float(p_vec.b, h);
+		h = hash_murmur3_one_float(p_vec.a, h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Rect2i &p_rect) {

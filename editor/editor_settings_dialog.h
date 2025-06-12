@@ -30,9 +30,11 @@
 
 #pragma once
 
+#include "editor/editor_inspector.h"
 #include "scene/gui/dialogs.h"
 
 class CheckButton;
+class EditorEventSearchBar;
 class EventListenerLineEdit;
 class InputEventConfigurationDialog;
 class PanelContainer;
@@ -53,10 +55,8 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	LineEdit *search_box = nullptr;
 	CheckButton *advanced_switch = nullptr;
-	LineEdit *shortcut_search_box = nullptr;
-	EventListenerLineEdit *shortcut_search_by_event = nullptr;
 	SectionedInspector *inspector = nullptr;
-	Button *clear_all_search = nullptr;
+	EditorEventSearchBar *shortcut_search_bar = nullptr;
 
 	// Shortcuts
 	enum ShortcutButton {
@@ -108,8 +108,6 @@ class EditorSettingsDialog : public AcceptDialog {
 	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
 	String _get_shortcut_button_string(const String &p_shortcut_name);
 
-	void _filter_shortcuts(const String &p_filter);
-	void _filter_shortcuts_by_event(const Ref<InputEvent> &p_event);
 	bool _should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const;
 
 	void _update_shortcuts();
@@ -136,4 +134,45 @@ public:
 	static void update_navigation_preset();
 
 	EditorSettingsDialog();
+};
+
+class EditorSettingsPropertyWrapper : public EditorProperty {
+	GDCLASS(EditorSettingsPropertyWrapper, EditorProperty);
+
+	String property;
+	EditorProperty *editor_property = nullptr;
+
+	BoxContainer *container = nullptr;
+
+	HBoxContainer *override_info = nullptr;
+	Label *override_label = nullptr;
+	Button *goto_button = nullptr;
+	Button *remove_button = nullptr;
+
+	bool requires_restart = false;
+
+	void _update_override();
+	void _create_override();
+	void _remove_override();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	static inline Callable restart_request_callback;
+
+	virtual void update_property() override;
+	void setup(const String &p_property, EditorProperty *p_editor_property, bool p_requires_restart);
+};
+
+class EditorSettingsInspectorPlugin : public EditorInspectorPlugin {
+	GDCLASS(EditorSettingsInspectorPlugin, EditorInspectorPlugin);
+
+	Object *current_object = nullptr;
+
+public:
+	SectionedInspector *inspector = nullptr;
+
+	virtual bool can_handle(Object *p_object) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };

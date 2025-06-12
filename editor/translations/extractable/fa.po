@@ -21,6 +21,12 @@ msgstr ""
 msgid "All Recognized"
 msgstr "همه ی موارد شناخته شده اند"
 
+msgid "Save"
+msgstr "ذخیره"
+
+msgid "Clear"
+msgstr "پاک کردن"
+
 msgid "Network"
 msgstr "شبکه"
 
@@ -29,9 +35,6 @@ msgstr "باز کن"
 
 msgid "Select Current Folder"
 msgstr "انتخاب پوشه کنونی"
-
-msgid "Save"
-msgstr "ذخیره"
 
 msgid "Select This Folder"
 msgstr "برگزیدن این پوشه"
@@ -66,11 +69,11 @@ msgstr "مسیر:"
 msgid "Refresh files."
 msgstr "نوسازی پرونده‌ها."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "تغییر پدیدار بودن فایل‌های مخفی شده."
-
 msgid "Directories & Files:"
 msgstr "پوشه‌ها و پرونده‌ها:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "تغییر پدیدار بودن فایل‌های مخفی شده."
 
 msgid "File:"
 msgstr "پرونده:"
@@ -110,9 +113,6 @@ msgstr "چسباندن"
 
 msgid "Select All"
 msgstr "انتخاب همه"
-
-msgid "Clear"
-msgstr "پاک کردن"
 
 msgid "Undo"
 msgstr "عقب‌گرد"

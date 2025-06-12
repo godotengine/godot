@@ -531,9 +531,10 @@ void FileSystemDock::_notification(int p_what) {
 			button_hist_prev->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_bw_history));
 			file_list_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_tree_rmb_option));
-			current_path_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
+			current_path_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false, true));
 
 			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
+			thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
 
 			set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
 
@@ -633,6 +634,12 @@ void FileSystemDock::_notification(int p_what) {
 			bool new_always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
+				do_redraw = true;
+			}
+
+			int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
+			if (new_thumbnail_size_setting != thumbnail_size_setting) {
+				thumbnail_size_setting = new_thumbnail_size_setting;
 				do_redraw = true;
 			}
 
@@ -938,8 +945,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	String directory = current_path;
 	String file = "";
 
-	int thumbnail_size = EDITOR_GET("docks/filesystem/thumbnail_size");
-	thumbnail_size *= EDSCALE;
+	int thumbnail_size = thumbnail_size_setting * EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
 	Ref<Texture2D> file_thumbnail;
 	Ref<Texture2D> file_thumbnail_broken;
@@ -2204,9 +2210,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (external_program.is_empty()) {
 				OS::get_singleton()->shell_open(file);
 			} else {
-				List<String> args;
-				args.push_back(file);
-				OS::get_singleton()->create_process(external_program, args);
+				List<String> paths;
+				paths.push_back(file);
+				OS::get_singleton()->open_with_program(external_program, paths);
 			}
 		} break;
 
@@ -2271,6 +2277,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 #endif
 
 			List<String> terminal_emulator_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
+			bool append_default_args = true;
+
 #ifdef LINUXBSD_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
 			// Use `String.ends_with()` so that installations in non-default paths
@@ -2284,11 +2292,20 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					terminal_emulator_args.push_back("-cd");
 				} else if (chosen_terminal_emulator.ends_with("xfce4-terminal")) {
 					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("lxterminal")) {
+					terminal_emulator_args.push_back("--working-directory={directory}");
+					append_default_args = false;
+				} else if (chosen_terminal_emulator.ends_with("kitty")) {
+					terminal_emulator_args.push_back("--directory");
+				} else if (chosen_terminal_emulator.ends_with("alacritty")) {
+					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("xterm")) {
+					terminal_emulator_args.push_back("-e");
+					terminal_emulator_args.push_back("cd '{directory}' && exec $SHELL");
+					append_default_args = false;
 				}
 			}
 #endif
-
-			bool append_default_args = true;
 
 #ifdef WINDOWS_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
@@ -2613,7 +2630,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		default: {
 			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
 				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
-					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, p_selected);
+					// For create new file option, pass the path location of mouse click position instead, to plugin callback.
+					String fpath = current_path;
+					if (!fpath.ends_with("/")) {
+						fpath = fpath.get_base_dir();
+					}
+					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, { fpath });
 				}
 			} else if (p_option >= CONVERT_BASE_ID) {
 				selected_conversion_id = p_option - CONVERT_BASE_ID;
@@ -4135,7 +4157,7 @@ FileSystemDock::FileSystemDock() {
 	button_hist_prev = memnew(Button);
 	button_hist_prev->set_flat(true);
 	button_hist_prev->set_disabled(true);
-	button_hist_prev->set_focus_mode(FOCUS_NONE);
+	button_hist_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_prev->set_tooltip_text(TTRC("Go to previous selected folder/file."));
 	button_hist_prev->set_accessibility_name(TTRC("Previous"));
 	nav_hbc->add_child(button_hist_prev);
@@ -4143,7 +4165,7 @@ FileSystemDock::FileSystemDock() {
 	button_hist_next = memnew(Button);
 	button_hist_next->set_flat(true);
 	button_hist_next->set_disabled(true);
-	button_hist_next->set_focus_mode(FOCUS_NONE);
+	button_hist_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_next->set_tooltip_text(TTRC("Go to next selected folder/file."));
 	button_hist_next->set_accessibility_name(TTRC("Next"));
 	nav_hbc->add_child(button_hist_next);
@@ -4157,7 +4179,7 @@ FileSystemDock::FileSystemDock() {
 
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));
-	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
+	button_toggle_display_mode->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_accessibility_name(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");

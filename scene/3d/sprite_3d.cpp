@@ -964,6 +964,9 @@ Rect2 Sprite3D::get_item_rect() const {
 }
 
 void Sprite3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "frame") {
 		p_property.hint = PROPERTY_HINT_RANGE;
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
@@ -1056,7 +1059,12 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 	if (frames.is_null()) {
 		return;
 	}
-
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "frame" && playing) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		}
+		return;
+	}
 	if (p_property.name == "animation") {
 		List<StringName> names;
 		frames->get_animation_list(&names);

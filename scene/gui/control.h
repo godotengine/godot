@@ -252,6 +252,17 @@ private:
 
 		bool autofocus = false;
 
+		// Accessibility.
+
+		String accessibility_name;
+		String accessibility_description;
+		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+
+		TypedArray<NodePath> accessibility_controls_nodes;
+		TypedArray<NodePath> accessibility_described_by_nodes;
+		TypedArray<NodePath> accessibility_labeled_by_nodes;
+		TypedArray<NodePath> accessibility_flow_to_nodes;
+
 		// Theming.
 
 		ThemeOwner *theme_owner = nullptr;
@@ -398,6 +409,7 @@ protected:
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
 
 	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
+	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
 
 	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
@@ -602,6 +614,31 @@ public:
 	void set_autofocus(bool p_enable);
 	bool get_autofocus() const;
 	void attempt_autofocus();
+
+	// Accessibility.
+
+	virtual String get_accessibility_container_name(const Node *p_node) const;
+
+	void set_accessibility_name(const String &p_name);
+	String get_accessibility_name() const;
+
+	void set_accessibility_description(const String &p_description);
+	String get_accessibility_description() const;
+
+	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
+	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+
+	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_controls_nodes() const;
+
+	void set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_described_by_nodes() const;
+
+	void set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_labeled_by_nodes() const;
+
+	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
 
 	// Rendering.
 

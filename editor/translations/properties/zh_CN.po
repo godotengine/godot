@@ -166,6 +166,9 @@ msgstr "自动接受退出"
 msgid "Quit on Go Back"
 msgstr "返回时退出"
 
+msgid "General"
+msgstr "常规"
+
 msgid "Display"
 msgstr "显示"
 
@@ -246,9 +249,6 @@ msgstr "总线"
 
 msgid "Default Bus Layout"
 msgstr "默认总线布局"
-
-msgid "General"
-msgstr "常规"
 
 msgid "Default Playback Type"
 msgstr "默认回放类型"
@@ -498,6 +498,45 @@ msgstr "启用平移及缩放手势"
 
 msgid "Rotary Input Scroll Axis"
 msgstr "旋钮输入滚动轴"
+
+msgid "Navigation"
+msgstr "导航"
+
+msgid "World"
+msgstr "世界"
+
+msgid "Map Use Async Iterations"
+msgstr "地图使用异步迭代"
+
+msgid "Avoidance"
+msgstr "避障"
+
+msgid "Thread Model"
+msgstr "线程模型"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "避障使用多线程"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "避障使用高优先级线程"
+
+msgid "Pathfinding"
+msgstr "寻路"
+
+msgid "Max Threads"
+msgstr "最大线程数"
+
+msgid "Baking"
+msgstr "烘焙"
+
+msgid "Use Crash Prevention Checks"
+msgstr "使用防崩溃检查"
+
+msgid "Baking Use Multiple Threads"
+msgstr "烘焙使用多线程"
+
+msgid "Baking Use High Priority Threads"
+msgstr "烘焙使用高优先级线程"
 
 msgid "Low Processor Usage Mode"
 msgstr "低处理器占用模式"
@@ -805,9 +844,6 @@ msgstr "多线程"
 msgid "Worker Pool"
 msgstr "工作池"
 
-msgid "Max Threads"
-msgstr "最大线程数"
-
 msgid "Low Priority Thread Ratio"
 msgstr "低优先级线程比率"
 
@@ -987,9 +1023,6 @@ msgstr "项目管理器屏幕"
 
 msgid "Connection"
 msgstr "连接"
-
-msgid "Engine Version Update Mode"
-msgstr "引擎版本更新模式"
 
 msgid "Use Embedded Menu"
 msgstr "使用嵌入式菜单"
@@ -1204,9 +1237,6 @@ msgstr "触摸屏"
 msgid "Scale Gizmo Handles"
 msgstr "缩放小工具控制柄"
 
-msgid "Increase Scrollbar Touch Area"
-msgstr "增大滚动条触摸区域"
-
 msgid "Scene Tabs"
 msgstr "场景选项卡"
 
@@ -1384,9 +1414,6 @@ msgstr "子资源色相调整"
 msgid "Text Editor"
 msgstr "文本编辑器"
 
-msgid "Line Spacing"
-msgstr "行间距"
-
 msgid "Color Theme"
 msgstr "颜色主题"
 
@@ -1465,14 +1492,14 @@ msgstr "绘制制表符"
 msgid "Draw Spaces"
 msgstr "绘制空格"
 
+msgid "Line Spacing"
+msgstr "行间距"
+
 msgid "Behavior"
 msgstr "行为"
 
 msgid "Empty Selection Clipboard"
 msgstr "空选剪贴板"
-
-msgid "Navigation"
-msgstr "导航"
 
 msgid "Move Caret on Right Click"
 msgstr "在右键单击时移动光标"
@@ -2251,6 +2278,9 @@ msgstr "成员变量颜色"
 msgid "Mark Color"
 msgstr "标记颜色"
 
+msgid "Warning Color"
+msgstr "警告颜色"
+
 msgid "Bookmark Color"
 msgstr "书签颜色"
 
@@ -2331,6 +2361,138 @@ msgstr "自定义模板"
 
 msgid "Release"
 msgstr "发布"
+
+msgid "Architectures"
+msgstr "架构"
+
+msgid "App Store Team ID"
+msgstr "App Store 团队 ID"
+
+msgid "Export Method Debug"
+msgstr "调试导出方法"
+
+msgid "Code Sign Identity Debug"
+msgstr "调试代码签名身份"
+
+msgid "Code Sign Identity Release"
+msgstr "发布代码签名身份"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "预置描述文件调试 UUID"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "预置描述文件发布 UUID"
+
+msgid "Provisioning Profile Specifier Debug"
+msgstr "预置描述文件指定调试"
+
+msgid "Provisioning Profile Specifier Release"
+msgstr "预置描述文件指定发布"
+
+msgid "Export Method Release"
+msgstr "发布导出方法"
+
+msgid "Bundle Identifier"
+msgstr "捆绑包标识符"
+
+msgid "Signature"
+msgstr "签名"
+
+msgid "Short Version"
+msgstr "短版本"
+
+msgid "Additional Plist Content"
+msgstr "额外 Plist 内容"
+
+msgid "Icon Interpolation"
+msgstr "图标插值"
+
+msgid "Export Project Only"
+msgstr "仅导出项目"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "无条件删除旧导出文件"
+
+msgid "Plugins"
+msgstr "插件"
+
+msgid "Entitlements"
+msgstr "授权"
+
+msgid "Increased Memory Limit"
+msgstr "提升的内存限制"
+
+msgid "Game Center"
+msgstr "游戏中心"
+
+msgid "Push Notifications"
+msgstr "推送通知"
+
+msgid "Additional"
+msgstr "额外"
+
+msgid "Capabilities"
+msgstr "能力"
+
+msgid "Access Wi-Fi"
+msgstr "访问 Wi-Fi"
+
+msgid "Performance Gaming Tier"
+msgstr "性能游戏标准"
+
+msgid "Performance A 12"
+msgstr "性能 A12"
+
+msgid "Enabled"
+msgstr "启用"
+
+msgid "User Data"
+msgstr "用户数据"
+
+msgid "Accessible From Files App"
+msgstr "可从文件 App 访问"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "可从 iTunes 分享访问"
+
+msgid "Privacy"
+msgstr "隐私"
+
+msgid "Camera Usage Description"
+msgstr "相机使用描述"
+
+msgid "Camera Usage Description Localized"
+msgstr "相机使用描述本地化"
+
+msgid "Microphone Usage Description"
+msgstr "麦克风使用描述"
+
+msgid "Microphone Usage Description Localized"
+msgstr "麦克风使用描述本地化"
+
+msgid "Photolibrary Usage Description"
+msgstr "照片图库使用描述"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "照片图库使用描述本地化"
+
+msgid "Tracking Enabled"
+msgstr "启用追踪"
+
+msgid "Tracking Domains"
+msgstr "追踪域"
+
+msgid "Icons"
+msgstr "图标"
+
+msgid "Icon 1024 X 1024"
+msgstr "图标 1024×1024"
+
+msgid "Icon 1024 X 1024 Dark"
+msgstr "图标 1024×1024 深色"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "图标 1024×1024 着色"
 
 msgid "Export Console Wrapper"
 msgstr "导出控制台封装"
@@ -2578,9 +2740,6 @@ msgstr "化简距离"
 msgid "Save to File"
 msgstr "保存为文件"
 
-msgid "Enabled"
-msgstr "启用"
-
 msgid "Shadow Meshes"
 msgstr "阴影网格"
 
@@ -2737,9 +2896,6 @@ msgstr "次像素定位"
 msgid "Keep Rounding Remainders"
 msgstr "保持舍入余数"
 
-msgid "Oversampling"
-msgstr "过采样"
-
 msgid "Metadata Overrides"
 msgstr "元数据覆盖"
 
@@ -2841,6 +2997,12 @@ msgstr "排列"
 
 msgid "Layout"
 msgstr "布局"
+
+msgid "Base Scale"
+msgstr "基础缩放"
+
+msgid "Saturation"
+msgstr "饱和度"
 
 msgid "Normal Map"
 msgstr "法线贴图"
@@ -3121,9 +3283,6 @@ msgstr "允许"
 
 msgid "Threads"
 msgstr "线程"
-
-msgid "Thread Model"
-msgstr "线程模型"
 
 msgid "Display Server"
 msgstr "显示服务器"
@@ -3545,9 +3704,6 @@ msgstr "注释标记"
 msgid "Critical Color"
 msgstr "危急颜色"
 
-msgid "Warning Color"
-msgstr "警告颜色"
-
 msgid "Notice Color"
 msgstr "注意颜色"
 
@@ -3664,6 +3820,9 @@ msgstr "图像格式"
 
 msgid "Root Node Mode"
 msgstr "根节点模式"
+
+msgid "Visibility Mode"
+msgstr "可见模式"
 
 msgid "Json"
 msgstr "JSON"
@@ -3833,6 +3992,9 @@ msgstr "子节点"
 msgid "Light"
 msgstr "灯光"
 
+msgid "Visible"
+msgstr "可见"
+
 msgid "glTF to Godot Expression"
 msgstr "glTF 至 Godot 表达式"
 
@@ -3946,9 +4108,6 @@ msgstr "位置步数"
 
 msgid "Use Enhanced Internal Edge Removal"
 msgstr "使用增强的内部边移除"
-
-msgid "Areas Detect Static Bodies"
-msgstr "区域检测静态物体"
 
 msgid "Generate All Kinematic Contacts"
 msgstr "生成所有动态约束"
@@ -4328,6 +4487,9 @@ msgstr "Alpha 混合"
 msgid "Enable Hole Punch"
 msgstr "启用打洞"
 
+msgid "Border Color"
+msgstr "边框颜色"
+
 msgid "Aspect Ratio"
 msgstr "纵横比"
 
@@ -4511,9 +4673,6 @@ msgstr "Gradle 构建目录"
 msgid "Android Source Template"
 msgstr "Android 源码模板"
 
-msgid "Compress Native Libraries"
-msgstr "压缩原生库"
-
 msgid "Export Format"
 msgstr "导出格式"
 
@@ -4522,12 +4681,6 @@ msgstr "最小 SDK"
 
 msgid "Target SDK"
 msgstr "目标 SDK"
-
-msgid "Plugins"
-msgstr "插件"
-
-msgid "Architectures"
-msgstr "架构"
 
 msgid "Keystore"
 msgstr "密钥库"
@@ -4637,8 +4790,29 @@ msgstr "自定义权限"
 msgid "iOS Deploy"
 msgstr "iOS 部署"
 
-msgid "Icons"
-msgstr "图标"
+msgid "Targeted Device Family"
+msgstr "目标设备族"
+
+msgid "Min iOS Version"
+msgstr "最低 iOS 版本"
+
+msgid "Storyboard"
+msgstr "Storyboard"
+
+msgid "Image Scale Mode"
+msgstr "图像缩放模式"
+
+msgid "Custom Image @2x"
+msgstr "自定义图像 @2x"
+
+msgid "Custom Image @3x"
+msgstr "自定义图像 @3x"
+
+msgid "Use Custom BG Color"
+msgstr "使用自定义背景色"
+
+msgid "Custom BG Color"
+msgstr "自定义背景色"
 
 msgid "Settings 58 X 58"
 msgstr "设置 58 X 58"
@@ -4687,150 +4861,6 @@ msgstr "iOS 136×136"
 
 msgid "App Store 1024 X 1024"
 msgstr "App Store 1024×1024"
-
-msgid "App Store Team ID"
-msgstr "App Store 团队 ID"
-
-msgid "Export Method Debug"
-msgstr "调试导出方法"
-
-msgid "Code Sign Identity Debug"
-msgstr "调试代码签名身份"
-
-msgid "Code Sign Identity Release"
-msgstr "发布代码签名身份"
-
-msgid "Provisioning Profile UUID Debug"
-msgstr "预置描述文件调试 UUID"
-
-msgid "Provisioning Profile UUID Release"
-msgstr "预置描述文件发布 UUID"
-
-msgid "Provisioning Profile Specifier Debug"
-msgstr "预置描述文件指定调试"
-
-msgid "Provisioning Profile Specifier Release"
-msgstr "预置描述文件指定发布"
-
-msgid "Export Method Release"
-msgstr "发布导出方法"
-
-msgid "Targeted Device Family"
-msgstr "目标设备族"
-
-msgid "Bundle Identifier"
-msgstr "捆绑包标识符"
-
-msgid "Signature"
-msgstr "签名"
-
-msgid "Short Version"
-msgstr "短版本"
-
-msgid "Min iOS Version"
-msgstr "最低 iOS 版本"
-
-msgid "Additional Plist Content"
-msgstr "额外 Plist 内容"
-
-msgid "Icon Interpolation"
-msgstr "图标插值"
-
-msgid "Export Project Only"
-msgstr "仅导出项目"
-
-msgid "Delete Old Export Files Unconditionally"
-msgstr "无条件删除旧导出文件"
-
-msgid "Entitlements"
-msgstr "授权"
-
-msgid "Increased Memory Limit"
-msgstr "提升的内存限制"
-
-msgid "Game Center"
-msgstr "游戏中心"
-
-msgid "Push Notifications"
-msgstr "推送通知"
-
-msgid "Additional"
-msgstr "额外"
-
-msgid "Capabilities"
-msgstr "能力"
-
-msgid "Access Wi-Fi"
-msgstr "访问 Wi-Fi"
-
-msgid "Performance Gaming Tier"
-msgstr "性能游戏标准"
-
-msgid "Performance A 12"
-msgstr "性能 A12"
-
-msgid "User Data"
-msgstr "用户数据"
-
-msgid "Accessible From Files App"
-msgstr "可从文件 App 访问"
-
-msgid "Accessible From iTunes Sharing"
-msgstr "可从 iTunes 分享访问"
-
-msgid "Privacy"
-msgstr "隐私"
-
-msgid "Camera Usage Description"
-msgstr "相机使用描述"
-
-msgid "Camera Usage Description Localized"
-msgstr "相机使用描述本地化"
-
-msgid "Microphone Usage Description"
-msgstr "麦克风使用描述"
-
-msgid "Microphone Usage Description Localized"
-msgstr "麦克风使用描述本地化"
-
-msgid "Photolibrary Usage Description"
-msgstr "照片图库使用描述"
-
-msgid "Photolibrary Usage Description Localized"
-msgstr "照片图库使用描述本地化"
-
-msgid "Tracking Enabled"
-msgstr "启用追踪"
-
-msgid "Tracking Domains"
-msgstr "追踪域"
-
-msgid "Icon 1024 X 1024"
-msgstr "图标 1024×1024"
-
-msgid "Icon 1024 X 1024 Dark"
-msgstr "图标 1024×1024 深色"
-
-msgid "Icon 1024 X 1024 Tinted"
-msgstr "图标 1024×1024 着色"
-
-msgid "Storyboard"
-msgstr "Storyboard"
-
-msgid "Image Scale Mode"
-msgstr "图像缩放模式"
-
-msgid "Custom Image @2x"
-msgstr "自定义图像 @2x"
-
-msgid "Custom Image @3x"
-msgstr "自定义图像 @3x"
-
-msgid "Use Custom BG Color"
-msgstr "使用自定义背景色"
-
-msgid "Custom BG Color"
-msgstr "自定义背景色"
 
 msgid "Architecture"
 msgstr "架构"
@@ -5135,17 +5165,11 @@ msgstr "图标 512×512"
 msgid "Windows"
 msgstr "Windows"
 
-msgid "rcedit"
-msgstr "rcedit"
-
 msgid "signtool"
 msgstr "signtool"
 
 msgid "osslsigncode"
 msgstr "osslsigncode"
-
-msgid "wine"
-msgstr "wine"
 
 msgid "Identity Type"
 msgstr "身份类型"
@@ -5630,9 +5654,6 @@ msgstr "小工具范围"
 msgid "Multimesh"
 msgstr "MultiMesh"
 
-msgid "Pathfinding"
-msgstr "寻路"
-
 msgid "Path Desired Distance"
 msgstr "路径期望距离"
 
@@ -5659,9 +5680,6 @@ msgstr "简化路径"
 
 msgid "Simplify Epsilon"
 msgstr "简化阈值"
-
-msgid "Avoidance"
-msgstr "避障"
 
 msgid "Avoidance Enabled"
 msgstr "启用避障"
@@ -5776,9 +5794,6 @@ msgstr "滚动"
 
 msgid "Base Offset"
 msgstr "基础偏移"
-
-msgid "Base Scale"
-msgstr "基础缩放"
 
 msgid "Limit Begin"
 msgstr "起点限制"
@@ -5906,8 +5921,8 @@ msgstr "禁用"
 msgid "One Way Collision"
 msgstr "单向碰撞"
 
-msgid "One Way Collision Margin"
-msgstr "单向碰撞边距"
+msgid "Margin"
+msgstr "边距"
 
 msgid "Debug Color"
 msgstr "调试颜色"
@@ -6054,14 +6069,29 @@ msgstr "力"
 msgid "Torque"
 msgstr "力矩"
 
-msgid "Margin"
-msgstr "边距"
-
 msgid "Constant Linear Velocity"
 msgstr "常线速度"
 
 msgid "Constant Angular Velocity"
 msgstr "常角速度"
+
+msgid "Texture Normal"
+msgstr "正常纹理"
+
+msgid "Texture Pressed"
+msgstr "按下纹理"
+
+msgid "Bitmask"
+msgstr "掩码"
+
+msgid "Shape Centered"
+msgstr "形状居中"
+
+msgid "Shape Visible"
+msgstr "形状可见"
+
+msgid "Passby Press"
+msgstr "经过点击"
 
 msgid "UV"
 msgstr "UV"
@@ -6140,30 +6170,6 @@ msgstr "启用碰撞"
 
 msgid "Use Kinematic Bodies"
 msgstr "使用运动学物体"
-
-msgid "Navigation Enabled"
-msgstr "启用导航"
-
-msgid "Texture Normal"
-msgstr "正常纹理"
-
-msgid "Texture Pressed"
-msgstr "按下纹理"
-
-msgid "Bitmask"
-msgstr "掩码"
-
-msgid "Shape Centered"
-msgstr "形状居中"
-
-msgid "Shape Visible"
-msgstr "形状可见"
-
-msgid "Passby Press"
-msgstr "经过点击"
-
-msgid "Visibility Mode"
-msgstr "可见模式"
 
 msgid "Enabling"
 msgstr "启用"
@@ -6697,14 +6703,14 @@ msgstr "顶层"
 msgid "Visibility"
 msgstr "可见性"
 
-msgid "Visible"
-msgstr "可见"
-
 msgid "Visibility Parent"
 msgstr "可见性父级"
 
 msgid "Bake"
 msgstr "烘焙"
+
+msgid "Debug Shape"
+msgstr "调试形状"
 
 msgid "Rotation Mode"
 msgstr "旋转模式"
@@ -6946,8 +6952,38 @@ msgstr "角 Z"
 msgid "Hit Back Faces"
 msgstr "命中背面"
 
-msgid "Debug Shape"
-msgstr "调试形状"
+msgid "Pinned Points"
+msgstr "固定点"
+
+msgid "Attachments"
+msgstr "附件"
+
+msgid "Point Index"
+msgstr "点索引"
+
+msgid "Spatial Attachment Path"
+msgstr "空间附件路径"
+
+msgid "Parent Collision Ignore"
+msgstr "忽略父节点碰撞"
+
+msgid "Simulation Precision"
+msgstr "模拟精度"
+
+msgid "Total Mass"
+msgstr "总质量"
+
+msgid "Linear Stiffness"
+msgstr "线性硬度"
+
+msgid "Pressure Coefficient"
+msgstr "压力系数"
+
+msgid "Damping Coefficient"
+msgstr "阻尼系数"
+
+msgid "Drag Coefficient"
+msgstr "阻力系数"
 
 msgid "Spring Length"
 msgstr "弹簧长度"
@@ -7065,39 +7101,6 @@ msgstr "激活"
 
 msgid "Influence"
 msgstr "影响"
-
-msgid "Pinned Points"
-msgstr "固定点"
-
-msgid "Attachments"
-msgstr "附件"
-
-msgid "Point Index"
-msgstr "点索引"
-
-msgid "Spatial Attachment Path"
-msgstr "空间附件路径"
-
-msgid "Parent Collision Ignore"
-msgstr "忽略父节点碰撞"
-
-msgid "Simulation Precision"
-msgstr "模拟精度"
-
-msgid "Total Mass"
-msgstr "总质量"
-
-msgid "Linear Stiffness"
-msgstr "线性硬度"
-
-msgid "Pressure Coefficient"
-msgstr "压力系数"
-
-msgid "Damping Coefficient"
-msgstr "阻尼系数"
-
-msgid "Drag Coefficient"
-msgstr "阻力系数"
 
 msgid "Position Offset"
 msgstr "位置偏移"
@@ -7651,6 +7654,12 @@ msgstr "最后行列对齐"
 msgid "Reverse Fill"
 msgstr "翻转填充"
 
+msgid "Folded"
+msgstr "已折叠"
+
+msgid "Title"
+msgstr "标题"
+
 msgid "Show Grid"
 msgstr "显示网格"
 
@@ -7710,9 +7719,6 @@ msgstr "可拖动"
 
 msgid "Selected"
 msgstr "选中"
-
-msgid "Title"
-msgstr "标题"
 
 msgid "Autoshrink Enabled"
 msgstr "启用自动收缩"
@@ -7876,9 +7882,6 @@ msgstr "字素内部"
 msgid "Secret"
 msgstr "密码"
 
-msgid "Secret Character"
-msgstr "密码字符"
-
 msgid "Underline"
 msgstr "下划线"
 
@@ -7962,9 +7965,6 @@ msgstr "允许更大"
 
 msgid "Allow Lesser"
 msgstr "允许更小"
-
-msgid "Border Color"
-msgstr "边框颜色"
 
 msgid "Border Width"
 msgstr "边框宽度"
@@ -8602,6 +8602,9 @@ msgstr "四方形 3"
 
 msgid "Canvas Cull Mask"
 msgstr "画布剔除遮罩"
+
+msgid "Oversampling"
+msgstr "过采样"
 
 msgid "Size 2D Override"
 msgstr "2D 大小覆盖"
@@ -9410,9 +9413,6 @@ msgstr "调整"
 msgid "Brightness"
 msgstr "亮度"
 
-msgid "Saturation"
-msgstr "饱和度"
-
 msgid "Color Correction"
 msgstr "颜色校正"
 
@@ -9553,9 +9553,6 @@ msgstr "翻转次法线"
 
 msgid "Flip Texture"
 msgstr "翻转纹理"
-
-msgid "Subsurface Scattering"
-msgstr "次表面散射"
 
 msgid "Skin Mode"
 msgstr "皮肤模式"
@@ -10178,9 +10175,6 @@ msgstr "执行行"
 msgid "Can Fold"
 msgstr "可折叠"
 
-msgid "Folded"
-msgstr "已折叠"
-
 msgid "Can Fold Code Region"
 msgstr "能够折叠代码区域"
 
@@ -10496,6 +10490,12 @@ msgstr "悬停"
 msgid "Hovered Dimmed"
 msgstr "悬停变暗"
 
+msgid "Hovered Selected"
+msgstr "悬停选中"
+
+msgid "Hovered Selected Focus"
+msgstr "悬停选中聚焦"
+
 msgid "Selected Focus"
 msgstr "选中项聚焦"
 
@@ -10552,6 +10552,9 @@ msgstr "字体悬停颜色"
 
 msgid "Font Hovered Dimmed Color"
 msgstr "字体悬停颜色变暗"
+
+msgid "Font Hovered Selected Color"
+msgstr "字体悬停选中颜色"
 
 msgid "Guide Color"
 msgstr "参考线颜色"
@@ -10633,15 +10636,6 @@ msgstr "滚动条垂直间距"
 
 msgid "Icon Margin"
 msgstr "图标边距"
-
-msgid "Font Hovered Selected Color"
-msgstr "字体悬停选中颜色"
-
-msgid "Hovered Selected"
-msgstr "悬停选中"
-
-msgid "Hovered Selected Focus"
-msgstr "悬停选中聚焦"
 
 msgid "Tab Selected"
 msgstr "选项卡已选"
@@ -11111,39 +11105,6 @@ msgstr "默认边界连接边距"
 msgid "Default Link Connection Radius"
 msgstr "默认链接连接半径"
 
-msgid "Default Cell Height"
-msgstr "默认单元格高度"
-
-msgid "Default Up"
-msgstr "默认上方"
-
-msgid "Merge Rasterizer Cell Scale"
-msgstr "合并光栅器单元格缩放"
-
-msgid "World"
-msgstr "世界"
-
-msgid "Map Use Async Iterations"
-msgstr "地图使用异步迭代"
-
-msgid "Avoidance Use Multiple Threads"
-msgstr "避障使用多线程"
-
-msgid "Avoidance Use High Priority Threads"
-msgstr "避障使用高优先级线程"
-
-msgid "Baking"
-msgstr "烘焙"
-
-msgid "Use Crash Prevention Checks"
-msgstr "使用防崩溃检查"
-
-msgid "Baking Use Multiple Threads"
-msgstr "烘焙使用多线程"
-
-msgid "Baking Use High Priority Threads"
-msgstr "烘焙使用高优先级线程"
-
 msgid "Edge Connection Color"
 msgstr "边界连接颜色"
 
@@ -11171,14 +11132,8 @@ msgstr "代理路径颜色"
 msgid "Enable Edge Connections"
 msgstr "启用边界连接"
 
-msgid "Enable Edge Connections X-Ray"
-msgstr "启用边界连接 X 光"
-
 msgid "Enable Edge Lines"
 msgstr "启用边界线"
-
-msgid "Enable Edge Lines X-Ray"
-msgstr "启用边界线 X 光"
 
 msgid "Enable Geometry Face Random Color"
 msgstr "启用几何体面随机颜色"
@@ -11186,14 +11141,8 @@ msgstr "启用几何体面随机颜色"
 msgid "Enable Link Connections"
 msgstr "启用链接连接"
 
-msgid "Enable Link Connections X-Ray"
-msgstr "启用链接连接 X 光"
-
 msgid "Enable Agent Paths"
 msgstr "启用代理路径"
-
-msgid "Enable Agent Paths X-Ray"
-msgstr "启用代理路径 X 光"
 
 msgid "Agent Path Point Size"
 msgstr "代理路径点大小"
@@ -11224,6 +11173,27 @@ msgstr "启用障碍物半径"
 
 msgid "Enable Obstacles Static"
 msgstr "启用静态障碍物"
+
+msgid "Default Cell Height"
+msgstr "默认单元格高度"
+
+msgid "Default Up"
+msgstr "默认上方"
+
+msgid "Merge Rasterizer Cell Scale"
+msgstr "合并光栅器单元格缩放"
+
+msgid "Enable Edge Connections X-Ray"
+msgstr "启用边界连接 X 光"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "启用边界线 X 光"
+
+msgid "Enable Link Connections X-Ray"
+msgstr "启用链接连接 X 光"
+
+msgid "Enable Agent Paths X-Ray"
+msgstr "启用代理路径 X 光"
 
 msgid "Inverse Mass"
 msgstr "逆转质量"
@@ -11623,6 +11593,9 @@ msgstr "屏幕空间反射"
 
 msgid "Roughness Quality"
 msgstr "粗糙度质量"
+
+msgid "Subsurface Scattering"
+msgstr "次表面散射"
 
 msgid "Subsurface Scattering Quality"
 msgstr "次表面散射质量"

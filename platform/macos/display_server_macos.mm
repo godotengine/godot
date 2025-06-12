@@ -43,7 +43,6 @@
 #import "key_mapping_macos.h"
 #import "macos_quartz_core_spi.h"
 #import "os_macos.h"
-#import "tts_macos.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -916,66 +915,6 @@ Callable DisplayServerMacOS::_help_get_action_callback() const {
 	return help_action_callback;
 }
 
-void DisplayServerMacOS::initialize_tts() const {
-	const_cast<DisplayServerMacOS *>(this)->tts = [[TTS_MacOS alloc] init];
-}
-
-bool DisplayServerMacOS::tts_is_speaking() const {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL_V(tts, false);
-	return [tts isSpeaking];
-}
-
-bool DisplayServerMacOS::tts_is_paused() const {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL_V(tts, false);
-	return [tts isPaused];
-}
-
-TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
-	return [tts getVoices];
-}
-
-void DisplayServerMacOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL(tts);
-	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
-}
-
-void DisplayServerMacOS::tts_pause() {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL(tts);
-	[tts pauseSpeaking];
-}
-
-void DisplayServerMacOS::tts_resume() {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL(tts);
-	[tts resumeSpeaking];
-}
-
-void DisplayServerMacOS::tts_stop() {
-	if (unlikely(!tts)) {
-		initialize_tts();
-	}
-	ERR_FAIL_NULL(tts);
-	[tts stopSpeaking];
-}
-
 bool DisplayServerMacOS::is_dark_mode_supported() const {
 	if (@available(macOS 10.14, *)) {
 		return true;
@@ -1642,69 +1581,6 @@ BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
 	return last_button_state;
 }
 
-void DisplayServerMacOS::clipboard_set(const String &p_text) {
-	_THREAD_SAFE_METHOD_
-
-	NSString *copiedString = [NSString stringWithUTF8String:p_text.utf8().get_data()];
-	NSArray *copiedStringArray = [NSArray arrayWithObject:copiedString];
-
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	[pasteboard clearContents];
-	[pasteboard writeObjects:copiedStringArray];
-}
-
-String DisplayServerMacOS::clipboard_get() const {
-	_THREAD_SAFE_METHOD_
-
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
-	NSDictionary *options = [NSDictionary dictionary];
-
-	BOOL ok = [pasteboard canReadObjectForClasses:classArray options:options];
-
-	if (!ok) {
-		return "";
-	}
-
-	NSArray *objectsToPaste = [pasteboard readObjectsForClasses:classArray options:options];
-	NSString *string = [objectsToPaste objectAtIndex:0];
-
-	String ret;
-	ret.append_utf8([string UTF8String]);
-	return ret;
-}
-
-Ref<Image> DisplayServerMacOS::clipboard_get_image() const {
-	Ref<Image> image;
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
-	if (!result) {
-		return image;
-	}
-	NSData *data = [pasteboard dataForType:result];
-	if (!data) {
-		return image;
-	}
-	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
-	NSData *pngData = [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
-	image.instantiate();
-	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
-	return image;
-}
-
-bool DisplayServerMacOS::clipboard_has() const {
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
-	NSDictionary *options = [NSDictionary dictionary];
-	return [pasteboard canReadObjectForClasses:classArray options:options];
-}
-
-bool DisplayServerMacOS::clipboard_has_image() const {
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
-	return result;
-}
-
 int DisplayServerMacOS::get_screen_count() const {
 	_THREAD_SAFE_METHOD_
 
@@ -1718,13 +1594,16 @@ int DisplayServerMacOS::get_primary_screen() const {
 
 int DisplayServerMacOS::get_keyboard_focus_screen() const {
 	const NSUInteger index = [[NSScreen screens] indexOfObject:[NSScreen mainScreen]];
-	return (index == NSNotFound) ? 0 : index;
+	return (index == NSNotFound) ? get_primary_screen() : index;
 }
 
 Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
 	Point2i position = _get_native_screen_position(p_screen) - _get_screens_origin();
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot expects a positive value.
@@ -1736,6 +1615,9 @@ Size2i DisplayServerMacOS::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		// Note: Use frame to get the whole screen size.
@@ -1750,6 +1632,9 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
@@ -1771,6 +1656,9 @@ float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		NSArray<NSScreen *> *screens = NSScreen.screens;
 		NSUInteger index = (NSUInteger)p_screen;
@@ -1793,6 +1681,9 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		const float scale = screen_get_max_scale();
@@ -1849,7 +1740,9 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 }
 
 Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Ref<Image>());
 
 	HashSet<CGWindowID> exclude_windows;
 	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
@@ -1950,6 +1843,9 @@ float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
@@ -2144,7 +2040,7 @@ void DisplayServerMacOS::window_set_mouse_passthrough(const Vector<Vector2> &p_r
 
 int DisplayServerMacOS::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	ERR_FAIL_COND_V(!windows.has(p_window), INVALID_SCREEN);
 	const WindowData &wd = windows[p_window];
 
 	const NSUInteger index = [[NSScreen screens] indexOfObject:[wd.window_object screen]];
@@ -2155,11 +2051,15 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	if (window_get_current_screen(p_window) == p_screen) {
 		return;
 	}
+	WindowData &wd = windows[p_window];
 
 	bool was_fullscreen = false;
 	if (wd.fullscreen) {
@@ -2537,7 +2437,13 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
-				[wd.window_object zoom:nil];
+				if (wd.borderless) {
+					if (wd.pre_zoom_rect.size.width > 0 && wd.pre_zoom_rect.size.height > 0) {
+						[wd.window_object setFrame:wd.pre_zoom_rect display:NO animate:YES];
+					}
+				} else {
+					[wd.window_object zoom:nil];
+				}
 			}
 		} break;
 	}
@@ -2570,7 +2476,12 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (!NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
-				[wd.window_object zoom:nil];
+				wd.pre_zoom_rect = [wd.window_object frame];
+				if (wd.borderless) {
+					[wd.window_object setFrame:[[wd.window_object screen] visibleFrame] display:NO animate:YES];
+				} else {
+					[wd.window_object zoom:nil];
+				}
 			}
 		} break;
 	}
@@ -2770,6 +2681,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[wd.window_object orderOut:nil];
 			}
 			wd.borderless = p_enabled;
+			bool was_maximized = (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame]));
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
 				[wd.window_object setHasShadow:NO];
@@ -2799,6 +2711,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];
 				}
+			}
+			if (was_maximized) {
+				[wd.window_object setFrame:[[wd.window_object screen] visibleFrame] display:NO];
 			}
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
@@ -3973,12 +3888,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	// Register to be notified on displays arrangement changes.
 	CGDisplayRegisterReconfigurationCallback(_displays_arrangement_changed, nullptr);
-
-	// Init TTS
-	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
-	if (tts_enabled) {
-		initialize_tts();
-	}
 
 	native_menu = memnew(NativeMenuMacOS);
 

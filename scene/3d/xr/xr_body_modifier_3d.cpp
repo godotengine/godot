@@ -82,7 +82,7 @@ XRBodyModifier3D::BoneUpdate XRBodyModifier3D::get_bone_update() const {
 }
 
 void XRBodyModifier3D::_get_joint_data() {
-	// Table of Godot Humanoid bone names.
+	// Table of Godot Humanoid bone names with some additions.
 	static const String bone_names[XRBodyTracker::JOINT_MAX] = {
 		"Root", // XRBodyTracker::JOINT_ROOT
 
@@ -168,6 +168,19 @@ void XRBodyModifier3D::_get_joint_data() {
 		"RightLittleIntermediate", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_PHALANX_INTERMEDIATE
 		"RightLittleDistal", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_PHALANX_DISTAL
 		"RightLittleTip", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_TIP
+
+		// Extra Joints.
+		"LowerChest", // XRBodyTracker::JOINT_LOWER_CHEST
+		"LeftScapula", // XRBodyTracker::JOINT_LEFT_SCAPULA
+		"LeftWristTwist", // XRBodyTracker::JOINT_LEFT_WRIST_TWIST
+		"RightScapula", // XRBodyTracker::JOINT_RIGHT_SCAPULA
+		"RightWristTwist", // XRBodyTracker::JOINT_RIGHT_WRIST_TWIST
+		"LeftAnkleTwist", // XRBodyTracker::JOINT_LEFT_ANKLE_TWIST
+		"LeftAnkle", // XRBodyTracker::JOINT_LEFT_ANKLE
+		"LeftMiddleFoot", // XRBodyTracker::JOINT_LEFT_MIDDLE_FOOT
+		"RightAnkleTwist", // XRBodyTracker::JOINT_RIGHT_ANKLE_TWIST
+		"RightAnkle", // XRBodyTracker::JOINT_RIGHT_ANKLE
+		"RightMiddleFoot", // XRBodyTracker::JOINT_RIGHT_MIDDLE_FOOT
 	};
 
 	// reset JIC.

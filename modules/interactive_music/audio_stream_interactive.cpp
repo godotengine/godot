@@ -416,17 +416,18 @@ String AudioStreamInteractive::_get_streams_hint() const {
 }
 
 #endif
+
 void AudioStreamInteractive::_validate_property(PropertyInfo &r_property) const {
 	String prop = r_property.name;
 
+	if (Engine::get_singleton()->is_editor_hint() && prop == "switch_to") {
 #ifdef TOOLS_ENABLED
-	if (prop == "switch_to") {
 		r_property.hint_string = _get_streams_hint();
+#endif
 		return;
 	}
-#endif
 
-	if (prop == "initial_clip") {
+	if (Engine::get_singleton()->is_editor_hint() && prop == "initial_clip") {
 #ifdef TOOLS_ENABLED
 		r_property.hint_string = _get_streams_hint();
 #endif
@@ -437,7 +438,7 @@ void AudioStreamInteractive::_validate_property(PropertyInfo &r_property) const 
 		} else if (prop == "clip_" + itos(clip) + "/next_clip") {
 			if (clips[clip].auto_advance != AUTO_ADVANCE_ENABLED) {
 				r_property.usage = 0;
-			} else {
+			} else if (Engine::get_singleton()->is_editor_hint()) {
 #ifdef TOOLS_ENABLED
 				r_property.hint_string = _get_streams_hint();
 #endif

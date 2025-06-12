@@ -22,7 +22,7 @@
 			<return type="int" enum="XRHandTracker.HandJointFlags" is_bitfield="true" />
 			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
 			<description>
-				Returns flags about the validity of the tracking data for the given hand joint (see [enum XRHandTracker.HandJointFlags]).
+				Returns flags about the validity of the tracking data for the given hand joint.
 			</description>
 		</method>
 		<method name="get_hand_joint_linear_velocity" qualifiers="const">

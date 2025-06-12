@@ -7,8 +7,6 @@
  * Copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, 2012-2024, D. R. Commander.
- * Godot modifications:
- * Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md).
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *

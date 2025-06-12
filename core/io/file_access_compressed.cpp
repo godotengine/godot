@@ -68,7 +68,7 @@ Error FileAccessCompressed::open_after_magic(Ref<FileAccess> p_base) {
 	read_block_count = bc;
 	read_block_size = read_blocks.size() == 1 ? read_total : block_size;
 
-	int ret = Compression::decompress(buffer.ptrw(), read_block_size, comp_buffer.ptr(), read_blocks[0].csize, cmode);
+	const int64_t ret = Compression::decompress(buffer.ptrw(), read_block_size, comp_buffer.ptr(), read_blocks[0].csize, cmode);
 	read_block = 0;
 	read_pos = 0;
 
@@ -137,10 +137,11 @@ void FileAccessCompressed::_close() {
 
 			Vector<uint8_t> cblock;
 			cblock.resize(Compression::get_max_compressed_buffer_size(bl, cmode));
-			int s = Compression::compress(cblock.ptrw(), bp, bl, cmode);
+			const int64_t compressed_size = Compression::compress(cblock.ptrw(), bp, bl, cmode);
+			ERR_FAIL_COND_MSG(compressed_size < 0, "FileAccessCompressed: Error compressing data.");
 
-			f->store_buffer(cblock.ptr(), s);
-			block_sizes.push_back(s);
+			f->store_buffer(cblock.ptr(), (uint64_t)compressed_size);
+			block_sizes.push_back(compressed_size);
 		}
 
 		f->seek(16); //ok write block sizes
@@ -200,7 +201,7 @@ void FileAccessCompressed::seek(uint64_t p_position) {
 				read_block = block_idx;
 				f->seek(read_blocks[read_block].offset);
 				f->get_buffer(comp_buffer.ptrw(), read_blocks[read_block].csize);
-				int ret = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
+				const int64_t ret = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
 				ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
 				read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;
 			}
@@ -288,7 +289,7 @@ uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) con
 
 		// Read the next block of compressed data.
 		f->get_buffer(comp_buffer.ptrw(), read_blocks[read_block].csize);
-		int ret = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
+		const int64_t ret = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
 		ERR_FAIL_COND_V_MSG(ret == -1, -1, "Compressed file is corrupt.");
 		read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;
 		read_pos = 0;

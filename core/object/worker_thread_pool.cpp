@@ -740,6 +740,15 @@ WorkerThreadPool::TaskID WorkerThreadPool::get_caller_task_id() const {
 	}
 }
 
+WorkerThreadPool::GroupID WorkerThreadPool::get_caller_group_id() const {
+	int th_index = get_thread_index();
+	if (th_index != -1 && threads[th_index].current_task && threads[th_index].current_task->group) {
+		return threads[th_index].current_task->group->self;
+	} else {
+		return INVALID_TASK_ID;
+	}
+}
+
 #ifdef THREADS_ENABLED
 uint32_t WorkerThreadPool::_thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock) {
 	for (uint32_t i = 0; i < MAX_UNLOCKABLE_LOCKS; i++) {
@@ -856,11 +865,13 @@ void WorkerThreadPool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_task", "action", "high_priority", "description"), &WorkerThreadPool::add_task, DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_task_completed", "task_id"), &WorkerThreadPool::is_task_completed);
 	ClassDB::bind_method(D_METHOD("wait_for_task_completion", "task_id"), &WorkerThreadPool::wait_for_task_completion);
+	ClassDB::bind_method(D_METHOD("get_caller_task_id"), &WorkerThreadPool::get_caller_task_id);
 
 	ClassDB::bind_method(D_METHOD("add_group_task", "action", "elements", "tasks_needed", "high_priority", "description"), &WorkerThreadPool::add_group_task, DEFVAL(-1), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_group_task_completed", "group_id"), &WorkerThreadPool::is_group_task_completed);
 	ClassDB::bind_method(D_METHOD("get_group_processed_element_count", "group_id"), &WorkerThreadPool::get_group_processed_element_count);
 	ClassDB::bind_method(D_METHOD("wait_for_group_task_completion", "group_id"), &WorkerThreadPool::wait_for_group_task_completion);
+	ClassDB::bind_method(D_METHOD("get_caller_group_id"), &WorkerThreadPool::get_caller_group_id);
 }
 
 WorkerThreadPool *WorkerThreadPool::get_named_pool(const StringName &p_name) {

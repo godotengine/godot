@@ -118,6 +118,7 @@ public:
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
+
 #ifdef DEBUG_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
@@ -127,6 +128,11 @@ public:
 		HashMap<StringName, Vector<Error>> method_error_values;
 		HashMap<StringName, List<StringName>> linked_properties;
 #endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+		List<StringName> dependency_list;
+#endif
+
 		HashMap<StringName, PropertySetGet> property_setget;
 		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
@@ -499,6 +505,11 @@ public:
 	static bool is_class_reloadable(const StringName &p_class);
 	static bool is_class_runtime(const StringName &p_class);
 
+#ifdef TOOLS_ENABLED
+	static void add_class_dependency(const StringName &p_class, const StringName &p_dependency);
+	static void get_class_dependencies(const StringName &p_class, List<StringName> *r_rependencies);
+#endif
+
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);
 	static void get_extensions_for_type(const StringName &p_class, List<String> *p_extensions);
@@ -531,13 +542,8 @@ public:
 
 #ifdef DEBUG_ENABLED
 
-template <typename... P>
-_FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
-	return Vector<Error>({ p_args... });
-}
-
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) \
-	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__));
+	::ClassDB::set_method_error_return_values(get_class_static(), m_method, Vector<Error>{ __VA_ARGS__ });
 
 #else
 

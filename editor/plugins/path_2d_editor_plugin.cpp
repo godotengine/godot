@@ -443,6 +443,14 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	int len = curve->get_point_count();
 	Control *vpc = canvas_item_editor->get_viewport_control();
 
+	debug_handle_lines.clear();
+	debug_handle_curve_transforms.clear();
+	debug_handle_sharp_transforms.clear();
+	debug_handle_smooth_transforms.clear();
+
+	Transform2D handle_curve_transform = Transform2D().scaled(curve_handle_size * 0.5);
+	Transform2D handle_point_transform = Transform2D().scaled(handle_size * 0.5);
+
 	for (int i = 0; i < len; i++) {
 		Vector2 point = xform.xform(curve->get_point_position(i));
 		// Determines the point icon to be used
@@ -452,10 +460,10 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			Vector2 point_out = xform.xform(curve->get_point_position(i) + curve->get_point_out(i));
 			if (point != point_out) {
 				smooth = true;
-				// Draw the line with a dark and light color to be visible on all backgrounds
-				vpc->draw_line(point, point_out, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
-				vpc->draw_line(point, point_out, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
-				vpc->draw_texture_rect(curve_handle, Rect2(point_out - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
+				debug_handle_lines.push_back(point);
+				debug_handle_lines.push_back(point_out);
+				handle_curve_transform.set_origin(point_out);
+				debug_handle_curve_transforms.push_back(handle_curve_transform);
 			}
 		}
 
@@ -463,22 +471,142 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			Vector2 point_in = xform.xform(curve->get_point_position(i) + curve->get_point_in(i));
 			if (point != point_in) {
 				smooth = true;
-				// Draw the line with a dark and light color to be visible on all backgrounds
-				vpc->draw_line(point, point_in, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
-				vpc->draw_line(point, point_in, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
-				vpc->draw_texture_rect(curve_handle, Rect2(point_in - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
+				debug_handle_lines.push_back(point);
+				debug_handle_lines.push_back(point_in);
+				handle_curve_transform.set_origin(point_in);
+				debug_handle_curve_transforms.push_back(handle_curve_transform);
 			}
 		}
 
-		vpc->draw_texture_rect(
-				smooth ? path_smooth_handle : path_sharp_handle,
-				Rect2(point - handle_size * 0.5, handle_size),
-				false);
+		handle_point_transform.set_origin(point);
+		if (smooth) {
+			debug_handle_smooth_transforms.push_back(handle_point_transform);
+		} else {
+			debug_handle_sharp_transforms.push_back(handle_point_transform);
+		}
 	}
 
 	if (on_edge) {
 		Ref<Texture2D> add_handle = get_editor_theme_icon(SNAME("EditorHandleAdd"));
 		p_overlay->draw_texture(add_handle, edge_point - add_handle->get_size() * 0.5);
+	}
+
+	RenderingServer *rs = RS::get_singleton();
+	rs->mesh_clear(debug_mesh_rid);
+
+	if (!debug_handle_lines.is_empty()) {
+		Array handles_array;
+		handles_array.resize(Mesh::ARRAY_MAX);
+
+		handles_array[Mesh::ARRAY_VERTEX] = Vector<Vector2>(debug_handle_lines);
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, handles_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+		rs->canvas_item_add_mesh(vpc->get_canvas_item(), debug_mesh_rid, Transform2D(), Color(0.5, 0.5, 0.5, 1.0));
+	}
+
+	// Add texture rects multimeshes for handle vertices.
+
+	uint32_t handle_curve_count = debug_handle_curve_transforms.size();
+	uint32_t handle_sharp_count = debug_handle_sharp_transforms.size();
+	uint32_t handle_smooth_count = debug_handle_smooth_transforms.size();
+
+	// Add texture rects for curve handle vertices.
+
+	rs->multimesh_set_visible_instances(debug_handle_curve_multimesh_rid, 0);
+	if (handle_curve_count > 0) {
+		if (rs->multimesh_get_instance_count(debug_handle_curve_multimesh_rid) != int(handle_curve_count)) {
+			rs->multimesh_allocate_data(debug_handle_curve_multimesh_rid, handle_curve_count, RS::MULTIMESH_TRANSFORM_2D);
+		}
+
+		Vector<float> multimesh_buffer;
+		multimesh_buffer.resize(8 * handle_curve_count);
+		float *multimesh_buffer_ptrw = multimesh_buffer.ptrw();
+
+		const Transform2D *debug_handle_transforms_ptr = debug_handle_curve_transforms.ptr();
+
+		for (uint32_t i = 0; i < handle_curve_count; i++) {
+			const Transform2D &handle_transform = debug_handle_transforms_ptr[i];
+
+			multimesh_buffer_ptrw[i * 8 + 0] = handle_transform[0][0];
+			multimesh_buffer_ptrw[i * 8 + 1] = handle_transform[1][0];
+			multimesh_buffer_ptrw[i * 8 + 2] = 0;
+			multimesh_buffer_ptrw[i * 8 + 3] = handle_transform[2][0];
+			multimesh_buffer_ptrw[i * 8 + 4] = handle_transform[0][1];
+			multimesh_buffer_ptrw[i * 8 + 5] = handle_transform[1][1];
+			multimesh_buffer_ptrw[i * 8 + 6] = 0;
+			multimesh_buffer_ptrw[i * 8 + 7] = handle_transform[2][1];
+		}
+
+		rs->multimesh_set_buffer(debug_handle_curve_multimesh_rid, multimesh_buffer);
+		rs->multimesh_set_visible_instances(debug_handle_curve_multimesh_rid, handle_curve_count);
+
+		rs->canvas_item_add_multimesh(vpc->get_canvas_item(), debug_handle_curve_multimesh_rid, curve_handle->get_rid());
+	}
+
+	// Add texture rects for sharp handle vertices.
+
+	rs->multimesh_set_visible_instances(debug_handle_sharp_multimesh_rid, 0);
+	if (handle_sharp_count > 0) {
+		if (rs->multimesh_get_instance_count(debug_handle_sharp_multimesh_rid) != int(handle_sharp_count)) {
+			rs->multimesh_allocate_data(debug_handle_sharp_multimesh_rid, handle_sharp_count, RS::MULTIMESH_TRANSFORM_2D);
+		}
+
+		Vector<float> multimesh_buffer;
+		multimesh_buffer.resize(8 * handle_sharp_count);
+		float *multimesh_buffer_ptrw = multimesh_buffer.ptrw();
+
+		const Transform2D *debug_handle_transforms_ptr = debug_handle_sharp_transforms.ptr();
+
+		for (uint32_t i = 0; i < handle_sharp_count; i++) {
+			const Transform2D &handle_transform = debug_handle_transforms_ptr[i];
+
+			multimesh_buffer_ptrw[i * 8 + 0] = handle_transform[0][0];
+			multimesh_buffer_ptrw[i * 8 + 1] = handle_transform[1][0];
+			multimesh_buffer_ptrw[i * 8 + 2] = 0;
+			multimesh_buffer_ptrw[i * 8 + 3] = handle_transform[2][0];
+			multimesh_buffer_ptrw[i * 8 + 4] = handle_transform[0][1];
+			multimesh_buffer_ptrw[i * 8 + 5] = handle_transform[1][1];
+			multimesh_buffer_ptrw[i * 8 + 6] = 0;
+			multimesh_buffer_ptrw[i * 8 + 7] = handle_transform[2][1];
+		}
+
+		rs->multimesh_set_buffer(debug_handle_sharp_multimesh_rid, multimesh_buffer);
+		rs->multimesh_set_visible_instances(debug_handle_sharp_multimesh_rid, handle_sharp_count);
+
+		rs->canvas_item_add_multimesh(vpc->get_canvas_item(), debug_handle_sharp_multimesh_rid, curve_handle->get_rid());
+	}
+
+	// Add texture rects for smooth handle vertices.
+
+	rs->multimesh_set_visible_instances(debug_handle_smooth_multimesh_rid, 0);
+	if (handle_smooth_count > 0) {
+		if (rs->multimesh_get_instance_count(debug_handle_smooth_multimesh_rid) != int(handle_smooth_count)) {
+			rs->multimesh_allocate_data(debug_handle_smooth_multimesh_rid, handle_smooth_count, RS::MULTIMESH_TRANSFORM_2D);
+		}
+
+		Vector<float> multimesh_buffer;
+		multimesh_buffer.resize(8 * handle_smooth_count);
+		float *multimesh_buffer_ptrw = multimesh_buffer.ptrw();
+
+		const Transform2D *debug_handle_transforms_ptr = debug_handle_smooth_transforms.ptr();
+
+		for (uint32_t i = 0; i < handle_smooth_count; i++) {
+			const Transform2D &handle_transform = debug_handle_transforms_ptr[i];
+
+			multimesh_buffer_ptrw[i * 8 + 0] = handle_transform[0][0];
+			multimesh_buffer_ptrw[i * 8 + 1] = handle_transform[1][0];
+			multimesh_buffer_ptrw[i * 8 + 2] = 0;
+			multimesh_buffer_ptrw[i * 8 + 3] = handle_transform[2][0];
+			multimesh_buffer_ptrw[i * 8 + 4] = handle_transform[0][1];
+			multimesh_buffer_ptrw[i * 8 + 5] = handle_transform[1][1];
+			multimesh_buffer_ptrw[i * 8 + 6] = 0;
+			multimesh_buffer_ptrw[i * 8 + 7] = handle_transform[2][1];
+		}
+
+		rs->multimesh_set_buffer(debug_handle_smooth_multimesh_rid, multimesh_buffer);
+		rs->multimesh_set_visible_instances(debug_handle_smooth_multimesh_rid, handle_smooth_count);
+
+		rs->canvas_item_add_multimesh(vpc->get_canvas_item(), debug_handle_smooth_multimesh_rid, curve_handle->get_rid());
 	}
 }
 
@@ -720,7 +848,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_pressed(true);
-	curve_edit->set_focus_mode(Control::FOCUS_NONE);
+	curve_edit->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_edit->set_accessibility_name(TTRC("Select Points"));
 	curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT));
@@ -729,7 +857,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit_curve = memnew(Button);
 	curve_edit_curve->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_edit_curve->set_toggle_mode(true);
-	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
+	curve_edit_curve->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	curve_edit_curve->set_tooltip_text(TTR("Select Control Points (Shift+Drag)"));
 	curve_edit_curve->set_accessibility_name(TTRC("Select Control Points"));
 	curve_edit_curve->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT_CURVE));
@@ -738,7 +866,7 @@ Path2DEditor::Path2DEditor() {
 	curve_create = memnew(Button);
 	curve_create->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_create->set_toggle_mode(true);
-	curve_create->set_focus_mode(Control::FOCUS_NONE);
+	curve_create->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_create->set_accessibility_name(TTRC("Add Point"));
 	curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CREATE));
@@ -747,7 +875,7 @@ Path2DEditor::Path2DEditor() {
 	curve_del = memnew(Button);
 	curve_del->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_del->set_toggle_mode(true);
-	curve_del->set_focus_mode(Control::FOCUS_NONE);
+	curve_del->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
 	curve_del->set_accessibility_name(TTRC("Delete Point"));
 	curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_DELETE));
@@ -755,7 +883,7 @@ Path2DEditor::Path2DEditor() {
 
 	curve_close = memnew(Button);
 	curve_close->set_theme_type_variation(SceneStringName(FlatButton));
-	curve_close->set_focus_mode(Control::FOCUS_NONE);
+	curve_close->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	curve_close->set_tooltip_text(TTR("Close Curve"));
 	curve_close->set_accessibility_name(TTRC("Close Curve"));
 	curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLOSE));
@@ -763,7 +891,7 @@ Path2DEditor::Path2DEditor() {
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
-	curve_clear_points->set_focus_mode(Control::FOCUS_NONE);
+	curve_clear_points->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
 	curve_clear_points->set_accessibility_name(TTRC("Clear Points"));
 	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_confirm_clear_points));
@@ -795,6 +923,66 @@ Path2DEditor::Path2DEditor() {
 	create_curve_button->hide();
 	add_child(create_curve_button);
 	create_curve_button->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_create_curve));
+
+	ERR_FAIL_NULL(RS::get_singleton());
+	RenderingServer *rs = RS::get_singleton();
+
+	debug_mesh_rid = rs->mesh_create();
+
+	{
+		debug_handle_mesh_rid = rs->mesh_create();
+
+		Vector<Vector2> vertex_array;
+		vertex_array.resize(4);
+		Vector2 *vertex_array_ptrw = vertex_array.ptrw();
+		vertex_array_ptrw[0] = Vector2(-1.0, -1.0);
+		vertex_array_ptrw[1] = Vector2(1.0, -1.0);
+		vertex_array_ptrw[2] = Vector2(1.0, 1.0);
+		vertex_array_ptrw[3] = Vector2(-1.0, 1.0);
+
+		Vector<Vector2> uv_array;
+		uv_array.resize(4);
+		Vector2 *uv_array_ptrw = uv_array.ptrw();
+		uv_array_ptrw[0] = Vector2(0.0, 0.0);
+		uv_array_ptrw[1] = Vector2(1.0, 0.0);
+		uv_array_ptrw[2] = Vector2(1.0, 1.0);
+		uv_array_ptrw[3] = Vector2(0.0, 1.0);
+
+		Vector<int> index_array;
+		index_array.resize(6);
+		int *index_array_ptrw = index_array.ptrw();
+		index_array_ptrw[0] = 0;
+		index_array_ptrw[1] = 1;
+		index_array_ptrw[2] = 3;
+		index_array_ptrw[3] = 1;
+		index_array_ptrw[4] = 2;
+		index_array_ptrw[5] = 3;
+
+		Array mesh_arrays;
+		mesh_arrays.resize(RS::ARRAY_MAX);
+		mesh_arrays[RS::ARRAY_VERTEX] = vertex_array;
+		mesh_arrays[RS::ARRAY_TEX_UV] = uv_array;
+		mesh_arrays[RS::ARRAY_INDEX] = index_array;
+
+		rs->mesh_add_surface_from_arrays(debug_handle_mesh_rid, RS::PRIMITIVE_TRIANGLES, mesh_arrays, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+
+		debug_handle_curve_multimesh_rid = rs->multimesh_create();
+		debug_handle_sharp_multimesh_rid = rs->multimesh_create();
+		debug_handle_smooth_multimesh_rid = rs->multimesh_create();
+
+		rs->multimesh_set_mesh(debug_handle_curve_multimesh_rid, debug_handle_mesh_rid);
+		rs->multimesh_set_mesh(debug_handle_sharp_multimesh_rid, debug_handle_mesh_rid);
+		rs->multimesh_set_mesh(debug_handle_smooth_multimesh_rid, debug_handle_mesh_rid);
+	}
+}
+
+Path2DEditor::~Path2DEditor() {
+	ERR_FAIL_NULL(RS::get_singleton());
+	RS::get_singleton()->free(debug_mesh_rid);
+	RS::get_singleton()->free(debug_handle_curve_multimesh_rid);
+	RS::get_singleton()->free(debug_handle_sharp_multimesh_rid);
+	RS::get_singleton()->free(debug_handle_smooth_multimesh_rid);
+	RS::get_singleton()->free(debug_handle_mesh_rid);
 }
 
 void Path2DEditorPlugin::edit(Object *p_object) {

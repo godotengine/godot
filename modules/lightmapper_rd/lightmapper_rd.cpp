@@ -79,7 +79,11 @@ void LightmapperRD::add_directional_light(const String &p_name, bool p_static, c
 	l.size = Math::tan(Math::deg_to_rad(p_angular_distance));
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
-	light_names.push_back(p_name);
+
+	LightMetadata md;
+	md.name = p_name;
+	md.type = LIGHT_TYPE_DIRECTIONAL;
+	light_metadata.push_back(md);
 }
 
 void LightmapperRD::add_omni_light(const String &p_name, bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) {
@@ -99,7 +103,11 @@ void LightmapperRD::add_omni_light(const String &p_name, bool p_static, const Ve
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
-	light_names.push_back(p_name);
+
+	LightMetadata md;
+	md.name = p_name;
+	md.type = LIGHT_TYPE_OMNI;
+	light_metadata.push_back(md);
 }
 
 void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) {
@@ -124,7 +132,11 @@ void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Ve
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
-	light_names.push_back(p_name);
+
+	LightMetadata md;
+	md.name = p_name;
+	md.type = LIGHT_TYPE_SPOT;
+	light_metadata.push_back(md);
 }
 
 void LightmapperRD::add_probe(const Vector3 &p_position) {
@@ -620,6 +632,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	/*****************************/
 
 	lights.sort();
+	light_metadata.sort();
 
 	Vector<Vector2i> seam_buffer_vec;
 	seam_buffer_vec.resize(seams.size() * 2);
@@ -1083,32 +1096,19 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		return bake_error;
 	}
 
-	// The index of the directional light used for shadowmasking.
-	int shadowmask_light_idx = -1;
-
-	// If there are no valid directional lights for shadowmasking, the entire
-	// scene would be shadowed and this saves baking time.
+	// Find any directional light suitable for shadowmasking.
 	if (p_bake_shadowmask) {
-		int shadowmask_lights_count = 0;
-
+		bool found = false;
 		for (int i = 0; i < lights.size(); i++) {
 			if (lights[i].type == LightType::LIGHT_TYPE_DIRECTIONAL && !lights[i].static_bake) {
-				if (shadowmask_light_idx < 0) {
-					shadowmask_light_idx = i;
-				}
-
-				shadowmask_lights_count += 1;
+				found = true;
+				break;
 			}
 		}
 
-		if (shadowmask_light_idx < 0) {
+		if (!found) {
 			p_bake_shadowmask = false;
 			WARN_PRINT("Shadowmask disabled: no directional light with their bake mode set to dynamic exists.");
-
-		} else if (shadowmask_lights_count > 1) {
-			WARN_PRINT(
-					vformat("%d directional lights detected for shadowmask baking. Only %s will be used.",
-							shadowmask_lights_count, light_names[shadowmask_light_idx]));
 		}
 	}
 
@@ -1299,6 +1299,29 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	const uint32_t cluster_size = 16;
 	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, cluster_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_indices_buffer, cluster_indices_buffer, cluster_aabbs_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
+
+	// The index of the directional light used for shadowmasking.
+	int shadowmask_light_idx = -1;
+
+	// Find the directional light index in the sorted lights array.
+	if (p_bake_shadowmask) {
+		int shadowmask_lights_count = 0;
+
+		for (int i = 0; i < lights.size(); i++) {
+			if (lights[i].type == LightType::LIGHT_TYPE_DIRECTIONAL && !lights[i].static_bake) {
+				if (shadowmask_light_idx < 0) {
+					shadowmask_light_idx = i;
+				}
+				shadowmask_lights_count += 1;
+			}
+		}
+
+		if (shadowmask_lights_count > 1) {
+			WARN_PRINT(
+					vformat("%d directional lights detected for shadowmask baking. Only %s will be used.",
+							shadowmask_lights_count, light_metadata[shadowmask_light_idx].name));
+		}
+	}
 
 	// Create global bake parameters buffer.
 	BakeParameters bake_parameters;

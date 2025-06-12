@@ -208,6 +208,16 @@
 	[self windowDidResize:notification];
 }
 
+- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame {
+	if (ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		if (!wd.borderless && !(NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame]))) {
+			wd.pre_zoom_rect = [wd.window_object frame];
+		}
+	}
+	return YES;
+}
+
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
 	if (!ds->has_window(window_id)) {
 		return;

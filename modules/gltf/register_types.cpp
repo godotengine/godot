@@ -61,7 +61,7 @@ static void _editor_init() {
 
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 	if (blender_path.is_empty() && EditorSettings::get_singleton()->has_setting("filesystem/import/blender/blender3_path")) {
-		blender_path = EditorSettings::get_singleton()->get("filesystem/import/blender/blender3_path");
+		blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
 
 		if (!blender_path.is_empty()) {
 #if defined(MACOS_ENABLED)
