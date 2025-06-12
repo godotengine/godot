@@ -82,7 +82,6 @@ class EditorPropertyFontMetaOverride : public EditorProperty {
 	MarginContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 
-	Button *button_add = nullptr;
 	Button *edit = nullptr;
 	PopupMenu *menu = nullptr;
 	EditorLocaleDialog *locale_select = nullptr;
@@ -96,9 +95,6 @@ class EditorPropertyFontMetaOverride : public EditorProperty {
 	EditorPaginator *paginator = nullptr;
 
 protected:
-	void _notification(int p_what);
-	static void _bind_methods() {}
-
 	void _edit_pressed();
 	void _page_changed(int p_page);
 	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
@@ -168,7 +164,6 @@ class EditorPropertyOTFeatures : public EditorProperty {
 	MarginContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 
-	Button *button_add = nullptr;
 	Button *edit = nullptr;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_sub[FGRP_MAX];
@@ -180,9 +175,6 @@ class EditorPropertyOTFeatures : public EditorProperty {
 	EditorPaginator *paginator = nullptr;
 
 protected:
-	void _notification(int p_what);
-	static void _bind_methods() {}
-
 	void _edit_pressed();
 	void _page_changed(int p_page);
 	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);

@@ -34,14 +34,6 @@
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
 
-void InputEventConfigContainer::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			open_config_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
-		} break;
-	}
-}
-
 void InputEventConfigContainer::_configure_pressed() {
 	config_dialog->popup_and_configure(input_event);
 }
@@ -134,7 +126,7 @@ InputEventConfigContainer::InputEventConfigContainer() {
 	input_event_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	add_child(input_event_text);
 
-	open_config_button = EditorInspector::create_inspector_action_button(TTR("Configure"));
+	EditorInspectorActionButton *open_config_button = memnew(EditorInspectorActionButton(TTRC("Configure"), SNAME("Edit")));
 	open_config_button->connect(SceneStringName(pressed), callable_mp(this, &InputEventConfigContainer::_configure_pressed));
 	add_child(open_config_button);
 

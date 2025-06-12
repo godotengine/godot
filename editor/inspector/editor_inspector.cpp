@@ -57,6 +57,21 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/scene_string_names.h"
 
+void EditorInspectorActionButton::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			set_button_icon(get_editor_theme_icon(icon_name));
+		} break;
+	}
+}
+
+EditorInspectorActionButton::EditorInspectorActionButton(const String &p_text, const StringName &p_icon_name) {
+	icon_name = p_icon_name;
+	set_text(p_text);
+	set_theme_type_variation(SNAME("InspectorActionButton"));
+	set_h_size_flags(SIZE_SHRINK_CENTER);
+}
+
 bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.containsn(p_filter)) {
 		return true;
@@ -3164,8 +3179,6 @@ void EditorInspectorArray::_notification(int p_what) {
 					ae.erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 				}
 			}
-
-			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -3256,7 +3269,7 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	elements_vbox->add_theme_constant_override("separation", 0);
 	vbox->add_child(elements_vbox);
 
-	add_button = EditorInspector::create_inspector_action_button(TTR("Add Element"));
+	add_button = memnew(EditorInspectorActionButton(TTRC("Add Element"), SNAME("Add")));
 	add_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_add_button_pressed));
 	add_button->set_disabled(read_only);
 	vbox->add_child(add_button);
@@ -3511,14 +3524,6 @@ void EditorInspector::cleanup_plugins() {
 		inspector_plugins[i].unref();
 	}
 	inspector_plugin_count = 0;
-}
-
-Button *EditorInspector::create_inspector_action_button(const String &p_text) {
-	Button *button = memnew(Button);
-	button->set_text(p_text);
-	button->set_theme_type_variation(SNAME("InspectorActionButton"));
-	button->set_h_size_flags(SIZE_SHRINK_CENTER);
-	return button;
 }
 
 bool EditorInspector::is_main_editor_inspector() const {
@@ -4611,8 +4616,7 @@ void EditorInspector::update_tree() {
 		spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
 		main_vbox->add_child(spacer);
 
-		Button *add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
-		add_md->set_button_icon(theme_cache.icon_add);
+		Button *add_md = memnew(EditorInspectorActionButton(TTRC("Add Metadata"), SNAME("Add")));
 		add_md->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_show_add_meta_dialog));
 		main_vbox->add_child(add_md);
 		if (all_read_only) {
