@@ -683,7 +683,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	simplification->set_max(10.00);
 	simplification->set_step(0.01);
 	simplification->set_value(2);
-	simplification->set_accessibility_name(TTRC("Simplification"));
+	simplification->set_accessibility_name(TTRC("Simplification:"));
 	hb->add_child(simplification);
 	hb->add_spacer();
 	hb->add_child(memnew(Label(TTR("Shrink (Pixels):"))));
@@ -692,7 +692,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	shrink_pixels->set_max(10);
 	shrink_pixels->set_step(1);
 	shrink_pixels->set_value(0);
-	shrink_pixels->set_accessibility_name(TTRC("Shrink"));
+	shrink_pixels->set_accessibility_name(TTRC("Shrink (Pixels):"));
 	hb->add_child(shrink_pixels);
 	hb->add_spacer();
 	hb->add_child(memnew(Label(TTR("Grow (Pixels):"))));
@@ -701,7 +701,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	grow_pixels->set_max(10);
 	grow_pixels->set_step(1);
 	grow_pixels->set_value(2);
-	grow_pixels->set_accessibility_name(TTRC("Grow"));
+	grow_pixels->set_accessibility_name(TTRC("Grow (Pixels):"));
 	hb->add_child(grow_pixels);
 	hb->add_spacer();
 	update_preview = memnew(Button);

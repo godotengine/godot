@@ -332,7 +332,7 @@ RunInstancesDialog::RunInstancesDialog() {
 	main_args_edit = memnew(LineEdit);
 	main_args_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_args_edit->set_placeholder(TTR("Space-separated arguments, example: host player1 blue"));
-	main_args_edit->set_accessibility_name(TTRC("Launch Arguments"));
+	main_args_edit->set_accessibility_name(TTRC("Main Run Args:"));
 	main_gc->add_child(main_args_edit);
 	_fetch_main_args();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &RunInstancesDialog::_fetch_main_args));
@@ -342,7 +342,7 @@ RunInstancesDialog::RunInstancesDialog() {
 	main_features_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_features_edit->set_placeholder(TTR("Comma-separated tags, example: demo, steam, event"));
 	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
-	main_features_edit->set_accessibility_name(TTRC("Feature Tags"));
+	main_features_edit->set_accessibility_name(TTRC("Main Feature Tags:"));
 	main_gc->add_child(main_features_edit);
 	main_features_edit->connect(SceneStringName(text_changed), callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
 

@@ -356,7 +356,6 @@ EditorBottomPanel::EditorBottomPanel() {
 	pin_button->set_theme_type_variation("FlatMenuButton");
 	pin_button->set_toggle_mode(true);
 	pin_button->set_tooltip_text(TTRC("Pin Bottom Panel Switching"));
-	pin_button->set_accessibility_name(TTRC("Pin Bottom Panel"));
 	pin_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_pin_button_toggled));
 
 	expand_button = memnew(Button);
