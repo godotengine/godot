@@ -3578,7 +3578,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				// Stage-based function.
 				const StageFunctionInfo &sf = E.value.stage_functions[name];
 				if (argcount != sf.arguments.size()) {
-					_set_error(vformat(RTR("Invalid number of arguments when calling stage function '%s', which expects %d arguments."), String(name), sf.arguments.size()));
+					_set_error(vformat(RTR("Invalid number of arguments when calling stage function '%s', which expects %d argument(s)."), String(name), sf.arguments.size()));
 					return false;
 				}
 				// Validate arguments.

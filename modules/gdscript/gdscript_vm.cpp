@@ -177,7 +177,7 @@ String GDScriptFunction::_get_call_error(const String &p_where, const Variant **
 			return "Invalid type in " + p_where + ". Cannot convert argument " + itos(p_err.argument + 1) + " from " + Variant::get_type_name(p_argptrs[p_err.argument]->get_type()) + " to " + Variant::get_type_name(Variant::Type(p_err.expected)) + ".";
 		case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 		case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
-			return "Invalid call to " + p_where + ". Expected " + itos(p_err.expected) + " arguments.";
+			return "Invalid call to " + p_where + ". Expected " + itos(p_err.expected) + " argument(s).";
 		case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 			return "Attempt to call " + p_where + " on a null instance.";
 		case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
