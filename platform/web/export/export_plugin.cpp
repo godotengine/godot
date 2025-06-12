@@ -401,6 +401,16 @@ bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPre
 	if (p_option == "threads/godot_pool_size" || p_option == "threads/emscripten_pool_size") {
 		return p_preset->get("variant/thread_support").operator bool();
 	}
+	if (p_option == "progressive_web_app/ensure_cross_origin_isolation_headers" ||
+			p_option == "progressive_web_app/offline_page" ||
+			p_option == "progressive_web_app/display" ||
+			p_option == "progressive_web_app/orientation" ||
+			p_option == "progressive_web_app/icon_144x144" ||
+			p_option == "progressive_web_app/icon_180x180" ||
+			p_option == "progressive_web_app/icon_512x512" ||
+			p_option == "progressive_web_app/background_color") {
+		return p_preset->get("progressive_web_app/enabled").operator bool();
+	}
 
 	return true;
 }

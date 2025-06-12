@@ -158,7 +158,7 @@ public:
 	}
 
 	virtual void export_option_set(const String &p_edited_property) override {
-		_should_update_export_options = p_edited_property == "variant/thread_support";
+		_should_update_export_options = p_edited_property == "variant/thread_support" || "progressive_web_app/enabled";
 	}
 
 	String get_debug_protocol() const override { return "ws://"; }
