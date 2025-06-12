@@ -121,6 +121,7 @@ private:
 		bool notify_transform : 1;
 
 		bool visible : 1;
+		bool visible_in_tree : 1;
 		bool disable_scale : 1;
 
 		// Scene tree interpolation
@@ -155,6 +156,9 @@ private:
 	void _notify_dirty();
 	void _propagate_transform_changed(Spatial *p_origin);
 
+	void _update_visible_in_tree();
+	bool _is_visible_in_tree_reference() const;
+	void _propagate_visible_in_tree(bool p_visible_in_tree);
 	void _propagate_visibility_changed();
 	void _propagate_merging_allowed(bool p_merging_allowed);
 
@@ -293,7 +297,15 @@ public:
 	bool is_visible() const;
 	void show();
 	void hide();
-	bool is_visible_in_tree() const;
+	bool is_visible_in_tree() const {
+#if DEV_ENABLED
+		// As this is newly introduced, regression test the old method against the new in DEV builds.
+		// If no regressions, this can be removed after a beta.
+		bool visible = _is_visible_in_tree_reference();
+		ERR_FAIL_COND_V_MSG(data.visible_in_tree != visible, visible, "is_visible_in_tree regression detected, recovering.");
+#endif
+		return data.visible_in_tree;
+	}
 
 	void force_update_transform();
 
