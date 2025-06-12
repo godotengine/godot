@@ -97,6 +97,8 @@ public:
 	bool has_nothing_selected() const;
 	String get_selected() const;
 
+	void set_instant_preview_toggle_visible(bool p_visible);
+
 	void save_selected_item();
 	void cleanup();
 
