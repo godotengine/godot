@@ -295,9 +295,6 @@ class EditorPropertyLocalizableString : public EditorProperty {
 	void _add_locale(const String &p_locale);
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
-protected:
-	void _notification(int p_what);
-
 public:
 	virtual void update_property() override;
 	EditorPropertyLocalizableString();
