@@ -152,9 +152,11 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
 
 	property_object = nullptr;
+	property_path = "";
 	item_selected_callback = p_item_selected_callback;
 
 	container->init(p_base_types);
+	container->set_instant_preview_toggle_visible(false);
 	get_ok_button()->set_disabled(container->has_nothing_selected());
 
 	set_title(get_dialog_title(p_base_types));
@@ -169,6 +171,7 @@ void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &
 	initial_property_value = property_object->get(property_path);
 
 	container->init(p_base_types);
+	container->set_instant_preview_toggle_visible(true);
 	get_ok_button()->set_disabled(container->has_nothing_selected());
 
 	set_title(get_dialog_title(p_base_types));
@@ -184,14 +187,14 @@ void EditorQuickOpenDialog::ok_pressed() {
 }
 
 void EditorQuickOpenDialog::selection_changed() {
-	if (!EDITOR_GET("filesystem/quick_open_dialog/instant_preview")) {
+	if (!EDITOR_GET("filesystem/quick_open_dialog/instant_preview") || property_object == nullptr) {
 		return;
 	}
 	preview_property();
 }
 
 void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
-	if (!EDITOR_GET("filesystem/quick_open_dialog/instant_preview")) {
+	if (!EDITOR_GET("filesystem/quick_open_dialog/instant_preview") || property_object == nullptr) {
 		container->save_selected_item();
 		ok_pressed();
 	} else if (p_double_click) {
@@ -937,6 +940,10 @@ QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const V
 String _get_uid_string(const String &p_filepath) {
 	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_filepath);
 	return id == ResourceUID::INVALID_ID ? p_filepath : ResourceUID::get_singleton()->id_to_text(id);
+}
+
+void QuickOpenResultContainer::set_instant_preview_toggle_visible(bool p_visible) {
+	instant_preview_toggle->set_visible(p_visible);
 }
 
 void QuickOpenResultContainer::save_selected_item() {
