@@ -905,6 +905,13 @@
 				Returns the travel cost of this [param region].
 			</description>
 		</method>
+		<method name="region_get_use_async_iterations" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [param region] uses an async synchronization process that runs on a background thread.
+			</description>
+		</method>
 		<method name="region_get_use_edge_connections" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="region" type="RID" />
@@ -984,6 +991,14 @@
 			<param index="1" name="travel_cost" type="float" />
 			<description>
 				Sets the [param travel_cost] for this [param region].
+			</description>
+		</method>
+		<method name="region_set_use_async_iterations">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the [param region] uses an async synchronization process that runs on a background thread.
 			</description>
 		</method>
 		<method name="region_set_use_edge_connections">
