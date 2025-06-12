@@ -101,6 +101,21 @@ def library_emitter(target, source, env):
 
 
 def configure(env: "SConsEnvironment"):
+    env["CC"] = "emcc"
+    env["CXX"] = "em++"
+
+    env["AR"] = "emar"
+    env["RANLIB"] = "emranlib"
+
+    # Get version info for checks below.
+    cc_version = get_compiler_version(env)
+    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
+
+    # Minimum emscripten requirements.
+    if cc_semver < (4, 0, 0):
+        print_error("The minimum Emscripten version to build Godot is 4.0.0, detected: %s.%s.%s" % cc_semver)
+        sys.exit(255)
+
     env.Append(LIBEMITTER=[library_emitter])
 
     env["EXPORTED_FUNCTIONS"] = ["_main"]
@@ -149,9 +164,14 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-Wl,--fatal-warnings"])
 
     # LTO
-
     if env["lto"] == "auto":  # Enable LTO for production.
         env["lto"] = "thin"
+
+    if env["lto"] == "thin" and cc_semver < (4, 0, 9):
+        print_warning(
+            '"lto=thin" support requires Emscripten 4.0.9 (detected %s.%s.%s), using "lto=full" instead.' % cc_semver
+        )
+        env["lto"] = "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -175,6 +195,13 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sSAFE_HEAP=1"])
 
     # Closure compiler
+    if env["use_closure_compiler"] and cc_semver < (4, 0, 11):
+        print_warning(
+            '"use_closure_compiler=yes" support requires Emscripten 4.0.11 (detected %s.%s.%s), using "use_closure_compiler=no" instead.'
+            % cc_semver
+        )
+        env["use_closure_compiler"] = False
+
     if env["use_closure_compiler"]:
         # For emscripten support code.
         env.Append(LINKFLAGS=["--closure", "1"])
@@ -201,12 +228,6 @@ def configure(env: "SConsEnvironment"):
     # Add method for creating the final zip file
     env.AddMethod(create_template_zip, "CreateTemplateZip")
 
-    env["CC"] = "emcc"
-    env["CXX"] = "em++"
-
-    env["AR"] = "emar"
-    env["RANLIB"] = "emranlib"
-
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
     # Use POSIX-style paths, required with TempFileMunge.
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
@@ -222,15 +243,6 @@ def configure(env: "SConsEnvironment"):
     env["LIBSUFFIX"] = ".a"
     env["LIBPREFIXES"] = ["$LIBPREFIX"]
     env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
-
-    # Get version info for checks below.
-    cc_version = get_compiler_version(env)
-    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
-
-    # Minimum emscripten requirements.
-    if cc_semver < (3, 1, 62):
-        print_error("The minimum emscripten version to build Godot is 3.1.62, detected: %s.%s.%s" % cc_semver)
-        sys.exit(255)
 
     env.Prepend(CPPPATH=["#platform/web"])
     env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED", "UNIX_SOCKET_UNAVAILABLE"])
