@@ -41,7 +41,7 @@ void JoltObject3D::_remove_from_space() {
 		return;
 	}
 
-	space->remove_body(jolt_body->GetID());
+	space->remove_object(jolt_body->GetID());
 	jolt_body = nullptr;
 }
 
