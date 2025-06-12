@@ -144,7 +144,7 @@ void JoltBody3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings, sleep_initially);
+	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings, sleep_initially);
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -706,11 +706,7 @@ void JoltBody3D::set_is_sleeping(bool p_enabled) {
 	if (!in_space()) {
 		sleep_initially = p_enabled;
 	} else {
-		if (p_enabled) {
-			space->get_body_iface().DeactivateBody(jolt_body->GetID());
-		} else {
-			space->get_body_iface().ActivateBody(jolt_body->GetID());
-		}
+		space->set_is_object_sleeping(jolt_body->GetID(), p_enabled);
 	}
 }
 
@@ -1180,7 +1176,7 @@ bool JoltBody3D::is_ccd_enabled() const {
 	if (!in_space()) {
 		return jolt_settings->mMotionQuality == JPH::EMotionQuality::LinearCast;
 	} else {
-		return space->get_body_iface().GetMotionQuality(jolt_body->GetID()) == JPH::EMotionQuality::LinearCast;
+		return !is_static() && jolt_body->GetMotionProperties()->GetMotionQuality() == JPH::EMotionQuality::LinearCast;
 	}
 }
 

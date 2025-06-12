@@ -122,6 +122,18 @@ bool QuadTree::Node::EncapsulateChildBounds(int inChildIndex, const AABox &inBou
 
 const AABox QuadTree::cInvalidBounds(Vec3::sReplicate(cLargeFloat), Vec3::sReplicate(-cLargeFloat));
 
+static inline void sQuadTreePerformanceWarning()
+{
+#ifdef JPH_ENABLE_ASSERTS
+	static atomic<bool> triggered_report { false };
+	bool expected = false;
+	if (triggered_report.compare_exchange_strong(expected, true))
+		Trace("QuadTree: Performance warning: Stack full!\n"
+			"This must be a very deep tree. Are you batch adding bodies through BodyInterface::AddBodiesPrepare/AddBodiesFinalize?\n"
+			"If you add lots of bodies through BodyInterface::AddBody you may need to call PhysicsSystem::OptimizeBroadPhase to rebuild the tree.");
+#endif
+}
+
 void QuadTree::GetBodyLocation(const TrackingVector &inTracking, BodyID inBodyID, uint32 &outNodeIdx, uint32 &outChildIdx) const
 {
 	uint32 body_location = inTracking[inBodyID.GetIndex()].mBodyLocation;
@@ -293,14 +305,17 @@ void QuadTree::UpdatePrepare(const BodyVector &inBodies, TrackingVector &ioTrack
 	NodeID *cur_node_id = node_ids;
 
 	// Collect all bodies
-	NodeID node_stack[cStackSize];
-	node_stack[0] = root_node.GetNodeID();
-	JPH_ASSERT(node_stack[0].IsValid());
-	int top = 0;
+	Array<NodeID, STLLocalAllocator<NodeID, cStackSize>> node_stack;
+	node_stack.reserve(cStackSize);
+	node_stack.push_back(root_node.GetNodeID());
+	JPH_ASSERT(node_stack.front().IsValid());
 	do
 	{
+		// Pop node from stack
+		NodeID node_id = node_stack.back();
+		node_stack.pop_back();
+
 		// Check if node is a body
-		NodeID node_id = node_stack[top];
 		if (node_id.IsBody())
 		{
 			// Validate that we're still in the right layer
@@ -330,31 +345,14 @@ void QuadTree::UpdatePrepare(const BodyVector &inBodies, TrackingVector &ioTrack
 				// Node is changed, recurse and get all children
 				for (NodeID child_node_id : node.mChildNodeID)
 					if (child_node_id.IsValid())
-					{
-						if (top < cStackSize)
-						{
-							node_stack[top] = child_node_id;
-							top++;
-						}
-						else
-						{
-							JPH_ASSERT(false, "Stack full!\n"
-								"This must be a very deep tree. Are you batch adding bodies through BodyInterface::AddBodiesPrepare/AddBodiesFinalize?\n"
-								"If you add lots of bodies through BodyInterface::AddBody you may need to call PhysicsSystem::OptimizeBroadPhase to rebuild the tree.");
-
-							// Falling back to adding the node as a whole
-							*cur_node_id = child_node_id;
-							++cur_node_id;
-						}
-					}
+						node_stack.push_back(child_node_id);
 
 				// Mark node to be freed
 				mAllocator->AddObjectToBatch(mFreeNodeBatch, node_idx);
 			}
 		}
-		--top;
 	}
-	while (top >= 0);
+	while (!node_stack.empty());
 
 	// Check that our book keeping matches
 	uint32 num_node_ids = uint32(cur_node_id - node_ids);
@@ -988,7 +986,9 @@ JPH_INLINE void QuadTree::WalkTree(const ObjectLayerFilter &inObjectLayerFilter,
 	uint64 start = GetProcessorTickCount();
 #endif // JPH_TRACK_BROADPHASE_STATS
 
-	NodeID node_stack[cStackSize];
+	Array<NodeID, STLLocalAllocator<NodeID, cStackSize>> node_stack_array;
+	node_stack_array.resize(cStackSize);
+	NodeID *node_stack = node_stack_array.data();
 	node_stack[0] = root_node.GetNodeID();
 	int top = 0;
 	do
@@ -1027,33 +1027,34 @@ JPH_INLINE void QuadTree::WalkTree(const ObjectLayerFilter &inObjectLayerFilter,
 		{
 			JPH_IF_TRACK_BROADPHASE_STATS(++nodes_visited;)
 
-			// Check if stack can hold more nodes
-			if (top + 4 < cStackSize)
+			// Ensure there is space on the stack (falls back to heap if there isn't)
+			if (top + 4 >= (int)node_stack_array.size())
 			{
-				// Process normal node
-				const Node &node = mAllocator->Get(child_node_id.GetNodeIndex());
-				JPH_ASSERT(IsAligned(&node, JPH_CACHE_LINE_SIZE));
-
-				// Load bounds of 4 children
-				Vec4 bounds_minx = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMinX);
-				Vec4 bounds_miny = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMinY);
-				Vec4 bounds_minz = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMinZ);
-				Vec4 bounds_maxx = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMaxX);
-				Vec4 bounds_maxy = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMaxY);
-				Vec4 bounds_maxz = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMaxZ);
-
-				// Load ids for 4 children
-				UVec4 child_ids = UVec4::sLoadInt4Aligned((const uint32 *)&node.mChildNodeID[0]);
-
-				// Check which sub nodes to visit
-				int num_results = ioVisitor.VisitNodes(bounds_minx, bounds_miny, bounds_minz, bounds_maxx, bounds_maxy, bounds_maxz, child_ids, top);
-				child_ids.StoreInt4((uint32 *)&node_stack[top]);
-				top += num_results;
+				sQuadTreePerformanceWarning();
+				node_stack_array.resize(node_stack_array.size() << 1);
+				node_stack = node_stack_array.data();
+				ioVisitor.OnStackResized(node_stack_array.size());
 			}
-			else
-				JPH_ASSERT(false, "Stack full!\n"
-					"This must be a very deep tree. Are you batch adding bodies through BodyInterface::AddBodiesPrepare/AddBodiesFinalize?\n"
-					"If you add lots of bodies through BodyInterface::AddBody you may need to call PhysicsSystem::OptimizeBroadPhase to rebuild the tree.");
+
+			// Process normal node
+			const Node &node = mAllocator->Get(child_node_id.GetNodeIndex());
+			JPH_ASSERT(IsAligned(&node, JPH_CACHE_LINE_SIZE));
+
+			// Load bounds of 4 children
+			Vec4 bounds_minx = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMinX);
+			Vec4 bounds_miny = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMinY);
+			Vec4 bounds_minz = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMinZ);
+			Vec4 bounds_maxx = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMaxX);
+			Vec4 bounds_maxy = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMaxY);
+			Vec4 bounds_maxz = Vec4::sLoadFloat4Aligned((const Float4 *)&node.mBoundsMaxZ);
+
+			// Load ids for 4 children
+			UVec4 child_ids = UVec4::sLoadInt4Aligned((const uint32 *)&node.mChildNodeID[0]);
+
+			// Check which sub nodes to visit
+			int num_results = ioVisitor.VisitNodes(bounds_minx, bounds_miny, bounds_minz, bounds_maxx, bounds_maxy, bounds_maxz, child_ids, top);
+			child_ids.StoreInt4((uint32 *)&node_stack[top]);
+			top += num_results;
 		}
 
 		// Fetch next node until we find one that the visitor wants to see
@@ -1092,6 +1093,7 @@ void QuadTree::CastRay(const RayCast &inRay, RayCastBodyCollector &ioCollector, 
 			mInvDirection(inRay.mDirection),
 			mCollector(ioCollector)
 		{
+			mFractionStack.resize(cStackSize);
 			mFractionStack[0] = -1;
 		}
 
@@ -1125,11 +1127,17 @@ void QuadTree::CastRay(const RayCast &inRay, RayCastBodyCollector &ioCollector, 
 			mCollector.AddHit(result);
 		}
 
+		/// Called when the stack is resized, this allows us to resize the fraction stack to match the new stack size
+		JPH_INLINE void			OnStackResized(size_t inNewStackSize)
+		{
+			mFractionStack.resize(inNewStackSize);
+		}
+
 	private:
 		Vec3					mOrigin;
 		RayInvDirection			mInvDirection;
 		RayCastBodyCollector &	mCollector;
-		float					mFractionStack[cStackSize];
+		Array<float, STLLocalAllocator<float, cStackSize>> mFractionStack;
 	};
 
 	Visitor visitor(inRay, ioCollector);
@@ -1173,6 +1181,12 @@ void QuadTree::CollideAABox(const AABox &inBox, CollideShapeBodyCollector &ioCol
 		{
 			// Store potential hit with body
 			mCollector.AddHit(inBodyID);
+		}
+
+		/// Called when the stack is resized
+		JPH_INLINE void				OnStackResized([[maybe_unused]] size_t inNewStackSize) const
+		{
+			// Nothing to do
 		}
 
 	private:
@@ -1226,7 +1240,13 @@ void QuadTree::CollideSphere(Vec3Arg inCenter, float inRadius, CollideShapeBodyC
 			mCollector.AddHit(inBodyID);
 		}
 
-	private:
+		/// Called when the stack is resized
+		JPH_INLINE void				OnStackResized([[maybe_unused]] size_t inNewStackSize) const
+		{
+			// Nothing to do
+		}
+
+private:
 		Vec4						mCenterX;
 		Vec4						mCenterY;
 		Vec4						mCenterZ;
@@ -1277,6 +1297,12 @@ void QuadTree::CollidePoint(Vec3Arg inPoint, CollideShapeBodyCollector &ioCollec
 			mCollector.AddHit(inBodyID);
 		}
 
+		/// Called when the stack is resized
+		JPH_INLINE void				OnStackResized([[maybe_unused]] size_t inNewStackSize) const
+		{
+			// Nothing to do
+		}
+
 	private:
 		Vec3						mPoint;
 		CollideShapeBodyCollector &	mCollector;
@@ -1325,6 +1351,12 @@ void QuadTree::CollideOrientedBox(const OrientedBox &inBox, CollideShapeBodyColl
 			mCollector.AddHit(inBodyID);
 		}
 
+		/// Called when the stack is resized
+		JPH_INLINE void				OnStackResized([[maybe_unused]] size_t inNewStackSize) const
+		{
+			// Nothing to do
+		}
+
 	private:
 		OrientedBox					mBox;
 		CollideShapeBodyCollector &	mCollector;
@@ -1346,6 +1378,7 @@ void QuadTree::CastAABox(const AABoxCast &inBox, CastShapeBodyCollector &ioColle
 			mInvDirection(inBox.mDirection),
 			mCollector(ioCollector)
 		{
+			mFractionStack.resize(cStackSize);
 			mFractionStack[0] = -1;
 		}
 
@@ -1383,12 +1416,18 @@ void QuadTree::CastAABox(const AABoxCast &inBox, CastShapeBodyCollector &ioColle
 			mCollector.AddHit(result);
 		}
 
+		/// Called when the stack is resized, this allows us to resize the fraction stack to match the new stack size
+		JPH_INLINE void				OnStackResized(size_t inNewStackSize)
+		{
+			mFractionStack.resize(inNewStackSize);
+		}
+
 	private:
 		Vec3						mOrigin;
 		Vec3						mExtent;
 		RayInvDirection				mInvDirection;
 		CastShapeBodyCollector &	mCollector;
-		float						mFractionStack[cStackSize];
+		Array<float, STLLocalAllocator<float, cStackSize>> mFractionStack;
 	};
 
 	Visitor visitor(inBox, ioCollector);
@@ -1406,7 +1445,9 @@ void QuadTree::FindCollidingPairs(const BodyVector &inBodies, const BodyID *inAc
 	JPH_ASSERT(inActiveBodies != nullptr);
 	JPH_ASSERT(inNumActiveBodies > 0);
 
-	NodeID node_stack[cStackSize];
+	Array<NodeID, STLLocalAllocator<NodeID, cStackSize>> node_stack_array;
+	node_stack_array.resize(cStackSize);
+	NodeID *node_stack = node_stack_array.data();
 
 	// Loop over all active bodies
 	for (int b1 = 0; b1 < inNumActiveBodies; ++b1)
@@ -1468,16 +1509,17 @@ void QuadTree::FindCollidingPairs(const BodyVector &inBodies, const BodyID *inAc
 					// Sort so that overlaps are first
 					child_ids = UVec4::sSort4True(overlap, child_ids);
 
-					// Push them onto the stack
-					if (top + 4 < cStackSize)
+					// Ensure there is space on the stack (falls back to heap if there isn't)
+					if (top + 4 >= (int)node_stack_array.size())
 					{
-						child_ids.StoreInt4((uint32 *)&node_stack[top]);
-						top += num_results;
+						sQuadTreePerformanceWarning();
+						node_stack_array.resize(node_stack_array.size() << 1);
+						node_stack = node_stack_array.data();
 					}
-					else
-						JPH_ASSERT(false, "Stack full!\n"
-							"This must be a very deep tree. Are you batch adding bodies through BodyInterface::AddBodiesPrepare/AddBodiesFinalize?\n"
-							"If you add lots of bodies through BodyInterface::AddBody you may need to call PhysicsSystem::OptimizeBroadPhase to rebuild the tree.");
+
+					// Push them onto the stack
+					child_ids.StoreInt4((uint32 *)&node_stack[top]);
+					top += num_results;
 				}
 			}
 			--top;
@@ -1597,6 +1639,7 @@ void QuadTree::DumpTree(const NodeID &inRoot, const char *inFileNamePrefix) cons
 
 	// Iterate the entire tree
 	Array<NodeID, STLLocalAllocator<NodeID, cStackSize>> node_stack;
+	node_stack.reserve(cStackSize);
 	node_stack.push_back(inRoot);
 	JPH_ASSERT(inRoot.IsValid());
 	do

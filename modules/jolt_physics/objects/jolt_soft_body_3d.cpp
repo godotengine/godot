@@ -110,7 +110,7 @@ void JoltSoftBody3D::_add_to_space() {
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
 
-	JPH::Body *new_jolt_body = space->add_soft_body(*this, *jolt_settings);
+	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings);
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -326,6 +326,10 @@ void JoltSoftBody3D::_exceptions_changed() {
 	_update_group_filter();
 }
 
+void JoltSoftBody3D::_motion_changed() {
+	wake_up();
+}
+
 JoltSoftBody3D::JoltSoftBody3D() :
 		JoltObject3D(OBJECT_TYPE_SOFT_BODY) {
 	jolt_settings->mRestitution = 0.0f;
@@ -410,7 +414,7 @@ void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse)
 
 	physics_vertex.mVelocity += to_jolt(p_impulse) * physics_vertex.mInvMass;
 
-	wake_up();
+	_motion_changed();
 }
 
 void JoltSoftBody3D::apply_vertex_force(int p_index, const Vector3 &p_force) {
@@ -421,7 +425,6 @@ void JoltSoftBody3D::apply_vertex_force(int p_index, const Vector3 &p_force) {
 
 void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply central impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
-	ERR_FAIL_NULL(shared);
 
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
@@ -434,16 +437,15 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 		}
 	}
 
-	wake_up();
+	_motion_changed();
 }
 
 void JoltSoftBody3D::apply_central_force(const Vector3 &p_force) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply central force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
-	ERR_FAIL_NULL(shared);
 
-	JPH::BodyInterface &body_iface = space->get_body_iface();
+	jolt_body->AddForce(to_jolt(p_force));
 
-	body_iface.AddForce(jolt_body->GetID(), to_jolt(p_force), JPH::EActivation::Activate);
+	_motion_changed();
 }
 
 void JoltSoftBody3D::set_is_sleeping(bool p_enabled) {
@@ -451,13 +453,7 @@ void JoltSoftBody3D::set_is_sleeping(bool p_enabled) {
 		return;
 	}
 
-	JPH::BodyInterface &body_iface = space->get_body_iface();
-
-	if (p_enabled) {
-		body_iface.DeactivateBody(jolt_body->GetID());
-	} else {
-		body_iface.ActivateBody(jolt_body->GetID());
-	}
+	space->set_is_object_sleeping(jolt_body->GetID(), p_enabled);
 }
 
 bool JoltSoftBody3D::is_sleep_allowed() const {
