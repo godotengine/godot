@@ -167,7 +167,7 @@ AABB Decal::get_aabb() const {
 }
 
 void Decal::_validate_property(PropertyInfo &p_property) const {
-	if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
+	if (Engine::get_singleton()->is_editor_hint() && !distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
