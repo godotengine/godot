@@ -304,7 +304,9 @@ protected:
 
 	bool read_only = false;
 
+	bool hovered = false;
 	int hovering_key_idx = -1;
+	int select_single_attempt = -1;
 
 protected:
 	bool moving_selection_attempt = false;
@@ -316,8 +318,17 @@ protected:
 	bool moving_selection = false;
 
 public:
+	virtual void _move_selection_begin() { }
+	virtual void _move_selection(float p_offset) {}
+	virtual void _move_selection_commit() {}
+	virtual void _move_selection_cancel() {}
+
+public:
 	bool is_moving_selection() const;
 	float get_moving_selection_offset() const;
+
+	virtual void try_select(const int p_index, bool is_single) = 0;
+	virtual void try_deselect(const int p_index) = 0;
 
 protected:
 	void _update_key_type_icon();
@@ -345,7 +356,7 @@ public:
 	virtual Variant get_key_value(const int p_index) const = 0;
 
 public:
-	
+	int find_closest_key(const Point2 &p_pos) const;
 	virtual bool is_key_selectable_by_distance() const;
 
 public:
@@ -384,6 +395,8 @@ public:
 	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
 	Ref<Animation> get_animation() const;
 
+	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
+
 public:
 	virtual bool has_valid_track() const override;
 
@@ -391,6 +404,8 @@ public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
 	virtual bool has_valid_key(const int p_index) const override;
+
+	virtual bool is_compressed() const = 0;
 };
 
 class AnimationMarkerEdit : public AnimationKeyEdit { //XXX
@@ -407,11 +422,8 @@ class AnimationMarkerEdit : public AnimationKeyEdit { //XXX
 	Control *play_position = nullptr; // Separate control used to draw so updates for only position changed are much faster.
 	float play_position_pos = 0.0f;
 
-	HashSet<StringName> selection;
-
 	PopupMenu *menu = nullptr;
 
-	bool hovered = false;
 	StringName hovering_marker;
 
 	void _zoom_changed();
@@ -421,17 +433,9 @@ class AnimationMarkerEdit : public AnimationKeyEdit { //XXX
 	void _menu_selected(int p_index);
 
 	void _play_position_draw();
-	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 	bool _is_ui_pos_in_current_section(const Point2 &p_pos);
 
 	float insert_at_pos = 0.0f;
-
-	StringName select_single_attempt;
-	
-	void _move_selection_begin();
-	void _move_selection(float p_offset);
-	void _move_selection_commit();
-	void _move_selection_cancel();
 
 	virtual void _clear_selection_for_anim(const Ref<Animation> &p_anim) override;
 	void _select_key(const StringName &p_name, bool is_single = false);
@@ -479,12 +483,9 @@ protected:
 public:
 	virtual Ref<Texture2D> _get_key_type_icon() const override;
 	virtual Ref<Texture2D> _get_key_type_icon_selected() const override;
-
+	
 	bool has_marker(const String p_name);
-	int get_marker_index(const StringName marker) const;
-	StringName get_marker_name(const int p_index) const;
 	double get_global_marker_time(int p_index) const;
-	int find_closest_key(const Point2 &p_pos) const;
 	float get_global_marker_pos(const StringName marker) const;
 
 	virtual Variant get_key_value(const int p_index) const override;
@@ -503,7 +504,6 @@ public:
 	Ref<Animation> get_animation() const;
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
 	AnimationTrackEditor *get_editor() const { return editor; }
-	bool is_selection_active() const { return !selection.is_empty(); }
 	virtual Size2 get_minimum_size() const override;
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);
@@ -514,11 +514,37 @@ public:
 
 	void set_use_fps(bool p_use_fps);
 
-	PackedStringArray get_selected_section() const;
-	bool is_marker_selected(const StringName &p_marker) const;
-
 	// For use by AnimationTrackEditor.
 	void _clear_selection(bool p_update);
+
+	virtual void try_select(const int p_index, bool is_single) override;
+	virtual void try_deselect(const int p_index) override;
+
+	virtual bool is_compressed() const override;
+
+	virtual void _move_selection_begin() override;
+	virtual void _move_selection(float p_offset) override;
+	virtual void _move_selection_commit() override;
+	virtual void _move_selection_cancel() override;
+
+	struct SelectedMarkerKey {
+		int key = 0;
+		bool operator<(const SelectedMarkerKey &p_key) const { return key < p_key.key; }
+	};
+
+	struct MarkerKeyInfo {
+		float pos = 0;
+	};
+
+	RBMap<SelectedMarkerKey, MarkerKeyInfo> selection;
+
+	void clear_selection();
+	int get_selection_count() const;
+	void insert_selection(const int p_index);
+
+	PackedStringArray get_selected_section();
+	int get_last_selection();
+	int get_first_selection();
 
 public:
 	AnimationMarkerEdit();
@@ -568,7 +594,6 @@ class AnimationTrackEdit : public AnimationKeyEdit { //XXX
 
 	PopupMenu *menu = nullptr;
 
-	bool hovered = false;
 	bool clicking_on_name = false;
 
 	void _zoom_changed();
@@ -581,7 +606,6 @@ class AnimationTrackEdit : public AnimationKeyEdit { //XXX
 	void _path_submitted(const String &p_text);
 	void _play_position_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
-	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 
 	int lookup_key_idx = -1;
 	bool _lookup_key(int p_key_idx) const;
@@ -608,6 +632,7 @@ public:
 	int track = -1;
 
 	virtual Variant get_key_value(const int p_index) const override;
+	virtual bool is_compressed() const override;
 
 protected:
 	NodePath node_path;
@@ -623,16 +648,13 @@ public:
 	
 	bool has_marker(const String p_name);
 	int get_marker_index(const StringName marker) const;
-	StringName get_marker_name(const int p_index) const;
 	double get_global_marker_time(const int p_index) const;
 	bool has_key(const int p_index);
 	float get_global_time(float p_time) const;
 	void draw_markers(float p_clip_left, float p_clip_right);
-	bool is_marker_selected(const StringName &p_marker) const;
 
 	virtual bool is_key_selected(const int p_index) const override;
 
-	int find_closest_key(const Point2 &p_pos) const;
 	void draw_timeline(float p_clip_left, float p_clip_right);
 
 	virtual int get_key_count() const override;
@@ -664,6 +686,9 @@ public:
 
 	void set_in_group(bool p_enable);
 	void append_to_selection(const Rect2 &p_box, bool p_deselection);
+
+	virtual void try_select(const int p_index, bool is_single) override;
+	virtual void try_deselect(const int p_index) override;
 
 public:
 	int _get_theme_font_height(float p_scale) const;
@@ -886,6 +911,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	bool moving_selection = false;
 	float moving_selection_offset = 0.0f;
+
 	void _move_selection_begin();
 	void _move_selection(float p_offset);
 	void _move_selection_commit();
@@ -1093,8 +1119,9 @@ public:
 	void show_dummy_player_warning(bool p_show);
 	void show_inactive_player_warning(bool p_show);
 
-	bool is_key_selected(int p_track, int p_key) const;
+	bool is_key_selected(const int p_track, const int p_key) const;
 	bool is_selection_active() const;
+	bool is_marker_selection_active() const;
 	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
 	bool is_snap_timeline_enabled() const;
@@ -1107,11 +1134,16 @@ public:
 	float get_snap_unit();
 	bool is_grouping_tracks();
 	bool is_sorting_alphabetically();
-	PackedStringArray get_selected_section() const;
-	bool is_marker_selected(const StringName &p_marker) const;
 	bool is_marker_moving_selection() const;
 	float get_marker_moving_selection_offset() const;
 	bool is_function_name_pressed();
+
+	bool is_marker_selected(const int p_key) const;
+	PackedStringArray get_selected_marker_section();
+
+	Color get_marker_color(const int p_index) const;
+	StringName get_marker_name(const int p_index) const;
+	int get_marker_index(const StringName marker) const;
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
 	void goto_prev_step(bool p_from_mouse_event);

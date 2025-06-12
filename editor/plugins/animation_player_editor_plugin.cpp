@@ -296,7 +296,7 @@ void AnimationPlayerEditor::_play_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		PackedStringArray markers = track_editor->get_selected_section();
+		PackedStringArray markers = track_editor->get_selected_marker_section();
 		if (markers.size() == 2) {
 			StringName start_marker = markers[0];
 			StringName end_marker = markers[1];
@@ -320,7 +320,7 @@ void AnimationPlayerEditor::_play_from_pressed() {
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
-		PackedStringArray markers = track_editor->get_selected_section();
+		PackedStringArray markers = track_editor->get_selected_marker_section();
 		if (markers.size() == 2) {
 			StringName start_marker = markers[0];
 			StringName end_marker = markers[1];
@@ -348,7 +348,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		PackedStringArray markers = track_editor->get_selected_section();
+		PackedStringArray markers = track_editor->get_selected_marker_section();
 		if (markers.size() == 2) {
 			StringName start_marker = markers[0];
 			StringName end_marker = markers[1];
@@ -372,7 +372,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
-		PackedStringArray markers = track_editor->get_selected_section();
+		PackedStringArray markers = track_editor->get_selected_marker_section();
 		if (markers.size() == 2) {
 			StringName start_marker = markers[0];
 			StringName end_marker = markers[1];

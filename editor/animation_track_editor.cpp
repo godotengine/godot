@@ -2383,7 +2383,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			{
 				float scale = timeline->get_zoom_scale();
 
-				PackedStringArray section = editor->get_selected_section();
+				PackedStringArray section = editor->get_selected_marker_section();
 				if (section.size() == 2) {
 					StringName start_marker = section[0];
 					StringName end_marker = section[1];
@@ -2710,8 +2710,8 @@ int AnimationTrackEdit::get_marker_index(const StringName marker) const {
 	return markers.find(marker);
 }
 
-StringName AnimationTrackEdit::get_marker_name(const int p_index) const {
-	PackedStringArray markers = editor->get_current_animation()->get_marker_names();
+StringName AnimationTrackEditor::get_marker_name(const int p_index) const {
+	PackedStringArray markers = animation->get_marker_names();
 	if (markers.size() == 0) {
 		return StringName("");
 	}
@@ -2727,34 +2727,19 @@ StringName AnimationTrackEdit::get_marker_name(const int p_index) const {
 	return markers[p_index];
 }
 
-int AnimationMarkerEdit::get_marker_index(const StringName marker) const {
-	PackedStringArray markers = editor->get_current_animation()->get_marker_names();
+int AnimationTrackEditor::get_marker_index(const StringName marker) const {
+	PackedStringArray markers = animation->get_marker_names();
 	return markers.find(marker);
-}
-
-StringName AnimationMarkerEdit::get_marker_name(const int p_index) const {
-	PackedStringArray markers = editor->get_current_animation()->get_marker_names();
-	if (markers.size() == 0) {
-		return StringName("");
-	}
-
-	if (p_index >= markers.size()) {
-		return StringName("");
-	}
-
-	if (p_index < 0) {
-		return StringName("");
-	}
-
-	return markers[p_index];
 }
 
 float AnimationMarkerEdit::get_global_marker_pos(const StringName marker) const {
 	float scale = timeline->get_zoom_scale();
 	int limit = timeline->get_name_limit();
 
-	float offset = animation->get_marker_time(marker) - timeline->get_value();
-	bool is_selected = is_marker_selected(marker);
+	int index = editor->get_marker_index(marker);
+	float offset = get_key_time(index) - timeline->get_value();
+
+	bool is_selected = is_key_selected(index);
 	if (is_selected && moving_selection) {
 		offset += moving_selection_offset;
 	}
@@ -2763,10 +2748,10 @@ float AnimationMarkerEdit::get_global_marker_pos(const StringName marker) const 
 }
 
 double AnimationMarkerEdit::get_global_marker_time(const int p_index) const {
-	StringName marker = get_marker_name(p_index);
+	StringName marker = editor->get_marker_name(p_index);
 	double time = animation->get_marker_time(marker);
 
-	bool is_selected = is_marker_selected(marker);
+	bool is_selected = is_key_selected(p_index);
 	if (is_selected && editor->is_marker_moving_selection()) {
 		time += editor->get_marker_moving_selection_offset();
 	}
@@ -2774,10 +2759,10 @@ double AnimationMarkerEdit::get_global_marker_time(const int p_index) const {
 }
 
 double AnimationTrackEdit::get_global_marker_time(const int p_index) const {
-	StringName marker = get_marker_name(p_index);
+	StringName marker = editor->get_marker_name(p_index);
 	double time = animation->get_marker_time(marker);
 
-	bool is_selected = is_marker_selected(marker);
+	bool is_selected = is_key_selected(p_index);
 	if (is_selected && editor->is_marker_moving_selection()) {
 		time += editor->get_marker_moving_selection_offset();
 	}
@@ -2790,11 +2775,6 @@ bool AnimationTrackEdit::has_key(const int p_index) {
 
 /// KEY EDIT ///
 
-//AnimationKeyEdit::AnimationKeyEdit() {
-//	animationTrackDrawUtils = memnew(AnimationTrackDrawUtils);
-//	animationTrackDrawUtils->canvas_item = this;
-//}
-
 bool AnimationKeyEdit::has_valid_track() const {
 	if (animation.is_null()) {
 		return false;
@@ -2806,16 +2786,6 @@ bool AnimationKeyEdit::has_valid_track() const {
 
 	return true;
 }
-
-/*
-bool AnimationKeyIconEdit::has_valid_key(const int p_index) const {
-	if (!icon.is_valid()) {
-		return false;
-	}
-
-	return true;
-}
-*/
 
 int AnimationTrackEdit::get_key_count() const {
 	if (animation.is_null()) {
@@ -2927,11 +2897,6 @@ bool AnimationTrackEdit::is_key_selected(const int p_index) const {
 	return editor->is_key_selected(track, p_index);
 }
 
-bool AnimationMarkerEdit::is_key_selected(const int p_index) const {
-	StringName marker = get_marker_name(p_index);
-	return editor->is_marker_selected(marker);
-}
-
 float KeyEdit::_get_pixels_sec(const int p_index, bool ignore_moving_selection) const {
 	float local_time = _get_local_time(p_index);
 
@@ -2956,8 +2921,7 @@ double AnimationTrackEdit::get_key_time(const int p_index) const {
 }
 
 double AnimationMarkerEdit::get_key_time(const int p_index) const {
-	PackedStringArray names = animation->get_marker_names();
-	StringName marker_name = names[p_index];
+	StringName marker_name = editor->get_marker_name(p_index);
 	return animation->get_marker_time(marker_name);
 }
 
@@ -2992,12 +2956,12 @@ void AnimationTrackEdit::draw_key(const int p_index, const Rect2 &p_global_rect,
 	animationTrackDrawUtils->_draw_texture_region_clipped(texture, p_global_rect, region, p_clip_left, p_clip_right, color);
 }
 
-int AnimationTrackEdit::find_closest_key(const Point2 &p_pos) const {
+int KeyEdit::find_closest_key(const Point2 &p_pos) const {
 	int key_idx = -1;
 	float key_distance = 1e20;
 
 	// Select should happen in the opposite order of drawing for more accurate overlap select.
-	for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
+	for (int i = get_key_count() - 1; i >= 0; i--) {
 		Rect2 rect = get_global_key_rect(i);
 
 		if (rect.has_point(p_pos)) {
@@ -3025,7 +2989,7 @@ Variant AnimationTrackEdit::get_key_value(const int p_index) const {
 }
 
 Variant AnimationMarkerEdit::get_key_value(const int p_index) const {
-	return get_marker_name(p_index);
+	return editor->get_marker_name(p_index);
 }
 
 void KeyEdit::draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right) {
@@ -3732,56 +3696,12 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable) {
-	if (!animation->track_is_compressed(track)) { // Selecting compressed keyframes for editing is not possible.
-		float scale = timeline->get_zoom_scale();
-		int limit = timeline->get_name_limit();
-		int limit_end = get_size().width - timeline->get_buttons_width();
-		// Left Border including space occupied by keyframes on t=0.
-		int limit_start_hitbox = limit - type_icon->get_width();
+void AnimationTrackEdit::try_select(const int p_index, bool is_single) {
+	emit_signal(SNAME("select_key"), p_index, is_single);
+}
 
-		if (p_pos.x >= limit_start_hitbox && p_pos.x <= limit_end) {
-			int key_idx = find_closest_key(p_pos);
-			if (key_idx != -1) {
-				if (p_aggregate) {
-					if (editor->is_key_selected(track, key_idx)) {
-						if (p_deselectable) {
-							emit_signal(SNAME("deselect_key"), key_idx);
-							moving_selection_pivot = 0.0f;
-							moving_selection_mouse_begin_x = 0.0f;
-						}
-					} else {
-						emit_signal(SNAME("select_key"), key_idx, false);
-						moving_selection_attempt = true;
-						moving_selection_effective = false;
-						select_single_attempt = -1;
-						moving_selection_pivot = animation->track_get_key_time(track, key_idx);
-						moving_selection_mouse_begin_x = p_pos.x;
-					}
-				} else {
-					if (!editor->is_key_selected(track, key_idx)) {
-						emit_signal(SNAME("select_key"), key_idx, true);
-						select_single_attempt = -1;
-					} else {
-						select_single_attempt = key_idx;
-					}
-
-					moving_selection_attempt = true;
-					moving_selection_effective = false;
-					moving_selection_pivot = animation->track_get_key_time(track, key_idx);
-					moving_selection_mouse_begin_x = p_pos.x;
-				}
-
-				if (read_only) {
-					moving_selection_attempt = false;
-					moving_selection_pivot = 0.0f;
-					moving_selection_mouse_begin_x = 0.0f;
-				}
-				return true;
-			}
-		}
-	}
-	return false;
+void AnimationTrackEdit::try_deselect(const int p_index) {
+	emit_signal(SNAME("deselect_key"), p_index);
 }
 
 bool AnimationTrackEdit::_lookup_key(int p_key_idx) const {
@@ -4153,7 +4073,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			{
 				float scale = timeline->get_zoom_scale();
 
-				PackedStringArray section = editor->get_selected_section();
+				PackedStringArray section = editor->get_selected_marker_section();
 				if (section.size() == 2) {
 					StringName start_marker = section[0];
 					StringName end_marker = section[1];
@@ -4296,7 +4216,7 @@ AnimationTrackEditGroup::AnimationTrackEditGroup() {
 double AnimationTrackEditGroup::get_global_marker_time(int p_index) const {
 	StringName marker = get_marker_name(p_index);
 	double time = editor->get_current_animation()->get_marker_time(marker);
-	if (editor->is_marker_selected(marker) && editor->is_marker_moving_selection()) {
+	if (editor->is_marker_selected(p_index) && editor->is_marker_moving_selection()) {
 		time += editor->get_marker_moving_selection_offset();
 	}
 	return time;
@@ -4969,12 +4889,45 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	_query_insert(id);
 }
 
-PackedStringArray AnimationTrackEditor::get_selected_section() const {
-	return marker_edit->get_selected_section();
+PackedStringArray AnimationMarkerEdit::get_selected_section() {
+	if (get_selection_count() >= 2) {
+		PackedStringArray arr;
+		arr.push_back(""); // Marker with smallest time.
+		arr.push_back(""); // Marker with largest time.
+		double min_time = Math::INF;
+		double max_time = -Math::INF;
+
+		for (RBMap<SelectedMarkerKey, MarkerKeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
+			SelectedMarkerKey key = E->key;
+			int key_index = key.key;
+
+			StringName marker_name = editor->get_marker_name(key_index);
+			double time = get_key_time(key_index); //get_time()
+			if (time < min_time) {
+				arr.set(0, marker_name);
+				min_time = time;
+			}
+			if (time > max_time) {
+				arr.set(1, marker_name);
+				max_time = time;
+			}
+		}
+		return arr;
+	}
+
+	return PackedStringArray();
 }
 
-bool AnimationTrackEditor::is_marker_selected(const StringName &p_marker) const {
-	return marker_edit->is_marker_selected(p_marker);
+bool AnimationMarkerEdit::is_key_selected(const int p_index) const {
+	SelectedMarkerKey smk;
+	smk.key = p_index;
+	//smk.track = p_track;
+
+	return selection.has(smk);
+}
+
+bool AnimationTrackEditor::is_marker_selected(const int p_key) const {
+	return marker_edit->is_key_selected(p_key);
 }
 
 bool AnimationTrackEditor::is_marker_moving_selection() const {
@@ -5322,7 +5275,7 @@ void AnimationTrackEditor::show_inactive_player_warning(bool p_show) {
 	inactive_player_warning->set_visible(p_show);
 }
 
-bool AnimationTrackEditor::is_key_selected(int p_track, int p_key) const {
+bool AnimationTrackEditor::is_key_selected(const int p_track, const int p_key) const {
 	SelectedKey sk;
 	sk.key = p_key;
 	sk.track = p_track;
@@ -6325,7 +6278,7 @@ void AnimationTrackEditor::_key_selected(int p_key, bool p_single, int p_track) 
 	_redraw_tracks();
 	_update_key_edit();
 
-	marker_edit->_clear_selection(marker_edit->is_selection_active());
+	marker_edit->_clear_selection(is_marker_selection_active());
 }
 
 void AnimationTrackEditor::_key_deselected(int p_key, int p_track) {
@@ -6482,7 +6435,7 @@ void AnimationTrackEditor::_select_at_anim(const Ref<Animation> &p_anim, int p_t
 	selection.insert(sk, ki);
 	_update_key_edit();
 
-	marker_edit->_clear_selection(marker_edit->is_selection_active());
+	marker_edit->_clear_selection(is_marker_selection_active());
 }
 
 void AnimationTrackEditor::_move_selection_commit() {
@@ -8974,8 +8927,10 @@ void AnimationMarkerEdit::_menu_selected(int p_index) {
 			_insert_marker(insert_at_pos);
 		} break;
 		case MENU_KEY_RENAME: {
-			if (selection.size() > 0) {
-				_rename_marker(*selection.last());
+			if (editor->is_marker_selection_active()) {
+				int index = get_last_selection();
+				StringName marker_name = editor->get_marker_name(index);
+				_rename_marker(marker_name);
 			}
 		} break;
 		case MENU_KEY_DELETE: {
@@ -8986,6 +8941,27 @@ void AnimationMarkerEdit::_menu_selected(int p_index) {
 			queue_redraw();
 		} break;
 	}
+}
+
+int AnimationMarkerEdit::get_first_selection() {
+	if (!selection.is_empty()) {
+		RBMap<SelectedMarkerKey, MarkerKeyInfo>::Iterator it = selection.begin();
+
+		SelectedMarkerKey first_key = it->key;
+		return first_key.key;
+	}
+	return -1;
+}
+
+int AnimationMarkerEdit::get_last_selection() {
+	if (!selection.is_empty()) {
+		RBMap<SelectedMarkerKey, MarkerKeyInfo>::Iterator it = selection.end();
+		--it;
+
+		SelectedMarkerKey last_key = it->key;
+		return last_key.key;
+	}
+	return -1;
 }
 
 void AnimationMarkerEdit::_play_position_draw() {
@@ -9004,34 +8980,27 @@ void AnimationMarkerEdit::_play_position_draw() {
 	}
 }
 
-int AnimationMarkerEdit::find_closest_key(const Point2 &p_pos) const {
-	int key_idx = -1;
-	float key_distance = 1e20;
-
-	// Select should happen in the opposite order of drawing for more accurate overlap select.
-	PackedStringArray names = animation->get_marker_names();
-	for (int i = names.size() - 1; i >= 0; i--) {
-		Rect2 rect = get_global_key_rect(i);
-
-		if (rect.has_point(p_pos)) {
-			if (is_key_selectable_by_distance()) {
-				float distance = Math::abs(rect.position.x - p_pos.x);
-				if (key_idx == -1 || distance < key_distance) {
-					key_idx = i;
-					key_distance = distance;
-				}
-			} else {
-				key_idx = i;
-				// First one does it.
-				break;
-			}
-		}
-	}
-
-	return key_idx;
+void AnimationMarkerEdit::try_select(const int p_index, bool is_single) {
+	call_deferred("_select_key", editor->get_marker_name(p_index), is_single);
 }
 
-bool AnimationMarkerEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable) {
+void AnimationMarkerEdit::try_deselect(const int p_index) {
+	call_deferred("_deselect_key", editor->get_marker_name(p_index));
+}
+
+bool AnimationMarkerEdit::is_compressed() const {
+	return false;
+}
+
+bool AnimationTrackEdit::is_compressed() const {
+	return animation->track_is_compressed(track);
+}
+
+bool AnimationKeyEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable) {
+	if (is_compressed()) { // Selecting compressed keyframes for editing is not possible.
+		return false;
+	}
+
 	int limit = timeline->get_name_limit();
 	int limit_end = get_size().width - timeline->get_buttons_width();
 	// Left Border including space occupied by keyframes on t=0.
@@ -9040,29 +9009,28 @@ bool AnimationMarkerEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggr
 	if (p_pos.x >= limit_start_hitbox && p_pos.x <= limit_end) {
 		int key_idx = find_closest_key(p_pos);
 		if (key_idx != -1) {
-			StringName name = get_marker_name(key_idx);
 			if (p_aggregate) {
-				if (selection.has(name)) {
+				if (is_key_selected(key_idx)) {
 					if (p_deselectable) {
-						call_deferred("_deselect_key", name);
+						try_deselect(key_idx);
 						moving_selection_pivot = 0.0f;
 						moving_selection_mouse_begin_x = 0.0f;
 					}
 				} else {
-					call_deferred("_select_key", name, false);
+					try_select(key_idx, false);
 					moving_selection_attempt = true;
 					moving_selection_effective = false;
-					select_single_attempt = StringName();
+					select_single_attempt = -1;
 					moving_selection_pivot = get_key_time(key_idx);
 					moving_selection_mouse_begin_x = p_pos.x;
 				}
 
 			} else {
-				if (!selection.has(name)) {
-					call_deferred("_select_key", name, true);
-					select_single_attempt = StringName();
+				if (!is_key_selected(key_idx)) {
+					try_select(key_idx, true);
+					select_single_attempt = -1;
 				} else {
-					select_single_attempt = name;
+					select_single_attempt = key_idx;
 				}
 
 				moving_selection_attempt = true;
@@ -9121,24 +9089,29 @@ void AnimationMarkerEdit::_update_key_edit() {
 		return;
 	}
 
-	if (selection.size() == 1) {
+	if (get_selection_count() == 1) {
 		key_edit = memnew(AnimationMarkerKeyEdit);
 		key_edit->animation = animation;
 		key_edit->animation_read_only = read_only;
-		key_edit->marker_name = *selection.begin();
+		key_edit->marker_name = editor->get_marker_name(get_first_selection());
 		key_edit->use_fps = timeline->is_using_fps();
 		key_edit->marker_edit = this;
 
 		EditorNode::get_singleton()->push_item(key_edit);
 
 		InspectorDock::get_singleton()->set_info(TTR("Marker name is read-only in the inspector."), TTR("A marker's name can only be changed by right-clicking it in the animation editor and selecting \"Rename Marker\", in order to make sure that marker names are all unique."), true);
-	} else if (selection.size() > 1) {
+	} else if (get_selection_count() > 1) {
 		multi_key_edit = memnew(AnimationMultiMarkerKeyEdit);
 		multi_key_edit->animation = animation;
 		multi_key_edit->animation_read_only = read_only;
 		multi_key_edit->marker_edit = this;
-		for (const StringName &name : selection) {
-			multi_key_edit->marker_names.push_back(name);
+
+		for (RBMap<SelectedMarkerKey, MarkerKeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
+			SelectedMarkerKey key = E->key;
+			int key_index = key.key;
+
+			StringName marker_name = editor->get_marker_name(key_index);
+			multi_key_edit->marker_names.push_back(marker_name);
 		}
 
 		EditorNode::get_singleton()->push_item(multi_key_edit);
@@ -9259,7 +9232,7 @@ void AnimationMarkerEdit::_notification(int p_what) {
 						continue; //TOOD: make return maybe
 					}
 
-					bool is_selected = is_marker_selected(marker_name);
+					bool is_selected = is_key_selected(i);
 					try_draw_key(i, global_rect, is_selected, limit, limit_end);
 
 					const int font_size = 12 * EDSCALE;
@@ -9344,24 +9317,24 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 				call_deferred("_select_key", select_single_attempt, true);
 
 				// First select click should not affect play position.
-				if (!selection.has(select_single_attempt)) {
+				if (!is_key_selected(select_single_attempt)) {
 					accept_event();
 				} else {
 					// Second click and onwards should snap to marker time.
-					double ofs = animation->get_marker_time(select_single_attempt);
+					double ofs = get_key_time(select_single_attempt);
 					timeline->set_play_position(ofs);
 					timeline->emit_signal(SNAME("timeline_changed"), ofs, mb->is_alt_pressed());
 					accept_event();
 				}
 			} else {
 				// First select click should not affect play position.
-				if (!selection.has(select_single_attempt)) {
+				if (!is_key_selected(select_single_attempt)) {
 					accept_event();
 				}
 			}
 
 			moving_selection = false;
-			select_single_attempt = StringName();
+			select_single_attempt = -1;
 		}
 
 		if (moving_selection && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
@@ -9528,45 +9501,16 @@ bool AnimationMarkerEdit::has_marker(const String p_name) {
 	return names.has(p_name);
 }
 
-PackedStringArray AnimationMarkerEdit::get_selected_section() const {
-	if (selection.size() >= 2) {
-		PackedStringArray arr;
-		arr.push_back(""); // Marker with smallest time.
-		arr.push_back(""); // Marker with largest time.
-		double min_time = Math::INF;
-		double max_time = -Math::INF;
-		for (const StringName &marker_name : selection) {
-			double time = animation->get_marker_time(marker_name);
-			if (time < min_time) {
-				arr.set(0, marker_name);
-				min_time = time;
-			}
-			if (time > max_time) {
-				arr.set(1, marker_name);
-				max_time = time;
-			}
-		}
-		return arr;
-	}
-
-	return PackedStringArray();
+Color AnimationTrackEditor::get_marker_color(const int p_index) const {
+	const StringName &p_name = get_marker_name(p_index);
+	return animation->get_marker_color(p_name);
 }
-
-bool AnimationMarkerEdit::is_marker_selected(const StringName &p_marker) const {
-	return selection.has(p_marker);
-}
-
-bool AnimationTrackEdit::is_marker_selected(const StringName &p_marker) const {
-	return editor->is_marker_selected(p_marker);
-}
-
 
 void AnimationMarkerEdit::draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
 	Ref<Texture2D> texture = p_selected ? selected_icon : type_icon;
 
 	// Don't apply custom marker color when the key is selected.
-	const StringName &p_name = get_marker_name(p_index);
-	Color marker_color = p_selected ? Color(1, 1, 1) : animation->get_marker_color(p_name);
+	Color marker_color = p_selected ? Color(1, 1, 1) : editor->get_marker_color(p_index);
 
 	Rect2 region;
 	region.size = texture->get_size();
@@ -9574,7 +9518,7 @@ void AnimationMarkerEdit::draw_key(const int p_index, const Rect2 &p_global_rect
 	// Use a different color for the currently hovered key.
 	// The color multiplier is chosen to work with both dark and light editor themes,
 	// and on both unselected and selected key icons.
-	Color color = p_name == hovering_marker ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : marker_color;
+	Color color = p_index == hovering_key_idx ? get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")) : marker_color;
 	animationTrackDrawUtils->_draw_texture_region_clipped(texture, p_global_rect, region, p_clip_left, p_clip_right, color);
 }
 
@@ -9642,11 +9586,13 @@ void AnimationMarkerEdit::_move_selection(float p_offset) {
 }
 
 void AnimationMarkerEdit::_move_selection_commit() {
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Animation Move Markers"));
 
-	for (HashSet<StringName>::Iterator E = selection.last(); E; --E) {
-		StringName name = *E;
+	for (RBMap<SelectedMarkerKey, MarkerKeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		int key_index = E->key().key;
+		StringName name = editor->get_marker_name(key_index);
+
 		double time = animation->get_marker_time(name);
 		float newpos = time + moving_selection_offset;
 		undo_redo->add_do_method(animation.ptr(), "remove_marker", name);
@@ -9658,8 +9604,9 @@ void AnimationMarkerEdit::_move_selection_commit() {
 
 		// add_marker will overwrite the overlapped key on the redo pass, so we add it back on the undo pass.
 		if (StringName overlap = animation->get_marker_at_time(newpos)) {
-			if (select_single_attempt == overlap) {
-				select_single_attempt = "";
+			int index = editor->get_marker_index(overlap);
+			if (select_single_attempt == index) {
+				select_single_attempt = -1;
 			}
 			undo_redo->add_undo_method(animation.ptr(), "add_marker", overlap, newpos);
 			undo_redo->add_undo_method(animation.ptr(), "set_marker_color", overlap, animation->get_marker_color(overlap));
@@ -9667,9 +9614,9 @@ void AnimationMarkerEdit::_move_selection_commit() {
 	}
 
 	moving_selection = false;
-	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+	AnimationPlayer* player = AnimationPlayerEditor::get_singleton()->get_player();
 	if (player) {
-		PackedStringArray selected_section = get_selected_section();
+		PackedStringArray selected_section = editor->get_selected_marker_section();
 		if (selected_section.size() >= 2) {
 			undo_redo->add_do_method(player, "set_section_with_markers", selected_section[0], selected_section[1]);
 			undo_redo->add_undo_method(player, "set_section_with_markers", selected_section[0], selected_section[1]);
@@ -9683,15 +9630,33 @@ void AnimationMarkerEdit::_move_selection_commit() {
 	_update_key_edit();
 }
 
+bool AnimationTrackEditor::is_marker_selection_active() const {
+	return marker_edit->get_selection_count();
+}
+
+PackedStringArray AnimationTrackEditor::get_selected_marker_section() {
+	return marker_edit->get_selected_section();
+}
+
+void AnimationMarkerEdit::_move_selection_cancel() {
+	moving_selection = false;
+	queue_redraw();
+}
+
 void AnimationMarkerEdit::_delete_selected_markers() {
-	if (selection.size()) {
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	if (get_selection_count()) {
+		EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Animation Delete Markers"));
-		for (const StringName &name : selection) {
-			double time = animation->get_marker_time(name);
-			undo_redo->add_do_method(animation.ptr(), "remove_marker", name);
-			undo_redo->add_undo_method(animation.ptr(), "add_marker", name, time);
-			undo_redo->add_undo_method(animation.ptr(), "set_marker_color", name, animation->get_marker_color(name));
+
+		for (RBMap<SelectedMarkerKey, MarkerKeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
+			SelectedMarkerKey key = E->key;
+			int key_index = key.key;
+
+			StringName marker_name = editor->get_marker_name(key_index);
+			double time = get_key_time(key_index);
+			undo_redo->add_do_method(animation.ptr(), "remove_marker", marker_name);
+			undo_redo->add_undo_method(animation.ptr(), "add_marker", marker_name, time);
+			undo_redo->add_undo_method(animation.ptr(), "set_marker_color", marker_name, animation->get_marker_color(marker_name));
 		}
 		_clear_selection_for_anim(animation);
 
@@ -9702,24 +9667,23 @@ void AnimationMarkerEdit::_delete_selected_markers() {
 	}
 }
 
-void AnimationMarkerEdit::_move_selection_cancel() {
-	moving_selection = false;
-	queue_redraw();
-}
-
 void AnimationMarkerEdit::_clear_selection(bool p_update) {
-	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+	AnimationPlayer* player = AnimationPlayerEditor::get_singleton()->get_player();
 	if (player) {
 		player->reset_section();
 	}
 
-	selection.clear();
+	clear_selection();
 
 	if (p_update) {
 		queue_redraw();
 	}
 
 	_clear_key_edit();
+}
+
+void AnimationMarkerEdit::clear_selection() {
+	selection.clear();
 }
 
 void AnimationMarkerEdit::_clear_selection_for_anim(const Ref<Animation> &p_anim) {
@@ -9730,16 +9694,36 @@ void AnimationMarkerEdit::_clear_selection_for_anim(const Ref<Animation> &p_anim
 	_clear_selection(true);
 }
 
+int AnimationMarkerEdit::get_selection_count() const {
+	return selection.size();
+}
+
+void AnimationMarkerEdit::insert_selection(const int p_index) {
+	SelectedMarkerKey sk;
+	//sk.color = p_color;
+	sk.key = p_index;
+	MarkerKeyInfo ki;
+	//ki.pos = p_pos;
+
+	selection.insert(sk, ki);
+	//_update_marker_key_edit();
+
+	//marker_edit->_clear_selection(is_marker_selection_active());
+}
+
 void AnimationMarkerEdit::_select_key(const StringName &p_name, bool is_single) {
 	if (is_single) {
 		_clear_selection(false);
 	}
 
-	selection.insert(p_name);
+	int index = editor->get_marker_index(p_name);
+	if (index != -1) {
+		insert_selection(index);
+	}
 
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
 	if (player) {
-		if (selection.size() >= 2) {
+		if (get_selection_count() >= 2) {
 			PackedStringArray selected_section = get_selected_section();
 			double start_time = animation->get_marker_time(selected_section[0]);
 			double end_time = animation->get_marker_time(selected_section[1]);
@@ -9756,7 +9740,12 @@ void AnimationMarkerEdit::_select_key(const StringName &p_name, bool is_single) 
 }
 
 void AnimationMarkerEdit::_deselect_key(const StringName &p_name) {
-	selection.erase(p_name);
+	int key_index = editor->get_marker_index(p_name);
+
+	SelectedMarkerKey smk;
+	smk.key = key_index;
+
+	selection.erase(smk);
 
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
 	if (player) {
@@ -9869,7 +9858,7 @@ void AnimationMarkerEdit::_marker_rename_confirmed() {
 		undo_redo->add_do_method(this, "_select_key", new_name, true);
 		undo_redo->add_undo_method(this, "_select_key", prev_name, true);
 		undo_redo->commit_action();
-		select_single_attempt = StringName();
+		select_single_attempt = -1;
 	}
 	marker_rename_confirm->hide();
 }
