@@ -213,8 +213,10 @@ Error WaylandEmbedderProxy::Client::delete_object(uint32_t p_local_id) {
 		DEBUG_LOG_WAYLAND_SNOOPER(vformat("Deleting fake object %s l0x%x", object->interface ? object->interface->name : "UNKNOWN", p_local_id));
 #endif
 
-		// wl_display::delete_id
-		send_wayland_message(socket, DISPLAY_ID, 1, { p_local_id });
+		if (!(p_local_id & 0xff000000)) {
+			// wl_display::delete_id
+			send_wayland_message(socket, DISPLAY_ID, 1, { p_local_id });
+		}
 
 		fake_objects.erase(p_local_id);
 
