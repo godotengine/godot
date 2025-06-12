@@ -357,27 +357,27 @@ public:
 private:
 	struct MaterialKey {
 		// enum values
-		uint64_t texture_filter : get_num_bits(TEXTURE_FILTER_MAX - 1);
-		uint64_t detail_uv : get_num_bits(DETAIL_UV_MAX - 1);
-		uint64_t transparency : get_num_bits(TRANSPARENCY_MAX - 1);
-		uint64_t alpha_antialiasing_mode : get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
-		uint64_t shading_mode : get_num_bits(SHADING_MODE_MAX - 1);
-		uint64_t blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
-		uint64_t depth_draw_mode : get_num_bits(DEPTH_DRAW_MAX - 1);
-		uint64_t depth_test : get_num_bits(DEPTH_TEST_MAX - 1);
-		uint64_t cull_mode : get_num_bits(CULL_MAX - 1);
-		uint64_t diffuse_mode : get_num_bits(DIFFUSE_MAX - 1);
-		uint64_t specular_mode : get_num_bits(SPECULAR_MAX - 1);
-		uint64_t billboard_mode : get_num_bits(BILLBOARD_MAX - 1);
-		uint64_t detail_blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
-		uint64_t roughness_channel : get_num_bits(TEXTURE_CHANNEL_MAX - 1);
-		uint64_t emission_op : get_num_bits(EMISSION_OP_MAX - 1);
-		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
+		uint64_t texture_filter : Math::get_num_bits(TEXTURE_FILTER_MAX - 1);
+		uint64_t detail_uv : Math::get_num_bits(DETAIL_UV_MAX - 1);
+		uint64_t transparency : Math::get_num_bits(TRANSPARENCY_MAX - 1);
+		uint64_t alpha_antialiasing_mode : Math::get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
+		uint64_t shading_mode : Math::get_num_bits(SHADING_MODE_MAX - 1);
+		uint64_t blend_mode : Math::get_num_bits(BLEND_MODE_MAX - 1);
+		uint64_t depth_draw_mode : Math::get_num_bits(DEPTH_DRAW_MAX - 1);
+		uint64_t depth_test : Math::get_num_bits(DEPTH_TEST_MAX - 1);
+		uint64_t cull_mode : Math::get_num_bits(CULL_MAX - 1);
+		uint64_t diffuse_mode : Math::get_num_bits(DIFFUSE_MAX - 1);
+		uint64_t specular_mode : Math::get_num_bits(SPECULAR_MAX - 1);
+		uint64_t billboard_mode : Math::get_num_bits(BILLBOARD_MAX - 1);
+		uint64_t detail_blend_mode : Math::get_num_bits(BLEND_MODE_MAX - 1);
+		uint64_t roughness_channel : Math::get_num_bits(TEXTURE_CHANNEL_MAX - 1);
+		uint64_t emission_op : Math::get_num_bits(EMISSION_OP_MAX - 1);
+		uint64_t distance_fade : Math::get_num_bits(DISTANCE_FADE_MAX - 1);
 
 		// stencil
-		uint64_t stencil_mode : get_num_bits(STENCIL_MODE_MAX - 1);
+		uint64_t stencil_mode : Math::get_num_bits(STENCIL_MODE_MAX - 1);
 		uint64_t stencil_flags : STENCIL_FLAG_NUM_BITS;
-		uint64_t stencil_compare : get_num_bits(STENCIL_COMPARE_MAX - 1);
+		uint64_t stencil_compare : Math::get_num_bits(STENCIL_COMPARE_MAX - 1);
 		uint64_t stencil_reference : 8;
 
 		// booleans

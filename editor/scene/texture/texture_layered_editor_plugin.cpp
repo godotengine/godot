@@ -241,7 +241,7 @@ void TextureLayeredEditor::_update_gui() {
 	info->set_text(texture_info);
 
 	const uint32_t components_mask = Image::get_format_component_mask(format);
-	if (is_power_of_2(components_mask)) {
+	if (Math::is_power_of_2(components_mask)) {
 		// Only one channel available, no point in showing a channel selector.
 		channel_selector->hide();
 	} else {

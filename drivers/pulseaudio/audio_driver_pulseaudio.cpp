@@ -222,7 +222,7 @@ Error AudioDriverPulseAudio::init_output_device() {
 	}
 
 	int tmp_latency = Engine::get_singleton()->get_audio_output_latency();
-	buffer_frames = closest_power_of_2(tmp_latency * mix_rate / 1000);
+	buffer_frames = Math::closest_power_of_2(tmp_latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
 	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
@@ -727,7 +727,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 	spec.rate = mix_rate;
 
 	int input_latency = 30;
-	int input_buffer_frames = closest_power_of_2(input_latency * mix_rate / 1000);
+	int input_buffer_frames = Math::closest_power_of_2(input_latency * mix_rate / 1000);
 	int input_buffer_size = input_buffer_frames * spec.channels;
 
 	pa_buffer_attr attr = {};

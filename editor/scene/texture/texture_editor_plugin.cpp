@@ -278,7 +278,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	const uint32_t components_mask = format != Image::FORMAT_MAX ? Image::get_format_component_mask(format) : 0xf;
 
 	// Add color channel selector at the bottom left if more than 1 channel is available.
-	if (p_show_metadata && !is_power_of_2(components_mask)) {
+	if (p_show_metadata && !Math::is_power_of_2(components_mask)) {
 		channel_selector = memnew(ColorChannelSelector);
 		channel_selector->connect("selected_channels_changed", callable_mp(this, &TexturePreview::on_selected_channels_changed));
 		channel_selector->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);

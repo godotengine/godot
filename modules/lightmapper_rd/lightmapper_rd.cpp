@@ -226,7 +226,7 @@ void LightmapperRD::_sort_triangle_clusters(uint32_t p_cluster_size, uint32_t p_
 				break;
 		}
 
-		uint32_t left_cluster_count = next_power_of_2(p_count / 2);
+		uint32_t left_cluster_count = Math::next_power_of_2(p_count / 2);
 		left_cluster_count = MAX(left_cluster_count, p_cluster_size);
 		left_cluster_count = MIN(left_cluster_count, p_count);
 		_sort_triangle_clusters(p_cluster_size, p_cluster_index, p_index_start, left_cluster_count, p_triangle_sort, p_cluster_aabb);
@@ -257,8 +257,8 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		atlas_size = atlas_size.max(s + Size2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor);
 	}
 
-	int max = nearest_power_of_2_templated(atlas_size.width);
-	max = MAX(max, nearest_power_of_2_templated(atlas_size.height));
+	int max = Math::nearest_power_of_2_templated(atlas_size.width);
+	max = MAX(max, Math::nearest_power_of_2_templated(atlas_size.height));
 
 	if (max > p_max_texture_size) {
 		return BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE;
@@ -1016,7 +1016,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	// We denoise in fixed size regions and synchronize execution to avoid GPU timeouts.
 	// We use a region with 1/4 the amount of pixels if we're denoising SH lightmaps, as
 	// all four of them are denoised in the shader in one dispatch.
-	const int user_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int user_region_size = Math::nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
 	const int max_region_size = p_bake_sh ? user_region_size / 2 : user_region_size;
 	int x_regions = Math::division_round_up(p_atlas_size.width, max_region_size);
 	int y_regions = Math::division_round_up(p_atlas_size.height, max_region_size);
@@ -1683,7 +1683,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 	}
 
-	const int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int max_region_size = Math::nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
 	const int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
 	const int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
 
