@@ -343,6 +343,19 @@ void WaylandEmbedderProxy::client_disconnect(size_t p_client_id) {
 					delete_object(global_id);
 				}
 
+				if (object->interface == &wl_surface_interface) {
+					WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
+					if (global_seat_data) {
+						if (global_seat_data->pointed_surface_id == global_id) {
+							global_seat_data->pointed_surface_id = INVALID_ID;
+						}
+
+						if (global_seat_data->focused_surface_id == global_id) {
+							global_seat_data->focused_surface_id = INVALID_ID;
+						}
+					}
+				}
+
 				// ??????::destroy() / ??????::release() - yes this is not ideal.
 				send_wayland_message(compositor_socket, global_id, opcode, {});
 				destroyed = true;
@@ -983,32 +996,45 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 		return true;
 	}
 
-	if (object->interface == &wl_surface_interface && p_opcode == WL_SURFACE_COMMIT) {
+	if (object->interface == &wl_surface_interface) {
 		WaylandSurfaceData *surface_data = (WaylandSurfaceData *)object->data;
 		CRASH_COND(surface_data == nullptr);
 
-		if (surface_data->role_object_handle.is_valid()) {
-			WaylandObject *role_object = surface_data->role_object_handle.get();
-			if (role_object && role_object->interface) {
-				DEBUG_LOG_WAYLAND_SNOOPER(vformat("!!!!! Committed surface g0x%x with role object %s id l0x%x", global_id, role_object->interface->name, surface_data->role_object_handle.get_local_id()));
+		if (p_opcode == WL_SURFACE_DESTROY) {
+			WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
+			CRASH_COND(global_seat_data == nullptr);
+
+			if (global_seat_data->pointed_surface_id == global_id) {
+				global_seat_data->pointed_surface_id = INVALID_ID;
 			}
 
-			if (role_object && role_object->interface == &xdg_toplevel_interface) {
-				XdgToplevelData *toplevel_data = (XdgToplevelData *)role_object->data;
-				CRASH_COND(toplevel_data == nullptr);
-				// xdg shell spec requires clients to first send data and then commit the
-				// surface.
+			if (global_seat_data->focused_surface_id == global_id) {
+				global_seat_data->focused_surface_id = INVALID_ID;
+			}
+		} else if (p_opcode == WL_SURFACE_COMMIT) {
+			if (surface_data->role_object_handle.is_valid()) {
+				WaylandObject *role_object = surface_data->role_object_handle.get();
+				if (role_object && role_object->interface) {
+					DEBUG_LOG_WAYLAND_SNOOPER(vformat("!!!!! Committed surface g0x%x with role object %s id l0x%x", global_id, role_object->interface->name, surface_data->role_object_handle.get_local_id()));
+				}
 
-				if (toplevel_data->is_embedded() && !toplevel_data->configured) {
-					toplevel_data->configured = true;
-					// xdg_surface::configure
-					send_wayland_message(client->socket, toplevel_data->xdg_surface_handle.get_local_id(), 0, { serial_counter++ });
+				if (role_object && role_object->interface == &xdg_toplevel_interface) {
+					XdgToplevelData *toplevel_data = (XdgToplevelData *)role_object->data;
+					CRASH_COND(toplevel_data == nullptr);
+					// xdg shell spec requires clients to first send data and then commit the
+					// surface.
+
+					if (toplevel_data->is_embedded() && !toplevel_data->configured) {
+						toplevel_data->configured = true;
+						// xdg_surface::configure
+						send_wayland_message(client->socket, toplevel_data->xdg_surface_handle.get_local_id(), 0, { serial_counter++ });
+					}
 				}
 			}
-		}
 
-		send_wayland_message(compositor_socket, global_id, p_opcode, {});
-		return true;
+			send_wayland_message(compositor_socket, global_id, p_opcode, {});
+			return true;
+		}
 	}
 
 	if (object->interface == &wl_seat_interface) {
