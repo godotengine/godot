@@ -430,7 +430,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		} else if (favorite.ends_with("/")) {
 			text = favorite.substr(0, favorite.length() - 1).get_file();
 			icon = folder_icon;
-			color = assigned_folder_colors.has(favorite) ? folder_colors[assigned_folder_colors[favorite]] : default_folder_color;
+			color = FileSystemDock::get_dir_icon_color(favorite, default_folder_color);
 		} else {
 			text = favorite.get_file();
 			int index;
@@ -3949,6 +3949,30 @@ void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 
 void FileSystemDock::_file_sort_popup(int p_id) {
 	set_file_sort((FileSortOption)p_id);
+}
+
+// TODO: Could use a unit test.
+Color FileSystemDock::get_dir_icon_color(const String &p_dir_path, const Color &p_default) {
+	if (!singleton) { // This method can be called from the project manager.
+		return p_default;
+	}
+	Color folder_icon_color = p_default;
+
+	// Check for a folder color to inherit (if one is assigned).
+	String parent_dir = ProjectSettings::get_singleton()->localize_path(p_dir_path);
+	while (!parent_dir.is_empty() && parent_dir != "res://") {
+		if (!parent_dir.ends_with("/")) {
+			parent_dir += "/";
+		}
+
+		const String color_name = singleton->assigned_folder_colors.get(parent_dir, String());
+		if (!color_name.is_empty()) {
+			folder_icon_color = singleton->folder_colors[color_name];
+			break;
+		}
+		parent_dir = parent_dir.trim_suffix("/").get_base_dir();
+	}
+	return folder_icon_color;
 }
 
 const HashMap<String, Color> &FileSystemDock::get_folder_colors() const {
