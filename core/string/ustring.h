@@ -203,8 +203,10 @@ public:
 	_FORCE_INLINE_ CharStringT(CharStringT &&p_str) = default;
 	_FORCE_INLINE_ void operator=(const CharStringT &p_str) { _cowdata = p_str._cowdata; }
 	_FORCE_INLINE_ void operator=(CharStringT &&p_str) { _cowdata = std::move(p_str._cowdata); }
-	_FORCE_INLINE_ CharStringT(const T *p_cstr) { copy_from(p_cstr); }
-	_FORCE_INLINE_ void operator=(const T *p_cstr) { copy_from(p_cstr); }
+
+	// From null terminated strings.
+	_FORCE_INLINE_ CharStringT(const T *p_cstr) { copy_from(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0)); }
+	_FORCE_INLINE_ void operator=(const T *p_cstr) { copy_from(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0)); }
 
 	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const {
 		if (length() != p_other.length()) {
@@ -231,23 +233,19 @@ public:
 	}
 
 protected:
-	void copy_from(const T *p_cstr) {
-		if (!p_cstr) {
+	Error copy_from(const Span<T> &p_cstr) {
+		if (p_cstr.is_empty()) {
 			resize(0);
-			return;
+			return OK;
 		}
 
-		size_t len = strlen(p_cstr);
-		if (len == 0) {
-			resize(0);
-			return;
-		}
+		const Error err = resize(p_cstr.size() + 1); // Include terminating null char.
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to copy C-string.");
 
-		Error err = resize(++len); // include terminating null char.
-
-		ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
-
-		memcpy(ptrw(), p_cstr, len * sizeof(T));
+		T *dst = ptrw();
+		memcpy(dst, p_cstr.ptr(), p_cstr.size() * sizeof(T));
+		dst[p_cstr.size()] = _null;
+		return OK;
 	}
 };
 
