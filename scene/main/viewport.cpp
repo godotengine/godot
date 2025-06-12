@@ -3489,19 +3489,17 @@ void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 	}
 
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
+	if (is_captured && ps->has_setting(LEGACY_INPUT_SETTING) && ps->get_setting(LEGACY_INPUT_SETTING).is_one()) {
+		return;
+	}
 	if (physics_object_picking && !is_input_handled()) {
 		if (Object::cast_to<InputEventMouse>(*p_event) ||
 				Object::cast_to<InputEventScreenDrag>(*p_event) ||
 				Object::cast_to<InputEventScreenTouch>(*p_event)) {
 			ProjectSettings *ps = ProjectSettings::get_singleton();
 			const bool is_captured = Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED;
-
-			if (is_captured && ps->has_setting(LEGACY_INPUT_SETTING) && ps->get_setting(LEGACY_INPUT_SETTING).is_one()) {
-				return;
-			} else {
-				physics_picking_events.push_back(p_event);
-				set_input_as_handled();
-			}
+			physics_picking_events.push_back(p_event);
+			set_input_as_handled();
 		}
 	}
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
