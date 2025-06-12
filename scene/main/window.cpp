@@ -415,16 +415,7 @@ void Window::move_to_center() {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
 
-	Rect2 parent_rect;
-
-	if (is_embedded()) {
-		parent_rect = get_embedder()->get_visible_rect();
-	} else {
-		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
-		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
-		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
-	}
-
+	Rect2 parent_rect = get_usable_parent_rect();
 	if (parent_rect != Rect2()) {
 		set_position(parent_rect.position + (parent_rect.size - get_size()) / 2);
 	}
@@ -1910,16 +1901,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	// Consider the current size when calling with the default value.
 	Size2i expected_size = p_size == Size2i() ? size : p_size;
 
-	Rect2 parent_rect;
-
-	if (is_embedded()) {
-		parent_rect = get_embedder()->get_visible_rect();
-	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
-		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
-		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
-		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
-	}
+	Rect2 parent_rect = get_usable_parent_rect();
 
 	Vector2i size_ratio = parent_rect.size * p_fallback_ratio;
 
@@ -1942,16 +1924,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	// Consider the current size when calling with the default value.
 	Size2i expected_size = p_minsize == Size2i() ? size : p_minsize;
 
-	Rect2 parent_rect;
-
-	if (is_embedded()) {
-		parent_rect = get_embedder()->get_visible_rect();
-	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
-		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
-		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
-		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
-	}
+	Rect2 parent_rect = get_usable_parent_rect();
 
 	Rect2i popup_rect;
 	popup_rect.size = _clamp_window_size(expected_size);
@@ -1969,16 +1942,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 	ERR_FAIL_COND_MSG(p_ratio <= 0.0 || p_ratio > 1.0, "Ratio must be between 0.0 and 1.0!");
 
-	Rect2 parent_rect;
-
-	if (is_embedded()) {
-		parent_rect = get_embedder()->get_visible_rect();
-	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
-		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
-		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
-		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
-	}
+	Rect2 parent_rect = get_usable_parent_rect();
 
 	Rect2i popup_rect;
 	if (parent_rect != Rect2()) {
@@ -2038,13 +2002,8 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	set_transient(true);
 	set_visible(true);
 
-	Rect2i parent_rect;
-	if (is_embedded()) {
-		parent_rect = get_embedder()->get_visible_rect();
-	} else {
-		int screen_id = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
-		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id);
-	}
+	Rect2i parent_rect = get_usable_parent_rect();
+
 	if (should_fit && parent_rect != Rect2i() && !parent_rect.intersects(Rect2i(position, size))) {
 		ERR_PRINT(vformat("Window %d spawned at invalid position: %s.", get_window_id(), position));
 		set_position((parent_rect.size - size) / 2);
@@ -2209,18 +2168,34 @@ void Window::start_resize(DisplayServer::WindowResizeEdge p_edge) {
 
 Rect2i Window::get_usable_parent_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2i());
-	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
-	Rect2i parent_rect;
-	if (is_embedded()) {
-		parent_rect = get_embedder()->get_visible_rect();
-	} else {
-		const Window *w = is_visible() ? this : get_parent_visible_window();
-		//find a parent that can contain us
-		ERR_FAIL_NULL_V(w, Rect2());
 
-		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
+	// When embedded we cannot resize the window.
+	if (is_embedded()) {
+		return get_embedder()->get_visible_rect();
 	}
-	return parent_rect;
+
+	// The DisplayServer doesn't allow resizing so there is no parent that we could resize into.
+	if (window_id != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+		return Rect2i(position, size);
+	}
+
+	// Internal popups should not overflow from the parent window.
+	if (get_flag(FLAG_POPUP)) {
+		Viewport *parent_viewport = get_parent_viewport();
+		if (parent_viewport) {
+			return parent_viewport->get_visible_rect();
+		}
+	}
+
+	// If there is no native window we don't know what screen it will be on or what its size is.
+	// Just hope that the popup will appear on the same screen as the main one.
+	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::SCREEN_OF_MAIN_WINDOW);
+	}
+
+	// If nothing else bounds the window rect then use the window's current screen rect.
+	int screen = DisplayServer::get_singleton()->window_get_current_screen(window_id);
+	return DisplayServer::get_singleton()->screen_get_usable_rect(screen);
 }
 
 void Window::set_accessibility_name(const String &p_name) {
