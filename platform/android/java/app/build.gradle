@@ -37,6 +37,10 @@ dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
 
+    if (isInstantApp()) {
+        implementation "com.google.android.gms:play-services-instantapps:$versions.instantAppsVersion"
+    }
+
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
     } else if (rootProject.findProject(":godot:lib")) {
@@ -90,7 +94,7 @@ android {
         jvmTarget = versions.javaVersion
     }
 
-    assetPacks = [":assetPackInstallTime"]
+    assetPacks = isInstantApp() ? [] : [":assetPackInstallTime"]
 
     namespace = 'com.godot.game'
 
