@@ -104,6 +104,7 @@ source_files = [
     "detect_prime_egl.cpp",
     "display_server_wayland.cpp",
     "key_mapping_xkb.cpp",
+    "snooper.cpp",
     "wayland_thread.cpp",
 ]
 
