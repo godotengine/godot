@@ -522,9 +522,9 @@ void ShaderTextEditor::_validate_script() {
 		int err_line = err_positions.front()->get().line;
 		if (err_positions.size() == 1) {
 			// Error in main file
-			err_text = "error(" + itos(err_line) + "): " + err_text;
+			err_text = "Error at line " + itos(err_line) + ": " + err_text;
 		} else {
-			err_text = "error(" + itos(err_line) + ") in include " + err_positions.back()->get().file.get_file() + ":" + itos(err_positions.back()->get().line) + ": " + err_text;
+			err_text = "Error at line " + itos(err_line) + " in include " + err_positions.back()->get().file.get_file() + ":" + itos(err_positions.back()->get().line) + ": " + err_text;
 			set_error_count(err_positions.size() - 1);
 		}
 
@@ -585,11 +585,11 @@ void ShaderTextEditor::_validate_script() {
 			if (include_positions.size() > 1) {
 				//error is in an include
 				err_line = include_positions[0].line;
-				err_text = "error(" + itos(err_line) + ") in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
+				err_text = "Error at line " + itos(err_line) + " in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
 				set_error_count(include_positions.size() - 1);
 			} else {
 				err_line = sl.get_error_line();
-				err_text = "error(" + itos(err_line) + "): " + sl.get_error_text();
+				err_text = "Error at line " + itos(err_line) + ": " + sl.get_error_text();
 				set_error_count(0);
 			}
 			set_error(err_text);
@@ -624,7 +624,7 @@ void ShaderTextEditor::_update_warning_panel() {
 	for (const ShaderWarning &w : warnings) {
 		if (warning_count == 0) {
 			if (saved_treat_warning_as_errors) {
-				String error_text = "error(" + itos(w.get_line()) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");
+				String error_text = "Error at line " + itos(w.get_line()) + ": " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");
 				set_error_pos(w.get_line() - 1, 0);
 				set_error(error_text);
 				get_text_editor()->set_line_background_color(w.get_line() - 1, marked_line_color);

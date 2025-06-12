@@ -6321,7 +6321,7 @@ void VisualShaderEditor::_update_preview() {
 			preview_text->set_line_background_color(err_line - 1, error_line_color);
 			error_panel->show();
 
-			error_label->set_text("error(" + file + ":" + itos(err_line) + "): " + error_pp);
+			error_label->set_text("Error in " + file + " at line " + itos(err_line) + ": " + error_pp);
 			shader_error = true;
 			return;
 		}
@@ -6336,10 +6336,10 @@ void VisualShaderEditor::_update_preview() {
 		if (include_positions.size() > 1) {
 			// Error is in an include.
 			err_line = include_positions[0].line;
-			err_text = "error(" + itos(err_line) + ") in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
+			err_text = "Error at line " + itos(err_line) + " in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
 		} else {
 			err_line = sl.get_error_line();
-			err_text = "error(" + itos(err_line) + "): " + sl.get_error_text();
+			err_text = "Error at line " + itos(err_line) + ": " + sl.get_error_text();
 		}
 
 		Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
