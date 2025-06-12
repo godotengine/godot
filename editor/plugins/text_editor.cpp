@@ -200,7 +200,7 @@ void TextEditor::_validate_script() {
 		code_editor->set_error("");
 
 		if (json_file->parse(te->get_text(), true) != OK) {
-			code_editor->set_error(json_file->get_error_message());
+			code_editor->set_error(json_file->get_error_message().replace("[", "[lb]"));
 			code_editor->set_error_pos(json_file->get_error_line(), 0);
 			te->set_line_background_color(code_editor->get_error_pos().x, EDITOR_GET("text_editor/theme/highlighting/mark_color"));
 		}
