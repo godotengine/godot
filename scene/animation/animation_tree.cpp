@@ -990,6 +990,20 @@ real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_co
 	return activity[p_connection].activity;
 }
 
+#ifdef TOOLS_ENABLED
+String AnimationTree::get_editor_error_message() const {
+	if (!is_active()) {
+		return TTR("The AnimationTree is inactive.\nActivate it in the inspector to enable playback; check node warnings if activation fails.");
+	} else if (!is_enabled()) {
+		return TTR("The AnimationTree node (or one of its parents) has its process mode set to Disabled.\nChange the process mode in the inspector to allow playback.");
+	} else if (is_state_invalid()) {
+		return get_invalid_state_reason();
+	}
+
+	return "";
+}
+#endif
+
 void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tree_root", "animation_node"), &AnimationTree::set_root_animation_node);
 	ClassDB::bind_method(D_METHOD("get_tree_root"), &AnimationTree::get_root_animation_node);

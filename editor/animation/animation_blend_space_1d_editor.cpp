@@ -589,11 +589,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 
 			String error;
 
-			if (!tree->is_active()) {
-				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (tree->is_state_invalid()) {
-				error = tree->get_invalid_state_reason();
-			}
+			error = tree->get_editor_error_message();
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
