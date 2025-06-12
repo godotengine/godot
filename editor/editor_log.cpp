@@ -512,7 +512,6 @@ EditorLog::EditorLog() {
 	collapse_button->set_theme_type_variation(SceneStringName(FlatButton));
 	collapse_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
-	collapse_button->set_accessibility_name(TTRC("Collapse Duplicate Messages"));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));

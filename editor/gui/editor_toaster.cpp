@@ -578,7 +578,7 @@ EditorToaster::EditorToaster() {
 
 	// Main button.
 	main_button = memnew(Button);
-	main_button->set_accessibility_name(TTRC("Notifications"));
+	main_button->set_accessibility_name(TTRC("Notifications:"));
 	main_button->set_tooltip_text(TTRC("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
@@ -595,7 +595,6 @@ EditorToaster::EditorToaster() {
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);
-	disable_notifications_button->set_accessibility_name(TTRC("Silence Notifications"));
 	disable_notifications_button->set_tooltip_text(TTRC("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
 	disable_notifications_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(false));

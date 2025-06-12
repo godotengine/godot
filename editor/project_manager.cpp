@@ -1362,7 +1362,6 @@ ProjectManager::ProjectManager() {
 		title_bar_logo = memnew(Button);
 		title_bar_logo->set_flat(true);
 		title_bar_logo->set_tooltip_text(TTR("About Godot"));
-		title_bar_logo->set_accessibility_name(TTRC("About Godot"));
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
@@ -1467,7 +1466,7 @@ ProjectManager::ProjectManager() {
 			filter_option->set_clip_text(true);
 			filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_option->set_stretch_ratio(0.3);
-			filter_option->set_accessibility_name(TTRC("Sort"));
+			filter_option->set_accessibility_name(TTRC("Sort:"));
 			filter_option->connect(SceneStringName(item_selected), callable_mp(this, &ProjectManager::_on_order_option_changed));
 			hb->add_child(filter_option);
 

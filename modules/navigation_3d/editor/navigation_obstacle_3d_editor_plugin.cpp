@@ -830,7 +830,6 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
 	obstacle_editor->add_child(button_create);
 	button_create->set_tooltip_text(TTR("Add Vertex"));
-	button_create->set_accessibility_name(TTRC("Add Vertex"));
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_CREATE));
 	button_create->set_toggle_mode(true);
 	button_create->set_button_group(bg);

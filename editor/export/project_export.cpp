@@ -1472,13 +1472,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
 	duplicate_preset->set_tooltip_text(TTR("Duplicate"));
-	duplicate_preset->set_accessibility_name(TTRC("Duplicate"));
 	duplicate_preset->set_flat(true);
 	preset_hb->add_child(duplicate_preset);
 	duplicate_preset->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_duplicate_preset));
 	delete_preset = memnew(Button);
 	delete_preset->set_tooltip_text(TTR("Delete"));
-	delete_preset->set_accessibility_name(TTRC("Delete"));
 	delete_preset->set_flat(true);
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_delete_preset));
@@ -1700,7 +1698,7 @@ ProjectExportDialog::ProjectExportDialog() {
 			enc_ex_filters);
 
 	script_key = memnew(LineEdit);
-	script_key->set_accessibility_name(TTRC("Encryption Key"));
+	script_key->set_accessibility_name(TTRC("Encryption Key (256-bits as hexadecimal):"));
 	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -1711,7 +1709,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(sec_scroll_container);
 
 	seed_input = memnew(LineEdit);
-	seed_input->set_accessibility_name(TTRC("Encryption Seed"));
+	seed_input->set_accessibility_name(TTRC("Initialization vector seed"));
 	seed_input->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_seed_input_changed));
 	sec_vb->add_margin_child(TTR("Initialization vector seed"), seed_input);
 
@@ -1731,7 +1729,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_vb->set_name(TTR("Scripts"));
 
 	script_mode = memnew(OptionButton);
-	script_mode->set_accessibility_name(TTRC("GDScript Export Mode"));
+	script_mode->set_accessibility_name(TTRC("GDScript Export Mode:"));
 	script_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
 	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);

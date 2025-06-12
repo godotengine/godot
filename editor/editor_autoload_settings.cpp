@@ -933,7 +933,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	hbc->add_child(l);
 
 	autoload_add_name = memnew(LineEdit);
-	autoload_add_name->set_accessibility_name(TTRC("Node Name"));
+	autoload_add_name->set_accessibility_name(TTRC("Node Name:"));
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	autoload_add_name->connect(SceneStringName(text_submitted), callable_mp(this, &EditorAutoloadSettings::_autoload_text_submitted));
 	autoload_add_name->connect(SceneStringName(text_changed), callable_mp(this, &EditorAutoloadSettings::_autoload_text_changed));

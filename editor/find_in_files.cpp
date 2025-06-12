@@ -349,7 +349,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	_search_text_line_edit = memnew(LineEdit);
 	_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_search_text_line_edit->set_accessibility_name(TTRC("Search"));
+	_search_text_line_edit->set_accessibility_name(TTRC("Find:"));
 	_search_text_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesDialog::_on_search_text_modified));
 	_search_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
 	gc->add_child(_search_text_line_edit);
@@ -361,7 +361,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	_replace_text_line_edit = memnew(LineEdit);
 	_replace_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_replace_text_line_edit->set_accessibility_name(TTRC("Replace"));
+	_replace_text_line_edit->set_accessibility_name(TTRC("Replace:"));
 	_replace_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_replace_text_submitted));
 	_replace_text_line_edit->hide();
 	gc->add_child(_replace_text_line_edit);
@@ -396,6 +396,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		_folder_line_edit = memnew(LineEdit);
 		_folder_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		_folder_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
+		_folder_line_edit->set_accessibility_name(TTRC("Folder:"));
 		hbc->add_child(_folder_line_edit);
 
 		Button *folder_button = memnew(Button);
@@ -421,7 +422,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_includes_line_edit = memnew(LineEdit);
 	_includes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_includes_line_edit->set_placeholder(TTR("example: scripts,scenes/*/test.gd"));
-	_includes_line_edit->set_accessibility_name(TTRC("Include Files"));
+	_includes_line_edit->set_accessibility_name(TTRC("Includes:"));
 	_includes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
 	gc->add_child(_includes_line_edit);
 
@@ -434,7 +435,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_excludes_line_edit = memnew(LineEdit);
 	_excludes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_excludes_line_edit->set_placeholder(TTR("example: res://addons,scenes/test/*.gd"));
-	_excludes_line_edit->set_accessibility_name(TTRC("Exclude Files"));
+	_excludes_line_edit->set_accessibility_name(TTRC("Excludes:"));
 	_excludes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
 	gc->add_child(_excludes_line_edit);
 
@@ -761,7 +762,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		_replace_container->add_child(replace_label);
 
 		_replace_line_edit = memnew(LineEdit);
-		_replace_line_edit->set_accessibility_name(TTRC("Replace"));
+		_replace_line_edit->set_accessibility_name(TTRC("Replace:"));
 		_replace_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 		_replace_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesPanel::_on_replace_text_changed));
 		_replace_container->add_child(_replace_line_edit);

@@ -649,7 +649,6 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
 	button_center_view->set_tooltip_text(TTR("Center View"));
-	button_center_view->set_accessibility_name(TTRC("Center View"));
 	add_child(button_center_view);
 
 	panner.instantiate();

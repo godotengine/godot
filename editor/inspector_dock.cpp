@@ -719,7 +719,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_new_button = memnew(Button);
 	resource_new_button->set_theme_type_variation("FlatMenuButton");
 	resource_new_button->set_tooltip_text(TTRC("Create a new resource in memory and edit it."));
-	resource_new_button->set_accessibility_name(TTRC("New Resource"));
 	general_options_hb->add_child(resource_new_button);
 	resource_new_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_new_resource));
 	resource_new_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -727,7 +726,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_load_button = memnew(Button);
 	resource_load_button->set_theme_type_variation("FlatMenuButton");
 	resource_load_button->set_tooltip_text(TTRC("Load an existing resource from disk and edit it."));
-	resource_load_button->set_accessibility_name(TTRC("Load Resource"));
 	general_options_hb->add_child(resource_load_button);
 	resource_load_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_open_resource_selector));
 	resource_load_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -736,7 +734,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_save_button->set_flat(false);
 	resource_save_button->set_theme_type_variation("FlatMenuButton");
 	resource_save_button->set_tooltip_text(TTRC("Save the currently edited resource."));
-	resource_save_button->set_accessibility_name(TTRC("Save Resource"));
 	general_options_hb->add_child(resource_save_button);
 	resource_save_button->get_popup()->add_item(TTRC("Save"), RESOURCE_SAVE);
 	resource_save_button->get_popup()->add_item(TTRC("Save As..."), RESOURCE_SAVE_AS);
@@ -748,7 +745,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_extra_button->set_flat(false);
 	resource_extra_button->set_theme_type_variation("FlatMenuButton");
 	resource_extra_button->set_tooltip_text(TTRC("Extra resource options."));
-	resource_extra_button->set_accessibility_name(TTRC("Resource Options"));
 	general_options_hb->add_child(resource_extra_button);
 	resource_extra_button->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_resource_extra_popup));
 	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTRC("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
@@ -766,7 +762,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	backward_button->set_flat(true);
 	general_options_hb->add_child(backward_button);
 	backward_button->set_tooltip_text(TTRC("Go to previous edited object in history."));
-	backward_button->set_accessibility_name(TTRC("Previous Edited Object"));
 	backward_button->set_disabled(true);
 	backward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_back));
 
@@ -774,7 +769,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
 	forward_button->set_tooltip_text(TTRC("Go to next edited object in history."));
-	forward_button->set_accessibility_name(TTRC("Next Edited Object"));
 	forward_button->set_disabled(true);
 	forward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_forward));
 
@@ -783,7 +777,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	history_menu->set_flat(false);
 	history_menu->set_theme_type_variation("FlatMenuButton");
 	history_menu->set_tooltip_text(TTRC("History of recently edited objects."));
-	history_menu->set_accessibility_name(TTRC("Edit History"));
 	general_options_hb->add_child(history_menu);
 	history_menu->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_history));
 	history_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_select_history));
@@ -798,7 +791,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button->set_theme_type_variation("FlatMenuButton");
 	open_docs_button->set_disabled(true);
 	open_docs_button->set_tooltip_text(TTRC("Open documentation for this object."));
-	open_docs_button->set_accessibility_name(TTRC("Open Documentation"));
 	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTRC("Open Documentation")));
 	subresource_hb->add_child(open_docs_button);
 	open_docs_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
@@ -814,7 +806,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	search = memnew(LineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search->set_placeholder(TTRC("Filter Properties"));
-	search->set_accessibility_name(TTRC("Filter Properties"));
 	search->set_clear_button_enabled(true);
 	property_tools_hb->add_child(search);
 
@@ -823,7 +814,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	object_menu->set_theme_type_variation("FlatMenuButton");
 	property_tools_hb->add_child(object_menu);
 	object_menu->set_tooltip_text(TTRC("Manage object properties."));
-	object_menu->set_accessibility_name(TTRC("Object Properties"));
 	object_menu->get_popup()->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_menu));
 	object_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 

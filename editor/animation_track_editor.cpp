@@ -2053,14 +2053,13 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_hide_slider(true);
 	length->set_tooltip_text(TTR("Animation length (seconds)"));
-	length->set_accessibility_name(TTRC("Animation length"));
+	length->set_accessibility_name(TTRC("Animation length (seconds)"));
 	length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
 	len_hb->add_child(length);
 
 	loop = memnew(Button);
 	loop->set_flat(true);
 	loop->set_tooltip_text(TTR("Animation Looping"));
-	loop->set_accessibility_name(TTRC("Animation Looping"));
 	loop->connect(SceneStringName(pressed), callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
 	loop->set_toggle_mode(true);
 	len_hb->add_child(loop);
@@ -7874,7 +7873,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_edit_icon->set_toggle_mode(true);
 	bezier_edit_icon->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_toggle_bezier_edit));
 	bezier_edit_icon->set_tooltip_text(TTR("Toggle between the bezier curve editor and track editor."));
-	bezier_edit_icon->set_accessibility_name(TTRC("Bezier Curve Editor"));
 
 	bottom_hf->add_child(bezier_edit_icon);
 
@@ -7893,7 +7891,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	selected_filter->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_view_group_toggle)); // Same function works the same.
 	selected_filter->set_toggle_mode(true);
 	selected_filter->set_tooltip_text(TTR("Only show tracks from nodes selected in tree."));
-	selected_filter->set_accessibility_name(TTRC("Show Tracks from Selected Nodes"));
 
 	bottom_hf->add_child(selected_filter);
 
@@ -7910,7 +7907,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	view_group->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
 	view_group->set_toggle_mode(true);
 	view_group->set_tooltip_text(TTR("Group tracks by node or display them as plain list."));
-	view_group->set_accessibility_name(TTRC("Group Tracks by Node"));
 
 	bottom_hf->add_child(view_group);
 	bottom_hf->add_child(memnew(VSeparator));
@@ -7922,7 +7918,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_timeline->set_toggle_mode(true);
 	snap_timeline->set_pressed(false);
 	snap_timeline->set_tooltip_text(TTR("Apply snapping to timeline cursor."));
-	snap_timeline->set_accessibility_name(TTRC("Apply Snapping to Cursor"));
 
 	snap_keys = memnew(Button);
 	snap_keys->set_flat(true);
@@ -7931,7 +7926,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_keys->set_toggle_mode(true);
 	snap_keys->set_pressed(true);
 	snap_keys->set_tooltip_text(TTR("Apply snapping to selected key(s)."));
-	snap_keys->set_accessibility_name(TTRC("Apply Snapping to Selected Key"));
 
 	fps_compat = memnew(Button);
 	fps_compat->set_flat(true);
@@ -7940,7 +7934,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	fps_compat->set_toggle_mode(true);
 	fps_compat->set_pressed(true);
 	fps_compat->set_tooltip_text(TTR("Apply snapping to the nearest integer FPS."));
-	fps_compat->set_accessibility_name(TTRC("Apply Snapping to Nearest Integer FPS"));
 	fps_compat->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_update_fps_compat_mode));
 
 	nearest_fps_label = memnew(Label);
@@ -7955,7 +7948,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_hide_slider(true);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip_text(TTR("Animation step value."));
-	step->set_accessibility_name(TTRC("Animation Step Value"));
+	step->set_accessibility_name(TTRC("Animation step value."));
 	bottom_hf->add_child(step);
 	step->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_update_step));
 	step->set_read_only(true);
@@ -8009,7 +8002,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->set_flat(false);
 	edit->set_disabled(true);
 	edit->set_tooltip_text(TTR("Animation properties."));
-	edit->set_accessibility_name(TTRC("Animation Properties"));
+	edit->set_accessibility_name(TTRC("Animation properties."));
 	edit->get_popup()->add_item(TTR("Copy Tracks..."), EDIT_COPY_TRACKS);
 	edit->get_popup()->add_item(TTR("Paste Tracks"), EDIT_PASTE_TRACKS);
 	edit->get_popup()->add_separator();
@@ -8105,21 +8098,21 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	optimize_velocity_error->set_min(0.001);
 	optimize_velocity_error->set_step(0.001);
 	optimize_velocity_error->set_value(0.01);
-	optimize_velocity_error->set_accessibility_name(TTRC("Max Velocity Error"));
+	optimize_velocity_error->set_accessibility_name(TTRC("Max Velocity Error:"));
 	optimize_vb->add_margin_child(TTR("Max Velocity Error:"), optimize_velocity_error);
 	optimize_angular_error = memnew(SpinBox);
 	optimize_angular_error->set_max(1.0);
 	optimize_angular_error->set_min(0.001);
 	optimize_angular_error->set_step(0.001);
 	optimize_angular_error->set_value(0.01);
-	optimize_angular_error->set_accessibility_name(TTRC("Max Angular Error"));
+	optimize_angular_error->set_accessibility_name(TTRC("Max Angular Error:"));
 	optimize_vb->add_margin_child(TTR("Max Angular Error:"), optimize_angular_error);
 	optimize_precision_error = memnew(SpinBox);
 	optimize_precision_error->set_max(6);
 	optimize_precision_error->set_min(1);
 	optimize_precision_error->set_step(1);
 	optimize_precision_error->set_value(3);
-	optimize_precision_error->set_accessibility_name(TTRC("Max Precision Error"));
+	optimize_precision_error->set_accessibility_name(TTRC("Max Precision Error:"));
 	optimize_vb->add_margin_child(TTR("Max Precision Error:"), optimize_precision_error);
 
 	optimize_dialog->set_ok_button_text(TTR("Optimize"));
@@ -8186,7 +8179,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ease_grid->set_columns(2);
 	ease_dialog->add_child(ease_grid);
 	transition_selection = memnew(OptionButton);
-	transition_selection->set_accessibility_name(TTRC("Transition Type"));
+	transition_selection->set_accessibility_name(TTRC("Transition Type:"));
 	transition_selection->add_item(TTR("Linear", "Transition Type"), Tween::TRANS_LINEAR);
 	transition_selection->add_item(TTR("Sine", "Transition Type"), Tween::TRANS_SINE);
 	transition_selection->add_item(TTR("Quint", "Transition Type"), Tween::TRANS_QUINT);
@@ -8202,7 +8195,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	transition_selection->select(Tween::TRANS_LINEAR); // Default
 	transition_selection->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Translation context is needed.
 	ease_selection = memnew(OptionButton);
-	ease_selection->set_accessibility_name(TTRC("Ease Type"));
+	ease_selection->set_accessibility_name(TTRC("Ease Type:"));
 	ease_selection->add_item(TTR("In", "Ease Type"), Tween::EASE_IN);
 	ease_selection->add_item(TTR("Out", "Ease Type"), Tween::EASE_OUT);
 	ease_selection->add_item(TTR("InOut", "Ease Type"), Tween::EASE_IN_OUT);
@@ -8214,7 +8207,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ease_fps->set_max(999);
 	ease_fps->set_step(FPS_DECIMAL);
 	ease_fps->set_value(30); // Default
-	ease_fps->set_accessibility_name(TTRC("FPS"));
+	ease_fps->set_accessibility_name(TTRC("FPS:"));
 	ease_grid->add_child(memnew(Label(TTR("Transition Type:"))));
 	ease_grid->add_child(transition_selection);
 	ease_grid->add_child(memnew(Label(TTR("Ease Type:"))));
@@ -8231,16 +8224,16 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bake_grid->set_columns(2);
 	bake_dialog->add_child(bake_grid);
 	bake_trs = memnew(CheckBox);
-	bake_trs->set_accessibility_name(TTRC("3D Pos/Rot/Scl Track"));
+	bake_trs->set_accessibility_name(TTRC("3D Pos/Rot/Scl Track:"));
 	bake_trs->set_pressed(true);
 	bake_blendshape = memnew(CheckBox);
-	bake_blendshape->set_accessibility_name(TTRC("Blendshape Track"));
+	bake_blendshape->set_accessibility_name(TTRC("Blendshape Track:"));
 	bake_blendshape->set_pressed(true);
 	bake_value = memnew(CheckBox);
-	bake_value->set_accessibility_name(TTRC("Value Track"));
+	bake_value->set_accessibility_name(TTRC("Value Track:"));
 	bake_value->set_pressed(true);
 	bake_fps = memnew(SpinBox);
-	bake_fps->set_accessibility_name(TTRC("FPS"));
+	bake_fps->set_accessibility_name(TTRC("FPS:"));
 	bake_fps->set_min(FPS_DECIMAL);
 	bake_fps->set_max(999);
 	bake_fps->set_step(FPS_DECIMAL);
@@ -9376,7 +9369,7 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_rename_new_name_label->set_text(TTR("Change Marker Name:"));
 	marker_rename_vbox->add_child(marker_rename_new_name_label);
 	marker_rename_new_name = memnew(LineEdit);
-	marker_rename_new_name->set_accessibility_name(TTRC("Change Marker Name"));
+	marker_rename_new_name->set_accessibility_name(TTRC("Change Marker Name:"));
 	marker_rename_new_name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationMarkerEdit::_marker_rename_new_name_changed));
 	marker_rename_confirm->register_text_enter(marker_rename_new_name);
 	marker_rename_vbox->add_child(marker_rename_new_name);

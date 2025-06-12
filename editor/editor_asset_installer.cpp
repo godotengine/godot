@@ -685,7 +685,6 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	show_source_files_button = memnew(Button);
 	show_source_files_button->set_toggle_mode(true);
 	show_source_files_button->set_tooltip_text(TTRC("Open the list of the asset contents and select which files to install."));
-	show_source_files_button->set_accessibility_name(TTRC("Show Asset Contents"));
 	remapping_tools->add_child(show_source_files_button);
 	show_source_files_button->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
 
@@ -711,7 +710,6 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	asset_conflicts_label->set_text(TTRC("No files conflict with your project"));
 	remapping_tools->add_child(asset_conflicts_label);
 	asset_conflicts_link = memnew(LinkButton);
-	asset_conflicts_link->set_accessibility_name(TTRC("Show Conflicting Files"));
 	asset_conflicts_link->set_theme_type_variation("HeaderSmallLink");
 	asset_conflicts_link->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	asset_conflicts_link->set_tooltip_text(TTRC("Show contents of the asset and conflicting files."));
