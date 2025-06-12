@@ -261,10 +261,10 @@
 	<members>
 		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0">
 			Accessibility support mode:
-			- [b]Auto[/b] ([code]0[/code]): accessibility support is enabled, but accessibility information updates are processed only if an assistive app (e.g. screen reader or Braille display) is active (default).
-			- [b]Always Active[/b] ([code]1[/code]): accessibility support is enabled, and accessibility information updates are processed regardless of current assistive apps' status.
-			- [b]Disabled[/b] ([code]2[/code]): accessibility support is fully disabled.
-			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, macOS Accessibility Inspector, or AT-SPI Browser do not count as assistive apps. To test your app with these tools, use [code]1[/code].
+			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
+			- [b]Always Active[/b] ([code]1[/code]): Accessibility support is enabled, and updates to the accessibility information are always processed, regardless of the status of assistive apps.
+			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD) do not count as assistive apps. To test your project with these tools, use [b]Always Active[/b].
 		</member>
 		<member name="accessibility/general/updates_per_second" type="int" setter="" getter="" default="60">
 			The number of accessibility information updates per second.
