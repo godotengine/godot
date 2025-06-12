@@ -284,26 +284,10 @@ void EditorDockManager::_dock_split_dragged(int p_offset) {
 	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
-void EditorDockManager::_dock_container_gui_input(const Ref<InputEvent> &p_input, TabContainer *p_dock_container) {
-	Ref<InputEventMouseButton> mb = p_input;
-
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		int tab_id = p_dock_container->get_tab_bar()->get_hovered_tab();
-		if (tab_id < 0) {
-			return;
-		}
-
-		Control *tab_control = p_dock_container->get_tab_control(tab_id);
-
-		if (!all_docks.has(tab_control)) {
-			return;
-		}
-
-		// Right click context menu.
-		dock_context_popup->set_dock(tab_control);
-		dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + mb->get_position());
-		dock_context_popup->popup();
-	}
+void EditorDockManager::_dock_container_popup(int p_tab_idx, TabContainer *p_dock_container) {
+	dock_context_popup->set_dock(p_dock_container->get_tab_control(p_tab_idx));
+	dock_context_popup->set_position(p_dock_container->get_screen_position() + p_dock_container->get_local_mouse_position());
+	dock_context_popup->popup();
 }
 
 void EditorDockManager::_dock_container_update_visibility(TabContainer *p_dock_container) {
@@ -982,13 +966,13 @@ void EditorDockManager::register_dock_slot(DockSlot p_dock_slot, TabContainer *p
 	p_tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	p_tab_container->set_popup(dock_context_popup);
 	p_tab_container->connect("pre_popup_pressed", callable_mp(dock_context_popup, &DockContextPopup::select_current_dock_in_dock_slot).bind(p_dock_slot));
+	p_tab_container->get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &EditorDockManager::_dock_container_popup).bind(p_tab_container));
 	p_tab_container->set_drag_to_rearrange_enabled(true);
 	p_tab_container->set_tabs_rearrange_group(1);
 	p_tab_container->connect("tab_changed", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
 	p_tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
 	p_tab_container->connect("child_order_changed", callable_mp(this, &EditorDockManager::_dock_container_update_visibility).bind(p_tab_container));
 	p_tab_container->set_use_hidden_tabs_for_min_size(true);
-	p_tab_container->get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_dock_container_gui_input).bind(p_tab_container));
 	p_tab_container->hide();
 
 	// Create dock dragging hint.

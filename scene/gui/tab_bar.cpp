@@ -222,10 +222,11 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT))) {
+		if (mb->is_pressed()) {
 			Point2 pos = mb->get_position();
+			bool selecting = mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT);
 
-			if (buttons_visible) {
+			if (buttons_visible && selecting) {
 				if (is_layout_rtl()) {
 					if (pos.x < theme_cache.decrement_icon->get_width()) {
 						if (missing_right) {
@@ -267,47 +268,43 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			int found = -1;
-			for (int i = offset; i <= max_drawn_tab; i++) {
-				if (tabs[i].hidden) {
-					continue;
-				}
-
-				if (tabs[i].rb_rect.has_point(pos)) {
-					rb_pressing = true;
-					_update_hover();
-					queue_redraw();
-					return;
-				}
-
-				if (tabs[i].cb_rect.has_point(pos) && (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current))) {
-					cb_pressing = true;
-					_update_hover();
-					queue_redraw();
-					return;
-				}
-
-				if (pos.x >= get_tab_rect(i).position.x && pos.x < get_tab_rect(i).position.x + tabs[i].size_cache) {
-					if (!tabs[i].disabled) {
-						found = i;
-					}
-					break;
-				}
-			}
-
+			int found = get_tab_idx_at_point(pos);
 			if (found != -1) {
-				if (deselect_enabled && get_current_tab() == found) {
-					set_current_tab(-1);
-				} else {
-					set_current_tab(found);
+				// Clicking right button icon.
+				if (tabs[found].rb_rect.has_point(pos)) {
+					if (selecting) {
+						rb_pressing = true;
+						_update_hover();
+						queue_redraw();
+					}
+					return;
 				}
 
+				// Clicking close button.
+				if (tabs[found].cb_rect.has_point(pos) && (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && found == current))) {
+					if (selecting) {
+						cb_pressing = true;
+						_update_hover();
+						queue_redraw();
+					}
+					return;
+				}
+
+				// Selecting a tab.
+				if (selecting) {
+					if (deselect_enabled && get_current_tab() == found) {
+						set_current_tab(-1);
+					} else {
+						set_current_tab(found);
+					}
+
+					emit_signal(SNAME("tab_clicked"), found);
+				}
+
+				// Right mouse button clicked on a tab.
 				if (mb->get_button_index() == MouseButton::RIGHT) {
-					// Right mouse button clicked.
 					emit_signal(SNAME("tab_rmb_clicked"), found);
 				}
-
-				emit_signal(SNAME("tab_clicked"), found);
 			}
 		}
 	}

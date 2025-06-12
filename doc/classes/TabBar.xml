@@ -333,7 +333,7 @@
 		<signal name="tab_rmb_clicked">
 			<param index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is right-clicked. [member select_with_rmb] must be enabled.
+				Emitted when a tab is right-clicked.
 			</description>
 		</signal>
 		<signal name="tab_selected">
