@@ -2866,7 +2866,7 @@ void EditorPropertyNodePath::_menu_option(int p_idx) {
 		} break;
 
 		case ACTION_COPY: {
-			DisplayServer::get_singleton()->clipboard_set(_get_node_path());
+			DisplayServer::get_singleton()->clipboard_set(String(_get_node_path()));
 		} break;
 
 		case ACTION_EDIT: {
@@ -2874,7 +2874,7 @@ void EditorPropertyNodePath::_menu_option(int p_idx) {
 			menu->hide();
 
 			const NodePath &np = _get_node_path();
-			edit->set_text(np);
+			edit->set_text(String(np));
 			edit->show();
 			callable_mp((Control *)edit, &Control::grab_focus).call_deferred();
 		} break;
@@ -2976,7 +2976,7 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 void EditorPropertyNodePath::update_property() {
 	const Node *base_node = get_base_node();
 	const NodePath &p = _get_node_path();
-	assign->set_tooltip_text(p);
+	assign->set_tooltip_text(String(p));
 
 	if (p.is_empty()) {
 		assign->set_button_icon(Ref<Texture2D>());
@@ -2988,7 +2988,7 @@ void EditorPropertyNodePath::update_property() {
 
 	if (!base_node || !base_node->has_node(p)) {
 		assign->set_button_icon(Ref<Texture2D>());
-		assign->set_text(p);
+		assign->set_text(String(p));
 		return;
 	}
 
@@ -2997,7 +2997,7 @@ void EditorPropertyNodePath::update_property() {
 
 	if (String(target_node->get_name()).contains_char('@')) {
 		assign->set_button_icon(Ref<Texture2D>());
-		assign->set_text(p);
+		assign->set_text(String(p));
 		return;
 	}
 

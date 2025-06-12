@@ -57,7 +57,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 
 	for (int i = 0; i < state->get_node_count(); i++) {
 		String node_type = state->get_node_type(i);
-		String parent_path = state->get_node_path(i, true);
+		String parent_path = String(state->get_node_path(i, true));
 
 		// Handle instanced scenes.
 		if (node_type.is_empty()) {
@@ -83,7 +83,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			auto_translate_mode_found = true;
 
 			int idx_last = atr_owners.size() - 1;
-			if (idx_last > 0 && !parent_path.begins_with(atr_owners[idx_last].first)) {
+			if (idx_last > 0 && !parent_path.begins_with(String(atr_owners[idx_last].first))) {
 				// Exit from the current owner nesting into the previous one.
 				atr_owners.remove_at(idx_last);
 			}
@@ -106,7 +106,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		// If `auto_translate_mode` wasn't found, that means it is set to its default value (`AUTO_TRANSLATE_MODE_INHERIT`).
 		if (!auto_translate_mode_found) {
 			int idx_last = atr_owners.size() - 1;
-			if (idx_last > 0 && parent_path.begins_with(atr_owners[idx_last].first)) {
+			if (idx_last > 0 && parent_path.begins_with(String(atr_owners[idx_last].first))) {
 				auto_translating = atr_owners[idx_last].second;
 			} else {
 				atr_owners.push_back(Pair(state->get_node_path(i), true));
@@ -130,7 +130,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		}
 
 		if (node_type == "TabContainer") {
-			tabcontainer_paths.push_back(state->get_node_path(i));
+			tabcontainer_paths.push_back(String(state->get_node_path(i)));
 		}
 
 		for (int j = 0; j < state->get_node_property_count(i); j++) {

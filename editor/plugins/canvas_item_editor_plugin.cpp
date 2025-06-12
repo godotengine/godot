@@ -2436,7 +2436,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					CanvasItem *item = selection_results[i].item;
 
 					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(item, "Node");
-					String node_path = "/" + root_name + "/" + root_path.rel_path_to(item->get_path());
+					String node_path = "/" + root_name + "/" + String(root_path.rel_path_to(item->get_path()));
 
 					int locked = 0;
 					if (_is_node_locked(item)) {
@@ -2503,7 +2503,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				String *paths_write = paths.ptrw();
 
 				for (int i = 0; i < paths.size(); i++) {
-					paths_write[i] = selection_results[i].item->get_path();
+					paths_write[i] = String(selection_results[i].item->get_path());
 				}
 				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, paths);
 			}

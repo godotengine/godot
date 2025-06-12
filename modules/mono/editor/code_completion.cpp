@@ -51,7 +51,7 @@ void _add_nodes_suggestions(const Node *p_base, const Node *p_node, PackedString
 		return;
 	}
 
-	String path_relative_to_orig = p_base->get_path_to(p_node);
+	String path_relative_to_orig = String(p_base->get_path_to(p_node));
 
 	r_suggestions.push_back(quoted(path_relative_to_orig));
 
