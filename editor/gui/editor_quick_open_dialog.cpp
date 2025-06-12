@@ -151,7 +151,7 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 	ERR_FAIL_COND(p_base_types.is_empty());
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
 
-	directly_modify_property = false;
+	property_object = nullptr;
 	item_selected_callback = p_item_selected_callback;
 
 	container->init(p_base_types);
@@ -164,14 +164,9 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 
 void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, String p_path) {
 	ERR_FAIL_COND(p_base_types.is_empty());
-	directly_modify_property = true;
 	property_object = p_obj;
 	property_path = p_path;
-
-	// What the property value was before this Quick Load window was opened.
-	// We keep track of this so that if the user previews a different value,
-	// but then cancels out of the window, we can restore it.
-	current_property_value = property_object->get(property_path);
+	initial_property_value = property_object->get(property_path);
 
 	container->init(p_base_types);
 	get_ok_button()->set_disabled(container->has_nothing_selected());
@@ -192,17 +187,7 @@ void EditorQuickOpenDialog::selection_changed() {
 	if (!EDITOR_GET("filesystem/quick_open_dialog/instant_preview")) {
 		return;
 	}
-
-	// In order for Instant Preview to work, we need to directly set the property
-	// value of the target object to the newly selected resource.
 	preview_property();
-
-	container->save_selected_item();
-
-	// Required due to the way keyboard navigation between items is handled;
-	// it doesn't appear to use Godot's normal focus system. We may want to
-	// update it to use the standard focus/navigation system in the future.
-	search_box->grab_focus();
 }
 
 void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
@@ -215,18 +200,17 @@ void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
 }
 
 void EditorQuickOpenDialog::preview_property() {
-	if (!directly_modify_property) {
+	if (!property_object) {
 		item_selected_callback.call(container->get_selected());
 		return;
 	}
 	Ref<Resource> loaded_resource = ResourceLoader::load(container->get_selected());
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + container->get_selected() + "'.");
-	Variant previewed_value = Variant(loaded_resource);
-	property_object->set(property_path, previewed_value);
+	property_object->set(property_path, loaded_resource);
 }
 
 void EditorQuickOpenDialog::update_property() {
-	if (!directly_modify_property) {
+	if (!property_object) {
 		item_selected_callback.call(container->get_selected());
 		return;
 	}
@@ -239,7 +223,7 @@ void EditorQuickOpenDialog::update_property() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Set %s"), property_path), UndoRedo::MERGE_ENDS, nullptr, false);
 	undo_redo->add_do_property(property_object, property_path, new_variant);
-	undo_redo->add_undo_property(property_object, property_path, current_property_value);
+	undo_redo->add_undo_property(property_object, property_path, initial_property_value);
 
 	bool valid = false;
 	List<StringName> linked_properties;
@@ -281,7 +265,7 @@ void EditorQuickOpenDialog::update_property() {
 	Resource *r = Object::cast_to<Resource>(property_object);
 	if (r) {
 		if (String(property_path) == "resource_local_to_scene") {
-			bool prev = current_property_value;
+			bool prev = initial_property_value;
 			bool next = new_variant;
 			if (next) {
 				undo_redo->add_do_method(r, "setup_local_to_scene");
@@ -295,8 +279,8 @@ void EditorQuickOpenDialog::update_property() {
 }
 
 void EditorQuickOpenDialog::cancel_pressed() {
-	if (directly_modify_property) {
-		property_object->set(property_path, current_property_value);
+	if (property_object) {
+		property_object->set(property_path, initial_property_value);
 	}
 	container->cleanup();
 	search_box->clear();
@@ -393,8 +377,8 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 
 		instant_preview_toggle = memnew(CheckButton);
 		style_button(instant_preview_toggle);
-		instant_preview_toggle->set_text(TTR("Instant Preview"));
-		instant_preview_toggle->set_tooltip_text(TTR("Selected resource will be immediately updated in editor"));
+		instant_preview_toggle->set_text(TTRC("Instant Preview"));
+		instant_preview_toggle->set_tooltip_text(TTRC("Selected resource will be previewed in the editor before accepting."));
 		instant_preview_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_instant_preview));
 		bottom_bar->add_child(instant_preview_toggle);
 
@@ -1037,7 +1021,7 @@ void QuickOpenResultContainer::_bind_methods() {
 //------------------------- Result Item
 
 QuickOpenResultItem::QuickOpenResultItem() {
-	set_focus_mode(FocusMode::FOCUS_ALL);
+	set_focus_mode(FocusMode::FOCUS_NONE);
 	_set_enabled(false);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 

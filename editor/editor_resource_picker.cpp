@@ -360,9 +360,6 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				base_types.push_back(type);
 			}
 
-			// EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
-
-			// TODO: This needs to emit `resource_changed` signal
 			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog_for_property(
 					base_types,
 					resource_owner,
