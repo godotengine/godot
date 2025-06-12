@@ -7989,6 +7989,18 @@ void Node3DEditor::_selection_changed() {
 		selected = nullptr;
 	}
 	update_transform_gizmo();
+
+	const List<Node *> &top_selected = editor_selection->get_top_selected_node_list();
+	if (top_selected.size() == 1) {
+		Node3D *new_selected = Object::cast_to<Node3D>(top_selected.back()->get());
+		if (new_selected != selected) {
+			edit(new_selected);
+		}
+	} else {
+		if (selected) {
+			edit(nullptr);
+		}
+	}
 }
 
 void Node3DEditor::_refresh_menu_icons() {
