@@ -2638,6 +2638,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "internationalization/locale/line_breaking_strictness", PROPERTY_HINT_ENUM, "Auto,Loose,Normal,Strict"), 0);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
