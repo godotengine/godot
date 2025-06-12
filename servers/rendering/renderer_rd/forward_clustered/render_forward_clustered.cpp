@@ -698,7 +698,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 
 	// now do implementation UBO
 
-	scene_state.ubo.cluster_shift = get_shift_from_power_of_2(p_render_data->cluster_size);
+	scene_state.ubo.cluster_shift = Math::shift_from_power_of_2(p_render_data->cluster_size);
 	scene_state.ubo.max_cluster_element_count_div_32 = p_render_data->cluster_max_elements / 32;
 	{
 		uint32_t cluster_screen_width = Math::division_round_up((uint32_t)p_screen_size.width, p_render_data->cluster_size);
@@ -767,7 +767,7 @@ void RenderForwardClustered::_update_instance_data_buffer(RenderListType p_rende
 			if (scene_state.instance_buffer[p_render_list] != RID()) {
 				RD::get_singleton()->free(scene_state.instance_buffer[p_render_list]);
 			}
-			uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), scene_state.instance_data[p_render_list].size()));
+			uint32_t new_size = Math::closest_power_of_2(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), scene_state.instance_data[p_render_list].size()));
 			scene_state.instance_buffer[p_render_list] = RD::get_singleton()->storage_buffer_create(new_size * sizeof(SceneState::InstanceData));
 			scene_state.instance_buffer_size[p_render_list] = new_size;
 		}

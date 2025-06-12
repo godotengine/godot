@@ -209,7 +209,7 @@ private:
 		uint32_t real_old_capacity = capacity + 1;
 		// Capacity can't be 0 and must be 2^n - 1.
 		capacity = MAX(4u, p_new_capacity);
-		uint32_t real_capacity = next_power_of_2(capacity);
+		uint32_t real_capacity = Math::next_power_of_2(capacity);
 		capacity = real_capacity - 1;
 
 		HashMapData *old_map_data = map_data;
@@ -413,7 +413,7 @@ public:
 		ERR_FAIL_COND_MSG(p_new_capacity < size(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		if (elements == nullptr) {
 			capacity = MAX(4u, p_new_capacity);
-			capacity = next_power_of_2(capacity) - 1;
+			capacity = Math::next_power_of_2(capacity) - 1;
 			return; // Unallocated yet.
 		}
 		if (p_new_capacity <= get_capacity()) {
@@ -693,7 +693,7 @@ public:
 	AHashMap(uint32_t p_initial_capacity) {
 		// Capacity can't be 0 and must be 2^n - 1.
 		capacity = MAX(4u, p_initial_capacity);
-		capacity = next_power_of_2(capacity) - 1;
+		capacity = Math::next_power_of_2(capacity) - 1;
 	}
 	AHashMap() :
 			capacity(INITIAL_CAPACITY - 1) {
