@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WaveformRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Basic display node for audio waves.
+	</brief_description>
+	<description>
+		Base class displaying an audio waveform for [AudioStream], with the help of the internal AudioStreamPreview class.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_color">
+			<return type="Color" />
+			<description>
+				Returns the value of [member color].
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void" />
+			<description>
+				Edit the value of [member color].
+			</description>
+		</method>
+		<method name="get_stream">
+			<return type="AudioStream" />
+			<description>
+				Returns the value of [member stream].
+			</description>
+		</method>
+		<method name="set_stream">
+			<return type="void" />
+			<description>
+				Edit the value of [member stream].
+			</description>
+		</method>
+		<method name="update_waveform">
+			<return type="void" />
+			<description>
+				Godot calls this method every time [member stream] changes. The user is allowed to force the call. When called, it redraws the waveform.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="_set_color" getter="get_color">
+			The color used to draw the waveform.
+		</member>
+		<member name="stream" type="AudioStream" setter="_set_stream" getter="get_stream">
+			The [AudioStream] to render as a waveform.
+		</member>
+	</members>
+	<signals>
+		<signal name="waveform_updated">
+			<description>
+				Emitted when the waveform finishes drawing.
+			</description>
+		</signal>
+	</signals>
+</class>

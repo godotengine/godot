@@ -93,6 +93,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_stream_player.h"
+#include "scene/gui/waveform_rect.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
@@ -446,6 +447,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Control);
 	GDREGISTER_CLASS(Button);
 	GDREGISTER_CLASS(Label);
+	GDREGISTER_CLASS(WaveformRect);
 	GDREGISTER_ABSTRACT_CLASS(ScrollBar);
 	GDREGISTER_CLASS(HScrollBar);
 	GDREGISTER_CLASS(VScrollBar);
