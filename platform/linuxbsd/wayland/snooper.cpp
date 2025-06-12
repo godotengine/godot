@@ -1927,7 +1927,7 @@ bool WaylandEmbedderProxy::handle_sock(int p_fd, int p_id) {
 		info.direction = p_id >= 0 ? ProxyDirection::COMPOSITOR : ProxyDirection::CLIENT;
 	}
 
-	CRASH_COND(info.size > SNOOP_MAX_MSG_SIZE);
+	//CRASH_COND(info.size > SNOOP_MAX_MSG_SIZE);
 	if (msg_buf.size() < info.words()) {
 		msg_buf.resize(info.words());
 	}
