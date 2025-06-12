@@ -102,7 +102,6 @@
 			<return type="int" />
 			<description>
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
-				[b]Note:[/b] Lines hidden by [member visible_characters] are not counted.
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
@@ -189,8 +188,6 @@
 			<return type="int" />
 			<description>
 				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
-				[b]Note:[/b] Paragraphs hidden by [member visible_characters] are not counted.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_paragraph_offset">
@@ -881,6 +878,9 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="paragraph_separation" data_type="constant" type="int" default="0">
+			Additional vertical spacing between paragraphs (in pixels). Spacing is added after the last line. This value can be negative.
 		</theme_item>
 		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
 			The horizontal offset of the font's shadow.

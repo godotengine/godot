@@ -1386,12 +1386,12 @@ void EditorSettings::setup_network() {
 		}
 		// Select current IP (found)
 		if (ip == current) {
-			selected = ip;
+			selected = String(ip);
 		}
 		if (!hint.is_empty()) {
 			hint += ",";
 		}
-		hint += ip;
+		hint += String(ip);
 	}
 
 	// Add hints with valid IP addresses to remote_host property.

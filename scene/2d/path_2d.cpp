@@ -364,6 +364,9 @@ bool PathFollow2D::is_cubic_interpolation_enabled() const {
 }
 
 void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "offset") {
 		real_t max = 10000.0;
 		if (path && path->get_curve().is_valid()) {

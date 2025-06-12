@@ -524,9 +524,6 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
 	int remaining_characters = visible_characters - l.char_offset;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
-		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters <= 0) {
-			break;
-		}
 		switch (it->type) {
 			case ITEM_DROPCAP: {
 				// Add dropcap.
@@ -579,8 +576,11 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				}
 				String lang = _find_language(it);
 				String tx = t->text;
-				if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters >= 0) {
-					tx = tx.substr(0, remaining_characters);
+				if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters >= 0 && tx.length() > remaining_characters) {
+					String first = tx.substr(0, remaining_characters);
+					String second = tx.substr(remaining_characters, -1);
+					l.text_buf->add_string(first, font, font_size, lang, it->rid);
+					l.text_buf->add_string(second, font, font_size, lang, it->rid);
 				}
 				remaining_characters -= tx.length();
 
@@ -762,7 +762,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 
 			float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 			if (i > 0) {
-				h += theme_cache.line_separation;
+				h += theme_cache.paragraph_separation;
 			}
 			if (frame->min_size_over.y > 0) {
 				h = MAX(h, frame->min_size_over.y);
@@ -771,7 +771,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 				h = MIN(h, frame->max_size_over.y);
 			}
 			yofs += h;
-			prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation;
+			prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
 
 			frame->lines[i].offset += offset;
 			row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
@@ -835,7 +835,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	bool rtl = (l.text_buf->get_direction() == TextServer::DIRECTION_RTL);
 	bool lrtl = is_layout_rtl();
 
-	bool trim_chars = (visible_characters >= 0) && (visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING);
+	bool trim_chars = (visible_characters >= 0) && (visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING || visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING);
 	bool trim_glyphs_ltr = (visible_characters >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_LTR) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && !lrtl));
 	bool trim_glyphs_rtl = (visible_characters >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_RTL) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && lrtl));
 	int total_glyphs = (trim_glyphs_ltr || trim_glyphs_rtl) ? get_total_glyph_count() : 0;
@@ -907,7 +907,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			} break;
 		}
 
-		bool skip_prefix = (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && l.char_offset == visible_characters) || (trim_chars && l.char_offset > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
+		bool skip_prefix = (trim_chars && l.char_offset > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
 		if (l.text_prefix.is_valid() && line == 0 && !skip_prefix) {
 			Color font_color = _find_color(l.from, p_base_color);
 			int outline_size = _find_outline_size(l.from, p_outline_size);
@@ -1513,7 +1513,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 			// Do not apply to the last line to avoid cutting text.
 			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 		} else {
-			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
 		}
 	}
 	float vbegin = 0, vsep = 0;
@@ -1545,7 +1545,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	while (ofs.y < size.height && from_line < to_line) {
 		MutexLock lock(main->lines[from_line].text_buf->get_mutex());
 		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, vsep, p_click, r_click_frame, r_click_line, r_click_item, r_click_char, false, p_meta);
-		ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * (theme_cache.line_separation + vsep);
+		ofs.y += main->lines[from_line].text_buf->get_size().y + (main->lines[from_line].text_buf->get_line_count() - 1) * (theme_cache.line_separation + vsep) + (theme_cache.paragraph_separation + vsep);
 		if (((r_click_item != nullptr) && ((*r_click_item) != nullptr)) || ((r_click_frame != nullptr) && ((*r_click_frame) != nullptr))) {
 			if (r_outside != nullptr) {
 				*r_outside = false;
@@ -1762,7 +1762,11 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 			return table_offy;
 		}
 
-		off.y += TS->shaped_text_get_descent(rid) + theme_cache.line_separation + p_vsep;
+		if (line == l.text_buf->get_line_count() - 1) {
+			off.y += TS->shaped_text_get_descent(rid) + theme_cache.paragraph_separation + p_vsep;
+		} else {
+			off.y += TS->shaped_text_get_descent(rid) + theme_cache.line_separation + p_vsep;
+		}
 	}
 
 	// Text line hit.
@@ -1891,7 +1895,7 @@ int RichTextLabel::_find_first_line(int p_from, int p_to, int p_vofs) const {
 }
 
 _FORCE_INLINE_ float RichTextLabel::_calculate_line_vertical_offset(const RichTextLabel::Line &line) const {
-	return line.get_height(theme_cache.line_separation);
+	return line.get_height(theme_cache.line_separation, theme_cache.paragraph_separation);
 }
 
 void RichTextLabel::_update_theme_item_cache() {
@@ -2287,7 +2291,7 @@ void RichTextLabel::_notification(int p_what) {
 					// Do not apply to the last line to avoid cutting text.
 					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 				} else {
-					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
 				}
 			}
 			float vbegin = 0, vsep = 0;
@@ -2450,7 +2454,7 @@ void RichTextLabel::_notification(int p_what) {
 					// Do not apply to the last line to avoid cutting text.
 					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 				} else {
-					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
 				}
 			}
 			float vbegin = 0, vsep = 0;
@@ -2494,7 +2498,7 @@ void RichTextLabel::_notification(int p_what) {
 				if (drawn_lines > 0) {
 					visible_paragraph_count++;
 				}
-				ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * (theme_cache.line_separation + vsep);
+				ofs.y += main->lines[from_line].text_buf->get_size().y + (main->lines[from_line].text_buf->get_line_count() - 1) * (theme_cache.line_separation + vsep) + (theme_cache.paragraph_separation + vsep);
 				from_line++;
 			}
 			if (has_focus() && get_tree()->is_accessibility_enabled()) {
@@ -6248,15 +6252,7 @@ void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 }
 
 int RichTextLabel::get_paragraph_count() const {
-	int para_count = 0;
-	int to_line = main->first_invalid_line.load();
-	for (int i = 0; i < to_line; i++) {
-		if ((visible_characters >= 0) && main->lines[i].char_offset >= visible_characters) {
-			break;
-		}
-		para_count++;
-	}
-	return para_count;
+	return main->lines.size();
 }
 
 int RichTextLabel::get_visible_paragraph_count() const {
@@ -6331,13 +6327,7 @@ int RichTextLabel::get_line_count() const {
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
 		MutexLock lock(main->lines[i].text_buf->get_mutex());
-		for (int j = 0; j < main->lines[i].text_buf->get_line_count(); j++) {
-			RID rid = main->lines[i].text_buf->get_line_rid(j);
-			if ((visible_characters >= 0) && main->lines[i].char_offset + TS->shaped_text_get_range(rid).x >= visible_characters) {
-				break;
-			}
-			line_count++;
-		}
+		line_count += main->lines[i].text_buf->get_line_count();
 	}
 	return line_count;
 }
@@ -7068,6 +7058,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 	if (visible_ratio != p_ratio) {
 		_stop_thread();
 
+		int prev_vc = visible_characters;
 		if (p_ratio >= 1.0) {
 			visible_characters = -1;
 			visible_ratio = 1.0;
@@ -7079,10 +7070,44 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 			visible_ratio = p_ratio;
 		}
 
-		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			main->first_invalid_line.store(0); //  Invalidate all lines..
-			_invalidate_accessibility();
-			_validate_line_caches();
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters != prev_vc) {
+			int new_vc = (visible_characters < 0) ? get_total_character_count() : visible_characters;
+			int old_vc = (prev_vc < 0) ? get_total_character_count() : prev_vc;
+			int to_line = main->first_invalid_line.load();
+			int old_from_l = to_line;
+			int new_from_l = to_line;
+			for (int i = 0; i < to_line; i++) {
+				const Line &l = main->lines[i];
+				if (l.char_offset <= old_vc && l.char_offset + l.char_count > old_vc) {
+					old_from_l = i;
+				}
+				if (l.char_offset <= new_vc && l.char_offset + l.char_count > new_vc) {
+					new_from_l = i;
+				}
+			}
+			Rect2 text_rect = _get_text_rect();
+			int first_invalid = MIN(new_from_l, old_from_l);
+			int second_invalid = MAX(new_from_l, old_from_l);
+
+			float total_height = (first_invalid == 0) ? 0 : _calculate_line_vertical_offset(main->lines[first_invalid - 1]);
+			if (first_invalid < to_line) {
+				int total_chars = main->lines[first_invalid].char_offset;
+				total_height = _shape_line(main, first_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+			}
+			if (first_invalid != second_invalid) {
+				for (int i = first_invalid + 1; i < second_invalid; i++) {
+					main->lines[i].offset.y = total_height;
+					total_height = _calculate_line_vertical_offset(main->lines[i]);
+				}
+				if (second_invalid < to_line) {
+					int total_chars = main->lines[second_invalid].char_offset;
+					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+				}
+			}
+			for (int i = second_invalid + 1; i < to_line; i++) {
+				main->lines[i].offset.y = total_height;
+				total_height = _calculate_line_vertical_offset(main->lines[i]);
+			}
 		}
 		queue_redraw();
 	}
@@ -7129,7 +7154,7 @@ int RichTextLabel::get_content_height() const {
 			// Do not apply to the last line to avoid cutting text.
 			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 		} else {
-			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
 		}
 	}
 	return total_height;
@@ -7448,6 +7473,7 @@ void RichTextLabel::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, progress_fg_style, "fill", "ProgressBar");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, line_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, paragraph_separation);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, RichTextLabel, normal_font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, RichTextLabel, normal_font_size);
@@ -7506,6 +7532,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 	if (visible_characters != p_visible) {
 		_stop_thread();
 
+		int prev_vc = visible_characters;
 		visible_characters = p_visible;
 		if (p_visible == -1) {
 			visible_ratio = 1;
@@ -7515,10 +7542,44 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 				visible_ratio = (float)p_visible / (float)total_char_count;
 			}
 		}
-		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			main->first_invalid_line.store(0); // Invalidate all lines.
-			_invalidate_accessibility();
-			_validate_line_caches();
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters != prev_vc) {
+			int new_vc = (visible_characters < 0) ? get_total_character_count() : visible_characters;
+			int old_vc = (prev_vc < 0) ? get_total_character_count() : prev_vc;
+			int to_line = main->first_invalid_line.load();
+			int old_from_l = to_line;
+			int new_from_l = to_line;
+			for (int i = 0; i < to_line; i++) {
+				const Line &l = main->lines[i];
+				if (l.char_offset <= old_vc && l.char_offset + l.char_count > old_vc) {
+					old_from_l = i;
+				}
+				if (l.char_offset <= new_vc && l.char_offset + l.char_count > new_vc) {
+					new_from_l = i;
+				}
+			}
+			Rect2 text_rect = _get_text_rect();
+			int first_invalid = MIN(new_from_l, old_from_l);
+			int second_invalid = MAX(new_from_l, old_from_l);
+
+			float total_height = (first_invalid == 0) ? 0 : _calculate_line_vertical_offset(main->lines[first_invalid - 1]);
+			if (first_invalid < to_line) {
+				int total_chars = main->lines[first_invalid].char_offset;
+				total_height = _shape_line(main, first_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+			}
+			if (first_invalid != second_invalid) {
+				for (int i = first_invalid + 1; i < second_invalid; i++) {
+					main->lines[i].offset.y = total_height;
+					total_height = _calculate_line_vertical_offset(main->lines[i]);
+				}
+				if (second_invalid < to_line) {
+					int total_chars = main->lines[second_invalid].char_offset;
+					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+				}
+			}
+			for (int i = second_invalid + 1; i < to_line; i++) {
+				main->lines[i].offset.y = total_height;
+				total_height = _calculate_line_vertical_offset(main->lines[i]);
+			}
 		}
 		queue_redraw();
 	}

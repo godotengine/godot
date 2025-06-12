@@ -100,11 +100,11 @@ void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binorm
 layout(location = 0) out vec3 vertex_interp;
 
 #ifdef NORMAL_USED
-layout(location = 1) out hvec3 normal_interp;
+layout(location = 1) out vec3 normal_interp;
 #endif
 
 #if defined(COLOR_USED)
-layout(location = 2) out hvec4 color_interp;
+layout(location = 2) out vec4 color_interp;
 #endif
 
 #ifdef UV_USED
@@ -116,12 +116,12 @@ layout(location = 4) out vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 5) out hvec3 tangent_interp;
-layout(location = 6) out hvec3 binormal_interp;
+layout(location = 5) out vec3 tangent_interp;
+layout(location = 6) out vec3 binormal_interp;
 #endif
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
-layout(location = 7) out hvec4 diffuse_light_interp;
-layout(location = 8) out hvec4 specular_light_interp;
+layout(location = 7) out vec4 diffuse_light_interp;
+layout(location = 8) out vec4 specular_light_interp;
 
 #include "../scene_forward_vertex_lights_inc.glsl"
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
@@ -506,14 +506,16 @@ void vertex_shader(in vec3 vertex,
 
 // VERTEX LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
+	hvec3 normal = hvec3(normal_interp);
+
 #ifdef USE_MULTIVIEW
 	hvec3 view = hvec3(-normalize(vertex_interp - eye_offset));
 #else
 	hvec3 view = hvec3(-normalize(vertex_interp));
 #endif
 
-	diffuse_light_interp = hvec4(0.0);
-	specular_light_interp = hvec4(0.0);
+	hvec4 diffuse_light = hvec4(0.0);
+	hvec4 specular_light = hvec4(0.0);
 
 	uint omni_light_count = sc_omni_lights(8);
 	uvec2 omni_light_indices = instances.data[instance_index].omni_lights;
@@ -523,7 +525,7 @@ void vertex_shader(in vec3 vertex,
 			break;
 		}
 
-		light_process_omni_vertex(light_index, vertex, view, normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
+		light_process_omni_vertex(light_index, vertex, view, normal, roughness, diffuse_light.rgb, specular_light.rgb);
 	}
 
 	uint spot_light_count = sc_spot_lights(8);
@@ -534,7 +536,7 @@ void vertex_shader(in vec3 vertex,
 			break;
 		}
 
-		light_process_spot_vertex(light_index, vertex, view, normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
+		light_process_spot_vertex(light_index, vertex, view, normal, roughness, diffuse_light.rgb, specular_light.rgb);
 	}
 
 	uint directional_lights_count = sc_directional_lights(scene_directional_light_count);
@@ -552,41 +554,44 @@ void vertex_shader(in vec3 vertex,
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 			if (i == 0) {
-				light_compute_vertex(normal_interp, hvec3(directional_lights.data[0].direction), view,
+				light_compute_vertex(normal, hvec3(directional_lights.data[0].direction), view,
 						hvec3(directional_lights.data[0].color * directional_lights.data[0].energy),
 						true, roughness,
 						directional_diffuse,
 						directional_specular);
 			} else {
-				light_compute_vertex(normal_interp, hvec3(directional_lights.data[i].direction), view,
+				light_compute_vertex(normal, hvec3(directional_lights.data[i].direction), view,
 						hvec3(directional_lights.data[i].color * directional_lights.data[i].energy),
 						true, roughness,
-						diffuse_light_interp.rgb,
-						specular_light_interp.rgb);
+						diffuse_light.rgb,
+						specular_light.rgb);
 			}
 		}
 
 		// Calculate the contribution from the shadowed light so we can scale the shadows accordingly.
-		half diff_avg = dot(diffuse_light_interp.rgb, hvec3(0.33333));
+		half diff_avg = dot(diffuse_light.rgb, hvec3(0.33333));
 		half diff_dir_avg = dot(directional_diffuse, hvec3(0.33333));
 		if (diff_avg > half(0.0)) {
-			diffuse_light_interp.a = diff_dir_avg / (diff_avg + diff_dir_avg);
+			diffuse_light.a = diff_dir_avg / (diff_avg + diff_dir_avg);
 		} else {
-			diffuse_light_interp.a = half(1.0);
+			diffuse_light.a = half(1.0);
 		}
 
-		diffuse_light_interp.rgb += directional_diffuse;
+		diffuse_light.rgb += directional_diffuse;
 
-		half spec_avg = dot(specular_light_interp.rgb, hvec3(0.33333));
+		half spec_avg = dot(specular_light.rgb, hvec3(0.33333));
 		half spec_dir_avg = dot(directional_specular, hvec3(0.33333));
 		if (spec_avg > half(0.0)) {
-			specular_light_interp.a = spec_dir_avg / (spec_avg + spec_dir_avg);
+			specular_light.a = spec_dir_avg / (spec_avg + spec_dir_avg);
 		} else {
-			specular_light_interp.a = half(1.0);
+			specular_light.a = half(1.0);
 		}
 
-		specular_light_interp.rgb += directional_specular;
+		specular_light.rgb += directional_specular;
 	}
+
+	diffuse_light_interp = hvec4(diffuse_light);
+	specular_light_interp = hvec4(specular_light);
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 
@@ -785,14 +790,17 @@ void main() {
 
 /* Varyings */
 
+// All interpolators are intentionally kept at full precision as storageInputOutput16 is not
+// checked for support. Devices with Adreno GPUs don't usually support this capability.
+
 layout(location = 0) in vec3 vertex_interp;
 
 #ifdef NORMAL_USED
-layout(location = 1) in hvec3 normal_interp;
+layout(location = 1) in vec3 normal_interp;
 #endif
 
 #if defined(COLOR_USED)
-layout(location = 2) in hvec4 color_interp;
+layout(location = 2) in vec4 color_interp;
 #endif
 
 #ifdef UV_USED
@@ -804,13 +812,13 @@ layout(location = 4) in vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 5) in hvec3 tangent_interp;
-layout(location = 6) in hvec3 binormal_interp;
+layout(location = 5) in vec3 tangent_interp;
+layout(location = 6) in vec3 binormal_interp;
 #endif
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
-layout(location = 7) in hvec4 diffuse_light_interp;
-layout(location = 8) in hvec4 specular_light_interp;
+layout(location = 7) in vec4 diffuse_light_interp;
+layout(location = 8) in vec4 specular_light_interp;
 #endif
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -1093,15 +1101,15 @@ void main() {
 	float alpha_highp = 1.0;
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) || defined(BENT_NORMAL_MAP_USED)
-	vec3 binormal_highp = vec3(binormal_interp);
-	vec3 tangent_highp = vec3(tangent_interp);
+	vec3 binormal_highp = binormal_interp;
+	vec3 tangent_highp = tangent_interp;
 #else // TANGENT_USED || NORMAL_MAP_USED || LIGHT_ANISOTROPY_USED || BENT_NORMAL_MAP_USED
 	vec3 binormal_highp = vec3(0.0);
 	vec3 tangent_highp = vec3(0.0);
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal_highp = vec3(normal_interp);
+	vec3 normal_highp = normal_interp;
 #if defined(DO_SIDE_CHECK)
 	if (!gl_FrontFacing) {
 		normal_highp = -normal_highp;
@@ -1118,7 +1126,7 @@ void main() {
 #endif
 
 #if defined(COLOR_USED)
-	vec4 color_highp = vec4(color_interp);
+	vec4 color_highp = color_interp;
 #endif
 
 #if defined(NORMAL_MAP_USED)
@@ -1577,7 +1585,7 @@ void main() {
 		float lod;
 		half blend = half(modf(roughness_lod, lod));
 		hvec3 clearcoat_sample_a = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod)).rgb);
-		hvec3 clearcoat_sample_b = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP)), vec4(ref_vec, lod + 1)).rgb);
+		hvec3 clearcoat_sample_b = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod + 1)).rgb);
 		hvec3 clearcoat_light = mix(clearcoat_sample_a, clearcoat_sample_b, blend);
 
 #else
@@ -1781,8 +1789,8 @@ void main() {
 // LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 #ifdef USE_VERTEX_LIGHTING
-	diffuse_light += diffuse_light_interp.rgb;
-	direct_specular_light += specular_light_interp.rgb * f0;
+	diffuse_light += hvec3(diffuse_light_interp.rgb);
+	direct_specular_light += hvec3(specular_light_interp.rgb) * f0;
 #endif
 
 	uint directional_lights_count = sc_directional_lights(scene_data.directional_light_count);
@@ -1934,8 +1942,8 @@ void main() {
 #endif
 
 #ifdef USE_VERTEX_LIGHTING
-					diffuse_light *= mix(half(1.0), shadow, diffuse_light_interp.a);
-					direct_specular_light *= mix(half(1.0), shadow, specular_light_interp.a);
+					diffuse_light *= mix(half(1.0), shadow, half(diffuse_light_interp.a));
+					direct_specular_light *= mix(half(1.0), shadow, half(specular_light_interp.a));
 #endif
 #undef BIAS_FUNC
 				}
@@ -1947,8 +1955,8 @@ void main() {
 		} else { // shadowmask_mode == LIGHTMAP_SHADOWMASK_MODE_ONLY
 
 #ifdef USE_VERTEX_LIGHTING
-			diffuse_light *= mix(half(1.0), half(shadowmask), diffuse_light_interp.a);
-			direct_specular_light *= mix(half(1.0), half(shadowmask), specular_light_interp.a);
+			diffuse_light *= mix(half(1.0), shadowmask, half(diffuse_light_interp.a));
+			direct_specular_light *= mix(half(1.0), shadowmask, half(specular_light_interp.a));
 #endif
 
 			shadows[0] = shadowmask;

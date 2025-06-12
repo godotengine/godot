@@ -96,6 +96,9 @@ RID CameraAttributes::get_rid() const {
 }
 
 void CameraAttributes::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && p_property.name == "exposure_sensitivity") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		return;
@@ -253,6 +256,9 @@ void CameraAttributesPractical::_update_auto_exposure() {
 }
 
 void CameraAttributesPractical::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if ((!dof_blur_far_enabled && (p_property.name == "dof_blur_far_distance" || p_property.name == "dof_blur_far_transition")) ||
 			(!dof_blur_near_enabled && (p_property.name == "dof_blur_near_distance" || p_property.name == "dof_blur_near_transition"))) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
@@ -447,6 +453,9 @@ void CameraAttributesPhysical::_update_auto_exposure() {
 }
 
 void CameraAttributesPhysical::_validate_property(PropertyInfo &property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (property.name == "exposure_aperture" || property.name == "exposure_shutter_speed")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		return;

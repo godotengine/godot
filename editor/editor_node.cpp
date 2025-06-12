@@ -96,6 +96,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
+#include "editor/editor_run.h"
 #include "editor/editor_script.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_settings_dialog.h"
@@ -1957,7 +1958,7 @@ void EditorNode::_save_scene_silently() {
 	// when Save on Focus Loss kicks in.
 	Node *scene = editor_data.get_edited_scene_root();
 	if (scene && !scene->get_scene_file_path().is_empty() && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
-		_save_scene(scene->get_scene_file_path());
+		_save_scene(scene->get_scene_file_path(), -1, false);
 		save_editor_layout_delayed();
 	}
 }
@@ -1985,23 +1986,29 @@ static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Re
 	}
 }
 
-void EditorNode::_save_scene(String p_file, int idx) {
+void EditorNode::_save_scene(String p_file, int idx, bool show_progress) {
 	ERR_FAIL_COND_MSG(!saving_scene.is_empty() && saving_scene == p_file, "Scene saved while already being saved!");
 
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
-	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 3));
-	save_scene_progress->step(TTR("Analyzing"), 0);
+	if (show_progress) {
+		save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 3));
+		save_scene_progress->step(TTR("Analyzing"), 0);
+	}
 
 	if (!scene) {
 		show_accept(TTR("This operation can't be done without a tree root."), TTR("OK"));
-		_close_save_scene_progress();
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
 		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
-		_close_save_scene_progress();
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
 	}
 
@@ -2013,7 +2020,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
 
-	save_scene_progress->step(TTR("Packing Scene"), 1);
+	if (show_progress) {
+		save_scene_progress->step(TTR("Packing Scene"), 1);
+	}
 
 	Ref<PackedScene> sdata;
 
@@ -2035,11 +2044,15 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (err != OK) {
 		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
-		_close_save_scene_progress();
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
 	}
 
-	save_scene_progress->step(TTR("Saving scene"), 2);
+	if (show_progress) {
+		save_scene_progress->step(TTR("Saving scene"), 2);
+	}
 
 	int flg = 0;
 	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
@@ -2053,7 +2066,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	emit_signal(SNAME("scene_saved"), p_file);
 	editor_data.notify_scene_saved(p_file);
 
-	save_scene_progress->step(TTR("Saving external resources"), 3);
+	if (show_progress) {
+		save_scene_progress->step(TTR("Saving external resources"), 3);
+	}
 
 	_save_external_resources();
 	saving_scene = p_file; // Some editors may save scenes of built-in resources as external data, so avoid saving this scene again.
@@ -2079,7 +2094,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 	_update_unsaved_cache();
-	_close_save_scene_progress();
+	if (show_progress) {
+		_close_save_scene_progress();
+	}
 }
 
 void EditorNode::save_all_scenes() {
@@ -3419,14 +3436,39 @@ void EditorNode::_request_screenshot() {
 
 void EditorNode::_screenshot(bool p_use_utc) {
 	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).remove_char(':') + ".png";
-	NodePath path = String("user://") + name;
-	_save_screenshot(path);
-	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
-		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(path), true);
+	String path = String("user://") + name;
+
+	if (!EditorRun::request_screenshot(callable_mp(this, &EditorNode::_save_screenshot_with_embedded_process).bind(path))) {
+		_save_screenshot(path);
 	}
 }
 
-void EditorNode::_save_screenshot(NodePath p_path) {
+void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h, const String &p_emb_path, const Rect2i &p_rect, const String &p_path) {
+	Control *main_screen_control = editor_main_screen->get_control();
+	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
+	Viewport *viewport = main_screen_control->get_viewport();
+	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the editor main screen.");
+	Ref<ViewportTexture> texture = viewport->get_texture();
+	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
+	Ref<Image> img = texture->get_image();
+	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
+	img->convert(Image::FORMAT_RGBA8);
+	ERR_FAIL_COND(p_emb_path.is_empty());
+	Ref<Image> overlay = Image::load_from_file(p_emb_path);
+	DirAccess::remove_absolute(p_emb_path);
+	ERR_FAIL_COND_MSG(overlay.is_null(), "Cannot get an image from a embedded process.");
+	overlay->convert(Image::FORMAT_RGBA8);
+	overlay->resize(p_rect.size.x, p_rect.size.y);
+	img->blend_rect(overlay, Rect2i(0, 0, p_w, p_h), p_rect.position);
+	Error error = img->save_png(p_path);
+	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
+
+	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
+		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(p_path), true);
+	}
+}
+
+void EditorNode::_save_screenshot(const String &p_path) {
 	Control *main_screen_control = editor_main_screen->get_control();
 	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
 	Viewport *viewport = main_screen_control->get_viewport();
@@ -3437,6 +3479,10 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
+
+	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
+		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(p_path), true);
+	}
 }
 
 void EditorNode::_check_system_theme_changed() {
@@ -5385,6 +5431,12 @@ String EditorNode::_get_system_info() const {
 	info.push_back(graphics);
 
 	info.push_back(vformat("%s (%d threads)", processor_name, processor_count));
+
+	const int64_t system_ram = OS::get_singleton()->get_memory_info()["physical"];
+	if (system_ram > 0) {
+		// If the memory info is available, display it.
+		info.push_back(vformat("%s memory", String::humanize_size(system_ram)));
+	}
 
 	return String(" - ").join(info);
 }

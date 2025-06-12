@@ -950,6 +950,9 @@ bool CSGShape3D::is_calculating_tangents() const {
 }
 
 void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	bool is_collision_prefixed = p_property.name.begins_with("collision_");
 	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root

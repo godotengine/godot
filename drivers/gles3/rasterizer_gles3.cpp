@@ -138,6 +138,10 @@ void RasterizerGLES3::clear_depth(float p_depth) {
 #endif // GLES_API_ENABLED
 }
 
+void RasterizerGLES3::clear_stencil(int32_t p_stencil) {
+	glClearStencil(p_stencil);
+}
+
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	// These are ultimately annoying, so removing for now.
@@ -436,7 +440,13 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	glViewport(int(MIN(p1.x, p2.x)), int(MIN(p1.y, p2.y)), Math::abs(size.x), Math::abs(size.y));
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, rt->color);
+	GLenum target = rt->view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+	glBindTexture(target, rt->color);
+	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glDisable(GL_CULL_FACE);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ZERO);
 

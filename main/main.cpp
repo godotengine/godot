@@ -2638,6 +2638,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "internationalization/locale/line_breaking_strictness", PROPERTY_HINT_ENUM, "Auto,Loose,Normal,Strict"), 0);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
@@ -4583,6 +4584,8 @@ int Main::start() {
 		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
 
+	GDExtensionManager::get_singleton()->startup();
+
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
 		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
@@ -4788,6 +4791,8 @@ bool Main::iteration() {
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
+	GDExtensionManager::get_singleton()->frame();
+
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
 	}
@@ -4905,6 +4910,8 @@ void Main::cleanup(bool p_force) {
 		input->flush_frame_parsed_events();
 	}
 #endif
+
+	GDExtensionManager::get_singleton()->shutdown();
 
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();

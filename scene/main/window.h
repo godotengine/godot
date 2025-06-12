@@ -257,6 +257,7 @@ private:
 	static int root_layout_direction;
 
 protected:
+	virtual void _pre_popup() {} // Called after "about_to_popup", but before window is shown.
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
 

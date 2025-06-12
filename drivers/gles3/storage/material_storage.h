@@ -257,7 +257,25 @@ struct SceneShaderData : public ShaderData {
 
 	enum DepthTest {
 		DEPTH_TEST_DISABLED,
-		DEPTH_TEST_ENABLED
+		DEPTH_TEST_ENABLED,
+		DEPTH_TEST_ENABLED_INVERTED,
+	};
+
+	enum StencilCompare {
+		STENCIL_COMPARE_LESS,
+		STENCIL_COMPARE_EQUAL,
+		STENCIL_COMPARE_LESS_OR_EQUAL,
+		STENCIL_COMPARE_GREATER,
+		STENCIL_COMPARE_NOT_EQUAL,
+		STENCIL_COMPARE_GREATER_OR_EQUAL,
+		STENCIL_COMPARE_ALWAYS,
+		STENCIL_COMPARE_MAX // not an actual operator, just the amount of operators
+	};
+
+	enum StencilFlags {
+		STENCIL_FLAG_READ = 1,
+		STENCIL_FLAG_WRITE = 2,
+		STENCIL_FLAG_WRITE_DEPTH_FAIL = 4,
 	};
 
 	enum AlphaAntiAliasing {
@@ -284,6 +302,11 @@ struct SceneShaderData : public ShaderData {
 	DepthDraw depth_draw;
 	DepthTest depth_test;
 	RS::CullMode cull_mode;
+
+	StencilCompare stencil_compare;
+	uint32_t stencil_flags;
+	int32_t stencil_reference;
+	bool stencil_enabled;
 
 	bool uses_point_size;
 	bool uses_alpha;

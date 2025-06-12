@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include "core/input/input.h"
-#include "servers/display_server.h"
+#include "display_server_macos_base.h"
 
 #if defined(GLES3_ENABLED)
 #include "gl_manager_macos_angle.h"
@@ -74,10 +73,8 @@
 
 class EmbeddedProcessMacOS;
 
-class DisplayServerMacOS : public DisplayServer {
-	GDSOFTCLASS(DisplayServerMacOS, DisplayServer);
-
-	_THREAD_SAFE_CLASS_
+class DisplayServerMacOS : public DisplayServerMacOSBase {
+	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);
 
 public:
 	struct KeyEvent {
@@ -175,7 +172,6 @@ private:
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos = 0;
 
-	id tts = nullptr;
 	id menu_delegate = nullptr;
 	NativeMenuMacOS *native_menu = nullptr;
 
@@ -253,8 +249,6 @@ private:
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
 
-	void initialize_tts() const;
-
 	struct EmbeddedProcessData {
 		EmbeddedProcessMacOS *process;
 		WindowData *wd = nullptr;
@@ -315,15 +309,6 @@ public:
 	Callable _help_get_search_callback() const;
 	Callable _help_get_action_callback() const;
 
-	virtual bool tts_is_speaking() const override;
-	virtual bool tts_is_paused() const override;
-	virtual TypedArray<Dictionary> tts_get_voices() const override;
-
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
-	virtual void tts_pause() override;
-	virtual void tts_resume() override;
-	virtual void tts_stop() override;
-
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual Color get_accent_color() const override;
@@ -349,12 +334,6 @@ public:
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
-
-	virtual void clipboard_set(const String &p_text) override;
-	virtual String clipboard_get() const override;
-	virtual Ref<Image> clipboard_get_image() const override;
-	virtual bool clipboard_has() const override;
-	virtual bool clipboard_has_image() const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;

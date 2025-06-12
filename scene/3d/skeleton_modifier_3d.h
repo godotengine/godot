@@ -65,7 +65,6 @@ protected:
 	GDVIRTUAL2(_skeleton_changed, Skeleton3D *, Skeleton3D *);
 	GDVIRTUAL0(_validate_bone_names);
 
-	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 

@@ -531,9 +531,10 @@ void FileSystemDock::_notification(int p_what) {
 			button_hist_prev->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_bw_history));
 			file_list_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_tree_rmb_option));
-			current_path_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
+			current_path_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false, true));
 
 			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
+			thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
 
 			set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
 
@@ -633,6 +634,12 @@ void FileSystemDock::_notification(int p_what) {
 			bool new_always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
+				do_redraw = true;
+			}
+
+			int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
+			if (new_thumbnail_size_setting != thumbnail_size_setting) {
+				thumbnail_size_setting = new_thumbnail_size_setting;
 				do_redraw = true;
 			}
 
@@ -938,8 +945,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	String directory = current_path;
 	String file = "";
 
-	int thumbnail_size = EDITOR_GET("docks/filesystem/thumbnail_size");
-	thumbnail_size *= EDSCALE;
+	int thumbnail_size = thumbnail_size_setting * EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
 	Ref<Texture2D> file_thumbnail;
 	Ref<Texture2D> file_thumbnail_broken;
@@ -2271,6 +2277,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 #endif
 
 			List<String> terminal_emulator_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
+			bool append_default_args = true;
+
 #ifdef LINUXBSD_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
 			// Use `String.ends_with()` so that installations in non-default paths
@@ -2284,11 +2292,20 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					terminal_emulator_args.push_back("-cd");
 				} else if (chosen_terminal_emulator.ends_with("xfce4-terminal")) {
 					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("lxterminal")) {
+					terminal_emulator_args.push_back("--working-directory={directory}");
+					append_default_args = false;
+				} else if (chosen_terminal_emulator.ends_with("kitty")) {
+					terminal_emulator_args.push_back("--directory");
+				} else if (chosen_terminal_emulator.ends_with("alacritty")) {
+					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("xterm")) {
+					terminal_emulator_args.push_back("-e");
+					terminal_emulator_args.push_back("cd '{directory}' && exec $SHELL");
+					append_default_args = false;
 				}
 			}
 #endif
-
-			bool append_default_args = true;
 
 #ifdef WINDOWS_ENABLED
 			// Prepend default arguments based on the terminal emulator name.

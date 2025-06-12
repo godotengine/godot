@@ -1725,11 +1725,11 @@ String Variant::stringify(int recursion_count) const {
 		}
 		case CALLABLE: {
 			const Callable &c = *reinterpret_cast<const Callable *>(_data._mem);
-			return c;
+			return String(c);
 		}
 		case SIGNAL: {
 			const Signal &s = *reinterpret_cast<const Signal *>(_data._mem);
-			return s;
+			return String(s);
 		}
 		case RID: {
 			const ::RID &s = *reinterpret_cast<const ::RID *>(_data._mem);

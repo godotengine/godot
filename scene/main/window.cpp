@@ -244,7 +244,7 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 		if (initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "theme_type_variation") {
+	} else if (Engine::get_singleton()->is_editor_hint() && p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
 		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
@@ -1366,7 +1366,13 @@ void Window::set_force_native(bool p_force_native) {
 	if (is_visible() && !is_in_edited_scene_root()) {
 		ERR_FAIL_MSG("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
+	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+		return;
+	}
 	force_native = p_force_native;
+	if (!is_in_edited_scene_root() && get_tree()->get_root()->is_embedding_subwindows()) {
+		set_embedding_subwindows(force_native);
+	}
 }
 
 bool Window::get_force_native() const {
@@ -1987,6 +1993,8 @@ void Window::popup_centered_ratio(float p_ratio) {
 void Window::popup(const Rect2i &p_screen_rect) {
 	ERR_MAIN_THREAD_GUARD;
 	emit_signal(SNAME("about_to_popup"));
+
+	_pre_popup();
 
 	if (!get_embedder() && get_flag(FLAG_POPUP)) {
 		// Send a focus-out notification when opening a Window Manager Popup.
