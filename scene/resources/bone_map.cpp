@@ -171,6 +171,9 @@ void BoneMap::_bind_methods() {
 }
 
 void BoneMap::_validate_property(PropertyInfo &property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (property.name == "bonemap" || property.name == "profile") {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
