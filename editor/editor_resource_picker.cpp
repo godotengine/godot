@@ -32,6 +32,7 @@
 
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_help.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
@@ -496,6 +497,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
+			resp->set_path(_get_owner_path() + "::"); // Assign a base path for built-in Resources.
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
@@ -587,6 +589,32 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 			edit_menu->popup();
 		}
 	}
+}
+
+String EditorResourcePicker::_get_owner_path() const {
+	EditorProperty *property = Object::cast_to<EditorProperty>(get_parent());
+	if (!property) {
+		return String();
+	}
+	Object *obj = property->get_edited_object();
+
+	Node *node = Object::cast_to<Node>(obj);
+	if (node) {
+		if (node->get_scene_file_path().is_empty()) {
+			node = node->get_owner();
+		}
+		if (node) {
+			return node->get_scene_file_path();
+		}
+		return String();
+	}
+
+	Resource *res = Object::cast_to<Resource>(obj);
+	if (res && !res->is_built_in()) {
+		return res->get_path();
+	}
+	// TODO: It would be nice to handle deeper Resource nesting.
+	return String();
 }
 
 String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource) const {
