@@ -271,11 +271,9 @@ private:
 
 	Callable item_selected_callback;
 
-	bool directly_modify_property = false;
 	Object *property_object = nullptr;
 	String property_path;
-	Variant current_property_value;
-
+	Variant initial_property_value;
 	void _search_box_text_changed(const String &p_query);
 
 	void preview_property();
