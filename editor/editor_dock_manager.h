@@ -118,7 +118,7 @@ private:
 	Control *_get_dock_tab_dragged();
 	void _dock_drag_stopped();
 	void _dock_split_dragged(int p_offset);
-	void _dock_container_gui_input(const Ref<InputEvent> &p_input, TabContainer *p_dock_container);
+	void _dock_container_popup(int p_tab_idx, TabContainer *p_dock_container);
 	void _bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, Control *p_dock, Button *p_bottom_button);
 	void _dock_container_update_visibility(TabContainer *p_dock_container);
 	void _update_layout();
