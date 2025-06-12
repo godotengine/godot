@@ -1025,6 +1025,11 @@
 		<member name="interface/inspector/open_resources_in_current_inspector" type="bool" setter="" getter="">
 			If [code]true[/code], subresources can be edited in the current inspector view. If the resource type is defined in [member interface/inspector/resources_to_open_in_new_inspector] or if this setting is [code]false[/code], attempting to edit a subresource always opens a new inspector view.
 		</member>
+		<member name="interface/inspector/resource_picker_use_dialog_threshold" type="int" setter="" getter="">
+			If number of items on the resource picker's popup menu exceeds this value, a searchable dialog will be used instead.
+			- If set to [code]0[/code], the dialog will always be used.
+			- If set to [code]-1[/code], the popup menu will always be used.
+		</member>
 		<member name="interface/inspector/resources_to_open_in_new_inspector" type="PackedStringArray" setter="" getter="">
 			List of resources that should always be opened in a new inspector view, even if [member interface/inspector/open_resources_in_current_inspector] is [code]true[/code].
 		</member>

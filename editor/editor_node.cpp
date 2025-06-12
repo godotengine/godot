@@ -110,6 +110,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_popup_menu_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_scene_tabs.h"
@@ -8607,6 +8608,9 @@ EditorNode::EditorNode() {
 
 	quick_open_dialog = memnew(EditorQuickOpenDialog);
 	gui_base->add_child(quick_open_dialog);
+
+	popup_menu_dialog = memnew(EditorPopupMenuDialog);
+	gui_base->add_child(popup_menu_dialog);
 
 	quick_open_color_palette = memnew(EditorQuickOpenDialog);
 	gui_base->add_child(quick_open_color_palette);

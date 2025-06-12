@@ -38,6 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_popup_menu_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -126,7 +127,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 void EditorResourcePicker::_resource_selected() {
 	if (edited_resource.is_null()) {
 		edit_button->set_pressed(true);
-		_update_menu();
+		_update_menu(true);
 		return;
 	}
 
@@ -183,7 +184,7 @@ void EditorResourcePicker::_resource_saved(Object *p_resource) {
 	}
 }
 
-void EditorResourcePicker::_update_menu() {
+void EditorResourcePicker::_update_menu(bool p_allow_dialog) {
 	if (edit_menu && edit_menu->is_visible()) {
 		edit_button->set_pressed(false);
 		edit_menu->hide();
@@ -192,12 +193,21 @@ void EditorResourcePicker::_update_menu() {
 
 	_update_menu_items();
 
-	Rect2 gt = edit_button->get_screen_rect();
-	edit_menu->reset_size();
-	int ms = edit_menu->get_contents_minimum_size().width;
-	Vector2 popup_pos = gt.get_end() - Vector2(ms, 0);
-	edit_menu->set_position(popup_pos);
-	edit_menu->popup();
+	int dialog_threshold = EDITOR_GET("interface/inspector/resource_picker_use_dialog_threshold");
+	if (p_allow_dialog && dialog_threshold >= 0 && edit_menu->get_item_count() >= dialog_threshold) {
+		EditorNode::get_singleton()->get_popup_menu_dialog()->popup_dialog(edit_menu, TTR("Add Resource"), TTR("Search Resources..."));
+	} else {
+		Rect2 gt = edit_button->get_screen_rect();
+		edit_menu->reset_size();
+		int ms = edit_menu->get_contents_minimum_size().width;
+		Vector2 popup_pos = gt.get_end() - Vector2(ms, 0);
+		edit_menu->set_position(popup_pos);
+		edit_menu->popup();
+	}
+}
+
+void EditorResourcePicker::_update_menu_from_button() {
+	_update_menu(false);
 }
 
 void EditorResourcePicker::_update_menu_items() {
@@ -1151,7 +1161,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	edit_button->set_accessibility_name(TTRC("Edit"));
 	add_child(edit_button);
-	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu_from_button));
 	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	add_theme_constant_override("separation", 0);

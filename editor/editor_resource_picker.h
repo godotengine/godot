@@ -94,7 +94,8 @@ class EditorResourcePicker : public HBoxContainer {
 
 	void _resource_saved(Object *p_resource);
 
-	void _update_menu();
+	void _update_menu(bool p_allow_dialog);
+	void _update_menu_from_button();
 	void _update_menu_items();
 	void _edit_menu_cbk(int p_which);
 
