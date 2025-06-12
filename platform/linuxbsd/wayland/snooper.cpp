@@ -192,9 +192,10 @@ struct WaylandEmbedderProxy::WaylandObject *WaylandEmbedderProxy::Client::get_ob
 
 Error WaylandEmbedderProxy::Client::delete_object(uint32_t p_local_id) {
 	if (global_instances.has(p_local_id)) {
+#ifdef WAYLAND_SNOOPER_DEBUG_LOGS_ENABLED
 		WaylandObject *object = &global_instances[p_local_id];
-
 		DEBUG_LOG_WAYLAND_SNOOPER(vformat("Deleting global instance %s l0x%x", object->interface ? object->interface->name : "UNKNOWN", p_local_id));
+#endif
 
 		// wl_display::delete_id
 		send_wayland_message(socket, DISPLAY_ID, 1, { p_local_id });
@@ -207,9 +208,10 @@ Error WaylandEmbedderProxy::Client::delete_object(uint32_t p_local_id) {
 		return OK;
 	}
 	if (fake_objects.has(p_local_id)) {
+#ifdef WAYLAND_SNOOPER_DEBUG_LOGS_ENABLED
 		WaylandObject *object = &fake_objects[p_local_id];
-
 		DEBUG_LOG_WAYLAND_SNOOPER(vformat("Deleting fake object %s l0x%x", object->interface ? object->interface->name : "UNKNOWN", p_local_id));
+#endif
 
 		// wl_display::delete_id
 		send_wayland_message(socket, DISPLAY_ID, 1, { p_local_id });
@@ -588,10 +590,12 @@ int WaylandEmbedderProxy::next_global_id() {
 
 	// Oh no. Time for debug info!
 
+#ifdef WAYLAND_THREAD_DEBUG_LOGS_ENABLED
 	for (uint32_t id = 1; id < objects.size(); ++id) {
 		WaylandObject &object = objects[id];
 		DEBUG_LOG_WAYLAND_SNOOPER(vformat(" - g0x%x (#%d): %s version %d, data 0x%x", id, id, object.interface->name, object.version, (uintptr_t)object.data));
 	}
+#endif
 
 	// FIXME: Resize or something.
 	CRASH_NOW_MSG("FIXME Out of ids. FIXME");
