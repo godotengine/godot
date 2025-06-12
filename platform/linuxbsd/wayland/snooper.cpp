@@ -1948,7 +1948,7 @@ bool WaylandEmbedderProxy::handle_sock(int p_fd, int p_id) {
 
 		ssize_t head_rec = recvmsg(p_fd, &head_msg, MSG_PEEK);
 
-		ERR_FAIL_COND_V_MSG(head_rec == -1, false, "Can't read message header.");
+		ERR_FAIL_COND_V_MSG(head_rec == -1, false, vformat("Can't read message header: %s", strerror(errno)));
 		ERR_FAIL_COND_V(((size_t)head_rec) != vec.iov_len, false);
 
 		// Header is two 32-bit words: first is ID, second has size in most significant
@@ -1975,7 +1975,7 @@ bool WaylandEmbedderProxy::handle_sock(int p_fd, int p_id) {
 
 		ssize_t full_rec = recvmsg(p_fd, &full_msg, 0);
 
-		ERR_FAIL_COND_V_MSG(full_rec == -1, false, "Can't read full message.");
+		ERR_FAIL_COND_V_MSG(full_rec == -1, false, vformat("Can't read full message: %s", strerror(errno)));
 		ERR_FAIL_COND_V_MSG(((size_t)full_rec) != info.size, false, "Invalid message length.");
 
 		DEBUG_LOG_WAYLAND_SNOOPER(" === START PACKET === ");
