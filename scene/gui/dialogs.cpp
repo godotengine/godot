@@ -448,6 +448,9 @@ void AcceptDialog::_bind_methods() {
 }
 
 void AcceptDialog::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "ok_button_text") {
 		p_property.hint = PROPERTY_HINT_PLACEHOLDER_TEXT;
 		p_property.hint_string = default_ok_text;

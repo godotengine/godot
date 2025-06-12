@@ -83,6 +83,9 @@ void NoiseTexture3D::_bind_methods() {
 }
 
 void NoiseTexture3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "seamless_blend_skirt") {
 		if (!seamless) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;

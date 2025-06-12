@@ -78,7 +78,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::get_node_time_info() const {
 }
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "animation" && get_editable_animation_list) {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "animation" && get_editable_animation_list) {
 		Vector<String> names = get_editable_animation_list();
 		String anims;
 		for (int i = 0; i < names.size(); i++) {

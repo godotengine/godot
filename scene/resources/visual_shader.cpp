@@ -3790,6 +3790,9 @@ String VisualShaderNodeInput::get_input_index_name(int p_index) const {
 }
 
 void VisualShaderNodeInput::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "input_name") {
 		String port_list;
 

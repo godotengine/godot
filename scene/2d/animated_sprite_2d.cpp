@@ -116,7 +116,12 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 	if (frames.is_null()) {
 		return;
 	}
-
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "frame" && playing) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		}
+		return;
+	}
 	if (p_property.name == "animation") {
 		List<StringName> names;
 		frames->get_animation_list(&names);

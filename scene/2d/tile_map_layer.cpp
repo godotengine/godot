@@ -2203,6 +2203,9 @@ void TileMapLayer::_bind_methods() {
 }
 
 void TileMapLayer::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (is_y_sort_enabled()) {
 		if (p_property.name == "rendering_quadrant_size") {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
