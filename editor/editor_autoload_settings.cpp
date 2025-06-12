@@ -194,7 +194,7 @@ void EditorAutoloadSettings::_autoload_add() {
 
 	// Although not ideal to clear this on error, it's necessary to avoid
 	//  the Project Settings getting stuck if "Add" is pressed again.
-	// The proper fix would be to just make it so the error dialogue is always on top.
+	// The proper fix would be to just make it so the error dialog is always on top.
 	autoload_add_name->set_text("");
 	add_autoload->set_disabled(true);
 }
