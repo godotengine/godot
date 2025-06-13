@@ -2141,7 +2141,7 @@ Size2 Window::get_clamped_minimum_size() const {
 		return min_size;
 	}
 
-	return min_size.max(get_contents_minimum_size());
+	return min_size.max(get_contents_minimum_size() * get_content_scale_factor());
 }
 
 void Window::grab_focus() {
