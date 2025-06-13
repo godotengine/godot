@@ -3573,7 +3573,7 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 		return true;
 	}
 
-	if (p_step >= 0 && p_step < 6) {
+	if (p_step == 0) {
 		static const Vector3 view_normals[6] = {
 			Vector3(+1, 0, 0),
 			Vector3(-1, 0, 0),
@@ -3596,44 +3596,34 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 		float max_distance = RSG::light_storage->reflection_probe_get_origin_max_distance(p_instance->base);
 		float atlas_size = RSG::light_storage->reflection_atlas_get_size(scenario->reflection_atlas);
 		float mesh_lod_threshold = RSG::light_storage->reflection_probe_get_mesh_lod_threshold(p_instance->base) / atlas_size;
-
-		Vector3 edge = view_normals[p_step] * probe_size / 2;
-		float distance = Math::abs(view_normals[p_step].dot(edge) - view_normals[p_step].dot(origin_offset)); //distance from origin offset to actual view distance limit
-
-		max_distance = MAX(max_distance, distance);
-
-		//render cubemap side
-		Projection cm;
-		cm.set_perspective(90, 1, 0.01, max_distance);
-
-		Transform3D local_view;
-		local_view.set_look_at(origin_offset, origin_offset + view_normals[p_step], view_up[p_step]);
-
-		Transform3D xform = p_instance->transform * local_view;
-
-		RID shadow_atlas;
-
 		bool use_shadows = RSG::light_storage->reflection_probe_renders_shadows(p_instance->base);
-		if (use_shadows) {
-			shadow_atlas = scenario->reflection_probe_shadow_atlas;
-		}
-
-		RID environment;
-		if (scenario->environment.is_valid()) {
-			environment = scenario->environment;
-		} else {
-			environment = scenario->fallback_environment;
-		}
-
-		RENDER_TIMESTAMP("Render ReflectionProbe, Step " + itos(p_step));
-		RendererSceneRender::CameraData camera_data;
-		camera_data.set_camera(xform, cm, false, false, false);
-
+		RID shadow_atlas = use_shadows ? scenario->reflection_probe_shadow_atlas : RID();
+		RID environment = scenario->environment.is_valid() ? scenario->environment : scenario->fallback_environment;
 		Ref<RenderSceneBuffers> render_buffers = RSG::light_storage->reflection_probe_atlas_get_render_buffers(scenario->reflection_atlas);
-		_render_scene(&camera_data, render_buffers, environment, RID(), RID(), RSG::light_storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, RID(), shadow_atlas, reflection_probe->instance, p_step, mesh_lod_threshold, use_shadows);
+		for (uint32_t face = 0; face < 6; face++) {
+			// Compute distance from origin offset to the actual view distance limit.
+			Vector3 edge = view_normals[face] * probe_size / 2;
+			float distance = Math::abs(view_normals[face].dot(edge) - view_normals[face].dot(origin_offset));
+			max_distance = MAX(max_distance, distance);
 
+			// Render cubemap side.
+			Projection cm;
+			cm.set_perspective(90, 1, 0.01, max_distance);
+
+			Transform3D local_view;
+			local_view.set_look_at(origin_offset, origin_offset + view_normals[face], view_up[face]);
+
+			RendererSceneRender::CameraData camera_data;
+			Transform3D xform = p_instance->transform * local_view;
+			camera_data.set_camera(xform, cm, false, false, false);
+
+			RENDER_TIMESTAMP("Render ReflectionProbe, Face " + itos(face));
+			_render_scene(&camera_data, render_buffers, environment, RID(), RID(), RSG::light_storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, RID(), shadow_atlas, reflection_probe->instance, face, mesh_lod_threshold, use_shadows);
+		}
+
+		RSG::light_storage->reflection_probe_instance_end_render(reflection_probe->instance, scenario->reflection_atlas);
 	} else {
-		//do roughness postprocess step until it believes it's done
+		// Do roughness postprocess step until it believes it's done.
 		RENDER_TIMESTAMP("Post-Process ReflectionProbe, Step " + itos(p_step));
 		return RSG::light_storage->reflection_probe_instance_postprocess_step(reflection_probe->instance);
 	}
