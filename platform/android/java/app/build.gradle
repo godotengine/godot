@@ -208,7 +208,9 @@ android {
     flavorDimensions 'edition'
 
     productFlavors {
-        standard {}
+        standard {
+            getIsDefault().set(true)
+        }
         mono {}
     }
 
