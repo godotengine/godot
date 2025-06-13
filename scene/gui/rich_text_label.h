@@ -169,7 +169,7 @@ private:
 		ItemFont() { type = ITEM_FONT; }
 		~ItemFont() {
 			if (font.is_valid()) {
-				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
+				RichTextLabel *owner_rtl = Object::cast_to<RichTextLabel>(ObjectDB::get_instance(owner));
 				if (owner_rtl) {
 					font->disconnect("changed", owner_rtl, "_invalidate_fonts");
 				}
