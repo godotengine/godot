@@ -2146,9 +2146,8 @@ bool CodeEdit::is_code_completion_enabled() const {
 void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes) {
 	code_completion_prefixes.clear();
 	for (int i = 0; i < p_prefixes.size(); i++) {
-		const String prefix = p_prefixes[i];
+		String prefix = p_prefixes[i];
 
-		ERR_CONTINUE_MSG(prefix.is_empty(), "Code completion prefix cannot be empty.");
 		code_completion_prefixes.insert(prefix[0]);
 	}
 }
@@ -2430,6 +2429,12 @@ void CodeEdit::cancel_code_completion() {
 
 /* Line length guidelines */
 void CodeEdit::set_line_length_guidelines(TypedArray<int> p_guideline_columns) {
+	for (int i = 0; i < p_guideline_columns.size(); i++) {
+		int value = p_guideline_columns[i];
+		if (value < 0) {
+			p_guideline_columns[i] = 0;
+		}
+	}
 	line_length_guideline_columns = p_guideline_columns;
 	queue_redraw();
 }
@@ -2890,7 +2895,7 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_tooltip_on_hover"), "set_symbol_tooltip_on_hover_enabled", "is_symbol_tooltip_on_hover_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines", PROPERTY_HINT_TYPE_STRING, "int"), "set_line_length_guidelines", "get_line_length_guidelines");
 
 	ADD_GROUP("Gutters", "gutters_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
@@ -2905,18 +2910,18 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 
 	ADD_GROUP("Delimiters", "delimiter_");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings"), "set_string_delimiters", "get_string_delimiters");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments"), "set_comment_delimiters", "get_comment_delimiters");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings", PROPERTY_HINT_TYPE_STRING, "String"), "set_string_delimiters", "get_string_delimiters");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments", PROPERTY_HINT_TYPE_STRING, "String"), "set_comment_delimiters", "get_comment_delimiters");
 
 	ADD_GROUP("Code Completion", "code_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "code_completion_enabled"), "set_code_completion_enabled", "is_code_completion_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes"), "set_code_completion_prefixes", "get_code_completion_prefixes");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes", PROPERTY_HINT_TYPE_STRING, "String"), "set_code_completion_prefixes", "get_code_completion_prefixes");
 
 	ADD_GROUP("Indentation", "indent_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "indent_size"), "set_indent_size", "get_indent_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_use_spaces"), "set_indent_using_spaces", "is_indent_using_spaces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes", PROPERTY_HINT_TYPE_STRING, "String"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
 	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled"), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
@@ -3340,7 +3345,11 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 		}
 	}
 
-	int at = 0;
+
+	int at = delimiters.size();
+
+	// Comment that so the order dont change when you edit a value, maybe create a parameter for it later ?
+	/* int at = 0;
 	for (int i = 0; i < delimiters.size(); i++) {
 		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
 		if (p_start_key.length() < delimiters[i].start_key.length()) {
@@ -3348,7 +3357,7 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 		} else {
 			break;
 		}
-	}
+	} */
 
 	Delimiter delimiter;
 	delimiter.type = p_type;
@@ -3402,13 +3411,16 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 
 	for (int i = 0; i < p_delimiters.size(); i++) {
 		String key = p_delimiters[i];
+		String start_key;
+		String end_key;
 
 		if (key.is_empty()) {
-			continue;
+			start_key = " ";
 		}
-
-		const String start_key = key.get_slicec(' ', 0);
-		const String end_key = key.get_slice_count(" ") > 1 ? key.get_slicec(' ', 1) : String();
+		else {
+			start_key = key.get_slicec(' ', 0);
+			end_key = key.get_slice_count(" ") > 1 ? key.get_slicec(' ', 1) : String();
+		}
 
 		_add_delimiter(start_key, end_key, end_key.is_empty(), p_type);
 	}
