@@ -32,7 +32,6 @@
 
 #include "../snapshot_collector.h"
 #include "data_viewers/class_view.h"
-#include "data_viewers/json_view.h"
 #include "data_viewers/node_view.h"
 #include "data_viewers/object_view.h"
 #include "data_viewers/refcounted_view.h"
@@ -76,9 +75,7 @@ void ObjectDBProfilerPanel::_on_debug_breaked(bool p_reallydid, bool p_can_debug
 }
 
 void ObjectDBProfilerPanel::_begin_object_snapshot() {
-	Array args;
-	args.push_back(next_request_id++);
-	args.push_back(SnapshotCollector::get_godot_version_string());
+	Array args = { next_request_id++, SnapshotCollector::get_godot_version_string() };
 	EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_prepare_snapshot", args);
 }
 
@@ -88,10 +85,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		int total_size = p_data[1];
 		partial_snapshots[request_id] = PartialSnapshot();
 		partial_snapshots[request_id].total_size = total_size;
-		Array args;
-		args.push_back(request_id);
-		args.push_back(0);
-		args.push_back(SNAPSHOT_CHUNK_SIZE);
+		Array args = { request_id, 0, SNAPSHOT_CHUNK_SIZE };
 		take_snapshot->set_text(vformat(TTRC("Receiving Snapshot (0/%s MiB)"), _to_mb(total_size)));
 		EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
 		return true;
@@ -102,10 +96,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		chunk.data.append_array(p_data[1]);
 		take_snapshot->set_text(vformat(TTRC("Receiving Snapshot (%s/%s MiB)"), _to_mb(chunk.data.size()), _to_mb(chunk.total_size)));
 		if (chunk.data.size() != chunk.total_size) {
-			Array args;
-			args.push_back(request_id);
-			args.push_back(chunk.data.size());
-			args.push_back(chunk.data.size() + SNAPSHOT_CHUNK_SIZE);
+			Array args = { request_id, chunk.data.size(), chunk.data.size() + SNAPSHOT_CHUNK_SIZE };
 			EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
 			return true;
 		}
@@ -173,7 +164,7 @@ TreeItem *ObjectDBProfilerPanel::_add_snapshot_button(const String &p_snapshot_f
 }
 
 void ObjectDBProfilerPanel::_show_selected_snapshot() {
-	if (snapshot_list->get_selected()->get_text(0) == diff_options[diff_button->get_selected_id()]) {
+	if (snapshot_list->get_selected()->get_text(0) == (String)diff_button->get_selected_metadata()) {
 		for (int i = 0; i < diff_button->get_item_count(); i++) {
 			if (diff_button->get_item_text(i) == current_snapshot->get_snapshot()->name) {
 				diff_button->select(i);
@@ -181,7 +172,7 @@ void ObjectDBProfilerPanel::_show_selected_snapshot() {
 			}
 		}
 	}
-	show_snapshot(snapshot_list->get_selected()->get_text(0), diff_options[diff_button->get_selected_id()]);
+	show_snapshot(snapshot_list->get_selected()->get_text(0), diff_button->get_selected_metadata());
 	_update_enabled_diff_items();
 }
 
@@ -195,33 +186,33 @@ void ObjectDBProfilerPanel::_on_snapshot_deselected() {
 Ref<GameStateSnapshotRef> ObjectDBProfilerPanel::get_snapshot(const String &p_snapshot_file_name) {
 	if (snapshot_cache.has(p_snapshot_file_name)) {
 		return snapshot_cache.get(p_snapshot_file_name);
-	} else {
-		Ref<DirAccess> snapshot_dir = _get_and_create_snapshot_storage_dir();
-		ERR_FAIL_COND_V_MSG(snapshot_dir.is_null(), nullptr, "Could not access ObjectDB Snapshot directory");
-
-		String full_file_path = snapshot_dir->get_current_dir().path_join(p_snapshot_file_name) + ".odb_snapshot";
-
-		Error err;
-		Ref<FileAccess> snapshot_file = FileAccess::open(full_file_path, FileAccess::READ, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Could not open ObjectDB Snapshot file: " + full_file_path);
-
-		Vector<uint8_t> content = snapshot_file->get_buffer(snapshot_file->get_length()); // We want to split on newlines, so normalize them.
-		ERR_FAIL_COND_V_MSG(content.is_empty(), nullptr, "ObjectDB Snapshot file is empty: " + full_file_path);
-
-		Ref<GameStateSnapshotRef> snapshot = GameStateSnapshot::create_ref(p_snapshot_file_name, content);
-		if (snapshot.is_valid()) {
-			// Don't cache a null snapshot.
-			snapshot_cache.insert(p_snapshot_file_name, snapshot);
-		}
-		return snapshot;
 	}
+
+	Ref<DirAccess> snapshot_dir = _get_and_create_snapshot_storage_dir();
+	ERR_FAIL_COND_V_MSG(snapshot_dir.is_null(), nullptr, "Could not access ObjectDB Snapshot directory");
+
+	String full_file_path = snapshot_dir->get_current_dir().path_join(p_snapshot_file_name) + ".odb_snapshot";
+
+	Error err;
+	Ref<FileAccess> snapshot_file = FileAccess::open(full_file_path, FileAccess::READ, &err);
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Could not open ObjectDB Snapshot file: " + full_file_path);
+
+	Vector<uint8_t> content = snapshot_file->get_buffer(snapshot_file->get_length()); // We want to split on newlines, so normalize them.
+	ERR_FAIL_COND_V_MSG(content.is_empty(), nullptr, "ObjectDB Snapshot file is empty: " + full_file_path);
+
+	Ref<GameStateSnapshotRef> snapshot = GameStateSnapshot::create_ref(p_snapshot_file_name, content);
+	if (snapshot.is_valid()) {
+		snapshot_cache.insert(p_snapshot_file_name, snapshot);
+	}
+
+	return snapshot;
 }
 
 void ObjectDBProfilerPanel::show_snapshot(const String &p_snapshot_file_name, const String &p_snapshot_diff_file_name) {
 	clear_snapshot(false);
 
 	current_snapshot = get_snapshot(p_snapshot_file_name);
-	if (p_snapshot_diff_file_name != "none") {
+	if (!p_snapshot_diff_file_name.is_empty()) {
 		diff_snapshot = get_snapshot(p_snapshot_diff_file_name);
 	}
 
@@ -392,6 +383,7 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 
 	diff_button = memnew(OptionButton);
 	diff_button->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	diff_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	diff_button->connect(SceneStringName(item_selected), callable_mp(this, &ObjectDBProfilerPanel::_show_selected_snapshot).unbind(1));
 	diff_button_and_label->add_child(diff_button);
 
@@ -407,7 +399,6 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 	add_view(memnew(SnapshotObjectView));
 	add_view(memnew(SnapshotNodeView));
 	add_view(memnew(SnapshotRefCountedView));
-	add_view(memnew(SnapshotJsonView));
 
 	set_enabled(false);
 
@@ -441,13 +432,13 @@ void ObjectDBProfilerPanel::_update_view_tabs() {
 
 void ObjectDBProfilerPanel::_update_diff_items() {
 	diff_button->clear();
-	diff_button->add_item("none", 0);
-	diff_options[0] = "none";
+	diff_button->add_item(TTR("None"), 0);
+	diff_button->set_item_metadata(0, String());
 
 	for (int i = 0; i < snapshot_list->get_root()->get_child_count(); i++) {
 		String name = snapshot_list->get_root()->get_child(i)->get_text(0);
 		diff_button->add_item(name);
-		diff_options[i + 1] = name; // 0 = none, so i + 1.
+		diff_button->set_item_metadata(i + 1, name);
 	}
 }
 

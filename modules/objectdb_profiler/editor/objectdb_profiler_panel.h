@@ -39,13 +39,13 @@
 class TabContainer;
 class Tree;
 
-const int SNAPSHOT_CACHE_MAX_SIZE = 10;
-
 // UI loaded by the debugger.
 class ObjectDBProfilerPanel : public Control {
 	GDCLASS(ObjectDBProfilerPanel, Control);
 
 protected:
+	static constexpr int SNAPSHOT_CACHE_MAX_SIZE = 10;
+
 	enum OdbProfilerMenuOptions {
 		ODB_MENU_RENAME,
 		ODB_MENU_SHOW_IN_FOLDER,
@@ -66,7 +66,6 @@ protected:
 	TabContainer *view_tabs = nullptr;
 	PopupMenu *rmb_menu = nullptr;
 	OptionButton *diff_button = nullptr;
-	HashMap<int, String> diff_options;
 	HashMap<int, PartialSnapshot> partial_snapshots;
 
 	LocalVector<SnapshotView *> views;

@@ -53,7 +53,7 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 			// To get a reference to it, first we load the parent resource (the .tscn, for example), then,
 			// we load the child resource. The parent resource (dependency) should not be destroyed before the child
 			// resource (pvalue) is loaded.
-			if (path.contains("::")) {
+			if (path.is_resource_file()) {
 				// Built-in resource.
 				String base_path = path.get_slice("::", 0);
 				if (!resource_cache.cache.has(base_path)) {

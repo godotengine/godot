@@ -127,7 +127,7 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	r_captured = true;
 	if (p_msg == "request_prepare_snapshot") {
-		int request_id = (int)p_args[0];
+		int request_id = p_args[0];
 		Dictionary snapshot_context;
 		snapshot_context["editor_version"] = (String)p_args[1];
 		Array objects;
@@ -145,19 +145,15 @@ Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const 
 		pending_snapshots[request_id] = objs_buffer_compressed;
 
 		// Tell the editor how long the snapshot is.
-		Array resp;
-		resp.push_back(request_id);
-		resp.push_back(pending_snapshots[request_id].size());
+		Array resp = { request_id, pending_snapshots[request_id].size() };
 		EngineDebugger::get_singleton()->send_message("snapshot:snapshot_prepared", resp);
 
 	} else if (p_msg == "request_snapshot_chunk") {
-		int request_id = (int)p_args[0];
-		int begin = (int)p_args[1];
-		int end = (int)p_args[2];
+		int request_id = p_args[0];
+		int begin = p_args[1];
+		int end = p_args[2];
 
-		Array resp;
-		resp.push_back(request_id);
-		resp.push_back(pending_snapshots[request_id].slice(begin, end));
+		Array resp = { request_id, pending_snapshots[request_id].slice(begin, end) };
 		EngineDebugger::get_singleton()->send_message("snapshot:snapshot_chunk", resp);
 
 		// If we sent the last part of the string, delete it locally.

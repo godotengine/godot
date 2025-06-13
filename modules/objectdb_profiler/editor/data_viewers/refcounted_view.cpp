@@ -92,13 +92,11 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 	refs_list->set_column_title(offset + 0, TTRC("Class"));
 	refs_list->set_column_expand(offset + 0, true);
 	refs_list->set_column_title_tooltip_text(offset + 0, TTRC("Object's class"));
-	refs_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	refs_list->set_column_title(offset + 1, TTRC("Name"));
 	refs_list->set_column_expand(offset + 1, true);
 	refs_list->set_column_expand_ratio(offset + 1, 2);
 	refs_list->set_column_title_tooltip_text(offset + 1, TTRC("Object's name"));
-	refs_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	refs_list->set_column_title(offset + 2, TTRC("Native Refs"));
 	refs_list->set_column_expand(offset + 2, false);
@@ -164,11 +162,14 @@ void SnapshotRefCountedView::_insert_data(GameStateSnapshot *p_snapshot, const S
 		if (diff_data) {
 			item->set_text(0, p_name);
 			item->set_tooltip_text(0, p_snapshot->name);
+			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			offset = 1;
 		}
 
 		item->set_text(offset + 0, pair.value->type_name);
+		item->set_auto_translate_mode(offset + 0, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_text(offset + 1, pair.value->get_name());
+		item->set_auto_translate_mode(offset + 1, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_text(offset + 2, String::num_uint64(native_refs));
 		item->set_text(offset + 3, String::num_uint64(objectdb_refs));
 		item->set_text(offset + 4, String::num_uint64(total_refs));
@@ -276,7 +277,9 @@ void SnapshotRefCountedView::_refcounted_selected() {
 			TreeItem *i = inbound_tree->create_item(root);
 			SnapshotDataObject *target = d->snapshot->objects[ob.value];
 			i->set_text(0, target->get_name());
+			i->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			i->set_text(1, ob.key);
+			i->set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
 			i->set_text(2, property_repeat_count[ob.value] > 1 ? TTRC("Yes") : TTRC("No"));
 			reference_item_map[i] = data_item_map[target];
 		}

@@ -50,7 +50,7 @@ public:
 	HashSet<ObjectID> get_unique_outbound_refernces();
 	HashSet<ObjectID> get_unique_inbound_references();
 
-	uint64_t remote_object_id;
+	uint64_t remote_object_id = 0;
 	String type_name;
 	LocalVector<PropertyInfo> prop_list;
 	HashMap<StringName, Variant> prop_values;

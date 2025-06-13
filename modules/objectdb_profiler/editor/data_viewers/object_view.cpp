@@ -136,6 +136,7 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 		if (diff_data) {
 			item->set_text(0, p_name);
 			item->set_tooltip_text(0, p_snapshot->name);
+			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			offset = 1;
 		}
 		item->set_auto_translate_mode(offset + 0, AUTO_TRANSLATE_MODE_DISABLED);
