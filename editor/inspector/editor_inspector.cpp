@@ -44,7 +44,7 @@
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/multi_node_edit.h"
-#include "editor/plugins/script/script_editor_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"

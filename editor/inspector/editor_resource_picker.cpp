@@ -41,7 +41,7 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "editor/plugins/script/script_editor_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"

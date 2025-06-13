@@ -48,7 +48,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
-#include "editor/plugins/script/script_editor_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
