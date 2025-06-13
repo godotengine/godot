@@ -94,6 +94,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_enable_immersive_mode = p_env->GetMethodID(godot_class, "nativeEnableImmersiveMode", "(Z)V");
 	_is_in_immersive_mode = p_env->GetMethodID(godot_class, "isInImmersiveMode", "()Z");
 	_on_editor_workspace_selected = p_env->GetMethodID(godot_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
+	_set_window_flag = p_env->GetMethodID(godot_class, "setWindowFlag", "(IZ)V");
+	_get_window_flag = p_env->GetMethodID(godot_class, "getWindowFlag", "(I)Z");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -598,4 +600,21 @@ void GodotJavaWrapper::on_editor_workspace_selected(const String &p_workspace) {
 		jstring j_workspace = env->NewStringUTF(p_workspace.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _on_editor_workspace_selected, j_workspace);
 	}
+}
+
+void GodotJavaWrapper::set_window_flag(DisplayServer::WindowFlags p_flag, bool p_enabled) {
+	if (_set_window_flag) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_instance, _set_window_flag, p_flag, p_enabled);
+	}
+}
+
+bool GodotJavaWrapper::get_window_flag(DisplayServer::WindowFlags p_flag) {
+	if (_get_window_flag) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_instance, _get_window_flag, p_flag);
+	}
+	return false;
 }
