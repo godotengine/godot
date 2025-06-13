@@ -812,7 +812,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
-	p_render_data->scene_data->calculate_motion_vectors = RendererRD::TextureStorage::get_singleton()->render_target_get_override_velocity(rb->get_render_target()).is_valid();
+	RID render_target = rb->get_render_target();
+	if (render_target.is_valid()) {
+		p_render_data->scene_data->calculate_motion_vectors = RendererRD::TextureStorage::get_singleton()->render_target_get_override_velocity(render_target).is_valid();
+	} else {
+		p_render_data->scene_data->calculate_motion_vectors = false;
+	}
 
 	p_render_data->scene_data->directional_light_count = 0;
 	p_render_data->scene_data->opaque_prepass_threshold = 0.0;
