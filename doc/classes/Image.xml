@@ -129,7 +129,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image (see [method generate_mipmaps]).
 			</description>
 		</method>
 		<method name="create_empty" qualifiers="static">
@@ -139,7 +139,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image (see [method generate_mipmaps]).
 			</description>
 		</method>
 		<method name="create_from_data" qualifiers="static">

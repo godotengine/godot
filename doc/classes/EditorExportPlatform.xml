@@ -138,27 +138,27 @@
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns message category, for the message with [param index].
+				Returns the message category for the message with the given [param index].
 			</description>
 		</method>
 		<method name="get_message_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns number of messages in the export log.
+				Returns the number of messages in the export log.
 			</description>
 		</method>
 		<method name="get_message_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns message text, for the message with [param index].
+				Returns the text for the message with the given [param index].
 			</description>
 		</method>
 		<method name="get_message_type" qualifiers="const">
 			<return type="int" enum="EditorExportPlatform.ExportMessageType" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns message type, for the message with [param index].
+				Returns the type for the message with the given [param index].
 			</description>
 		</method>
 		<method name="get_os_name" qualifiers="const">
