@@ -33,8 +33,8 @@
 RenderingContextDriver::~RenderingContextDriver() {
 }
 
-RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_window(DisplayServer::WindowID p_window) const {
-	HashMap<DisplayServer::WindowID, SurfaceID>::ConstIterator it = window_surface_map.find(p_window);
+RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_window(DSTypes::WindowID p_window) const {
+	HashMap<DSTypes::WindowID, SurfaceID>::ConstIterator it = window_surface_map.find(p_window);
 	if (it != window_surface_map.end()) {
 		return it->value;
 	} else {
@@ -42,7 +42,7 @@ RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_windo
 	}
 }
 
-Error RenderingContextDriver::window_create(DisplayServer::WindowID p_window, const void *p_platform_data) {
+Error RenderingContextDriver::window_create(DSTypes::WindowID p_window, const void *p_platform_data) {
 	SurfaceID surface = surface_create(p_platform_data);
 	if (surface != 0) {
 		window_surface_map[p_window] = surface;
@@ -52,30 +52,30 @@ Error RenderingContextDriver::window_create(DisplayServer::WindowID p_window, co
 	}
 }
 
-void RenderingContextDriver::window_set_size(DisplayServer::WindowID p_window, uint32_t p_width, uint32_t p_height) {
+void RenderingContextDriver::window_set_size(DSTypes::WindowID p_window, uint32_t p_width, uint32_t p_height) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_size(surface, p_width, p_height);
 	}
 }
 
-void RenderingContextDriver::window_set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_vsync_mode) {
+void RenderingContextDriver::window_set_vsync_mode(DSTypes::WindowID p_window, DSTypes::VSyncMode p_vsync_mode) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_vsync_mode(surface, p_vsync_mode);
 	}
 }
 
-DisplayServer::VSyncMode RenderingContextDriver::window_get_vsync_mode(DisplayServer::WindowID p_window) const {
+DSTypes::VSyncMode RenderingContextDriver::window_get_vsync_mode(DSTypes::WindowID p_window) const {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		return surface_get_vsync_mode(surface);
 	} else {
-		return DisplayServer::VSYNC_DISABLED;
+		return DSTypes::VSYNC_DISABLED;
 	}
 }
 
-void RenderingContextDriver::window_destroy(DisplayServer::WindowID p_window) {
+void RenderingContextDriver::window_destroy(DSTypes::WindowID p_window) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_destroy(surface);

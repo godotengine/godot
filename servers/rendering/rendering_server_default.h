@@ -37,6 +37,7 @@
 #include "renderer_canvas_cull.h"
 #include "renderer_viewport.h"
 #include "rendering_server_globals.h"
+#include "servers/display/dstypes.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 #include "servers/server_wrap_mt_common.h"
@@ -756,9 +757,9 @@ public:
 	FUNC2(viewport_set_measure_render_time, RID, bool)
 	FUNC1RC(double, viewport_get_measured_render_time_cpu, RID)
 	FUNC1RC(double, viewport_get_measured_render_time_gpu, RID)
-	FUNC1RC(RID, viewport_find_from_screen_attachment, DisplayServer::WindowID)
+	FUNC1RC(RID, viewport_find_from_screen_attachment, DSTypes::WindowID)
 
-	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
+	FUNC2(call_set_vsync_mode, DSTypes::VSyncMode, DSTypes::WindowID)
 
 	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
 	FUNC2(viewport_set_vrs_update_mode, RID, ViewportVRSUpdateMode)

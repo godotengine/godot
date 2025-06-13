@@ -35,6 +35,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display_server.h"
 
 Size2 TabBar::get_minimum_size() const {
 	Size2 ms;

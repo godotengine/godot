@@ -36,6 +36,7 @@
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
+#include "servers/display_server.h"
 #include "storage/texture_storage.h"
 
 #ifndef XR_DISABLED
