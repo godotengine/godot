@@ -53,6 +53,9 @@ public:
 	List<PropertyInfo> prop_list;
 	HashMap<StringName, TypedDictionary<uint64_t, Variant>> prop_values;
 
+	bool _hide_script_from_inspector() { return true; }
+	bool _hide_metadata_from_inspector() { return true; }
+
 	void set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field);
 	String get_title();
 	Variant get_variant(const StringName &p_name);
