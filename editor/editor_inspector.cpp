@@ -1297,15 +1297,18 @@ void EditorProperty::menu_option(int p_option) {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
 		} break;
 		case MENU_UNFAVORITE_BOTH: {
+			emit_signal(SNAME("property_favorited"));
 			emit_signal(SNAME("property_favorited_global"), property, false);
 			emit_signal(SNAME("property_favorited_local"), property, false);
 			queue_redraw();
 		} break;
 		case MENU_FAVORITE_PROPERTY_GLOBAL: {
+			emit_signal(SNAME("property_favorited"));
 			emit_signal(SNAME("property_favorited_global"), property, !favorited);
 			queue_redraw();
 		} break;
 		case MENU_FAVORITE_PROPERTY_LOCAL: {
+			emit_signal(SNAME("property_favorited"));
 			emit_signal(SNAME("property_favorited_local"), property, !favorited);
 			queue_redraw();
 		} break;
@@ -1405,6 +1408,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING_NAME, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed_with_value", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("property_checked", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "checked")));
+	ADD_SIGNAL(MethodInfo("property_favorited"));
 	ADD_SIGNAL(MethodInfo("property_favorited_local", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "favorited")));
 	ADD_SIGNAL(MethodInfo("property_favorited_global", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "favorited")));
 	ADD_SIGNAL(MethodInfo("property_pinned", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "pinned")));

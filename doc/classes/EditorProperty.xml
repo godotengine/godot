@@ -182,6 +182,11 @@
 				Emitted when a property was deleted. Used internally.
 			</description>
 		</signal>
+		<signal name="property_favorited">
+			<description>
+				Emit when a property is favorited, making it appear at the top of the inspector.
+			</description>
+		</signal>
 		<signal name="property_favorited_global">
 			<param index="0" name="property" type="StringName" />
 			<param index="1" name="favorited" type="bool" />
