@@ -113,14 +113,14 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	RS::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_env);
 
 	bool use_ambient_light = false;
-	bool use_cube_map = false;
+	bool use_octmap = false;
 	if (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && (environment_background == RS::ENV_BG_CLEAR_COLOR || environment_background == RS::ENV_BG_COLOR)) {
 		use_ambient_light = true;
 	} else {
-		use_cube_map = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
-		use_ambient_light = use_cube_map || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
+		use_octmap = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
+		use_ambient_light = use_octmap || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
 	}
-	use_cube_map = use_cube_map || (environment_background == RS::ENV_BG_SKY && environment_get_sky(p_env).is_valid());
+	use_octmap = use_octmap || (environment_background == RS::ENV_BG_SKY && environment_get_sky(p_env).is_valid());
 
 	Color ambient_color;
 	float ambient_color_sky_mix = 0.0;
@@ -134,7 +134,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		ambient_color.b *= ambient_energy;
 	}
 
-	if (use_cube_map) {
+	if (use_octmap) {
 		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy_multiplier(p_env), p_bake_irradiance, p_size);
 		if (use_ambient_light && panorama.is_valid()) {
 			for (int x = 0; x < p_size.width; x++) {
@@ -1234,8 +1234,8 @@ int RendererSceneRenderRD::get_roughness_layers() const {
 	return sky.roughness_layers;
 }
 
-bool RendererSceneRenderRD::is_using_radiance_cubemap_array() const {
-	return sky.sky_use_cubemap_array;
+bool RendererSceneRenderRD::is_using_radiance_octmap_array() const {
+	return sky.sky_use_octmap_array;
 }
 
 void RendererSceneRenderRD::_update_vrs(Ref<RenderSceneBuffersRD> p_render_buffers) {
@@ -1358,6 +1358,22 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 			int directional_shadow_size = light_storage->directional_shadow_get_size();
 			scene_data.directional_shadow_pixel_size.x = 1.0 / directional_shadow_size;
 			scene_data.directional_shadow_pixel_size.y = 1.0 / directional_shadow_size;
+		}
+
+		if (p_environment.is_valid()) {
+			RID sky_rid = environment_get_sky(p_environment);
+			if (sky_rid.is_valid()) {
+				int radiance_size = sky.sky_get_radiance_size(sky_rid);
+				scene_data.radiance_pixel_size = 1.0f / radiance_size;
+				float uv_border_size = sky.sky_get_uv_border_size(sky_rid);
+				scene_data.radiance_border_size = uv_border_size;
+			}
+		}
+
+		if (p_reflection_atlas.is_valid()) {
+			float border_size = light_storage->reflection_atlas_get_border_size(p_reflection_atlas);
+			scene_data.reflection_atlas_border_size.x = border_size;
+			scene_data.reflection_atlas_border_size.y = 1.0f - border_size * 2.0;
 		}
 
 		scene_data.time = time;
@@ -1659,7 +1675,7 @@ void RendererSceneRenderRD::init() {
 	}
 
 	if (is_volumetric_supported()) {
-		RendererRD::Fog::get_singleton()->init_fog_shader(RendererRD::LightStorage::get_singleton()->get_max_directional_lights(), get_roughness_layers(), is_using_radiance_cubemap_array());
+		RendererRD::Fog::get_singleton()->init_fog_shader(RendererRD::LightStorage::get_singleton()->get_max_directional_lights(), get_roughness_layers(), is_using_radiance_octmap_array());
 	}
 
 	RSG::camera_attributes->camera_attributes_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
@@ -1690,8 +1706,20 @@ void RendererSceneRenderRD::init() {
 
 	bool can_use_storage = _render_buffers_can_be_storage();
 	bool can_use_vrs = is_vrs_supported();
+	BitField<RendererRD::CopyEffects::RasterEffects> raster_effects = {};
+	if (!can_use_storage) {
+		raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_COPY);
+		raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_GAUSSIAN_BLUR);
+
+		// This path can be used in the future to redirect certain devices to use the raster version of the effect, either due to performance or driver errors.
+		bool use_raster_for_octmaps = false;
+		if (use_raster_for_octmaps) {
+			raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_OCTMAP);
+		}
+	}
+
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
-	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
+	copy_effects = memnew(RendererRD::CopyEffects(raster_effects));
 	debug_effects = memnew(RendererRD::DebugEffects);
 	luminance = memnew(RendererRD::Luminance(!can_use_storage));
 	smaa = memnew(RendererRD::SMAA);

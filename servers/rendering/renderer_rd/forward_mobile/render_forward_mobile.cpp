@@ -495,7 +495,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		if (p_radiance_texture.is_valid()) {
 			radiance_texture = p_radiance_texture;
 		} else {
-			radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+			radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_octmap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 		}
 		RD::Uniform u;
 		u.binding = 2;
@@ -1226,7 +1226,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				RID texture = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(rb->get_render_target());
 				bool convert_to_linear = !hdr_render_target;
 
-				copy_effects->copy_to_drawlist(draw_list, fb_format, texture, convert_to_linear);
+				copy_effects->copy_to_drawlist(draw_list, fb_format, texture, convert_to_linear, 2.0f);
 			}
 		}
 
@@ -3137,13 +3137,13 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	return RD::get_singleton()->framebuffer_format_create_multipass(attachments, passes, p_view_count, vrs_attachment);
 }
 
-static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline() {
+static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline(bool p_storage) {
 	RD::AttachmentFormat attachment;
 	thread_local Vector<RD::AttachmentFormat> attachments;
 	attachments.clear();
 
 	attachment.format = RendererRD::LightStorage::get_reflection_probe_color_format();
-	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_color_usage_bits();
+	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_color_usage_bits(p_storage);
 	attachments.push_back(attachment);
 
 	attachment.format = RendererRD::LightStorage::get_reflection_probe_depth_format();
@@ -3192,6 +3192,7 @@ void RenderForwardMobile::_mesh_compile_pipeline_for_surface(SceneShaderForwardM
 
 void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipelineData &p_surface, const GlobalPipelineData &p_global, RS::PipelineSource p_source, Vector<ShaderPipelinePair> *r_pipeline_pairs) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	bool octmap_use_storage = !copy_effects->get_raster_effects().has_flag(RendererRD::CopyEffects::RASTER_EFFECT_OCTMAP);
 
 	// Set the attributes common to all pipelines.
 	SceneShaderForwardMobile::ShaderData::PipelineKey pipeline_key;
@@ -3241,7 +3242,7 @@ void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipel
 
 	if (p_global.use_reflection_probes) {
 		pipeline_key.version = SceneShaderForwardMobile::SHADER_VERSION_COLOR_PASS;
-		pipeline_key.framebuffer_format_id = _get_reflection_probe_color_framebuffer_format_for_pipeline();
+		pipeline_key.framebuffer_format_id = _get_reflection_probe_color_framebuffer_format_for_pipeline(octmap_use_storage);
 		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 	}
 
@@ -3404,8 +3405,8 @@ RenderForwardMobile::RenderForwardMobile() {
 	String defines;
 
 	defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
-	if (is_using_radiance_cubemap_array()) {
-		defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
+	if (is_using_radiance_octmap_array()) {
+		defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY \n";
 	}
 	// defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
 	defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
