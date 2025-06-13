@@ -140,6 +140,12 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	ubo.directional_shadow_pixel_size[0] = directional_shadow_pixel_size.x;
 	ubo.directional_shadow_pixel_size[1] = directional_shadow_pixel_size.y;
 
+	ubo.radiance_pixel_size = radiance_pixel_size;
+	ubo.radiance_border_size = radiance_border_size;
+
+	ubo.reflection_atlas_border_size[0] = reflection_atlas_border_size.x;
+	ubo.reflection_atlas_border_size[1] = reflection_atlas_border_size.y;
+
 	ubo.time = time;
 
 	ubo.directional_light_count = directional_light_count;

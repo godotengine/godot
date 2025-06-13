@@ -26,8 +26,9 @@
 #VERSION_DEFINES
 
 layout(push_constant, std430) uniform Params {
+	vec2 border_size;
 	int mip_level;
-	uint face_id;
+	int pad;
 }
 params;
 
@@ -35,9 +36,9 @@ layout(location = 0) out vec2 uv_interp;
 /* clang-format on */
 
 void main() {
-	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
-	gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
-	uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
+	vec2 base_arr[3] = vec2[](vec2(-1.0, -3.0), vec2(-1.0, 1.0), vec2(3.0, 1.0));
+	uv_interp = base_arr[gl_VertexIndex];
+	gl_Position = vec4(uv_interp, 0.0, 1.0);
 }
 
 /* clang-format off */
@@ -47,13 +48,16 @@ void main() {
 
 #VERSION_DEFINES
 
+#include "../oct_inc.glsl"
+
 layout(push_constant, std430) uniform Params {
+	vec2 border_size;
 	int mip_level;
-	uint face_id;
+	int pad;
 }
 params;
 
-layout(set = 0, binding = 0) uniform samplerCube source_cubemap;
+layout(set = 0, binding = 0) uniform sampler2D source_octmap;
 
 layout(location = 0) in vec2 uv_interp;
 layout(location = 0) out vec4 frag_color;
@@ -65,8 +69,6 @@ layout(location = 0) out vec4 frag_color;
 #else
 #define NUM_TAPS 8
 #endif
-
-#define BASE_RESOLUTION 128
 
 #ifdef USE_HIGH_QUALITY
 layout(set = 1, binding = 0, std430) buffer restrict readonly Data {
@@ -80,67 +82,35 @@ layout(set = 1, binding = 0, std430) buffer restrict readonly Data {
 data;
 #endif
 
-void get_dir(out vec3 dir, in vec2 uv, in uint face) {
-	switch (face) {
-		case 0:
-			dir = vec3(1.0, uv[1], -uv[0]);
-			break;
-		case 1:
-			dir = vec3(-1.0, uv[1], uv[0]);
-			break;
-		case 2:
-			dir = vec3(uv[0], 1.0, -uv[1]);
-			break;
-		case 3:
-			dir = vec3(uv[0], -1.0, uv[1]);
-			break;
-		case 4:
-			dir = vec3(uv[0], uv[1], 1.0);
-			break;
-		default:
-			dir = vec3(-uv[0], uv[1], -1.0);
-			break;
-	}
-}
-
 void main() {
-	// determine dir / pos for the texel
-	vec3 dir, adir, frameZ;
-	{
-		vec2 uv;
-		uv.x = uv_interp.x;
-		uv.y = 1.0 - uv_interp.y;
-		uv = uv * 2.0 - 1.0;
-
-		get_dir(dir, uv, params.face_id);
-		frameZ = normalize(dir);
-
-		adir = abs(dir);
-	}
-
-	// determine which texel this is
 	// NOTE (macOS/MoltenVK): Do not rename, "level" variable name conflicts with the Metal "level(float lod)" mipmap sampling function name.
 	int mip_level = 0;
-
+	vec2 uv = uv_interp * 0.5 + 0.5;
 	if (params.mip_level < 0) {
-		// return as is
-		frag_color.rgb = textureLod(source_cubemap, frameZ, 0.0).rgb;
+		// Just copy the octmap directly.
+		frag_color.rgb = textureLod(source_octmap, uv, 0.0).rgb;
 		frag_color.a = 1.0;
 		return;
-	} else if (params.mip_level > 6) {
-		// maximum level
-		mip_level = 6;
+	} else if (params.mip_level > 5) {
+		// Limit the level.
+		mip_level = 5;
 	} else {
+		// Use the level from the push constant.
 		mip_level = params.mip_level;
 	}
 
-	// GGX gather colors
+	// Determine the direction from the texel's position.
+	vec3 dir = oct_to_vec3_with_border(uv, params.border_size.y);
+	vec3 adir = abs(dir);
+	vec3 frameZ = dir;
+
+	// Gather colors using GGX.
 	vec4 color = vec4(0.0);
 	for (int axis = 0; axis < 3; axis++) {
 		const int otherAxis0 = 1 - (axis & 1) - (axis >> 1);
 		const int otherAxis1 = 2 - (axis >> 1);
-
-		float frameweight = (max(adir[otherAxis0], adir[otherAxis1]) - .75) / .25;
+		const float lowerBound = 0.57735; // 1 / sqrt(3), magnitude for each component on a vector where all the components are equal.
+		float frameweight = (max(adir[otherAxis0], adir[otherAxis1]) - lowerBound) / (1.0 - lowerBound);
 		if (frameweight > 0.0) {
 			// determine frame
 			vec3 UpVector;
@@ -195,7 +165,7 @@ void main() {
 			float theta2 = theta * theta;
 			float phi2 = phi * phi;
 
-			// sample
+			// Sample.
 			for (int iSuperTap = 0; iSuperTap < NUM_TAPS / 4; iSuperTap++) {
 				const int index = (NUM_TAPS / 4) * axis + iSuperTap;
 
@@ -239,21 +209,15 @@ void main() {
 
 					sample_weight *= frameweight;
 
-					// adjust for jacobian
-					sample_dir /= max(abs(sample_dir[0]), max(abs(sample_dir[1]), abs(sample_dir[2])));
-					sample_level += 0.75 * log2(dot(sample_dir, sample_dir));
-					// sample cubemap
-					color.xyz += textureLod(source_cubemap, normalize(sample_dir), sample_level).xyz * sample_weight;
-					color.w += sample_weight;
+					// Sample Octmap.
+					vec2 sample_uv = vec3_to_oct_with_border(normalize(sample_dir), params.border_size);
+					color.rgb += textureLod(source_octmap, sample_uv, sample_level).rgb * sample_weight;
+					color.a += sample_weight;
 				}
 			}
 		}
 	}
-	color /= color.w;
 
-	// write color
-	color.xyz = max(vec3(0.0), color.xyz);
-	color.w = 1.0;
-
-	frag_color = color;
+	// Write out the result.
+	frag_color = vec4(max(vec3(0.0), color.rgb / color.a), 1.0);
 }
