@@ -521,6 +521,15 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 	PackedVector3Array vertices = p_surface_arrays[Mesh::ARRAY_VERTEX];
 	PackedInt32Array indices = p_surface_arrays[Mesh::ARRAY_INDEX];
 
+	if (!vertices.is_empty() && indices.is_empty() && vertices.size() % 3 == 0) {
+		// Mesh surface has no indices but valid triangle vertices so make dummy indices to progress.
+		indices.resize(vertices.size());
+		int *indices_ptrw = indices.ptrw();
+		for (int j = 0; j < vertices.size(); j++) {
+			indices_ptrw[j] = j;
+		}
+	}
+
 	if (vertices.is_empty() || indices.is_empty()) {
 		return;
 	}
