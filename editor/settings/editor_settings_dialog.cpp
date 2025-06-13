@@ -40,7 +40,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/editor_sectioned_inspector.h"
-#include "editor/plugins/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_event_search_bar.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/event_listener_line_edit.h"

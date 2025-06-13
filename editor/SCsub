@@ -88,6 +88,7 @@ if env.editor_build:
     env.add_source_files(env.editor_sources, gen_exporters)
 
     SConscript("animation/SCsub")
+    SConscript("asset_library/SCsub")
     SConscript("audio/SCsub")
     SConscript("debugger/SCsub")
     SConscript("doc/SCsub")
@@ -108,6 +109,7 @@ if env.editor_build:
     SConscript("shader/SCsub")
     SConscript("themes/SCsub")
     SConscript("translations/SCsub")
+    SConscript("version_control/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])

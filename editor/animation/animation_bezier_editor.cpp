@@ -30,11 +30,11 @@
 
 #include "animation_bezier_editor.h"
 
+#include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
-#include "editor/plugins/animation/animation_player_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/option_button.h"

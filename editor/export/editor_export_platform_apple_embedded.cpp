@@ -40,7 +40,7 @@
 #include "editor/export/macho.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
-#include "editor/plugins/script/script_editor_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 
 #include "modules/modules_enabled.gen.h" // For mono.

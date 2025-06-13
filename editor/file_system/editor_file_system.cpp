@@ -42,7 +42,7 @@
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_resource_preview.h"
-#include "editor/plugins/script/script_editor_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "scene/resources/packed_scene.h"

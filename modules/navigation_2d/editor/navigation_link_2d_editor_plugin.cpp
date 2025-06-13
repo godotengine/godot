@@ -32,7 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/main/viewport.h"
 

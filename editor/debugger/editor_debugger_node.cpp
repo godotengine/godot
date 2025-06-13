@@ -31,6 +31,7 @@
 #include "editor_debugger_node.h"
 
 #include "core/object/undo_redo.h"
+#include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_debugger_tree.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/docks/inspector_dock.h"
@@ -40,9 +41,8 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
-#include "editor/plugins/editor_debugger_plugin.h"
-#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/menu_button.h"

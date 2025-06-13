@@ -36,7 +36,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
-#include "editor/plugins/3d/skeleton_3d_editor_plugin.h"
+#include "editor/scene/3d/skeleton_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
