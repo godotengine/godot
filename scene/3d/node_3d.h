@@ -153,8 +153,8 @@ private:
 		RID visibility_parent;
 
 		Node3D *parent = nullptr;
-		List<Node3D *> children;
-		List<Node3D *>::Element *C = nullptr;
+		LocalVector<Node3D *> children;
+		uint32_t parent_child_id = UINT32_MAX;
 
 		ClientPhysicsInterpolationData *client_physics_interpolation_data = nullptr;
 
