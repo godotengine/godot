@@ -3596,7 +3596,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			emit_signal(SNAME("insert_key"), insert_at_pos);
 		} break;
 		case MENU_KEY_DUPLICATE: {
-			emit_signal(SNAME("duplicate_request"), insert_at_pos, true);
+			emit_signal(SNAME("duplicate_request"), insert_at_pos, !editor->is_insert_at_current_time_enabled());
 		} break;
 		case MENU_KEY_CUT: {
 			emit_signal(SNAME("cut_request"));
@@ -3605,7 +3605,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			emit_signal(SNAME("copy_request"));
 		} break;
 		case MENU_KEY_PASTE: {
-			emit_signal(SNAME("paste_request"), insert_at_pos, true);
+			emit_signal(SNAME("paste_request"), insert_at_pos, !editor->is_insert_at_current_time_enabled());
 		} break;
 		case MENU_KEY_ADD_RESET: {
 			emit_signal(SNAME("create_reset_request"));
@@ -3948,6 +3948,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_read_only(false);
 		snap_keys->set_disabled(false);
 		snap_timeline->set_disabled(false);
+		insert_at_current_time->set_disabled(false);
 		fps_compat->set_disabled(false);
 		snap_mode->set_disabled(false);
 		auto_fit->set_disabled(false);
@@ -3971,6 +3972,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_read_only(true);
 		snap_keys->set_disabled(true);
 		snap_timeline->set_disabled(true);
+		insert_at_current_time->set_disabled(true);
 		fps_compat->set_disabled(true);
 		snap_mode->set_disabled(true);
 		bezier_edit_icon->set_disabled(true);
@@ -4930,6 +4932,16 @@ bool AnimationTrackEditor::is_snap_keys_enabled() const {
 	return snap_keys->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 }
 
+bool AnimationTrackEditor::is_insert_at_current_time_enabled() const {
+	return insert_at_current_time->is_pressed();
+}
+
+void AnimationTrackEditor::resolve_insertion_offset(float &r_offset) const {
+	if (is_insert_at_current_time_enabled()) {
+		r_offset = timeline->get_play_position();
+	}
+}
+
 bool AnimationTrackEditor::is_bezier_editor_active() const {
 	return bezier_edit->is_visible();
 }
@@ -5342,6 +5354,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			bezier_edit_icon->set_button_icon(get_editor_theme_icon(SNAME("EditBezier")));
 			snap_timeline->set_button_icon(get_editor_theme_icon(SNAME("SnapTimeline")));
 			snap_keys->set_button_icon(get_editor_theme_icon(SNAME("SnapKeys")));
+			insert_at_current_time->set_button_icon(get_editor_theme_icon(SNAME("InsertAtCurrentTime")));
 			fps_compat->set_button_icon(get_editor_theme_icon(SNAME("FPS")));
 			view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 			function_name_toggler->set_button_icon(get_editor_theme_icon(SNAME("MemberMethod")));
@@ -5696,6 +5709,9 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 	if (snap_keys->is_pressed() && step->get_value() != 0) {
 		p_ofs = snap_time(p_ofs);
 	}
+
+	resolve_insertion_offset(p_ofs);
+
 	while (animation->track_find_key(p_track, p_ofs, Animation::FIND_MODE_APPROX) != -1) { // Make sure insertion point is valid.
 		p_ofs += SECOND_DECIMAL;
 	}
@@ -7909,6 +7925,15 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	view_group->set_tooltip_text(TTR("Group tracks by node or display them as plain list."));
 
 	bottom_hf->add_child(view_group);
+
+	insert_at_current_time = memnew(Button);
+	insert_at_current_time->set_flat(true);
+	bottom_hf->add_child(insert_at_current_time);
+	insert_at_current_time->set_disabled(true);
+	insert_at_current_time->set_toggle_mode(true);
+	insert_at_current_time->set_pressed(EDITOR_GET("editors/animation/insert_at_current_time"));
+	insert_at_current_time->set_tooltip_text(TTRC("Insert at current time."));
+
 	bottom_hf->add_child(memnew(VSeparator));
 
 	snap_timeline = memnew(Button);
@@ -9221,6 +9246,8 @@ void AnimationMarkerEdit::_insert_marker(float p_ofs) {
 	if (editor->is_snap_timeline_enabled()) {
 		p_ofs = editor->snap_time(p_ofs);
 	}
+
+	editor->resolve_insertion_offset(p_ofs);
 
 	marker_insert_confirm->popup_centered(Size2(200, 100) * EDSCALE);
 	marker_insert_color->set_pick_color(Color(1, 1, 1));

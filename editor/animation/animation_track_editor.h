@@ -613,6 +613,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Label *nearest_fps_label = nullptr;
 	TextureRect *zoom_icon = nullptr;
 	Button *snap_keys = nullptr;
+	Button *insert_at_current_time = nullptr;
 	Button *snap_timeline = nullptr;
 	Button *bezier_edit_icon = nullptr;
 	OptionButton *snap_mode = nullptr;
@@ -954,6 +955,8 @@ public:
 	bool is_moving_selection() const;
 	bool is_snap_timeline_enabled() const;
 	bool is_snap_keys_enabled() const;
+	bool is_insert_at_current_time_enabled() const;
+	void resolve_insertion_offset(float &r_offset) const;
 	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
 	void _on_filter_updated(const String &p_filter);
