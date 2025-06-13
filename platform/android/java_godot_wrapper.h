@@ -34,6 +34,7 @@
 
 #include "core/math/color.h"
 #include "core/templates/list.h"
+#include "servers/display_server.h"
 
 #include <android/log.h>
 #include <jni.h>
@@ -83,6 +84,8 @@ private:
 	jmethodID _is_in_immersive_mode = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
 	jmethodID _get_activity = nullptr;
+	jmethodID _set_window_flag = nullptr;
+	jmethodID _get_window_flag = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -138,4 +141,7 @@ public:
 	bool is_in_immersive_mode();
 
 	void on_editor_workspace_selected(const String &p_workspace);
+
+	void set_window_flag(DisplayServer::WindowFlags p_flag, bool p_enabled);
+	bool get_window_flag(DisplayServer::WindowFlags p_flag);
 };

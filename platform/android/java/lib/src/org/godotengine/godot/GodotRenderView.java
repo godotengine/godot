@@ -71,4 +71,17 @@ public interface GodotRenderView {
 		// Pointer capture is not supported on native XR devices.
 		return !DeviceUtils.isNativeXRDevice(getView().getContext()) && getInputHandler().canCapturePointer();
 	}
+
+	/**
+	 * Update the render view pixel format.
+	 * @param format A constant from PixelFormat.
+	 *
+	 * @see android.view.SurfaceHolder#setFormat(int)
+	 */
+	default void setPixelFormat(int format) {
+		SurfaceView surfaceView = getView();
+		if (surfaceView != null && surfaceView.getHolder() != null) {
+			surfaceView.getHolder().setFormat(format);
+		}
+	}
 }
