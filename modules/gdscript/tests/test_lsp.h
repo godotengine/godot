@@ -509,6 +509,20 @@ func f():
 			}
 		}
 
+		SUBCASE("Documentation is correctly set") {
+			String path = "res://lsp/doc_comments.gd";
+			assert_no_errors_in(path);
+			GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
+			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+			REQUIRE(parser);
+			LSP::DocumentSymbol cls = parser->get_symbols();
+			REQUIRE(cls.documentation.contains("brief"));
+			REQUIRE(cls.documentation.contains("description"));
+			REQUIRE(cls.documentation.contains("t1"));
+			REQUIRE(cls.documentation.contains("t2"));
+			REQUIRE(cls.documentation.contains("t3"));
+		}
+
 		memdelete(proto);
 		finish_language();
 	}

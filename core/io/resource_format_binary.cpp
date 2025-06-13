@@ -36,6 +36,7 @@
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
+#include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
 //#define print_bl(m_what) print_line(m_what)
@@ -2284,7 +2285,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						}
 					}
 
-					Variant default_value = ClassDB::class_get_default_property_value(E->get_class(), F.name);
+					bool is_script = F.name == CoreStringName(script);
+					Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(E.ptr(), F.name);
 
 					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
 						continue;

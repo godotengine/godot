@@ -643,6 +643,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	// item with the original error condition.
 	error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 	error->set_text(1, error_title);
+	error->set_autowrap_mode(1, TextServer::AUTOWRAP_WORD_SMART);
 	tooltip += " " + error_title + "\n";
 
 	// Find the language of the error's source file.
@@ -980,15 +981,19 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			break;
 		default:
-			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			break;
 	}
+
 	reason->set_text(p_reason);
+
+	_update_reason_content_height();
 
 	const PackedInt32Array boundaries = TS->string_get_word_breaks(p_reason, "", 80);
 	PackedStringArray lines;
@@ -999,6 +1004,26 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	}
 
 	reason->set_tooltip_text(String("\n").join(lines));
+}
+
+void ScriptEditorDebugger::_update_reason_content_height() {
+	float margin_height = 0;
+	const Ref<StyleBox> style = reason->get_theme_stylebox(CoreStringName(normal));
+	if (style.is_valid()) {
+		margin_height += style->get_content_margin(SIDE_TOP) + style->get_content_margin(SIDE_BOTTOM);
+	}
+
+	const float content_height = margin_height + reason->get_content_height();
+
+	float content_max_height = margin_height;
+	for (int i = 0; i < 3; i++) {
+		if (i >= reason->get_line_count()) {
+			break;
+		}
+		content_max_height += reason->get_line_height(i);
+	}
+
+	reason->set_custom_minimum_size(Size2(0, CLAMP(content_height, 0, content_max_height)));
 }
 
 void ScriptEditorDebugger::_notification(int p_what) {
@@ -1031,7 +1056,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_export->set_button_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_style_override(SNAME("normal"), get_theme_stylebox(SNAME("normal"), SNAME("Label"))); // Empty stylebox.
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {
@@ -1245,6 +1271,7 @@ void ScriptEditorDebugger::stop() {
 		peer.unref();
 		reason->set_text("");
 		reason->set_tooltip_text("");
+		reason->set_custom_minimum_size(Size2(0, 0));
 	}
 
 	node_path_cache.clear();
@@ -1531,7 +1558,7 @@ void ScriptEditorDebugger::update_live_edit_root() {
 		msg.push_back("");
 	}
 	_put_msg("scene:live_set_root", msg);
-	live_edit_root->set_text(np);
+	live_edit_root->set_text(String(np));
 }
 
 void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name) {
@@ -1966,14 +1993,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		vbc->add_child(hbc);
 
-		reason = memnew(Label);
+		reason = memnew(RichTextLabel);
 		reason->set_focus_mode(FOCUS_ACCESSIBILITY);
-		reason->set_text("");
-		hbc->add_child(reason);
+		reason->set_selection_enabled(true);
+		reason->set_context_menu_enabled(true);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
-		reason->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-		reason->set_max_lines_visible(3);
-		reason->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		reason->set_v_size_flags(SIZE_SHRINK_CENTER);
+		reason->connect(SceneStringName(resized), callable_mp(this, &ScriptEditorDebugger::_update_reason_content_height));
+		hbc->add_child(reason);
 
 		hbc->add_child(memnew(VSeparator));
 

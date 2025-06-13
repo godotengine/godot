@@ -312,3 +312,12 @@ Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/set_byte_o
 Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/set_byte_stride/arguments/0': meta changed value in new API, from "int32" to "int64".
 
 GLTFBufferView and GLTFAccessor now use int64 for offsets and lengths. Compatibility methods registered.
+
+
+GH-107347
+---------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments': size changed value in new API, from 6 to 12.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments': size changed value in new API, from 10 to 12.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments': size changed value in new API, from 11 to 12.
+
+Optional argument added. Compatibility methods registered.

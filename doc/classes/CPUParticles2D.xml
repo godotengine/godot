@@ -91,7 +91,7 @@
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Enables or disables the given flag.
+				Enables or disables the given particle flag.
 			</description>
 		</method>
 	</methods>

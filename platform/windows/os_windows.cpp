@@ -111,7 +111,7 @@ static String fix_path(const String &p_path) {
 	if (p_path.is_relative_path()) {
 		Char16String current_dir_name;
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
-		current_dir_name.resize(str_len + 1);
+		current_dir_name.resize_uninitialized(str_len + 1);
 		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
 	}
@@ -1280,12 +1280,12 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1386,12 +1386,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1485,12 +1485,12 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1626,7 +1626,7 @@ Vector<String> OS_Windows::get_system_fonts() const {
 		hr = family_names->GetStringLength(index, &length);
 		ERR_CONTINUE(FAILED(hr));
 
-		name.resize(length + 1);
+		name.resize_uninitialized(length + 1);
 		hr = family_names->GetString(index, (WCHAR *)name.ptrw(), length + 1);
 		ERR_CONTINUE(FAILED(hr));
 
@@ -2664,12 +2664,12 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	// Reset CWD to ensure long path is used.
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 
 	Char16String new_current_dir_name;
 	str_len = GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), nullptr, 0);
-	new_current_dir_name.resize(str_len + 1);
+	new_current_dir_name.resize_uninitialized(str_len + 1);
 	GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), (LPWSTR)new_current_dir_name.ptrw(), new_current_dir_name.size());
 
 	SetCurrentDirectoryW((LPCWSTR)new_current_dir_name.get_data());

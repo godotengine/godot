@@ -244,7 +244,7 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 		if (initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "theme_type_variation") {
+	} else if (Engine::get_singleton()->is_editor_hint() && p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
 		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
@@ -1370,7 +1370,7 @@ void Window::set_force_native(bool p_force_native) {
 		return;
 	}
 	force_native = p_force_native;
-	if (!is_in_edited_scene_root() && get_tree()->get_root()->is_embedding_subwindows()) {
+	if (!is_in_edited_scene_root() && is_inside_tree() && get_tree()->get_root()->is_embedding_subwindows()) {
 		set_embedding_subwindows(force_native);
 	}
 }
@@ -1502,6 +1502,9 @@ void Window::_notification(int p_what) {
 				if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
 					ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Window::_settings_changed));
 				}
+			} else if (get_parent() && get_tree()->get_root()->is_embedding_subwindows()) {
+				// Is not the main window and main window is embedding.
+				set_embedding_subwindows(force_native);
 			}
 
 			bool embedded = false;
@@ -2141,7 +2144,7 @@ Size2 Window::get_clamped_minimum_size() const {
 		return min_size;
 	}
 
-	return min_size.max(get_contents_minimum_size());
+	return min_size.max(get_contents_minimum_size() * get_content_scale_factor());
 }
 
 void Window::grab_focus() {

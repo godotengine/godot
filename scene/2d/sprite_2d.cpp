@@ -461,6 +461,9 @@ Rect2 Sprite2D::get_rect() const {
 }
 
 void Sprite2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "frame") {
 		p_property.hint = PROPERTY_HINT_RANGE;
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
@@ -481,7 +484,9 @@ void Sprite2D::_texture_changed() {
 }
 
 void Sprite2D::_emit_region_rect_enabled() {
-	emit_signal("_editor_region_rect_enabled");
+	if (Engine::get_singleton()->is_editor_hint()) {
+		emit_signal("_editor_region_rect_enabled");
+	}
 }
 
 void Sprite2D::_bind_methods() {
@@ -547,7 +552,7 @@ void Sprite2D::_bind_methods() {
 }
 
 Sprite2D::Sprite2D() {
-#ifdef TOOLS_ENABLED
-	add_user_signal(MethodInfo("_editor_region_rect_enabled"));
-#endif
+	if (Engine::get_singleton()->is_editor_hint()) {
+		add_user_signal(MethodInfo("_editor_region_rect_enabled"));
+	}
 }

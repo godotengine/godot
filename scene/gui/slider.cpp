@@ -367,6 +367,9 @@ void Slider::_notification(int p_what) {
 }
 
 void Slider::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "ticks_position") {
 		p_property.hint_string = orientation == VERTICAL ? "Right,Left,Both,Center" : "Bottom,Top,Both,Center";
 	}

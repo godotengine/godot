@@ -2907,6 +2907,8 @@ RID RenderingDevice::framebuffer_create(const Vector<RID> &p_texture_attachments
 
 		if (texture && texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 			pass.depth_attachment = i;
+		} else if (texture && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
+			// Prevent the VRS attachment from being added to the color_attachments.
 		} else {
 			if (texture && texture->is_resolve_buffer) {
 				pass.resolve_attachments.push_back(i);

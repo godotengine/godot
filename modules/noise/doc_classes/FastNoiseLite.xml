@@ -30,7 +30,7 @@
 			A low value places more emphasis on the lower frequency base layers, while a high value puts more emphasis on the higher frequency layers.
 		</member>
 		<member name="domain_warp_fractal_lacunarity" type="float" setter="set_domain_warp_fractal_lacunarity" getter="get_domain_warp_fractal_lacunarity" default="6.0">
-			Octave lacunarity of the fractal noise which warps the space. Increasing this value results in higher octaves producing noise with finer details and a rougher appearance.
+			The change in frequency between octaves, also known as "lacunarity", of the fractal noise which warps the space. Increasing this value results in higher octaves, producing noise with finer details and a rougher appearance.
 		</member>
 		<member name="domain_warp_fractal_octaves" type="int" setter="set_domain_warp_fractal_octaves" getter="get_domain_warp_fractal_octaves" default="5">
 			The number of noise layers that are sampled to get the final value for the fractal noise which warps the space.
@@ -81,7 +81,7 @@
 			A lattice of points are assigned random values then interpolated based on neighboring values.
 		</constant>
 		<constant name="TYPE_VALUE_CUBIC" value="4" enum="NoiseType">
-			Similar to Value noise, but slower. Has more variance in peaks and valleys.
+			Similar to value noise ([constant TYPE_VALUE]), but slower. Has more variance in peaks and valleys.
 			Cubic noise can be used to avoid certain artifacts when using value noise to create a bumpmap. In general, you should always use this mode if the value noise is being used for a heightmap or bumpmap.
 		</constant>
 		<constant name="TYPE_PERLIN" value="3" enum="NoiseType">

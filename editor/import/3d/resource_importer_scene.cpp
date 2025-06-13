@@ -1062,7 +1062,7 @@ Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, con
 		}
 	}
 
-	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
+	String import_id = p_node->get_meta("import_id", "PATH:" + String(p_root->get_path_to(p_node)));
 
 	Dictionary node_settings;
 	if (p_node_data.has(import_id)) {
@@ -1110,7 +1110,7 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 		}
 	}
 
-	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
+	String import_id = p_node->get_meta("import_id", "PATH:" + String(p_root->get_path_to(p_node)));
 
 	Dictionary node_settings;
 	if (p_node_data.has(import_id)) {
@@ -1437,7 +1437,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	bool isroot = p_node == p_root;
 
-	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
+	String import_id = p_node->get_meta("import_id", "PATH:" + String(p_root->get_path_to(p_node)));
 
 	Dictionary node_settings;
 	if (p_node_data.has(import_id)) {

@@ -32,7 +32,7 @@
 #include "bone_attachment_3d.compat.inc"
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "bone_name") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "bone_name") {
 		// Because it is a constant function, we cannot use the get_skeleton function.
 		const Skeleton3D *parent = nullptr;
 		if (use_external_skeleton) {

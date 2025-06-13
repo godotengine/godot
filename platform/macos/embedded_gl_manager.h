@@ -90,7 +90,7 @@ class GLManagerEmbedded {
 	CGLErrorStringPtr CGLErrorString = nullptr;
 
 	uint32_t display_id = INVALID_DISPLAY_ID;
-	CVDisplayLinkRef display_link;
+	CVDisplayLinkRef display_link = nullptr;
 	bool vsync_enabled = false;
 	bool display_link_running = false;
 	dispatch_semaphore_t display_semaphore = nullptr;

@@ -2191,7 +2191,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				} else {
 					icon_cache = key_type_icon;
 
-					text = anim_path;
+					text = String(anim_path);
 				}
 
 				path_cache = text;
@@ -2822,7 +2822,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 	// Don't overlap track keys if they start at 0.
 	if (path_rect.has_point(p_pos + Size2(type_icon->get_width(), 0))) {
-		return animation->track_get_path(track);
+		return String(animation->track_get_path(track));
 	}
 
 	if (update_mode_rect.has_point(p_pos)) {
@@ -3230,7 +3230,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			path->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationTrackEdit::_path_submitted));
 		}
 
-		path->set_text(animation->track_get_path(track));
+		path->set_text(String(animation->track_get_path(track)));
 		const Vector2 theme_ofs = path->get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"))->get_offset();
 
 		moving_selection_attempt = false;
@@ -3462,7 +3462,7 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 
 	Dictionary drag_data;
 	drag_data["type"] = "animation_track";
-	String base_path = animation->track_get_path(track);
+	String base_path = String(animation->track_get_path(track));
 	base_path = base_path.get_slicec(':', 0); // Remove sub-path.
 	drag_data["group"] = base_path;
 	drag_data["index"] = track;
@@ -3493,7 +3493,7 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 
 	// Don't allow moving tracks outside their groups.
 	if (get_editor()->is_grouping_tracks()) {
-		String base_path = animation->track_get_path(track);
+		String base_path = String(animation->track_get_path(track));
 		base_path = base_path.get_slicec(':', 0); // Remove sub-path.
 		if (d["group"] != base_path) {
 			return false;
@@ -3524,7 +3524,7 @@ void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data)
 
 	// Don't allow moving tracks outside their groups.
 	if (get_editor()->is_grouping_tracks()) {
-		String base_path = animation->track_get_path(track);
+		String base_path = String(animation->track_get_path(track));
 		base_path = base_path.get_slicec(':', 0); // Remove sub-path.
 		if (d["group"] != base_path) {
 			return;
@@ -4370,7 +4370,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	}
 
 	// Let's build a node path.
-	String path = root->get_path_to(p_node, true);
+	String path = String(root->get_path_to(p_node, true));
 	if (!p_sub.is_empty()) {
 		path += ":" + p_sub;
 	}
@@ -4410,7 +4410,7 @@ bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const 
 	}
 
 	// Let's build a node path.
-	String path = root->get_path_to(p_node, true);
+	String path = String(root->get_path_to(p_node, true));
 	if (!p_sub.is_empty()) {
 		path += ":" + p_sub;
 	}
@@ -4423,11 +4423,11 @@ bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const 
 }
 
 void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant &p_value) {
-	String path = p_path;
+	String path = String(p_path);
 
 	// Animation property is a special case, always creates an animation track.
 	for (int i = 0; i < animation->get_track_count(); i++) {
-		String np = animation->track_get_path(i);
+		String np = String(animation->track_get_path(i));
 
 		if (path == np && animation->track_get_type(i) == Animation::TYPE_ANIMATION) {
 			// Exists.
@@ -4460,7 +4460,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	ERR_FAIL_NULL(root);
 
 	// Let's build a node path.
-	String path = root->get_path_to(p_node, true);
+	String path = String(root->get_path_to(p_node, true));
 
 	// Get the value from the subpath.
 	Vector<StringName> subpath = NodePath(p_property).get_as_property_path().get_subnames();
@@ -4509,14 +4509,14 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			inserted = true;
 		} else if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
 			Variant actual_value;
-			String track_path = animation->track_get_path(i);
-			if (track_path == np) {
+			String track_path = String(animation->track_get_path(i));
+			if (track_path == String(np)) {
 				actual_value = value; // All good.
 			} else {
 				int sep = track_path.rfind_char(':');
 				if (sep != -1) {
 					String base_path = track_path.substr(0, sep);
-					if (base_path == np) {
+					if (base_path == String(np)) {
 						String value_name = track_path.substr(sep + 1);
 						actual_value = value.get(value_name);
 					} else {
@@ -5017,7 +5017,7 @@ void AnimationTrackEditor::_update_tracks() {
 		String filter_text = timeline->filter_track->get_text();
 
 		if (!filter_text.is_empty()) {
-			String target = animation->track_get_path(i);
+			String target = String(animation->track_get_path(i));
 			if (!target.containsn(filter_text)) {
 				continue;
 			}
@@ -5087,7 +5087,7 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edits.push_back(track_edit);
 
 		if (use_grouping) {
-			String base_path = animation->track_get_path(i);
+			String base_path = String(animation->track_get_path(i));
 			base_path = base_path.get_slicec(':', 0); // Remove sub-path.
 
 			if (!group_sort.has(base_path)) {
@@ -5100,7 +5100,7 @@ void AnimationTrackEditor::_update_tracks() {
 					if (n) {
 						icon = EditorNode::get_singleton()->get_object_icon(n, "Node");
 						name = n->get_name();
-						tooltip = root->get_path_to(n);
+						tooltip = String(root->get_path_to(n));
 					}
 				}
 
@@ -6681,7 +6681,6 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event, bool p_timeli
 }
 
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
-	last_menu_track_opt = p_option;
 	switch (p_option) {
 		case EDIT_COPY_TRACKS: {
 			track_copy_select->clear();
@@ -6711,7 +6710,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 					path = NodePath(node->get_path().get_names(), path.get_subnames(), true); // Store full path instead for copying.
 				} else {
-					text = path;
+					text = String(path);
 					int sep = text.find_char(':');
 					if (sep != -1) {
 						text = text.substr(sep + 1);
@@ -6841,11 +6840,15 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			undo_redo->commit_action();
 		} break;
-
-		case EDIT_SCALE_SELECTION:
+		case EDIT_SCALE_SELECTION: {
+			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			scale->get_line_edit()->grab_focus();
+			scale_from_cursor = false;
+		} break;
 		case EDIT_SCALE_FROM_CURSOR: {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 			scale->get_line_edit()->grab_focus();
+			scale_from_cursor = true;
 		} break;
 		case EDIT_SCALE_CONFIRM: {
 			if (selection.is_empty()) {
@@ -6868,9 +6871,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			len = to_t - from_t;
-			if (last_menu_track_opt == EDIT_SCALE_FROM_CURSOR) {
+			if (scale_from_cursor) {
 				pivot = timeline->get_play_position();
-
 			} else {
 				pivot = from_t;
 			}
@@ -6912,7 +6914,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				to_restore.push_back(amr);
 			}
 
-#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * Math::abs(s) + from_t
+#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * Math::abs(s) + pivot
 			// 3 - Move the keys (re insert them).
 			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 				float newpos = NEW_POS(E->get().pos);

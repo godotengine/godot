@@ -139,7 +139,7 @@
 		<method name="_get_logo" qualifiers="virtual required const">
 			<return type="Texture2D" />
 			<description>
-				Returns platform logo displayed in the export dialog, logo should be 32x32 adjusted to the current editor scale, see [method EditorInterface.get_editor_scale].
+				Returns the platform logo displayed in the export dialog. The logo should be 32×32 pixels, adjusted for the current editor scale (see [method EditorInterface.get_editor_scale]).
 			</description>
 		</method>
 		<method name="_get_name" qualifiers="virtual required const">
@@ -152,7 +152,7 @@
 			<return type="ImageTexture" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns one-click deploy menu item icon for the specified [param device], icon should be 16x16 adjusted to the current editor scale, see [method EditorInterface.get_editor_scale].
+				Returns the item icon for the specified [param device] in the one-click deploy menu. The icon should be 16×16 pixels, adjusted for the current editor scale (see [method EditorInterface.get_editor_scale]).
 			</description>
 		</method>
 		<method name="_get_option_label" qualifiers="virtual const">
@@ -172,7 +172,7 @@
 		<method name="_get_options_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Returns number one-click deploy devices (or other one-click option displayed in the menu).
+				Returns the number of devices (or other options) available in the one-click deploy menu.
 			</description>
 		</method>
 		<method name="_get_options_tooltip" qualifiers="virtual const">
@@ -203,7 +203,7 @@
 		<method name="_get_run_icon" qualifiers="virtual const">
 			<return type="Texture2D" />
 			<description>
-				Returns icon of the one-click deploy menu button, icon should be 16x16 adjusted to the current editor scale, see [method EditorInterface.get_editor_scale].
+				Returns the icon of the one-click deploy menu button. The icon should be 16×16 pixels, adjusted for the current editor scale (see [method EditorInterface.get_editor_scale]).
 			</description>
 		</method>
 		<method name="_has_valid_export_configuration" qualifiers="virtual required const">

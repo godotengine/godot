@@ -616,7 +616,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 		if (dir.is_relative_path() || dir == ".") {
 			Char16String current_dir_name;
 			size_t str_len = GetCurrentDirectoryW(0, nullptr);
-			current_dir_name.resize(str_len + 1);
+			current_dir_name.resize_uninitialized(str_len + 1);
 			GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 			if (dir == ".") {
 				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/');
@@ -3390,7 +3390,7 @@ static INT_PTR input_text_dialog_cmd_proc(HWND hWnd, UINT code, WPARAM wParam, L
 		ERR_FAIL_NULL_V(text_edit, false);
 
 		Char16String text;
-		text.resize(GetWindowTextLengthW(text_edit) + 1);
+		text.resize_uninitialized(GetWindowTextLengthW(text_edit) + 1);
 		GetWindowTextW(text_edit, (LPWSTR)text.get_data(), text.size());
 
 		const Callable *callback = (const Callable *)GetWindowLongPtrW(hWnd, GWLP_USERDATA);

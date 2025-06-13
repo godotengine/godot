@@ -502,13 +502,98 @@ Transform3D Node3D::_get_global_transform_interpolated(real_t p_interpolation_fr
 	return res;
 }
 
+// Visible nodes - get_global_transform_interpolated is cheap.
+// Invisible nodes - get_global_transform_interpolated is expensive, try to avoid.
 Transform3D Node3D::get_global_transform_interpolated() {
 #if 1
 	// Pass through if physics interpolation is switched off.
 	// This is a convenience, as it allows you to easy turn off interpolation
 	// without changing any code.
-	if (data.fti_global_xform_interp_set && is_physics_interpolated_and_enabled() && !Engine::get_singleton()->is_in_physics_frame() && is_visible_in_tree()) {
-		return data.global_transform_interpolated;
+	if (is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !Engine::get_singleton()->is_in_physics_frame()) {
+		// Note that with SceneTreeFTI, we may want to calculate interpolated transform for a node
+		// with physics interpolation set to OFF, if it has a parent that is ON.
+
+		// Cheap case.
+		// We already pre-cache the visible_in_tree for VisualInstances, but NOT for Node3Ds, so we have to
+		// deal with non-VIs the slow way.
+		if (Object::cast_to<VisualInstance3D>(this) && _is_vi_visible() && data.fti_global_xform_interp_set) {
+			return data.global_transform_interpolated;
+		}
+
+		// Find out if visible in tree.
+		// If not visible in tree, find the FIRST ancestor that is visible in tree.
+		const Node3D *visible_parent = nullptr;
+		const Node3D *s = this;
+		bool visible = true;
+		bool visible_in_tree = true;
+
+		while (s) {
+			if (!s->data.visible) {
+				visible_in_tree = false;
+				visible = false;
+			} else {
+				if (!visible) {
+					visible_parent = s;
+					visible = true;
+				}
+			}
+			s = s->data.parent;
+		}
+
+		// Simplest case, we can return the interpolated xform calculated by SceneTreeFTI.
+		if (visible_in_tree) {
+			return data.fti_global_xform_interp_set ? data.global_transform_interpolated : get_global_transform();
+		} else if (visible_parent) {
+			// INVISIBLE case. Not visible, but there is a visible ancestor somewhere in the chain.
+			if (_get_scene_tree_depth() < 1) {
+				// This should not happen unless there a problem has been introduced in the scene tree depth code.
+				// Print a non-spammy error and return something reasonable.
+				ERR_PRINT_ONCE("depth is < 1.");
+				return get_global_transform();
+			}
+
+			// The interpolated xform is not already calculated for invisible nodes, but we can calculate this
+			// manually on demand if there is a visible parent.
+			// First create the chain (backwards), from the node up to first visible parent.
+			const Node3D **parents = (const Node3D **)alloca((sizeof(const Node3D *) * _get_scene_tree_depth()));
+			int32_t num_parents = 0;
+
+			s = this;
+			while (s) {
+				if (s == visible_parent) {
+					// Finished.
+					break;
+				}
+
+				parents[num_parents++] = s;
+				s = s->data.parent;
+			}
+
+			// Now calculate the interpolated chain forwards.
+			float interpolation_fraction = Engine::get_singleton()->get_physics_interpolation_fraction();
+
+			// Seed the xform with the visible parent.
+			Transform3D xform = visible_parent->data.fti_global_xform_interp_set ? visible_parent->data.global_transform_interpolated : visible_parent->get_global_transform();
+			Transform3D local_interp;
+
+			// Backwards through the list is forwards through the chain through the tree.
+			for (int32_t n = num_parents - 1; n >= 0; n--) {
+				s = parents[n];
+
+				if (s->is_physics_interpolated()) {
+					// Make sure to call `get_transform()` rather than using local_transform directly, because
+					// local_transform may be dirty and need updating from rotation / scale.
+					TransformInterpolator::interpolate_transform_3d(s->data.local_transform_prev, s->get_transform(), local_interp, interpolation_fraction);
+				} else {
+					local_interp = s->get_transform();
+				}
+				xform *= local_interp;
+			}
+
+			// We could save this in case of multiple calls,
+			// but probably not necessary.
+			return xform;
+		}
 	}
 
 	return get_global_transform();
@@ -1156,9 +1241,21 @@ Vector3 Node3D::to_global(Vector3 p_local) const {
 	return get_global_transform().xform(p_local);
 }
 
+void Node3D::_physics_interpolated_changed() {
+	ERR_THREAD_GUARD;
+	data.notify_transform = data.notify_transform_requested || (data.notify_transform_when_fti_off && !is_physics_interpolated_and_enabled());
+}
+
+void Node3D::_set_notify_transform_when_fti_off(bool p_enable) {
+	ERR_THREAD_GUARD;
+	data.notify_transform_when_fti_off = p_enable;
+	data.notify_transform = data.notify_transform_requested || (data.notify_transform_when_fti_off && !is_physics_interpolated_and_enabled());
+}
+
 void Node3D::set_notify_transform(bool p_enabled) {
 	ERR_THREAD_GUARD;
-	data.notify_transform = p_enabled;
+	data.notify_transform_requested = p_enabled;
+	data.notify_transform = data.notify_transform_requested || (data.notify_transform_when_fti_off && !is_physics_interpolated_and_enabled());
 }
 
 bool Node3D::is_transform_notification_enabled() const {
@@ -1195,10 +1292,10 @@ void Node3D::_update_visibility_parent(bool p_update_root) {
 			return;
 		}
 		Node *parent = get_node_or_null(visibility_parent_path);
-		ERR_FAIL_NULL_MSG(parent, "Can't find visibility parent node at path: " + visibility_parent_path);
+		ERR_FAIL_NULL_MSG(parent, "Can't find visibility parent node at path: " + String(visibility_parent_path));
 		ERR_FAIL_COND_MSG(parent == this, "The visibility parent can't be the same node.");
 		GeometryInstance3D *gi = Object::cast_to<GeometryInstance3D>(parent);
-		ERR_FAIL_NULL_MSG(gi, "The visibility parent node must be a GeometryInstance3D, at path: " + visibility_parent_path);
+		ERR_FAIL_NULL_MSG(gi, "The visibility parent node must be a GeometryInstance3D, at path: " + String(visibility_parent_path));
 		new_parent = gi ? gi->get_instance() : RID();
 	} else if (data.parent) {
 		new_parent = data.parent->data.visibility_parent;
@@ -1440,6 +1537,8 @@ Node3D::Node3D() :
 	data.ignore_notification = false;
 	data.notify_local_transform = false;
 	data.notify_transform = false;
+	data.notify_transform_requested = false;
+	data.notify_transform_when_fti_off = false;
 
 	data.visible = true;
 	data.disable_scale = false;

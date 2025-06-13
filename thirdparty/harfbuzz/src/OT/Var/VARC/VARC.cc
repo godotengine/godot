@@ -126,24 +126,18 @@ hb_transforming_pen_get_funcs ()
   return static_transforming_pen_funcs.get_unconst ();
 }
 
-
 hb_ubytes_t
-VarComponent::get_path_at (hb_font_t *font,
+VarComponent::get_path_at (const hb_varc_context_t &c,
 			   hb_codepoint_t parent_gid,
-			   hb_draw_session_t &draw_session,
 			   hb_array_t<const int> coords,
 			   hb_transform_t total_transform,
 			   hb_ubytes_t total_record,
-			   hb_decycler_t *decycler,
-			   signed *edges_left,
-			   signed depth_left,
-			   hb_glyf_scratch_t &scratch,
 			   VarRegionList::cache_t *cache) const
 {
   const unsigned char *end = total_record.arrayZ + total_record.length;
   const unsigned char *record = total_record.arrayZ;
 
-  auto &VARC = *font->face->table.VARC->table;
+  auto &VARC = *c.font->face->table.VARC->table;
   auto &varStore = &VARC+VARC.varStore;
 
 #define READ_UINT32VAR(name) \
@@ -193,9 +187,9 @@ VarComponent::get_path_at (hb_font_t *font,
 
   // Axis values
 
-  auto &axisIndices = scratch.axisIndices;
+  auto &axisIndices = c.scratch.axisIndices;
   axisIndices.clear ();
-  auto &axisValues = scratch.axisValues;
+  auto &axisValues = c.scratch.axisValues;
   axisValues.clear ();
   if (flags & (unsigned) flags_t::HAVE_AXES)
   {
@@ -222,7 +216,7 @@ VarComponent::get_path_at (hb_font_t *font,
    * limit on the max number of coords for now. */
   if ((flags & (unsigned) flags_t::RESET_UNSPECIFIED_AXES) ||
       coords.length > HB_VAR_COMPOSITE_MAX_AXES)
-    component_coords = hb_array<int> (font->coords, font->num_coords);
+    component_coords = hb_array<int> (c.font->coords, c.font->num_coords);
 
   // Transform
 
@@ -316,14 +310,18 @@ VarComponent::get_path_at (hb_font_t *font,
       transform.scaleY = transform.scaleX;
 
     total_transform.transform (transform.to_transform ());
-    total_transform.scale (font->x_mult ? 1.f / font->x_multf : 0.f,
-			   font->y_mult ? 1.f / font->y_multf : 0.f);
+    total_transform.scale (c.font->x_mult ? 1.f / c.font->x_multf : 0.f,
+			   c.font->y_mult ? 1.f / c.font->y_multf : 0.f);
 
-    VARC.get_path_at (font, gid,
-		      draw_session, component_coords, total_transform,
+    bool same_coords = component_coords.length == coords.length &&
+		       component_coords.arrayZ == coords.arrayZ;
+
+    c.depth_left--;
+    VARC.get_path_at (c, gid,
+		      component_coords, total_transform,
 		      parent_gid,
-		      decycler, edges_left, depth_left - 1,
-		      scratch);
+		      same_coords ? cache : nullptr);
+    c.depth_left++;
   }
 
 #undef PROCESS_TRANSFORM_COMPONENTS
@@ -333,16 +331,12 @@ VarComponent::get_path_at (hb_font_t *font,
 }
 
 bool
-VARC::get_path_at (hb_font_t *font,
+VARC::get_path_at (const hb_varc_context_t &c,
 		   hb_codepoint_t glyph,
-		   hb_draw_session_t &draw_session,
 		   hb_array_t<const int> coords,
 		   hb_transform_t transform,
 		   hb_codepoint_t parent_glyph,
-		   hb_decycler_t *decycler,
-		   signed *edges_left,
-		   signed depth_left,
-		   hb_glyf_scratch_t &scratch) const
+		   VarRegionList::cache_t *parent_cache) const
 {
   // Don't recurse on the same glyph.
   unsigned idx = glyph == parent_glyph ?
@@ -350,50 +344,69 @@ VARC::get_path_at (hb_font_t *font,
 		 (this+coverage).get_coverage (glyph);
   if (idx == NOT_COVERED)
   {
-    // Build a transforming pen to apply the transform.
-    hb_draw_funcs_t *transformer_funcs = hb_transforming_pen_get_funcs ();
-    hb_transforming_pen_context_t context {transform,
-					   draw_session.funcs,
-					   draw_session.draw_data,
-					   &draw_session.st};
-    hb_draw_session_t transformer_session {transformer_funcs, &context};
-    hb_draw_session_t &shape_draw_session = transform.is_identity () ? draw_session : transformer_session;
+    if (c.draw_session)
+    {
+      // Build a transforming pen to apply the transform.
+      hb_draw_funcs_t *transformer_funcs = hb_transforming_pen_get_funcs ();
+      hb_transforming_pen_context_t context {transform,
+					     c.draw_session->funcs,
+					     c.draw_session->draw_data,
+					     &c.draw_session->st};
+      hb_draw_session_t transformer_session {transformer_funcs, &context};
+      hb_draw_session_t &shape_draw_session = transform.is_identity () ? *c.draw_session : transformer_session;
 
-    if (!font->face->table.glyf->get_path_at (font, glyph, shape_draw_session, coords, scratch))
+      if (c.font->face->table.glyf->get_path_at (c.font, glyph, shape_draw_session, coords, c.scratch.glyf_scratch)) return true;
 #ifndef HB_NO_CFF
-    if (!font->face->table.cff2->get_path_at (font, glyph, shape_draw_session, coords))
-    if (!font->face->table.cff1->get_path (font, glyph, shape_draw_session)) // Doesn't have variations
+      if (c.font->face->table.cff2->get_path_at (c.font, glyph, shape_draw_session, coords)) return true;
+      if (c.font->face->table.cff1->get_path (c.font, glyph, shape_draw_session)) return true; // Doesn't have variations
 #endif
       return false;
+    }
+    else if (c.extents)
+    {
+      hb_glyph_extents_t glyph_extents;
+      if (!c.font->face->table.glyf->get_extents_at (c.font, glyph, &glyph_extents, coords))
+#ifndef HB_NO_CFF
+      if (!c.font->face->table.cff2->get_extents_at (c.font, glyph, &glyph_extents, coords))
+      if (!c.font->face->table.cff1->get_extents (c.font, glyph, &glyph_extents)) // Doesn't have variations
+#endif
+	return false;
+
+      hb_extents_t comp_extents (glyph_extents);
+      transform.transform_extents (comp_extents);
+      c.extents->union_ (comp_extents);
+    }
     return true;
   }
 
-  if (depth_left <= 0)
+  if (c.depth_left <= 0)
     return true;
 
-  if (*edges_left <= 0)
+  if (c.edges_left <= 0)
     return true;
-  (*edges_left)--;
+  (c.edges_left)--;
 
-  hb_decycler_node_t node (*decycler);
+  hb_decycler_node_t node (c.decycler);
   if (unlikely (!node.visit (glyph)))
     return true;
 
   hb_ubytes_t record = (this+glyphRecords)[idx];
 
-  float static_cache[sizeof (void *) * 16];
-  VarRegionList::cache_t *cache = (this+varStore).create_cache (hb_array (static_cache));
+  VarRegionList::cache_t static_cache[sizeof (void *) * 16];
+  VarRegionList::cache_t *cache = parent_cache ?
+				  parent_cache :
+				  (this+varStore).create_cache (hb_array (static_cache));
 
-  transform.scale (font->x_multf, font->y_multf);
+  transform.scale (c.font->x_multf, c.font->y_multf);
 
-  VarCompositeGlyph::get_path_at (font, glyph,
-				  draw_session, coords, transform,
+  VarCompositeGlyph::get_path_at (c,
+				  glyph,
+				  coords, transform,
 				  record,
-				  decycler, edges_left, depth_left,
-				  scratch,
 				  cache);
 
-  (this+varStore).destroy_cache (cache, hb_array (static_cache));
+  if (cache != parent_cache)
+    (this+varStore).destroy_cache (cache, hb_array (static_cache));
 
   return true;
 }

@@ -2638,6 +2638,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "internationalization/locale/line_breaking_strictness", PROPERTY_HINT_ENUM, "Auto,Loose,Normal,Strict"), 0);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
@@ -2908,6 +2909,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	print_header(false);
 
 #ifdef TOOLS_ENABLED
+	int accessibility_mode_editor = 0;
 	int tablet_driver_editor = -1;
 	if (editor || project_manager || cmdline_tool) {
 		OS::get_singleton()->benchmark_begin_measure("Startup", "Initialize Early Settings");
@@ -2945,6 +2947,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool tablet_found = false;
 
+					bool ac_found = false;
+
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
 					} else if (project_manager) {
@@ -2959,7 +2963,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found || !tablet_found) {
+					while (!screen_found || !prefer_wayland_found || !tablet_found || !ac_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2978,7 +2982,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 								}
 							}
-							if (assign == "interface/editor/expand_to_title") {
+							if (assign == "interface/accessibility/accessibility_support") {
+								accessibility_mode_editor = value;
+								ac_found = true;
+							} else if (assign == "interface/editor/expand_to_title") {
 								init_expand_to_title = value;
 							} else if (assign == "interface/editor/display_scale") {
 								init_display_scale = value;
@@ -3153,7 +3160,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 #endif
 
 		if (!accessibility_mode_set) {
-			accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+#ifdef TOOLS_ENABLED
+			if (editor || project_manager || cmdline_tool) {
+				accessibility_mode = (DisplayServer::AccessibilityMode)accessibility_mode_editor;
+			} else {
+#else
+			{
+#endif
+				accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+			}
 		}
 		DisplayServer::accessibility_set_mode(accessibility_mode);
 

@@ -97,6 +97,9 @@ void NoiseTexture2D::_bind_methods() {
 }
 
 void NoiseTexture2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "bump_strength") {
 		if (!as_normal_map) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;

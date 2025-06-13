@@ -103,7 +103,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OpenXR's foveation extension is supported, the interface must be initialized before this returns a valid value.
-				[b]Note:[/b] This feature is only available on the compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
+				[b]Note:[/b] This feature is only available on the Compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
 			</description>
 		</method>
 		<method name="is_hand_interaction_supported" qualifiers="const">
@@ -157,11 +157,11 @@
 		</member>
 		<member name="foveation_dynamic" type="bool" setter="set_foveation_dynamic" getter="get_foveation_dynamic" default="false">
 			Enable dynamic foveation adjustment, the interface must be initialized before this is accessible. If enabled foveation will automatically adjusted between low and [member foveation_level].
-			[b]Note:[/b] Only works on compatibility renderer.
+			[b]Note:[/b] Only works on the Compatibility renderer.
 		</member>
 		<member name="foveation_level" type="int" setter="set_foveation_level" getter="get_foveation_level" default="0">
 			Set foveation level from 0 (off) to 3 (high), the interface must be initialized before this is accessible.
-			[b]Note:[/b] Only works on compatibility renderer.
+			[b]Note:[/b] Only works on the Compatibility renderer.
 		</member>
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.

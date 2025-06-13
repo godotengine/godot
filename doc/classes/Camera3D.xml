@@ -128,7 +128,8 @@
 			<param index="1" name="z_near" type="float" />
 			<param index="2" name="z_far" type="float" />
 			<description>
-				Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [param size], and the [param z_near] and [param z_far] clip planes in world space units. (As a hint, 2D games often use this projection, with values specified in pixels.)
+				Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [param size], and the [param z_near] and [param z_far] clip planes in world space units.
+				As a hint, 3D games that look 2D often use this projection, with [param size] specified in pixels.
 			</description>
 		</method>
 		<method name="set_perspective">

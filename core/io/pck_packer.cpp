@@ -111,6 +111,12 @@ Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const Stri
 		file->store_32(0); // Reserved.
 	}
 
+	// Align for first file.
+	int pad = _get_pad(alignment, file->get_position());
+	for (int i = 0; i < pad; i++) {
+		file->store_8(0);
+	}
+
 	file_base = file->get_position();
 	file->seek(file_base_ofs);
 	file->store_64(file_base); // Update files base.

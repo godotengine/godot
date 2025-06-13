@@ -809,7 +809,7 @@ void AnimationLibraryEditor::_save_mixer_lib_folding(TreeItem *p_item) {
 	}
 
 	// Get unique identifier for this scene+mixer combination
-	String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + mixer->get_path()).md5_text();
+	String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + String(mixer->get_path())).md5_text();
 
 	PackedStringArray collapsed_lib_names;
 	PackedStringArray collapsed_lib_ids;
@@ -886,7 +886,7 @@ Vector<uint64_t> AnimationLibraryEditor::_load_mixer_libs_folding() {
 	}
 
 	// Get unique identifier for this scene+mixer combination
-	String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + mixer->get_path()).md5_text();
+	String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + String(mixer->get_path())).md5_text();
 
 	Vector<uint64_t> collapsed_lib_ids;
 

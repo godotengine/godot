@@ -819,10 +819,12 @@ void ScriptTextEditor::_validate_script() {
 		}
 
 		if (errors.size() > 0) {
-			// TRANSLATORS: Script error pointing to a line and column number.
-			String error_text = vformat(TTR("Error at (%d, %d):"), errors.front()->get().line, errors.front()->get().column) + " " + errors.front()->get().message;
+			const int line = errors.front()->get().line;
+			const int column = errors.front()->get().column;
+			const String message = errors.front()->get().message.replace("[", "[lb]");
+			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), line, column, line, column) + " " + message;
 			code_editor->set_error(error_text);
-			code_editor->set_error_pos(errors.front()->get().line - 1, errors.front()->get().column - 1);
+			code_editor->set_error_pos(line - 1, column - 1);
 		}
 		script_is_valid = false;
 	} else {
@@ -861,8 +863,8 @@ void ScriptTextEditor::_update_warnings() {
 			warnings_panel->push_table(1);
 			for (const Connection &connection : missing_connections) {
 				String base_path = base->get_name();
-				String source_path = base == connection.signal.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.signal.get_object()));
-				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.callable.get_object()));
+				String source_path = base == connection.signal.get_object() ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.signal.get_object())));
+				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.callable.get_object())));
 
 				warnings_panel->push_cell();
 				warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -2580,7 +2582,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		}
 	}
 
-	const PackedStringArray paths = { code_editor->get_text_editor()->get_path() };
+	const PackedStringArray paths = { String(code_editor->get_text_editor()->get_path()) };
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, paths);
 
 	const CodeEdit *tx = code_editor->get_text_editor();

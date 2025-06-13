@@ -91,7 +91,7 @@
 		<method name="get_length" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the length of the audio stream in seconds.
+				Returns the length of the audio stream in seconds. If this stream is an [AudioStreamRandomizer], returns the length of the last played stream. If this stream has an indefinite length (such as for [AudioStreamGenerator] and [AudioStreamMicrophone]), returns [code]0.0[/code].
 			</description>
 		</method>
 		<method name="instantiate_playback">
