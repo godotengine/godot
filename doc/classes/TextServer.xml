@@ -2194,10 +2194,10 @@
 			Glyph horizontal position is rounded to one quarter of the pixel size, each glyph is rasterized up to four times.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE" value="20" enum="SubpixelPositioning">
-			Maximum font size which will use one half of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
+			Maximum font size which will use "one half of the pixel" subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE" value="16" enum="SubpixelPositioning">
-			Maximum font size which will use one quarter of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
+			Maximum font size which will use "one quarter of the pixel" subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="FEATURE_SIMPLE_LAYOUT" value="1" enum="Feature">
 			TextServer supports simple text layouts.
@@ -2275,7 +2275,7 @@
 			Font is italic or oblique.
 		</constant>
 		<constant name="FONT_FIXED_WIDTH" value="4" enum="FontStyle" is_bitfield="true">
-			Font have fixed-width characters.
+			Font has fixed-width characters (also known as monospace).
 		</constant>
 		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
 			Use default Unicode BiDi algorithm.

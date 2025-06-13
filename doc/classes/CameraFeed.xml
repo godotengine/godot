@@ -67,10 +67,10 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="parameters" type="Dictionary" />
 			<description>
-				Sets the feed format parameters for the given index in the [member formats] array. Returns [code]true[/code] on success. By default YUYV encoded stream is transformed to FEED_RGB. YUYV encoded stream output format can be changed with [param parameters].output value:
-				[code]separate[/code] will result in FEED_YCBCR_SEP
-				[code]grayscale[/code] will result in desaturated FEED_RGB
-				[code]copy[/code] will result in FEED_YCBCR
+				Sets the feed format parameters for the given [param index] in the [member formats] array. Returns [code]true[/code] on success. By default, the YUYV encoded stream is transformed to [constant FEED_RGB]. The YUYV encoded stream output format can be changed by setting [param parameters]'s [code]output[/code] entry to one of the following:
+				- [code]"separate"[/code] will result in [constant FEED_YCBCR_SEP];
+				- [code]"grayscale"[/code] will result in desaturated [constant FEED_RGB];
+				- [code]"copy"[/code] will result in [constant FEED_YCBCR].
 			</description>
 		</method>
 		<method name="set_name">
