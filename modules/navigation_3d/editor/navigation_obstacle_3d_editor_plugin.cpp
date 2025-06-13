@@ -34,7 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/plugins/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/gui/button.h"

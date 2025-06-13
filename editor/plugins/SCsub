@@ -4,15 +4,3 @@ from misc.utility.scons_hints import *
 Import("env")
 
 env.add_source_files(env.editor_sources, "*.cpp")
-
-SConscript("2d/SCsub")
-SConscript("3d/SCsub")
-SConscript("animation/SCsub")
-SConscript("audio/SCsub")
-SConscript("gui/SCsub")
-SConscript("gizmos/SCsub")
-SConscript("script/SCsub")
-SConscript("shader_baker/SCsub")
-SConscript("shader/SCsub")
-SConscript("texture/SCsub")
-SConscript("tiles/SCsub")
