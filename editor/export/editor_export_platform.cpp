@@ -1966,6 +1966,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		f->store_32(0); // Reserved.
 	}
 
+	// Align for first file.
+	int file_padding = _get_pad(PCK_PADDING, f->get_position());
+	for (int i = 0; i < file_padding; i++) {
+		f->store_8(0);
+	}
+
 	uint64_t file_base = f->get_position();
 	f->seek(file_base_ofs);
 	f->store_64(file_base - pck_start_pos); // Update files base.
