@@ -2956,7 +2956,7 @@
 			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
 		</constant>
 		<constant name="PROPERTY_HINT_GROUP_ENABLE" value="42" enum="PropertyHint">
-			Hints that a boolean property will enable the feature associated with the group that it occurs in. Only works within a group or subgroup. Use the optional hint string [code]"feature"[/code] when the group only has variables that are meaningful when the feature is enabled.
+			Hints that a boolean property will enable the feature associated with the group that it occurs in. Only works within a group or subgroup. Use the optional hint string [code]"feature"[/code] when the group only has properties that are meaningful when the feature is enabled.
 			[b]Note:[/b] The [code]"feature"[/code] hint string does not modify or reset any values.
 		</constant>
 		<constant name="PROPERTY_HINT_INPUT_NAME" value="43" enum="PropertyHint">

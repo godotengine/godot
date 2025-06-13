@@ -2045,7 +2045,7 @@
 			<return type="void" />
 			<description>
 				Stops synthesis in progress and removes all utterances from the queue.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Linux), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="unregister_additional_output">
@@ -2856,13 +2856,13 @@
 			Set scroll offset action, callback argument is set to [Vector2] with the scroll offset.
 		</constant>
 		<constant name="ACTION_SET_VALUE" value="20" enum="AccessibilityAction">
-			Set value action action, callback argument is set to [String] or number with the new value.
+			Set value action, callback argument is set to [String] or number with the new value.
 		</constant>
 		<constant name="ACTION_SHOW_CONTEXT_MENU" value="21" enum="AccessibilityAction">
 			Show context menu action, callback argument is not set.
 		</constant>
 		<constant name="ACTION_CUSTOM" value="22" enum="AccessibilityAction">
-			Custom action, callback argument is set to the integer action id.
+			Custom action, callback argument is set to the integer action ID.
 		</constant>
 		<constant name="LIVE_OFF" value="0" enum="AccessibilityLiveMode">
 			Indicates that updates to the live region should not be presented.
