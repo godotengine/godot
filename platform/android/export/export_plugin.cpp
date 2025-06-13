@@ -1050,7 +1050,7 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	store_string_at_path(manifest_path, manifest_text);
 }
 
-bool EditorExportPlatformAndroid::_should_be_transparent(const Ref<EditorExportPreset> &p_preset) const {
+bool EditorExportPlatformAndroid::_is_transparency_allowed(const Ref<EditorExportPreset> &p_preset) const {
 	return (bool)get_project_setting(p_preset, "display/window/per_pixel_transparency/allowed");
 }
 
@@ -1062,13 +1062,13 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 		return;
 	}
 
-	bool should_be_transparent = _should_be_transparent(p_preset);
+	bool transparency_allowed = _is_transparency_allowed(p_preset);
 
 	// Default/Reserved theme attributes.
 	Dictionary main_theme_attributes;
 	main_theme_attributes["android:windowSwipeToDismiss"] = bool_to_string(p_preset->get("gesture/swipe_to_dismiss"));
-	main_theme_attributes["android:windowIsTranslucent"] = bool_to_string(should_be_transparent);
-	if (should_be_transparent) {
+	main_theme_attributes["android:windowIsTranslucent"] = bool_to_string(transparency_allowed);
+	if (transparency_allowed) {
 		main_theme_attributes["android:windowBackground"] = "@android:color/transparent";
 	}
 
@@ -1076,7 +1076,7 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 	splash_theme_attributes["android:windowSplashScreenBackground"] = "@mipmap/icon_background";
 	splash_theme_attributes["windowSplashScreenAnimatedIcon"] = "@mipmap/icon_foreground";
 	splash_theme_attributes["postSplashScreenTheme"] = "@style/GodotAppMainTheme";
-	splash_theme_attributes["android:windowIsTranslucent"] = bool_to_string(should_be_transparent);
+	splash_theme_attributes["android:windowIsTranslucent"] = bool_to_string(transparency_allowed);
 
 	PackedStringArray reserved_splash_keys;
 	reserved_splash_keys.append("postSplashScreenTheme");
@@ -2992,7 +2992,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 			}
 		}
 	} else {
-		if (_should_be_transparent(p_preset)) {
+		if (_is_transparency_allowed(p_preset)) {
 			// Warning only, so don't override `valid`.
 			err += vformat(TTR("\"Use Gradle Build\" is required for transparent background on Android"));
 			err += "\n";
