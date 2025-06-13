@@ -38,6 +38,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.PixelFormat
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.*
@@ -79,6 +80,7 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.security.MessageDigest
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -188,6 +190,13 @@ class Godot(private val context: Context) {
 
 	private var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
+
+	/**
+	 * Stores the flags for the primary window.
+	 *
+	 * @see <a href="https://docs.godotengine.org/en/stable/classes/class_window.html#enum-window-flags">WindowFlags</a>
+	 */
+	private val primaryWindowFlags = ConcurrentHashMap<Int, Boolean>()
 
 	/**
 	 * Returns true if the native engine has been initialized through [onInitNativeLayer], false otherwise.
@@ -481,21 +490,32 @@ class Godot(private val context: Context) {
 
 			// Check whether the render view should be made transparent
 			val shouldBeTransparent =
-				!isProjectManagerHint() && !isEditorHint() && java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
+				!isProjectManagerHint() &&
+					!isEditorHint() &&
+					java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed")) &&
+					java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/size/transparent"))
 			Log.d(TAG, "Render view should be transparent: $shouldBeTransparent")
 			renderView = if (usesVulkan()) {
 				if (meetsVulkanRequirements(activity.packageManager)) {
-					GodotVulkanRenderView(host, this, godotInputHandler, shouldBeTransparent)
+					GodotVulkanRenderView(host, this, godotInputHandler)
 				} else if (canFallbackToOpenGL()) {
 					// Fallback to OpenGl.
-					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
+					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
 				} else {
 					throw IllegalStateException(activity.getString(R.string.error_missing_vulkan_requirements_message))
 				}
 
 			} else {
 				// Fallback to OpenGl.
-				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
+				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+			}
+			if (shouldBeTransparent) {
+				/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
+				 * If we want a translucent one, we should change the surface's
+				 * format here, using PixelFormat.TRANSLUCENT for GL Surfaces
+				 * is interpreted as any 32-bit surface with alpha by SurfaceFlinger.
+				 */
+				renderView?.setPixelFormat(PixelFormat.TRANSLUCENT)
 			}
 
 			if (host == primaryHost) {
@@ -1204,4 +1224,23 @@ class Godot(private val context: Context) {
 	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
 		primaryHost?.onEditorWorkspaceSelected(workspace)
 	}
+
+	@Keep
+	private fun setWindowFlag(flag: Int, enabled: Boolean) {
+		primaryWindowFlags[flag] = enabled
+		if (flag == 3 /* WINDOW_FLAG_TRANSPARENT */) {
+			runOnUiThread {
+				val pixelFormat = if (enabled) {
+					PixelFormat.TRANSLUCENT
+				} else {
+					PixelFormat.OPAQUE
+				}
+				Log.d(TAG, "Updating pixel format to $pixelFormat")
+				renderView?.setPixelFormat(pixelFormat)
+			}
+		}
+	}
+
+	@Keep
+	private fun getWindowFlag(flag: Int): Boolean = primaryWindowFlags[flag] ?: false
 }
