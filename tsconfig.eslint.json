@@ -1,0 +1,10 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"strict": true,
+		"module": "NodeNext",
+		"moduleResolution": "nodenext",
+		"typeRoots": ["node_modules/@types", "eslint.d.ts"]
+	},
+	"includes": ["eslint.config.mts"]
+}

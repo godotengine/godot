@@ -95,23 +95,8 @@ repos:
       - id: eslint
         name: eslint
         language: node
-        entry: eslint
-        files: ^(platform/web/js/|modules/|misc/dist/html/).*\.(js|html)$
-        args:
-          - --fix
-          - --no-warn-ignored
-          - --no-config-lookup
-          - --config
-          - platform/web/eslint.config.cjs
-        additional_dependencies:
-          - "@eslint/js@^9.3.0"
-          - "@html-eslint/eslint-plugin@^0.24.1"
-          - "@html-eslint/parser@^0.24.1"
-          - "@stylistic/eslint-plugin@^2.1.0"
-          - eslint@^9.3.0
-          - eslint-plugin-html@^8.1.1
-          - globals@^15.3.0
-          - espree@^10.0.1
+        entry: npm run install-and-lint
+        files: ^(platform/web/js/|modules/|misc/dist/html/|misc/scripts/).*\.(js|mjs|html)$
 
       - id: jsdoc
         name: jsdoc

@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"allowJs": true,
+		"outDir": "__tsoutdir"
+	},
+	"references": [
+		{ "path": "./misc/scripts/jsconfig.json" },
+		{ "path": "./tsconfig.eslint.json" }
+	]
+}

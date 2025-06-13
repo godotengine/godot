@@ -1,0 +1,26 @@
+{
+	"private": true,
+	"name": "@godotengine/godot",
+	"description": "This is a meta package to run various dev scripts. This isn't a Node.js wrapper of Godot.",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/godotengine/godot.git"
+	},
+	"scripts": {
+		"install-and-lint": "npm i && npm run lint",
+		"lint": "node misc/scripts/run_eslint.mjs"
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"@eslint/js": "^9.27.0",
+		"@html-eslint/eslint-plugin": "^0.24.1",
+		"@html-eslint/parser": "^0.24.1",
+		"@stylistic/eslint-plugin": "^2.13.0",
+		"@types/node": "^22.15.18",
+		"eslint": "^9.27.0",
+		"eslint-plugin-html": "^8.1.3",
+		"espree": "^10.3.0",
+		"globals": "^15.15.0",
+		"jiti": "^2.4.2"
+	}
+}

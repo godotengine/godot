@@ -1,0 +1,3 @@
+# Ignore all temporary preprocessed files.
+*.preprocessed.js
+*.preprocessed.*.js
