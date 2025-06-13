@@ -276,6 +276,7 @@ def configure(env: "SConsEnvironment"):
             print_warning("GDExtension support requires proxy_to_pthread=no, disabling proxy to pthread.")
             env["proxy_to_pthread"] = False
 
+        env.Append(CPPDEFINES=["WEB_DLINK_ENABLED"])
         env.Append(CCFLAGS=["-sSIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
