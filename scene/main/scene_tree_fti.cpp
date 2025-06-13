@@ -459,7 +459,7 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_fra
 #endif
 
 	// Don't recurse into hidden branches.
-	if (s && !s->is_visible()) {
+	if (s && !s->data.visible) {
 		// NOTE : If we change from recursing entire tree, we should do an is_visible_in_tree()
 		// check for the first of the branch.
 		return;
@@ -593,7 +593,7 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_fra
 
 	// Recurse to children.
 	for (uint32_t n = 0; n < num_children; n++) {
-		_update_dirty_nodes(p_node->get_child(n), p_current_half_frame, p_interpolation_fraction, p_active, s->data.fti_global_xform_interp_set ? &s->data.global_transform_interpolated : &s->data.global_transform, p_depth + 1);
+		_update_dirty_nodes(children.ptr()[n], p_current_half_frame, p_interpolation_fraction, p_active, s->data.fti_global_xform_interp_set ? &s->data.global_transform_interpolated : &s->data.global_transform, p_depth + 1);
 	}
 }
 
