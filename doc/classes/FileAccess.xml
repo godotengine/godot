@@ -293,14 +293,14 @@
 			<return type="int" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns file size in bytes, or [code]-1[/code] on error.
+				Returns the size of the file at the given path, in bytes, or [code]-1[/code] on error.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">
 			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns file UNIX permissions.
+				Returns the UNIX permissions of the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
