@@ -416,7 +416,9 @@ void NavigationAgent2D::set_navigation_layers(uint32_t p_navigation_layers) {
 
 	navigation_layers = p_navigation_layers;
 
-	_request_repath();
+	if (target_position_submitted) {
+		_request_repath();
+	}
 }
 
 uint32_t NavigationAgent2D::get_navigation_layers() const {
@@ -535,7 +537,9 @@ void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
 	map_override = p_navigation_map;
 
 	NavigationServer2D::get_singleton()->agent_set_map(agent, map_override);
-	_request_repath();
+	if (target_position_submitted) {
+		_request_repath();
+	}
 }
 
 RID NavigationAgent2D::get_navigation_map() const {
