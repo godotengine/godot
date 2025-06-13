@@ -717,7 +717,7 @@ Patches:
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.8 (b55145ec095652289a59c33603f3abafee898273, 2024)
+- Version: 2.3.3 (bf4215a7574f88aa55859db9db00e3ae58cf42d6, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
