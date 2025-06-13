@@ -30,8 +30,8 @@
 
 #include "separation_ray_shape_2d.h"
 
-#include "servers/physics_server_2d.h"
-#include "servers/rendering_server.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 void SeparationRayShape2D::_update_shape() {
 	Dictionary d;

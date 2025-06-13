@@ -34,7 +34,7 @@
 
 #include "core/object/class_db.h"
 #include "core/templates/self_list.h"
-#include "servers/navigation/navigation_globals.h"
+#include "servers/navigation_2d/navigation_constants_2d.h"
 
 #include <Agent2d.h>
 
