@@ -1267,7 +1267,7 @@ MaterialStorage::MaterialStorage() {
 			p16[4] = 2;
 			p16[5] = 3;
 		}
-		quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv);
+		quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv.ptr());
 		quad_index_array = RD::get_singleton()->index_array_create(quad_index_buffer, 0, 6);
 	}
 

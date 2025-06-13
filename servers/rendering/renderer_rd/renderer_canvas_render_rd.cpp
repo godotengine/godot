@@ -298,7 +298,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 	ERR_FAIL_COND_V(vertex_id == RD::INVALID_ID, 0);
 
 	PolygonBuffers pb;
-	pb.vertex_buffer = RD::get_singleton()->vertex_buffer_create(polygon_buffer.size(), polygon_buffer);
+	pb.vertex_buffer = RD::get_singleton()->vertex_buffer_create(polygon_buffer.size(), polygon_buffer.ptr());
 	for (int i = 0; i < descriptions.size(); i++) {
 		if (buffers[i] == RID()) { //if put in vertex, use as vertex
 			buffers.write[i] = pb.vertex_buffer;
@@ -316,7 +316,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			uint8_t *w = index_buffer.ptrw();
 			memcpy(w, p_indices.ptr(), sizeof(int32_t) * p_indices.size());
 		}
-		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_count, RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer);
+		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_count, RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer.ptr());
 		pb.indices = RD::get_singleton()->index_array_create(pb.index_buffer, 0, p_count);
 		pb.primitive_count = p_count;
 	}
@@ -1365,14 +1365,14 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		if (oc->vertex_array.is_null()) {
 			//create from scratch
 			//vertices
-			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(float), geometry);
+			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(float), geometry.ptr());
 
 			Vector<RID> buffer;
 			buffer.push_back(oc->vertex_buffer);
 			oc->vertex_array = RD::get_singleton()->vertex_array_create(4 * lc / 2, shadow_render.vertex_format, buffer);
 			//indices
 
-			oc->index_buffer = RD::get_singleton()->index_buffer_create(3 * lc, RD::INDEX_BUFFER_FORMAT_UINT16, indices);
+			oc->index_buffer = RD::get_singleton()->index_buffer_create(3 * lc, RD::INDEX_BUFFER_FORMAT_UINT16, indices.ptr());
 			oc->index_array = RD::get_singleton()->index_array_create(oc->index_buffer, 0, 3 * lc);
 
 		} else {
@@ -1434,11 +1434,11 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 				float_points_ptr[i * 2] = p_points[i].x;
 				float_points_ptr[i * 2 + 1] = p_points[i].y;
 			}
-			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), float_points.to_byte_array());
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), float_points.ptr());
 #else
-			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), p_points.to_byte_array());
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), p_points.ptr());
 #endif
-			oc->sdf_index_buffer = RD::get_singleton()->index_buffer_create(sdf_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, sdf_indices.to_byte_array());
+			oc->sdf_index_buffer = RD::get_singleton()->index_buffer_create(sdf_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, sdf_indices.ptr());
 			oc->sdf_index_array = RD::get_singleton()->index_array_create(oc->sdf_index_buffer, 0, sdf_indices.size());
 
 			Vector<RID> buffer;
@@ -1944,7 +1944,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 			p16[4] = 2;
 			p16[5] = 3;
 		}
-		shader.quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv);
+		shader.quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv.ptr());
 		shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
 	}
 
