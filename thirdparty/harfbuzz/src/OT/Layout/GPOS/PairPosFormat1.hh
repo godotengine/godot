@@ -54,7 +54,7 @@ struct PairPosFormat1_3
   {
     auto &cov = this+coverage;
 
-    if (pairSet.len > glyphs->get_population () * hb_bit_storage ((unsigned) pairSet.len) / 4)
+    if (pairSet.len > glyphs->get_population () * hb_bit_storage ((unsigned) pairSet.len))
     {
       for (hb_codepoint_t g : glyphs->iter())
       {
@@ -148,7 +148,7 @@ struct PairPosFormat1_3
 #endif
     if (index == NOT_COVERED) return_trace (false);
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_to;
     if (unlikely (!skippy_iter.next (&unsafe_to)))

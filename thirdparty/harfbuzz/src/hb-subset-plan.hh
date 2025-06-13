@@ -296,5 +296,75 @@ struct hb_subset_plan_t
   }
 };
 
+// hb-subset-plan implementation is split into multiple files to keep
+// compile times more reasonable:
+// - hb-subset-plan.cc
+// - hb-subset-plan-layout.cc
+//
+// The functions below are those needed to connect the split files
+// above together.
+HB_INTERNAL void
+remap_indexes (const hb_set_t *indexes,
+               hb_map_t       *mapping /* OUT */);
+
+
+#ifndef HB_NO_VAR
+template<typename ItemVarStore>
+HB_INTERNAL void
+remap_variation_indices (const ItemVarStore &var_store,
+                         const hb_set_t &variation_indices,
+                         const hb_vector_t<int>& normalized_coords,
+                         bool calculate_delta, /* not pinned at default */
+                         bool no_variations, /* all axes pinned */
+                         hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> &variation_idx_delta_map /* OUT */);
+
+
+template<typename DeltaSetIndexMap>
+HB_INTERNAL void
+remap_colrv1_delta_set_index_indices (const DeltaSetIndexMap &index_map,
+                                      const hb_set_t &delta_set_idxes,
+                                      hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> &variation_idx_delta_map, /* IN/OUT */
+                                      hb_map_t &new_deltaset_idx_varidx_map /* OUT */);
+
+
+HB_INTERNAL void
+generate_varstore_inner_maps (const hb_set_t& varidx_set,
+                              unsigned subtable_count,
+                              hb_vector_t<hb_inc_bimap_t> &inner_maps /* OUT */);
+
+HB_INTERNAL void
+normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan);
+
+HB_INTERNAL void
+update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan);
+
+HB_INTERNAL bool
+get_instance_glyphs_contour_points (hb_subset_plan_t *plan);
+
+#ifndef HB_NO_BASE
+HB_INTERNAL void
+collect_base_variation_indices (hb_subset_plan_t* plan);
+#endif
+#endif
+
+#ifndef HB_NO_SUBSET_LAYOUT
+typedef hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> script_langsys_map;
+
+HB_INTERNAL void
+remap_used_mark_sets (hb_subset_plan_t *plan,
+                      hb_map_t& used_mark_sets_map);
+
+HB_INTERNAL void
+layout_nameid_closure (hb_subset_plan_t* plan,
+                       hb_set_t* drop_tables);
+
+HB_INTERNAL void
+layout_populate_gids_to_retain (hb_subset_plan_t* plan,
+                                hb_set_t* drop_tables);
+
+HB_INTERNAL void
+collect_layout_variation_indices (hb_subset_plan_t* plan);
+#endif
+
 
 #endif /* HB_SUBSET_PLAN_HH */
