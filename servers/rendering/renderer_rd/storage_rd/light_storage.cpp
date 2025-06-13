@@ -1518,6 +1518,8 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		_reflection_atlas_clear(atlas);
 	}
 
+	const int required_real_time_mipmaps = 7;
+
 	if (atlas->reflection.is_null()) {
 		RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
 		ERR_FAIL_NULL_V_MSG(copy_effects, false, "Effects haven't been initialized");
