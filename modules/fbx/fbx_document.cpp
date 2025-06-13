@@ -1798,7 +1798,7 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 			const Skeleton3D *sk = p_state->skeletons[fbx_node->skeleton]->godot_skeleton;
 			ERR_FAIL_NULL(sk);
 
-			const String path = p_animation_player->get_parent()->get_path_to(sk);
+			const String path = String(p_animation_player->get_parent()->get_path_to(sk));
 			const String bone = fbx_node->get_name();
 			transform_node_path = path + ":" + bone;
 		} else {

@@ -66,7 +66,7 @@ String ResourceUID::id_to_text(ID p_id) const {
 
 	// tmp_size + uid:// (6) + 1 for null.
 	String txt;
-	txt.resize(tmp_size + 7);
+	txt.resize_uninitialized(tmp_size + 7);
 
 	char32_t *p = txt.ptrw();
 	p[0] = 'u';
@@ -273,7 +273,7 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 		int64_t id = f->get_64();
 		int32_t len = f->get_32();
 		Cache c;
-		c.cs.resize(len + 1);
+		c.cs.resize_uninitialized(len + 1);
 		ERR_FAIL_COND_V(c.cs.size() != len + 1, ERR_FILE_CORRUPT); // Out of memory.
 		c.cs[len] = 0;
 		int32_t rl = f->get_buffer((uint8_t *)c.cs.ptrw(), len);
@@ -333,7 +333,7 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 	for (uint32_t i = 0; i < entry_count; i++) {
 		int64_t id = p_cache_file->get_64();
 		int32_t len = p_cache_file->get_32();
-		cs.resize(len + 1);
+		cs.resize_uninitialized(len + 1);
 		ERR_FAIL_COND_V(cs.size() != len + 1, String());
 		cs[len] = 0;
 		int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);

@@ -1585,9 +1585,21 @@ void GDScriptByteCodeGenerator::write_for_range_assignment(const Address &p_from
 	const Address &range_step = for_range_step_variables.back()->get();
 
 	// Assign range args.
-	write_assign(range_from, p_from);
-	write_assign(range_to, p_to);
-	write_assign(range_step, p_step);
+	if (range_from.type == p_from.type) {
+		write_assign(range_from, p_from);
+	} else {
+		write_assign_with_conversion(range_from, p_from);
+	}
+	if (range_to.type == p_to.type) {
+		write_assign(range_to, p_to);
+	} else {
+		write_assign_with_conversion(range_to, p_to);
+	}
+	if (range_step.type == p_step.type) {
+		write_assign(range_step, p_step);
+	} else {
+		write_assign_with_conversion(range_step, p_step);
+	}
 }
 
 void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_conversion, bool p_is_range) {

@@ -31,6 +31,7 @@
 #include "servers/text_server.h"
 #include "text_server.compat.inc"
 
+#include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
@@ -2346,6 +2347,17 @@ bool TextServer::is_valid_letter(uint64_t p_unicode) const {
 }
 
 TextServer::TextServer() {
+	// Default font rendering related project settings.
+
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), 1);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::HINTING_LIGHT);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::SUBPIXEL_POSITIONING_AUTO);
+
+	GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
+	GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"), 1);
+
 	_init_diacritics_map();
 }
 

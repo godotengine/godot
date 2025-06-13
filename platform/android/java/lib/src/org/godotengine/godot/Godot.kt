@@ -478,19 +478,24 @@ class Godot(private val context: Context) {
 			editText.setBackgroundColor(Color.TRANSPARENT)
 			// ...add to FrameLayout
 			containerLayout?.addView(editText)
+
+			// Check whether the render view should be made transparent
+			val shouldBeTransparent =
+				!isProjectManagerHint() && !isEditorHint() && java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
+			Log.d(TAG, "Render view should be transparent: $shouldBeTransparent")
 			renderView = if (usesVulkan()) {
 				if (meetsVulkanRequirements(activity.packageManager)) {
-					GodotVulkanRenderView(host, this, godotInputHandler)
+					GodotVulkanRenderView(host, this, godotInputHandler, shouldBeTransparent)
 				} else if (canFallbackToOpenGL()) {
 					// Fallback to OpenGl.
-					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
 				} else {
 					throw IllegalStateException(activity.getString(R.string.error_missing_vulkan_requirements_message))
 				}
 
 			} else {
 				// Fallback to OpenGl.
-				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
 			}
 
 			if (host == primaryHost) {
@@ -1011,25 +1016,29 @@ class Godot(private val context: Context) {
 	@Keep
 	private fun vibrate(durationMs: Int, amplitude: Int) {
 		if (durationMs > 0 && requestPermission("VIBRATE")) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				if (amplitude <= -1) {
-					vibratorService.vibrate(
-						VibrationEffect.createOneShot(
-							durationMs.toLong(),
-							VibrationEffect.DEFAULT_AMPLITUDE
+			try {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					if (amplitude <= -1) {
+						vibratorService.vibrate(
+							VibrationEffect.createOneShot(
+								durationMs.toLong(),
+								VibrationEffect.DEFAULT_AMPLITUDE
+							)
 						)
-					)
+					} else {
+						vibratorService.vibrate(
+							VibrationEffect.createOneShot(
+								durationMs.toLong(),
+								amplitude
+							)
+						)
+					}
 				} else {
-					vibratorService.vibrate(
-						VibrationEffect.createOneShot(
-							durationMs.toLong(),
-							amplitude
-						)
-					)
+					// deprecated in API 26
+					vibratorService.vibrate(durationMs.toLong())
 				}
-			} else {
-				// deprecated in API 26
-				vibratorService.vibrate(durationMs.toLong())
+			} catch (e: SecurityException) {
+				Log.w(TAG, "SecurityException: VIBRATE permission not found. Make sure it is declared in the manifest or enabled in the export preset.")
 			}
 		}
 	}

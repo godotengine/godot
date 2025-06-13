@@ -1147,23 +1147,23 @@
 		</constant>
 		<constant name="DRIVER_RESOURCE_LOGICAL_DEVICE" value="0" enum="DriverResource">
 			Specific device object based on a physical device.
-			- Vulkan: Vulkan device driver resource ([code]VkDevice[/code]). ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: Vulkan device driver resource ([code]VkDevice[/code]) ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_PHYSICAL_DEVICE" value="1" enum="DriverResource">
 			Physical device the specific logical device is based on.
-			- Vulkan: [code]VkDevice[/code]. ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: [code]VkDevice[/code] ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_TOPMOST_OBJECT" value="2" enum="DriverResource">
 			Top-most graphics API entry object.
-			- Vulkan: [code]VkInstance[/code]. ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: [code]VkInstance[/code] ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_COMMAND_QUEUE" value="3" enum="DriverResource">
 			The main graphics-compute command queue.
-			- Vulkan: [code]VkQueue[/code]. ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: [code]VkQueue[/code] ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_QUEUE_FAMILY" value="4" enum="DriverResource">
 			The specific family the main queue belongs to.
-			- Vulkan: the queue family index, an [code]uint32_t[/code]. ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: The queue family index, a [code]uint32_t[/code] ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_TEXTURE" value="5" enum="DriverResource">
 			- Vulkan: [code]VkImage[/code].

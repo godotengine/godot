@@ -28,14 +28,13 @@
 
 #include "hb-paint-extents.hh"
 
-#include "hb-draw.h"
+#include "hb-draw.hh"
 
 #include "hb-machinery.hh"
 
 
 /*
- * This file implements bounds-extraction as well as boundedness
- * computation of COLRv1 fonts as described in:
+ * This file implements bounds-extraction computation of COLRv1 fonts as described in:
  *
  * https://learn.microsoft.com/en-us/typography/opentype/spec/colr#glyph-metrics-and-boundedness
  */
@@ -61,93 +60,6 @@ hb_paint_extents_pop_transform (hb_paint_funcs_t *funcs HB_UNUSED,
   hb_paint_extents_context_t *c = (hb_paint_extents_context_t *) paint_data;
 
   c->pop_transform ();
-}
-
-static void
-hb_draw_extents_move_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
-			 void *data,
-			 hb_draw_state_t *st,
-			 float to_x, float to_y,
-			 void *user_data HB_UNUSED)
-{
-  hb_extents_t *extents = (hb_extents_t *) data;
-
-  extents->add_point (to_x, to_y);
-}
-
-static void
-hb_draw_extents_line_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
-			 void *data,
-			 hb_draw_state_t *st,
-			 float to_x, float to_y,
-			 void *user_data HB_UNUSED)
-{
-  hb_extents_t *extents = (hb_extents_t *) data;
-
-  extents->add_point (to_x, to_y);
-}
-
-static void
-hb_draw_extents_quadratic_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
-			      void *data,
-			      hb_draw_state_t *st,
-			      float control_x, float control_y,
-			      float to_x, float to_y,
-			      void *user_data HB_UNUSED)
-{
-  hb_extents_t *extents = (hb_extents_t *) data;
-
-  extents->add_point (control_x, control_y);
-  extents->add_point (to_x, to_y);
-}
-
-static void
-hb_draw_extents_cubic_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
-			  void *data,
-			  hb_draw_state_t *st,
-			  float control1_x, float control1_y,
-			  float control2_x, float control2_y,
-			  float to_x, float to_y,
-			  void *user_data HB_UNUSED)
-{
-  hb_extents_t *extents = (hb_extents_t *) data;
-
-  extents->add_point (control1_x, control1_y);
-  extents->add_point (control2_x, control2_y);
-  extents->add_point (to_x, to_y);
-}
-
-static inline void free_static_draw_extents_funcs ();
-
-static struct hb_draw_extents_funcs_lazy_loader_t : hb_draw_funcs_lazy_loader_t<hb_draw_extents_funcs_lazy_loader_t>
-{
-  static hb_draw_funcs_t *create ()
-  {
-    hb_draw_funcs_t *funcs = hb_draw_funcs_create ();
-
-    hb_draw_funcs_set_move_to_func (funcs, hb_draw_extents_move_to, nullptr, nullptr);
-    hb_draw_funcs_set_line_to_func (funcs, hb_draw_extents_line_to, nullptr, nullptr);
-    hb_draw_funcs_set_quadratic_to_func (funcs, hb_draw_extents_quadratic_to, nullptr, nullptr);
-    hb_draw_funcs_set_cubic_to_func (funcs, hb_draw_extents_cubic_to, nullptr, nullptr);
-
-    hb_draw_funcs_make_immutable (funcs);
-
-    hb_atexit (free_static_draw_extents_funcs);
-
-    return funcs;
-  }
-} static_draw_extents_funcs;
-
-static inline
-void free_static_draw_extents_funcs ()
-{
-  static_draw_extents_funcs.free_instance ();
-}
-
-static hb_draw_funcs_t *
-hb_draw_extents_get_funcs ()
-{
-  return static_draw_extents_funcs.get_unconst ();
 }
 
 static void
@@ -220,6 +132,9 @@ hb_paint_extents_paint_image (hb_paint_funcs_t *funcs HB_UNUSED,
 			      void *user_data HB_UNUSED)
 {
   hb_paint_extents_context_t *c = (hb_paint_extents_context_t *) paint_data;
+
+  if (!glyph_extents)
+    return false; // Happens with SVG images.
 
   hb_extents_t extents = {(float) glyph_extents->x_bearing,
 			  (float) glyph_extents->y_bearing + glyph_extents->height,

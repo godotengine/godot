@@ -358,7 +358,7 @@ String ShaderPreprocessor::vector_to_string(const LocalVector<char32_t> &p_v, in
 	const int count = stop - p_start;
 
 	String result;
-	result.resize(count + 1);
+	result.resize_uninitialized(count + 1);
 	for (int i = 0; i < count; i++) {
 		result[i] = p_v[p_start + i];
 	}

@@ -1455,7 +1455,7 @@ void Node::set_name(const StringName &p_name) {
 String Node::get_description() const {
 	String description;
 	if (is_inside_tree()) {
-		description = get_path();
+		description = String(get_path());
 	} else {
 		description = get_name();
 		if (description.is_empty()) {
@@ -2170,7 +2170,7 @@ void Node::_acquire_unique_name_in_owner() {
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
-		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
+		String which_path = String(is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which));
 		WARN_PRINT(vformat("Setting node name '%s' to be unique within scene for '%s', but it's already claimed by '%s'.\n'%s' is no longer set as having a unique name.",
 				get_name(), is_inside_tree() ? get_path() : data.owner->get_path_to(this), which_path, which_path));
 		data.unique_name_in_owner = false;
@@ -3345,7 +3345,7 @@ static void _print_orphan_nodes_routine(Object *p_obj) {
 	if (p == n) {
 		path = n->get_name();
 	} else {
-		path = String(p->get_name()) + "/" + p->get_path_to(n);
+		path = String(p->get_name()) + "/" + String(p->get_path_to(n));
 	}
 
 	String source;
@@ -3434,7 +3434,7 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 		String n = "%" + p_node->get_name();
 		r_options->push_back(n.quote());
 	}
-	String n = p_base->get_path_to(p_node);
+	String n = String(p_base->get_path_to(p_node));
 	r_options->push_back(n.quote());
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_add_nodes_to_options(p_base, p_node->get_child(i), r_options);

@@ -35,6 +35,8 @@
 class LightmapGIGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(LightmapGIGizmoPlugin, EditorNode3DGizmoPlugin);
 
+	float probe_size = 0.4f;
+
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;

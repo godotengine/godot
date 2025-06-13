@@ -425,7 +425,9 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 }
 
 void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position) {
-	if (orbiting_index == p_index && gizmo_activated) {
+	Point2 mouse_pos = get_local_mouse_position();
+	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4 * EDSCALE;
+	if (orbiting_index == p_index && gizmo_activated && movement_threshold_passed) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 			orbiting_mouse_start = p_position;
@@ -460,6 +462,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 			_process_click(100, mb->get_position(), mb->is_pressed());
 			if (mb->is_pressed()) {
 				gizmo_activated = true;
+				original_mouse_pos = get_local_mouse_position();
 				grab_focus();
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
@@ -1631,7 +1634,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
 
-			String node_path = "/" + root_name + "/" + root_path.rel_path_to(spat->get_path());
+			String node_path = "/" + root_name + "/" + String(root_path.rel_path_to(spat->get_path()));
 
 			int locked = 0;
 			if (_is_node_locked(spat)) {
@@ -1985,7 +1988,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					surface->queue_redraw();
 				} else {
-					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_RULER) {
+					if (ruler->is_inside_tree()) {
 						EditorNode::get_singleton()->get_scene_root()->remove_child(ruler);
 						ruler_start_point->set_visible(false);
 						ruler_end_point->set_visible(false);
@@ -2267,27 +2270,36 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (_edit.instant) {
 			// In a Blender-style transform, numbers set the magnitude of the transform.
 			// E.g. pressing g4.5x means "translate 4.5 units along the X axis".
-			// Use the Unicode value because we care about the text, not the actual keycode.
-			// This ensures numbers work consistently across different keyboard language layouts.
 			bool processed = true;
-			Key key = k->get_physical_keycode();
-			char32_t unicode = k->get_unicode();
-			if (unicode >= '0' && unicode <= '9') {
-				uint32_t value = uint32_t(unicode - Key::KEY_0);
+			Key keycode = k->get_keycode();
+			Key physical_keycode = k->get_physical_keycode();
+
+			// Use physical keycode for main keyboard numbers (for non-QWERTY layouts like AZERTY)
+			// but regular keycode for numpad numbers.
+			if ((physical_keycode >= Key::KEY_0 && physical_keycode <= Key::KEY_9) || (keycode >= Key::KP_0 && keycode <= Key::KP_9)) {
+				uint32_t value;
+				if (physical_keycode >= Key::KEY_0 && physical_keycode <= Key::KEY_9) {
+					value = uint32_t(physical_keycode - Key::KEY_0);
+				} else {
+					value = uint32_t(keycode - Key::KP_0);
+				}
+
 				if (_edit.numeric_next_decimal < 0) {
 					_edit.numeric_input = _edit.numeric_input + value * Math::pow(10.0, _edit.numeric_next_decimal--);
 				} else {
 					_edit.numeric_input = _edit.numeric_input * 10 + value;
 				}
 				update_transform_numeric();
-			} else if (unicode == '-') {
+			} else if (keycode == Key::MINUS || keycode == Key::KP_SUBTRACT) {
 				_edit.numeric_negate = !_edit.numeric_negate;
 				update_transform_numeric();
-			} else if (unicode == '.') {
+			} else if (keycode == Key::PERIOD || physical_keycode == Key::KP_PERIOD) {
+				// Use physical keycode for KP_PERIOD to ensure numpad period works consistently
+				// across different keyboard layouts (like nordic keyboards).
 				if (_edit.numeric_next_decimal == 0) {
 					_edit.numeric_next_decimal = -1;
 				}
-			} else if (key == Key::ENTER || key == Key::KP_ENTER || key == Key::SPACE) {
+			} else if (keycode == Key::ENTER || keycode == Key::KP_ENTER || keycode == Key::SPACE) {
 				commit_transform();
 			} else {
 				processed = false;

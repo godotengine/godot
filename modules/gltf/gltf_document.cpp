@@ -7051,7 +7051,7 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 	Ref<GLTFObjectModelProperty> ret;
 	const Object *target_object = p_godot_node;
 	const Vector<StringName> subpath = p_node_path.get_subnames();
-	ERR_FAIL_COND_V_MSG(subpath.is_empty(), ret, "glTF: Cannot export empty property. No property was specified in the NodePath: " + p_node_path);
+	ERR_FAIL_COND_V_MSG(subpath.is_empty(), ret, "glTF: Cannot export empty property. No property was specified in the NodePath: " + String(p_node_path));
 	int target_prop_depth = 0;
 	for (StringName subname : subpath) {
 		Variant target_property = target_object->get(subname);
@@ -7282,7 +7282,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			const Skeleton3D *sk = p_state->skeletons[gltf_node->skeleton]->godot_skeleton;
 			ERR_FAIL_NULL(sk);
 
-			const String path = p_animation_player->get_parent()->get_path_to(sk);
+			const String path = String(p_animation_player->get_parent()->get_path_to(sk));
 			const String bone = gltf_node->get_name();
 			transform_node_path = path + ":" + bone;
 		} else {

@@ -430,7 +430,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		} else if (favorite.ends_with("/")) {
 			text = favorite.substr(0, favorite.length() - 1).get_file();
 			icon = folder_icon;
-			color = assigned_folder_colors.has(favorite) ? folder_colors[assigned_folder_colors[favorite]] : default_folder_color;
+			color = FileSystemDock::get_dir_icon_color(favorite, default_folder_color);
 		} else {
 			text = favorite.get_file();
 			int index;
@@ -1635,7 +1635,7 @@ void FileSystemDock::_update_project_settings_after_move(const HashMap<String, S
 	// Find all project settings of type FILE and replace them if needed.
 	const HashMap<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
 	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
-		if (E.value.hint == PROPERTY_HINT_FILE) {
+		if (E.value.hint == PROPERTY_HINT_FILE_PATH) {
 			String old_path = GLOBAL_GET(E.key);
 			if (p_renames.has(old_path)) {
 				ProjectSettings::get_singleton()->set_setting(E.key, p_renames[old_path]);
@@ -3342,7 +3342,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("Resource..."), FILE_MENU_NEW_RESOURCE);
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
 
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_paths);
+		const PackedStringArray folder_path = { p_paths[0].get_base_dir() };
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, folder_path);
 		p_popup->add_separator();
 	}
 
@@ -3743,13 +3744,25 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 		if (option_id > -1) {
 			_tree_rmb_option(option_id);
 		} else {
+			bool create = false;
 			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
 			if (!custom_callback.is_valid()) {
+				create = true;
 				custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_event);
 			}
 
 			if (custom_callback.is_valid()) {
-				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _tree_get_selected(false));
+				PackedStringArray selected = _tree_get_selected(false);
+				if (create) {
+					if (selected.is_empty()) {
+						selected.append("res://");
+					} else if (selected.size() == 1) {
+						selected.write[0] = selected[0].get_base_dir();
+					} else {
+						return;
+					}
+				}
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, selected);
 			} else {
 				return;
 			}
@@ -3949,6 +3962,30 @@ void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 
 void FileSystemDock::_file_sort_popup(int p_id) {
 	set_file_sort((FileSortOption)p_id);
+}
+
+// TODO: Could use a unit test.
+Color FileSystemDock::get_dir_icon_color(const String &p_dir_path, const Color &p_default) {
+	if (!singleton) { // This method can be called from the project manager.
+		return p_default;
+	}
+	Color folder_icon_color = p_default;
+
+	// Check for a folder color to inherit (if one is assigned).
+	String parent_dir = ProjectSettings::get_singleton()->localize_path(p_dir_path);
+	while (!parent_dir.is_empty() && parent_dir != "res://") {
+		if (!parent_dir.ends_with("/")) {
+			parent_dir += "/";
+		}
+
+		const String color_name = singleton->assigned_folder_colors.get(parent_dir, String());
+		if (!color_name.is_empty()) {
+			folder_icon_color = singleton->folder_colors[color_name];
+			break;
+		}
+		parent_dir = parent_dir.trim_suffix("/").get_base_dir();
+	}
+	return folder_icon_color;
 }
 
 const HashMap<String, Color> &FileSystemDock::get_folder_colors() const {
