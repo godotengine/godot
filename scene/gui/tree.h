@@ -174,42 +174,7 @@ private:
 		}
 	}
 
-	_FORCE_INLINE_ void _unlink_from_tree() {
-		if (accessibility_row_element.is_valid()) {
-			DisplayServer::get_singleton()->accessibility_free_element(accessibility_row_element);
-			accessibility_row_element = RID();
-		}
-		for (Cell &cell : cells) {
-			if (cell.accessibility_cell_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(cell.accessibility_cell_element);
-				cell.accessibility_cell_element = RID();
-			}
-			for (Cell::Button &btn : cell.buttons) {
-				if (btn.accessibility_button_element.is_valid()) {
-					DisplayServer::get_singleton()->accessibility_free_element(btn.accessibility_button_element);
-					btn.accessibility_button_element = RID();
-				}
-			}
-		}
-		TreeItem *p = get_prev();
-		if (p) {
-			p->next = next;
-		}
-		if (next) {
-			next->prev = p;
-		}
-		if (parent) {
-			if (!parent->children_cache.is_empty()) {
-				parent->children_cache.remove_at(get_index());
-			}
-			if (parent->first_child == this) {
-				parent->first_child = next;
-			}
-			if (parent->last_child == this) {
-				parent->last_child = prev;
-			}
-		}
-	}
+	_FORCE_INLINE_ void _unlink_from_tree();
 
 	bool _is_any_collapsed(bool p_only_visible);
 

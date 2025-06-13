@@ -75,7 +75,7 @@ class EmbeddedProcessMacOS final : public EmbeddedProcessBase {
 	// Embedded process state.
 
 	// The last mouse mode sent by the embedded process.
-	DisplayServer::MouseMode mouse_mode = DisplayServer::MOUSE_MODE_VISIBLE;
+	DSTypes::MouseMode mouse_mode = DSTypes::MOUSE_MODE_VISIBLE;
 
 	// Helper functions.
 
@@ -90,7 +90,7 @@ public:
 	// MARK: - Message Handlers
 
 	void set_context_id(uint32_t p_context_id);
-	void mouse_set_mode(DisplayServer::MouseMode p_mode);
+	void mouse_set_mode(DSTypes::MouseMode p_mode);
 
 	uint32_t get_context_id() const { return context_id; }
 	void set_script_debugger(ScriptEditorDebugger *p_debugger) override;
@@ -117,7 +117,7 @@ public:
 	void display_state_changed();
 
 	// MARK: - Embedded process state
-	_FORCE_INLINE_ DisplayServer::MouseMode get_mouse_mode() const { return mouse_mode; }
+	_FORCE_INLINE_ DSTypes::MouseMode get_mouse_mode() const { return mouse_mode; }
 
 	EmbeddedProcessMacOS();
 	~EmbeddedProcessMacOS() override;

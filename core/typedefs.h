@@ -440,3 +440,20 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_MSVC_WARNING_POP
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
 #endif
+
+template <typename T, typename = void>
+struct is_incomplete_type : std::true_type {};
+
+template <typename T>
+struct is_incomplete_type<T, std::void_t<decltype(sizeof(T))>> : std::false_type {};
+
+template <typename T>
+constexpr bool is_incomplete_type_v = is_incomplete_type<T>::value;
+
+#ifndef SCU_BUILD
+#define STATIC_ASSERT_INCOMPLETE_CLASS(m_type) \
+	class m_type;                              \
+	static_assert(is_incomplete_type_v<m_type>, #m_type " was defined when it should not be. Please check include hierarchy of " __FILE__);
+#else
+#define STATIC_ASSERT_INCOMPLETE_CLASS(m_type)
+#endif

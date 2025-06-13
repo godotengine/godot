@@ -30,10 +30,13 @@
 
 #include "node_3d.h"
 
+STATIC_ASSERT_INCOMPLETE_CLASS(DisplayServer);
+
 #include "core/math/transform_interpolator.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
+#include "servers/display_server.h"
 
 /*
 

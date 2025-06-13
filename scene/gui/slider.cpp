@@ -31,6 +31,7 @@
 #include "slider.h"
 
 #include "scene/theme/theme_db.h"
+#include "servers/display_server.h"
 
 Size2 Slider::get_minimum_size() const {
 	Size2i ss = theme_cache.slider_style->get_minimum_size();

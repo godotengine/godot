@@ -38,6 +38,7 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/display_server.h"
 
 void TouchActionsPanel::_notification(int p_what) {
 	switch (p_what) {

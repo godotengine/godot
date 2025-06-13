@@ -32,6 +32,7 @@
 
 #include "core/os/time.h"
 #include "core/version.h"
+#include "servers/display_server.h"
 
 String _get_version_string(EditorVersionButton::VersionFormat p_format) {
 	String main;

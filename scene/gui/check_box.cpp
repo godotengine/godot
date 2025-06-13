@@ -31,6 +31,7 @@
 #include "check_box.h"
 
 #include "scene/theme/theme_db.h"
+#include "servers/display_server.h"
 
 Size2 CheckBox::get_icon_size() const {
 	Size2 tex_size = Size2(0, 0);

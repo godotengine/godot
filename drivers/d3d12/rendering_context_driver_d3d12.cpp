@@ -257,13 +257,13 @@ void RenderingContextDriverD3D12::surface_set_size(SurfaceID p_surface, uint32_t
 	surface->needs_resize = true;
 }
 
-void RenderingContextDriverD3D12::surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) {
+void RenderingContextDriverD3D12::surface_set_vsync_mode(SurfaceID p_surface, DSTypes::VSyncMode p_vsync_mode) {
 	Surface *surface = (Surface *)(p_surface);
 	surface->vsync_mode = p_vsync_mode;
 	surface->needs_resize = true;
 }
 
-DisplayServer::VSyncMode RenderingContextDriverD3D12::surface_get_vsync_mode(SurfaceID p_surface) const {
+DSTypes::VSyncMode RenderingContextDriverD3D12::surface_get_vsync_mode(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->vsync_mode;
 }

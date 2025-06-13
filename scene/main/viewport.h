@@ -705,7 +705,7 @@ public:
 	void set_vrs_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_vrs_texture() const;
 
-	virtual DisplayServer::WindowID get_window_id() const = 0;
+	virtual DSTypes::WindowID get_window_id() const = 0;
 
 	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
@@ -882,7 +882,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual DisplayServer::WindowID get_window_id() const override;
+	virtual DSTypes::WindowID get_window_id() const override;
 	void _notification(int p_what);
 
 public:

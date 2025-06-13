@@ -69,6 +69,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
 
         # Add all the gen.cpp files in the SCU directory
         add_source_files_orig(self, sources, subdir + ".scu/scu_*.gen.cpp", True)
+        self.Append(CPPDEFINES=["SCU_BUILD"])
         return True
     return False
 

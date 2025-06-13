@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "scene/main/viewport.h"
+#include "servers/display_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {

@@ -36,6 +36,7 @@
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
+#include "servers/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #include <openxr/openxr.h>

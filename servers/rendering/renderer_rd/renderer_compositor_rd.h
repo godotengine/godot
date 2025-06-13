@@ -122,7 +122,7 @@ public:
 
 	void initialize();
 	void begin_frame(double frame_step);
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
+	void blit_render_targets_to_screen(DSTypes::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
 	bool is_opengl() { return false; }
 	void gl_end_frame(bool p_swap_buffers) {}

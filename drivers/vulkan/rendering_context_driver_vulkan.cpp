@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/version.h"
+#include "servers/display_server.h"
 
 #include "rendering_device_driver_vulkan.h"
 #include "vulkan_hooks.h"
