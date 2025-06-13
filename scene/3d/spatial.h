@@ -111,11 +111,6 @@ private:
 		bool toplevel : 1;
 		bool inside_world : 1;
 
-		// this is cached, and only currently kept up to date in visual instances
-		// this is set if a visual instance is
-		// (a) in the tree AND (b) visible via is_visible_in_tree() call
-		bool vi_visible : 1;
-
 		bool ignore_notification : 1;
 		bool notify_local_transform : 1;
 		bool notify_transform : 1;
@@ -168,9 +163,6 @@ private:
 protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
 	_FORCE_INLINE_ void _update_local_transform() const;
-
-	void _set_vi_visible(bool p_visible);
-	bool _is_vi_visible() const { return data.vi_visible; }
 
 	Transform _get_global_transform_interpolated(real_t p_interpolation_fraction);
 	const Transform &_get_cached_global_transform_interpolated() const { return data.global_transform_interpolated; }
