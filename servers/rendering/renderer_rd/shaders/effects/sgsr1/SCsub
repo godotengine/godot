@@ -7,6 +7,10 @@ if "RD_GLSL" in env["BUILDERS"]:
     # find all include files
     gl_include_files = [str(f) for f in Glob("*_inc.glsl")] + [str(f) for f in Glob("../*_inc.glsl")]
 
+    # Add all FSR2 shader and header files.
+    gl_include_files += [str(f) for f in Glob("/*.h")]
+    gl_include_files += [str(f) for f in Glob("/*.glsl")]
+
     # find all shader code(all glsl files excluding our include files)
     glsl_files = [str(f) for f in Glob("*.glsl") if str(f) not in gl_include_files]
 
@@ -16,6 +20,3 @@ if "RD_GLSL" in env["BUILDERS"]:
     # compile shaders
     for glsl_file in glsl_files:
         env.RD_GLSL(glsl_file)
-
-SConscript("fsr2/SCsub")
-SConscript("sgsr1/SCsub")
