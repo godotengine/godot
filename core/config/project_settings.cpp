@@ -1581,6 +1581,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
 	GLOBAL_DEF("display/window/size/always_on_top", false);
+	GLOBAL_DEF("display/window/size/exclude_from_capture", false);
 	GLOBAL_DEF("display/window/size/transparent", false);
 	GLOBAL_DEF("display/window/size/extend_to_title", false);
 	GLOBAL_DEF("display/window/size/no_focus", false);
