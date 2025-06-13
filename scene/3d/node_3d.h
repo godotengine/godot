@@ -150,8 +150,12 @@ private:
 		RID visibility_parent;
 
 		Node3D *parent = nullptr;
-		List<Node3D *> children;
-		List<Node3D *>::Element *C = nullptr;
+
+		// An unordered vector of `Spatial` children only.
+		// This is a subset of the `Node::children`, purely
+		// an optimization for faster traversal.
+		LocalVector<Node3D *> node3d_children;
+		uint32_t index_in_parent = UINT32_MAX;
 
 		ClientPhysicsInterpolationData *client_physics_interpolation_data = nullptr;
 
