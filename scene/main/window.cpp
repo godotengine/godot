@@ -1370,7 +1370,7 @@ void Window::set_force_native(bool p_force_native) {
 		return;
 	}
 	force_native = p_force_native;
-	if (!is_in_edited_scene_root() && get_tree()->get_root()->is_embedding_subwindows()) {
+	if (!is_in_edited_scene_root() && is_inside_tree() && get_tree()->get_root()->is_embedding_subwindows()) {
 		set_embedding_subwindows(force_native);
 	}
 }
@@ -1502,6 +1502,9 @@ void Window::_notification(int p_what) {
 				if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
 					ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Window::_settings_changed));
 				}
+			} else if (get_parent() && get_tree()->get_root()->is_embedding_subwindows()) {
+				// Is not the main window and main window is embedding.
+				set_embedding_subwindows(force_native);
 			}
 
 			bool embedded = false;
