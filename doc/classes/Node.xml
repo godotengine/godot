@@ -764,7 +764,7 @@
 			<return type="void" />
 			<description>
 				Prints all orphan nodes (nodes outside the [SceneTree]). Useful for debugging.
-				[b]Note:[/b] This method only works in debug builds. Does nothing in a project exported in release mode.
+				[b]Note:[/b] This method only works in debug builds. It does nothing in a project exported in release mode.
 			</description>
 		</method>
 		<method name="print_tree">

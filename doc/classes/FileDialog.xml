@@ -107,7 +107,7 @@
 		<method name="invalidate">
 			<return type="void" />
 			<description>
-				Invalidate and update the current dialog content list.
+				Invalidates and updates this dialog's content list.
 				[b]Note:[/b] This method does nothing on native file dialogs.
 			</description>
 		</method>

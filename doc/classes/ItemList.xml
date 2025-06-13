@@ -315,7 +315,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the text for the item at the given index to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
 			</description>
 		</method>
 		<method name="set_item_metadata">

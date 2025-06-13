@@ -443,7 +443,7 @@
 			<return type="Variant" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the element at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]null[/code].
+				Returns the element at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns [code]null[/code].
 				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>
