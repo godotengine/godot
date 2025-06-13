@@ -825,6 +825,18 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
 		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton() && !Engine::get_singleton()->is_project_manager_hint() && !Engine::get_singleton()->is_editor_hint()) {
+			// Project started from the editor, inject "path" argument to set instance working directory.
+			char cwd[PATH_MAX];
+			if (::getcwd(cwd, sizeof(cwd)) != nullptr) {
+				List<String> arguments = p_arguments;
+				arguments.push_back("--path");
+				arguments.push_back(String::utf8(cwd));
+				return create_process(path, arguments, r_child_id, false);
+			}
+		}
+#endif
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
