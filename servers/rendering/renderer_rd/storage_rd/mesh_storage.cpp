@@ -55,7 +55,7 @@ MeshStorage::MeshStorage() {
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_VERTEX] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_VERTEX] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 
 		{ //normal
@@ -67,7 +67,7 @@ MeshStorage::MeshStorage() {
 				fptr[1] = 0.0;
 				fptr[2] = 0.0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_NORMAL] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_NORMAL] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 
 		{ //tangent
@@ -80,7 +80,7 @@ MeshStorage::MeshStorage() {
 				fptr[2] = 0.0;
 				fptr[3] = 0.0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TANGENT] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TANGENT] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 
 		{ //color
@@ -93,7 +93,7 @@ MeshStorage::MeshStorage() {
 				fptr[2] = 1.0;
 				fptr[3] = 1.0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_COLOR] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_COLOR] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 
 		{ //tex uv 1
@@ -104,7 +104,7 @@ MeshStorage::MeshStorage() {
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 		{ //tex uv 2
 			buffer.resize(sizeof(float) * 2);
@@ -114,7 +114,7 @@ MeshStorage::MeshStorage() {
 				fptr[0] = 0.0;
 				fptr[1] = 0.0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 
 		for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
@@ -127,7 +127,7 @@ MeshStorage::MeshStorage() {
 				fptr[2] = 0.0;
 				fptr[3] = 0.0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_CUSTOM0 + i] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_CUSTOM0 + i] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 
 		{ //bones
@@ -140,7 +140,7 @@ MeshStorage::MeshStorage() {
 				fptr[2] = 0;
 				fptr[3] = 0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_BONES] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_BONES] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 
 		{ //weights
@@ -153,7 +153,7 @@ MeshStorage::MeshStorage() {
 				fptr[2] = 0.0;
 				fptr[3] = 0.0;
 			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_WEIGHTS] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_WEIGHTS] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer.ptr());
 		}
 	}
 
@@ -385,20 +385,20 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			Vector<uint8_t> new_vertex_data;
 			new_vertex_data.resize_initialized(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
 			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, as_storage_flag);
+			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data.ptr(), as_storage_flag);
 			s->vertex_buffer_size = new_vertex_data.size();
 		} else {
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, as_storage_flag);
+			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data.ptr(), as_storage_flag);
 			s->vertex_buffer_size = new_surface.vertex_data.size();
 		}
 	}
 
 	if (new_surface.attribute_data.size()) {
-		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.attribute_data.size(), new_surface.attribute_data);
+		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.attribute_data.size(), new_surface.attribute_data.ptr());
 		s->attribute_buffer_size = new_surface.attribute_data.size();
 	}
 	if (new_surface.skin_data.size()) {
-		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data, as_storage_flag);
+		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data.ptr(), as_storage_flag);
 		s->skin_buffer_size = new_surface.skin_data.size();
 	}
 
@@ -411,7 +411,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	if (new_surface.index_count) {
 		bool is_index_16 = new_surface.vertex_count <= 65536 && new_surface.vertex_count > 0;
 
-		s->index_buffer = RD::get_singleton()->index_buffer_create(new_surface.index_count, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.index_data, false);
+		s->index_buffer = RD::get_singleton()->index_buffer_create(new_surface.index_count, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.index_data.ptr(), false);
 		s->index_buffer_size = new_surface.index_data.size();
 		s->index_count = new_surface.index_count;
 		s->index_array = RD::get_singleton()->index_array_create(s->index_buffer, 0, s->index_count);
@@ -421,7 +421,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 			for (int i = 0; i < new_surface.lods.size(); i++) {
 				uint32_t indices = new_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
-				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.lods[i].index_data);
+				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.lods[i].index_data.ptr());
 				s->lods[i].index_buffer_size = new_surface.lods[i].index_data.size();
 				s->lods[i].index_array = RD::get_singleton()->index_array_create(s->lods[i].index_buffer, 0, indices);
 				s->lods[i].edge_length = new_surface.lods[i].edge_length;
@@ -439,7 +439,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	s->uv_scale = new_surface.uv_scale;
 
 	if (mesh->blend_shape_count > 0) {
-		s->blend_shape_buffer = RD::get_singleton()->storage_buffer_create(new_surface.blend_shape_data.size(), new_surface.blend_shape_data);
+		s->blend_shape_buffer = RD::get_singleton()->storage_buffer_create(new_surface.blend_shape_data.size(), new_surface.blend_shape_data.ptr());
 		s->blend_shape_buffer_size = new_surface.blend_shape_data.size();
 	}
 
@@ -1043,7 +1043,7 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 		for (float &weight : mi->blend_weights) {
 			weight = 0;
 		}
-		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.to_byte_array());
+		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.ptr());
 		mi->weights_dirty = true;
 	}
 
@@ -1057,7 +1057,7 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 }
 
 void MeshStorage::_mesh_instance_add_surface_buffer(MeshInstance *mi, Mesh *mesh, MeshInstance::Surface *s, uint32_t p_surface, uint32_t p_buffer_index) {
-	s->vertex_buffer[p_buffer_index] = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, Vector<uint8_t>(), RD::BUFFER_CREATION_AS_STORAGE_BIT);
+	s->vertex_buffer[p_buffer_index] = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, nullptr, RD::BUFFER_CREATION_AS_STORAGE_BIT);
 
 	Vector<RD::Uniform> uniforms;
 	{
@@ -1681,7 +1681,7 @@ void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 3, static_cast<uint8_t>(count >> 24));
 			}
 
-			RID newBuffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count, newVector, RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+			RID newBuffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count, newVector.ptr(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
 			multimesh->command_buffer = newBuffer;
 		}
 	}

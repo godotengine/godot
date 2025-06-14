@@ -94,9 +94,9 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 		ERR_FAIL_COND(p_data_cells.size() != (int)cell_count * 16); //see that data size matches
 
 		voxel_gi->cell_count = cell_count;
-		voxel_gi->octree_buffer = RD::get_singleton()->storage_buffer_create(p_octree_cells.size(), p_octree_cells);
+		voxel_gi->octree_buffer = RD::get_singleton()->storage_buffer_create(p_octree_cells.size(), p_octree_cells.ptr());
 		voxel_gi->octree_buffer_size = p_octree_cells.size();
-		voxel_gi->data_buffer = RD::get_singleton()->storage_buffer_create(p_data_cells.size(), p_data_cells);
+		voxel_gi->data_buffer = RD::get_singleton()->storage_buffer_create(p_data_cells.size(), p_data_cells.ptr());
 		voxel_gi->data_buffer_size = p_data_cells.size();
 
 		if (p_distance_field.size()) {
@@ -583,8 +583,8 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		/* Buffers */
 
 		cascade.solid_cell_buffer = RD::get_singleton()->storage_buffer_create(sizeof(SDFGI::Cascade::SolidCell) * solid_cell_count);
-		cascade.solid_cell_dispatch_buffer_storage = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>());
-		cascade.solid_cell_dispatch_buffer_call = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+		cascade.solid_cell_dispatch_buffer_storage = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, nullptr);
+		cascade.solid_cell_dispatch_buffer_call = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, nullptr, RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
 		cascade.lights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(SDFGIShader::Light) * MAX(SDFGI::MAX_STATIC_LIGHTS, SDFGI::MAX_DYNAMIC_LIGHTS));
 		{
 			Vector<RD::Uniform> uniforms;

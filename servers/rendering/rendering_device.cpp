@@ -233,7 +233,7 @@ RenderingDevice::Buffer *RenderingDevice::_get_buffer_from_owner(RID p_buffer) {
 	return buffer;
 }
 
-Error RenderingDevice::_buffer_initialize(Buffer *p_buffer, const uint8_t *p_data, size_t p_data_size, uint32_t p_required_align) {
+Error RenderingDevice::_buffer_initialize(Buffer *p_buffer, const void *p_data, size_t p_data_size, uint32_t p_required_align) {
 	uint32_t transfer_worker_offset;
 	TransferWorker *transfer_worker = _acquire_transfer_worker(p_data_size, p_required_align, transfer_worker_offset);
 	p_buffer->transfer_worker_index = transfer_worker->index;
@@ -782,9 +782,7 @@ uint64_t RenderingDevice::buffer_get_device_address(RID p_buffer) {
 	return driver->buffer_get_device_address(buffer->driver_id);
 }
 
-RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
-
+RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const void *p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
 	Buffer buffer;
 	buffer.size = p_size_bytes;
 	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT);
@@ -806,8 +804,8 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<u
 	buffer.draw_tracker = RDG::resource_tracker_create();
 	buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
 
-	if (p_data.size()) {
-		_buffer_initialize(&buffer, p_data.ptr(), p_data.size());
+	if (p_data != nullptr) {
+		_buffer_initialize(&buffer, p_data, p_size_bytes);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -821,21 +819,15 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<u
 	return id;
 }
 
-RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
-	uint32_t element_size = get_format_vertex_size(p_format);
-	ERR_FAIL_COND_V_MSG(element_size == 0, RID(), "Format requested is not supported for texture buffers");
-	uint64_t size_bytes = uint64_t(element_size) * p_size_elements;
-
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != size_bytes, RID());
-
+RID RenderingDevice::texture_buffer_create(uint32_t p_size_bytes, DataFormat p_format, const void *p_data) {
 	Buffer texture_buffer;
-	texture_buffer.size = size_bytes;
+	texture_buffer.size = p_size_bytes;
 	BitField<RDD::BufferUsageBits> usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_TEXEL_BIT);
-	texture_buffer.driver_id = driver->buffer_create(size_bytes, usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
+	texture_buffer.driver_id = driver->buffer_create(p_size_bytes, usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
 	ERR_FAIL_COND_V(!texture_buffer.driver_id, RID());
 
 	// Texture buffers are assumed to be immutable unless they don't have initial data.
-	if (p_data.is_empty()) {
+	if (p_data == nullptr) {
 		texture_buffer.draw_tracker = RDG::resource_tracker_create();
 		texture_buffer.draw_tracker->buffer_driver_id = texture_buffer.driver_id;
 	}
@@ -846,12 +838,12 @@ RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat 
 		ERR_FAIL_V(RID());
 	}
 
-	if (p_data.size()) {
-		_buffer_initialize(&texture_buffer, p_data.ptr(), p_data.size());
+	if (p_data != nullptr) {
+		_buffer_initialize(&texture_buffer, p_data, p_size_bytes);
 	}
 
 	_THREAD_SAFE_LOCK_
-	buffer_memory += size_bytes;
+	buffer_memory += p_size_bytes;
 	_THREAD_SAFE_UNLOCK_
 
 	RID id = texture_buffer_owner.make_rid(texture_buffer);
@@ -3084,9 +3076,7 @@ bool RenderingDevice::sampler_is_format_supported_for_filter(DataFormat p_format
 /**** VERTEX BUFFER ****/
 /***********************/
 
-RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
-
+RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const void *p_data, BitField<BufferCreationBits> p_creation_bits) {
 	Buffer buffer;
 	buffer.size = p_size_bytes;
 	buffer.usage = RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_VERTEX_BIT;
@@ -3100,13 +3090,13 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<ui
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
 	// Vertex buffers are assumed to be immutable unless they don't have initial data or they've been marked for storage explicitly.
-	if (p_data.is_empty() || p_creation_bits.has_flag(BUFFER_CREATION_AS_STORAGE_BIT)) {
+	if (p_data == nullptr || p_creation_bits.has_flag(BUFFER_CREATION_AS_STORAGE_BIT)) {
 		buffer.draw_tracker = RDG::resource_tracker_create();
 		buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
 	}
 
-	if (p_data.size()) {
-		_buffer_initialize(&buffer, p_data.ptr(), p_data.size());
+	if (p_data != nullptr) {
+		_buffer_initialize(&buffer, p_data, p_size_bytes);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -3226,7 +3216,7 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 	return id;
 }
 
-RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices, BitField<BufferCreationBits> p_creation_bits) {
+RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const void *p_data, bool p_use_restart_indices, BitField<BufferCreationBits> p_creation_bits) {
 	ERR_FAIL_COND_V(p_index_count == 0, RID());
 
 	IndexBuffer index_buffer;
@@ -3235,13 +3225,10 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 	index_buffer.index_count = p_index_count;
 	uint32_t size_bytes = p_index_count * ((p_format == INDEX_BUFFER_FORMAT_UINT16) ? 2 : 4);
 #ifdef DEBUG_ENABLED
-	if (p_data.size()) {
+	if (p_data != nullptr) {
 		index_buffer.max_index = 0;
-		ERR_FAIL_COND_V_MSG((uint32_t)p_data.size() != size_bytes, RID(),
-				"Default index buffer initializer array size (" + itos(p_data.size()) + ") does not match format required size (" + itos(size_bytes) + ").");
-		const uint8_t *r = p_data.ptr();
 		if (p_format == INDEX_BUFFER_FORMAT_UINT16) {
-			const uint16_t *index16 = (const uint16_t *)r;
+			const uint16_t *index16 = (const uint16_t *)p_data;
 			for (uint32_t i = 0; i < p_index_count; i++) {
 				if (p_use_restart_indices && index16[i] == 0xFFFF) {
 					continue; // Restart index, ignore.
@@ -3249,7 +3236,7 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 				index_buffer.max_index = MAX(index16[i], index_buffer.max_index);
 			}
 		} else {
-			const uint32_t *index32 = (const uint32_t *)r;
+			const uint32_t *index32 = (const uint32_t *)p_data;
 			for (uint32_t i = 0; i < p_index_count; i++) {
 				if (p_use_restart_indices && index32[i] == 0xFFFFFFFF) {
 					continue; // Restart index, ignore.
@@ -3272,13 +3259,11 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 	ERR_FAIL_COND_V(!index_buffer.driver_id, RID());
 
 	// Index buffers are assumed to be immutable unless they don't have initial data.
-	if (p_data.is_empty()) {
+	if (p_data == nullptr) {
 		index_buffer.draw_tracker = RDG::resource_tracker_create();
 		index_buffer.draw_tracker->buffer_driver_id = index_buffer.driver_id;
-	}
-
-	if (p_data.size()) {
-		_buffer_initialize(&index_buffer, p_data.ptr(), p_data.size());
+	} else {
+		_buffer_initialize(&index_buffer, p_data, size_bytes);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -3492,9 +3477,7 @@ uint64_t RenderingDevice::shader_get_vertex_input_attribute_mask(RID p_shader) {
 /**** UNIFORMS ****/
 /******************/
 
-RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
-	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
-
+RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const void *p_data, BitField<BufferCreationBits> p_creation_bits) {
 	Buffer buffer;
 	buffer.size = p_size_bytes;
 	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT);
@@ -3505,13 +3488,11 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
 	// Uniform buffers are assumed to be immutable unless they don't have initial data.
-	if (p_data.is_empty()) {
+	if (p_data == nullptr) {
 		buffer.draw_tracker = RDG::resource_tracker_create();
 		buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
-	}
-
-	if (p_data.size()) {
-		_buffer_initialize(&buffer, p_data.ptr(), p_data.size());
+	} else {
+		_buffer_initialize(&buffer, p_data, p_size_bytes);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -7356,11 +7337,11 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sampler_create", "state"), &RenderingDevice::_sampler_create);
 	ClassDB::bind_method(D_METHOD("sampler_is_format_supported_for_filter", "format", "sampler_filter"), &RenderingDevice::sampler_is_format_supported_for_filter);
 
-	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::_vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("vertex_format_create", "vertex_descriptions"), &RenderingDevice::_vertex_format_create);
 	ClassDB::bind_method(D_METHOD("vertex_array_create", "vertex_count", "vertex_format", "src_buffers", "offsets"), &RenderingDevice::_vertex_array_create, DEFVAL(Vector<int64_t>()));
 
-	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices", "creation_bits"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices", "creation_bits"), &RenderingDevice::_index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
@@ -7371,9 +7352,9 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
-	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::uniform_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("storage_buffer_create", "size_bytes", "data", "usage", "creation_bits"), &RenderingDevice::storage_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("texture_buffer_create", "size_bytes", "format", "data"), &RenderingDevice::texture_buffer_create, DEFVAL(Vector<uint8_t>()));
+	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::_uniform_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("storage_buffer_create", "size_bytes", "data", "usage", "creation_bits"), &RenderingDevice::_storage_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("texture_buffer_create", "size_bytes", "format", "data"), &RenderingDevice::_texture_buffer_create, DEFVAL(Vector<uint8_t>()));
 
 	ClassDB::bind_method(D_METHOD("uniform_set_create", "uniforms", "shader", "shader_set"), &RenderingDevice::_uniform_set_create);
 	ClassDB::bind_method(D_METHOD("uniform_set_is_valid", "uniform_set"), &RenderingDevice::uniform_set_is_valid);

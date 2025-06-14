@@ -543,7 +543,7 @@ void ParticlesStorage::_particles_allocate_emission_buffer(Particles *particles)
 	particles->emission_buffer = reinterpret_cast<ParticleEmissionBuffer *>(particles->emission_buffer_data.ptrw());
 	particles->emission_buffer->particle_max = particles->amount;
 
-	particles->emission_storage_buffer = RD::get_singleton()->storage_buffer_create(particles->emission_buffer_data.size(), particles->emission_buffer_data);
+	particles->emission_storage_buffer = RD::get_singleton()->storage_buffer_create(particles->emission_buffer_data.size(), particles->emission_buffer_data.ptr());
 
 	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
 		//will need to be re-created
@@ -1381,7 +1381,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 
 		data.resize_initialized(particle_instance_buffer_size);
 
-		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data);
+		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data.ptr());
 
 		{
 			Vector<RD::Uniform> uniforms;
