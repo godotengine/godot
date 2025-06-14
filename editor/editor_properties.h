@@ -165,8 +165,9 @@ class EditorPropertyPath : public EditorProperty {
 	EditorFileDialog *dialog = nullptr;
 	LineEdit *path = nullptr;
 	Button *path_edit = nullptr;
+	Button *toggle_uid = nullptr;
 
-	String _get_path_text();
+	String _get_path_text(bool p_allow_uid = false);
 
 	void _path_selected(const String &p_path);
 	void _path_pressed();
