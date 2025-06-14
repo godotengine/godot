@@ -98,11 +98,18 @@ void RunInstancesDialog::_create_instance(InstanceData &p_instance, const Dictio
 	instance_item->set_text(COLUMN_FEATURE_TAGS, p_data.get("features", String()));
 }
 
+void RunInstancesDialog::_notification(int p_what) {
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
+	}
+}
+
 void RunInstancesDialog::_save_main_args() {
 	ProjectSettings::get_singleton()->set_setting("editor/run/main_run_args", main_args_edit->get_text());
 	ProjectSettings::get_singleton()->save();
 	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_main_feature_tags", main_features_edit->get_text());
 	EditorSettings::get_singleton()->set_project_metadata("debug_options", "multiple_instances_enabled", enable_multiple_instances_checkbox->is_pressed());
+	EditorSettings::get_singleton()->notify_changes();
 }
 
 void RunInstancesDialog::_save_arguments() {
