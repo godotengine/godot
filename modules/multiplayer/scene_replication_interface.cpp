@@ -141,7 +141,7 @@ void SceneReplicationInterface::on_network_process() {
 	// Process syncs.
 	uint64_t usec = OS::get_singleton()->get_ticks_usec();
 	for (KeyValue<int, PeerInfo> &E : peers_info) {
-		const HashSet<ObjectID> to_sync = E.value.sync_nodes;
+		const HashSet<ObjectID> &to_sync = E.value.sync_nodes;
 		if (to_sync.is_empty()) {
 			continue; // Nothing to sync
 		}
