@@ -243,7 +243,7 @@ void GLManagerNative_Windows::_nvapi_setup_profile() {
 	ogl_thread_control_setting.settingId = OGL_THREAD_CONTROL_ID;
 	ogl_thread_control_setting.settingType = NVDRS_DWORD_TYPE;
 	int thread_control_val = OGL_THREAD_CONTROL_DISABLE;
-	if (!GLOBAL_GET("rendering/gl_compatibility/nvidia_disable_threaded_optimization")) {
+	if (!GLOBAL_GET("rendering/gl_compatibility/nvidia_disable_threaded_optimization") || OS::get_singleton()->_is_gdriver_threaded_optimization_allowed()) {
 		thread_control_val = OGL_THREAD_CONTROL_ENABLE;
 	}
 	ogl_thread_control_setting.u32CurrentValue = thread_control_val;
@@ -503,7 +503,9 @@ void GLManagerNative_Windows::swap_buffers() {
 }
 
 Error GLManagerNative_Windows::initialize() {
-	_nvapi_setup_profile();
+	if (GLOBAL_GET("rendering/gl_compatibility/tune_nvidia_driver")) {
+		_nvapi_setup_profile();
+	}
 	return OK;
 }
 
