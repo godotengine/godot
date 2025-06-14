@@ -319,7 +319,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the given [param column]'s title to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
 			</description>
 		</method>
 		<method name="set_selected">
