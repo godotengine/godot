@@ -302,16 +302,7 @@ void TextureLayeredEditor::_draw_outline() {
 	draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
 }
 
-void TextureLayeredEditor::_make_shaders() {
-	shaders[0].instantiate();
-	shaders[0]->set_code(array_2d_shader);
-
-	shaders[1].instantiate();
-	shaders[1]->set_code(cubemap_shader);
-
-	shaders[2].instantiate();
-	shaders[2]->set_code(cubemap_array_shader);
-
+void TextureLayeredEditor::_make_materials() {
 	for (int i = 0; i < 3; i++) {
 		materials[i].instantiate();
 		materials[i]->set_shader(shaders[i]);
@@ -343,6 +334,23 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 	texture_rect->set_size(Vector2(tex_width, tex_height));
 }
 
+void TextureLayeredEditor::init_shaders() {
+	shaders[0].instantiate();
+	shaders[0]->set_code(array_2d_shader);
+
+	shaders[1].instantiate();
+	shaders[1]->set_code(cubemap_shader);
+
+	shaders[2].instantiate();
+	shaders[2]->set_code(cubemap_array_shader);
+}
+
+void TextureLayeredEditor::finish_shaders() {
+	shaders[0].unref();
+	shaders[1].unref();
+	shaders[2].unref();
+}
+
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	if (texture.is_valid()) {
 		texture->disconnect_changed(callable_mp(this, &TextureLayeredEditor::_texture_changed));
@@ -351,8 +359,8 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		if (shaders[0].is_null()) {
-			_make_shaders();
+		if (materials[0].is_null()) {
+			_make_materials();
 		}
 
 		texture->connect_changed(callable_mp(this, &TextureLayeredEditor::_texture_changed));
