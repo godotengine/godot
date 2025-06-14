@@ -241,6 +241,13 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
+		if (h_scroll) {
+			h_scroll->_pan_callback(mm, this, h_scroll_enabled, false);
+		}
+		if (v_scroll) {
+			v_scroll->_pan_callback(mm, this, false, v_scroll_enabled);
+		}
+
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}

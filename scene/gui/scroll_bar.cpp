@@ -533,6 +533,24 @@ void ScrollBar::_drag_node_exit() {
 	drag_node = nullptr;
 }
 
+void ScrollBar::_pan_callback(const Ref<InputEventMouseMotion> &p_motion, Control *p_parent_control, bool p_h_enabled, bool p_v_enabled) {
+	if (!p_motion.is_valid()) {
+		return;
+	}
+
+	if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::MIDDLE)) {
+		Viewport *viewport = p_parent_control->get_viewport();
+		Rect2 global_rect = p_parent_control->get_global_rect();
+		Vector2 relative = -p_motion->get_relative();
+
+		if (is_class("VScrollBar") && p_v_enabled) {
+			set_value(get_value() - viewport->wrap_mouse_in_rect(relative, global_rect).y);
+		} else if (is_class("HScrollBar") && p_h_enabled) {
+			set_value(get_value() - viewport->wrap_mouse_in_rect(relative, global_rect).x);
+		}
+	}
+}
+
 void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 	if (!drag_node_enabled) {
 		return;

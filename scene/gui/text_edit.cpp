@@ -2556,6 +2556,13 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		_update_minimap_hover();
 	}
 
+	if (h_scroll) {
+		h_scroll->_pan_callback(mm, this, true, false);
+	}
+	if (v_scroll) {
+		v_scroll->_pan_callback(mm, this, false, true);
+	}
+
 	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 		accept_event(); // Accept event if scroll changed.
 	}
