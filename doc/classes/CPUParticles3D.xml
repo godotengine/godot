@@ -109,10 +109,10 @@
 			Each particle's rotation will be animated along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="angle_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum angle.
+			Maximum initial rotation applied to each particle, in degrees.
 		</member>
 		<member name="angle_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum angle.
+			Minimum equivalent of [member angle_max].
 		</member>
 		<member name="angular_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's angular velocity (rotation speed) will vary along this [Curve] over its lifetime. Should be a unit [Curve].
@@ -127,19 +127,20 @@
 			Each particle's animation offset will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="anim_offset_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum animation offset.
+			Maximum animation offset that corresponds to frame index in the texture. [code]0[/code] is the first frame, [code]1[/code] is the last one. See [member CanvasItemMaterial.particles_animation].
 		</member>
 		<member name="anim_offset_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum animation offset.
+			Minimum equivalent of [member anim_offset_max].
 		</member>
 		<member name="anim_speed_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's animation speed will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="anim_speed_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum particle animation speed.
+			Maximum particle animation speed. Animation speed of [code]1[/code] means that the particles will make full [code]0[/code] to [code]1[/code] offset cycle during lifetime, [code]2[/code] means [code]2[/code] cycles etc.
+			With animation speed greater than [code]1[/code], remember to enable [member BaseMaterial3D.particles_anim_loop] property if you want the animation to repeat.
 		</member>
 		<member name="anim_speed_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum particle animation speed.
+			Minimum equivalent of [member anim_speed_max].
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			Each particle's initial color.
@@ -157,10 +158,10 @@
 			Damping will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="damping_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum damping.
+			The maximum rate at which particles lose velocity. For example value of [code]100[/code] means that the particle will go from [code]100[/code] velocity to [code]0[/code] in [code]1[/code] second.
 		</member>
 		<member name="damping_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum damping.
+			Minimum equivalent of [member damping_max].
 		</member>
 		<member name="direction" type="Vector3" setter="set_direction" getter="get_direction" default="Vector3(1, 0, 0)">
 			Unit vector specifying the particles' emission direction.
@@ -169,7 +170,7 @@
 			Particle draw order.
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
-			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
+			The box's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
 		</member>
 		<member name="emission_colors" type="PackedColorArray" setter="set_emission_colors" getter="get_emission_colors" default="PackedColorArray()">
 			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
@@ -210,7 +211,7 @@
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins.
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="0">
-			The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the particle system itself.
+			The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
 			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane.
@@ -225,16 +226,16 @@
 			Each particle's hue will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="hue_variation_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum hue variation.
+			Maximum initial hue variation applied to each particle. It will shift the particle color's hue.
 		</member>
 		<member name="hue_variation_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum hue variation.
+			Minimum equivalent of [member hue_variation_max].
 		</member>
 		<member name="initial_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum value of the initial velocity.
+			Maximum initial velocity magnitude for each particle. Direction comes from [member direction] and [member spread].
 		</member>
 		<member name="initial_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum value of the initial velocity.
+			Minimum equivalent of [member initial_velocity_max].
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
 			Amount of time each particle will exist.
@@ -246,13 +247,13 @@
 			Each particle's linear acceleration will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="linear_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum linear acceleration.
+			Maximum linear acceleration applied to each particle in the direction of motion.
 		</member>
 		<member name="linear_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum linear acceleration.
+			Minimum equivalent of [member linear_accel_max].
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="false">
-			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated.
+			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the this node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the this node (and its parents) when it is moved or rotated.
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] used for each particle. If [code]null[/code], particles will be spheres.
@@ -264,10 +265,10 @@
 			Each particle's orbital velocity will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="orbit_velocity_max" type="float" setter="set_param_max" getter="get_param_max">
-			Maximum orbit velocity.
+			Maximum orbital velocity applied to each particle. Makes the particles circle around origin. Specified in number of full rotations around origin per second.
 		</member>
 		<member name="orbit_velocity_min" type="float" setter="set_param_min" getter="get_param_min">
-			Minimum orbit velocity.
+			Minimum equivalent of [member orbit_velocity_max].
 		</member>
 		<member name="particle_flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			Align Y axis of particle with the direction of its velocity.
@@ -285,10 +286,10 @@
 			Each particle's radial acceleration will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="radial_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum radial acceleration.
+			Maximum radial acceleration applied to each particle. Makes particle accelerate away from the origin or towards it if negative.
 		</member>
 		<member name="radial_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum radial acceleration.
+			Minimum equivalent of [member radial_accel_max].
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" default="0.0">
 			Emission lifetime randomness ratio.
@@ -297,19 +298,22 @@
 			Each particle's scale will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="scale_amount_max" type="float" setter="set_param_max" getter="get_param_max" default="1.0">
-			Maximum scale.
+			Maximum initial scale applied to each particle.
 		</member>
 		<member name="scale_amount_min" type="float" setter="set_param_min" getter="get_param_min" default="1.0">
-			Minimum scale.
+			Minimum equivalent of [member scale_amount_max].
 		</member>
 		<member name="scale_curve_x" type="Curve" setter="set_scale_curve_x" getter="get_scale_curve_x">
-			Curve for the scale over life, along the x axis.
+			Each particle's scale along the X axis will vary along this [Curve].
+			[member split_scale] must be enabled.
 		</member>
 		<member name="scale_curve_y" type="Curve" setter="set_scale_curve_y" getter="get_scale_curve_y">
-			Curve for the scale over life, along the y axis.
+			Each particle's scale along the Y axis will vary along this [Curve].
+			[member split_scale] must be enabled.
 		</member>
 		<member name="scale_curve_z" type="Curve" setter="set_scale_curve_z" getter="get_scale_curve_z">
-			Curve for the scale over life, along the z axis.
+			Each particle's scale along the Z axis will vary along this [Curve].
+			[member split_scale] must be enabled.
 		</member>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
 			Sets the random seed used by the particle system. Only effective if [member use_fixed_seed] is [code]true[/code].
@@ -327,10 +331,10 @@
 			Each particle's tangential acceleration will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="tangential_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum tangent acceleration.
+			Maximum tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity giving the particles a swirling motion.
 		</member>
 		<member name="tangential_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum tangent acceleration.
+			Minimum equivalent of [member tangential_accel_max].
 		</member>
 		<member name="use_fixed_seed" type="bool" setter="set_use_fixed_seed" getter="get_use_fixed_seed" default="false">
 			If [code]true[/code], particles will use the same seed for every simulation using the seed defined in [member seed]. This is useful for situations where the visual outcome should be consistent across replays, for example when using Movie Maker mode.
