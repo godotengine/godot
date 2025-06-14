@@ -361,8 +361,9 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 			}
 
 			Vector<Variant> args;
+			args.resize(p_argcount);
 			for (int i = 0; i < p_argcount; i++) {
-				args.push_back(*p_args[i]);
+				args.write[i] = *p_args[i];
 			}
 
 			unique_group_calls[ug] = args;
@@ -1059,13 +1060,15 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 	/* clang-format on */
 
 	Vector<int> indices;
+	indices.resize(8 * 3);
 	for (int i = 0; i < 8 * 3; i++) {
-		indices.push_back(diamond_faces[i]);
+		indices.write[i] = (diamond_faces[i]);
 	}
 
 	Vector<Vector3> vertices;
+	vertices.resize(6);
 	for (int i = 0; i < 6; i++) {
-		vertices.push_back(diamond[i] * 0.1);
+		vertices.write[i] = diamond[i] * 0.1;
 	}
 
 	Array arr;
@@ -1254,6 +1257,7 @@ void SceneTree::_process(bool p_physics) {
 
 				if (using_threads) {
 					local_process_group_cache.clear();
+					local_process_group_cache.reserve(i - from);
 				}
 				for (uint32_t j = from; j < i; j++) {
 					if (process_groups[j]->last_pass == process_last_pass) {
