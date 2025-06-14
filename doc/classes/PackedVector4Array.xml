@@ -135,6 +135,13 @@
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
+		<method name="pick_random" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Returns a random element from the array. Generates an error and returns [code]null[/code] if the array is empty.
+				Similar to [method Array.pick_random]
+			</description>
+		</method>
 		<method name="push_back">
 			<return type="bool" />
 			<param index="0" name="value" type="Vector4" />
