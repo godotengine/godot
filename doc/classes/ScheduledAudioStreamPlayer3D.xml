@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScheduledAudioStreamPlayer3D" inherits="AudioStreamPlayer3D" experimental="" keywords="sound, music, song" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node for scheduled audio playback.
+	</brief_description>
+	<description>
+		Behaves similarly to [AudioStreamPlayer3D] but can schedule audio to play in the future.
+		See also [ScheduledAudioStreamPlayer] to play a scheduled sound non-positionally.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="play_scheduled">
+			<return type="AudioStreamPlaybackScheduled" />
+			<param index="0" name="absolute_time" type="float" />
+			<param index="1" name="from_position" type="float" default="0.0" />
+			<description>
+				Schedules a sound to be played on the [AudioServer]'s timeline at [param absolute_time] in seconds. If the sound is scheduled to play earlier than the value returned by [method AudioServer.get_absolute_time], it will be played immediately. The sound starts from the given [param from_position] in seconds.
+				Use this method for high precision playbacks, such as a metronome or other rhythm-based sounds.
+				Returns an [AudioStreamPlaybackScheduled] instance representing the scheduled playback of the sound.
+				[b]Note:[/b] Calling this method after [member AudioStreamPlayer3D.max_polyphony] is reached will cut off the oldest sound playing on this node.
+				[b]Note:[/b] On the Web platform, [member AudioStreamPlayer3D.playback_type] must be set to [constant AudioServer.PLAYBACK_TYPE_STREAM]. Otherwise, this method will behave like [method AudioStreamPlayer3D.play].
+			</description>
+		</method>
+	</methods>
+</class>

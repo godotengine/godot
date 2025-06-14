@@ -31,6 +31,7 @@
 #include "audio_stream_player_internal.h"
 
 #include "scene/main/node.h"
+#include "scene/resources/audio_stream_playback_scheduled.h"
 #include "servers/audio/audio_stream.h"
 
 void AudioStreamPlayerInternal::_set_process(bool p_enabled) {
@@ -133,7 +134,7 @@ void AudioStreamPlayerInternal::notification(int p_what) {
 	}
 }
 
-Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
+Ref<AudioStreamPlayback> AudioStreamPlayerInternal::_create_playback() {
 	Ref<AudioStreamPlayback> stream_playback;
 	if (stream.is_null()) {
 		return stream_playback;
@@ -168,10 +169,39 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 		}
 	}
 
+	return stream_playback;
+}
+
+Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
+	Ref<AudioStreamPlayback> stream_playback = _create_playback();
+	if (stream_playback.is_null()) {
+		return stream_playback;
+	}
+
 	stream_playbacks.push_back(stream_playback);
 	active.set();
 	_set_process(true);
 	return stream_playback;
+}
+
+Ref<AudioStreamPlaybackScheduled> AudioStreamPlayerInternal::play_scheduled_basic() {
+	Ref<AudioStreamPlayback> stream_playback = _create_playback();
+	if (stream_playback.is_null()) {
+		return Ref<AudioStreamPlaybackScheduled>();
+	}
+
+	Ref<AudioStreamPlaybackScheduled> stream_playback_scheduled;
+	stream_playback_scheduled.instantiate();
+	stream_playback_scheduled->set_base_playback(stream_playback);
+
+	if (stream_playback_scheduled->get_is_sample()) {
+		WARN_PRINT_ED("Scheduled play does not support samples. Playing immediately.");
+	}
+
+	stream_playbacks.push_back(stream_playback_scheduled);
+	active.set();
+	_set_process(true);
+	return stream_playback_scheduled;
 }
 
 void AudioStreamPlayerInternal::set_stream_paused(bool p_pause) {
@@ -263,7 +293,7 @@ void AudioStreamPlayerInternal::set_stream(Ref<AudioStream> p_stream) {
 	node->notify_property_list_changed();
 }
 
-void AudioStreamPlayerInternal::seek(float p_seconds) {
+void AudioStreamPlayerInternal::seek(double p_seconds) {
 	if (is_playing()) {
 		stop_callable.call();
 		play_callable.call(p_seconds);
@@ -289,7 +319,7 @@ bool AudioStreamPlayerInternal::is_playing() const {
 	return false;
 }
 
-float AudioStreamPlayerInternal::get_playback_position() {
+double AudioStreamPlayerInternal::get_playback_position() {
 	// Return the playback position of the most recently started playback stream.
 	if (!stream_playbacks.is_empty()) {
 		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
