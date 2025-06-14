@@ -58,8 +58,8 @@ void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 		NavigationServer3DManager::set_default_server(new_navigation_server_3d);
 
 #ifndef DISABLE_DEPRECATED
-		_nav_mesh_generator = memnew(NavigationMeshGenerator);
 		GDREGISTER_CLASS(NavigationMeshGenerator);
+		_nav_mesh_generator = memnew(NavigationMeshGenerator);
 		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
 #endif // DISABLE_DEPRECATED
 	}

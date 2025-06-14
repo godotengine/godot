@@ -127,6 +127,11 @@
 #include "editor/plugins/tool_button_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/register_exporters.h"
+#include "engine_update_label.h"
+#include "plugins/asset_library_editor_plugin.h"
+#include "project_manager/project_dialog.h"
+#include "project_manager/project_list.h"
+#include "project_manager/quick_settings_dialog.h"
 #ifndef DISABLE_DEPRECATED
 #include "editor/plugins/parallax_background_editor_plugin.h"
 #include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
@@ -275,6 +280,14 @@ void register_editor_types() {
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 #endif
+
+	GDREGISTER_INTERNAL_CLASS(ProjectList);
+	GDREGISTER_INTERNAL_CLASS(ProjectListItemControl);
+	GDREGISTER_INTERNAL_CLASS(EditorAssetLibrary);
+	GDREGISTER_INTERNAL_CLASS(EditorAssetLibraryItemDownload);
+	GDREGISTER_INTERNAL_CLASS(EngineUpdateLabel);
+	GDREGISTER_INTERNAL_CLASS(QuickSettingsDialog);
+	GDREGISTER_INTERNAL_CLASS(ProjectDialog);
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");

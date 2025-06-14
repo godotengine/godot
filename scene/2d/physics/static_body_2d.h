@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/2d/physics/physics_body_2d.h"
+#include "scene/resources/physics_material.h"
 
 class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;
