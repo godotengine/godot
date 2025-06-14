@@ -280,6 +280,7 @@ static bool dump_extension_api = false;
 static bool include_docs_in_extension_api_dump = false;
 static bool validate_extension_api = false;
 static String validate_extension_api_file;
+static bool verify_scripts = false;
 #endif
 bool profile_gpu = false;
 
@@ -311,12 +312,29 @@ static String unescape_cmdline(const String &p_str) {
 }
 
 static String get_full_version_string() {
-	String hash = String(GODOT_VERSION_HASH);
-	if (!hash.is_empty()) {
-		hash = "." + hash.left(9);
-	}
-	return String(GODOT_VERSION_FULL_BUILD) + hash;
+        String hash = String(GODOT_VERSION_HASH);
+        if (!hash.is_empty()) {
+                hash = "." + hash.left(9);
+        }
+        return String(GODOT_VERSION_FULL_BUILD) + hash;
 }
+
+#ifdef TOOLS_ENABLED
+static void collect_script_paths(EditorFileSystemDirectory *p_dir, Vector<String> &r_paths) {
+        if (!p_dir) {
+                return;
+        }
+        for (int i = 0; i < p_dir->get_file_count(); i++) {
+                StringName type = p_dir->get_file_type(i);
+                if (ClassDB::is_parent_class(type, SNAME("Script"))) {
+                        r_paths.push_back(p_dir->get_file_path(i));
+                }
+        }
+        for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+                collect_script_paths(p_dir->get_subdir(i), r_paths);
+        }
+}
+#endif
 
 #if defined(TOOLS_ENABLED) && defined(MODULE_GDSCRIPT_ENABLED)
 static Vector<String> get_files_with_extension(const String &p_root, const String &p_extension) {
@@ -663,7 +681,8 @@ void Main::print_help(const char *p_binary) {
 	print_help_title("Standalone tools");
 	print_help_option("-s, --script <script>", "Run a script.\n");
 	print_help_option("--main-loop <main_loop_name>", "Run a MainLoop specified by its global class name.\n");
-	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
+        print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
+        print_help_option("--verify-scripts", "Load all scripts in the project and report errors.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #ifdef TOOLS_ENABLED
 	print_help_option("--import", "Starts the editor, waits for any resources to be imported, and then quits.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-release <preset> <path>", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -3856,10 +3875,17 @@ int Main::start() {
 
 		// Doctest Unit Testing Handler
 		// Designed to override and pass arguments to the unit test handler.
-		if (E->get() == "--check-only") {
-			check_only = true;
+                if (E->get() == "--check-only") {
+                        check_only = true;
 #ifdef TOOLS_ENABLED
-		} else if (E->get() == "--no-docbase") {
+                } else if (E->get() == "--verify-scripts") {
+                        verify_scripts = true;
+                        cmdline_tool = true;
+                        audio_driver = NULL_AUDIO_DRIVER;
+                        display_driver = NULL_DISPLAY_DRIVER;
+#endif
+#ifdef TOOLS_ENABLED
+                } else if (E->get() == "--no-docbase") {
 			gen_flags.set_flag(DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES);
 		} else if (E->get() == "--gdextension-docs") {
 			gen_flags.set_flag(DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES);
@@ -4087,12 +4113,28 @@ int Main::start() {
 			return EXIT_SUCCESS;
 		}
 
-		if (validate_extension_api) {
-			Engine::get_singleton()->set_editor_hint(true); // "extension_api.json" should always contains editor singletons.
-			bool valid = GDExtensionAPIDump::validate_extension_json_file(validate_extension_api_file) == OK;
-			return valid ? EXIT_SUCCESS : EXIT_FAILURE;
-		}
-	}
+                if (validate_extension_api) {
+                        Engine::get_singleton()->set_editor_hint(true); // "extension_api.json" should always contains editor singletons.
+                        bool valid = GDExtensionAPIDump::validate_extension_json_file(validate_extension_api_file) == OK;
+                        return valid ? EXIT_SUCCESS : EXIT_FAILURE;
+                }
+        }
+
+        if (verify_scripts) {
+                Engine::get_singleton()->set_editor_hint(true);
+                EditorFileSystem::get_singleton()->scan();
+                Vector<String> script_paths;
+                collect_script_paths(EditorFileSystem::get_singleton()->get_filesystem(), script_paths);
+                bool all_ok = true;
+                for (const String &path : script_paths) {
+                        Ref<Script> s = ResourceLoader::load(path);
+                        if (s.is_null()) {
+                                OS::get_singleton()->printerr("Failed to load script: %s\n", path.utf8().get_data());
+                                all_ok = false;
+                        }
+                }
+                return all_ok ? EXIT_SUCCESS : EXIT_FAILURE;
+        }
 
 #ifndef DISABLE_DEPRECATED
 	if (converting_project) {
