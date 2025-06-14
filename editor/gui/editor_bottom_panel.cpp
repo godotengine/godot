@@ -282,11 +282,15 @@ void EditorBottomPanel::hide_bottom_panel() {
 	}
 }
 
-void EditorBottomPanel::toggle_last_opened_bottom_panel() {
+bool EditorBottomPanel::is_any_bottom_panel_visible() const {
+	return last_opened_control && last_opened_control->is_visible();
+}
+
+void EditorBottomPanel::show_last_opened_bottom_panel(bool p_toggle) {
 	// Select by control instead of index, so that the last bottom panel is opened correctly
 	// if it's been reordered since.
 	if (last_opened_control) {
-		_switch_by_control(!last_opened_control->is_visible(), last_opened_control, true);
+		_switch_by_control(p_toggle ? !last_opened_control->is_visible() : true, last_opened_control, true);
 	} else {
 		// Open the first panel in the list if no panel was opened this session.
 		_switch_to_item(true, 0, true);
