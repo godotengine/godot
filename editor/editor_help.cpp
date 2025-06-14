@@ -4884,6 +4884,18 @@ FindBar::FindBar() {
 	find_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
 
+	case_sensitive = memnew(CheckBox);
+	case_sensitive->set_text(TTRC("Match Case"));
+	case_sensitive->set_focus_mode(FOCUS_ACCESSIBILITY);
+	case_sensitive->connect(SceneStringName(toggled), callable_mp(this, &FindBar::_search_options_changed));
+	add_child(case_sensitive);
+
+	whole_words = memnew(CheckBox);
+	whole_words->set_text(TTRC("Whole Words"));
+	whole_words->set_focus_mode(FOCUS_ACCESSIBILITY);
+	whole_words->connect(SceneStringName(toggled), callable_mp(this, &FindBar::_search_options_changed));
+	add_child(whole_words);
+
 	hide_button = memnew(Button);
 	hide_button->set_flat(true);
 	hide_button->set_tooltip_text(TTR("Hide"));
@@ -4908,6 +4920,7 @@ void FindBar::popup_search() {
 		if (grabbed_focus) {
 			rich_text_label->deselect();
 			results_count_to_current = 0;
+			_update_flags(false);
 			_search();
 		}
 	}
@@ -4932,18 +4945,45 @@ void FindBar::set_rich_text_label(RichTextLabel *p_rich_text_label) {
 	rich_text_label = p_rich_text_label;
 }
 
+bool FindBar::is_case_sensitive() const {
+	return case_sensitive->is_pressed();
+}
+
+bool FindBar::is_whole_words() const {
+	return whole_words->is_pressed();
+}
+
 bool FindBar::search_next() {
+	_update_flags(false);
 	return _search();
 }
 
 bool FindBar::search_prev() {
-	return _search(true);
+	_update_flags(true);
+	return _search();
 }
 
-bool FindBar::_search(bool p_search_previous) {
+void FindBar::_update_flags(bool p_direction_backwards, bool p_continue) {
+	flags = 0;
+
+	if (is_whole_words()) {
+		flags |= SEARCH_WHOLE_WORDS;
+	}
+	if (is_case_sensitive()) {
+		flags |= SEARCH_MATCH_CASE;
+	}
+	if (p_direction_backwards) {
+		flags |= SEARCH_BACKWARDS;
+	}
+	if (p_continue) {
+		flags |= SEARCH_CONTINUE;
+	}
+}
+
+bool FindBar::_search() {
 	String stext = search_text->get_text();
-	bool keep = prev_search == stext;
-	bool ret = rich_text_label->search(stext, keep, p_search_previous);
+	bool keep = prev_search == stext && flags & SEARCH_CONTINUE;
+	bool ret = rich_text_label->search_ex(stext, keep, flags & SEARCH_BACKWARDS, flags & SEARCH_MATCH_CASE, flags & SEARCH_WHOLE_WORDS);
 
 	prev_search = stext;
 	if (!keep) {
@@ -4951,7 +4991,7 @@ bool FindBar::_search(bool p_search_previous) {
 	}
 
 	if (ret) {
-		_update_results_count(p_search_previous);
+		_update_results_count(flags & SEARCH_BACKWARDS, flags & SEARCH_MATCH_CASE, flags & SEARCH_WHOLE_WORDS);
 	} else {
 		results_count = 0;
 		results_count_to_current = 0;
@@ -4961,7 +5001,7 @@ bool FindBar::_search(bool p_search_previous) {
 	return ret;
 }
 
-void FindBar::_update_results_count(bool p_search_previous) {
+void FindBar::_update_results_count(bool p_search_previous, bool p_search_match_case, bool p_search_whole_words) {
 	results_count = 0;
 
 	String searched = search_text->get_text();
@@ -4973,14 +5013,31 @@ void FindBar::_update_results_count(bool p_search_previous) {
 
 	int from_pos = 0;
 
+	bool key_start_is_symbol = is_symbol(searched[0]);
+	bool key_end_is_symbol = is_symbol(searched[searched.length() - 1]);
+
 	while (true) {
-		int pos = full_text.findn(searched, from_pos);
+		int pos = -1;
+		if (p_search_match_case) {
+			pos = full_text.find(searched, from_pos);
+		} else {
+			pos = full_text.findn(searched, from_pos);
+		}
 		if (pos == -1) {
 			break;
 		}
 
-		results_count++;
 		from_pos = pos + searched.length();
+
+		if (p_search_whole_words) {
+			if (!key_start_is_symbol && pos > 0 && !is_symbol(full_text[pos - 1])) {
+				continue;
+			} else if (!key_end_is_symbol && (pos + searched.length()) < full_text.length() && !is_symbol(full_text[pos + searched.length()])) {
+				continue;
+			}
+		}
+
+		results_count++;
 	}
 
 	results_count_to_current += (p_search_previous) ? -1 : 1;
@@ -5016,6 +5073,11 @@ void FindBar::_hide_bar() {
 	}
 
 	hide();
+}
+
+void FindBar::_search_options_changed(bool p_pressed) {
+	_update_flags(false, false);
+	_search();
 }
 
 // Implemented in input(..) as the LineEdit consumes the Escape pressed key.
