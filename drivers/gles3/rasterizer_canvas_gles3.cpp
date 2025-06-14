@@ -1287,6 +1287,76 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		r_batch_broken = false;
 	}
 
+#ifdef DEBUG_ENABLED
+	if (debug_redraw && p_item->debug_redraw_time > 0.0) {
+		Color dc = debug_redraw_color;
+		dc.a *= p_item->debug_redraw_time / debug_redraw_time;
+
+		if (state.canvas_instance_batches[state.current_batch_index].tex != RID() || state.canvas_instance_batches[state.current_batch_index].command_type != Item::Command::TYPE_RECT) {
+			_new_batch(r_batch_broken);
+			state.canvas_instance_batches[state.current_batch_index].tex = RID();
+			state.canvas_instance_batches[state.current_batch_index].command_type = Item::Command::TYPE_RECT;
+			state.canvas_instance_batches[state.current_batch_index].command = nullptr;
+			state.canvas_instance_batches[state.current_batch_index].specialization &= specialization_command_mask;
+			state.canvas_instance_batches[state.current_batch_index].flags = 0;
+		}
+
+		if (state.canvas_instance_batches[state.current_batch_index].blend_mode != GLES3::CanvasShaderData::BLEND_MODE_MIX || state.canvas_instance_batches[state.current_batch_index].blend_color != Color(1.0, 1.0, 1.0, 1.0)) {
+			_new_batch(r_batch_broken);
+			state.canvas_instance_batches[state.current_batch_index].blend_mode = GLES3::CanvasShaderData::BLEND_MODE_MIX;
+			state.canvas_instance_batches[state.current_batch_index].blend_color = Color(1.0, 1.0, 1.0, 1.0);
+		}
+
+		_prepare_canvas_texture(RID(), state.canvas_instance_batches[state.current_batch_index].filter, state.canvas_instance_batches[state.current_batch_index].repeat, r_index, texpixel_size);
+
+		_update_transform_2d_to_mat2x3(base_transform, state.instance_data_array[r_index].world);
+		for (int i = 0; i < 4; i++) {
+			state.instance_data_array[r_index].ninepatch_margins[i] = 0.0;
+			state.instance_data_array[r_index].lights[i] = uint32_t(0);
+		}
+		state.instance_data_array[r_index].color_texture_pixel_size[0] = 0.0;
+		state.instance_data_array[r_index].color_texture_pixel_size[1] = 0.0;
+
+		Rect2 src_rect;
+		Rect2 dst_rect;
+
+		dst_rect = p_item->rect;
+		if (dst_rect.size.width < 0) {
+			dst_rect.position.x += dst_rect.size.width;
+			dst_rect.size.width *= -1;
+		}
+		if (dst_rect.size.height < 0) {
+			dst_rect.position.y += dst_rect.size.height;
+			dst_rect.size.height *= -1;
+		}
+
+		src_rect = Rect2(0, 0, 1, 1);
+
+		state.instance_data_array[r_index].modulation[0] = dc.r;
+		state.instance_data_array[r_index].modulation[1] = dc.g;
+		state.instance_data_array[r_index].modulation[2] = dc.b;
+		state.instance_data_array[r_index].modulation[3] = dc.a;
+
+		state.instance_data_array[r_index].src_rect[0] = src_rect.position.x;
+		state.instance_data_array[r_index].src_rect[1] = src_rect.position.y;
+		state.instance_data_array[r_index].src_rect[2] = src_rect.size.width;
+		state.instance_data_array[r_index].src_rect[3] = src_rect.size.height;
+
+		state.instance_data_array[r_index].dst_rect[0] = dst_rect.position.x;
+		state.instance_data_array[r_index].dst_rect[1] = dst_rect.position.y;
+		state.instance_data_array[r_index].dst_rect[2] = dst_rect.size.width;
+		state.instance_data_array[r_index].dst_rect[3] = dst_rect.size.height;
+
+		_add_to_batch(r_index, r_batch_broken);
+
+		p_item->debug_redraw_time -= RSG::rasterizer->get_frame_delta_time();
+
+		RenderingServerDefault::redraw_request();
+
+		r_batch_broken = false;
+	}
+#endif
+
 	if (current_clip && reclip) {
 		//will make it re-enable clipping if needed afterwards
 		current_clip = nullptr;
@@ -1300,8 +1370,6 @@ _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primit
 }
 
 void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, RenderingMethod::RenderInfo *r_render_info) {
-	ERR_FAIL_NULL(state.canvas_instance_batches[state.current_batch_index].command);
-
 	// Used by Polygon and Mesh.
 	static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
 
@@ -1327,6 +1395,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 		} break;
 
 		case Item::Command::TYPE_POLYGON: {
+			ERR_FAIL_NULL(state.canvas_instance_batches[p_index].command);
 			const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(state.canvas_instance_batches[p_index].command);
 
 			PolygonBuffers *pb = polygon_buffers.polygons.getptr(polygon->polygon.polygon_id);
@@ -1385,6 +1454,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 		case Item::Command::TYPE_MESH:
 		case Item::Command::TYPE_MULTIMESH:
 		case Item::Command::TYPE_PARTICLES: {
+			ERR_FAIL_NULL(state.canvas_instance_batches[p_index].command);
 			GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 			GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
 			RID mesh;
@@ -2892,6 +2962,12 @@ void fragment() {
 	texture_storage->canvas_texture_initialize(default_canvas_texture);
 
 	state.time = 0.0;
+}
+
+void RasterizerCanvasGLES3::set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) {
+	debug_redraw = p_enabled;
+	debug_redraw_time = p_time;
+	debug_redraw_color = p_color;
 }
 
 RasterizerCanvasGLES3::~RasterizerCanvasGLES3() {
