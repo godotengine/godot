@@ -58,5 +58,7 @@ public:
 
 	_FORCE_INLINE_ int64_t rand_weighted(const Vector<float> &p_weights) { return randbase.rand_weighted(p_weights); }
 
+	void shuffle_array(Array p_array);
+
 	RandomNumberGenerator() { randbase.randomize(); }
 };
