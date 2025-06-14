@@ -278,7 +278,7 @@ class DisplayServerWindows : public DisplayServer {
 	String rendering_driver;
 	bool app_focused = false;
 	bool keep_screen_on = false;
-	bool get_object_recieved = false;
+	bool get_object_received = false;
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
