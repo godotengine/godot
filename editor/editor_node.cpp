@@ -7027,7 +7027,7 @@ void EditorNode::_renderer_selected(int p_which) {
 
 	renderer_request = rendering_method;
 	video_restart_dialog->set_text(
-			vformat(TTR("Changing the renderer requires restarting the editor.\n\nChoosing Save & Restart will change the rendering method to:\n- Desktop platforms: %s\n- Mobile platforms: %s\n- Web platform: gl_compatibility"),
+			vformat(TTR("Changing the renderer requires restarting the editor.\n\nChoosing Save & Restart will change the rendering method to:\n- Desktop platforms: %s\n- Mobile platforms: %s\n- Web platform: gl_compatibility\n\nChanging the driver used for each renderer can be done in the Project Settings."),
 					renderer_request, renderer_request.replace("forward_plus", "mobile")));
 	video_restart_dialog->popup_centered();
 	renderer->select(renderer_current);
@@ -7036,6 +7036,7 @@ void EditorNode::_renderer_selected(int p_which) {
 
 void EditorNode::_add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden) {
 	String item_text;
+
 	if (p_renderer_name == "forward_plus") {
 		item_text = TTR("Forward+");
 	}
@@ -7046,7 +7047,42 @@ void EditorNode::_add_renderer_entry(const String &p_renderer_name, bool p_mark_
 		item_text = TTR("Compatibility");
 	}
 	if (p_mark_overridden) {
-		item_text += " " + TTR("(Overridden)");
+		item_text += " - " + TTR("Overridden");
+	}
+
+	// Append short driver name to the renderer name, so that it's visible on screenshots of the editor.
+	String driver_name_short;
+	if (p_renderer_name != "gl_compatibility") {
+		String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
+		if (RS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
+			// Take CLI argument overrides and automatic fallbacks into account.
+			driver_name = RS::get_singleton()->get_current_rendering_driver_name();
+		}
+		if (driver_name == "vulkan") {
+			driver_name_short = "VK";
+		} else if (driver_name == "d3d12") {
+			driver_name_short = "D3D";
+		} else if (driver_name == "metal") {
+			driver_name_short = "MT";
+		}
+	} else {
+		String driver_name = GLOBAL_GET("rendering/gl_compatibility/driver");
+		if (RS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			// Take CLI argument overrides and automatic fallbacks into account.
+			driver_name = RS::get_singleton()->get_current_rendering_driver_name();
+		}
+
+		if (driver_name == "opengl3") {
+			driver_name_short = "GL";
+		} else if (driver_name == "opengl3_es") {
+			driver_name_short = "GLES";
+		} else if (driver_name == "opengl3_angle") {
+			driver_name_short = "ANGLE";
+		}
+	}
+
+	if (!driver_name_short.is_empty()) {
+		item_text += " (" + driver_name_short + ")";
 	}
 	renderer->add_item(item_text);
 }
