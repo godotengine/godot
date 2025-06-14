@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialComponentPlaneAlignmentList" inherits="OpenXRSpatialComponentData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing the queries plane alignment result data.
+	</brief_description>
+	<description>
+		Object for storing the queries plane alignment result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_plane_alignment" qualifiers="const">
+			<return type="int" enum="OpenXRSpatialComponentPlaneAlignmentList.OpenXrSpatialPlaneAlignment" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the plane alignment for the parent entity at this [param index].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="OPENXR_SPATIAL_PLANE_ALIGNMENT_HORIZONTAL_UPWARD" value="0" enum="OpenXrSpatialPlaneAlignment">
+			Plane is facing upward.
+		</constant>
+		<constant name="OPENXR_SPATIAL_PLANE_ALIGNMENT_HORIZONTAL_DOWNWARD" value="1" enum="OpenXrSpatialPlaneAlignment">
+			Plane is facing downwards.
+		</constant>
+		<constant name="OPENXR_SPATIAL_PLANE_ALIGNMENT_VERTICAL" value="2" enum="OpenXrSpatialPlaneAlignment">
+			Plane is vertically aligned.
+		</constant>
+		<constant name="OPENXR_SPATIAL_PLANE_ALIGNMENT_ARBITRARY" value="3" enum="OpenXrSpatialPlaneAlignment">
+			Plane has an arbitrary alignment.
+		</constant>
+		<constant name="OPENXR_SPATIAL_PLANE_ALIGNMENT_MAX_ENUM" value="2147483647" enum="OpenXrSpatialPlaneAlignment">
+			Maximum alignment value. Do not use for looping!
+		</constant>
+	</constants>
+</class>

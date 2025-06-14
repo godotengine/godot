@@ -2809,6 +2809,22 @@ Transform3D OpenXRAPI::transform_from_pose(const XrPosef &p_pose) {
 	return Transform3D(basis, origin);
 }
 
+XrPosef OpenXRAPI::pose_from_transform(const Transform3D &p_transform) {
+	XrPosef pose;
+
+	Quaternion q(p_transform.basis);
+	pose.orientation.x = q.x;
+	pose.orientation.y = q.y;
+	pose.orientation.z = q.z;
+	pose.orientation.w = q.w;
+
+	pose.position.x = p_transform.origin.x;
+	pose.position.y = p_transform.origin.y;
+	pose.position.z = p_transform.origin.z;
+
+	return pose;
+}
+
 template <typename T>
 XRPose::TrackingConfidence _transform_from_location(const T &p_location, Transform3D &r_transform) {
 	XRPose::TrackingConfidence confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
