@@ -83,7 +83,8 @@ struct [[nodiscard]] Projection {
 	void set_orthogonal(real_t p_size, real_t p_aspect, real_t p_znear, real_t p_zfar, bool p_flip_fov = false);
 	void set_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far);
 	void set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov = false);
-	void adjust_perspective_znear(real_t p_new_znear);
+	void adjust_perspective_znear_zfar(real_t p_new_znear, real_t p_new_zfar);
+	void adjust_perspective_fov(real_t p_new_fovy_degrees);
 
 	static Projection create_depth_correction(bool p_flip_y);
 	static Projection create_light_atlas_rect(const Rect2 &p_rect);
@@ -96,6 +97,7 @@ struct [[nodiscard]] Projection {
 	static Projection create_frustum_aspect(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov = false);
 	static Projection create_fit_aabb(const AABB &p_aabb);
 	Projection perspective_znear_adjusted(real_t p_new_znear) const;
+	Projection perspective_fov_adjusted(real_t p_new_fovy_degrees) const;
 	Plane get_projection_plane(Planes p_plane) const;
 	Projection flipped_y() const;
 	Projection jitter_offseted(const Vector2 &p_offset) const;
