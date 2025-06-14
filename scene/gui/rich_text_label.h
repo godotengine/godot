@@ -627,8 +627,8 @@ private:
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, bool p_meta = false);
 
 	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
-	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
-	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
+	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search, bool p_search_match_case, bool p_search_whole_words);
+	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search, bool p_search_match_case, bool p_search_whole_words);
 
 	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
 	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
@@ -851,6 +851,7 @@ public:
 	void set_fit_content(bool p_enabled);
 	bool is_fit_content_enabled() const;
 
+	bool search_ex(const String &p_string, bool p_from_selection = false, bool p_search_previous = false, bool p_search_match_case = false, bool p_search_whole_words = false);
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
 	void scroll_to_paragraph(int p_paragraph);
