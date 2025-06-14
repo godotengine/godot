@@ -368,8 +368,6 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 
 	// Release image
 	AImage_delete(image);
-
-	feed->emit_signal(SNAME("frame_changed"));
 }
 
 void CameraFeedAndroid::onSessionReady(void *context, ACameraCaptureSession *session) {
