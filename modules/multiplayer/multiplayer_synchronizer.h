@@ -67,7 +67,7 @@ private:
 	uint32_t net_id = 0;
 	bool sync_started = false;
 
-	static Object *_get_prop_target(Object *p_obj, const NodePath &p_prop);
+	static Node *_get_prop_target(Node *p_node, const NodePath &p_prop);
 	void _start();
 	void _stop();
 	void _update_process();
@@ -78,8 +78,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static Error get_state(const LocalVector<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs);
-	static Error set_state(const LocalVector<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
+	static Error get_state(const LocalVector<NodePath> &p_properties, Node *p_node, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs);
+	static Error set_state(const LocalVector<NodePath> &p_properties, Node *p_node, const Vector<Variant> &p_state);
 
 	void reset();
 	Node *get_root_node();
