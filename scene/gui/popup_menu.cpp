@@ -1123,6 +1123,24 @@ RID PopupMenu::get_focused_accessibility_element() const {
 	}
 }
 
+PackedStringArray PopupMenu::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
+
+	String ac_name = get_accessibility_name();
+	if (has_meta("_menu_name")) {
+		ac_name = get_meta("_menu_name", get_name());
+	}
+	_accessibility_configuration_check_name(String(), ac_name, RTR("Name"), warnings);
+
+	for (int i = 0; i < items.size(); i++) {
+		const Item &item = items[i];
+		_accessibility_configuration_check_name(vformat(RTR("Item %d"), i), item.xl_text.strip_edges(), RTR("Text"), warnings);
+	}
+
+	return warnings;
+}
+
 void PopupMenu::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE: {
@@ -1163,7 +1181,7 @@ void PopupMenu::_notification(int p_what) {
 			Point2 ofs;
 
 			for (int i = 0; i < items.size(); i++) {
-				const Item &item = items.write[i];
+				const Item &item = items[i];
 
 				ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
 

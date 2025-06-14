@@ -1165,6 +1165,19 @@ void LineEdit::_accessibility_action_menu(const Variant &p_data) {
 	menu->grab_focus();
 }
 
+PackedStringArray LineEdit::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
+
+	String ac_name = get_accessibility_name();
+	if (!placeholder.is_empty() && get_accessibility_name().is_empty()) {
+		ac_name = placeholder;
+	}
+	_accessibility_configuration_check_name(String(), ac_name, RTR("Placeholder"), warnings);
+
+	return warnings;
+}
+
 void LineEdit::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED

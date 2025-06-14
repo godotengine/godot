@@ -1248,6 +1248,17 @@ void ItemList::_accessibility_action_blur(const Variant &p_data, int p_index) {
 	deselect(p_index);
 }
 
+PackedStringArray ItemList::get_accessibility_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_accessibility_configuration_warnings();
+
+	for (int i = 0; i < items.size(); i++) {
+		const Item &item = items[i];
+		_accessibility_configuration_check_name(vformat(RTR("Item %d"), i), item.xl_text.strip_edges(), RTR("Text"), warnings);
+	}
+
+	return warnings;
+}
+
 void ItemList::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE:
@@ -1283,7 +1294,7 @@ void ItemList::_notification(int p_what) {
 			DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_scroll_element, Rect2(0, 0, scroll_bar_h->get_max(), scroll_bar_v->get_max()));
 
 			for (int i = 0; i < items.size(); i++) {
-				const Item &item = items.write[i];
+				const Item &item = items[i];
 
 				if (item.accessibility_item_element.is_null()) {
 					item.accessibility_item_element = DisplayServer::get_singleton()->accessibility_create_sub_element(accessibility_scroll_element, DisplayServer::AccessibilityRole::ROLE_LIST_BOX_OPTION);

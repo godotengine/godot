@@ -3455,6 +3455,33 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 }
 #endif
 
+void Node::_accessibility_configuration_check_name(const String &p_prefix, const String &p_name, const String &p_alt_prop_name, PackedStringArray &r_warnings) const {
+	if (p_name.is_empty()) {
+		if (p_alt_prop_name.is_empty()) {
+			r_warnings.push_back(p_prefix + RTR("Accessibility name is empty, or contain only spaces."));
+		} else {
+			r_warnings.push_back(p_prefix + vformat(RTR("Accessibility name / %s is empty, or contain only spaces."), p_alt_prop_name));
+		}
+	}
+	if (p_name.contains(get_class_name())) {
+		if (p_alt_prop_name.is_empty()) {
+			r_warnings.push_back(p_prefix + RTR("Accessibility name include Node class name."));
+		} else {
+			r_warnings.push_back(p_prefix + vformat(RTR("Accessibility name / %s include Node class name."), p_alt_prop_name));
+		}
+	}
+	for (int i = 0; i < p_name.length(); i++) {
+		if (is_control(p_name[i])) {
+			if (p_alt_prop_name.is_empty()) {
+				r_warnings.push_back(p_prefix + RTR("Accessibility name include control character(s)."));
+			} else {
+				r_warnings.push_back(p_prefix + vformat(RTR("Accessibility name / %s include control character(s)."), p_alt_prop_name));
+			}
+			break;
+		}
+	}
+}
+
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();
 	for (KeyValue<StringName, Node *> &K : data.children) {

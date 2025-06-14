@@ -675,6 +675,7 @@ public:
 	virtual RID get_focused_accessibility_element() const;
 	virtual bool accessibility_override_tree_hierarchy() const { return false; }
 
+	void _accessibility_configuration_check_name(const String &p_prefix, const String &p_name, const String &p_alt_prop_name, PackedStringArray &r_warnings) const;
 	virtual PackedStringArray get_accessibility_configuration_warnings() const;
 
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;

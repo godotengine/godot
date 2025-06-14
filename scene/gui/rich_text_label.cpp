@@ -1913,7 +1913,12 @@ PackedStringArray RichTextLabel::get_accessibility_configuration_warnings() cons
 		if (it->type == ITEM_IMAGE) {
 			ItemImage *img = static_cast<ItemImage *>(it);
 			if (img && img->alt_text.strip_edges().is_empty()) {
-				warnings.push_back(RTR("Image alternative text must not be empty."));
+				warnings.push_back(RTR("Image alternative text is empty, or contain only spaces."));
+			}
+		} else if (it->type == ITEM_TABLE) {
+			ItemTable *tab = static_cast<ItemTable *>(it);
+			if (tab && tab->name.strip_edges().is_empty()) {
+				warnings.push_back(RTR("Table name is empty, or contain only spaces."));
 			}
 		}
 		it = _get_next_item(it, true);
