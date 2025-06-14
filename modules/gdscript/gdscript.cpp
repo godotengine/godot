@@ -51,8 +51,11 @@
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
 
+#include "scene/gui/control.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
+#include "scene/theme/theme_db.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/extension/gdextension_manager.h"
@@ -362,6 +365,18 @@ bool GDScript::has_method(const StringName &p_method) const {
 
 bool GDScript::has_static_method(const StringName &p_method) const {
 	return member_functions.has(p_method) && member_functions[p_method]->is_static();
+}
+
+bool GDScript::has_themed_property(const StringName &p_property) const {
+	return themed_property_indices.has(p_property);
+}
+
+Script::ThemedPropertyInfo GDScript::get_themed_property(const StringName &p_property) const {
+	if (themed_property_indices.has(p_property)) {
+		return themed_property_indices[p_property];
+	}
+
+	return Script::ThemedPropertyInfo();
 }
 
 int GDScript::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
@@ -717,6 +732,44 @@ void GDScript::_static_default_init() {
 	}
 }
 
+void GDScript::_bind_themed_properties() {
+	if (get_global_name().is_empty()) {
+		return;
+	}
+
+	for (const StringName &prop_name : themed_properties) {
+		StringName prop_item = themed_property_indices[prop_name].theme_item_name;
+		StringName theme_type = themed_property_indices[prop_name].theme_type;
+		Theme::DataType prop_type = static_cast<Theme::DataType>(themed_property_indices[prop_name].theme_item_type);
+		ThemeDB::ThemeItemSetter setter = [prop_type, prop_name](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {
+			Control *c_cast = Object::cast_to<Control>(p_instance);
+			Window *w_cast = Object::cast_to<Window>(p_instance);
+			Variant value = Variant();
+			if (c_cast) {
+				value = c_cast->get_theme_item(prop_type, p_item_name, p_type_name);
+			} else {
+				value = w_cast->get_theme_item(prop_type, p_item_name, p_type_name);
+			}
+
+			p_instance->get_script_instance()->set(prop_name, value);
+		};
+
+		if (theme_type.is_empty()) {
+			ThemeDB::get_singleton()->bind_class_item(prop_type, get_global_name(), prop_name, prop_item, setter);
+		} else {
+			ThemeDB::get_singleton()->bind_class_external_item(prop_type, get_global_name(), prop_name, prop_item, theme_type, setter);
+		}
+	}
+}
+
+void GDScript::_unbind_themed_properties() {
+	if (get_global_name().is_empty()) {
+		return;
+	}
+
+	ThemeDB::get_singleton()->unbind_class_items(get_global_name());
+}
+
 #ifdef TOOLS_ENABLED
 
 void GDScript::_save_old_static_data() {
@@ -811,6 +864,10 @@ Error GDScript::reload(bool p_keep_state) {
 	}
 #endif
 
+	if (is_valid()) {
+		_unbind_themed_properties();
+	}
+
 	valid = false;
 	GDScriptParser parser;
 	Error err;
@@ -887,6 +944,10 @@ Error GDScript::reload(bool p_keep_state) {
 		if (err) {
 			return err;
 		}
+	}
+
+	if (is_valid()) {
+		_bind_themed_properties();
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1599,6 +1660,8 @@ void GDScript::clear(ClearData *p_clear_data) {
 		clear_data->functions.insert(static_initializer);
 		static_initializer = nullptr;
 	}
+
+	_unbind_themed_properties();
 
 	_save_orphaned_subclasses(clear_data);
 
