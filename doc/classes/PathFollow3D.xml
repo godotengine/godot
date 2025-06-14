@@ -32,7 +32,7 @@
 			If [code]true[/code], any offset outside the path's length will wrap around, instead of stopping at the ends. Use it for cyclic paths.
 		</member>
 		<member name="progress" type="float" setter="set_progress" getter="get_progress" default="0.0">
-			The distance from the first vertex, measured in 3D units along the path. Changing this value sets this node's position to a point within the path.
+			The distance from the first vertex along the path, measured in meters. Changing this value sets this node's position to a point within the path.
 		</member>
 		<member name="progress_ratio" type="float" setter="set_progress_ratio" getter="get_progress_ratio" default="0.0">
 			The distance from the first vertex, considering 0.0 as the first vertex and 1.0 as the last. This is just another way of expressing the progress within the path, as the progress supplied is multiplied internally by the path's length.
