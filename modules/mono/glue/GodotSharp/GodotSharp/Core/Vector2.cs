@@ -1117,7 +1117,63 @@ namespace Godot
         /// <returns>A string representation of this vector.</returns>
         public readonly string ToString(string? format)
         {
+            Span<char> destination = stackalloc char[64];
+            if (TryFormat(destination, out int charsWritten, format))
+            {
+                return destination[..charsWritten].ToString();
+            }
+
             return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)})";
+        }
+
+        /// <summary>
+        /// Tries to format this <see cref="Vector2"/> into the provided span of characters.
+        /// </summary>
+        /// <returns><see langword="true"/> if the formatting was successful; otherwise, <see langword="false"/>.</returns>
+        public readonly bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format = default)
+        {
+            charsWritten = 0;
+
+            // Write '('
+            if (charsWritten >= destination.Length)
+            {
+                return false;
+            }
+            destination[charsWritten] = '(';
+            charsWritten++;
+
+            // Write X
+            if (!X.TryFormat(destination[charsWritten..], out int xCharsWritten, format, CultureInfo.InvariantCulture))
+            {
+                return false;
+            }
+            charsWritten += xCharsWritten;
+
+            // Write ', '
+            if (charsWritten + 1 >= destination.Length)
+            {
+                return false;
+            }
+            destination[charsWritten] = ',';
+            destination[charsWritten + 1] = ' ';
+            charsWritten += 2;
+
+            // Write Y
+            if (!Y.TryFormat(destination[charsWritten..], out int yCharsWritten, format, CultureInfo.InvariantCulture))
+            {
+                return false;
+            }
+            charsWritten += yCharsWritten;
+
+            // Write ')'
+            if (charsWritten >= destination.Length)
+            {
+                return false;
+            }
+            destination[charsWritten] = ')';
+            charsWritten++;
+
+            return true;
         }
     }
 }
