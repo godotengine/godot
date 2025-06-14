@@ -499,8 +499,7 @@ func f():
 
 			for (const String &path : paths) {
 				assert_no_errors_in(path);
-				GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
-				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 				REQUIRE(parser);
 				LSP::DocumentSymbol cls = parser->get_symbols();
 
