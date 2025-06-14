@@ -2391,7 +2391,7 @@ bool Node::is_in_group(const StringName &p_identifier) const {
 
 void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 	ERR_THREAD_GUARD
-	ERR_FAIL_COND(!p_identifier.operator String().length());
+	ERR_FAIL_COND_MSG(p_identifier.is_empty(), "Tried to add node to a group with an empty name.");
 
 	if (data.grouped.has(p_identifier)) {
 		return;
