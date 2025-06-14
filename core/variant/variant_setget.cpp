@@ -1364,6 +1364,22 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			}
 			return step < 0;
 		} break;
+		case RECT2: {
+			Vector2 from = reinterpret_cast<const Rect2 *>(_data._mem)->position;
+			Vector2 to = reinterpret_cast<const Rect2 *>(_data._mem)->get_end();
+
+			r_iter = from;
+
+			return from < to;
+		} break;
+		case RECT2I: {
+			Vector2i from = reinterpret_cast<const Rect2i *>(_data._mem)->position;
+			Vector2i to = reinterpret_cast<const Rect2i *>(_data._mem)->get_end();
+
+			r_iter = from;
+
+			return from < to;
+		} break;
 		case OBJECT: {
 			if (!_get_obj().obj) {
 				valid = false;
@@ -1598,6 +1614,42 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
+		case RECT2: {
+			Vector2 idx = r_iter;
+			Vector2 begin = reinterpret_cast<const Rect2 *>(_data._mem)->position;
+			Vector2 end = reinterpret_cast<const Rect2 *>(_data._mem)->get_end();
+
+			++idx.x;
+			if (idx.x >= end.x) {
+				idx.x = begin.x;
+				++idx.y;
+			}
+
+			if (idx.y >= end.y) {
+				return false;
+			}
+
+			r_iter = idx;
+			return true;
+		} break;
+		case RECT2I: {
+			Vector2i idx = r_iter;
+			Vector2i begin = reinterpret_cast<const Rect2i *>(_data._mem)->position;
+			Vector2i end = reinterpret_cast<const Rect2i *>(_data._mem)->get_end();
+
+			++idx.x;
+			if (idx.x >= end.x) {
+				idx.x = begin.x;
+				++idx.y;
+			}
+
+			if (idx.y >= end.y) {
+				return false;
+			}
+
+			r_iter = idx;
+			return true;
+		} break;
 		case OBJECT: {
 			if (!_get_obj().obj) {
 				valid = false;
@@ -1792,6 +1844,12 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			return r_iter;
 		} break;
 		case VECTOR3I: {
+			return r_iter;
+		} break;
+		case RECT2: {
+			return r_iter;
+		} break;
+		case RECT2I: {
 			return r_iter;
 		} break;
 		case OBJECT: {
