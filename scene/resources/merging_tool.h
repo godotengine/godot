@@ -67,7 +67,7 @@ public:
 	static bool merge_meshes(MeshInstance &r_dest_mi, Vector<MeshInstance *> p_list, bool p_use_global_space, bool p_check_compatibility);
 
 	// Join all surfaces into one ubermesh.
-	static bool join_meshes(MeshInstance &r_dest_mi, Vector<MeshInstance *> p_list);
+	static bool join_meshes(MeshInstance &r_dest_mi, LocalVector<MeshInstance *> p_list);
 
 	// Adds a surface from one mesh to another.
 	static bool join_mesh_surface(const MeshInstance &p_source_mi, uint32_t p_source_surface_id, MeshInstance &r_dest_mi);
