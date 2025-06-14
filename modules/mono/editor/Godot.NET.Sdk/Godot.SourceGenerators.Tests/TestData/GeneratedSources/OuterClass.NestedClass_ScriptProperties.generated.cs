@@ -1,9 +1,9 @@
 using Godot;
 using Godot.NativeInterop;
 
-partial struct OuterClass
+partial struct @OuterClass
 {
-partial class NestedClass
+partial class @NestedClass
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
     /// <summary>
