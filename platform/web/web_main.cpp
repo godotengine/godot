@@ -35,6 +35,7 @@
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h" // SceneTree only forward declares it.
 
@@ -124,6 +125,8 @@ void print_web_header() {
 
 /// When calling main, it is assumed FS is setup and synced.
 extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
+	godot_init_profiler();
+
 	os = new OS_Web();
 
 #ifdef TOOLS_ENABLED
