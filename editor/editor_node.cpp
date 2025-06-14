@@ -5246,7 +5246,7 @@ static int progress_total_steps = 0;
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 	if (!singleton) {
 		return;
-	} else if (singleton->cmdline_mode) {
+	} else if (Main::is_cmdline_tool()) {
 		print_line_rich(vformat("[   0%% ] [color=gray][b]%s[/b] | Started %s (%d steps)[/color]", p_task, p_label, p_steps));
 		progress_total_steps = p_steps;
 	} else if (singleton->progress_dialog) {
@@ -5257,7 +5257,7 @@ void EditorNode::progress_add_task(const String &p_task, const String &p_label, 
 bool EditorNode::progress_task_step(const String &p_task, const String &p_state, int p_step, bool p_force_refresh) {
 	if (!singleton) {
 		return false;
-	} else if (singleton->cmdline_mode) {
+	} else if (Main::is_cmdline_tool()) {
 		const int percent = (p_step / float(progress_total_steps + 1)) * 100;
 		print_line_rich(vformat("[%4d%% ] [color=gray][b]%s[/b] | %s[/color]", percent, p_task, p_state));
 		return false;
@@ -5271,7 +5271,7 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 void EditorNode::progress_end_task(const String &p_task) {
 	if (!singleton) {
 		return;
-	} else if (singleton->cmdline_mode) {
+	} else if (Main::is_cmdline_tool()) {
 		print_line_rich(vformat("[color=green][ DONE ][/color] [b]%s[/b]\n", p_task));
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->end_task(p_task);
