@@ -82,10 +82,9 @@ public:
 	}
 
 	void update_end() { //call after updating dependencies
-		List<Pair<Dependency *, DependencyTracker *>> to_clean_up;
+		LocalVector<Pair<Dependency *, DependencyTracker *>> to_clean_up;
 
-		for (Dependency *E : dependencies) {
-			Dependency *dep = E;
+		for (Dependency *dep : dependencies) {
 			HashMap<DependencyTracker *, uint32_t>::Iterator F = dep->instances.find(this);
 			ERR_CONTINUE(!F);
 			if (F->value != instance_version) {
@@ -96,16 +95,14 @@ public:
 			}
 		}
 
-		while (to_clean_up.size()) {
-			to_clean_up.front()->get().first->instances.erase(to_clean_up.front()->get().second);
-			dependencies.erase(to_clean_up.front()->get().first);
-			to_clean_up.pop_front();
+		for (const Pair<Dependency *, DependencyTracker *> &pair : to_clean_up) {
+			pair.first->instances.erase(pair.second);
+			dependencies.erase(pair.first);
 		}
 	}
 
 	void clear() { // clear all dependencies
-		for (Dependency *E : dependencies) {
-			Dependency *dep = E;
+		for (Dependency *dep : dependencies) {
 			dep->instances.erase(this);
 		}
 		dependencies.clear();
