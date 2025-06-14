@@ -35,11 +35,8 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/control.h"
 
-class Node3D;
 class Button;
-class PopupMenu;
 class EditorDebuggerPlugin;
-class EditorExport;
 class EditorExportPlugin;
 class EditorExportPlatform;
 class EditorImportPlugin;
@@ -49,9 +46,9 @@ class EditorNode3DGizmoPlugin;
 class EditorResourceConversionPlugin;
 class EditorSceneFormatImporter;
 class EditorScenePostImportPlugin;
-class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
+class PopupMenu;
 class ScriptCreateDialog;
 
 class EditorPlugin : public Node {
@@ -61,7 +58,7 @@ class EditorPlugin : public Node {
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
 
-	String last_main_screen_name;
+	String last_main_screen_plugin_name;
 	String plugin_version;
 
 #ifndef DISABLE_DEPRECATED
@@ -120,6 +117,7 @@ protected:
 	GDVIRTUAL0RC(String, _get_plugin_name)
 	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
 	GDVIRTUAL0RC(bool, _has_main_screen)
+	GDVIRTUAL0RC(String, _get_workspace_display_name)
 	GDVIRTUAL1(_make_visible, bool)
 	GDVIRTUAL1(_edit, Object *)
 	GDVIRTUAL1RC(bool, _handles, Object *)
@@ -166,7 +164,7 @@ public:
 	void set_force_draw_over_forwarding_enabled();
 	bool is_force_draw_over_forwarding_enabled() { return force_draw_over_forwarding_enabled; }
 
-	void notify_main_screen_changed(const String &screen_name);
+	void notify_main_screen_changed(const String &plugin_name);
 	void notify_scene_changed(const Node *scn_root);
 	void notify_scene_closed(const String &scene_filepath);
 	void notify_resource_saved(const Ref<Resource> &p_resource);
@@ -185,6 +183,7 @@ public:
 	virtual String get_plugin_version() const;
 	virtual void set_plugin_version(const String &p_version);
 	virtual bool has_main_screen() const;
+	virtual String get_workspace_display_name() const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
 	virtual void edit(Object *p_object);
