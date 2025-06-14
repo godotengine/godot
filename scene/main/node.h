@@ -107,7 +107,7 @@ private:
 
 		Node *parent;
 		Node *owner;
-		Vector<Node *> children; // list of children
+		LocalVectori<Node *> children; // list of children
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;
 
