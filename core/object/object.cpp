@@ -30,6 +30,7 @@
 
 #include "object.h"
 
+#include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -2376,6 +2377,13 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 		} else if (pf == "set_meta" || pf == "get_meta" || pf == "has_meta" || pf == "remove_meta") {
 			for (const KeyValue<StringName, Variant> &K : metadata) {
 				r_options->push_back(String(K.key).quote());
+			}
+		} else if (pf == "set_translation_domain") {
+			if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_domains")) {
+				PackedStringArray domains = GLOBAL_GET("internationalization/locale/translations_domains");
+				for (String &E : domains) {
+					r_options->push_back(E.quote());
+				}
 			}
 		}
 	} else if (p_idx == 2) {

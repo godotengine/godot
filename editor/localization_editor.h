@@ -57,6 +57,9 @@ class LocalizationEditor : public VBoxContainer {
 	EditorFileDialog *pot_generate_dialog = nullptr;
 	Button *pot_generate_button = nullptr;
 
+	Tree *domain_list = nullptr;
+	LineEdit *add_domain_edit = nullptr;
+
 	bool updating_translations = false;
 	String localization_changed;
 
@@ -82,6 +85,10 @@ class LocalizationEditor : public VBoxContainer {
 	void _pot_add_builtin_toggled();
 	void _pot_generate(const String &p_file);
 	void _update_pot_file_extensions();
+
+	void _add_domain_pressed();
+	void _translation_domain_add(const StringName &p_name);
+	void _translation_domain_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 
 	void _filesystem_files_moved(const String &p_old_file, const String &p_new_file);
 	void _filesystem_file_removed(const String &p_file);
