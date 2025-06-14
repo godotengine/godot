@@ -55,7 +55,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		private val TAG = GodotActivity::class.java.simpleName
 
 		@JvmStatic
-		protected val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
+		val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
 
 		@JvmStatic
 		protected val EXTRA_NEW_LAUNCH = "new_launch_requested"
