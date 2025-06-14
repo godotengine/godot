@@ -94,6 +94,7 @@ class FindReplaceBar : public HBoxContainer {
 
 	uint32_t flags = 0;
 
+	int temp_unfolded_line = -1;
 	int result_line = 0;
 	int result_col = 0;
 	int results_count = -1;
@@ -107,6 +108,7 @@ class FindReplaceBar : public HBoxContainer {
 	void _get_search_from(int &r_line, int &r_col, SearchMode p_search_mode);
 	void _update_results_count();
 	void _update_matches_display();
+	void _temp_unfold_line(int p_line);
 
 	void _show_search(bool p_with_replace, bool p_show_only);
 	void _hide_bar();
