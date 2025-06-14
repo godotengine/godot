@@ -336,7 +336,8 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 			"VERSION:", p_pipeline_key.version,
 			"PASS FLAGS:", p_pipeline_key.color_pass_flags,
 			"SPEC PACKED #0:", p_pipeline_key.shader_specialization.packed_0,
-			"WIREFRAME:", p_pipeline_key.wireframe);
+			"WIREFRAME:", p_pipeline_key.wireframe,
+			"LINE WIDTH:", p_pipeline_key.line_width);
 #endif
 
 	// Color pass -> attachment 0: Color/Diffuse, attachment 1: Separate Specular, attachment 2: Motion Vectors
@@ -415,6 +416,7 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	RD::PipelineRasterizationState raster_state;
 	raster_state.cull_mode = p_pipeline_key.cull_mode;
 	raster_state.wireframe = wireframe || p_pipeline_key.wireframe;
+	raster_state.line_width = p_pipeline_key.line_width;
 
 	RD::PipelineMultisampleState multisample_state;
 	multisample_state.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_pipeline_key.framebuffer_format_id, 0);
