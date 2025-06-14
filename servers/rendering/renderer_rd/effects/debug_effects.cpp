@@ -66,7 +66,7 @@ DebugEffects::DebugEffects() {
 void DebugEffects::_create_frustum_arrays() {
 	if (frustum.vertex_buffer.is_null()) {
 		// Create vertex buffer, but don't put data in it yet
-		frustum.vertex_buffer = RD::get_singleton()->vertex_buffer_create(8 * sizeof(float) * 3, Vector<uint8_t>());
+		frustum.vertex_buffer = RD::get_singleton()->vertex_buffer_create(8 * sizeof(float) * 3, nullptr);
 
 		Vector<RD::VertexAttribute> attributes;
 		Vector<RID> buffers;
@@ -117,7 +117,7 @@ void DebugEffects::_create_frustum_arrays() {
 			}
 		}
 
-		frustum.index_buffer = RD::get_singleton()->index_buffer_create(6 * 2 * 3, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, data);
+		frustum.index_buffer = RD::get_singleton()->index_buffer_create(6 * 2 * 3, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, data.ptr());
 		frustum.index_array = RD::get_singleton()->index_array_create(frustum.index_buffer, 0, 6 * 2 * 3);
 	}
 
@@ -151,7 +151,7 @@ void DebugEffects::_create_frustum_arrays() {
 			}
 		}
 
-		frustum.lines_buffer = RD::get_singleton()->index_buffer_create(12 * 2, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, data);
+		frustum.lines_buffer = RD::get_singleton()->index_buffer_create(12 * 2, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, data.ptr());
 		frustum.lines_array = RD::get_singleton()->index_array_create(frustum.lines_buffer, 0, 12 * 2);
 	}
 }

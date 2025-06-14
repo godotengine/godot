@@ -441,14 +441,14 @@ void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
 	RD::get_singleton()->set_resource_name(fog_map, "Fog map");
 
 #if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
-	Vector<uint8_t> dm;
+	LocalVector<uint8_t> dm;
 	dm.resize_initialized(fog_size.x * fog_size.y * fog_size.z * 4);
 
-	density_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
+	density_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm.ptr());
 	RD::get_singleton()->set_resource_name(density_map, "Fog density map");
-	light_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
+	light_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm.ptr());
 	RD::get_singleton()->set_resource_name(light_map, "Fog light map");
-	emissive_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
+	emissive_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm.ptr());
 	RD::get_singleton()->set_resource_name(emissive_map, "Fog emissive map");
 #else
 	tf.format = RD::DATA_FORMAT_R32_UINT;

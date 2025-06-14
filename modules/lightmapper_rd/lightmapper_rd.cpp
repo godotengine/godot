@@ -642,38 +642,21 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	}
 
 	{ //buffers
-		Vector<uint8_t> vb = vertex_array.to_byte_array();
-		vertex_buffer = rd->storage_buffer_create(vb.size(), vb);
+		vertex_buffer = rd->storage_buffer_create(vertex_array.size(), vertex_array.ptr());
 
-		Vector<uint8_t> tb = triangles.to_byte_array();
-		triangle_buffer = rd->storage_buffer_create(tb.size(), tb);
+		triangle_buffer = rd->storage_buffer_create(triangles.size(), triangles.ptr());
 
-		Vector<uint8_t> tib = triangle_indices.to_byte_array();
-		r_triangle_indices_buffer = rd->storage_buffer_create(tib.size(), tib);
+		r_triangle_indices_buffer = rd->storage_buffer_create(triangle_indices.size(), triangle_indices.ptr());
 
-		Vector<uint8_t> cib = cluster_indices.to_byte_array();
-		r_cluster_indices_buffer = rd->storage_buffer_create(cib.size(), cib);
+		r_cluster_indices_buffer = rd->storage_buffer_create(cluster_indices.size(), cluster_indices.ptr());
 
-		Vector<uint8_t> cab = cluster_aabbs.to_byte_array();
-		r_cluster_aabbs_buffer = rd->storage_buffer_create(cab.size(), cab);
+		r_cluster_aabbs_buffer = rd->storage_buffer_create(cluster_aabbs.size(), cluster_aabbs.ptr());
 
-		Vector<uint8_t> lb = lights.to_byte_array();
-		if (lb.is_empty()) {
-			lb.resize(sizeof(Light)); //even if no lights, the buffer must exist
-		}
-		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
+		lights_buffer = rd->storage_buffer_create(lights.size() * sizeof(Light), lights.ptr());
 
-		Vector<uint8_t> sb = seam_buffer_vec.to_byte_array();
-		if (sb.is_empty()) {
-			sb.resize(sizeof(Vector2i) * 2); //even if no seams, the buffer must exist
-		}
-		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
+		seams_buffer = rd->storage_buffer_create(seam_buffer_vec.size() * sizeof(Vector2i) * 2, seam_buffer_vec.ptr());
 
-		Vector<uint8_t> pb = p_probe_positions.to_byte_array();
-		if (pb.is_empty()) {
-			pb.resize(sizeof(Probe));
-		}
-		probe_positions_buffer = rd->storage_buffer_create(pb.size(), pb);
+		probe_positions_buffer = rd->storage_buffer_create(p_probe_positions.size() * sizeof(Probe), p_probe_positions.ptr());
 	}
 
 	{ //grid

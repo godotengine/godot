@@ -153,7 +153,7 @@ void RendererCompositorRD::initialize() {
 			p16[4] = 2;
 			p16[5] = 3;
 		}
-		blit.index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv);
+		blit.index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv.ptr());
 		blit.array = RD::get_singleton()->index_array_create(blit.index_buffer, 0, 6);
 
 		blit.sampler = RD::get_singleton()->sampler_create(RD::SamplerState());
