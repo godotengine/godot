@@ -1500,7 +1500,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 
 				EditorNode::get_singleton()->push_item(resource.ptr());
-				EditorNode::get_singleton()->save_resource_as(resource);
+				EditorNode::get_singleton()->save_resource_as(resource, "");
 
 				if (scr.is_valid()) {
 					update_docs_from_script(scr);
