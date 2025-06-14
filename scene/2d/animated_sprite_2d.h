@@ -60,8 +60,6 @@ class AnimatedSprite2D : public Node2D {
 	void _calc_frame_speed_scale();
 	void _stop_internal(bool p_reset);
 
-	Rect2 _get_rect() const;
-
 protected:
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -126,6 +124,8 @@ public:
 
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
+
+	Rect2 get_rect() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
