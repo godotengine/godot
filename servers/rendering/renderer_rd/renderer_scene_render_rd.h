@@ -51,6 +51,7 @@
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_shader_library.h"
+#include "servers/rendering/renderer_rd/effects/sgsr1.h"
 
 class RendererSceneRenderRD : public RendererSceneRender, public RenderingShaderLibrary {
 	friend RendererRD::SkyRD;
@@ -65,6 +66,7 @@ protected:
 	RendererRD::SMAA *smaa = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	RendererRD::FSR *fsr = nullptr;
+	RendererRD::SGSR1 *sgsr1 = nullptr;
 	RendererRD::VRS *vrs = nullptr;
 #ifdef METAL_ENABLED
 	RendererRD::MFXSpatialEffect *mfx_spatial = nullptr;
