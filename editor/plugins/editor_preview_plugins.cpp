@@ -324,7 +324,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	aborted = false;
 
 	Error load_error;
-	Ref<PackedScene> pack = ResourceLoader::load(p_path, "PackedScene", ResourceFormatLoader::CACHE_MODE_IGNORE, &load_error); // no more cache issues?
+	Ref<PackedScene> pack = ResourceLoader::load(p_path, "PackedScene", ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP, &load_error); // no more cache issues?
 	if (load_error != OK) {
 		print_error(vformat("Failed to generate scene thumbnail for %s : Loaded with error code %d", p_path, int(load_error)));
 		return Ref<Texture2D>();
