@@ -331,6 +331,7 @@ class EditorHelpBit : public VBoxContainer {
 
 	float content_min_height = 0.0;
 	float content_max_height = 0.0;
+	bool allow_resizing = false;
 
 	static HelpData _get_class_help_data(const StringName &p_class_name);
 	static HelpData _get_enum_help_data(const StringName &p_class_name, const StringName &p_enum_name);
@@ -355,6 +356,7 @@ public:
 	void set_custom_text(const String &p_type, const String &p_name, const String &p_description);
 
 	void set_content_height_limits(float p_min, float p_max);
+	void set_allow_resizing(bool p_allow);
 	void update_content_height();
 
 	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true);
