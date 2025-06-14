@@ -9,6 +9,7 @@
 		A GridMap contains a collection of cells. Each grid cell refers to a tile in the [MeshLibrary]. All cells in the map have the same dimensions.
 		Internally, a GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
 		[b]Note:[/b] GridMap doesn't extend [VisualInstance3D] and therefore can't be hidden or cull masked based on [member VisualInstance3D.layers]. If you make a light not affect the first layer, the whole GridMap won't be lit by the light in question.
+		[b]Note:[/b] Physics queries against GridMap are only effective 2 physics frames after the GridMap has been added to the scene. This means that when performing physics queries in [method Node._ready], you need to wait for 2 physics frames before physics queries will acknowledge the GridMap's presence. This can be done by calling [code]await get_tree().physics_frame[/code] twice in a row [i]before[/i] performing physics queries.
 	</description>
 	<tutorials>
 		<link title="Using gridmaps">$DOCS_URL/tutorials/3d/using_gridmaps.html</link>
