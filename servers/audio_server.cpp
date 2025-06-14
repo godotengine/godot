@@ -549,8 +549,8 @@ void AudioServer::_mix_step() {
 			}
 		}
 
-		// Process effects.
-		if (!bus->bypass) {
+		// Process effects, unless it's the master bus while in the editor.
+		if (!bus->bypass && (i != 0 || !Engine::get_singleton()->is_editor_hint())) {
 			for (int j = 0; j < bus->effects.size(); j++) {
 				if (!bus->effects[j].enabled) {
 					continue;
@@ -607,15 +607,19 @@ void AudioServer::_mix_step() {
 
 			AudioFrame peak = AudioFrame(0, 0);
 
-			float volume = Math::db_to_linear(bus->volume_db);
+			float volume = 1;
+			// The master bus should always be at the default volume while in the editor, so audio preview isn't affected.
+			if (k != 0 || !Engine::get_singleton()->is_editor_hint()) {
+				volume = Math::db_to_linear(bus->volume_db);
 
-			if (solo_mode) {
-				if (!bus->soloed) {
-					volume = 0.0;
-				}
-			} else {
-				if (bus->mute) {
-					volume = 0.0;
+				if (solo_mode) {
+					if (!bus->soloed) {
+						volume = 0.0;
+					}
+				} else {
+					if (bus->mute) {
+						volume = 0.0;
+					}
 				}
 			}
 
