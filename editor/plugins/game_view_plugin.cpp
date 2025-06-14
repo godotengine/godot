@@ -599,7 +599,7 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 		return EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE;
 	}
 	String display_driver = GLOBAL_GET("display/display_server/driver");
-	if (display_driver == "headless" || display_driver == "wayland") {
+	if (display_driver == "headless") {
 		return EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER;
 	}
 
@@ -645,11 +645,7 @@ void GameView::_update_ui() {
 			}
 			break;
 		case EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED:
-			if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-				state_label->set_text(TTRC("Game embedding not available on Wayland.\nWayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD > Prefer Wayland)."));
-			} else {
-				state_label->set_text(TTRC("Game embedding not available on your OS."));
-			}
+			state_label->set_text(TTRC("Game embedding not available on your OS."));
 			break;
 		case EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER:
 			state_label->set_text(vformat(TTR("Game embedding not available for the Display Server: '%s'.\nDisplay Server can be modified in the Project Settings (Display > Display Server > Driver)."), GLOBAL_GET("display/display_server/driver")));

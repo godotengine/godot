@@ -654,6 +654,14 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
 		registry->wp_fifo_manager_name = name;
 	}
+
+	if (strcmp(interface, godot_embedding_compositor_interface.name) == 0) {
+		registry->godot_embedding_compositor = (struct godot_embedding_compositor *)wl_registry_bind(wl_registry, name, &godot_embedding_compositor_interface, 1);
+		registry->godot_embedding_compositor_name = name;
+
+		godot_embedding_compositor_add_listener(registry->godot_embedding_compositor, &godot_embedding_compositor_listener, memnew(EmbeddingCompositorState));
+		// FIXME: DEBUG: Cleanup and whatnot. This is a test.
+	}
 }
 
 void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
@@ -2977,15 +2985,72 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
 }
 
+void WaylandThread::_godot_embedding_compositor_on_client(void *data, struct godot_embedding_compositor *godot_embedding_compositor, struct godot_embedded_client *godot_embedded_client, int32_t pid) {
+	EmbeddingCompositorState *state = (EmbeddingCompositorState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddedClientState *client_state = memnew(EmbeddedClientState);
+	client_state->embedding_compositor = godot_embedding_compositor;
+	client_state->pid = pid;
+	godot_embedded_client_add_listener(godot_embedded_client, &godot_embedded_client_listener, client_state);
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("New client %d.", pid));
+	state->clients[pid] = godot_embedded_client;
+}
+
+void WaylandThread::_godot_embedded_client_on_disconnected(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->clients.erase(state->pid);
+
+	memfree(state);
+	godot_embedded_client_destroy(godot_embedded_client);
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Client %d disconnected.", state->pid));
+}
+
+void WaylandThread::_godot_embedded_client_on_window_embedded(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	state->window_mapped = true;
+}
+
+void WaylandThread::_godot_embedded_client_on_window_focus_in(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->focused_pid = state->pid;
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus in", state->pid));
+}
+
+void WaylandThread::_godot_embedded_client_on_window_focus_out(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->focused_pid = -1;
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus out", state->pid));
+}
+
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
 	ThreadData *data = (ThreadData *)p_data;
 	ERR_FAIL_NULL(data);
 	ERR_FAIL_NULL(data->wl_display);
 
-	struct pollfd poll_fd;
+	struct pollfd poll_fd = {};
 	poll_fd.fd = wl_display_get_fd(data->wl_display);
-	poll_fd.events = POLLIN | POLLHUP;
+	poll_fd.events = POLLIN;
 
 	while (true) {
 		// Empty the event queue while it's full.
@@ -3119,6 +3184,15 @@ WaylandThread::OfferState *WaylandThread::wl_data_offer_get_offer_state(struct w
 WaylandThread::OfferState *WaylandThread::wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer) {
 	if (p_offer && wl_proxy_is_godot((wl_proxy *)p_offer)) {
 		return (OfferState *)zwp_primary_selection_offer_v1_get_user_data(p_offer);
+	}
+
+	return nullptr;
+}
+
+WaylandThread::EmbeddingCompositorState *WaylandThread::godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor) {
+	// NOTE: No need for tag check as it's a "fake" interface - nothing else exposes it.
+	if (p_compositor) {
+		return (EmbeddingCompositorState *)godot_embedding_compositor_get_user_data(p_compositor);
 	}
 
 	return nullptr;
@@ -3292,15 +3366,20 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
 
 	if (p_ss->wl_pointer == nullptr) {
+		WARN_PRINT("can't lock - no pointer?");
 		return;
 	}
 
 	if (registry.wp_pointer_constraints == nullptr) {
+		WARN_PRINT("can't lock - no constraints global.");
 		return;
 	}
 
 	if (p_ss->wp_locked_pointer == nullptr) {
 		struct wl_surface *locked_surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
+		if (locked_surface == nullptr) {
+			locked_surface = window_get_wl_surface(DisplayServer::MAIN_WINDOW_ID);
+		}
 		ERR_FAIL_NULL(locked_surface);
 
 		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
@@ -4289,7 +4368,25 @@ Error WaylandThread::init() {
 
 	KeyMappingXKB::initialize();
 
-	wl_display = wl_display_connect(nullptr);
+	String socket_path;
+	if (Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
+		Error snooper_status = snooper.init();
+		ERR_FAIL_COND_V_MSG(snooper_status != OK, ERR_CANT_CREATE, "Can't initialize protocol embedder.");
+
+		socket_path = snooper.get_socket_path();
+		ERR_FAIL_COND_V_MSG(socket_path.is_empty(), ERR_CANT_CREATE, "Process embedder returned invalid path.");
+
+		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", socket_path);
+	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
+		socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
+	}
+
+	if (!socket_path.is_empty()) {
+		wl_display = wl_display_connect(socket_path.utf8().get_data());
+	} else {
+		wl_display = wl_display_connect(nullptr);
+	}
+
 	ERR_FAIL_NULL_V_MSG(wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
 
 	thread_data.wl_display = wl_display;
@@ -4345,7 +4442,8 @@ Error WaylandThread::init() {
 	}
 #endif // SOWRAP_ENABLED
 
-	if (libdecor_found) {
+	// DEBUG
+	if (false && libdecor_found) {
 		libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
 	} else {
 		print_verbose("libdecor not found. Client-side decorations disabled.");
@@ -4850,6 +4948,17 @@ bool WaylandThread::is_suspended() const {
 	return true;
 }
 
+struct godot_embedding_compositor *WaylandThread::get_embedding_compositor() {
+	return registry.godot_embedding_compositor;
+}
+
+OS::ProcessID WaylandThread::embedded_compositor_get_focused_pid() {
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(registry.godot_embedding_compositor);
+	ERR_FAIL_NULL_V(ecomp_state, -1);
+
+	return ecomp_state->focused_pid;
+}
+
 void WaylandThread::destroy() {
 	if (!initialized) {
 		return;
@@ -4884,6 +4993,10 @@ void WaylandThread::destroy() {
 			libdecor_frame_close(ws.libdecor_frame);
 		}
 #endif // LIBDECOR_ENABLED
+
+		if (ws.xdg_toplevel_decoration) {
+			zxdg_toplevel_decoration_v1_destroy(ws.xdg_toplevel_decoration);
+		}
 
 		if (ws.xdg_toplevel) {
 			xdg_toplevel_destroy(ws.xdg_toplevel);
@@ -5039,6 +5152,8 @@ void WaylandThread::destroy() {
 	if (wl_registry) {
 		wl_registry_destroy(wl_registry);
 	}
+
+	wl_display_roundtrip(wl_display);
 
 	if (wl_display) {
 		wl_display_disconnect(wl_display);
