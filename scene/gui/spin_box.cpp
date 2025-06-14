@@ -86,9 +86,6 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	double step = get_step();
-	if (use_custom_arrow_step && custom_arrow_step != 0.0) {
-		step = custom_arrow_step;
-	}
 	String value = String::num(get_value(), Math::range_step_decimals(step));
 	if (is_localizing_numeral_system()) {
 		value = TS->format_number(value);
@@ -195,13 +192,14 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_range_click_timeout() {
 	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
-		bool up = get_local_mouse_position().y < (get_size().height / 2);
-		double step = get_step();
-		// Arrow button is being pressed, so we also need to set the step to the same value as custom_arrow_step if its not 0.
+		bool mouse_on_up_button = get_local_mouse_position().y < (get_size().height / 2);
+		// Arrow button is being pressed. Snap the value to next step.
 		double temp_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
-		_set_step_no_signal(temp_step);
-		set_value(get_value() + (up ? temp_step : -temp_step));
-		_set_step_no_signal(step);
+		double new_value = _calc_value(get_value(), temp_step);
+		if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
+			new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
+		}
+		set_value(new_value);
 		use_custom_arrow_step = true;
 
 		if (range_click_timer->is_one_shot()) {
@@ -264,11 +262,13 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 				line_edit->grab_focus();
 
 				if (mouse_on_up_button || mouse_on_down_button) {
-					// Arrow button is being pressed, so step is being changed temporarily.
+					// Arrow button is being pressed. Snap the value to next step.
 					double temp_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
-					_set_step_no_signal(temp_step);
-					set_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step));
-					_set_step_no_signal(step);
+					double new_value = _calc_value(get_value(), temp_step);
+					if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
+						new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
+					}
+					set_value(new_value);
 					use_custom_arrow_step = true;
 				}
 				state_cache.up_button_pressed = mouse_on_up_button;
@@ -614,12 +614,6 @@ void SpinBox::_update_buttons_state_for_current_value() {
 		state_cache.down_button_disabled = should_disable_down;
 		queue_redraw();
 	}
-}
-
-void SpinBox::_set_step_no_signal(double p_step) {
-	set_block_signals(true);
-	set_step(p_step);
-	set_block_signals(false);
 }
 
 void SpinBox::_validate_property(PropertyInfo &p_property) const {
