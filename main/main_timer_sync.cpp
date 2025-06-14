@@ -412,7 +412,7 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_t
 
 // calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
 MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physics_ticks_per_second, double p_process_step) {
-	if (fixed_fps != -1) {
+	if (fixed_fps >= 1) {
 		p_process_step = 1.0 / fixed_fps;
 	}
 
