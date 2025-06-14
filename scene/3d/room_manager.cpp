@@ -1470,7 +1470,7 @@ bool RoomManager::_convert_room_hull_preliminary(Room *p_room, const Vector<Vect
 		AABB aabb;
 		aabb.create_from_points(p_room_pts);
 
-		LocalVector<Vector3> pts;
+		Vector<Vector3> pts;
 		Vector3 mins = aabb.position;
 		Vector3 maxs = mins + aabb.size;
 
@@ -1596,7 +1596,7 @@ bool RoomManager::_convert_room_hull_final(Room *p_room, const LocalVector<Porta
 	p_room->_bound_mesh_data = md_simplified;
 
 	// send bound to visual server
-	VisualServer::get_singleton()->room_set_bound(p_room->_room_rid, p_room->get_instance_id(), p_room->_planes, p_room->_aabb, md_simplified.vertices);
+	VisualServer::get_singleton()->room_set_bound(p_room->_room_rid, p_room->get_instance_id(), Vector<Plane>(p_room->_planes), p_room->_aabb, md_simplified.vertices);
 
 	return true;
 }

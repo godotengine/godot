@@ -309,7 +309,7 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDo
 			triangulate_polygon(
 					surface->surface_tool,
 					*indices,
-					surface->vertices_map,
+					Vector<int>(surface->vertices_map),
 					vertices);
 		}
 	}

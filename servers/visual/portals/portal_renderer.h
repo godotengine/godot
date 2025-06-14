@@ -349,7 +349,7 @@ private:
 
 	bool _override_camera = false;
 	Vector3 _override_camera_pos;
-	LocalVector<Plane, int32_t> _override_camera_planes;
+	Vector<Plane> _override_camera_planes;
 
 public:
 	static String _rid_to_string(RID p_rid);
