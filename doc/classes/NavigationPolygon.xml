@@ -172,6 +172,7 @@
 	<members>
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="10.0">
 			The distance to erode/shrink the walkable surface when baking the navigation mesh.
+			[b]Note:[/b] The radius must be positive. If the radius is zero, a major correction step during the baking process will be disabled. Invalid outline overlaps and other precision errors of the input will not be fixed, removing unintended parts of the baking result.
 		</member>
 		<member name="baking_rect" type="Rect2" setter="set_baking_rect" getter="get_baking_rect" default="Rect2(0, 0, 0, 0)">
 			If the baking [Rect2] has an area the navigation mesh baking will be restricted to its enclosing area.
