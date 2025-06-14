@@ -69,6 +69,20 @@
 
 #endif
 
+// Should never inline.
+#ifndef _NO_INLINE_
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#define _NO_INLINE_ __attribute__((noinline))
+#elif defined(__llvm__)
+#define _NO_INLINE_ __attribute__((noinline))
+#elif defined(_MSC_VER)
+#define _NO_INLINE_ __declspec(noinline)
+#else
+#define _NO_INLINE_
+#endif
+
+#endif
+
 // No discard allows the compiler to flag warnings if we don't use the return value of functions / classes
 #ifndef _NO_DISCARD_
 // c++ 17 onwards

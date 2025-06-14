@@ -58,6 +58,7 @@ static const WORD MAX_CONSOLE_LINES = 1500;
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+__declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 }
 
 // Workaround mingw-w64 < 4.0 bug

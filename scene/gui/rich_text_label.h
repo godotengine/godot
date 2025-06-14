@@ -164,7 +164,17 @@ private:
 
 	struct ItemFont : public Item {
 		Ref<Font> font;
+		ObjectID owner;
+
 		ItemFont() { type = ITEM_FONT; }
+		~ItemFont() {
+			if (font.is_valid()) {
+				RichTextLabel *owner_rtl = Object::cast_to<RichTextLabel>(ObjectDB::get_instance(owner));
+				if (owner_rtl) {
+					font->disconnect("changed", owner_rtl, "_invalidate_fonts");
+				}
+			}
+		}
 	};
 
 	struct ItemColor : public Item {
@@ -347,6 +357,8 @@ private:
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
+
+	void _invalidate_fonts();
 
 	struct ProcessState {
 		int line_width;

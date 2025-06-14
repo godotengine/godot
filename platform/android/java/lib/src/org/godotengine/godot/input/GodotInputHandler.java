@@ -408,6 +408,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			case KeyEvent.KEYCODE_BUTTON_SELECT:
 				button = 4;
 				break;
+			case KeyEvent.KEYCODE_BUTTON_MODE: // Home/Xbox Button on Xbox controllers
+				button = 5;
+				break;
 			case KeyEvent.KEYCODE_BUTTON_START:
 				button = 6;
 				break;
@@ -428,6 +431,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 				break;
 			case KeyEvent.KEYCODE_DPAD_RIGHT:
 				button = 14;
+				break;
+			case KeyEvent.KEYCODE_MEDIA_RECORD: // Share Button on Xbox controllers
+				button = 15;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_C:
 				button = 17;
