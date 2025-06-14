@@ -1358,40 +1358,35 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->add_selection_for_next_occurrence();
 			CHECK(text_edit->get_caret_count() == 1);
 			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 0);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 4);
+			CHECK(text_edit->get_selection_origin_line(0) == 1);
+			CHECK(text_edit->get_selection_origin_column(0) == 0);
 			CHECK(text_edit->get_caret_line(0) == 1);
 			CHECK(text_edit->get_caret_column(0) == 4);
 
+			// Select the next occurrence on the same line.
 			text_edit->add_selection_for_next_occurrence();
 			CHECK(text_edit->get_caret_count() == 2);
 			CHECK(text_edit->get_selected_text(1) == "test");
-			CHECK(text_edit->get_selection_from_line(1) == 1);
-			CHECK(text_edit->get_selection_from_column(1) == 13);
-			CHECK(text_edit->get_selection_to_line(1) == 1);
-			CHECK(text_edit->get_selection_to_column(1) == 17);
+			CHECK(text_edit->get_selection_origin_line(1) == 1);
+			CHECK(text_edit->get_selection_origin_column(1) == 13);
 			CHECK(text_edit->get_caret_line(1) == 1);
 			CHECK(text_edit->get_caret_column(1) == 17);
 
+			// Select the next occurrence on the next line.
 			text_edit->add_selection_for_next_occurrence();
 			CHECK(text_edit->get_caret_count() == 3);
 			CHECK(text_edit->get_selected_text(2) == "test");
-			CHECK(text_edit->get_selection_from_line(2) == 2);
-			CHECK(text_edit->get_selection_from_column(2) == 9);
-			CHECK(text_edit->get_selection_to_line(2) == 2);
-			CHECK(text_edit->get_selection_to_column(2) == 13);
+			CHECK(text_edit->get_selection_origin_line(2) == 2);
+			CHECK(text_edit->get_selection_origin_column(2) == 9);
 			CHECK(text_edit->get_caret_line(2) == 2);
 			CHECK(text_edit->get_caret_column(2) == 13);
 
+			// Select the next occurrence on the next line.
 			text_edit->add_selection_for_next_occurrence();
 			CHECK(text_edit->get_caret_count() == 4);
 			CHECK(text_edit->get_selected_text(3) == "test");
-			CHECK(text_edit->get_selection_from_line(3) == 3);
-			CHECK(text_edit->get_selection_from_column(3) == 5);
-			CHECK(text_edit->get_selection_to_line(3) == 3);
-			CHECK(text_edit->get_selection_to_column(3) == 9);
+			CHECK(text_edit->get_selection_origin_line(3) == 3);
+			CHECK(text_edit->get_selection_origin_column(3) == 5);
 			CHECK(text_edit->get_caret_line(3) == 3);
 			CHECK(text_edit->get_caret_column(3) == 9);
 
@@ -1403,10 +1398,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->add_selection_for_next_occurrence();
 			CHECK(text_edit->get_caret_count() == 6);
 			CHECK(text_edit->get_selected_text(5) == "rand");
-			CHECK(text_edit->get_selection_from_line(5) == 3);
-			CHECK(text_edit->get_selection_from_column(5) == 18);
-			CHECK(text_edit->get_selection_to_line(5) == 3);
-			CHECK(text_edit->get_selection_to_column(5) == 22);
+			CHECK(text_edit->get_selection_origin_line(5) == 3);
+			CHECK(text_edit->get_selection_origin_column(5) == 18);
 			CHECK(text_edit->get_caret_line(5) == 3);
 			CHECK(text_edit->get_caret_column(5) == 22);
 
@@ -1415,6 +1408,16 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selected_text(1) == "test");
 			CHECK(text_edit->get_selected_text(2) == "test");
 			CHECK(text_edit->get_selected_text(3) == "test");
+
+			// Selecting from end of line does not error.
+			text_edit->remove_secondary_carets();
+			text_edit->select(1, 17, 3, 8, 0);
+			text_edit->add_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK(text_edit->get_selection_origin_line(0) == 1);
+			CHECK(text_edit->get_selection_origin_column(0) == 17);
+			CHECK(text_edit->get_caret_line(0) == 3);
+			CHECK(text_edit->get_caret_column(0) == 8);
 		}
 
 		SUBCASE("[TextEdit] skip selection for next occurrence") {
@@ -1455,10 +1458,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_count() == 1);
 			CHECK(text_edit->has_selection(0));
 			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 0);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 4);
+			CHECK(text_edit->get_selection_origin_line(0) == 1);
+			CHECK(text_edit->get_selection_origin_column(0) == 0);
 			CHECK(text_edit->get_caret_line(0) == 1);
 			CHECK(text_edit->get_caret_column(0) == 4);
 
@@ -1467,10 +1468,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_count() == 1);
 			CHECK(text_edit->has_selection(0));
 			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 13);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 17);
+			CHECK(text_edit->get_selection_origin_line(0) == 1);
+			CHECK(text_edit->get_selection_origin_column(0) == 13);
 			CHECK(text_edit->get_caret_line(0) == 1);
 			CHECK(text_edit->get_caret_column(0) == 17);
 
@@ -1478,10 +1477,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_count() == 1);
 			CHECK(text_edit->has_selection(0));
 			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 2);
-			CHECK(text_edit->get_selection_from_column(0) == 9);
-			CHECK(text_edit->get_selection_to_line(0) == 2);
-			CHECK(text_edit->get_selection_to_column(0) == 13);
+			CHECK(text_edit->get_selection_origin_line(0) == 2);
+			CHECK(text_edit->get_selection_origin_column(0) == 9);
 			CHECK(text_edit->get_caret_line(0) == 2);
 			CHECK(text_edit->get_caret_column(0) == 13);
 
@@ -1489,10 +1486,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_count() == 1);
 			CHECK(text_edit->has_selection(0));
 			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 3);
-			CHECK(text_edit->get_selection_from_column(0) == 5);
-			CHECK(text_edit->get_selection_to_line(0) == 3);
-			CHECK(text_edit->get_selection_to_column(0) == 9);
+			CHECK(text_edit->get_selection_origin_line(0) == 3);
+			CHECK(text_edit->get_selection_origin_column(0) == 5);
 			CHECK(text_edit->get_caret_line(0) == 3);
 			CHECK(text_edit->get_caret_column(0) == 9);
 
@@ -1500,10 +1495,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->skip_selection_for_next_occurrence();
 			CHECK(text_edit->has_selection(0));
 			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 0);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 4);
+			CHECK(text_edit->get_selection_origin_line(0) == 1);
+			CHECK(text_edit->get_selection_origin_column(0) == 0);
 			CHECK(text_edit->get_caret_line(0) == 1);
 			CHECK(text_edit->get_caret_column(0) == 4);
 
@@ -1516,10 +1509,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			CHECK(text_edit->has_selection(1));
 			CHECK(text_edit->get_selected_text(1) == "test");
-			CHECK(text_edit->get_selection_from_line(1) == 1);
-			CHECK(text_edit->get_selection_from_column(1) == 13);
-			CHECK(text_edit->get_selection_to_line(1) == 1);
-			CHECK(text_edit->get_selection_to_column(1) == 17);
+			CHECK(text_edit->get_selection_origin_line(1) == 1);
+			CHECK(text_edit->get_selection_origin_column(1) == 13);
 			CHECK(text_edit->get_caret_line(1) == 1);
 			CHECK(text_edit->get_caret_column(1) == 17);
 
@@ -1531,10 +1522,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selected_text(0) == "test");
 
 			CHECK(text_edit->get_selected_text(1) == "test");
-			CHECK(text_edit->get_selection_from_line(1) == 2);
-			CHECK(text_edit->get_selection_from_column(1) == 9);
-			CHECK(text_edit->get_selection_to_line(1) == 2);
-			CHECK(text_edit->get_selection_to_column(1) == 13);
+			CHECK(text_edit->get_selection_origin_line(1) == 2);
+			CHECK(text_edit->get_selection_origin_column(1) == 9);
 			CHECK(text_edit->get_caret_line(1) == 2);
 			CHECK(text_edit->get_caret_column(1) == 13);
 
@@ -1544,10 +1533,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selected_text(0) == "test");
 
 			CHECK(text_edit->get_selected_text(1) == "test");
-			CHECK(text_edit->get_selection_from_line(1) == 3);
-			CHECK(text_edit->get_selection_from_column(1) == 5);
-			CHECK(text_edit->get_selection_to_line(1) == 3);
-			CHECK(text_edit->get_selection_to_column(1) == 9);
+			CHECK(text_edit->get_selection_origin_line(1) == 3);
+			CHECK(text_edit->get_selection_origin_column(1) == 5);
 			CHECK(text_edit->get_caret_line(1) == 3);
 			CHECK(text_edit->get_caret_column(1) == 9);
 
@@ -1556,12 +1543,20 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_count() == 1);
 			CHECK(text_edit->has_selection(0));
 			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 0);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 4);
+			CHECK(text_edit->get_selection_origin_line(0) == 1);
+			CHECK(text_edit->get_selection_origin_column(0) == 0);
 			CHECK(text_edit->get_caret_line(0) == 1);
 			CHECK(text_edit->get_caret_column(0) == 4);
+
+			// Selecting from end of line does not error.
+			text_edit->remove_secondary_carets();
+			text_edit->select(1, 17, 3, 8, 0);
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK(text_edit->get_selection_origin_line(0) == 1);
+			CHECK(text_edit->get_selection_origin_column(0) == 17);
+			CHECK(text_edit->get_caret_line(0) == 3);
+			CHECK(text_edit->get_caret_column(0) == 8);
 		}
 
 		SUBCASE("[TextEdit] deselect on focus loss") {
