@@ -136,7 +136,7 @@ bool VSPortal::_is_plane_duplicate(const Plane &p_plane, const LocalVector<Plane
 
 bool VSPortal::_pvs_is_outside_planes(const LocalVector<Plane, int32_t> &p_planes) const {
 	// short version
-	const Vector<Vector3> &pts = _pts_world;
+	const LocalVector<Vector3> &pts = _pts_world;
 	int nPoints = pts.size();
 
 	const real_t epsilon = 0.1;
@@ -180,7 +180,7 @@ bool VSPortal::_test_pvs_plane(const Plane &p_plane, const Vector3 *pts_a, int n
 // add clipping planes to the vector formed by each portal edge and the camera
 void VSPortal::add_planes(const Vector3 &p_cam, LocalVector<Plane> &r_planes, bool p_outgoing) const {
 	// short version
-	const Vector<Vector3> &pts = _pts_world;
+	const LocalVector<Vector3> &pts = _pts_world;
 
 	int nPoints = pts.size();
 	ERR_FAIL_COND(nPoints < 3);
