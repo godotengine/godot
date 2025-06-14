@@ -4332,6 +4332,41 @@ String String::dedent() const {
 	return new_string;
 }
 
+String String::strip(const String &p_chars) const {
+	int len = length();
+	int end = len - 1;
+	int beg = 0;
+
+	if (p_chars.is_empty()) {
+		// Strip non-printable characters by default.
+		for (; beg < len; beg++) {
+			if (get(beg) > 32) {
+				break;
+			}
+		}
+		for (; end >= beg; end--) {
+			if (get(end) > 32) {
+				break;
+			}
+		}
+	} else {
+		// Strip given characters.
+		for (; beg < len; beg++) {
+			if (p_chars.find_char(get(beg)) == -1) {
+				break;
+			}
+		}
+
+		for (; end >= beg; end--) {
+			if (p_chars.find_char(get(end)) == -1) {
+				break;
+			}
+		}
+	}
+
+	return substr(beg, end - beg + 1);
+}
+
 String String::strip_edges(bool left, bool right) const {
 	int len = length();
 	int beg = 0, end = len;
@@ -4356,10 +4391,6 @@ String String::strip_edges(bool left, bool right) const {
 		}
 	}
 
-	if (beg == 0 && end == len) {
-		return *this;
-	}
-
 	return substr(beg, end - beg);
 }
 
@@ -4380,9 +4411,17 @@ String String::lstrip(const String &p_chars) const {
 	int len = length();
 	int beg;
 
-	for (beg = 0; beg < len; beg++) {
-		if (p_chars.find_char(get(beg)) == -1) {
-			break;
+	if (p_chars.is_empty()) {
+		for (beg = 0; beg < len; beg++) {
+			if (get(beg) > 32) {
+				break;
+			}
+		}
+	} else {
+		for (beg = 0; beg < len; beg++) {
+			if (p_chars.find_char(get(beg)) == -1) {
+				break;
+			}
 		}
 	}
 
@@ -4397,9 +4436,17 @@ String String::rstrip(const String &p_chars) const {
 	int len = length();
 	int end;
 
-	for (end = len - 1; end >= 0; end--) {
-		if (p_chars.find_char(get(end)) == -1) {
-			break;
+	if (p_chars.is_empty()) {
+		for (end = len - 1; end >= 0; end--) {
+			if (get(end) > 32) {
+				break;
+			}
+		}
+	} else {
+		for (end = len - 1; end >= 0; end--) {
+			if (p_chars.find_char(get(end)) == -1) {
+				break;
+			}
 		}
 	}
 
