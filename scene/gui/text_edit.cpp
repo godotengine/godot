@@ -3633,22 +3633,24 @@ String TextEdit::get_tooltip(const Point2 &p_pos) const {
 		return Control::get_tooltip(p_pos);
 	}
 	Point2i pos = get_line_column_at_pos(p_pos);
-	int row = pos.y;
+	int line = pos.y;
 	int col = pos.x;
 
-	String s = text[row];
-	if (s.length() == 0) {
+	const String &text_line = text[line];
+	if (text_line.is_empty()) {
 		return Control::get_tooltip(p_pos);
 	}
-	int beg, end;
-	if (select_word(s, col, beg, end)) {
-		Variant args[1] = { s.substr(beg, end - beg) };
-		const Variant *argp[] = { &args[0] };
-		Callable::CallError ce;
-		Variant ret;
-		tooltip_callback.callp(argp, 1, ret, ce);
-		ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, "", "Failed to call custom tooltip.");
-		return ret;
+	const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
+	for (int i = 0; i < words.size(); i = i + 2) {
+		if (words[i] <= col && words[i + 1] >= col) {
+			Variant args[1] = { text_line.substr(words[i], words[i + 1] - words[i]) };
+			const Variant *argp[] = { &args[0] };
+			Callable::CallError ce;
+			Variant ret;
+			tooltip_callback.callp(argp, 1, ret, ce);
+			ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, "", "Failed to call custom tooltip.");
+			return ret;
+		}
 	}
 
 	return Control::get_tooltip(p_pos);
@@ -4924,43 +4926,29 @@ Point2 TextEdit::get_local_mouse_pos() const {
 
 String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 	Point2i pos = get_line_column_at_pos(p_pos, false, false);
-	int row = pos.y;
+	int line = pos.y;
 	int col = pos.x;
-	if (row < 0 || col < 0) {
-		return "";
-	}
+	return get_word(line, col);
+}
 
-	String s = text[row];
-	if (s.length() == 0) {
-		return "";
+String TextEdit::get_word(int p_line, int p_column) const {
+	if (p_line < 0 || p_column < 0) {
+		return String();
 	}
-	int beg, end;
-	if (select_word(s, col, beg, end)) {
-		bool inside_quotes = false;
-		char32_t selected_quote = '\0';
-		int qbegin = 0, qend = 0;
-		for (int i = 0; i < s.length(); i++) {
-			if (s[i] == '"' || s[i] == '\'') {
-				if (i == 0 || s[i - 1] != '\\') {
-					if (inside_quotes && selected_quote == s[i]) {
-						qend = i;
-						inside_quotes = false;
-						selected_quote = '\0';
-						if (col >= qbegin && col <= qend) {
-							return s.substr(qbegin, qend - qbegin);
-						}
-					} else if (!inside_quotes) {
-						qbegin = i + 1;
-						inside_quotes = true;
-						selected_quote = s[i];
-					}
-				}
-			}
+	ERR_FAIL_INDEX_V(p_line, text.size(), String());
+
+	const String &text_line = text[p_line];
+	if (text_line.is_empty()) {
+		return String();
+	}
+	ERR_FAIL_INDEX_V(p_column, text_line.size() + 1, String());
+
+	const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(p_line)->get_rid());
+	for (int i = 0; i < words.size(); i = i + 2) {
+		if (words[i] <= p_column && words[i + 1] >= p_column) {
+			return text_line.substr(words[i], words[i + 1] - words[i]);
 		}
-
-		return s.substr(beg, end - beg);
 	}
-
 	return String();
 }
 
