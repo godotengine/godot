@@ -438,7 +438,7 @@ public:
 	String trim_suffix(const char *p_suffix) const;
 	String lpad(int min_length, const String &character = " ") const;
 	String rpad(int min_length, const String &character = " ") const;
-	String sprintf(const Array &values, bool *error) const;
+	String sprintf(const Span<Variant> &values, bool *error) const;
 	String quote(const String &quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
