@@ -391,6 +391,13 @@ PackedStringArray TranslationServer::get_loaded_locales() const {
 
 void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
 	main_domain->add_translation(p_translation);
+
+	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_domains")) {
+		const Vector<String> &translation_domains = GLOBAL_GET("internationalization/locale/translations_domains");
+		for (String domain_name : translation_domains) {
+			get_or_add_domain(domain_name)->add_translation(p_translation);
+		}
+	}
 }
 
 void TranslationServer::remove_translation(const Ref<Translation> &p_translation) {
@@ -439,6 +446,19 @@ Ref<TranslationDomain> TranslationServer::get_or_add_domain(const StringName &p_
 void TranslationServer::remove_domain(const StringName &p_domain) {
 	ERR_FAIL_COND_MSG(p_domain == StringName(), "Cannot remove main translation domain.");
 	custom_domains.erase(p_domain);
+}
+
+Vector<String> TranslationServer::get_all_domains(const bool &include_internal) const {
+	Vector<String> domains;
+
+	for (const KeyValue<StringName, Ref<TranslationDomain>> &E : custom_domains) {
+		if (!include_internal && (E.key == "godot.editor" || E.key == "godot.properties" || E.key == "godot.documentation")) {
+			continue; // Skip these internal domains
+		}
+		domains.push_back(E.key);
+	}
+
+	return domains;
 }
 
 void TranslationServer::setup() {
@@ -554,6 +574,13 @@ void TranslationServer::get_argument_options(const StringName &p_function, int p
 			target_hash_map = &script_map;
 		} else if (pf == "get_country_name") {
 			target_hash_map = &country_name_map;
+		} else if (pf == "get_or_add_domain") {
+			if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_domains")) {
+				PackedStringArray domains = GLOBAL_GET("internationalization/locale/translations_domains");
+				for (String &E : domains) {
+					r_options->push_back(E.quote());
+				}
+			}
 		}
 
 		if (target_hash_map) {
@@ -595,6 +622,7 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_domain", "domain"), &TranslationServer::has_domain);
 	ClassDB::bind_method(D_METHOD("get_or_add_domain", "domain"), &TranslationServer::get_or_add_domain);
 	ClassDB::bind_method(D_METHOD("remove_domain", "domain"), &TranslationServer::remove_domain);
+	ClassDB::bind_method(D_METHOD("get_all_domains", "include_internal"), &TranslationServer::get_all_domains, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 

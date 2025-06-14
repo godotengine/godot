@@ -38,7 +38,10 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/pot_generator.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tab_container.h"
 
 void LocalizationEditor::_notification(int p_what) {
@@ -47,6 +50,7 @@ void LocalizationEditor::_notification(int p_what) {
 			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
 			translation_pot_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_delete));
 			translation_pot_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
+			domain_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_domain_delete));
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -414,6 +418,59 @@ void LocalizationEditor::_update_pot_file_extensions() {
 	}
 }
 
+void LocalizationEditor::_add_domain_pressed() {
+	_translation_domain_add(add_domain_edit->get_text());
+}
+
+void LocalizationEditor::_translation_domain_add(const StringName &p_name) {
+	PackedStringArray translation_domains = GLOBAL_GET("internationalization/locale/translations_domains");
+
+	if (!translation_domains.has(p_name)) {
+		translation_domains.push_back(p_name);
+	} else {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add %s translation domain"), p_name));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_domains", translation_domains);
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_domains", GLOBAL_GET("internationalization/locale/translations_domains"));
+	undo_redo->add_do_method(this, "update_translations");
+	undo_redo->add_undo_method(this, "update_translations");
+	undo_redo->add_do_method(this, "emit_signal", localization_changed);
+	undo_redo->add_undo_method(this, "emit_signal", localization_changed);
+	undo_redo->commit_action();
+
+	add_domain_edit->clear();
+}
+
+void LocalizationEditor::_translation_domain_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
+
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+	ERR_FAIL_NULL(ti);
+
+	int idx = ti->get_metadata(0);
+
+	PackedStringArray domains = GLOBAL_GET("internationalization/locale/translations_domains");
+
+	ERR_FAIL_INDEX(idx, domains.size());
+
+	domains.remove_at(idx);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Remove Translation Domain"));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_domains", domains);
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_domains", GLOBAL_GET("internationalization/locale/translations_domains"));
+	undo_redo->add_do_method(this, "update_translations");
+	undo_redo->add_undo_method(this, "update_translations");
+	undo_redo->add_do_method(this, "emit_signal", localization_changed);
+	undo_redo->add_undo_method(this, "emit_signal", localization_changed);
+	undo_redo->commit_action();
+}
+
 void LocalizationEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
 	p_fs_dock->connect("files_moved", callable_mp(this, &LocalizationEditor::_filesystem_files_moved));
 	p_fs_dock->connect("file_removed", callable_mp(this, &LocalizationEditor::_filesystem_file_removed));
@@ -613,6 +670,22 @@ void LocalizationEditor::update_translations() {
 
 	pot_generate_button->set_disabled(pot_translations.is_empty());
 
+	// Update translation domains
+	domain_list->clear();
+	root = domain_list->create_item(nullptr);
+	domain_list->set_hide_root(true);
+	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translations_domains")) {
+		PackedStringArray domains = GLOBAL_GET("internationalization/locale/translations_domains");
+		for (int i = 0; i < domains.size(); i++) {
+			TreeItem *t = domain_list->create_item(root);
+			t->set_editable(0, false);
+			t->set_text(0, domains[i]);
+			t->set_tooltip_text(0, domains[i]);
+			t->set_metadata(0, i);
+			t->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTRC("Remove"));
+		}
+	}
+
 	updating_translations = false;
 }
 
@@ -771,5 +844,38 @@ LocalizationEditor::LocalizationEditor() {
 		pot_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 		pot_file_open_dialog->connect("files_selected", callable_mp(this, &LocalizationEditor::_pot_add));
 		add_child(pot_file_open_dialog);
+	}
+
+	{
+		VBoxContainer *tvb = memnew(VBoxContainer);
+		tvb->set_name(TTRC("Domains"));
+		translations->add_child(tvb);
+
+		HBoxContainer *thb = memnew(HBoxContainer);
+		thb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		tvb->add_child(thb);
+
+		add_domain_edit = memnew(LineEdit);
+		add_domain_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		add_domain_edit->set_placeholder(TTRC("Add New Domain"));
+		add_domain_edit->set_accessibility_name(TTRC("Add New Domain"));
+		add_domain_edit->set_clear_button_enabled(true);
+		add_domain_edit->set_keep_editing_on_text_submit(true);
+		add_domain_edit->connect(SceneStringName(text_submitted), callable_mp(this, &LocalizationEditor::_translation_domain_add));
+		thb->add_child(add_domain_edit);
+
+		Button *add_button = memnew(Button);
+		add_button->set_text(TTRC("Add"));
+		add_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_add_domain_pressed));
+		thb->add_child(add_button);
+
+		VBoxContainer *tmc = memnew(VBoxContainer);
+		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		tvb->add_child(tmc);
+
+		domain_list = memnew(Tree);
+		domain_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+		tmc->add_child(domain_list);
 	}
 }
