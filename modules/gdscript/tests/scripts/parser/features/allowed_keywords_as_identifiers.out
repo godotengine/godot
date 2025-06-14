@@ -1,4 +1,8 @@
 GDTEST_OK
+~~ WARNING at line 6: (SHADOWED_GLOBAL_IDENTIFIER) The variable "PI" has the same name as a built-in constant.
+~~ WARNING at line 9: (SHADOWED_GLOBAL_IDENTIFIER) The variable "INF" has the same name as a built-in constant.
+~~ WARNING at line 12: (SHADOWED_GLOBAL_IDENTIFIER) The variable "NAN" has the same name as a built-in constant.
+~~ WARNING at line 15: (SHADOWED_GLOBAL_IDENTIFIER) The variable "TAU" has the same name as a built-in constant.
 match
 PI
 INF

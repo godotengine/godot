@@ -1,3 +1,31 @@
 GDTEST_OK
-~~ WARNING at line 2: (UNUSED_VARIABLE) The local variable "abs" is declared but never used in the block. If this is intended, prefix it with an underscore: "_abs".
-~~ WARNING at line 2: (SHADOWED_GLOBAL_IDENTIFIER) The variable "abs" has the same name as a built-in function.
+~~ WARNING at line 28: (SHADOWED_GLOBAL_IDENTIFIER) The variable "abs" has the same name as a built-in function.
+~~ WARNING at line 29: (SHADOWED_GLOBAL_IDENTIFIER) The variable "range" has the same name as a built-in function.
+~~ WARNING at line 30: (SHADOWED_GLOBAL_IDENTIFIER) The variable "Error" has the same name as a built-in enum class.
+~~ WARNING at line 31: (SHADOWED_GLOBAL_IDENTIFIER) The variable "OK" has the same name as a built-in enum member.
+~~ WARNING at line 32: (SHADOWED_GLOBAL_IDENTIFIER) The variable "PI" has the same name as a built-in constant.
+~~ WARNING at line 38: (SHADOWED_GLOBAL_IDENTIFIER) The variable "abs" has the same name as a built-in function.
+~~ WARNING at line 39: (SHADOWED_GLOBAL_IDENTIFIER) The variable "range" has the same name as a built-in function.
+~~ WARNING at line 40: (SHADOWED_GLOBAL_IDENTIFIER) The variable "Error" has the same name as a built-in enum class.
+~~ WARNING at line 41: (SHADOWED_GLOBAL_IDENTIFIER) The variable "OK" has the same name as a built-in enum member.
+~~ WARNING at line 42: (SHADOWED_GLOBAL_IDENTIFIER) The variable "PI" has the same name as a built-in constant.
+~~ WARNING at line 46: (SHADOWED_GLOBAL_IDENTIFIER) The constant "min" has the same name as a built-in function.
+~~ WARNING at line 50: (SHADOWED_GLOBAL_IDENTIFIER) The constant "min" has the same name as a built-in function.
+~~ WARNING at line 55: (SHADOWED_GLOBAL_IDENTIFIER) The enum class "max" has the same name as a built-in function.
+~~ WARNING at line 69: (SHADOWED_GLOBAL_IDENTIFIER) The enum member "round" has the same name as a built-in function.
+~~ WARNING at line 82: (SHADOWED_GLOBAL_IDENTIFIER) The function "ceil" has the same name as a built-in function.
+~~ WARNING at line 86: (SHADOWED_GLOBAL_IDENTIFIER) The function "char" has the same name as a built-in function.
+~~ WARNING at line 89: (SHADOWED_GLOBAL_IDENTIFIER) The function "Corner" has the same name as a built-in enum class.
+~~ WARNING at line 92: (SHADOWED_GLOBAL_IDENTIFIER) The function "CORNER_TOP_LEFT" has the same name as a built-in enum member.
+~~ WARNING at line 95: (SHADOWED_GLOBAL_IDENTIFIER) The function "TAU" has the same name as a built-in constant.
+~~ WARNING at line 106: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "abs" has the same name as a built-in function.
+~~ WARNING at line 109: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "range" has the same name as a built-in function.
+~~ WARNING at line 112: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "Error" has the same name as a built-in enum class.
+~~ WARNING at line 115: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "OK" has the same name as a built-in enum member.
+~~ WARNING at line 118: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "PI" has the same name as a built-in constant.
+~~ WARNING at line 129: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "abs" has the same name as a built-in function.
+~~ WARNING at line 132: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "range" has the same name as a built-in function.
+~~ WARNING at line 135: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "Error" has the same name as a built-in enum class.
+~~ WARNING at line 138: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "OK" has the same name as a built-in enum member.
+~~ WARNING at line 141: (SHADOWED_GLOBAL_IDENTIFIER) The function parameter "PI" has the same name as a built-in constant.
+warn
