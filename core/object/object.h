@@ -525,13 +525,13 @@ protected:                                                                      
 	}                                                                                                                                       \
                                                                                                                                             \
 public:                                                                                                                                     \
-	static void initialize_class() {                                                                                                        \
+	static void initialize_class(RegistrationContext p_context) {                                                                           \
 		static bool initialized = false;                                                                                                    \
 		if (initialized) {                                                                                                                  \
 			return;                                                                                                                         \
 		}                                                                                                                                   \
-		m_inherits::initialize_class();                                                                                                     \
-		_add_class_to_classdb(get_class_static(), super_type::get_class_static());                                                          \
+		m_inherits::initialize_class(RegistrationContext::SUPERCLASS);                                                                      \
+		_add_class_to_classdb(get_class_static(), super_type::get_class_static(), p_context);                                               \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                              \
 			_bind_methods();                                                                                                                \
 		}                                                                                                                                   \
@@ -543,7 +543,7 @@ public:                                                                         
                                                                                                                                             \
 protected:                                                                                                                                  \
 	virtual void _initialize_classv() override {                                                                                            \
-		initialize_class();                                                                                                                 \
+		initialize_class(RegistrationContext::OBJECT_CONSTRUCTION);                                                                         \
 	}                                                                                                                                       \
 	_FORCE_INLINE_ void (Object::*_get_get_property_list() const)(List<PropertyInfo> * p_list) const {                                      \
 		return (void (Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                                \
@@ -598,6 +598,12 @@ public:
 
 		Connection() {}
 		Connection(const Variant &p_variant);
+	};
+
+	enum struct RegistrationContext {
+		EXPLICIT,
+		SUPERCLASS,
+		OBJECT_CONSTRUCTION
 	};
 
 private:
@@ -698,7 +704,7 @@ protected:
 	friend class GDExtensionMethodBind;
 	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }
 	_ALWAYS_INLINE_ GDExtensionClassInstancePtr _get_extension_instance() const { return _extension_instance; }
-	virtual void _initialize_classv() { initialize_class(); }
+	virtual void _initialize_classv() { initialize_class(RegistrationContext::OBJECT_CONSTRUCTION); }
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; }
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; }
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {}
@@ -765,7 +771,7 @@ protected:
 	friend class ClassDB;
 	friend class PlaceholderExtensionInstance;
 
-	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits, RegistrationContext p_context);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
@@ -782,7 +788,7 @@ protected:
 #endif
 
 public: // Should be protected, but bug in clang++.
-	static void initialize_class();
+	static void initialize_class(RegistrationContext p_context);
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
