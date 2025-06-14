@@ -247,21 +247,21 @@ void SceneReplicationConfig::_update() {
 	}
 }
 
-const List<NodePath> &SceneReplicationConfig::get_spawn_properties() {
+const LocalVector<NodePath> &SceneReplicationConfig::get_spawn_properties() {
 	if (dirty) {
 		_update();
 	}
 	return spawn_props;
 }
 
-const List<NodePath> &SceneReplicationConfig::get_sync_properties() {
+const LocalVector<NodePath> &SceneReplicationConfig::get_sync_properties() {
 	if (dirty) {
 		_update();
 	}
 	return sync_props;
 }
 
-const List<NodePath> &SceneReplicationConfig::get_watch_properties() {
+const LocalVector<NodePath> &SceneReplicationConfig::get_watch_properties() {
 	if (dirty) {
 		_update();
 	}

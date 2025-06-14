@@ -239,8 +239,13 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 		// Try to apply synchronizer Net ID
 		ERR_FAIL_COND_V_MSG(pending_sync_net_ids.is_empty(), ERR_INVALID_DATA, vformat("The MultiplayerSynchronizer at path \"%s\" is unable to process the pending spawn since it has no network ID. This might happen when changing the multiplayer authority during the \"_ready\" callback. Make sure to only change the authority of multiplayer synchronizers during \"_enter_tree\" or the \"_spawn_custom\" callback of their multiplayer spawner.", sync->get_path()));
 		ERR_FAIL_COND_V(!peers_info.has(pending_spawn_remote), ERR_INVALID_DATA);
-		uint32_t net_id = pending_sync_net_ids.front()->get();
-		pending_sync_net_ids.pop_front();
+		uint32_t net_id = pending_sync_net_ids[pending_sync_head++];
+		// when we’ve consumed them all, clear and reset
+		if (pending_sync_head == pending_sync_net_ids.size()) {
+			pending_sync_net_ids.clear();
+			pending_sync_head = 0;
+		}
+
 		peers_info[pending_spawn_remote].recv_sync_ids[net_id] = sync->get_instance_id();
 		sync->set_net_id(net_id);
 
@@ -248,7 +253,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 		if (pending_buffer_size > 0) {
 			ERR_FAIL_COND_V(!node || !sync->get_replication_config_ptr(), ERR_UNCONFIGURED);
 			int consumed = 0;
-			const List<NodePath> &props = sync->get_replication_config_ptr()->get_spawn_properties();
+			const LocalVector<NodePath> &props = sync->get_replication_config_ptr()->get_spawn_properties();
 			Vector<Variant> vars;
 			vars.resize(props.size());
 			Error err = MultiplayerAPI::decode_and_decompress_variants(vars, pending_buffer, pending_buffer_size, consumed);
@@ -487,8 +492,8 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	}
 
 	// Prepare spawn state.
-	List<NodePath> state_props;
-	List<uint32_t> sync_ids;
+	LocalVector<NodePath> state_props;
+	LocalVector<uint32_t> sync_ids;
 	const HashSet<ObjectID> synchronizers = tnode->synchronizers;
 	for (const ObjectID &sid : synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
@@ -582,7 +587,7 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	uint32_t name_len = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
 	ERR_FAIL_COND_V_MSG(name_len + (sync_len * 4) > uint32_t(p_buffer_len - ofs), ERR_INVALID_DATA, vformat("Invalid spawn packet size: %d, wants: %d", p_buffer_len, ofs + name_len + (sync_len * 4)));
-	List<uint32_t> sync_ids;
+	LocalVector<uint32_t> sync_ids;
 	for (uint32_t i = 0; i < sync_len; i++) {
 		sync_ids.push_back(decode_uint32(&p_buffer[ofs]));
 		ofs += 4;
@@ -719,7 +724,7 @@ void SceneReplicationInterface::_send_delta(int p_peer, const HashSet<ObjectID> 
 		}
 		uint64_t last_usec = p_last_watch_usecs.has(oid) ? p_last_watch_usecs[oid] : 0;
 		uint64_t indexes;
-		List<Variant> delta = sync->get_delta_state(p_usec, last_usec, indexes);
+		LocalVector<Variant> delta = sync->get_delta_state(p_usec, last_usec, indexes);
 
 		if (!delta.size()) {
 			continue; // Nothing to update.
@@ -778,7 +783,7 @@ Error SceneReplicationInterface::on_delta_receive(int p_from, const uint8_t *p_b
 			ofs += size;
 			ERR_CONTINUE_MSG(true, "Ignoring delta for non-authority or invalid synchronizer.");
 		}
-		List<NodePath> props = sync->get_delta_properties(indexes);
+		LocalVector<NodePath> props = sync->get_delta_properties(indexes);
 		ERR_FAIL_COND_V(props.is_empty(), ERR_INVALID_DATA);
 		Vector<Variant> vars;
 		vars.resize(props.size());
@@ -822,7 +827,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> &
 		int size;
 		Vector<Variant> vars;
 		Vector<const Variant *> varp;
-		const List<NodePath> &props = sync->get_replication_config_ptr()->get_sync_properties();
+		const LocalVector<NodePath> &props = sync->get_replication_config_ptr()->get_sync_properties();
 		Error err = MultiplayerSynchronizer::get_state(props, node, vars, varp);
 		ERR_CONTINUE_MSG(err != OK, "Unable to retrieve sync state.");
 		err = MultiplayerAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), nullptr, size);
@@ -881,7 +886,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 			ofs += size;
 			continue;
 		}
-		const List<NodePath> &props = sync->get_replication_config_ptr()->get_sync_properties();
+		const LocalVector<NodePath> &props = sync->get_replication_config_ptr()->get_sync_properties();
 		Vector<Variant> vars;
 		vars.resize(props.size());
 		int consumed;

@@ -78,8 +78,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static Error get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs);
-	static Error set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
+	static Error get_state(const LocalVector<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs);
+	static Error set_state(const LocalVector<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
 
 	void reset();
 	Node *get_root_node();
@@ -116,8 +116,8 @@ public:
 	void remove_visibility_filter(Callable p_callback);
 	VisibilityUpdateMode get_visibility_update_mode() const;
 
-	List<Variant> get_delta_state(uint64_t p_cur_usec, uint64_t p_last_usec, uint64_t &r_indexes);
-	List<NodePath> get_delta_properties(uint64_t p_indexes);
+	LocalVector<Variant> get_delta_state(uint64_t p_cur_usec, uint64_t p_last_usec, uint64_t &r_indexes);
+	LocalVector<NodePath> get_delta_properties(uint64_t p_indexes);
 	SceneReplicationConfig *get_replication_config_ptr() const;
 
 	MultiplayerSynchronizer();

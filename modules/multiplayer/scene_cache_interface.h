@@ -72,7 +72,7 @@ private:
 	NodeCache &_track(Node *p_node);
 
 protected:
-	Error _send_confirm_path(Node *p_node, NodeCache &p_cache, const List<int> &p_peers);
+	Error _send_confirm_path(Node *p_node, NodeCache &p_cache, const LocalVector<int> &p_peers);
 
 public:
 	void clear();
@@ -81,9 +81,9 @@ public:
 	void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	// Returns true if all peers have cached path.
-	bool send_object_cache(Object *p_obj, int p_target, int &p_id);
-	int make_object_cache(Object *p_obj);
-	Object *get_cached_object(int p_from, uint32_t p_cache_id);
+	bool send_object_cache(Node *p_node, int p_target, int &p_id);
+	int make_object_cache(Node *p_node);
+	Node *get_cached_object(int p_from, uint32_t p_cache_id);
 	bool is_cache_confirmed(Node *p_path, int p_peer);
 
 	SceneCacheInterface(SceneMultiplayer *p_multiplayer) { multiplayer = p_multiplayer; }
