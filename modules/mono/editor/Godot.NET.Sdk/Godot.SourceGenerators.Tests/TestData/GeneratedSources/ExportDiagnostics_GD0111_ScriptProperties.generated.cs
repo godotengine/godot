@@ -1,7 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
 
-partial class ExportDiagnostics_GD0111
+partial class @ExportDiagnostics_GD0111
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
     /// <summary>
