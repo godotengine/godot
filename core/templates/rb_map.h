@@ -104,11 +104,15 @@ public:
 		}
 		_FORCE_INLINE_ KeyValue<K, V> *operator->() const { return &E->key_value(); }
 		_FORCE_INLINE_ Iterator &operator++() {
-			E = E->next();
+			if (likely(E)) {
+				E = E->next();
+			}
 			return *this;
 		}
 		_FORCE_INLINE_ Iterator &operator--() {
-			E = E->prev();
+			if (likely(E)) {
+				E = E->prev();
+			}
 			return *this;
 		}
 
@@ -136,11 +140,15 @@ public:
 		}
 		_FORCE_INLINE_ const KeyValue<K, V> *operator->() const { return &E->key_value(); }
 		_FORCE_INLINE_ ConstIterator &operator++() {
-			E = E->next();
+			if (likely(E)) {
+				E = E->next();
+			}
 			return *this;
 		}
 		_FORCE_INLINE_ ConstIterator &operator--() {
-			E = E->prev();
+			if (likely(E)) {
+				E = E->prev();
+			}
 			return *this;
 		}
 
