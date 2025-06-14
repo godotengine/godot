@@ -2821,30 +2821,26 @@ uint64_t String::hash64() const {
 }
 
 String String::md5_text() const {
-	CharString cs = utf8();
 	unsigned char hash[16];
-	CryptoCore::md5((unsigned char *)cs.ptr(), cs.length(), hash);
+	CryptoCore::md5((unsigned char *)ptr(), length() * sizeof(char32_t), hash);
 	return String::hex_encode_buffer(hash, 16);
 }
 
 String String::sha1_text() const {
-	CharString cs = utf8();
 	unsigned char hash[20];
-	CryptoCore::sha1((unsigned char *)cs.ptr(), cs.length(), hash);
+	CryptoCore::sha1((unsigned char *)ptr(), length() * sizeof(char32_t), hash);
 	return String::hex_encode_buffer(hash, 20);
 }
 
 String String::sha256_text() const {
-	CharString cs = utf8();
 	unsigned char hash[32];
-	CryptoCore::sha256((unsigned char *)cs.ptr(), cs.length(), hash);
+	CryptoCore::sha256((unsigned char *)ptr(), length() * sizeof(char32_t), hash);
 	return String::hex_encode_buffer(hash, 32);
 }
 
 Vector<uint8_t> String::md5_buffer() const {
-	CharString cs = utf8();
 	unsigned char hash[16];
-	CryptoCore::md5((unsigned char *)cs.ptr(), cs.length(), hash);
+	CryptoCore::md5((unsigned char *)ptr(), length() * sizeof(char32_t), hash);
 
 	Vector<uint8_t> ret;
 	ret.resize_uninitialized(16);
@@ -2856,9 +2852,8 @@ Vector<uint8_t> String::md5_buffer() const {
 }
 
 Vector<uint8_t> String::sha1_buffer() const {
-	CharString cs = utf8();
 	unsigned char hash[20];
-	CryptoCore::sha1((unsigned char *)cs.ptr(), cs.length(), hash);
+	CryptoCore::sha1((unsigned char *)ptr(), length() * sizeof(char32_t), hash);
 
 	Vector<uint8_t> ret;
 	ret.resize_uninitialized(20);
@@ -2871,9 +2866,8 @@ Vector<uint8_t> String::sha1_buffer() const {
 }
 
 Vector<uint8_t> String::sha256_buffer() const {
-	CharString cs = utf8();
 	unsigned char hash[32];
-	CryptoCore::sha256((unsigned char *)cs.ptr(), cs.length(), hash);
+	CryptoCore::sha256((unsigned char *)ptr(), length() * sizeof(char32_t), hash);
 
 	Vector<uint8_t> ret;
 	ret.resize_uninitialized(32);
