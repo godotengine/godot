@@ -248,7 +248,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 		if (pending_buffer_size > 0) {
 			ERR_FAIL_COND_V(!node || !sync->get_replication_config_ptr(), ERR_UNCONFIGURED);
 			int consumed = 0;
-			const List<NodePath> props = sync->get_replication_config_ptr()->get_spawn_properties();
+			const List<NodePath> &props = sync->get_replication_config_ptr()->get_spawn_properties();
 			Vector<Variant> vars;
 			vars.resize(props.size());
 			Error err = MultiplayerAPI::decode_and_decompress_variants(vars, pending_buffer, pending_buffer_size, consumed);
@@ -822,7 +822,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> &
 		int size;
 		Vector<Variant> vars;
 		Vector<const Variant *> varp;
-		const List<NodePath> props = sync->get_replication_config_ptr()->get_sync_properties();
+		const List<NodePath> &props = sync->get_replication_config_ptr()->get_sync_properties();
 		Error err = MultiplayerSynchronizer::get_state(props, node, vars, varp);
 		ERR_CONTINUE_MSG(err != OK, "Unable to retrieve sync state.");
 		err = MultiplayerAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), nullptr, size);
@@ -881,7 +881,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 			ofs += size;
 			continue;
 		}
-		const List<NodePath> props = sync->get_replication_config_ptr()->get_sync_properties();
+		const List<NodePath> &props = sync->get_replication_config_ptr()->get_sync_properties();
 		Vector<Variant> vars;
 		vars.resize(props.size());
 		int consumed;
