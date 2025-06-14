@@ -366,7 +366,7 @@ void SoftBody3D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				_reset_points_offsets();
 				return;
@@ -380,10 +380,10 @@ void SoftBody3D::_notification(int p_what) {
 			PhysicsServer3D::get_singleton()->soft_body_set_transform(physics_rid, get_global_transform());
 
 			// Soft body renders mesh in global space.
-			set_notify_transform(false);
+			set_notify_global_transform(false);
 			set_as_top_level(true);
 			set_transform(Transform3D());
-			set_notify_transform(true);
+			set_notify_global_transform(true);
 		} break;
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
 			if (mesh.is_valid() && rendering_server_handler->is_ready(mesh->get_rid())) {
