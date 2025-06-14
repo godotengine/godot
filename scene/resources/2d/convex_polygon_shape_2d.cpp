@@ -93,6 +93,10 @@ Vector<Vector2> ConvexPolygonShape2D::get_points() const {
 	return points;
 }
 
+bool ConvexPolygonShape2D::contains_point(const Vector2 &p_point) const {
+	return false; //Requires rewriting base class to include normals of points
+}
+
 void ConvexPolygonShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_cloud", "point_cloud"), &ConvexPolygonShape2D::set_point_cloud);
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &ConvexPolygonShape2D::set_points);

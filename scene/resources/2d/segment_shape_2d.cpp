@@ -86,6 +86,10 @@ real_t SegmentShape2D::get_enclosing_radius() const {
 	return (a + b).length();
 }
 
+bool SegmentShape2D::contains_point(const Vector2 &p_point) const {
+	return false;
+}
+
 void SegmentShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_a", "a"), &SegmentShape2D::set_a);
 	ClassDB::bind_method(D_METHOD("get_a"), &SegmentShape2D::get_a);
