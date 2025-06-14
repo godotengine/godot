@@ -95,6 +95,7 @@
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.5">
 			The distance to erode/shrink the walkable area of the heightfield away from obstructions.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
+			[b]Note:[/b] The radius must be positive. If the radius is zero, a major correction step during the baking process will be disabled. Invalid outline overlaps and other precision errors of the input will not be fixed, removing unintended parts of the baking result.
 		</member>
 		<member name="border_size" type="float" setter="set_border_size" getter="get_border_size" default="0.0">
 			The size of the non-navigable border around the bake bounding area.
