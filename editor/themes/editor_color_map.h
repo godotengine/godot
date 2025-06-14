@@ -32,12 +32,21 @@
 
 #include "core/math/color.h"
 #include "core/string/string_name.h"
+#include "core/templates/bit_field.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 
 // The default icon theme is designed to be used for a dark theme. This map stores
 // Color values to convert to other colors for better readability on a light theme.
 class EditorColorMap {
+public:
+	enum EditorColorMode {
+		COLOR_MODE_MONO = 1 << 0,
+		COLOR_MODE_2D = 1 << 1,
+		COLOR_MODE_3D = 1 << 2,
+	};
+
+private:
 	// Godot Color values are used to avoid the ambiguity of strings
 	// (where "#ffffff", "fff", and "white" are all equivalent).
 	static HashMap<Color, Color> color_conversion_map;
@@ -45,12 +54,17 @@ class EditorColorMap {
 	// are contained in the color map from above.
 	static HashSet<StringName> color_conversion_exceptions;
 
+	// The names of icons that have multiple color modes (2d, 3d, etc).
+	static HashMap<StringName, BitField<EditorColorMode>> color_conversion_modes;
+
 public:
 	static void add_conversion_color_pair(const String &p_from_color, const String &p_to_color);
 	static void add_conversion_exception(const StringName &p_icon_name);
+	static void add_color_conversion_mode(const StringName &p_icon_name, const BitField<EditorColorMode> &p_color_mode);
 
 	static HashMap<Color, Color> &get_color_conversion_map() { return color_conversion_map; }
 	static HashSet<StringName> &get_color_conversion_exceptions() { return color_conversion_exceptions; }
+	static HashMap<StringName, BitField<EditorColorMode>> &get_color_conversion_modes() { return color_conversion_modes; }
 
 	static void create();
 	static void finish();
