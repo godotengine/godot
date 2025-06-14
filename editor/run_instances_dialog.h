@@ -44,6 +44,7 @@ class RunInstancesDialog : public AcceptDialog {
 	GDCLASS(RunInstancesDialog, AcceptDialog);
 
 	enum Columns {
+		COLUMN_ENABLED,
 		COLUMN_OVERRIDE_ARGS,
 		COLUMN_LAUNCH_ARGUMENTS,
 		COLUMN_OVERRIDE_FEATURES,
@@ -53,6 +54,7 @@ class RunInstancesDialog : public AcceptDialog {
 	struct InstanceData {
 		TreeItem *item = nullptr;
 
+		bool is_enabled() const;
 		bool overrides_run_args() const;
 		String get_launch_arguments() const;
 		bool overrides_features() const;
@@ -96,7 +98,7 @@ class RunInstancesDialog : public AcceptDialog {
 
 public:
 	void popup_dialog();
-	int get_instance_count() const;
+	LocalVector<int> get_enabled_instances_indices() const;
 	void get_argument_list_for_instance(int p_idx, List<String> &r_list) const;
 	void apply_custom_features(int p_instance_idx);
 
