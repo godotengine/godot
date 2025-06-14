@@ -38,6 +38,10 @@
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
+void Engine::_update_time_scale() {
+	_time_scale = _time_scale_user * _time_scale_game;
+}
+
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
@@ -112,7 +116,8 @@ uint32_t Engine::get_frame_delay() const {
 }
 
 void Engine::set_time_scale(double p_scale) {
-	_time_scale = p_scale;
+	_time_scale_game = p_scale;
+	_update_time_scale();
 }
 
 double Engine::get_time_scale() const {
@@ -402,6 +407,15 @@ void Engine::set_embedded_in_editor(bool p_enabled) {
 
 bool Engine::is_embedded_in_editor() const {
 	return embedded_in_editor;
+}
+
+void Engine::set_time_scale_user(double p_scale) {
+	_time_scale_user = p_scale;
+	_update_time_scale();
+}
+
+double Engine::get_time_scale_user() {
+	return _time_scale_user;
 }
 
 Engine::Engine() {
