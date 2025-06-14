@@ -1141,7 +1141,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 		Ref<StyleBoxFlat> style_tab_focus = p_config.button_style_focus->duplicate();
 
-		Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0, p_config.corner_radius * EDSCALE);
+		Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0, p_config.corner_radius);
 		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 		p_theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
@@ -1971,13 +1971,44 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 		// Bottom panel.
 		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
+		style_bottom_panel->set_border_width_all(0);
 		style_bottom_panel->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		style_bottom_panel->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		style_bottom_panel->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+
+		Ref<StyleBoxFlat> style_bottom_panel_hidden = style_bottom_panel->duplicate();
+		style_bottom_panel_hidden->set_content_margin(SIDE_TOP, 0);
+
+		Ref<StyleBoxFlat> style_bottom_panel_tabbar = p_config.content_panel_style->duplicate();
+		style_bottom_panel_tabbar->set_content_margin(SIDE_TOP, 0);
+		Ref<StyleBoxFlat> style_bottom_tab = menu_transparent_style->duplicate();
+		style_bottom_tab->set_content_margin(SIDE_TOP, (p_config.increased_margin + 2) * EDSCALE);
+		style_bottom_tab->set_content_margin(SIDE_BOTTOM, (p_config.increased_margin + 2) * EDSCALE);
+
+		Ref<StyleBoxFlat> style_bottom_tab_selected = style_bottom_tab->duplicate();
+		style_bottom_tab_selected->set_bg_color(p_config.dark_color_1);
+
+		Ref<StyleBoxFlat> style_bottom_tab_hover = style_bottom_tab->duplicate();
+		style_bottom_tab_hover->set_bg_color(p_config.button_style_hover->get_bg_color());
+
 		p_theme->set_stylebox("BottomPanel", EditorStringName(EditorStyles), style_bottom_panel);
+		p_theme->set_stylebox("BottomPanelHidden", EditorStringName(EditorStyles), style_bottom_panel_hidden);
+		p_theme->set_type_variation("BottomPanel", "TabContainer");
+		p_theme->set_stylebox("tabbar_background", "BottomPanel", style_bottom_panel_tabbar);
+		p_theme->set_stylebox("tab_selected", "BottomPanel", style_bottom_tab_selected);
+		p_theme->set_stylebox("tab_hovered", "BottomPanel", style_bottom_tab_hover);
+		p_theme->set_stylebox("tab_focus", "BottomPanel", menu_transparent_style);
+		p_theme->set_stylebox("tab_unselected", "BottomPanel", style_bottom_tab);
+		p_theme->set_color("font_unselected_color", "BottomPanel", p_config.font_color);
+		p_theme->set_color("font_hovered_color", "BottomPanel", p_config.font_hover_color);
+		p_theme->set_color("font_selected_color", "BottomPanel", p_config.accent_color);
+		p_theme->set_constant("tab_separation", "BottomPanel", p_config.separation_margin);
+
 		p_theme->set_type_variation("BottomPanelButton", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "BottomPanelButton", menu_transparent_style);
-		p_theme->set_stylebox(SceneStringName(pressed), "BottomPanelButton", menu_transparent_style);
-		p_theme->set_stylebox("hover_pressed", "BottomPanelButton", main_screen_button_hover);
-		p_theme->set_stylebox(SceneStringName(hover), "BottomPanelButton", main_screen_button_hover);
+		p_theme->set_stylebox(SceneStringName(pressed), "BottomPanelButton", style_bottom_tab_selected);
+		p_theme->set_stylebox("hover_pressed", "BottomPanelButton", style_bottom_tab_hover);
+		p_theme->set_stylebox(SceneStringName(hover), "BottomPanelButton", style_bottom_tab_hover);
 		// Don't tint the icon even when in "pressed" state.
 		p_theme->set_color("icon_pressed_color", "BottomPanelButton", Color(1, 1, 1, 1));
 		Color icon_hover_color = p_config.icon_normal_color * (p_config.dark_theme ? 1.15 : 1.0);
@@ -2525,18 +2556,6 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> debugger_panel_style = p_config.content_panel_style->duplicate();
 		debugger_panel_style->set_border_width(SIDE_BOTTOM, 0);
 		p_theme->set_stylebox("DebuggerPanel", EditorStringName(EditorStyles), debugger_panel_style);
-
-		// This pattern of get_font()->get_height(get_font_size()) is used quite a lot and is very verbose.
-		// FIXME: Introduce Theme::get_font_height() / Control::get_theme_font_height() / Window::get_theme_font_height().
-		const int offset_i1 = p_theme->get_font(SNAME("tab_selected"), SNAME("TabContainer"))->get_height(p_theme->get_font_size(SNAME("tab_selected"), SNAME("TabContainer")));
-		const int offset_i2 = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->get_minimum_size().height;
-		const int offset_i3 = p_theme->get_stylebox(SceneStringName(panel), SNAME("TabContainer"))->get_content_margin(SIDE_TOP);
-		const int invisible_top_offset = offset_i1 + offset_i2 + offset_i3;
-
-		Ref<StyleBoxFlat> invisible_top_panel_style = p_config.content_panel_style->duplicate();
-		invisible_top_panel_style->set_expand_margin(SIDE_TOP, -invisible_top_offset);
-		invisible_top_panel_style->set_content_margin(SIDE_TOP, 0);
-		p_theme->set_stylebox("BottomPanelDebuggerOverride", EditorStringName(EditorStyles), invisible_top_panel_style);
 	}
 
 	// Resource and node editors.
