@@ -74,7 +74,7 @@ if env["builtin_openxr"]:
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_jsoncpp_dir + "json_value.cpp")
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_jsoncpp_dir + "json_writer.cpp")
 
-    # add in load
+    # add in loader
     if env["platform"] != "android":
         # On Android the openxr_loader is provided by separate plugins for each device
         # Build the engine using object files
@@ -91,7 +91,6 @@ if env["builtin_openxr"]:
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
-        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/xr_generated_loader.cpp")
         env.modules_sources += khrloader_obj
 
     env.modules_sources += thirdparty_obj
