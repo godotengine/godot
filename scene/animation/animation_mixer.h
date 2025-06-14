@@ -258,6 +258,11 @@ protected:
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
 	};
 
+	struct TrackCacheSignal : public TrackCache {
+		TrackCacheSignal() { type = Animation::TYPE_SIGNAL; }
+		~TrackCacheSignal() {}
+	};
+
 	// Audio stream information for each audio stream placed on the track.
 	struct PlayingAudioStreamInfo {
 		AudioStreamPlaybackPolyphonic::ID index = -1; // ID retrieved from AudioStreamPlaybackPolyphonic.
