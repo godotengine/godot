@@ -69,6 +69,7 @@
 #include "core/math/expression.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
+#include "core/object/call_error_info.h"
 #include "core/object/class_db.h"
 #include "core/object/script_backtrace.h"
 #include "core/object/script_language_extension.h"
@@ -162,6 +163,8 @@ void register_core_types() {
 	}
 
 	GDREGISTER_CLASS(Object);
+
+	GDREGISTER_CLASS(CallErrorInfo);
 
 	GDREGISTER_ABSTRACT_CLASS(Script);
 	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
