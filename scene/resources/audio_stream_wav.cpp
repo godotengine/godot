@@ -37,6 +37,7 @@ const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;
 
 void AudioStreamPlaybackWAV::start(double p_from_pos) {
+#ifndef DISABLE_DEPRECATED
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		//no seeking in IMA_ADPCM
 		for (int i = 0; i < 2; i++) {
@@ -50,7 +51,9 @@ void AudioStreamPlaybackWAV::start(double p_from_pos) {
 		}
 
 		offset = 0;
-	} else {
+	} else
+#endif
+	{
 		seek(p_from_pos);
 	}
 
@@ -76,9 +79,11 @@ double AudioStreamPlaybackWAV::get_playback_position() const {
 }
 
 void AudioStreamPlaybackWAV::seek(double p_time) {
+#ifndef DISABLE_DEPRECATED
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		return; //no seeking in ima-adpcm
 	}
+#endif
 
 	double max = base->get_length();
 	if (p_time < 0) {
@@ -99,6 +104,7 @@ void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_ds
 		p_amount--;
 		int64_t pos = p_offset << (is_stereo && !is_ima_adpcm && !is_qoa ? 1 : 0);
 
+#ifndef DISABLE_DEPRECATED
 		if (is_ima_adpcm) {
 			int64_t sample_pos = pos + p_ima_adpcm[0].window_ofs;
 
@@ -173,34 +179,36 @@ void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_ds
 				final_r = p_ima_adpcm[1].predictor;
 			}
 
-		} else if (is_qoa) {
-			uint32_t new_data_ofs = 8 + pos / QOA_FRAME_LEN * p_qoa->frame_len;
+		} else
+#endif // DISABLE_DEPRECATED
+			if (is_qoa) {
+				uint32_t new_data_ofs = 8 + pos / QOA_FRAME_LEN * p_qoa->frame_len;
 
-			if (p_qoa->data_ofs != new_data_ofs) {
-				p_qoa->data_ofs = new_data_ofs;
-				const uint8_t *ofs_src = (uint8_t *)p_src + p_qoa->data_ofs;
-				qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), &p_qoa->dec_len);
-			}
+				if (p_qoa->data_ofs != new_data_ofs) {
+					p_qoa->data_ofs = new_data_ofs;
+					const uint8_t *ofs_src = (uint8_t *)p_src + p_qoa->data_ofs;
+					qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), &p_qoa->dec_len);
+				}
 
-			uint32_t dec_idx = pos % QOA_FRAME_LEN << (is_stereo ? 1 : 0);
+				uint32_t dec_idx = pos % QOA_FRAME_LEN << (is_stereo ? 1 : 0);
 
-			final = p_qoa->dec[dec_idx];
-			if (is_stereo) {
-				final_r = p_qoa->dec[dec_idx + 1];
-			}
-
-		} else {
-			final = p_src[pos];
-			if (is_stereo) {
-				final_r = p_src[pos + 1];
-			}
-			if constexpr (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
-				final <<= 8;
+				final = p_qoa->dec[dec_idx];
 				if (is_stereo) {
-					final_r <<= 8;
+					final_r = p_qoa->dec[dec_idx + 1];
+				}
+
+			} else {
+				final = p_src[pos];
+				if (is_stereo) {
+					final_r = p_src[pos + 1];
+				}
+				if constexpr (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
+					final <<= 8;
+					if (is_stereo) {
+						final_r <<= 8;
+					}
 				}
 			}
-		}
 
 		if (!is_stereo) {
 			final_r = final; //copy to right channel if stereo
@@ -266,6 +274,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	const uint8_t *data = base->data.ptr();
 	AudioFrame *dst_buff = p_buffer;
 
+#ifndef DISABLE_DEPRECATED
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		if (loop_format != AudioStreamWAV::LOOP_DISABLED) {
 			ima_adpcm[0].loop_pos = loop_begin;
@@ -273,6 +282,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			loop_format = AudioStreamWAV::LOOP_FORWARD;
 		}
 	}
+#endif
 
 	while (todo > 0) {
 		int64_t limit = 0;
@@ -314,6 +324,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 				} else {
 					/* go to loop-begin */
 
+#ifndef DISABLE_DEPRECATED
 					if (format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 						for (int i = 0; i < 2; i++) {
 							ima_adpcm[i].step_index = ima_adpcm[i].loop_step_index;
@@ -321,7 +332,9 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 							ima_adpcm[i].last_nibble = loop_begin;
 						}
 						offset = loop_begin;
-					} else {
+					} else
+#endif
+					{
 						offset = loop_begin + (offset - loop_end);
 					}
 				}
@@ -351,7 +364,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 		todo -= target;
 
-		switch (base->format) {
+		switch (format) {
 			case AudioStreamWAV::FORMAT_8_BITS: {
 				if (is_stereo) {
 					decode_samples<int8_t, true, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
@@ -367,6 +380,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 				}
 
 			} break;
+#ifndef DISABLE_DEPRECATED
 			case AudioStreamWAV::FORMAT_IMA_ADPCM: {
 				if (is_stereo) {
 					decode_samples<int8_t, true, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
@@ -375,6 +389,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 				}
 
 			} break;
+#endif
 			case AudioStreamWAV::FORMAT_QOA: {
 				if (is_stereo) {
 					decode_samples<uint8_t, true, false, true>((uint8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
@@ -382,6 +397,8 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 					decode_samples<uint8_t, false, false, true>((uint8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				}
 			} break;
+			default:
+				break;
 		}
 
 		dst_buff += target;
@@ -1068,6 +1085,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	AudioStreamWAV::Format dst_format;
 
 	if (compression == 1) {
+#ifndef DISABLE_DEPRECATED
+		WARN_DEPRECATED_MSG("IMA ADPCM compression is deprecated. Consider using Quite OK Audio instead.");
 		dst_format = AudioStreamWAV::FORMAT_IMA_ADPCM;
 		if (format_channels == 1) {
 			_compress_ima_adpcm(data, dst_data);
@@ -1103,7 +1122,9 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 				w[i * 2 + 1] = rr[i];
 			}
 		}
-
+#else
+		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "This build was compiled without deprecated features. IMA ADPCM is not available.");
+#endif
 	} else if (compression == 2) {
 		dst_format = AudioStreamWAV::FORMAT_QOA;
 
