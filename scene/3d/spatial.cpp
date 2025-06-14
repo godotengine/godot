@@ -473,36 +473,26 @@ Transform Spatial::get_global_transform_interpolated() {
 		// with physics interpolation set to OFF, if it has a parent that is ON.
 
 		// Cheap case.
-		// We already pre-cache the visible_in_tree for VisualInstances, but NOT for Spatials, so we have to
-		// deal with non-VIs the slow way.
-		if (Object::cast_to<VisualInstance>(this) && _is_vi_visible() && data.fti_global_xform_interp_set) {
-			return data.global_transform_interpolated;
+		if (is_visible_in_tree()) {
+			return data.fti_global_xform_interp_set ? data.global_transform_interpolated : get_global_transform();
 		}
 
-		// Find out if visible in tree.
-		// If not visible in tree, find the FIRST ancestor that is visible in tree.
+		// If we got here we are invisible.
+		// But if there is a FIRST ancestor that is visible in tree, we can back calculate the interpolated transform.
 		const Spatial *visible_parent = nullptr;
 		const Spatial *s = this;
-		bool visible = true;
-		bool visible_in_tree = true;
 
 		while (s) {
-			if (!s->data.visible) {
-				visible_in_tree = false;
-				visible = false;
-			} else {
-				if (!visible) {
-					visible_parent = s;
-					visible = true;
-				}
+			if (s->data.visible_in_tree) {
+				visible_parent = s;
+				break;
 			}
 			s = s->data.parent;
 		}
 
-		// Simplest case, we can return the interpolated xform calculated by SceneTreeFTI.
-		if (visible_in_tree) {
-			return data.fti_global_xform_interp_set ? data.global_transform_interpolated : get_global_transform();
-		} else if (visible_parent) {
+		// We aren't bothering with the no visible parent case, because that would mean the root node
+		// was hidden.
+		if (visible_parent) {
 			// INVISIBLE case. Not visible, but there is a visible ancestor somewhere in the chain.
 			if (_get_scene_tree_depth() < 1) {
 				// This should not happen unless there a problem has been introduced in the scene tree depth code.
@@ -612,10 +602,6 @@ AABB Spatial::get_fallback_gizmo_aabb() const {
 
 Spatial *Spatial::get_parent_spatial() const {
 	return data.parent;
-}
-
-void Spatial::_set_vi_visible(bool p_visible) {
-	data.vi_visible = p_visible;
 }
 
 Transform Spatial::get_relative_transform(const Node *p_parent) const {
@@ -1260,7 +1246,6 @@ Spatial::Spatial() :
 	data.visible = true;
 	data.visible_in_tree = true;
 	data.disable_scale = false;
-	data.vi_visible = true;
 	data.merging_allowed = true;
 
 	data.fti_on_frame_xform_list = false;
