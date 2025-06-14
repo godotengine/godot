@@ -40,6 +40,9 @@
 			The beats per minute of the audio track. This should match the BPM measure that was used to compose the track. This is only relevant for music that wishes to make use of interactive music functionality, not sound effects.
 			A more convenient editor for [member bpm] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
 		</member>
+		<member name="edit/volume_db" type="float" setter="" getter="" default="0.0">
+			Volume offset, in decibels, to apply to this audio stream.
+		</member>
 		<member name="loop" type="bool" setter="" getter="" default="false">
 			If enabled, the audio will begin playing at the beginning after playback ends by reaching the end of the audio.
 			[b]Note:[/b] In [AudioStreamPlayer], the [signal AudioStreamPlayer.finished] signal won't be emitted for looping audio when it reaches the end of the audio file, as the audio will keep playing indefinitely.
