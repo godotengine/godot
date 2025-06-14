@@ -281,7 +281,7 @@ bool VertexCacheOptimizer::reorder_indices_pool(PoolVector<int> &r_indices, uint
 	LocalVector<int> temp;
 	temp = r_indices;
 	if (reorder_indices(temp, p_num_triangles, p_num_verts)) {
-		r_indices = temp;
+		r_indices = PoolVector<int>(temp);
 		return true;
 	}
 	return false;
