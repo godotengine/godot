@@ -2126,7 +2126,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 			*r_embedded_size = f->get_position() - embed_pos;
 		}
 	}
-  
+
 	f->close();
 
 	return OK;
