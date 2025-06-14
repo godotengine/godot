@@ -102,6 +102,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _draw() = 0;
+	void _validate_property(PropertyInfo &p_property) const;
 	void draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect);
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
 	_FORCE_INLINE_ RID &get_mesh() { return mesh; }
@@ -172,6 +173,7 @@ public:
 	virtual AABB get_aabb() const override;
 
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	SpriteBase3D();
 	~SpriteBase3D();
