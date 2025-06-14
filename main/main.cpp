@@ -406,6 +406,8 @@ void finalize_display() {
 }
 
 void initialize_theme_db() {
+	GDREGISTER_CLASS(ThemeDB);
+	GDREGISTER_CLASS(ThemeContext);
 	theme_db = memnew(ThemeDB);
 }
 
@@ -983,7 +985,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
-	GDREGISTER_CLASS(Performance);
 	engine->add_singleton(Engine::Singleton("Performance", performance));
 
 	// Only flush stdout in debug builds by default, as spamming `print()` will
@@ -3061,6 +3062,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Servers");
 
+	register_server_types();
+
 	tsman = memnew(TextServerManager);
 	if (tsman) {
 		Ref<TextServerDummy> ts;
@@ -3070,12 +3073,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 #ifndef PHYSICS_3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3DManager", PhysicsServer3DManager::get_singleton(), "PhysicsServer3DManager"));
+	PhysicsServer3DManager::get_singleton()->register_server("Dummy", callable_mp_static(PhysicsServer3DDummy::create));
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+	PhysicsServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(PhysicsServer2DDummy::create));
 #endif // PHYSICS_2D_DISABLED
 
-	register_server_types();
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Modules and Extensions");
 
@@ -3579,6 +3584,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
+	register_scene_types();
+	register_scene_singletons();
+
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	MAIN_PRINT("Main: Load Navigation");
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
@@ -3590,10 +3598,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	NavigationServer2DManager::initialize_server();
 #endif // NAVIGATION_2D_DISABLED
 
-	register_scene_types();
 	register_driver_types();
-
-	register_scene_singletons();
 
 	{
 		OS::get_singleton()->benchmark_begin_measure("Scene", "Modules and Extensions");
