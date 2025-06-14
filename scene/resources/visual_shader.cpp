@@ -822,14 +822,6 @@ VisualShaderNodeCustom::VisualShaderNodeCustom() {
 
 /////////////////////////////////////////////////////////
 
-void VisualShader::set_shader_type(Type p_type) {
-	current_type = p_type;
-}
-
-VisualShader::Type VisualShader::get_shader_type() const {
-	return current_type;
-}
-
 void VisualShader::add_varying(const String &p_name, VaryingMode p_mode, VaryingType p_type) {
 	ERR_FAIL_COND(!p_name.is_valid_ascii_identifier());
 	ERR_FAIL_INDEX((int)p_mode, (int)VARYING_MODE_MAX);
@@ -1464,14 +1456,6 @@ void VisualShader::set_mode(Mode p_mode) {
 
 	_queue_update();
 	notify_property_list_changed();
-}
-
-void VisualShader::set_graph_offset(const Vector2 &p_offset) {
-	graph_offset = p_offset;
-}
-
-Vector2 VisualShader::get_graph_offset() const {
-	return graph_offset;
 }
 
 Shader::Mode VisualShader::get_mode() const {
@@ -3157,9 +3141,6 @@ void VisualShader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_node_connections", "type"), &VisualShader::_get_node_connections);
 
-	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
-	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
-
 	ClassDB::bind_method(D_METHOD("attach_node_to_frame", "type", "id", "frame"), &VisualShader::attach_node_to_frame);
 	ClassDB::bind_method(D_METHOD("detach_node_from_frame", "type", "id"), &VisualShader::detach_node_from_frame);
 
@@ -3172,8 +3153,6 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_has_preview_shader_parameter", "name"), &VisualShader::_has_preview_shader_parameter);
 
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
-
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
 
 	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 
