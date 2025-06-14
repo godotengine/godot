@@ -9,9 +9,9 @@ func test():
 	Utils.check(result == 0)
 
 class Parent:
-	func my_function(par1: int) -> int:
+	@virtual func my_function(par1: int) -> int:
 		return par1
 
 class Child extends Parent:
-	func my_function(_par1: int, par2: int = 0) -> int:
+	@override func my_function(_par1: int, par2: int = 0) -> int:
 		return par2
