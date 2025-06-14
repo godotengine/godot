@@ -87,5 +87,10 @@
 				Emitted when an external [param resource] had its file removed.
 			</description>
 		</signal>
+		<signal name="selection_changed">
+			<description>
+				Emitted when the selection changes.
+			</description>
+		</signal>
 	</signals>
 </class>
