@@ -151,6 +151,12 @@
 			OKHSL Color Model rectangle with constant saturation.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="ColorModeType">
+		</enum>
+		<enum name="PickerShapeType">
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="focused_not_editing_cursor_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.275)">
 			Color of rectangle or circle drawn when a picker shape part is focused but not editable via keyboard or joypad. Displayed [i]over[/i] the picker shape, so a partially transparent color should be used to ensure the picker shape remains visible.
