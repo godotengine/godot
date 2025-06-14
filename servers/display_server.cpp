@@ -52,6 +52,8 @@ DisplayServer::AccessibilityMode DisplayServer::accessibility_mode = DisplayServ
 
 bool DisplayServer::hidpi_allowed = false;
 
+String DisplayServer::session_path = "";
+
 bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
 
@@ -411,6 +413,18 @@ Dictionary DisplayServer::global_menu_get_system_menu_roots() const {
 
 #endif
 
+void DisplayServer::set_session(const String &p_name) {
+	session_path = "user://" + p_name + ".cfg";
+}
+
+void DisplayServer::set_session_path(const String &p_path) {
+	session_path = p_path;
+}
+
+String DisplayServer::get_session_path() {
+	return session_path;
+}
+
 bool DisplayServer::tts_is_speaking() const {
 	WARN_PRINT("TTS is not supported by this display server.");
 	return false;
@@ -614,6 +628,10 @@ void DisplayServer::delete_sub_window(WindowID p_id) {
 
 void DisplayServer::window_set_exclusive(WindowID p_window, bool p_exclusive) {
 	// Do nothing, if not supported.
+}
+
+void DisplayServer::window_set_session_id(const String &p_session_id, WindowID p_window) {
+	// Do nothing, if the DisplayServer does not use this
 }
 
 void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
@@ -1349,6 +1367,10 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_get_system_menu_roots"), &DisplayServer::global_menu_get_system_menu_roots);
 #endif
 
+	ClassDB::bind_method(D_METHOD("set_session", "session"), &DisplayServer::set_session);
+	ClassDB::bind_method(D_METHOD("set_session_path", "session_path"), &DisplayServer::set_session_path);
+	ClassDB::bind_method(D_METHOD("get_session_path"), &DisplayServer::get_session_path);
+
 	ClassDB::bind_method(D_METHOD("tts_is_speaking"), &DisplayServer::tts_is_speaking);
 	ClassDB::bind_method(D_METHOD("tts_is_paused"), &DisplayServer::tts_is_paused);
 	ClassDB::bind_method(D_METHOD("tts_get_voices"), &DisplayServer::tts_get_voices);
@@ -1418,6 +1440,9 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("window_set_title", "title", "window_id"), &DisplayServer::window_set_title, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_title_size", "title", "window_id"), &DisplayServer::window_get_title_size, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_set_session_id", "session_id", "window_id"), &DisplayServer::window_set_session_id, DEFVAL(MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("window_set_mouse_passthrough", "region", "window_id"), &DisplayServer::window_set_mouse_passthrough, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_get_current_screen", "window_id"), &DisplayServer::window_get_current_screen, DEFVAL(MAIN_WINDOW_ID));
