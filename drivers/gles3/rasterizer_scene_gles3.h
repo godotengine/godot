@@ -206,6 +206,9 @@ private:
 		uint32_t bake_mode;
 		float shadow_opacity;
 		float specular;
+
+		float pad[3];
+		uint32_t mask;
 	};
 	static_assert(sizeof(DirectionalLightData) % 16 == 0, "DirectionalLightData size must be a multiple of 16 bytes");
 
