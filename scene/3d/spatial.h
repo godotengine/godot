@@ -141,8 +141,8 @@ private:
 
 		int children_lock;
 		Spatial *parent;
-		List<Spatial *> children;
-		List<Spatial *>::Element *C;
+		LocalVector<Spatial *> children;
+		uint32_t parent_child_id = UINT32_MAX;
 
 		float lod_range = 10.0f;
 		ClientPhysicsInterpolationData *client_physics_interpolation_data;

@@ -590,7 +590,10 @@ void CanvasItem::_notification(int p_what) {
 			if (parent) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
 				if (ci) {
-					C = ci->children_items.push_back(this);
+					data.parent_child_id = ci->data.children.size();
+					ci->data.children.push_back(this);
+				} else {
+					data.parent_child_id = UINT32_MAX;
 				}
 			}
 			_enter_canvas();
@@ -616,10 +619,23 @@ void CanvasItem::_notification(int p_what) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
 			_exit_canvas();
-			if (C) {
-				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
-				C = nullptr;
+
+			CanvasItem *parent = Object::cast_to<CanvasItem>(get_parent());
+			if (parent && (data.parent_child_id != UINT32_MAX)) {
+				// Aliases
+				uint32_t c = data.parent_child_id;
+				LocalVector<CanvasItem *> &parent_children = parent->data.children;
+
+				parent_children.remove_unordered(c);
+
+				// After unordered remove, we need to inform the moved child
+				// what their new id is in the parent children list.
+				if (parent_children.size() > c) {
+					parent_children[c]->data.parent_child_id = c;
+				}
 			}
+			data.parent_child_id = UINT32_MAX;
+
 			global_invalid = true;
 		} break;
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
@@ -1006,12 +1022,11 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 	}
 
-	for (List<CanvasItem *>::Element *E = p_node->children_items.front(); E; E = E->next()) {
-		CanvasItem *ci = E->get();
-		if (ci->toplevel) {
-			continue;
+	for (uint32_t n = 0; n < p_node->data.children.size(); n++) {
+		CanvasItem *ci = p_node->data.children[n];
+		if (!ci->toplevel) {
+			_notify_transform(ci);
 		}
-		_notify_transform(ci);
 	}
 }
 
@@ -1364,8 +1379,6 @@ CanvasItem::CanvasItem() :
 	notify_transform = false;
 	font_sdf_selected = false;
 	light_mask = 1;
-
-	C = nullptr;
 }
 
 CanvasItem::~CanvasItem() {
