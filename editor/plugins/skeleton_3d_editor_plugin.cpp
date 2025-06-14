@@ -156,7 +156,7 @@ void BonePropertiesEditor::_meta_changed(const String &p_property, const Variant
 	}
 
 	String key = p_property.get_slicec('/', 3);
-	if (!skeleton->has_bone_meta(1, key)) {
+	if (!skeleton->has_bone_meta(bone, key)) {
 		return;
 	}
 
@@ -180,7 +180,7 @@ void BonePropertiesEditor::_meta_deleted(const String &p_property) {
 	}
 
 	String key = p_property.get_slicec('/', 3);
-	if (!skeleton->has_bone_meta(1, key)) {
+	if (!skeleton->has_bone_meta(bone, key)) {
 		return;
 	}
 
