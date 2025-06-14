@@ -2603,6 +2603,26 @@ int LightStorage::get_directional_light_shadow_size(RID p_light_instance) {
 
 LightStorage::ShadowCubemap *LightStorage::_get_shadow_cubemap(int p_size) {
 	if (!shadow_cubemaps.has(p_size)) {
+		// First check if we've already got too many shadow cubemaps allocated
+		// This helps prevent crashes with multiple Omnilight3D lights with cube shadows
+		if (shadow_cubemaps.size() >= MAX_CUBE_SHADOWS) {
+			// Return the existing shadow cubemap with closest matching size
+			int closest_size = 0;
+			int closest_diff = INT_MAX;
+
+			for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
+				int diff = ABS(E.key - p_size);
+				if (diff < closest_diff) {
+					closest_diff = diff;
+					closest_size = E.key;
+				}
+			}
+
+			if (closest_size > 0) {
+				return &shadow_cubemaps[closest_size];
+			}
+		}
+
 		ShadowCubemap sc;
 		{
 			RD::TextureFormat tf;
