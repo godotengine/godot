@@ -80,7 +80,7 @@ void JoltArea3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings, _should_sleep());
+	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings, _should_sleep());
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -214,15 +214,11 @@ void JoltArea3D::_remove_all_overlaps() {
 }
 
 void JoltArea3D::_update_sleeping() {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return;
 	}
 
-	if (_should_sleep()) {
-		space->get_body_iface().DeactivateBody(jolt_body->GetID());
-	} else {
-		space->get_body_iface().ActivateBody(jolt_body->GetID());
-	}
+	space->set_is_object_sleeping(jolt_body->GetID(), _should_sleep());
 }
 
 void JoltArea3D::_update_group_filter() {
