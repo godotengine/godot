@@ -387,6 +387,21 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		dst_buff += target;
 	}
 
+	if (base->volume_linear != 1.0f || volume_linear_smooth != 1.0f) {
+		if (base->volume_linear != volume_linear_smooth) {
+			float volume_increment = (base->volume_linear - volume_linear_smooth) / p_frames;
+			for (int i = 0; i < p_frames; i++) {
+				p_buffer[i] *= volume_linear_smooth;
+				volume_linear_smooth += volume_increment;
+			}
+			volume_linear_smooth = base->volume_linear;
+		} else {
+			for (int i = 0; i < p_frames; i++) {
+				p_buffer[i] *= base->volume_linear;
+			}
+		}
+	}
+
 	if (todo) {
 		int mixed_frames = p_frames - todo;
 		//bit was missing from mix
@@ -611,6 +626,7 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 	Ref<AudioStreamPlaybackWAV> sample;
 	sample.instantiate();
 	sample->base = Ref<AudioStreamWAV>(this);
+	sample->volume_linear_smooth = sample->base->volume_linear;
 
 	if (format == AudioStreamWAV::FORMAT_QOA) {
 		uint32_t ffp = qoa_decode_header(data.ptr(), data_bytes, &sample->qoa.desc);
