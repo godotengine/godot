@@ -595,6 +595,10 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 	undo_redo->commit_action();
 }
 
+void ProjectSettingsEditor::update_action_map_editor() {
+	_update_action_map_editor();
+}
+
 void ProjectSettingsEditor::_update_action_map_editor() {
 	Vector<ActionMapEditor::ActionInfo> actions;
 
