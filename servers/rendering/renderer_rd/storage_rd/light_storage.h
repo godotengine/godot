@@ -47,6 +47,11 @@ class RenderDataRD;
 namespace RendererRD {
 
 class LightStorage : public RendererLightStorage {
+	GDCLASS(LightStorage, RendererLightStorage);
+
+protected:
+	static void _bind_methods();
+
 public:
 	enum ShadowAtlastQuadrant : uint32_t {
 		QUADRANT_SHIFT = 27,
@@ -425,7 +430,7 @@ private:
 
 	struct DirectionalShadow {
 		RID depth;
-		RID fb; //when renderign direct
+		RID fb; //when rendering direct
 
 		int light_count = 0;
 		int size = 0;
