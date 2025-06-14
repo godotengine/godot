@@ -42,6 +42,7 @@ RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
 bool RendererCompositor::low_end = false;
 
 RendererCompositor *RendererCompositor::create() {
+	ERR_FAIL_COND_V_MSG(_create_func == nullptr, nullptr, "A RendererCompositor _create_func hasn't been assigned.");
 	return _create_func();
 }
 
