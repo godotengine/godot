@@ -126,6 +126,7 @@ public:
 			STATIC,
 			SUPER,
 			TRAIT,
+			USES,
 			VAR,
 			TK_VOID, // Conflict with WinAPI.
 			YIELD,
