@@ -2148,6 +2148,11 @@ void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes
 	for (int i = 0; i < p_prefixes.size(); i++) {
 		String prefix = p_prefixes[i];
 
+		// Hadle case if we add a prefixe with the editor.
+		if (Engine::get_singleton()->is_editor_hint() && prefix.is_empty()) {
+			prefix = " ";
+		}
+
 		code_completion_prefixes.insert(prefix[0]);
 	}
 }
@@ -3345,6 +3350,9 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 		}
 	}
 
+	for (int i = 0; i < delimiters.size(); i++) {
+		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
+	}
 
 	int at = delimiters.size();
 
@@ -3416,8 +3424,7 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 
 		if (key.is_empty()) {
 			start_key = " ";
-		}
-		else {
+		} else {
 			start_key = key.get_slicec(' ', 0);
 			end_key = key.get_slice_count(" ") > 1 ? key.get_slicec(' ', 1) : String();
 		}
