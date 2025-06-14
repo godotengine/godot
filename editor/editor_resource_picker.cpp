@@ -34,6 +34,7 @@
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
+#include "editor/editor_properties_array_dict.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -315,6 +316,12 @@ void EditorResourcePicker::_update_menu_items() {
 			relative_id++;
 		}
 	}
+
+	if (Object::cast_to<EditorPropertyArray>(resource_owner) || Object::cast_to<EditorPropertyDictionary>(resource_owner)) {
+		edit_menu->add_separator();
+		edit_menu->add_item(TTR("Expand All"), OBJ_MENU_EXPAND_ALL);
+		edit_menu->add_item(TTR("Collapse All"), OBJ_MENU_COLLAPSE_ALL);
+	}
 }
 
 void EditorResourcePicker::_edit_menu_cbk(int p_which) {
@@ -462,6 +469,22 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
 			FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
+		} break;
+
+		case OBJ_MENU_EXPAND_ALL: {
+			if (EditorPropertyArray *owner_array = Object::cast_to<EditorPropertyArray>(resource_owner)) {
+				owner_array->unfold_all_children(true);
+			} else if (EditorPropertyDictionary *owner_dic = Object::cast_to<EditorPropertyDictionary>(resource_owner)) {
+				owner_dic->unfold_all_children(true);
+			}
+		} break;
+
+		case OBJ_MENU_COLLAPSE_ALL: {
+			if (EditorPropertyArray *owner_array = Object::cast_to<EditorPropertyArray>(resource_owner)) {
+				owner_array->unfold_all_children(false);
+			} else if (EditorPropertyDictionary *owner_dic = Object::cast_to<EditorPropertyDictionary>(resource_owner)) {
+				owner_dic->unfold_all_children(false);
+			}
 		} break;
 
 		default: {
