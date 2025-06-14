@@ -84,7 +84,8 @@ private:
 	int pending_spawn_remote = 0;
 	const uint8_t *pending_buffer = nullptr;
 	int pending_buffer_size = 0;
-	List<uint32_t> pending_sync_net_ids;
+	LocalVector<uint32_t> pending_sync_net_ids;
+	uint32_t pending_sync_head = 0;
 
 	// Replicator config.
 	SceneMultiplayer *multiplayer = nullptr;
