@@ -254,7 +254,7 @@ private:
 
 		String accessibility_name;
 		String accessibility_description;
-		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+		DSTypes::AccessibilityLiveMode accessibility_live = DSTypes::AccessibilityLiveMode::LIVE_OFF;
 
 		TypedArray<NodePath> accessibility_controls_nodes;
 		TypedArray<NodePath> accessibility_described_by_nodes;
@@ -619,8 +619,8 @@ public:
 	void set_accessibility_description(const String &p_description);
 	String get_accessibility_description() const;
 
-	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
-	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+	void set_accessibility_live(DSTypes::AccessibilityLiveMode p_mode);
+	DSTypes::AccessibilityLiveMode get_accessibility_live() const;
 
 	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_controls_nodes() const;

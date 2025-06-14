@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display_server.h"
 
 void ItemList::_shape_text(int p_idx) {
 	Item &item = items.write[p_idx];

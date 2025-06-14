@@ -79,7 +79,7 @@ public:
 		bool use_occlusion_culling = false;
 		bool occlusion_buffer_dirty = false;
 
-		DisplayServer::WindowID viewport_to_screen;
+		DSTypes::WindowID viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
 		bool viewport_render_direct_to_screen;
 
@@ -159,7 +159,7 @@ public:
 			transparent_bg = false;
 			use_hdr_2d = false;
 
-			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
+			viewport_to_screen = DSTypes::INVALID_WINDOW_ID;
 			shadow_atlas_size = 0;
 			measure_render_time = false;
 
@@ -220,7 +220,7 @@ public:
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
-	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DSTypes::WindowID p_screen = DSTypes::MAIN_WINDOW_ID);
 	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);
 
 	void viewport_set_active(RID p_viewport, bool p_active);
@@ -295,7 +295,7 @@ public:
 
 	void viewport_set_sdf_oversize_and_scale(RID p_viewport, RS::ViewportSDFOversize p_over_size, RS::ViewportSDFScale p_scale);
 
-	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const;
+	virtual RID viewport_find_from_screen_attachment(DSTypes::WindowID p_id = DSTypes::MAIN_WINDOW_ID) const;
 
 	void viewport_set_vrs_mode(RID p_viewport, RS::ViewportVRSMode p_mode);
 	void viewport_set_vrs_update_mode(RID p_viewport, RS::ViewportVRSUpdateMode p_mode);
@@ -313,7 +313,7 @@ public:
 	int get_num_viewports_with_motion_vectors() const;
 
 	// Workaround for setting this on thread.
-	void call_set_vsync_mode(DisplayServer::VSyncMode p_mode, DisplayServer::WindowID p_window);
+	void call_set_vsync_mode(DSTypes::VSyncMode p_mode, DSTypes::WindowID p_window);
 
 	RendererViewport();
 	virtual ~RendererViewport() {}

@@ -46,6 +46,7 @@
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/svg_texture.h"
 #include "scene/resources/texture.h"
+#include "servers/display_server.h"
 
 // Theme configuration.
 
