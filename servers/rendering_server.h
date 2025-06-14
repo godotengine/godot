@@ -39,6 +39,8 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
+class RasterizerBlendState;
+
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
 #ifdef DEBUG_ENABLED
@@ -218,6 +220,7 @@ public:
 		SHADER_PARTICLES,
 		SHADER_SKY,
 		SHADER_FOG,
+		SHADER_MESH_RASTERIZER,
 		SHADER_MAX
 	};
 
@@ -1173,6 +1176,16 @@ public:
 	virtual void viewport_set_vrs_mode(RID p_viewport, ViewportVRSMode p_mode) = 0;
 	virtual void viewport_set_vrs_update_mode(RID p_viewport, ViewportVRSUpdateMode p_mode) = 0;
 	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
+
+	/* TEXTURE DRAWABLE API*/
+
+	virtual RID texture_drawable_create(int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps = false) = 0;
+	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable) = 0;
+
+	/* MESH RASTERIZER API */
+
+	virtual RID mesh_rasterizer_create(RID p_mesh, int p_surface_index) = 0;
+	virtual void mesh_rasterizer_draw(RID p_mesh_rasterizer, RID p_material, RID p_texture_drawable, Ref<RasterizerBlendState> p_blend_state, const Color &p_clear_color, RD::TextureSamples p_multisample = RD::TEXTURE_SAMPLES_1) = 0;
 
 	/* SKY API */
 
