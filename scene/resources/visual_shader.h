@@ -40,6 +40,7 @@ class VisualShaderNode;
 
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
+	Dictionary engine_version;
 
 public:
 	enum Type {
@@ -180,6 +181,13 @@ protected:
 	virtual void reset_state() override;
 
 public: // internal methods
+	void set_engine_version(const Dictionary &p_version);
+	Dictionary get_engine_version() const;
+
+#ifndef DISABLE_DEPRECATED
+	void update_engine_version(const Dictionary &p_new_version);
+#endif // DISABLE_DEPRECATED
+
 	void set_shader_type(Type p_type);
 	Type get_shader_type() const;
 
