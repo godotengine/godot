@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ORMMaterial3D" inherits="BaseMaterial3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ORMMaterial3D" inherits="BaseMaterial3D" keywords="pbr" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A PBR (Physically Based Rendering) material to be used on 3D objects. Uses an ORM texture.
 	</brief_description>
