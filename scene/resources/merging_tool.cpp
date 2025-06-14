@@ -505,7 +505,7 @@ int MergingTool::_clean_mesh_surface(const String &p_source_name, const Transfor
 	return 0;
 }
 
-bool MergingTool::_ensure_indices_valid(LocalVector<int> &r_indices, const PoolVector<Vector3> &p_verts) {
+bool MergingTool::_ensure_indices_valid(LocalVector<int> &r_indices, const LocalVector<Vector3> &p_verts) {
 	// No indices? create some.
 	if (!r_indices.size()) {
 #ifdef TOOLS_ENABLED
@@ -535,7 +535,7 @@ bool MergingTool::_ensure_indices_valid(LocalVector<int> &r_indices, const PoolV
 }
 
 // Check for invalid tris, or make a list of the valid triangles, depending on whether r_inds is set.
-bool MergingTool::_check_for_valid_indices(const LocalVector<int> &p_inds, const PoolVector<Vector3> &p_verts, LocalVector<int> *r_inds) {
+bool MergingTool::_check_for_valid_indices(const LocalVector<int> &p_inds, const LocalVector<Vector3> &p_verts, LocalVector<int> *r_inds) {
 	int nTris = p_inds.size();
 	nTris /= 3;
 	int indCount = 0;

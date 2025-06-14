@@ -255,7 +255,7 @@ public:
 		return ret;
 	}
 
-	operator PoolVector<T>() const {
+	explicit operator PoolVector<T>() const {
 		PoolVector<T> pl;
 		if (size()) {
 			pl.resize(size());
