@@ -433,4 +433,8 @@
 			Do not process modification. Use [method advance] to process the modification manually.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="ModifierCallbackModeProcess">
+		</enum>
+	</enums>
 </class>
