@@ -156,7 +156,12 @@ const LSP::DocumentSymbol *GDScriptWorkspace::get_native_symbol(const String &p_
 				}
 			}
 		}
-		class_name = ClassDB::get_parent_class(class_name);
+		// Might contain pseudo classes like @GDScript that only exist in documentation.
+		if (ClassDB::class_exists(class_name)) {
+			class_name = ClassDB::get_parent_class(class_name);
+		} else {
+			break;
+		}
 	}
 
 	return nullptr;
@@ -343,20 +348,32 @@ Error GDScriptWorkspace::initialize() {
 			class_symbol.children.push_back(symbol);
 		}
 
-		Vector<DocData::MethodDoc> methods_signals;
-		methods_signals.append_array(class_data.constructors);
-		methods_signals.append_array(class_data.methods);
-		methods_signals.append_array(class_data.operators);
-		const int signal_start_idx = methods_signals.size();
-		methods_signals.append_array(class_data.signals);
+		Vector<DocData::MethodDoc> method_likes;
+		method_likes.append_array(class_data.methods);
+		method_likes.append_array(class_data.annotations);
+		const int constructors_start_idx = method_likes.size();
+		method_likes.append_array(class_data.constructors);
+		const int operator_start_idx = method_likes.size();
+		method_likes.append_array(class_data.operators);
+		const int signal_start_idx = method_likes.size();
+		method_likes.append_array(class_data.signals);
 
-		for (int i = 0; i < methods_signals.size(); i++) {
-			const DocData::MethodDoc &data = methods_signals[i];
+		for (int i = 0; i < method_likes.size(); i++) {
+			const DocData::MethodDoc &data = method_likes[i];
 
 			LSP::DocumentSymbol symbol;
 			symbol.name = data.name;
 			symbol.native_class = class_name;
-			symbol.kind = i >= signal_start_idx ? LSP::SymbolKind::Event : LSP::SymbolKind::Method;
+
+			if (i >= signal_start_idx) {
+				symbol.kind = LSP::SymbolKind::Event;
+			} else if (i >= operator_start_idx) {
+				symbol.kind = LSP::SymbolKind::Operator;
+			} else if (i >= constructors_start_idx) {
+				symbol.kind = LSP::SymbolKind::Constructor;
+			} else {
+				symbol.kind = LSP::SymbolKind::Method;
+			}
 
 			String params = "";
 			bool arg_default_value_started = false;
