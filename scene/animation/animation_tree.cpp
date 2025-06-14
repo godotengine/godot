@@ -139,7 +139,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 
 void AnimationNode::blend_animation(const StringName &p_animation, AnimationMixer::PlaybackInfo p_playback_info) {
 	ERR_FAIL_NULL(process_state);
-	p_playback_info.track_weights = node_state.track_weights;
+	p_playback_info.track_weights = Vector<real_t>(node_state.track_weights);
 	process_state->tree->make_animation_instance(p_animation, p_playback_info);
 }
 
