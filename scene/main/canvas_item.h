@@ -83,8 +83,10 @@ private:
 	Color modulate = Color(1, 1, 1, 1);
 	Color self_modulate = Color(1, 1, 1, 1);
 
-	List<CanvasItem *> children_items;
-	List<CanvasItem *>::Element *C = nullptr;
+	struct Data {
+		LocalVector<CanvasItem *> children;
+		uint32_t parent_child_id = UINT32_MAX;
+	} data;
 
 	int light_mask = 1;
 	uint32_t visibility_layer = 1;
