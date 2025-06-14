@@ -44,6 +44,13 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
+		<method name="advance">
+			<return type="void" />
+			<param index="0" name="offset" type="int" />
+			<description>
+				Shifts the file reading/writing cursor by the specified offset (in bytes from the cursor's current position).
+			</description>
+		</method>
 		<method name="close">
 			<return type="void" />
 			<description>
