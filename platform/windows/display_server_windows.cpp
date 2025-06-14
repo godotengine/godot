@@ -4658,7 +4658,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	// Process window messages.
 	switch (uMsg) {
 		case WM_GETOBJECT: {
-			get_object_recieved = true;
+			get_object_received = true;
 		} break;
 		case WM_MENUCOMMAND: {
 			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
@@ -7177,7 +7177,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			}
 
 			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_wait;
-			if (delta > 500 || get_object_recieved) {
+			if (delta > 500 || get_object_received) {
 				break;
 			}
 		}

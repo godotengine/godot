@@ -42,7 +42,7 @@ struct DisplayServerEmbeddedState {
 	/// Default to a scale of 2.0, which is the most common.
 	float screen_max_scale = 2.0f;
 	float screen_dpi = 96.0f;
-	/// The display ID of the window which is displaying the the embedded process content.
+	/// The display ID of the window which is displaying the embedded process content.
 	uint32_t display_id = -1;
 
 	void serialize(PackedByteArray &r_data);
