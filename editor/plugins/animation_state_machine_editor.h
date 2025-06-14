@@ -112,7 +112,10 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 		Color transition_color;
 		Color transition_disabled_color;
+		Color transition_in_color;
+		Color transition_out_color;
 		Color transition_icon_color;
+		Color transition_icon_auto_color;
 		Color transition_icon_disabled_color;
 		Color highlight_color;
 		Color highlight_disabled_color;
@@ -130,7 +133,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	static AnimationNodeStateMachineEditor *singleton;
 
 	void _state_machine_gui_input(const Ref<InputEvent> &p_event);
-	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group, float p_opacity = 1.0);
+	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, AnimationNodeStateMachineTransition::ConnectionType p_type, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group, float p_opacity = 1.0);
 
 	void _state_machine_draw();
 
@@ -189,6 +192,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		Vector2 from;
 		Vector2 to;
 		AnimationNodeStateMachineTransition::SwitchMode mode;
+		AnimationNodeStateMachineTransition::ConnectionType type;
 		StringName advance_condition_name;
 		bool advance_condition_state = false;
 		bool disabled = false;
