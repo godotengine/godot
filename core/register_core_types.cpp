@@ -76,6 +76,7 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/os/main_loop.h"
 #include "core/os/time.h"
+#include "core/string/fuzzy_search.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
@@ -287,6 +288,9 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
 
 	GDREGISTER_CLASS(EngineProfiler);
+
+	GDREGISTER_CLASS(FuzzySearch);
+	GDREGISTER_CLASS(FuzzyMatch);
 
 	resource_uid = memnew(ResourceUID);
 
