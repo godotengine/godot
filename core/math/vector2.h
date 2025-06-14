@@ -80,6 +80,7 @@ struct [[nodiscard]] Vector2 {
 	void normalize();
 	Vector2 normalized() const;
 	bool is_normalized() const;
+	Vector2 apply_directional_force(const Vector2 &direction, float strength) const;
 
 	real_t length() const;
 	real_t length_squared() const;
