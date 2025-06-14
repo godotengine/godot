@@ -46,7 +46,25 @@ bool EditorVCSInterface::initialize(const String &p_project_path) {
 }
 
 void EditorVCSInterface::set_credentials(const String &p_username, const String &p_password, const String &p_ssh_public_key, const String &p_ssh_private_key, const String &p_ssh_passphrase) {
-	GDVIRTUAL_CALL(_set_credentials, p_username, p_password, p_ssh_public_key, p_ssh_private_key, p_ssh_passphrase);
+	String ssh_public_key = p_ssh_public_key;
+	if (p_ssh_public_key.is_empty()) {
+#ifdef WINDOWS_ENABLED
+		ssh_public_key = OS::get_singleton()->get_environment("USERPROFILE").path_join(".ssh/id_rsa.pub");
+#else
+		ssh_public_key = OS::get_singleton()->get_environment("HOME").path_join(".ssh/id_rsa.pub");
+#endif
+	}
+
+	String ssh_private_key = p_ssh_private_key;
+	if (ssh_private_key.is_empty()) {
+#ifdef WINDOWS_ENABLED
+		ssh_private_key = OS::get_singleton()->get_environment("USERPROFILE").path_join(".ssh/id_rsa");
+#else
+		ssh_private_key = OS::get_singleton()->get_environment("HOME").path_join(".ssh/id_rsa");
+#endif
+	}
+
+	GDVIRTUAL_CALL(_set_credentials, p_username, p_password, ssh_public_key, ssh_private_key, p_ssh_passphrase);
 }
 
 List<String> EditorVCSInterface::get_remotes() {
