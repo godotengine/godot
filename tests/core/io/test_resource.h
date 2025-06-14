@@ -385,10 +385,13 @@ TEST_CASE("[Resource] Duplication") {
 
 			orig->call("set_defaults");
 
-			const Ref<Resource> &dupe = p_duplicate_fn(orig);
 			if ((p_test_mode == TEST_MODE_RESOURCE_DUPLICATE_DEEP_WITH_MODE || p_test_mode == TEST_MODE_VARIANT_DUPLICATE_DEEP_WITH_MODE) && p_deep_mode == RESOURCE_DEEP_DUPLICATE_MAX) {
+				ERR_PRINT_OFF;
+				const Ref<Resource> &dupe = p_duplicate_fn(orig);
+				ERR_PRINT_ON;
 				CHECK(dupe.is_null());
 			} else {
+				const Ref<Resource> &dupe = p_duplicate_fn(orig);
 				dupe->call("verify_duplication", orig, p_test_mode, p_deep_mode);
 			}
 		}
