@@ -30,11 +30,9 @@
 
 #pragma once
 
-#include "core/templates/rid_owner.h"
-#include "core/templates/self_list.h"
-#include "scene/resources/mesh.h"
 #include "servers/rendering/dummy/environment/fog.h"
 #include "servers/rendering/dummy/environment/gi.h"
+#include "servers/rendering/dummy/mesh_rasterizer_dummy.h"
 #include "servers/rendering/dummy/rasterizer_canvas_dummy.h"
 #include "servers/rendering/dummy/rasterizer_scene_dummy.h"
 #include "servers/rendering/dummy/storage/light_storage.h"
@@ -44,7 +42,6 @@
 #include "servers/rendering/dummy/storage/texture_storage.h"
 #include "servers/rendering/dummy/storage/utilities.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
 
 class RasterizerDummy : public RendererCompositor {
 private:
@@ -60,6 +57,7 @@ protected:
 	RendererDummy::MeshStorage mesh_storage;
 	RendererDummy::ParticlesStorage particles_storage;
 	RendererDummy::TextureStorage texture_storage;
+	RendererDummy::MeshRasterizerDummy mesh_rasterizer;
 	RendererDummy::GI gi;
 	RendererDummy::Fog fog;
 	RasterizerSceneDummy scene;
@@ -71,6 +69,7 @@ public:
 	RendererMeshStorage *get_mesh_storage() override { return &mesh_storage; }
 	RendererParticlesStorage *get_particles_storage() override { return &particles_storage; }
 	RendererTextureStorage *get_texture_storage() override { return &texture_storage; }
+	MeshRasterizer *get_mesh_rasterizer() override { return &mesh_rasterizer; }
 	RendererGI *get_gi() override { return &gi; }
 	RendererFog *get_fog() override { return &fog; }
 	RendererCanvasRender *get_canvas() override { return &canvas; }

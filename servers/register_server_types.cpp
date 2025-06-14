@@ -254,6 +254,8 @@ void register_server_types() {
 	GDREGISTER_CLASS(FramebufferCacheRD);
 	GDREGISTER_CLASS(UniformSetCacheRD);
 
+	GDREGISTER_CLASS(RasterizerBlendState);
+
 	GDREGISTER_CLASS(CameraFeed);
 
 	GDREGISTER_VIRTUAL_CLASS(MovieWriter);
