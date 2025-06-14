@@ -32,6 +32,7 @@
 
 HashMap<Color, Color> EditorColorMap::color_conversion_map;
 HashSet<StringName> EditorColorMap::color_conversion_exceptions;
+HashMap<StringName, BitField<EditorColorMap::EditorColorMode>> EditorColorMap::color_conversion_modes;
 
 void EditorColorMap::add_conversion_color_pair(const String &p_from_color, const String &p_to_color) {
 	color_conversion_map[Color::html(p_from_color)] = Color::html(p_to_color);
@@ -39,6 +40,10 @@ void EditorColorMap::add_conversion_color_pair(const String &p_from_color, const
 
 void EditorColorMap::add_conversion_exception(const StringName &p_icon_name) {
 	color_conversion_exceptions.insert(p_icon_name);
+}
+
+void EditorColorMap::add_color_conversion_mode(const StringName &p_icon_name, const BitField<EditorColorMode> &p_color_mode) {
+	color_conversion_modes[p_icon_name] = p_color_mode;
 }
 
 void EditorColorMap::create() {
@@ -221,6 +226,42 @@ void EditorColorMap::create() {
 	add_conversion_exception("CodeRegionFoldDownArrow");
 	add_conversion_exception("TextEditorPlay");
 	add_conversion_exception("Breakpoint");
+
+	// These icons have 2D and 3D variations that are color shifted.
+	add_color_conversion_mode("AnimatableBody", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("Area", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("AudioListener", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("CharacterBody", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("CPUParticles", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("CollisionObject", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("DirectionalLight", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("GPUParticles", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("Geometry", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("MeshInstance", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("MultiMeshInstance", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("NavigationLink", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("NavigationRegion", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("Path", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("PathFollow", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("PhysicalBone", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("PhysicsBody", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("PinJoint", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("RayCast", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("RemoteTransform", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("RigidBody", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("ShapeCast", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("Shape", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("Skeleton", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("Sprite", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("StaticBody", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("VisibleOnScreenEnabler", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("VisibleOnScreenNotifier", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("World", EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+
+	// These icons also have a mono version.
+	add_color_conversion_mode("AudioStreamPlayer", EditorColorMode::COLOR_MODE_MONO | EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("Camera", EditorColorMode::COLOR_MODE_MONO | EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
+	add_color_conversion_mode("Node", EditorColorMode::COLOR_MODE_MONO | EditorColorMode::COLOR_MODE_2D | EditorColorMode::COLOR_MODE_3D);
 }
 
 void EditorColorMap::finish() {
