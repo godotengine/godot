@@ -2812,7 +2812,7 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 	return p_type == "GDScript";
 }
 
-String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
+String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, bool *r_is_hidden) const {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
@@ -2919,6 +2919,9 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	}
 	if (r_is_tool) {
 		*r_is_tool = parser.is_tool();
+	}
+	if (r_is_hidden) {
+		*r_is_hidden = parser.is_hidden();
 	}
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }
