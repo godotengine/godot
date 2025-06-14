@@ -32,11 +32,11 @@
 
 #include "editor_scene_exporter_gltf_settings.h"
 
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/3d/scene_import_settings.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 
 String SceneExporterGLTFPlugin::get_plugin_name() const {
