@@ -353,7 +353,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 
 		const real_t title_space = r.size.width - panel->get_minimum_size().x - close_h_ofs;
 		if (title_space > 0) {
-			TextLine title_text = TextLine(p_window->get_translated_title(), title_font, font_size);
+			TextLine title_text = TextLine(p_window->get_displayed_title(), title_font, font_size);
 			title_text.set_width(title_space);
 			title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 			int x = (r.size.width - title_text.get_size().x) / 2;

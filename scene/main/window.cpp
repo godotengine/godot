@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/input/shortcut.h"
 #include "core/string/translation_server.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
@@ -305,39 +304,9 @@ void Window::set_title(const String &p_title) {
 	ERR_MAIN_THREAD_GUARD;
 
 	title = p_title;
-	tr_title = atr(p_title);
+	_update_displayed_title();
 
-#ifdef DEBUG_ENABLED
-	if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-		// Append a suffix to the window title to denote that the project is running
-		// from a debug build (including the editor, excluding the project manager).
-		// Since this results in lower performance, this should be clearly presented
-		// to the user.
-		tr_title = vformat("%s (DEBUG)", tr_title);
-	}
-#endif
-
-	if (embedder) {
-		embedder->_sub_window_update(this);
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
-		if (keep_title_visible) {
-			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
-			Size2i size_limit = get_clamped_minimum_size();
-			if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
-				_update_window_size();
-			}
-		}
-	}
 	emit_signal("title_changed");
-
-#ifdef DEBUG_ENABLED
-	if (EngineDebugger::get_singleton() && window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-		Array arr = { tr_title };
-		EngineDebugger::get_singleton()->send_message("window:title", arr);
-	}
-#endif
-	queue_accessibility_update();
 }
 
 String Window::get_title() const {
@@ -345,9 +314,9 @@ String Window::get_title() const {
 	return title;
 }
 
-String Window::get_translated_title() const {
+String Window::get_displayed_title() const {
 	ERR_READ_THREAD_GUARD_V(String());
-	return tr_title;
+	return displayed_title;
 }
 
 void Window::_settings_changed() {
@@ -698,7 +667,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
-	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
+	DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
@@ -1167,7 +1136,7 @@ Size2i Window::_clamp_window_size(const Size2i &p_size) {
 void Window::_update_window_size() {
 	Size2i size_limit = get_clamped_minimum_size();
 	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID && keep_title_visible) {
-		Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
+		Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(displayed_title, window_id);
 		size_limit = size_limit.max(title_size);
 	}
 
@@ -1437,7 +1406,7 @@ void Window::_notification(int p_what) {
 
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_WINDOW);
 			if (accessibility_name.is_empty()) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, tr_title);
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, displayed_title);
 			} else {
 				DisplayServer::get_singleton()->accessibility_update_set_name(ae, accessibility_name);
 			}
@@ -1459,7 +1428,7 @@ void Window::_notification(int p_what) {
 				}
 
 				int w = get_theme_constant(SNAME("title_height"));
-				DisplayServer::get_singleton()->accessibility_update_set_name(accessibility_title_element, tr_title);
+				DisplayServer::get_singleton()->accessibility_update_set_name(accessibility_title_element, displayed_title);
 				DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_title_element, Rect2(Vector2(0, -w), Size2(size.x, w)));
 			} else {
 				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_final_transform());
@@ -1596,29 +1565,7 @@ void Window::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
-
-			tr_title = atr(title);
-#ifdef DEBUG_ENABLED
-			if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-				// Append a suffix to the window title to denote that the project is running
-				// from a debug build (including the editor, excluding the project manager).
-				// Since this results in lower performance, this should be clearly presented
-				// to the user.
-				tr_title = vformat("%s (DEBUG)", tr_title);
-			}
-#endif
-
-			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
-				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
-				if (keep_title_visible) {
-					Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
-					Size2i size_limit = get_clamped_minimum_size();
-					if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
-						_update_window_size();
-					}
-				}
-			}
-			queue_accessibility_update();
+			_update_displayed_title();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3102,6 +3049,42 @@ void Window::_mouse_leave_viewport() {
 		mouse_in_window = false;
 		_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
 	}
+}
+
+void Window::_update_displayed_title() {
+	displayed_title = atr(title);
+
+#ifdef DEBUG_ENABLED
+	if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
+		// Append a suffix to the window title to denote that the project is running
+		// from a debug build (including the editor, excluding the project manager).
+		// Since this results in lower performance, this should be clearly presented
+		// to the user.
+		displayed_title = vformat("%s (DEBUG)", displayed_title);
+	}
+#endif
+
+	if (embedder) {
+		embedder->_sub_window_update(this);
+	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
+		if (keep_title_visible) {
+			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(displayed_title, window_id);
+			Size2i size_limit = get_clamped_minimum_size();
+			if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
+				_update_window_size();
+			}
+		}
+	}
+
+#ifdef DEBUG_ENABLED
+	if (EngineDebugger::get_singleton() && window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
+		Array arr = { displayed_title };
+		EngineDebugger::get_singleton()->send_message("window:title", arr);
+	}
+#endif
+
+	queue_accessibility_update();
 }
 
 void Window::_bind_methods() {
