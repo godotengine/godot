@@ -644,6 +644,13 @@ static HSV srgb_to_okhsv(RGB rgb)
 		});
 
 	float C = sqrtf(lab.a * lab.a + lab.b * lab.b);
+	
+	// Special case for pure white and black (C == 0)
+	if (C < 1e-8f)
+	{
+		return { 0.f, 0.f, lab.L };  // Hue = 0, Saturation = 0, Value = Luminance
+	}
+	
 	float a_ = lab.a / C;
 	float b_ = lab.b / C;
 
