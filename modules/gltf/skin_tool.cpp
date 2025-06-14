@@ -402,7 +402,7 @@ Error SkinTool::_determine_skeletons(
 		for (GLTFSkinIndex skin_i = 0; skin_i < skins.size(); ++skin_i) {
 			Ref<GLTFSkin> skin = skins.write[skin_i];
 
-			// If any of the the skeletons nodes exist in a skin, that skin now maps to the skeleton
+			// If any of the skeletons nodes exist in a skin, that skin now maps to the skeleton
 			for (int i = 0; i < skeleton_nodes.size(); ++i) {
 				SkinNodeIndex skel_node_i = skeleton_nodes[i];
 				if (skin->joints.has(skel_node_i) || skin->non_joints.has(skel_node_i)) {
