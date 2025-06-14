@@ -1566,7 +1566,7 @@ void EditorPropertyFloat::update_property() {
 	spin->set_value_no_signal(val);
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees) {
+void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees, bool p_allow_inf, bool p_allow_nan) {
 	radians_as_degrees = p_radians_as_degrees;
 	spin->set_min(p_min);
 	spin->set_max(p_max);
@@ -1576,6 +1576,8 @@ void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool 
 	spin->set_allow_greater(p_greater);
 	spin->set_allow_lesser(p_lesser);
 	spin->set_suffix(p_suffix);
+	spin->set_allow_inf(p_allow_inf);
+	spin->set_allow_nan(p_allow_nan);
 }
 
 EditorPropertyFloat::EditorPropertyFloat() {
@@ -3571,6 +3573,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 struct EditorPropertyRangeHint {
 	bool or_greater = true;
 	bool or_less = true;
+	bool allow_inf = false;
+	bool allow_nan = false;
 	double min = -99999.0;
 	double max = 99999.0;
 	double step = 1.0;
@@ -3595,7 +3599,13 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		hint.or_less = false;
 
 		hint.min = slices[0].to_float();
+		if (slices[0] == "-inf") {
+			hint.min = -Math::INF;
+		}
 		hint.max = slices[1].to_float();
+		if (slices[1] == "inf") {
+			hint.max = Math::INF;
+		}
 
 		if (slices.size() >= 3 && slices[2].is_valid_float()) {
 			// Step is optional, could be something else if not a number.
@@ -3612,7 +3622,16 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
 				hint.exp_range = true;
+			} else if (slice == "allow_inf") {
+				hint.allow_inf = true;
+			} else if (slice == "allow_nan") {
+				hint.allow_nan = true;
 			}
+		}
+
+		// The slider does not work properly if max or min is set to infinity.
+		if (hint.max == Math::INF || hint.min == -Math::INF) {
+			hint.hide_slider = true;
 		}
 	}
 	bool degrees = false;
@@ -3775,7 +3794,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees);
+				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees, hint.allow_inf, hint.allow_nan);
 
 				return editor;
 			}

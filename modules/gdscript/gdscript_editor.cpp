@@ -913,17 +913,26 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 		r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
 	}
 	if (p_annotation->name == SNAME("@export_range")) {
-		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
+		if (p_argument >= 3) {
 			// Slider hint.
-			ScriptLanguage::CodeCompletionOption slider1("or_greater", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			slider1.insert_text = slider1.display.quote(p_quote_style);
-			r_result.insert(slider1.display, slider1);
-			ScriptLanguage::CodeCompletionOption slider2("or_less", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			slider2.insert_text = slider2.display.quote(p_quote_style);
-			r_result.insert(slider2.display, slider2);
-			ScriptLanguage::CodeCompletionOption slider3("hide_slider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			slider3.insert_text = slider3.display.quote(p_quote_style);
-			r_result.insert(slider3.display, slider3);
+			ScriptLanguage::CodeCompletionOption slider("or_greater", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			slider.insert_text = slider.display.quote(p_quote_style);
+			r_result.insert(slider.display, slider);
+			slider = ScriptLanguage::CodeCompletionOption("or_less", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			slider.insert_text = slider.display.quote(p_quote_style);
+			r_result.insert(slider.display, slider);
+			slider = ScriptLanguage::CodeCompletionOption("allow_inf", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			slider.insert_text = slider.display.quote(p_quote_style);
+			r_result.insert(slider.display, slider);
+			slider = ScriptLanguage::CodeCompletionOption("allow_nan", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			slider.insert_text = slider.display.quote(p_quote_style);
+			r_result.insert(slider.display, slider);
+			slider = ScriptLanguage::CodeCompletionOption("exp", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			slider.insert_text = slider.display.quote(p_quote_style);
+			r_result.insert(slider.display, slider);
+			slider = ScriptLanguage::CodeCompletionOption("hide_slider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			slider.insert_text = slider.display.quote(p_quote_style);
+			r_result.insert(slider.display, slider);
 		}
 	} else if (p_annotation->name == SNAME("@export_exp_easing")) {
 		if (p_argument == 0 || p_argument == 1) {
