@@ -32,6 +32,16 @@
 			<param index="0" name="resource" type="Resource" />
 			<description>
 				Takes an input [Resource] and converts it to the type given in [method _converts_to]. The returned [Resource] is the result of the conversion, and the input [Resource] remains unchanged.
+				Returns [code]null[/code] if the plugin only supports asynchronous conversions using [method _convert_async].
+			</description>
+		</method>
+		<method name="_convert_async" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="on_complete" type="Callable" />
+			<description>
+				Takes an input [Resource] and asynchronously converts it to the type given in [method _converts_to]. When the conversion is complete, [param on_complete] is called with the resulting [Resource].
+				Returns [code]null[/code] if the plugin only supports normal conversions using [method _convert].
 			</description>
 		</method>
 		<method name="_converts_to" qualifiers="virtual const">
