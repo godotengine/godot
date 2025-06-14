@@ -1,0 +1,3 @@
+[submodule "thirdparty/materialx"]
+	path = thirdparty/materialx
+	url = https://github.com/AcademySoftwareFoundation/MaterialX.git
