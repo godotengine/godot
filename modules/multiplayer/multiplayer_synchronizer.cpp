@@ -38,8 +38,9 @@ Object *MultiplayerSynchronizer::_get_prop_target(Object *p_obj, const NodePath 
 		return p_obj;
 	}
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V_MSG(!node || !node->has_node(p_path), nullptr, vformat("Node '%s' not found.", p_path));
-	return node->get_node(p_path);
+	Node *target = node ? node->get_node_or_null(p_path) : nullptr;
+	ERR_FAIL_COND_V_MSG(!node || !target, nullptr, vformat("Node '%s' not found.", p_path));
+	return target;
 }
 
 void MultiplayerSynchronizer::_stop() {
