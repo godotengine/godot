@@ -572,8 +572,8 @@ bool SceneMultiplayer::is_object_decoding_allowed() const {
 	return allow_object_decoding;
 }
 
-String SceneMultiplayer::get_rpc_md5(const Object *p_obj) {
-	return rpc->get_rpc_md5(p_obj);
+String SceneMultiplayer::get_rpc_md5(const Node *p_node) {
+	return rpc->get_rpc_md5(p_node);
 }
 
 Error SceneMultiplayer::rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {

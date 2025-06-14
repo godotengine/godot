@@ -180,7 +180,7 @@ public:
 
 	Error send_command(int p_to, const uint8_t *p_packet, int p_packet_len); // Used internally to relay packets when needed.
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
-	String get_rpc_md5(const Object *p_obj);
+	String get_rpc_md5(const Node *p_node);
 
 	const HashSet<int> get_connected_peers() const { return connected_peers; }
 
