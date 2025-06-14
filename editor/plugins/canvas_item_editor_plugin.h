@@ -143,6 +143,7 @@ private:
 		VIEW_CENTER_TO_SELECTION,
 		VIEW_FRAME_TO_SELECTION,
 		PREVIEW_CANVAS_SCALE,
+		PREVIEW_3D_SCENE_BACKGROUND,
 		SKELETON_MAKE_BONES,
 		SKELETON_SHOW_BONES
 	};
@@ -654,6 +655,7 @@ class CanvasItemEditorViewport : public Control {
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
+	void _project_settings_changed();
 
 protected:
 	void _notification(int p_what);
