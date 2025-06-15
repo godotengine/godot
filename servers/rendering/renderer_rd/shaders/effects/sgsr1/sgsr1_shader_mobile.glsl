@@ -181,10 +181,10 @@ void main()
 			aWY += weightY(pl.x-2.0, pl.y, right.z,data);
 			aWY += weightY(pl.x-1.0, pl.y, right.w,data);
 
-			float finalY = aWY.y/aWY.x;
+			float finallyY = aWY.y/aWY.x;
 			float maxY = max(max(left.y,left.z),max(right.x,right.w));
 			float minY = min(min(left.y,left.z),min(right.x,right.w));
-			float deltaY = clamp(EdgeSharpness*finalY, minY, maxY) -color.w;
+			float deltaY = clamp(EdgeSharpness*finallyY, minY, maxY) -color.w;
 
 			//smooth high contrast input
 			deltaY = clamp(deltaY, -23.0 / 255.0, 23.0 / 255.0);
@@ -195,6 +195,6 @@ void main()
 		}
 	}
 
-	color.w = 1.0;  //assume alpha channel is not used
+	color.w = 1.0; //assume alpha channel is not used
 	out_Target0.xyzw = color;
 }
