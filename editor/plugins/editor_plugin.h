@@ -106,6 +106,7 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
+
 	EditorUndoRedoManager *get_undo_redo();
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
@@ -139,6 +140,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	Button *_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title);
 	void _add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control);
+	void _add_autoload_singleton_compat_80519(const String &p_name, const String &p_path);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -240,7 +242,7 @@ public:
 	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
 
-	void add_autoload_singleton(const String &p_name, const String &p_path);
+	void add_autoload_singleton(const String &p_name, const String &p_path, const bool &p_singleton = true);
 	void remove_autoload_singleton(const String &p_name);
 
 	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
