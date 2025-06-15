@@ -1808,6 +1808,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					AHashMap<int, PlayingAnimationInfo> &map = track_info.anim_info;
 
 					AnimationPlayer *animation_playback = Object::cast_to<AnimationPlayer>(t_obj);
+					float animation_playback_speed_scale = animation_playback->get_speed_scale();
 
 					// Find animation.
 					int idx = -1;
@@ -1895,8 +1896,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							}
 						}
 
-						AnimationPlayer *ap_root = Object::cast_to<AnimationPlayer>(this);
-						bool root_is_playing = ap_root && ap_root->is_playing();
+						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(this);
+						bool ap_is_playing = ap && ap->is_playing();
 
 						double anim_time = (time - key_time) + start_ofs;
 
@@ -1906,23 +1907,24 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						t->anim_name = anim_name;
 
 						bool anim_changed = StringName(animation_playback->get_assigned_animation()) != t->anim_name;
-						if (anim_changed) {
+						bool stop_anim = anim_changed || found_to_play;
+						bool assign_anim = stop_anim || (!anim_changed && !found_to_play && seeked);
+						bool hard_seek = seeked || anim_changed || found_to_play;
+
+						if (stop_anim) {
 							animation_playback->stop();
 
 							if (playing_caches.has(t)) {
 								playing_caches.erase(t);
 								t->playing = false;
 							}
-
-							animation_playback->set_assigned_animation(t->anim_name);
-
-							if (!playing_animation_players.has(asp)) {
-								playing_animation_players.push_back(asp);
-							}
 						}
 
-						bool do_hard_seek = seeked || anim_changed || found_to_play; //(!seeked && !root_is_playing);
-						animation_playback->seek(anim_time_start, do_hard_seek, p_update_only);
+						if (assign_anim) {
+							animation_playback->set_assigned_animation(t->anim_name);
+						}
+
+						animation_playback->seek(anim_time_start, hard_seek, p_update_only);
 
 						PlayingAnimationInfo pasi;
 
@@ -1988,14 +1990,19 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						map[idx] = pasi;
 
 						// Handle non-interpolation playing
-						if (root_is_playing && map.size() == 1) {
+						if (ap_is_playing && map.size() == 1) {
 							if (anim_time >= anim_time_start && anim_time <= anim_time_end && anim_time_start != anim_time_end) {
-								animation_playback->play_section(t->anim_name, anim_time_start, anim_time_end); //, ap_root->get_speed_scale()); //, -1, animation_playback->get_speed_scale() * ap_root->get_speed_scale());
+								animation_playback->play_section(t->anim_name, anim_time_start, anim_time_end, 0, ap->get_speed_scale());
 								t->playing = true;
 
 								if (!playing_caches.has(t)) {
 									playing_caches.insert(t);
-							}
+								}
+
+								if (!playing_animation_players.has(asp)) {
+									playing_animation_players.push_back(asp);
+								}
+
 							} else {
 								if(playing_caches.has(t)) {
 									playing_caches.erase(t);

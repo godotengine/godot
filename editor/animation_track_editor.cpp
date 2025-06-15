@@ -2104,6 +2104,11 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 	if (mb.is_valid() && mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
 		if (!panner->is_panning() && mb->get_button_index() == MouseButton::LEFT) {
+			AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+			if (player && player->is_playing()) {
+				player->stop();
+			}
+
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();

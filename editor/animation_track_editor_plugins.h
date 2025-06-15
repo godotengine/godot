@@ -102,6 +102,7 @@ protected:
 	virtual void set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {} //sets the start offset of the key
 	virtual void set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) {} //sets the end offset of the key
 	virtual StringName get_edit_name(const int p_index) const; //name of the key
+	virtual float get_key_scale(const int p_index) const { return 1.0; }
 
 protected:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
@@ -151,6 +152,9 @@ protected:
 	virtual void set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) override;
 	virtual void set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) override;
 	virtual StringName get_edit_name(const int p_index) const override;
+
+protected:
+	virtual float get_key_scale(const int p_index) const override;
 
 protected:
 	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) override;

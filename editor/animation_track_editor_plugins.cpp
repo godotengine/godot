@@ -651,6 +651,15 @@ bool AnimationTrackEditTypeAnimation::has_valid_key(const int p_index) const {
 	return true;
 }
 
+float AnimationTrackEditTypeAnimation::get_key_scale(const int p_index) const {
+	//Object *object = ObjectDB::get_instance(get_node_id());
+	//AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(get_root()->get_node_or_null(get_animation()->track_get_path(get_track())));
+	//if (ap) {
+	//	return ap->get_speed_scale();
+	//}
+	return 1.0;
+}
+
 void AnimationTrackEditTypeAnimation::_preview_changed(ObjectID p_which) {
 	AnimationTrackEditClip::_preview_changed(p_which);
 }
@@ -739,19 +748,8 @@ float AnimationTrackEditClip::get_key_width(const int p_index) const {
 	float end_ofs = get_end_offset(p_index);
 	float len = get_length(p_index);
 
-	float anim_len = len - start_ofs - end_ofs;
-	if (anim_len < 0) {
-		WARN_PRINT("anim_len < 0");
-		anim_len = 0;
-	}
-
-	if (!len_resizing) {
-		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-			anim_len = MIN(anim_len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
-		}
-	}
-	float scale = get_timeline()->get_zoom_scale();
-	return anim_len * scale;
+	Region region = _calc_key_region(p_index, start_ofs, end_ofs, len);
+	return region.width;
 }
 
 float AnimationTrackEditClip::get_key_height(const int p_index) const {
@@ -842,6 +840,7 @@ void AnimationTrackEditClip::gui_input(const Ref<InputEvent> &p_event) {
 	if (len_resizing && mm.is_valid()) {
 		// Rezising index is some.
 		len_resizing_rel += mm->get_relative().x;
+
 		float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
 		float prev_ofs_start = get_start_offset(len_resizing_index);
 		float prev_ofs_end = get_end_offset(len_resizing_index);
@@ -889,26 +888,29 @@ void AnimationTrackEditClip::gui_input(const Ref<InputEvent> &p_event) {
 			float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
 			float prev_ofs = get_start_offset(len_resizing_index);
 			float prev_time = get_animation()->track_get_key_time(get_track(), len_resizing_index);
-			float new_ofs = prev_ofs + ofs_local;
-			float new_time = prev_time + ofs_local;
-			if (prev_time != new_time) {
+			// Raster die neue Zeit
+			float new_time = editor->snap_time(prev_time + ofs_local);
+			float new_ofs = prev_ofs + (new_time - prev_time);
+			if (Math::abs(prev_time - new_time) > CMP_EPSILON) { // Prüfe relevante Änderung
+				float offset = new_time - prev_time;
+
 				undo_redo->create_action(TTR("Change Track Clip Start Offset"));
 				set_start_offset(len_resizing_index, prev_ofs, new_ofs);
 				undo_redo->commit_action();
 
 				emit_signal(SNAME("move_selection_begin"));
-				emit_signal(SNAME("move_selection"), ofs_local);
+				emit_signal(SNAME("move_selection"), offset);
 				emit_signal(SNAME("move_selection_commit"));
 			}
 		} else {
 			float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
 			float prev_ofs = get_end_offset(len_resizing_index);
-			float new_ofs = prev_ofs + ofs_local;
-			if (prev_ofs != new_ofs) {
+			// Raster die neue Zeit
+			float new_time = editor->snap_time(prev_ofs + ofs_local);
+			float new_ofs = new_time; // End-Offset ist absolut
+			if (Math::abs(prev_ofs - new_ofs) > CMP_EPSILON) { // Prüfe relevante Änderung
 				undo_redo->create_action(TTR("Change Track Clip End Offset"));
-
 				set_end_offset(len_resizing_index, prev_ofs, new_ofs);
-
 				undo_redo->commit_action();
 			}
 		}
@@ -949,10 +951,11 @@ void AnimationTrackEditClip::draw_key(const int p_index, const Rect2 &p_global_r
 
 	if (len_resizing && p_index == len_resizing_index) {
 		float ofs_local = len_resizing_rel / scale;
+		float snapped_ofs = editor->snap_time(ofs_local);
 		if (len_resizing_start) {
-			diff_start_ofs = ofs_local;
+			diff_start_ofs = snapped_ofs;
 		} else {
-			diff_end_ofs = -ofs_local;
+			diff_end_ofs = -snapped_ofs;
 		}
 	}
 
