@@ -990,31 +990,21 @@ bool Array::is_same_instance(const Array &p_other) const {
 	return _p == p_other._p;
 }
 
-ContainerType Array::get_element_type() const {
+ContainerType Array::convert_validator_to_container(const ContainerTypeValidate &validator) {
 	ContainerType type;
-	type.builtin_type = _p->typed.type;
-	type.class_name = _p->typed.class_name;
-	type.script = _p->typed.script;
+	type.builtin_type = validator.type;
+	type.class_name = validator.class_name;
+	type.script = validator.script;
 
-	for (const ContainerTypeValidate &nested_validator : _p->typed.nested_types) {
-		ContainerType nested_type;
-		nested_type.builtin_type = nested_validator.type;
-		nested_type.class_name = nested_validator.class_name;
-		nested_type.script = nested_validator.script;
-
-		// Recursively convert nested validators back to ContainerType
-		for (const ContainerTypeValidate &deeper_validator : nested_validator.nested_types) {
-			ContainerType deeper_type;
-			deeper_type.builtin_type = deeper_validator.type;
-			deeper_type.class_name = deeper_validator.class_name;
-			deeper_type.script = deeper_validator.script;
-			nested_type.nested_types.push_back(deeper_type);
-		}
-
-		type.nested_types.push_back(nested_type);
+	// Recursively convert all nested types
+	for (const ContainerTypeValidate &nested : validator.nested_types) {
+		type.nested_types.push_back(convert_validator_to_container(nested));
 	}
 
 	return type;
+}
+ContainerType Array::get_element_type() const {
+	return convert_validator_to_container(_p->typed);
 }
 
 uint32_t Array::get_typed_builtin() const {

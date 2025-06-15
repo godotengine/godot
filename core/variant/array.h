@@ -216,4 +216,5 @@ public:
 
 private:
 	static ContainerTypeValidate convert_container_type(const ContainerType &container);
+	static ContainerType convert_validator_to_container(const ContainerTypeValidate &validator);
 };

@@ -36,6 +36,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
+#include "core/variant/container_type_validate.h"
 #include "scene/main/multiplayer_api.h"
 
 #ifdef DEBUG_ENABLED
@@ -3824,8 +3825,9 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 				type = nullptr;
 				break;
 			} else {
-				// NEW: Allow nested typed collections, but check depth limit
+				// Allow nested typed collections, but check depth limit
 				int depth = get_container_type_depth(container_type);
+				// TODO: Make 8 constant value somewhere?
 				if (depth > 8) { // Match the max_nesting_depth from ContainerTypeValidate
 					push_error("Nested container depth exceeds maximum allowed (8 levels).");
 					complete_extents(type);

@@ -65,7 +65,7 @@ struct ContainerTypeValidate {
 	const char *where = "container";
 
 	Vector<ContainerTypeValidate> nested_types;
-	int max_nesting_depth = 8; // Reasonable limit to prevent infinite recursion
+	int max_nesting_depth = 8;
 
 	// Helper methods for nested type handling
 	_FORCE_INLINE_ bool is_nested() const {
