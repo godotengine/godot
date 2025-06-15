@@ -36,7 +36,7 @@
 #include "godot_step_3d.h"
 
 #include "core/templates/rid_owner.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class GodotPhysicsServer3D : public PhysicsServer3D {
 	GDCLASS(GodotPhysicsServer3D, PhysicsServer3D);
