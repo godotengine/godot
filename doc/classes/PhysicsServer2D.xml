@@ -1124,7 +1124,7 @@
 			Constant to set/get a body's inertia. The default value of this parameter is [code]0.0[/code]. If the body's inertia is set to a value [code]&lt;= 0.0[/code], then the inertia will be recalculated based on the body's shapes, mass, and center of mass.
 		</constant>
 		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
-			Constant to set/get a body's center of mass position in the body's local coordinate system. The default value of this parameter is [code]Vector2(0,0)[/code]. If this parameter is never set explicitly, then it is recalculated based on the body's shapes when setting the parameter [constant BODY_PARAM_MASS] or when calling [method body_set_space].
+			Constant to set/get a body's center of mass position in the body's local coordinate system. The default value of this parameter is [code]Vector2(0, 0)[/code]. If this parameter is never set explicitly, then it is recalculated based on the body's shapes when setting the parameter [constant BODY_PARAM_MASS] or when calling [method body_set_space].
 		</constant>
 		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier. The default value of this parameter is [code]1.0[/code].
