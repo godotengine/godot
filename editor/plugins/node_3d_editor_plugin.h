@@ -211,6 +211,13 @@ public:
 		NAVIGATION_MOUSE_5,
 	};
 
+	enum NavigationZoomStyle {
+		NAVIGATION_ZOOM_VERTICAL,
+		NAVIGATION_ZOOM_HORIZONTAL,
+		NAVIGATION_ZOOM_REVERSED_VERTICAL,
+		NAVIGATION_ZOOM_REVERSED_HORIZONTAL,
+	};
+
 private:
 	double cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
@@ -334,11 +341,6 @@ private:
 	bool selection_in_progress = false;
 
 	PopupMenu *selection_menu = nullptr;
-
-	enum NavigationZoomStyle {
-		NAVIGATION_ZOOM_VERTICAL,
-		NAVIGATION_ZOOM_HORIZONTAL
-	};
 
 	enum NavigationMode {
 		NAVIGATION_NONE,

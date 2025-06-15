@@ -2597,17 +2597,19 @@ void Node3DEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const
 	}
 
 	NavigationZoomStyle zoom_style = (NavigationZoomStyle)EDITOR_GET("editors/3d/navigation/zoom_style").operator int();
-	if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
-		if (p_relative.x > 0) {
-			scale_cursor_distance(1 - p_relative.x * zoom_speed);
-		} else if (p_relative.x < 0) {
-			scale_cursor_distance(1.0 / (1 + p_relative.x * zoom_speed));
+	if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL || zoom_style == NAVIGATION_ZOOM_REVERSED_HORIZONTAL) {
+		float x = (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) ? p_relative.x : -p_relative.x;
+		if (x > 0) {
+			scale_cursor_distance(1 - x * zoom_speed);
+		} else if (x < 0) {
+			scale_cursor_distance(1.0 / (1 + x * zoom_speed));
 		}
 	} else {
-		if (p_relative.y > 0) {
-			scale_cursor_distance(1 + p_relative.y * zoom_speed);
-		} else if (p_relative.y < 0) {
-			scale_cursor_distance(1.0 / (1 - p_relative.y * zoom_speed));
+		float y = (zoom_style == NAVIGATION_ZOOM_VERTICAL) ? p_relative.y : -p_relative.y;
+		if (y > 0) {
+			scale_cursor_distance(1 + y * zoom_speed);
+		} else if (y < 0) {
+			scale_cursor_distance(1.0 / (1 - y * zoom_speed));
 		}
 	}
 }
