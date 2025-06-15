@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  sgsr1.cpp															  */
+/*  sgsr1.cpp                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -46,14 +46,13 @@ SGSR1::SGSR1() {
 
 	for (int i = 0; i < SGSR1_SHADER_VARIANT_MAX; i++) {
 		pipelines[i].setup(
-			sgsr1_shader.version_get_shader(shader_version, i),
-			RD::RENDER_PRIMITIVE_TRIANGLES,
-			RD::PipelineRasterizationState(),
-			RD::PipelineMultisampleState(),
-			RD::PipelineDepthStencilState(),
-			RD::PipelineColorBlendState::create_disabled(),
-			0
-		);
+				sgsr1_shader.version_get_shader(shader_version, i),
+				RD::RENDER_PRIMITIVE_TRIANGLES,
+				RD::PipelineRasterizationState(),
+				RD::PipelineMultisampleState(),
+				RD::PipelineDepthStencilState(),
+				RD::PipelineColorBlendState::create_disabled(),
+				0);
 	}
 
 	if (RD::get_singleton()->has_feature(RD::SUPPORTS_HALF_FLOAT)) {

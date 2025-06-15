@@ -39,6 +39,7 @@
 #ifdef METAL_ENABLED
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
+#include "servers/rendering/renderer_rd/effects/sgsr1.h"
 #include "servers/rendering/renderer_rd/effects/smaa.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
@@ -51,7 +52,6 @@
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_shader_library.h"
-#include "servers/rendering/renderer_rd/effects/sgsr1.h"
 
 class RendererSceneRenderRD : public RendererSceneRender, public RenderingShaderLibrary {
 	friend RendererRD::SkyRD;

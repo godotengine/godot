@@ -32,8 +32,8 @@
 
 #include "spatial_upscaler.h"
 
-#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/sgsr1/sgsr1_shader_mobile.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 
 namespace RendererRD {
 
