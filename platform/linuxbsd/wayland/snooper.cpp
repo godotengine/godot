@@ -1350,7 +1350,7 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 
 				if (!toplevel_data->is_embedded()) {
 					// Passthrough.
-					return true;
+					return false;
 				}
 
 				// Subsurfaces don't normally work, at least on sway, as the locking
