@@ -144,6 +144,8 @@ private:
 	bool unparent_when_invisible = false;
 	bool keep_title_visible = false;
 
+	bool multi_viewport_focus = false;
+
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
 	void _update_child_controls();
@@ -511,6 +513,9 @@ public:
 	virtual Transform2D get_popup_base_transform() const override;
 	virtual Viewport *get_section_root_viewport() const override;
 	virtual bool is_attached_in_viewport() const override;
+
+	void set_multi_viewport_focus(bool p_enable);
+	bool is_multi_viewport_focus_enabled() const;
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
