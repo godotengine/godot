@@ -92,12 +92,20 @@ objects = [
     generate_from_xml(
         "xdg_foreign_v2", "#thirdparty/wayland-protocols/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml"
     ),
+    generate_from_xml("linux_dmabuf_v1", "#thirdparty/wayland-protocols/stable/linux-dmabuf/linux-dmabuf-v1.xml"),
+    generate_from_xml(
+        "linux_explicit_synchronization_unstable_v1",
+        "#thirdparty/wayland-protocols/unstable/linux-explicit-synchronization/linux-explicit-synchronization-unstable-v1.xml",
+    ),
+    generate_from_xml("wayland-drm", "#thirdparty/mesa/src/egl/wayland/wayland-drm/wayland-drm.xml"),
+    generate_from_xml("godot_embedding_compositor", "godot-embedding-compositor.xml"),
 ]
 
 source_files = [
     "detect_prime_egl.cpp",
     "display_server_wayland.cpp",
     "key_mapping_xkb.cpp",
+    "snooper.cpp",
     "wayland_thread.cpp",
 ]
 

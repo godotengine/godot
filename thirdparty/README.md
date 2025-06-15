@@ -663,6 +663,17 @@ Patches:
 - `0001-msvc-2019-psa-redeclaration.patch` (GH-90535)
 
 
+# mesa
+
+- Upstream: https://gitlab.freedesktop.org/mesa/mesa
+- Version: 25.1.3 (ba95e694fed5276f9b83dac70a0c19530ee47fb1, 2025)
+- License: BSL-1.0
+
+Files extracted from upstream source:
+
+- `/src/egl/wayland/wayland-drm/wayland-drm.xml`
+
+
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
