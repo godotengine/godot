@@ -730,6 +730,7 @@ public:
 
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
+	virtual Transform2D get_popup_base_transform_native() const { return Transform2D(); }
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
 	virtual Viewport *get_section_root_viewport() const { return nullptr; }
 	virtual bool is_attached_in_viewport() const { return false; }

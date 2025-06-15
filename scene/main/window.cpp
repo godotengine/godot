@@ -3028,6 +3028,20 @@ Transform2D Window::get_screen_transform_internal(bool p_absolute_position) cons
 	return embedder_transform * get_final_transform();
 }
 
+Transform2D Window::get_popup_base_transform_native() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
+		return Transform2D();
+	}
+	Transform2D popup_base_transform;
+	popup_base_transform.set_origin(get_position());
+	popup_base_transform *= get_final_transform();
+	if (get_embedder()) {
+		return get_embedder()->get_popup_base_transform_native() * popup_base_transform;
+	}
+	return popup_base_transform;
+}
+
 Transform2D Window::get_popup_base_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	if (is_embedding_subwindows()) {
