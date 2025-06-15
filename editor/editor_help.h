@@ -136,6 +136,8 @@ class EditorHelp : public VBoxContainer {
 		Color qualifier_color;
 		Color type_color;
 		Color override_color;
+		Color primary_hr_color;
+		Color secondary_hr_color;
 
 		Ref<Font> doc_font;
 		Ref<Font> doc_bold_font;
