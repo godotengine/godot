@@ -2417,7 +2417,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 		if (EditorSettings::get_singleton()->has_setting(ios_deploy_setting)) {
 			String idepl = EDITOR_GET(ios_deploy_setting);
 			if (ea->has_runnable_preset.is_set() && !idepl.is_empty()) {
-				String devices;
+				String devices_json;
 				List<String> args;
 				args.push_back("-c");
 				args.push_back("-timeout");
@@ -2427,12 +2427,12 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 				args.push_back("-I");
 
 				int ec = 0;
-				Error err = OS::get_singleton()->execute(idepl, args, &devices, &ec, true);
+				Error err = OS::get_singleton()->execute(idepl, args, &devices_json, &ec, true);
 				if (err == OK && ec == 0) {
 					Ref<JSON> json;
 					json.instantiate();
-					devices = "{ \"devices\":[" + devices.replace("}{", "},{") + "]}";
-					err = json->parse(devices);
+					devices_json = "{ \"devices\":[" + devices_json.replace("}{", "},{") + "]}";
+					err = json->parse(devices_json);
 					if (err == OK) {
 						Dictionary data = json->get_data();
 						Array devices = data["devices"];
@@ -2454,7 +2454,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 		}
 		// Enum devices (via Xcode).
 		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
-			String devices;
+			String devices_json;
 			List<String> args;
 			args.push_back("devicectl");
 			args.push_back("list");
@@ -2462,12 +2462,18 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 			args.push_back("-j");
 			args.push_back("-");
 			args.push_back("-q");
+			// Add a timeout, so the process doesn't hang indefinitely, which can prevent Godot shutting down.
+			args.push_back("--timeout");
+			args.push_back("5");
+			args.push_back("--filter");
+			args.push_back(vformat("hardwareProperties.deviceType = '%s'", ea->get_device_type()));
+
 			int ec = 0;
-			Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, true);
 			if (err == OK && ec == 0) {
 				Ref<JSON> json;
 				json.instantiate();
-				err = json->parse(devices);
+				err = json->parse(devices_json);
 				if (err == OK) {
 					const Dictionary &data = json->get_data();
 					const Dictionary &result = data["result"];
@@ -2755,7 +2761,6 @@ EditorExportPlatformAppleEmbedded::EditorExportPlatformAppleEmbedded(const char 
 		devices_changed.set();
 #ifdef MACOS_ENABLED
 		_update_preset_status();
-		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
 	}
 }

@@ -91,6 +91,13 @@ class EditorExportPlatformAppleEmbedded : public EditorExportPlatform {
 	static bool _check_xcode_install();
 	static void _check_for_changes_poll_thread(void *ud);
 	void _update_preset_status();
+
+protected:
+	void _start_thread() {
+		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
+	}
+
+private:
 #endif
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
@@ -169,6 +176,7 @@ protected:
 
 	virtual String get_platform_name() const = 0;
 	virtual String get_sdk_name() const = 0;
+	virtual String get_device_type() const = 0;
 	virtual String get_minimum_deployment_target() const = 0;
 
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;

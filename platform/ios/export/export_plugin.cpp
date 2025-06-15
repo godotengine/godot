@@ -35,6 +35,9 @@
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() :
 		EditorExportPlatformAppleEmbedded(_ios_logo_svg, _ios_run_icon_svg) {
+#ifdef MACOS_ENABLED
+    _start_thread();
+#endif
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
