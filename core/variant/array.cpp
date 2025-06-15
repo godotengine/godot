@@ -36,7 +36,6 @@
 #include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
-#include "core/variant/dictionary.h"
 
 struct ArrayPrivate {
 	SafeRefCount refcount;
@@ -214,20 +213,47 @@ void Array::assign(const Array &p_array) {
 	const ContainerTypeValidate &typed = _p->typed;
 	const ContainerTypeValidate &source_typed = p_array._p->typed;
 
-	if (typed == source_typed || typed.type == Variant::NIL || (source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
-		// from same to same or
+	// Check nested type compatibility
+	if (typed == source_typed || typed.type == Variant::NIL ||
+			(source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
+		// from same to same (including nested types) or
 		// from anything to variants or
 		// from subclasses to base classes
 		_p->array = p_array._p->array;
 		return;
 	}
 
+	// Nested type validation for assignment
+	if (typed.is_nested() && source_typed.is_nested()) {
+		// Both arrays have nested types - validate deep compatibility
+		ERR_FAIL_COND_MSG(!typed.can_reference(source_typed),
+				vformat("Cannot assign Array with nested type structure to incompatible nested type structure."));
+
+		// Validate each element for nested type compliance
+		const Variant *source = p_array._p->array.ptr();
+		int size = p_array._p->array.size();
+
+		Vector<Variant> validated_array;
+		validated_array.resize(size);
+		Variant *write = validated_array.ptrw();
+
+		for (int i = 0; i < size; i++) {
+			Variant element = source[i];
+			ERR_FAIL_COND_MSG(!typed.validate(element, "assign nested"),
+					vformat("Array element at index %d failed nested type validation during assignment.", i));
+			write[i] = element;
+		}
+
+		_p->array = validated_array;
+		return;
+	}
+
 	const Variant *source = p_array._p->array.ptr();
 	int size = p_array._p->array.size();
 
-	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) || (source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
-		// from variants to objects or
-		// from base classes to subclasses
+	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) ||
+			(source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
+		// from variants to objects or from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
 			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
@@ -285,15 +311,18 @@ void Array::push_back(const Variant &p_value) {
 void Array::append_array(const Array &p_array) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 
+	// Handle nested type validation
 	if (!is_typed() || _p->typed.can_reference(p_array._p->typed)) {
 		_p->array.append_array(p_array._p->array);
 		return;
 	}
 
+	// Validate each element for nested types
 	Vector<Variant> validated_array = p_array._p->array;
 	Variant *write = validated_array.ptrw();
 	for (int i = 0; i < validated_array.size(); ++i) {
-		ERR_FAIL_COND(!_p->typed.validate(write[i], "append_array"));
+		ERR_FAIL_COND_MSG(!_p->typed.validate(write[i], "append_array"),
+				vformat("Element at index %d failed nested type validation in append_array.", i));
 	}
 
 	_p->array.append_array(validated_array);
@@ -861,6 +890,13 @@ const void *Array::id() const {
 	return _p;
 }
 
+Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name,
+		const Variant &p_script, const Vector<ContainerTypeValidate> &p_nested_types) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	set_typed(p_type, p_class_name, p_script, p_nested_types);
+	assign(p_from);
+}
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
@@ -868,8 +904,59 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 	assign(p_from);
 }
 
+void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script,
+		const Vector<ContainerTypeValidate> &p_nested_types) const {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
+	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
+	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
+	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
+	Ref<Script> script = p_script;
+	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
+
+	// Validate nested types structure
+	if (!p_nested_types.is_empty()) {
+		ERR_FAIL_COND_MSG(p_type != Variant::ARRAY && p_type != Variant::DICTIONARY,
+				"Nested types can only be set for Array or Dictionary types");
+
+		// Basic sanity check for nesting depth
+		for (const ContainerTypeValidate &nested_type : p_nested_types) {
+			ERR_FAIL_COND_MSG(nested_type.get_depth() > 8, "Nested type depth exceeds maximum (8 levels)");
+		}
+	}
+
+	_p->typed.type = Variant::Type(p_type);
+	_p->typed.class_name = p_class_name;
+	_p->typed.script = script;
+	_p->typed.nested_types = p_nested_types; // NEW: Store nested type information
+	_p->typed.where = "TypedArray";
+}
+
+// Helper function to recursively convert ContainerType to ContainerTypeValidate
+ContainerTypeValidate Array::convert_container_type(const ContainerType &container) {
+	ContainerTypeValidate validator;
+	validator.type = container.builtin_type;
+	validator.class_name = container.class_name;
+	validator.script = container.script;
+	validator.where = "NestedType";
+
+	// Recursively convert all nested types
+	for (const ContainerType &nested : container.nested_types) {
+		validator.nested_types.push_back(convert_container_type(nested));
+	}
+
+	return validator;
+}
+
 void Array::set_typed(const ContainerType &p_element_type) {
-	set_typed(p_element_type.builtin_type, p_element_type.class_name, p_element_type.script);
+	// Convert all nested types recursively
+	Vector<ContainerTypeValidate> nested_validators;
+	for (const ContainerType &nested : p_element_type.nested_types) {
+		nested_validators.push_back(convert_container_type(nested));
+	}
+
+	// Call the enhanced set_typed method
+	set_typed(p_element_type.builtin_type, p_element_type.class_name, p_element_type.script, nested_validators);
 }
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
@@ -899,12 +986,21 @@ bool Array::is_same_instance(const Array &p_other) const {
 	return _p == p_other._p;
 }
 
-ContainerType Array::get_element_type() const {
+ContainerType Array::convert_validator_to_container(const ContainerTypeValidate &validator) {
 	ContainerType type;
-	type.builtin_type = _p->typed.type;
-	type.class_name = _p->typed.class_name;
-	type.script = _p->typed.script;
+	type.builtin_type = validator.type;
+	type.class_name = validator.class_name;
+	type.script = validator.script;
+
+	// Recursively convert all nested types
+	for (const ContainerTypeValidate &nested : validator.nested_types) {
+		type.nested_types.push_back(convert_validator_to_container(nested));
+	}
+
 	return type;
+}
+ContainerType Array::get_element_type() const {
+	return convert_validator_to_container(_p->typed);
 }
 
 uint32_t Array::get_typed_builtin() const {

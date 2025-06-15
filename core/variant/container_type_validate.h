@@ -31,12 +31,31 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
 struct ContainerType {
 	Variant::Type builtin_type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
+	Vector<ContainerType> nested_types;
+
+	// Helper method to check if this is a nested container type
+	_FORCE_INLINE_ bool is_nested() const {
+		return !nested_types.is_empty();
+	}
+
+	// Get nesting depth (0 = not nested, 1 = single level nesting, etc.)
+	_FORCE_INLINE_ int get_depth() const {
+		if (nested_types.is_empty()) {
+			return 0;
+		}
+		int max_depth = 0;
+		for (const ContainerType &nested : nested_types) {
+			max_depth = MAX(max_depth, nested.get_depth());
+		}
+		return max_depth + 1;
+	}
 };
 
 struct ContainerTypeValidate {
@@ -45,15 +64,38 @@ struct ContainerTypeValidate {
 	Ref<Script> script;
 	const char *where = "container";
 
+	Vector<ContainerTypeValidate> nested_types;
+	int max_nesting_depth = 8;
+
+	// Helper methods for nested type handling
+	_FORCE_INLINE_ bool is_nested() const {
+		return !nested_types.is_empty();
+	}
+
+	_FORCE_INLINE_ int get_depth() const {
+		if (nested_types.is_empty()) {
+			return 0;
+		}
+		int max_depth = 0;
+		for (const ContainerTypeValidate &nested : nested_types) {
+			max_depth = MAX(max_depth, nested.get_depth());
+		}
+		return max_depth + 1;
+	}
+
+	// Enhanced can_reference method for nested types
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
+		// First check the base type compatibility
 		if (type != p_type.type) {
 			return false;
 		} else if (type != Variant::OBJECT) {
-			return true;
+			// For non-object types, also check nested type compatibility
+			return can_reference_nested(p_type);
 		}
 
+		// Handle object type validation
 		if (class_name == StringName()) {
-			return true;
+			return can_reference_nested(p_type);
 		} else if (p_type.class_name == StringName()) {
 			return false;
 		} else if (class_name != p_type.class_name && !ClassDB::is_parent_class(p_type.class_name, class_name)) {
@@ -61,29 +103,75 @@ struct ContainerTypeValidate {
 		}
 
 		if (script.is_null()) {
-			return true;
+			return can_reference_nested(p_type);
 		} else if (p_type.script.is_null()) {
 			return false;
 		} else if (script != p_type.script && !p_type.script->inherits_script(script)) {
 			return false;
 		}
 
+		return can_reference_nested(p_type);
+	}
+
+	_FORCE_INLINE_ bool can_reference_nested(const ContainerTypeValidate &p_type) const {
+		// Both must have the same nesting structure
+		if (nested_types.size() != p_type.nested_types.size()) {
+			return false;
+		}
+
+		// Recursively check each nested level
+		for (int i = 0; i < nested_types.size(); i++) {
+			if (!nested_types[i].can_reference(p_type.nested_types[i])) {
+				return false;
+			}
+		}
+
 		return true;
 	}
 
+	// Enhanced equality operators for nested types
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
-		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
-	}
-	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
+		if (type != p_type.type || class_name != p_type.class_name || script != p_type.script) {
+			return false;
+		}
+
+		// Check nested types equality
+		if (nested_types.size() != p_type.nested_types.size()) {
+			return false;
+		}
+
+		for (int i = 0; i < nested_types.size(); i++) {
+			if (nested_types[i] != p_type.nested_types[i]) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
-	// Coerces String and StringName into each other and int into float when needed.
+	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
+		return !(*this == p_type);
+	}
+
 	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
 		if (type == Variant::NIL) {
 			return true;
 		}
 
+		// Validate the base type
+		if (!validate_base_type(inout_variant, p_operation)) {
+			return false;
+		}
+
+		// If this is a nested container type, validate the nested structure
+		if (is_nested() && (type == Variant::ARRAY || type == Variant::DICTIONARY)) {
+			return validate_nested_container(inout_variant, p_operation);
+		}
+
+		return true;
+	}
+
+	_FORCE_INLINE_ bool validate_base_type(Variant &inout_variant, const char *p_operation = "use") const {
 		if (type != inout_variant.get_type()) {
 			if (inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
 				return true;
@@ -109,6 +197,87 @@ struct ContainerTypeValidate {
 		return validate_object(inout_variant, p_operation);
 	}
 
+	_FORCE_INLINE_ bool validate_nested_container(Variant &inout_variant, const char *p_operation = "use") const {
+		if (get_depth() > max_nesting_depth) {
+			ERR_FAIL_V_MSG(false, vformat("Nested container depth exceeds maximum allowed (%d levels).", max_nesting_depth));
+		}
+
+		if (type == Variant::ARRAY) {
+			return validate_nested_array(inout_variant, p_operation);
+		} else if (type == Variant::DICTIONARY) {
+			return validate_nested_dictionary(inout_variant, p_operation);
+		}
+
+		return true;
+	}
+
+	// Nested array validation for Array[Array[Type]] etc.
+	_FORCE_INLINE_ bool validate_nested_array(Variant &inout_variant, const char *p_operation = "use") const {
+		Array array = inout_variant;
+
+		// For nested arrays, we expect the first nested type to define the element type
+		if (nested_types.size() > 0) {
+			const ContainerTypeValidate &element_type = nested_types[0];
+
+			for (int i = 0; i < array.size(); i++) {
+				Variant element = array[i];
+				if (!element_type.validate(element, p_operation)) {
+					ERR_FAIL_V_MSG(false, vformat("Array element at index %d failed type validation.", i));
+				}
+				// Update the array with the potentially coerced element
+				array[i] = element;
+			}
+		}
+
+		inout_variant = array;
+		return true;
+	}
+
+	// Nested dictionary validation for Dictionary[KeyType, Dictionary[KeyType2, ValueType]] etc.
+	_FORCE_INLINE_ bool validate_nested_dictionary(Variant &inout_variant, const char *p_operation = "use") const {
+		Dictionary dict = inout_variant;
+
+		// For nested dictionaries, we expect two nested types: key and value
+		if (nested_types.size() >= 2) {
+			const ContainerTypeValidate &key_type = nested_types[0];
+			const ContainerTypeValidate &value_type = nested_types[1];
+
+			Array keys = dict.keys();
+			for (int i = 0; i < keys.size(); i++) {
+				Variant key = keys[i];
+				Variant value = dict[key];
+
+				// Validate key type
+				if (!key_type.validate(key, p_operation)) {
+					ERR_FAIL_V_MSG(false, vformat("Dictionary key failed type validation."));
+				}
+
+				// Validate value type
+				if (!value_type.validate(value, p_operation)) {
+					ERR_FAIL_V_MSG(false, vformat("Dictionary value failed type validation."));
+				}
+
+				// Update dictionary with potentially coerced values
+				Variant original_key = keys[i];
+				if (key != original_key) {
+					// Only modify if key actually changed and new key doesn't exist
+					if (!dict.has(key)) {
+						dict.erase(original_key);
+						dict[key] = value;
+					} else {
+						ERR_FAIL_V_MSG(false, vformat("Dictionary key coercion would create duplicate key."));
+					}
+				} else {
+					dict[original_key] = value; // Just update value
+				}
+			}
+		}
+
+		inout_variant = dict;
+		return true;
+	}
+
+	// Original validate_object method (unchanged)
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
 		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
 

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/vector.h"
 #include "core/typedefs.h"
 #include "core/variant/variant_deep_duplicate.h"
 
@@ -42,6 +43,7 @@ class Variant;
 
 struct ArrayPrivate;
 struct ContainerType;
+struct ContainerTypeValidate;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -187,6 +189,8 @@ public:
 
 	void set_typed(const ContainerType &p_element_type);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script,
+			const Vector<ContainerTypeValidate> &p_nested_types) const;
 
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
@@ -201,9 +205,15 @@ public:
 	bool is_read_only() const;
 	static Array create_read_only();
 
+	Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name,
+			const Variant &p_script, const Vector<ContainerTypeValidate> &p_nested_types);
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array(std::initializer_list<Variant> p_init);
 	Array();
 	~Array();
+
+private:
+	static ContainerTypeValidate convert_container_type(const ContainerType &container);
+	static ContainerType convert_validator_to_container(const ContainerTypeValidate &validator);
 };
