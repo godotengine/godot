@@ -31,6 +31,8 @@
 #include "gradient.h"
 
 Gradient::Gradient() {
+	set_use_shared_copy(false);
+
 	//Set initial gradient transition from black to white
 	points.resize(2);
 	points[0].color = Color(0, 0, 0, 1);

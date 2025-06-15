@@ -1564,6 +1564,8 @@ void Environment::_bind_methods() {
 }
 
 Environment::Environment() {
+	set_use_shared_copy(false);
+
 	environment = RS::get_singleton()->environment_create();
 
 	set_camera_feed_id(bg_camera_feed_id);

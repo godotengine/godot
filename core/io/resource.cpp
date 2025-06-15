@@ -650,6 +650,14 @@ void Resource::reset_local_to_scene() {
 	// Restores the state as if setup_local_to_scene() hadn't been called.
 }
 
+void Resource::set_use_shared_copy(bool p_enable) {
+	use_shared_copy = p_enable;
+}
+
+bool Resource::get_use_shared_copy() const {
+	return use_shared_copy;
+}
+
 Node *(*Resource::_get_local_scene_func)() = nullptr;
 void (*Resource::_update_configuration_warning)() = nullptr;
 
@@ -706,6 +714,8 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Resource::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Resource::get_name);
 	ClassDB::bind_method(D_METHOD("get_rid"), &Resource::get_rid);
+	ClassDB::bind_method(D_METHOD("set_use_shared_copy", "enable"), &Resource::set_use_shared_copy);
+	ClassDB::bind_method(D_METHOD("get_use_shared_copy"), &Resource::get_use_shared_copy);
 	ClassDB::bind_method(D_METHOD("set_local_to_scene", "enable"), &Resource::set_local_to_scene);
 	ClassDB::bind_method(D_METHOD("is_local_to_scene"), &Resource::is_local_to_scene);
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
@@ -735,6 +745,7 @@ void Resource::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));
 
 	ADD_GROUP("Resource", "resource_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_shared_copy"), "set_use_shared_copy", "get_use_shared_copy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");

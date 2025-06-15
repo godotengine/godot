@@ -154,5 +154,6 @@ void CapsuleShape3D::_bind_methods() {
 
 CapsuleShape3D::CapsuleShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CAPSULE)) {
+	set_use_shared_copy(false);
 	_update_shape();
 }
