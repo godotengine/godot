@@ -289,6 +289,12 @@ public:
 			dst_ptr += qoa_encode_frame(data16.ptr(), p_desc, frame_len, dst_ptr);
 		}
 	}
+
+	typedef Ref<AudioStreamWAV> (*LoadFromBufferFunc)(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options);
+	typedef Ref<AudioStreamWAV> (*LoadFromFileFunc)(const String &p_path, const Dictionary &p_options);
+
+	static LoadFromBufferFunc load_from_buffer_func;
+	static LoadFromFileFunc load_from_file_func;
 };
 
 VARIANT_ENUM_CAST(AudioStreamWAV::Format)
