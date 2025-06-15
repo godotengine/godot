@@ -214,7 +214,7 @@
 		<method name="font_get_global_oversampling" qualifiers="const" deprecated="Use [Viewport] oversampling, or the [code skip-lint]oversampling[/code] argument of the [code skip-lint]draw_*[/code] methods instead.">
 			<return type="float" />
 			<description>
-				Deprecated. This method always returns [code]1.0[/code].
+				This method does nothing and always returns [code]1.0[/code].
 			</description>
 		</method>
 		<method name="font_get_glyph_advance" qualifiers="const">
@@ -403,7 +403,7 @@
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Deprecated. This method always returns [code]1.0[/code].
+				This method always returns [code]1.0[/code].
 			</description>
 		</method>
 		<method name="font_get_scale" qualifiers="const">
@@ -790,7 +790,7 @@
 			<return type="void" />
 			<param index="0" name="oversampling" type="float" />
 			<description>
-				Deprecated. This method does nothing.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="font_set_glyph_advance">
@@ -933,7 +933,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="oversampling" type="float" />
 			<description>
-				Deprecated. This method does nothing.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="font_set_scale">
@@ -1194,7 +1194,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Converts readable feature, variation, script, or language name to OpenType tag.
+				Converts the given readable name of a feature, variation, script, or language to a OpenType tag.
 			</description>
 		</method>
 		<method name="parse_number" qualifiers="const">
@@ -1913,7 +1913,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Returns the string converted to lowercase.
+				Returns the string converted to [code]lowercase[/code].
 				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
@@ -1923,7 +1923,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Returns the string converted to title case.
+				Returns the string converted to [code]Title Case[/code].
 				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
@@ -1933,7 +1933,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Returns the string converted to uppercase.
+				Returns the string converted to [code]UPPERCASE[/code].
 				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
@@ -1950,7 +1950,7 @@
 			<return type="String" />
 			<param index="0" name="tag" type="int" />
 			<description>
-				Converts OpenType tag to readable feature, variation, script, or language name.
+				Converts the given OpenType tag to the readable name of a feature, variation, script, or language.
 			</description>
 		</method>
 	</methods>

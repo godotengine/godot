@@ -313,7 +313,7 @@
 			If [code]true[/code], the [LineEdit] will not exit edit mode when text is submitted by pressing [code]ui_text_submit[/code] action (by default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms. If left empty, current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length" default="0">
 			Maximum number of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
