@@ -28,8 +28,16 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="add_types" type="bool" />
 			<description>
-				If implemented, gets the dependencies of a given resource. If [param add_types] is [code]true[/code], paths should be appended [code]::TypeName[/code], where [code]TypeName[/code] is the class name of the dependency.
-				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
+				Should return the dependencies for the resource at the given [param path]. Each dependency is a string composed of one to three sections separated by [code]::[/code], with trailing empty sections omitted.
+				- First section: Should contain the UID if the resource has one. Otherwise, it should contain the file path.
+				- Second section: Should contain the class name of the dependency if [param add_types] is [code]true[/code]. Otherwise, it should be empty.
+				- Third section: Should contain the fallback path if the resource has a UID. Otherwise, it should be empty.
+				Examples of valid dependency strings include:
+				- [code]"uid://fqgvuwrkuixh::Script::res://script.gd"[/code]
+				- [code]"uid://fqgvuwrkuixh::::res://script.gd"[/code]
+				- [code]"res://script.gd::Script"[/code]
+				- [code]"res://script.gd"[/code]
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you can use [code]"Resource"[/code] for the class name.
 			</description>
 		</method>
 		<method name="_get_recognized_extensions" qualifiers="virtual const">
