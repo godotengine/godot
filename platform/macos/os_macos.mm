@@ -41,6 +41,8 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
+#include "drivers/apple/foundation_helpers.h"
+#include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
 
 #include <dlfcn.h>
@@ -758,6 +760,89 @@ String OS_MacOS::get_executable_path() const {
 	}
 }
 
+NSString *resolve_path(NSString *p_path) {
+	NSTask *task = [NSTask new];
+	task.executableURL = [NSURL fileURLWithPath:@"/usr/bin/which"];
+	task.arguments = @[ p_path ];
+
+	NSPipe *pipe = [NSPipe pipe];
+	task.standardOutput = pipe;
+
+	NSError *err = nil;
+	if ([task launchAndReturnError:&err] == NO) {
+		ERR_PRINT(vformat("launch failed: %s", conv::to_string(err.localizedDescription)));
+		return p_path;
+	}
+	[task waitUntilExit];
+
+	if (task.terminationStatus != 0) {
+		ERR_PRINT(vformat("command failed: status(%d), reason(%d)", task.terminationStatus, task.terminationReason));
+		return p_path;
+	}
+
+	NSData *data = [pipe.fileHandleForReading readDataToEndOfFileAndReturnError:&err];
+	if (data == nil) {
+		ERR_PRINT(vformat("read failed: %s", conv::to_string(err.localizedDescription)));
+		return p_path;
+	}
+	NSString *cmd_path = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+	cmd_path = [cmd_path stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+	return cmd_path;
+}
+
+Error OS_MacOS::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode,
+		bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+	NSString *resolved_path = resolve_path(conv::to_nsstring(p_path));
+
+	NSTask *task = [NSTask new];
+	task.executableURL = [NSURL fileURLWithPath:resolved_path];
+	NSMutableArray<NSString *> *args = [NSMutableArray arrayWithCapacity:p_arguments.size()];
+	for (const String &arg : p_arguments) {
+		[args addObject:conv::to_nsstring(arg)];
+	}
+
+	task.arguments = args;
+
+	NSPipe *output = nil;
+	if (r_pipe) {
+		output = [NSPipe pipe];
+		task.standardOutput = output;
+		if (read_stderr) {
+			task.standardError = output;
+		}
+	}
+
+	NSError *err = nil;
+	if ([task launchAndReturnError:&err] == NO) {
+		ERR_PRINT(vformat("launch failed: %s", conv::to_string(err.localizedDescription)));
+		return FAILED;
+	}
+	[task waitUntilExit];
+
+	if (r_exitcode) {
+		*r_exitcode = (int)task.terminationStatus;
+	}
+
+	if (r_pipe) {
+		NSFileHandle *handle = output.fileHandleForReading;
+		NSData *data = [handle readDataToEndOfFileAndReturnError:&err];
+		if (data == nil) {
+			ERR_PRINT(vformat("read failed: %s", conv::to_string(err.localizedDescription)));
+			return FAILED;
+		}
+		String output_str = data.length > 1 ? String::utf8((const char *)data.bytes, data.length - 1) : String();
+		if (p_pipe_mutex) {
+			p_pipe_mutex->lock();
+		}
+		*r_pipe = output_str;
+		if (p_pipe_mutex) {
+			p_pipe_mutex->unlock();
+		}
+	}
+
+	return task.terminationReason == NSTaskTerminationReasonExit ? OK : FAILED;
+}
+
 Error OS_MacOS::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	// Use NSWorkspace if path is an .app bundle.
 	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
@@ -1023,8 +1108,8 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 		}
 		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
 	}
-
 	Vector<Logger *> loggers;
+	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
 	loggers.push_back(memnew(MacOSTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 

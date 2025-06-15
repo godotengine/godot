@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  macos_terminal_logger.mm                                              */
+/*  foundation_helpers.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "macos_terminal_logger.h"
+#pragma once
 
-#ifdef MACOS_ENABLED
+#import <Foundation/NSString.h>
 
-#include <os/log.h>
+class String;
 
-void MacOSTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
-	if (!should_log(true)) {
-		return;
-	}
+namespace conv {
 
-	const char *err_details;
-	if (p_rationale && p_rationale[0]) {
-		err_details = p_rationale;
-	} else {
-		err_details = p_code;
-	}
+/**
+ * Converts a Godot String to an NSString without allocating an intermediate UTF-8 buffer.
+ * */
+NSString *to_nsstring(const String &p_str);
+/**
+ * Converts an NSString to a Godot String without allocating intermediate buffers.
+ * */
+String to_string(NSString *p_str);
 
-	const char *bold_color;
-	const char *normal_color;
-	switch (p_type) {
-		case ERR_WARNING:
-			bold_color = "\E[1;33m";
-			normal_color = "\E[0;93m";
-			break;
-		case ERR_SCRIPT:
-			bold_color = "\E[1;35m";
-			normal_color = "\E[0;95m";
-			break;
-		case ERR_SHADER:
-			bold_color = "\E[1;36m";
-			normal_color = "\E[0;96m";
-			break;
-		case ERR_ERROR:
-		default:
-			bold_color = "\E[1;31m";
-			normal_color = "\E[0;91m";
-			break;
-	}
-
-	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
-	logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", error_type_indent(p_type), p_function, p_file, p_line);
-
-	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-		if (!backtrace->is_empty()) {
-			logf_error("\E[0;90m%s\E[0m\n", backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data());
-		}
-	}
-}
-
-#endif // MACOS_ENABLED
+} //namespace conv

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  macos_terminal_logger.mm                                              */
+/*  os_log_logger.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "macos_terminal_logger.h"
+#pragma once
 
-#ifdef MACOS_ENABLED
+#include "core/io/logger.h"
 
 #include <os/log.h>
 
-void MacOSTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
-	if (!should_log(true)) {
-		return;
-	}
+/**
+ * @brief Apple unified logging system integration for Godot Engine.
+ */
+class OsLogLogger : public Logger {
+	os_log_t log;
+	os_log_t error_log;
+	os_log_t warning_log;
+	os_log_t script_log;
+	os_log_t shader_log;
 
-	const char *err_details;
-	if (p_rationale && p_rationale[0]) {
-		err_details = p_rationale;
-	} else {
-		err_details = p_code;
-	}
+public:
+	void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
+	void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
 
-	const char *bold_color;
-	const char *normal_color;
-	switch (p_type) {
-		case ERR_WARNING:
-			bold_color = "\E[1;33m";
-			normal_color = "\E[0;93m";
-			break;
-		case ERR_SCRIPT:
-			bold_color = "\E[1;35m";
-			normal_color = "\E[0;95m";
-			break;
-		case ERR_SHADER:
-			bold_color = "\E[1;36m";
-			normal_color = "\E[0;96m";
-			break;
-		case ERR_ERROR:
-		default:
-			bold_color = "\E[1;31m";
-			normal_color = "\E[0;91m";
-			break;
-	}
-
-	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
-	logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", error_type_indent(p_type), p_function, p_file, p_line);
-
-	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-		if (!backtrace->is_empty()) {
-			logf_error("\E[0;90m%s\E[0m\n", backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data());
-		}
-	}
-}
-
-#endif // MACOS_ENABLED
+	/**
+	 * @brief Constructs an OsLogLogger with the specified subsystem identifier, which is normally the bundle identifier.
+	 */
+	OsLogLogger(const char *p_subsystem);
+};

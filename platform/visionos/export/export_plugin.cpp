@@ -35,6 +35,9 @@
 
 EditorExportPlatformVisionOS::EditorExportPlatformVisionOS() :
 		EditorExportPlatformAppleEmbedded(_visionos_logo_svg, _visionos_run_icon_svg) {
+#ifdef MACOS_ENABLED
+	_start_thread();
+#endif
 }
 
 EditorExportPlatformVisionOS::~EditorExportPlatformVisionOS() {

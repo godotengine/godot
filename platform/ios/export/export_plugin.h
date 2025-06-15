@@ -36,8 +36,8 @@ class EditorExportPlatformIOS : public EditorExportPlatformAppleEmbedded {
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatformAppleEmbedded);
 
 	virtual String get_platform_name() const override { return "ios"; }
-
 	virtual String get_sdk_name() const override { return "iphoneos"; }
+	virtual String get_device_type() const override { return "iPhone"; }
 
 	virtual String get_minimum_deployment_target() const override { return "14.0"; }
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  macos_terminal_logger.mm                                              */
+/*  foundation_helpers.mm                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "macos_terminal_logger.h"
+#import "foundation_helpers.h"
 
-#ifdef MACOS_ENABLED
+#import "core/string/ustring.h"
 
-#include <os/log.h>
+#import <CoreFoundation/CFString.h>
 
-void MacOSTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
-	if (!should_log(true)) {
-		return;
-	}
+namespace conv {
 
-	const char *err_details;
-	if (p_rationale && p_rationale[0]) {
-		err_details = p_rationale;
-	} else {
-		err_details = p_code;
-	}
-
-	const char *bold_color;
-	const char *normal_color;
-	switch (p_type) {
-		case ERR_WARNING:
-			bold_color = "\E[1;33m";
-			normal_color = "\E[0;93m";
-			break;
-		case ERR_SCRIPT:
-			bold_color = "\E[1;35m";
-			normal_color = "\E[0;95m";
-			break;
-		case ERR_SHADER:
-			bold_color = "\E[1;36m";
-			normal_color = "\E[0;96m";
-			break;
-		case ERR_ERROR:
-		default:
-			bold_color = "\E[1;31m";
-			normal_color = "\E[0;91m";
-			break;
-	}
-
-	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
-	logf_error("\E[0;90m%sat: %s (%s:%i)\E[0m\n", error_type_indent(p_type), p_function, p_file, p_line);
-
-	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-		if (!backtrace->is_empty()) {
-			logf_error("\E[0;90m%s\E[0m\n", backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data());
-		}
-	}
+NSString *to_nsstring(const String &p_str) {
+	return [[NSString alloc] initWithBytes:(const void *)p_str.ptr()
+									length:p_str.length() * sizeof(char32_t)
+								  encoding:NSUTF32LittleEndianStringEncoding];
 }
 
-#endif // MACOS_ENABLED
+String to_string(NSString *p_str) {
+	CFStringRef str = (__bridge CFStringRef)p_str;
+	CFStringEncoding fastest = CFStringGetFastestEncoding(str);
+	// Sometimes, CFString will return a pointer to it's encoded data,
+	// so we can create the string without allocating intermediate buffers.
+	const char *p = CFStringGetCStringPtr(str, fastest);
+	if (p) {
+		switch (fastest) {
+			case kCFStringEncodingASCII:
+				return String::ascii(Span(p, CFStringGetLength(str)));
+			case kCFStringEncodingUTF8:
+				return String::utf8(p);
+			case kCFStringEncodingUTF32LE:
+				return String::utf32(Span((char32_t *)p, CFStringGetLength(str)));
+			default:
+				break;
+		}
+	}
+
+	CFRange range = CFRangeMake(0, CFStringGetLength(str));
+	CFIndex byte_len = 0;
+	// Try to losslessly convert the string directly into a String's buffer to avoid intermediate allocations.
+	CFIndex n = CFStringGetBytes(str, range, kCFStringEncodingUTF32LE, 0, NO, nil, 0, &byte_len);
+	if (n == range.length) {
+		String res;
+		res.resize_uninitialized((byte_len / sizeof(char32_t)) + 1);
+		res[n] = 0;
+		n = CFStringGetBytes(str, range, kCFStringEncodingUTF32LE, 0, NO, (UInt8 *)res.ptrw(), res.length() * sizeof(char32_t), nil);
+		return res;
+	}
+
+	return String::utf8(p_str.UTF8String);
+}
+
+} //namespace conv
