@@ -97,6 +97,17 @@ namespace GodotTools.Export
                         }
                     },
                     { "default_value", false }
+                },
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/self_contained" },
+                            { "type", (int)Variant.Type.Bool }
+                        }
+                    },
+                    { "default_value", true }
                 }
             );
             return exportOptionList;
@@ -284,7 +295,7 @@ namespace GodotTools.Export
 
                     // Execute dotnet publish.
                     if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
-                            runtimeIdentifier, publishOutputDir, includeDebugSymbols))
+                            runtimeIdentifier, publishOutputDir, includeDebugSymbols, (bool)GetOption("dotnet/self_contained")))
                     {
                         throw new InvalidOperationException("Failed to build project.");
                     }

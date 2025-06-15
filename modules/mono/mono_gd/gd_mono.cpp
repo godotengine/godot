@@ -37,11 +37,7 @@
 #include "../thirdparty/hostfxr.h"
 #include "../utils/path_utils.h"
 #include "gd_mono_cache.h"
-
-#ifdef TOOLS_ENABLED
-#include "../editor/hostfxr_resolver.h"
-#include "../editor/semver.h"
-#endif
+#include "hostfxr_resolver.h"
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -161,9 +157,27 @@ bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
 #endif
 
 String find_hostfxr() {
-#ifdef TOOLS_ENABLED
-	String dotnet_root;
 	String fxr_path;
+#ifndef TOOLS_ENABLED
+#if defined(WINDOWS_ENABLED)
+	fxr_path = GodotSharpDirs::get_api_assemblies_dir()
+					   .path_join("hostfxr.dll");
+#elif defined(MACOS_ENABLED)
+	fxr_path = GodotSharpDirs::get_api_assemblies_dir()
+					   .path_join("libhostfxr.dylib");
+#elif defined(UNIX_ENABLED)
+	fxr_path = GodotSharpDirs::get_api_assemblies_dir()
+					   .path_join("libhostfxr.so");
+#else
+#error "Platform not supported (yet?)"
+#endif
+
+	if (!fxr_path.is_empty()) {
+		return fxr_path;
+	}
+#endif
+
+	String dotnet_root;
 	if (godotsharp::hostfxr_resolver::try_get_path(dotnet_root, fxr_path)) {
 		return fxr_path;
 	}
@@ -181,28 +195,6 @@ String find_hostfxr() {
 			"libraries are not present in the expected locations.");
 
 	return String();
-#else
-
-#if defined(WINDOWS_ENABLED)
-	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.path_join("hostfxr.dll");
-#elif defined(MACOS_ENABLED)
-	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.path_join("libhostfxr.dylib");
-#elif defined(UNIX_ENABLED)
-	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.path_join("libhostfxr.so");
-#else
-#error "Platform not supported (yet?)"
-#endif
-
-	if (FileAccess::exists(probe_path)) {
-		return probe_path;
-	}
-
-	return String();
-
-#endif
 }
 
 #ifndef TOOLS_ENABLED
