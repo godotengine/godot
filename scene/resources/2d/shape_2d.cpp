@@ -114,6 +114,7 @@ bool Shape2D::is_collision_outline_enabled() {
 }
 
 Shape2D::Shape2D(const RID &p_rid) {
+	set_use_shared_copy(false);
 	shape = p_rid;
 }
 
