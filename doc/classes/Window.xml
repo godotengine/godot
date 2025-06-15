@@ -614,7 +614,7 @@
 		<member name="exclude_from_capture" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
 			[b]Note:[/b] This property is implemented on macOS and Windows.
-			[b]Note:[/b] Enabling this setting does [b]NOT[/b] prevent other apps from capturing an image. It should not be used as a security measure.
+			[b]Note:[/b] Enabling this setting will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 			If [code]true[/code], the [Window] will be in exclusive mode. Exclusive windows are always on top of their parent and will block all input going to the parent [Window].
@@ -860,10 +860,12 @@
 		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
 			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+			[b]Note:[/b] This mode might not work with screen recording software.
 			[b]On Android:[/b] This enables immersive mode.
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
 			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+			[b]On Linux (Wayland):[/b] Equivalent to [constant MODE_FULLSCREEN].
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
@@ -903,7 +905,7 @@
 		<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="Flags">
 			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
 			[b]Note:[/b] This flag is implemented on macOS and Windows.
-			[b]Note:[/b] Setting this flag will [b]NOT[/b] prevent other apps from capturing an image, it should not be used as a security measure.
+			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
 		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">
 			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
