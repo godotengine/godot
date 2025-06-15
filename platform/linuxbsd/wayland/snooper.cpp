@@ -95,6 +95,11 @@
 #define WL_POINTER_LEAVE 1
 #define WL_POINTER_BUTTON 3
 
+#define WL_DRM_DEVICE 0
+#define WL_DRM_FORMAT 1
+#define WL_DRM_AUTHENTICATED 2
+#define WL_DRM_CAPABILITIES 3
+
 size_t WaylandEmbedderProxy::wl_array_word_offset(uint32_t p_size) {
 	constexpr size_t word_size = sizeof(uint32_t);
 
@@ -284,6 +289,43 @@ WaylandEmbedderProxy::WaylandObject *WaylandEmbedderProxy::Client::new_global_in
 	new_object.data = p_data;
 
 	return &new_object;
+}
+
+void WaylandEmbedderProxy::Client::send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalData *p_state) {
+	CRASH_COND(p_state == nullptr);
+
+	if (p_state->device.is_empty()) {
+		// Not yet initialized.
+		return;
+	}
+
+	{
+		// FIXME: Make string marshaling at least somewhat bearable.
+		size_t str_words = wl_array_word_offset(p_state->device.length());
+		size_t arg_words = str_words + 1;
+
+		CharString device_name = p_state->device.utf8();
+
+		uint32_t *arg_buf = (uint32_t *)memalloc(arg_words);
+		char *str_buf = (char *)arg_buf + 1;
+
+		arg_buf[0] = device_name.length();
+		strncpy(str_buf, device_name.get_data(), device_name.length());
+
+		send_wayland_message(socket, p_id, WL_DRM_DEVICE, arg_buf, arg_words);
+
+		memfree(arg_buf);
+	}
+
+	for (uint32_t format : p_state->formats) {
+		send_wayland_message(socket, p_id, WL_DRM_FORMAT, { format });
+	}
+
+	if (p_state->authenticated) {
+		send_wayland_message(socket, p_id, WL_DRM_AUTHENTICATED, {});
+	}
+
+	send_wayland_message(socket, p_id, WL_DRM_CAPABILITIES, { p_state->capabilities });
 }
 
 void WaylandEmbedderProxy::client_disconnect(size_t p_client_id) {
@@ -973,6 +1015,10 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 
 				DEBUG_LOG_WAYLAND_SNOOPER(vformat("Instancing global #%d iface %s ver %d new id l0x%x g0x%x", global_name, global_info.interface->name, version, new_local_id, global_info.global_id));
 
+				if (global_info.interface == &wl_drm_interface) {
+					client->send_wl_drm_state(new_local_id, (WaylandDrmGlobalData *)global_info.data);
+				}
+
 				// FIXME: Multiple associations?
 				client->global_ids[new_local_id] = global_info.global_id;
 				client->local_ids[global_info.global_id] = new_local_id;
@@ -1507,6 +1553,46 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 	uint32_t *body = msg_data + 2;
 	size_t body_len = msg_len - (WORD_SIZE * 2);
 
+	// wl_drm can't ever be destroyed, so we need to track its state as it's going
+	// to be instanced at least few times.
+	if (global_object->interface == &wl_drm_interface) {
+		uint32_t global_name = registry_globals_names[p_global_id];
+		WaylandDrmGlobalData *global_data = (WaylandDrmGlobalData *)registry_globals[global_name].data;
+		CRASH_COND(global_data == nullptr);
+
+		if (p_opcode == WL_DRM_DEVICE) {
+			// signature: s
+			uint32_t name_len = body[0];
+			uint8_t *name = (uint8_t *)(body + 1);
+			global_data->device = String::utf8((const char *)name, name_len);
+
+			return false;
+		}
+
+		if (p_opcode == WL_DRM_FORMAT) {
+			// signature: u
+			uint32_t format = body[0];
+			global_data->formats.push_back(format);
+
+			return false;
+		}
+
+		if (p_opcode == WL_DRM_AUTHENTICATED) {
+			// signature: N/A
+			global_data->authenticated = true;
+
+			return false;
+		}
+
+		if (p_opcode == WL_DRM_CAPABILITIES) {
+			// signature: u
+			uint32_t capabilities = body[0];
+			global_data->capabilities = capabilities;
+		}
+
+		return false;
+	}
+
 	if (!p_local_handle.is_valid()) {
 		// Some requests might not have a valid local object handle for various
 		// reasons, such as when certain events are directed to this proxy or when the
@@ -1562,6 +1648,12 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 					DEBUG_LOG_WAYLAND_SNOOPER("Allocating global wl_seat data.");
 					global_info.data = memnew(WaylandSeatGlobalData);
 					wl_seat_name = registry_globals.size();
+				}
+
+				if (global_info.interface == &wl_drm_interface) {
+					// FIXME: Cleanup.
+					DEBUG_LOG_WAYLAND_SNOOPER("Allocating global wl_drm data.");
+					global_info.data = memnew(WaylandDrmGlobalData);
 				}
 
 				// FIXME: Ensure that no duplicate entries get added (VSet?)

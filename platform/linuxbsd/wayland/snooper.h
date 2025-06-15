@@ -122,6 +122,13 @@ private:
 		WaylandObjectData *data = nullptr;
 	};
 
+	struct WaylandDrmGlobalData : WaylandObjectData {
+		String device;
+		LocalVector<uint32_t> formats;
+		bool authenticated;
+		uint32_t capabilities;
+	};
+
 	struct Client {
 		WaylandEmbedderProxy *snooper = nullptr;
 
@@ -158,6 +165,8 @@ private:
 		uint32_t new_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
 		WaylandObject *new_fake_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
 		WaylandObject *new_global_instance(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
+
+		void send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalData *p_state);
 	};
 
 	// Local IDs are a mess to handle as they strictly depend on their client of
