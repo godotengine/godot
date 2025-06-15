@@ -318,7 +318,7 @@ protected:
 	};
 
 	struct TrackCacheAnimation : public TrackCache {
-		//bool playing = false;
+		bool playing = false;
 		//Ref<Animation> animation;
 		//Ref<AnimationPlayer> animation_player;
 		StringName anim_name;

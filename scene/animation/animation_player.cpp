@@ -70,36 +70,42 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (name == "playback/play") { // For backward compatibility.
 
-		r_ret = get_current_animation();
+r_ret = get_current_animation();
 
-	} else if (name.begins_with("next/")) {
-		String which = name.get_slicec('/', 1);
-		r_ret = animation_get_next(which);
+	}
+ else if (name.begins_with("next/")) {
+	 String which = name.get_slicec('/', 1);
+	 r_ret = animation_get_next(which);
 
-	} else if (p_name == SceneStringName(blend_times)) {
-		Vector<BlendKey> keys;
-		for (const KeyValue<BlendKey, double> &E : blend_times) {
-			keys.ordered_insert(E.key);
-		}
+	}
+ else if (p_name == SceneStringName(blend_times)) {
+	 Vector<BlendKey> keys;
+	 for (const KeyValue<BlendKey, double>& E : blend_times) {
+		 keys.ordered_insert(E.key);
+	 }
 
-		Array array;
-		for (int i = 0; i < keys.size(); i++) {
-			array.push_back(keys[i].from);
-			array.push_back(keys[i].to);
-			array.push_back(blend_times.get(keys[i]));
-		}
+	 Array array;
+	 for (int i = 0; i < keys.size(); i++) {
+		 array.push_back(keys[i].from);
+		 array.push_back(keys[i].to);
+		 array.push_back(blend_times.get(keys[i]));
+	 }
 
-		r_ret = array;
+	 r_ret = array;
 #ifndef DISABLE_DEPRECATED
-	} else if (name == "method_call_mode") {
-		r_ret = get_callback_mode_method();
-	} else if (name == "playback_process_mode") {
-		r_ret = get_callback_mode_process();
-	} else if (name == "playback_active") {
-		r_ret = is_active();
+	}
+ else if (name == "method_call_mode") {
+	 r_ret = get_callback_mode_method();
+	}
+ else if (name == "playback_process_mode") {
+	 r_ret = get_callback_mode_process();
+	}
+ else if (name == "playback_active") {
+	 r_ret = is_active();
 #endif // DISABLE_DEPRECATED
-	} else {
-		return false;
+	}
+ else {
+	 return false;
 	}
 
 	return true;
@@ -109,12 +115,12 @@ void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "current_animation") {
 		List<String> names;
 
-		for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+		for (const KeyValue<StringName, AnimationData>& E : animation_set) {
 			names.push_back(E.key);
 		}
 		names.push_front("[stop]");
 		String hint;
-		for (List<String>::Element *E = names.front(); E; E = E->next()) {
+		for (List<String>::Element* E = names.front(); E; E = E->next()) {
 			if (E != names.front()) {
 				hint += ",";
 			}
@@ -122,22 +128,23 @@ void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		p_property.hint_string = hint;
-	} else if (!auto_capture && p_property.name.begins_with("playback_auto_capture_")) {
+	}
+	else if (!auto_capture && p_property.name.begins_with("playback_auto_capture_")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
-void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
+void AnimationPlayer::_get_property_list(List<PropertyInfo>* p_list) const {
 	List<PropertyInfo> anim_names;
 
-	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+	for (const KeyValue<StringName, AnimationData>& E : animation_set) {
 		AHashMap<StringName, StringName>::ConstIterator F = animation_next_set.find(E.key);
 		if (F && F->value != StringName()) {
 			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
 
-	for (const PropertyInfo &E : anim_names) {
+	for (const PropertyInfo& E : anim_names) {
 		p_list->push_back(E);
 	}
 
@@ -146,17 +153,17 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void AnimationPlayer::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
-				set_active(active);
-				play(autoplay);
-				_check_immediately_after_start();
-			}
-		} break;
+	case NOTIFICATION_READY: {
+		if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
+			set_active(active);
+			play(autoplay);
+			_check_immediately_after_start();
+		}
+	} break;
 	}
 }
 
-void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current) {
+void AnimationPlayer::_process_playback_data(PlaybackData& cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current, bool p_ignore_loop) {
 	double speed = speed_scale * cd.speed_scale;
 	bool backwards = std::signbit(speed); // Negative zero means playing backwards too.
 	double delta = p_started ? 0 : p_delta * speed;
@@ -167,7 +174,12 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 
 	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 
-	switch (cd.from->animation->get_loop_mode()) {
+	Animation::LoopMode loop_mode = cd.from->animation->get_loop_mode();
+	if (p_ignore_loop) {
+		loop_mode = Animation::LOOP_NONE;
+	}
+
+	switch (loop_mode) {
 		case Animation::LOOP_NONE: {
 			if (Animation::is_less_approx(next_pos, start)) {
 				next_pos = start;
@@ -207,7 +219,7 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 
 	// End detection.
 	if (p_is_current) {
-		if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
+		if (loop_mode == Animation::LOOP_NONE) {
 			if (!backwards && Animation::is_less_or_equal_approx(prev_pos, end) && Math::is_equal_approx(next_pos, end)) {
 				// Playback finished.
 				next_pos = end; // Snap to the edge.
