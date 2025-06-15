@@ -4249,6 +4249,13 @@ void TileMapLayerEditor::_draw_overlay() {
 	Transform2D xform_inv = xform.affine_inverse();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 
+	// Don't draw overlay when size too small.
+	Vector2 hint_distance = xform.get_scale() * tile_shape_size;
+	float scale_fading = MIN(1, (MIN(hint_distance.x, hint_distance.y) - 6) / 10);
+	if (scale_fading < 0) {
+		return;
+	}
+
 	// Draw tiles with invalid IDs in the grid.
 	TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
 	for (int i = 0; i < used_cells.size(); i++) {
@@ -4273,7 +4280,7 @@ void TileMapLayerEditor::_draw_overlay() {
 						(float)((hash >> 24) & 0xFF) / 256.0,
 						Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
 						Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
-						0.8);
+						0.8 * scale_fading);
 
 				// Display the warning pattern.
 				Transform2D tile_xform;
@@ -4287,7 +4294,7 @@ void TileMapLayerEditor::_draw_overlay() {
 				icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
 				icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
 				Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
-				custom_overlay->draw_texture_rect(missing_tile_texture, rect);
+				custom_overlay->draw_texture_rect(missing_tile_texture, rect, false, Color(1, 1, 1, scale_fading));
 			}
 		}
 	}
@@ -4337,7 +4344,7 @@ void TileMapLayerEditor::_draw_overlay() {
 				tile_xform.set_origin(tile_set->map_to_local(Vector2(x, y)));
 				tile_xform.set_scale(tile_shape_size);
 				Color color = grid_color;
-				color.a = color.a * opacity;
+				color.a = color.a * opacity * scale_fading;
 				tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, false);
 			}
 		}
