@@ -115,12 +115,12 @@ void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "current_animation") {
 		List<String> names;
 
-		for (const KeyValue<StringName, AnimationData>& E : animation_set) {
+		for (const KeyValue<StringName, AnimationData> &E : animation_set) {
 			names.push_back(E.key);
 		}
 		names.push_front("[stop]");
 		String hint;
-		for (List<String>::Element* E = names.front(); E; E = E->next()) {
+		for (List<String>::Element *E = names.front(); E; E = E->next()) {
 			if (E != names.front()) {
 				hint += ",";
 			}
@@ -128,8 +128,7 @@ void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		p_property.hint_string = hint;
-	}
-	else if (!auto_capture && p_property.name.begins_with("playback_auto_capture_")) {
+	} else if (!auto_capture && p_property.name.begins_with("playback_auto_capture_")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
