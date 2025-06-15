@@ -1565,9 +1565,13 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 	uint32_t *body = msg_data + 2;
 	size_t body_len = msg_len - (WORD_SIZE * 2);
 
-	// wl_drm can't ever be destroyed, so we need to track its state as it's going
-	// to be instanced at least few times.
+	// FIXME: Make sure that it makes sense to track this protocol. Not only it is
+	// old and getting deprecated, but I can't even get this code branch to hit
+	// probably because, at the time of writing, we only get the "main" display
+	// through the proxy.
 	if (global_object->interface == &wl_drm_interface) {
+		// wl_drm can't ever be destroyed, so we need to track its state as it's going
+		// to be instanced at least few times.
 		uint32_t global_name = registry_globals_names[p_global_id];
 		WaylandDrmGlobalData *global_data = (WaylandDrmGlobalData *)registry_globals[global_name].data;
 		CRASH_COND(global_data == nullptr);
