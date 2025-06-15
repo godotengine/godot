@@ -129,6 +129,10 @@ private:
 		uint32_t capabilities;
 	};
 
+	struct WaylandShmGlobalData : WaylandObjectData {
+		LocalVector<uint32_t> formats;
+	};
+
 	struct Client {
 		WaylandEmbedderProxy *snooper = nullptr;
 

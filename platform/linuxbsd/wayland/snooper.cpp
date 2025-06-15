@@ -95,6 +95,8 @@
 #define WL_POINTER_LEAVE 1
 #define WL_POINTER_BUTTON 3
 
+#define WL_SHM_FORMAT 0
+
 #define WL_DRM_DEVICE 0
 #define WL_DRM_FORMAT 1
 #define WL_DRM_AUTHENTICATED 2
@@ -1015,8 +1017,18 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 
 				DEBUG_LOG_WAYLAND_SNOOPER(vformat("Instancing global #%d iface %s ver %d new id l0x%x g0x%x", global_name, global_info.interface->name, version, new_local_id, global_info.global_id));
 
+				// Some interfaces report their state as soon as they're bound. Since
+				// instances are handled by us, we need to track and report the relevant
+				// data ourselves.
 				if (global_info.interface == &wl_drm_interface) {
 					client->send_wl_drm_state(new_local_id, (WaylandDrmGlobalData *)global_info.data);
+				} else if (global_info.interface == &wl_shm_interface) {
+					WaylandShmGlobalData *global_data = (WaylandShmGlobalData *)global_info.data;
+					CRASH_COND(global_data == nullptr);
+
+					for (uint32_t format : global_data->formats) {
+						send_wayland_message(client->socket, new_local_id, WL_SHM_FORMAT, { format });
+					}
 				}
 
 				// FIXME: Multiple associations?
@@ -1593,6 +1605,18 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 		return false;
 	}
 
+	if (global_object->interface == &wl_shm_interface) {
+		uint32_t global_name = registry_globals_names[p_global_id];
+		WaylandShmGlobalData *global_data = (WaylandShmGlobalData *)registry_globals[global_name].data;
+		CRASH_COND(global_data == nullptr);
+
+		if (p_opcode == WL_SHM_FORMAT) {
+			// Signature: u
+			uint32_t format = body[0];
+			global_data->formats.push_back(format);
+		}
+	}
+
 	if (!p_local_handle.is_valid()) {
 		// Some requests might not have a valid local object handle for various
 		// reasons, such as when certain events are directed to this proxy or when the
@@ -1642,6 +1666,12 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 				global_info.version = MIN(global_version, (uint32_t)global_interface->version);
 				DEBUG_LOG_WAYLAND_SNOOPER("Clamped global %s %d", interface_name, global_info.version);
 				global_info.compositor_name = global_name;
+
+				if (global_info.interface == &wl_shm_interface) {
+					// FIXME: Cleanup.
+					DEBUG_LOG_WAYLAND_SNOOPER("Allocating global wl_shm data.");
+					global_info.data = memnew(WaylandShmGlobalData);
+				}
 
 				if (global_info.interface == &wl_seat_interface) {
 					// FIXME: Cleanup.
