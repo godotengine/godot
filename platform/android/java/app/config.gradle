@@ -15,8 +15,7 @@ ext.versions = [
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
     ndkVersion         : '28.1.13356709',
     splashscreenVersion: '1.0.1',
-    openxrVendorsVersion: '4.0.0-stable',
-    instantAppsVersion: '17.0.0'
+    openxrVendorsVersion: '4.0.0-stable'
 
 ]
 
@@ -379,9 +378,4 @@ ext.shouldNotStrip = { ->
 ext.getAddonsDirectory = { ->
     String addonsDirectory = project.hasProperty("addons_directory") ? project.property("addons_directory") : ""
     return addonsDirectory
-}
-
-ext.isInstantApp = { ->
-    String instantApp = project.hasProperty("play_instant_app") ? project.property("play_instant_app") : ""
-    return Boolean.parseBoolean(instantApp)
 }
