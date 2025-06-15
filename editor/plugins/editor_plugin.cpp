@@ -64,14 +64,14 @@ void EditorPlugin::remove_custom_type(const String &p_type) {
 	EditorNode::get_editor_data().remove_custom_type(p_type);
 }
 
-void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path) {
+void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path, const bool &p_singleton) {
 	if (p_path.begins_with("res://")) {
-		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path);
+		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path, p_singleton);
 	} else {
 		const Ref<Script> plugin_script = static_cast<Ref<Script>>(get_script());
 		ERR_FAIL_COND(plugin_script.is_null());
 		const String script_base_path = plugin_script->get_path().get_base_dir();
-		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, script_base_path.path_join(p_path));
+		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, script_base_path.path_join(p_path), p_singleton);
 	}
 }
 
@@ -602,7 +602,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
 
-	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
+	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path", "global"), &EditorPlugin::add_autoload_singleton, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);
 
 	ClassDB::bind_method(D_METHOD("update_overlays"), &EditorPlugin::update_overlays);
