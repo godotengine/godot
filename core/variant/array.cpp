@@ -209,15 +209,13 @@ void Array::operator=(const Array &p_array) {
 	_ref(p_array);
 }
 
-
-
 void Array::assign(const Array &p_array) {
 	const ContainerTypeValidate &typed = _p->typed;
 	const ContainerTypeValidate &source_typed = p_array._p->typed;
 
 	// Check nested type compatibility
 	if (typed == source_typed || typed.type == Variant::NIL ||
-	    (source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
+			(source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
 		// from same to same (including nested types) or
 		// from anything to variants or
 		// from subclasses to base classes
@@ -229,7 +227,7 @@ void Array::assign(const Array &p_array) {
 	if (typed.is_nested() && source_typed.is_nested()) {
 		// Both arrays have nested types - validate deep compatibility
 		ERR_FAIL_COND_MSG(!typed.can_reference(source_typed),
-			vformat("Cannot assign Array with nested type structure to incompatible nested type structure."));
+				vformat("Cannot assign Array with nested type structure to incompatible nested type structure."));
 
 		// Validate each element for nested type compliance
 		const Variant *source = p_array._p->array.ptr();
@@ -242,7 +240,7 @@ void Array::assign(const Array &p_array) {
 		for (int i = 0; i < size; i++) {
 			Variant element = source[i];
 			ERR_FAIL_COND_MSG(!typed.validate(element, "assign nested"),
-				vformat("Array element at index %d failed nested type validation during assignment.", i));
+					vformat("Array element at index %d failed nested type validation during assignment.", i));
 			write[i] = element;
 		}
 
@@ -254,7 +252,7 @@ void Array::assign(const Array &p_array) {
 	int size = p_array._p->array.size();
 
 	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) ||
-	    (source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
+			(source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
 		// from variants to objects or from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
@@ -303,7 +301,6 @@ void Array::assign(const Array &p_array) {
 	_p->array = array;
 }
 
-
 void Array::push_back(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant value = p_value;
@@ -325,7 +322,7 @@ void Array::append_array(const Array &p_array) {
 	Variant *write = validated_array.ptrw();
 	for (int i = 0; i < validated_array.size(); ++i) {
 		ERR_FAIL_COND_MSG(!_p->typed.validate(write[i], "append_array"),
-			vformat("Element at index %d failed nested type validation in append_array.", i));
+				vformat("Element at index %d failed nested type validation in append_array.", i));
 	}
 
 	_p->array.append_array(validated_array);
@@ -894,7 +891,7 @@ const void *Array::id() const {
 }
 
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name,
-			 const Variant &p_script, const Vector<ContainerTypeValidate> &p_nested_types) {
+		const Variant &p_script, const Vector<ContainerTypeValidate> &p_nested_types) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
 	set_typed(p_type, p_class_name, p_script, p_nested_types);
@@ -908,7 +905,7 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 }
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script,
-					  const Vector<ContainerTypeValidate> &p_nested_types) const {
+		const Vector<ContainerTypeValidate> &p_nested_types) const {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
@@ -920,7 +917,7 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	// Validate nested types structure
 	if (!p_nested_types.is_empty()) {
 		ERR_FAIL_COND_MSG(p_type != Variant::ARRAY && p_type != Variant::DICTIONARY,
-			"Nested types can only be set for Array or Dictionary types");
+				"Nested types can only be set for Array or Dictionary types");
 
 		// Basic sanity check for nesting depth
 		for (const ContainerTypeValidate &nested_type : p_nested_types) {
@@ -934,7 +931,6 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed.nested_types = p_nested_types; // NEW: Store nested type information
 	_p->typed.where = "TypedArray";
 }
-
 
 // Helper function to recursively convert ContainerType to ContainerTypeValidate
 ContainerTypeValidate Array::convert_container_type(const ContainerType &container) {

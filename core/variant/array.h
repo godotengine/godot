@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/typedefs.h"
 #include "core/templates/vector.h"
+#include "core/typedefs.h"
 #include "core/variant/variant_deep_duplicate.h"
 
 #include <climits>
@@ -71,7 +71,6 @@ public:
 			element_ptr = p_other.element_ptr;
 			return *this;
 		}
-
 
 	private:
 		const Variant *element_ptr = nullptr;
@@ -191,7 +190,7 @@ public:
 	void set_typed(const ContainerType &p_element_type);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script,
-					  const Vector<ContainerTypeValidate> &p_nested_types) const;
+			const Vector<ContainerTypeValidate> &p_nested_types) const;
 
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
@@ -207,7 +206,7 @@ public:
 	static Array create_read_only();
 
 	Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name,
-			 const Variant &p_script, const Vector<ContainerTypeValidate> &p_nested_types);
+			const Variant &p_script, const Vector<ContainerTypeValidate> &p_nested_types);
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array(std::initializer_list<Variant> p_init);

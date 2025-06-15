@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/object/script_language.h"
-#include "core/variant/variant.h"
 #include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 struct ContainerType {
 	Variant::Type builtin_type = Variant::NIL;

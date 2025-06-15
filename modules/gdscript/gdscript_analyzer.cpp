@@ -6156,7 +6156,9 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			for (int i = 0; i < max_depth; i++) {
 				if (p_target.has_container_element_type(i) && p_source.has_container_element_type(i)) {
 					valid = check_type_compatibility(p_target.get_container_element_type(i), p_source.get_container_element_type(i), p_allow_implicit_conversion, p_source_node);
-					if (!valid) break;
+					if (!valid) {
+						break;
+					}
 				} else if (p_target.has_container_element_type(i) != p_source.has_container_element_type(i)) {
 					valid = false;
 					break;
