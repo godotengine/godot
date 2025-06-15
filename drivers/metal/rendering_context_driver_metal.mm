@@ -124,12 +124,12 @@ public:
 #if TARGET_OS_OSX
 		// Display sync is only supported on macOS.
 		switch (vsync_mode) {
-			case DisplayServer::VSYNC_MAILBOX:
-			case DisplayServer::VSYNC_ADAPTIVE:
-			case DisplayServer::VSYNC_ENABLED:
+			case DSTypes::VSYNC_MAILBOX:
+			case DSTypes::VSYNC_ADAPTIVE:
+			case DSTypes::VSYNC_ENABLED:
 				layer.displaySyncEnabled = YES;
 				break;
-			case DisplayServer::VSYNC_DISABLED:
+			case DSTypes::VSYNC_DISABLED:
 				layer.displaySyncEnabled = NO;
 				break;
 		}
@@ -176,7 +176,7 @@ public:
 		count--;
 		front = (front + 1) % frame_buffers.size();
 
-		if (vsync_mode != DisplayServer::VSYNC_DISABLED) {
+		if (vsync_mode != DSTypes::VSYNC_DISABLED) {
 			[p_cmd_buffer->get_command_buffer() presentDrawable:drawable afterMinimumDuration:present_minimum_duration];
 		} else {
 			[p_cmd_buffer->get_command_buffer() presentDrawable:drawable];
@@ -201,7 +201,7 @@ void RenderingContextDriverMetal::surface_set_size(SurfaceID p_surface, uint32_t
 	surface->needs_resize = true;
 }
 
-void RenderingContextDriverMetal::surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) {
+void RenderingContextDriverMetal::surface_set_vsync_mode(SurfaceID p_surface, DSTypes::VSyncMode p_vsync_mode) {
 	Surface *surface = (Surface *)(p_surface);
 	if (surface->vsync_mode == p_vsync_mode) {
 		return;
@@ -210,7 +210,7 @@ void RenderingContextDriverMetal::surface_set_vsync_mode(SurfaceID p_surface, Di
 	surface->needs_resize = true;
 }
 
-DisplayServer::VSyncMode RenderingContextDriverMetal::surface_get_vsync_mode(SurfaceID p_surface) const {
+DSTypes::VSyncMode RenderingContextDriverMetal::surface_get_vsync_mode(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->vsync_mode;
 }

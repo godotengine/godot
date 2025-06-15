@@ -30,7 +30,10 @@
 
 #include "node_2d.h"
 
+STATIC_ASSERT_INCOMPLETE_CLASS(DisplayServer);
+
 #include "scene/main/viewport.h"
+#include "servers/display_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {

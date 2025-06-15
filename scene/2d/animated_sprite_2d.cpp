@@ -31,6 +31,7 @@
 #include "animated_sprite_2d.h"
 
 #include "scene/main/viewport.h"
+#include "servers/display_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite2D::_edit_get_state() const {

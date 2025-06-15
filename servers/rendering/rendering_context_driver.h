@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "core/templates/hash_map.h"
+#include "servers/display/dstypes.h"
 
 class RenderingDeviceDriver;
 
@@ -39,15 +40,15 @@ public:
 	typedef uint64_t SurfaceID;
 
 private:
-	HashMap<DisplayServer::WindowID, SurfaceID> window_surface_map;
+	HashMap<DSTypes::WindowID, SurfaceID> window_surface_map;
 
 public:
-	SurfaceID surface_get_from_window(DisplayServer::WindowID p_window) const;
-	Error window_create(DisplayServer::WindowID p_window, const void *p_platform_data);
-	void window_set_size(DisplayServer::WindowID p_window, uint32_t p_width, uint32_t p_height);
-	void window_set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_vsync_mode);
-	DisplayServer::VSyncMode window_get_vsync_mode(DisplayServer::WindowID p_window) const;
-	void window_destroy(DisplayServer::WindowID p_window);
+	SurfaceID surface_get_from_window(DSTypes::WindowID p_window) const;
+	Error window_create(DSTypes::WindowID p_window, const void *p_platform_data);
+	void window_set_size(DSTypes::WindowID p_window, uint32_t p_width, uint32_t p_height);
+	void window_set_vsync_mode(DSTypes::WindowID p_window, DSTypes::VSyncMode p_vsync_mode);
+	DSTypes::VSyncMode window_get_vsync_mode(DSTypes::WindowID p_window) const;
+	void window_destroy(DSTypes::WindowID p_window);
 
 public:
 	// Not an enum as these values are matched against values returned by
@@ -95,8 +96,8 @@ public:
 	virtual void driver_free(RenderingDeviceDriver *p_driver) = 0;
 	virtual SurfaceID surface_create(const void *p_platform_data) = 0;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) = 0;
-	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) = 0;
-	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const = 0;
+	virtual void surface_set_vsync_mode(SurfaceID p_surface, DSTypes::VSyncMode p_vsync_mode) = 0;
+	virtual DSTypes::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const = 0;
 	virtual uint32_t surface_get_width(SurfaceID p_surface) const = 0;
 	virtual uint32_t surface_get_height(SurfaceID p_surface) const = 0;
 	virtual void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) = 0;
