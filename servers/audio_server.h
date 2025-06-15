@@ -284,10 +284,11 @@ private:
 		// 4. The playback is removed and deallocated on the main thread using the SafeList maybe_cleanup method.
 		enum PlaybackState {
 			PAUSED = 0, // Paused. Keep this stream playback around though so it can be restarted.
-			PLAYING = 1, // Playing. Fading may still be necessary if volume changes!
-			FADE_OUT_TO_PAUSE = 2, // About to pause.
-			FADE_OUT_TO_DELETION = 3, // About to stop.
-			AWAITING_DELETION = 4,
+			FADE_IN = 1, // Fade in to avoid clipping on play
+			PLAYING = 2, // Playing. Fading may still be necessary if volume changes!
+			FADE_OUT_TO_PAUSE = 3, // About to pause.
+			FADE_OUT_TO_DELETION = 4, // About to stop.
+			AWAITING_DELETION = 5,
 		};
 		// If zero or positive, a place in the stream to seek to during the next mix.
 		SafeNumeric<float> setseek;
