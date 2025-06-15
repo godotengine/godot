@@ -1536,9 +1536,9 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 			}
 
 			if (p_generate_atlas) {
-				_blit_lightmap(lightmaps_data[i], mesh_instances[i].size, bake_textures[mesh_instances[i].slice], mesh_instances[i].offset.x, mesh_instances[i].offset.y, true);
+				_blit_lightmap(Vector<Vector3>(lightmaps_data[i]), mesh_instances[i].size, bake_textures[mesh_instances[i].slice], mesh_instances[i].offset.x, mesh_instances[i].offset.y, true);
 			} else {
-				_blit_lightmap(lightmaps_data[i], mesh_instances[i].size, bake_textures[i], 0, 0, false);
+				_blit_lightmap(Vector<Vector3>(lightmaps_data[i]), mesh_instances[i].size, bake_textures[i], 0, 0, false);
 			}
 		}
 	}

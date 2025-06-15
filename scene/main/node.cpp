@@ -1156,7 +1156,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			unique = false;
 		} else {
 			//check if exists
-			Node **children = data.children.ptrw();
+			Node **children = data.children.ptr();
 			int cc = data.children.size();
 
 			for (int i = 0; i < cc; i++) {
@@ -1346,7 +1346,7 @@ void Node::remove_child(Node *p_child) {
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\", child) instead.");
 
 	int child_count = data.children.size();
-	Node **children = data.children.ptrw();
+	Node **children = data.children.ptr();
 	int idx = -1;
 
 	if (p_child->data.pos >= 0 && p_child->data.pos < child_count) {
@@ -1379,7 +1379,7 @@ void Node::remove_child(Node *p_child) {
 
 	//update pointer and size
 	child_count = data.children.size();
-	children = data.children.ptrw();
+	children = data.children.ptr();
 
 	for (int i = idx; i < child_count; i++) {
 		children[i]->data.pos = i;
