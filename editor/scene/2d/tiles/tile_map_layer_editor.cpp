@@ -4246,107 +4246,112 @@ void TileMapLayerEditor::_draw_overlay() {
 	Transform2D xform_inv = xform.affine_inverse();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 
-	// Draw tiles with invalid IDs in the grid.
-	TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
-	for (int i = 0; i < used_cells.size(); i++) {
-		Vector2i coords = used_cells[i];
-		int tile_source_id = edited_layer->get_cell_source_id(coords);
-		if (tile_source_id >= 0) {
-			Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
-			int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
+	// Fade the overlay out when size too small.
+	Vector2 hint_distance = xform.get_scale() * tile_shape_size;
+	float scale_fading = MIN(1, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
+	if (scale_fading > 0) {
+		// Draw tiles with invalid IDs in the grid.
+		TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
+		for (int i = 0; i < used_cells.size(); i++) {
+			Vector2i coords = used_cells[i];
+			int tile_source_id = edited_layer->get_cell_source_id(coords);
+			if (tile_source_id >= 0) {
+				Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
+				int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
 
-			TileSetSource *source = nullptr;
-			if (tile_set->has_source(tile_source_id)) {
-				source = *tile_set->get_source(tile_source_id);
-			}
+				TileSetSource *source = nullptr;
+				if (tile_set->has_source(tile_source_id)) {
+					source = *tile_set->get_source(tile_source_id);
+				}
 
-			if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
-				// Generate a random color from the hashed identifier of the tiles.
-				Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
-				uint32_t hash = RandomPCG(to_hash.hash()).rand();
+				if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
+					// Generate a random color from the hashed identifier of the tiles.
+					Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
+					uint32_t hash = RandomPCG(to_hash.hash()).rand();
 
-				Color color;
-				color = color.from_hsv(
-						(float)((hash >> 24) & 0xFF) / 256.0,
-						Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
-						Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
-						0.8);
+					Color color;
+					color = color.from_hsv(
+							(float)((hash >> 24) & 0xFF) / 256.0,
+							Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
+							Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
+							0.8 * scale_fading);
 
-				// Display the warning pattern.
-				Transform2D tile_xform;
-				tile_xform.set_origin(tile_set->map_to_local(coords));
-				tile_xform.set_scale(tile_shape_size);
-				tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
+					// Display the warning pattern.
+					Transform2D tile_xform;
+					tile_xform.set_origin(tile_set->map_to_local(coords));
+					tile_xform.set_scale(tile_shape_size);
+					tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
 
-				// Draw the warning icon.
-				Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
-				Vector2 icon_size;
-				icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
-				icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
-				Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
-				custom_overlay->draw_texture_rect(missing_tile_texture, rect);
+					// Draw the warning icon.
+					Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
+					Vector2 icon_size;
+					icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
+					icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
+					Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
+					custom_overlay->draw_texture_rect(missing_tile_texture, rect, false, Color(1, 1, 1, scale_fading));
+				}
 			}
 		}
-	}
 
-	// Fading on the border.
-	const int fading = 5;
+		// Fading on the border.
+		const int fading = 5;
 
-	// Determine the drawn area.
-	Size2 screen_size = custom_overlay->get_size();
-	Rect2i screen_rect;
-	screen_rect.position = tile_set->local_to_map(xform_inv.xform(Vector2()));
-	screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
-	screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
-	screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(screen_size)));
-	screen_rect = screen_rect.grow(1);
+		// Determine the drawn area.
+		Size2 screen_size = custom_overlay->get_size();
+		Rect2i screen_rect;
+		screen_rect.position = tile_set->local_to_map(xform_inv.xform(Vector2()));
+		screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
+		screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
+		screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(screen_size)));
+		screen_rect = screen_rect.grow(1);
 
-	Rect2i tilemap_used_rect = edited_layer->get_used_rect();
+		Rect2i tilemap_used_rect = edited_layer->get_used_rect();
 
-	Rect2i displayed_rect = tilemap_used_rect.intersection(screen_rect);
-	displayed_rect = displayed_rect.grow(fading);
+		Rect2i displayed_rect = tilemap_used_rect.intersection(screen_rect);
+		displayed_rect = displayed_rect.grow(fading);
 
-	// Reduce the drawn area to avoid crashes if needed.
-	int max_size = 100;
-	if (displayed_rect.size.x > max_size) {
-		displayed_rect = displayed_rect.grow_individual(-(displayed_rect.size.x - max_size) / 2, 0, -(displayed_rect.size.x - max_size) / 2, 0);
-	}
-	if (displayed_rect.size.y > max_size) {
-		displayed_rect = displayed_rect.grow_individual(0, -(displayed_rect.size.y - max_size) / 2, 0, -(displayed_rect.size.y - max_size) / 2);
-	}
+		// Reduce the drawn area to avoid crashes if needed.
+		int max_size = 100;
+		if (displayed_rect.size.x > max_size) {
+			displayed_rect = displayed_rect.grow_individual(-(displayed_rect.size.x - max_size) / 2, 0, -(displayed_rect.size.x - max_size) / 2, 0);
+		}
+		if (displayed_rect.size.y > max_size) {
+			displayed_rect = displayed_rect.grow_individual(0, -(displayed_rect.size.y - max_size) / 2, 0, -(displayed_rect.size.y - max_size) / 2);
+		}
 
-	// Draw the grid.
-	bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
-	if (display_grid) {
-		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
+		// Draw the grid.
+		bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
+		if (display_grid) {
+			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
+			for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
+				for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
+					Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
+
+					// Fade out the border of the grid.
+					float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
+					float right_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.x, (float)(displayed_rect.size.x - fading), (float)(pos_in_rect.x + 1)), 0.0f, 1.0f);
+					float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
+					float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)(pos_in_rect.y + 1)), 0.0f, 1.0f);
+					float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
+
+					Transform2D tile_xform;
+					tile_xform.set_origin(tile_set->map_to_local(Vector2(x, y)));
+					tile_xform.set_scale(tile_shape_size);
+					Color color = grid_color;
+					color.a = color.a * opacity * scale_fading;
+					tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, false);
+				}
+			}
+		}
+
+		// Draw the IDs for debug.
+		/*Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 		for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 			for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-				Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
-
-				// Fade out the border of the grid.
-				float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
-				float right_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.x, (float)(displayed_rect.size.x - fading), (float)(pos_in_rect.x + 1)), 0.0f, 1.0f);
-				float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
-				float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)(pos_in_rect.y + 1)), 0.0f, 1.0f);
-				float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
-
-				Transform2D tile_xform;
-				tile_xform.set_origin(tile_set->map_to_local(Vector2(x, y)));
-				tile_xform.set_scale(tile_shape_size);
-				Color color = grid_color;
-				color.a = color.a * opacity;
-				tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, false);
+				custom_overlay->draw_string(font, xform.xform(tile_set->map_to_local(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
 			}
-		}
+		}*/
 	}
-
-	// Draw the IDs for debug.
-	/*Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
-		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-			custom_overlay->draw_string(font, xform.xform(tile_set->map_to_local(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
-		}
-	}*/
 
 	// Draw the plugins.
 	tabs_plugins[tabs_bar->get_current_tab()]->forward_canvas_draw_over_viewport(custom_overlay);
