@@ -3814,7 +3814,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	type->type_chain.push_back(type_element);
 
 	if (match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
-		// Typed collection (like Array[int], Dictionary[String, int]).
+		// Typed collection (like Array[int], Dictionary[String, int], Array[Array[int]]).
 		bool first_pass = true;
 		do {
 			TypeNode *container_type = parse_type(false); // Don't allow void for element type.
@@ -3823,9 +3823,15 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 				complete_extents(type);
 				type = nullptr;
 				break;
-			} else if (container_type->container_types.size() > 0) {
-				push_error("Nested typed collections are not supported.");
 			} else {
+				// NEW: Allow nested typed collections, but check depth limit
+				int depth = get_container_type_depth(container_type);
+				if (depth > 8) { // Match the max_nesting_depth from ContainerTypeValidate
+					push_error("Nested container depth exceeds maximum allowed (8 levels).");
+					complete_extents(type);
+					type = nullptr;
+					break;
+				}
 				type->container_types.append(container_type);
 			}
 			first_pass = false;
@@ -5231,7 +5237,12 @@ String GDScriptParser::DataType::to_string() const {
 				return "null";
 			}
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
-				return vformat("Array[%s]", get_container_element_type(0).to_string());
+				String result = "Array[" + get_container_element_type(0).to_string();
+				for (int i = 1; i < get_container_element_type_count(); i++) {
+					result += ", " + get_container_element_type(i).to_string();
+				}
+				result += "]";
+				return result;
 			}
 			if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
 				return vformat("Dictionary[%s, %s]", get_container_element_type_or_variant(0).to_string(), get_container_element_type_or_variant(1).to_string());
@@ -5549,6 +5560,18 @@ void GDScriptParser::reset_extents(Node *p_node, Node *p_from) {
 	p_node->end_line = p_from->end_line;
 	p_node->start_column = p_from->start_column;
 	p_node->end_column = p_from->end_column;
+}
+
+int GDScriptParser::get_container_type_depth(TypeNode *p_type) const {
+	if (!p_type || p_type->container_types.is_empty()) {
+		return 0;
+	}
+
+	int max_depth = 0;
+	for (TypeNode *nested_type : p_type->container_types) {
+		max_depth = MAX(max_depth, get_container_type_depth(nested_type));
+	}
+	return max_depth + 1;
 }
 
 /*---------- PRETTY PRINT FOR DEBUG ----------*/

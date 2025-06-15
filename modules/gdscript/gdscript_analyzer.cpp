@@ -761,10 +761,12 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			result.builtin_type = builtin_type;
 
 			if (builtin_type == Variant::ARRAY) {
-				GDScriptParser::DataType container_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
-				if (container_type.kind != GDScriptParser::DataType::VARIANT) {
-					container_type.is_constant = false;
-					result.set_container_element_type(0, container_type);
+				for (int i = 0; i < p_type->container_types.size(); i++) {
+					GDScriptParser::DataType container_type = type_from_metatype(resolve_datatype(p_type->container_types[i]));
+					if (container_type.kind != GDScriptParser::DataType::VARIANT) {
+						container_type.is_constant = false;
+						result.set_container_element_type(i, container_type);
+					}
 				}
 			}
 			if (builtin_type == Variant::DICTIONARY) {
@@ -2755,10 +2757,14 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 // This function determines which type is that (if any).
 void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNode *p_array, const GDScriptParser::DataType &p_element_type) {
 	GDScriptParser::DataType expected_type = p_element_type;
-	expected_type.container_element_types.clear(); // Nested types (like `Array[Array[int]]`) are not currently supported.
 
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element_node = p_array->elements[i];
+
+		if (element_node->type == GDScriptParser::Node::ARRAY && expected_type.has_container_element_type(0)) {
+			update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(element_node), expected_type.get_container_element_type(0));
+		}
+
 		if (element_node->is_constant) {
 			update_const_expression_builtin_type(element_node, expected_type, "include");
 		}
@@ -6145,9 +6151,16 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			valid = true;
 		}
 		if (valid && p_target.builtin_type == Variant::ARRAY && p_source.builtin_type == Variant::ARRAY) {
-			// Check the element type.
-			if (p_target.has_container_element_type(0) && p_source.has_container_element_type(0)) {
-				valid = p_target.get_container_element_type(0) == p_source.get_container_element_type(0);
+			// Check all container element types recursively
+			int max_depth = MAX(p_target.get_container_element_type_count(), p_source.get_container_element_type_count());
+			for (int i = 0; i < max_depth; i++) {
+				if (p_target.has_container_element_type(i) && p_source.has_container_element_type(i)) {
+					valid = check_type_compatibility(p_target.get_container_element_type(i), p_source.get_container_element_type(i), p_allow_implicit_conversion, p_source_node);
+					if (!valid) break;
+				} else if (p_target.has_container_element_type(i) != p_source.has_container_element_type(i)) {
+					valid = false;
+					break;
+				}
 			}
 		}
 		if (valid && p_target.builtin_type == Variant::DICTIONARY && p_source.builtin_type == Variant::DICTIONARY) {

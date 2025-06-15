@@ -1343,6 +1343,9 @@ private:
 	Node *list = nullptr;
 	List<ParserError> errors;
 
+	// Helper method to calculate container type nesting depth
+	int get_container_type_depth(TypeNode *p_type) const;
+
 #ifdef DEBUG_ENABLED
 	struct PendingWarning {
 		const Node *source = nullptr;
