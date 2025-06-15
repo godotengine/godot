@@ -1943,12 +1943,15 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 
 	if (info->direction == ProxyDirection::COMPOSITOR) {
 		if (handle_request(LocalObjectHandle(client, info->raw_id), info->opcode, buf, info->size)) {
+			DEBUG_LOG_WAYLAND_SNOOPER("Custom handler success.");
 			return false;
 		}
 
 		if (global_id != INVALID_ID) {
 			buf[0] = global_id;
 		}
+
+		DEBUG_LOG_WAYLAND_SNOOPER("Falling back to generic handler.");
 
 		if (handle_generic_msg(client, interface, message, info, buf)) {
 			send_raw_message(compositor_socket, { { buf, info->size } }, sent_fds);
