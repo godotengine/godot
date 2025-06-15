@@ -3216,7 +3216,7 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 }
 
 void PopupMenu::_pre_popup() {
-	Size2 scale = get_parent_viewport()->get_popup_base_transform().get_scale();
+	Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
 	CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
 	if (c) {
 		scale *= c->get_global_transform_with_canvas().get_scale();
