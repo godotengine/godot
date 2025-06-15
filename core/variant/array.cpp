@@ -935,29 +935,28 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed.where = "TypedArray";
 }
 
+
+// Helper function to recursively convert ContainerType to ContainerTypeValidate
+ContainerTypeValidate Array::convert_container_type(const ContainerType &container) {
+	ContainerTypeValidate validator;
+	validator.type = container.builtin_type;
+	validator.class_name = container.class_name;
+	validator.script = container.script;
+	validator.where = "NestedType";
+
+	// Recursively convert all nested types
+	for (const ContainerType &nested : container.nested_types) {
+		validator.nested_types.push_back(convert_container_type(nested));
+	}
+
+	return validator;
+}
+
 void Array::set_typed(const ContainerType &p_element_type) {
-	// Convert ContainerType nested_types to ContainerTypeValidate nested_types
+	// Convert all nested types recursively
 	Vector<ContainerTypeValidate> nested_validators;
-
-	// Convert nested types (for now, just handle one level - can be enhanced later)
 	for (const ContainerType &nested : p_element_type.nested_types) {
-		ContainerTypeValidate validator;
-		validator.type = nested.builtin_type;
-		validator.class_name = nested.class_name;
-		validator.script = nested.script;
-		validator.where = "NestedType";
-
-		// Handle one more level of nesting (covers most common cases)
-		for (const ContainerType &deeper_nested : nested.nested_types) {
-			ContainerTypeValidate deeper_validator;
-			deeper_validator.type = deeper_nested.builtin_type;
-			deeper_validator.class_name = deeper_nested.class_name;
-			deeper_validator.script = deeper_nested.script;
-			deeper_validator.where = "DeeperNestedType";
-			validator.nested_types.push_back(deeper_validator);
-		}
-
-		nested_validators.push_back(validator);
+		nested_validators.push_back(convert_container_type(nested));
 	}
 
 	// Call the enhanced set_typed method

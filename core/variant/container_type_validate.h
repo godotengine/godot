@@ -38,7 +38,6 @@ struct ContainerType {
 	Variant::Type builtin_type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
-	// NEW: Support for nested container types
 	Vector<ContainerType> nested_types;
 
 	// Helper method to check if this is a nested container type
@@ -65,7 +64,6 @@ struct ContainerTypeValidate {
 	Ref<Script> script;
 	const char *where = "container";
 
-	// NEW: Support for nested type validation
 	Vector<ContainerTypeValidate> nested_types;
 	int max_nesting_depth = 8; // Reasonable limit to prevent infinite recursion
 
@@ -115,7 +113,6 @@ struct ContainerTypeValidate {
 		return can_reference_nested(p_type);
 	}
 
-	// NEW: Nested type compatibility checking
 	_FORCE_INLINE_ bool can_reference_nested(const ContainerTypeValidate &p_type) const {
 		// Both must have the same nesting structure
 		if (nested_types.size() != p_type.nested_types.size()) {
@@ -156,13 +153,12 @@ struct ContainerTypeValidate {
 		return !(*this == p_type);
 	}
 
-	// Enhanced validation with nested type support
 	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
 		if (type == Variant::NIL) {
 			return true;
 		}
 
-		// First validate the base type
+		// Validate the base type
 		if (!validate_base_type(inout_variant, p_operation)) {
 			return false;
 		}
@@ -175,7 +171,6 @@ struct ContainerTypeValidate {
 		return true;
 	}
 
-	// NEW: Base type validation (extracted from original validate method)
 	_FORCE_INLINE_ bool validate_base_type(Variant &inout_variant, const char *p_operation = "use") const {
 		if (type != inout_variant.get_type()) {
 			if (inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
@@ -202,7 +197,6 @@ struct ContainerTypeValidate {
 		return validate_object(inout_variant, p_operation);
 	}
 
-	// NEW: Nested container validation
 	_FORCE_INLINE_ bool validate_nested_container(Variant &inout_variant, const char *p_operation = "use") const {
 		if (get_depth() > max_nesting_depth) {
 			ERR_FAIL_V_MSG(false, vformat("Nested container depth exceeds maximum allowed (%d levels).", max_nesting_depth));
@@ -217,7 +211,7 @@ struct ContainerTypeValidate {
 		return true;
 	}
 
-	// NEW: Nested array validation for Array[Array[Type]] etc.
+	// Nested array validation for Array[Array[Type]] etc.
 	_FORCE_INLINE_ bool validate_nested_array(Variant &inout_variant, const char *p_operation = "use") const {
 		Array array = inout_variant;
 
@@ -239,7 +233,7 @@ struct ContainerTypeValidate {
 		return true;
 	}
 
-	// NEW: Nested dictionary validation for Dictionary[KeyType, Dictionary[KeyType2, ValueType]] etc.
+	// Nested dictionary validation for Dictionary[KeyType, Dictionary[KeyType2, ValueType]] etc.
 	_FORCE_INLINE_ bool validate_nested_dictionary(Variant &inout_variant, const char *p_operation = "use") const {
 		Dictionary dict = inout_variant;
 
@@ -264,10 +258,18 @@ struct ContainerTypeValidate {
 				}
 
 				// Update dictionary with potentially coerced values
-				if (key != keys[i]) {
-					dict.erase(keys[i]);
+				Variant original_key = keys[i];
+				if (key != original_key) {
+					// Only modify if key actually changed and new key doesn't exist
+					if (!dict.has(key)) {
+						dict.erase(original_key);
+						dict[key] = value;
+					} else {
+						ERR_FAIL_V_MSG(false, vformat("Dictionary key coercion would create duplicate key."));
+					}
+				} else {
+					dict[original_key] = value; // Just update value
 				}
-				dict[key] = value;
 			}
 		}
 
@@ -312,32 +314,5 @@ struct ContainerTypeValidate {
 		ERR_FAIL_COND_V_MSG(!other_script->inherits_script(script), false, vformat("Attempted to %s an object into a %s, that does not inherit from '%s'.", String(p_operation), String(where), String(script->get_class_name())));
 
 		return true;
-	}
-
-	// NEW: Helper method to create nested type validators
-	static ContainerTypeValidate create_nested_array_validator(Variant::Type element_type) {
-		ContainerTypeValidate validator;
-		validator.type = Variant::ARRAY;
-
-		ContainerTypeValidate element_validator;
-		element_validator.type = element_type;
-
-		validator.nested_types.push_back(element_validator);
-		return validator;
-	}
-
-	static ContainerTypeValidate create_nested_dict_validator(Variant::Type key_type, Variant::Type value_type) {
-		ContainerTypeValidate validator;
-		validator.type = Variant::DICTIONARY;
-
-		ContainerTypeValidate key_validator;
-		key_validator.type = key_type;
-
-		ContainerTypeValidate value_validator;
-		value_validator.type = value_type;
-
-		validator.nested_types.push_back(key_validator);
-		validator.nested_types.push_back(value_validator);
-		return validator;
 	}
 };

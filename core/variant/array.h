@@ -213,4 +213,7 @@ public:
 	Array(std::initializer_list<Variant> p_init);
 	Array();
 	~Array();
+
+private:
+	static ContainerTypeValidate convert_container_type(const ContainerType &container);
 };
