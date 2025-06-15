@@ -2004,7 +2004,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 
 							} else {
-								if(playing_caches.has(t)) {
+								if (playing_caches.has(t)) {
 									playing_caches.erase(t);
 
 									animation_playback->stop(true);

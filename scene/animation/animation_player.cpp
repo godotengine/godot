@@ -70,42 +70,36 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (name == "playback/play") { // For backward compatibility.
 
-r_ret = get_current_animation();
+		r_ret = get_current_animation();
 
-	}
- else if (name.begins_with("next/")) {
-	 String which = name.get_slicec('/', 1);
-	 r_ret = animation_get_next(which);
+	} else if (name.begins_with("next/")) {
+		String which = name.get_slicec('/', 1);
+		r_ret = animation_get_next(which);
 
-	}
- else if (p_name == SceneStringName(blend_times)) {
-	 Vector<BlendKey> keys;
-	 for (const KeyValue<BlendKey, double>& E : blend_times) {
-		 keys.ordered_insert(E.key);
-	 }
+	} else if (p_name == SceneStringName(blend_times)) {
+		Vector<BlendKey> keys;
+		for (const KeyValue<BlendKey, double> &E : blend_times) {
+			keys.ordered_insert(E.key);
+		}
 
-	 Array array;
-	 for (int i = 0; i < keys.size(); i++) {
-		 array.push_back(keys[i].from);
-		 array.push_back(keys[i].to);
-		 array.push_back(blend_times.get(keys[i]));
-	 }
+		Array array;
+		for (int i = 0; i < keys.size(); i++) {
+			array.push_back(keys[i].from);
+			array.push_back(keys[i].to);
+			array.push_back(blend_times.get(keys[i]));
+		}
 
-	 r_ret = array;
+		r_ret = array;
 #ifndef DISABLE_DEPRECATED
-	}
- else if (name == "method_call_mode") {
-	 r_ret = get_callback_mode_method();
-	}
- else if (name == "playback_process_mode") {
-	 r_ret = get_callback_mode_process();
-	}
- else if (name == "playback_active") {
-	 r_ret = is_active();
+	} else if (name == "method_call_mode") {
+		r_ret = get_callback_mode_method();
+	} else if (name == "playback_process_mode") {
+		r_ret = get_callback_mode_process();
+	} else if (name == "playback_active") {
+		r_ret = is_active();
 #endif // DISABLE_DEPRECATED
-	}
- else {
-	 return false;
+	} else {
+		return false;
 	}
 
 	return true;
@@ -133,17 +127,17 @@ void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void AnimationPlayer::_get_property_list(List<PropertyInfo>* p_list) const {
+void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> anim_names;
 
-	for (const KeyValue<StringName, AnimationData>& E : animation_set) {
+	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
 		AHashMap<StringName, StringName>::ConstIterator F = animation_next_set.find(E.key);
 		if (F && F->value != StringName()) {
 			anim_names.push_back(PropertyInfo(Variant::STRING, "next/" + String(E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
 
-	for (const PropertyInfo& E : anim_names) {
+	for (const PropertyInfo &E : anim_names) {
 		p_list->push_back(E);
 	}
 
@@ -152,17 +146,17 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo>* p_list) const {
 
 void AnimationPlayer::_notification(int p_what) {
 	switch (p_what) {
-	case NOTIFICATION_READY: {
-		if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
-			set_active(active);
-			play(autoplay);
-			_check_immediately_after_start();
-		}
-	} break;
+		case NOTIFICATION_READY: {
+			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
+				set_active(active);
+				play(autoplay);
+				_check_immediately_after_start();
+			}
+		} break;
 	}
 }
 
-void AnimationPlayer::_process_playback_data(PlaybackData& cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current, bool p_ignore_loop) {
+void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current, bool p_ignore_loop) {
 	double speed = speed_scale * cd.speed_scale;
 	bool backwards = std::signbit(speed); // Negative zero means playing backwards too.
 	double delta = p_started ? 0 : p_delta * speed;
