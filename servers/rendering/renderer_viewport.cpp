@@ -220,7 +220,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
-				case RS::VIEWPORT_SCALING_3D_MODE_SGSR1_SPATIAL:
+				case RS::VIEWPORT_SCALING_3D_MODE_SGSR1:
 					target_width = p_viewport->size.width;
 					target_height = p_viewport->size.height;
 					render_width = MAX(target_width * scaling_3d_scale, 1.0); // target_width / (target_width * scaling)
@@ -974,6 +974,7 @@ void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::Viewport
 		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR, "FSR1 is only available when using the Forward+ renderer.");
 		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2, "FSR2 is only available when using the Forward+ renderer.");
 		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL, "MetalFX Temporal is only available when using the Forward+ renderer.");
+		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_SGSR1, "SGSR1 is only available when using the Forward+ renderer.");
 	}
 
 	if (viewport->scaling_3d_mode == p_mode) {

@@ -463,7 +463,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	if (can_use_effects) {
 		if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 			spatial_upscaler = fsr;
-		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_SGSR1_SPATIAL) {
+		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_SGSR1) {
 			spatial_upscaler = sgsr1;
 		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
 #if METAL_ENABLED
