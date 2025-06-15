@@ -5239,12 +5239,7 @@ String GDScriptParser::DataType::to_string() const {
 				return "null";
 			}
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
-				String result = "Array[" + get_container_element_type(0).to_string();
-				for (int i = 1; i < get_container_element_type_count(); i++) {
-					result += ", " + get_container_element_type(i).to_string();
-				}
-				result += "]";
-				return result;
+				return vformat("Array[%s]", get_container_element_type(0).to_string());
 			}
 			if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
 				return vformat("Dictionary[%s, %s]", get_container_element_type_or_variant(0).to_string(), get_container_element_type_or_variant(1).to_string());
