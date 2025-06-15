@@ -303,6 +303,7 @@ void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 			} else {
 				annotation_indent = String(" ").repeat(text_editor->get_indent_size() * indent);
 			}
+			// TODO: Inserting @warning_ignore() above/inside enum declarations will produce parse errors.
 			text_editor->insert_line_at(line, annotation_indent + "@warning_ignore(" + code.quote(quote_style) + ")");
 		}
 
