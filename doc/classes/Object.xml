@@ -264,6 +264,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.
+				[b]Note:[/b] Unlike other virtual methods, [method _notification] is called automatically for every extended script. This means you should not call the base implementation of [method _notification] via [code]super[/code] in GDScript or its equivalents in other languages.
 			</description>
 		</method>
 		<method name="_property_can_revert" qualifiers="virtual">
