@@ -3451,6 +3451,13 @@
 			If [code]true[/code], support for the unobstructed data source is requested. If supported, you will receive hand tracking data based on the actual finger positions of the user often determined by optical tracking.
 			[b]Note:[/b] This requires the OpenXR data source extension and unobstructed handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
 		</member>
+		<member name="xr/openxr/extensions/overlay/enabled" type="bool" setter="" getter="" default="false">
+			If true we enable the overlay extension if available.
+		</member>
+		<member name="xr/openxr/extensions/overlay/session_layers_placement" type="int" setter=""
+			getter="" default="4294967295">
+			Specifies where in the stack the OpenXR runtime composites the overlay session. The larger the value the closer to the front the overlay appears.
+		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.
 		</member>

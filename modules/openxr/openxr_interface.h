@@ -55,6 +55,7 @@
 
 #include "action_map/openxr_action_map.h"
 #include "extensions/openxr_hand_tracking_extension.h"
+#include "modules/openxr/extensions/openxr_overlay_extension.h"
 #include "openxr_api.h"
 
 #include "servers/xr/xr_controller_tracker.h"
@@ -79,6 +80,7 @@ private:
 	Vector3 head_angular_velocity;
 	XRPose::TrackingConfidence head_confidence;
 	Transform3D transform_for_view[2]; // We currently assume 2, but could be 4 for VARJO which we do not support yet
+	OpenXROverlayExtension *overlay_wrapper = nullptr;
 
 	XRVRS xr_vrs;
 
@@ -200,6 +202,12 @@ public:
 	virtual bool is_passthrough_enabled() override;
 	virtual bool start_passthrough() override;
 	virtual void stop_passthrough() override;
+
+	virtual bool is_overlay_supported() override;
+	virtual bool is_overlay_enabled() override;
+
+	int get_overlay_session_layers_placement() const;
+	void set_overlay_session_layers_placement(int p_overlay_session_layers_placement);
 
 	/** environment blend mode. */
 	virtual Array get_supported_environment_blend_modes() override;

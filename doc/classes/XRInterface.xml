@@ -102,6 +102,18 @@
 				Returns [code]true[/code] if this interface has been initialized.
 			</description>
 		</method>
+		<method name="is_overlay_enabled">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if overlay session mode is enabled.
+			</description>
+		</method>
+		<method name="is_overlay_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this interface supports overlay session mode.
+			</description>
+		</method>
 		<method name="is_passthrough_enabled" deprecated="Check if [member environment_blend_mode] is [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
 			<return type="bool" />
 			<description>
