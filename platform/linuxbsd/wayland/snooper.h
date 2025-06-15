@@ -61,6 +61,7 @@
 #include "protocol/tablet.gen.h"
 #include "protocol/text_input.gen.h"
 #include "protocol/viewporter.gen.h"
+#include "protocol/wayland-drm.gen.h"
 #include "protocol/xdg_activation.gen.h"
 #include "protocol/xdg_decoration.gen.h"
 #include "protocol/xdg_foreign_v1.gen.h"
@@ -368,6 +369,9 @@ private:
 
 		// wp-cursor-shape-v1
 		&wp_cursor_shape_manager_v1_interface,
+
+		// wayland-drm
+		&wl_drm_interface,
 
 		// Our custom things.
 		&godot_embedding_compositor_interface,
