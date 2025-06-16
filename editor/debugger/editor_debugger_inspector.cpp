@@ -369,7 +369,11 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
 		h = PROPERTY_HINT_OBJECT_ID;
 		hs = "Object";
+	} else if (var.var_type == Variant::FLOAT) {
+		h = PROPERTY_HINT_RANGE;
+		hs = "-inf,inf,0,or_greater,or_less,allow_inf,allow_nan";
 	}
+
 	String type;
 	switch (var.type) {
 		case 0:
