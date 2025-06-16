@@ -382,7 +382,7 @@ class EditorInspectorSection : public Container {
 	Rect2 check_rect;
 	bool check_hover = false;
 
-	bool hide_feature = false;
+	bool checkbox_only = false;
 
 	HashSet<StringName> revertable_properties;
 
@@ -446,7 +446,7 @@ public:
 	void fold();
 	void set_bg_color(const Color &p_bg_color);
 	void reset_timer();
-	void set_checkable(const String &p_related_check_property, bool p_hide_feature);
+	void set_checkable(const String &p_related_check_property, bool p_checkbox_only);
 	void set_checked(bool p_checked);
 
 	bool has_revertable_properties() const;

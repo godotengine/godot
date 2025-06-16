@@ -1886,7 +1886,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				header_offset_x += section_indent;
 			}
 
-			bool can_click_unfold = vbox->get_child_count(false) != 0 && !(checkable && !checked && hide_feature);
+			bool can_click_unfold = vbox->get_child_count(false) != 0 && !(checkable && !checked && !checkbox_only);
 
 			// Draw header area.
 			int header_height = _get_header_height();
@@ -1969,7 +1969,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				String num_revertable_str;
 				int num_revertable_width = 0;
 
-				bool folded = (foldable || hide_feature) && !object->editor_is_section_unfolded(section);
+				bool folded = (foldable || !checkbox_only) && !object->editor_is_section_unfolded(section);
 
 				if (folded && revertable_properties.size()) {
 					int label_width = theme_cache.bold_font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, theme_cache.bold_font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
@@ -2150,7 +2150,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
-		if (foldable && has_children_to_show && !(checkable && !checked && hide_feature) && k->is_action("ui_accept", true)) {
+		if (foldable && has_children_to_show && !(checkable && !checked && !checkbox_only) && k->is_action("ui_accept", true)) {
 			accept_event();
 
 			bool should_unfold = !object->editor_is_section_unfolded(section);
@@ -2179,11 +2179,11 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
 			if (checked) {
 				unfold();
-			} else if (hide_feature) {
+			} else if (!checkbox_only) {
 				fold();
 			}
 		} else if (foldable) {
-			bool should_unfold = has_children_to_show && !(checkable && !checked && hide_feature) && !object->editor_is_section_unfolded(section);
+			bool should_unfold = has_children_to_show && !(checkable && !checked && !checkbox_only) && !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
 				unfold();
 			} else {
@@ -2221,7 +2221,7 @@ void EditorInspectorSection::_accessibility_action_expand(const Variant &p_data)
 }
 
 void EditorInspectorSection::unfold() {
-	if (!foldable && !hide_feature) {
+	if (!foldable && checkbox_only) {
 		return;
 	}
 
@@ -2233,7 +2233,7 @@ void EditorInspectorSection::unfold() {
 }
 
 void EditorInspectorSection::fold() {
-	if (!foldable && !hide_feature) {
+	if (!foldable && checkbox_only) {
 		return;
 	}
 
@@ -2257,12 +2257,12 @@ void EditorInspectorSection::reset_timer() {
 	}
 }
 
-void EditorInspectorSection::set_checkable(const String &p_related_check_property, bool p_hide_feature) {
+void EditorInspectorSection::set_checkable(const String &p_related_check_property, bool p_checkbox_only) {
 	if (checkable == !p_related_check_property.is_empty()) {
 		return;
 	}
 
-	hide_feature = p_hide_feature;
+	checkbox_only = p_checkbox_only;
 	checkable = !p_related_check_property.is_empty();
 	related_enable_property = p_related_check_property;
 	queue_redraw();
@@ -2278,7 +2278,7 @@ void EditorInspectorSection::set_checkable(const String &p_related_check_propert
 
 void EditorInspectorSection::set_checked(bool p_checked) {
 	checked = p_checked;
-	if (hide_feature && !checked) {
+	if (!checkbox_only && !checked) {
 		fold();
 	} else {
 		unfold();
@@ -4207,7 +4207,7 @@ void EditorInspector::update_tree() {
 					Variant value_checked = object->get(p.name, &valid);
 
 					if (valid) {
-						last_created_section->set_checkable(p.name, p.hint_string == "feature");
+						last_created_section->set_checkable(p.name, p.hint_string == "checkbox_only");
 						last_created_section->set_checked(value_checked.operator bool());
 
 						if (p.name.begins_with(group_base)) {
@@ -4415,7 +4415,7 @@ void EditorInspector::update_tree() {
 					Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
 					if (valid) {
 						section->section = corresponding_section->section;
-						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->hide_feature);
+						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only);
 						section->set_checked(value_checked.operator bool());
 						if (use_doc_hints) {
 							section->set_tooltip_text(corresponding_section->get_tooltip_text());
@@ -4452,7 +4452,7 @@ void EditorInspector::update_tree() {
 						Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
 						if (valid) {
 							section->section = corresponding_section->section;
-							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->hide_feature);
+							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only);
 							section->set_checked(value_checked.operator bool());
 							if (use_doc_hints) {
 								section->set_tooltip_text(corresponding_section->get_tooltip_text());
