@@ -77,19 +77,19 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 	emit_signal("extension_unloading", p_extension);
 #endif
 
-	if (level >= 0) { // Already initialized up to some level.
-		// Deinitialize down from current level.
-		for (int32_t i = level; i >= GDExtension::INITIALIZATION_LEVEL_CORE; i--) {
-			p_extension->deinitialize_library(GDExtension::InitializationLevel(i));
-		}
-	}
-
 	if (!shutdown_callback_called) {
 		// Extension is unloading before the shutdown callback has been called,
 		// which means the engine hasn't shutdown yet but we want to make sure
 		// to call the shutdown callback so it doesn't miss it.
 		if (p_extension->shutdown_callback) {
 			p_extension->shutdown_callback();
+		}
+	}
+
+	if (level >= 0) { // Already initialized up to some level.
+		// Deinitialize down from current level.
+		for (int32_t i = level; i >= GDExtension::INITIALIZATION_LEVEL_CORE; i--) {
+			p_extension->deinitialize_library(GDExtension::InitializationLevel(i));
 		}
 	}
 
