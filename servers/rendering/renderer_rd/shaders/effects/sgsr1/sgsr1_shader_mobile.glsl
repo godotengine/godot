@@ -60,10 +60,10 @@ void main() {
 ////////////////////////
 
 #if defined(UseUniformBlock)
-layout(set = 0, binding = 0) uniform UniformBlock {
+layout(binding = 0) uniform UniformBlock {
 	vec4 ViewportInfo[1];
-}
-layout(set = 0, binding = 1) uniform sampler2D ps0;
+};
+layout(binding = 1) uniform sampler2D ps0;
 #else
 uniform vec4 ViewportInfo[1];
 uniform sampler2D ps0;
