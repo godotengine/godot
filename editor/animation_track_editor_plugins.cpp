@@ -326,6 +326,16 @@ Rect2 AnimationTrackEditSpriteFrame::_create_texture_region_sprite(int p_index, 
 	return region;
 }
 
+Rect2 AnimationTrackEditSpriteFrame::_create_region_animated_sprite(int p_index, Object *object, const Ref<Texture2D> texture) const {
+	Rect2 region;
+
+	if (texture.is_valid()) {
+		region.size = texture->get_size();
+	}
+
+	return region;
+}
+
 void AnimationTrackEditSpriteFrame::draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
 	Object *object = ObjectDB::get_instance(get_node_id());
 	Ref<Resource> resource = get_resource(p_index);
