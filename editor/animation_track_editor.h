@@ -356,6 +356,7 @@ public:
 
 protected:
 	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right);
+	virtual float get_key_y(const int p_index) const { return 0.0; }
 
 	// Helper
 public:
@@ -364,6 +365,8 @@ public:
 	Rect2 _to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection = false) const;
 	Rect2 _to_local_key_rect(const int p_index, const Rect2 &p_global_rect, bool p_ignore_moving_selection) const;
 	void _draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
+
+	virtual String _get_tooltip(const int p_index) const { return ""; }
 
 public:
 	KeyEdit();
@@ -625,6 +628,7 @@ public:
 	NodePath get_path() const;
 	int get_track() const;
 	void set_track(const int p_track);
+	Animation::TrackType get_track_type() const;
 
 public:
 	virtual Ref<Texture2D> _get_key_type_icon() const override;

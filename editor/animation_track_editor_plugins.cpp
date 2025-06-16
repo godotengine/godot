@@ -116,6 +116,15 @@ void AnimationTrackEditTypeMethod::draw_key(const int p_index, const Rect2 &p_gl
 void AnimationTrackEditTypeMethod::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
 }
 
+String AnimationTrackEditTypeMethod::_get_tooltip(const int p_index) const {
+	String text = "";
+
+	Dictionary d = get_key_value(p_index);
+	text += _make_method_text(d) + "\n";
+
+	return text;
+}
+
 StringName AnimationTrackEditTypeMethod::get_edit_name(const int p_index) const {
 	Dictionary d = animation->track_get_key_value(get_track(), p_index);
 	String method_name = _make_method_text(d);
@@ -160,8 +169,7 @@ float AnimationTrackEditColor::get_key_height(const int p_index) const {
 }
 
 void AnimationTrackEditColor::draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
-	Color color = get_animation()->track_get_key_value(get_track(), p_index);
-
+	Color color = get_key_value(p_index);
 	editor->_draw_grid_clipped(this, p_global_rect, color, COLOR_EDIT_RECT_INTERVAL, p_clip_left, p_clip_right);
 }
 
@@ -170,12 +178,12 @@ void AnimationTrackEditColor::draw_key_link(const int p_index, const Rect2 &p_gl
 
 	fh /= 3;
 
-	int x_from = p_global_rect.position.x + fh / 2 - 1;
-	int x_to = p_global_rect_next.position.x - fh / 2 + 1;
+	float x_from = p_global_rect.position.x + fh / 2.0 - 1;
+	float x_to = p_global_rect_next.position.x - fh / 2.0 + 1;
 	x_from = MAX(x_from, p_clip_left);
 	x_to = MIN(x_to, p_clip_right);
 
-	int y_from = (get_size().height - fh) / 2;
+	float y_from = (get_size().height - fh) / 2.0;
 
 	if (x_from > p_clip_right || x_to < p_clip_left) {
 		return;
@@ -483,8 +491,8 @@ void AnimationTrackEditVolumeDB::draw_bg(const float p_clip_left, const float p_
 	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
 	int tex_h = volume_texture->get_height();
 
-	int y_from = (get_size().height - tex_h) / 2;
-	int y_size = tex_h;
+	float y_from = (get_size().height - tex_h) / 2.0;
+	float y_size = tex_h;
 
 	Color color(1, 1, 1, 0.3);
 	draw_texture_rect(volume_texture, Rect2(p_clip_left, y_from, p_clip_right - p_clip_left, y_from + y_size), false, color);
@@ -493,33 +501,39 @@ void AnimationTrackEditVolumeDB::draw_bg(const float p_clip_left, const float p_
 void AnimationTrackEditVolumeDB::draw_fg(const float p_clip_left, const float p_clip_right) {
 	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
 	int tex_h = volume_texture->get_height();
-	int y_from = (get_size().height - tex_h) / 2;
-	int db0 = y_from + (24 / 80.0) * tex_h;
+	float y_from = (get_size().height - tex_h) / 2.0;
+	float db0 = y_from + (24 / 80.0) * tex_h;
 
 	editor->_draw_line_clipped(this, Vector2(p_clip_left, db0), Vector2(p_clip_right, db0), Color(1, 1, 1, 0.3), -1.0, p_clip_left, p_clip_right);
 }
 
+bool AnimationTrackEditVolumeDB::is_linked(const int p_index, const int p_index_next) const {
+	return true;
+}
+
+float AnimationTrackEditVolumeDB::get_key_y(const int p_index) const {
+	float db = get_key_value(p_index);
+
+	float min_db = -60;
+	float max_db = 24;
+	float diff_db = max_db - min_db;
+
+	db = CLAMP(db, min_db, max_db);
+	float norm_h = (db - min_db) / diff_db; // [0, 1], 0 = -60 dB, 1 = 24 dB
+
+	// Scale to small range around track_alignment
+	float scale_factor = 0.5; // % of track height
+	return (norm_h - 0.5) * scale_factor;
+}
+
 void AnimationTrackEditVolumeDB::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
-	float db = get_animation()->track_get_key_value(get_track(), p_index);
-	float db_n = get_animation()->track_get_key_value(get_track(), p_index + 1);
-
-	db = CLAMP(db, -60, 24);
-	db_n = CLAMP(db_n, -60, 24);
-
-	float h = 1.0 - ((db + 60) / 84.0);
-	float h_n = 1.0 - ((db_n + 60) / 84.0);
-
-	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
-	int tex_h = volume_texture->get_height();
-
-	int y_from = (get_size().height - tex_h) / 2;
+	Point2 center = p_global_rect.get_center();
+	Point2 center_n = p_global_rect_next.get_center();
 
 	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 	color.a *= REGION_EDGE_ALPHA;
 
-	int from_x = p_global_rect.position.x;
-	int to_x = p_global_rect_next.position.x;
-	editor->_draw_line_clipped(this, Point2(from_x, y_from + h * tex_h), Point2(to_x, y_from + h_n * tex_h), color, 2, p_clip_left, p_clip_right);
+	editor->_draw_line_clipped(this, center, center_n, color, 2, p_clip_left, p_clip_right);
 }
 
 /// AUDIO ///
@@ -537,6 +551,20 @@ bool AnimationTrackEditTypeAudio::has_valid_key(const int p_index) const {
 	}
 
 	return true;
+}
+
+String AnimationTrackEditTypeAudio::_get_tooltip(const int p_index) const {
+	String text = "";
+
+	String stream_name = get_edit_name(p_index);
+
+	text += TTR("Stream:") + " " + stream_name + "\n";
+	float so = get_start_offset(p_index);
+	text += TTR("Start (s):") + " " + rtos(so) + "\n";
+	float eo = get_end_offset(p_index);
+	text += TTR("End (s):") + " " + rtos(eo) + "\n";
+
+	return text;
 }
 
 void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
@@ -668,6 +696,19 @@ float AnimationTrackEditTypeAnimation::get_key_scale(const int p_index) const {
 	//	return ap->get_speed_scale();
 	//}
 	return 1.0;
+}
+
+String AnimationTrackEditTypeAnimation::_get_tooltip(const int p_index) const {
+	String text = "";
+
+	String anim_name = get_edit_name(p_index);
+	text += TTR("Animation Clip:") + " " + anim_name + "\n";
+	float so = get_start_offset(p_index);
+	text += TTR("Start (s):") + " " + rtos(so) + "\n";
+	float eo = get_end_offset(p_index);
+	text += TTR("End (s):") + " " + rtos(eo) + "\n";
+
+	return text;
 }
 
 void AnimationTrackEditTypeAnimation::_preview_changed(ObjectID p_which) {

@@ -133,6 +133,9 @@ protected:
 	virtual void apply_data(const Ref<Resource> resource, const float time) override;
 
 public:
+	virtual String _get_tooltip(const int p_index) const override;
+
+public:
 	AnimationTrackEditTypeAudio();
 };
 
@@ -143,6 +146,7 @@ class AnimationTrackEditTypeAnimation : public AnimationTrackEditClip {
 
 public:
 	virtual bool has_valid_key(const int p_index) const override;
+	virtual String _get_tooltip(const int p_index) const override;
 
 protected:
 	virtual Ref<Resource> get_resource(const int p_index) const override;
@@ -224,6 +228,8 @@ public:
 	virtual float get_key_height(const int p_index) const override;
 	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
+	virtual String _get_tooltip(const int p_index) const override;
+
 public:
 	StringName get_edit_name(const int p_index) const; //name of the key
 
@@ -293,11 +299,18 @@ public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
 	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
+	virtual bool is_linked(const int p_index, const int p_index_next) const override;
 
 protected:
 	virtual void draw_bg(const float p_clip_left, const float p_clip_right) override;
 	virtual void draw_fg(const float p_clip_left, const float p_clip_right) override;
 	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) override;
+
+	virtual float get_key_y(const int p_index) const override;
+
+private:
+	float get_min_key_y() const;
+	float get_max_key_y() const;
 
 public:
 	AnimationTrackEditVolumeDB();

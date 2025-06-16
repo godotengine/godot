@@ -2860,9 +2860,17 @@ Rect2 KeyEdit::get_global_key_rect(const int p_index, bool p_ignore_moving_selec
 Rect2 KeyEdit::_to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection) const {
 	Rect2 global_rect = Rect2(p_local_rect);
 
-	float offset = _get_pixels_sec(p_index, p_ignore_moving_selection);
-	global_rect.position.x += offset;
-	global_rect.position.y += get_size().height * track_alignment;
+	global_rect.position.x += _get_pixels_sec(p_index, p_ignore_moving_selection);
+
+	float track_height = get_size().height;
+	float key_height = p_local_rect.size.y;
+
+	// Calculate normalized CLAMP bounds to keep key within track
+	float min_y = track_height > 0 ? key_height / (2.0 * track_height) : 0.0;
+	float max_y = track_height > 0 ? 1.0 - key_height / (2.0 * track_height) : 1.0;
+
+	// Position key center, adjusted for key height
+	global_rect.position.y += track_height * CLAMP(track_alignment - get_key_y(p_index), min_y, max_y);
 
 	return global_rect;
 }
@@ -3205,26 +3213,28 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	if (p_pos.x >= limit_start_hitbox && p_pos.x <= limit_end) {
 		int key_idx = find_closest_key(p_pos);
 		if (key_idx != -1) {
-			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(animation->track_get_key_time(track, key_idx), SECOND_DECIMAL))) + "\n";
-			switch (animation->track_get_type(track)) {
+			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(get_key_time(key_idx), SECOND_DECIMAL))) + "\n";
+
+			Animation::TrackType track_type = get_track_type();
+			switch (track_type) {
 				case Animation::TYPE_POSITION_3D: {
-					Vector3 t = animation->track_get_key_value(track, key_idx);
+					Vector3 t = get_key_value(key_idx);
 					text += TTR("Position:") + " " + String(t) + "\n";
 				} break;
 				case Animation::TYPE_ROTATION_3D: {
-					Quaternion t = animation->track_get_key_value(track, key_idx);
+					Quaternion t = get_key_value(key_idx);
 					text += TTR("Rotation:") + " " + String(t) + "\n";
 				} break;
 				case Animation::TYPE_SCALE_3D: {
-					Vector3 t = animation->track_get_key_value(track, key_idx);
+					Vector3 t = get_key_value(key_idx);
 					text += TTR("Scale:") + " " + String(t) + "\n";
 				} break;
 				case Animation::TYPE_BLEND_SHAPE: {
-					float t = animation->track_get_key_value(track, key_idx);
+					float t = get_key_value(key_idx);
 					text += TTR("Blend Shape:") + " " + itos(t) + "\n";
 				} break;
 				case Animation::TYPE_VALUE: {
-					const Variant &v = animation->track_get_key_value(track, key_idx);
+					const Variant &v = get_key_value(key_idx);
 					text += TTR("Type:") + " " + Variant::get_type_name(v.get_type()) + "\n";
 					Variant::Type valid_type = Variant::NIL;
 					text += TTR("Value:") + " " + String(v);
@@ -3235,22 +3245,15 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 				} break;
 				case Animation::TYPE_METHOD: {
-					Dictionary d = animation->track_get_key_value(track, key_idx);
-					if (d.has("method")) {
-						text += String(d["method"]);
-					}
-					text += "(";
-					Vector<Variant> args;
-					if (d.has("args")) {
-						args = d["args"];
-					}
-					for (int i = 0; i < args.size(); i++) {
-						if (i > 0) {
-							text += ", ";
-						}
-						text += args[i].get_construct_string();
-					}
-					text += ")\n";
+					text += _get_tooltip(key_idx);
+
+				} break;
+				case Animation::TYPE_AUDIO: {
+					text += _get_tooltip(key_idx);
+
+				} break;
+				case Animation::TYPE_ANIMATION: {
+					text += _get_tooltip(key_idx);
 
 				} break;
 				case Animation::TYPE_BEZIER: {
@@ -3272,36 +3275,9 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 							text += TTR("Handle mode: Balanced\n");
 						} break;
 						case Animation::HANDLE_MODE_MIRRORED: {
-							text += TTR("Handle mode: Mirrored\n");
+							text += TTR("Handle mode: Mirrored\ng");
 						} break;
 					}
-				} break;
-				case Animation::TYPE_AUDIO: {
-					String stream_name = "null";
-					Ref<Resource> stream = animation->audio_track_get_key_stream(track, key_idx);
-					if (stream.is_valid()) {
-						if (stream->get_path().is_resource_file()) {
-							stream_name = stream->get_path().get_file();
-						} else if (!stream->get_name().is_empty()) {
-							stream_name = stream->get_name();
-						} else {
-							stream_name = stream->get_class();
-						}
-					}
-
-					text += TTR("Stream:") + " " + stream_name + "\n";
-					float so = animation->audio_track_get_key_start_offset(track, key_idx);
-					text += TTR("Start (s):") + " " + rtos(so) + "\n";
-					float eo = animation->audio_track_get_key_end_offset(track, key_idx);
-					text += TTR("End (s):") + " " + rtos(eo) + "\n";
-				} break;
-				case Animation::TYPE_ANIMATION: {
-					String anim_name = animation->animation_track_get_key_animation(track, key_idx);
-					text += TTR("Animation Clip:") + " " + anim_name + "\n";
-					float so = animation->animation_track_get_key_start_offset(track, key_idx);
-					text += TTR("Start (s):") + " " + rtos(so) + "\n";
-					float eo = animation->animation_track_get_key_end_offset(track, key_idx);
-					text += TTR("End (s):") + " " + rtos(eo) + "\n";
 				} break;
 			}
 			return text;
@@ -8895,6 +8871,10 @@ int AnimationMarkerEdit::get_last_selection() {
 	return -1;
 }
 
+Animation::TrackType AnimationTrackEdit::get_track_type() const {
+	return animation->track_get_type(track);
+}
+
 void AnimationKeyEdit::__play_position_draw() {
 	if (animation.is_null() || play_position_pos < 0) {
 		return;
@@ -9384,7 +9364,7 @@ String AnimationMarkerEdit::get_tooltip(const Point2 &p_pos) const {
 		int key_idx = find_closest_key(p_pos);
 		if (key_idx != -1) {
 			String name = editor->get_marker_name(key_idx);
-			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(animation->get_marker_time(name), 0.0001))) + "\n";
+			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(get_key_time(key_idx), 0.0001))) + "\n";
 			text += TTR("Marker:") + " " + name + "\n";
 			return text;
 		}
