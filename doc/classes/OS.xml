@@ -1211,7 +1211,7 @@
 			[b]Note:[/b] Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.
 		</member>
 		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen" default="false">
-			If [code]true[/code], the window is fullscreen.
+			If [code]true[/code], the window is fullscreen. See also [member window_use_nonexclusive_fullscreen].
 		</member>
 		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized" default="false">
 			If [code]true[/code], the window is maximized.
@@ -1233,6 +1233,11 @@
 		</member>
 		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size" default="Vector2( 0, 0 )">
 			The size of the window (without counting window manager decorations).
+		</member>
+		<member name="window_use_nonexclusive_fullscreen" type="bool" setter="set_window_use_nonexclusive_fullscreen" getter="is_window_use_nonexclusive_fullscreen" default="false">
+			If [code]true[/code] and [member window_fullscreen] is set, a full screen mode with full multi-window support is used.
+			If [code]false[/code] and [member window_fullscreen] is set, a single window fullscreen mode is used, this mode has less overhead, but only one window can be open on a given screen at a time (opening a application switching will trigger a full screen transition). This mode might not work with screen recording software.
+			[b]Note:[/b] This property is only implemented on Windows.
 		</member>
 	</members>
 	<constants>
