@@ -275,6 +275,7 @@ opts.Add(BoolVariable("builtin_msdfgen", "Use the built-in MSDFgen library", Tru
 opts.Add(BoolVariable("builtin_glslang", "Use the built-in glslang library", True))
 opts.Add(BoolVariable("builtin_graphite", "Use the built-in Graphite library", True))
 opts.Add(BoolVariable("builtin_harfbuzz", "Use the built-in HarfBuzz library", True))
+opts.Add(BoolVariable("builtin_sdl", "Use the built-in SDL library", True))
 opts.Add(BoolVariable("builtin_icu4c", "Use the built-in ICU library", True))
 opts.Add(BoolVariable("builtin_libjpeg_turbo", "Use the built-in libjpeg-turbo library", True))
 opts.Add(BoolVariable("builtin_libogg", "Use the built-in libogg library", True))
