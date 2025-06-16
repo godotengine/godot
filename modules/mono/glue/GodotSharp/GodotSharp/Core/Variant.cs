@@ -72,6 +72,11 @@ public partial struct Variant : IDisposable
             case Type.Quaternion:
             case Type.Color:
             case Type.Rid:
+            case Type.Projection:
+            case Type.Aabb:
+            case Type.Basis:
+            case Type.Transform2D:
+            case Type.Transform3D:
                 _disposer = null;
                 break;
             default:
