@@ -22,7 +22,7 @@
 			<param index="0" name="candidates" type="Dictionary[]" />
 			<description>
 				Override this method to define what items in [param candidates] should be displayed.
-				Both [param candidates] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
+				Both [param candidates] and the return is an [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
 			</description>
 		</method>
 		<method name="_request_code_completion" qualifiers="virtual">
@@ -539,13 +539,13 @@
 			If [code]true[/code], the [member ProjectSettings.input/ui_text_completion_query] action requests code completion. To handle it, see [method _request_code_completion] or [signal code_completion_requested].
 		</member>
 		<member name="code_completion_prefixes" type="String[]" setter="set_code_completion_prefixes" getter="get_code_completion_prefixes" default="[]">
-			Sets prefixes that will trigger code completion. [br] If you add a prefixes with the editor, you need to press [kbd] Backspace [/kbd] before editing the value.
+			Sets prefixes that will trigger code completion.
 		</member>
 		<member name="delimiter_comments" type="String[]" setter="set_comment_delimiters" getter="get_comment_delimiters" default="[]">
-			Sets the comment delimiters. All existing comment delimiters will be removed. [br] If you add a comment delimiter with the editor, you need to press [kbd] Backspace [/kbd] before editing the value. If you want to make a end key, you need to write it right next to the first character and then put the space between the two characters.
+			Sets the comment delimiters. All existing comment delimiters will be removed.
 		</member>
 		<member name="delimiter_strings" type="String[]" setter="set_string_delimiters" getter="get_string_delimiters" default="[&quot;&apos; &apos;&quot;, &quot;\&quot; \&quot;&quot;]">
-			Sets the string delimiters. All existing string delimiters will be removed. [br] If you add a string delimiter with the editor, you need to press [kbd] Backspace [/kbd] before editing the value. If you want to make a end key, you need to write it right next to the first character and then put the space between the two characters.
+			Sets the string delimiters. All existing string delimiters will be removed.
 		</member>
 		<member name="gutters_draw_bookmarks" type="bool" setter="set_draw_bookmarks_gutter" getter="is_drawing_bookmarks_gutter" default="false">
 			If [code]true[/code], bookmarks are drawn in the gutter. This gutter is shared with breakpoints and executing lines. See [method set_line_as_bookmarked].
@@ -569,7 +569,7 @@
 			If [code]true[/code], an extra indent is automatically inserted when a new line is added and a prefix in [member indent_automatic_prefixes] is found. If a brace pair opening key is found, the matching closing brace will be moved to another new line (see [member auto_brace_completion_pairs]).
 		</member>
 		<member name="indent_automatic_prefixes" type="String[]" setter="set_auto_indent_prefixes" getter="get_auto_indent_prefixes" default="[&quot;:&quot;, &quot;{&quot;, &quot;[&quot;, &quot;(&quot;]">
-			Prefixes to trigger an automatic indent. Used when [member indent_automatic] is set to [code]true[/code]. [br] If you add a prefixes with the editor, you need to press [kbd] Backspace [/kbd] before editing the value.
+			Prefixes to trigger an automatic indent. Used when [member indent_automatic] is set to [code]true[/code].
 		</member>
 		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size" default="4">
 			Size of the tabulation indent (one [kbd]Tab[/kbd] press) in characters. If [member indent_use_spaces] is enabled the number of spaces to use.

@@ -2146,13 +2146,9 @@ bool CodeEdit::is_code_completion_enabled() const {
 void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes) {
 	code_completion_prefixes.clear();
 	for (int i = 0; i < p_prefixes.size(); i++) {
-		String prefix = p_prefixes[i];
+		const String prefix = p_prefixes[i];
 
-		// Hadle case if we add a prefixe with the editor.
-		if (Engine::get_singleton()->is_editor_hint() && prefix.is_empty()) {
-			prefix = " ";
-		}
-
+		ERR_CONTINUE_MSG(prefix.is_empty(), "Code completion prefix cannot be empty.");
 		code_completion_prefixes.insert(prefix[0]);
 	}
 }
@@ -2915,18 +2911,18 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 
 	ADD_GROUP("Delimiters", "delimiter_");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings", PROPERTY_HINT_TYPE_STRING, "String"), "set_string_delimiters", "get_string_delimiters");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments", PROPERTY_HINT_TYPE_STRING, "String"), "set_comment_delimiters", "get_comment_delimiters");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings", PROPERTY_HINT_TYPE_STRING, "String", PROPERTY_USAGE_NO_EDITOR), "set_string_delimiters", "get_string_delimiters");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments", PROPERTY_HINT_TYPE_STRING, "String", PROPERTY_USAGE_NO_EDITOR), "set_comment_delimiters", "get_comment_delimiters");
 
 	ADD_GROUP("Code Completion", "code_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "code_completion_enabled"), "set_code_completion_enabled", "is_code_completion_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes", PROPERTY_HINT_TYPE_STRING, "String"), "set_code_completion_prefixes", "get_code_completion_prefixes");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes", PROPERTY_HINT_TYPE_STRING, "String", PROPERTY_USAGE_NO_EDITOR), "set_code_completion_prefixes", "get_code_completion_prefixes");
 
 	ADD_GROUP("Indentation", "indent_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "indent_size"), "set_indent_size", "get_indent_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_use_spaces"), "set_indent_using_spaces", "is_indent_using_spaces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes", PROPERTY_HINT_TYPE_STRING, "String"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes", PROPERTY_HINT_TYPE_STRING, "String", PROPERTY_USAGE_NO_EDITOR), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
 	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled"), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
@@ -3354,10 +3350,8 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
 	}
 
-	int at = delimiters.size();
 
-	// Comment that so the order dont change when you edit a value, maybe create a parameter for it later ?
-	/* int at = 0;
+	int at = 0;
 	for (int i = 0; i < delimiters.size(); i++) {
 		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
 		if (p_start_key.length() < delimiters[i].start_key.length()) {
@@ -3365,7 +3359,7 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 		} else {
 			break;
 		}
-	} */
+	}
 
 	Delimiter delimiter;
 	delimiter.type = p_type;
@@ -3419,15 +3413,13 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 
 	for (int i = 0; i < p_delimiters.size(); i++) {
 		String key = p_delimiters[i];
-		String start_key;
-		String end_key;
 
 		if (key.is_empty()) {
-			start_key = " ";
-		} else {
-			start_key = key.get_slicec(' ', 0);
-			end_key = key.get_slice_count(" ") > 1 ? key.get_slicec(' ', 1) : String();
+			continue;
 		}
+
+		const String start_key = key.get_slicec(' ', 0);
+		const String end_key = key.get_slice_count(" ") > 1 ? key.get_slicec(' ', 1) : String();
 
 		_add_delimiter(start_key, end_key, end_key.is_empty(), p_type);
 	}
