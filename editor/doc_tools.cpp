@@ -196,6 +196,11 @@ static void merge_methods(Vector<DocData::MethodDoc> &p_to, const Vector<DocData
 			to.is_experimental = from.is_experimental;
 			to.experimental_message = from.experimental_message;
 			to.keywords = from.keywords;
+
+			if (from.qualifiers.contains("multilevel")) {
+				// Multilevel qualifier is added manually.
+				to.qualifiers += vformat("%s%s", to.qualifiers.is_empty() ? "" : " ", "multilevel");
+			}
 		}
 	}
 }

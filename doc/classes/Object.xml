@@ -30,7 +30,7 @@
 		<link title="Object notifications">$DOCS_URL/tutorials/best_practices/godot_notifications.html</link>
 	</tutorials>
 	<methods>
-		<method name="_get" qualifiers="virtual">
+		<method name="_get" qualifiers="virtual multilevel">
 			<return type="Variant" />
 			<param index="0" name="property" type="StringName" />
 			<description>
@@ -74,7 +74,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_get_property_list" qualifiers="virtual">
+		<method name="_get_property_list" qualifiers="virtual multilevel">
 			<return type="Dictionary[]" />
 			<description>
 				Override this method to provide a custom list of additional properties to handle by the engine.
@@ -242,7 +242,7 @@
 				Moves the iterator to the next iteration. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
 			</description>
 		</method>
-		<method name="_notification" qualifiers="virtual">
+		<method name="_notification" qualifiers="virtual multilevel">
 			<return type="void" />
 			<param index="0" name="what" type="int" />
 			<description>
@@ -282,7 +282,7 @@
 				[b]Note:[/b] [method _property_can_revert] must also be overridden for this method to be called.
 			</description>
 		</method>
-		<method name="_set" qualifiers="virtual">
+		<method name="_set" qualifiers="virtual multilevel">
 			<return type="bool" />
 			<param index="0" name="property" type="StringName" />
 			<param index="1" name="value" type="Variant" />
@@ -662,7 +662,7 @@
 				[b]Note:[/b] The dictionaries of [code]args[/code] and [code]return[/code] are formatted identically to the results of [method get_property_list], although not all entries are used.
 			</description>
 		</method>
-		<method name="get_property_list" qualifiers="const">
+		<method name="get_property_list" qualifiers="const multilevel">
 			<return type="Dictionary[]" />
 			<description>
 				Returns the object's property list as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
@@ -832,7 +832,7 @@
 				[b]Note:[/b] This method is used by the Inspector dock to display a revert icon. The object must implement [method _property_can_revert] to customize the default value. If [method _property_can_revert] is not implemented, this method returns [code]false[/code].
 			</description>
 		</method>
-		<method name="property_get_revert" qualifiers="const">
+		<method name="property_get_revert" qualifiers="const multilevel">
 			<return type="Variant" />
 			<param index="0" name="property" type="StringName" />
 			<description>
