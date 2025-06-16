@@ -1530,13 +1530,9 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	}
 	ERR_FAIL_COND_V(res.is_null(), ERR_CANT_OPEN);
 
-	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
-		Vector<String> errors;
-		for (const String &E : dependency_errors[p_resource]) {
-			errors.push_back(E);
-		}
-		dependency_error->show(p_resource, errors);
-		dependency_errors.erase(p_resource);
+	if (!p_ignore_broken_deps && !dependency_errors.is_empty()) {
+		dependency_error->show(p_resource, dependency_errors);
+		dependency_errors.clear();
 
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
@@ -4316,10 +4312,6 @@ bool EditorNode::is_multi_window_enabled() const {
 	return !SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && !EDITOR_GET("interface/editor/single_window_mode") && EDITOR_GET("interface/multi_window/enable");
 }
 
-void EditorNode::fix_dependencies(const String &p_for_file) {
-	dependency_fixer->edit(p_for_file);
-}
-
 int EditorNode::new_scene() {
 	int idx = editor_data.add_edited_scene(-1);
 	_set_current_scene(idx); // Before trying to remove an empty scene, set the current tab index to the newly added tab index.
@@ -4391,13 +4383,10 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 
-	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
+	if (!p_ignore_broken_deps && !dependency_errors.is_empty()) {
 		current_menu_option = -1;
-		Vector<String> errors;
-		for (const String &E : dependency_errors[lpath]) {
-			errors.push_back(E);
-		}
-		dependency_error->show(lpath, errors);
+		dependency_error->show(lpath, dependency_errors);
+		dependency_errors.clear();
 
 		if (prev != -1 && prev != idx) {
 			_set_current_scene(prev);
@@ -7987,9 +7976,6 @@ EditorNode::EditorNode() {
 
 	dependency_error = memnew(DependencyErrorDialog);
 	gui_base->add_child(dependency_error);
-
-	dependency_fixer = memnew(DependencyEditor);
-	gui_base->add_child(dependency_fixer);
 
 	editor_settings_dialog = memnew(EditorSettingsDialog);
 	gui_base->add_child(editor_settings_dialog);
