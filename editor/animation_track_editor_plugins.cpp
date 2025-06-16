@@ -113,7 +113,7 @@ void AnimationTrackEditTypeMethod::draw_key(const int p_index, const Rect2 &p_gl
 	AnimationTrackEdit::draw_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
 }
 
-void AnimationTrackEditTypeMethod::draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right) {
+void AnimationTrackEditTypeMethod::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
 }
 
 StringName AnimationTrackEditTypeMethod::get_edit_name(const int p_index) const {
@@ -165,13 +165,13 @@ void AnimationTrackEditColor::draw_key(const int p_index, const Rect2 &p_global_
 	editor->_draw_grid_clipped(this, p_global_rect, color, COLOR_EDIT_RECT_INTERVAL, p_clip_left, p_clip_right);
 }
 
-void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, float p_x, float p_next_x, float p_clip_left, float p_clip_right) {
+void AnimationTrackEditColor::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
 	int fh = get_key_height(p_index);
 
 	fh /= 3;
 
-	int x_from = p_x + fh / 2 - 1;
-	int x_to = p_next_x - fh / 2 + 1;
+	int x_from = p_global_rect.position.x + fh / 2 - 1;
+	int x_to = p_global_rect_next.position.x - fh / 2 + 1;
 	x_from = MAX(x_from, p_clip_left);
 	x_to = MIN(x_to, p_clip_right);
 
@@ -499,7 +499,7 @@ void AnimationTrackEditVolumeDB::draw_fg(const float p_clip_left, const float p_
 	editor->_draw_line_clipped(this, Vector2(p_clip_left, db0), Vector2(p_clip_right, db0), Color(1, 1, 1, 0.3), -1.0, p_clip_left, p_clip_right);
 }
 
-void AnimationTrackEditVolumeDB::draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right) {
+void AnimationTrackEditVolumeDB::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
 	float db = get_animation()->track_get_key_value(get_track(), p_index);
 	float db_n = get_animation()->track_get_key_value(get_track(), p_index + 1);
 
@@ -517,8 +517,8 @@ void AnimationTrackEditVolumeDB::draw_key_link(const int p_index, const float p_
 	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 	color.a *= REGION_EDGE_ALPHA;
 
-	int from_x = p_x;
-	int to_x = p_next_x;
+	int from_x = p_global_rect.position.x;
+	int to_x = p_global_rect_next.position.x;
 	editor->_draw_line_clipped(this, Point2(from_x, y_from + h * tex_h), Point2(to_x, y_from + h_n * tex_h), color, 2, p_clip_left, p_clip_right);
 }
 
@@ -763,7 +763,7 @@ float AnimationTrackEditClip::get_key_width(const int p_index) const {
 }
 
 float AnimationTrackEditClip::get_key_height(const int p_index) const {
-	return _get_theme_font_height(1.0);
+	return _get_theme_font_height(1.5);
 }
 
 int AnimationTrackEditClip::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const int p_index, const Rect2 p_global_rect, const int p_clip_left, const int p_clip_right) {
@@ -771,8 +771,8 @@ int AnimationTrackEditClip::handle_track_resizing(const Ref<InputEventMouseMotio
 	float start_ofs = get_start_offset(p_index);
 	float end_ofs = get_end_offset(p_index);
 
-	float p_x = _get_pixels_sec(p_index, true);
-	Region region = _calc_key_region(p_index, start_ofs, end_ofs, len, p_x);
+	float offset = _get_pixels_sec(p_index, true);
+	Region region = _calc_key_region(p_index, start_ofs, end_ofs, len, offset);
 	region = _clip_key_region(region, p_clip_left, p_clip_right);
 
 	float region_begin = region.x;
@@ -1139,10 +1139,9 @@ StringName AnimationTrackEditClip::get_edit_name(const int p_index) const {
 	return resource_name;
 }
 
-Region AnimationTrackEditClip::_calc_key_region(const int p_index, const float start_ofs, const float end_ofs, const float len, float __offset) const {
-	float anim_len = len - start_ofs - end_ofs;
+Region AnimationTrackEditClip::_calc_key_region(const int p_index, const float p_start_ofs, const float p_end_ofs, const float p_len, float p_offset) const {
+	float anim_len = p_len - p_start_ofs - p_end_ofs;
 	if (anim_len < 0) {
-		WARN_PRINT("anim_len < 0");
 		anim_len = 0;
 	}
 
@@ -1156,7 +1155,7 @@ Region AnimationTrackEditClip::_calc_key_region(const int p_index, const float s
 	float scale = get_timeline()->get_zoom_scale();
 
 	float pixel_len = anim_len * scale;
-	float pixel_begin = __offset;
+	float pixel_begin = p_offset;
 
 	return Region(pixel_begin, pixel_len);
 }

@@ -2630,26 +2630,38 @@ void AnimationTrackEdit::_notification(int p_what) {
 	}
 }
 
-void AnimationTrackEdit::draw_timeline(const float p_clip_left, const float p_clip_right) {
-	float scale = timeline->get_zoom_scale();
+bool AnimationKeyEdit::is_linked(const int p_index, const int p_index_next) const {
+	Variant current = get_key_value(p_index);
+	Variant next = get_key_value(p_index_next);
+	return current == next;
+}
 
+void AnimationTrackEdit::draw_timeline(const float p_clip_left, const float p_clip_right) {
 	Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
 	const int key_count = get_key_count();
 	for (int i = 0; i < key_count; i++) {
 		Rect2 global_rect = get_global_key_rect(i);
 
-		bool selected = editor->is_key_selected(track, i);
+		bool selected = is_key_selected(i);
 
-		if (i < key_count - 1) {
-			const Rect2 next_rect = get_global_key_rect(i + 1);
-			if (global_rect.position.x <= p_clip_right && next_rect.position.x >= p_clip_left) {
-				draw_key_link(i, scale, global_rect.position.x, next_rect.position.x, p_clip_left, p_clip_right);
+		if (global_rect.position.x > p_clip_right) {
+			bool is_key_moving = selected && editor->is_moving_selection();
+			if (is_key_moving) {
+				continue;
+			} else {
+				break;
 			}
 		}
 
-		if (global_rect.position.x > p_clip_right) {
-			break;
+		int next_i = i + 1;
+		if (next_i < key_count) {
+			const Rect2 next_rect = get_global_key_rect(next_i);
+			if (global_rect.position.x <= p_clip_right && next_rect.position.x >= p_clip_left) {
+				if (is_linked(i, next_i)) {
+					draw_key_link(i, global_rect, next_rect, p_clip_left, p_clip_right);
+				}
+			}
 		}
 
 		if (global_rect.position.x + global_rect.size.x < p_clip_left) {
@@ -2858,8 +2870,8 @@ Rect2 KeyEdit::_to_global_key_rect(const int p_index, const Rect2 &p_local_rect,
 Rect2 KeyEdit::_to_local_key_rect(const int p_index, const Rect2 &p_global_rect, bool p_ignore_moving_selection) const {
 	Rect2 local_rect = Rect2(p_global_rect);
 
-	float p_x = ((get_key_time(p_index) - timeline->get_value()) * timeline->get_zoom_scale()) + timeline->get_name_limit();
-	local_rect.position.x = p_x;
+	float offset = ((get_key_time(p_index) - timeline->get_value()) * timeline->get_zoom_scale()) + timeline->get_name_limit();
+	local_rect.position.x = offset;
 	local_rect.size.x /= timeline->get_zoom_scale();
 
 	return local_rect;
@@ -2872,10 +2884,10 @@ bool AnimationTrackEdit::is_key_selected(const int p_index) const {
 	return editor->is_key_selected(track, p_index);
 }
 
-float KeyEdit::_get_pixels_sec(const int p_index, bool ignore_moving_selection) const {
+float KeyEdit::_get_pixels_sec(const int p_index, bool p_ignore_moving_selection) const {
 	float local_time = _get_local_time(p_index);
 
-	if (!ignore_moving_selection) {
+	if (!p_ignore_moving_selection) {
 		if (is_key_selected(p_index) && editor->is_moving_selection()) {
 			local_time += editor->get_moving_selection_offset();
 		}
@@ -2887,8 +2899,8 @@ float KeyEdit::_get_pixels_sec(const int p_index, bool ignore_moving_selection) 
 	return local_time * scale + limit;
 }
 
-float KeyEdit::_get_local_time(const int p_index, float offset) const {
-	return (get_key_time(p_index) + offset) - timeline->get_value();
+float KeyEdit::_get_local_time(const int p_index, float p_offset) const {
+	return (get_key_time(p_index) + p_offset) - timeline->get_value();
 }
 
 double AnimationTrackEdit::get_key_time(const int p_index) const {
@@ -2967,29 +2979,12 @@ Variant AnimationMarkerEdit::get_key_value(const int p_index) const {
 	return editor->get_marker_name(p_index);
 }
 
-void KeyEdit::draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right) {
-	Rect2 rect = get_global_key_rect(p_index);
-	Rect2 next_rect = get_global_key_rect(p_index + 1);
-
-	if (next_rect.position.x + next_rect.size.x < p_clip_left) {
-		return;
-	}
-
-	if (rect.position.x > p_clip_right) {
-		return;
-	}
-
-	Variant current = get_key_value(p_index);
-	Variant next = get_key_value(p_index + 1);
-	if (current != next) {
-		return;
-	}
-
+void KeyEdit::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
 	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 	color.a = 0.5;
 
-	int from_x = MAX(rect.position.x + rect.size.x, p_clip_left);
-	int to_x = MIN(next_rect.position.x, p_clip_right);
+	int from_x = MAX(p_global_rect.position.x + p_global_rect.size.x, p_clip_left);
+	int to_x = MIN(p_global_rect_next.position.x, p_clip_right);
 	float yh = get_size().height / 2;
 
 	editor->_draw_line_clipped(this, Point2(from_x, yh), Point2(to_x, yh), color, 2, p_clip_left, p_clip_right);
@@ -3046,16 +3041,14 @@ NodePath AnimationTrackEdit::get_path() const {
 	return node_path;
 }
 
-Size2 AnimationTrackEdit::get_minimum_size() const {
+Size2 AnimationKeyEdit::get_minimum_size() const {
 	Ref<Texture2D> texture = get_editor_theme_icon(SNAME("Object"));
 	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	const int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
-	float p_pixels_sec = 0;
-
 	int max_h = MAX(texture->get_height(), font->get_height(font_size));
-	if (has_valid_track()) {
+	if (!animation.is_null()) {
 		max_h = MAX(max_h, get_key_height(-1));
 	}
 
@@ -3658,8 +3651,8 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void AnimationTrackEdit::try_select(const int p_index, bool is_single) {
-	emit_signal(SNAME("select_key"), p_index, is_single);
+void AnimationTrackEdit::try_select(const int p_index, bool p_is_single) {
+	emit_signal(SNAME("select_key"), p_index, p_is_single);
 }
 
 void AnimationTrackEdit::try_deselect(const int p_index) {
@@ -9455,23 +9448,6 @@ void AnimationMarkerEdit::draw_fg(const float p_clip_left, const float p_clip_ri
 
 Ref<Animation> AnimationMarkerEdit::get_animation() const {
 	return animation;
-}
-
-Size2 AnimationMarkerEdit::get_minimum_size() const {
-	Ref<Texture2D> texture = get_editor_theme_icon(SNAME("Object"));
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
-
-	int p_index = -1;
-	float p_pixels_sec = 0;
-
-	int max_h = MAX(texture->get_height(), font->get_height(font_size));
-	if (has_valid_track()) {
-		max_h = MAX(max_h, get_key_height(p_index));
-	}
-
-	return Vector2(1, max_h + separation);
 }
 
 void AnimationMarkerEdit::set_timeline(AnimationTimelineEdit *p_timeline) {

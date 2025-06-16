@@ -277,7 +277,7 @@ public:
 	AnimationTimelineEdit();
 };
 
-class KeyEdit : public Control { //XXX
+class KeyEdit : public Control {
 	GDCLASS(KeyEdit, Control);
 
 protected:
@@ -315,7 +315,6 @@ protected:
 public:
 	bool is_moving_selection() const;
 	float get_moving_selection_offset() const;
-	//int get_select_single_attempt() const;
 
 public:
 	virtual void _move_selection_begin() {}
@@ -324,7 +323,7 @@ public:
 	virtual void _move_selection_cancel() {}
 
 public:
-	virtual void try_select(const int p_index, bool is_single) = 0;
+	virtual void try_select(const int p_index, bool p_is_single) = 0;
 	virtual void try_deselect(const int p_index) = 0;
 
 public:
@@ -347,6 +346,7 @@ public:
 public:
 	int find_closest_key(const Point2 &p_pos) const;
 	virtual bool is_key_selectable_by_distance() const;
+	virtual bool is_linked(const int p_index, const int p_index_next) const { return false; }
 
 public:
 	Rect2 get_key_rect(const int p_index) const;
@@ -355,12 +355,12 @@ public:
 	void try_draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
 
 protected:
-	virtual void draw_key_link(const int p_index, const float p_pixels_sec, const float p_x, const float p_next_x, const float p_clip_left, const float p_clip_right);
+	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right);
 
 	// Helper
 public:
 	float _get_pixels_sec(const int p_index, bool p_ignore_moving_selection = false) const;
-	float _get_local_time(const int p_index, float offset = 0) const;
+	float _get_local_time(const int p_index, float p_offset = 0) const;
 	Rect2 _to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection = false) const;
 	Rect2 _to_local_key_rect(const int p_index, const Rect2 &p_global_rect, bool p_ignore_moving_selection) const;
 	void _draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
@@ -369,7 +369,7 @@ public:
 	KeyEdit();
 };
 
-class AnimationKeyEdit : public KeyEdit { //XXX
+class AnimationKeyEdit : public KeyEdit {
 	GDCLASS(AnimationKeyEdit, KeyEdit);
 
 	virtual void _clear_selection_for_anim(const Ref<Animation> &p_anim) {}
@@ -385,11 +385,13 @@ public:
 
 public:
 	virtual bool has_valid_track() const override;
+	virtual Size2 get_minimum_size() const override;
 
 public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
 	virtual bool has_valid_key(const int p_index) const override;
+	virtual bool is_linked(const int p_index, const int p_index_next) const override;
 
 	virtual bool is_compressed() const = 0;
 
@@ -401,7 +403,7 @@ public:
 	float play_position_pos = 0.0f;
 };
 
-class AnimationMarkerEdit : public AnimationKeyEdit { //XXX
+class AnimationMarkerEdit : public AnimationKeyEdit {
 	GDCLASS(AnimationMarkerEdit, Control);
 	friend class AnimationTimelineEdit;
 
@@ -491,7 +493,6 @@ public:
 	Ref<Animation> get_animation() const;
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
 	AnimationTrackEditor *get_editor() const { return editor; }
-	virtual Size2 get_minimum_size() const override;
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
@@ -539,7 +540,7 @@ public:
 	AnimationMarkerEdit();
 };
 
-class AnimationTrackEdit : public AnimationKeyEdit { //XXX
+class AnimationTrackEdit : public AnimationKeyEdit {
 	GDCLASS(AnimationTrackEdit, Control);
 	friend class AnimationTimelineEdit;
 
@@ -654,7 +655,6 @@ public:
 
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
 	AnimationTrackEditor *get_editor() const { return editor; }
-	virtual Size2 get_minimum_size() const override;
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);

@@ -77,10 +77,10 @@ private:
 
 	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const int p_index, const Rect2 p_global_rect, const int p_clip_left, const int p_clip_right);
 
-	Region _calc_key_region(const int p_index, const float start_ofs, const float end_ofs, const float len, float __offset = 0) const;
-	Region _clip_key_region(const Region &region, const int p_clip_left, const int p_clip_right);
-	Region _calc_key_region_shift(const Region &orig_region, const Region &region) const;
-	bool _is_key_region_outside(const Region &region, const int p_clip_left, const int p_clip_right) const;
+	Region _calc_key_region(const int p_index, const float p_start_ofs, const float p_end_ofs, const float p_len, float p_offset = 0) const;
+	Region _clip_key_region(const Region &p_region, const int p_clip_left, const int p_clip_right);
+	Region _calc_key_region_shift(const Region &p_orig_region, const Region &p_region) const;
+	bool _is_key_region_outside(const Region &p_region, const int p_clip_left, const int p_clip_right) const;
 
 public:
 	void set_node(Object *p_object);
@@ -228,7 +228,7 @@ public:
 	StringName get_edit_name(const int p_index) const; //name of the key
 
 protected:
-	virtual void draw_key_link(int p_index, float p_pixels_sec, float p_x, float p_next_x, float p_clip_left, float p_clip_right) override;
+	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) override;
 
 private:
 	// Helper
@@ -247,7 +247,7 @@ public:
 	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 protected:
-	virtual void draw_key_link(int p_index, float p_pixels_sec, float p_x, float p_next_x, float p_clip_left, float p_clip_right) override;
+	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) override;
 
 public:
 	AnimationTrackEditColor();
@@ -297,7 +297,7 @@ public:
 protected:
 	virtual void draw_bg(const float p_clip_left, const float p_clip_right) override;
 	virtual void draw_fg(const float p_clip_left, const float p_clip_right) override;
-	virtual void draw_key_link(int p_index, float p_pixels_sec, float p_x, float p_next_x, float p_clip_left, float p_clip_right) override;
+	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) override;
 
 public:
 	AnimationTrackEditVolumeDB();
