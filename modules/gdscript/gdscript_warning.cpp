@@ -169,6 +169,8 @@ String GDScriptWarning::get_message() const {
 		case FUNCTION_USED_AS_PROPERTY: // This is valid, returns `Callable`.
 			break;
 #endif
+		case THEMED_ASSIGNMENT:
+			return vformat(R"*("%s" is a themed property. Values assigned to it outside of its setter are likely to be overwritten unexpectedly.)*", symbols[0]);
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -243,6 +245,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"CONSTANT_USED_AS_FUNCTION",
 		"FUNCTION_USED_AS_PROPERTY",
 #endif
+		"THEMED_ASSIGNMENT",
 	};
 
 	static_assert(std::size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");

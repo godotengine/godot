@@ -616,6 +616,9 @@
 		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
 		</member>
+		<member name="debug/gdscript/warnings/themed_assignment" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when assigning to a [code]@themed[/code] property outside of its setter.
+		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a variable that wasn't previously assigned.
 		</member>

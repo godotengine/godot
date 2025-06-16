@@ -1065,6 +1065,19 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				if (member.variable->exported && member.variable->onready) {
 					parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
 				}
+
+				if (member.variable->themed) {
+					if (member.variable->exported) {
+						parser->push_error("@themed variable may not be used together with @export.", p_source);
+						return;
+					}
+
+					if (member.variable->onready) {
+						parser->push_error("@themed may not be used together with @onready.", p_source);
+						return;
+					}
+				}
+
 				if (member.variable->initializer) {
 					// Check if it is call to get_node() on self (using shorthand $ or not), so we can check if @onready is needed.
 					// This could be improved by traversing the expression fully and checking the presence of get_node at any level.
@@ -2845,6 +2858,30 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 #endif // DEBUG_ENABLED
 
 	reduce_expression(p_assignment->assignee);
+
+#ifdef DEBUG_ENABLED
+	if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+		GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);
+		if (id->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE && id->variable_source && id->variable_source->themed) {
+			GDScriptParser::VariableNode *v_source = id->variable_source;
+			bool warn = true;
+
+			if (v_source->property == GDScriptParser::VariableNode::PROP_INLINE) {
+				if (v_source->setter && v_source->setter == id->suite->parent_function) {
+					warn = false;
+				}
+			} else if (v_source->property == GDScriptParser::VariableNode::PROP_SETGET) {
+				if (v_source->setter_pointer && v_source->setter_pointer->name == id->suite->parent_function->identifier->name) {
+					warn = false;
+				}
+			}
+
+			if (warn) {
+				parser->push_warning(p_assignment, GDScriptWarning::THEMED_ASSIGNMENT, id->name);
+			}
+		}
+	}
+#endif
 
 #ifdef DEBUG_ENABLED
 	{
