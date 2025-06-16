@@ -845,7 +845,7 @@ bool MergingTool::join_mesh_surface(const MeshInstance &p_source_mi, uint32_t p_
 }
 
 // No compat checking, no renaming.
-bool MergingTool::join_meshes(MeshInstance &r_dest_mi, Vector<MeshInstance *> p_list) {
+bool MergingTool::join_meshes(MeshInstance &r_dest_mi, LocalVector<MeshInstance *> p_list) {
 	if (p_list.size() < 1) {
 		// Should not happen but just in case...
 		return false;
