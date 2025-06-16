@@ -439,3 +439,23 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_MSVC_WARNING_POP
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
 #endif
+
+template <typename T, typename = void>
+struct is_fully_defined : std::false_type {};
+
+template <typename T>
+struct is_fully_defined<T, std::void_t<decltype(sizeof(T))>> : std::true_type {};
+
+template <typename T>
+constexpr bool is_fully_defined_v = is_fully_defined<T>::value;
+
+#ifndef SCU_BUILD_ENABLED
+/// Enforces the requirement that a class is not fully defined.
+/// This can be used to reduce include coupling and keep compile times low.
+/// The check must be made at the top of the corresponding .cpp file of a header.
+#define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type) \
+	m_keyword m_type;                                    \
+	static_assert(!is_fully_defined_v<m_type>, #m_type " was unexpectedly fully defined. Please check the include hierarchy of '" __FILE__ "' and remove includes that resolve the " #m_keyword ".");
+#else
+#define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type)
+#endif
