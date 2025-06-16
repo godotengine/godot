@@ -625,6 +625,7 @@ bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, c
 		".cfb", // Don't let small config files slow-down startup
 		".scn", // Binary scenes are usually already compressed
 		".ctex", // Streamable textures are usually already compressed
+		".pck", // Pack.
 		// Trailer for easier processing
 		nullptr
 	};
@@ -797,21 +798,61 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
+Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_sparse) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 
-	String path = p_path.simplify_path();
-	if (path.begins_with("uid://")) {
-		path = ResourceUID::uid_to_path(path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+	String simplified_path = p_path.simplify_path();
+	if (simplified_path.begins_with("uid://")) {
+		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
 	}
-	const String dst_path = path.replace_first("res://", "assets/");
 
-	store_in_apk(ed, dst_path, p_data, _should_compress_asset(path, p_data) ? Z_DEFLATED : 0);
+	if (p_sparse) {
+		Error err = OK;
+		Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
+		if (err != OK) {
+			return err;
+		}
+
+		EditorExportPlatform::SavedData sd;
+		sd.path_utf8 = simplified_path.trim_prefix("res://").utf8();
+		sd.ofs = p_sparse;
+		sd.size = p_data.size();
+		err = EditorExportPlatform::_encrypt_and_store_data(ftmp, simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted);
+		if (err != OK) {
+			return err;
+		}
+
+		Vector<uint8_t> enc_data;
+		enc_data.resize(ftmp->get_length());
+		ftmp->seek(0);
+		ftmp->get_buffer(enc_data.ptrw(), enc_data.size());
+		ftmp.unref();
+
+		const String dst_path = String("assets/") + ed->pd.path.get_basename() + "_" + simplified_path.trim_prefix("res://").sha256_text();
+		print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
+		store_in_apk(ed, dst_path, enc_data, _should_compress_asset(simplified_path, enc_data) ? Z_DEFLATED : 0);
+
+		// Store MD5 of original file.
+		{
+			unsigned char hash[16];
+			CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
+			sd.md5.resize(16);
+			for (int i = 0; i < 16; i++) {
+				sd.md5.write[i] = hash[i];
+			}
+		}
+
+		ed->pd.file_ofs.push_back(sd);
+	} else {
+		const String dst_path = simplified_path.replace_first("res://", "assets/");
+		print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
+		store_in_apk(ed, dst_path, p_data, _should_compress_asset(simplified_path, p_data) ? Z_DEFLATED : 0);
+	}
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
+Error EditorExportPlatformAndroid::ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_sparse) {
 	return OK;
 }
 
@@ -2094,6 +2135,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/sparse_pck"), true));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/use_gradle_build"), false, true, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/gradle_build_directory", PROPERTY_HINT_PLACEHOLDER_TEXT, "res://android"), "", false, false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/android_source_template", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
@@ -2827,6 +2870,11 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 
 	// Validate the rest of the export configuration.
 
+	if (p_preset->get_enc_pck() && !(p_preset->get("binary_format/sparse_pck") || p_preset->get("apk_expansion/enable"))) {
+		valid = false;
+		err += TTR("Encryption is supported with sparse PCK or APK expansion only.");
+	}
+
 	String dk = _get_keystore_path(p_preset, true);
 	String dk_user = p_preset->get_or_env("keystore/debug_user", ENV_ANDROID_KEYSTORE_DEBUG_USER);
 	String dk_password = p_preset->get_or_env("keystore/debug_password", ENV_ANDROID_KEYSTORE_DEBUG_PASS);
@@ -3529,9 +3577,77 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			user_data.libs_directory = gradle_build_directory.path_join("libs");
 			user_data.debug = p_debug;
 			if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
-				err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &user_data, copy_gradle_so);
+				err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &user_data, copy_gradle_so, false);
 			} else {
-				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, nullptr, &user_data, copy_gradle_so);
+				bool sparse = p_preset->has("binary_format/sparse_pck") && p_preset->get("binary_format/sparse_pck");
+				user_data.pd.path = sparse ? "assets.sparsepck" : String();
+				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, nullptr, &user_data, copy_gradle_so, sparse);
+
+				if (sparse) {
+					Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export_index", "tmp", false, &err);
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not create temporary file!"));
+						return err;
+					}
+					int64_t pck_start_pos = ftmp->get_position();
+					uint64_t file_base_ofs = 0;
+					uint64_t dir_base_ofs = 0;
+					EditorExportPlatform::_store_header(ftmp, p_preset->get_enc_pck() && p_preset->get_enc_directory(), true, file_base_ofs, dir_base_ofs);
+
+					// Write directory.
+					uint64_t dir_offset = ftmp->get_position();
+					ftmp->seek(dir_base_ofs);
+					ftmp->store_64(dir_offset - pck_start_pos);
+					ftmp->seek(dir_offset);
+
+					Vector<uint8_t> key;
+					if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
+						String script_key = _get_script_encryption_key(p_preset);
+						key.resize(32);
+						if (script_key.length() == 64) {
+							for (int i = 0; i < 32; i++) {
+								int v = 0;
+								if (i * 2 < script_key.length()) {
+									char32_t ct = script_key[i * 2];
+									if (is_digit(ct)) {
+										ct = ct - '0';
+									} else if (ct >= 'a' && ct <= 'f') {
+										ct = 10 + ct - 'a';
+									}
+									v |= ct << 4;
+								}
+
+								if (i * 2 + 1 < script_key.length()) {
+									char32_t ct = script_key[i * 2 + 1];
+									if (is_digit(ct)) {
+										ct = ct - '0';
+									} else if (ct >= 'a' && ct <= 'f') {
+										ct = 10 + ct - 'a';
+									}
+									v |= ct;
+								}
+								key.write[i] = v;
+							}
+						}
+					}
+
+					if (!EditorExportPlatform::_encrypt_and_store_directory(ftmp, user_data.pd, key, p_preset->get_seed(), 0)) {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Can't create encrypted file."));
+						return ERR_CANT_CREATE;
+					}
+
+					Vector<uint8_t> enc_data;
+					enc_data.resize(ftmp->get_length());
+					ftmp->seek(0);
+					ftmp->get_buffer(enc_data.ptrw(), enc_data.size());
+					ftmp.unref();
+
+					err = store_file_at_path(user_data.assets_directory + "/assets.sparsepck", enc_data);
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not write PCK directory!"));
+						return err;
+					}
+				}
 			}
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
@@ -3971,7 +4087,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		APKExportData ed;
 		ed.ep = &ep;
 		ed.apk = unaligned_apk;
-		err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &ed, save_apk_so);
+		err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &ed, save_apk_so, false);
 	} else {
 		if (apk_expansion) {
 			err = save_apk_expansion_file(p_preset, p_debug, p_path);
@@ -3980,10 +4096,75 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 		} else {
+			bool sparse = p_preset->has("binary_format/sparse_pck") && p_preset->get("binary_format/sparse_pck");
+
 			APKExportData ed;
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
-			err = export_project_files(p_preset, p_debug, save_apk_file, nullptr, &ed, save_apk_so);
+			ed.pd.path = sparse ? "assets.sparsepck" : String();
+			err = export_project_files(p_preset, p_debug, save_apk_file, nullptr, &ed, save_apk_so, sparse);
+
+			if (sparse) {
+				Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export_index", "tmp", false, &err);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not create temporary file!"));
+					return err;
+				}
+				int64_t pck_start_pos = ftmp->get_position();
+				uint64_t file_base_ofs = 0;
+				uint64_t dir_base_ofs = 0;
+				EditorExportPlatform::_store_header(ftmp, p_preset->get_enc_pck() && p_preset->get_enc_directory(), true, file_base_ofs, dir_base_ofs);
+
+				// Write directory.
+				uint64_t dir_offset = ftmp->get_position();
+				ftmp->seek(dir_base_ofs);
+				ftmp->store_64(dir_offset - pck_start_pos);
+				ftmp->seek(dir_offset);
+
+				Vector<uint8_t> key;
+				if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
+					String script_key = _get_script_encryption_key(p_preset);
+					key.resize(32);
+					if (script_key.length() == 64) {
+						for (int i = 0; i < 32; i++) {
+							int v = 0;
+							if (i * 2 < script_key.length()) {
+								char32_t ct = script_key[i * 2];
+								if (is_digit(ct)) {
+									ct = ct - '0';
+								} else if (ct >= 'a' && ct <= 'f') {
+									ct = 10 + ct - 'a';
+								}
+								v |= ct << 4;
+							}
+
+							if (i * 2 + 1 < script_key.length()) {
+								char32_t ct = script_key[i * 2 + 1];
+								if (is_digit(ct)) {
+									ct = ct - '0';
+								} else if (ct >= 'a' && ct <= 'f') {
+									ct = 10 + ct - 'a';
+								}
+								v |= ct;
+							}
+							key.write[i] = v;
+						}
+					}
+				}
+
+				if (!EditorExportPlatform::_encrypt_and_store_directory(ftmp, ed.pd, key, p_preset->get_seed(), 0)) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Can't create encrypted file."));
+					return ERR_CANT_CREATE;
+				}
+
+				Vector<uint8_t> enc_data;
+				enc_data.resize(ftmp->get_length());
+				ftmp->seek(0);
+				ftmp->get_buffer(enc_data.ptrw(), enc_data.size());
+				ftmp.unref();
+
+				store_in_apk(&ed, "assets/assets.sparsepck", enc_data, 0);
+			}
 		}
 	}
 
