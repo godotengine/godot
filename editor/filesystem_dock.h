@@ -203,6 +203,7 @@ private:
 	CreateDialog *new_resource_dialog = nullptr;
 
 	bool always_show_folders = false;
+	int thumbnail_size_setting = 0;
 
 	bool editor_is_dark_theme = false;
 
@@ -381,6 +382,8 @@ public:
 	static constexpr double ITEM_ALPHA_MIN = 0.1;
 	static constexpr double ITEM_ALPHA_MAX = 0.15;
 	static constexpr double ITEM_BG_DARK_SCALE = 0.3;
+
+	static Color get_dir_icon_color(const String &p_dir_path, const Color &p_default);
 
 	const HashMap<String, Color> &get_folder_colors() const;
 	Dictionary get_assigned_folder_colors() const;

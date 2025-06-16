@@ -117,17 +117,19 @@ void Camera3D::_update_camera_mode() {
 }
 
 void Camera3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "fov") {
-		if (mode != PROJECTION_PERSPECTIVE) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	} else if (p_property.name == "size") {
-		if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	} else if (p_property.name == "frustum_offset") {
-		if (mode != PROJECTION_FRUSTUM) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "fov") {
+			if (mode != PROJECTION_PERSPECTIVE) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.name == "size") {
+			if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else if (p_property.name == "frustum_offset") {
+			if (mode != PROJECTION_FRUSTUM) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
 
@@ -139,8 +141,6 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			}
 		}
 	}
-
-	Node3D::_validate_property(p_property);
 }
 
 void Camera3D::_update_camera() {
@@ -164,6 +164,7 @@ void Camera3D::_update_camera() {
 
 void Camera3D::_physics_interpolated_changed() {
 	_update_process_mode();
+	Node3D::_physics_interpolated_changed();
 }
 
 void Camera3D::set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal) {

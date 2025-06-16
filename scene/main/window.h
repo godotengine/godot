@@ -158,6 +158,8 @@ private:
 	RID accessibility_title_element;
 	RID accessibility_announcement_element;
 	String announcement;
+	String accessibility_name;
+	String accessibility_description;
 
 	void _make_window();
 	void _clear_window();
@@ -255,6 +257,7 @@ private:
 	static int root_layout_direction;
 
 protected:
+	virtual void _pre_popup() {} // Called after "about_to_popup", but before window is shown.
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
 
@@ -419,6 +422,12 @@ public:
 	void start_resize(DisplayServer::WindowResizeEdge p_edge);
 
 	Rect2i get_usable_parent_rect() const;
+
+	void set_accessibility_name(const String &p_name);
+	String get_accessibility_name() const;
+
+	void set_accessibility_description(const String &p_description);
+	String get_accessibility_description() const;
 
 	void accessibility_announcement(const String &p_announcement);
 

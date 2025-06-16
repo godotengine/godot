@@ -58,35 +58,35 @@ TEST_CASE("[Math] C++ macros") {
 }
 
 TEST_CASE("[Math] Power of two functions") {
-	CHECK(next_power_of_2(0) == 0);
-	CHECK(next_power_of_2(1) == 1);
-	CHECK(next_power_of_2(16) == 16);
-	CHECK(next_power_of_2(17) == 32);
-	CHECK(next_power_of_2(65535) == 65536);
+	CHECK(next_power_of_2((uint32_t)0) == 0);
+	CHECK(next_power_of_2((uint32_t)1) == 1);
+	CHECK(next_power_of_2((uint32_t)16) == 16);
+	CHECK(next_power_of_2((uint32_t)17) == 32);
+	CHECK(next_power_of_2((uint32_t)65535) == 65536);
 
-	CHECK(previous_power_of_2(0) == 0);
-	CHECK(previous_power_of_2(1) == 1);
-	CHECK(previous_power_of_2(16) == 16);
-	CHECK(previous_power_of_2(17) == 16);
-	CHECK(previous_power_of_2(65535) == 32768);
+	CHECK(previous_power_of_2((uint32_t)0) == 0);
+	CHECK(previous_power_of_2((uint32_t)1) == 1);
+	CHECK(previous_power_of_2((uint32_t)16) == 16);
+	CHECK(previous_power_of_2((uint32_t)17) == 16);
+	CHECK(previous_power_of_2((uint32_t)65535) == 32768);
 
-	CHECK(closest_power_of_2(0) == 0);
-	CHECK(closest_power_of_2(1) == 1);
-	CHECK(closest_power_of_2(16) == 16);
-	CHECK(closest_power_of_2(17) == 16);
-	CHECK(closest_power_of_2(65535) == 65536);
+	CHECK(closest_power_of_2((uint32_t)0) == 0);
+	CHECK(closest_power_of_2((uint32_t)1) == 1);
+	CHECK(closest_power_of_2((uint32_t)16) == 16);
+	CHECK(closest_power_of_2((uint32_t)17) == 16);
+	CHECK(closest_power_of_2((uint32_t)65535) == 65536);
 
-	CHECK(get_shift_from_power_of_2(0) == -1);
-	CHECK(get_shift_from_power_of_2(1) == 0);
-	CHECK(get_shift_from_power_of_2(16) == 4);
-	CHECK(get_shift_from_power_of_2(17) == -1);
-	CHECK(get_shift_from_power_of_2(65535) == -1);
+	CHECK(get_shift_from_power_of_2((uint32_t)0) == -1);
+	CHECK(get_shift_from_power_of_2((uint32_t)1) == 0);
+	CHECK(get_shift_from_power_of_2((uint32_t)16) == 4);
+	CHECK(get_shift_from_power_of_2((uint32_t)17) == -1);
+	CHECK(get_shift_from_power_of_2((uint32_t)65535) == -1);
 
-	CHECK(nearest_shift(0) == 0);
-	CHECK(nearest_shift(1) == 1);
-	CHECK(nearest_shift(16) == 5);
-	CHECK(nearest_shift(17) == 5);
-	CHECK(nearest_shift(65535) == 16);
+	CHECK(nearest_shift((uint32_t)0) == 0);
+	CHECK(nearest_shift((uint32_t)1) == 1);
+	CHECK(nearest_shift((uint32_t)16) == 5);
+	CHECK(nearest_shift((uint32_t)17) == 5);
+	CHECK(nearest_shift((uint32_t)65535) == 16);
 }
 
 TEST_CASE_TEMPLATE("[Math] abs", T, int, float, double) {

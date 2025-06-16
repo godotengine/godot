@@ -392,7 +392,7 @@ TEST_SUITE("[Navigation2D]") {
 		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 0);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 1);
-		CHECK_NE(agent_avoidance_callback_mock.function1_latest_arg0, Vector3(0, 0, 0));
+		CHECK_NE(agent_avoidance_callback_mock.function1_latest_arg0, Vector2(0, 0));
 
 		navigation_server->free(agent);
 		navigation_server->free(map);
@@ -429,12 +429,12 @@ TEST_SUITE("[Navigation2D]") {
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
 		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 1);
-		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
-		Vector3 agent_2_safe_velocity = agent_2_avoidance_callback_mock.function1_latest_arg0;
+		Vector2 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
+		Vector2 agent_2_safe_velocity = agent_2_avoidance_callback_mock.function1_latest_arg0;
 		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "agent 1 should move a bit along desired velocity (+X)");
 		CHECK_MESSAGE(agent_2_safe_velocity.x < 0, "agent 2 should move a bit along desired velocity (-X)");
-		CHECK_MESSAGE(agent_1_safe_velocity.z < 0, "agent 1 should move a bit to the side so that it avoids agent 2");
-		CHECK_MESSAGE(agent_2_safe_velocity.z > 0, "agent 2 should move a bit to the side so that it avoids agent 1");
+		CHECK_MESSAGE(agent_1_safe_velocity.y < 0, "agent 1 should move a bit to the side so that it avoids agent 2");
+		CHECK_MESSAGE(agent_2_safe_velocity.y > 0, "agent 2 should move a bit to the side so that it avoids agent 1");
 
 		navigation_server->free(agent_2);
 		navigation_server->free(agent_1);
@@ -466,9 +466,9 @@ TEST_SUITE("[Navigation2D]") {
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
-		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
+		Vector2 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
 		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "Agent 1 should move a bit along desired velocity (+X).");
-		CHECK_MESSAGE(agent_1_safe_velocity.z < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
+		CHECK_MESSAGE(agent_1_safe_velocity.y < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
 
 		navigation_server->free(obstacle_1);
 		navigation_server->free(agent_1);
@@ -518,12 +518,12 @@ TEST_SUITE("[Navigation2D]") {
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
 		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 1);
-		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
-		Vector3 agent_2_safe_velocity = agent_2_avoidance_callback_mock.function1_latest_arg0;
+		Vector2 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
+		Vector2 agent_2_safe_velocity = agent_2_avoidance_callback_mock.function1_latest_arg0;
 		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "Agent 1 should move a bit along desired velocity (+X).");
-		CHECK_MESSAGE(agent_1_safe_velocity.z < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
+		CHECK_MESSAGE(agent_1_safe_velocity.y < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
 		CHECK_MESSAGE(agent_2_safe_velocity.x > 0, "Agent 2 should move a bit along desired velocity (+X).");
-		CHECK_MESSAGE(agent_2_safe_velocity.z == 0, "Agent 2 should not move to the side.");
+		CHECK_MESSAGE(agent_2_safe_velocity.y == 0, "Agent 2 should not move to the side.");
 
 		navigation_server->free(obstacle_1);
 		navigation_server->free(agent_2);
@@ -602,6 +602,7 @@ TEST_SUITE("[Navigation2D]") {
 		navigation_polygon->add_outline(PackedVector2Array({ Vector2(-1000.0, -1000.0), Vector2(1000.0, -1000.0), Vector2(1000.0, 1000.0), Vector2(-1000.0, 1000.0) }));
 		navigation_server->map_set_active(map, true);
 		navigation_server->map_set_use_async_iterations(map, false);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_polygon(region, navigation_polygon);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
@@ -659,6 +660,7 @@ TEST_SUITE("[Navigation2D]") {
 		RID region = navigation_server->region_create();
 		navigation_server->map_set_active(map, true);
 		navigation_server->map_set_use_async_iterations(map, false);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_polygon(region, navigation_polygon);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.

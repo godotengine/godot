@@ -3045,15 +3045,21 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 			return err;
 		}
 
-		// Remove uid from .import file to avoid conflict.
+		// Roll a new uid for this copied .import file to avoid conflict.
+		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id();
+
+		// Save the new .import file
 		Ref<ConfigFile> cfg;
 		cfg.instantiate();
 		cfg->load(p_from + ".import");
-		cfg->erase_section_key("remap", "uid");
+		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
 		err = cfg->save(p_to + ".import");
 		if (err != OK) {
 			return err;
 		}
+
+		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
+		ResourceUID::get_singleton()->add_id(res_uid, p_to);
 	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
 		Error err = da->copy(p_from, p_to);
@@ -3078,7 +3084,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 	return OK;
 }
 
-bool EditorFileSystem::_copy_directory(const String &p_from, const String &p_to, List<CopiedFile> *p_files) {
+bool EditorFileSystem::_copy_directory(const String &p_from, const String &p_to, HashMap<String, String> *p_files) {
 	Ref<DirAccess> old_dir = DirAccess::open(p_from);
 	ERR_FAIL_COND_V(old_dir.is_null(), false);
 
@@ -3095,10 +3101,7 @@ bool EditorFileSystem::_copy_directory(const String &p_from, const String &p_to,
 		if (old_dir->current_is_dir()) {
 			success = _copy_directory(p_from.path_join(F), p_to.path_join(F), p_files) && success;
 		} else if (F.get_extension() != "import" && F.get_extension() != "uid") {
-			CopiedFile copy;
-			copy.from = p_from.path_join(F);
-			copy.to = p_to.path_join(F);
-			p_files->push_back(copy);
+			(*p_files)[p_from.path_join(F)] = p_to.path_join(F);
 		}
 	}
 	return success;
@@ -3493,24 +3496,46 @@ Error EditorFileSystem::copy_file(const String &p_from, const String &p_to) {
 }
 
 Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to) {
-	List<CopiedFile> files;
+	// Recursively copy directories and build a map of files to copy.
+	HashMap<String, String> files;
 	bool success = _copy_directory(p_from, p_to, &files);
 
-	EditorProgress *ep = nullptr;
-	if (files.size() > 10) {
-		ep = memnew(EditorProgress("_copy_files", TTR("Copying files..."), files.size()));
+	// Copy the files themselves
+	if (success) {
+		EditorProgress *ep = nullptr;
+		if (files.size() > 10) {
+			ep = memnew(EditorProgress("copy_directory", TTR("Copying files..."), files.size()));
+		}
+		int i = 0;
+		for (const KeyValue<String, String> &tuple : files) {
+			if (_copy_file(tuple.key, tuple.value) != OK) {
+				success = false;
+			}
+			if (ep) {
+				ep->step(tuple.key.get_file(), i++, false);
+			}
+		}
+		memdelete_notnull(ep);
 	}
 
-	int i = 0;
-	for (const CopiedFile &F : files) {
-		if (_copy_file(F.from, F.to) != OK) {
-			success = false;
+	// Now remap any internal dependencies (within the folder) to use the new files.
+	if (success) {
+		EditorProgress *ep = nullptr;
+		if (files.size() > 10) {
+			ep = memnew(EditorProgress("copy_directory", TTR("Remapping dependencies..."), files.size()));
 		}
-		if (ep) {
-			ep->step(F.from.get_file(), i++, false);
+		int i = 0;
+		for (const KeyValue<String, String> &tuple : files) {
+			if (ResourceLoader::rename_dependencies(tuple.value, files) != OK) {
+				success = false;
+			}
+			update_file(tuple.value);
+			if (ep) {
+				ep->step(tuple.key.get_file(), i++, false);
+			}
 		}
+		memdelete_notnull(ep);
 	}
-	memdelete_notnull(ep);
 
 	EditorFileSystemDirectory *efd = get_filesystem_path(p_to);
 	ERR_FAIL_NULL_V(efd, FAILED);

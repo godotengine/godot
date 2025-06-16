@@ -84,7 +84,7 @@
 				Stops playback. May be called multiple times before [method _play], or in response to [method VideoStreamPlayer.stop]. [method _is_playing] should return [code]false[/code] once stopped.
 			</description>
 		</method>
-		<method name="_update" qualifiers="virtual">
+		<method name="_update" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>

@@ -421,7 +421,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
 	RBSet<_VCSort> vclist;
-	HashMap<String, Vector<_VCSort>> setting_overrides;
+	HashMap<String, LocalVector<_VCSort>> setting_overrides;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -464,10 +464,11 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		int dot = vc.name.rfind_char('.');
-		if (dot != -1 && !custom_prop_info.has(vc.name)) {
+		if (dot != -1) {
 			StringName n = vc.name.substr(0, dot);
-			if (props.has(n)) { // Property is an override.
-				setting_overrides[n].append(vc);
+			if (props.has(n)) {
+				// Property is an override.
+				setting_overrides[n].push_back(vc);
 			} else {
 				vclist.insert(vc);
 			}
@@ -482,6 +483,18 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			pi.name = base.name;
 			pi.usage = base.flags;
 			p_list->push_back(pi);
+#ifdef TOOLS_ENABLED
+		} else if (base.name.begins_with(EDITOR_SETTING_OVERRIDE_PREFIX)) {
+			PropertyInfo info(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags);
+
+			const PropertyInfo *pi = editor_settings_info.getptr(base.name.trim_prefix(EDITOR_SETTING_OVERRIDE_PREFIX));
+			if (pi) {
+				info.usage = pi->usage;
+				info.hint = pi->hint;
+				info.hint_string = pi->hint_string;
+			}
+			p_list->push_back(info);
+#endif
 		} else {
 			p_list->push_back(PropertyInfo(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags));
 		}
@@ -490,6 +503,12 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			for (const _VCSort &over : setting_overrides.get(base.name)) {
 				if (custom_prop_info.has(over.name)) {
 					PropertyInfo pi = custom_prop_info[over.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else if (custom_prop_info.has(base.name)) {
+					// Fallback to base property info.
+					PropertyInfo pi = custom_prop_info[base.name];
 					pi.name = over.name;
 					pi.usage = over.flags;
 					p_list->push_back(pi);
@@ -812,7 +831,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	for (uint32_t i = 0; i < count; i++) {
 		uint32_t slen = f->get_32();
 		CharString cs;
-		cs.resize(slen + 1);
+		cs.resize_uninitialized(slen + 1);
 		cs[slen] = 0;
 		f->get_buffer((uint8_t *)cs.ptr(), slen);
 		String key = String::utf8(cs.ptr(), slen);
@@ -1263,7 +1282,7 @@ bool ProjectSettings::is_project_loaded() const {
 }
 
 bool ProjectSettings::_property_can_revert(const StringName &p_name) const {
-	return props.has(p_name);
+	return props.has(p_name) && !String(p_name).begins_with(EDITOR_SETTING_OVERRIDE_PREFIX);
 }
 
 bool ProjectSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
@@ -1448,6 +1467,18 @@ void ProjectSettings::get_argument_options(const StringName &p_function, int p_i
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
 #endif
+
+void ProjectSettings::set_editor_setting_override(const String &p_setting, const Variant &p_value) {
+	set_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting, p_value);
+}
+
+bool ProjectSettings::has_editor_setting_override(const String &p_setting) const {
+	return has_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting);
+}
+
+Variant ProjectSettings::get_editor_setting_override(const String &p_setting) const {
+	return get_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting);
+}
 
 void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
@@ -1683,6 +1714,7 @@ ProjectSettings::ProjectSettings() {
 
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	GLOBAL_DEF("navigation/world/map_use_async_iterations", true);
+	GLOBAL_DEF("navigation/world/region_use_async_iterations", true);
 
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);

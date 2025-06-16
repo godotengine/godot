@@ -853,17 +853,17 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		// Could not find texture to fit, create one.
 		int texsize = MAX(p_data->size.x * 0.125, 256);
 
-		texsize = next_power_of_2(texsize);
+		texsize = next_power_of_2((uint32_t)texsize);
 		if (p_msdf) {
 			texsize = MIN(texsize, 2048);
 		} else {
 			texsize = MIN(texsize, 1024);
 		}
 		if (mw > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2(mw);
+			texsize = next_power_of_2((uint32_t)mw);
 		}
 		if (mh > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2(mh);
+			texsize = next_power_of_2((uint32_t)mh);
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
@@ -1504,7 +1504,7 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 					continue;
 				}
 				unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
-				p_font_data->font_name.resize(text_size);
+				p_font_data->font_name.resize_uninitialized(text_size);
 				hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)p_font_data->font_name.ptrw());
 			}
 			if (p_font_data->font_name.is_empty() && fd->face->family_name != nullptr) {
@@ -1759,6 +1759,33 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 				}
 				if (os2->ulUnicodeRange4 & 1L << 25) {
 					p_font_data->supported_scripts.insert(HB_SCRIPT_ANATOLIAN_HIEROGLYPHS);
+				}
+			}
+
+			// Validate script sample strings.
+			{
+				LocalVector<uint32_t> failed_scripts;
+
+				Vector<UChar> sample_buf;
+				sample_buf.resize(255);
+				for (const uint32_t &scr_tag : p_font_data->supported_scripts) {
+					if ((hb_script_t)scr_tag == HB_SCRIPT_COMMON) {
+						continue;
+					}
+					UErrorCode icu_err = U_ZERO_ERROR;
+					int32_t len = uscript_getSampleString(hb_icu_script_from_script((hb_script_t)scr_tag), sample_buf.ptrw(), 255, &icu_err);
+					if (U_SUCCESS(icu_err) && len > 0) {
+						String sample = String::utf16(sample_buf.ptr(), len);
+						for (int ch = 0; ch < sample.length(); ch++) {
+							if (FT_Get_Char_Index(fd->face, sample[ch]) == 0) {
+								failed_scripts.push_back(scr_tag);
+								break;
+							}
+						}
+					}
+				}
+				for (const uint32_t &scr_tag : failed_scripts) {
+					p_font_data->supported_scripts.erase(scr_tag);
 				}
 			}
 
@@ -2308,7 +2335,7 @@ Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) 
 		}
 		String text;
 		unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
-		text.resize(text_size);
+		text.resize_uninitialized(text_size);
 		hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)text.ptrw());
 		if (!text.is_empty()) {
 			Dictionary &id_string = names_for_lang[String(hb_language_to_string(names[i].language))];
@@ -6513,7 +6540,17 @@ UBreakIterator *TextServerAdvanced::_create_line_break_iterator_for_locale(const
 	// Creating UBreakIterator (ubrk_open) is surprisingly costly.
 	// However, cloning (ubrk_clone) is cheaper, so we keep around blueprints to accelerate creating new ones.
 
-	const String language = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	String language = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	if (!language.contains("@")) {
+		if (lb_strictness == LB_LOOSE) {
+			language += "@lb=loose";
+		} else if (lb_strictness == LB_NORMAL) {
+			language += "@lb=normal";
+		} else if (lb_strictness == LB_STRICT) {
+			language += "@lb=strict";
+		}
+	}
+
 	_THREAD_SAFE_METHOD_
 	const HashMap<String, UBreakIterator *>::Iterator key_value = line_break_iterators_per_language.find(language);
 	if (key_value) {
@@ -8066,12 +8103,14 @@ bool TextServerAdvanced::_is_valid_letter(uint64_t p_unicode) const {
 
 void TextServerAdvanced::_update_settings() {
 	lcd_subpixel_layout.set((TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout"));
+	lb_strictness = (LineBreakStrictness)(int)GLOBAL_GET("internationalization/locale/line_breaking_strictness");
 }
 
 TextServerAdvanced::TextServerAdvanced() {
 	_insert_num_systems_lang();
 	_insert_feature_sets();
 	_bmp_create_font_funcs();
+	_update_settings();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerAdvanced::_update_settings));
 }
 

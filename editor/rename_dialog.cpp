@@ -143,7 +143,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_name = memnew(Button);
 	but_insert_name->set_text("NAME");
 	but_insert_name->set_tooltip_text(String("${NAME}\n") + TTR("Node name."));
-	but_insert_name->set_focus_mode(Control::FOCUS_NONE);
+	but_insert_name->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	but_insert_name->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${NAME}"));
 	but_insert_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_name);
@@ -153,7 +153,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_parent = memnew(Button);
 	but_insert_parent->set_text("PARENT");
 	but_insert_parent->set_tooltip_text(String("${PARENT}\n") + TTR("Node's parent name, if available."));
-	but_insert_parent->set_focus_mode(Control::FOCUS_NONE);
+	but_insert_parent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	but_insert_parent->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${PARENT}"));
 	but_insert_parent->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_parent);
@@ -163,7 +163,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_type = memnew(Button);
 	but_insert_type->set_text("TYPE");
 	but_insert_type->set_tooltip_text(String("${TYPE}\n") + TTR("Node type."));
-	but_insert_type->set_focus_mode(Control::FOCUS_NONE);
+	but_insert_type->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	but_insert_type->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${TYPE}"));
 	but_insert_type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_type);
@@ -173,7 +173,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_scene = memnew(Button);
 	but_insert_scene->set_text("SCENE");
 	but_insert_scene->set_tooltip_text(String("${SCENE}\n") + TTR("Current scene name."));
-	but_insert_scene->set_focus_mode(Control::FOCUS_NONE);
+	but_insert_scene->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	but_insert_scene->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${SCENE}"));
 	but_insert_scene->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_scene);
@@ -183,7 +183,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_root = memnew(Button);
 	but_insert_root->set_text("ROOT");
 	but_insert_root->set_tooltip_text(String("${ROOT}\n") + TTR("Root node name."));
-	but_insert_root->set_focus_mode(Control::FOCUS_NONE);
+	but_insert_root->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	but_insert_root->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${ROOT}"));
 	but_insert_root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_root);
@@ -193,7 +193,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_count = memnew(Button);
 	but_insert_count->set_text("COUNTER");
 	but_insert_count->set_tooltip_text(String("${COUNTER}\n") + TTR("Sequential integer counter.\nCompare counter options."));
-	but_insert_count->set_focus_mode(Control::FOCUS_NONE);
+	but_insert_count->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	but_insert_count->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${COUNTER}"));
 	but_insert_count->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_count);
@@ -359,12 +359,12 @@ void RenameDialog::_update_substitute() {
 	but_insert_count->set_disabled(!is_main_field);
 
 	// The focus mode seems to be reset when disabling/re-enabling
-	but_insert_name->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_parent->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_type->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_scene->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_root->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_count->set_focus_mode(Control::FOCUS_NONE);
+	but_insert_name->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	but_insert_parent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	but_insert_type->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	but_insert_scene->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	but_insert_root->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	but_insert_count->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 }
 
 void RenameDialog::_post_popup() {

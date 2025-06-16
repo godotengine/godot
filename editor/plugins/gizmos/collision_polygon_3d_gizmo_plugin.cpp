@@ -98,8 +98,10 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	float depth = polygon->get_depth() * 0.5;
 
 	Vector<Vector3> lines;
-	for (int i = 0; i < points.size(); i++) {
-		int n = (i + 1) % points.size();
+	const int points_size = points.size();
+
+	for (int i = 0; i < points_size; i++) {
+		int n = (i + 1) % points_size;
 		lines.push_back(Vector3(points[i].x, points[i].y, depth));
 		lines.push_back(Vector3(points[n].x, points[n].y, depth));
 		lines.push_back(Vector3(points[i].x, points[i].y, -depth));
@@ -119,13 +121,13 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		// Determine orientation of the 2D polygon's vertices to determine
 		// which direction to draw outer polygons.
 		float signed_area = 0.0f;
-		for (int i = 0; i < points.size(); i++) {
-			const int j = (i + 1) % points.size();
+		for (int i = 0; i < points_size; i++) {
+			const int j = (i + 1) % points_size;
 			signed_area += points[i].x * points[j].y - points[j].x * points[i].y;
 		}
 
 		// Generate triangles for the sides of the extruded polygon.
-		for (int i = 0; i < points.size(); i++) {
+		for (int i = 0; i < points_size; i++) {
 			verts.push_back(Vector3(points[i].x, points[i].y, depth));
 			verts.push_back(Vector3(points[i].x, points[i].y, -depth));
 
@@ -133,10 +135,11 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			colors.push_back(collision_color);
 		}
 
-		for (int i = 0; i < verts.size(); i += 2) {
-			const int j = (i + 1) % verts.size();
-			const int k = (i + 2) % verts.size();
-			const int l = (i + 3) % verts.size();
+		const int verts_size = verts.size();
+		for (int i = 0; i < verts_size; i += 2) {
+			const int j = (i + 1) % verts_size;
+			const int k = (i + 2) % verts_size;
+			const int l = (i + 3) % verts_size;
 
 			indices.push_back(i);
 			if (signed_area < 0) {
@@ -165,18 +168,19 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector<Color> cap_colours_bottom;
 			Vector<int> cap_indices_bottom;
 
-			const int index_offset = verts.size();
+			const int index_offset = verts_size;
 
 			const Vector<Vector2> &convex = decomp[i];
+			const int convex_size = convex.size();
 
-			for (int j = 0; j < convex.size(); j++) {
+			for (int j = 0; j < convex_size; j++) {
 				cap_verts_bottom.push_back(Vector3(convex[j].x, convex[j].y, -depth));
 				cap_colours_bottom.push_back(collision_color);
 			}
 
-			if (convex.size() >= 3) {
-				for (int j = 1; j < convex.size(); j++) {
-					const int k = (j + 1) % convex.size();
+			if (convex_size >= 3) {
+				for (int j = 1; j < convex_size; j++) {
+					const int k = (j + 1) % convex_size;
 
 					cap_indices_bottom.push_back(index_offset + 0);
 					cap_indices_bottom.push_back(index_offset + j);
@@ -194,18 +198,19 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector<Color> cap_colours_top;
 			Vector<int> cap_indices_top;
 
-			const int index_offset = verts.size();
+			const int index_offset = verts_size;
 
 			const Vector<Vector2> &convex = decomp[i];
+			const int convex_size = convex.size();
 
-			for (int j = 0; j < convex.size(); j++) {
+			for (int j = 0; j < convex_size; j++) {
 				cap_verts_top.push_back(Vector3(convex[j].x, convex[j].y, depth));
 				cap_colours_top.push_back(collision_color);
 			}
 
-			if (convex.size() >= 3) {
-				for (int j = 1; j < convex.size(); j++) {
-					const int k = (j + 1) % convex.size();
+			if (convex_size >= 3) {
+				for (int j = 1; j < convex_size; j++) {
+					const int k = (j + 1) % convex_size;
 
 					cap_indices_top.push_back(index_offset + k);
 					cap_indices_top.push_back(index_offset + j);

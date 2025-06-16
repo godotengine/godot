@@ -618,6 +618,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	OptionButton *snap_mode = nullptr;
 	Button *auto_fit = nullptr;
 	Button *auto_fit_bezier = nullptr;
+	OptionButton *bezier_key_mode = nullptr;
 
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
@@ -767,6 +768,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
 	void _bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
+	void _bezier_track_set_key_handle_mode_at_time(Animation *p_anim, int p_track, float p_time, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
 
 	////////////// edit menu stuff
 
@@ -800,7 +802,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _edit_menu_about_to_popup();
 	void _edit_menu_pressed(int p_option);
-	int last_menu_track_opt = 0;
+	bool scale_from_cursor = false;
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 

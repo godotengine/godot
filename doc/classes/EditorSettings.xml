@@ -44,10 +44,10 @@
 				settings.set("category/property_name", 0)
 
 				var property_info = {
-				    "name": "category/property_name",
-				    "type": TYPE_INT,
-				    "hint": PROPERTY_HINT_ENUM,
-				    "hint_string": "one,two,three"
+					"name": "category/property_name",
+					"type": TYPE_INT,
+					"hint": PROPERTY_HINT_ENUM,
+					"hint_string": "one,two,three"
 				}
 
 				settings.add_property_info(property_info)
@@ -58,10 +58,10 @@
 
 				var propertyInfo = new Godot.Collections.Dictionary
 				{
-				    {"name", "category/propertyName"},
-				    {"type", Variant.Type.Int},
-				    {"hint", PropertyHint.Enum},
-				    {"hint_string", "one,two,three"}
+					{ "name", "category/propertyName" },
+					{ "type", Variant.Type.Int },
+					{ "hint", PropertyHint.Enum },
+					{ "hint_string", "one,two,three" },
 				};
 
 				settings.AddPropertyInfo(propertyInfo);
@@ -282,6 +282,9 @@
 		</member>
 		<member name="editors/2d/guides_color" type="Color" setter="" getter="">
 			The guides color to use in the 2D editor. Guides can be created by dragging the mouse cursor from the rulers.
+		</member>
+		<member name="editors/2d/ruler_width" type="float" setter="" getter="">
+			The thickness of the coordinate ruler in the 2D editor. Increasing this will also increase the size of the ruler font, improving readability when using a lower editor scale. The editor may force a minimum size to keep the ruler numbers legible.
 		</member>
 		<member name="editors/2d/smart_snapping_line_color" type="Color" setter="" getter="">
 			The color to use when drawing smart snapping lines in the 2D editor. The smart snapping lines will automatically display when moving 2D nodes if smart snapping is enabled in the Snapping Options menu at the top of the 2D editor viewport.
@@ -514,6 +517,9 @@
 		</member>
 		<member name="editors/3d_gizmos/gizmo_settings/bone_shape" type="int" setter="" getter="">
 			The shape of [Skeleton3D] bone gizmos in the 3D editor. [b]Wire[/b] is a thin line, while [b]Octahedron[/b] is a set of lines that represent a thicker hollow line pointing in a specific direction (similar to most 3D animation software).
+		</member>
+		<member name="editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size" type="float" setter="" getter="">
+			Size of probe gizmos displayed when editing [LightmapGI] and [LightmapProbe] nodes. Setting this to [code]0.0[/code] will hide the probe spheres of [LightmapGI] and wireframes of [LightmapProbe] nodes, but will keep the wireframes linking probes from [LightmapGI] and billboard icons from [LightmapProbe] intact.
 		</member>
 		<member name="editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size" type="float" setter="" getter="">
 			Size of the disk gizmo displayed when editing [Path3D]'s tilt handles.
@@ -781,13 +787,15 @@
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
 		</member>
 		<member name="filesystem/quick_open_dialog/enable_fuzzy_matching" type="bool" setter="" getter="">
-			If [code]true[/code], fuzzy matching of search tokens is allowed.
+			If [code]true[/code], together with exact matches of a filename, the dialog includes approximate matches.
+			This is useful for finding the correct files even when there are typos in the search query; for example, searching "nprmal" will find "normal". Additionally, it allows you to write shorter search queries; for example, searching "nml" will also find "normal".
+			See also [member filesystem/quick_open_dialog/max_fuzzy_misses].
 		</member>
 		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
 			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
 		</member>
 		<member name="filesystem/quick_open_dialog/max_fuzzy_misses" type="int" setter="" getter="">
-			The number of allowed missed query characters in a match, if fuzzy matching is enabled. For example, with the default value of 2, [code]foobar[/code] would match [code]foobur[/code] and [code]foob[/code] but not [code]foo[/code].
+			The number of missed query characters allowed in a match when fuzzy matching is enabled. For example, with the default value of [code]2[/code], [code]"normal"[/code] would match [code]"narmal"[/code] and [code]"norma"[/code] but not [code]"nor"[/code].
 		</member>
 		<member name="filesystem/quick_open_dialog/max_results" type="int" setter="" getter="">
 			Maximum number of matches to show in dialog.
@@ -808,6 +816,13 @@
 			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
 			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage.
 			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
+		</member>
+		<member name="interface/accessibility/accessibility_support" type="int" setter="" getter="">
+			Editor accessibility support mode:
+			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
+			- [b]Always Active[/b] ([code]1[/code]): Accessibility support is enabled, and updates to the accessibility information are always processed, regardless of the status of assistive apps.
+			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD) do not count as assistive apps. To test your project with these tools, use [b]Always Active[/b].
 		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
@@ -894,14 +909,16 @@
 			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
 		</member>
 		<member name="interface/editor/low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
+			The amount of sleeping between frames in the editor (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editor/main_font" type="String" setter="" getter="">
 			The font to use for the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
+			[b]Note:[/b] If the provided font is variable, a weight of 400 (normal) will be used.
 		</member>
 		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
+			[b]Note:[/b] If the provided font is variable, a weight of 700 (bold) will be used.
 		</member>
 		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
 			The size of the font in the editor interface.
@@ -945,7 +962,7 @@
 			Editor UI default layout direction.
 		</member>
 		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 20 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
+			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editor/update_continuously" type="bool" setter="" getter="">
@@ -1116,8 +1133,8 @@
 			If [code]true[/code], enable two finger pan and scale gestures on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
-		<member name="interface/touchscreen/increase_scrollbar_touch_area" type="bool" setter="" getter="">
-			If [code]true[/code], increases the scrollbar touch area to improve usability on touchscreen devices.
+		<member name="interface/touchscreen/enable_touch_optimizations" type="bool" setter="" getter="">
+			If [code]true[/code], increases the scrollbar touch area and enables a larger dragger for split containers to improve usability on touchscreen devices
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
 		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">

@@ -43,6 +43,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/slider.h"
@@ -90,7 +91,7 @@ void ConnectionInfoDialog::popup_connections(const String &p_method, const Vecto
 }
 
 ConnectionInfoDialog::ConnectionInfoDialog() {
-	set_title(TTR("Connections to method:"));
+	set_title(TTRC("Connections to method:"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
@@ -101,6 +102,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 
 	method = memnew(Label);
 	method->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	method->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	method->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vbc->add_child(method);
 
@@ -109,9 +111,9 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	tree->set_columns(3);
 	tree->set_hide_root(true);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0, TTR("Source"));
-	tree->set_column_title(1, TTR("Signal"));
-	tree->set_column_title(2, TTR("Target"));
+	tree->set_column_title(0, TTRC("Source"));
+	tree->set_column_title(1, TTRC("Signal"));
+	tree->set_column_title(2, TTRC("Target"));
 	vbc->add_child(tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
@@ -612,20 +614,18 @@ void ScriptTextEditor::_update_background_color() {
 	// Set the warning background.
 	if (warning_line_color.a != 0.0) {
 		for (const ScriptLanguage::Warning &warning : warnings) {
-			int folder_line_header = te->get_folded_line_header(warning.end_line - 2);
-			bool is_folded = folder_line_header != (warning.end_line - 2);
+			int warning_start_line = CLAMP(warning.start_line - 1, 0, te->get_line_count() - 1);
+			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
+			int folded_line_header = te->get_folded_line_header(warning_start_line);
 
-			if (is_folded) {
-				te->set_line_background_color(folder_line_header, warning_line_color);
-			} else if (warning.end_line - warning.start_line > 0 && warning.end_line - warning.start_line < 20) {
-				// If the warning spans below 20 lines (arbitrary), set the background color for all lines.
-				// (W.end_line - W.start_line > 0) ensures that we set the background for single line warnings.
-				for (int i = warning.start_line - 1; i < warning.end_line - 1; i++) {
+			// If the warning highlight is too long, only highlight the start line.
+			const int warning_max_lines = 20;
+
+			te->set_line_background_color(folded_line_header, warning_line_color);
+			if (warning_end_line - warning_start_line < warning_max_lines) {
+				for (int i = warning_start_line + 1; i <= warning_end_line; i++) {
 					te->set_line_background_color(i, warning_line_color);
 				}
-			} else {
-				// Otherwise, just set the background color for the start line of the warning.
-				te->set_line_background_color(warning.start_line - 1, warning_line_color);
 			}
 		}
 	}
@@ -633,14 +633,10 @@ void ScriptTextEditor::_update_background_color() {
 	// Set the error background.
 	if (marked_line_color.a != 0.0) {
 		for (const ScriptLanguage::ScriptError &error : errors) {
-			int folder_line_header = te->get_folded_line_header(error.line - 1);
-			bool is_folded_code = folder_line_header != (error.line - 1);
+			int error_line = CLAMP(error.line - 1, 0, te->get_line_count() - 1);
+			int folded_line_header = te->get_folded_line_header(error_line);
 
-			if (is_folded_code) {
-				te->set_line_background_color(folder_line_header, marked_line_color);
-			} else {
-				te->set_line_background_color(error.line - 1, marked_line_color);
-			}
+			te->set_line_background_color(folded_line_header, marked_line_color);
 		}
 	}
 }
@@ -823,10 +819,12 @@ void ScriptTextEditor::_validate_script() {
 		}
 
 		if (errors.size() > 0) {
-			// TRANSLATORS: Script error pointing to a line and column number.
-			String error_text = vformat(TTR("Error at (%d, %d):"), errors.front()->get().line, errors.front()->get().column) + " " + errors.front()->get().message;
+			const int line = errors.front()->get().line;
+			const int column = errors.front()->get().column;
+			const String message = errors.front()->get().message.replace("[", "[lb]");
+			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), line, column, line, column) + " " + message;
 			code_editor->set_error(error_text);
-			code_editor->set_error_pos(errors.front()->get().line - 1, errors.front()->get().column - 1);
+			code_editor->set_error_pos(line - 1, column - 1);
 		}
 		script_is_valid = false;
 	} else {
@@ -865,8 +863,8 @@ void ScriptTextEditor::_update_warnings() {
 			warnings_panel->push_table(1);
 			for (const Connection &connection : missing_connections) {
 				String base_path = base->get_name();
-				String source_path = base == connection.signal.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.signal.get_object()));
-				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.callable.get_object()));
+				String source_path = base == connection.signal.get_object() ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.signal.get_object())));
+				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.callable.get_object())));
 
 				warnings_panel->push_cell();
 				warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -1881,7 +1879,6 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case SEARCH_LOCATE_FUNCTION: {
 			quick_open->popup_dialog(get_functions());
-			quick_open->set_title(TTR("Go to Function"));
 		} break;
 		case SEARCH_GOTO_LINE: {
 			goto_line_popup->popup_find_line(code_editor);
@@ -2044,6 +2041,13 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready() && is_visible_in_tree()) {
+				_update_errors();
+				_update_warnings();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED:
 			if (!editor_enabled) {
 				break;
@@ -2537,7 +2541,7 @@ void ScriptTextEditor::_prepare_edit_menu() {
 void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos) {
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
-		context_menu->add_item(TTR("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
+		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}
 	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
@@ -2574,11 +2578,11 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
 		}
 		if (p_color) {
-			context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
+			context_menu->add_item(TTRC("Pick Color"), EDIT_PICK_COLOR);
 		}
 	}
 
-	const PackedStringArray paths = { code_editor->get_text_editor()->get_path() };
+	const PackedStringArray paths = { String(code_editor->get_text_editor()->get_path()) };
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, paths);
 
 	const CodeEdit *tx = code_editor->get_text_editor();
@@ -2641,6 +2645,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	color_panel->add_child(color_picker);
 
 	quick_open = memnew(ScriptEditorQuickOpen);
+	quick_open->set_title(TTRC("Go to Function"));
 	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
 	add_child(quick_open);
 
@@ -2673,7 +2678,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_submenu_node_item(TTR("Line"), sub_menu);
+		edit_menu->get_popup()->add_submenu_node_item(TTRC("Line"), sub_menu);
 	}
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
@@ -2682,7 +2687,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_submenu_node_item(TTR("Folding"), sub_menu);
+		edit_menu->get_popup()->add_submenu_node_item(TTRC("Folding"), sub_menu);
 	}
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
@@ -2694,7 +2699,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_submenu_node_item(TTR("Indentation"), sub_menu);
+		edit_menu->get_popup()->add_submenu_node_item(TTRC("Indentation"), sub_menu);
 	}
 	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 	edit_menu->get_popup()->add_separator();
@@ -2704,9 +2709,9 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/capitalize"), EDIT_CAPITALIZE);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_submenu_node_item(TTR("Convert Case"), sub_menu);
+		edit_menu->get_popup()->add_submenu_node_item(TTRC("Convert Case"), sub_menu);
 	}
-	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
+	edit_menu->get_popup()->add_submenu_node_item(TTRC("Syntax Highlighter"), highlighter_menu);
 	highlighter_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
 
 	edit_hb->add_child(search_menu);
@@ -2729,12 +2734,12 @@ void ScriptTextEditor::_enable_code_editor() {
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
 	goto_menu->get_popup()->add_separator();
 
-	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
+	goto_menu->get_popup()->add_submenu_node_item(TTRC("Bookmarks"), bookmarks_menu);
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_bookmark_item_pressed));
 
-	goto_menu->get_popup()->add_submenu_node_item(TTR("Breakpoints"), breakpoints_menu);
+	goto_menu->get_popup()->add_submenu_node_item(TTRC("Breakpoints"), breakpoints_menu);
 	_update_breakpoint_list();
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_breakpoint_item_pressed));
@@ -2794,7 +2799,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_hb = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
-	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_text(TTRC("Edit"));
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->set_shortcut_context(this);
 
@@ -2810,12 +2815,12 @@ ScriptTextEditor::ScriptTextEditor() {
 	set_syntax_highlighter(highlighter);
 
 	search_menu = memnew(MenuButton);
-	search_menu->set_text(TTR("Search"));
+	search_menu->set_text(TTRC("Search"));
 	search_menu->set_switch_on_hover(true);
 	search_menu->set_shortcut_context(this);
 
 	goto_menu = memnew(MenuButton);
-	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_text(TTRC("Go To"));
 	goto_menu->set_switch_on_hover(true);
 	goto_menu->set_shortcut_context(this);
 
@@ -2837,7 +2842,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	inline_color_options->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	inline_color_options->set_fit_to_longest_item(false);
 	inline_color_options->connect("item_selected", callable_mp(this, &ScriptTextEditor::_update_color_text).unbind(1));
-	inline_color_picker->get_slider(ColorPicker::SLIDER_COUNT)->get_parent()->add_sibling(inline_color_options);
+	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 

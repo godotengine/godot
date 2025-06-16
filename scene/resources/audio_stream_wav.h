@@ -124,6 +124,8 @@ private:
 	LocalVector<uint8_t> data;
 	uint32_t data_bytes = 0;
 
+	Dictionary tags;
+
 protected:
 	static void _bind_methods();
 
@@ -148,6 +150,9 @@ public:
 
 	void set_stereo(bool p_enable);
 	bool is_stereo() const;
+
+	void set_tags(const Dictionary &p_tags);
+	virtual Dictionary get_tags() const override;
 
 	virtual double get_length() const override; //if supported, otherwise return 0
 

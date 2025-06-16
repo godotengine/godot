@@ -28,7 +28,8 @@ elif env["platform"] == "linuxbsd":
         env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
 
     if env["wayland"] and env["opengl3"]:
-        env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_EGL"])
+        env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_EGL", "XRDEPENDENCIES_USE_GLAD"])
+        env_openxr.Prepend(CPPEXTPATH=["#thirdparty/glad"])
 
     # FIXME: Review what needs to be set for Android and macOS.
     # FreeBSD uses non-standard getenv functions.

@@ -71,7 +71,6 @@
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
-#include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server_dummy.h"
@@ -1037,6 +1036,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Vector<String> breakpoints;
 	bool delta_smoothing_override = false;
+	bool load_shell_env = false;
 
 	String default_renderer = "";
 	String default_renderer_mobile = "";
@@ -2637,17 +2637,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
-
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
+
+	load_shell_env = GLOBAL_DEF("application/run/load_shell_environment", false);
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed.
 		OS::get_singleton()->_allow_hidpi = true;
+		load_shell_env = true;
 	}
 #endif
+	if (load_shell_env) {
+		OS::get_singleton()->load_shell_environment();
+	}
 
 	if (separate_thread_render == -1) {
 		separate_thread_render = (int)GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE) == OS::RENDER_SEPARATE_THREAD;
@@ -2902,6 +2906,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	print_header(false);
 
 #ifdef TOOLS_ENABLED
+	int accessibility_mode_editor = 0;
 	int tablet_driver_editor = -1;
 	if (editor || project_manager || cmdline_tool) {
 		OS::get_singleton()->benchmark_begin_measure("Startup", "Initialize Early Settings");
@@ -2939,6 +2944,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool tablet_found = false;
 
+					bool ac_found = false;
+
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
 					} else if (project_manager) {
@@ -2953,7 +2960,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found || !tablet_found) {
+					while (!screen_found || !prefer_wayland_found || !tablet_found || !ac_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2972,7 +2979,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 								}
 							}
-							if (assign == "interface/editor/expand_to_title") {
+							if (assign == "interface/accessibility/accessibility_support") {
+								accessibility_mode_editor = value;
+								ac_found = true;
+							} else if (assign == "interface/editor/expand_to_title") {
 								init_expand_to_title = value;
 							} else if (assign == "interface/editor/display_scale") {
 								init_display_scale = value;
@@ -3147,7 +3157,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 #endif
 
 		if (!accessibility_mode_set) {
-			accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+#ifdef TOOLS_ENABLED
+			if (editor || project_manager || cmdline_tool) {
+				accessibility_mode = (DisplayServer::AccessibilityMode)accessibility_mode_editor;
+			} else {
+#else
+			{
+#endif
+				accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+			}
 		}
 		DisplayServer::accessibility_set_mode(accessibility_mode);
 
@@ -4433,13 +4451,12 @@ int Main::start() {
 
 #ifdef TOOLS_ENABLED
 		if (editor) {
-			bool editor_embed_subwindows = EditorSettings::get_singleton()->get_setting(
-					"interface/editor/single_window_mode");
+			bool editor_embed_subwindows = EDITOR_GET("interface/editor/single_window_mode");
 
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embedding_subwindows(true);
 			}
-			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
+			restore_editor_window_layout = EDITOR_GET("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 		}
 #endif
 
@@ -4577,6 +4594,8 @@ int Main::start() {
 	if (movie_writer) {
 		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
+
+	GDExtensionManager::get_singleton()->startup();
 
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
@@ -4783,6 +4802,8 @@ bool Main::iteration() {
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
+	GDExtensionManager::get_singleton()->frame();
+
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
 	}
@@ -4849,11 +4870,9 @@ bool Main::iteration() {
 	}
 
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	bool skip_delay = scene_tree && scene_tree->is_accessibility_enabled();
+	bool wake_for_events = scene_tree && scene_tree->is_accessibility_enabled();
 
-	if (!skip_delay) {
-		OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
-	}
+	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw(), wake_for_events);
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
@@ -4902,6 +4921,8 @@ void Main::cleanup(bool p_force) {
 		input->flush_frame_parsed_events();
 	}
 #endif
+
+	GDExtensionManager::get_singleton()->shutdown();
 
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();

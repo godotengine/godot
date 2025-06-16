@@ -215,7 +215,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is [code]true[/code] the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
+				If [param paused] is [code]true[/code] the specified [param agent] will not be processed. For example, it will not calculate avoidance velocities or receive avoidance callbacks.
 			</description>
 		</method>
 		<method name="agent_set_position">
@@ -307,7 +307,7 @@
 			<return type="int" />
 			<param index="0" name="process_info" type="int" enum="NavigationServer2D.ProcessInfo" />
 			<description>
-				Returns information about the current state of the NavigationServer. See [enum ProcessInfo] for a list of available states.
+				Returns information about the current state of the NavigationServer.
 			</description>
 		</method>
 		<method name="is_baking_navigation_polygon" qualifiers="const">
@@ -737,7 +737,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is [code]true[/code] the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
+				If [param paused] is [code]true[/code] the specified [param obstacle] will not be processed. For example, it will no longer affect avoidance velocities.
 			</description>
 		</method>
 		<method name="obstacle_set_position">
@@ -905,6 +905,13 @@
 				Returns the travel cost of this [param region].
 			</description>
 		</method>
+		<method name="region_get_use_async_iterations" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [param region] uses an async synchronization process that runs on a background thread.
+			</description>
+		</method>
 		<method name="region_get_use_edge_connections" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="region" type="RID" />
@@ -984,6 +991,14 @@
 			<param index="1" name="travel_cost" type="float" />
 			<description>
 				Sets the [param travel_cost] for this [param region].
+			</description>
+		</method>
+		<method name="region_set_use_async_iterations">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the [param region] uses an async synchronization process that runs on a background thread.
 			</description>
 		</method>
 		<method name="region_set_use_edge_connections">

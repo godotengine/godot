@@ -448,7 +448,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
-				Returns the spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+				Returns the spacing for [param spacing] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="font_get_stretch" qualifiers="const">
@@ -462,7 +462,7 @@
 			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns font style flags, see [enum FontStyle].
+				Returns font style flags.
 			</description>
 		</method>
 		<method name="font_get_style_name" qualifiers="const">
@@ -960,7 +960,7 @@
 			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<param index="2" name="value" type="int" />
 			<description>
-				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+				Sets the spacing for [param spacing] to [param value] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="font_set_stretch">
@@ -977,7 +977,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="style" type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<description>
-				Sets the font style flags, see [enum FontStyle].
+				Sets the font style flags.
 				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], [method font_set_embolden], or [method font_set_transform] instead.
 			</description>
 		</method>
@@ -1211,7 +1211,7 @@
 			<param index="1" name="args" type="Array" />
 			<param index="2" name="text" type="String" />
 			<description>
-				Default implementation of the BiDi algorithm override function. See [enum StructuredTextParser] for more info.
+				Default implementation of the BiDi algorithm override function.
 			</description>
 		</method>
 		<method name="percent_sign" qualifiers="const">
@@ -1400,6 +1400,7 @@
 			<param index="6" name="oversampling" type="float" default="0.0" />
 			<description>
 				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				[param clip_l] and [param clip_r] are offsets relative to [param pos], going to the right in horizontal layout and downward in vertical layout. If [param clip_l] is not negative, glyphs starting before the offset are clipped. If [param clip_r] is not negative, glyphs ending after the offset are clipped.
 			</description>
 		</method>
 		<method name="shaped_text_draw_outline" qualifiers="const">
@@ -1414,6 +1415,7 @@
 			<param index="7" name="oversampling" type="float" default="0.0" />
 			<description>
 				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				[param clip_l] and [param clip_r] are offsets relative to [param pos], going to the right in horizontal layout and downward in vertical layout. If [param clip_l] is not negative, glyphs starting before the offset are clipped. If [param clip_r] is not negative, glyphs ending after the offset are clipped.
 			</description>
 		</method>
 		<method name="shaped_text_fit_to_width">
@@ -1682,7 +1684,7 @@
 			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="264" />
 			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="4" />
 			<description>
-				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum GraphemeFlag]).
+				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking.
 			</description>
 		</method>
 		<method name="shaped_text_has_visible_chars" qualifiers="const">
@@ -2192,10 +2194,10 @@
 			Glyph horizontal position is rounded to one quarter of the pixel size, each glyph is rasterized up to four times.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE" value="20" enum="SubpixelPositioning">
-			Maximum font size which will use one half of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
+			Maximum font size which will use "one half of the pixel" subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE" value="16" enum="SubpixelPositioning">
-			Maximum font size which will use one quarter of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
+			Maximum font size which will use "one quarter of the pixel" subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="FEATURE_SIMPLE_LAYOUT" value="1" enum="Feature">
 			TextServer supports simple text layouts.
@@ -2273,7 +2275,7 @@
 			Font is italic or oblique.
 		</constant>
 		<constant name="FONT_FIXED_WIDTH" value="4" enum="FontStyle" is_bitfield="true">
-			Font have fixed-width characters.
+			Font has fixed-width characters (also known as monospace).
 		</constant>
 		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
 			Use default Unicode BiDi algorithm.

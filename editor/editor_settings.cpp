@@ -568,8 +568,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	open_in_new_inspector_defaults.push_back("MeshLibrary");
 	_initial_set("interface/inspector/resources_to_open_in_new_inspector", open_in_new_inspector_defaults);
 
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/accessibility/accessibility_support", 0, "Auto (When Screen Reader is Running),Always Active,Disabled")
+	set_restart_if_changed("interface/accessibility/accessibility_support", true);
+
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_mode", (int32_t)ColorPicker::MODE_RGB, "RGB,HSV,RAW,OKHSL")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,OK HS Rectangle:5,OK HL Rectangle") // `SHAPE_NONE` is 4.
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/color_picker_show_intensity", true, "");
 
 	// Theme
@@ -592,19 +595,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Touchscreen
 	bool has_touchscreen_ui = DisplayServer::get_singleton()->is_touchscreen_available();
+	bool is_native_touchscreen = has_touchscreen_ui && !OS::get_singleton()->has_feature("xr_editor"); // Disable some touchscreen settings by default for the XR Editor.
+
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_touch_optimizations", is_native_touchscreen, "")
+	set_restart_if_changed("interface/touchscreen/enable_touch_optimizations", true);
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", is_native_touchscreen, "")
+	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
+
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/touchscreen/scale_gizmo_handles", has_touchscreen_ui ? 3 : 1, "1,5,1")
 	set_restart_if_changed("interface/touchscreen/scale_gizmo_handles", true);
 
-	// Disable some touchscreen settings by default for the XR Editor.
-	bool is_native_touchscreen = has_touchscreen_ui && !OS::get_singleton()->has_feature("xr_editor");
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", is_native_touchscreen, "")
-	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/increase_scrollbar_touch_area", is_native_touchscreen, "")
-	set_restart_if_changed("interface/touchscreen/increase_scrollbar_touch_area", true);
-
-	// Only available in the Android editor.
+	// Only available in the Android/XR editor.
 	String touch_actions_panel_hints = "Disabled:0,Embedded Panel:1,Floating Panel:2";
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/touchscreen/touch_actions_panel", 1, touch_actions_panel_hints)
 
@@ -847,6 +850,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d_gizmos/gizmo_settings/bone_axis_length", (float)0.1);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d_gizmos/gizmo_settings/bone_shape", 1, "Wire,Octahedron");
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size", 0.4, "0.0,1.0,0.001,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
@@ -919,6 +923,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4), true);
 	_initial_set("editors/2d/use_integer_zoom_by_default", false, true);
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/zoom_speed_factor", 1.1, "1.01,2,0.01")
+	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/ruler_width", 16.0, "12.0,30.0,1.0")
 
 	// Bone mapper (BoneMapEditorPlugin)
 	_initial_set("editors/bone_mapper/handle_colors/unset", Color(0.3, 0.3, 0.3));
@@ -1182,7 +1187,7 @@ String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path)
 	if (editor.begins_with("rider")) {
 		new_exec_flags = "{project} --line {line} {file}";
 	} else if (editor == "subl" || editor == "sublime text" || editor == "sublime_text") {
-		new_exec_flags = "{project} {file}:{line}:{column}";
+		new_exec_flags = "{project} {file}:{line}:{col}";
 	} else if (editor == "vim" || editor == "gvim") {
 		new_exec_flags = "\"+call cursor({line}, {col})\" {file}";
 	} else if (editor == "emacs") {
@@ -1347,7 +1352,7 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-	String lang = get("interface/editor/editor_language");
+	String lang = _EDITOR_GET("interface/editor/editor_language");
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
@@ -1385,12 +1390,12 @@ void EditorSettings::setup_network() {
 		}
 		// Select current IP (found)
 		if (ip == current) {
-			selected = ip;
+			selected = String(ip);
 		}
 		if (!hint.is_empty()) {
 			hint += ",";
 		}
-		hint += ip;
+		hint += String(ip);
 	}
 
 	// Add hints with valid IP addresses to remote_host property.
@@ -1460,6 +1465,9 @@ void EditorSettings::set_setting(const String &p_setting, const Variant &p_value
 
 Variant EditorSettings::get_setting(const String &p_setting) const {
 	_THREAD_SAFE_METHOD_
+	if (ProjectSettings::get_singleton()->has_editor_setting_override(p_setting)) {
+		return ProjectSettings::get_singleton()->get_editor_setting_override(p_setting);
+	}
 	return get(p_setting);
 }
 
@@ -1534,7 +1542,7 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 
 Variant _EDITOR_GET(const String &p_setting) {
 	ERR_FAIL_COND_V(!EditorSettings::get_singleton() || !EditorSettings::get_singleton()->has_setting(p_setting), Variant());
-	return EditorSettings::get_singleton()->get(p_setting);
+	return EditorSettings::get_singleton()->get_setting(p_setting);
 }
 
 bool EditorSettings::_property_can_revert(const StringName &p_name) const {

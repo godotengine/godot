@@ -1065,7 +1065,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 #endif
 
 	if (data.size()) {
-		for (uint32_t i = 0; i < p_format.array_layers; i++) {
+		for (uint32_t i = 0; i < format.array_layers; i++) {
 			_texture_initialize(id, i, data[i], immediate_flush);
 		}
 
@@ -2907,6 +2907,8 @@ RID RenderingDevice::framebuffer_create(const Vector<RID> &p_texture_attachments
 
 		if (texture && texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 			pass.depth_attachment = i;
+		} else if (texture && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
+			// Prevent the VRS attachment from being added to the color_attachments.
 		} else {
 			if (texture && texture->is_resolve_buffer) {
 				pass.resolve_attachments.push_back(i);

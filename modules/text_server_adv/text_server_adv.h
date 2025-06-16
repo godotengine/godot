@@ -152,7 +152,15 @@ class TextServerAdvanced : public TextServerExtension {
 	HashMap<StringName, int32_t> feature_sets;
 	HashMap<int32_t, FeatureInfo> feature_sets_inv;
 
+	enum LineBreakStrictness {
+		LB_AUTO,
+		LB_LOOSE,
+		LB_NORMAL,
+		LB_STRICT,
+	};
+
 	SafeNumeric<TextServer::FontLCDSubpixelLayout> lcd_subpixel_layout{ TextServer::FontLCDSubpixelLayout::FONT_LCD_SUBPIXEL_LAYOUT_NONE };
+	LineBreakStrictness lb_strictness = LB_AUTO;
 	void _update_settings();
 
 	void _insert_num_systems_lang();

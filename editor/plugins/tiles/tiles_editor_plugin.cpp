@@ -93,25 +93,23 @@ void TilesEditorUtils::_thread() {
 				viewport->set_transparent_background(true);
 				viewport->set_update_mode(SubViewport::UPDATE_ONCE);
 
-				TileMap *tile_map = memnew(TileMap);
-				tile_map->set_tileset(item.tile_set);
-				tile_map->set_pattern(0, Vector2(), item.pattern);
-				viewport->add_child(tile_map);
-
-				TypedArray<Vector2i> used_cells = tile_map->get_used_cells(0);
+				TileMapLayer *tile_map_layer = memnew(TileMapLayer);
+				tile_map_layer->set_tile_set(item.tile_set);
+				tile_map_layer->set_pattern(Vector2(), item.pattern);
+				viewport->add_child(tile_map_layer);
 
 				Rect2 encompassing_rect;
-				encompassing_rect.set_position(tile_map->map_to_local(used_cells[0]));
-				for (int i = 0; i < used_cells.size(); i++) {
-					Vector2i cell = used_cells[i];
-					Vector2 world_pos = tile_map->map_to_local(cell);
+				encompassing_rect.set_position(tile_map_layer->map_to_local(tile_map_layer->get_tile_map_layer_data().begin()->key));
+				for (KeyValue<Vector2i, CellData> kv : tile_map_layer->get_tile_map_layer_data()) {
+					Vector2i cell = kv.key;
+					Vector2 world_pos = tile_map_layer->map_to_local(cell);
 					encompassing_rect.expand_to(world_pos);
 
 					// Texture.
-					Ref<TileSetAtlasSource> atlas_source = item.tile_set->get_source(tile_map->get_cell_source_id(0, cell));
+					Ref<TileSetAtlasSource> atlas_source = item.tile_set->get_source(tile_map_layer->get_cell_source_id(cell));
 					if (atlas_source.is_valid()) {
-						Vector2i coords = tile_map->get_cell_atlas_coords(0, cell);
-						int alternative = tile_map->get_cell_alternative_tile(0, cell);
+						Vector2i coords = tile_map_layer->get_cell_atlas_coords(cell);
+						int alternative = tile_map_layer->get_cell_alternative_tile(cell);
 
 						if (atlas_source->has_tile(coords) && atlas_source->has_alternative_tile(coords, alternative)) {
 							Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
@@ -122,8 +120,8 @@ void TilesEditorUtils::_thread() {
 				}
 
 				Vector2 scale = thumbnail_size2 / MAX(encompassing_rect.size.x, encompassing_rect.size.y);
-				tile_map->set_scale(scale);
-				tile_map->set_position(-(scale * encompassing_rect.get_center()) + thumbnail_size2 / 2);
+				tile_map_layer->set_scale(scale);
+				tile_map_layer->set_position(-(scale * encompassing_rect.get_center()) + thumbnail_size2 / 2);
 
 				// Add the viewport at the last moment to avoid rendering too early.
 				callable_mp((Node *)EditorNode::get_singleton(), &Node::add_child).call_deferred(viewport, false, Node::INTERNAL_MODE_DISABLED);

@@ -48,14 +48,14 @@
 		</method>
 		<method name="char">
 			<return type="String" />
-			<param index="0" name="char" type="int" />
+			<param index="0" name="code" type="int" />
 			<description>
-				Returns a single character (as a [String]) of the given Unicode code point (which is compatible with ASCII code).
+				Returns a single character (as a [String] of length 1) of the given Unicode code point [param code].
 				[codeblock]
-				var upper = char(65)      # upper is "A"
-				var lower = char(65 + 32) # lower is "a"
-				var euro = char(8364)     # euro is "€"
+				print(char(65))     # Prints "A"
+				print(char(129302)) # Prints "🤖" (robot face emoji)
 				[/codeblock]
+				This is the inverse of [method ord]. See also [method String.chr] and [method String.unicode_at].
 			</description>
 		</method>
 		<method name="convert" deprecated="Use [method @GlobalScope.type_convert] instead.">
@@ -87,13 +87,13 @@
 				Returns an array of dictionaries representing the current call stack. See also [method print_stack].
 				[codeblock]
 				func _ready():
-				    foo()
+					foo()
 
 				func foo():
-				    bar()
+					bar()
 
 				func bar():
-				    print(get_stack())
+					print(get_stack())
 				[/codeblock]
 				Starting from [code]_ready()[/code], [code]bar()[/code] would print:
 				[codeblock lang=text]
@@ -111,9 +111,9 @@
 				[codeblock]
 				var foo = "bar"
 				func _ready():
-				    var d = inst_to_dict(self)
-				    print(d.keys())
-				    print(d.values())
+					var d = inst_to_dict(self)
+					print(d.keys())
+					print(d.values())
 				[/codeblock]
 				Prints out:
 				[codeblock lang=text]
@@ -175,6 +175,18 @@
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
 			</description>
 		</method>
+		<method name="ord">
+			<return type="int" />
+			<param index="0" name="char" type="String" />
+			<description>
+				Returns an integer representing the Unicode code point of the given character [param char], which should be a string of length 1.
+				[codeblock]
+				print(ord("A")) # Prints 65
+				print(ord("🤖")) # Prints 129302
+				[/codeblock]
+				This is the inverse of [method char]. See also [method String.chr] and [method String.unicode_at].
+			</description>
+		</method>
 		<method name="preload">
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
@@ -232,7 +244,7 @@
 				[codeblock]
 				var array = [3, 6, 9]
 				for i in range(array.size() - 1, -1, -1):
-				    print(array[i])
+					print(array[i])
 				[/codeblock]
 				Output:
 				[codeblock lang=text]
@@ -243,7 +255,7 @@
 				To iterate over [float], convert them in the loop.
 				[codeblock]
 				for i in range (3, 0, -1):
-				    print(i / 10.0)
+					print(i / 10.0)
 				[/codeblock]
 				Output:
 				[codeblock lang=text]
@@ -423,6 +435,14 @@
 				@export_file("*.txt") var notes_path: String
 				@export_file var level_paths: Array[String]
 				[/codeblock]
+				[b]Note:[/b] The file will be stored and referenced as UID, if available. This ensures that the reference is valid even when the file is moved. You can use [ResourceUID] methods to convert it to path.
+			</description>
+		</annotation>
+		<annotation name="@export_file_path" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="filter" type="String" default="&quot;&quot;" />
+			<description>
+				Same as [annotation @export_file], except the file will be stored as a raw path. This means that it may become invalid when the file is moved. If you are exporting a [Resource] path, consider using [annotation @export_file] instead.
 			</description>
 		</annotation>
 		<annotation name="@export_flags" qualifiers="vararg">
@@ -701,14 +721,14 @@
 				var randomize_color_action = randomize_color
 
 				func hello():
-				    print("Hello world!")
+					print("Hello world!")
 
 				func randomize_color():
-				    var undo_redo = EditorInterface.get_editor_undo_redo()
-				    undo_redo.create_action("Randomized Sprite2D Color")
-				    undo_redo.add_do_property(self, &amp;"self_modulate", Color(randf(), randf(), randf()))
-				    undo_redo.add_undo_property(self, &amp;"self_modulate", self_modulate)
-				    undo_redo.commit_action()
+					var undo_redo = EditorInterface.get_editor_undo_redo()
+					undo_redo.create_action("Randomized Sprite2D Color")
+					undo_redo.add_do_property(self, &amp;"self_modulate", Color(randf(), randf(), randf()))
+					undo_redo.add_undo_property(self, &amp;"self_modulate", self_modulate)
+					undo_redo.commit_action()
 				[/codeblock]
 				[b]Note:[/b] The property is exported without the [constant PROPERTY_USAGE_STORAGE] flag because a [Callable] cannot be properly serialized and stored in a file.
 				[b]Note:[/b] In an exported project neither [EditorInterface] nor [EditorUndoRedoManager] exist, which may cause some scripts to break. To prevent this, you can use [method Engine.get_singleton] and omit the static type from the variable declaration:
@@ -791,10 +811,10 @@
 				Mark the following statement to ignore the specified [param warning]. See [url=$DOCS_URL/tutorials/scripting/gdscript/warning_system.html]GDScript warning system[/url].
 				[codeblock]
 				func test():
-				    print("hello")
-				    return
-				    @warning_ignore("unreachable_code")
-				    print("unreachable")
+					print("hello")
+					return
+					@warning_ignore("unreachable_code")
+					print("unreachable")
 				[/codeblock]
 				See also [annotation @warning_ignore_start] and [annotation @warning_ignore_restore].
 			</description>
@@ -814,12 +834,12 @@
 				Starts ignoring the listed warning types until the end of the file or the [annotation @warning_ignore_restore] annotation with the given warning type.
 				[codeblock]
 				func test():
-				    var a = 1 # Warning (if enabled in the Project Settings).
-				    @warning_ignore_start("unused_variable")
-				    var b = 2 # No warning.
-				    var c = 3 # No warning.
-				    @warning_ignore_restore("unused_variable")
-				    var d = 4 # Warning (if enabled in the Project Settings).
+					var a = 1 # Warning (if enabled in the Project Settings).
+					@warning_ignore_start("unused_variable")
+					var b = 2 # No warning.
+					var c = 3 # No warning.
+					@warning_ignore_restore("unused_variable")
+					var d = 4 # Warning (if enabled in the Project Settings).
 				[/codeblock]
 				[b]Note:[/b] To suppress a single warning, use [annotation @warning_ignore] instead.
 				[b]Note:[/b] Unlike most other annotations, arguments of the [annotation @warning_ignore_start] annotation must be string literals (constant expressions are not supported).

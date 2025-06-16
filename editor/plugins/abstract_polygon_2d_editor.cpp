@@ -128,6 +128,43 @@ bool AbstractPolygon2DEditor::_has_resource() const {
 void AbstractPolygon2DEditor::_create_resource() {
 }
 
+Vector2 AbstractPolygon2DEditor::_get_geometric_center() const {
+	int n_polygons = _get_polygon_count();
+
+	double cx = 0.0;
+	double cy = 0.0;
+	int n_subs = 0;
+	for (int i = 0; i < n_polygons; i++) {
+		const Vector<Vector2> &vertices = _get_polygon(i);
+		Vector<Vector<Point2>> decomp = ::Geometry2D::decompose_polygon_in_convex(vertices);
+		if (decomp.is_empty()) {
+			continue;
+		}
+		for (const Vector<Vector2> &sub : decomp) {
+			int sub_n_points = sub.size();
+			double sub_area2x = 0.0;
+			double sub_cx = 0.0;
+			double sub_cy = 0.0;
+			for (int n = 0; n < sub_n_points; n++) {
+				int next = (n + 1 < sub_n_points) ? n + 1 : 0;
+				sub_area2x += (sub[n].x * sub[next].y) - (sub[next].x * sub[n].y);
+				sub_cx += (sub[n].x + sub[next].x) * (sub[n].x * sub[next].y - sub[next].x * sub[n].y);
+				sub_cy += (sub[n].y + sub[next].y) * (sub[n].x * sub[next].y - sub[next].x * sub[n].y);
+			}
+			sub_cx /= (sub_area2x * 3);
+			sub_cy /= (sub_area2x * 3);
+
+			cx += sub_cx;
+			cy += sub_cy;
+		}
+		n_subs += decomp.size();
+	}
+	cx /= n_subs;
+	cy /= n_subs;
+
+	return Vector2(cx, cy);
+}
+
 void AbstractPolygon2DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MODE_CREATE: {
@@ -150,6 +187,33 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 			button_edit->set_pressed(false);
 			button_delete->set_pressed(true);
 		} break;
+		case CENTER_POLY: {
+			_wip_close();
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Move Origin to Geometric Center"));
+
+			Vector2 center = _get_geometric_center();
+
+			int n_polygons = _get_polygon_count();
+			for (int i = 0; i < n_polygons; i++) {
+				const Vector<Vector2> &vertices = _get_polygon(i);
+				int n_points = vertices.size();
+
+				Vector<Vector2> new_vertices;
+				new_vertices.resize(n_points);
+				for (int n = 0; n < n_points; n++) {
+					new_vertices.write[n] = vertices[n] - center;
+				}
+				_action_set_polygon(i, vertices, new_vertices);
+			}
+			Node2D *node = _get_node();
+			Vector2 node_pos = node->get_position();
+			undo_redo->add_do_method(node, "set_position", node_pos + node->get_transform().basis_xform(center));
+			undo_redo->add_undo_method(node, "set_position", node_pos);
+
+			_commit_action();
+		} break;
 	}
 }
 
@@ -159,6 +223,7 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 			button_create->set_button_icon(get_editor_theme_icon(SNAME("CurveCreate")));
 			button_edit->set_button_icon(get_editor_theme_icon(SNAME("CurveEdit")));
 			button_delete->set_button_icon(get_editor_theme_icon(SNAME("CurveDelete")));
+			button_center->set_button_icon(get_editor_theme_icon(SNAME("CurveCenter")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -194,6 +259,7 @@ void AbstractPolygon2DEditor::_wip_cancel() {
 	edited_point = PosVertex();
 	hover_point = Vertex();
 	selected_point = Vertex();
+	center_drag = false;
 
 	canvas_item_editor->update_viewport();
 }
@@ -229,6 +295,7 @@ void AbstractPolygon2DEditor::_wip_close() {
 	edited_point = PosVertex();
 	hover_point = Vertex();
 	selected_point = Vertex();
+	center_drag = false;
 }
 
 void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, const String &p_reason) {
@@ -237,16 +304,34 @@ void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, const Stri
 	button_create->set_disabled(p_disable);
 	button_edit->set_disabled(p_disable);
 	button_delete->set_disabled(p_disable);
+	button_center->set_disabled(p_disable);
 
 	if (p_disable) {
 		button_create->set_tooltip_text(p_reason);
 		button_edit->set_tooltip_text(p_reason);
 		button_delete->set_tooltip_text(p_reason);
+		button_center->set_tooltip_text(p_reason);
 	} else {
-		button_create->set_tooltip_text(TTR("Create points."));
-		button_edit->set_tooltip_text(TTR("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
-		button_delete->set_tooltip_text(TTR("Erase points."));
+		button_create->set_tooltip_text(TTRC("Create points."));
+		button_edit->set_tooltip_text(TTRC("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
+		button_delete->set_tooltip_text(TTRC("Erase points."));
+		button_center->set_tooltip_text(TTRC("Move center of gravity to geometric center."));
 	}
+}
+
+bool AbstractPolygon2DEditor::_commit_drag() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	center_drag = false;
+	int n_polygons = _get_polygon_count();
+	ERR_FAIL_COND_V(pre_center_move_edit.size() != n_polygons, false);
+	undo_redo->create_action(TTR("Move Geometric Center"));
+	for (int i = 0; i < n_polygons; i++) {
+		_action_set_polygon(i, pre_center_move_edit[i], _get_polygon(i));
+	}
+	pre_center_move_edit.clear();
+	_commit_action();
+	return true;
 }
 
 bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
@@ -408,6 +493,34 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 				_wip_cancel();
 			}
 		}
+
+		// Center drag.
+		if (edit_origin_and_center) {
+			real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+
+			if (mb->get_button_index() == MouseButton::LEFT) {
+				if (mb->is_meta_pressed() || mb->is_ctrl_pressed() || mb->is_shift_pressed() || mb->is_alt_pressed()) {
+					return false;
+				}
+				if (mb->is_pressed() && !center_drag) {
+					Vector2 center_point = xform.xform(_get_geometric_center());
+					if ((gpoint - center_point).length() < grab_threshold) {
+						pre_center_move_edit.clear();
+						int n_polygons = _get_polygon_count();
+						for (int i = 0; i < n_polygons; i++) {
+							pre_center_move_edit.push_back(_get_polygon(i));
+						}
+						center_drag_origin = cpoint;
+						center_drag = true;
+						return true;
+					}
+				} else if (center_drag) {
+					return _commit_drag();
+				}
+			} else if (mb->get_button_index() == MouseButton::RIGHT && center_drag) {
+				_commit_drag();
+			}
+		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -415,7 +528,25 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 	if (mm.is_valid()) {
 		Vector2 gpoint = mm->get_position();
 
-		if (edited_point.valid() && (wip_active || mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
+		if (center_drag) {
+			Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+			cpoint = _get_node()->get_screen_transform().affine_inverse().xform(cpoint);
+			Vector2 delta = center_drag_origin - cpoint;
+
+			int n_polygons = _get_polygon_count();
+			for (int i = 0; i < n_polygons; i++) {
+				const Vector<Vector2> &vertices = _get_polygon(i);
+				int n_points = vertices.size();
+
+				Vector<Vector2> new_vertices;
+				new_vertices.resize(n_points);
+				for (int n = 0; n < n_points; n++) {
+					new_vertices.write[n] = vertices[n] - delta;
+				}
+				_set_polygon(i, new_vertices);
+			}
+			center_drag_origin = cpoint;
+		} else if (edited_point.valid() && (wip_active || mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 			cpoint = _get_node()->get_screen_transform().affine_inverse().xform(cpoint);
 
@@ -512,10 +643,35 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_screen_transform();
 	// All polygon points are sharp, so use the sharp handle icon
 	const Ref<Texture2D> handle = get_editor_theme_icon(SNAME("EditorPathSharpHandle"));
+	const Ref<Texture2D> nhandle = get_editor_theme_icon(SNAME("EditorPathNullHandle"));
+
+	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+	int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+	const float outline_size = 4 * EDSCALE;
+	Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	Color outline_color = font_color.inverted();
 
 	const Vertex active_point = get_active_point();
 	const int n_polygons = _get_polygon_count();
 	const bool is_closed = !_is_line();
+
+	if (edit_origin_and_center) {
+		const Vector2 &center = _get_geometric_center();
+		if (!center.is_zero_approx()) {
+			const Vector2 point = xform.xform(center);
+			p_overlay->draw_texture(nhandle, point - nhandle->get_size() * 0.5, Color(1, 1, 0.4));
+			Size2 lbl_size = font->get_string_size("c", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+			p_overlay->draw_string_outline(font, point - lbl_size * 0.5, "c", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+			p_overlay->draw_string(font, point - lbl_size * 0.5, "c", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+		}
+		{
+			const Vector2 point = xform.xform(Vector2());
+			p_overlay->draw_texture(nhandle, point - nhandle->get_size() * 0.5, center.is_equal_approx(Vector2()) ? Color(1, 1, 0.4) : Color(1, 0.4, 1));
+			Size2 lbl_size = font->get_string_size("o", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+			p_overlay->draw_string_outline(font, point - lbl_size * 0.5, "o", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+			p_overlay->draw_string(font, point - lbl_size * 0.5, "o", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+		}
+	}
 
 	for (int j = -1; j < n_polygons; j++) {
 		if (wip_active && wip_destructive && j != -1) {
@@ -584,13 +740,8 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			p_overlay->draw_texture(handle, point - handle->get_size() * 0.5, overlay_modulate);
 
 			if (vertex == hover_point) {
-				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-				int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 				String num = String::num_int64(vertex.vertex);
 				Size2 num_size = font->get_string_size(num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-				const float outline_size = 4;
-				Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
-				Color outline_color = font_color.inverted();
 				p_overlay->draw_string_outline(font, point - num_size * 0.5, num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 				p_overlay->draw_string(font, point - num_size * 0.5, num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 			}
@@ -600,6 +751,13 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 	if (edge_point.valid()) {
 		Ref<Texture2D> add_handle = get_editor_theme_icon(SNAME("EditorHandleAdd"));
 		p_overlay->draw_texture(add_handle, edge_point.pos - add_handle->get_size() * 0.5);
+	}
+}
+
+void AbstractPolygon2DEditor::set_edit_origin_and_center(bool p_enabled) {
+	edit_origin_and_center = p_enabled;
+	if (button_center) {
+		button_center->set_visible(edit_origin_and_center);
 	}
 }
 
@@ -623,6 +781,7 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		edited_point = PosVertex();
 		hover_point = Vertex();
 		selected_point = Vertex();
+		center_drag = false;
 	} else {
 		_set_node(nullptr);
 	}
@@ -728,6 +887,7 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 
 AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	edited_point = PosVertex();
+	center_drag = false;
 	wip_destructive = p_wip_destructive;
 
 	hover_point = Vertex();
@@ -754,6 +914,12 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	add_child(button_delete);
 	button_delete->connect(SceneStringName(pressed), callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(MODE_DELETE));
 	button_delete->set_toggle_mode(true);
+
+	button_center = memnew(Button);
+	button_center->set_theme_type_variation(SceneStringName(FlatButton));
+	add_child(button_center);
+	button_center->connect(SceneStringName(pressed), callable_mp(this, &AbstractPolygon2DEditor::_menu_option).bind(CENTER_POLY));
+	button_center->set_visible(edit_origin_and_center);
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);

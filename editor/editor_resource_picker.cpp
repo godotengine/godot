@@ -32,6 +32,7 @@
 
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_help.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
@@ -290,6 +291,7 @@ void EditorResourcePicker::_update_menu_items() {
 
 		if (paste_valid) {
 			edit_menu->add_item(TTR("Paste"), OBJ_MENU_PASTE);
+			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
 		}
 	}
 
@@ -439,12 +441,20 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			EditorSettings::get_singleton()->set_resource_clipboard(edited_resource);
 		} break;
 
-		case OBJ_MENU_PASTE: {
+		case OBJ_MENU_PASTE:
+		case OBJ_MENU_PASTE_AS_UNIQUE: {
 			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (edited_resource->is_built_in() && EditorNode::get_singleton()->get_edited_scene() &&
-					edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
-				// Automatically make resource unique if it belongs to another scene.
-				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+			if (p_which == OBJ_MENU_PASTE_AS_UNIQUE ||
+					(EditorNode::get_singleton()->get_edited_scene() && edited_resource->is_built_in() && edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path())) {
+				// Automatically make resource unique if it belongs to another scene,
+				// or if requested by the user with the Paste as Unique option.
+				if (p_which == OBJ_MENU_PASTE_AS_UNIQUE) {
+					// Use the recursive version when using Paste as Unique.
+					// This will show up a dialog to select which resources to make unique.
+					_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+				} else {
+					_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+				}
 				return;
 			}
 			_resource_changed();
@@ -487,6 +497,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
+			resp->set_path(_get_owner_path() + "::"); // Assign a base path for built-in Resources.
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
@@ -578,6 +589,32 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 			edit_menu->popup();
 		}
 	}
+}
+
+String EditorResourcePicker::_get_owner_path() const {
+	EditorProperty *property = Object::cast_to<EditorProperty>(get_parent());
+	if (!property) {
+		return String();
+	}
+	Object *obj = property->get_edited_object();
+
+	Node *node = Object::cast_to<Node>(obj);
+	if (node) {
+		if (node->get_scene_file_path().is_empty()) {
+			node = node->get_owner();
+		}
+		if (node) {
+			return node->get_scene_file_path();
+		}
+		return String();
+	}
+
+	Resource *res = Object::cast_to<Resource>(obj);
+	if (res && !res->is_built_in()) {
+		return res->get_path();
+	}
+	// TODO: It would be nice to handle deeper Resource nesting.
+	return String();
 }
 
 String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource) const {

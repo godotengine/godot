@@ -30,6 +30,7 @@
 
 #include "editor_settings_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -42,6 +43,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/event_listener_line_edit.h"
+#include "editor/gui/editor_event_search_bar.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
@@ -215,16 +217,6 @@ void EditorSettingsDialog::popup_edit_settings() {
 	_focus_current_search_box();
 }
 
-void EditorSettingsDialog::_filter_shortcuts(const String &) {
-	_update_shortcuts();
-}
-
-void EditorSettingsDialog::_filter_shortcuts_by_event(const Ref<InputEvent> &p_event) {
-	if (p_event.is_null() || (p_event->is_pressed() && !p_event->is_echo())) {
-		_update_shortcuts();
-	}
-}
-
 void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
 	EditorNode::get_log()->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
@@ -239,6 +231,8 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			EditorSettingsPropertyWrapper::restart_request_callback = callable_mp(this, &EditorSettingsDialog::_editor_restart_request);
+
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_method_notify_callback(EditorDebuggerNode::_methods_changed, nullptr);
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_property_notify_callback(EditorDebuggerNode::_properties_changed, nullptr);
@@ -247,6 +241,10 @@ void EditorSettingsDialog::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_update_icons();
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_shortcuts();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -301,15 +299,13 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSettingsDialog::_update_icons() {
-	search_box->set_right_icon(shortcuts->get_editor_theme_icon(SNAME("Search")));
+	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 	search_box->set_clear_button_enabled(true);
-	shortcut_search_box->set_right_icon(shortcuts->get_editor_theme_icon(SNAME("Search")));
-	shortcut_search_box->set_clear_button_enabled(true);
 
-	restart_close_button->set_button_icon(shortcuts->get_editor_theme_icon(SNAME("Close")));
-	restart_container->add_theme_style_override(SceneStringName(panel), shortcuts->get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-	restart_icon->set_texture(shortcuts->get_editor_theme_icon(SNAME("StatusWarning")));
-	restart_label->add_theme_color_override(SceneStringName(font_color), shortcuts->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	restart_close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
+	restart_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 }
 
 void EditorSettingsDialog::_event_config_confirmed() {
@@ -418,15 +414,15 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	shortcut_item->set_text(1, sc_text);
 	if (sc_text == "None") {
 		// Fade out unassigned shortcut labels for easier visual grepping.
-		shortcut_item->set_custom_color(1, shortcuts->get_theme_color(SceneStringName(font_color), SNAME("Label")) * Color(1, 1, 1, 0.5));
+		shortcut_item->set_custom_color(1, get_theme_color(SceneStringName(font_color), SNAME("Label")) * Color(1, 1, 1, 0.5));
 	}
 
 	if (p_allow_revert) {
-		shortcut_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Reload")), SHORTCUT_REVERT);
+		shortcut_item->add_button(1, get_editor_theme_icon(SNAME("Reload")), SHORTCUT_REVERT);
 	}
 
-	shortcut_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Add")), SHORTCUT_ADD);
-	shortcut_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Close")), SHORTCUT_ERASE);
+	shortcut_item->add_button(1, get_editor_theme_icon(SNAME("Add")), SHORTCUT_ADD);
+	shortcut_item->add_button(1, get_editor_theme_icon(SNAME("Close")), SHORTCUT_ERASE, p_events.is_empty());
 
 	shortcut_item->set_meta("is_action", p_is_action);
 	shortcut_item->set_meta("type", "shortcut");
@@ -447,11 +443,11 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 		event_item->set_text(1, ie->as_text());
 		event_item->set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
 
-		event_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Edit")), SHORTCUT_EDIT);
-		event_item->add_button(1, shortcuts->get_editor_theme_icon(SNAME("Close")), SHORTCUT_ERASE);
+		event_item->add_button(1, get_editor_theme_icon(SNAME("Edit")), SHORTCUT_EDIT);
+		event_item->add_button(1, get_editor_theme_icon(SNAME("Close")), SHORTCUT_ERASE);
 
-		event_item->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
-		event_item->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
+		event_item->set_custom_bg_color(0, get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
+		event_item->set_custom_bg_color(1, get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
 
 		event_item->set_meta("is_action", p_is_action);
 		event_item->set_meta("type", "event");
@@ -462,7 +458,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 }
 
 bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const {
-	const Ref<InputEvent> search_ev = shortcut_search_by_event->get_event();
+	const Ref<InputEvent> search_ev = shortcut_search_bar->get_event();
 	if (search_ev.is_valid()) {
 		bool event_match = false;
 		for (int i = 0; i < p_events.size(); ++i) {
@@ -477,7 +473,7 @@ bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const 
 		}
 	}
 
-	const String &search_text = shortcut_search_box->get_text();
+	const String &search_text = shortcut_search_bar->get_name();
 	if (search_text.is_empty()) {
 		return true;
 	}
@@ -536,8 +532,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 	if (collapsed.has("Common")) {
 		common_section->set_collapsed(collapsed["Common"]);
 	}
-	common_section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
-	common_section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+	common_section->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+	common_section->set_custom_bg_color(1, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 	// Get the action map for the editor, and add each item to the "Common" section.
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
@@ -591,8 +587,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 		section->set_tooltip_text(0, tooltip);
 		section->set_selectable(0, false);
 		section->set_selectable(1, false);
-		section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
-		section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		section->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		section->set_custom_bg_color(1, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 		if (collapsed.has(item_name)) {
 			section->set_collapsed(collapsed[item_name]);
@@ -631,9 +627,6 @@ void EditorSettingsDialog::_update_shortcuts() {
 			memdelete(section);
 		}
 	}
-
-	// Update UI.
-	clear_all_search->set_disabled(shortcut_search_box->get_text().is_empty() && shortcut_search_by_event->get_event().is_null());
 }
 
 void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button) {
@@ -849,7 +842,7 @@ void EditorSettingsDialog::_focus_current_search_box() {
 	if (tab == tab_general) {
 		current_search_box = search_box;
 	} else if (tab == tab_shortcuts) {
-		current_search_box = shortcut_search_box;
+		current_search_box = shortcut_search_bar->get_name_search_box();
 	}
 
 	if (current_search_box) {
@@ -923,6 +916,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
 	inspector->get_inspector()->connect("restart_requested", callable_mp(this, &EditorSettingsDialog::_editor_restart_request));
 
+	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
+		inspector->set_touch_dragger_enabled(true);
+	}
+
 	restart_container = memnew(PanelContainer);
 	tab_general->add_child(restart_container);
 	HBoxContainer *restart_hb = memnew(HBoxContainer);
@@ -953,32 +950,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tabs->add_child(tab_shortcuts);
 	tab_shortcuts->set_name(TTRC("Shortcuts"));
 
-	HBoxContainer *top_hbox = memnew(HBoxContainer);
-	top_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	tab_shortcuts->add_child(top_hbox);
-
-	shortcut_search_box = memnew(LineEdit);
-	shortcut_search_box->set_placeholder(TTRC("Filter by Name"));
-	shortcut_search_box->set_accessibility_name(TTRC("Filter by Name"));
-	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	top_hbox->add_child(shortcut_search_box);
-	shortcut_search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
-
-	shortcut_search_by_event = memnew(EventListenerLineEdit);
-	shortcut_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	shortcut_search_by_event->set_stretch_ratio(0.75);
-	shortcut_search_by_event->set_allowed_input_types(INPUT_KEY);
-	shortcut_search_by_event->connect("event_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts_by_event));
-	shortcut_search_by_event->connect(SceneStringName(focus_entered), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
-	shortcut_search_by_event->connect(SceneStringName(focus_exited), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
-	top_hbox->add_child(shortcut_search_by_event);
-
-	clear_all_search = memnew(Button);
-	clear_all_search->set_text(TTRC("Clear All"));
-	clear_all_search->set_tooltip_text(TTRC("Clear all search filters."));
-	clear_all_search->connect(SceneStringName(pressed), callable_mp(shortcut_search_box, &LineEdit::clear));
-	clear_all_search->connect(SceneStringName(pressed), callable_mp(shortcut_search_by_event, &EventListenerLineEdit::clear_event));
-	top_hbox->add_child(clear_all_search);
+	shortcut_search_bar = memnew(EditorEventSearchBar);
+	shortcut_search_bar->connect(SceneStringName(value_changed), callable_mp(this, &EditorSettingsDialog::_update_shortcuts));
+	tab_shortcuts->add_child(shortcut_search_bar);
 
 	shortcuts = memnew(Tree);
 	shortcuts->set_accessibility_name(TTRC("Shortcuts"));
@@ -1009,4 +983,121 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
 	set_ok_button_text(TTRC("Close"));
+
+	Ref<EditorSettingsInspectorPlugin> plugin;
+	plugin.instantiate();
+	plugin->inspector = inspector;
+	EditorInspector::add_inspector_plugin(plugin);
+}
+
+void EditorSettingsPropertyWrapper::_update_override() {
+	// Don't allow overriding theme properties, because it causes problems. Overriding Project Manager settings makes no sense.
+	// TODO: Find a better way to define exception prefixes (if the list happens to grow).
+	if (property.begins_with("interface/theme") || property.begins_with("project_manager")) {
+		can_override = false;
+		return;
+	}
+
+	const bool has_override = ProjectSettings::get_singleton()->has_editor_setting_override(property);
+	if (has_override) {
+		const Variant override_value = EDITOR_GET(property);
+		override_label->set_text(vformat(TTR("Overridden in project: %s"), override_value));
+		// In case the text is too long and trimmed.
+		override_label->set_tooltip_text(override_value);
+	}
+	override_info->set_visible(has_override);
+	can_override = !has_override;
+}
+
+void EditorSettingsPropertyWrapper::_create_override() {
+	ProjectSettings::get_singleton()->set_editor_setting_override(property, EDITOR_GET(property));
+	ProjectSettings::get_singleton()->save();
+	_update_override();
+}
+
+void EditorSettingsPropertyWrapper::_remove_override() {
+	ProjectSettings::get_singleton()->set_editor_setting_override(property, Variant());
+	ProjectSettings::get_singleton()->save();
+	EditorSettings::get_singleton()->mark_setting_changed(property);
+	EditorNode::get_singleton()->notify_settings_overrides_changed();
+	_update_override();
+
+	if (requires_restart) {
+		restart_request_callback.call();
+	}
+}
+
+void EditorSettingsPropertyWrapper::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		goto_button->set_button_icon(get_editor_theme_icon(SNAME("MethodOverride")));
+		remove_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+	}
+}
+
+void EditorSettingsPropertyWrapper::update_property() {
+	editor_property->update_property();
+}
+
+void EditorSettingsPropertyWrapper::setup(const String &p_property, EditorProperty *p_editor_property, bool p_requires_restart) {
+	requires_restart = p_requires_restart;
+
+	property = p_property;
+	container = memnew(VBoxContainer);
+
+	editor_property = p_editor_property;
+	editor_property->set_h_size_flags(SIZE_EXPAND_FILL);
+	container->add_child(editor_property);
+
+	override_info = memnew(HBoxContainer);
+	override_info->hide();
+	container->add_child(override_info);
+
+	override_label = memnew(Label);
+	override_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	override_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	override_label->set_mouse_filter(MOUSE_FILTER_STOP); // For tooltip.
+	override_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	override_info->add_child(override_label);
+
+	goto_button = memnew(Button);
+	goto_button->set_tooltip_text(TTRC("Go to the override in the Project Settings."));
+	override_info->add_child(goto_button);
+	goto_button->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::open_setting_override).bind(property), CONNECT_DEFERRED);
+
+	remove_button = memnew(Button);
+	remove_button->set_tooltip_text(TTRC("Remove this override."));
+	override_info->add_child(remove_button);
+	remove_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsPropertyWrapper::_remove_override));
+
+	add_child(container);
+	_update_override();
+
+	connect(SNAME("property_overridden"), callable_mp(this, &EditorSettingsPropertyWrapper::_create_override));
+	editor_property->connect("property_changed", callable_mp((EditorProperty *)this, &EditorProperty::emit_changed));
+}
+
+bool EditorSettingsInspectorPlugin::can_handle(Object *p_object) {
+	return p_object && p_object->is_class("SectionedInspectorFilter") && p_object != current_object;
+}
+
+bool EditorSettingsInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	if (!p_object->is_class("SectionedInspectorFilter")) {
+		return false;
+	}
+
+	const String property = inspector->get_full_item_path(p_path);
+	if (!EditorSettings::get_singleton()->has_setting(property)) {
+		return false;
+	}
+	current_object = p_object;
+
+	EditorSettingsPropertyWrapper *editor = memnew(EditorSettingsPropertyWrapper);
+	EditorProperty *real_property = inspector->get_inspector()->instantiate_property_editor(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+	real_property->set_object_and_property(p_object, p_path);
+	real_property->set_name_split_ratio(0.0);
+	editor->setup(property, real_property, bool(p_usage & PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	add_property_editor(p_path, editor);
+	current_object = nullptr;
+	return true;
 }

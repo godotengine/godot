@@ -245,6 +245,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	//capitalize_string_remaps["msec"] = "(msec)"; // Unit.
 	capitalize_string_remaps["navmesh"] = "NavMesh";
 	capitalize_string_remaps["nfc"] = "NFC";
+	capitalize_string_remaps["ogv"] = "OGV";
 	capitalize_string_remaps["oidn"] = "OIDN";
 	capitalize_string_remaps["ok"] = "OK";
 	capitalize_string_remaps["opengl"] = "OpenGL";
@@ -258,7 +259,6 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ppc64"] = "ppc64";
 	capitalize_string_remaps["pvrtc"] = "PVRTC";
 	capitalize_string_remaps["pvs"] = "PVS";
-	capitalize_string_remaps["rcedit"] = "rcedit";
 	capitalize_string_remaps["rcodesign"] = "rcodesign";
 	capitalize_string_remaps["rdo"] = "RDO";
 	capitalize_string_remaps["rgb"] = "RGB";
@@ -290,6 +290,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["textfile"] = "TextFile";
 	capitalize_string_remaps["tls"] = "TLS";
 	capitalize_string_remaps["tv"] = "TV";
+	capitalize_string_remaps["tvos"] = "tvOS";
 	capitalize_string_remaps["uastc"] = "UASTC";
 	capitalize_string_remaps["ui"] = "UI";
 	capitalize_string_remaps["uri"] = "URI";
@@ -304,6 +305,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["uv1"] = "UV1";
 	capitalize_string_remaps["uv2"] = "UV2";
 	capitalize_string_remaps["vector2"] = "Vector2";
+	capitalize_string_remaps["visionos"] = "visionOS";
 	capitalize_string_remaps["vpn"] = "VPN";
 	capitalize_string_remaps["vram"] = "VRAM";
 	capitalize_string_remaps["vrs"] = "VRS";
@@ -312,7 +314,6 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["webp"] = "WebP";
 	capitalize_string_remaps["webrtc"] = "WebRTC";
 	capitalize_string_remaps["websocket"] = "WebSocket";
-	capitalize_string_remaps["wine"] = "wine";
 	capitalize_string_remaps["wintab"] = "WinTab";
 	capitalize_string_remaps["winink"] = "Windows Ink";
 	capitalize_string_remaps["wifi"] = "Wi-Fi";

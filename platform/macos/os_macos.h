@@ -64,6 +64,7 @@ protected:
 
 	JoypadApple *joypad_apple = nullptr;
 	MainLoop *main_loop = nullptr;
+	CFRunLoopTimerRef wait_timer = nil;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -75,8 +76,12 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
+
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
 	virtual List<String> get_cmdline_platform_args() const override;
+
+	virtual void load_shell_environment() const override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
@@ -110,6 +115,7 @@ public:
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
 	virtual String get_unique_id() const override;

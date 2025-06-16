@@ -160,6 +160,22 @@ bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "web") {
 		return true;
 	}
+
+	if (p_feature == "web_extensions") {
+#ifdef WEB_DLINK_ENABLED
+		return true;
+#else
+		return false;
+#endif
+	}
+	if (p_feature == "web_noextensions") {
+#ifdef WEB_DLINK_ENABLED
+		return false;
+#else
+		return true;
+#endif
+	}
+
 	if (godot_js_os_has_feature(p_feature.utf8().get_data())) {
 		return true;
 	}
@@ -180,9 +196,9 @@ String OS_Web::get_name() const {
 	return "Web";
 }
 
-void OS_Web::add_frame_delay(bool p_can_draw) {
+void OS_Web::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 #ifndef PROXY_TO_PTHREAD_ENABLED
-	OS::add_frame_delay(p_can_draw);
+	OS::add_frame_delay(p_can_draw, p_wake_for_events);
 #endif
 }
 

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ReferenceRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A rectangle hint for designing UIs.
+		A rectangular box for designing UIs.
 	</brief_description>
 	<description>
-		A rectangle box that displays only a colored border around its rectangle. It is used to visualize the extents of a [Control].
+		A rectangular box that displays only a colored border around its rectangle (see [method Control.get_rect]). It can be used to visualize the extents of a [Control] node, for testing purposes.
 	</description>
 	<tutorials>
 	</tutorials>

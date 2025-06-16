@@ -109,10 +109,6 @@ void GameViewDebuggerMacOS::_init_capture_message_handlers() {
 	parse_message_handlers["game_view:joy_stop"] = &GameViewDebuggerMacOS::_msg_joy_stop;
 }
 
-bool GameViewDebuggerMacOS::has_capture(const String &p_capture) const {
-	return p_capture == "game_view";
-}
-
 bool GameViewDebuggerMacOS::capture(const String &p_message, const Array &p_data, int p_session) {
 	Ref<EditorDebuggerSession> session = get_session(p_session);
 	ERR_FAIL_COND_V(session.is_null(), true);
@@ -121,9 +117,7 @@ bool GameViewDebuggerMacOS::capture(const String &p_message, const Array &p_data
 	if (fn_ptr) {
 		return (this->**fn_ptr)(p_data);
 	} else {
-		// Any other messages with this prefix should be ignored.
-		WARN_PRINT("GameViewDebuggerMacOS unknown message: " + p_message);
-		return ERR_SKIP;
+		return GameViewDebugger::capture(p_message, p_data, p_session);
 	}
 
 	return true;

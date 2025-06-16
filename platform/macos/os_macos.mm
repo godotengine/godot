@@ -49,6 +49,28 @@
 #include <os/log.h>
 #include <sys/sysctl.h>
 
+void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
+	if (p_wake_for_events) {
+		uint64_t delay = get_frame_delay(p_can_draw);
+		if (delay == 0) {
+			return;
+		}
+		if (wait_timer) {
+			CFRunLoopTimerInvalidate(wait_timer);
+			CFRelease(wait_timer);
+		}
+		wait_timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + (double(delay) / 1000000.0), 0, 0, 0,
+				^(CFRunLoopTimerRef timer) {
+					CFRunLoopTimerInvalidate(wait_timer);
+					CFRelease(wait_timer);
+					wait_timer = nil;
+				});
+		CFRunLoopAddTimer(CFRunLoopGetCurrent(), wait_timer, kCFRunLoopCommonModes);
+		return;
+	}
+	OS_Unix::add_frame_delay(p_can_draw, p_wake_for_events);
+}
+
 void OS_MacOS::initialize() {
 	crash_handler.initialize();
 
@@ -236,6 +258,32 @@ void OS_MacOS::set_cmdline_platform_args(const List<String> &p_args) {
 
 List<String> OS_MacOS::get_cmdline_platform_args() const {
 	return launch_service_args;
+}
+
+void OS_MacOS::load_shell_environment() const {
+	static bool shell_env_loaded = false;
+	if (unlikely(!shell_env_loaded)) {
+		shell_env_loaded = true;
+		if (OS::get_singleton()->has_environment("TERM") || OS::get_singleton()->has_environment("__GODOT_SHELL_ENV_SET")) {
+			return; // Already started from terminal, or other the instance with the shell environment, do nothing.
+		}
+		String pipe;
+		List<String> args;
+		args.push_back("-c");
+		args.push_back(". /etc/zshrc;. /etc/zprofile;. ~/.zshenv;. ~/.zshrc;. ~/.zprofile;env");
+		Error err = OS::get_singleton()->execute("zsh", args, &pipe);
+		if (err == OK) {
+			Vector<String> env_vars = pipe.split("\n");
+			for (const String &E : env_vars) {
+				Vector<String> tags = E.split("=", 2);
+				if (tags.size() != 2 || tags[0] == "SHELL" || tags[0] == "USER" || tags[0] == "COMMAND_MODE" || tags[0] == "TMPDIR" || tags[0] == "TERM_SESSION_ID" || tags[0] == "PWD" || tags[0] == "OLDPWD" || tags[0] == "SHLVL" || tags[0] == "HOME" || tags[0] == "DISPLAY" || tags[0] == "LOGNAME" || tags[0] == "TERM" || tags[0] == "COLORTERM" || tags[0] == "_" || tags[0].begins_with("__CF") || tags[0].begins_with("XPC_") || tags[0].begins_with("__GODOT")) {
+					continue;
+				}
+				OS::get_singleton()->set_environment(tags[0], tags[1]);
+			}
+		}
+		OS::get_singleton()->set_environment("__GODOT_SHELL_ENV_SET", "1");
+	}
 }
 
 String OS_MacOS::get_name() const {
@@ -777,10 +825,80 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
 		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton() && !Engine::get_singleton()->is_project_manager_hint() && !Engine::get_singleton()->is_editor_hint()) {
+			// Project started from the editor, inject "path" argument to set instance working directory.
+			char cwd[PATH_MAX];
+			if (::getcwd(cwd, sizeof(cwd)) != nullptr) {
+				List<String> arguments = p_arguments;
+				arguments.push_back("--path");
+				arguments.push_back(String::utf8(cwd));
+				return create_process(path, arguments, r_child_id, false);
+			}
+		}
+#endif
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
 	}
+}
+
+Error OS_MacOS::open_with_program(const String &p_program_path, const List<String> &p_paths) {
+	NSURL *app_url = [NSURL fileURLWithPath:@(p_program_path.utf8().get_data())];
+	if (!app_url) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	NSBundle *bundle = [NSBundle bundleWithURL:app_url];
+	if (!bundle) {
+		return OS_Unix::create_process(p_program_path, p_paths);
+	}
+
+	NSMutableArray *urls_to_open = [[NSMutableArray alloc] init];
+	for (const String &path : p_paths) {
+		NSURL *file_url = [NSURL fileURLWithPath:@(path.utf8().get_data())];
+		if (file_url) {
+			[urls_to_open addObject:file_url];
+		}
+	}
+
+	if ([urls_to_open count] == 0) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+#if defined(__x86_64__)
+	if (@available(macOS 10.15, *)) {
+#endif
+		NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+		[configuration setCreatesNewApplicationInstance:NO];
+		__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+		__block Error err = ERR_TIMEOUT;
+
+		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open
+						   withApplicationAtURL:app_url
+								  configuration:configuration
+							  completionHandler:^(NSRunningApplication *app, NSError *error) {
+								  if (error) {
+									  err = ERR_CANT_FORK;
+									  NSLog(@"Failed to open paths: %@", error.localizedDescription);
+								  } else {
+									  err = OK;
+								  }
+								  dispatch_semaphore_signal(lock);
+							  }];
+		dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+
+		return err;
+#if defined(__x86_64__)
+	} else {
+		NSError *error = nullptr;
+		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open withApplicationAtURL:app_url options:NSWorkspaceLaunchDefault configuration:@{} error:&error];
+		if (error) {
+			return ERR_CANT_FORK;
+		}
+		return OK;
+	}
+#endif
 }
 
 bool OS_MacOS::is_process_running(const ProcessID &p_pid) const {
@@ -969,8 +1087,9 @@ void OS_MacOS_NSApp::start_main() {
 							ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 						}
 					}
-
-					CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+					if (wait_timer == nil) {
+						CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+					}
 				});
 				CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
 				return;

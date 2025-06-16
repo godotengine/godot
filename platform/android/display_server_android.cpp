@@ -76,7 +76,7 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		//case FEATURE_NATIVE_ICON:
-		//case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_ORIENTATION:
@@ -264,6 +264,10 @@ bool DisplayServerAndroid::screen_is_kept_on() const {
 }
 
 void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL(godot_io_java);
 
@@ -271,6 +275,10 @@ void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientati
 }
 
 DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_LANDSCAPE);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, SCREEN_LANDSCAPE);
 
@@ -295,26 +303,46 @@ int DisplayServerAndroid::get_primary_screen() const {
 }
 
 Point2i DisplayServerAndroid::screen_get_position(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
 	return Point2i(0, 0);
 }
 
 Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	return OS_Android::get_singleton()->get_display_size();
 }
 
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	Size2i display_size = OS_Android::get_singleton()->get_display_size();
 	return Rect2i(0, 0, display_size.width, display_size.height);
 }
 
 int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 160);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_NULL_V(godot_io_java, 0);
+	ERR_FAIL_NULL_V(godot_io_java, 160);
 
 	return godot_io_java->get_screen_dpi();
 }
 
 float DisplayServerAndroid::screen_get_scale(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, 1.0f);
 
@@ -332,6 +360,10 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 }
 
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	if (!godot_io_java) {
 		ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
@@ -487,7 +519,8 @@ void DisplayServerAndroid::window_set_title(const String &p_title, DisplayServer
 }
 
 int DisplayServerAndroid::window_get_current_screen(DisplayServer::WindowID p_window) const {
-	return SCREEN_OF_MAIN_WINDOW;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	return 0;
 }
 
 void DisplayServerAndroid::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {
@@ -559,7 +592,13 @@ void DisplayServerAndroid::window_set_flag(DisplayServer::WindowFlags p_flag, bo
 }
 
 bool DisplayServerAndroid::window_get_flag(DisplayServer::WindowFlags p_flag, DisplayServer::WindowID p_window) const {
-	return false;
+	switch (p_flag) {
+		case WindowFlags::WINDOW_FLAG_TRANSPARENT:
+			return is_window_transparency_available();
+
+		default:
+			return false;
+	}
 }
 
 void DisplayServerAndroid::window_request_attention(DisplayServer::WindowID p_window) {
@@ -927,4 +966,8 @@ void DisplayServerAndroid::set_native_icon(const String &p_filename) {
 
 void DisplayServerAndroid::set_icon(const Ref<Image> &p_icon) {
 	// NOT SUPPORTED
+}
+
+bool DisplayServerAndroid::is_window_transparency_available() const {
+	return GLOBAL_GET_CACHED(bool, "display/window/per_pixel_transparency/allowed");
 }

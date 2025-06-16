@@ -43,6 +43,7 @@
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
+#include "scene/resources/style_box_flat.h"
 
 enum class TabStyle {
 	TEXT_ONLY,
@@ -51,6 +52,115 @@ enum class TabStyle {
 };
 
 EditorDockManager *EditorDockManager::singleton = nullptr;
+
+bool EditorDockDragHint::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	return can_drop_dock;
+}
+
+void EditorDockDragHint::drop_data(const Point2 &p_point, const Variant &p_data) {
+	// Drop dock into last spot if not over tabbar.
+	if (drop_tabbar->get_rect().has_point(p_point)) {
+		drop_tabbar->_handle_drop_data("tab_container_tab", p_point, p_data, callable_mp(this, &EditorDockDragHint::_drag_move_tab), callable_mp(this, &EditorDockDragHint::_drag_move_tab_from));
+	} else {
+		dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), dock_manager->dock_slot[occupied_slot], drop_tabbar->get_tab_count());
+	}
+}
+
+void EditorDockDragHint::_drag_move_tab(int p_from_index, int p_to_index) {
+	dock_manager->_move_dock_tab_index(dock_manager->_get_dock_tab_dragged(), p_to_index, true);
+}
+
+void EditorDockDragHint::_drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index) {
+	dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), dock_manager->dock_slot[occupied_slot], p_to_index);
+}
+
+void EditorDockDragHint::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		Point2 pos = mm->get_position();
+
+		// Redraw when inside the tabbar and just exited.
+		if (mouse_inside_tabbar) {
+			queue_redraw();
+		}
+		mouse_inside_tabbar = drop_tabbar->get_rect().has_point(pos);
+	}
+}
+
+void EditorDockDragHint::set_slot(EditorDockManager::DockSlot p_slot) {
+	occupied_slot = p_slot;
+	drop_tabbar = dock_manager->dock_slot[occupied_slot]->get_tab_bar();
+}
+
+void EditorDockDragHint::_notification(int p_what) {
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme")) {
+				dock_drop_highlight->set_corner_radius_all(EDSCALE * EDITOR_GET("interface/theme/corner_radius").operator int());
+				if (mouse_inside) {
+					queue_redraw();
+				}
+			}
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			valid_drop_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		} break;
+
+		case NOTIFICATION_MOUSE_ENTER:
+		case NOTIFICATION_MOUSE_EXIT: {
+			mouse_inside = p_what == NOTIFICATION_MOUSE_ENTER;
+			queue_redraw();
+		} break;
+
+		case NOTIFICATION_DRAG_BEGIN: {
+			Control *dragged_dock = dock_manager->_get_dock_tab_dragged();
+			if (!dragged_dock) {
+				return;
+			}
+
+			can_drop_dock = true;
+
+			dock_drop_highlight->set_border_color(valid_drop_color);
+			dock_drop_highlight->set_bg_color(valid_drop_color * Color(1, 1, 1, 0.1));
+		} break;
+		case NOTIFICATION_DRAG_END: {
+			dock_manager->_dock_drag_stopped();
+			can_drop_dock = false;
+			mouse_inside = false;
+			hide();
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (!mouse_inside) {
+				return;
+			}
+
+			// Draw highlights around docks that can be dropped.
+			Rect2 dock_rect = Rect2(Point2(), get_size()).grow(2 * EDSCALE);
+			draw_style_box(dock_drop_highlight, dock_rect);
+
+			// Only display tabbar hint if the mouse is over the tabbar.
+			if (drop_tabbar->get_global_rect().has_point(get_global_mouse_position())) {
+				drop_tabbar->_draw_tab_drop(get_canvas_item());
+			}
+		} break;
+	}
+}
+
+EditorDockDragHint::EditorDockDragHint() {
+	dock_manager = EditorDockManager::get_singleton();
+
+	set_as_top_level(true);
+	dock_drop_highlight.instantiate();
+	dock_drop_highlight->set_corner_radius_all(EDSCALE * EDITOR_GET("interface/theme/corner_radius").operator int());
+	dock_drop_highlight->set_border_width_all(Math::round(2 * EDSCALE));
+}
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
 
 void DockSplitContainer::_update_visibility() {
 	if (is_updating) {
@@ -112,6 +222,62 @@ void DockSplitContainer::remove_child_notify(Node *p_child) {
 
 	child_control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &DockSplitContainer::_update_visibility));
 	_update_visibility();
+}
+
+DockSplitContainer::DockSplitContainer() {
+	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
+		callable_mp((SplitContainer *)this, &SplitContainer::set_touch_dragger_enabled).call_deferred(true);
+	}
+}
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+Control *EditorDockManager::_get_dock_tab_dragged() {
+	if (dock_tab_dragged) {
+		return dock_tab_dragged;
+	}
+
+	Dictionary dock_drop_data = dock_slot[DOCK_SLOT_LEFT_BL]->get_viewport()->gui_get_drag_data();
+
+	// Check if we are dragging a dock.
+	const String type = dock_drop_data.get("type", "");
+	if (type == "tab_container_tab") {
+		Node *from_node = dock_slot[DOCK_SLOT_LEFT_BL]->get_node(dock_drop_data["from_path"]);
+		if (!from_node) {
+			return nullptr;
+		}
+
+		TabContainer *parent = Object::cast_to<TabContainer>(from_node->get_parent());
+		if (!parent) {
+			return nullptr;
+		}
+
+		// TODO: Update logic when GH-106503 is merged to cast directly to EditorDock instead of the below check.
+		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+			if (dock_slot[i] == parent) {
+				dock_tab_dragged = parent->get_tab_control(dock_drop_data["tab_index"]);
+				break;
+			}
+		}
+		if (!dock_tab_dragged) {
+			return nullptr;
+		}
+
+		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+			if (dock_slot[i]->is_visible_in_tree()) {
+				dock_drag_rects[i]->set_rect(dock_slot[i]->get_global_rect());
+				dock_drag_rects[i]->show();
+			}
+		}
+
+		return dock_tab_dragged;
+	}
+	return nullptr;
+}
+
+void EditorDockManager::_dock_drag_stopped() {
+	dock_tab_dragged = nullptr;
 }
 
 void EditorDockManager::_dock_split_dragged(int p_offset) {
@@ -830,6 +996,12 @@ void EditorDockManager::register_dock_slot(DockSlot p_dock_slot, TabContainer *p
 	p_tab_container->set_use_hidden_tabs_for_min_size(true);
 	p_tab_container->get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_dock_container_gui_input).bind(p_tab_container));
 	p_tab_container->hide();
+
+	// Create dock dragging hint.
+	dock_drag_rects[p_dock_slot] = memnew(EditorDockDragHint);
+	dock_drag_rects[p_dock_slot]->set_slot(p_dock_slot);
+	dock_drag_rects[p_dock_slot]->hide();
+	EditorNode::get_singleton()->get_gui_base()->add_child(dock_drag_rects[p_dock_slot]);
 }
 
 int EditorDockManager::get_vsplit_count() const {
@@ -853,6 +1025,9 @@ EditorDockManager::EditorDockManager() {
 	docks_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDockManager::_docks_menu_option));
 	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorDockManager::update_docks_menu));
 }
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
 
 void DockContextPopup::_notification(int p_what) {
 	switch (p_what) {
@@ -1094,7 +1269,7 @@ DockContextPopup::DockContextPopup() {
 	tab_move_left_button = memnew(Button);
 	tab_move_left_button->set_accessibility_name(TTRC("Move Tab Left"));
 	tab_move_left_button->set_flat(true);
-	tab_move_left_button->set_focus_mode(Control::FOCUS_NONE);
+	tab_move_left_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	tab_move_left_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_tab_move_left));
 	header_hb->add_child(tab_move_left_button);
 
@@ -1107,7 +1282,7 @@ DockContextPopup::DockContextPopup() {
 	tab_move_right_button = memnew(Button);
 	tab_move_right_button->set_accessibility_name(TTRC("Move Tab Right"));
 	tab_move_right_button->set_flat(true);
-	tab_move_right_button->set_focus_mode(Control::FOCUS_NONE);
+	tab_move_right_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	tab_move_right_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_tab_move_right));
 
 	header_hb->add_child(tab_move_right_button);
@@ -1129,7 +1304,7 @@ DockContextPopup::DockContextPopup() {
 	} else {
 		make_float_button->set_tooltip_text(TTR("Make this dock floating."));
 	}
-	make_float_button->set_focus_mode(Control::FOCUS_NONE);
+	make_float_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	make_float_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	make_float_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_float_dock));
 	dock_select_popup_vb->add_child(make_float_button);
@@ -1137,7 +1312,7 @@ DockContextPopup::DockContextPopup() {
 	dock_to_bottom_button = memnew(Button);
 	dock_to_bottom_button->set_text(TTR("Move to Bottom"));
 	dock_to_bottom_button->set_tooltip_text(TTR("Move this dock to the bottom panel."));
-	dock_to_bottom_button->set_focus_mode(Control::FOCUS_NONE);
+	dock_to_bottom_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	dock_to_bottom_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_to_bottom_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_move_dock_to_bottom));
 	dock_to_bottom_button->hide();
@@ -1146,7 +1321,7 @@ DockContextPopup::DockContextPopup() {
 	close_button = memnew(Button);
 	close_button->set_text(TTR("Close"));
 	close_button->set_tooltip_text(TTR("Close this dock."));
-	close_button->set_focus_mode(Control::FOCUS_NONE);
+	close_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	close_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	close_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_close_dock));
 	dock_select_popup_vb->add_child(close_button);
