@@ -119,15 +119,15 @@ void EditorRunBar::_reset_play_buttons() {
 
 	play_button->set_pressed(false);
 	play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
-	play_button->set_tooltip_text(TTR("Play the project."));
+	play_button->set_tooltip_text(TTRC("Play the project."));
 
 	play_scene_button->set_pressed(false);
 	play_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PlayScene")));
-	play_scene_button->set_tooltip_text(TTR("Play the edited scene."));
+	play_scene_button->set_tooltip_text(TTRC("Play the edited scene."));
 
 	play_custom_scene_button->set_pressed(false);
 	play_custom_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PlayCustom")));
-	play_custom_scene_button->set_tooltip_text(TTR("Play a custom scene."));
+	play_custom_scene_button->set_tooltip_text(TTRC("Play a custom scene."));
 }
 
 void EditorRunBar::_update_play_buttons() {
@@ -152,7 +152,7 @@ void EditorRunBar::_update_play_buttons() {
 	if (active_button) {
 		active_button->set_pressed(true);
 		active_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
-		active_button->set_tooltip_text(TTR("Reload the played scene."));
+		active_button->set_tooltip_text(TTRC("Reload the played scene."));
 	}
 }
 
@@ -518,6 +518,7 @@ EditorRunBar::EditorRunBar() {
 
 	// Use a button for the indicator since it comes with a background panel and pixel perfect centering of an icon.
 	profiler_autostart_indicator = memnew(Button);
+	profiler_autostart_indicator->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	profiler_autostart_indicator->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	profiler_autostart_indicator->set_focus_mode(FOCUS_ACCESSIBILITY);
 	profiler_autostart_indicator->set_theme_type_variation("ProfilerAutostartIndicator");
@@ -678,6 +679,6 @@ EditorRunBar::EditorRunBar() {
 	write_movie_panel->add_child(write_movie_button);
 	write_movie_button->set_theme_type_variation("RunBarButtonMovieMakerDisabled");
 	write_movie_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
+	write_movie_button->set_tooltip_text(TTRC("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 	write_movie_button->set_accessibility_name(TTRC("Enable Movie Maker Mode"));
 }
