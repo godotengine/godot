@@ -1418,13 +1418,12 @@ bool OpenXRAPI::on_state_ready() {
 bool OpenXRAPI::on_state_synchronized() {
 	print_verbose("On state synchronized");
 
-	// Just in case, see if we already have active trackers...
-	for (const RID &tracker : tracker_owner.get_owned_list()) {
-		tracker_check_profile(tracker);
-	}
-
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_synchronized();
+	}
+
+	if (xr_interface) {
+		xr_interface->on_state_synchronized();
 	}
 
 	return true;
@@ -2075,11 +2074,10 @@ bool OpenXRAPI::poll_events() {
 				print_verbose("OpenXR EVENT: interaction profile changed!");
 
 				XrEventDataInteractionProfileChanged *event = (XrEventDataInteractionProfileChanged *)&runtimeEvent;
-
-				for (const RID &tracker : tracker_owner.get_owned_list()) {
-					tracker_check_profile(tracker, event->session);
+				if (event->session == session) {
+					// Make sure we get our interaction profile change
+					interaction_profile_changed = true;
 				}
-
 			} break;
 			default:
 				if (!handled) {
@@ -3454,8 +3452,16 @@ bool OpenXRAPI::sync_action_sets(const Vector<RID> p_active_sets) {
 
 	XrResult result = xrSyncActions(session, &sync_info);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to sync active action sets! [", get_error_string(result), "]");
-		return false;
+		ERR_FAIL_V_MSG(false, "OpenXR: failed to sync active action sets! [" + get_error_string(result) + "]");
+	}
+
+	if (interaction_profile_changed) {
+		// Just in case, see if we already have active trackers...
+		for (const RID &tracker : tracker_owner.get_owned_list()) {
+			tracker_check_profile(tracker);
+		}
+
+		interaction_profile_changed = false;
 	}
 
 	return true;
