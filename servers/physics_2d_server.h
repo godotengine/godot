@@ -146,7 +146,7 @@ class Physics2DDirectSpaceState : public Object {
 	Dictionary _intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_layers = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 	Array _intersect_point(const Vector2 &p_point, int p_max_results = 32, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_layers = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 	Array _intersect_point_on_canvas(const Vector2 &p_point, ObjectID p_canvas_intance_id, int p_max_results = 32, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_layers = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	Array _intersect_point_impl(const Vector2 &p_point, int p_max_results, const Vector<RID> &p_exclud, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = 0);
+	Array _intersect_point_impl(const Vector2 &p_point, int p_max_results, const Vector<RID> &p_exclud, uint32_t p_layers, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = ObjectID());
 	Array _intersect_shape(const Ref<Physics2DShapeQueryParameters> &p_shape_query, int p_max_results = 32);
 	Array _cast_motion(const Ref<Physics2DShapeQueryParameters> &p_shape_query);
 	Array _collide_shape(const Ref<Physics2DShapeQueryParameters> &p_shape_query, int p_max_results = 32);
@@ -160,7 +160,7 @@ public:
 		Vector2 position;
 		Vector2 normal;
 		RID rid;
-		ObjectID collider_id = 0;
+		ObjectID collider_id;
 		Object *collider = nullptr;
 		int shape = 0;
 		Variant metadata;
@@ -170,7 +170,7 @@ public:
 
 	struct ShapeResult {
 		RID rid;
-		ObjectID collider_id = 0;
+		ObjectID collider_id;
 		Object *collider = nullptr;
 		int shape = 0;
 		Variant metadata;
@@ -189,7 +189,7 @@ public:
 		Vector2 point;
 		Vector2 normal;
 		RID rid;
-		ObjectID collider_id = 0;
+		ObjectID collider_id;
 		int shape = 0;
 		Vector2 linear_velocity; //velocity at contact point
 		Variant metadata;
@@ -375,11 +375,11 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) = 0;
 	virtual void body_clear_shapes(RID p_body) = 0;
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id) = 0;
-	virtual uint32_t body_get_object_instance_id(RID p_body) const = 0;
+	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id) = 0;
+	virtual ObjectID body_get_object_instance_id(RID p_body) const = 0;
 
-	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_id) = 0;
-	virtual uint32_t body_get_canvas_instance_id(RID p_body) const = 0;
+	virtual void body_attach_canvas_instance_id(RID p_body, ObjectID p_id) = 0;
+	virtual ObjectID body_get_canvas_instance_id(RID p_body) const = 0;
 
 	enum CCDMode {
 		CCD_MODE_DISABLED,
@@ -474,7 +474,7 @@ public:
 		real_t collision_safe_fraction = 0.0;
 		real_t collision_unsafe_fraction = 0.0;
 		int collision_local_shape = 0;
-		ObjectID collider_id = 0;
+		ObjectID collider_id;
 		RID collider;
 		int collider_shape = 0;
 		Variant collider_metadata;

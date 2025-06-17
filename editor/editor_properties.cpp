@@ -549,13 +549,13 @@ void EditorPropertyMember::_property_select() {
 		selector->select_method_from_base_type(hint_text, current);
 
 	} else if (hint == MEMBER_METHOD_OF_INSTANCE) {
-		Object *instance = ObjectDB::get_instance(hint_text.to_int64());
+		Object *instance = ObjectDB::get_instance(ObjectID(hint_text.to_int64()));
 		if (instance) {
 			selector->select_method_from_instance(instance, current);
 		}
 
 	} else if (hint == MEMBER_METHOD_OF_SCRIPT) {
-		Object *obj = ObjectDB::get_instance(hint_text.to_int64());
+		Object *obj = ObjectDB::get_instance(ObjectID(hint_text.to_int64()));
 		if (Object::cast_to<Script>(obj)) {
 			selector->select_method_from_script(Object::cast_to<Script>(obj), current);
 		}
@@ -580,13 +580,13 @@ void EditorPropertyMember::_property_select() {
 		selector->select_property_from_base_type(hint_text, current);
 
 	} else if (hint == MEMBER_PROPERTY_OF_INSTANCE) {
-		Object *instance = ObjectDB::get_instance(hint_text.to_int64());
+		Object *instance = ObjectDB::get_instance(ObjectID(hint_text.to_int64()));
 		if (instance) {
 			selector->select_property_from_instance(instance, current);
 		}
 
 	} else if (hint == MEMBER_PROPERTY_OF_SCRIPT) {
-		Object *obj = ObjectDB::get_instance(hint_text.to_int64());
+		Object *obj = ObjectDB::get_instance(ObjectID(hint_text.to_int64()));
 		if (Object::cast_to<Script>(obj)) {
 			selector->select_property_from_script(Object::cast_to<Script>(obj), current);
 		}
@@ -1228,7 +1228,7 @@ void EditorPropertyObjectID::update_property() {
 	}
 
 	ObjectID id = get_edited_object()->get(get_edited_property());
-	if (id != 0) {
+	if (id.is_valid()) {
 		edit->set_text(type + " ID: " + itos(id));
 		edit->set_disabled(false);
 		edit->set_icon(EditorNode::get_singleton()->get_class_icon(type));

@@ -1822,7 +1822,7 @@ void EditorNode::_dialog_action(String p_file) {
 			save_resource_in_path(saving_resource, p_file);
 			saving_resource = Ref<Resource>();
 			ObjectID current = editor_history.get_current();
-			Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : nullptr;
+			Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 			ERR_FAIL_COND(!current_obj);
 			current_obj->_change_notify();
 		} break;
@@ -1970,7 +1970,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 		return;
 	}
 
-	uint32_t id = p_object->get_instance_id();
+	ObjectID id = p_object->get_instance_id();
 	if (id != editor_history.get_current()) {
 		if (p_inspector_only) {
 			editor_history.add_object_inspector_only(id);
@@ -2023,8 +2023,8 @@ static bool overrides_external_editor(Object *p_object) {
 }
 
 void EditorNode::_edit_current(bool p_skip_foreign) {
-	uint32_t current = editor_history.get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : nullptr;
+	ObjectID current = editor_history.get_current();
+	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
 	RES res = Object::cast_to<Resource>(current_obj);
 	if (p_skip_foreign && res.is_valid()) {

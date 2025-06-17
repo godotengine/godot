@@ -836,13 +836,13 @@ bool Variant::is_one() const {
 
 ObjectID Variant::get_object_instance_id() const {
 	if (unlikely(type != OBJECT)) {
-		return 0;
+		return ObjectID();
 	} else if (likely(_get_obj().rc)) {
 		return _get_obj().rc->instance_id;
 	} else if (likely(!_get_obj().ref.is_null())) {
 		return _REF_OBJ_PTR(*this)->get_instance_id();
 	} else {
-		return 0;
+		return ObjectID();
 	}
 }
 
@@ -1291,6 +1291,19 @@ Variant::operator unsigned char() const {
 			return 0;
 		}
 	}
+}
+
+Variant::operator ObjectID() const {
+	if (type == INT) {
+		return ObjectID(_data._int);
+	} else {
+		return ObjectID();
+	}
+}
+
+Variant::Variant(const ObjectID &p_id) {
+	type = INT;
+	_data._int = p_id;
 }
 
 Variant::operator CharType() const {

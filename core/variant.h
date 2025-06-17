@@ -196,6 +196,7 @@ public:
 	operator unsigned long() const;
 #endif
 
+	operator ObjectID() const;
 	operator CharType() const;
 	operator float() const;
 	operator double() const;
@@ -267,6 +268,7 @@ public:
 	Variant(uint64_t p_int);
 	Variant(float p_float);
 	Variant(double p_double);
+	Variant(const ObjectID &p_id);
 	Variant(const String &p_string);
 	Variant(const StringName &p_string);
 	Variant(const char *const p_cstring);

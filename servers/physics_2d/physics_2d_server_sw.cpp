@@ -417,7 +417,7 @@ ObjectID Physics2DServerSW::area_get_object_instance_id(RID p_area) const {
 		p_area = space->get_default_area()->get_self();
 	}
 	Area2DSW *area = area_owner.get(p_area);
-	ERR_FAIL_COND_V(!area, 0);
+	ERR_FAIL_COND_V(!area, ObjectID());
 	return area->get_instance_id();
 }
 
@@ -436,7 +436,7 @@ ObjectID Physics2DServerSW::area_get_canvas_instance_id(RID p_area) const {
 		p_area = space->get_default_area()->get_self();
 	}
 	Area2DSW *area = area_owner.get(p_area);
-	ERR_FAIL_COND_V(!area, 0);
+	ERR_FAIL_COND_V(!area, ObjectID());
 	return area->get_canvas_instance_id();
 }
 
@@ -506,14 +506,14 @@ void Physics2DServerSW::area_set_monitor_callback(RID p_area, Object *p_receiver
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_monitor_callback(p_receiver ? p_receiver->get_instance_id() : 0, p_method);
+	area->set_monitor_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
 }
 
 void Physics2DServerSW::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_area_monitor_callback(p_receiver ? p_receiver->get_instance_id() : 0, p_method);
+	area->set_area_monitor_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
 }
 
 /* BODY API */
@@ -675,30 +675,30 @@ Physics2DServerSW::CCDMode Physics2DServerSW::body_get_continuous_collision_dete
 	return body->get_continuous_collision_detection_mode();
 }
 
-void Physics2DServerSW::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
+void Physics2DServerSW::body_attach_object_instance_id(RID p_body, ObjectID p_id) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_id);
 };
 
-uint32_t Physics2DServerSW::body_get_object_instance_id(RID p_body) const {
+ObjectID Physics2DServerSW::body_get_object_instance_id(RID p_body) const {
 	Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, 0);
+	ERR_FAIL_COND_V(!body, ObjectID());
 
 	return body->get_instance_id();
 };
 
-void Physics2DServerSW::body_attach_canvas_instance_id(RID p_body, uint32_t p_id) {
+void Physics2DServerSW::body_attach_canvas_instance_id(RID p_body, ObjectID p_id) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_canvas_instance_id(p_id);
 };
 
-uint32_t Physics2DServerSW::body_get_canvas_instance_id(RID p_body) const {
+ObjectID Physics2DServerSW::body_get_canvas_instance_id(RID p_body) const {
 	Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, 0);
+	ERR_FAIL_COND_V(!body, ObjectID());
 
 	return body->get_canvas_instance_id();
 };
@@ -916,7 +916,7 @@ int Physics2DServerSW::body_get_max_contacts_reported(RID p_body) const {
 void Physics2DServerSW::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(0), p_method, p_udata);
+	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
 }
 
 bool Physics2DServerSW::body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) {
