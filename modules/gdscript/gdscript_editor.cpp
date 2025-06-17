@@ -3147,8 +3147,21 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 					}
 				} break;
 				case GDScriptParser::IdentifierNode::Source::LOCAL_VARIABLE: {
-					if (identifier_node->next != nullptr && identifier_node->next->type == GDScriptParser::ClassNode::Node::GET_NODE) {
-						get_node = static_cast<GDScriptParser::GetNodeNode *>(identifier_node->next);
+					// TODO: Do basic assignment flow analysis like in `_guess_expression_type`.
+					const GDScriptParser::SuiteNode::Local local = identifier_node->suite->get_local(identifier_node->name);
+					switch (local.type) {
+						case GDScriptParser::SuiteNode::Local::CONSTANT: {
+							if (local.constant->initializer && local.constant->initializer->type == GDScriptParser::Node::GET_NODE) {
+								get_node = static_cast<GDScriptParser::GetNodeNode *>(local.constant->initializer);
+							}
+						} break;
+						case GDScriptParser::SuiteNode::Local::VARIABLE: {
+							if (local.variable->initializer && local.variable->initializer->type == GDScriptParser::Node::GET_NODE) {
+								get_node = static_cast<GDScriptParser::GetNodeNode *>(local.variable->initializer);
+							}
+						} break;
+						default: {
+						} break;
 					}
 				} break;
 				default: {
