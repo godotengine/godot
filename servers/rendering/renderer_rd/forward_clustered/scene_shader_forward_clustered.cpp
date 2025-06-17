@@ -692,7 +692,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data.main_cam_inv_view_matrix";
 
 		actions.renames["VERTEX"] = "vertex";
-		actions.renames["NORMAL"] = "normal";
+		actions.renames["NORMAL"] = "normal_highp";
 		actions.renames["TANGENT"] = "tangent";
 		actions.renames["BINORMAL"] = "binormal";
 		actions.renames["POSITION"] = "position";
@@ -726,12 +726,12 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 		actions.renames["BENT_NORMAL_MAP"] = "bent_normal_map";
-		actions.renames["ALBEDO"] = "albedo";
-		actions.renames["ALPHA"] = "alpha";
+		actions.renames["ALBEDO"] = "albedo_highp";
+		actions.renames["ALPHA"] = "alpha_highp";
 		actions.renames["PREMUL_ALPHA_FACTOR"] = "premul_alpha";
-		actions.renames["METALLIC"] = "metallic";
+		actions.renames["METALLIC"] = "metallic_highp";
 		actions.renames["SPECULAR"] = "specular";
-		actions.renames["ROUGHNESS"] = "roughness";
+		actions.renames["ROUGHNESS"] = "roughness_highp";
 		actions.renames["RIM"] = "rim";
 		actions.renames["RIM_TINT"] = "rim_tint";
 		actions.renames["CLEARCOAT"] = "clearcoat";
