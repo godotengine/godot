@@ -332,7 +332,7 @@
             "name": "godot_instance_from_id",
             "return_type": "godot_object *",
             "arguments": [
-              ["godot_int", "p_instance_id"]
+              ["uint64_t", "p_instance_id"]
             ]
           }
         ]
