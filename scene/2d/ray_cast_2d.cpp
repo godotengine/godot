@@ -74,7 +74,7 @@ bool RayCast2D::is_colliding() const {
 	return collided;
 }
 Object *RayCast2D::get_collider() const {
-	if (against == 0) {
+	if (!against.is_valid()) {
 		return nullptr;
 	}
 
@@ -197,7 +197,7 @@ void RayCast2D::_update_raycast_state() {
 		against_shape = rr.shape;
 	} else {
 		collided = false;
-		against = 0;
+		against = ObjectID();
 		against_shape = 0;
 	}
 
@@ -348,7 +348,6 @@ void RayCast2D::_bind_methods() {
 
 RayCast2D::RayCast2D() {
 	enabled = false;
-	against = 0;
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;

@@ -1055,7 +1055,7 @@ ObjectID CanvasItem::get_canvas_layer_instance_id() const {
 	if (canvas_layer) {
 		return canvas_layer->get_instance_id();
 	} else {
-		return 0;
+		return ObjectID();
 	}
 }
 
