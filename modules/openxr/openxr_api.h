@@ -272,6 +272,7 @@ private:
 	};
 	RID_Owner<Tracker, true> tracker_owner;
 	RID get_tracker_rid(XrPath p_path);
+	bool interaction_profile_changed = true; // If true we need to check for updates to our active_profile_rid.
 
 	struct ActionSet { // Action sets define a set of actions that can be enabled together
 		String name; // Name for this action set (i.e. "godot_action_set")
@@ -420,6 +421,7 @@ public:
 	XrInstance get_instance() const { return instance; }
 	XrSystemId get_system_id() const { return system_id; }
 	XrSession get_session() const { return session; }
+	XrSessionState get_session_state() const { return session_state; }
 	OpenXRGraphicsExtensionWrapper *get_graphics_extension() const { return graphics_extension; }
 	String get_runtime_name() const { return runtime_name; }
 	String get_runtime_version() const { return runtime_version; }
