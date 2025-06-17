@@ -339,7 +339,7 @@ void vertex_shader(vec3 vertex_input,
 
 	vec3 vertex = vertex_input;
 #ifdef NORMAL_USED
-	vec3 normal = normal_input;
+	vec3 normal_highp = normal_input;
 #endif
 
 #ifdef TANGENT_USED
@@ -387,7 +387,7 @@ void vertex_shader(vec3 vertex_input,
 	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
 
 #ifdef NORMAL_USED
-	normal = model_normal_matrix * normal;
+	normal_highp = model_normal_matrix * normal_highp;
 #endif
 
 #ifdef TANGENT_USED
@@ -402,7 +402,7 @@ void vertex_shader(vec3 vertex_input,
 	float z_clip_scale = 1.0;
 #endif
 
-	float roughness = 1.0;
+	float roughness_highp = 1.0;
 
 	mat4 modelview = scene_data.view_matrix * model_matrix;
 	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
@@ -412,6 +412,11 @@ void vertex_shader(vec3 vertex_input,
 	{
 #CODE : VERTEX
 	}
+
+	float roughness = roughness_highp;
+#ifdef NORMAL_USED
+	vec3 normal = normal_highp;
+#endif
 
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
@@ -1142,15 +1147,15 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 	vec3 view_highp = -normalize(vertex_interp);
 #endif
-	vec3 albedo = vec3(1.0);
+	vec3 albedo_highp = vec3(1.0);
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);
 	float transmittance_depth = 0.0;
 	float transmittance_boost = 0.0;
-	float metallic = 0.0;
+	float metallic_highp = 0.0;
 	float specular = 0.5;
 	vec3 emission = vec3(0.0);
-	float roughness = 1.0;
+	float roughness_highp = 1.0;
 	float rim = 0.0;
 	float rim_tint = 0.0;
 	float clearcoat = 0.0;
@@ -1171,7 +1176,7 @@ void fragment_shader(in SceneData scene_data) {
 	float ao = 1.0;
 	float ao_light_affect = 0.0;
 
-	float alpha = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
+	float alpha_highp = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
 
 #ifdef TANGENT_USED
 	vec3 binormal = binormal_interp;
@@ -1182,10 +1187,10 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal = normal_interp;
+	vec3 normal_highp = normal_interp;
 #if defined(DO_SIDE_CHECK)
 	if (!gl_FrontFacing) {
-		normal = -normal;
+		normal_highp = -normal_highp;
 	}
 #endif // DO_SIDE_CHECK
 #endif // NORMAL_USED
@@ -1255,9 +1260,18 @@ void fragment_shader(in SceneData scene_data) {
 
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
+
 	{
 #CODE : FRAGMENT
 	}
+
+	float roughness = roughness_highp;
+	float metallic = metallic_highp;
+	vec3 albedo = albedo_highp;
+	float alpha = alpha_highp;
+#ifdef NORMAL_USED
+	vec3 normal = normal_highp;
+#endif
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 	transmittance_color.a *= sss_strength;
