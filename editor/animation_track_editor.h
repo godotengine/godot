@@ -956,7 +956,7 @@ public:
 	bool is_snap_timeline_enabled() const;
 	bool is_snap_keys_enabled() const;
 	bool is_insert_at_current_time_enabled() const;
-	float get_insert_at_current_time_position_if_enabled(float p_fallback_ofs) const;
+	void resolve_insertion_offset(float &r_offset) const;
 	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
 	void _on_filter_updated(const String &p_filter);

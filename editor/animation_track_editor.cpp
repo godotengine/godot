@@ -3597,7 +3597,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			emit_signal(SNAME("insert_key"), insert_at_pos);
 		} break;
 		case MENU_KEY_DUPLICATE: {
-			emit_signal(SNAME("duplicate_request"), insert_at_pos, true);
+			emit_signal(SNAME("duplicate_request"), insert_at_pos, !editor->is_insert_at_current_time_enabled());
 		} break;
 		case MENU_KEY_CUT: {
 			emit_signal(SNAME("cut_request"));
@@ -3606,7 +3606,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			emit_signal(SNAME("copy_request"));
 		} break;
 		case MENU_KEY_PASTE: {
-			emit_signal(SNAME("paste_request"), insert_at_pos, true);
+			emit_signal(SNAME("paste_request"), insert_at_pos, !editor->is_insert_at_current_time_enabled());
 		} break;
 		case MENU_KEY_ADD_RESET: {
 			emit_signal(SNAME("create_reset_request"));
@@ -4937,11 +4937,9 @@ bool AnimationTrackEditor::is_insert_at_current_time_enabled() const {
 	return insert_at_current_time->is_pressed();
 }
 
-float AnimationTrackEditor::get_insert_at_current_time_position_if_enabled(float p_fallback_ofs) const {
+void AnimationTrackEditor::resolve_insertion_offset(float &r_offset) const {
 	if (is_insert_at_current_time_enabled()) {
-		return timeline->get_play_position();
-	} else {
-		return p_fallback_ofs;
+		r_offset = timeline->get_play_position();
 	}
 }
 
@@ -5713,7 +5711,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 		p_ofs = snap_time(p_ofs);
 	}
 
-	p_ofs = get_insert_at_current_time_position_if_enabled(p_ofs);
+	resolve_insertion_offset(p_ofs);
 
 	while (animation->track_find_key(p_track, p_ofs, Animation::FIND_MODE_APPROX) != -1) { // Make sure insertion point is valid.
 		p_ofs += SECOND_DECIMAL;
@@ -9257,7 +9255,7 @@ void AnimationMarkerEdit::_insert_marker(float p_ofs) {
 		p_ofs = editor->snap_time(p_ofs);
 	}
 
-	p_ofs = editor->get_insert_at_current_time_position_if_enabled(p_ofs);
+	editor->resolve_insertion_offset(p_ofs);
 
 	marker_insert_confirm->popup_centered(Size2(200, 100) * EDSCALE);
 	marker_insert_color->set_pick_color(Color(1, 1, 1));
