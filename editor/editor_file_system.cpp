@@ -3262,11 +3262,13 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 					int imported_count = 0;
 					while (true) {
-						ep->step(reimport_files[imported_count].path.get_file(), from + imported_count, false);
-						imported_sem.wait();
-						do {
-							imported_count++;
-						} while (imported_sem.try_wait());
+						while (true) {
+							ep->step(reimport_files[imported_count].path.get_file(), from + imported_count, false);
+							if (imported_sem.try_wait()) {
+								imported_count++;
+								break;
+							}
+						}
 						if (imported_count == item_count) {
 							break;
 						}
