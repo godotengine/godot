@@ -258,6 +258,10 @@ void EditorSceneTabs::update_scene_tabs() {
 	_update_tab_titles();
 }
 
+void EditorSceneTabs::set_is_closing_tab(bool closing) {
+	scene_tabs->set_is_closing_tab(closing);
+}
+
 void EditorSceneTabs::_update_tab_titles() {
 	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
 
@@ -418,6 +422,8 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	scene_tabs->set_scroll_to_selected(true);
+	scene_tabs->set_scroll_on_tab_close(false);
 	tabbar_container->add_child(scene_tabs);
 
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorSceneTabs::_scene_tab_changed));

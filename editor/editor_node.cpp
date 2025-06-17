@@ -3649,7 +3649,9 @@ void EditorNode::_discard_changes(const String &p_str) {
 			// Don't close tabs when exiting the editor (required for "restore_scenes_on_load" setting).
 			if (!_is_closing_editor()) {
 				_remove_scene(tab_closing_idx);
+				scene_tabs->set_is_closing_tab(true);
 				scene_tabs->update_scene_tabs();
+				scene_tabs->set_is_closing_tab(false);
 			}
 			_proceed_closing_scene_tabs();
 		} break;
@@ -6100,7 +6102,9 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	}
 
 	save_editor_layout_delayed();
+	scene_tabs->set_is_closing_tab(true);
 	scene_tabs->update_scene_tabs();
+	scene_tabs->set_is_closing_tab(false);
 }
 
 void EditorNode::_cancel_close_scene_tab() {
