@@ -145,7 +145,7 @@ def configure(env: "SConsEnvironment"):
         env["metal"] = False
 
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         env.Prepend(
             CPPPATH=[
                 "$VISIONOS_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
