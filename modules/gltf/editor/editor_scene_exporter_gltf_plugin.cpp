@@ -69,7 +69,7 @@ SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	// Add a button to the Scene -> Export menu to pop up the settings dialog.
 	PopupMenu *menu = get_export_as_menu();
 	int idx = menu->get_item_count();
-	menu->add_item(TTR("glTF 2.0 Scene..."));
+	menu->add_item(TTRC("glTF 2.0 Scene..."));
 	menu->set_item_metadata(idx, callable_mp(this, &SceneExporterGLTFPlugin::_popup_gltf_export_dialog));
 }
 

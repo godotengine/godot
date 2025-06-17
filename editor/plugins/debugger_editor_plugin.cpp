@@ -55,7 +55,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	file_server = memnew(EditorFileServer);
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
-	Button *db = EditorNode::get_bottom_panel()->add_item(TTR("Debugger"), debugger, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D));
+	Button *db = EditorNode::get_bottom_panel()->add_item(TTRC("Debugger"), debugger, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D));
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.
@@ -63,41 +63,41 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->set_hide_on_checkable_item_selection(false);
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/deploy_with_remote_debug", TTRC("Deploy with Remote Debug")), RUN_DEPLOY_REMOTE_DEBUG);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, using one-click deploy will make the executable attempt to connect to this computer's IP so the running project can be debugged.\nThis option is intended to be used for remote debugging (typically with a mobile device).\nYou don't need to enable it to use the GDScript debugger locally."));
+			TTRC("When this option is enabled, using one-click deploy will make the executable attempt to connect to this computer's IP so the running project can be debugged.\nThis option is intended to be used for remote debugging (typically with a mobile device).\nYou don't need to enable it to use the GDScript debugger locally."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/small_deploy_with_network_fs", TTRC("Small Deploy with Network Filesystem")), RUN_FILE_SERVER);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, using one-click deploy for Android will only export an executable without the project data.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploying will use the USB cable for faster performance. This option speeds up testing for projects with large assets."));
+			TTRC("When this option is enabled, using one-click deploy for Android will only export an executable without the project data.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploying will use the USB cable for faster performance. This option speeds up testing for projects with large assets."));
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTRC("Visible Collision Shapes")), RUN_DEBUG_COLLISIONS);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
+			TTRC("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTRC("Visible Paths")), RUN_DEBUG_PATHS);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
+			TTRC("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTRC("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, navigation meshes, and polygons will be visible in the running project."));
+			TTRC("When this option is enabled, navigation meshes, and polygons will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_avoidance", TTRC("Visible Avoidance")), RUN_DEBUG_AVOIDANCE);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, avoidance object shapes, radiuses, and velocities will be visible in the running project."));
+			TTRC("When this option is enabled, avoidance object shapes, radiuses, and velocities will be visible in the running project."));
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_canvas_redraw", TTRC("Debug CanvasItem Redraws")), RUN_DEBUG_CANVAS_REDRAW);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, redraw requests of 2D objects will become visible (as a short flash) in the running project.\nThis is useful to troubleshoot low processor mode."));
+			TTRC("When this option is enabled, redraw requests of 2D objects will become visible (as a short flash) in the running project.\nThis is useful to troubleshoot low processor mode."));
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTRC("Synchronize Scene Changes")), RUN_LIVE_DEBUG);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, any changes made to the scene in the editor will be replicated in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
+			TTRC("When this option is enabled, any changes made to the scene in the editor will be replicated in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTRC("Synchronize Script Changes")), RUN_RELOAD_SCRIPTS);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, any script that is saved will be reloaded in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
+			TTRC("When this option is enabled, any script that is saved will be reloaded in the running project.\nWhen used remotely on a device, this is more efficient when the network filesystem option is enabled."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/keep_server_open", TTRC("Keep Debug Server Open")), SERVER_KEEP_OPEN);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, the editor debug server will stay open and listen for new sessions started outside of the editor itself."));
+			TTRC("When this option is enabled, the editor debug server will stay open and listen for new sessions started outside of the editor itself."));
 
 	// Multi-instance, start/stop.
 	debug_menu->add_separator();
-	debug_menu->add_item(TTR("Customize Run Instances..."), RUN_MULTIPLE_INSTANCES);
+	debug_menu->add_item(TTRC("Customize Run Instances..."), RUN_MULTIPLE_INSTANCES);
 	debug_menu->connect(SceneStringName(id_pressed), callable_mp(this, &DebuggerEditorPlugin::_menu_option));
 
 	run_instances_dialog = memnew(RunInstancesDialog);

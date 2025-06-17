@@ -1760,7 +1760,7 @@ void GridMapEditorPlugin::_notification(int p_what) {
 			grid_map_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 			grid_map_editor->hide();
 
-			panel_button = EditorNode::get_bottom_panel()->add_item(TTR("GridMap"), grid_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_grid_map_bottom_panel", TTRC("Toggle GridMap Bottom Panel")));
+			panel_button = EditorNode::get_bottom_panel()->add_item(TTRC("GridMap"), grid_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_grid_map_bottom_panel", TTRC("Toggle GridMap Bottom Panel")));
 			panel_button->hide();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {

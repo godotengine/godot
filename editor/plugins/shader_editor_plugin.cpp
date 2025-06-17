@@ -946,7 +946,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	empty.instantiate();
 	shader_tabs->add_theme_style_override(SceneStringName(panel), empty);
 
-	button = EditorNode::get_bottom_panel()->add_item(TTR("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
+	button = EditorNode::get_bottom_panel()->add_item(TTRC("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
 	files_split->add_child(shader_create_dialog);

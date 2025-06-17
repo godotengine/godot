@@ -495,7 +495,7 @@ TileMapEditorPlugin::TileMapEditorPlugin() {
 	editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	editor->hide();
 
-	button = EditorNode::get_bottom_panel()->add_item(TTR("TileMap"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTRC("Toggle TileMap Bottom Panel")));
+	button = EditorNode::get_bottom_panel()->add_item(TTRC("TileMap"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTRC("Toggle TileMap Bottom Panel")));
 	button->hide();
 }
 
@@ -546,7 +546,7 @@ TileSetEditorPlugin::TileSetEditorPlugin() {
 	editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	editor->hide();
 
-	button = EditorNode::get_bottom_panel()->add_item(TTR("TileSet"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_set_bottom_panel", TTRC("Toggle TileSet Bottom Panel")));
+	button = EditorNode::get_bottom_panel()->add_item(TTRC("TileSet"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_set_bottom_panel", TTRC("Toggle TileSet Bottom Panel")));
 	button->hide();
 }
 
