@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app_delegate_service.h                                                */
+/*  godot_scene_delegate.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,11 +32,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class GDTViewController;
+typedef NSObject<UIWindowSceneDelegate> GDTSceneDelegateServiceProtocol API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0));
 
-@interface GDTAppDelegateService : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0))
+@interface GDTSceneDelegate : NSObject <UIWindowSceneDelegate>
 
-@property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) GDTViewController *viewController;
+@property(class, readonly, strong) NSArray<GDTSceneDelegateServiceProtocol *> *services;
+
++ (void)addService:(GDTSceneDelegateServiceProtocol *)service;
 
 @end
