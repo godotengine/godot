@@ -104,10 +104,6 @@ Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
 }
 
 void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
-	if (p_type == ERR_HANDLER_SCRIPT) {
-		return; //ignore script errors, those go through debugger
-	}
-
 	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive errors during flush.
 		return;
@@ -407,26 +403,23 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		}
 	}
 
-	ScriptLanguage *script_lang = script_debugger->get_break_language();
-	ERR_FAIL_NULL(script_lang);
-	const bool can_break = !(p_is_error_breakpoint && script_debugger->is_ignoring_error_breaks());
-	const String error_str = script_lang ? script_lang->debug_get_error() : "";
-
-	if (can_break) {
-		Array msg = {
-			p_can_continue,
-			error_str,
-			script_lang->debug_get_stack_level_count() > 0,
-			Thread::get_caller_id()
-		};
-		if (allow_focus_steal_fn) {
-			allow_focus_steal_fn();
-		}
-		send_message("debug_enter", msg);
-	} else {
-		ERR_PRINT(error_str);
+	if (p_is_error_breakpoint && script_debugger->is_ignoring_error_breaks()) {
 		return;
 	}
+
+	ScriptLanguage *script_lang = script_debugger->get_break_language();
+	ERR_FAIL_NULL(script_lang);
+
+	Array msg = {
+		p_can_continue,
+		script_lang->debug_get_error(),
+		script_lang->debug_get_stack_level_count() > 0,
+		Thread::get_caller_id()
+	};
+	if (allow_focus_steal_fn) {
+		allow_focus_steal_fn();
+	}
+	send_message("debug_enter", msg);
 
 	Input::MouseMode mouse_mode = Input::MOUSE_MODE_VISIBLE;
 
