@@ -34,6 +34,8 @@
 #include "scene/gui/range.h"
 #include "scene/gui/texture_rect.h"
 
+#include "editor/gui/editor_range_dial.h"
+
 class EditorSpinSlider : public Range {
 	GDCLASS(EditorSpinSlider, Range);
 
@@ -57,13 +59,15 @@ class EditorSpinSlider : public Range {
 	bool grabbing_spinner = false;
 
 	bool read_only = false;
-	float grabbing_spinner_dist_cache = 0.0f;
+	double grabbing_spinner_dist_cache = 0.0f;
+	double grabbing_spinner_total_applied = 0.0f;
 	float grabbing_spinner_speed = 0.0f;
 	Vector2 grabbing_spinner_mouse_pos;
 	double pre_grab_value = 0.0;
 
 	Control *value_input_popup = nullptr;
 	LineEdit *value_input = nullptr;
+	EditorRangeDialPopup *dial_popup = nullptr;
 	uint64_t value_input_closed_frame = 0;
 	bool value_input_dirty = false;
 	bool value_input_focus_visible = false;
@@ -93,6 +97,7 @@ private:
 
 	void _update_value_input_stylebox();
 	void _ensure_input_popup();
+	void _ensure_dial_popup();
 	void _draw_spin_slider();
 
 	struct ThemeCache {
