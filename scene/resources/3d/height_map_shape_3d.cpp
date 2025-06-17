@@ -232,17 +232,17 @@ void HeightMapShape3D::set_map_data(Vector<real_t> p_new) {
 	emit_changed();
 }
 
-int HeightMapShape3D::get_tile_size() const {
-	return tile_size;
+void HeightMapShape3D::set_tile_size(real_t p_tile_size) {
+	if (p_tile_size <= 0 || tile_size == p_tile_size) {
+		return;
+	}
+	tile_size = p_tile_size;
+	_update_shape();
+	emit_changed();
 }
 
-void HeightMapShape3D::set_tile_size(real_t p_new) {
-	if (p_new <= 0) {
-		// ignore
-	} else if (tile_size != p_new) {
-		_update_shape();
-		emit_changed();
-	}
+real_t HeightMapShape3D::get_tile_size() const {
+	return tile_size;
 }
 
 Vector<real_t> HeightMapShape3D::get_map_data() const {

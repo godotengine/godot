@@ -56,7 +56,7 @@ public:
 	int get_map_depth() const;
 	void set_map_data(Vector<real_t> p_new);
 	Vector<real_t> get_map_data() const;
-	void set_tile_size(real_t p_new);
+	void set_tile_size(real_t p_tile_size);
 	real_t get_tile_size() const;
 
 	real_t get_min_height() const;
