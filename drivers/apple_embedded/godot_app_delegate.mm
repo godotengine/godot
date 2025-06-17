@@ -31,6 +31,7 @@
 #import "godot_app_delegate.h"
 
 #import "app_delegate_service.h"
+#import "godot_scene_delegate.h"
 
 @implementation GDTApplicationDelegate
 
@@ -59,15 +60,29 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 - (UIWindow *)window {
 	UIWindow *result = nil;
 
-	for (GDTAppDelegateServiceProtocol *service in services) {
-		if (![service respondsToSelector:_cmd]) {
-			continue;
+	if (@available(iOS 13, tvOS 13, visionOS 1, *)) {
+		for (GDTSceneDelegateServiceProtocol *service in [GDTSceneDelegate services]) {
+			if (![service respondsToSelector:_cmd]) {
+				continue;
+			}
+
+			UIWindow *value = [service window];
+
+			if (value) {
+				result = value;
+			}
 		}
+	} else {
+		for (GDTAppDelegateServiceProtocol *service in services) {
+			if (![service respondsToSelector:_cmd]) {
+				continue;
+			}
 
-		UIWindow *value = [service window];
+			UIWindow *value = [service window];
 
-		if (value) {
-			result = value;
+			if (value) {
+				result = value;
+			}
 		}
 	}
 
@@ -108,15 +123,16 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 	return result;
 }
 
-/* Can be handled by Info.plist. Not yet supported by Godot.
-
 // MARK: Scene
 
-- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options {}
+- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+	config.delegateClass = [GDTSceneDelegate class];
+	return config;
+}
 
-- (void)application:(UIApplication *)application didDiscardSceneSessions:(NSSet<UISceneSession *> *)sceneSessions {}
-
-*/
+- (void)application:(UIApplication *)application didDiscardSceneSessions:(NSSet<UISceneSession *> *)sceneSessions API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+}
 
 // MARK: Life-Cycle
 
