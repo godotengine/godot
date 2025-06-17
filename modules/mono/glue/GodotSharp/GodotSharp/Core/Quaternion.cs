@@ -558,26 +558,44 @@ namespace Godot
 
         public Quaternion(Vector3 arcFrom, Vector3 arcTo)
         {
-            Vector3 c = arcFrom.Cross(arcTo);
-            real_t d = arcFrom.Dot(arcTo);
-
-            if (d < -1.0f + Mathf.Epsilon)
+#if DEBUG
+            if (arcFrom.IsZeroApprox() || arcTo.IsZeroApprox())
             {
-                X = 0f;
-                Y = 1f;
-                Z = 0f;
-                W = 0f;
+                throw new ArgumentException("The vectors must not be zero.");
+            }
+#endif
+#if REAL_T_IS_DOUBLE
+            const real_t ALMOST_ONE = 0.999999999999999;
+#else
+            const real_t ALMOST_ONE = 0.99999975f;
+#endif
+            Vector3 n0 = arcFrom.Normalized();
+            Vector3 n1 = arcTo.Normalized();
+            real_t d = n0.Dot(n1);
+            if (Mathf.Abs(d) > ALMOST_ONE)
+            {
+                if (d >= 0)
+                {
+                    return; // Vectors are same.
+                }
+                Vector3 axis = n0.GetAnyPerpendicular();
+                X = axis.X;
+                Y = axis.Y;
+                Z = axis.Z;
+                W = 0;
             }
             else
             {
-                real_t s = Mathf.Sqrt((1.0f + d) * 2.0f);
-                real_t rs = 1.0f / s;
+                Vector3 c = n0.Cross(n1);
+                real_t s = Mathf.Sqrt((1f + d) * 2f);
+                real_t rs = 1f / s;
 
                 X = c.X * rs;
                 Y = c.Y * rs;
                 Z = c.Z * rs;
                 W = s * 0.5f;
             }
+            this = Normalized();
         }
 
         /// <summary>
