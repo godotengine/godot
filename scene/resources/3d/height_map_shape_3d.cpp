@@ -237,7 +237,7 @@ int HeightMapShape3D::get_tile_size() const {
 }
 
 void HeightMapShape3D::set_tile_size(real_t p_new) {
-	if (p_new < 0) {
+	if (p_new <= 0) {
 		// ignore
 	} else if (tile_size != p_new) {
 		_update_shape();
