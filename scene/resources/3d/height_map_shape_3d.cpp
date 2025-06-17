@@ -42,7 +42,7 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 		// also we'll have to figure out how well bullet centers this shape...
 
 		Vector2 size(map_width - 1, map_depth - 1);
-		Vector2 start = size * -0.5 * tile_size;
+		Vector2 start = size * -0.5 * cell_size;
 
 		const real_t *r = map_data.ptr();
 
@@ -60,23 +60,23 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 
 				if (w != map_width - 1) {
 					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x + tile_size, r[r_offset], height.z);
+					points.write[w_offset++] = Vector3(height.x + cell_size, r[r_offset], height.z);
 				}
 
 				if (d != map_depth - 1) {
 					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + tile_size);
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + cell_size);
 				}
 
 				if ((w != map_width - 1) && (d != map_depth - 1)) {
-					points.write[w_offset++] = Vector3(height.x + tile_size, r[r_offset], height.z);
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + tile_size);
+					points.write[w_offset++] = Vector3(height.x + cell_size, r[r_offset], height.z);
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + cell_size);
 				}
 
-				height.x += tile_size;
+				height.x += cell_size;
 			}
 
-			start.y += tile_size;
+			start.y += cell_size;
 		}
 	}
 
@@ -91,7 +91,7 @@ Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modula
 	// This will be slow for large maps...
 
 	if ((map_width != 0) && (map_depth != 0)) {
-		Vector2 size = Vector2(map_width - 1, map_depth - 1) * -0.5 * tile_size;
+		Vector2 size = Vector2(map_width - 1, map_depth - 1) * -0.5 * cell_size;
 		const real_t *r = map_data.ptr();
 
 		for (int d = 0; d <= map_depth - 2; d++) {
@@ -106,10 +106,10 @@ Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modula
 
 				const int index_offset = verts.size();
 
-				verts.push_back(Vector3(size.x + w, height_tl, size.y + d + tile_size));
+				verts.push_back(Vector3(size.x + w, height_tl, size.y + d + cell_size));
 				verts.push_back(Vector3(size.x + w, height_bl, size.y + d));
-				verts.push_back(Vector3(size.x + w + tile_size, height_br, size.y + d));
-				verts.push_back(Vector3(size.x + w + tile_size, height_tr, size.y + d + tile_size));
+				verts.push_back(Vector3(size.x + w + cell_size, height_br, size.y + d));
+				verts.push_back(Vector3(size.x + w + cell_size, height_tr, size.y + d + cell_size));
 
 				colors.push_back(p_modulate);
 				colors.push_back(p_modulate);
@@ -148,7 +148,7 @@ void HeightMapShape3D::_update_shape() {
 	d["heights"] = map_data;
 	d["min_height"] = min_height;
 	d["max_height"] = max_height;
-	d["tile_size"] = tile_size;
+	d["cell_size"] = cell_size;
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
@@ -232,17 +232,17 @@ void HeightMapShape3D::set_map_data(Vector<real_t> p_new) {
 	emit_changed();
 }
 
-void HeightMapShape3D::set_tile_size(real_t p_tile_size) {
-	if (p_tile_size <= 0 || tile_size == p_tile_size) {
+void HeightMapShape3D::set_cell_size(real_t p_cell_size) {
+	if (p_cell_size <= 0 || cell_size == p_cell_size) {
 		return;
 	}
-	tile_size = p_tile_size;
+	cell_size = p_cell_size;
 	_update_shape();
 	emit_changed();
 }
 
-real_t HeightMapShape3D::get_tile_size() const {
-	return tile_size;
+real_t HeightMapShape3D::get_cell_size() const {
+	return cell_size;
 }
 
 Vector<real_t> HeightMapShape3D::get_map_data() const {
@@ -364,8 +364,8 @@ void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_map_data"), &HeightMapShape3D::get_map_data);
 	ClassDB::bind_method(D_METHOD("get_min_height"), &HeightMapShape3D::get_min_height);
 	ClassDB::bind_method(D_METHOD("get_max_height"), &HeightMapShape3D::get_max_height);
-	ClassDB::bind_method(D_METHOD("set_tile_size", "tile_size"), &HeightMapShape3D::set_tile_size);
-	ClassDB::bind_method(D_METHOD("get_tile_size"), &HeightMapShape3D::get_tile_size);
+	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &HeightMapShape3D::set_cell_size);
+	ClassDB::bind_method(D_METHOD("get_cell_size"), &HeightMapShape3D::get_cell_size);
 
 	ClassDB::bind_method(D_METHOD("update_map_data_from_image", "image", "height_min", "height_max"), &HeightMapShape3D::update_map_data_from_image);
 

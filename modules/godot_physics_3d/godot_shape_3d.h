@@ -386,6 +386,7 @@ struct GodotHeightMapShape3D : public GodotConcaveShape3D {
 	Vector<real_t> heights;
 	int width = 0;
 	int depth = 0;
+	real_t cell_size = 1;
 	Vector3 local_origin;
 
 	// Accelerator.
@@ -408,9 +409,9 @@ struct GodotHeightMapShape3D : public GodotConcaveShape3D {
 	}
 
 	_FORCE_INLINE_ void _get_point(int p_x, int p_z, Vector3 &r_point) const {
-		r_point.x = p_x - 0.5 * (width - 1.0);
+		r_point.x = p_x - 0.5 * (width - cell_size);
 		r_point.y = _get_height(p_x, p_z);
-		r_point.z = p_z - 0.5 * (depth - 1.0);
+		r_point.z = p_z - 0.5 * (depth - cell_size);
 	}
 
 	void _get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const;
@@ -420,12 +421,13 @@ struct GodotHeightMapShape3D : public GodotConcaveShape3D {
 	template <typename ProcessFunction>
 	bool _intersect_grid_segment(ProcessFunction &p_process, const Vector3 &p_begin, const Vector3 &p_end, int p_width, int p_depth, const Vector3 &offset, Vector3 &r_point, Vector3 &r_normal) const;
 
-	void _setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
+	void _setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_cell_size, real_t p_min_height, real_t p_max_height);
 
 public:
 	Vector<real_t> get_heights() const;
 	int get_width() const;
 	int get_depth() const;
+	real_t get_cell_size() const;
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_HEIGHTMAP; }
 
