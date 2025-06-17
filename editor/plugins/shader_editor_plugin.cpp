@@ -382,6 +382,13 @@ void ShaderEditorPlugin::_shader_selected(int p_index) {
 
 	shader_tabs->set_current_tab(p_index);
 	shader_list->select(p_index);
+
+	// Avoid `Shader` being edited when editing `ShaderInclude` due to inspector refreshing.
+	if (edited_shaders[p_index].shader.is_valid()) {
+		EditorNode::get_singleton()->push_item_no_inspector(edited_shaders[p_index].shader.ptr());
+	} else {
+		EditorNode::get_singleton()->push_item_no_inspector(edited_shaders[p_index].shader_inc.ptr());
+	}
 }
 
 void ShaderEditorPlugin::_shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index) {
