@@ -1495,7 +1495,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	error = memnew(AcceptDialog);
 	add_child(error);
 
-	dock_button = EditorNode::get_bottom_panel()->add_item(TTR("Polygon"), polygon_edit, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTR("Toggle Polygon Bottom Panel")));
+	dock_button = EditorNode::get_bottom_panel()->add_item(TTRC("Polygon"), polygon_edit, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTR("Toggle Polygon Bottom Panel")));
 	dock_button->hide();
 }
 
