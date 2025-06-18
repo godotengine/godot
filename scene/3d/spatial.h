@@ -141,8 +141,12 @@ private:
 
 		int children_lock;
 		Spatial *parent;
-		List<Spatial *> children;
-		List<Spatial *>::Element *C;
+
+		// An unordered vector of `Spatial` children only.
+		// This is a subset of the `Node::children`, purely
+		// an optimization for faster traversal.
+		LocalVector<Spatial *> spatial_children;
+		uint32_t index_in_parent = UINT32_MAX;
 
 		float lod_range = 10.0f;
 		ClientPhysicsInterpolationData *client_physics_interpolation_data;
