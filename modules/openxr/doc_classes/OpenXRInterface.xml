@@ -85,6 +85,12 @@
 				If handtracking is enabled and motion range is supported, gets the currently configured motion range for [param hand].
 			</description>
 		</method>
+		<method name="get_session_state">
+			<return type="int" enum="OpenXRInterface.OpenXrSessionState" />
+			<description>
+				Returns the current state of our OpenXR session.
+			</description>
+		</method>
 		<method name="is_action_set_active" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -216,7 +222,7 @@
 		</signal>
 		<signal name="session_focussed">
 			<description>
-				Informs our OpenXR session now has focus.
+				Informs our OpenXR session now has focus, e.g. output is sent to our HMD and we're receiving XR input.
 			</description>
 		</signal>
 		<signal name="session_loss_pending">
@@ -229,13 +235,47 @@
 				Informs our OpenXR session is stopping.
 			</description>
 		</signal>
+		<signal name="session_synchronized">
+			<description>
+				Informs our OpenXR session has been synchronized.
+			</description>
+		</signal>
 		<signal name="session_visible">
 			<description>
-				Informs our OpenXR session is now visible (output is being sent to the HMD).
+				Informs our OpenXR session is now visible, e.g. output is being sent to the HMD but we don't receive XR input.
 			</description>
 		</signal>
 	</signals>
 	<constants>
+		<constant name="OPENXR_SESSION_STATE_UNKNOWN" value="0" enum="OpenXrSessionState">
+			The state of the session is unknown, we haven't tried setting up OpenXR yet.
+		</constant>
+		<constant name="OPENXR_SESSION_STATE_IDLE" value="1" enum="OpenXrSessionState">
+			The initial state after the OpenXR session is created or after the session is destroyed.
+		</constant>
+		<constant name="OPENXR_SESSION_STATE_READY" value="2" enum="OpenXrSessionState">
+			OpenXR is ready to begin our session. [signal session_begun] is emitted when we change to this state.
+		</constant>
+		<constant name="OPENXR_SESSION_STATE_SYNCHRONIZED" value="3" enum="OpenXrSessionState">
+			The application has synched its frame loop with the runtime but we're not rendering anything. [signal session_synchronized] is emitted when we change to this state.
+		</constant>
+		<constant name="OPENXR_SESSION_STATE_VISIBLE" value="4" enum="OpenXrSessionState">
+			The application has synched its frame loop with the runtime and we're rendering output to the user, however we receive no user input. [signal session_visible] is emitted when we change to this state.
+			[b]Note:[/b] This is the current state just before we get the focused state, whenever the user opens a system menu, switches to another application or takes off their headset.
+		</constant>
+		<constant name="OPENXR_SESSION_STATE_FOCUSED" value="5" enum="OpenXrSessionState">
+			The application has synched its frame loop with the runtime, we're rendering output to the user and we're receiving XR input. [signal session_focussed] is emitted when we change to this state.
+			[b]Note:[/b] This is the state OpenXR will be in when the user can fully interact with your game.
+		</constant>
+		<constant name="OPENXR_SESSION_STATE_STOPPING" value="6" enum="OpenXrSessionState">
+			Our session is being stopped. [signal session_stopping] is emitted when we change to this state.
+		</constant>
+		<constant name="OPENXR_SESSION_STATE_LOSS_PENDING" value="7" enum="OpenXrSessionState">
+			The session is about to be lost. [signal session_loss_pending] is emitted when we change to this state.
+		</constant>
+		<constant name="OPENXR_SESSION_STATE_EXITING" value="8" enum="OpenXrSessionState">
+			The OpenXR instance is about to be destroyed and we're existing. [signal instance_exiting] is emitted when we change to this state.
+		</constant>
 		<constant name="HAND_LEFT" value="0" enum="Hand">
 			Left hand.
 		</constant>
