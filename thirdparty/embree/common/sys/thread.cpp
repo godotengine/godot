@@ -161,7 +161,7 @@ namespace embree
 /// Linux Platform
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(__LINUX__) && !defined(__ANDROID__)
+#if defined(__LINUX__) && !defined(__ANDROID__) && !defined(__OPEN_HARMONY__)
 
 #include <fstream>
 #include <sstream>
@@ -257,7 +257,7 @@ namespace embree
 /// Android Platform
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(__OPEN_HARMONY__)
 
 namespace embree
 {
@@ -396,14 +396,14 @@ namespace embree
     pthread_attr_destroy(&attr);
 
     /* set affinity */
-#if defined(__LINUX__) && !defined(__ANDROID__)
-    if (threadID >= 0) {
-      cpu_set_t cset;
-      CPU_ZERO(&cset);
-      threadID = mapThreadID(threadID);
-      CPU_SET(threadID, &cset);
-      pthread_setaffinity_np(*tid, sizeof(cset), &cset);
-    }
+#if defined(__LINUX__) && !defined(__ANDROID__) && !defined(__OPEN_HARMONY__)
+	if (threadID >= 0) {
+		cpu_set_t cset;
+		CPU_ZERO(&cset);
+		threadID = mapThreadID(threadID);
+		CPU_SET(threadID, &cset);
+		pthread_setaffinity_np(*tid, sizeof(cset), &cset);
+	}
 #elif defined(__FreeBSD__)
     if (threadID >= 0) {
       cpuset_t cset;
@@ -411,13 +411,13 @@ namespace embree
       CPU_SET(threadID, &cset);
       pthread_setaffinity_np(*tid, sizeof(cset), &cset);
     }
-#elif defined(__ANDROID__)
-    if (threadID >= 0) {
-      cpu_set_t cset;
-      CPU_ZERO(&cset);
-      CPU_SET(threadID, &cset);
-      sched_setaffinity(pthread_gettid_np(*tid), sizeof(cset), &cset);
-    }
+#elif defined(__ANDROID__) || defined(__OPEN_HARMONY__)
+	if (threadID >= 0) {
+		cpu_set_t cset;
+		CPU_ZERO(&cset);
+		CPU_SET(threadID, &cset);
+		sched_setaffinity(pthread_gettid_np(*tid), sizeof(cset), &cset);
+	}
 #endif
 
     return thread_t(tid);
@@ -438,10 +438,12 @@ namespace embree
   /*! destroy a hardware thread by its handle */
   void destroyThread(thread_t tid) {
 #if defined(__ANDROID__)
-    FATAL("Can't destroy threads on Android."); // pthread_cancel not implemented.
+	  FATAL("Can't destroy threads on Android."); // pthread_cancel not implemented.
+#elif defined(__OPEN_HARMONY__)
+	  FATAL("Can't destroy threads on OpenHarmony."); // pthread_cancel not implemented.
 #else
-    pthread_cancel(*(pthread_t*)tid);
-    delete (pthread_t*)tid;
+	  pthread_cancel(*(pthread_t *)tid);
+	  delete (pthread_t *)tid;
 #endif
   }
 
