@@ -815,8 +815,12 @@ typedef void (*GDExtensionMainLoopShutdownCallback)();
 typedef void (*GDExtensionMainLoopFrameCallback)();
 
 typedef struct {
+	// Will be called after Godot is started and is fully initialized.
 	GDExtensionMainLoopStartupCallback startup_func;
+	// Will be called before Godot is shutdown when it is still fully initialized.
 	GDExtensionMainLoopShutdownCallback shutdown_func;
+	// Will be called for each process frame. This will run after all `_process()` methods on Node, and before `ScriptServer::frame()`.
+	// This is intended to be the equivalent of `ScriptLanguage::frame()` for GDExtension language bindings that don't use the script API.
 	GDExtensionMainLoopFrameCallback frame_func;
 } GDExtensionMainLoopCallbacks;
 
