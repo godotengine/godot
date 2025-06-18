@@ -83,6 +83,8 @@ private:
 
 	void deinitialize_modules();
 
+	mutable String remote_fs_dir;
+
 public:
 	static OS_AppleEmbedded *get_singleton();
 
@@ -115,6 +117,7 @@ public:
 
 	virtual String get_cache_path() const override;
 	virtual String get_temp_path() const override;
+	virtual String get_resource_dir() const override;
 
 	virtual String get_locale() const override;
 
@@ -124,6 +127,8 @@ public:
 	virtual void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0) override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
+
+	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) override;
 
 	void on_focus_out();
 	void on_focus_in();

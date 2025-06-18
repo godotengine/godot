@@ -35,14 +35,12 @@
 #import "app_delegate_service.h"
 #import "display_server_apple_embedded.h"
 #import "godot_view_apple_embedded.h"
-#import "terminal_logger_apple_embedded.h"
 #import "view_controller.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_pack.h"
-#include "drivers/unix/syslog_logger.h"
+#import "drivers/apple/os_log_logger.h"
 #include "main/main.h"
 
 #import <AudioToolbox/AudioServices.h>
@@ -142,7 +140,7 @@ OS_AppleEmbedded::OS_AppleEmbedded() {
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(TerminalLoggerAppleEmbedded));
+	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver);
@@ -381,6 +379,18 @@ String OS_AppleEmbedded::get_temp_path() const {
 		}
 	}
 	return ret;
+}
+
+String OS_AppleEmbedded::get_resource_dir() const {
+#ifdef TOOLS_ENABLED
+	return OS_Unix::get_resource_dir();
+#else
+	if (remote_fs_dir.is_empty()) {
+		return OS_Unix::get_resource_dir();
+	} else {
+		return remote_fs_dir;
+	}
+#endif
 }
 
 String OS_AppleEmbedded::get_locale() const {
@@ -639,6 +649,15 @@ bool OS_AppleEmbedded::_check_internal_feature_support(const String &p_feature) 
 	}
 
 	return false;
+}
+
+Error OS_AppleEmbedded::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
+	r_project_path = OS::get_user_data_dir();
+	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);
+	if (err == OK) {
+		remote_fs_dir = r_project_path;
+	}
+	return err;
 }
 
 void OS_AppleEmbedded::on_focus_out() {
