@@ -272,7 +272,15 @@ void ScriptEditorDebugger::request_remote_evaluate(const String &p_expression, i
 }
 
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field) {
-	Array msg = { p_obj_id, p_prop, p_value };
+	Array msg = { p_obj_id, p_prop };
+
+	Ref<Resource> res = p_value;
+	if (res.is_valid() && !res->get_path().is_empty()) {
+		msg.append(res->get_path());
+	} else {
+		msg.append(p_value);
+	}
+
 	if (p_field.is_empty()) {
 		_put_msg("scene:set_object_property", msg);
 	} else {
