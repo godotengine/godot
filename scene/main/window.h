@@ -120,7 +120,7 @@ private:
 	bool initialized = false;
 
 	String title;
-	String tr_title;
+	String displayed_title;
 	mutable int current_screen = 0;
 	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -252,6 +252,8 @@ private:
 	void _update_mouse_over(Vector2 p_pos) override;
 	void _mouse_leave_viewport() override;
 
+	void _update_displayed_title();
+
 	Ref<Shortcut> debugger_stop_shortcut;
 
 	static int root_layout_direction;
@@ -296,7 +298,7 @@ public:
 
 	void set_title(const String &p_title);
 	String get_title() const;
-	String get_translated_title() const;
+	String get_displayed_title() const;
 
 	void set_initial_position(WindowInitialPosition p_initial_position);
 	WindowInitialPosition get_initial_position() const;
