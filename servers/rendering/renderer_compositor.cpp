@@ -49,6 +49,14 @@ bool RendererCompositor::is_xr_enabled() const {
 	return xr_enabled;
 }
 
+bool RendererCompositor::get_use_debanding() const {
+	return use_debanding;
+}
+
+void RendererCompositor::set_use_debanding(bool value) {
+	use_debanding = value;
+}
+
 RendererCompositor::RendererCompositor() {
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCompositor singleton already exists.");
 	singleton = this;

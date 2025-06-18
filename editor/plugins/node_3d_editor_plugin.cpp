@@ -100,6 +100,7 @@
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/rendering/renderer_compositor.h"
 
 constexpr real_t DISTANCE_DEFAULT = 4;
 
@@ -2899,6 +2900,7 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
+	RendererCompositor::get_singleton()->set_use_debanding(use_debanding);
 
 	const bool use_occlusion_culling = GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling");
 	viewport->set_use_occlusion_culling(use_occlusion_culling);
