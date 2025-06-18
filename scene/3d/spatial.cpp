@@ -104,10 +104,10 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 		return; //already dirty
 	*/
 
-	data.children_lock++;
+	Spatial **children = data.spatial_children.ptr();
 
 	for (uint32_t n = 0; n < data.spatial_children.size(); n++) {
-		Spatial *s = data.spatial_children[n];
+		Spatial *s = children[n];
 
 		// Don't propagate to a toplevel.
 		if (!s->data.toplevel_active) {
@@ -123,8 +123,6 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 		get_tree()->xform_change_list.add(&xform_change);
 	}
 	data.dirty |= DIRTY_GLOBAL | DIRTY_GLOBAL_INTERPOLATED;
-
-	data.children_lock--;
 }
 
 void Spatial::notification_callback(int p_message_type) {
@@ -885,7 +883,7 @@ void Spatial::_propagate_visibility_changed() {
 #endif
 
 	for (uint32_t n = 0; n < data.spatial_children.size(); n++) {
-		Spatial *s = data.spatial_children[n];
+		Spatial *s = data.spatial_children.ptr()[n];
 
 		if (s->data.visible) {
 			s->_propagate_visibility_changed();
@@ -914,7 +912,7 @@ void Spatial::_propagate_merging_allowed(bool p_merging_allowed) {
 	data.merging_allowed = p_merging_allowed;
 
 	for (uint32_t n = 0; n < data.spatial_children.size(); n++) {
-		Spatial *s = data.spatial_children[n];
+		Spatial *s = data.spatial_children.ptr()[n];
 		s->_propagate_merging_allowed(p_merging_allowed);
 	}
 }
@@ -1269,7 +1267,6 @@ void Spatial::_bind_methods() {
 Spatial::Spatial() :
 		xform_change(this), _client_physics_interpolation_spatials_list(this) {
 	data.dirty = DIRTY_NONE;
-	data.children_lock = 0;
 
 	data.ignore_notification = false;
 	data.toplevel = false;

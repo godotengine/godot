@@ -183,7 +183,7 @@ void Node::_propagate_ready() {
 	data.ready_notified = true;
 	data.blocked++;
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_ready();
+		data.children.ptr()[i]->_propagate_ready();
 	}
 	data.blocked--;
 
@@ -235,7 +235,7 @@ void Node::_propagate_physics_interpolation_reset_requested(bool p_requested) {
 
 	data.blocked++;
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_physics_interpolation_reset_requested(p_requested);
+		data.children.ptr()[i]->_propagate_physics_interpolation_reset_requested(p_requested);
 	}
 	data.blocked--;
 }
@@ -281,8 +281,8 @@ void Node::_propagate_enter_tree() {
 	//block while adding children
 
 	for (int i = 0; i < data.children.size(); i++) {
-		if (!data.children[i]->is_inside_tree()) { // could have been added in enter_tree
-			data.children[i]->_propagate_enter_tree();
+		if (!data.children.ptr()[i]->is_inside_tree()) { // could have been added in enter_tree
+			data.children.ptr()[i]->_propagate_enter_tree();
 		}
 	}
 
@@ -429,7 +429,7 @@ void Node::move_child(Node *p_child, int p_pos) {
 	data.blocked++;
 	//new pos first
 	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->data.pos = i;
+		data.children.ptr()[i]->data.pos = i;
 	}
 	// notification second
 	move_child_notify(p_child);
@@ -456,7 +456,7 @@ void Node::_propagate_groups_dirty() {
 	}
 
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_groups_dirty();
+		data.children.ptr()[i]->_propagate_groups_dirty();
 	}
 }
 
@@ -563,9 +563,11 @@ void Node::_propagate_pause_owner(Node *p_owner) {
 void Node::_propagate_pause_change_notification(int p_notification) {
 	notification(p_notification);
 
+	Node **children = data.children.ptr();
+
 	for (int i = 0; i < data.children.size(); i++) {
-		if (data.children[i]->data.pause_mode == PAUSE_MODE_INHERIT) {
-			data.children[i]->_propagate_pause_change_notification(p_notification);
+		if (children[i]->data.pause_mode == PAUSE_MODE_INHERIT) {
+			children[i]->_propagate_pause_change_notification(p_notification);
 		}
 	}
 }
@@ -575,7 +577,7 @@ void Node::set_network_master(int p_peer_id, bool p_recursive) {
 
 	if (p_recursive) {
 		for (int i = 0; i < data.children.size(); i++) {
-			data.children[i]->set_network_master(p_peer_id, true);
+			data.children.ptr()[i]->set_network_master(p_peer_id, true);
 		}
 	}
 }
@@ -1400,7 +1402,8 @@ int Node::get_child_count() const {
 Node *Node::get_child(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, data.children.size(), nullptr);
 
-	return data.children[p_index];
+	// Index already checked above, can use unsafe version here.
+	return data.children.ptr()[p_index];
 }
 
 Node *Node::_get_child_by_name(const StringName &p_name) const {
@@ -1468,7 +1471,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 			next = nullptr;
 
 			for (int j = 0; j < current->data.children.size(); j++) {
-				Node *child = current->data.children[j];
+				Node *child = current->data.children.ptr()[j];
 
 				if (child->data.name == name) {
 					next = child;
@@ -1936,7 +1939,7 @@ void Node::_print_tree(const Node *p_node) {
 void Node::_propagate_reverse_notification(int p_notification) {
 	data.blocked++;
 	for (int i = data.children.size() - 1; i >= 0; i--) {
-		data.children[i]->_propagate_reverse_notification(p_notification);
+		data.children.ptr()[i]->_propagate_reverse_notification(p_notification);
 	}
 
 	notification(p_notification, true);
@@ -1953,7 +1956,7 @@ void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) 
 	}
 
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_deferred_notification(p_notification, p_reverse);
+		data.children.ptr()[i]->_propagate_deferred_notification(p_notification, p_reverse);
 	}
 
 	if (p_reverse) {
@@ -1968,7 +1971,7 @@ void Node::propagate_notification(int p_notification) {
 	notification(p_notification);
 
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->propagate_notification(p_notification);
+		data.children.ptr()[i]->propagate_notification(p_notification);
 	}
 	data.blocked--;
 }
@@ -1981,7 +1984,7 @@ void Node::propagate_call(const StringName &p_method, const Array &p_args, const
 	}
 
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->propagate_call(p_method, p_args, p_parent_first);
+		data.children.ptr()[i]->propagate_call(p_method, p_args, p_parent_first);
 	}
 
 	if (!p_parent_first && has_method(p_method)) {
@@ -1998,7 +2001,7 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 
 	data.blocked++;
 	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_replace_owner(p_owner, p_by_owner);
+		data.children.ptr()[i]->_propagate_replace_owner(p_owner, p_by_owner);
 	}
 	data.blocked--;
 }
