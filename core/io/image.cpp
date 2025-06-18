@@ -1140,8 +1140,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, vformat("Image width cannot be greater than %d pixels.", MAX_WIDTH));
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, vformat("Image height cannot be greater than %d pixels.", MAX_HEIGHT));
-	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS,
-			vformat("Too many pixels for Image. Maximum is %dx%d = %d pixels.", MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE, MAX_PIXELS));
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, vformat("Too many pixels for Image. Maximum is %d pixels.", MAX_PIXELS));
 
 	if (p_width == width && p_height == height) {
 		return;
@@ -2182,8 +2181,7 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 			vformat("The Image width specified (%d pixels) cannot be greater than %d pixels.", p_width, MAX_WIDTH));
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
 			vformat("The Image height specified (%d pixels) cannot be greater than %d pixels.", p_height, MAX_HEIGHT));
-	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS,
-			vformat("Too many pixels for Image. Maximum is %dx%d = %d pixels.", MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE, MAX_PIXELS));
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, vformat("Too many pixels for Image. Maximum is %d pixels.", MAX_PIXELS));
 	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, vformat("The Image format specified (%d) is out of range. See Image's Format enum.", p_format));
 
 	int mm = 0;
@@ -2208,8 +2206,7 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 			vformat("The Image width specified (%d pixels) cannot be greater than %d pixels.", p_width, MAX_WIDTH));
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
 			vformat("The Image height specified (%d pixels) cannot be greater than %d pixels.", p_height, MAX_HEIGHT));
-	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS,
-			vformat("Too many pixels for Image. Maximum is %dx%d = %d pixels.", MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE, MAX_PIXELS));
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, vformat("Too many pixels for Image. Maximum is %d pixels.", MAX_PIXELS));
 	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, vformat("The Image format specified (%d) is out of range. See Image's Format enum.", p_format));
 
 	int mm;

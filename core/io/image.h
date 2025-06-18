@@ -68,7 +68,6 @@ public:
 	enum {
 		MAX_WIDTH = (1 << 24), // Force a limit somehow.
 		MAX_HEIGHT = (1 << 24), // Force a limit somehow.
-		MAX_TEXTURE_SIZE = 16384,
 		MAX_PIXELS = 268435456 // 16384 ^ 2
 	};
 
