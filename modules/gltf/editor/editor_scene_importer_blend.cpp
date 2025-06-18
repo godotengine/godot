@@ -248,11 +248,11 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 	if (blender_major_version >= 4) {
 		if (p_options.has(SNAME("blender/meshes/gpu_instances")) && p_options[SNAME("blender/meshes/gpu_instances")]) {
-            parameters_map["export_gpu_instances"] = true;
-        } else {
+			parameters_map["export_gpu_instances"] = true;
+		} else {
 			parameters_map["export_gpu_instances"] = false;
 		}
-    }
+	}
 
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
 		parameters_map["export_tangents"] = true;
