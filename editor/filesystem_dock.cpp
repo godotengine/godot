@@ -3580,6 +3580,11 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 
 void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
+	current_path = "";
+	current_path_line_edit->set_text(current_path);
+	if (file_list_vb->is_visible()) {
+		_update_file_list(false);
+	}
 }
 
 void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
