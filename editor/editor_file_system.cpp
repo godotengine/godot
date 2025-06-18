@@ -1389,7 +1389,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 void EditorFileSystem::_process_removed_files(const HashSet<String> &p_processed_files) {
 	for (const KeyValue<String, EditorFileSystem::FileCache> &kv : file_cache) {
 		if (!p_processed_files.has(kv.key)) {
-			if (ClassDB::is_parent_class(kv.value.type, SNAME("Script"))) {
+			if (ClassDB::is_parent_class(kv.value.type, SNAME("Script")) || ClassDB::is_parent_class(kv.value.type, SNAME("PackedScene"))) {
 				// A script has been removed from disk since the last startup. The documentation needs to be updated.
 				// There's no need to add the path in update_script_paths since that is exclusively for updating global class names,
 				// which is handled in _first_scan_filesystem before the full scan to ensure plugins and autoloads can be created.
@@ -2203,6 +2203,29 @@ void EditorFileSystem::_update_script_documentation() {
 		if (!efd || index < 0) {
 			// The file was removed
 			EditorHelp::remove_script_doc_by_path(path);
+			continue;
+		}
+
+		if (path.ends_with(".tscn")) {
+			Ref<PackedScene> packed_scene = ResourceLoader::load(path);
+			if (packed_scene.is_valid()) {
+				Ref<SceneState> state = packed_scene->get_state();
+				if (state.is_valid()) {
+					Vector<Ref<Resource>> sub_resources = state->get_sub_resources();
+					for (Ref<Resource> sub_resource : sub_resources) {
+						Ref<Script> scr = sub_resource;
+						if (scr.is_valid()) {
+							for (const DocData::ClassDoc &cd : scr->get_documentation()) {
+								EditorHelp::add_doc(cd);
+								if (!first_scan) {
+									// Update the documentation in the Script Editor if it is open.
+									ScriptEditor::get_singleton()->update_doc(cd.name);
+								}
+							}
+						}
+					}
+				}
+			}
 			continue;
 		}
 
