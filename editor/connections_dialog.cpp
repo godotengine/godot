@@ -290,7 +290,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 
 	LocalVector<Pair<Variant::Type, StringName>> effective_args;
 	int unbind = get_unbinds();
-	effective_args.reserve(p_signal.arguments.size() - unbind);
+	effective_args.reserve(MAX(p_signal.arguments.size() - unbind, 0));
 	for (int64_t i = 0; i < p_signal.arguments.size() - unbind; i++) {
 		PropertyInfo pi = p_signal.arguments[i];
 		effective_args.push_back(Pair(pi.type, pi.class_name));
