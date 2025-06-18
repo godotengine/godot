@@ -121,6 +121,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("set_breakpoint", callable_mp(this, &EditorDebuggerNode::_breakpoint_set_in_tree).bind(id));
 	node->connect("clear_breakpoints", callable_mp(this, &EditorDebuggerNode::_breakpoints_cleared_in_tree).bind(id));
 	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
+	node->connect("run_scene_requested", callable_mp(this, &EditorDebuggerNode::_run_scene_requested).bind(id));
 
 	if (tabs->get_tab_count() > 0) {
 		get_debugger(0)->clear_style();
@@ -781,6 +782,24 @@ void EditorDebuggerNode::_save_node_requested(ObjectID p_id, const String &p_fil
 		return;
 	}
 	get_current_debugger()->save_node(p_id, p_file);
+}
+
+void EditorDebuggerNode::_run_scene_requested(const String &p_scene, const Vector<String> &p_args, int p_debugger) {
+	EditorRunBar *editor_run_bar = EditorRunBar::get_singleton();
+	ERR_FAIL_NULL(editor_run_bar);
+
+	editor_run_bar->stop_playing();
+
+	// Defer starting the new one, so the old one has a chance to fully stop.
+	callable_mp(this, &EditorDebuggerNode::_run_scene_internal).call_deferred(editor_run_bar, p_scene, p_args);
+}
+
+void EditorDebuggerNode::_run_scene_internal(EditorRunBar *p_editor_run_bar, const String &p_scene, const Vector<String> &p_args) {
+	if (p_scene.is_empty()) {
+		p_editor_run_bar->play_main_scene(false);
+	} else {
+		p_editor_run_bar->play_custom_scene(p_scene, p_args);
+	}
 }
 
 void EditorDebuggerNode::_breakpoint_set_in_tree(Ref<RefCounted> p_script, int p_line, bool p_enabled, int p_debugger) {

@@ -39,6 +39,7 @@ class DebugAdapterParser;
 class EditorDebuggerPlugin;
 class EditorDebuggerTree;
 class EditorDebuggerRemoteObjects;
+class EditorRunBar;
 class MenuButton;
 class ScriptEditorDebugger;
 class TabContainer;
@@ -142,6 +143,9 @@ protected:
 	void _remote_objects_requested(const TypedArray<uint64_t> &p_ids, int p_debugger);
 	void _remote_selection_cleared(int p_debugger);
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
+
+	void _run_scene_requested(const String &p_scene, const Vector<String> &p_args, int p_debugger);
+	void _run_scene_internal(EditorRunBar *p_editor_run_bar, const String &p_scene, const Vector<String> &p_args);
 
 	void _breakpoint_set_in_tree(Ref<RefCounted> p_script, int p_line, bool p_enabled, int p_debugger);
 	void _breakpoints_cleared_in_tree(int p_debugger);

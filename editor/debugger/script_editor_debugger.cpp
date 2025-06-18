@@ -926,6 +926,11 @@ void ScriptEditorDebugger::_msg_embed_next_frame(uint64_t p_thread_id, const Arr
 	emit_signal(SNAME("embed_shortcut_requested"), EMBED_NEXT_FRAME);
 }
 
+void ScriptEditorDebugger::_msg_run_scene(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.size() < 2);
+	emit_signal(SNAME("run_scene_requested"), p_data[0], p_data[1]);
+}
+
 void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data) {
 	emit_signal(SNAME("debug_data"), p_msg, p_data);
 
@@ -976,6 +981,7 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["window:title"] = &ScriptEditorDebugger::_msg_window_title;
 	parse_message_handlers["request_embed_suspend_toggle"] = &ScriptEditorDebugger::_msg_embed_suspend_toggle;
 	parse_message_handlers["request_embed_next_frame"] = &ScriptEditorDebugger::_msg_embed_next_frame;
+	parse_message_handlers["request_run_scene"] = &ScriptEditorDebugger::_msg_run_scene;
 }
 
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
@@ -1944,6 +1950,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
 	ADD_SIGNAL(MethodInfo("embed_shortcut_requested", PropertyInfo(Variant::INT, "embed_shortcut_action")));
+	ADD_SIGNAL(MethodInfo("run_scene_requested", PropertyInfo(Variant::STRING, "scene"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 }
 
 void ScriptEditorDebugger::add_debugger_tab(Control *p_control) {
