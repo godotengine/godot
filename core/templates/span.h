@@ -91,6 +91,11 @@ public:
 	_FORCE_INLINE_ constexpr const T *begin() const { return _ptr; }
 	_FORCE_INLINE_ constexpr const T *end() const { return _ptr + _len; }
 
+	template <typename T1>
+	_FORCE_INLINE_ constexpr Span<T1> reinterpret() const {
+		return Span<T1>(reinterpret_cast<const T1 *>(_ptr), _len * sizeof(T) / sizeof(T1));
+	}
+
 	// Algorithms.
 	constexpr int64_t find(const T &p_val, uint64_t p_from = 0) const;
 	constexpr int64_t rfind(const T &p_val, uint64_t p_from) const;
