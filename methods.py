@@ -19,6 +19,9 @@ from os.path import normpath, basename
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
+
+compiler_version_cache = None
+
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
 _scu_folders = set()
@@ -1068,6 +1071,21 @@ def detect_darwin_sdk_path(platform, env):
             raise
 
 
+def is_apple_clang(env):
+    import shlex
+
+    if env["platform"] not in ["macos", "ios"]:
+        return False
+    if not using_clang(env):
+        return False
+    try:
+        version = subprocess.check_output(shlex.split(env.subst(env["CXX"])) + ["--version"]).strip().decode("utf-8")
+    except (subprocess.CalledProcessError, OSError):
+        print_warning("Couldn't parse CXX environment variable to infer compiler version.")
+        return False
+    return version.startswith("Apple")
+
+
 def get_compiler_version(env):
     """
     Returns an array of version numbers as ints: [major, minor, patch].
@@ -1088,6 +1106,127 @@ def get_compiler_version(env):
         return list(map(int, match.group().split(".")))
     else:
         return None
+
+
+def get_compiler_version_ex(env):
+    """
+    Returns a dictionary with various version information:
+
+    - major, minor, patch: Version following semantic versioning system
+    - metadata1, metadata2: Extra information
+    - date: Date of the build
+    """
+
+    global compiler_version_cache
+    if compiler_version_cache is not None:
+        return compiler_version_cache
+
+    import shlex
+
+    ret = {
+        "major": -1,
+        "minor": -1,
+        "patch": -1,
+        "metadata1": "",
+        "metadata2": "",
+        "date": "",
+        "apple_major": -1,
+        "apple_minor": -1,
+        "apple_patch1": -1,
+        "apple_patch2": -1,
+        "apple_patch3": -1,
+    }
+
+    if env.msvc and not using_clang(env):
+        try:
+            # FIXME: `-latest` works for most cases, but there are edge-cases where this would
+            # benefit from a more nuanced search.
+            # https://github.com/godotengine/godot/pull/91069#issuecomment-2358956731
+            # https://github.com/godotengine/godot/pull/91069#issuecomment-2380836341
+            args = [
+                env["VSWHERE"],
+                "-latest",
+                "-prerelease",
+                "-products",
+                "*",
+                "-requires",
+                "Microsoft.Component.MSBuild",
+                "-utf8",
+            ]
+            version = subprocess.check_output(args, encoding="utf-8").strip()
+            for line in version.splitlines():
+                split = line.split(":", 1)
+                if split[0] == "catalog_productDisplayVersion":
+                    sem_ver = split[1].split(".")
+                    ret["major"] = int(sem_ver[0])
+                    ret["minor"] = int(sem_ver[1])
+                    ret["patch"] = int(sem_ver[2].split()[0])
+                # Could potentially add section for determining preview version, but
+                # that can wait until metadata is actually used for something.
+                if split[0] == "catalog_buildVersion":
+                    ret["metadata1"] = split[1]
+        except (subprocess.CalledProcessError, OSError):
+            print_warning("Couldn't find vswhere to determine compiler version.")
+        return update_compiler_version_cache(ret)
+
+    # Not using -dumpversion as some GCC distros only return major, and
+    # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
+    try:
+        version = subprocess.check_output(
+            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
+        ).strip()
+    except (subprocess.CalledProcessError, OSError):
+        print_warning("Couldn't parse CXX environment variable to infer compiler version.")
+        return update_compiler_version_cache(ret)
+
+    match = re.search(
+        r"(?:(?<=version )|(?<=\) )|(?<=^))"
+        r"(?P<major>\d+)"
+        r"(?:\.(?P<minor>\d*))?"
+        r"(?:\.(?P<patch>\d*))?"
+        r"(?:-(?P<metadata1>[0-9a-zA-Z-]*))?"
+        r"(?:\+(?P<metadata2>[0-9a-zA-Z-]*))?"
+        r"(?: (?P<date>[0-9]{8}|[0-9]{6})(?![0-9a-zA-Z]))?",
+        version,
+    )
+    if match is not None:
+        for key, value in match.groupdict().items():
+            if value is not None:
+                ret[key] = value
+
+    match_apple = re.search(
+        r"(?:(?<=clang-)|(?<=\) )|(?<=^))"
+        r"(?P<apple_major>\d+)"
+        r"(?:\.(?P<apple_minor>\d*))?"
+        r"(?:\.(?P<apple_patch1>\d*))?"
+        r"(?:\.(?P<apple_patch2>\d*))?"
+        r"(?:\.(?P<apple_patch3>\d*))?",
+        version,
+    )
+    if match_apple is not None:
+        for key, value in match_apple.groupdict().items():
+            if value is not None:
+                ret[key] = value
+
+    # Transform semantic versioning to integers
+    for key in [
+        "major",
+        "minor",
+        "patch",
+        "apple_major",
+        "apple_minor",
+        "apple_patch1",
+        "apple_patch2",
+        "apple_patch3",
+    ]:
+        ret[key] = int(ret[key] or -1)
+    return update_compiler_version_cache(ret)
+
+
+def update_compiler_version_cache(value):
+    global compiler_version_cache
+    compiler_version_cache = value
+    return value
 
 
 def is_vanilla_clang(env):
