@@ -7103,6 +7103,13 @@ bool EditorNode::call_build() {
 	return builds_successful;
 }
 
+void EditorNode::call_run_scene(const String &p_scene, Vector<String> &r_args) {
+	for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
+		EditorPlugin *plugin = editor_data.get_editor_plugin(i);
+		plugin->run_scene(p_scene, r_args);
+	}
+}
+
 void EditorNode::_inherit_imported(const String &p_action) {
 	open_imported->hide();
 	load_scene(open_import_request, true, true);
