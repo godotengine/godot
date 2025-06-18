@@ -321,3 +321,11 @@ Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/a
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments': size changed value in new API, from 11 to 12.
 
 Optional argument added. Compatibility methods registered.
+
+
+GH-98566
+--------
+Validate extension JSON: API was removed: classes/VisualShader/methods/set_graph_offset
+Validate extension JSON: API was removed: classes/VisualShader/methods/get_graph_offset
+
+The graph_offset property was removed from the resource. This information is now stored in `vs_editor_cache.cfg`.
