@@ -330,6 +330,9 @@ public:
 	GDVIRTUAL4(_font_set_kerning, RID, int64_t, const Vector2i &, const Vector2 &);
 	GDVIRTUAL3RC(Vector2, _font_get_kerning, RID, int64_t, const Vector2i &);
 
+	virtual int64_t font_get_glyph_by_name(const RID &p_font_rid, int64_t p_size, const String &p_name) const override;
+	GDVIRTUAL3RC_REQUIRED(int64_t, _font_get_glyph_by_name, RID, int64_t, const String &);
+
 	virtual int64_t font_get_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_char, int64_t p_variation_selector = 0) const override;
 	GDVIRTUAL4RC_REQUIRED(int64_t, _font_get_glyph_index, RID, int64_t, int64_t, int64_t);
 

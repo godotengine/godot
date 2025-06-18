@@ -84,6 +84,7 @@ public:
 	virtual void font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) override {}
 	virtual RID font_get_glyph_texture_rid(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override { return RID(); }
 	virtual Size2 font_get_glyph_texture_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override { return Size2(); }
+	virtual int64_t font_get_glyph_by_name(const RID &p_font_rid, int64_t p_size, const String &p_name) const override { return 0; }
 	virtual int64_t font_get_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_char, int64_t p_variation_selector) const override { return 0; }
 	virtual int64_t font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const override { return 0; }
 	virtual bool font_has_char(const RID &p_font_rid, int64_t p_char) const override { return false; }

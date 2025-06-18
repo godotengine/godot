@@ -2653,6 +2653,24 @@ Vector2 TextServerFallback::_font_get_kerning(const RID &p_font_rid, int64_t p_s
 	return Vector2();
 }
 
+int64_t TextServerFallback::_font_get_glyph_by_name(const RID &p_font_rid, int64_t p_size, const String &p_name) const {
+#ifdef MODULE_FREETYPE_ENABLED
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+	ERR_FAIL_COND_V(p_name.is_empty(), 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+	FontForSizeFallback *ffsd = nullptr;
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), 0);
+
+	if (ffsd->face) {
+		return FT_Get_Name_Index(ffsd->face, (const FT_String *)p_name.utf8().get_data());
+	}
+#endif
+	return 0;
+}
+
 int64_t TextServerFallback::_font_get_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_char, int64_t p_variation_selector) const {
 	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), 0, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");
 	return (int64_t)p_char;
