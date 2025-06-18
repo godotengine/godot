@@ -3105,6 +3105,10 @@ void EditorHelp::load_script_doc_cache() {
 		return;
 	}
 
+	if (EditorNode::is_cmdline_mode()) {
+		return;
+	}
+
 	_wait_for_thread();
 
 	if (!ResourceLoader::exists(get_script_doc_cache_full_path())) {
