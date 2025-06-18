@@ -250,6 +250,8 @@ static bool init_display_scale_found = false;
 static int init_display_scale = 0;
 static float init_custom_scale = 1.0;
 static bool init_expand_to_title = false;
+#else
+static bool standalone_script = false;
 #endif
 static bool use_custom_res = true;
 static bool force_res = false;
@@ -1038,9 +1040,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool delta_smoothing_override = false;
 	bool load_shell_env = false;
 
-	String default_renderer = "";
-	String default_renderer_mobile = "";
-	String renderer_hints = "";
+	String default_renderer;
+	String default_renderer_mobile;
+	String renderer_hints;
+
+	String script;
 
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
@@ -1185,7 +1189,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing text driver argument, aborting.\n");
 				goto error;
 			}
-
+		} else if (arg == "-s" || arg == "--script") {
+			main_args.push_back(arg);
+			if (N) {
+				script = N->get();
+				N = N->next();
+				main_args.push_back(script);
+			}
 		} else if (arg == "--display-driver") { // force video driver
 
 			if (N) {
@@ -1933,11 +1943,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
-		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
-		OS::get_singleton()->print("%s", error_msg.utf8().get_data());
-		OS::get_singleton()->alert(error_msg);
+		if (script.is_empty()) {
+			const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
+			OS::get_singleton()->print("%s", error_msg.utf8().get_data());
+			OS::get_singleton()->alert(error_msg);
 
-		goto error;
+			goto error;
+		} else {
+			standalone_script = true;
+			globals->ignore_global_class_list();
+		}
 #endif
 	}
 
@@ -2143,14 +2158,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (main_args.is_empty() && String(GLOBAL_GET("application/run/main_scene")) == "") {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
+#else
+		if (script.is_empty()) {
 #endif
 			const String error_msg = "Error: Can't run project: no main scene defined in the project.\n";
 			OS::get_singleton()->print("%s", error_msg.utf8().get_data());
 			OS::get_singleton()->alert(error_msg);
 			goto error;
-#ifdef TOOLS_ENABLED
 		}
-#endif
 	}
 
 	if (editor || project_manager) {
@@ -4129,6 +4144,11 @@ int Main::start() {
 
 	if (!script.is_empty()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
+#ifndef TOOLS_ENABLED
+		if (standalone_script && script_res.is_null()) {
+			OS::get_singleton()->alert(vformat("Can't load the script \"%s\".", script));
+		}
+#endif
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), EXIT_FAILURE, "Can't load script: " + script);
 
 		if (check_only) {
@@ -4150,7 +4170,12 @@ int Main::start() {
 			script_loop->set_script(script_res);
 			main_loop = script_loop;
 		} else {
-			return EXIT_FAILURE;
+#ifndef TOOLS_ENABLED
+			if (standalone_script) {
+				OS::get_singleton()->alert(vformat("Can't instantiate the script \"%s\".", script));
+			}
+#endif
+			ERR_FAIL_V_MSG(EXIT_FAILURE, vformat("Can't instantiate the script \"%s\".", script));
 		}
 	} else { // Not based on script path.
 		if (!editor && !ClassDB::class_exists(main_loop_type) && ScriptServer::is_global_class(main_loop_type)) {
