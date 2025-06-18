@@ -1918,7 +1918,7 @@ Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	}
 
 	(*dst++) = 0;
-	resize_uninitialized(prev_length + dst - ptr());
+	resize_uninitialized(dst - ptr());
 
 	return result;
 }
