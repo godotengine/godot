@@ -37,10 +37,10 @@
 #import "display_server_macos.h"
 #import "godot_application.h"
 #import "godot_application_delegate.h"
-#import "macos_terminal_logger.h"
 
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
+#include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
 
 #include <dlfcn.h>
@@ -1023,9 +1023,9 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 		}
 		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
 	}
-
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(MacOSTerminalLogger));
+	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
+	loggers.push_back(memnew(UnixTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 #ifdef COREAUDIO_ENABLED
