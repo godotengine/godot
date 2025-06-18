@@ -2587,6 +2587,19 @@ def sanitize_operator_name(dirty_name: str, state: State) -> str:
     elif clear_name == "~":
         clear_name = "bwnot"
 
+    elif clear_name == "not":
+        clear_name = "lnots"
+    elif clear_name == "!":
+        clear_name = "lnot"
+    elif clear_name == "and":
+        clear_name = "lands"
+    elif clear_name == "&&":
+        clear_name = "land"
+    elif clear_name == "or":
+        clear_name = "lors"
+    elif clear_name == "||":
+        clear_name = "lor"
+
     elif clear_name == "[]":
         clear_name = "idx"
 

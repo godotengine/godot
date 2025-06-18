@@ -77,11 +77,24 @@
 		</constructor>
 	</constructors>
 	<operators>
+		<operator name="operator !">
+			<return type="bool" />
+			<description>
+				Performs the logical NOT operation. We recommend using its alias [operator bool.operator not].
+			</description>
+		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<param index="0" name="right" type="bool" />
 			<description>
 				Returns [code]true[/code] if the two booleans are not equal. That is, one is [code]true[/code] and the other is [code]false[/code]. This operation can be seen as a logical XOR.
+			</description>
+		</operator>
+		<operator name="operator &amp;&amp;">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Performs the logical AND operation. We recommend using its alias [operator bool.operator and].
 			</description>
 		</operator>
 		<operator name="operator &lt;">
@@ -103,6 +116,33 @@
 			<param index="0" name="right" type="bool" />
 			<description>
 				Returns [code]true[/code] if the left operand is [code]true[/code] and the right operand is [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator ||">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Performs the logical OR operation. We recommend using its alias [operator bool.operator or].
+			</description>
+		</operator>
+		<operator name="operator and">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Performs the logical AND operation. Same as [operator bool.operator &amp;&amp;].
+			</description>
+		</operator>
+		<operator name="operator not">
+			<return type="bool" />
+			<description>
+				Performs the logical NOT operation. Same as [operator bool.operator !].
+			</description>
+		</operator>
+		<operator name="operator or">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Performs the logical OR operation. Same as [operator bool.operator ||].
 			</description>
 		</operator>
 	</operators>
