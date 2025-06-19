@@ -1293,6 +1293,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
             )
         output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
+        # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built
+        # platform, which means VS can't properly render code that's inside module-specific ifdefs. This adds those defines to the
+        # platform-specific VS props file, so that VS knows which defines are enabled for the selected platform.
+        env.Append(VSHINT_DEFINES=[f"MODULE_{module.upper()}_ENABLED" for module in env.module_list])
+
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
 
