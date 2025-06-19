@@ -678,7 +678,7 @@ void Camera2D::set_custom_viewport(Node *p_viewport) {
 	if (custom_viewport) {
 		custom_viewport_id = custom_viewport->get_instance_id();
 	} else {
-		custom_viewport_id = 0;
+		custom_viewport_id = ObjectID();
 	}
 
 	if (is_inside_tree()) {
@@ -859,7 +859,6 @@ Camera2D::Camera2D() {
 
 	viewport = nullptr;
 	custom_viewport = nullptr;
-	custom_viewport_id = 0;
 	process_mode = CAMERA2D_PROCESS_IDLE;
 
 	smoothing = 5.0;
