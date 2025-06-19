@@ -1,63 +1,60 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /workspace/godotheadless
-
-PATCH_FILE="gitpatch.txt"
-PATCH_BRANCH="mass-move-godot"
+PATCH_FILE="/workspace/godotheadless/gitpatch.txt"
+PATCH_BRANCH="massive-rename-commit"
 MAIN_BRANCH="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@' || echo main)"
 
-# 1. Check for patch file
+cd /workspace/godotheadless
+
+# 1. Sanity checks
 if [ ! -f "$PATCH_FILE" ]; then
   echo "❌ Patch file not found: $PATCH_FILE"
   exit 1
 fi
 
-# 2. Ensure clean working state
 if ! git diff --quiet || ! git diff --cached --quiet; then
-  echo "❌ Uncommitted changes detected! Please commit or stash before running this script."
+  echo "❌ Working tree not clean. Commit or stash changes first."
   exit 2
 fi
 
-# 3. Create a new branch for the patch
+# 2. Checkout base branch, update, and branch
 git fetch origin
 git checkout "$MAIN_BRANCH"
 git pull
 git checkout -b "$PATCH_BRANCH"
 
-# 4. Dry-run patch application to preview errors
-echo "🕵️ Checking if patch can be applied cleanly (dry-run)..."
-if ! git apply --check "$PATCH_FILE"; then
-  echo "❌ Patch cannot be applied cleanly! Aborting. (Try to resolve conflicts, or ensure you are on the right base commit.)"
+# 3. Try dry-run with three-way merge
+echo "🕵️ Dry-run patch application..."
+if ! git apply --3way --check "$PATCH_FILE"; then
+  echo "❌ Patch will NOT apply cleanly. Please fix conflicts manually."
   exit 3
 fi
-echo "✅ Patch check passed. Applying patch for real..."
 
-# 5. Apply patch with whitespace fixes
-if git apply --whitespace=fix "$PATCH_FILE"; then
-  echo "✅ Patch applied successfully!"
+# 4. Actually apply the patch (three-way merge helps auto-resolve renames)
+echo "🔧 Applying patch (with --3way)..."
+if git apply --3way "$PATCH_FILE"; then
+  echo "✅ Patch applied."
 else
-  echo "❌ Patch application failed! Check above for errors. Try manual patching or splitting the patch."
+  echo "❌ Patch apply failed. (See output above for why.)"
   exit 4
 fi
 
-# 6. Stage all changes and prompt for review
+# 5. Stage all changes
 git add .
 
 echo
-echo "📝 Patch applied and staged! Please REVIEW your repo now."
+echo "📝 Patch is staged. Please review your repo for correctness."
+echo "Run:  git status      # to check status"
+echo "Run:  git diff        # to see changes"
+echo "Run:  git diff --cached   # to see what will be committed"
 echo "---------------------------------------------"
-echo "Run:  git status   to see changes"
-echo "Run:  git diff     to view unstaged diffs"
-echo "Run:  git diff --cached   to view staged diffs"
-echo "---------------------------------------------"
-echo "Press ENTER to commit and push, or Ctrl+C to abort..."
+echo "Press ENTER to commit and push, or Ctrl+C to abort and review further..."
 read -r
 
-# 7. Commit and push (waits for your confirmation)
-git commit -m "Apply large patch: reorganize Godot, add gdverify tool"
+# 6. Commit and push
+git commit -m "Mass rename and gdverify integration (giant patch applied via script)"
 git push -u origin "$PATCH_BRANCH"
 
 echo
-echo "✅ Patch committed and pushed to branch: $PATCH_BRANCH"
-echo "Now create a Pull Request from '$PATCH_BRANCH' to '$MAIN_BRANCH' in your Git provider's web UI!"
+echo "✅ All done! Create a Pull Request from '$PATCH_BRANCH' to '$MAIN_BRANCH' on your repo host."
