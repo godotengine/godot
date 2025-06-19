@@ -219,7 +219,6 @@ void HeightMapShape3D::_update_shape() {
 		d["min_height"] = min_height;
 		d["max_height"] = max_height;
 	}
-	d["cell_size"] = 1.0;
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
