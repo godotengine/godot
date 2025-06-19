@@ -3170,6 +3170,9 @@ static void _regenerate_script_doc_cache(bool p_changes) {
 }
 
 void EditorHelp::regenerate_script_doc_cache() {
+	if (block_regen) {
+		return;
+	}
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
 		// Wait until EditorFileSystem scanning is complete to use updated filesystem structure.
 		EditorFileSystem::get_singleton()->connect(SNAME("sources_changed"), callable_mp_static(_regenerate_script_doc_cache), CONNECT_ONE_SHOT);
@@ -3235,6 +3238,9 @@ void EditorHelp::_delete_script_doc_cache() {
 }
 
 void EditorHelp::save_script_doc_cache() {
+	if (block_regen) {
+		return;
+	}
 	if (!_script_docs_loaded.is_set()) {
 		print_verbose("Script docs haven't been properly loaded or regenerated, so don't save them to disk.");
 		return;
@@ -3255,6 +3261,9 @@ void EditorHelp::save_script_doc_cache() {
 }
 
 void EditorHelp::generate_doc(bool p_use_cache, bool p_use_script_cache) {
+	if (block_regen) {
+		return;
+	}
 	doc_generation_count++;
 	OS::get_singleton()->benchmark_begin_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
 
