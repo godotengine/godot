@@ -1,59 +1,32 @@
 #!/bin/bash
-
-# === CONFIGURATION ===
-
-DEFAULT_BRANCH="work"
-DEFAULT_REMOTE="origin"
-DEFAULT_COMMIT_MESSAGE="Applied patch automatically"
-
-# === SAFETY START ===
-
-set -e  # Exit immediately on any failure
-set -o pipefail
-
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 path/to/patchfile.diff"
-  exit 1
-fi
+set -euo pipefail
 
 PATCH_FILE="$1"
+TOKEN="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"
 
-if [ ! -f "$PATCH_FILE" ]; then
-  echo "ERROR: Patch file '$PATCH_FILE' not found."
-  exit 1
-fi
+echo "🛠  Applying patch: $PATCH_FILE"
 
-echo "🛠 Applying patch: $PATCH_FILE"
-
-# Ensure we're inside a git repo
-if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-  echo "ERROR: Not inside a git repository."
-  exit 1
-fi
-
-# Apply the patch with 3-way fallback
-git apply --3way "$PATCH_FILE"
+git apply --3way "$PATCH_FILE" || {
+    echo "❌ Patch failed to apply."
+    exit 1
+}
 
 echo "✅ Patch applied to working directory."
 
-# Stage all changes
-git add -A
-
-# If nothing to commit, exit gracefully
-if git diff --cached --quiet; then
-  echo "⚠️ No changes to commit. Patch may have been already applied."
-  exit 0
+# Run pre-commit validations
+if pre-commit run --all-files; then
+    echo "✅ Pre-commit checks passed."
+else
+    echo "⚠️ Pre-commit had issues. Fix before committing!"
+    exit 1
 fi
 
-# Commit the staged changes
-git commit -m "$DEFAULT_COMMIT_MESSAGE"
-
+git add -A
+git commit -m "Applied patch automatically"
 echo "✅ Commit created."
 
-# Push immediately
-echo "🚀 Pushing to $DEFAULT_REMOTE/$DEFAULT_BRANCH ..."
-git push "$DEFAULT_REMOTE" "$DEFAULT_BRANCH"
+# Push using token-based authentication directly
+REMOTE_URL="https://$TOKEN@github.com/FromAriel/godotheadless.git"
+git push "$REMOTE_URL" HEAD:work
 
-echo "🎉 All done. Your patch is now safely saved in GitHub."
-
-exit 0
+echo "🚀 Pushed successfully to 'work' branch."
