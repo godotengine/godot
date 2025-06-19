@@ -1,2 +1,2 @@
 GDTEST_PARSER_ERROR
-Expected ":" after function declaration.
+Expected end of statement after abstract function declaration, found "{" instead.

@@ -2,7 +2,7 @@ extends RefCounted
 
 @abstract class A:
 	# Currently, an @abstract function cannot be static.
-	static @abstract func f()
+	@abstract static func f()
 
 func test():
 	pass

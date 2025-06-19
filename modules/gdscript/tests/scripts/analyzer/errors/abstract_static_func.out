@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 5: "@abstract" annotation cannot be applied to static functions.

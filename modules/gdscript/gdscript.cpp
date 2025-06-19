@@ -2749,7 +2749,6 @@ Vector<String> GDScriptLanguage::get_reserved_words() const {
 		"when",
 		"while",
 		// Declarations.
-		"abstract",
 		"class",
 		"class_name",
 		"const",
@@ -2915,7 +2914,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		*r_icon_path = c->simplified_icon_path;
 	}
 	if (r_is_abstract) {
-		*r_is_abstract = false;
+		*r_is_abstract = c->is_abstract;
 	}
 	if (r_is_tool) {
 		*r_is_tool = parser.is_tool();
