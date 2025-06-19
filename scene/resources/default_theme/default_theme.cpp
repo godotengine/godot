@@ -230,7 +230,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("normal", "Button", sb_button_normal);
 	theme->set_stylebox("pressed", "Button", sb_button_pressed);
 	theme->set_stylebox("hover", "Button", sb_button_hover);
-	theme->set_stylebox("hover_pressed", "Button", sb_button_hover);
 	theme->set_stylebox("disabled", "Button", sb_button_disabled);
 	theme->set_stylebox("focus", "Button", sb_button_focus);
 
