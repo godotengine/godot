@@ -87,8 +87,8 @@ class EmbeddedGodotGame : GodotGame() {
 
 	override fun setRequestedOrientation(requestedOrientation: Int) {
 		// Allow orientation change only if fullscreen mode is active
-		// or if the requestedOrientation is landscape (i.e switching to default).
-		if (isFullscreen || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE) {
+		// or if the requestedOrientation is unspecified (i.e switching to default).
+		if (isFullscreen || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
 			super.setRequestedOrientation(requestedOrientation)
 		} else {
 			// Cache the requestedOrientation to apply when switching to fullscreen.
@@ -155,7 +155,7 @@ class EmbeddedGodotGame : GodotGame() {
 
 			// Cache the last used orientation in fullscreen to reapply when re-entering fullscreen.
 			gameRequestedOrientation = requestedOrientation
-			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 		}
 		updateWindowDimensions(layoutWidthInPx, layoutHeightInPx)
 	}
