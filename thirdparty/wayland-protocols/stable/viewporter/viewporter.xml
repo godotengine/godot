@@ -71,8 +71,7 @@
       src_y, src_width, src_height), and the destination size (dst_width,
       dst_height). The contents of the source rectangle are scaled to the
       destination size, and content outside the source rectangle is ignored.
-      This state is double-buffered, and is applied on the next
-      wl_surface.commit.
+      This state is double-buffered, see wl_surface.commit.
 
       The two parts of crop and scale state are independent: the source
       rectangle, and the destination size. Initially both are unset, that
@@ -149,8 +148,7 @@
 	or negative, or x or y are negative, raise the bad_value protocol
 	error.
 
-	The crop and scale state is double-buffered state, and will be
-	applied on the next wl_surface.commit.
+	The crop and scale state is double-buffered, see wl_surface.commit.
       </description>
       <arg name="x" type="fixed" summary="source rectangle x"/>
       <arg name="y" type="fixed" summary="source rectangle y"/>
@@ -169,8 +167,7 @@
 	contains zero or negative values raises the bad_value protocol
 	error.
 
-	The crop and scale state is double-buffered state, and will be
-	applied on the next wl_surface.commit.
+	The crop and scale state is double-buffered, see wl_surface.commit.
       </description>
       <arg name="width" type="int" summary="surface width"/>
       <arg name="height" type="int" summary="surface height"/>
