@@ -104,6 +104,10 @@ public:
 
 	void set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type);
 	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
+	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script,
+			const Vector<ContainerTypeValidate> &p_key_nested_types,
+			uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script,
+			const Vector<ContainerTypeValidate> &p_value_nested_types);
 
 	bool is_typed() const;
 	bool is_typed_key() const;
@@ -112,6 +116,8 @@ public:
 	bool is_same_typed(const Dictionary &p_other) const;
 	bool is_same_typed_key(const Dictionary &p_other) const;
 	bool is_same_typed_value(const Dictionary &p_other) const;
+	bool is_nested_key() const;
+	bool is_nested_value() const;
 
 	ContainerType get_key_type() const;
 	ContainerType get_value_type() const;
@@ -132,4 +138,8 @@ public:
 	Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init);
 	Dictionary();
 	~Dictionary();
+
+private:
+	static ContainerTypeValidate convert_container_type(const ContainerType &container);
+	static ContainerType convert_validator_to_container(const ContainerTypeValidate &validator);
 };
