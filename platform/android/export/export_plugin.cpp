@@ -1054,7 +1054,6 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 
 	// Default/Reserved theme attributes.
 	Dictionary main_theme_attributes;
-	main_theme_attributes["android:windowDrawsSystemBarBackgrounds"] = "false";
 	main_theme_attributes["android:windowSwipeToDismiss"] = bool_to_string(p_preset->get("gesture/swipe_to_dismiss"));
 	main_theme_attributes["android:windowIsTranslucent"] = bool_to_string(should_be_transparent);
 	if (should_be_transparent) {
@@ -2163,6 +2162,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_normal"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/edge_to_edge"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data_backup/allow"), false));
 
@@ -3076,6 +3076,11 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	bool immersive = p_preset->get("screen/immersive_mode");
 	if (immersive) {
 		command_line_strings.push_back("--fullscreen");
+	}
+
+	bool edge_to_edge = p_preset->get("screen/edge_to_edge");
+	if (edge_to_edge) {
+		command_line_strings.push_back("--edge_to_edge");
 	}
 
 	bool debug_opengl = p_preset->get("graphics/opengl_debug");
