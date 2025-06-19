@@ -113,6 +113,7 @@ String PhysicsBody::get_configuration_warning() const {
 
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 		CollisionObject(RID_PRIME(PhysicsServer::get_singleton()->body_create(p_mode)), false) {
+	_define_ancestry(AncestralClass::PHYSICS_BODY);
 }
 
 #ifndef DISABLE_DEPRECATED

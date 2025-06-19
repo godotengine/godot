@@ -452,6 +452,8 @@ StringName Node2D::get_property_store_alias(const StringName &p_property) const 
 #endif
 
 Node2D::Node2D() {
+	_define_ancestry(AncestralClass::NODE_2D);
+
 	angle = 0;
 	_scale = Vector2(1, 1);
 	_xform_dirty = false;

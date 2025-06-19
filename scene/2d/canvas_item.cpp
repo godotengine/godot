@@ -1367,6 +1367,8 @@ int CanvasItem::get_canvas_layer() const {
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
+	_define_ancestry(AncestralClass::CANVAS_ITEM);
+
 	canvas_item = RID_PRIME(VisualServer::get_singleton()->canvas_item_create());
 	visible = true;
 	pending_update = false;

@@ -571,6 +571,8 @@ void Area2D::_bind_methods() {
 
 Area2D::Area2D() :
 		CollisionObject2D(RID_PRIME(Physics2DServer::get_singleton()->area_create()), true) {
+	_define_ancestry(AncestralClass::AREA_2D);
+
 	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(98);
 	set_gravity_vector(Vector2(0, 1));

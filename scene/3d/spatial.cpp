@@ -1268,6 +1268,8 @@ void Spatial::_bind_methods() {
 
 Spatial::Spatial() :
 		xform_change(this), _client_physics_interpolation_spatials_list(this) {
+	_define_ancestry(AncestralClass::SPATIAL);
+
 	data.dirty = DIRTY_NONE;
 	data.children_lock = 0;
 

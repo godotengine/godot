@@ -2959,6 +2959,8 @@ void Control::_bind_methods() {
 }
 
 Control::Control() {
+	_define_ancestry(AncestralClass::CONTROL);
+
 	data.parent = nullptr;
 
 	data.mouse_filter = MOUSE_FILTER_STOP;

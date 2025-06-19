@@ -208,6 +208,8 @@ RID VisualInstance::get_base() const {
 }
 
 VisualInstance::VisualInstance() {
+	_define_ancestry(AncestralClass::VISUAL_INSTANCE);
+
 	instance = RID_PRIME(VisualServer::get_singleton()->instance_create());
 	VisualServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
 	layers = 1;
@@ -357,6 +359,8 @@ void GeometryInstance::_bind_methods() {
 }
 
 GeometryInstance::GeometryInstance() {
+	_define_ancestry(AncestralClass::GEOMETRY_INSTANCE);
+
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = false;
 	}
