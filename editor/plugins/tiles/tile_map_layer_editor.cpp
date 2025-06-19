@@ -1522,18 +1522,30 @@ int TileMapLayerEditorTilesPlugin::_get_transformed_alternative(int p_alternativ
 	bool transform_flip_v = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V;
 	bool transform_transpose = p_alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
 
+	bool is_hexagon = _get_edited_layer()->get_tile_set()->get_tile_shape() == TileSet::TILE_SHAPE_HEXAGON;
+
 	switch (p_transform) {
 		case TRANSFORM_ROTATE_LEFT: { // (h, v, t) -> (v, !h, !t)
-			bool negated_flip_h = !transform_flip_h;
-			transform_flip_h = transform_flip_v;
-			transform_flip_v = negated_flip_h;
-			transform_transpose = !transform_transpose;
+			if (is_hexagon) {
+				transform_flip_h = !transform_flip_h;
+				transform_flip_v = !transform_flip_v;
+			} else {
+				bool negated_flip_h = !transform_flip_h;
+				transform_flip_h = transform_flip_v;
+				transform_flip_v = negated_flip_h;
+				transform_transpose = !transform_transpose;
+			}
 		} break;
 		case TRANSFORM_ROTATE_RIGHT: { // (h, v, t) -> (!v, h, !t)
-			bool negated_flip_v = !transform_flip_v;
-			transform_flip_v = transform_flip_h;
-			transform_flip_h = negated_flip_v;
-			transform_transpose = !transform_transpose;
+			if (is_hexagon) {
+				transform_flip_h = !transform_flip_h;
+				transform_flip_v = !transform_flip_v;
+			} else {
+				bool negated_flip_v = !transform_flip_v;
+				transform_flip_v = transform_flip_h;
+				transform_flip_h = negated_flip_v;
+				transform_transpose = !transform_transpose;
+			}
 		} break;
 		case TRANSFORM_FLIP_H: { // (h, v, t) -> (!h, v, t)
 			transform_flip_h = !transform_flip_h;
