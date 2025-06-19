@@ -49,7 +49,7 @@ class VisualInstance : public CullInstance {
 	RID _get_visual_instance_rid() const;
 
 protected:
-	void _update_visibility();
+	void _update_server_visibility_and_xform(bool p_force_refresh_server);
 	virtual void _refresh_portal_mode();
 	void set_instance_use_identity_transform(bool p_enable);
 	virtual void fti_update_servers_xform();

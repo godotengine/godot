@@ -194,7 +194,7 @@ void SceneTreeFTI::_update_request_resets() {
 	for (uint32_t n = 0; n < data.request_reset_list.size(); n++) {
 		Spatial *s = data.request_reset_list[n];
 		if (s->_is_physics_interpolation_reset_requested()) {
-			if (s->_is_vi_visible() && !s->_is_using_identity_transform()) {
+			if (s->is_visible_in_tree() && !s->_is_using_identity_transform()) {
 				s->notification(Spatial::NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 			}
 
@@ -675,17 +675,7 @@ void SceneTreeFTI::frame_update(Node *p_root, bool p_frame_start) {
 					continue;
 				}
 
-				// The first node requires a recursive visibility check
-				// up the tree, because `is_visible()` only returns the node
-				// local flag.
-				if (Object::cast_to<VisualInstance>(s)) {
-					if (!s->_is_vi_visible()) {
-#ifdef DEBUG_ENABLED
-						skipped++;
-#endif
-						continue;
-					}
-				} else if (!s->is_visible_in_tree()) {
+				if (!s->is_visible_in_tree()) {
 #ifdef DEBUG_ENABLED
 					skipped++;
 #endif
