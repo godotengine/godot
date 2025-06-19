@@ -50,9 +50,11 @@
 #include "protocol/xdg_shell.gen.h"
 
 #include "protocol/cursor_shape.gen.h"
+#include "protocol/fifo_v1.gen.h"
 #include "protocol/fractional_scale.gen.h"
 #include "protocol/godot_embedding_compositor.gen.h"
 #include "protocol/idle_inhibit.gen.h"
+#include "protocol/linux_drm_syncobj_v1.gen.h"
 #include "protocol/linux_explicit_synchronization_unstable_v1.gen.h"
 #include "protocol/pointer_constraints.gen.h"
 #include "protocol/pointer_gestures.gen.h"
@@ -385,6 +387,14 @@ private:
 
 		// wayland-drm
 		&wl_drm_interface,
+
+		// linux-drm-syncobj-v1
+		&wp_linux_drm_syncobj_manager_v1_interface,
+		&wp_linux_drm_syncobj_surface_v1_interface,
+		&wp_linux_drm_syncobj_timeline_v1_interface,
+
+		// fifo-v1
+		&wp_fifo_v1_interface,
 
 		// Our custom things.
 		&godot_embedding_compositor_interface,
