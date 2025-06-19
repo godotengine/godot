@@ -15,6 +15,7 @@ DISABLE_LIGHT_SPOT = false
 DISABLE_REFLECTION_PROBE = true
 DISABLE_FOG = false
 USE_DEPTH_FOG = false
+USE_SUN_SCATTER = false
 USE_RADIANCE_MAP = true
 USE_LIGHTMAP = false
 USE_SH_LIGHTMAP = false
@@ -188,7 +189,7 @@ struct SceneData {
 	mediump vec4 ambient_light_color_energy;
 
 	mediump float ambient_color_sky_mix;
-	float pad2;
+	uint directional_shadow_count;
 	float emissive_exposure_normalization;
 	bool use_ambient_light;
 
@@ -1130,7 +1131,7 @@ struct SceneData {
 	mediump vec4 ambient_light_color_energy;
 
 	mediump float ambient_color_sky_mix;
-	float pad2;
+	uint directional_shadow_count;
 	float emissive_exposure_normalization;
 	bool use_ambient_light;
 
@@ -1205,7 +1206,7 @@ in vec3 additive_specular_light_interp;
 #endif // USE_VERTEX_LIGHTING
 
 // Directional light data.
-#if !defined(DISABLE_LIGHT_DIRECTIONAL) || (!defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT))
+#if !defined(DISABLE_LIGHT_DIRECTIONAL) || (!defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)) || defined(USE_SUN_SCATTER)
 
 struct DirectionalLightData {
 	mediump vec3 direction;
@@ -1227,7 +1228,7 @@ layout(std140) uniform DirectionalLights { // ubo:7
 uniform highp sampler2DShadow directional_shadow_atlas; // texunit:-3
 #endif // defined(USE_ADDITIVE_LIGHTING) && (!defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT))
 
-#endif // !DISABLE_LIGHT_DIRECTIONAL
+#endif // !DISABLE_LIGHT_DIRECTIONAL || USE_SUN_SCATTER
 
 // Omni and spot light data.
 #if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
@@ -1770,18 +1771,21 @@ vec4 fog_process(vec3 vertex) {
 	*/
 #endif
 
-#ifndef DISABLE_LIGHT_DIRECTIONAL
-	if (scene_data_block.data.fog_sun_scatter > 0.001) {
-		vec4 sun_scatter = vec4(0.0);
-		float sun_total = 0.0;
-		vec3 view = normalize(vertex);
-		for (uint i = uint(0); i < scene_data_block.data.directional_light_count; i++) {
-			vec3 light_color = directional_lights[i].color * directional_lights[i].energy;
-			float light_amount = pow(max(dot(view, directional_lights[i].direction), 0.0), 8.0);
-			fog_color += light_color * light_amount * scene_data_block.data.fog_sun_scatter;
-		}
+#ifdef USE_SUN_SCATTER
+	vec4 sun_scatter = vec4(0.0);
+	float sun_total = 0.0;
+	vec3 view = normalize(vertex);
+	for (uint i = uint(0); i < scene_data_block.data.directional_light_count; i++) {
+		vec3 light_color = directional_lights[i].color * directional_lights[i].energy;
+		float light_amount = pow(max(dot(view, directional_lights[i].direction), 0.0), 8.0);
+		fog_color += light_color * light_amount * scene_data_block.data.fog_sun_scatter;
 	}
-#endif // !DISABLE_LIGHT_DIRECTIONAL
+	for (uint i = uint(MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS) - uint(scene_data_block.data.directional_shadow_count); i < uint(MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS); i++) {
+		vec3 light_color = directional_lights[i].color * directional_lights[i].energy;
+		float light_amount = pow(max(dot(view, directional_lights[i].direction), 0.0), 8.0);
+		fog_color += light_color * light_amount * scene_data_block.data.fog_sun_scatter;
+	}
+#endif // USE_SUN_SCATTER
 
 	float fog_amount = 0.0;
 
