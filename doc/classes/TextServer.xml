@@ -399,11 +399,11 @@
 				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
 			</description>
 		</method>
-		<method name="font_get_oversampling" qualifiers="const" deprecated="Use [Viewport] oversampling, or the [code skip-lint]oversampling[/code] argument of the [code skip-lint]draw_*[/code] methods instead.">
+		<method name="font_get_oversampling" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Deprecated. This method always returns [code]1.0[/code].
+				Returns oversampling factor override. If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="font_get_scale" qualifiers="const">
@@ -928,12 +928,12 @@
 				Sets font OpenType feature set override.
 			</description>
 		</method>
-		<method name="font_set_oversampling" deprecated="Use [Viewport] oversampling, or the [code skip-lint]oversampling[/code] argument of the [code skip-lint]draw_*[/code] methods instead.">
+		<method name="font_set_oversampling">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="oversampling" type="float" />
 			<description>
-				Deprecated. This method does nothing.
+				If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="font_set_scale">

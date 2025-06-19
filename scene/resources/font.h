@@ -203,6 +203,7 @@ class FontFile : public Font {
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	bool keep_rounding_remainders = true;
+	double oversampling_override = 0.0;
 
 #ifndef DISABLE_DEPRECATED
 	real_t bmp_height = 0.0;
@@ -291,10 +292,8 @@ public:
 	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
 	virtual bool get_keep_rounding_remainders() const;
 
-#ifndef DISABLE_DEPRECATED
-	virtual void set_oversampling(real_t p_oversampling) {}
-	virtual real_t get_oversampling() const { return 1.0; }
-#endif
+	virtual void set_oversampling(real_t p_oversampling);
+	virtual real_t get_oversampling() const;
 
 	// Cache.
 	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const override;
@@ -495,6 +494,7 @@ class SystemFont : public Font {
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	bool keep_rounding_remainders = true;
+	double oversampling_override = 0.0;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
 	int msdf_size = 48;
@@ -538,10 +538,8 @@ public:
 	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
 	virtual bool get_keep_rounding_remainders() const;
 
-#ifndef DISABLE_DEPRECATED
-	virtual void set_oversampling(real_t p_oversampling) {}
-	virtual real_t get_oversampling() const { return 1.0; }
-#endif
+	virtual void set_oversampling(real_t p_oversampling);
+	virtual real_t get_oversampling() const;
 
 	virtual void set_multichannel_signed_distance_field(bool p_msdf);
 	virtual bool is_multichannel_signed_distance_field() const;

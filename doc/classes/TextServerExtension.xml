@@ -381,7 +381,7 @@
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+				Returns oversampling factor override. If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="_font_get_scale" qualifiers="virtual required const">
@@ -916,7 +916,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="oversampling" type="float" />
 			<description>
-				Sets font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+				If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="_font_set_scale" qualifiers="virtual required">
