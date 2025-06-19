@@ -426,7 +426,6 @@ public:
 	Vector<real_t> get_heights() const;
 	int get_width() const;
 	int get_depth() const;
-	real_t get_cell_size() const;
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_HEIGHTMAP; }
 
