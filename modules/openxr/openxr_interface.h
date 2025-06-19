@@ -218,19 +218,19 @@ public:
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
 
 	/** Session */
-	enum OpenXrSessionState { // Should mirror XrSessionState
-		OPENXR_SESSION_STATE_UNKNOWN = 0,
-		OPENXR_SESSION_STATE_IDLE = 1,
-		OPENXR_SESSION_STATE_READY = 2,
-		OPENXR_SESSION_STATE_SYNCHRONIZED = 3,
-		OPENXR_SESSION_STATE_VISIBLE = 4,
-		OPENXR_SESSION_STATE_FOCUSED = 5,
-		OPENXR_SESSION_STATE_STOPPING = 6,
-		OPENXR_SESSION_STATE_LOSS_PENDING = 7,
-		OPENXR_SESSION_STATE_EXITING = 8,
+	enum SessionState { // Should mirror XrSessionState
+		SESSION_STATE_UNKNOWN = 0,
+		SESSION_STATE_IDLE = 1,
+		SESSION_STATE_READY = 2,
+		SESSION_STATE_SYNCHRONIZED = 3,
+		SESSION_STATE_VISIBLE = 4,
+		SESSION_STATE_FOCUSED = 5,
+		SESSION_STATE_STOPPING = 6,
+		SESSION_STATE_LOSS_PENDING = 7,
+		SESSION_STATE_EXITING = 8,
 	};
 
-	OpenXrSessionState get_session_state();
+	SessionState get_session_state();
 
 	/** Hand tracking. */
 	enum Hand {
@@ -337,7 +337,7 @@ public:
 	~OpenXRInterface();
 };
 
-VARIANT_ENUM_CAST(OpenXRInterface::OpenXrSessionState)
+VARIANT_ENUM_CAST(OpenXRInterface::SessionState)
 VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
 VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)
