@@ -1,15 +1,15 @@
-abstract class AbstractClass:
-	abstract func some_func()
+@abstract class AbstractClass:
+	@abstract func some_func()
 
 class ImplementedClass extends AbstractClass:
 	func some_func():
 		pass
 
-abstract class AbstractClassAgain extends ImplementedClass:
-	abstract func some_func()
+@abstract class AbstractClassAgain extends ImplementedClass:
+	@abstract func some_func()
 
 class Test1:
-	abstract func some_func()
+	@abstract func some_func()
 
 class Test2 extends AbstractClass:
 	pass

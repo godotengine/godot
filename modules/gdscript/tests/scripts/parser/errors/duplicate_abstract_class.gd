@@ -1,6 +1,6 @@
 extends RefCounted
 
-abstract abstract class A:
+@abstract @abstract class A:
 	pass
 
 func test():

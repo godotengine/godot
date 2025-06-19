@@ -295,6 +295,27 @@
 		</constant>
 	</constants>
 	<annotations>
+		<annotation name="@abstract">
+			<return type="void" />
+			<description>
+				Marks a class or a method as abstract.
+				An abstract class is a class that cannot be instantiated directly. Instead, it is meant to be subclassed by other classes. Attempting to instantiate an abstract class will result in an error.
+				An abstract method is a non-static member function that has no implementation. An abstract function has no body; instead, a newline or semicolon is expected after the function header. An abstract method defines an interface that subclasses must conform to, because the method signature must be compatible when overriding a base class method.
+				If a class has at least one unimplemented abstract method (either its own or inherited), then it must also be declared abstract. However, the reverse is not true; an abstract class may have no abstract methods.
+				[codeblock]
+				@abstract class Shape:
+					@abstract func draw()
+
+				class Circle extends Shape:
+					func draw():
+						print("Drawing a circle.")
+
+				class Square extends Shape:
+					func draw():
+						print("Drawing a square.")
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export">
 			<return type="void" />
 			<description>
