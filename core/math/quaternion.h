@@ -35,6 +35,12 @@
 #include "core/string/ustring.h"
 
 struct [[nodiscard]] Quaternion {
+	static const Quaternion ZERO;
+	static const Quaternion ONE;
+	static const Quaternion INF;
+	static const Quaternion NaN;
+	static const Quaternion IDENTITY;
+
 	union {
 		// NOLINTBEGIN(modernize-use-default-member-init)
 		struct {
@@ -169,6 +175,12 @@ struct [[nodiscard]] Quaternion {
 		normalize();
 	}
 };
+
+inline constexpr Quaternion Quaternion::ZERO = { 0, 0, 0, 0 };
+inline constexpr Quaternion Quaternion::ONE = { 1, 1, 1, 1 };
+inline constexpr Quaternion Quaternion::INF = { (real_t)Math::INF, (real_t)Math::INF, (real_t)Math::INF, (real_t)Math::INF };
+inline constexpr Quaternion Quaternion::NaN = { (real_t)Math::NaN, (real_t)Math::NaN, (real_t)Math::NaN, (real_t)Math::NaN };
+inline constexpr Quaternion Quaternion::IDENTITY = { 0, 0, 0, 1 };
 
 real_t Quaternion::dot(const Quaternion &p_q) const {
 	return x * p_q.x + y * p_q.y + z * p_q.z + w * p_q.w;

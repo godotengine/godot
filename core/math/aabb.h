@@ -41,6 +41,11 @@
 class Variant;
 
 struct [[nodiscard]] AABB {
+	static const AABB ZERO;
+	static const AABB ONE;
+	static const AABB INF;
+	static const AABB NaN;
+
 	Vector3 position;
 	Vector3 size;
 
@@ -139,6 +144,11 @@ struct [[nodiscard]] AABB {
 			size(p_size) {
 	}
 };
+
+inline constexpr AABB AABB::ZERO = { Vector3::ZERO, Vector3::ZERO };
+inline constexpr AABB AABB::ONE = { Vector3::ONE, Vector3::ONE };
+inline constexpr AABB AABB::INF = { Vector3::INF, Vector3::INF };
+inline constexpr AABB AABB::NaN = { Vector3::NaN, Vector3::NaN };
 
 inline bool AABB::intersects(const AABB &p_aabb) const {
 #ifdef MATH_CHECKS

@@ -661,7 +661,7 @@ Variant ShaderEditorPlugin::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	}
 
 	int idx = 0;
-	if (p_point == Vector2(Math::INF, Math::INF)) {
+	if (p_point == Vector2::INF) {
 		if (shader_list->is_anything_selected()) {
 			idx = shader_list->get_selected_items()[0];
 		}
@@ -745,7 +745,7 @@ void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "shader_list_element") {
 		int idx = d["shader_list_element"];
 		int new_idx = 0;
-		if (p_point == Vector2(Math::INF, Math::INF)) {
+		if (p_point == Vector2::INF) {
 			if (shader_list->is_anything_selected()) {
 				new_idx = shader_list->get_selected_items()[0];
 			}

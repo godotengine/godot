@@ -36,8 +36,16 @@
 class String;
 struct Vector4;
 
+#undef MIN
+#undef MAX
+
 struct [[nodiscard]] Vector4i {
-	static const int AXIS_COUNT = 4;
+	static const Vector4i ZERO;
+	static const Vector4i ONE;
+	static const Vector4i MIN;
+	static const Vector4i MAX;
+
+	static constexpr int AXIS_COUNT = 4;
 
 	enum Axis {
 		AXIS_X,
@@ -73,19 +81,19 @@ struct [[nodiscard]] Vector4i {
 	Vector4i::Axis max_axis_index() const;
 
 	Vector4i min(const Vector4i &p_vector4i) const {
-		return Vector4i(MIN(x, p_vector4i.x), MIN(y, p_vector4i.y), MIN(z, p_vector4i.z), MIN(w, p_vector4i.w));
+		return Vector4i(::MIN(x, p_vector4i.x), ::MIN(y, p_vector4i.y), ::MIN(z, p_vector4i.z), ::MIN(w, p_vector4i.w));
 	}
 
 	Vector4i mini(int32_t p_scalar) const {
-		return Vector4i(MIN(x, p_scalar), MIN(y, p_scalar), MIN(z, p_scalar), MIN(w, p_scalar));
+		return Vector4i(::MIN(x, p_scalar), ::MIN(y, p_scalar), ::MIN(z, p_scalar), ::MIN(w, p_scalar));
 	}
 
 	Vector4i max(const Vector4i &p_vector4i) const {
-		return Vector4i(MAX(x, p_vector4i.x), MAX(y, p_vector4i.y), MAX(z, p_vector4i.z), MAX(w, p_vector4i.w));
+		return Vector4i(::MAX(x, p_vector4i.x), ::MAX(y, p_vector4i.y), ::MAX(z, p_vector4i.z), ::MAX(w, p_vector4i.w));
 	}
 
 	Vector4i maxi(int32_t p_scalar) const {
-		return Vector4i(MAX(x, p_scalar), MAX(y, p_scalar), MAX(z, p_scalar), MAX(w, p_scalar));
+		return Vector4i(::MAX(x, p_scalar), ::MAX(y, p_scalar), ::MAX(z, p_scalar), ::MAX(w, p_scalar));
 	}
 
 	_FORCE_INLINE_ int64_t length_squared() const;
@@ -141,6 +149,11 @@ struct [[nodiscard]] Vector4i {
 	constexpr Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
 };
+
+inline constexpr Vector4i Vector4i::ZERO = { 0, 0, 0, 0 };
+inline constexpr Vector4i Vector4i::ONE = { 1, 1, 1, 1 };
+inline constexpr Vector4i Vector4i::MIN = { INT32_MIN, INT32_MIN, INT32_MIN, INT32_MIN };
+inline constexpr Vector4i Vector4i::MAX = { INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX };
 
 int64_t Vector4i::length_squared() const {
 	return x * (int64_t)x + y * (int64_t)y + z * (int64_t)z + w * (int64_t)w;

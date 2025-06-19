@@ -4969,7 +4969,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 }
 
 bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	if (p_point == Vector2(Math::INF, Math::INF)) {
+	if (p_point == Vector2::INF) {
 		return false;
 	}
 	preview_node_viewport_pos = p_point;

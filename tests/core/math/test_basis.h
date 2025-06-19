@@ -269,35 +269,32 @@ TEST_CASE("[Basis] Set axis angle") {
 }
 
 TEST_CASE("[Basis] Finite number checks") {
-	constexpr Vector3 x(0, 1, 2);
-	constexpr Vector3 infinite(Math::NaN, Math::NaN, Math::NaN);
-
 	CHECK_MESSAGE(
-			Basis(x, x, x).is_finite(),
+			Basis(Vector3::ZERO, Vector3::ZERO, Vector3::ZERO).is_finite(),
 			"Basis with all components finite should be finite");
 
 	CHECK_FALSE_MESSAGE(
-			Basis(infinite, x, x).is_finite(),
+			Basis(Vector3::INF, Vector3::ZERO, Vector3::ZERO).is_finite(),
 			"Basis with one component infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Basis(x, infinite, x).is_finite(),
+			Basis(Vector3::ZERO, Vector3::INF, Vector3::ZERO).is_finite(),
 			"Basis with one component infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Basis(x, x, infinite).is_finite(),
+			Basis(Vector3::ZERO, Vector3::ZERO, Vector3::INF).is_finite(),
 			"Basis with one component infinite should not be finite.");
 
 	CHECK_FALSE_MESSAGE(
-			Basis(infinite, infinite, x).is_finite(),
+			Basis(Vector3::INF, Vector3::INF, Vector3::ZERO).is_finite(),
 			"Basis with two components infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Basis(infinite, x, infinite).is_finite(),
+			Basis(Vector3::INF, Vector3::ZERO, Vector3::INF).is_finite(),
 			"Basis with two components infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Basis(x, infinite, infinite).is_finite(),
+			Basis(Vector3::ZERO, Vector3::INF, Vector3::INF).is_finite(),
 			"Basis with two components infinite should not be finite.");
 
 	CHECK_FALSE_MESSAGE(
-			Basis(infinite, infinite, infinite).is_finite(),
+			Basis(Vector3::INF, Vector3::INF, Vector3::INF).is_finite(),
 			"Basis with three components infinite should not be finite.");
 }
 

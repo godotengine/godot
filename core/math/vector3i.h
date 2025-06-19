@@ -36,8 +36,22 @@
 class String;
 struct Vector3;
 
+#undef MIN
+#undef MAX
+
 struct [[nodiscard]] Vector3i {
-	static const int AXIS_COUNT = 3;
+	static const Vector3i ZERO;
+	static const Vector3i ONE;
+	static const Vector3i MIN;
+	static const Vector3i MAX;
+	static const Vector3i LEFT;
+	static const Vector3i RIGHT;
+	static const Vector3i UP;
+	static const Vector3i DOWN;
+	static const Vector3i FORWARD;
+	static const Vector3i BACK;
+
+	static constexpr int AXIS_COUNT = 3;
 
 	enum Axis {
 		AXIS_X,
@@ -71,19 +85,19 @@ struct [[nodiscard]] Vector3i {
 	Vector3i::Axis max_axis_index() const;
 
 	Vector3i min(const Vector3i &p_vector3i) const {
-		return Vector3i(MIN(x, p_vector3i.x), MIN(y, p_vector3i.y), MIN(z, p_vector3i.z));
+		return Vector3i(::MIN(x, p_vector3i.x), ::MIN(y, p_vector3i.y), ::MIN(z, p_vector3i.z));
 	}
 
 	Vector3i mini(int32_t p_scalar) const {
-		return Vector3i(MIN(x, p_scalar), MIN(y, p_scalar), MIN(z, p_scalar));
+		return Vector3i(::MIN(x, p_scalar), ::MIN(y, p_scalar), ::MIN(z, p_scalar));
 	}
 
 	Vector3i max(const Vector3i &p_vector3i) const {
-		return Vector3i(MAX(x, p_vector3i.x), MAX(y, p_vector3i.y), MAX(z, p_vector3i.z));
+		return Vector3i(::MAX(x, p_vector3i.x), ::MAX(y, p_vector3i.y), ::MAX(z, p_vector3i.z));
 	}
 
 	Vector3i maxi(int32_t p_scalar) const {
-		return Vector3i(MAX(x, p_scalar), MAX(y, p_scalar), MAX(z, p_scalar));
+		return Vector3i(::MAX(x, p_scalar), ::MAX(y, p_scalar), ::MAX(z, p_scalar));
 	}
 
 	_FORCE_INLINE_ int64_t length_squared() const;
@@ -138,6 +152,17 @@ struct [[nodiscard]] Vector3i {
 	constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };
+
+inline constexpr Vector3i Vector3i::ZERO = { 0, 0, 0 };
+inline constexpr Vector3i Vector3i::ONE = { 1, 1, 1 };
+inline constexpr Vector3i Vector3i::MIN = { INT32_MIN, INT32_MIN, INT32_MIN };
+inline constexpr Vector3i Vector3i::MAX = { INT32_MAX, INT32_MAX, INT32_MAX };
+inline constexpr Vector3i Vector3i::LEFT = { -1, 0, 0 };
+inline constexpr Vector3i Vector3i::RIGHT = { 1, 0, 0 };
+inline constexpr Vector3i Vector3i::UP = { 0, 1, 0 };
+inline constexpr Vector3i Vector3i::DOWN = { 0, -1, 0 };
+inline constexpr Vector3i Vector3i::FORWARD = { 0, 0, -1 };
+inline constexpr Vector3i Vector3i::BACK = { 0, 0, 1 };
 
 int64_t Vector3i::length_squared() const {
 	return x * (int64_t)x + y * (int64_t)y + z * (int64_t)z;

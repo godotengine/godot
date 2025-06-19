@@ -1821,7 +1821,7 @@ void RuntimeNodeSelect::_physics_frame() {
 
 	switch (selection_drag_state) {
 		case SELECTION_DRAG_END: {
-			selection_position = Point2(Math::INF, Math::INF);
+			selection_position = Point2::INF;
 			selection_drag_state = SELECTION_DRAG_NONE;
 
 			if (selection_drag_area.get_area() > SELECTION_MIN_AREA) {
@@ -1877,11 +1877,11 @@ void RuntimeNodeSelect::_physics_frame() {
 	}
 
 	if (items.is_empty()) {
-		selection_position = Point2(Math::INF, Math::INF);
+		selection_position = Point2::INF;
 		return;
 	}
 	if ((!list_shortcut_pressed && node_select_mode == SELECT_MODE_SINGLE) || items.size() == 1) {
-		selection_position = Point2(Math::INF, Math::INF);
+		selection_position = Point2::INF;
 
 		Vector<Node *> node;
 		node.append(items[0].item);
@@ -1894,7 +1894,7 @@ void RuntimeNodeSelect::_physics_frame() {
 		_open_selection_list(items, selection_position);
 	}
 
-	selection_position = Point2(Math::INF, Math::INF);
+	selection_position = Point2::INF;
 }
 
 void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_invert_new_selections) {

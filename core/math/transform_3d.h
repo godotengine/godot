@@ -36,6 +36,15 @@
 #include "core/templates/vector.h"
 
 struct [[nodiscard]] Transform3D {
+	static const Transform3D ZERO;
+	static const Transform3D ONE;
+	static const Transform3D INF;
+	static const Transform3D NaN;
+	static const Transform3D IDENTITY;
+	static const Transform3D FLIP_X;
+	static const Transform3D FLIP_Y;
+	static const Transform3D FLIP_Z;
+
 	Basis basis;
 	Vector3 origin;
 
@@ -51,8 +60,8 @@ struct [[nodiscard]] Transform3D {
 	void rotate(const Vector3 &p_axis, real_t p_angle);
 	void rotate_basis(const Vector3 &p_axis, real_t p_angle);
 
-	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
-	Transform3D looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false) const;
+	void set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
+	Transform3D looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false) const;
 
 	void scale(const Vector3 &p_scale);
 	Transform3D scaled(const Vector3 &p_scale) const;
@@ -135,6 +144,15 @@ struct [[nodiscard]] Transform3D {
 			basis(p_xx, p_xy, p_xz, p_yx, p_yy, p_yz, p_zx, p_zy, p_zz),
 			origin(p_ox, p_oy, p_oz) {}
 };
+
+inline constexpr Transform3D Transform3D::ZERO = { Basis::ZERO, Vector3::ZERO };
+inline constexpr Transform3D Transform3D::ONE = { Basis::ONE, Vector3::ONE };
+inline constexpr Transform3D Transform3D::INF = { Basis::INF, Vector3::INF };
+inline constexpr Transform3D Transform3D::NaN = { Basis::NaN, Vector3::NaN };
+inline constexpr Transform3D Transform3D::IDENTITY = { Basis::IDENTITY, Vector3::ZERO };
+inline constexpr Transform3D Transform3D::FLIP_X = { Basis::FLIP_X, Vector3::ZERO };
+inline constexpr Transform3D Transform3D::FLIP_Y = { Basis::FLIP_Y, Vector3::ZERO };
+inline constexpr Transform3D Transform3D::FLIP_Z = { Basis::FLIP_Z, Vector3::ZERO };
 
 constexpr bool Transform3D::operator==(const Transform3D &p_transform) const {
 	return (basis == p_transform.basis && origin == p_transform.origin);

@@ -6166,7 +6166,7 @@ void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
 }
 
 Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	if (p_point == Vector2(Math::INF, Math::INF)) {
+	if (p_point == Vector2::INF) {
 		return Variant();
 	}
 
@@ -6196,7 +6196,7 @@ Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 }
 
 bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-	if (p_point == Vector2(Math::INF, Math::INF)) {
+	if (p_point == Vector2::INF) {
 		return false;
 	}
 
@@ -6215,7 +6215,7 @@ bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	if (p_point == Vector2(Math::INF, Math::INF)) {
+	if (p_point == Vector2::INF) {
 		return;
 	}
 
