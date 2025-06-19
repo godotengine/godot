@@ -365,14 +365,14 @@
 			<return type="Color" />
 			<description>
 				Returns the color converted to the [url=https://en.wikipedia.org/wiki/SRGB]sRGB[/url] color space. This method assumes the original color is in the linear color space. See also [method srgb_to_linear] which performs the opposite operation.
-				[b]Note:[/b] The color's [member a]lpha channel is not affected. The alpha channel is always stored with linear encoding, regardless of the color space of the other color channels.
+				[b]Note:[/b] The color's alpha channel ([member a]) is not affected. The alpha channel is always stored with linear encoding, regardless of the color space of the other color channels.
 			</description>
 		</method>
 		<method name="srgb_to_linear" qualifiers="const">
 			<return type="Color" />
 			<description>
 				Returns the color converted to the linear color space. This method assumes the original color already is in the sRGB color space. See also [method linear_to_srgb] which performs the opposite operation.
-				[b]Note:[/b] The color's [member a]lpha channel is not affected. The alpha channel is always stored with linear encoding, regardless of the color space of the other color channels.
+				[b]Note:[/b] The color's alpha channel ([member a]) is not affected. The alpha channel is always stored with linear encoding, regardless of the color space of the other color channels.
 			</description>
 		</method>
 		<method name="to_abgr32" qualifiers="const">
