@@ -81,6 +81,7 @@ protected:
 	void _hide_gui_in_scene(Node *p_node) const;
 	bool _setup_packed_scene(Ref<PackedScene> p_pack) const;
 	void _wait_frame() const;
+	Ref<ImageTexture> _create_dummy_thumbnail() const;
 
 public:
 	virtual void abort() override;

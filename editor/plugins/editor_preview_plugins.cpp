@@ -350,7 +350,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	// Prohibit Viewport class as root when generating thumbnails
 	if (Object::cast_to<Viewport>(p_scene)) {
 		p_scene->queue_free();
-		return Ref<Texture2D>();
+		return _create_dummy_thumbnail();
 	}
 
 	int count_2d = 0;
@@ -584,7 +584,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	}
 
 	// Is scene without any visuals (No Node2D, Node3D, Control found)
-	return Ref<Texture2D>();
+	return _create_dummy_thumbnail();
 }
 
 void EditorPackedScenePreviewPlugin::_setup_scene_3d(Node *p_node) const {
@@ -885,6 +885,16 @@ void EditorPackedScenePreviewPlugin::_wait_frame() const {
 		}
 		continue;
 	}
+}
+
+// Used for scene file that is valid but not suitable to generate thumbnails (no visuals),
+// providing a dummy thumbnail ensures the file will not be read again until it's changed.
+Ref<ImageTexture> EditorPackedScenePreviewPlugin::_create_dummy_thumbnail() const {
+	Ref<Image> dummy_img = Image::create_empty(2, 2, false, Image::Format::FORMAT_RGBA8);
+	Color default_clear_color = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
+	dummy_img->fill(default_clear_color);
+	Ref<ImageTexture> dummy_thumbnail = ImageTexture::create_from_image(dummy_img);
+	return dummy_thumbnail;
 }
 
 void EditorPackedScenePreviewPlugin::_calculate_scene_aabb(Node *p_node, AABB &r_aabb) const {
