@@ -2438,7 +2438,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 
 		// Enum real devices (via ios_deploy, pre Xcode 15).
 		String ios_deploy_setting = "export/" + ea->get_platform_name() + "/ios_deploy";
-		if (EditorSettings::get_singleton()->has_setting(ios_deploy_setting)) {
+		if (EditorSettings::get_singleton() && EditorSettings::get_singleton()->has_setting(ios_deploy_setting)) {
 			String idepl = EDITOR_GET(ios_deploy_setting);
 			if (ea->has_runnable_preset.is_set() && !idepl.is_empty()) {
 				String devices_json;
