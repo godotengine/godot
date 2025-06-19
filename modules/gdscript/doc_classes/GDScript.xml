@@ -12,6 +12,12 @@
 		<link title="GDScript documentation index">$DOCS_URL/tutorials/scripting/gdscript/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="is_final" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the script is marked as final.
+			</description>
+		</method>
 		<method name="new" qualifiers="vararg">
 			<return type="Variant" />
 			<description>

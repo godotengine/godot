@@ -624,9 +624,9 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 		E->apply(parser, p_class, p_class->outer);
 	}
 
-	// Final classes are not allowed to be instantiated.
-	if (base_class != nullptr && base_class->is_final) {
-		push_error(vformat(R"(The base class "%s" is a final class and cannot be extended.)", base_class->identifier->name), p_class);
+	// Final classes are not allowed to be inherited.
+	if (result.class_type != nullptr && result.class_type->is_final) {
+		push_error(vformat(R"(The base class "%s" is marked as final and cannot be extended.)", result.class_type->fqcn), p_class);
 		return ERR_PARSE_ERROR;
 	}
 
@@ -1925,7 +1925,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 				GDScriptParser::FunctionNode *base_function = base_type.class_type->get_member(function_name).function;
 				if (base_function != nullptr && base_function->is_final) {
-					push_error(vformat(R"(Function "%s" is modified as final and cannot be overridden.)", function_name), p_function);
+					push_error(vformat(R"(Function "%s" is marked as final and cannot be overridden.)", function_name), p_function);
 				}
 			}
 
