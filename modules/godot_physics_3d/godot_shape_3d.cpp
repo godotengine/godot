@@ -1686,10 +1686,6 @@ int GodotHeightMapShape3D::get_depth() const {
 	return depth;
 }
 
-real_t GodotHeightMapShape3D::get_cell_size() const {
-	return cell_size;
-}
-
 void GodotHeightMapShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	//not very useful, but not very used either
 	p_transform.xform(get_aabb()).project_range_in_plane(Plane(p_normal), r_min, r_max);
@@ -2147,16 +2143,15 @@ void GodotHeightMapShape3D::_build_accelerator() {
 	}
 }
 
-void GodotHeightMapShape3D::_setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_cell_size, real_t p_min_height, real_t p_max_height) {
+void GodotHeightMapShape3D::_setup(const Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	heights = p_heights;
 	width = p_width;
 	depth = p_depth;
-	cell_size = p_cell_size;
 
 	// Initialize aabb.
 	AABB aabb_new;
 	aabb_new.position = Vector3(0.0, p_min_height, 0.0);
-	aabb_new.size = Vector3(p_cell_size * (p_width - 1), p_max_height - p_min_height, p_cell_size * (p_depth - 1));
+	aabb_new.size = Vector3(p_width - 1, p_max_height - p_min_height, p_depth - 1);
 
 	// Initialize origin as the aabb center.
 	local_origin = aabb_new.position + 0.5 * aabb_new.size;
@@ -2176,11 +2171,9 @@ void GodotHeightMapShape3D::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(!d.has("width"));
 	ERR_FAIL_COND(!d.has("depth"));
 	ERR_FAIL_COND(!d.has("heights"));
-	ERR_FAIL_COND(!d.has("cell_size"));
 
 	int width_new = d["width"];
 	int depth_new = d["depth"];
-	real_t cell_size_new = d["cell_size"];
 
 	ERR_FAIL_COND(width_new <= 0.0);
 	ERR_FAIL_COND(depth_new <= 0.0);
@@ -2240,7 +2233,7 @@ void GodotHeightMapShape3D::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(heights_buffer.size() != (width_new * depth_new));
 
 	// If specified, min and max height will be used as precomputed values.
-	_setup(heights_buffer, width_new, depth_new, cell_size_new, min_height, max_height);
+	_setup(heights_buffer, width_new, depth_new, min_height, max_height);
 }
 
 Variant GodotHeightMapShape3D::get_data() const {
