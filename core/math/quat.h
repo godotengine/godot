@@ -71,6 +71,50 @@ public:
 		r_axis.z = z * r;
 	}
 
+	bool set_shortest_arc(const Vector3 &p_from, const Vector3 &p_to) {
+#ifdef MATH_CHECKS
+		ERR_FAIL_COND_V_MSG(p_from.is_zero_approx() || p_to.is_zero_approx(), false, "The vectors must not be zero.");
+#endif
+#ifdef REAL_T_IS_DOUBLE
+		constexpr real_t ALMOST_ONE = 0.999999999999999;
+#else
+		constexpr real_t ALMOST_ONE = 0.99999975f;
+#endif
+		Vector3 n0 = p_from.normalized();
+		Vector3 n1 = p_to.normalized();
+
+		real_t d = n0.dot(n1);
+		if (Math::abs(d) > ALMOST_ONE) {
+			if (d >= 0) {
+				// Vectors point to the same direction.
+				x = 0;
+				y = 0;
+				z = 0;
+				w = 1;
+				return true;
+			}
+
+			// Get any perpendicular vector.
+			Vector3 axis = n0.cross((Math::abs(n0.x) <= Math::abs(n0.y) && Math::abs(n0.x) <= Math::abs(n0.z)) ? Vector3(1, 0, 0) : Vector3(0, 1, 0)).normalized();
+			x = axis.x;
+			y = axis.y;
+			z = axis.z;
+			w = 0;
+			return false;
+		}
+
+		Vector3 c = n0.cross(n1);
+		real_t s = Math::sqrt((1 + d) * 2);
+		real_t rs = 1 / s;
+
+		x = c.x * rs;
+		y = c.y * rs;
+		z = c.z * rs;
+		w = s * 0.5f;
+		normalize();
+		return true;
+	}
+
 	void operator*=(const Quat &p_q);
 	Quat operator*(const Quat &p_q) const;
 
@@ -135,25 +179,8 @@ public:
 		return *this;
 	}
 
-	Quat(const Vector3 &p_v0, const Vector3 &p_v1) // shortest arc
-	{
-		Vector3 c = p_v0.cross(p_v1);
-		real_t d = p_v0.dot(p_v1);
-
-		if (d < -1 + (real_t)CMP_EPSILON) {
-			x = 0;
-			y = 1;
-			z = 0;
-			w = 0;
-		} else {
-			real_t s = Math::sqrt((1 + d) * 2);
-			real_t rs = 1 / s;
-
-			x = c.x * rs;
-			y = c.y * rs;
-			z = c.z * rs;
-			w = s * 0.5f;
-		}
+	Quat(const Vector3 &p_v0, const Vector3 &p_v1) {
+		set_shortest_arc(p_v0, p_v1);
 	}
 
 	inline Quat() :
