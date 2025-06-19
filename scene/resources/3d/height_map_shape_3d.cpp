@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <cmath>
 #include "height_map_shape_3d.h"
 
 #include "core/io/image.h"
@@ -143,12 +144,82 @@ real_t HeightMapShape3D::get_enclosing_radius() const {
 
 void HeightMapShape3D::_update_shape() {
 	Dictionary d;
-	d["width"] = map_width;
-	d["depth"] = map_depth;
-	d["heights"] = map_data;
-	d["min_height"] = min_height;
-	d["max_height"] = max_height;
-	d["cell_size"] = cell_size;
+	if (cell_size != 1.0){
+		// Resize before updating shape
+		const int _map_width = std::ceil(map_width * cell_size);
+		const int _map_depth = std::ceil(map_depth * cell_size);
+
+		const real_t _interval = 1 / cell_size;
+
+		real_t _min_height = 0.0;
+		real_t _max_height = 0.0;
+
+		real_t _i = 0.0;
+		while (_i < map_width -1){
+			_i = _i + _interval;
+		}
+		const real_t _offset = (_i - int(_i)) / 2;
+
+		Vector<real_t> _map_data;
+		_map_data.resize(_map_width * _map_depth);
+		real_t *_map_data_ptrw = _map_data.ptrw();
+		for (real_t y = 0; y < _map_depth; y++){
+		for (real_t x = 0; x < _map_width; x++){
+				// The coordinate we're looking for needs to be mapped back to
+				// the original map_data.
+				const real_t _x = (real_t(x) * _interval) - _offset;
+				const real_t _y = (real_t(y) * _interval) - _offset;
+				// Let's say our _x, _y is 1.2, 1.5. If our map_data in
+				// positions:
+				//   [1, 2]
+				//   [1, 2]
+				// have the following values:
+				//   [10, 11]
+				//   [11, 12]
+				// We can lerp each one and then lerp between the two. So:
+				//   ((11 - 10) * .2) + 10 = 10.2
+				//   ((12 - 11) * .2) + 11 = 11.2
+				//   ((11.2 - 10.2) * .5) + 10.2 = 10.7 <-- the value we want.
+				const int _floor_x = std::floor(_x);
+				const int _floor_y = std::floor(_y);
+				const real_t _floor_x_val = map_data[(_floor_x * map_width) + _floor_y];
+				const real_t _ceil_x_val = map_data[((_floor_x + 1) * map_width) + _floor_y];
+				const real_t _floor_y_val = map_data[(_floor_x * map_width) + _floor_y + 1];
+				const real_t _ceil_y_val = map_data[((_floor_x + 1) * map_width) + _floor_y + 1];
+
+				const real_t lerped_x = Math::lerp(_floor_x_val, _ceil_x_val, _x - int(_x));
+				const real_t lerped_y = Math::lerp(_floor_y_val, _ceil_y_val, _x - int(_x));
+
+				const real_t _height = Math::lerp(lerped_x, lerped_y, _y - int(_y));
+				const int _index = (y * _map_depth) + x;
+				_map_data_ptrw[_index] = _height;
+				// If we need to extrapolate these could also have changed
+				if (x == 0 && y == 0){
+					_min_height = _height;
+					_max_height = _height;
+				} else {
+					if (_min_height > _height){
+						_min_height = _height;
+					}
+					if (_max_height < _height){
+						_max_height = _height;
+					}
+				}
+			}
+		}
+		d["width"] = _map_width;
+		d["depth"] = _map_depth;
+		d["heights"] = _map_data;
+		d["min_height"] = _min_height;
+		d["max_height"] = _max_height;
+	} else {
+		d["width"] = map_width;
+		d["depth"] = map_depth;
+		d["heights"] = map_data;
+		d["min_height"] = min_height;
+		d["max_height"] = max_height;
+	}
+	d["cell_size"] = 1.0;
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
