@@ -324,7 +324,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	aborted = false;
 
 	Error load_error;
-	Ref<PackedScene> pack = ResourceLoader::load(p_path, "PackedScene", ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP, &load_error); // no more cache issues?
+	Ref<PackedScene> pack = ResourceLoader::load(p_path, "PackedScene", ResourceFormatLoader::CACHE_MODE_IGNORE, &load_error); // no more cache issues?
 	if (load_error != OK) {
 		print_error(vformat("Failed to generate scene thumbnail for %s : Loaded with error code %d", p_path, int(load_error)));
 		return Ref<Texture2D>();
@@ -341,11 +341,6 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	}
 
 	Node *p_scene = pack->instantiate(); // The instantiated preview scene
-
-	if (!p_scene) {
-		print_error(vformat("Failed to generate scene thumbnail for %s : Failed to instantiate scene", p_path));
-		return Ref<Texture2D>();
-	}
 
 	// Prohibit Viewport class as root when generating thumbnails
 	if (Object::cast_to<Viewport>(p_scene)) {
@@ -588,6 +583,13 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 }
 
 void EditorPackedScenePreviewPlugin::_setup_scene_3d(Node *p_node) const {
+	// Do not account any SubViewport at preview scene, as it would not render correctly
+	if (Object::cast_to<SubViewport>(p_node) && p_node->get_parent()) {
+		p_node->get_parent()->remove_child(p_node);
+		callable_mp(p_node, &Node::queue_free).call_deferred();
+		return;
+	}
+
 	// Don't let window to popup
 	Window *window = Object::cast_to<Window>(p_node);
 	if (window) {
@@ -637,6 +639,13 @@ void EditorPackedScenePreviewPlugin::_setup_scene_3d(Node *p_node) const {
 }
 
 void EditorPackedScenePreviewPlugin::_setup_scene_2d(Node *p_node) const {
+	// Do not account any SubViewport at preview scene, as it would not render correctly
+	if (Object::cast_to<SubViewport>(p_node) && p_node->get_parent()) {
+		p_node->get_parent()->remove_child(p_node);
+		callable_mp(p_node, &Node::queue_free).call_deferred();
+		return;
+	}
+
 	// Don't let window to popup
 	Window *window = Object::cast_to<Window>(p_node);
 	if (window) {
