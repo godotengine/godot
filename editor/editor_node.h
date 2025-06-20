@@ -648,6 +648,7 @@ private:
 	bool _is_scene_unsaved(int p_idx);
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
+	void _save_scene_with_preview(String p_file, int p_idx = -1);
 	void _close_save_scene_progress();
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
@@ -944,8 +945,11 @@ public:
 	Control *get_gui_base() { return gui_base; }
 
 	void save_scene_to_path(String p_file, bool p_with_preview = true) {
-		// p_with_preview has no effect, now generates preview at EditorPackedScenePreviewPlugin
-		_save_scene(p_file);
+		if (p_with_preview) {
+			_save_scene_with_preview(p_file);
+		} else {
+			_save_scene(p_file);
+		}
 	}
 
 	bool close_scene();
