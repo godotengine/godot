@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialMarkerTrackingCapability" inherits="OpenXRExtensionWrapper" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Implementation for handling spatial entity marker tracking logic.
+	</brief_description>
+	<description>
+		This class handles the OpenXR marker tracking spatial entity extension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_april_tag_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if April tag marker tracking is supported by the current device.
+			</description>
+		</method>
+		<method name="is_aruco_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if Aruco marker tracking is supported by the current device.
+			</description>
+		</method>
+		<method name="is_micro_qrcode_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if micro QR code marker tracking is supported by the current device.
+			</description>
+		</method>
+		<method name="is_qrcode_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if QR code marker tracking is supported by the current device.
+			</description>
+		</method>
+	</methods>
+</class>

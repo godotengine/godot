@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialComponentMesh3DList" inherits="OpenXRSpatialComponentData" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing the queries mesh3d result data.
+	</brief_description>
+	<description>
+		Object for storing the queries 3d mesh result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_mesh" qualifiers="const">
+			<return type="Mesh" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the mesh for the entity at this [param index].
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the transform for positioning our mesh for the entity at this [param index].
+			</description>
+		</method>
+	</methods>
+</class>
