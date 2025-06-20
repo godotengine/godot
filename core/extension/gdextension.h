@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/extension/gdextension_interface.h"
+#include "core/extension/gdextension_interface.gen.h"
 #include "core/extension/gdextension_loader.h"
 #include "core/io/config_file.h"
 #include "core/io/resource_loader.h"

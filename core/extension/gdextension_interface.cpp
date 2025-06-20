@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gdextension_interface.h"
+#include "gdextension_interface.gen.h"
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
