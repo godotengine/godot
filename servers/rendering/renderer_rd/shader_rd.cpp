@@ -234,9 +234,11 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
 #if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
+#if defined(__x86_64) || defined(__x86_64__)
 				if (RD::get_singleton()->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
 					builder.append("#define MOLTENVK_USED\n");
 				}
+#endif
 				// Image atomics are supported on Metal 3.1 but no support in MoltenVK or SPIRV-Cross yet.
 				builder.append("#define NO_IMAGE_ATOMICS\n");
 #endif
