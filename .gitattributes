@@ -21,3 +21,4 @@ misc/msvs/* eol=crlf
 *.png binary
 *.ttf binary
 *.tza binary
+godot/** -diff
