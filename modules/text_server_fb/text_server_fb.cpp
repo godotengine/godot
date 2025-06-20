@@ -3715,10 +3715,6 @@ bool TextServerFallback::_shaped_text_add_string(const RID &p_shaped, const Stri
 		ERR_FAIL_NULL_V(_get_font_data(p_fonts[i]), false);
 	}
 
-	if (p_text.is_empty()) {
-		return true;
-	}
-
 	if (sd->parent != RID()) {
 		full_copy(sd);
 	}
@@ -3748,9 +3744,11 @@ bool TextServerFallback::_shaped_text_add_string(const RID &p_shaped, const Stri
 	span.meta = p_meta;
 
 	sd->spans.push_back(span);
-	sd->text = sd->text + p_text;
-	sd->end += p_text.length();
-	invalidate(sd);
+	if (!p_text.is_empty()) {
+		sd->text = sd->text + p_text;
+		sd->end += p_text.length();
+		invalidate(sd);
+	}
 
 	return true;
 }
@@ -4763,6 +4761,15 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 			} else {
 				gl.advance = sd->objects[span.embedded_key].rect.size.y;
 			}
+			sd->glyphs.push_back(gl);
+		} else if (span.start == span.end) {
+			Glyph gl;
+			gl.count = 1;
+			gl.advance = 0.0;
+			gl.index = 0x0020;
+			gl.font_rid = span.fonts[0];
+			gl.font_size = span.font_size;
+			gl.flags = GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL | GRAPHEME_IS_SPACE;
 			sd->glyphs.push_back(gl);
 		} else {
 			// Text span.

@@ -4885,10 +4885,6 @@ bool TextServerAdvanced::_shaped_text_add_string(const RID &p_shaped, const Stri
 		ERR_FAIL_NULL_V(_get_font_data(p_fonts[i]), false);
 	}
 
-	if (p_text.is_empty()) {
-		return true;
-	}
-
 	if (sd->parent != RID()) {
 		full_copy(sd);
 	}
@@ -4903,9 +4899,11 @@ bool TextServerAdvanced::_shaped_text_add_string(const RID &p_shaped, const Stri
 	span.meta = p_meta;
 
 	sd->spans.push_back(span);
-	sd->text = sd->text + p_text;
-	sd->end += p_text.length();
-	invalidate(sd, true);
+	if (!p_text.is_empty()) {
+		sd->text = sd->text + p_text;
+		sd->end += p_text.length();
+		invalidate(sd, true);
+	}
 
 	return true;
 }
@@ -6039,14 +6037,21 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 		UErrorCode err = U_ZERO_ERROR;
 		int i = 0;
 		int span_size = sd->spans.size();
+		HashMap<int, bool> extra_breaks;
 		while (i < span_size) {
 			String language = sd->spans[i].language;
 			int r_start = sd->spans[i].start;
 			if (r_start == sd->spans[i].end) {
+				if (i != 0 && sd->spans[i].embedded_key == Variant()) {
+					extra_breaks[r_start + 1] = false;
+				}
 				i++;
 				continue;
 			}
 			while (i + 1 < span_size && (language == sd->spans[i + 1].language || sd->spans[i + 1].start == sd->spans[i + 1].end)) {
+				if (sd->spans[i + 1].start == sd->spans[i + 1].end && sd->spans[i + 1].embedded_key == Variant()) {
+					extra_breaks[sd->spans[i + 1].start + 1] = false;
+				}
 				i++;
 			}
 			int r_end = sd->spans[i].end;
@@ -6087,6 +6092,12 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 				ubrk_close(bi);
 			}
 			i++;
+		}
+		for (const KeyValue<int, bool> &E : extra_breaks) {
+			if (!sd->breaks.has(E.key)) {
+				sd->breaks[E.key] = E.value;
+				sd->break_inserts++;
+			}
 		}
 		sd->break_ops_valid = true;
 	}
