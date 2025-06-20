@@ -371,7 +371,7 @@ protected:
                 break;
             popInput();
         }
-        if (!inputStack.empty() && inputStack.back()->isStringInput()) {
+        if (!inputStack.empty() && inputStack.back()->isStringInput() && !inElseSkip) {
             if (token == '\n') {
                 bool seenNumSign = false;
                 for (int i = 0; i < (int)lastLineTokens.size() - 1;) {
@@ -732,6 +732,9 @@ protected:
 
     std::istringstream strtodStream;
     bool disableEscapeSequences;
+    // True if we're skipping a section enclosed by #if/#ifdef/#elif/#else which was evaluated to
+    // be inactive, e.g. #if 0
+    bool inElseSkip;
 };
 
 } // end namespace glslang

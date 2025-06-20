@@ -305,6 +305,7 @@ void Parser::parse(const Instruction &instruction)
 	}
 
 	case OpExtInst:
+	case OpExtInstWithForwardRefsKHR:
 	{
 		// The SPIR-V debug information extended instructions might come at global scope.
 		if (current_block)
@@ -536,12 +537,26 @@ void Parser::parse(const Instruction &instruction)
 		uint32_t id = ops[0];
 		uint32_t width = ops[1];
 		auto &type = set<SPIRType>(id, op);
+
+		if (width != 16 && length > 2)
+			SPIRV_CROSS_THROW("Unrecognized FP encoding mode for OpTypeFloat.");
+
 		if (width == 64)
 			type.basetype = SPIRType::Double;
 		else if (width == 32)
 			type.basetype = SPIRType::Float;
 		else if (width == 16)
-			type.basetype = SPIRType::Half;
+		{
+			if (length > 2)
+			{
+				if (ops[2] == spv::FPEncodingBFloat16KHR)
+					type.basetype = SPIRType::BFloat16;
+				else
+					SPIRV_CROSS_THROW("Unrecognized encoding for OpTypeFloat 16.");
+			}
+			else
+				type.basetype = SPIRType::Half;
+		}
 		else
 			SPIRV_CROSS_THROW("Unrecognized bit-width of floating point type.");
 		type.width = width;
@@ -587,6 +602,22 @@ void Parser::parse(const Instruction &instruction)
 
 		matrixbase.op = op;
 		matrixbase.columns = colcount;
+		matrixbase.self = id;
+		matrixbase.parent_type = ops[1];
+		break;
+	}
+
+	case OpTypeCooperativeMatrixKHR:
+	{
+		uint32_t id = ops[0];
+		auto &base = get<SPIRType>(ops[1]);
+		auto &matrixbase = set<SPIRType>(id, base);
+
+		matrixbase.op = op;
+		matrixbase.cooperative.scope_id = ops[2];
+		matrixbase.cooperative.rows_id = ops[3];
+		matrixbase.cooperative.columns_id = ops[4];
+		matrixbase.cooperative.use_id = ops[5];
 		matrixbase.self = id;
 		matrixbase.parent_type = ops[1];
 		break;

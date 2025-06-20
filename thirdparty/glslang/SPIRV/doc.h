@@ -157,6 +157,7 @@ enum OperandClass {
     OperandKernelProfilingInfo,
     OperandCapability,
     OperandCooperativeMatrixOperands,
+    OperandTensorAddressingOperands,
 
     OperandOpcode,
 

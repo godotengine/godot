@@ -37,8 +37,8 @@
 #define _REFLECTION_INCLUDED
 
 #include "../Public/ShaderLang.h"
-#include "../Include/Types.h"
-
+#include "../Include/BaseTypes.h"
+#include "../Include/visibility.h"
 #include <list>
 #include <set>
 
@@ -65,6 +65,7 @@ public:
     virtual ~TReflection() {}
 
     // grow the reflection stage by stage
+    GLSLANG_EXPORT_FOR_TESTS
     bool addStage(EShLanguage, const TIntermediate&);
 
     // for mapping a uniform index to a uniform object's description

@@ -417,6 +417,9 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 							// VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER
 							primary.texture_type = MTLTextureTypeTextureBuffer;
 						} break;
+						case spv::DimTileImageDataEXT: {
+							// We don't use VK_EXT_shader_tile_image currently.
+						} break;
 						case spv::DimMax: {
 							// Add all enumerations to silence the compiler warning
 							// and generate future warnings, should a new one be added.

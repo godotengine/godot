@@ -580,7 +580,8 @@ struct SPIRType : IVariant
 		Interpolant,
 		Char,
 		// MSL specific type, that is used by 'object'(analog of 'task' from glsl) shader.
-		MeshGridProperties
+		MeshGridProperties,
+		BFloat16
 	};
 
 	// Scalar/vector/matrix support.
@@ -604,6 +605,14 @@ struct SPIRType : IVariant
 	uint32_t pointer_depth = 0;
 	bool pointer = false;
 	bool forward_pointer = false;
+
+	struct
+	{
+		uint32_t use_id = 0;
+		uint32_t rows_id = 0;
+		uint32_t columns_id = 0;
+		uint32_t scope_id = 0;
+	} cooperative;
 
 	spv::StorageClass storage = spv::StorageClassGeneric;
 
@@ -1266,6 +1275,14 @@ struct SPIRConstant : IVariant
 		return f16_to_f32(scalar_u16(col, row));
 	}
 
+	inline float scalar_bf16(uint32_t col = 0, uint32_t row = 0) const
+	{
+		uint32_t v = scalar_u16(col, row) << 16;
+		float fp32;
+		memcpy(&fp32, &v, sizeof(float));
+		return fp32;
+	}
+
 	inline float scalar_f32(uint32_t col = 0, uint32_t row = 0) const
 	{
 		return m.c[col].r[row].f32;
@@ -1409,6 +1426,10 @@ struct SPIRConstant : IVariant
 
 	// If true, this is a LUT, and should always be declared in the outer scope.
 	bool is_used_as_lut = false;
+
+	// If this is a null constant of array type with specialized length.
+	// May require special handling in initializer
+	bool is_null_array_specialized_length = false;
 
 	// For composites which are constant arrays, etc.
 	SmallVector<ConstantID> subconstants;
