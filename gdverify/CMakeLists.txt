@@ -7,10 +7,13 @@ add_compile_definitions(TOOLS_ENABLED=0 DEBUG_ENABLED=0)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${GODOT_SRC_DIR})
 
-add_library(gdscript STATIC
+add_library(gdverify_core STATIC
     ${GODOT_SRC_DIR}/modules/gdscript/gdscript_parser.cpp
     ${GODOT_SRC_DIR}/modules/gdscript/gdscript_tokenizer.cpp
+    src/gdverify_lib.cpp
 )
 
+target_include_directories(gdverify_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${GODOT_SRC_DIR})
+
 add_executable(gdverify src/main.cpp)
-target_link_libraries(gdverify gdscript)
+target_link_libraries(gdverify gdverify_core)
