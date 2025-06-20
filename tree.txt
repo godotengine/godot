@@ -1,0 +1,1092 @@
+Folder PATH listing for volume New Volume
+Volume serial number is 8272-6B86
+J:.
++---.codex
++---.github
+|   +---actions
+|   |   +---download-artifact
+|   |   +---godot-build
+|   |   +---godot-cache-restore
+|   |   +---godot-cache-save
+|   |   +---godot-converter-test
+|   |   +---godot-cpp-build
+|   |   +---godot-deps
+|   |   +---godot-project-test
+|   |   \---upload-artifact
+|   +---ISSUE_TEMPLATE
+|   \---workflows
++---core
+|   +---config
+|   +---crypto
+|   +---debugger
+|   +---error
+|   +---extension
+|   +---input
+|   +---io
+|   +---math
+|   +---object
+|   +---os
+|   +---string
+|   +---templates
+|   \---variant
++---doc
+|   +---classes
+|   +---tools
+|   \---translations
++---drivers
+|   +---accesskit
+|   |   \---dynwrappers
+|   +---alsa
+|   +---alsamidi
+|   +---apple
+|   +---apple_embedded
+|   +---backtrace
+|   +---coreaudio
+|   +---coremidi
+|   +---d3d12
+|   +---egl
+|   +---gles3
+|   |   +---effects
+|   |   +---environment
+|   |   +---shaders
+|   |   |   \---effects
+|   |   \---storage
+|   +---gl_context
+|   +---metal
+|   +---png
+|   +---pulseaudio
+|   +---unix
+|   +---vulkan
+|   +---wasapi
+|   +---windows
+|   +---winmidi
+|   \---xaudio2
++---editor
+|   +---debugger
+|   |   \---debug_adapter
+|   +---export
+|   +---gui
+|   +---icons
+|   +---import
+|   |   \---3d
+|   +---plugins
+|   |   +---gizmos
+|   |   +---shader
+|   |   +---shader_baker
+|   |   \---tiles
+|   +---project_manager
+|   +---themes
+|   \---translations
+|       +---editor
+|       +---extractable
+|       \---properties
++---gdverify
+|   +---include
+|   |   \---core
+|   |       +---extension
+|   |       \---object
+|   +---samples
+|   \---src
++---godot
++---main
++---misc
+|   +---dist
+|   |   +---document_icons
+|   |   +---html
+|   |   +---ios_xcode
+|   |   |   +---godot_ios
+|   |   |   |   +---dylibs
+|   |   |   |   +---en.lproj
+|   |   |   |   \---Images.xcassets
+|   |   |   |       \---SplashImage.imageset
+|   |   |   +---godot_ios.xcodeproj
+|   |   |   |   +---project.xcworkspace
+|   |   |   |   \---xcshareddata
+|   |   |   |       \---xcschemes
+|   |   |   +---libgodot.ios.debug.xcframework
+|   |   |   |   +---ios-arm64
+|   |   |   |   \---ios-arm64_x86_64-simulator
+|   |   |   \---libgodot.ios.release.xcframework
+|   |   |       +---ios-arm64
+|   |   |       \---ios-arm64_x86_64-simulator
+|   |   +---linux
+|   |   +---macos
+|   |   +---macos_template.app
+|   |   |   \---Contents
+|   |   |       \---Resources
+|   |   +---macos_tools.app
+|   |   |   \---Contents
+|   |   |       \---Resources
+|   |   |           +---af.lproj
+|   |   |           +---ar.lproj
+|   |   |           +---az.lproj
+|   |   |           +---bg.lproj
+|   |   |           +---bn.lproj
+|   |   |           +---br.lproj
+|   |   |           +---ca.lproj
+|   |   |           +---cs.lproj
+|   |   |           +---da.lproj
+|   |   |           +---de.lproj
+|   |   |           +---el.lproj
+|   |   |           +---en.lproj
+|   |   |           +---eo.lproj
+|   |   |           +---es.lproj
+|   |   |           +---es_AR.lproj
+|   |   |           +---et.lproj
+|   |   |           +---eu.lproj
+|   |   |           +---fa.lproj
+|   |   |           +---fi.lproj
+|   |   |           +---fil.lproj
+|   |   |           +---fr.lproj
+|   |   |           +---ga.lproj
+|   |   |           +---gl.lproj
+|   |   |           +---he.lproj
+|   |   |           +---hi.lproj
+|   |   |           +---hr.lproj
+|   |   |           +---hu.lproj
+|   |   |           +---id.lproj
+|   |   |           +---is.lproj
+|   |   |           +---it.lproj
+|   |   |           +---ja.lproj
+|   |   |           +---ka.lproj
+|   |   |           +---km.lproj
+|   |   |           +---ko.lproj
+|   |   |           +---lt.lproj
+|   |   |           +---lv.lproj
+|   |   |           +---mi.lproj
+|   |   |           +---mk.lproj
+|   |   |           +---ml.lproj
+|   |   |           +---mr.lproj
+|   |   |           +---ms.lproj
+|   |   |           +---nb.lproj
+|   |   |           +---nl.lproj
+|   |   |           +---or.lproj
+|   |   |           +---pl.lproj
+|   |   |           +---pt.lproj
+|   |   |           +---pt_BR.lproj
+|   |   |           +---ro.lproj
+|   |   |           +---ru.lproj
+|   |   |           +---si.lproj
+|   |   |           +---sk.lproj
+|   |   |           +---sl.lproj
+|   |   |           +---sq.lproj
+|   |   |           +---sr-Cyrl.lproj
+|   |   |           +---sr-Latn.lproj
+|   |   |           +---sv.lproj
+|   |   |           +---ta.lproj
+|   |   |           +---te.lproj
+|   |   |           +---th.lproj
+|   |   |           +---tr.lproj
+|   |   |           +---tt.lproj
+|   |   |           +---tzm.lproj
+|   |   |           +---uk.lproj
+|   |   |           +---ur_PK.lproj
+|   |   |           +---vi.lproj
+|   |   |           +---zh_CN.lproj
+|   |   |           +---zh_HK.lproj
+|   |   |           \---zh_TW.lproj
+|   |   +---shell
+|   |   +---visionos_xcode
+|   |   |   +---godot_visionos
+|   |   |   |   +---dylibs
+|   |   |   |   +---en.lproj
+|   |   |   |   \---Images.xcassets
+|   |   |   |       \---SplashImage.imageset
+|   |   |   +---godot_visionos.xcodeproj
+|   |   |   |   +---project.xcworkspace
+|   |   |   |   \---xcshareddata
+|   |   |   |       \---xcschemes
+|   |   |   +---libgodot.visionos.debug.xcframework
+|   |   |   |   +---xros-arm64
+|   |   |   |   \---xros-arm64-simulator
+|   |   |   \---libgodot.visionos.release.xcframework
+|   |   |       +---xros-arm64
+|   |   |       \---xros-arm64-simulator
+|   |   \---windows
+|   +---error_suppressions
+|   +---extension_api_validation
+|   +---msvs
+|   +---scripts
+|   \---utility
++---modules
+|   +---astcenc
+|   +---basis_universal
+|   +---bcdec
+|   +---betsy
+|   +---bmp
+|   +---camera
+|   +---csg
+|   |   +---doc_classes
+|   |   +---editor
+|   |   +---icons
+|   |   \---tests
+|   +---cvtt
+|   +---dds
+|   |   \---tests
+|   +---enet
+|   |   \---doc_classes
+|   +---etcpak
+|   +---fbx
+|   |   +---doc_classes
+|   |   +---editor
+|   |   \---extensions
+|   +---freetype
+|   +---gdscript
+|   |   +---doc_classes
+|   |   +---editor
+|   |   |   \---script_templates
+|   |   |       +---CharacterBody2D
+|   |   |       +---CharacterBody3D
+|   |   |       +---EditorPlugin
+|   |   |       +---EditorScenePostImport
+|   |   |       +---EditorScript
+|   |   |       +---Node
+|   |   |       +---Object
+|   |   |       +---RichTextEffect
+|   |   |       \---VisualShaderNodeCustom
+|   |   +---icons
+|   |   +---language_server
+|   |   \---tests
+|   |       \---scripts
+|   |           +---analyzer
+|   |           |   +---errors
+|   |           |   +---features
+|   |           |   \---warnings
+|   |           +---completion
+|   |           |   +---argument_options
+|   |           |   |   \---string_literals
+|   |           |   +---assignment_options
+|   |           |   +---builtin_enum
+|   |           |   +---common
+|   |           |   +---enum_values_in_dictionary
+|   |           |   +---enum_values_in_match
+|   |           |   +---filter
+|   |           |   +---get_node
+|   |           |   |   +---literal
+|   |           |   |   +---literal_scene
+|   |           |   |   +---local
+|   |           |   |   +---local_inferred
+|   |           |   |   +---local_inferred_scene
+|   |           |   |   +---local_scene
+|   |           |   |   +---local_typehint
+|   |           |   |   +---local_typehint_scene
+|   |           |   |   +---local_typehint_scene_broad
+|   |           |   |   +---local_typehint_scene_incompatible
+|   |           |   |   +---member
+|   |           |   |   +---member_inferred
+|   |           |   |   +---member_inferred_scene
+|   |           |   |   +---member_scene
+|   |           |   |   +---member_typehint
+|   |           |   |   +---member_typehint_scene
+|   |           |   |   +---member_typehint_scene_broad
+|   |           |   |   \---member_typehint_scene_incompatible
+|   |           |   +---index
+|   |           |   +---no_parenthesis_when_callable_is_expected
+|   |           |   \---types
+|   |           |       +---local
+|   |           |       \---member
+|   |           +---lsp
+|   |           +---parser
+|   |           |   +---errors
+|   |           |   +---features
+|   |           |   \---warnings
+|   |           \---runtime
+|   |               +---errors
+|   |               \---features
+|   +---glslang
+|   +---gltf
+|   |   +---doc_classes
+|   |   +---editor
+|   |   +---extensions
+|   |   |   \---physics
+|   |   +---structures
+|   |   \---tests
+|   |       \---data
+|   |           +---gltf_embedded_texture
+|   |           +---gltf_placed_in_dot_godot_imported
+|   |           \---gltf_pointing_to_texture_outside_of_res_folder
+|   +---godot_physics_2d
+|   +---godot_physics_3d
+|   |   \---joints
+|   +---gridmap
+|   |   +---doc_classes
+|   |   +---editor
+|   |   \---icons
+|   +---hdr
+|   +---interactive_music
+|   |   +---doc_classes
+|   |   \---editor
+|   +---jolt_physics
+|   |   +---joints
+|   |   +---misc
+|   |   +---objects
+|   |   +---shapes
+|   |   \---spaces
+|   +---jpg
+|   +---jsonrpc
+|   |   \---tests
+|   +---ktx
+|   +---lightmapper_rd
+|   +---mbedtls
+|   |   \---tests
+|   +---meshoptimizer
+|   +---minimp3
+|   |   \---doc_classes
+|   +---mobile_vr
+|   |   \---doc_classes
+|   +---mono
+|   |   +---build_scripts
+|   |   +---doc_classes
+|   |   +---editor
+|   |   |   +---Godot.NET.Sdk
+|   |   |   |   +---Godot.NET.Sdk
+|   |   |   |   |   \---Sdk
+|   |   |   |   +---Godot.SourceGenerators
+|   |   |   |   +---Godot.SourceGenerators.Sample
+|   |   |   |   |   \---OneWayProperties
+|   |   |   |   \---Godot.SourceGenerators.Tests
+|   |   |   |       \---TestData
+|   |   |   |           +---GeneratedSources
+|   |   |   |           \---Sources
+|   |   |   +---GodotTools
+|   |   |   |   +---GodotTools
+|   |   |   |   |   +---Build
+|   |   |   |   |   +---Export
+|   |   |   |   |   +---Ides
+|   |   |   |   |   |   +---MonoDevelop
+|   |   |   |   |   |   \---Rider
+|   |   |   |   |   +---Inspector
+|   |   |   |   |   +---Internals
+|   |   |   |   |   \---Utils
+|   |   |   |   +---GodotTools.BuildLogger
+|   |   |   |   +---GodotTools.Core
+|   |   |   |   +---GodotTools.IdeMessaging
+|   |   |   |   |   +---Requests
+|   |   |   |   |   \---Utils
+|   |   |   |   +---GodotTools.IdeMessaging.CLI
+|   |   |   |   +---GodotTools.OpenVisualStudio
+|   |   |   |   +---GodotTools.ProjectEditor
+|   |   |   |   \---GodotTools.Shared
+|   |   |   \---script_templates
+|   |   |       +---CharacterBody2D
+|   |   |       +---CharacterBody3D
+|   |   |       +---EditorPlugin
+|   |   |       +---EditorScenePostImport
+|   |   |       +---EditorScript
+|   |   |       +---Node
+|   |   |       +---Object
+|   |   |       \---VisualShaderNodeCustom
+|   |   +---glue
+|   |   |   \---GodotSharp
+|   |   |       +---ExternalAnnotations
+|   |   |       +---Godot.SourceGenerators.Internal
+|   |   |       +---GodotPlugins
+|   |   |       +---GodotSharp
+|   |   |       |   +---Core
+|   |   |       |   |   +---Attributes
+|   |   |       |   |   +---Bridge
+|   |   |       |   |   +---Extensions
+|   |   |       |   |   +---Interfaces
+|   |   |       |   |   \---NativeInterop
+|   |   |       |   \---Properties
+|   |   |       \---GodotSharpEditor
+|   |   +---icons
+|   |   +---mono_gd
+|   |   +---thirdparty
+|   |   \---utils
+|   +---msdfgen
+|   +---multiplayer
+|   |   +---doc_classes
+|   |   +---editor
+|   |   \---tests
+|   +---navigation_2d
+|   |   +---2d
+|   |   \---editor
+|   +---navigation_3d
+|   |   +---3d
+|   |   \---editor
+|   +---noise
+|   |   +---doc_classes
+|   |   +---editor
+|   |   +---icons
+|   |   \---tests
+|   +---ogg
+|   |   \---doc_classes
+|   +---openxr
+|   |   +---action_map
+|   |   +---doc_classes
+|   |   +---editor
+|   |   +---extensions
+|   |   |   \---platform
+|   |   \---scene
+|   +---raycast
+|   +---regex
+|   |   +---doc_classes
+|   |   +---icons
+|   |   \---tests
+|   +---svg
+|   +---text_server_adv
+|   |   +---doc_classes
+|   |   +---gdextension_build
+|   |   \---icu_data
+|   +---text_server_fb
+|   |   +---doc_classes
+|   |   \---gdextension_build
+|   +---tga
+|   +---theora
+|   |   +---doc_classes
+|   |   \---editor
+|   +---tinyexr
+|   +---upnp
+|   |   \---doc_classes
+|   +---vhacd
+|   +---vorbis
+|   |   \---doc_classes
+|   +---webp
+|   +---webrtc
+|   |   \---doc_classes
+|   +---websocket
+|   |   +---doc_classes
+|   |   \---editor
+|   +---webxr
+|   |   +---doc_classes
+|   |   \---native
+|   +---xatlas_unwrap
+|   \---zip
+|       +---doc_classes
+|       \---tests
+|           \---data
++---platform
+|   +---android
+|   |   +---api
+|   |   +---doc_classes
+|   |   +---export
+|   |   +---java
+|   |   |   +---app
+|   |   |   |   +---assetPackInstallTime
+|   |   |   |   +---assets
+|   |   |   |   +---res
+|   |   |   |   |   +---values
+|   |   |   |   |   +---values-ar
+|   |   |   |   |   +---values-bg
+|   |   |   |   |   +---values-ca
+|   |   |   |   |   +---values-cs
+|   |   |   |   |   +---values-da
+|   |   |   |   |   +---values-de
+|   |   |   |   |   +---values-el
+|   |   |   |   |   +---values-en
+|   |   |   |   |   +---values-es
+|   |   |   |   |   +---values-es-rES
+|   |   |   |   |   +---values-fa
+|   |   |   |   |   +---values-fi
+|   |   |   |   |   +---values-fr
+|   |   |   |   |   +---values-hi
+|   |   |   |   |   +---values-hr
+|   |   |   |   |   +---values-hu
+|   |   |   |   |   +---values-in
+|   |   |   |   |   +---values-it
+|   |   |   |   |   +---values-iw
+|   |   |   |   |   +---values-ja
+|   |   |   |   |   +---values-ko
+|   |   |   |   |   +---values-lt
+|   |   |   |   |   +---values-lv
+|   |   |   |   |   +---values-nb
+|   |   |   |   |   +---values-nl
+|   |   |   |   |   +---values-pl
+|   |   |   |   |   +---values-pt
+|   |   |   |   |   +---values-ro
+|   |   |   |   |   +---values-ru
+|   |   |   |   |   +---values-sk
+|   |   |   |   |   +---values-sl
+|   |   |   |   |   +---values-sr
+|   |   |   |   |   +---values-sv
+|   |   |   |   |   +---values-th
+|   |   |   |   |   +---values-tl
+|   |   |   |   |   +---values-tr
+|   |   |   |   |   +---values-uk
+|   |   |   |   |   +---values-vi
+|   |   |   |   |   +---values-zh
+|   |   |   |   |   +---values-zh-rHK
+|   |   |   |   |   \---values-zh-rTW
+|   |   |   |   \---src
+|   |   |   |       \---com
+|   |   |   |           \---godot
+|   |   |   |               \---game
+|   |   |   +---editor
+|   |   |   |   \---src
+|   |   |   |       +---android
+|   |   |   |       |   \---java
+|   |   |   |       |       \---org
+|   |   |   |       |           \---godotengine
+|   |   |   |       |               \---editor
+|   |   |   |       +---horizonos
+|   |   |   |       |   +---assets
+|   |   |   |       |   \---java
+|   |   |   |       |       \---org
+|   |   |   |       |           \---godotengine
+|   |   |   |       |               \---editor
+|   |   |   |       +---main
+|   |   |   |       |   +---assets
+|   |   |   |       |   |   \---keystores
+|   |   |   |       |   +---java
+|   |   |   |       |   |   +---com
+|   |   |   |       |   |   |   \---android
+|   |   |   |       |   |   |       \---apksig
+|   |   |   |       |   |   |           +---apk
+|   |   |   |       |   |   |           +---internal
+|   |   |   |       |   |   |           |   +---apk
+|   |   |   |       |   |   |           |   |   +---stamp
+|   |   |   |       |   |   |           |   |   +---v1
+|   |   |   |       |   |   |           |   |   +---v2
+|   |   |   |       |   |   |           |   |   +---v3
+|   |   |   |       |   |   |           |   |   \---v4
+|   |   |   |       |   |   |           |   +---asn1
+|   |   |   |       |   |   |           |   |   \---ber
+|   |   |   |       |   |   |           |   +---jar
+|   |   |   |       |   |   |           |   +---oid
+|   |   |   |       |   |   |           |   +---pkcs7
+|   |   |   |       |   |   |           |   +---util
+|   |   |   |       |   |   |           |   +---x509
+|   |   |   |       |   |   |           |   \---zip
+|   |   |   |       |   |   |           +---util
+|   |   |   |       |   |   |           \---zip
+|   |   |   |       |   |   \---org
+|   |   |   |       |   |       \---godotengine
+|   |   |   |       |   |           \---editor
+|   |   |   |       |   |               +---embed
+|   |   |   |       |   |               \---utils
+|   |   |   |       |   \---res
+|   |   |   |       |       +---color
+|   |   |   |       |       +---drawable
+|   |   |   |       |       +---layout
+|   |   |   |       |       +---menu
+|   |   |   |       |       +---mipmap-anydpi-v26
+|   |   |   |       |       +---mipmap-hdpi
+|   |   |   |       |       +---mipmap-mdpi
+|   |   |   |       |       +---mipmap-xhdpi
+|   |   |   |       |       +---mipmap-xxhdpi
+|   |   |   |       |       +---mipmap-xxxhdpi
+|   |   |   |       |       \---values
+|   |   |   |       \---picoos
+|   |   |   |           +---assets
+|   |   |   |           \---java
+|   |   |   |               \---org
+|   |   |   |                   \---godotengine
+|   |   |   |                       \---editor
+|   |   |   +---gradle
+|   |   |   |   \---wrapper
+|   |   |   +---lib
+|   |   |   |   +---aidl
+|   |   |   |   |   \---com
+|   |   |   |   |       \---android
+|   |   |   |   |           \---vending
+|   |   |   |   |               \---licensing
+|   |   |   |   +---patches
+|   |   |   |   +---res
+|   |   |   |   |   +---layout
+|   |   |   |   |   +---mipmap
+|   |   |   |   |   +---mipmap-anydpi-v26
+|   |   |   |   |   +---mipmap-hdpi
+|   |   |   |   |   +---mipmap-mdpi
+|   |   |   |   |   +---mipmap-xhdpi
+|   |   |   |   |   +---mipmap-xxhdpi
+|   |   |   |   |   +---mipmap-xxxhdpi
+|   |   |   |   |   +---values
+|   |   |   |   |   +---values-fa
+|   |   |   |   |   +---values-ko
+|   |   |   |   |   \---xml
+|   |   |   |   +---src
+|   |   |   |   |   +---com
+|   |   |   |   |   |   \---google
+|   |   |   |   |   |       \---android
+|   |   |   |   |   |           \---vending
+|   |   |   |   |   |               +---expansion
+|   |   |   |   |   |               |   \---downloader
+|   |   |   |   |   |               |       \---impl
+|   |   |   |   |   |               \---licensing
+|   |   |   |   |   |                   \---util
+|   |   |   |   |   \---org
+|   |   |   |   |       \---godotengine
+|   |   |   |   |           \---godot
+|   |   |   |   |               +---error
+|   |   |   |   |               +---gl
+|   |   |   |   |               +---input
+|   |   |   |   |               +---io
+|   |   |   |   |               |   +---directory
+|   |   |   |   |               |   \---file
+|   |   |   |   |               +---plugin
+|   |   |   |   |               +---service
+|   |   |   |   |               +---tts
+|   |   |   |   |               +---utils
+|   |   |   |   |               +---variant
+|   |   |   |   |               +---vulkan
+|   |   |   |   |               \---xr
+|   |   |   |   |                   +---ovr
+|   |   |   |   |                   \---regular
+|   |   |   |   \---srcTest
+|   |   |   |       \---java
+|   |   |   |           \---org
+|   |   |   |               \---godotengine
+|   |   |   |                   \---godot
+|   |   |   |                       \---utils
+|   |   |   +---nativeSrcsConfigs
+|   |   |   \---scripts
+|   |   +---plugin
+|   |   \---variant
+|   +---ios
+|   |   +---api
+|   |   +---doc_classes
+|   |   \---export
+|   +---linuxbsd
+|   |   +---doc_classes
+|   |   +---export
+|   |   +---wayland
+|   |   |   \---dynwrappers
+|   |   \---x11
+|   |       \---dynwrappers
+|   +---macos
+|   |   +---doc_classes
+|   |   +---editor
+|   |   \---export
+|   +---visionos
+|   |   +---api
+|   |   +---doc_classes
+|   |   \---export
+|   +---web
+|   |   +---api
+|   |   +---doc_classes
+|   |   +---editor
+|   |   +---export
+|   |   \---js
+|   |       +---engine
+|   |       +---jsdoc2rst
+|   |       +---libs
+|   |       \---patches
+|   \---windows
+|       +---doc_classes
+|       \---export
++---scene
+|   +---2d
+|   |   +---navigation
+|   |   \---physics
+|   |       \---joints
+|   +---3d
+|   |   +---navigation
+|   |   +---physics
+|   |   |   \---joints
+|   |   \---xr
+|   +---animation
+|   +---audio
+|   +---debugger
+|   +---gui
+|   +---main
+|   +---resources
+|   |   +---2d
+|   |   |   \---skeleton
+|   |   \---3d
+|   \---theme
+|       \---icons
++---servers
+|   +---audio
+|   |   \---effects
+|   +---camera
+|   +---debugger
+|   +---display
+|   +---extensions
+|   +---movie_writer
+|   +---navigation
+|   +---rendering
+|   |   +---dummy
+|   |   |   +---environment
+|   |   |   \---storage
+|   |   +---environment
+|   |   +---renderer_rd
+|   |   |   +---effects
+|   |   |   +---environment
+|   |   |   +---forward_clustered
+|   |   |   +---forward_mobile
+|   |   |   +---shaders
+|   |   |   |   +---effects
+|   |   |   |   |   \---fsr2
+|   |   |   |   +---environment
+|   |   |   |   +---forward_clustered
+|   |   |   |   \---forward_mobile
+|   |   |   +---spirv-reflect
+|   |   |   \---storage_rd
+|   |   \---storage
+|   +---text
+|   \---xr
++---tests
+|   +---core
+|   |   +---config
+|   |   +---input
+|   |   +---io
+|   |   +---math
+|   |   +---object
+|   |   +---os
+|   |   +---string
+|   |   +---templates
+|   |   +---threads
+|   |   \---variant
+|   +---data
+|   |   +---crypto
+|   |   +---fuzzy_search
+|   |   +---images
+|   |   \---models
+|   +---python_build
+|   |   \---fixtures
+|   |       +---gles3
+|   |       +---glsl
+|   |       \---rd_glsl
+|   +---scene
+|   \---servers
+|       \---rendering
+\---thirdparty
+    +---accesskit
+    |   \---include
+    +---amd-fsr
+    +---amd-fsr2
+    |   +---patches
+    |   \---shaders
+    +---angle
+    |   \---include
+    |       +---EGL
+    |       \---KHR
+    +---astcenc
+    +---basis_universal
+    |   +---encoder
+    |   |   \---3rdparty
+    |   +---patches
+    |   \---transcoder
+    +---brotli
+    |   +---common
+    |   +---dec
+    |   \---include
+    |       \---brotli
+    +---certs
+    +---clipper2
+    |   +---include
+    |   |   \---clipper2
+    |   +---patches
+    |   \---src
+    +---cvtt
+    |   \---patches
+    +---d3d12ma
+    |   \---patches
+    +---directx_headers
+    |   +---include
+    |   |   +---directx
+    |   |   \---dxguids
+    |   \---patches
+    +---doctest
+    |   \---patches
+    +---embree
+    |   +---common
+    |   |   +---algorithms
+    |   |   +---lexers
+    |   |   +---math
+    |   |   +---simd
+    |   |   |   +---arm
+    |   |   |   \---wasm
+    |   |   +---sys
+    |   |   \---tasking
+    |   +---include
+    |   |   \---embree4
+    |   +---kernels
+    |   |   +---builders
+    |   |   +---bvh
+    |   |   +---common
+    |   |   +---geometry
+    |   |   \---subdiv
+    |   \---patches
+    +---enet
+    |   +---enet
+    |   \---patches
+    +---etcpak
+    |   \---patches
+    +---fonts
+    +---freetype
+    |   +---include
+    |   |   \---freetype
+    |   |       +---config
+    |   |       \---internal
+    |   |           \---services
+    |   \---src
+    |       +---autofit
+    |       +---base
+    |       +---bdf
+    |       +---bzip2
+    |       +---cache
+    |       +---cff
+    |       +---cid
+    |       +---gxvalid
+    |       +---gzip
+    |       +---lzw
+    |       +---otvalid
+    |       +---pcf
+    |       +---pfr
+    |       +---psaux
+    |       +---pshinter
+    |       +---psnames
+    |       +---raster
+    |       +---sdf
+    |       +---sfnt
+    |       +---smooth
+    |       +---svg
+    |       +---truetype
+    |       +---type1
+    |       +---type42
+    |       \---winfonts
+    +---glad
+    |   +---EGL
+    |   +---glad
+    |   +---KHR
+    |   \---patches
+    +---glslang
+    |   +---glslang
+    |   |   +---GenericCodeGen
+    |   |   +---Include
+    |   |   +---MachineIndependent
+    |   |   |   \---preprocessor
+    |   |   +---OSDependent
+    |   |   |   +---Unix
+    |   |   |   +---Web
+    |   |   |   \---Windows
+    |   |   +---Public
+    |   |   \---ResourceLimits
+    |   +---patches
+    |   \---SPIRV
+    +---graphite
+    |   +---include
+    |   |   \---graphite2
+    |   \---src
+    |       \---inc
+    +---grisu2
+    |   \---patches
+    +---harfbuzz
+    |   \---src
+    |       +---graph
+    |       \---OT
+    |           +---Color
+    |           |   +---CBDT
+    |           |   +---COLR
+    |           |   +---CPAL
+    |           |   +---sbix
+    |           |   \---svg
+    |           +---glyf
+    |           +---Layout
+    |           |   +---Common
+    |           |   +---GDEF
+    |           |   +---GPOS
+    |           |   \---GSUB
+    |           +---name
+    |           \---Var
+    |               \---VARC
+    +---icu4c
+    |   +---common
+    |   |   \---unicode
+    |   \---i18n
+    |       \---unicode
+    +---jolt_physics
+    |   \---Jolt
+    |       +---AABBTree
+    |       |   +---NodeCodec
+    |       |   \---TriangleCodec
+    |       +---Core
+    |       +---Geometry
+    |       +---Math
+    |       +---ObjectStream
+    |       +---Physics
+    |       |   +---Body
+    |       |   +---Character
+    |       |   +---Collision
+    |       |   |   +---BroadPhase
+    |       |   |   \---Shape
+    |       |   +---Constraints
+    |       |   |   \---ConstraintPart
+    |       |   +---Ragdoll
+    |       |   +---SoftBody
+    |       |   \---Vehicle
+    |       +---Renderer
+    |       +---Skeleton
+    |       \---TriangleSplitter
+    +---libbacktrace
+    |   \---patches
+    +---libjpeg-turbo
+    |   +---patches
+    |   \---src
+    +---libktx
+    |   +---external
+    |   |   \---dfdutils
+    |   |       \---KHR
+    |   +---include
+    |   |   \---KHR
+    |   +---lib
+    |   +---other_include
+    |   |   \---KHR
+    |   +---patches
+    |   \---utils
+    +---libogg
+    |   \---ogg
+    +---libpng
+    |   +---arm
+    |   +---intel
+    |   +---loongarch
+    |   \---powerpc
+    +---libtheora
+    |   +---theora
+    |   +---x86
+    |   \---x86_vc
+    +---libvorbis
+    |   +---books
+    |   |   +---coupled
+    |   |   +---floor
+    |   |   \---uncoupled
+    |   +---modes
+    |   \---vorbis
+    +---libwebp
+    |   +---patches
+    |   +---sharpyuv
+    |   \---src
+    |       +---dec
+    |       +---demux
+    |       +---dsp
+    |       +---enc
+    |       +---mux
+    |       +---utils
+    |       \---webp
+    +---linuxbsd_headers
+    |   +---alsa
+    |   |   +---patches
+    |   |   \---sound
+    |   +---dbus
+    |   +---fontconfig
+    |   +---libdecor-0
+    |   +---pulse
+    |   +---speechd
+    |   +---udev
+    |   +---wayland
+    |   +---X11
+    |   |   +---extensions
+    |   |   \---Xcursor
+    |   \---xkbcommon
+    +---manifold
+    |   +---include
+    |   |   \---manifold
+    |   \---src
+    |       \---cross_section
+    +---mbedtls
+    |   +---include
+    |   |   +---mbedtls
+    |   |   \---psa
+    |   +---library
+    |   \---patches
+    +---meshoptimizer
+    +---mingw-std-threads
+    |   \---patches
+    +---minimp3
+    |   \---patches
+    +---miniupnpc
+    |   +---include
+    |   |   \---miniupnpc
+    |   \---src
+    +---minizip
+    |   \---patches
+    +---misc
+    |   \---patches
+    +---msdfgen
+    |   \---core
+    +---openxr
+    |   +---include
+    |   |   \---openxr
+    |   \---src
+    |       +---common
+    |       +---external
+    |       |   \---jsoncpp
+    |       |       +---include
+    |       |       |   \---json
+    |       |       \---src
+    |       |           \---lib_json
+    |       \---loader
+    +---pcre2
+    |   +---deps
+    |   |   \---sljit
+    |   |       \---sljit_src
+    |   |           \---allocator_src
+    |   \---src
+    +---recastnavigation
+    |   \---Recast
+    |       +---Include
+    |       \---Source
+    +---rvo2
+    |   +---rvo2_2d
+    |   \---rvo2_3d
+    +---smaa
+    +---spirv-cross
+    |   +---include
+    |   |   \---spirv_cross
+    |   \---LICENSES
+    +---spirv-reflect
+    |   +---include
+    |   |   \---spirv
+    |   |       \---unified1
+    |   \---patches
+    +---swappy-frame-pacing
+    |   \---common
+    +---thorvg
+    |   +---inc
+    |   +---patches
+    |   \---src
+    |       +---common
+    |       +---loaders
+    |       |   +---external_jpg
+    |       |   +---external_png
+    |       |   +---external_webp
+    |       |   +---raw
+    |       |   \---svg
+    |       \---renderer
+    |           \---sw_engine
+    +---tinyexr
+    |   \---patches
+    +---ufbx
+    +---vhacd
+    |   +---inc
+    |   +---patches
+    |   +---public
+    |   \---src
+    +---volk
+    +---vulkan
+    |   +---include
+    |   |   +---vk_video
+    |   |   \---vulkan
+    |   \---patches
+    +---wayland
+    |   \---protocol
+    +---wayland-protocols
+    |   +---stable
+    |   |   +---tablet
+    |   |   +---viewporter
+    |   |   \---xdg-shell
+    |   +---staging
+    |   |   +---cursor-shape
+    |   |   +---fractional-scale
+    |   |   +---xdg-activation
+    |   |   \---xdg-system-bell
+    |   \---unstable
+    |       +---idle-inhibit
+    |       +---pointer-constraints
+    |       +---pointer-gestures
+    |       +---primary-selection
+    |       +---relative-pointer
+    |       +---text-input
+    |       +---xdg-decoration
+    |       \---xdg-foreign
+    +---wslay
+    |   +---patches
+    |   \---wslay
+    +---xatlas
+    +---zlib
+    \---zstd
+        +---common
+        +---compress
+        \---decompress
