@@ -531,11 +531,10 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		capture_2d->get_image()->convert(Image::Format::FORMAT_RGBA8); // ALPHA channel is required for image blending
 
 		// Prepare for gui render
-		callable_mp((Node *)sub_viewport, &Node::remove_child).call_deferred(p_scene);
-		p_scene->queue_free();
-		p_scene = pack->instantiate();
-		_setup_scene_2d(p_scene);
-		_hide_node_2d_in_scene(p_scene);
+		Node *p_scene_gui = pack->instantiate();
+		_setup_scene_2d(p_scene_gui);
+		_hide_node_2d_in_scene(p_scene_gui);
+
 		SubViewport *sub_viewport_gui = memnew(SubViewport);
 		sub_viewport_gui->set_size(Size2i(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height")));
 		sub_viewport_gui->set_update_mode(SubViewport::UpdateMode::UPDATE_DISABLED);
@@ -546,7 +545,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		sub_viewport_gui->set_default_canvas_item_texture_filter(Viewport::DefaultCanvasItemTextureFilter(texture_filter));
 		sub_viewport_gui->set_default_canvas_item_texture_repeat(Viewport::DefaultCanvasItemTextureRepeat(texture_repeat));
 		sub_viewport_gui->set_disable_3d(true);
-		sub_viewport_gui->add_child(p_scene);
+		sub_viewport_gui->add_child(p_scene_gui);
 
 		// Render GUI
 		sub_viewport_gui->set_update_mode(SubViewport::UpdateMode::UPDATE_ONCE);

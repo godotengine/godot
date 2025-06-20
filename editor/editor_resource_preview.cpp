@@ -130,7 +130,12 @@ Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() {
 }
 
 bool EditorResourcePreview::can_run_on_thread() const {
-	return RSG::rasterizer->can_create_resources_async();
+	// Now forces all renderers to generate thumbnail on thread for better UX. (See issue ##107736)
+	//
+	// Previously this returns `RSG::rasterizer->can_create_resources_async()` to prevent
+	// threading on Compatibility renderer for some reason (Need rendering team to confirm),
+	// But after testing thumbnail creation on a thread using GLES3 it has no issues.
+	return true;
 }
 
 bool EditorResourcePreview::is_threaded() const {
