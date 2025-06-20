@@ -742,13 +742,35 @@
 			<return type="void" />
 			<description>
 				Modifies the following class or method as final. A final class cannot be extended, and a final method cannot be overridden.
+				You can annotate a class as final:
 				[codeblock]
+				# A.gd
+				@final class_name A
 
+				# B.gd
+				class_name B extends A # Error: The base class "A" is marked as final and cannot be extended..
+
+				# C.gd
+				@final extends RefCounted
+
+				class D extends C # Error: The base class "C" is marked as final and cannot be extended.
 				[/codeblock]
+				You can also annotate a method as final:
 				[codeblock]
+				# E.gd
+				class_name E extends Node
 
+				@final func my_final_method():
+				    pass
+
+				# F.gd
+				class_name F extends E
+
+				func my_final_method(): # Error: The method "my_final_method" is marked as final and cannot be overridden.
+				    pass
 				[/codeblock]
 				[b]Note:[/b] The annotation [code skip-lint]@final[/code] is a modifier, meaning that it is syntax-related instead of engine-specific.
+				[b]Note:[/b] You cannot modify an abstract class or method as final, as they are syntactically conflicting with each other and disallow the abstract class to be extended or the method to be overridden.
 			</description>
 		</annotation>
 		<annotation name="@icon">

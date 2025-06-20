@@ -2300,7 +2300,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	StringName func_name;
 	bool is_abstract = false;
 	bool is_static = false;
-	bool is_final = false;
 	Variant rpc_config;
 	GDScriptDataType return_type;
 	return_type.has_type = true;
@@ -2315,7 +2314,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		}
 		is_abstract = p_func->is_abstract;
 		is_static = p_func->is_static;
-		is_final = p_func->is_final;
 		rpc_config = p_func->rpc_config;
 		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
 	} else {
