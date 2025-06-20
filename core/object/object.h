@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/disabled_classes.gen.h"
-#include "core/extension/gdextension_interface.h"
+#include "core/extension/gdextension_interface.gen.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
