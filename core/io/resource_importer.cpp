@@ -590,10 +590,7 @@ void ResourceImporter::_bind_methods() {
 Error ResourceFormatImporterSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
-	Error err = cf->load(p_path + ".import");
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(cf->load(p_path + ".import"));
 	cf->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(p_uid));
 	cf->save(p_path + ".import");
 

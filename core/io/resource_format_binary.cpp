@@ -679,9 +679,7 @@ Ref<Resource> ResourceLoaderBinary::get_resource() {
 }
 
 Error ResourceLoaderBinary::load() {
-	if (error != OK) {
-		return error;
-	}
+	RETURN_IF_ERR(error);
 
 	for (int i = 0; i < external_resources.size(); i++) {
 		String path = external_resources[i].path;
@@ -825,10 +823,7 @@ Error ResourceLoaderBinary::load() {
 
 			Variant value;
 
-			error = parse_variant(value);
-			if (error) {
-				return error;
-			}
+			RETURN_IF_ERR(parse_variant(value));
 
 			bool set_valid = true;
 			if (value.get_type() == Variant::OBJECT && missing_resource == nullptr && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {

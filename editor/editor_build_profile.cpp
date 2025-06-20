@@ -522,9 +522,7 @@ Error EditorBuildProfile::save_to_file(const String &p_path) {
 Error EditorBuildProfile::load_from_file(const String &p_path) {
 	Error err;
 	String text = FileAccess::get_file_as_string(p_path, &err);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	JSON json;
 	err = json.parse(text);

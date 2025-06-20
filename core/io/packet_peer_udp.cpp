@@ -97,10 +97,7 @@ int PacketPeerUDP::get_available_packet_count() const {
 }
 
 Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	Error err = _poll();
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(_poll());
 	if (queue_count == 0) {
 		return ERR_UNAVAILABLE;
 	}

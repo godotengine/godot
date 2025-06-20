@@ -883,10 +883,7 @@ Error GDScript::reload(bool p_keep_state) {
 #endif
 
 	if (can_run) {
-		err = _static_init();
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(_static_init());
 	}
 
 #ifdef TOOLS_ENABLED

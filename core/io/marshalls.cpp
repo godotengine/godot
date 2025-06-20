@@ -147,10 +147,7 @@ static Error _decode_container_type(const uint8_t *&buf, int &len, int *r_len, b
 		} break;
 		case CONTAINER_TYPE_KIND_CLASS_NAME: {
 			String str;
-			Error err = _decode_string(buf, len, r_len, str);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(_decode_string(buf, len, r_len, str));
 
 			r_type.builtin_type = Variant::OBJECT;
 			if (p_allow_objects) {
@@ -162,10 +159,7 @@ static Error _decode_container_type(const uint8_t *&buf, int &len, int *r_len, b
 		} break;
 		case CONTAINER_TYPE_KIND_SCRIPT: {
 			String path;
-			Error err = _decode_string(buf, len, r_len, path);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(_decode_string(buf, len, r_len, path));
 
 			r_type.builtin_type = Variant::OBJECT;
 			if (p_allow_objects) {
@@ -253,10 +247,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::STRING: {
 			String str;
-			Error err = _decode_string(buf, len, r_len, str);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(_decode_string(buf, len, r_len, str));
 			r_variant = str;
 
 		} break;
@@ -629,10 +620,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::STRING_NAME: {
 			String str;
-			Error err = _decode_string(buf, len, r_len, str);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(_decode_string(buf, len, r_len, str));
 			r_variant = StringName(str);
 
 		} break;
@@ -666,10 +654,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				for (uint32_t i = 0; i < total; i++) {
 					String str;
-					Error err = _decode_string(buf, len, r_len, str);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(_decode_string(buf, len, r_len, str));
 
 					if (i < namecount) {
 						names.push_back(str);
@@ -717,10 +702,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V(!p_allow_objects, ERR_UNAUTHORIZED);
 
 				String str;
-				Error err = _decode_string(buf, len, r_len, str);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_decode_string(buf, len, r_len, str));
 
 				if (str.is_empty()) {
 					r_variant = (Object *)nullptr;
@@ -750,17 +732,11 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 					for (int i = 0; i < count; i++) {
 						str = String();
-						err = _decode_string(buf, len, r_len, str);
-						if (err) {
-							return err;
-						}
+						RETURN_IF_ERR(_decode_string(buf, len, r_len, str));
 
 						Variant value;
 						int used;
-						err = decode_variant(value, buf, len, &used, p_allow_objects, p_depth + 1);
-						if (err) {
-							return err;
-						}
+						RETURN_IF_ERR(decode_variant(value, buf, len, &used, p_allow_objects, p_depth + 1));
 
 						buf += used;
 						len -= used;
@@ -790,10 +766,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::SIGNAL: {
 			String name;
-			Error err = _decode_string(buf, len, r_len, name);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(_decode_string(buf, len, r_len, name));
 
 			ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
 			ObjectID id = ObjectID(decode_uint64(buf));
@@ -808,20 +781,14 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			{
 				ContainerTypeKind key_type_kind = GET_CONTAINER_TYPE_KIND(header, TYPED_DICTIONARY_KEY);
-				Error err = _decode_container_type(buf, len, r_len, p_allow_objects, key_type_kind, key_type);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_decode_container_type(buf, len, r_len, p_allow_objects, key_type_kind, key_type));
 			}
 
 			ContainerType value_type;
 
 			{
 				ContainerTypeKind value_type_kind = GET_CONTAINER_TYPE_KIND(header, TYPED_DICTIONARY_VALUE);
-				Error err = _decode_container_type(buf, len, r_len, p_allow_objects, value_type_kind, value_type);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_decode_container_type(buf, len, r_len, p_allow_objects, value_type_kind, value_type));
 			}
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
@@ -875,10 +842,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			{
 				ContainerTypeKind type_kind = GET_CONTAINER_TYPE_KIND(header, TYPED_ARRAY);
-				Error err = _decode_container_type(buf, len, r_len, p_allow_objects, type_kind, type);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_decode_container_type(buf, len, r_len, p_allow_objects, type_kind, type));
 			}
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
@@ -1055,10 +1019,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			for (int32_t i = 0; i < count; i++) {
 				String str;
-				Error err = _decode_string(buf, len, r_len, str);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_decode_string(buf, len, r_len, str));
 
 				strings.push_back(str);
 			}
@@ -1830,17 +1791,11 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			const Dictionary dict = p_variant;
 
 			{
-				Error err = _encode_container_type(dict.get_key_type(), buf, r_len, p_full_objects);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_encode_container_type(dict.get_key_type(), buf, r_len, p_full_objects));
 			}
 
 			{
-				Error err = _encode_container_type(dict.get_value_type(), buf, r_len, p_full_objects);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_encode_container_type(dict.get_value_type(), buf, r_len, p_full_objects));
 			}
 
 			if (buf) {
@@ -1872,10 +1827,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			const Array array = p_variant;
 
 			{
-				Error err = _encode_container_type(array.get_element_type(), buf, r_len, p_full_objects);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_encode_container_type(array.get_element_type(), buf, r_len, p_full_objects));
 			}
 
 			if (buf) {

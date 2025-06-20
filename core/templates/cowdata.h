@@ -286,10 +286,7 @@ Error CowData<T>::_fork_allocate(USize p_size) {
 
 	if (!_ptr) {
 		// We had no data before; just allocate a new array.
-		const Error error = _alloc(alloc_size);
-		if (error) {
-			return error;
-		}
+		RETURN_IF_ERR(_alloc(alloc_size));
 	} else if (_get_refcount()->get() == 1) {
 		// Resize in-place.
 		// NOTE: This case is not just an optimization, but required, as some callers depend on
@@ -362,10 +359,7 @@ Error CowData<T>::resize(Size p_size) {
 		return OK;
 	}
 
-	const Error error = _fork_allocate(p_size);
-	if (error) {
-		return error;
-	}
+	RETURN_IF_ERR(_fork_allocate(p_size));
 
 	if constexpr (p_initialize) {
 		if (p_size > prev_size) {

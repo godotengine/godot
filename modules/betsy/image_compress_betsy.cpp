@@ -411,11 +411,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		src_texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	}
 
-	err = get_src_texture_format(r_img, src_texture_format.format);
-
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(get_src_texture_format(r_img, src_texture_format.format));
 
 	// For the destination format just copy the source format and change the usage bits.
 	RD::TextureFormat dst_texture_format = src_texture_format;

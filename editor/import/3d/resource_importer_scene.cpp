@@ -3121,17 +3121,11 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	// Check whether any of the meshes or animations have nonexistent save paths
 	// and if they do, fail the import immediately.
 	if (subresources.has("meshes")) {
-		err = _check_resource_save_paths(p_source_id, "m", subresources["meshes"]);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(_check_resource_save_paths(p_source_id, "m", subresources["meshes"]));
 	}
 
 	if (subresources.has("animations")) {
-		err = _check_resource_save_paths(p_source_id, "a", subresources["animations"]);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(_check_resource_save_paths(p_source_id, "a", subresources["animations"]));
 	}
 
 	List<String> missing_deps; // for now, not much will be done with this

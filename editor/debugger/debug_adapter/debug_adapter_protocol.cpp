@@ -121,10 +121,7 @@ Error DAPeer::send_data() {
 		int data_sent = 0;
 		while (data_sent < formatted_data.size()) {
 			int curr_sent = 0;
-			Error err = connection->put_partial_data(formatted_data.ptr() + data_sent, formatted_data.size() - data_sent, curr_sent);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERR(connection->put_partial_data(formatted_data.ptr() + data_sent, formatted_data.size() - data_sent, curr_sent));
 			data_sent += curr_sent;
 		}
 		res_queue.pop_front();

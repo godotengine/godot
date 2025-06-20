@@ -787,10 +787,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	// Load the main image.
 	Ref<Image> image;
 	image.instantiate();
-	Error err = ImageLoader::load_image(p_source_file, image, nullptr, loader_flags, scale);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(ImageLoader::load_image(p_source_file, image, nullptr, loader_flags, scale));
 	images_imported.push_back(image);
 
 	// Load the editor-only image.
@@ -805,7 +802,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 		}
 
 		editor_image.instantiate();
-		err = ImageLoader::load_image(p_source_file, editor_image, nullptr, editor_loader_flags, editor_scale);
+		Error err = ImageLoader::load_image(p_source_file, editor_image, nullptr, editor_loader_flags, editor_scale);
 
 		if (err != OK) {
 			WARN_PRINT(vformat("Failed to import an image resource for editor use from '%s'.", p_source_file));

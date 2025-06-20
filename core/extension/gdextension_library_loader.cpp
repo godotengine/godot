@@ -174,10 +174,7 @@ String GDExtensionLibraryLoader::find_extension_library(const String &p_path, Re
 }
 
 Error GDExtensionLibraryLoader::open_library(const String &p_path) {
-	Error err = parse_gdextension_file(p_path);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(parse_gdextension_file(p_path));
 
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(library_path);
 
@@ -195,12 +192,7 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 		&abs_dependencies_paths, // library_dependencies
 	};
 
-	err = OS::get_singleton()->open_dynamic_library(is_static_library ? String() : abs_path, library, &data);
-	if (err != OK) {
-		return err;
-	}
-
-	return OK;
+	return OS::get_singleton()->open_dynamic_library(is_static_library ? String() : abs_path, library, &data);
 }
 
 Error GDExtensionLibraryLoader::initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) {

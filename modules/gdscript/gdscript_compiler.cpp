@@ -1914,9 +1914,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				// Evaluate the match expression.
 				GDScriptCodeGenerator::Address value = codegen.add_local("@match_value", _gdtype_from_datatype(match->test->get_datatype(), codegen.script));
 				GDScriptCodeGenerator::Address value_expr = _parse_expression(codegen, err, match->test);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(err);
 
 				// Assign to local.
 				// TODO: This can be improved by passing the target to parse_expression().
@@ -1958,9 +1956,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					GDScriptCodeGenerator::Address pattern_result = codegen.add_temporary();
 					for (int k = 0; k < branch->patterns.size(); k++) {
 						pattern_result = _parse_match_pattern(codegen, err, branch->patterns[k], value, type, pattern_result, k == 0, false);
-						if (err != OK) {
-							return err;
-						}
+						RETURN_IF_ERR(err);
 					}
 
 					// If there's a guard, check its condition too.
@@ -1971,9 +1967,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						// Don't actually use the block for the guard.
 						// The binds are already in the locals and we don't want to clear the result of the guard condition before we check the actual match.
 						GDScriptCodeGenerator::Address guard_result = _parse_expression(codegen, err, static_cast<GDScriptParser::ExpressionNode *>(branch->guard_body->statements[0]));
-						if (err) {
-							return err;
-						}
+						RETURN_IF_ERR(err);
 
 						gen->write_and_right_operand(guard_result);
 						gen->write_end_and(pattern_result);
@@ -1990,10 +1984,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					gen->pop_temporary();
 
 					// Parse the branch block.
-					err = _parse_block(codegen, branch->block, false); // Don't add locals again.
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(_parse_block(codegen, branch->block, false)); // Don't add locals again.
 
 					_clear_block_locals(codegen, branch_locals);
 
@@ -2010,9 +2001,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::IF: {
 				const GDScriptParser::IfNode *if_n = static_cast<const GDScriptParser::IfNode *>(s);
 				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, if_n->condition);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(err);
 
 				gen->write_if(condition);
 
@@ -2020,18 +2009,12 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					codegen.generator->pop_temporary();
 				}
 
-				err = _parse_block(codegen, if_n->true_block);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_parse_block(codegen, if_n->true_block));
 
 				if (if_n->false_block) {
 					gen->write_else();
 
-					err = _parse_block(codegen, if_n->false_block);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(_parse_block(codegen, if_n->false_block));
 				}
 
 				gen->write_endif();
@@ -2064,9 +2047,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 					for (int j = 0; j < args.size(); j++) {
 						args.write[j] = _parse_expression(codegen, err, range_call->arguments[j]);
-						if (err) {
-							return err;
-						}
+						RETURN_IF_ERR(err);
 					}
 
 					switch (args.size()) {
@@ -2091,9 +2072,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					}
 				} else {
 					GDScriptCodeGenerator::Address list = _parse_expression(codegen, err, for_n->list);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(err);
 
 					gen->write_for_list_assignment(list);
 
@@ -2109,10 +2088,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				//_clear_block_locals(codegen, loop_locals); // Inside loop, before block - for `continue`. // TODO
 
-				err = _parse_block(codegen, for_n->loop, false); // Don't add locals again.
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_parse_block(codegen, for_n->loop, false)); // Don't add locals again.
 
 				gen->write_endfor(range_call != nullptr);
 
@@ -2128,9 +2104,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				gen->start_while_condition();
 
 				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, while_n->condition);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(err);
 
 				gen->write_while(condition);
 
@@ -2143,10 +2117,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				//_clear_block_locals(codegen, loop_locals); // Inside loop, before block - for `continue`. // TODO
 
-				err = _parse_block(codegen, while_n->loop, false); // Don't add locals again.
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_parse_block(codegen, while_n->loop, false)); // Don't add locals again.
 
 				gen->write_endwhile();
 
@@ -2167,9 +2138,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				if (return_n->return_value != nullptr) {
 					return_value = _parse_expression(codegen, err, return_n->return_value);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(err);
 				}
 
 				if (return_n->void_return) {
@@ -2187,17 +2156,13 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				const GDScriptParser::AssertNode *as = static_cast<const GDScriptParser::AssertNode *>(s);
 
 				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, as->condition);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(err);
 
 				GDScriptCodeGenerator::Address message;
 
 				if (as->message) {
 					message = _parse_expression(codegen, err, as->message);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(err);
 				}
 				gen->write_assert(condition, message);
 
@@ -2223,9 +2188,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				bool initialized = false;
 				if (lv->initializer != nullptr) {
 					GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, err, lv->initializer);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(err);
 					if (lv->use_conversion_assign) {
 						gen->write_assign_with_conversion(local, src_address);
 					} else {
@@ -2264,9 +2227,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				// Expression.
 				if (s->is_expression()) {
 					GDScriptCodeGenerator::Address expr = _parse_expression(codegen, err, static_cast<const GDScriptParser::ExpressionNode *>(s), true);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(err);
 					if (expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						codegen.generator->pop_temporary();
 					}
@@ -2799,10 +2760,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 			}
 
 			if (main_script->has_class(base.ptr())) {
-				Error err = _prepare_compilation(base.ptr(), p_class->base_type.class_type, p_keep_state);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERR(_prepare_compilation(base.ptr(), p_class->base_type.class_type, p_keep_state));
 			} else if (!base->is_valid()) {
 				Error err = OK;
 				Ref<GDScript> base_root = GDScriptCache::get_shallow_script(base->path, err, p_script->path);
@@ -2983,10 +2941,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 		// Subclass might still be parsing, just skip it
 		if (!parsing_classes.has(subclass_ptr)) {
-			Error err = _prepare_compilation(subclass_ptr, inner_class, p_keep_state);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(_prepare_compilation(subclass_ptr, inner_class, p_keep_state));
 		}
 
 		p_script->constants.insert(name, subclass); //once parsed, goes to the list of constants
@@ -3003,23 +2958,15 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 			const GDScriptParser::FunctionNode *function = member.function;
 			Error err = OK;
 			_parse_function(err, p_script, p_class, function);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(err);
 		} else if (member.type == member.VARIABLE) {
 			const GDScriptParser::VariableNode *variable = member.variable;
 			if (variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
 				if (variable->setter != nullptr) {
-					Error err = _parse_setter_getter(p_script, p_class, variable, true);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(_parse_setter_getter(p_script, p_class, variable, true));
 				}
 				if (variable->getter != nullptr) {
-					Error err = _parse_setter_getter(p_script, p_class, variable, false);
-					if (err) {
-						return err;
-					}
+					RETURN_IF_ERR(_parse_setter_getter(p_script, p_class, variable, false));
 				}
 			}
 		}
@@ -3029,27 +2976,21 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 		// Create `@implicit_new()` special function in any case.
 		Error err = OK;
 		_parse_function(err, p_script, p_class, nullptr);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(err);
 	}
 
 	if (p_class->onready_used) {
 		// Create `@implicit_ready()` special function.
 		Error err = OK;
 		_parse_function(err, p_script, p_class, nullptr, true);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(err);
 	}
 
 	if (p_class->has_static_data) {
 		Error err = OK;
 		GDScriptFunction *func = _make_static_initializer(err, p_script, p_class);
 		p_script->static_initializer = func;
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(err);
 	}
 
 #ifdef DEBUG_ENABLED
@@ -3111,10 +3052,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 		StringName name = inner_class->identifier->name;
 		GDScript *subclass = p_script->subclasses[name].ptr();
 
-		Error err = _compile_class(subclass, inner_class, p_keep_state);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(_compile_class(subclass, inner_class, p_keep_state));
 
 		has_static_data = has_static_data || inner_class->has_static_data;
 	}
@@ -3322,16 +3260,8 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	make_scripts(p_script, root, p_keep_state);
 
 	main_script->_owner = nullptr;
-	Error err = _prepare_compilation(main_script, parser->get_tree(), p_keep_state);
-
-	if (err) {
-		return err;
-	}
-
-	err = _compile_class(main_script, root, p_keep_state);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(_prepare_compilation(main_script, parser->get_tree(), p_keep_state));
+	RETURN_IF_ERR(_compile_class(main_script, root, p_keep_state));
 
 	ScriptLambdaInfo new_lambda_info = _get_script_lambda_replacement_info(p_script);
 
@@ -3343,7 +3273,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 		GDScriptCache::add_static_script(p_script);
 	}
 
-	err = GDScriptCache::finish_compiling(main_script->path);
+	Error err = GDScriptCache::finish_compiling(main_script->path);
 	if (err) {
 		_set_error(R"(Failed to compile depended scripts.)", nullptr);
 	}

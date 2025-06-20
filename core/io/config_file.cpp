@@ -144,10 +144,7 @@ String ConfigFile::encode_to_text() const {
 Error ConfigFile::save(const String &p_path) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	return _internal_save(file);
 }
@@ -155,34 +152,22 @@ Error ConfigFile::save(const String &p_path) {
 Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
-
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
-	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_WRITE_AES256);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_WRITE_AES256));
 	return _internal_save(fae);
 }
 
 Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
-
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
-	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_WRITE_AES256);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_WRITE_AES256));
 
 	return _internal_save(fae);
 }
@@ -223,34 +208,22 @@ Error ConfigFile::load(const String &p_path) {
 Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
-	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_READ);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_READ));
 	return _internal_load(p_path, fae);
 }
 
 Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
-	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_READ);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_READ));
 
 	return _internal_load(p_path, fae);
 }

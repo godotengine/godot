@@ -754,15 +754,9 @@ Error OS_Android::move_to_trash(const String &p_path) {
 
 	// Check if it's a directory
 	if (da_ref->dir_exists(p_path)) {
-		Error err = da_ref->change_dir(p_path);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(da_ref->change_dir(p_path));
 		// This is directory, let's erase its contents
-		err = da_ref->erase_contents_recursive();
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(da_ref->erase_contents_recursive());
 		// Remove the top directory
 		return da_ref->remove(p_path);
 	} else if (da_ref->file_exists(p_path)) {
