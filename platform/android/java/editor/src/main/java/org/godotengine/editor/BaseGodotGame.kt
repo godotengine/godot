@@ -35,9 +35,11 @@ import android.util.Log
 import androidx.annotation.CallSuper
 import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotLib
-import org.godotengine.godot.utils.GameMenuUtils
+import org.godotengine.godot.editor.utils.GameMenuUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
+import org.godotengine.godot.xr.HYBRID_APP_FEATURE
+import org.godotengine.godot.xr.isHybridAppEnabled
 
 /**
  * Base class for the Godot play windows.
@@ -101,4 +103,14 @@ abstract class BaseGodotGame: GodotEditor() {
 	}
 
 	protected open fun getEditorGameEmbedMode() = GameMenuUtils.GameEmbedMode.AUTO
+
+	@CallSuper
+	override fun supportsFeature(featureTag: String): Boolean {
+		if (HYBRID_APP_FEATURE == featureTag) {
+			// Check if hybrid is enabled
+			return isHybridAppEnabled()
+		}
+
+		return super.supportsFeature(featureTag)
+	}
 }
