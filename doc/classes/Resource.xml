@@ -54,7 +54,7 @@
 			<description>
 				Duplicates this resource, returning a new resource with its [code]export[/code]ed or [constant PROPERTY_USAGE_STORAGE] properties copied from the original.
 				If [param deep] is [code]false[/code], a [b]shallow[/b] copy is returned: nested [Array], [Dictionary], and [Resource] properties are not duplicated and are shared with the original resource.
-				If [param deep] is [code]true[/code], a [b]deep[/b] copy is returned: all nested arrays, dictionaries, and packed arrays are also duplicated (recursively). Any [Resource] found inside will only be duplicated if it's local, like [constant RESOURCE_DEEP_DUPLICATE_INTERNAL] used with [method duplicate_deep].
+				If [param deep] is [code]true[/code], a [b]deep[/b] copy is returned: all nested arrays, dictionaries, and packed arrays are also duplicated (recursively). Any [Resource] found inside will only be duplicated if it's local, like [constant DEEP_DUPLICATE_INTERNAL] used with [method duplicate_deep].
 				The following exceptions apply:
 				- Subresource properties with the [constant PROPERTY_USAGE_ALWAYS_DUPLICATE] flag are always duplicated (recursively or not, depending on [param deep]).
 				- Subresource properties with the [constant PROPERTY_USAGE_NEVER_DUPLICATE] flag are never duplicated.
@@ -64,10 +64,10 @@
 		</method>
 		<method name="duplicate_deep" qualifiers="const">
 			<return type="Resource" />
-			<param index="0" name="deep_subresources_mode" type="int" enum="ResourceDeepDuplicateMode" default="1" />
+			<param index="0" name="deep_subresources_mode" type="int" enum="Resource.DeepDuplicateMode" default="1" />
 			<description>
 				Duplicates this resource, deeply, like [method duplicate][code](true)[/code], with extra control over how subresources are handled.
-				[param deep_subresources_mode] must be one of the values from [enum ResourceDeepDuplicateMode].
+				[param deep_subresources_mode] must be one of the values from [enum DeepDuplicateMode].
 			</description>
 		</method>
 		<method name="emit_changed">
@@ -186,13 +186,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="RESOURCE_DEEP_DUPLICATE_NONE" value="0" enum="ResourceDeepDuplicateMode">
+		<constant name="DEEP_DUPLICATE_NONE" value="0" enum="DeepDuplicateMode">
 			No subresorces at all are duplicated. This is useful even in a deep duplication to have all the arrays and dictionaries duplicated but still pointing to the original resources.
 		</constant>
-		<constant name="RESOURCE_DEEP_DUPLICATE_INTERNAL" value="1" enum="ResourceDeepDuplicateMode">
+		<constant name="DEEP_DUPLICATE_INTERNAL" value="1" enum="DeepDuplicateMode">
 			Only subresources without a path or with a scene-local path will be duplicated.
 		</constant>
-		<constant name="RESOURCE_DEEP_DUPLICATE_ALL" value="2" enum="ResourceDeepDuplicateMode">
+		<constant name="DEEP_DUPLICATE_ALL" value="2" enum="DeepDuplicateMode">
 			Every subresource found will be duplicated, even if it has a non-local path. In other words, even potentially big resources stored separately will be duplicated.
 		</constant>
 	</constants>

@@ -2262,6 +2262,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_static_method(Color, from_rgba8, sarray("r8", "g8", "b8", "a8"), varray(255));
 }
 
+VARIANT_ENUM_CAST(ResourceDeepDuplicateMode);
+
 static void _register_variant_builtin_methods_misc() {
 	/* RID */
 
