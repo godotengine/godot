@@ -35,11 +35,9 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
-#include "modules/gridmap/grid_map.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/line_2d.h"
@@ -53,7 +51,6 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/option_button.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/resources/atlas_texture.h"
@@ -362,16 +359,8 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		sub_viewport->set_transparent_background(false);
 		sub_viewport->set_disable_3d(false);
 
-		if (p_size.x < 2048 && p_size.y < 2048) { // Universal baseline for textures in Godot 4 is 4K
-			sub_viewport->set_scaling_3d_scale(2.0); // Supersampling x2
-		}
-
-		if (RS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
-			sub_viewport->set_msaa_3d(Viewport::MSAA::MSAA_8X);
-		}
-
 		Ref<Environment> environment;
-		Color default_clear_color = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
+		Color default_clear_color = GLOBAL_GET_CACHED(Color, "rendering/environment/defaults/default_clear_color");
 		environment.instantiate();
 		environment->set_background(Environment::BGMode::BG_CLEAR_COLOR);
 		environment->set_bg_color(default_clear_color);
@@ -456,16 +445,13 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		// If anyone want to rewrite this part to call RenderingServer directly, note that at the time of writing,
 		// there's a limitation where CanvasItem cannot be rendered outside of the tree.
 		// See CanvasItem::queue_redraw() and RenderingServer::draw()
-		int texture_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
-		int texture_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
+		int texture_filter = GLOBAL_GET_CACHED(int, "rendering/textures/canvas_textures/default_texture_filter");
+		int texture_repeat = GLOBAL_GET_CACHED(int, "rendering/textures/canvas_textures/default_texture_repeat");
 
 		SubViewport *sub_viewport = memnew(SubViewport);
 		sub_viewport->set_update_mode(SubViewport::UpdateMode::UPDATE_DISABLED);
 		sub_viewport->set_disable_3d(true);
 		sub_viewport->set_transparent_background(false);
-		if (RS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
-			sub_viewport->set_msaa_2d(Viewport::MSAA::MSAA_8X);
-		}
 		sub_viewport->set_default_canvas_item_texture_filter(Viewport::DefaultCanvasItemTextureFilter(texture_filter));
 		sub_viewport->set_default_canvas_item_texture_repeat(Viewport::DefaultCanvasItemTextureRepeat(texture_repeat));
 		Ref<World2D> world;
@@ -521,9 +507,9 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		}
 
 		// Retrieve thumbnail of 2D (No GUI)
-		Ref<ImageTexture> capture_2d = ImageTexture::create_from_image(sub_viewport->get_texture()->get_image());
-		capture_2d->get_image()->resize(p_size.x, p_size.y);
-		capture_2d->get_image()->convert(Image::Format::FORMAT_RGBA8); // ALPHA channel is required for image blending
+		Ref<Image> capture_2d_image = sub_viewport->get_texture()->get_image();
+		capture_2d_image->resize(p_size.x, p_size.y);
+		capture_2d_image->convert(Image::Format::FORMAT_RGBA8); // ALPHA channel is required for image blending
 
 		// Prepare for gui render
 		callable_mp((Node *)sub_viewport, &Node::remove_child).call_deferred(p_scene);
@@ -532,12 +518,9 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		_setup_scene_2d(p_scene);
 		_hide_node_2d_in_scene(p_scene);
 		SubViewport *sub_viewport_gui = memnew(SubViewport);
-		sub_viewport_gui->set_size(Size2i(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height")));
+		sub_viewport_gui->set_size(Size2i(GLOBAL_GET_CACHED(int, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(int, "display/window/size/viewport_height")));
 		sub_viewport_gui->set_update_mode(SubViewport::UpdateMode::UPDATE_DISABLED);
 		sub_viewport_gui->set_transparent_background(true);
-		if (RS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
-			sub_viewport_gui->set_msaa_2d(Viewport::MSAA::MSAA_8X);
-		}
 		sub_viewport_gui->set_default_canvas_item_texture_filter(Viewport::DefaultCanvasItemTextureFilter(texture_filter));
 		sub_viewport_gui->set_default_canvas_item_texture_repeat(Viewport::DefaultCanvasItemTextureRepeat(texture_repeat));
 		sub_viewport_gui->set_disable_3d(true);
@@ -560,15 +543,15 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		}
 
 		// Retrieve thumbnail of gui
-		Ref<ImageTexture> capture_gui = ImageTexture::create_from_image(sub_viewport_gui->get_texture()->get_image());
-		capture_gui->get_image()->resize(p_size.x, p_size.y);
+		Ref<Image> capture_gui_image = sub_viewport_gui->get_texture()->get_image();
+		capture_gui_image->resize(p_size.x, p_size.y);
 
 		// Mix 2D, GUI thumbnail images into one
 		Ref<ImageTexture> thumbnail;
 		thumbnail.instantiate();
 		Ref<Image> thumbnail_image = Image::create_empty(p_size.x, p_size.y, false, Image::Format::FORMAT_RGBA8); // blend_rect needs ALPHA channel to work
-		thumbnail_image->blend_rect(capture_2d->get_image(), capture_2d->get_image()->get_used_rect(), Point2i(0, 0));
-		thumbnail_image->blend_rect(capture_gui->get_image(), capture_gui->get_image()->get_used_rect(), Point2i(0, 0));
+		thumbnail_image->blend_rect(capture_2d_image, capture_2d_image->get_used_rect(), Point2i(0, 0));
+		thumbnail_image->blend_rect(capture_gui_image, capture_gui_image->get_used_rect(), Point2i(0, 0));
 		thumbnail->set_image(thumbnail_image);
 
 		// Clean up
@@ -1071,7 +1054,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	RS::get_singleton()->camera_set_transform(camera, Transform3D(Basis(), Vector3(0, 0, 3)));
 	RS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
 
-	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		camera_attributes = RS::get_singleton()->camera_attributes_create();
 		RS::get_singleton()->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
 		RS::get_singleton()->camera_set_camera_attributes(camera, camera_attributes);
@@ -1490,7 +1473,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	//RS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
 	RS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
-	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		camera_attributes = RS::get_singleton()->camera_attributes_create();
 		RS::get_singleton()->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
 		RS::get_singleton()->camera_set_camera_attributes(camera, camera_attributes);
@@ -1557,7 +1540,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	pos.x = 64 - size.x / 2;
 	pos.y = 80;
 
-	const Color c = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
+	const Color c = GLOBAL_GET_CACHED(Color, "rendering/environment/defaults/default_clear_color");
 	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
 	sampled_font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
 
