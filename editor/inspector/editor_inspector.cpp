@@ -3977,6 +3977,7 @@ void EditorInspector::update_tree() {
 				name_override = name_override.substr(0, dot);
 			}
 		}
+		name_override = name_override.uri_decode();
 
 		// Don't localize script variables.
 		EditorPropertyNameProcessor::Style name_style = property_name_style;
