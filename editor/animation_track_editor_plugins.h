@@ -308,10 +308,6 @@ protected:
 
 	virtual float get_key_y(const int p_index) const override;
 
-private:
-	float get_min_key_y() const;
-	float get_max_key_y() const;
-
 public:
 	AnimationTrackEditVolumeDB();
 };

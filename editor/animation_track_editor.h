@@ -313,8 +313,8 @@ protected:
 	bool moving_selection = false;
 
 public:
-	bool is_moving_selection() const;
-	float get_moving_selection_offset() const;
+	virtual bool is_moving_selection() const;
+	virtual float get_moving_selection_offset() const;
 
 public:
 	virtual void _move_selection_begin() {}
@@ -385,10 +385,14 @@ public:
 	Ref<Animation> get_animation() const;
 
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
+	bool _is_ui_pos_in_current_section(const Point2 &p_pos);
 
 public:
 	virtual bool has_valid_track() const override;
 	virtual Size2 get_minimum_size() const override;
+
+	double get_move_time(const int p_index) const;
+	double get_global_move_time(const int p_index) const;
 
 public:
 	virtual float get_key_width(const int p_index) const override;
@@ -397,6 +401,7 @@ public:
 	virtual bool is_linked(const int p_index, const int p_index_next) const override;
 
 	virtual bool is_compressed() const = 0;
+	virtual Vector<int> get_selected_section() = 0;
 
 public:
 	void __zoom_changed();
@@ -426,7 +431,6 @@ class AnimationMarkerEdit : public AnimationKeyEdit {
 	void _menu_selected(int p_index);
 
 	void _play_position_draw();
-	bool _is_ui_pos_in_current_section(const Point2 &p_pos);
 
 	virtual void _clear_selection_for_anim(const Ref<Animation> &p_anim) override;
 	void _select_key(const StringName &p_name, bool is_single = false);
@@ -476,7 +480,6 @@ public:
 	virtual Ref<Texture2D> _get_key_type_icon_selected() const override;
 
 	Color get_key_color(const int p_index) const;
-	double get_global_marker_time(const int p_index) const;
 
 	virtual bool has_key(const int p_index) const override;
 
@@ -518,24 +521,24 @@ public:
 	virtual void _move_selection_commit() override;
 	virtual void _move_selection_cancel() override;
 
-	struct SelectedMarkerKey {
+	struct SelectedKey {
 		int key = 0;
-		bool operator<(const SelectedMarkerKey &p_key) const { return key < p_key.key; }
+		bool operator<(const SelectedKey &p_key) const { return key < p_key.key; }
 	};
 
-	struct MarkerKeyInfo {
+	struct KeyInfo {
 		float pos = 0;
 		Color color;
 	};
 
-	RBMap<SelectedMarkerKey, MarkerKeyInfo> selection;
+	RBMap<SelectedKey, KeyInfo> selection;
 
 	void clear_selection();
 	int get_selection_count() const;
 	void insert_selection(const int p_index);
 	bool is_selection_active() const;
 
-	Vector<int> get_selected_section();
+	virtual Vector<int> get_selected_section() override;
 	int get_last_selection();
 	int get_first_selection();
 
@@ -621,6 +624,21 @@ public:
 	virtual Variant get_key_value(const int p_index) const override;
 	virtual bool is_compressed() const override;
 
+	virtual bool is_moving_selection() const override;
+	virtual float get_moving_selection_offset() const override;
+
+	struct SelectedKey {
+		int track = 0;
+		int key = 0;
+		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; }
+	};
+
+	struct KeyInfo {
+		float pos = 0;
+	};
+
+	virtual Vector<int> get_selected_section() override;
+
 protected:
 	NodePath node_path;
 
@@ -633,9 +651,6 @@ public:
 public:
 	virtual Ref<Texture2D> _get_key_type_icon() const override;
 	virtual Ref<Texture2D> _get_key_type_icon_selected() const override;
-
-	float get_global_time(float p_time) const;
-	void draw_markers(float p_clip_left, float p_clip_right);
 
 	virtual bool is_key_selected(const int p_index) const override;
 	virtual bool has_key(const int p_index) const override;
@@ -711,10 +726,6 @@ protected:
 	void _notification(int p_what);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-
-public:
-	float get_global_time(float p_time) const;
-	void draw_markers(float p_clip_left, float p_clip_right);
 
 public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
@@ -872,17 +883,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
-	struct SelectedKey {
-		int track = 0;
-		int key = 0;
-		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; }
-	};
-
-	struct KeyInfo {
-		float pos = 0;
-	};
-
-	RBMap<SelectedKey, KeyInfo> selection;
+	RBMap<AnimationTrackEdit::SelectedKey, AnimationTrackEdit::KeyInfo> selection;
 
 	bool moving_selection = false;
 	float moving_selection_offset = 0.0f;
@@ -1012,7 +1013,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Vector<TrackClipboard> track_clipboard;
 	KeyClipboard key_clipboard;
 
-	void _set_key_clipboard(int p_top_track, float p_top_time, RBMap<SelectedKey, KeyInfo> &p_keymap);
+	void _set_key_clipboard(int p_top_track, float p_top_time, RBMap<AnimationTrackEdit::SelectedKey, AnimationTrackEdit::KeyInfo> &p_keymap);
 	void _insert_animation_key(NodePath p_path, const Variant &p_value);
 
 	void _pick_track_filter_text_changed(const String &p_newtext);
@@ -1030,10 +1031,17 @@ public:
 	void _draw_vertical_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, float p_length, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
 	void _draw_texture_region_clipped(CanvasItem *p_canvas_item, const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
 	String _make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width);
+	void _draw_markers(CanvasItem *p_canvas_item, float p_clip_left, float p_clip_right);
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+public:
+	PropertySelector *get_prop_selector() { return prop_selector; }
+	PropertySelector *get_method_selector() { return method_selector; }
+
+	float get_global_time(const float p_time, const float p_offset = 0) const;
 
 public:
 	// Public for use with callable_mp.
@@ -1104,15 +1112,15 @@ public:
 
 	bool is_key_selected(const int p_track, const int p_key) const;
 	bool is_selection_active() const;
+	bool is_track_moving_selection() const;
+	float get_track_moving_selection_offset() const;
 	bool is_marker_selection_active() const;
 	bool is_key_clipboard_active() const;
-	bool is_moving_selection() const;
 	bool is_snap_timeline_enabled() const;
 	bool is_snap_keys_enabled() const;
 	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
 	void _on_filter_updated(const String &p_filter);
-	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
 	bool is_grouping_tracks();
@@ -1132,6 +1140,7 @@ public:
 	double get_marker_time(const int p_index) const;
 	double get_marker_move_time(const int p_index) const;
 	int get_marker_count() const;
+	int get_track_count() const;
 
 	int get_track_key_count(const int p_track) const;
 

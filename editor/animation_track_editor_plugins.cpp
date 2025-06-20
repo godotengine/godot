@@ -126,7 +126,7 @@ String AnimationTrackEditTypeMethod::_get_tooltip(const int p_index) const {
 }
 
 StringName AnimationTrackEditTypeMethod::get_edit_name(const int p_index) const {
-	Dictionary d = animation->track_get_key_value(get_track(), p_index);
+	Dictionary d = get_key_value(p_index);
 	String method_name = _make_method_text(d);
 	return method_name;
 }

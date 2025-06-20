@@ -2270,10 +2270,10 @@ void AnimationBezierTrackEdit::copy_selected_keys(bool p_cut) {
 		}
 	}
 
-	RBMap<AnimationTrackEditor::SelectedKey, AnimationTrackEditor::KeyInfo> keys;
+	RBMap<AnimationTrackEdit::SelectedKey, AnimationTrackEdit::KeyInfo> keys;
 	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
-		AnimationTrackEditor::SelectedKey sk;
-		AnimationTrackEditor::KeyInfo ki;
+		AnimationTrackEdit::SelectedKey sk;
+		AnimationTrackEdit::KeyInfo ki;
 		sk.track = E->get().first;
 		sk.key = E->get().second;
 		ki.pos = animation->track_get_key_time(E->get().first, E->get().second);
@@ -2287,7 +2287,7 @@ void AnimationBezierTrackEdit::copy_selected_keys(bool p_cut) {
 		undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
 		undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 		int i = 0;
-		for (RBMap<AnimationTrackEditor::SelectedKey, AnimationTrackEditor::KeyInfo>::Element *E = keys.back(); E; E = E->prev()) {
+		for (RBMap<AnimationTrackEdit::SelectedKey, AnimationTrackEdit::KeyInfo>::Element *E = keys.back(); E; E = E->prev()) {
 			int track_idx = E->key().track;
 			int key_idx = E->key().key;
 			float time = E->value().pos;
@@ -2297,7 +2297,7 @@ void AnimationBezierTrackEdit::copy_selected_keys(bool p_cut) {
 			i++;
 		}
 		i = 0;
-		for (RBMap<AnimationTrackEditor::SelectedKey, AnimationTrackEditor::KeyInfo>::Element *E = keys.back(); E; E = E->prev()) {
+		for (RBMap<AnimationTrackEdit::SelectedKey, AnimationTrackEdit::KeyInfo>::Element *E = keys.back(); E; E = E->prev()) {
 			undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, E->value().pos, i == 0);
 			i++;
 		}
