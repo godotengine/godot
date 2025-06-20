@@ -4329,12 +4329,13 @@ long ContentEncoding::ParseCompressionEntry(long long start, long long size,
         delete[] buf;
         return status;
       }
+
       // There should be only one settings element per content compression.
       if (compression->settings != NULL) {
         delete[] buf;
         return E_FILE_FORMAT_INVALID;
       }
-			
+
       compression->settings = buf;
       compression->settings_len = buflen;
     }
