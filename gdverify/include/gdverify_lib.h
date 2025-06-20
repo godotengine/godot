@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main.cpp                                                              */
+/*  gdverify_lib.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,49 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gdverify_lib.h"
+#pragma once
 
-#include <fstream>
-#include <sstream>
-#include <string>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int main(int argc, char **argv) {
-	if (argc < 2) {
-		fprintf(stderr, "Usage: %s <file.gd> [more files...]\n", argv[0]);
-		return 1;
-	}
+bool gdverify_library_init();
+void gdverify_library_finish();
 
-	if (!gdverify_library_init()) {
-		fprintf(stderr, "Failed to initialize gdverify library\n");
-		return 1;
-	}
+bool gdverify_check_script(const char *code, char **error_msg, int *error_line);
 
-	bool all_ok = true;
-	for (int i = 1; i < argc; ++i) {
-		std::ifstream f(argv[i]);
-		if (!f) {
-			fprintf(stderr, "Cannot open %s\n", argv[i]);
-			all_ok = false;
-			continue;
-		}
-		std::stringstream ss;
-		ss << f.rdbuf();
-		std::string src = ss.str();
-
-		char *err_msg = nullptr;
-		int err_line = 0;
-		bool ok = gdverify_check_script(src.c_str(), &err_msg, &err_line);
-		if (!ok) {
-			fprintf(stderr, "%s:%d: %s\n", argv[i], err_line, err_msg ? err_msg : "Unknown error");
-			if (err_msg) {
-				free(err_msg);
-			}
-			all_ok = false;
-		} else {
-			printf("%s: Syntax OK\n", argv[i]);
-		}
-	}
-
-	gdverify_library_finish();
-	return all_ok ? 0 : 1;
+#ifdef __cplusplus
 }
+#endif

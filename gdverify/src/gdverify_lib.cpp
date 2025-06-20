@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main.cpp                                                              */
+/*  gdverify_lib.cpp                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -29,48 +29,34 @@
 /**************************************************************************/
 
 #include "gdverify_lib.h"
+#include "godot_defs.h"
+#include "mini_godot_core.h"
 
-#include <fstream>
-#include <sstream>
-#include <string>
+#include "../modules/gdscript/gdscript_parser.h"
+#include "../modules/gdscript/gdscript_tokenizer_buffer.h"
 
-int main(int argc, char **argv) {
-	if (argc < 2) {
-		fprintf(stderr, "Usage: %s <file.gd> [more files...]\n", argv[0]);
-		return 1;
-	}
+bool gdverify_library_init() {
+	// Placeholder for initialization if needed
+	return true;
+}
 
-	if (!gdverify_library_init()) {
-		fprintf(stderr, "Failed to initialize gdverify library\n");
-		return 1;
-	}
+void gdverify_library_finish() {
+	// Placeholder for shutdown tasks if needed
+}
 
-	bool all_ok = true;
-	for (int i = 1; i < argc; ++i) {
-		std::ifstream f(argv[i]);
-		if (!f) {
-			fprintf(stderr, "Cannot open %s\n", argv[i]);
-			all_ok = false;
-			continue;
+bool gdverify_check_script(const char *code, char **error_msg, int *error_line) {
+	GDScriptParser parser;
+	String src = code;
+	Error err = parser.parse(src, "<memory>", false);
+	if (err != OK) {
+		if (error_line) {
+			*error_line = parser.get_error_line();
 		}
-		std::stringstream ss;
-		ss << f.rdbuf();
-		std::string src = ss.str();
-
-		char *err_msg = nullptr;
-		int err_line = 0;
-		bool ok = gdverify_check_script(src.c_str(), &err_msg, &err_line);
-		if (!ok) {
-			fprintf(stderr, "%s:%d: %s\n", argv[i], err_line, err_msg ? err_msg : "Unknown error");
-			if (err_msg) {
-				free(err_msg);
-			}
-			all_ok = false;
-		} else {
-			printf("%s: Syntax OK\n", argv[i]);
+		if (error_msg) {
+			String msg = parser.get_error();
+			*error_msg = strdup(msg.utf8().get_data());
 		}
+		return false;
 	}
-
-	gdverify_library_finish();
-	return all_ok ? 0 : 1;
+	return true;
 }
