@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "servers/display_server.h"
 #include "vulkan_hooks.h"
 
 #if RENDERING_SHADER_CONTAINER_VULKAN_SMOLV

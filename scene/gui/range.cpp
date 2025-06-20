@@ -30,6 +30,8 @@
 
 #include "range.h"
 
+#include "servers/display_server.h"
+
 PackedStringArray Range::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 

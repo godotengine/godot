@@ -34,6 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 #include "thirdparty/zlib/zlib.h"
 

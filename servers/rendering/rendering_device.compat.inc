@@ -140,7 +140,7 @@ Error RenderingDevice::_texture_resolve_multisample_bind_compat_84976(RID p_from
 }
 
 RenderingDevice::FramebufferFormatID RenderingDevice::_screen_get_framebuffer_format_bind_compat_87340() const {
-	return screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID);
+	return screen_get_framebuffer_format(DSTypes::MAIN_WINDOW_ID);
 }
 
 RID RenderingDevice::_uniform_buffer_create_bind_compat_101561(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {

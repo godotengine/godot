@@ -238,7 +238,7 @@ void SceneTree::_accessibility_notify_change(const Node *p_node, bool p_remove) 
 	}
 }
 
-void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_id) {
+void SceneTree::_process_accessibility_changes(DSTypes::WindowID p_window_id) {
 	// Process NOTIFICATION_ACCESSIBILITY_UPDATE.
 	Vector<ObjectID> processed;
 	for (const ObjectID &id : accessibility_change_queue) {

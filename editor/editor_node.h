@@ -317,7 +317,7 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
-	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+	DSTypes::WindowMode prev_mode = DSTypes::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	Control *vp_base = nullptr;

@@ -83,7 +83,7 @@ protected:
 	RasterizerSceneGLES3 *scene = nullptr;
 	static RasterizerGLES3 *singleton;
 
-	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer, bool p_first = true);
+	void _blit_render_target_to_screen(RID p_render_target, DSTypes::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer, bool p_first = true);
 
 public:
 	RendererUtilities *get_utilities() { return utilities; }
@@ -102,7 +102,7 @@ public:
 	void initialize();
 	void begin_frame(double frame_step);
 
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
+	void blit_render_targets_to_screen(DSTypes::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
 	bool is_opengl() { return true; }
 	void gl_end_frame(bool p_swap_buffers);

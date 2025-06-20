@@ -36,6 +36,7 @@
 #include "core/os/os.h"
 #include "core/variant/callable.h"
 
+#include "display/dstypes.h"
 #include "display/native_menu.h"
 
 class Texture2D;
@@ -56,26 +57,42 @@ class DisplayServer : public Object {
 	LocalVector<ObjectID> additional_outputs;
 
 public:
+	using WindowID = DSTypes::WindowID;
+	static constexpr WindowID MAIN_WINDOW_ID = DSTypes::MAIN_WINDOW_ID;
+	static constexpr WindowID INVALID_WINDOW_ID = DSTypes::INVALID_WINDOW_ID;
+	static constexpr WindowID INVALID_INDICATOR_ID = DSTypes::INVALID_INDICATOR_ID;
+
+	using IndicatorID = DSTypes::IndicatorID;
+
+	using VSyncMode = DSTypes::VSyncMode;
+	static constexpr VSyncMode VSYNC_DISABLED = VSyncMode::VSYNC_DISABLED;
+	static constexpr VSyncMode VSYNC_ENABLED = VSyncMode::VSYNC_ENABLED;
+	static constexpr VSyncMode VSYNC_ADAPTIVE = VSyncMode::VSYNC_ADAPTIVE;
+	static constexpr VSyncMode VSYNC_MAILBOX = VSyncMode::VSYNC_MAILBOX;
+
+	using AccessibilityLiveMode = DSTypes::AccessibilityLiveMode;
+	static constexpr AccessibilityLiveMode LIVE_OFF = AccessibilityLiveMode::LIVE_OFF;
+	static constexpr AccessibilityLiveMode LIVE_POLITE = AccessibilityLiveMode::LIVE_POLITE;
+	static constexpr AccessibilityLiveMode LIVE_ASSERTIVE = AccessibilityLiveMode::LIVE_ASSERTIVE;
+
+	using MouseMode = DSTypes::MouseMode;
+	static constexpr MouseMode MOUSE_MODE_VISIBLE = MouseMode::MOUSE_MODE_VISIBLE;
+	static constexpr MouseMode MOUSE_MODE_HIDDEN = MouseMode::MOUSE_MODE_HIDDEN;
+	static constexpr MouseMode MOUSE_MODE_CAPTURED = MouseMode::MOUSE_MODE_CAPTURED;
+	static constexpr MouseMode MOUSE_MODE_CONFINED = MouseMode::MOUSE_MODE_CONFINED;
+	static constexpr MouseMode MOUSE_MODE_CONFINED_HIDDEN = MouseMode::MOUSE_MODE_CONFINED_HIDDEN;
+	static constexpr MouseMode MOUSE_MODE_MAX = MouseMode::MOUSE_MODE_MAX;
+
+	using WindowMode = DSTypes::WindowMode;
+	static constexpr WindowMode WINDOW_MODE_WINDOWED = WindowMode::WINDOW_MODE_WINDOWED;
+	static constexpr WindowMode WINDOW_MODE_MINIMIZED = WindowMode::WINDOW_MODE_MINIMIZED;
+	static constexpr WindowMode WINDOW_MODE_MAXIMIZED = WindowMode::WINDOW_MODE_MAXIMIZED;
+	static constexpr WindowMode WINDOW_MODE_FULLSCREEN = WindowMode::WINDOW_MODE_FULLSCREEN;
+	static constexpr WindowMode WINDOW_MODE_EXCLUSIVE_FULLSCREEN = WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
 		return singleton;
 	}
-
-	enum WindowMode {
-		WINDOW_MODE_WINDOWED,
-		WINDOW_MODE_MINIMIZED,
-		WINDOW_MODE_MAXIMIZED,
-		WINDOW_MODE_FULLSCREEN,
-		WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
-	};
-
-	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
-	// project setting hint.
-	enum VSyncMode {
-		VSYNC_DISABLED,
-		VSYNC_ENABLED,
-		VSYNC_ADAPTIVE,
-		VSYNC_MAILBOX
-	};
 
 	enum HandleType {
 		DISPLAY_HANDLE,
@@ -286,15 +303,6 @@ protected:
 public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
 
-	enum MouseMode {
-		MOUSE_MODE_VISIBLE = Input::MOUSE_MODE_VISIBLE,
-		MOUSE_MODE_HIDDEN = Input::MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED = Input::MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED = Input::MOUSE_MODE_CONFINED,
-		MOUSE_MODE_CONFINED_HIDDEN = Input::MOUSE_MODE_CONFINED_HIDDEN,
-		MOUSE_MODE_MAX = Input::MOUSE_MODE_MAX,
-	};
-
 	virtual void mouse_set_mode(MouseMode p_mode);
 	virtual MouseMode mouse_get_mode() const;
 	virtual void mouse_set_mode_override(MouseMode p_mode);
@@ -388,16 +396,8 @@ public:
 
 	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
 	virtual bool screen_is_kept_on() const;
-	enum {
-		MAIN_WINDOW_ID = 0,
-		INVALID_WINDOW_ID = -1,
-		INVALID_INDICATOR_ID = -1
-	};
 
 public:
-	typedef int WindowID;
-	typedef int IndicatorID;
-
 	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 
 	enum WindowFlags {
@@ -645,12 +645,6 @@ public:
 		ACTION_SET_VALUE,
 		ACTION_SHOW_CONTEXT_MENU,
 		ACTION_CUSTOM,
-	};
-
-	enum AccessibilityLiveMode {
-		LIVE_OFF,
-		LIVE_POLITE,
-		LIVE_ASSERTIVE,
 	};
 
 	static AccessibilityMode accessibility_get_mode() { return accessibility_mode; }

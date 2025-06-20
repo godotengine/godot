@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  color_rect.cpp                                                        */
+/*  dstypes.h                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "color_rect.h"
+#pragma once
 
-#include "servers/display_server.h"
+#include "core/input/input.h"
 
-void ColorRect::set_color(const Color &p_color) {
-	if (color == p_color) {
-		return;
-	}
-	color = p_color;
-	queue_accessibility_update();
-	queue_redraw();
-}
+/// Constants for DisplayServer.
+/// This file is the 'least common denominator' that can be included without
+/// needing to include complex header hierarchies of the DisplayServer.
+namespace DSTypes {
 
-Color ColorRect::get_color() const {
-	return color;
-}
+using WindowID = int;
 
-void ColorRect::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
+enum {
+	MAIN_WINDOW_ID = 0,
+	INVALID_WINDOW_ID = -1,
+	INVALID_INDICATOR_ID = -1
+};
 
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, color);
-		} break;
+using IndicatorID = int;
 
-		case NOTIFICATION_DRAW: {
-			draw_rect(Rect2(Point2(), get_size()), color);
-		} break;
-	}
-}
+// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
+// project setting hint.
+enum VSyncMode {
+	VSYNC_DISABLED,
+	VSYNC_ENABLED,
+	VSYNC_ADAPTIVE,
+	VSYNC_MAILBOX
+};
 
-void ColorRect::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_color", "color"), &ColorRect::set_color);
-	ClassDB::bind_method(D_METHOD("get_color"), &ColorRect::get_color);
+enum AccessibilityLiveMode {
+	LIVE_OFF,
+	LIVE_POLITE,
+	LIVE_ASSERTIVE,
+};
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-}
+enum MouseMode {
+	MOUSE_MODE_VISIBLE = Input::MOUSE_MODE_VISIBLE,
+	MOUSE_MODE_HIDDEN = Input::MOUSE_MODE_HIDDEN,
+	MOUSE_MODE_CAPTURED = Input::MOUSE_MODE_CAPTURED,
+	MOUSE_MODE_CONFINED = Input::MOUSE_MODE_CONFINED,
+	MOUSE_MODE_CONFINED_HIDDEN = Input::MOUSE_MODE_CONFINED_HIDDEN,
+	MOUSE_MODE_MAX = Input::MOUSE_MODE_MAX,
+};
+
+enum WindowMode {
+	WINDOW_MODE_WINDOWED,
+	WINDOW_MODE_MINIMIZED,
+	WINDOW_MODE_MAXIMIZED,
+	WINDOW_MODE_FULLSCREEN,
+	WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
+};
+
+} //namespace DSTypes

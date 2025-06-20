@@ -32,6 +32,8 @@
 
 #ifdef VULKAN_ENABLED
 
+#include "core/templates/hash_set.h"
+#include "core/templates/local_vector.h"
 #include "servers/rendering/rendering_context_driver.h"
 
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
@@ -136,8 +138,8 @@ public:
 	virtual void driver_free(RenderingDeviceDriver *p_driver) override;
 	virtual SurfaceID surface_create(const void *p_platform_data) override;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) override;
-	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) override;
-	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
+	virtual void surface_set_vsync_mode(SurfaceID p_surface, DSTypes::VSyncMode p_vsync_mode) override;
+	virtual DSTypes::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_width(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_height(SurfaceID p_surface) const override;
 	virtual void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) override;
@@ -150,7 +152,7 @@ public:
 		VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
 		uint32_t width = 0;
 		uint32_t height = 0;
-		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
+		DSTypes::VSyncMode vsync_mode = DSTypes::VSYNC_ENABLED;
 		bool needs_resize = false;
 	};
 
