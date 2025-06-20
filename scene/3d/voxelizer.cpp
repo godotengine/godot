@@ -312,11 +312,17 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 
 	for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
 		Color c;
-		c.r = (r[i * 4 + 0] / 255.0) * p_color_mul.r + p_color_add.r;
-		c.g = (r[i * 4 + 1] / 255.0) * p_color_mul.g + p_color_add.g;
-		c.b = (r[i * 4 + 2] / 255.0) * p_color_mul.b + p_color_add.b;
+		Color src = Color(
+				r[i * 4 + 0] / 255.0,
+				r[i * 4 + 1] / 255.0,
+				r[i * 4 + 2] / 255.0,
+				r[i * 4 + 3] / 255.0);
+		src = src.srgb_to_linear();
 
-		c.a = r[i * 4 + 3] / 255.0;
+		c.r = src.r * p_color_mul.r + p_color_add.r;
+		c.g = src.g * p_color_mul.g + p_color_add.g;
+		c.b = src.b * p_color_mul.b + p_color_add.b;
+		c.a = src.a;
 
 		ret.write[i] = c;
 	}
@@ -342,14 +348,14 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
 			img_albedo = albedo_tex->get_image();
-			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), Color(0, 0, 0)); // albedo texture, color is multiplicative
+			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo().srgb_to_linear(), Color(0, 0, 0)); // albedo texture, color is multiplicative
 		} else {
-			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
+			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo().srgb_to_linear()); // no albedo texture, color is additive
 		}
 		if (mat->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			Ref<Texture2D> emission_tex = mat->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 
-			Color emission_col = mat->get_emission();
+			Color emission_col = mat->get_emission().srgb_to_linear();
 			float emission_energy = mat->get_emission_energy_multiplier() * exposure_normalization;
 			if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 				emission_energy *= mat->get_emission_intensity();
