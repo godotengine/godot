@@ -455,7 +455,7 @@ void EditorResourcePreview::_update_progress_bar() {
 	// Create progress bar if not present
 	if (!singleton->queue.is_empty() && thumbnail_progress == nullptr && singleton->progress_total_steps == -1) {
 		singleton->progress_total_steps = singleton->queue.size();
-		thumbnail_progress = memnew(EditorProgress("generate_thumbnails", "Generate Thumbnails", singleton->progress_total_steps));
+		thumbnail_progress = memnew(EditorProgress("generate_thumbnails", "Generate Thumbnails", singleton->progress_total_steps, true));
 	}
 
 	// Update progress bar
@@ -470,7 +470,10 @@ void EditorResourcePreview::_update_progress_bar() {
 		String msg = vformat("%s (%d/%d)", queue_file, queue_steps, queue_total);
 
 		// Don't force update or will stuck in infinite loop at _idle_callback(), since ProgressDialog::task_step() iterates the main loop
-		thumbnail_progress->step(msg, queue_steps, false);
+		if (thumbnail_progress->step(msg, queue_steps, false)) {
+			// The `step()` function returns `true` if the "Cancel" button was pressed.
+			singleton->queue.clear();
+		}
 	}
 
 	// Destroy progress bar when queue empty
@@ -478,7 +481,6 @@ void EditorResourcePreview::_update_progress_bar() {
 		memdelete(thumbnail_progress);
 		thumbnail_progress = nullptr;
 	}
-	return;
 }
 
 void EditorResourcePreview::_update_thumbnail_sizes() {
