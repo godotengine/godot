@@ -51,9 +51,9 @@ Error ResourceSaverPNG::save(const Ref<Resource> &p_resource, const String &p_pa
 Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img) {
 	Vector<uint8_t> buffer;
 	Error err = PNGDriverCommon::image_to_png(p_img, buffer);
-	ERR_FAIL_COND_V_MSG(err, err, "Can't convert image to PNG.");
+	RETURN_IF_ERR_MSG(err, "Can't convert image to PNG.");
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save PNG at path: '%s'.", p_path));
+	RETURN_IF_ERR_MSG(err, vformat("Can't save PNG at path: '%s'.", p_path));
 
 	const uint8_t *reader = buffer.ptr();
 

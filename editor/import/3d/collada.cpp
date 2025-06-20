@@ -2323,8 +2323,7 @@ int Collada::get_uv_channel(const String &p_name) {
 Error Collada::load(const String &p_path, int p_flags) {
 	Ref<XMLParser> parserr = memnew(XMLParser);
 	XMLParser &parser = *parserr.ptr();
-	Error err = parser.open(p_path);
-	ERR_FAIL_COND_V_MSG(err, err, "Cannot open Collada file '" + p_path + "'.");
+	RETURN_IF_ERR_MSG(parser.open(p_path), "Cannot open Collada file '" + p_path + "'.");
 
 	state.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	state.import_flags = p_flags;

@@ -47,7 +47,7 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 
 	Error err;
 	Ref<Resource> loaded_res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
-	ERR_FAIL_COND_V_MSG(err, err, "Failed to load " + p_path);
+	RETURN_IF_ERR_MSG(err, "Failed to load " + p_path);
 
 	translations = r_translations;
 
@@ -55,12 +55,14 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	String source_code = gdscript->get_source_code();
 
 	GDScriptParser parser;
-	err = parser.parse(source_code, p_path, false);
-	ERR_FAIL_COND_V_MSG(err, err, "Failed to parse GDScript with GDScriptParser.");
+	RETURN_IF_ERR_MSG(
+		parser.parse(source_code, p_path, false),
+		"Failed to parse GDScript with GDScriptParser.");
 
 	GDScriptAnalyzer analyzer(&parser);
-	err = analyzer.analyze();
-	ERR_FAIL_COND_V_MSG(err, err, "Failed to analyze GDScript with GDScriptAnalyzer.");
+	RETURN_IF_ERR_MSG(
+		analyzer.analyze(),
+		"Failed to analyze GDScript with GDScriptAnalyzer.");
 
 	comment_data = &parser.comment_data;
 

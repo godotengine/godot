@@ -3328,14 +3328,16 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		}
 
 		print_verbose("Saving animation to: " + p_save_path + ".res");
-		err = ResourceSaver::save(library, p_save_path + ".res", flags); //do not take over, let the changed files reload themselves
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save animation to file '" + p_save_path + ".res'.");
+		RETURN_IF_ERR_MSG(
+				ResourceSaver::save(library, p_save_path + ".res", flags), //do not take over, let the changed files reload themselves
+				"Cannot save animation to file '" + p_save_path + ".res'.");
 	} else if (_scene_import_type == "PackedScene") {
 		Ref<PackedScene> packer = memnew(PackedScene);
 		packer->pack(scene);
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
-		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
+		RETURN_IF_ERR_MSG(
+				ResourceSaver::save(packer, p_save_path + ".scn", flags);, //do not take over, let the changed files reload themselves
+				"Cannot save scene to file '" + p_save_path + ".scn'.");
 	} else {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown scene import type: " + _scene_import_type);
 	}

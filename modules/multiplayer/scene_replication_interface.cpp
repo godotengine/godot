@@ -251,13 +251,11 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 			const List<NodePath> props = sync->get_replication_config_ptr()->get_spawn_properties();
 			Vector<Variant> vars;
 			vars.resize(props.size());
-			Error err = MultiplayerAPI::decode_and_decompress_variants(vars, pending_buffer, pending_buffer_size, consumed);
-			ERR_FAIL_COND_V(err, err);
+			RETURN_IF_ERR(MultiplayerAPI::decode_and_decompress_variants(vars, pending_buffer, pending_buffer_size, consumed));
 			if (consumed > 0) {
 				pending_buffer += consumed;
 				pending_buffer_size -= consumed;
-				err = MultiplayerSynchronizer::set_state(props, node, vars);
-				ERR_FAIL_COND_V(err, err);
+				RETURN_IF_ERR(MultiplayerSynchronizer::set_state(props, node, vars));
 			}
 		}
 	}
@@ -482,8 +480,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	Variant spawn_arg = p_spawner->get_spawn_argument(oid);
 	int spawn_arg_size = 0;
 	if (is_custom) {
-		Error err = MultiplayerAPI::encode_and_compress_variant(spawn_arg, nullptr, spawn_arg_size, false);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(MultiplayerAPI::encode_and_compress_variant(spawn_arg, nullptr, spawn_arg_size, false));
 	}
 
 	// Prepare spawn state.
@@ -536,14 +533,12 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	// Write args
 	if (is_custom) {
 		ofs += encode_uint32(spawn_arg_size, &ptr[ofs]);
-		Error err = MultiplayerAPI::encode_and_compress_variant(spawn_arg, &ptr[ofs], spawn_arg_size, false);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(MultiplayerAPI::encode_and_compress_variant(spawn_arg, &ptr[ofs], spawn_arg_size, false));
 		ofs += spawn_arg_size;
 	}
 	// Write state.
 	if (state_size) {
-		Error err = MultiplayerAPI::encode_and_compress_variants(state_varp.ptrw(), state_varp.size(), &ptr[ofs], state_size);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(MultiplayerAPI::encode_and_compress_variants(state_varp.ptrw(), state_varp.size(), &ptr[ofs], state_size));
 		ofs += state_size;
 	}
 	r_len = ofs;
@@ -885,10 +880,8 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		Vector<Variant> vars;
 		vars.resize(props.size());
 		int consumed;
-		Error err = MultiplayerAPI::decode_and_decompress_variants(vars, &p_buffer[ofs], size, consumed);
-		ERR_FAIL_COND_V(err, err);
-		err = MultiplayerSynchronizer::set_state(props, node, vars);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(MultiplayerAPI::decode_and_decompress_variants(vars, &p_buffer[ofs], size, consumed));
+		RETURN_IF_ERR(MultiplayerSynchronizer::set_state(props, node, vars));
 		ofs += size;
 		sync->emit_signal(SNAME("synchronized"));
 #ifdef DEBUG_ENABLED

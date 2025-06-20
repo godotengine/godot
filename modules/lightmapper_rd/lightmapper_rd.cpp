@@ -862,7 +862,7 @@ Error LightmapperRD::_store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_in
 
 	Error err = OK;
 	Ref<FileAccess> file = FileAccess::open(p_name, FileAccess::WRITE, &err);
-	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save PFN at path: '%s'.", p_name));
+	RETURN_IF_ERR_MSG(err, vformat("Can't save PFN at path: '%s'.", p_name));
 	file->store_line("PF");
 	file->store_line(vformat("%d %d", img->get_width(), img->get_height()));
 #ifdef BIG_ENDIAN_ENABLED

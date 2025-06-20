@@ -127,7 +127,6 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 
 /**
  * If the return value of the expression is not OK, returns it as an error.
- * This is similar to the
  */
 #define RETURN_IF_ERR(m_error)  \
 	if (true) {                 \
@@ -136,6 +135,19 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 			return _error;      \
 		}                       \
 	} else                      \
+		((void)0)
+
+/**
+ * If the return value of the expression is not OK, returns it as an error.
+ */
+#define RETURN_IF_ERR_MSG(m_error, m_msg)                                                                                                  \
+	if (true) {                                                                                                                            \
+		Error _error = m_error;                                                                                                            \
+		if (unlikely(_error)) {                                                                                                            \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Expression \"" _STR(m_cond) "\" resulted in an error. Returning.", m_msg); \
+			return _error;                                                                                                                 \
+		}                                                                                                                                  \
+	} else                                                                                                                                 \
 		((void)0)
 
 // Index out of bounds error macros.

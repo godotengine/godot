@@ -1220,8 +1220,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 									Ref<ImporterMesh> mesh = Ref<ImporterMesh>(memnew(ImporterMesh));
 									const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
 									mesh->set_name(meshdata.name);
-									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, nullptr, Vector<Ref<ImporterMesh>>(), false);
-									ERR_FAIL_COND_V(err, err);
+									RETURN_IF_ERR(_create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, nullptr, Vector<Ref<ImporterMesh>>(), false));
 
 									morphs.push_back(mesh);
 								} else {
@@ -1269,8 +1268,9 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					mesh_unique_names.insert(name);
 
 					mesh->set_name(name);
-					Error err = _create_mesh_surfaces(morphs.is_empty(), mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
-					ERR_FAIL_COND_V_MSG(err, err, "Cannot create mesh surface.");
+					RETURN_IF_ERR_MSG(
+						_create_mesh_surfaces(morphs.is_empty(), mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials),
+						"Cannot create mesh surface.");
 
 					mesh_cache[meshid] = mesh;
 				} else {
@@ -1316,8 +1316,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 }
 
 Error ColladaImport::load(const String &p_path, int p_flags, bool p_force_make_tangents, bool p_use_compression) {
-	Error err = collada.load(p_path, p_flags);
-	ERR_FAIL_COND_V_MSG(err, err, "Cannot load file '" + p_path + "'.");
+	RETURN_IF_ERR_MSG(collada.load(p_path, p_flags), "Cannot load file '" + p_path + "'.");
 
 	force_make_tangents = p_force_make_tangents;
 	ERR_FAIL_COND_V(!collada.state.visual_scene_map.has(collada.state.root_visual_scene), ERR_INVALID_DATA);

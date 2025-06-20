@@ -1426,31 +1426,26 @@ Error EditorExportPlatformAppleEmbedded::_export_additional_assets(const Ref<Edi
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
 		Vector<String> linked_frameworks = export_plugins[i]->get_apple_embedded_platform_frameworks();
-		Error err = _export_additional_assets(p_preset, p_out_dir, linked_frameworks, true, false, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, linked_frameworks, true, false, r_exported_assets));
 
 		Vector<String> embedded_frameworks = export_plugins[i]->get_apple_embedded_platform_embedded_frameworks();
-		err = _export_additional_assets(p_preset, p_out_dir, embedded_frameworks, true, true, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, embedded_frameworks, true, true, r_exported_assets));
 
 		Vector<String> project_static_libs = export_plugins[i]->get_apple_embedded_platform_project_static_libs();
 		for (int j = 0; j < project_static_libs.size(); j++) {
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
 		}
-		err = _export_additional_assets(p_preset, p_out_dir, project_static_libs, true, false, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, project_static_libs, true, false, r_exported_assets));
 
 		Vector<String> apple_embedded_platform_bundle_files = export_plugins[i]->get_apple_embedded_platform_bundle_files();
-		err = _export_additional_assets(p_preset, p_out_dir, apple_embedded_platform_bundle_files, false, false, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, apple_embedded_platform_bundle_files, false, false, r_exported_assets));
 	}
 
 	Vector<String> library_paths;
 	for (int i = 0; i < p_libraries.size(); ++i) {
 		library_paths.push_back(p_libraries[i].path);
 	}
-	Error err = _export_additional_assets(p_preset, p_out_dir, library_paths, true, true, r_exported_assets);
-	ERR_FAIL_COND_V(err, err);
+	RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, library_paths, true, true, r_exported_assets));
 
 	return OK;
 }

@@ -2447,7 +2447,7 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 	{
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-		ERR_FAIL_COND_V_MSG(err, err, "Cannot save text file '" + p_path + "'.");
+		RETURN_IF_ERR_MSG(err, "Cannot save text file '" + p_path + "'.");
 
 		file->store_string(source);
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {

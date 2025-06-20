@@ -837,8 +837,9 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 			String dst_path = export_data->libs_directory.path_join(type).path_join(abi).path_join(filename);
 			Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_so.path);
 			print_verbose("Copying .so file from " + p_so.path + " to " + dst_path);
-			Error err = store_file_at_path(dst_path, data);
-			ERR_FAIL_COND_V_MSG(err, err, "Failed to copy .so file from " + p_so.path + " to " + dst_path);
+			RETURN_IF_ERR_MSG(
+				store_file_at_path(dst_path, data),
+				"Failed to copy .so file from " + p_so.path + " to " + dst_path);
 			export_data->libs.push_back(dst_path);
 		}
 	}
