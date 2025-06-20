@@ -53,7 +53,7 @@ Error TextFile::load_text(const String &p_path) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V_MSG(err, err, "Cannot open TextFile '" + p_path + "'.");
+	RETURN_IF_ERR_MSG(err, "Cannot open TextFile '" + p_path + "'.");
 
 	uint64_t len = f->get_length();
 	sourcef.resize(len + 1);

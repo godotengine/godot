@@ -2449,16 +2449,13 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 		}
 	}
 	p_state->original_skin_indices = p_state->skin_indices.duplicate();
-	Error err = SkinTool::_asset_parse_skins(
+	RETURN_IF_ERR(SkinTool::_asset_parse_skins(
 			p_state->original_skin_indices,
 			p_state->skins.duplicate(),
 			p_state->nodes.duplicate(),
 			p_state->skin_indices,
 			p_state->skins,
-			joint_mapping);
-	if (err != OK) {
-		return err;
-	}
+			joint_mapping));
 	for (int i = 0; i < p_state->skins.size(); ++i) {
 		Ref<GLTFSkin> skin = p_state->skins.write[i];
 		ERR_FAIL_COND_V(skin.is_null(), ERR_PARSE_ERROR);

@@ -95,31 +95,18 @@ static Error _erase_recursive(DirAccess *da) {
 	da->list_dir_end();
 
 	for (const String &E : dirs) {
-		Error err = da->change_dir(E);
-		if (err == OK) {
-			err = _erase_recursive(da);
-			if (err) {
-				da->change_dir("..");
-				return err;
-			}
-			err = da->change_dir("..");
-			if (err) {
-				return err;
-			}
-			err = da->remove(da->get_current_dir().path_join(E));
-			if (err) {
-				return err;
-			}
-		} else {
+		RETURN_IF_ERR(da->change_dir(E));
+		Error err = _erase_recursive(da);
+		if (err) {
+			da->change_dir("..");
 			return err;
 		}
+		RETURN_IF_ERR(da->change_dir(".."));
+		RETURN_IF_ERR(da->remove(da->get_current_dir().path_join(E)));
 	}
 
 	for (const String &E : files) {
-		Error err = da->remove(da->get_current_dir().path_join(E));
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(da->remove(da->get_current_dir().path_join(E)));
 	}
 
 	return OK;

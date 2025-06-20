@@ -1230,10 +1230,7 @@ Error DocTools::load_classes(const String &p_dir) {
 	while (!path.is_empty()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
-			Error err2 = parser->open(p_dir.path_join(path));
-			if (err2) {
-				return err2;
-			}
+			RETURN_IF_ERR(parser->open(p_dir.path_join(path)));
 
 			_load(parser);
 		}
@@ -1806,10 +1803,7 @@ Error DocTools::load_compressed(const uint8_t *p_data, int64_t p_compressed_size
 	class_list.clear();
 
 	Ref<XMLParser> parser = memnew(XMLParser);
-	Error err = parser->open_buffer(data);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(parser->open_buffer(data));
 
 	_load(parser);
 
@@ -1818,10 +1812,7 @@ Error DocTools::load_compressed(const uint8_t *p_data, int64_t p_compressed_size
 
 Error DocTools::load_xml(const uint8_t *p_data, int64_t p_size) {
 	Ref<XMLParser> parser = memnew(XMLParser);
-	Error err = parser->_open_buffer(p_data, p_size);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(parser->_open_buffer(p_data, p_size));
 
 	_load(parser);
 

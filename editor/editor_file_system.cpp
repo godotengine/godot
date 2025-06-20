@@ -3077,10 +3077,7 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (FileAccess::exists(p_from + ".import")) {
-		Error err = da->copy(p_from, p_to);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(da->copy(p_from, p_to));
 
 		// Roll a new uid for this copied .import file to avoid conflict.
 		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id();
@@ -3090,28 +3087,19 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		cfg.instantiate();
 		cfg->load(p_from + ".import");
 		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
-		err = cfg->save(p_to + ".import");
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(cfg->save(p_to + ".import"));
 
 		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
 		ResourceUID::get_singleton()->add_id(res_uid, p_to);
 	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
-		Error err = da->copy(p_from, p_to);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(da->copy(p_from, p_to));
 	} else {
 		// Load the resource and save it again in the new location (this generates a new UID).
 		Error err;
 		Ref<Resource> res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 		if (err == OK && res.is_valid()) {
-			err = ResourceSaver::save(res, p_to, ResourceSaver::FLAG_COMPRESS);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERR(ResourceSaver::save(res, p_to, ResourceSaver::FLAG_COMPRESS));
 		} else if (err != OK) {
 			// When loading files like text files the error is OK but the resource is still null.
 			// We can ignore such files.
@@ -3492,10 +3480,7 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 		return ERR_ALREADY_EXISTS;
 	}
 
-	err = da->make_dir_recursive(p_path);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(da->make_dir_recursive(p_path));
 
 	const String path = da->get_current_dir();
 	EditorFileSystemDirectory *parent = get_filesystem_path(path);

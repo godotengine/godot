@@ -174,8 +174,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 		}
 
 		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->create_instance(instance_args, &pid);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(OS::get_singleton()->create_instance(instance_args, &pid));
 		if (pid != 0) {
 			pids.push_back(pid);
 		}

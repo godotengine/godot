@@ -98,10 +98,7 @@ Error RemoteFilesystemClient::_store_file(const String &p_path, const LocalVecto
 	Ref<FileAccess> f = FileAccess::open(full_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, vformat("Unable to open file for writing to remote filesystem cache: '%s'.", p_path));
 	f->store_buffer(p_file.ptr(), p_file.size());
-	Error err = f->get_error();
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(f->get_error());
 	f.unref(); // Unref to ensure file is not locked and modified time can be obtained.
 
 	modified_time = FileAccess::get_modified_time(full_path);

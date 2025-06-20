@@ -8284,10 +8284,7 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess
 	if (magic == 0x46546C67) {
 		// Binary file.
 		p_file->seek(0);
-		err = _parse_glb(p_file, p_state);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(_parse_glb(p_file, p_state));
 	} else {
 		// Text file.
 		p_file->seek(0);
@@ -8795,11 +8792,8 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	state->set_base_path(p_path.get_base_dir());
 	state->filename = p_path.get_file();
-	Error err = _serialize(state);
-	if (err != OK) {
-		return err;
-	}
-	err = _serialize_file(state, p_path);
+	RETURN_IF_ERR(_serialize(state));
+	Error err = _serialize_file(state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
 	}

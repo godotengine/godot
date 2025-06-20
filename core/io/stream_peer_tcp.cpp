@@ -97,10 +97,7 @@ Error StreamPeerTCP::bind(int p_port, const IPAddress &p_host) {
 	if (p_host.is_wildcard()) {
 		ip_type = IP::TYPE_ANY;
 	}
-	Error err = _sock->open(NetSocket::TYPE_TCP, ip_type);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(_sock->open(NetSocket::TYPE_TCP, ip_type));
 	_sock->set_blocking_enabled(false);
 	return _sock->bind(p_host, p_port);
 }
@@ -113,10 +110,7 @@ Error StreamPeerTCP::connect_to_host(const IPAddress &p_host, int p_port) {
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-		Error err = _sock->open(NetSocket::TYPE_TCP, ip_type);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(_sock->open(NetSocket::TYPE_TCP, ip_type));
 		_sock->set_blocking_enabled(false);
 	}
 

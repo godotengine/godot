@@ -340,10 +340,7 @@ Error ResourceImporterLayeredTexture::import(ResourceUID::ID p_source_id, const 
 
 	Ref<Image> image;
 	image.instantiate();
-	Error err = ImageLoader::load_image(p_source_file, image);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(ImageLoader::load_image(p_source_file, image));
 
 	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
 		//if using video ram, optimize

@@ -3121,17 +3121,11 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	// Check whether any of the meshes or animations have nonexistent save paths
 	// and if they do, fail the import immediately.
 	if (subresources.has("meshes")) {
-		err = _check_resource_save_paths(p_source_id, "m", subresources["meshes"]);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(_check_resource_save_paths(p_source_id, "m", subresources["meshes"]));
 	}
 
 	if (subresources.has("animations")) {
-		err = _check_resource_save_paths(p_source_id, "a", subresources["animations"]);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(_check_resource_save_paths(p_source_id, "a", subresources["animations"]));
 	}
 
 	List<String> missing_deps; // for now, not much will be done with this
@@ -3334,14 +3328,16 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		}
 
 		print_verbose("Saving animation to: " + p_save_path + ".res");
-		err = ResourceSaver::save(library, p_save_path + ".res", flags); //do not take over, let the changed files reload themselves
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save animation to file '" + p_save_path + ".res'.");
+		RETURN_IF_ERR_MSG(
+				ResourceSaver::save(library, p_save_path + ".res", flags), //do not take over, let the changed files reload themselves
+				"Cannot save animation to file '" + p_save_path + ".res'.");
 	} else if (_scene_import_type == "PackedScene") {
 		Ref<PackedScene> packer = memnew(PackedScene);
 		packer->pack(scene);
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
-		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
+		RETURN_IF_ERR_MSG(
+				ResourceSaver::save(packer, p_save_path + ".scn", flags);, //do not take over, let the changed files reload themselves
+				"Cannot save scene to file '" + p_save_path + ".scn'.");
 	} else {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown scene import type: " + _scene_import_type);
 	}

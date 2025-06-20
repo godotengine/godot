@@ -190,10 +190,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 	for (uint32_t i = 0; i < constant_count; i++) {
 		Variant v;
 		int len;
-		Error err = decode_variant(v, b, total_len, &len, false);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(decode_variant(v, b, total_len, &len, false));
 		b += len;
 		total_len -= len;
 		constants.write[i] = v;

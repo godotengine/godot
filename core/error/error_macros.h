@@ -125,6 +125,31 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * issues when expanded e.g. after an `if (cond) ERR_FAIL();` without braces.
  */
 
+/**
+ * If the return value of the expression is not OK, returns it as an error.
+ */
+#define RETURN_IF_ERR(m_error)  \
+	if (true) {                 \
+		Error _error = m_error; \
+		if (unlikely(_error)) { \
+			return _error;      \
+		}                       \
+	} else                      \
+		((void)0)
+
+/**
+ * If the return value of the expression is not OK, returns it as an error.
+ */
+#define RETURN_IF_ERR_MSG(m_error, m_msg)                                                                                                  \
+	if (true) {                                                                                                                            \
+		Error _error = m_error;                                                                                                            \
+		if (unlikely(_error)) {                                                                                                            \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Expression \"" _STR(m_cond) "\" resulted in an error. Returning.", m_msg); \
+			return _error;                                                                                                                 \
+		}                                                                                                                                  \
+	} else                                                                                                                                 \
+		((void)0)
+
 // Index out of bounds error macros.
 // These macros should be used instead of `ERR_FAIL_COND` for bounds checking.
 

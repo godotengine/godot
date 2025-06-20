@@ -883,10 +883,7 @@ Error GDScript::reload(bool p_keep_state) {
 #endif
 
 	if (can_run) {
-		err = _static_init();
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(_static_init());
 	}
 
 #ifdef TOOLS_ENABLED
@@ -3130,8 +3127,7 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 	{
 		Error err;
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-
-		ERR_FAIL_COND_V_MSG(err, err, "Cannot save GDScript file '" + p_path + "'.");
+		RETURN_IF_ERR_MSG(err, "Cannot save GDScript file '" + p_path + "'.");
 
 		file->store_string(source);
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {

@@ -402,17 +402,11 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 
 	if (token.type == TK_CURLY_BRACKET_OPEN) {
 		Dictionary d;
-		Error err = _parse_object(d, p_str, index, p_len, line, p_depth + 1, r_err_str);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(_parse_object(d, p_str, index, p_len, line, p_depth + 1, r_err_str));
 		value = d;
 	} else if (token.type == TK_BRACKET_OPEN) {
 		Array a;
-		Error err = _parse_array(a, p_str, index, p_len, line, p_depth + 1, r_err_str);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(_parse_array(a, p_str, index, p_len, line, p_depth + 1, r_err_str));
 		value = a;
 	} else if (token.type == TK_IDENTIFIER) {
 		String id = token.value;
@@ -443,10 +437,7 @@ Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_
 	bool need_comma = false;
 
 	while (index < p_len) {
-		Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(_get_token(p_str, index, p_len, token, line, r_err_str));
 
 		if (token.type == TK_BRACKET_CLOSE) {
 			return OK;
@@ -463,10 +454,7 @@ Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_
 		}
 
 		Variant v;
-		err = _parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(_parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str));
 
 		array.push_back(v);
 		need_comma = true;
@@ -484,10 +472,7 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 
 	while (index < p_len) {
 		if (at_key) {
-			Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERR(_get_token(p_str, index, p_len, token, line, r_err_str));
 
 			if (token.type == TK_CURLY_BRACKET_CLOSE) {
 				return OK;
@@ -509,26 +494,17 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 			}
 
 			key = token.value;
-			err = _get_token(p_str, index, p_len, token, line, r_err_str);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERR(_get_token(p_str, index, p_len, token, line, r_err_str));
 			if (token.type != TK_COLON) {
 				r_err_str = "Expected ':'";
 				return ERR_PARSE_ERROR;
 			}
 			at_key = false;
 		} else {
-			Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERR(_get_token(p_str, index, p_len, token, line, r_err_str));
 
 			Variant v;
-			err = _parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(_parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str));
 			object[key] = v;
 			need_comma = true;
 			at_key = true;
@@ -552,12 +528,9 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 	r_err_line = 0;
 	String aux_key;
 
-	Error err = _get_token(str, idx, len, token, r_err_line, r_err_str);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(_get_token(str, idx, len, token, r_err_line, r_err_str));
 
-	err = _parse_value(r_ret, token, str, idx, len, r_err_line, 0, r_err_str);
+	Error err = _parse_value(r_ret, token, str, idx, len, r_err_line, 0, r_err_str);
 
 	// Check if EOF is reached
 	// or it's a type of the next token.
@@ -1581,7 +1554,7 @@ Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const Strin
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-	ERR_FAIL_COND_V_MSG(err, err, vformat("Cannot save json '%s'.", p_path));
+	RETURN_IF_ERR_MSG(err, vformat("Cannot save json '%s'.", p_path));
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {

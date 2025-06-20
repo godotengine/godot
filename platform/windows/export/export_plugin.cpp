@@ -82,9 +82,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 
 	if (p_src_path.get_extension() == "ico") {
 		Ref<FileAccess> f = FileAccess::open(p_src_path, FileAccess::READ, &err);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(err);
 
 		// Read ICONDIR.
 		f->get_16(); // Reserved.
@@ -142,9 +140,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 	ERR_FAIL_COND_V(valid_icon_count == 0, ERR_CANT_OPEN);
 
 	Ref<FileAccess> fw = FileAccess::open(p_dst_path, FileAccess::WRITE, &err);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	// Write ICONDIR.
 	fw->store_16(0); // Reserved.

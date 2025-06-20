@@ -173,8 +173,7 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 	size_t compressed_size = png_size_estimate;
 	int success = 0;
 	{ // scope writer lifetime
-		Error err = p_buffer.resize(buffer_offset + png_size_estimate);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(p_buffer.resize(buffer_offset + png_size_estimate));
 
 		uint8_t *writer = p_buffer.ptrw();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
@@ -186,8 +185,7 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 		ERR_FAIL_COND_V(compressed_size <= png_size_estimate, FAILED);
 
 		// write failed due to buffer size, resize and retry
-		Error err = p_buffer.resize(buffer_offset + compressed_size);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(p_buffer.resize(buffer_offset + compressed_size));
 
 		uint8_t *writer = p_buffer.ptrw();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
@@ -197,8 +195,7 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 	}
 
 	// trim buffer size to content
-	Error err = p_buffer.resize(buffer_offset + compressed_size);
-	ERR_FAIL_COND_V(err, err);
+	RETURN_IF_ERR(p_buffer.resize(buffer_offset + compressed_size));
 
 	return OK;
 }

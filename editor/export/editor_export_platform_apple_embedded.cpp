@@ -907,9 +907,7 @@ Error EditorExportPlatformAppleEmbedded::_walk_dir_recursive(Ref<DirAccess> &p_d
 		p_da->change_dir(dirs[i]);
 		Error err = _walk_dir_recursive(p_da, p_handler, p_userdata);
 		p_da->change_dir("..");
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(err);
 	}
 
 	return OK;
@@ -1053,10 +1051,7 @@ Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_s
 	}
 
 	if (!filesystem_da->dir_exists(p_destination)) {
-		Error make_dir_err = filesystem_da->make_dir_recursive(p_destination);
-		if (make_dir_err) {
-			return make_dir_err;
-		}
+		RETURN_IF_ERR(filesystem_da->make_dir_recursive(p_destination));
 	}
 
 	String asset = p_source.ends_with("/") ? p_source.left(-1) : p_source;
@@ -1319,10 +1314,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 		destination = destination_dir;
 
 		// Convert to framework and copy.
-		Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(_convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier")));
 	} else if (p_is_framework && asset.ends_with(".xcframework")) {
 		// For Apple Embedded platforms we need to turn .dylib inside .xcframework
 		// into .framework to be able to send application to AppStore
@@ -1348,22 +1340,13 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		if (dylibs > 0) {
 			// Convert to framework and copy.
-			Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(_convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier")));
 		} else {
 			// Copy as is.
 			if (!filesystem_da->dir_exists(destination_dir)) {
-				Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-				if (make_dir_err) {
-					return make_dir_err;
-				}
+				RETURN_IF_ERR(filesystem_da->make_dir_recursive(destination_dir));
 			}
-			Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERR(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 		}
 	} else if (p_is_framework && asset.ends_with(".framework")) {
 		// Framework.
@@ -1388,10 +1371,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 				return make_dir_err;
 			}
 		}
-		Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 	} else {
 		// Unknown resource.
 		asset_path = base_dir;
@@ -1410,15 +1390,9 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		// Copy as is.
 		if (!filesystem_da->dir_exists(destination_dir)) {
-			Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-			if (make_dir_err) {
-				return make_dir_err;
-			}
+			RETURN_IF_ERR(filesystem_da->make_dir_recursive(destination_dir));
 		}
-		Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERR(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 	}
 
 	if (asset_path.ends_with("/")) {
@@ -1453,31 +1427,26 @@ Error EditorExportPlatformAppleEmbedded::_export_additional_assets(const Ref<Edi
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
 		Vector<String> linked_frameworks = export_plugins[i]->get_apple_embedded_platform_frameworks();
-		Error err = _export_additional_assets(p_preset, p_out_dir, linked_frameworks, true, false, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, linked_frameworks, true, false, r_exported_assets));
 
 		Vector<String> embedded_frameworks = export_plugins[i]->get_apple_embedded_platform_embedded_frameworks();
-		err = _export_additional_assets(p_preset, p_out_dir, embedded_frameworks, true, true, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, embedded_frameworks, true, true, r_exported_assets));
 
 		Vector<String> project_static_libs = export_plugins[i]->get_apple_embedded_platform_project_static_libs();
 		for (int j = 0; j < project_static_libs.size(); j++) {
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
 		}
-		err = _export_additional_assets(p_preset, p_out_dir, project_static_libs, true, false, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, project_static_libs, true, false, r_exported_assets));
 
 		Vector<String> apple_embedded_platform_bundle_files = export_plugins[i]->get_apple_embedded_platform_bundle_files();
-		err = _export_additional_assets(p_preset, p_out_dir, apple_embedded_platform_bundle_files, false, false, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, apple_embedded_platform_bundle_files, false, false, r_exported_assets));
 	}
 
 	Vector<String> library_paths;
 	for (int i = 0; i < p_libraries.size(); ++i) {
 		library_paths.push_back(p_libraries[i].path);
 	}
-	Error err = _export_additional_assets(p_preset, p_out_dir, library_paths, true, true, r_exported_assets);
-	ERR_FAIL_COND_V(err, err);
+	RETURN_IF_ERR(_export_additional_assets(p_preset, p_out_dir, library_paths, true, true, r_exported_assets));
 
 	return OK;
 }
@@ -2080,11 +2049,8 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return err;
 	}
 
-	err = _export_icons(p_preset, iconset_dir);
-	if (err != OK) {
-		// Message is supplied by the subroutine method.
-		return err;
-	}
+	// Message is supplied by the subroutine method.
+	RETURN_IF_ERR(_export_icons(p_preset, iconset_dir));
 
 	{
 		String splash_image_path = binary_dir + "/Images.xcassets/SplashImage.imageset/";
@@ -2103,9 +2069,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		}
 	}
 
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	print_line("Exporting additional assets");
 	_export_additional_assets(p_preset, binary_dir, libraries, assets);

@@ -139,16 +139,9 @@ Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base, Ref<TLSOptions> p
 Error StreamPeerMbedTLS::put_data(const uint8_t *p_data, int p_bytes) {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
-	Error err;
 	int sent = 0;
-
 	while (p_bytes > 0) {
-		err = put_partial_data(p_data, p_bytes, sent);
-
-		if (err != OK) {
-			return err;
-		}
-
+		RETURN_IF_ERR(put_partial_data(p_data, p_bytes, sent));
 		p_data += sent;
 		p_bytes -= sent;
 	}
@@ -189,15 +182,9 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 Error StreamPeerMbedTLS::get_data(uint8_t *p_buffer, int p_bytes) {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
-	Error err;
-
 	int got = 0;
 	while (p_bytes > 0) {
-		err = get_partial_data(p_buffer, p_bytes, got);
-
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(get_partial_data(p_buffer, p_bytes, got));
 
 		p_buffer += got;
 		p_bytes -= got;

@@ -35,10 +35,7 @@
 Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	const uint64_t buffer_size = f->get_length();
 	Vector<uint8_t> file_buffer;
-	Error err = file_buffer.resize(buffer_size);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(file_buffer.resize(buffer_size));
 	{
 		uint8_t *writer = file_buffer.ptrw();
 		f->get_buffer(writer, buffer_size);

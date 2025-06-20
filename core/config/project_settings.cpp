@@ -818,9 +818,7 @@ bool ProjectSettings::has_setting(const String &p_var) const {
 Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(err);
 
 	uint8_t hdr[4];
 	f->get_buffer(hdr, 4);

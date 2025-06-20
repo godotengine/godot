@@ -206,8 +206,7 @@ public:
 	Error insert(Size p_pos, const T &p_val) {
 		Size new_size = size() + 1;
 		ERR_FAIL_INDEX_V(p_pos, new_size, ERR_INVALID_PARAMETER);
-		Error err = resize(new_size);
-		ERR_FAIL_COND_V(err, err);
+		RETURN_IF_ERR(resize(new_size));
 		T *p = ptrw();
 		for (Size i = new_size - 1; i > p_pos; i--) {
 			p[i] = std::move(p[i - 1]);
@@ -286,10 +285,7 @@ Error CowData<T>::_fork_allocate(USize p_size) {
 
 	if (!_ptr) {
 		// We had no data before; just allocate a new array.
-		const Error error = _alloc(alloc_size);
-		if (error) {
-			return error;
-		}
+		RETURN_IF_ERR(_alloc(alloc_size));
 	} else if (_get_refcount()->get() == 1) {
 		// Resize in-place.
 		// NOTE: This case is not just an optimization, but required, as some callers depend on
@@ -362,10 +358,7 @@ Error CowData<T>::resize(Size p_size) {
 		return OK;
 	}
 
-	const Error error = _fork_allocate(p_size);
-	if (error) {
-		return error;
-	}
+	RETURN_IF_ERR(_fork_allocate(p_size));
 
 	if constexpr (p_initialize) {
 		if (p_size > prev_size) {

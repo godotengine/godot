@@ -401,9 +401,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 }
 
 Error ResourceLoaderText::load() {
-	if (error != OK) {
-		return error;
-	}
+	RETURN_IF_ERR(error);
 
 	while (true) {
 		if (next_tag.name != "ext_resource") {
@@ -1148,9 +1146,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 }
 
 Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
-	if (error) {
-		return error;
-	}
+	RETURN_IF_ERR(error);
 
 	ignore_resource_parsing = true;
 

@@ -62,10 +62,7 @@ Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_ma
 	set_refuse_new_connections(false);
 	Ref<ENetConnection> host;
 	host.instantiate();
-	Error err = host->create_host_bound(bind_ip, p_port, p_max_clients, 0, p_max_channels > 0 ? p_max_channels + SYSCH_MAX : 0, p_out_bandwidth);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(host->create_host_bound(bind_ip, p_port, p_max_clients, 0, p_max_channels > 0 ? p_max_channels + SYSCH_MAX : 0, p_out_bandwidth));
 
 	active_mode = MODE_SERVER;
 	unique_id = 1;
@@ -79,14 +76,10 @@ Error ENetMultiplayerPeer::create_client(const String &p_address, int p_port, in
 	set_refuse_new_connections(false);
 	Ref<ENetConnection> host;
 	host.instantiate();
-	Error err;
 	if (p_local_port) {
-		err = host->create_host_bound(bind_ip, p_local_port, 1, 0, p_in_bandwidth, p_out_bandwidth);
+		RETURN_IF_ERR(host->create_host_bound(bind_ip, p_local_port, 1, 0, p_in_bandwidth, p_out_bandwidth));
 	} else {
-		err = host->create_host(1, 0, p_in_bandwidth, p_out_bandwidth);
-	}
-	if (err != OK) {
-		return err;
+		RETURN_IF_ERR(host->create_host(1, 0, p_in_bandwidth, p_out_bandwidth));
 	}
 
 	unique_id = generate_unique_id();

@@ -279,10 +279,7 @@ Error EditorDebuggerNode::start(const String &p_uri) {
 	current_uri = p_uri;
 
 	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.substr(0, p_uri.find("://") + 3)));
-	const Error err = server->start(p_uri);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERR(server->start(p_uri));
 	set_process(true);
 	EditorNode::get_log()->add_message("--- Debugging process started ---", EditorLog::MSG_TYPE_EDITOR);
 	return OK;

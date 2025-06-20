@@ -125,10 +125,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 
 	method = p_method;
 
-	Error err = _parse_url(p_url);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(_parse_url(p_url));
 
 	headers = p_custom_headers;
 
@@ -150,7 +147,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 		thread.start(_thread_func, this);
 	} else {
 		client->set_blocking_mode(false);
-		err = _request();
+		Error err = _request();
 		if (err != OK) {
 			_defer_done(RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
 			return ERR_CANT_CONNECT;

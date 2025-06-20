@@ -87,10 +87,7 @@ Error HTTPClientWeb::request(Method p_method, const String &p_url, const Vector<
 	ERR_FAIL_COND_V(port < 0, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
 
-	Error err = verify_headers(p_headers);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERR(verify_headers(p_headers));
 
 	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + p_url;
 	Vector<CharString> keeper;

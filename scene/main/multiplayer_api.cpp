@@ -122,10 +122,7 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 		} break;
 		default:
 			// Any other case is not yet compressed.
-			Error err = encode_variant(p_variant, r_buffer, r_len, p_allow_object_decoding);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERR(encode_variant(p_variant, r_buffer, r_len, p_allow_object_decoding));
 			if (r_buffer) {
 				// The first byte is not used by the marshaling, so store the type
 				// so we know how to decompress and decode this variant.
@@ -195,10 +192,7 @@ Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const ui
 			}
 		} break;
 		default:
-			Error err = decode_variant(r_variant, p_buffer, p_len, r_len, p_allow_object_decoding);
-			if (err != OK) {
-				return err;
-			}
+			return decode_variant(r_variant, p_buffer, p_len, r_len, p_allow_object_decoding);
 	}
 
 	return OK;

@@ -415,11 +415,7 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 
 	int res = ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data());
 	if (res != 0 && errno == EXDEV) { // Cross-device move, use copy and remove.
-		Error err = OK;
-		err = copy(p_path, p_new_path);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERR(copy(p_path, p_new_path));
 		return remove(p_path);
 	} else {
 		return (res == 0) ? OK : FAILED;
