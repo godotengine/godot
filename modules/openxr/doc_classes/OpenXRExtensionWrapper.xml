@@ -185,6 +185,12 @@
 				Called when the OpenXR session state is changed to visible. This means OpenXR is now ready to receive frames.
 			</description>
 		</method>
+		<method name="_on_sync_actions" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when OpenXR has performed its action sync.
+			</description>
+		</method>
 		<method name="_on_viewport_composition_layer_destroyed" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="layer" type="const void*" />
