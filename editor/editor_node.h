@@ -592,7 +592,7 @@ private:
 	void _set_current_scene(int p_idx);
 	void _set_current_scene_nocheck(int p_idx);
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
-	void _save_scene(String p_file, int idx = -1, bool show_progress = true);
+	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
