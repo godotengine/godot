@@ -209,6 +209,22 @@ void GLTFNode::set_additional_data(const StringName &p_extension_name, Variant p
 	additional_data[p_extension_name] = p_additional_data;
 }
 
+Transform3D GLTFNode::get_global_transform(Ref<GLTFState> p_state) {
+	Transform3D global_transform = transform;
+	const int gltf_node_count = p_state->nodes.size();
+	Ref<GLTFNode> current_gltf_node = this;
+	while (true) {
+		const int parent_index = current_gltf_node->get_parent();
+		if (parent_index == -1) {
+			break;
+		}
+		ERR_FAIL_INDEX_V(parent_index, gltf_node_count, Transform3D());
+		current_gltf_node = p_state->nodes[parent_index];
+		global_transform = current_gltf_node->transform * global_transform;
+	}
+	return global_transform;
+}
+
 NodePath GLTFNode::get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons) {
 	Vector<StringName> path;
 	Vector<StringName> subpath;
