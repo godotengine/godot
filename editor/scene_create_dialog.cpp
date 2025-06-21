@@ -30,10 +30,12 @@
 
 #include "scene_create_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
@@ -53,6 +55,7 @@ void SceneCreateDialog::_notification(int p_what) {
 			node_type_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
 			node_type_gui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			node_type_other->add_theme_icon_override(SNAME("icon"), get_editor_theme_icon(SNAME("Node")));
+			directory_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -61,12 +64,21 @@ void SceneCreateDialog::_notification(int p_what) {
 	}
 }
 
-void SceneCreateDialog::config(const String &p_dir) {
-	directory = p_dir;
+void SceneCreateDialog::config(const String &p_dir, const String &p_name, bool p_can_edit_dir) {
 	root_name_edit->set_text("");
-	scene_name_edit->set_text("");
+	scene_name_edit->set_text(p_name);
 	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred();
 	validation_panel->update();
+
+	can_edit_directory = p_can_edit_dir;
+	if (can_edit_directory) {
+		directory_edit_label->show();
+		directory_container->show();
+	} else {
+		directory_edit_label->hide();
+		directory_container->hide();
+	}
+	directory_edit->set_text(p_dir);
 }
 
 void SceneCreateDialog::accept_create() {
@@ -92,6 +104,31 @@ void SceneCreateDialog::on_type_picked() {
 }
 
 void SceneCreateDialog::update_dialog() {
+	String directory = directory_edit->get_text().strip_edges();
+
+	if (can_edit_directory) {
+		// We only need to validate the directory if it's editable, otherwise assume it's valid
+
+		if (directory.is_empty()) {
+			validation_panel->set_message(MSG_ID_DIR, TTR("Scene path is empty."), EditorValidationPanel::MSG_ERROR);
+
+		} else {
+			directory = ProjectSettings::get_singleton()->localize_path(directory);
+
+			if (!directory.begins_with("res://")) {
+				validation_panel->set_message(MSG_ID_DIR, TTR("Scene path is not local."), EditorValidationPanel::MSG_ERROR);
+			} else {
+				Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+				if (da->change_dir(directory) != OK) {
+					validation_panel->set_message(MSG_ID_DIR, TTR("Scene path is invalid."), EditorValidationPanel::MSG_ERROR);
+				}
+			}
+		}
+	} else {
+		// Hide the validation if we can't edit the directory
+		validation_panel->set_message(MSG_ID_DIR, "", EditorValidationPanel::MSG_OK);
+	}
+
 	scene_name = scene_name_edit->get_text().strip_edges();
 
 	if (scene_name.is_empty()) {
@@ -179,6 +216,24 @@ Node *SceneCreateDialog::create_scene_root() {
 	return root;
 }
 
+void SceneCreateDialog::_browse_directory() {
+	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+	file_browse->set_title(TTR("Choose Scene Path"));
+
+	file_browse->clear_filters();
+
+	file_browse->set_current_path(directory_edit->get_text());
+	file_browse->popup_file_dialog();
+}
+
+void SceneCreateDialog::_dir_selected(const String &p_file) {
+	String path = ProjectSettings::get_singleton()->localize_path(p_file);
+	directory_edit->set_text(path);
+	directory_edit->set_caret_column(path.length());
+	directory_edit->grab_focus();
+	validation_panel->update();
+}
+
 SceneCreateDialog::SceneCreateDialog() {
 	select_node_dialog = memnew(CreateDialog);
 	add_child(select_node_dialog);
@@ -248,6 +303,34 @@ SceneCreateDialog::SceneCreateDialog() {
 	}
 
 	{
+		directory_edit_label = memnew(Label(TTR("Scene Path:")));
+		gc->add_child(directory_edit_label);
+
+		directory_container = memnew(HBoxContainer);
+		gc->add_child(directory_container);
+
+		directory_edit = memnew(LineEdit);
+		directory_container->add_child(directory_edit);
+		directory_edit->set_accessibility_name(TTRC("Scene Path:"));
+		directory_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		directory_edit->connect(SceneStringName(text_submitted), callable_mp(this, &SceneCreateDialog::accept_create).unbind(1));
+
+		directory_button = memnew(Button);
+		directory_button->set_accessibility_name(TTRC("Select Path"));
+		directory_button->connect(SceneStringName(pressed), callable_mp(this, &SceneCreateDialog::_browse_directory));
+		directory_container->add_child(directory_button);
+
+		// Hide by default
+		directory_edit_label->hide();
+		directory_container->hide();
+
+		file_browse = memnew(EditorFileDialog);
+		file_browse->connect("dir_selected", callable_mp(this, &SceneCreateDialog::_dir_selected));
+		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+		add_child(file_browse);
+	}
+
+	{
 		Label *label = memnew(Label(TTR("Scene Name:")));
 		gc->add_child(label);
 
@@ -291,12 +374,14 @@ SceneCreateDialog::SceneCreateDialog() {
 
 	validation_panel = memnew(EditorValidationPanel);
 	main_vb->add_child(validation_panel);
+	validation_panel->add_line(MSG_ID_DIR, TTR("Scene path is valid."));
 	validation_panel->add_line(MSG_ID_PATH, TTR("Scene name is valid."));
 	validation_panel->add_line(MSG_ID_ROOT, TTR("Root node valid."));
 	validation_panel->set_update_callback(callable_mp(this, &SceneCreateDialog::update_dialog));
 	validation_panel->set_accept_button(get_ok_button());
 
 	node_type_group->connect(SceneStringName(pressed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	directory_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 	scene_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 	root_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 
