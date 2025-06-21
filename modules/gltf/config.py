@@ -30,6 +30,8 @@ def get_doc_classes():
         "GLTFState",
         "GLTFTexture",
         "GLTFTextureSampler",
+        "ResourceImporterGLTFMeshLibrary",
+        "ResourceImporterGLTFSingleMesh",
     ]
 
 
