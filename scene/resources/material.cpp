@@ -3167,7 +3167,7 @@ void BaseMaterial3D::_prepare_stencil_effect() {
 		case STENCIL_MODE_OUTLINE:
 			set_stencil_flags(STENCIL_FLAG_WRITE);
 			set_stencil_compare(STENCIL_COMPARE_ALWAYS);
-			stencil_next_pass->set_render_priority(-1);
+			stencil_next_pass->set_render_priority(get_render_priority() + 1);
 			stencil_next_pass->set_shading_mode(SHADING_MODE_UNSHADED);
 			stencil_next_pass->set_transparency(TRANSPARENCY_ALPHA);
 			stencil_next_pass->set_flag(FLAG_DISABLE_DEPTH_TEST, false);
@@ -3182,7 +3182,7 @@ void BaseMaterial3D::_prepare_stencil_effect() {
 		case STENCIL_MODE_XRAY:
 			set_stencil_flags(STENCIL_FLAG_WRITE);
 			set_stencil_compare(STENCIL_COMPARE_ALWAYS);
-			stencil_next_pass->set_render_priority(-1);
+			stencil_next_pass->set_render_priority(get_render_priority() + 1);
 			stencil_next_pass->set_shading_mode(SHADING_MODE_UNSHADED);
 			stencil_next_pass->set_transparency(TRANSPARENCY_ALPHA);
 			stencil_next_pass->set_flag(FLAG_DISABLE_DEPTH_TEST, true);
