@@ -393,6 +393,8 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	SET_COMPLETION_METHOD(resolve);
 
 	SET_WORKSPACE_METHOD(didDeleteFiles);
+	SET_WORKSPACE_METHOD(willDeleteFiles);
+	SET_WORKSPACE_METHOD(willRenameFiles);
 
 	set_method("initialize", callable_mp(this, &GDScriptLanguageProtocol::initialize));
 	set_method("initialized", callable_mp(this, &GDScriptLanguageProtocol::initialized));
