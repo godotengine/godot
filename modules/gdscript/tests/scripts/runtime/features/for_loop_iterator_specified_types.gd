@@ -43,3 +43,13 @@ func test():
 	for k: StringName in { x = 123, y = 456, z = 789 }:
 		var key := k
 		prints(var_to_str(k), var_to_str(key))
+
+	print("Test rect2.")
+	for e: Vector2 in Rect2(Vector2(3.5, 3.5), Vector2(2, 2)):
+		var elem := e
+		prints(var_to_str(e), var_to_str(elem))
+
+	print("Test rect2i.")
+	for e: Vector2i in Rect2i(Vector2i(4, 4), Vector2i(2, 2)):
+		var elem := e
+		prints(var_to_str(e), var_to_str(elem))
