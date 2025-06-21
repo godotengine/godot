@@ -215,9 +215,15 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		}
 
 		if (r_small_texture.is_null() && r_texture.is_valid() && preview_generators[i]->generate_small_preview_automatically()) {
-			Ref<Image> small_image = r_texture->get_image();
-			small_image = small_image->duplicate();
-			small_image->resize(small_thumbnail_size, small_thumbnail_size, Image::INTERPOLATE_CUBIC);
+			Ref<Image> small_image = r_texture->get_image()->duplicate();
+			Vector2i new_size = Vector2i(1, 1) * small_thumbnail_size;
+			const real_t aspect = small_image->get_size().aspect();
+			if (aspect > 1.0) {
+				new_size.y /= aspect;
+			} else {
+				new_size.x *= aspect;
+			}
+			small_image->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
 			r_small_texture.instantiate();
 			r_small_texture->set_image(small_image);
 		}
