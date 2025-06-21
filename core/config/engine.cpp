@@ -38,21 +38,37 @@
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
+void Engine::_update_time_scale() {
+	_time_scale = _time_scale_user * _time_scale_game;
+	ips = MAX(1, ips_game * _time_scale_user);
+	max_physics_steps_per_frame = MAX(max_physics_steps_per_frame_game, max_physics_steps_per_frame_game * _time_scale_user);
+}
+
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
-	ips = p_ips;
+	ips_game = p_ips;
+	_update_time_scale();
 }
 
 int Engine::get_physics_ticks_per_second() const {
+	return ips_game;
+}
+
+int Engine::get_effective_physics_ticks_per_second() const {
 	return ips;
 }
 
 void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
 	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
-	max_physics_steps_per_frame = p_max_physics_steps;
+	max_physics_steps_per_frame_game = p_max_physics_steps;
+	_update_time_scale();
 }
 
 int Engine::get_max_physics_steps_per_frame() const {
+	return max_physics_steps_per_frame_game;
+}
+
+int Engine::get_effective_max_physics_steps_per_frame() const {
 	return max_physics_steps_per_frame;
 }
 
@@ -112,10 +128,20 @@ uint32_t Engine::get_frame_delay() const {
 }
 
 void Engine::set_time_scale(double p_scale) {
-	_time_scale = p_scale;
+	_time_scale_game = p_scale;
+	_update_time_scale();
 }
 
 double Engine::get_time_scale() const {
+	return freeze_time_scale ? 0 : _time_scale_game;
+}
+
+void Engine::set_time_scale_user(double p_scale) {
+	_time_scale_user = p_scale;
+	_update_time_scale();
+}
+
+double Engine::get_effective_time_scale() {
 	return freeze_time_scale ? 0 : _time_scale;
 }
 
