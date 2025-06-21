@@ -64,14 +64,9 @@ void CollisionShape3DGizmoPlugin::create_collision_material(const String &p_name
 	const Color collision_color(1.0, 1.0, 1.0, p_alpha);
 
 	for (int i = 0; i < 4; i++) {
-		bool instantiated = i < 2;
-
 		Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
 
-		Color color = collision_color;
-		color.a *= instantiated ? 0.25 : 1.0;
-
-		material->set_albedo(color);
+		material->set_albedo(collision_color);
 		material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 		material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
