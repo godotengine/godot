@@ -1371,7 +1371,7 @@
 			<param index="5" name="language" type="String" default="&quot;&quot;" />
 			<param index="6" name="meta" type="Variant" default="null" />
 			<description>
-				Adds text span and font to draw it to the text buffer.
+				Adds text span and font to draw it to the text buffer. If [param text] is empty, a soft line break is added to the buffer.
 			</description>
 		</method>
 		<method name="shaped_text_clear">
