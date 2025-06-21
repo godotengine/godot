@@ -1319,6 +1319,9 @@
 		<member name="text_editor/behavior/files/restore_scripts_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], reopens scripts that were opened in the last session when the editor is reopened on a given project.
 		</member>
+		<member name="text_editor/behavior/files/JSON_truncate_integers" type="bool" setter="" getter="">
+			If [code]true[/code], values close to integers (+- 0.00001) are saved in JSON files as integers instead of being reformatted to floats (e.g. 1 = 1.0).
+		</member>
 		<member name="text_editor/behavior/files/trim_final_newlines_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims all empty newlines after the final newline when saving a script. Final newlines refer to the empty newlines found at the end of files. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
 		</member>

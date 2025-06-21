@@ -241,6 +241,7 @@ public:
 	void trim_trailing_whitespace();
 	void trim_final_newlines();
 	void insert_final_newline();
+	void format_ints();
 
 	enum CaseStyle {
 		UPPER,
