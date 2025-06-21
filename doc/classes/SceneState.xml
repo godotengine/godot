@@ -191,5 +191,11 @@
 			If passed to [method PackedScene.instantiate], it's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
+		<constant name="INSTANTIATION_DEFAULT" value="0" enum="InstantiationFlags">
+			Default instantiation behavior with no special flags.
+		</constant>
+		<constant name="INSTANTIATION_NO_SCRIPTS" value="1" enum="InstantiationFlags">
+			If passed to [method PackedScene.instantiate], the scene will be instantiated without any attached scripts. This applies to child scenes as well.
+		</constant>
 	</constants>
 </class>

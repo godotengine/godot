@@ -329,3 +329,10 @@ Validate extension JSON: API was removed: classes/VisualShader/methods/set_graph
 Validate extension JSON: API was removed: classes/VisualShader/methods/get_graph_offset
 
 The graph_offset property was removed from the resource. This information is now stored in `vs_editor_cache.cfg`.
+
+
+GH-107818
+---------
+Validate extension JSON: Error: Field 'classes/PackedScene/methods/instantiate/arguments': size changed value in new API, from 1 to 2.
+
+Optional argument added. Compatibility method registered.

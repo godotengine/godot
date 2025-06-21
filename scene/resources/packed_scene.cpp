@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "packed_scene.h"
+#include "packed_scene.compat.inc"
 
 #include "core/config/engine.h"
 #include "core/io/missing_resource.h"
@@ -124,7 +125,7 @@ Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, Ha
 	return remap_resource;
 }
 
-Node *SceneState::instantiate(GenEditState p_edit_state) const {
+Node *SceneState::instantiate(GenEditState p_edit_state, int p_flags) const {
 	// Nodes where instantiation failed (because something is missing.)
 	List<Node *> stray_instances;
 
@@ -196,7 +197,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			// Scene inheritance on root node.
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(sdata.is_null(), nullptr);
-			node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
+			PackedScene::GenEditState nested_edit_state = p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE; //only main gets main edit state
+			node = sdata->instantiate(nested_edit_state, p_flags);
 			ERR_FAIL_NULL_V(node, nullptr);
 			if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
 				node->set_scene_inherited_state(sdata->get_state());
@@ -209,7 +211,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				if (disable_placeholders) {
 					Ref<PackedScene> sdata = ResourceLoader::load(scene_path, "PackedScene");
 					if (sdata.is_valid()) {
-						node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
+						PackedScene::GenEditState nested_edit_state = p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE;
+						node = sdata->instantiate(nested_edit_state, p_flags);
 						ERR_FAIL_NULL_V(node, nullptr);
 					} else if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
 						missing_node = memnew(MissingNode);
@@ -229,7 +232,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				Ref<Resource> res = props[n.instance & FLAG_MASK];
 				Ref<PackedScene> sdata = res;
 				if (sdata.is_valid()) {
-					node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
+					PackedScene::GenEditState nested_edit_state = p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE;
+					node = sdata->instantiate(nested_edit_state, p_flags);
 					ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to load scene dependency: \"%s\". Make sure the required scene is valid.", sdata->get_path()));
 				} else if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
 					missing_node = memnew(MissingNode);
@@ -338,6 +342,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
 
 					if (snames[nprops[j].name] == CoreStringName(script)) {
+						if (p_flags & INSTANTIATION_NO_SCRIPTS) {
+							continue;
+						}
+
 						//work around to avoid old script variables from disappearing, should be the proper fix to:
 						//https://github.com/godotengine/godot/issues/2958
 
@@ -2140,6 +2148,9 @@ void SceneState::_bind_methods() {
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN_INHERITED);
+
+	BIND_ENUM_CONSTANT(INSTANTIATION_DEFAULT);
+	BIND_ENUM_CONSTANT(INSTANTIATION_NO_SCRIPTS);
 }
 
 SceneState::SceneState() {
@@ -2189,12 +2200,12 @@ bool PackedScene::can_instantiate() const {
 	return state->can_instantiate();
 }
 
-Node *PackedScene::instantiate(GenEditState p_edit_state) const {
+Node *PackedScene::instantiate(GenEditState p_edit_state, int p_flags) const {
 #ifndef TOOLS_ENABLED
 	ERR_FAIL_COND_V_MSG(p_edit_state != GEN_EDIT_STATE_DISABLED, nullptr, "Edit state is only for editors, does not work without tools compiled.");
 #endif
 
-	Node *s = state->instantiate((SceneState::GenEditState)p_edit_state);
+	Node *s = state->instantiate((SceneState::GenEditState)p_edit_state, p_flags);
 	if (!s) {
 		return nullptr;
 	}
@@ -2297,7 +2308,7 @@ void PackedScene::reset_state() {
 }
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
-	ClassDB::bind_method(D_METHOD("instantiate", "edit_state"), &PackedScene::instantiate, DEFVAL(GEN_EDIT_STATE_DISABLED));
+	ClassDB::bind_method(D_METHOD("instantiate", "edit_state", "flags"), &PackedScene::instantiate, DEFVAL(GEN_EDIT_STATE_DISABLED), DEFVAL(INSTANTIATION_DEFAULT));
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &PackedScene::can_instantiate);
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene", "scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);
@@ -2309,6 +2320,13 @@ void PackedScene::_bind_methods() {
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN_INHERITED);
+
+	BIND_ENUM_CONSTANT(INSTANTIATION_DEFAULT);
+	BIND_ENUM_CONSTANT(INSTANTIATION_NO_SCRIPTS);
+
+#ifndef DISABLE_DEPRECATED
+	_bind_compatibility_methods();
+#endif
 }
 
 PackedScene::PackedScene() {
