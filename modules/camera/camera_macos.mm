@@ -200,6 +200,7 @@ class CameraFeedMacOS : public CameraFeed {
 private:
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
+	bool format_locked;
 
 public:
 	AVCaptureDevice *get_device() const;
@@ -210,6 +211,9 @@ public:
 
 	bool activate_feed() override;
 	void deactivate_feed() override;
+
+	bool set_format(int p_index, const Dictionary &p_parameters) override;
+	Array get_formats() const override;
 };
 
 AVCaptureDevice *CameraFeedMacOS::get_device() const {
@@ -219,6 +223,7 @@ AVCaptureDevice *CameraFeedMacOS::get_device() const {
 CameraFeedMacOS::CameraFeedMacOS() {
 	device = nullptr;
 	capture_session = nullptr;
+	format_locked = false;
 }
 
 void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
@@ -239,6 +244,14 @@ bool CameraFeedMacOS::activate_feed() {
 	if (capture_session) {
 		// Already recording!
 	} else {
+		// Configure device format if specified.
+		if (selected_format != -1) {
+			NSError *error;
+			ERR_FAIL_INDEX_V((unsigned int)selected_format, device.formats.count, false);
+			format_locked = [device lockForConfiguration:&error];
+			ERR_FAIL_COND_V_MSG(!format_locked, false, error.localizedFailureReason.UTF8String);
+			[device setActiveFormat:device.formats[selected_format]];
+		}
 		// Start camera capture, check permission.
 		if (@available(macOS 10.14, *)) {
 			AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
@@ -267,6 +280,42 @@ void CameraFeedMacOS::deactivate_feed() {
 		[capture_session cleanup];
 		capture_session = nullptr;
 	};
+	if (format_locked) {
+		[device unlockForConfiguration];
+		format_locked = false;
+	}
+}
+
+bool CameraFeedMacOS::set_format(int p_index, const Dictionary &p_parameters) {
+	if (p_index == -1) {
+		selected_format = p_index;
+		emit_signal("format_changed");
+		return true;
+	}
+	ERR_FAIL_INDEX_V((unsigned int)p_index, device.formats.count, false);
+	ERR_FAIL_COND_V_MSG(capture_session != nullptr, false, "Feed is active.");
+	selected_format = p_index;
+	emit_signal("format_changed");
+	return true;
+}
+
+Array CameraFeedMacOS::get_formats() const {
+	Array result;
+	for (AVCaptureDeviceFormat *format in device.formats) {
+		Dictionary dictionary;
+		CMFormatDescriptionRef formatDescription = format.formatDescription;
+		CMVideoDimensions dimension = CMVideoFormatDescriptionGetDimensions(formatDescription);
+		dictionary["width"] = dimension.width;
+		dictionary["height"] = dimension.height;
+		FourCharCode fourcc = CMFormatDescriptionGetMediaSubType(formatDescription);
+		dictionary["format"] =
+				String::chr((char)(fourcc >> 24) & 0xFF) +
+				String::chr((char)(fourcc >> 16) & 0xFF) +
+				String::chr((char)(fourcc >> 8) & 0xFF) +
+				String::chr((char)(fourcc >> 0) & 0xFF);
+		result.push_back(dictionary);
+	}
+	return result;
 }
 
 //////////////////////////////////////////////////////////////////////////
