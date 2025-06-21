@@ -1129,21 +1129,15 @@ void TextEdit::_notification(int p_what) {
 
 				// Draw the minimap.
 
-				// Add visual feedback when dragging or hovering the visible area rectangle.
-				Color viewport_color = theme_cache.caret_color;
-				if (dragging_minimap) {
-					viewport_color.a = 0.25;
-				} else if (hovering_minimap) {
-					viewport_color.a = 0.175;
-				} else {
-					viewport_color.a = 0.1;
-				}
+				Ref<Font> font = get_theme_font(SNAME("font"));
+				int font_size = 12;
 
-				if (rtl) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
-				} else {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, minimap_width, viewport_height), viewport_color);
-				}
+				int mark_padding = 0;
+
+				int first_visible_line_index = get_first_visible_line();
+				int last_visible_line_index = get_first_visible_line() + get_visible_line_count();
+				int visible_rectangle_start = 0;
+				int visible_rectangle_end = 0;
 
 				for (int i = 0; i < minimap_draw_amount; i++) {
 					minimap_line++;
@@ -1203,24 +1197,74 @@ void TextEdit::_notification(int p_what) {
 							last_wrap_column += wrap_rows[line_wrap_index - 1].length();
 						}
 
+						String trimmed_line = str.strip_edges();
+						bool is_comment_line = trimmed_line.begins_with("#mark ");
+						bool is_region_line = trimmed_line.begins_with("#region ");
+
+						int highlight_height = 2;
+						int indents = 0;
+						for (int n = 0; n < str.length(); n++) {
+							char32_t c = str[n];
+							if (c == ' ' || c == '\t') {
+								indents++;
+							} else {
+								break;
+							}
+						}
+
+						if (is_comment_line) {
+							String comment_label = trimmed_line.erase(0, 5).strip_edges();
+							Color text_color;
+							for (const Pair<int64_t, Color> &color_data : color_map) {
+								text_color = color_data.second;
+							}
+							text_color.a = 1.0;
+							Vector2 text_pos = Vector2(xmargin_end + 2 + indents * tab_size, minimap_line_height * i + font_size - 2 + mark_padding);
+							draw_string(font, text_pos, comment_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+							highlight_height = font_size - 1;
+						} else if (is_region_line) {
+							String comment_label = trimmed_line.erase(0, 7).strip_edges();
+							Color text_color;
+							for (const Pair<int64_t, Color> &color_data : color_map) {
+								text_color = color_data.second;
+							}
+							text_color.a = 1.0;
+							Vector2 text_pos = Vector2(xmargin_end + 2 + indents * tab_size, minimap_line_height * i + font_size - 2 + mark_padding);
+							draw_string(font, text_pos, comment_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+							highlight_height = font_size - 1;
+						}
+
 						if (highlight_current_line && highlighted_lines.has(Pair<int, int>(minimap_line, line_wrap_index))) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), theme_cache.current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3 + mark_padding, minimap_width, highlight_height), theme_cache.current_line_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), theme_cache.current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3 + mark_padding, minimap_width, highlight_height), theme_cache.current_line_color);
 							}
 						} else if (line_background_color.a > 0) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), line_background_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3 + mark_padding, minimap_width, highlight_height), line_background_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), line_background_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3 + mark_padding, minimap_width, highlight_height), line_background_color);
 							}
+						}
+
+						if (minimap_line == first_visible_line_index) {
+							visible_rectangle_start = i * 3 + mark_padding;
+						}
+						if (minimap_line <= last_visible_line_index) {
+							visible_rectangle_end = i * 3 + mark_padding + highlight_height;
 						}
 
 						Color next_color = current_color;
 						int characters = 0;
 						int tab_alignment = 0;
 						int xpos = xmargin_end + 2 + indent_px;
+
+						if (is_comment_line || is_region_line) {
+							mark_padding += font_size - 3;
+							continue;
+						}
+
 						for (int j = 0; j < str.length(); j++) {
 							bool next_is_whitespace = false;
 							bool next_is_tab = false;
@@ -1263,9 +1307,9 @@ void TextEdit::_notification(int p_what) {
 
 							if (characters > 0) {
 								if (rtl) {
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i + mark_padding), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
 								} else {
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(xpos, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(xpos, minimap_line_height * i + mark_padding), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
 								}
 							}
 
@@ -1291,6 +1335,22 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 					}
+				}
+
+				// Add visual feedback when dragging or hovering the visible area rectangle.
+				Color viewport_color = theme_cache.caret_color;
+				if (dragging_minimap) {
+					viewport_color.a = 0.25;
+				} else if (hovering_minimap) {
+					viewport_color.a = 0.175;
+				} else {
+					viewport_color.a = 0.1;
+				}
+
+				if (rtl) {
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, visible_rectangle_start, minimap_width, visible_rectangle_end - visible_rectangle_start), viewport_color);
+				} else {
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), visible_rectangle_start, minimap_width, visible_rectangle_end - visible_rectangle_start), viewport_color);
 				}
 			}
 
