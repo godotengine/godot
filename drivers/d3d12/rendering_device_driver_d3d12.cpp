@@ -445,7 +445,7 @@ void RenderingDeviceDriverD3D12::_debug_message_func(D3D12_MESSAGE_CATEGORY p_ca
 	// Convert D3D12 severity to our own log macros.
 	switch (p_severity) {
 		case D3D12_MESSAGE_SEVERITY_MESSAGE:
-			print_verbose(error_message);
+			PRINT_VERBOSE(error_message);
 			break;
 		case D3D12_MESSAGE_SEVERITY_INFO:
 			print_line(error_message);
@@ -2359,7 +2359,7 @@ Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueue
 		SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
 		res = swap_chain->d3d_swap_chain->Present(swap_chain->sync_interval, swap_chain->present_flags);
 		if (!SUCCEEDED(res)) {
-			print_verbose(vformat("D3D12: Presenting swapchain failed with error 0x%08ux.", (uint64_t)res));
+			PRINT_VERBOSE(vformat("D3D12: Presenting swapchain failed with error 0x%08ux.", (uint64_t)res));
 			any_present_failed = true;
 		}
 	}
@@ -5840,8 +5840,8 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 		ERR_FAIL_COND_V_MSG(!shader_capabilities.shader_model, ERR_UNAVAILABLE,
 				vformat("No support for any of the suitable shader models (%s-%s) has been found.", D3D_SHADER_MODEL_TO_STRING(SMS_TO_CHECK[ARRAY_SIZE(SMS_TO_CHECK) - 1]), D3D_SHADER_MODEL_TO_STRING(SMS_TO_CHECK[0])));
 
-		print_verbose("- Shader:");
-		print_verbose("  model: " + D3D_SHADER_MODEL_TO_STRING(shader_capabilities.shader_model));
+		PRINT_VERBOSE("- Shader:");
+		PRINT_VERBOSE("  model: " + D3D_SHADER_MODEL_TO_STRING(shader_capabilities.shader_model));
 	}
 
 	shader_container_format.set_lib_d3d12(context_driver->lib_d3d12);
@@ -5907,48 +5907,48 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	}
 
 	if (fsr_capabilities.pipeline_supported || fsr_capabilities.primitive_supported || fsr_capabilities.attachment_supported) {
-		print_verbose("- D3D12 Variable Rate Shading supported:");
+		PRINT_VERBOSE("- D3D12 Variable Rate Shading supported:");
 		if (fsr_capabilities.pipeline_supported) {
-			print_verbose("  Draw call");
+			PRINT_VERBOSE("  Draw call");
 		}
 		if (fsr_capabilities.primitive_supported) {
-			print_verbose("  Primitive");
+			PRINT_VERBOSE("  Primitive");
 		}
 		if (fsr_capabilities.attachment_supported) {
-			print_verbose(String("  Screen-space image (tile size: ") + itos(fsr_capabilities.min_texel_size.x) + ")");
+			PRINT_VERBOSE(String("  Screen-space image (tile size: ") + itos(fsr_capabilities.min_texel_size.x) + ")");
 		}
 	} else {
-		print_verbose("- D3D12 Variable Rate Shading not supported");
+		PRINT_VERBOSE("- D3D12 Variable Rate Shading not supported");
 	}
 
 	if (multiview_capabilities.is_supported) {
-		print_verbose("- D3D12 multiview supported:");
-		print_verbose("  max view count: " + itos(multiview_capabilities.max_view_count));
-		//print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count)); // Hardcoded; not very useful at the moment.
+		PRINT_VERBOSE("- D3D12 multiview supported:");
+		PRINT_VERBOSE("  max view count: " + itos(multiview_capabilities.max_view_count));
+		//PRINT_VERBOSE("  max instances: " + itos(multiview_capabilities.max_instance_count)); // Hardcoded; not very useful at the moment.
 	} else {
-		print_verbose("- D3D12 multiview not supported");
+		PRINT_VERBOSE("- D3D12 multiview not supported");
 	}
 
 	if (format_capabilities.relaxed_casting_supported) {
 #if 0
-		print_verbose("- Relaxed casting supported");
+		PRINT_VERBOSE("- Relaxed casting supported");
 #else
 		// Certain configurations (Windows 11 with an updated NVIDIA driver) crash when using relaxed casting.
 		// Therefore, we disable it temporarily until we can assure that it's reliable.
 		// There are fallbacks in place that work in every case, if less efficient.
 		format_capabilities.relaxed_casting_supported = false;
-		print_verbose("- Relaxed casting supported (but disabled for now)");
+		PRINT_VERBOSE("- Relaxed casting supported (but disabled for now)");
 #endif
 	} else {
-		print_verbose("- Relaxed casting not supported");
+		PRINT_VERBOSE("- Relaxed casting not supported");
 	}
 
-	print_verbose(String("- D3D12 16-bit ops supported: ") + (shader_capabilities.native_16bit_ops ? "yes" : "no"));
+	PRINT_VERBOSE(String("- D3D12 16-bit ops supported: ") + (shader_capabilities.native_16bit_ops ? "yes" : "no"));
 
 	if (misc_features_support.depth_bounds_supported) {
-		print_verbose("- Depth bounds test supported");
+		PRINT_VERBOSE("- Depth bounds test supported");
 	} else {
-		print_verbose("- Depth bounds test not supported");
+		PRINT_VERBOSE("- Depth bounds test not supported");
 	}
 
 	return OK;
@@ -5980,7 +5980,7 @@ Error RenderingDeviceDriverD3D12::_get_device_limits() {
 
 	res = unused_command_queue->GetTimestampFrequency(&device_limits.timestamp_frequency);
 	if (!SUCCEEDED(res)) {
-		print_verbose("D3D12: GetTimestampFrequency failed with error " + vformat("0x%08ux", (uint64_t)res) + ". Timestamps will be inaccurate.");
+		PRINT_VERBOSE("D3D12: GetTimestampFrequency failed with error " + vformat("0x%08ux", (uint64_t)res) + ". Timestamps will be inaccurate.");
 	}
 
 	return OK;
