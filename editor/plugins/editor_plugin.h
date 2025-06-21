@@ -49,6 +49,7 @@ class EditorNode3DGizmoPlugin;
 class EditorResourceConversionPlugin;
 class EditorSceneFormatImporter;
 class EditorScenePostImportPlugin;
+class EditorScriptPreCreationPlugin;
 class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
@@ -239,6 +240,9 @@ public:
 
 	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+
+	void add_script_pre_creation_plugin(const Ref<EditorScriptPreCreationPlugin> &p_plugin, bool p_first_priority = false);
+	void remove_script_pre_creation_plugin(const Ref<EditorScriptPreCreationPlugin> &p_plugin);
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);

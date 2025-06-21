@@ -46,6 +46,18 @@
 #include "scene/gui/line_edit.h"
 #include "scene/theme/theme_db.h"
 
+void EditorScriptPreCreationPlugin::_bind_methods() {
+	GDVIRTUAL_BIND(_pre_creation, "script");
+}
+
+void EditorScriptPreCreationPlugin::pre_creation(Ref<Script> p_script) {
+	GDVIRTUAL_CALL(_pre_creation, p_script);
+}
+
+/////////////////////////////////////////////////////////
+
+Vector<Ref<EditorScriptPreCreationPlugin>> ScriptCreateDialog::pre_creation_plugins;
+
 static String _get_parent_class_of_script(const String &p_path) {
 	if (!ResourceLoader::exists(p_path, "Script")) {
 		return "Object"; // A script eventually inherits from Object.
@@ -190,6 +202,23 @@ String ScriptCreateDialog::_adjust_file_path(const String &p_base_path) const {
 	file_name = EditorNode::adjust_script_name_casing(file_name, language->preferred_file_name_casing());
 	String extension = language->get_extension();
 	return base_dir.path_join(file_name + "." + extension);
+}
+
+void ScriptCreateDialog::add_pre_creation_plugin(const Ref<EditorScriptPreCreationPlugin> &p_plugin, bool p_first_priority) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	if (p_first_priority) {
+		pre_creation_plugins.insert(0, p_plugin);
+	} else {
+		pre_creation_plugins.push_back(p_plugin);
+	}
+}
+
+void ScriptCreateDialog::remove_pre_creation_plugin(const Ref<EditorScriptPreCreationPlugin> &p_plugin) {
+	pre_creation_plugins.erase(p_plugin);
+}
+
+void ScriptCreateDialog::clean_up_creation_plugins() {
+	pre_creation_plugins.clear();
 }
 
 void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled) {
@@ -377,6 +406,10 @@ void ScriptCreateDialog::_create_new() {
 
 	String class_name = file_path->get_text().get_file().get_basename();
 	scr = ScriptServer::get_language(language_menu->get_selected())->make_template(sinfo.content, class_name, parent_class);
+
+	for (int i = 0; i < pre_creation_plugins.size(); i++) {
+		pre_creation_plugins.write[i]->pre_creation(scr);
+	}
 
 	if (is_built_in) {
 		scr->set_name(built_in_name->get_text());
