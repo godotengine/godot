@@ -387,12 +387,25 @@ public:
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 	bool _is_ui_pos_in_current_section(const Point2 &p_pos);
 
+	struct SelectedKey {
+		int track = 0;
+		int key = 0;
+		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; }
+	};
+
+	struct KeyInfo {
+		float pos = 0;
+		Variant data;
+	};
+
+	RBMap<SelectedKey, KeyInfo> selection;
+
 public:
 	virtual bool has_valid_track() const override;
 	virtual Size2 get_minimum_size() const override;
 
-	double get_move_time(const int p_index) const;
-	double get_global_move_time(const int p_index) const;
+	double get_move_key_time(const int p_index) const;
+	double get_global_move_key_time(const int p_index) const;
 
 public:
 	virtual float get_key_width(const int p_index) const override;
@@ -521,18 +534,6 @@ public:
 	virtual void _move_selection_commit() override;
 	virtual void _move_selection_cancel() override;
 
-	struct SelectedKey {
-		int key = 0;
-		bool operator<(const SelectedKey &p_key) const { return key < p_key.key; }
-	};
-
-	struct KeyInfo {
-		float pos = 0;
-		Color color;
-	};
-
-	RBMap<SelectedKey, KeyInfo> selection;
-
 	void clear_selection();
 	int get_selection_count() const;
 	void insert_selection(const int p_index);
@@ -626,16 +627,6 @@ public:
 
 	virtual bool is_moving_selection() const override;
 	virtual float get_moving_selection_offset() const override;
-
-	struct SelectedKey {
-		int track = 0;
-		int key = 0;
-		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; }
-	};
-
-	struct KeyInfo {
-		float pos = 0;
-	};
 
 	virtual Vector<int> get_selected_section() override;
 
@@ -883,7 +874,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
-	RBMap<AnimationTrackEdit::SelectedKey, AnimationTrackEdit::KeyInfo> selection;
+	RBMap<AnimationKeyEdit::SelectedKey, AnimationKeyEdit::KeyInfo> selection;
 
 	bool moving_selection = false;
 	float moving_selection_offset = 0.0f;
@@ -938,12 +929,12 @@ class AnimationTrackEditor : public VBoxContainer {
 	CheckBox *cleanup_all = nullptr;
 
 	ConfirmationDialog *scale_dialog = nullptr;
-	SpinBox *scale = nullptr;
+	SpinBox *scale_sp = nullptr;
 
 	ConfirmationDialog *ease_dialog = nullptr;
 	OptionButton *transition_selection = nullptr;
 	OptionButton *ease_selection = nullptr;
-	SpinBox *ease_fps = nullptr;
+	SpinBox *ease_fps_sp = nullptr;
 
 	void _select_all_tracks_for_copy();
 
@@ -1013,7 +1004,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Vector<TrackClipboard> track_clipboard;
 	KeyClipboard key_clipboard;
 
-	void _set_key_clipboard(int p_top_track, float p_top_time, RBMap<AnimationTrackEdit::SelectedKey, AnimationTrackEdit::KeyInfo> &p_keymap);
+	void _set_key_clipboard(int p_top_track, float p_top_time, RBMap<AnimationKeyEdit::SelectedKey, AnimationKeyEdit::KeyInfo> &p_keymap);
 	void _insert_animation_key(NodePath p_path, const Variant &p_value);
 
 	void _pick_track_filter_text_changed(const String &p_newtext);
@@ -1041,7 +1032,7 @@ public:
 	PropertySelector *get_prop_selector() { return prop_selector; }
 	PropertySelector *get_method_selector() { return method_selector; }
 
-	float get_global_time(const float p_time, const float p_offset = 0) const;
+	double get_global_time(const float p_time) const;
 
 public:
 	// Public for use with callable_mp.
@@ -1138,7 +1129,7 @@ public:
 	StringName get_marker_name(const int p_index) const;
 	int get_marker_index(const StringName marker) const;
 	double get_marker_time(const int p_index) const;
-	double get_marker_move_time(const int p_index) const;
+	double get_marker_move_key_time(const int p_index) const;
 	int get_marker_count() const;
 	int get_track_count() const;
 
