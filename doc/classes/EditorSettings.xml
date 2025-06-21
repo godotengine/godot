@@ -1206,6 +1206,10 @@
 		<member name="run/output/max_lines" type="int" setter="" getter="">
 			Maximum number of lines to show at any one time in the Output panel.
 		</member>
+		<member name="run/output/show_timestamps" type="bool" setter="" getter="">
+			If [code]true[/code], prefix all lines in the Output panel with timestamps in local time in the following format: [code]YYYY-MM-DD HH:MM:SS |[/code].
+			[b]Note:[/b] [member run/output/show_timestamps] does not affect standard output/error and file logging, which are controlled by [member ProjectSettings.application/run/print_timestamps_in_stdout] and [member ProjectSettings.debug/file_logging/log_timestamps] instead.
+		</member>
 		<member name="run/platforms/linuxbsd/prefer_wayland" type="bool" setter="" getter="">
 			If [code]true[/code], on Linux/BSD, the editor will check for Wayland first instead of X11 (if available).
 		</member>

@@ -404,6 +404,11 @@
 		<member name="application/run/print_header" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the engine header is printed in the console on startup. This header describes the current version of the engine, as well as the renderer being used. This behavior can also be disabled on the command line with the [code]--no-header[/code] option.
 		</member>
+		<member name="application/run/print_timestamps_in_stdout" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], prefix all lines in standard output and error streams with ISO 8601 timestamps in local time in the following format: [code]YYYY-MM-DDTHH:MM:SS+HH:MM |[/code]. The timezone offset is denoted by [code]+HH:MM[/code] at the end. See also [member debug/file_logging/log_timestamps].
+			[b]Note:[/b] This setting does not affect the editor's Output panel. This is controlled by [member EditorSettings.run/output/show_timestamps] instead.
+			[b]Note:[/b] This setting only affects the project itself, not the editor's own output.
+		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
@@ -504,6 +509,9 @@
 		<member name="debug/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
 			Path at which to store log files for the project. Using a path under [code]user://[/code] is recommended.
 			This can be specified manually on the command line using the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. If this command line argument is specified, log rotation is automatically disabled (see [member debug/file_logging/max_log_files]).
+		</member>
+		<member name="debug/file_logging/log_timestamps" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], prefix all lines with ISO 8601 timestamps in local time in the following format: [code]YYYY-MM-DDTHH:MM:SS+HH:MM |[/code]. The timezone offset is denoted by [code]+HH:MM[/code] at the end. See also [member application/run/print_timestamps_in_stdout].
 		</member>
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum number of log files allowed (used for rotation). Set to [code]1[/code] to disable log file rotation.
