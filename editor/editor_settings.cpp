@@ -1197,7 +1197,7 @@ String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path)
 	} else if (editor == "geany" || editor == "kate") {
 		new_exec_flags = "{file} --line {line} --column {col}";
 	} else if (editor == "code" || editor == "visual studio code" || editor == "codium" || editor == "vscodium") {
-		new_exec_flags = "{project} --goto {file}:{line}:{col}";
+		new_exec_flags = "{project} --goto {file}:{lineStart1}:{col}";
 	}
 
 	return new_exec_flags;
