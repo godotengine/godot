@@ -64,10 +64,6 @@ class EditorPlugin : public Node {
 	String last_main_screen_name;
 	String plugin_version;
 
-#ifndef DISABLE_DEPRECATED
-	void _editor_project_settings_changed();
-#endif
-
 public:
 	enum CustomControlContainer {
 		CONTAINER_TOOLBAR,

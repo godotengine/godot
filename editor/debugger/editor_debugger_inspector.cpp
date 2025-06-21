@@ -142,7 +142,7 @@ void EditorDebuggerInspector::_bind_methods() {
 void EditorDebuggerInspector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
-			connect("object_id_selected", callable_mp(this, &EditorDebuggerInspector::_object_selected));
+			connect("object_id_selected", callable_sp(this, SNAME("object_selected")));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -150,14 +150,6 @@ void EditorDebuggerInspector::_notification(int p_what) {
 			edit(variables);
 		} break;
 	}
-}
-
-void EditorDebuggerInspector::_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field) {
-	emit_signal(SNAME("objects_edited"), p_prop, p_values, p_field);
-}
-
-void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
-	emit_signal(SNAME("object_selected"), p_object);
 }
 
 EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_arr) {
@@ -190,7 +182,7 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		remote_objects = memnew(EditorDebuggerRemoteObjects);
 		remote_objects->remote_object_ids = ids;
 		remote_objects->remote_object_ids.make_read_only();
-		remote_objects->connect("values_edited", callable_mp(this, &EditorDebuggerInspector::_objects_edited));
+		remote_objects->connect("values_edited", callable_sp(this, SNAME("objects_edited")));
 		remote_objects_list.push_back(remote_objects);
 	}
 

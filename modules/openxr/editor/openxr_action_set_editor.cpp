@@ -170,10 +170,6 @@ void OpenXRActionSetEditor::_on_add_action() {
 	// TODO handle focus
 }
 
-void OpenXRActionSetEditor::_on_remove_action_set() {
-	emit_signal("remove", this);
-}
-
 void OpenXRActionSetEditor::_on_remove_action(Object *p_action_editor) {
 	OpenXRActionEditor *action_editor = Object::cast_to<OpenXRActionEditor>(p_action_editor);
 	ERR_FAIL_NULL(action_editor);
@@ -285,7 +281,7 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 
 	rem_action_set = memnew(Button);
 	rem_action_set->set_tooltip_text(TTR("Remove action set."));
-	rem_action_set->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_remove_action_set));
+	rem_action_set->connect(SceneStringName(pressed), callable_sp(this, SNAME("remove")).bind(this));
 	rem_action_set->set_accessibility_name(TTRC("Remove"));
 	rem_action_set->set_flat(true);
 	action_set_hb->add_child(rem_action_set);

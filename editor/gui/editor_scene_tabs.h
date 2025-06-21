@@ -70,7 +70,6 @@ private:
 
 	void _scene_tab_changed(int p_tab);
 	void _scene_tab_script_edited(int p_tab);
-	void _scene_tab_closed(int p_tab);
 	void _scene_tab_hovered(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);

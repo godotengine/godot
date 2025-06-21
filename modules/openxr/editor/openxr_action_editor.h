@@ -55,7 +55,6 @@ private:
 	void _on_action_name_changed(const String p_new_text);
 	void _on_action_localized_name_changed(const String p_new_text);
 	void _on_item_selected(int p_idx);
-	void _on_remove_action();
 
 protected:
 	static void _bind_methods();
