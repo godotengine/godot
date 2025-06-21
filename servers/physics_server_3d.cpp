@@ -912,6 +912,7 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(JOINT_TYPE_SLIDER);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_CONE_TWIST);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_6DOF);
+	BIND_ENUM_CONSTANT(JOINT_TYPE_DISTANCE_JOINT);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_MAX);
 
 	ClassDB::bind_method(D_METHOD("joint_make_pin", "joint", "body_A", "local_A", "body_B", "local_B"), &PhysicsServer3D::joint_make_pin);
@@ -1036,6 +1037,15 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_set_flag", "joint", "axis", "flag", "enable"), &PhysicsServer3D::generic_6dof_joint_set_flag);
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_get_flag", "joint", "axis", "flag"), &PhysicsServer3D::generic_6dof_joint_get_flag);
+
+	BIND_ENUM_CONSTANT(DISTANCE_JOINT_LIMITS_SPRING_STIFFNESS);
+	BIND_ENUM_CONSTANT(DISTANCE_JOINT_LIMITS_SPRING_DAMPING);
+	BIND_ENUM_CONSTANT(DISTANCE_JOINT_DISTANCE_MIN);
+	BIND_ENUM_CONSTANT(DISTANCE_JOINT_DISTANCE_MAX);
+
+	ClassDB::bind_method(D_METHOD("joint_make_distance", "joint", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_make_distance);
+
+	ClassDB::bind_method(D_METHOD("distance_joint_set_param", "joint", "param", "value"), &PhysicsServer3D::distance_joint_set_param);
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &PhysicsServer3D::free);
 
