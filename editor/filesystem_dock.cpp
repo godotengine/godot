@@ -1883,6 +1883,15 @@ void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
 	_move_operation_confirm(to_move_path, to_move_or_copy, p_overwrite ? OVERWRITE_REPLACE : OVERWRITE_RENAME);
 }
 
+void FileSystemDock::_convert_async_cbk(Ref<Resource> p_new_res, Ref<Resource> p_old_res) {
+	EditorNode::get_singleton()->replace_resources_in_scenes({ p_old_res }, { p_new_res });
+
+	const String old_res_path = p_old_res->get_path();
+	const String rmpath = OS::get_singleton()->get_resource_dir() + old_res_path.replace_first("res://", "/");
+	OS::get_singleton()->move_to_trash(rmpath);
+	EditorFileSystem::get_singleton()->update_file(old_res_path);
+}
+
 void FileSystemDock::_convert_dialog_action() {
 	Vector<Ref<Resource>> selected_resources;
 	for (const String &S : to_convert) {
@@ -1899,11 +1908,17 @@ void FileSystemDock::_convert_dialog_action() {
 			int conversion_id = 0;
 			for (const String &target : cached_valid_conversion_targets) {
 				if (conversion_id == selected_conversion_id && conversion->converts_to() == target) {
-					Ref<Resource> converted_res = conversion->convert(res);
 					ERR_FAIL_COND(res.is_null());
-					converted_resources.push_back(converted_res);
-					resources_to_erase_history_for.insert(res);
-					break;
+					Ref<Resource> converted_res = conversion->convert(res);
+					if (!converted_res.is_null()) {
+						converted_resources.push_back(converted_res);
+						resources_to_erase_history_for.insert(res);
+						break;
+					} else {
+						Callable cbk = callable_mp(this, &FileSystemDock::_convert_async_cbk).bind(res);
+						conversion->convert_async(res, cbk);
+						break;
+					}
 				}
 				conversion_id++;
 			}

@@ -34,6 +34,7 @@ void EditorResourceConversionPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_converts_to);
 	GDVIRTUAL_BIND(_handles, "resource");
 	GDVIRTUAL_BIND(_convert, "resource");
+	GDVIRTUAL_BIND(_convert_async, "resource", "on_complete");
 }
 
 String EditorResourceConversionPlugin::converts_to() const {
@@ -51,5 +52,11 @@ bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) co
 Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<Resource> ret;
 	GDVIRTUAL_CALL(_convert, p_resource, ret);
+	return ret;
+}
+
+bool EditorResourceConversionPlugin::convert_async(const Ref<Resource> &p_resource, const Callable &p_on_complete) {
+	bool ret = false;
+	GDVIRTUAL_CALL(_convert_async, p_resource, p_on_complete, ret);
 	return ret;
 }
