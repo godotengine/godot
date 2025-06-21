@@ -1580,7 +1580,7 @@ bool JoltPhysicsServer3D::joint_is_disabled_collisions_between_bodies(RID p_join
 	return joint->is_collision_disabled();
 }
 
-void JoltPhysicsServer3D::free(RID p_rid) {
+void JoltPhysicsServer3D::free_rid(RID p_rid) {
 	if (JoltShape3D *shape = shape_owner.get_or_null(p_rid)) {
 		free_shape(shape);
 	} else if (JoltBody3D *body = body_owner.get_or_null(p_rid)) {

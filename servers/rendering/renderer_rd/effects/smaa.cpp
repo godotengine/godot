@@ -138,8 +138,8 @@ SMAA::SMAA() {
 }
 
 SMAA::~SMAA() {
-	RD::get_singleton()->free(smaa.search_tex);
-	RD::get_singleton()->free(smaa.area_tex);
+	RD::get_singleton()->free_rid(smaa.search_tex);
+	RD::get_singleton()->free_rid(smaa.area_tex);
 
 	smaa.edge_shader.version_free(smaa.edge_shader_version);
 	smaa.weight_shader.version_free(smaa.weight_shader_version);
