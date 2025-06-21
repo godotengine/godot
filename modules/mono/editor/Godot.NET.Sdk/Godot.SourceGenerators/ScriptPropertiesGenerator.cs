@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,55 +11,74 @@ using Microsoft.CodeAnalysis.Text;
 namespace Godot.SourceGenerators
 {
     [Generator]
-    public class ScriptPropertiesGenerator : ISourceGenerator
+    public class ScriptPropertiesGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            var areGodotSourceGeneratorsDisabled = context.AnalyzerConfigOptionsProvider.Select(static (provider, _) => provider.IsGodotSourceGeneratorDisabled("ScriptProperties"));
+
+            var godotClasses = context.SyntaxProvider.CreateValuesProviderForGodotClasses();
+
+            var values = areGodotSourceGeneratorsDisabled
+                .Combine(context.CompilationProvider)
+                .Combine(godotClasses.Collect());
+
+            context.RegisterSourceOutput(values, static (spc, source) =>
+            {
+                (bool areGodotSourceGeneratorsDisabled, Compilation compilation) = source.Left;
+                var godotClasses = source.Right;
+
+                if (areGodotSourceGeneratorsDisabled)
+                    return;
+
+                Execute(spc, compilation, godotClasses);
+            });
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        private static void Execute(SourceProductionContext context, Compilation compilation, ImmutableArray<GodotClassData> godotClassDatas)
         {
-            if (context.IsGodotSourceGeneratorDisabled("ScriptProperties"))
-                return;
+            INamedTypeSymbol[] godotClasses = godotClassDatas.Where(x =>
+            {
+                // Report and skip non-partial classes
+                if (x.DeclarationSyntax.IsPartial())
+                {
+                    if (x.DeclarationSyntax.IsNested() && !x.DeclarationSyntax.AreAllOuterTypesPartial(out var typeMissingPartial))
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            Common.OuterClassPartialModifierRule,
+                            typeMissingPartial!.Identifier.GetLocation(),
+                            x.Symbol.ToDisplayString()
+                        ));
+                        return false;
+                    }
 
-            INamedTypeSymbol[] godotClasses = context
-                .Compilation.SyntaxTrees
-                .SelectMany(tree =>
-                    tree.GetRoot().DescendantNodes()
-                        .OfType<ClassDeclarationSyntax>()
-                        .SelectGodotScriptClasses(context.Compilation)
-                        // Report and skip non-partial classes
-                        .Where(x =>
-                        {
-                            if (x.cds.IsPartial())
-                            {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
-                                {
-                                    return false;
-                                }
+                    return true;
+                }
 
-                                return true;
-                            }
-                            return false;
-                        })
-                        .Select(x => x.symbol)
-                )
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.ClassPartialModifierRule,
+                    x.DeclarationSyntax.Identifier.GetLocation(),
+                    x.Symbol.ToDisplayString()
+                ));
+                return false;
+            }).Select(x => x.Symbol)
                 .Distinct<INamedTypeSymbol>(SymbolEqualityComparer.Default)
                 .ToArray();
 
             if (godotClasses.Length > 0)
             {
-                var typeCache = new MarshalUtils.TypeCache(context.Compilation);
+                var typeCache = new MarshalUtils.TypeCache(compilation);
 
                 foreach (var godotClass in godotClasses)
                 {
-                    VisitGodotScriptClass(context, typeCache, godotClass);
+                    VisitGodotScriptClass(context, compilation, typeCache, godotClass);
                 }
             }
         }
 
         private static void VisitGodotScriptClass(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
+            Compilation compilation,
             MarshalUtils.TypeCache typeCache,
             INamedTypeSymbol symbol
         )
@@ -273,7 +293,7 @@ namespace Godot.SourceGenerators
                     foreach (var groupingInfo in DetermineGroupingPropertyInfo(member.Symbol))
                         AppendGroupingPropertyInfo(source, groupingInfo);
 
-                    var propertyInfo = DeterminePropertyInfo(context, typeCache,
+                    var propertyInfo = DeterminePropertyInfo(context, compilation, typeCache,
                         member.Symbol, member.Type);
 
                     if (propertyInfo == null)
@@ -421,7 +441,8 @@ namespace Godot.SourceGenerators
         }
 
         private static PropertyInfo? DeterminePropertyInfo(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
+            Compilation compilation,
             MarshalUtils.TypeCache typeCache,
             ISymbol memberSymbol,
             MarshalType marshalType
@@ -468,7 +489,7 @@ namespace Godot.SourceGenerators
 
             if (exportToolButtonAttr != null && propertySymbol != null)
             {
-                if (!PropertyIsExpressionBodiedAndReturnsNewCallable(context.Compilation, propertySymbol))
+                if (!PropertyIsExpressionBodiedAndReturnsNewCallable(compilation, propertySymbol))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         Common.ExportToolButtonMustBeExpressionBodiedProperty,

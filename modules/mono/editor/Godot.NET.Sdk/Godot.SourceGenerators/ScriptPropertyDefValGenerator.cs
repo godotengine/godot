@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -9,56 +10,74 @@ using Microsoft.CodeAnalysis.Text;
 namespace Godot.SourceGenerators
 {
     [Generator]
-    public class ScriptPropertyDefValGenerator : ISourceGenerator
+    public class ScriptPropertyDefValGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            var areGodotSourceGeneratorsDisabled = context.AnalyzerConfigOptionsProvider.Select(static (provider, _) => provider.IsGodotSourceGeneratorDisabled("ScriptPropertyDefVal"));
+
+            var godotClasses = context.SyntaxProvider.CreateValuesProviderForGodotClasses();
+
+            var values = areGodotSourceGeneratorsDisabled
+                .Combine(context.CompilationProvider)
+                .Combine(godotClasses.Collect());
+
+            context.RegisterSourceOutput(values, static (spc, source) =>
+            {
+                (bool areGodotSourceGeneratorsDisabled, Compilation compilation) = source.Left;
+                var godotClasses = source.Right;
+
+                if (areGodotSourceGeneratorsDisabled)
+                    return;
+
+                Execute(spc, compilation, godotClasses);
+            });
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        private static void Execute(SourceProductionContext context, Compilation compilation, ImmutableArray<GodotClassData> godotClassDatas)
         {
-            if (context.IsGodotSourceGeneratorDisabled("ScriptPropertyDefVal"))
-                return;
+            INamedTypeSymbol[] godotClasses = godotClassDatas.Where(x =>
+            {
+                // Report and skip non-partial classes
+                if (x.DeclarationSyntax.IsPartial())
+                {
+                    if (x.DeclarationSyntax.IsNested() && !x.DeclarationSyntax.AreAllOuterTypesPartial(out var typeMissingPartial))
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            Common.OuterClassPartialModifierRule,
+                            typeMissingPartial!.Identifier.GetLocation(),
+                            x.Symbol.ToDisplayString()
+                        ));
+                        return false;
+                    }
 
-            INamedTypeSymbol[] godotClasses = context
-                .Compilation.SyntaxTrees
-                .SelectMany(tree =>
-                    tree.GetRoot().DescendantNodes()
-                        .OfType<ClassDeclarationSyntax>()
-                        .SelectGodotScriptClasses(context.Compilation)
-                        // Report and skip non-partial classes
-                        .Where(x =>
-                        {
-                            if (x.cds.IsPartial())
-                            {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
-                                {
-                                    return false;
-                                }
+                    return true;
+                }
 
-                                return true;
-                            }
-
-                            return false;
-                        })
-                        .Select(x => x.symbol)
-                )
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.ClassPartialModifierRule,
+                    x.DeclarationSyntax.Identifier.GetLocation(),
+                    x.Symbol.ToDisplayString()
+                ));
+                return false;
+            }).Select(x => x.Symbol)
                 .Distinct<INamedTypeSymbol>(SymbolEqualityComparer.Default)
                 .ToArray();
 
             if (godotClasses.Length > 0)
             {
-                var typeCache = new MarshalUtils.TypeCache(context.Compilation);
+                var typeCache = new MarshalUtils.TypeCache(compilation);
 
                 foreach (var godotClass in godotClasses)
                 {
-                    VisitGodotScriptClass(context, typeCache, godotClass);
+                    VisitGodotScriptClass(context, compilation, typeCache, godotClass);
                 }
             }
         }
 
         private static void VisitGodotScriptClass(
-            GeneratorExecutionContext context,
+            SourceProductionContext context,
+            Compilation compilation,
             MarshalUtils.TypeCache typeCache,
             INamedTypeSymbol symbol
         )
@@ -214,7 +233,7 @@ namespace Godot.SourceGenerators
                 {
                     if (propertyDeclarationSyntax.Initializer != null)
                     {
-                        var sm = context.Compilation.GetSemanticModel(propertyDeclarationSyntax.Initializer.SyntaxTree);
+                        var sm = compilation.GetSemanticModel(propertyDeclarationSyntax.Initializer.SyntaxTree);
                         var initializerValue = propertyDeclarationSyntax.Initializer.Value;
                         if (!IsStaticallyResolvable(initializerValue, sm))
                             value = "default";
@@ -231,7 +250,7 @@ namespace Godot.SourceGenerators
                             {
                                 if (propertyGet.ExpressionBody.Expression is IdentifierNameSyntax identifierNameSyntax)
                                 {
-                                    var sm = context.Compilation.GetSemanticModel(identifierNameSyntax.SyntaxTree);
+                                    var sm = compilation.GetSemanticModel(identifierNameSyntax.SyntaxTree);
                                     var fieldSymbol = sm.GetSymbolInfo(identifierNameSyntax).Symbol as IFieldSymbol;
                                     EqualsValueClauseSyntax? initializer = fieldSymbol?.DeclaringSyntaxReferences
                                         .Select(r => r.GetSyntax())
@@ -241,7 +260,7 @@ namespace Godot.SourceGenerators
 
                                     if (initializer != null)
                                     {
-                                        sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                                        sm = compilation.GetSemanticModel(initializer.SyntaxTree);
                                         value = initializer.Value.FullQualifiedSyntax(sm);
                                     }
                                 }
@@ -255,7 +274,7 @@ namespace Godot.SourceGenerators
                                     var returnStatementSyntax = returns.Single();
                                     if (returnStatementSyntax.Expression is IdentifierNameSyntax identifierNameSyntax)
                                     {
-                                        var sm = context.Compilation.GetSemanticModel(identifierNameSyntax.SyntaxTree);
+                                        var sm = compilation.GetSemanticModel(identifierNameSyntax.SyntaxTree);
                                         var fieldSymbol = sm.GetSymbolInfo(identifierNameSyntax).Symbol as IFieldSymbol;
                                         EqualsValueClauseSyntax? initializer = fieldSymbol?.DeclaringSyntaxReferences
                                             .Select(r => r.GetSyntax())
@@ -265,7 +284,7 @@ namespace Godot.SourceGenerators
 
                                         if (initializer != null)
                                         {
-                                            sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                                            sm = compilation.GetSemanticModel(initializer.SyntaxTree);
                                             value = initializer.Value.FullQualifiedSyntax(sm);
                                         }
                                     }
@@ -335,7 +354,7 @@ namespace Godot.SourceGenerators
                 string? value = null;
                 if (initializer != null)
                 {
-                    var sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
+                    var sm = compilation.GetSemanticModel(initializer.SyntaxTree);
                     value = initializer.Value.FullQualifiedSyntax(sm);
                 }
 
