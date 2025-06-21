@@ -80,4 +80,8 @@
 			If set, allows to retarget the position/rotation/scale.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="TransformFlag">
+		</enum>
+	</enums>
 </class>
