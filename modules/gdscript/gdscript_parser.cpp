@@ -996,6 +996,10 @@ void GDScriptParser::parse_class_name() {
 		current_class->fqcn = String(current_class->identifier->name);
 	}
 
+	if (script_path.begins_with("res://") && script_path.contains("::")) {
+		push_error(R"("class_name" isn't allowed in built-in scripts.)");
+	}
+
 	make_completion_context(COMPLETION_DECLARATION, current_class);
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
