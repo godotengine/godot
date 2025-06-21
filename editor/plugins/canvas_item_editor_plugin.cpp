@@ -4291,8 +4291,8 @@ void CanvasItemEditor::_selection_changed() {
 	}
 	selected_from_canvas = false;
 
-	if (temp_pivot != Vector2(Math::INF, Math::INF)) {
-		temp_pivot = Vector2(Math::INF, Math::INF);
+	if (temp_pivot != Vector2::INF) {
+		temp_pivot = Vector2::INF;
 		viewport->queue_redraw();
 	}
 }
@@ -6218,7 +6218,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 }
 
 bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (p_point == Vector2(Math::INF, Math::INF)) {
+	if (p_point == Vector2::INF) {
 		return false;
 	}
 	Dictionary d = p_data;
@@ -6352,7 +6352,7 @@ bool CanvasItemEditorViewport::_is_any_texture_selected() const {
 }
 
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
-	if (p_point == Vector2(Math::INF, Math::INF)) {
+	if (p_point == Vector2::INF) {
 		return;
 	}
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);

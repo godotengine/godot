@@ -85,24 +85,19 @@ TEST_CASE("[Transform3D] rotation") {
 }
 
 TEST_CASE("[Transform3D] Finite number checks") {
-	constexpr Vector3 y(0, 1, 2);
-	constexpr Vector3 infinite_vec(Math::NaN, Math::NaN, Math::NaN);
-	constexpr Basis x(y, y, y);
-	constexpr Basis infinite_basis(infinite_vec, infinite_vec, infinite_vec);
-
 	CHECK_MESSAGE(
-			Transform3D(x, y).is_finite(),
+			Transform3D(Basis::ZERO, Vector3::ZERO).is_finite(),
 			"Transform3D with all components finite should be finite");
 
 	CHECK_FALSE_MESSAGE(
-			Transform3D(x, infinite_vec).is_finite(),
+			Transform3D(Basis::ZERO, Vector3::INF).is_finite(),
 			"Transform3D with one component infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Transform3D(infinite_basis, y).is_finite(),
+			Transform3D(Basis::INF, Vector3::ZERO).is_finite(),
 			"Transform3D with one component infinite should not be finite.");
 
 	CHECK_FALSE_MESSAGE(
-			Transform3D(infinite_basis, infinite_vec).is_finite(),
+			Transform3D(Basis::INF, Vector3::INF).is_finite(),
 			"Transform3D with two components infinite should not be finite.");
 }
 

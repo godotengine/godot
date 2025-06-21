@@ -34,6 +34,15 @@
 #include "core/math/vector3.h"
 
 struct [[nodiscard]] Basis {
+	static const Basis ZERO;
+	static const Basis ONE;
+	static const Basis INF;
+	static const Basis NaN;
+	static const Basis IDENTITY;
+	static const Basis FLIP_X;
+	static const Basis FLIP_Y;
+	static const Basis FLIP_Z;
+
 	Vector3 rows[3] = {
 		Vector3(1, 0, 0),
 		Vector3(0, 1, 0),
@@ -224,7 +233,7 @@ struct [[nodiscard]] Basis {
 
 	operator Quaternion() const { return get_quaternion(); }
 
-	static Basis looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
+	static Basis looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
 
 	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); }
 	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) { set_quaternion_scale(p_quaternion, p_scale); }
@@ -246,6 +255,15 @@ private:
 	// Helper method.
 	void _set_diagonal(const Vector3 &p_diag);
 };
+
+inline constexpr Basis Basis::ZERO = { Vector3::ZERO, Vector3::ZERO, Vector3::ZERO };
+inline constexpr Basis Basis::ONE = { Vector3::ONE, Vector3::ONE, Vector3::ONE };
+inline constexpr Basis Basis::INF = { Vector3::INF, Vector3::INF, Vector3::INF };
+inline constexpr Basis Basis::NaN = { Vector3::NaN, Vector3::NaN, Vector3::NaN };
+inline constexpr Basis Basis::IDENTITY = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
+inline constexpr Basis Basis::FLIP_X = { { -1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
+inline constexpr Basis Basis::FLIP_Y = { { 1, 0, 0 }, { 0, -1, 0 }, { 0, 0, 1 } };
+inline constexpr Basis Basis::FLIP_Z = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, -1 } };
 
 constexpr bool Basis::operator==(const Basis &p_matrix) const {
 	for (int i = 0; i < 3; i++) {

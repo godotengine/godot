@@ -36,8 +36,20 @@
 class String;
 struct Vector2;
 
+#undef MIN
+#undef MAX
+
 struct [[nodiscard]] Vector2i {
-	static const int AXIS_COUNT = 2;
+	static const Vector2i ZERO;
+	static const Vector2i ONE;
+	static const Vector2i MIN;
+	static const Vector2i MAX;
+	static const Vector2i LEFT;
+	static const Vector2i RIGHT;
+	static const Vector2i UP;
+	static const Vector2i DOWN;
+
+	static constexpr int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -78,19 +90,19 @@ struct [[nodiscard]] Vector2i {
 	}
 
 	Vector2i min(const Vector2i &p_vector2i) const {
-		return Vector2i(MIN(x, p_vector2i.x), MIN(y, p_vector2i.y));
+		return Vector2i(::MIN(x, p_vector2i.x), ::MIN(y, p_vector2i.y));
 	}
 
 	Vector2i mini(int32_t p_scalar) const {
-		return Vector2i(MIN(x, p_scalar), MIN(y, p_scalar));
+		return Vector2i(::MIN(x, p_scalar), ::MIN(y, p_scalar));
 	}
 
 	Vector2i max(const Vector2i &p_vector2i) const {
-		return Vector2i(MAX(x, p_vector2i.x), MAX(y, p_vector2i.y));
+		return Vector2i(::MAX(x, p_vector2i.x), ::MAX(y, p_vector2i.y));
 	}
 
 	Vector2i maxi(int32_t p_scalar) const {
-		return Vector2i(MAX(x, p_scalar), MAX(y, p_scalar));
+		return Vector2i(::MAX(x, p_scalar), ::MAX(y, p_scalar));
 	}
 
 	double distance_to(const Vector2i &p_to) const {
@@ -149,6 +161,15 @@ struct [[nodiscard]] Vector2i {
 			x(p_x), y(p_y) {}
 	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
+
+inline constexpr Vector2i Vector2i::ZERO = { 0, 0 };
+inline constexpr Vector2i Vector2i::ONE = { 1, 1 };
+inline constexpr Vector2i Vector2i::MIN = { INT32_MIN, INT32_MIN };
+inline constexpr Vector2i Vector2i::MAX = { INT32_MAX, INT32_MAX };
+inline constexpr Vector2i Vector2i::LEFT = { -1, 0 };
+inline constexpr Vector2i Vector2i::RIGHT = { 1, 0 };
+inline constexpr Vector2i Vector2i::UP = { 0, -1 };
+inline constexpr Vector2i Vector2i::DOWN = { 0, 1 };
 
 constexpr Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);

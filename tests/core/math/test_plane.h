@@ -168,24 +168,19 @@ TEST_CASE("[Plane] Intersection") {
 }
 
 TEST_CASE("[Plane] Finite number checks") {
-	constexpr Vector3 x(0, 1, 2);
-	constexpr Vector3 infinite_vec(Math::NaN, Math::NaN, Math::NaN);
-	constexpr real_t y = 0;
-	constexpr real_t infinite_y = Math::NaN;
-
 	CHECK_MESSAGE(
-			Plane(x, y).is_finite(),
+			Plane(Vector3::ZERO, 0).is_finite(),
 			"Plane with all components finite should be finite");
 
 	CHECK_FALSE_MESSAGE(
-			Plane(x, infinite_y).is_finite(),
+			Plane(Vector3::ZERO, Math::NaN).is_finite(),
 			"Plane with one component infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Plane(infinite_vec, y).is_finite(),
+			Plane(Vector3::INF, 0).is_finite(),
 			"Plane with one component infinite should not be finite.");
 
 	CHECK_FALSE_MESSAGE(
-			Plane(infinite_vec, infinite_y).is_finite(),
+			Plane(Vector3::INF, Math::NaN).is_finite(),
 			"Plane with two components infinite should not be finite.");
 }
 

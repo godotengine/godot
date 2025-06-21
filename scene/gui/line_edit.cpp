@@ -1073,7 +1073,7 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (p_data.is_string() && is_editable()) {
 		apply_ime();
 
-		if (p_point != Vector2(Math::INF, Math::INF)) {
+		if (p_point != Vector2::INF) {
 			set_caret_at_pixel_pos(p_point.x);
 		}
 		int caret_column_tmp = caret_column;

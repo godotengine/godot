@@ -323,22 +323,19 @@ TEST_CASE("[Rect2] Merging") {
 }
 
 TEST_CASE("[Rect2] Finite number checks") {
-	constexpr Vector2 x(0, 1);
-	constexpr Vector2 infinite(Math::NaN, Math::NaN);
-
 	CHECK_MESSAGE(
-			Rect2(x, x).is_finite(),
+			Rect2(Vector2::ZERO, Vector2::ZERO).is_finite(),
 			"Rect2 with all components finite should be finite");
 
 	CHECK_FALSE_MESSAGE(
-			Rect2(infinite, x).is_finite(),
+			Rect2(Vector2::INF, Vector2::ZERO).is_finite(),
 			"Rect2 with one component infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Rect2(x, infinite).is_finite(),
+			Rect2(Vector2::ZERO, Vector2::INF).is_finite(),
 			"Rect2 with one component infinite should not be finite.");
 
 	CHECK_FALSE_MESSAGE(
-			Rect2(infinite, infinite).is_finite(),
+			Rect2(Vector2::INF, Vector2::INF).is_finite(),
 			"Rect2 with two components infinite should not be finite.");
 }
 
