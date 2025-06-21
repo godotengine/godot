@@ -1207,7 +1207,6 @@ void Input::release_pressed_events() {
 	physical_keys_pressed.clear();
 	key_label_pressed.clear();
 	joy_buttons_pressed.clear();
-	_joy_axis.clear();
 
 	for (KeyValue<StringName, Input::ActionState> &E : action_states) {
 		if (E.value.cache.pressed) {
