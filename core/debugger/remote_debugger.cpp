@@ -407,6 +407,118 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		}
 	}
 
+	if (!p_is_error_breakpoint) {
+		const int frame = 0;
+		ScriptLanguage *script_lang = script_debugger->get_break_language();
+		const String &source = script_lang->debug_get_stack_level_source(frame);
+		const int &line = script_lang->debug_get_stack_level_line(frame);
+
+		if (EngineDebugger::get_script_debugger()->is_breakpoint(line, source)) {
+			const HashMap<StringName, HashMap<int, Breakpoint>> &breakpoints = EngineDebugger::get_script_debugger()->get_breakpoints();
+			const Breakpoint &breakpoint = breakpoints[source][line];
+
+			if (!breakpoint.enabled) {
+				return;
+			}
+
+			if (!breakpoint.condition.is_empty()) {
+				List<String> locals;
+				List<Variant> local_vals;
+				script_lang->debug_get_stack_level_locals(frame, &locals, &local_vals);
+				ERR_FAIL_COND(locals.size() != local_vals.size());
+
+				PackedStringArray input_names;
+				for (const String &S : locals) {
+					input_names.append(S);
+				}
+
+				Array input_vals;
+				for (const Variant &V : local_vals) {
+					input_vals.append(V);
+				}
+
+				List<StringName> native_types;
+				ClassDB::get_class_list(&native_types);
+				for (const StringName &E : native_types) {
+					if (!ClassDB::is_class_exposed(E) || !Engine::get_singleton()->has_singleton(E) || Engine::get_singleton()->is_singleton_editor_only(E)) {
+						continue;
+					}
+
+					input_names.append(E);
+					input_vals.append(Engine::get_singleton()->get_singleton_object(E));
+				}
+
+				List<StringName> user_types;
+				ScriptServer::get_global_class_list(&user_types);
+				for (const StringName &S : user_types) {
+					String scr_path = ScriptServer::get_global_class_path(S);
+					Ref<Script> scr = ResourceLoader::load(scr_path, "Script");
+					ERR_CONTINUE_MSG(scr.is_null(), vformat("Could not load the global class %s from resource path: %s", S, scr_path));
+
+					input_names.append(S);
+					input_vals.append(scr);
+				}
+
+				Expression expression;
+				if (expression.parse(breakpoint.condition, input_names) != OK) {
+					ERR_FAIL_MSG(vformat("Breakpoint's condition parse error in \"%s\": %s.", breakpoint.condition, expression.get_error_text()));
+				}
+
+				ScriptInstance *instance = script_lang->debug_get_stack_level_instance(frame);
+				const Variant return_val = expression.execute(input_vals, instance != nullptr ? instance->get_owner() : nullptr, false);
+				String error = expression.get_error_text();
+				if (!error.is_empty()) {
+					ERR_FAIL_MSG(vformat("Breakpoint's condition execution error in \"%s\": %s.", breakpoint.condition, error));
+				}
+
+				if (!return_val.booleanize()) {
+					return;
+				}
+			}
+
+			if (!breakpoint.print.is_empty()) {
+				ScriptInstance *instance = script_lang->debug_get_stack_level_instance(frame);
+				if (instance) {
+					String expression_str = vformat("print(\"%s\".format(input_dict))", breakpoint.print);
+
+					Dictionary input_dict;
+					{
+						List<String> locals;
+						List<Variant> local_vals;
+						script_lang->debug_get_stack_level_locals(frame, &locals, &local_vals);
+						ERR_FAIL_COND(locals.size() != local_vals.size());
+
+						const List<Variant>::Element *V = local_vals.front();
+						for (const String &S : locals) {
+							const Variant &value = V->get();
+							input_dict[S] = value;
+							V = V->next();
+						}
+					}
+					{
+						List<String> members;
+						List<Variant> member_vals;
+						script_lang->debug_get_stack_level_members(frame, &members, &member_vals);
+						ERR_FAIL_COND(members.size() != member_vals.size());
+
+						const List<Variant>::Element *V = member_vals.front();
+						for (const String &S : members) {
+							const Variant &value = V->get();
+							input_dict[S] = value;
+							V = V->next();
+						}
+					}
+
+					print_line_rich(breakpoint.print.format(input_dict));
+				}
+			}
+
+			if (!breakpoint.suspend) {
+				return;
+			}
+		}
+	}
+
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 	ERR_FAIL_NULL(script_lang);
 	const bool can_break = !(p_is_error_breakpoint && script_debugger->is_ignoring_error_breaks());
@@ -521,12 +633,13 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "reload_all_scripts") {
 				reload_all_scripts = true;
 			} else if (command == "breakpoint") {
-				ERR_FAIL_COND(data.size() < 3);
-				bool set = data[2];
-				if (set) {
-					script_debugger->insert_breakpoint(data[1], data[0]);
+				ERR_FAIL_COND(data.size() < 7);
+				Breakpoint bp = Breakpoint(data[0], data[1], data[3], data[4], data[5], data[6]);
+				bool breakpointed = data[2];
+				if (breakpointed && bp.enabled) {
+					script_debugger->insert_breakpoint(bp.line, bp.source, bp);
 				} else {
-					script_debugger->remove_breakpoint(data[1], data[0]);
+					script_debugger->remove_breakpoint(bp.line, bp.source);
 				}
 
 			} else if (command == "set_skip_breakpoints") {
@@ -698,12 +811,13 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 	} else if (p_cmd == "reload_all_scripts") {
 		reload_all_scripts = true;
 	} else if (p_cmd == "breakpoint") {
-		ERR_FAIL_COND_V(p_data.size() < 3, ERR_INVALID_DATA);
-		bool set = p_data[2];
-		if (set) {
-			script_debugger->insert_breakpoint(p_data[1], p_data[0]);
+		ERR_FAIL_COND_V(p_data.size() < 7, ERR_INVALID_DATA);
+		Breakpoint bp = Breakpoint(p_data[0], p_data[1], p_data[3], p_data[4], p_data[5], p_data[6]);
+		bool breakpointed = p_data[2];
+		if (breakpointed && bp.enabled) {
+			script_debugger->insert_breakpoint(bp.line, bp.source, bp);
 		} else {
-			script_debugger->remove_breakpoint(p_data[1], p_data[0]);
+			script_debugger->remove_breakpoint(bp.line, bp.source);
 		}
 
 	} else if (p_cmd == "set_skip_breakpoints") {
