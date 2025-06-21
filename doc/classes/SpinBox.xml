@@ -58,6 +58,9 @@
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;">
 			Adds the specified prefix string before the numerical value of the [SpinBox].
 		</member>
+		<member name="prefix_auto_translate_mode" type="int" setter="set_prefix_auto_translate_mode" getter="get_prefix_auto_translate_mode" enum="Node.AutoTranslateMode" default="2">
+			Auto-translation mode for the prefix. Useful when prefix is a word that can be translated.
+		</member>
 		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
 			If [code]true[/code], the [SpinBox] will select the whole text when the [LineEdit] gains focus. Clicking the up and down arrows won't trigger this behavior.
 		</member>
@@ -65,6 +68,9 @@
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
 			Adds the specified suffix string after the numerical value of the [SpinBox].
+		</member>
+		<member name="suffix_auto_translate_mode" type="int" setter="set_suffix_auto_translate_mode" getter="get_suffix_auto_translate_mode" enum="Node.AutoTranslateMode" default="2">
+			Auto-translation mode for the suffix. Useful when suffix is a word that can be translated.
 		</member>
 		<member name="update_on_text_changed" type="bool" setter="set_update_on_text_changed" getter="get_update_on_text_changed" default="false">
 			Sets the value of the [Range] for this [SpinBox] when the [LineEdit] text is [i]changed[/i] instead of [i]submitted[/i]. See [signal LineEdit.text_changed] and [signal LineEdit.text_submitted].

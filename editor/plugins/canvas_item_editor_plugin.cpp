@@ -168,7 +168,8 @@ public:
 		primary_grid_step_x->set_step(1);
 		primary_grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
 		primary_grid_step_x->set_allow_greater(true);
-		primary_grid_step_x->set_suffix("steps");
+		primary_grid_step_x->set_suffix(TTRC("steps"));
+		primary_grid_step_x->set_suffix_auto_translate_mode(AUTO_TRANSLATE_MODE_INHERIT);
 		primary_grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		primary_grid_step_x->set_select_all_on_focus(true);
 		primary_grid_step_x->set_accessibility_name(TTRC("X Primary Step"));
@@ -179,7 +180,8 @@ public:
 		primary_grid_step_y->set_step(1);
 		primary_grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
 		primary_grid_step_y->set_allow_greater(true);
-		primary_grid_step_y->set_suffix(TTRC("steps")); // TODO: Add suffix auto-translation.
+		primary_grid_step_y->set_suffix(TTRC("steps"));
+		primary_grid_step_y->set_suffix_auto_translate_mode(AUTO_TRANSLATE_MODE_INHERIT);
 		primary_grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		primary_grid_step_y->set_select_all_on_focus(true);
 		primary_grid_step_y->set_accessibility_name(TTRC("Y Primary Step"));
