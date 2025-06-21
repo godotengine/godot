@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
+#include "servers/rendering/mesh_rasterizer.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
 
@@ -2489,6 +2490,16 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_3D);
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_FAST);
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_HIGH);
+
+	/* TEXTURE DRAWABLE API*/
+
+	ClassDB::bind_method(D_METHOD("texture_drawable_ctreate", "width", "height", "texture_format", "use_mipmaps"), &RenderingServer::texture_drawable_create, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_drawable_generate_mipmaps", "texture_drawable"), &RenderingServer::texture_drawable_generate_mipmaps);
+
+	/* MESH RASTERIZER API */
+
+	ClassDB::bind_method(D_METHOD("mesh_rasterizer_create", "mesh", "surface_index"), &RenderingServer::mesh_rasterizer_create);
+	ClassDB::bind_method(D_METHOD("mesh_rasterizer_draw", "mesh_rasterizer", "material", "texture_drawable", "blend_state", "clear_color", "multisamples"), &RenderingServer::mesh_rasterizer_draw, DEFVAL(RD::TEXTURE_SAMPLES_1));
 
 	/* SKELETON API */
 
