@@ -58,9 +58,7 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 					drag_from = get_transform().xform(mb->get_position()).x;
 				}
 			} else {
-				dragging = false;
-				queue_redraw();
-				sc->emit_signal(SNAME("drag_ended"));
+				_end_dragging();
 			}
 		}
 	}
@@ -82,6 +80,13 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 		sc->queue_sort();
 		sc->emit_signal(SNAME("dragged"), sc->get_split_offset());
 	}
+}
+
+void SplitContainerDragger::_end_dragging() {
+	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+	dragging = false;
+	queue_redraw();
+	sc->emit_signal(SNAME("drag_ended"));
 }
 
 Control::CursorShape SplitContainerDragger::get_cursor_shape(const Point2 &p_pos) const {
@@ -197,6 +202,19 @@ Control *SplitContainer::_get_sortable_child(int p_idx, SortableVisibilityMode p
 	return nullptr;
 }
 
+void SplitContainer::_fit_child_in_rect_with_visibility_update(Control *p_child, const Rect2 &p_rect) {
+	// For very small rects (like when a size is set to 0 via autosnapping) hide the child instead
+	// of changing its rectangle.  The child is scaled to 0 instead of changing visibility to avoid
+	// affecting any existing visibility state for both the SplitContainer users and for the size
+	// calculations SplitContainer itself doe
+	if (snap_state != Snap::SNAP_NONE && (p_rect.size.y < 1.0 || p_rect.size.x < 1.0)) {
+		p_child->set_scale(Vector2(0, 0));
+	} else {
+		// fit_child_in_rect resets scaling to 1
+		fit_child_in_rect(p_child, p_rect);
+	}
+}
+
 Ref<Texture2D> SplitContainer::_get_grabber_icon() const {
 	if (is_fixed) {
 		return theme_cache.grabber_icon;
@@ -262,7 +280,26 @@ void SplitContainer::_compute_split_offset(bool p_clamp) {
 	// Clamp the split offset to acceptable values.
 	int first_min_size = first->get_combined_minimum_size()[axis_index];
 	int second_min_size = second->get_combined_minimum_size()[axis_index];
-	computed_split_offset = CLAMP(wished_size, first_min_size, size - sep - second_min_size);
+
+	// Check autosnapping
+	if (dragging_area_control->dragging) {
+		if ((auto_snap & SNAP_FIRST) != 0 && wished_size < first_min_size / 3) {
+			set_snap_state(Snap::SNAP_FIRST);
+		} else if ((auto_snap & SNAP_SECOND) != 0 && wished_size > size - sep - second_min_size / 3) {
+			set_snap_state(Snap::SNAP_SECOND);
+		} else {
+			set_snap_state(Snap::SNAP_NONE);
+		}
+	}
+
+	// Apply snapping
+	if (!collapsed && (snap_state & SNAP_FIRST) != 0) {
+		computed_split_offset = 0;
+	} else if (!collapsed && (snap_state & SNAP_SECOND) != 0) {
+		computed_split_offset = size;
+	} else {
+		computed_split_offset = CLAMP(wished_size, first_min_size, size - sep - second_min_size);
+	}
 
 	// Clamp the split_offset if requested.
 	if (p_clamp) {
@@ -295,19 +332,19 @@ void SplitContainer::_resort() {
 
 	// Move the children.
 	if (vertical) {
-		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(get_size().width, computed_split_offset)));
+		_fit_child_in_rect_with_visibility_update(first, Rect2(Point2(0, 0), Size2(get_size().width, computed_split_offset)));
 		int sofs = computed_split_offset + sep;
-		fit_child_in_rect(second, Rect2(Point2(0, sofs), Size2(get_size().width, get_size().height - sofs)));
+		_fit_child_in_rect_with_visibility_update(second, Rect2(Point2(0, sofs), Size2(get_size().width, get_size().height - sofs)));
 	} else {
 		if (is_rtl) {
 			computed_split_offset = get_size().width - computed_split_offset - sep;
-			fit_child_in_rect(second, Rect2(Point2(0, 0), Size2(computed_split_offset, get_size().height)));
+			_fit_child_in_rect_with_visibility_update(second, Rect2(Point2(0, 0), Size2(computed_split_offset, get_size().height)));
 			int sofs = computed_split_offset + sep;
-			fit_child_in_rect(first, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+			_fit_child_in_rect_with_visibility_update(first, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
 		} else {
-			fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(computed_split_offset, get_size().height)));
+			_fit_child_in_rect_with_visibility_update(first, Rect2(Point2(0, 0), Size2(computed_split_offset, get_size().height)));
 			int sofs = computed_split_offset + sep;
-			fit_child_in_rect(second, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+			_fit_child_in_rect_with_visibility_update(second, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
 		}
 	}
 
@@ -405,7 +442,14 @@ void SplitContainer::set_collapsed(bool p_collapsed) {
 		return;
 	}
 	collapsed = p_collapsed;
+	if (collapsed && dragging_area_control->dragging) {
+		dragging_area_control->_end_dragging();
+	}
 	queue_sort();
+}
+
+bool SplitContainer::is_collapsed() const {
+	return collapsed;
 }
 
 void SplitContainer::set_dragger_visibility(DraggerVisibility p_visibility) {
@@ -413,6 +457,9 @@ void SplitContainer::set_dragger_visibility(DraggerVisibility p_visibility) {
 		return;
 	}
 	dragger_visibility = p_visibility;
+	if (dragger_visibility != DraggerVisibility::DRAGGER_VISIBLE && dragging_area_control->dragging) {
+		dragging_area_control->_end_dragging();
+	}
 	queue_sort();
 }
 
@@ -420,8 +467,30 @@ SplitContainer::DraggerVisibility SplitContainer::get_dragger_visibility() const
 	return dragger_visibility;
 }
 
-bool SplitContainer::is_collapsed() const {
-	return collapsed;
+void SplitContainer::set_auto_snap(Snap p_auto_snap) {
+	if (auto_snap == p_auto_snap) {
+		return;
+	}
+	auto_snap = p_auto_snap;
+}
+
+SplitContainer::Snap SplitContainer::get_auto_snap() const {
+	return auto_snap;
+}
+
+void SplitContainer::set_snap_state(Snap p_snap_state) {
+	if (snap_state == p_snap_state) {
+		return;
+	}
+	snap_state = p_snap_state;
+	if (!collapsed) {
+		queue_sort();
+	}
+	emit_signal(SNAME("snap_state_changed"));
+}
+
+SplitContainer::Snap SplitContainer::get_snap_state() const {
+	return snap_state;
 }
 
 void SplitContainer::set_vertical(bool p_vertical) {
@@ -449,9 +518,7 @@ void SplitContainer::set_dragging_enabled(bool p_enabled) {
 	}
 	dragging_enabled = p_enabled;
 	if (!dragging_enabled && dragging_area_control->dragging) {
-		dragging_area_control->dragging = false;
-		// queue_redraw() is called by _resort().
-		emit_signal(SNAME("drag_ended"));
+		dragging_area_control->_end_dragging();
 	}
 	if (get_viewport()) {
 		get_viewport()->update_mouse_cursor_state();
@@ -596,6 +663,12 @@ void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dragger_visibility", "mode"), &SplitContainer::set_dragger_visibility);
 	ClassDB::bind_method(D_METHOD("get_dragger_visibility"), &SplitContainer::get_dragger_visibility);
 
+	ClassDB::bind_method(D_METHOD("set_auto_snap", "auto_snap"), &SplitContainer::set_auto_snap);
+	ClassDB::bind_method(D_METHOD("get_auto_snap"), &SplitContainer::get_auto_snap);
+
+	ClassDB::bind_method(D_METHOD("set_snap_state", "snap_state"), &SplitContainer::set_snap_state);
+	ClassDB::bind_method(D_METHOD("get_snap_state"), &SplitContainer::get_snap_state);
+
 	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &SplitContainer::set_vertical);
 	ClassDB::bind_method(D_METHOD("is_vertical"), &SplitContainer::is_vertical);
 
@@ -622,11 +695,14 @@ void SplitContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::INT, "offset")));
 	ADD_SIGNAL(MethodInfo("drag_started"));
 	ADD_SIGNAL(MethodInfo("drag_ended"));
+	ADD_SIGNAL(MethodInfo("snap_state_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_split_offset", "get_split_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collapsed"), "set_collapsed", "is_collapsed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dragging_enabled"), "set_dragging_enabled", "is_dragging_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dragger_visibility", PROPERTY_HINT_ENUM, "Visible,Hidden,Hidden and Collapsed"), "set_dragger_visibility", "get_dragger_visibility");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_snap", PROPERTY_HINT_ENUM, "None,First,Second,Both"), "set_auto_snap", "get_auto_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_state", PROPERTY_HINT_ENUM, "None,First,Second"), "set_snap_state", "get_snap_state");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "touch_dragger_enabled"), "set_touch_dragger_enabled", "is_touch_dragger_enabled");
 
@@ -639,6 +715,11 @@ void SplitContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAGGER_VISIBLE);
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN);
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN_COLLAPSED);
+
+	BIND_ENUM_CONSTANT(SNAP_NONE);
+	BIND_ENUM_CONSTANT(SNAP_FIRST);
+	BIND_ENUM_CONSTANT(SNAP_SECOND);
+	BIND_ENUM_CONSTANT(SNAP_BOTH);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, minimum_grab_thickness);

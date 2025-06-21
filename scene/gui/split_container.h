@@ -42,6 +42,7 @@ class SplitContainerDragger : public Control {
 protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _end_dragging();
 
 	void _accessibility_action_inc(const Variant &p_data);
 	void _accessibility_action_dec(const Variant &p_data);
@@ -70,6 +71,13 @@ public:
 		DRAGGER_HIDDEN_COLLAPSED
 	};
 
+	enum Snap {
+		SNAP_NONE = 0,
+		SNAP_FIRST = 1,
+		SNAP_SECOND = 2,
+		SNAP_BOTH = SNAP_FIRST | SNAP_SECOND
+	};
+
 private:
 	int show_drag_area = false;
 	int drag_area_margin_begin = 0;
@@ -80,6 +88,8 @@ private:
 	bool vertical = false;
 	bool collapsed = false;
 	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
+	Snap auto_snap = SNAP_BOTH;
+	Snap snap_state = SNAP_NONE;
 	bool dragging_enabled = true;
 
 	SplitContainerDragger *dragging_area_control = nullptr;
@@ -109,6 +119,7 @@ private:
 	int _get_separation() const;
 	void _resort();
 	Control *_get_sortable_child(int p_idx, SortableVisibilityMode p_visibility_mode = SortableVisibilityMode::VISIBLE_IN_TREE) const;
+	void _fit_child_in_rect_with_visibility_update(Control *p_child, const Rect2 &p_rect);
 
 protected:
 	bool is_fixed = false;
@@ -127,6 +138,12 @@ public:
 
 	void set_dragger_visibility(DraggerVisibility p_visibility);
 	DraggerVisibility get_dragger_visibility() const;
+
+	void set_auto_snap(Snap p_auto_snap);
+	Snap get_auto_snap() const;
+
+	void set_snap_state(Snap p_snap_state);
+	Snap get_snap_state() const;
 
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
@@ -160,6 +177,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);
+VARIANT_ENUM_CAST(SplitContainer::Snap);
 
 class HSplitContainer : public SplitContainer {
 	GDCLASS(HSplitContainer, SplitContainer);
