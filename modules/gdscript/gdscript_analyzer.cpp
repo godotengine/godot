@@ -1964,6 +1964,22 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	}
 
 #ifdef DEBUG_ENABLED
+	// Named lambdas do not override anything since you cannot access them by name.
+	if (!p_is_lambda) {
+		List<MethodInfo> gdscript_funcs;
+		GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
+
+		for (MethodInfo &info : gdscript_funcs) {
+			if (info.name == function_name) {
+				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, "@GDScript");
+			}
+		}
+
+		if (Variant::has_utility_function(function_name)) {
+			parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, "@GlobalScope");
+		}
+	}
+
 	if (p_function->return_type == nullptr) {
 		parser->push_warning(p_function, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
