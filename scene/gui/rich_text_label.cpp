@@ -5408,9 +5408,27 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_strikethrough(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("s");
-		} else if (tag.begins_with("char=")) {
-			int32_t char_code = _get_tag_value(tag).hex_to_int();
-			add_text(String::chr(char_code));
+		} else if (tag.begins_with("char=") || tag.begins_with("c=")) {
+			Ref<Font> font = theme_cache.normal_font;
+			int font_size = theme_cache.normal_font_size;
+			ItemFont *font_it = _find_font(current);
+			if (font_it) {
+				if (font_it->font.is_valid()) {
+					font = font_it->font;
+				}
+			}
+			ItemFontSize *font_size_it = _find_font_size(current);
+			if (font_size_it && font_size_it->font_size > 0) {
+				font_size = font_size_it->font_size;
+			}
+			const String &code = _get_tag_value(tag);
+			int32_t char_code = font.is_valid() ? font->get_char_from_glyph_index(font_size, font->get_glyph_by_name(font_size, code)) : 0;
+			if (char_code == 0 && code.is_valid_hex_number(false)) {
+				char_code = code.hex_to_int();
+			}
+			if (char_code != 0) {
+				add_text(String::chr(char_code));
+			}
 			pos = brk_end + 1;
 		} else if (tag == "lb") {
 			add_text("[");
@@ -5695,7 +5713,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			}
 			if (font_option) {
 				const String &fnt = font_option->value;
-				Ref<Font> font = ResourceLoader::load(fnt, "Font");
+				Ref<Font> font = aliases.has(fnt) ? (Ref<Font>)aliases[fnt] : (Ref<Font>)ResourceLoader::load(fnt, "Font");
 				if (font.is_valid()) {
 					f = font;
 				}
@@ -5990,7 +6008,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		} else if (tag.begins_with("font=")) {
 			String fnt = _get_tag_value(tag).unquote();
 
-			Ref<Font> fc = ResourceLoader::load(fnt, "Font");
+			Ref<Font> fc = aliases.has(fnt) ? (Ref<Font>)aliases[fnt] : (Ref<Font>)ResourceLoader::load(fnt, "Font");
 			if (fc.is_valid()) {
 				push_font(fc);
 			}
@@ -6020,7 +6038,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			}
 			if (name_option) {
 				const String &fnt = name_option->value;
-				Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
+				Ref<Font> font_data = aliases.has(fnt) ? (Ref<Font>)aliases[fnt] : (Ref<Font>)ResourceLoader::load(fnt, "Font");
 				if (font_data.is_valid()) {
 					font = font_data;
 					def_font = RTL_CUSTOM_FONT;
@@ -7215,6 +7233,22 @@ float RichTextLabel::get_visible_ratio() const {
 	return visible_ratio;
 }
 
+void RichTextLabel::set_font_aliases(const TypedDictionary<String, Ref<Font>> &p_aliases) {
+	if (aliases == p_aliases) {
+		return;
+	}
+	_stop_thread();
+	aliases = p_aliases;
+
+	main->first_invalid_line = 0; // Invalidate all lines.
+	_validate_line_caches();
+	queue_redraw();
+}
+
+TypedDictionary<String, Ref<Font>> RichTextLabel::get_font_aliases() const {
+	return aliases;
+}
+
 void RichTextLabel::set_effects(Array p_effects) {
 	custom_effects = p_effects;
 	reload_effects();
@@ -7494,8 +7528,12 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_menu_visible"), &RichTextLabel::is_menu_visible);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &RichTextLabel::menu_option);
 
+	ClassDB::bind_method(D_METHOD("set_font_aliases", "aliases"), &RichTextLabel::set_font_aliases);
+	ClassDB::bind_method(D_METHOD("get_font_aliases"), &RichTextLabel::get_font_aliases);
+
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "font_aliases", PROPERTY_HINT_DICTIONARY_TYPE, "String;" + MAKE_RESOURCE_TYPE_HINT("Font")), "set_font_aliases", "get_font_aliases");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content"), "set_fit_content", "is_fit_content_enabled");

@@ -227,6 +227,15 @@
 				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
+		<method name="font_get_glyph_by_name" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="name" type="String" />
+			<description>
+				Return the glyph index of a glyph with given [param name].
+			</description>
+		</method>
 		<method name="font_get_glyph_contours" qualifiers="const">
 			<return type="Dictionary" />
 			<param index="0" name="font" type="RID" />

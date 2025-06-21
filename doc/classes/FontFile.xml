@@ -116,14 +116,6 @@
 				Returns thickness of the underline in pixels.
 			</description>
 		</method>
-		<method name="get_char_from_glyph_index" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="size" type="int" />
-			<param index="1" name="glyph_index" type="int" />
-			<description>
-				Returns character code associated with [param glyph_index], or [code]0[/code] if [param glyph_index] is invalid. See [method get_glyph_index].
-			</description>
-		</method>
 		<method name="get_embolden" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="cache_index" type="int" />
@@ -161,15 +153,6 @@
 			<description>
 				Returns glyph advance (offset of the next glyph).
 				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
-			</description>
-		</method>
-		<method name="get_glyph_index" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="size" type="int" />
-			<param index="1" name="char" type="int" />
-			<param index="2" name="variation_selector" type="int" />
-			<description>
-				Returns the glyph index of a [param char], optionally modified by the [param variation_selector].
 			</description>
 		</method>
 		<method name="get_glyph_list" qualifiers="const">

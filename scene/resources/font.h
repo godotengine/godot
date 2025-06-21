@@ -172,6 +172,11 @@ public:
 	virtual Dictionary get_supported_variation_list() const;
 	virtual int64_t get_face_count() const;
 
+	// Base font properties.
+	virtual int64_t get_glyph_by_name(int64_t p_size, const String &p_name) const;
+	virtual int32_t get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector = 0x0000) const;
+	virtual char32_t get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const;
+
 	Font();
 	~Font();
 };
@@ -392,10 +397,6 @@ public:
 
 	virtual void set_opentype_feature_overrides(const Dictionary &p_overrides);
 	virtual Dictionary get_opentype_feature_overrides() const;
-
-	// Base font properties.
-	virtual int32_t get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector = 0x0000) const;
-	virtual char32_t get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const;
 
 	FontFile();
 	~FontFile();

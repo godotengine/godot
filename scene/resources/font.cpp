@@ -97,6 +97,10 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &Font::get_supported_variation_list);
 	ClassDB::bind_method(D_METHOD("get_face_count"), &Font::get_face_count);
 
+	ClassDB::bind_method(D_METHOD("get_glyph_by_name", "size", "name"), &Font::get_glyph_by_name);
+	ClassDB::bind_method(D_METHOD("get_glyph_index", "size", "char", "variation_selector"), &Font::get_glyph_index);
+	ClassDB::bind_method(D_METHOD("get_char_from_glyph_index", "size", "glyph_index"), &Font::get_char_from_glyph_index);
+
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
 
@@ -560,6 +564,18 @@ Dictionary Font::get_supported_variation_list() const {
 
 int64_t Font::get_face_count() const {
 	return TS->font_get_face_count(_get_rid());
+}
+
+int64_t Font::get_glyph_by_name(int64_t p_size, const String &p_name) const {
+	return TS->font_get_glyph_by_name(_get_rid(), p_size, p_name);
+}
+
+int32_t Font::get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector) const {
+	return TS->font_get_glyph_index(_get_rid(), p_size, p_char, p_variation_selector);
+}
+
+char32_t Font::get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const {
+	return TS->font_get_char_from_glyph_index(_get_rid(), p_size, p_glyph_index);
 }
 
 Font::Font() {
@@ -1037,9 +1053,6 @@ void FontFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_opentype_feature_overrides", "overrides"), &FontFile::set_opentype_feature_overrides);
 	ClassDB::bind_method(D_METHOD("get_opentype_feature_overrides"), &FontFile::get_opentype_feature_overrides);
-
-	ClassDB::bind_method(D_METHOD("get_glyph_index", "size", "char", "variation_selector"), &FontFile::get_glyph_index);
-	ClassDB::bind_method(D_METHOD("get_char_from_glyph_index", "size", "glyph_index"), &FontFile::get_char_from_glyph_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
@@ -2816,16 +2829,6 @@ void FontFile::set_opentype_feature_overrides(const Dictionary &p_overrides) {
 Dictionary FontFile::get_opentype_feature_overrides() const {
 	_ensure_rid(0);
 	return TS->font_get_opentype_feature_overrides(cache[0]);
-}
-
-int32_t FontFile::get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector) const {
-	_ensure_rid(0);
-	return TS->font_get_glyph_index(cache[0], p_size, p_char, p_variation_selector);
-}
-
-char32_t FontFile::get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const {
-	_ensure_rid(0);
-	return TS->font_get_char_from_glyph_index(cache[0], p_size, p_glyph_index);
 }
 
 FontFile::FontFile() {
