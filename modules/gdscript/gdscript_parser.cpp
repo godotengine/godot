@@ -936,6 +936,10 @@ void GDScriptParser::parse_class_name() {
 		current_class->fqcn = String(current_class->identifier->name);
 	}
 
+	if (!script_path.is_resource_file()) {
+		push_error(R"("class_name" isn't allowed in built-in scripts.)");
+	}
+
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
 		// Allow extends on the same line.
 		parse_extends();
