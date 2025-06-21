@@ -428,6 +428,7 @@ void MultiMesh::_bind_methods() {
 }
 
 MultiMesh::MultiMesh() {
+	set_use_shared_copy(false);
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
 }
 
