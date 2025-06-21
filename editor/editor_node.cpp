@@ -1450,6 +1450,11 @@ void EditorNode::_reload_modified_scenes() {
 			editor_data.set_edited_scene(i);
 			_remove_edited_scene(false);
 
+			if (current_idx == i) {
+				editor_data.apply_changes_in_editors();
+				_save_editor_states(editor_data.get_scene_path(i), i);
+			}
+
 			Error err = load_scene(filename, false, false, false, true);
 			if (err != OK) {
 				ERR_PRINT(vformat("Failed to load scene: %s", filename));
