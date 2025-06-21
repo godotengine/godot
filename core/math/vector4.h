@@ -137,11 +137,11 @@ struct [[nodiscard]] Vector4 {
 	constexpr Vector4 operator/(real_t p_s) const;
 
 	constexpr bool operator==(const Vector4 &p_vec4) const;
-	constexpr bool operator!=(const Vector4 &p_vec4) const;
 	constexpr bool operator>(const Vector4 &p_vec4) const;
 	constexpr bool operator<(const Vector4 &p_vec4) const;
 	constexpr bool operator>=(const Vector4 &p_vec4) const;
 	constexpr bool operator<=(const Vector4 &p_vec4) const;
+	bool operator==(const Vector4i &p_vector4i) const;
 
 	explicit operator String() const;
 	operator Vector4i() const;
@@ -228,10 +228,6 @@ constexpr Vector4 Vector4::operator/(real_t p_s) const {
 
 constexpr bool Vector4::operator==(const Vector4 &p_vec4) const {
 	return x == p_vec4.x && y == p_vec4.y && z == p_vec4.z && w == p_vec4.w;
-}
-
-constexpr bool Vector4::operator!=(const Vector4 &p_vec4) const {
-	return x != p_vec4.x || y != p_vec4.y || z != p_vec4.z || w != p_vec4.w;
 }
 
 constexpr bool Vector4::operator<(const Vector4 &p_v) const {
