@@ -30,6 +30,7 @@
 
 #include "grid_map_editor_plugin.h"
 
+#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_main_screen.h"
@@ -435,26 +436,66 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		return true;
 	}
 
-	if (input_action == INPUT_PAINT) {
-		SetItem si;
-		si.position = Vector3i(cell[0], cell[1], cell[2]);
-		si.new_value = selected_palette;
-		si.new_orientation = cursor_rot;
-		si.old_value = node->get_cell_item(Vector3i(cell[0], cell[1], cell[2]));
-		si.old_orientation = node->get_cell_item_orientation(Vector3i(cell[0], cell[1], cell[2]));
-		set_items.push_back(si);
-		node->set_cell_item(Vector3i(cell[0], cell[1], cell[2]), selected_palette, cursor_rot);
-		return true;
-	} else if (input_action == INPUT_ERASE) {
-		SetItem si;
-		si.position = Vector3i(cell[0], cell[1], cell[2]);
-		si.new_value = -1;
-		si.new_orientation = 0;
-		si.old_value = node->get_cell_item(Vector3i(cell[0], cell[1], cell[2]));
-		si.old_orientation = node->get_cell_item_orientation(Vector3i(cell[0], cell[1], cell[2]));
-		set_items.push_back(si);
-		node->set_cell_item(Vector3i(cell[0], cell[1], cell[2]), -1);
-		return true;
+	if (input_action == INPUT_PAINT || input_action == INPUT_ERASE) {
+		List<Vector3i> cells;
+		if (!set_items.is_empty()) {
+			Vector3i last_si = set_items.back()->get().position;
+			// manipulating Vector3i into Point2i by ignoring the edit_axis
+			int i = edit_axis == 0 ? 1 : 0;
+			int j = edit_axis == 2 ? 1 : 2;
+			Point2i from_cell = Point2i(last_si[i], last_si[j]);
+			Point2i to_cell = Point2i(cell[i], cell[j]);
+
+			Vector<Point2i> cells_2d = Geometry2D::bresenham_line(from_cell, to_cell);
+
+			switch (edit_axis) {
+				case 0:
+					for (const Point2i &cell_2d : cells_2d) {
+						cells.push_back(Vector3i(edit_floor[0], cell_2d[0], cell_2d[1]));
+					}
+					break;
+				case 1:
+					for (const Point2i &cell_2d : cells_2d) {
+						cells.push_back(Vector3i(cell_2d[0], edit_floor[1], cell_2d[1]));
+					}
+					break;
+				case 2:
+					for (const Point2i &cell_2d : cells_2d) {
+						cells.push_back(Vector3i(cell_2d[0], cell_2d[1], edit_floor[2]));
+					}
+					break;
+				default:
+					break;
+			}
+		} else {
+			cells.push_back(Vector3i(cell[0], cell[1], cell[2]));
+		}
+
+		if (input_action == INPUT_PAINT) {
+			for (const Vector3i &cell_v : cells) {
+				SetItem si;
+				si.position = cell_v;
+				si.new_value = selected_palette;
+				si.new_orientation = cursor_rot;
+				si.old_value = node->get_cell_item(cell_v);
+				si.old_orientation = node->get_cell_item_orientation(cell_v);
+				set_items.push_back(si);
+				node->set_cell_item(cell_v, selected_palette, cursor_rot);
+			}
+			return true;
+		} else if (input_action == INPUT_ERASE) {
+			for (const Vector3i &cell_v : cells) {
+				SetItem si;
+				si.position = cell_v;
+				si.new_value = -1;
+				si.new_orientation = 0;
+				si.old_value = node->get_cell_item(cell_v);
+				si.old_orientation = node->get_cell_item_orientation(cell_v);
+				set_items.push_back(si);
+				node->set_cell_item(cell_v, -1);
+			}
+			return true;
+		}
 	}
 
 	return false;
