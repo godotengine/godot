@@ -3175,7 +3175,7 @@ void BaseMaterial3D::_prepare_stencil_effect() {
 			stencil_next_pass->set_grow(stencil_effect_outline_thickness);
 			stencil_next_pass->set_albedo(stencil_effect_color);
 			stencil_next_pass->set_stencil_mode(STENCIL_MODE_CUSTOM);
-			stencil_next_pass->set_stencil_flags(STENCIL_FLAG_READ | STENCIL_FLAG_WRITE);
+			stencil_next_pass->set_stencil_flags(STENCIL_FLAG_READ);
 			stencil_next_pass->set_stencil_compare(STENCIL_COMPARE_NOT_EQUAL);
 			stencil_next_pass->set_stencil_reference(stencil_reference);
 			break;
@@ -3190,7 +3190,7 @@ void BaseMaterial3D::_prepare_stencil_effect() {
 			stencil_next_pass->set_grow(0);
 			stencil_next_pass->set_albedo(stencil_effect_color);
 			stencil_next_pass->set_stencil_mode(STENCIL_MODE_CUSTOM);
-			stencil_next_pass->set_stencil_flags(STENCIL_FLAG_READ | STENCIL_FLAG_WRITE);
+			stencil_next_pass->set_stencil_flags(STENCIL_FLAG_READ);
 			stencil_next_pass->set_stencil_compare(STENCIL_COMPARE_NOT_EQUAL);
 			stencil_next_pass->set_stencil_reference(stencil_reference);
 			break;
@@ -3232,12 +3232,19 @@ void BaseMaterial3D::set_stencil_flags(int p_stencil_flags) {
 		return;
 	}
 
+	// If enabling read while already writing, switch to read only.
 	if ((p_stencil_flags & STENCIL_FLAG_READ) && (stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL))) {
 		p_stencil_flags = p_stencil_flags & STENCIL_FLAG_READ;
 	}
 
+	// If enabling write while already reading, switch to write or write_depth_fail.
 	if ((p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL)) && (stencil_flags & STENCIL_FLAG_READ)) {
 		p_stencil_flags = p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL);
+	}
+
+	// If enabling read+write while already doing neither, only allow read.
+	if ((p_stencil_flags & STENCIL_FLAG_READ) && (p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL))) {
+		p_stencil_flags = p_stencil_flags & STENCIL_FLAG_READ;
 	}
 
 	stencil_flags = p_stencil_flags;
