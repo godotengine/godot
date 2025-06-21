@@ -130,11 +130,13 @@ public:
 		ACTION_ON_PLAY_DO_NOTHING,
 		ACTION_ON_PLAY_OPEN_OUTPUT,
 		ACTION_ON_PLAY_OPEN_DEBUGGER,
+		ACTION_ON_PLAY_CLOSE_BOTTOM_PANEL,
 	};
 
 	enum ActionOnStop {
 		ACTION_ON_STOP_DO_NOTHING,
 		ACTION_ON_STOP_CLOSE_BUTTOM_PANEL,
+		ACTION_ON_STOP_RESTORE_LAST_USED_BUTTOM_PANEL,
 	};
 
 	enum MenuOptions {
@@ -434,6 +436,7 @@ private:
 	Callable palette_file_selected_callback;
 
 	EditorBottomPanel *bottom_panel = nullptr;
+	bool bottom_panel_was_visible_on_project_run = false;
 
 	Tree *disk_changed_list = nullptr;
 	LocalVector<String> disk_changed_scenes;
