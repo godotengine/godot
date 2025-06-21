@@ -167,6 +167,15 @@
 				Returns the resource path to the represented [PackedScene].
 			</description>
 		</method>
+		<method name="instantiate" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="edit_state" type="int" enum="SceneState.GenEditState" default="0" />
+			<param index="1" name="flags" type="int" enum="SceneState.InstantiationFlags" default="0" />
+			<description>
+				Instantiates the scene's node hierarchy represented by this [SceneState]. This method is used internally by [PackedScene].
+				The [param edit_state] controls editor-specific instantiation behavior, while [param flags] controls general instantiation options like [constant INSTANTIATION_NO_SCRIPTS].
+			</description>
+		</method>
 		<method name="is_node_instance_placeholder" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="idx" type="int" />
@@ -190,6 +199,12 @@
 		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
 			If passed to [method PackedScene.instantiate], it's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="INSTANTIATION_DEFAULT" value="0" enum="InstantiationFlags">
+			Default instantiation behavior with no special flags.
+		</constant>
+		<constant name="INSTANTIATION_NO_SCRIPTS" value="1" enum="InstantiationFlags">
+			If passed to [method PackedScene.instantiate], the scene will be instantiated without any attached scripts.
 		</constant>
 	</constants>
 </class>
