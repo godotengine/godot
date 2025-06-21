@@ -383,7 +383,7 @@ Patches:
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: vulkan-sdk-1.3.283.0 (e8dd0b6903b34f1879520b444634c75ea2deedf5, 2024)
+- Version: vulkan-sdk-1.4.313.0 (fc9889c889561c5882e83819dcaffef5ed45529b, 2025)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -402,7 +402,6 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-apple-disable-absolute-paths.patch` (GH-92010)
-- `0002-gcc15-include-fix.patch` (GH-102022)
 
 
 ## graphite
@@ -945,12 +944,12 @@ Files extracted from upstream source:
 ## spirv-cross
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Cross
-- Version: git (6173e24b31f09a0c3217103a130e74c4ddec14a6, 2024)
+- Version: vulkan-sdk-1.4.313.0 (2275d0efc4f2fa46851035d9d3c67c105bc8b99e, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
-- All `.cpp`, `.hpp` and `.h` files, minus `main.cpp`, `spirv_cross_c.*`, `spirv_hlsl.*`, `spirv_cpp.*`
+- All `.cpp`, `.hpp` and `.h` files, minus `main.cpp`, `spirv_cross_c.*`, `spirv_hlsl.*`, `spirv_cpp.*`, `spirv.h`
 - `include/` folder
 - `LICENSE` and `LICENSES/` folder, minus `CC-BY-4.0.txt`
 
@@ -961,7 +960,7 @@ to generate Metal source from Vulkan SPIR-V.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: vulkan-sdk-1.3.283.0 (ee5b57fba6a986381f998567761bbc064428e645, 2024)
+- Version: vulkan-sdk-1.4.313.0 (c6c0f5c9796bdef40c55065d82e0df67c38a29a4, 2025)
 - License: Apache 2.0
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -1059,7 +1058,7 @@ Patches:
 ## volk
 
 - Upstream: https://github.com/zeux/volk
-- Version: vulkan-sdk-1.3.283.0 (3a8068a57417940cf2bf9d837a7bb60d015ca2f1, 2024)
+- Version: vulkan-sdk-1.4.313.0 (43c29e655cb8117fd9cfb65ad9cefe2d40965102, 2025)
 - License: MIT
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -1074,7 +1073,7 @@ Files extracted from upstream source:
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Headers
-- Version: vulkan-sdk-1.3.283.0 (eaa319dade959cb61ed2229c8ea42e307cc8f8b3, 2024)
+- Version: vulkan-sdk-1.4.313.0 (409c16be502e39fe70dd6fe2d9ad4842ef2c9a53, 2025)
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -1091,10 +1090,10 @@ Files extracted from upstream source:
 - `LICENSE.md`
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-Utility-Libraries`
-SDK release: https://github.com/KhronosGroup/Vulkan-Utility-Libraries/blob/main/include/vulkan/vk_enum_string_helper.h
+SDK release: https://github.com/KhronosGroup/Vulkan-Utility-Libraries/blob/<tag>/include/vulkan/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.1.0 (009ecd192c1289c7529bff248a16cfe896254816, 2024)
+Version: 3.3.0 (1d8f600fd424278486eade7ed3e877c99f0846b1, 2025)
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches:
@@ -1102,7 +1101,6 @@ Patches:
 - `0001-VKEnumStringHelper-godot-vulkan.patch` (GH-97510)
 - `0002-VMA-godot-vulkan.patch` (GH-97510)
 - `0003-VMA-add-vmaCalculateLazilyAllocatedBytes.patch` (GH-99257)
-
 
 
 ## wayland
