@@ -3736,7 +3736,7 @@ void ThemeEditor::_theme_save_button_cbk(bool p_save_as) {
 	ERR_FAIL_COND_MSG(theme.is_null(), "Invalid state of the Theme Editor; the Theme resource is missing.");
 
 	if (p_save_as) {
-		EditorNode::get_singleton()->save_resource_as(theme);
+		EditorNode::get_singleton()->save_resource_as(theme, "");
 	} else {
 		EditorNode::get_singleton()->save_resource(theme);
 	}
