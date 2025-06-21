@@ -3232,12 +3232,14 @@ void BaseMaterial3D::set_stencil_flags(int p_stencil_flags) {
 		return;
 	}
 
-	if ((p_stencil_flags & STENCIL_FLAG_READ) && (stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL))) {
-		p_stencil_flags = p_stencil_flags & STENCIL_FLAG_READ;
-	}
-
-	if ((p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL)) && (stencil_flags & STENCIL_FLAG_READ)) {
-		p_stencil_flags = p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL);
+	if (p_stencil_flags & STENCIL_FLAG_READ &&
+			p_stencil_flags & STENCIL_FLAG_WRITE &&
+			p_stencil_flags & STENCIL_FLAG_WRITE_DEPTH_FAIL) {
+		if (!(stencil_flags & STENCIL_FLAG_READ)) {
+			p_stencil_flags = p_stencil_flags & (STENCIL_FLAG_READ | STENCIL_FLAG_WRITE);
+		} else {
+			p_stencil_flags = p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL);
+		}
 	}
 
 	stencil_flags = p_stencil_flags;
