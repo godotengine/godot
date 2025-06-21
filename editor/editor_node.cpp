@@ -765,6 +765,18 @@ void EditorNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			callable_mp(this, &EditorNode::_titlebar_resized).call_deferred();
+
+			// The rendering method selector.
+			const String current_renderer_ps = String(GLOBAL_GET("rendering/renderer/rendering_method")).to_lower();
+			const String current_renderer_os = OS::get_singleton()->get_current_rendering_method().to_lower();
+			if (current_renderer_ps == current_renderer_os) {
+				for (int i = 0; i < renderer->get_item_count(); i++) {
+					renderer->set_item_text(i, _to_rendering_method_display_name(renderer->get_item_metadata(i)));
+				}
+			} else {
+				// TRANSLATORS: The placeholder is the rendering method that has overridden the default one.
+				renderer->set_item_text(0, vformat(TTR("%s (Overridden)"), _to_rendering_method_display_name(current_renderer_os)));
+			}
 		} break;
 
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -7110,49 +7122,62 @@ void EditorNode::_update_renderer_color() {
 	}
 }
 
-void EditorNode::_renderer_selected(int p_which) {
-	String rendering_method = renderer->get_item_metadata(p_which);
-
-	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
-
+void EditorNode::_renderer_selected(int p_index) {
+	const String rendering_method = renderer->get_item_metadata(p_index);
+	const String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
 	if (rendering_method == current_renderer) {
 		return;
 	}
 
-	renderer_request = rendering_method;
+	// Don't change selection.
+	for (int i = 0; i < renderer->get_item_count(); i++) {
+		if (renderer->get_item_metadata(i) == current_renderer) {
+			renderer->select(i);
+			break;
+		}
+	}
+
+	if (video_restart_dialog == nullptr) {
+		video_restart_dialog = memnew(ConfirmationDialog);
+		video_restart_dialog->set_ok_button_text(TTRC("Save & Restart"));
+		video_restart_dialog->get_label()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		gui_base->add_child(video_restart_dialog);
+	} else {
+		video_restart_dialog->disconnect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_set_renderer_name_save_and_restart));
+	}
+
+	const String mobile_rendering_method = rendering_method == "forward_plus" ? "mobile" : rendering_method;
+	const String web_rendering_method = "gl_compatibility";
+	video_restart_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_set_renderer_name_save_and_restart).bind(rendering_method));
 	video_restart_dialog->set_text(
-			vformat(TTR("Changing the renderer requires restarting the editor.\n\nChoosing Save & Restart will change the rendering method to:\n- Desktop platforms: %s\n- Mobile platforms: %s\n- Web platform: gl_compatibility"),
-					renderer_request, renderer_request.replace("forward_plus", "mobile")));
+			vformat(TTR("Changing the renderer requires restarting the editor.\n\nChoosing Save & Restart will change the rendering method to:\n- Desktop platforms: %s\n- Mobile platforms: %s\n- Web platform: %s"),
+					_to_rendering_method_display_name(rendering_method), _to_rendering_method_display_name(mobile_rendering_method), _to_rendering_method_display_name(web_rendering_method)));
 	video_restart_dialog->popup_centered();
-	renderer->select(renderer_current);
+
 	_update_renderer_color();
 }
 
-void EditorNode::_add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden) {
-	String item_text;
-	if (p_renderer_name == "forward_plus") {
-		item_text = TTR("Forward+");
+String EditorNode::_to_rendering_method_display_name(const String &p_rendering_method) const {
+	if (p_rendering_method == "forward_plus") {
+		return TTR("Forward+");
 	}
-	if (p_renderer_name == "mobile") {
-		item_text = TTR("Mobile");
+	if (p_rendering_method == "mobile") {
+		return TTR("Mobile");
 	}
-	if (p_renderer_name == "gl_compatibility") {
-		item_text = TTR("Compatibility");
+	if (p_rendering_method == "gl_compatibility") {
+		return TTR("Compatibility");
 	}
-	if (p_mark_overridden) {
-		// TRANSLATORS: The placeholder is the rendering method that has overridden the default one.
-		item_text = vformat(TTR("%s (Overridden)"), item_text);
-	}
-	renderer->add_item(item_text);
+	return p_rendering_method;
 }
 
-void EditorNode::_set_renderer_name_save_and_restart() {
-	ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method", renderer_request);
-	if (renderer_request == "mobile" || renderer_request == "gl_compatibility") {
+void EditorNode::_set_renderer_name_save_and_restart(const String &p_rendering_method) {
+	ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method", p_rendering_method);
+
+	if (p_rendering_method == "mobile" || p_rendering_method == "gl_compatibility") {
 		// Also change the mobile override if changing to a compatible rendering method.
 		// This prevents visual discrepancies between desktop and mobile platforms.
-		ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", renderer_request);
-	} else if (renderer_request == "forward_plus") {
+		ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", p_rendering_method);
+	} else if (p_rendering_method == "forward_plus") {
 		// Use the equivalent mobile rendering method. This prevents the rendering method from staying
 		// on its old choice if moving from `gl_compatibility` to `forward_plus`.
 		ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", "mobile");
@@ -8264,9 +8289,8 @@ EditorNode::EditorNode() {
 		title_bar->add_child(right_menu_spacer);
 	}
 
-	String current_renderer_ps = GLOBAL_GET("rendering/renderer/rendering_method");
-	current_renderer_ps = current_renderer_ps.to_lower();
-	String current_renderer_os = OS::get_singleton()->get_current_rendering_method().to_lower();
+	const String current_renderer_ps = String(GLOBAL_GET("rendering/renderer/rendering_method")).to_lower();
+	const String current_renderer_os = OS::get_singleton()->get_current_rendering_method().to_lower();
 
 	// Add the renderers name to the UI.
 	if (current_renderer_ps == current_renderer_os) {
@@ -8275,32 +8299,22 @@ EditorNode::EditorNode() {
 		// "vulkan" in particular uses lowercase "v" in the code, and uppercase in the UI.
 		PackedStringArray renderers = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("rendering/renderer/rendering_method")).hint_string.split(",", false);
 		for (int i = 0; i < renderers.size(); i++) {
-			String rendering_method = renderers[i];
+			const String rendering_method = renderers[i].to_lower();
 			if (rendering_method == "dummy") {
 				continue;
 			}
-			_add_renderer_entry(rendering_method, false);
-			renderer->set_item_metadata(i, rendering_method);
-			// Lowercase for standard comparison.
-			rendering_method = rendering_method.to_lower();
+			renderer->add_item(String()); // Set in NOTIFICATION_TRANSLATION_CHANGED.
+			renderer->set_item_metadata(-1, rendering_method);
 			if (current_renderer_ps == rendering_method) {
 				renderer->select(i);
-				renderer_current = i;
 			}
 		}
 	} else {
 		// It's an CLI-overridden rendering method.
-		_add_renderer_entry(current_renderer_os, true);
-		renderer->set_item_metadata(0, current_renderer_os);
-		renderer->select(0);
-		renderer_current = 0;
+		renderer->add_item(String()); // Set in NOTIFICATION_TRANSLATION_CHANGED.
+		renderer->set_item_metadata(-1, current_renderer_os);
 	}
 	_update_renderer_color();
-
-	video_restart_dialog = memnew(ConfirmationDialog);
-	video_restart_dialog->set_ok_button_text(TTR("Save & Restart"));
-	video_restart_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_set_renderer_name_save_and_restart));
-	gui_base->add_child(video_restart_dialog);
 
 	progress_hb = memnew(BackgroundProgress);
 
