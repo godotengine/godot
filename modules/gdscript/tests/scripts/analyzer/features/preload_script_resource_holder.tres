@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SomeResourceList" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://analyzer/features/preload_script_resource.notest.gd" id="1_lsaa1"]
+[ext_resource type="Script" path="res://analyzer/features/preload_script_resource_holder.notest.gd" id="1_t40yp"]
+
+[resource]
+script = ExtResource("1_t40yp")
