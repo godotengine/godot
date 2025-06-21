@@ -541,6 +541,13 @@
 				Returns all navigation link [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
+		<method name="map_get_merge_rasterizer_cell_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns map's internal merge rasterizer cell scale.
+			</description>
+		</method>
 		<method name="map_get_obstacles" qualifiers="const">
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
@@ -628,6 +635,14 @@
 			<param index="1" name="radius" type="float" />
 			<description>
 				Set the map's link connection radius used to connect links to navigation polygons.
+			</description>
+		</method>
+		<method name="map_set_merge_rasterizer_cell_scale">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="scale" type="float" />
+			<description>
+				Set the map's internal merge rasterizer cell scale used to control merging sensitivity.
 			</description>
 		</method>
 		<method name="map_set_use_async_iterations">
