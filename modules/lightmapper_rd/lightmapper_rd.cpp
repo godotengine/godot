@@ -642,21 +642,33 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	}
 
 	{ //buffers
-		vertex_buffer = rd->storage_buffer_create(vertex_array.size(), vertex_array.span().reinterpret<uint8_t>());
+		vertex_buffer = rd->storage_buffer_create(vertex_array.size() * sizeof(Vertex), vertex_array.span().reinterpret<uint8_t>());
 
-		triangle_buffer = rd->storage_buffer_create(triangles.size(), triangles.span().reinterpret<uint8_t>());
+		triangle_buffer = rd->storage_buffer_create(triangles.size() * sizeof(Triangle), triangles.span().reinterpret<uint8_t>());
 
-		r_triangle_indices_buffer = rd->storage_buffer_create(triangle_indices.size(), triangle_indices.span().reinterpret<uint8_t>());
+		r_triangle_indices_buffer = rd->storage_buffer_create(triangle_indices.size() * sizeof(uint32_t), triangle_indices.span().reinterpret<uint8_t>());
 
-		r_cluster_indices_buffer = rd->storage_buffer_create(cluster_indices.size(), cluster_indices.span().reinterpret<uint8_t>());
+		r_cluster_indices_buffer = rd->storage_buffer_create(cluster_indices.size() * sizeof(uint32_t), cluster_indices.span().reinterpret<uint8_t>());
 
-		r_cluster_aabbs_buffer = rd->storage_buffer_create(cluster_aabbs.size(), cluster_aabbs.span().reinterpret<uint8_t>());
+		r_cluster_aabbs_buffer = rd->storage_buffer_create(cluster_aabbs.size() * sizeof(ClusterAABB), cluster_aabbs.span().reinterpret<uint8_t>());
 
-		lights_buffer = rd->storage_buffer_create(lights.size() * sizeof(Light), lights.span().reinterpret<uint8_t>());
+		Vector<uint8_t> lb = lights.to_byte_array();
+		if (lb.is_empty()) {
+			lb.resize(sizeof(Light));
+		}
+		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
 
-		seams_buffer = rd->storage_buffer_create(seam_buffer_vec.size() * sizeof(Vector2i) * 2, seam_buffer_vec.span().reinterpret<uint8_t>());
+		Vector<uint8_t> sb = seam_buffer_vec.to_byte_array();
+		if (sb.is_empty()) {
+			sb.resize(sizeof(Vector2i) * 2);
+		}
+		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 
-		probe_positions_buffer = rd->storage_buffer_create(p_probe_positions.size() * sizeof(Probe), p_probe_positions.span().reinterpret<uint8_t>());
+		Vector<uint8_t> pb = p_probe_positions.to_byte_array();
+		if (pb.is_empty()) {
+			pb.resize(sizeof(Probe));
+		}
+		probe_positions_buffer = rd->storage_buffer_create(pb.size(), pb);
 	}
 
 	{ //grid
