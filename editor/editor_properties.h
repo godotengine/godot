@@ -162,12 +162,12 @@ class EditorPropertyPath : public EditorProperty {
 	bool global = false;
 	bool save_mode = false;
 	bool enable_uid = false;
-	bool display_uid = true;
+	bool display_uid = false;
 
 	EditorFileDialog *dialog = nullptr;
 	LineEdit *path = nullptr;
-	Button *path_edit = nullptr;
 	Button *toggle_uid = nullptr;
+	Button *path_edit = nullptr;
 
 	String _get_path_text(bool p_allow_uid = false);
 
