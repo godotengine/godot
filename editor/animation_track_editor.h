@@ -369,14 +369,16 @@ public:
 
 	void try_draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
 
+	double get_move_key_time(const int p_index, bool p_ignore_moving_selection = false) const;
+	double get_global_move_key_time(const int p_index, bool p_ignore_moving_selection = false) const;
+
 protected:
 	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right);
 	virtual float get_key_y(const int p_index) const { return 0.0; }
 
 	// Helper
 public:
-	float _get_pixels_sec(const int p_index, bool p_ignore_moving_selection = false) const;
-	float _get_local_time(const int p_index, float p_offset = 0) const;
+	//float _get_local_time(const int p_index, float p_offset = 0) const;
 	Rect2 _to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection = false) const;
 	Rect2 _to_local_key_rect(const int p_index, const Rect2 &p_global_rect, bool p_ignore_moving_selection) const;
 	void _draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
@@ -407,9 +409,6 @@ public:
 public:
 	virtual bool has_valid_track() const override;
 	virtual Size2 get_minimum_size() const override;
-
-	double get_move_key_time(const int p_index) const;
-	double get_global_move_key_time(const int p_index) const;
 
 public:
 	virtual float get_key_width(const int p_index) const override;
@@ -629,10 +628,13 @@ public:
 	virtual Variant get_key_value(const int p_index) const override;
 	virtual bool is_compressed() const override;
 
-	virtual bool is_moving_selection() const override;
-	virtual float get_moving_selection_offset() const override;
-
 	virtual Vector<int> get_selected_section() override;
+
+public:
+	virtual bool is_moving_selection() const;
+	virtual void set_moving_selection(bool p_value);
+	virtual float get_moving_selection_offset() const;
+	virtual void set_moving_selection_offset(float p_value);
 
 protected:
 	NodePath node_path;
@@ -838,6 +840,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	ConfirmationDialog *insert_confirm = nullptr;
 	bool insert_queue = false;
 	List<InsertData> insert_data;
+
+	Vector2 get_selection_key_time_range();
 
 	void _query_insert(const InsertData &p_id);
 	Ref<Animation> _create_and_get_reset_animation();
