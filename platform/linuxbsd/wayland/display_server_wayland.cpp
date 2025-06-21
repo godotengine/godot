@@ -1530,10 +1530,8 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 		double window_scale = WaylandThread::window_state_get_scale_factor(ws);
 
 		Rect2i scaled_rect = p_rect;
-		scaled_rect.position.x /= window_scale;
-		scaled_rect.position.y /= window_scale;
-		scaled_rect.size.width /= window_scale;
-		scaled_rect.size.height /= window_scale;
+		scaled_rect.position = WaylandThread::scale_vector2i(scaled_rect.position, 1 / window_scale);
+		scaled_rect.size = WaylandThread::scale_vector2i(scaled_rect.size, 1 / window_scale);
 
 		print_verbose(vformat("Scaling embedded rect down by %f from %s to %s.", window_scale, p_rect, scaled_rect));
 
