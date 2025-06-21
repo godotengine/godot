@@ -42,6 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
@@ -53,6 +54,8 @@ void EditorSceneTabs::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tabbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
 			scene_tabs->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+
+			scene_list->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			scene_tab_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
@@ -224,6 +227,16 @@ void EditorSceneTabs::_update_context_menu() {
 void EditorSceneTabs::_custom_menu_option(int p_option) {
 	if (p_option >= EditorContextMenuPlugin::BASE_ID) {
 		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_option, last_hovered_tab >= 0 ? EditorNode::get_editor_data().get_scene_path(last_hovered_tab) : String());
+	}
+}
+
+void EditorSceneTabs::_update_scene_list() {
+	PopupMenu *popup = scene_list->get_popup();
+	popup->clear();
+
+	for (int i = 0; i < scene_tabs->get_tab_count(); i++) {
+		popup->add_item(scene_tabs->get_tab_title(i), i);
+		popup->set_item_icon(i, scene_tabs->get_tab_icon(i));
 	}
 }
 
@@ -442,6 +455,15 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tab_add_ph->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
 	tabbar_container->add_child(scene_tab_add_ph);
+
+	scene_list = memnew(MenuButton);
+	scene_list->set_flat(false);
+	scene_list->set_accessibility_name(TTRC("Show Opened Scenes List"));
+	scene_list->set_shortcut(ED_SHORTCUT("editor/show_opened_scenes_list", TTRC("Show Opened Scenes List"), KeyModifierMask::ALT | Key::T));
+	scene_list->get_popup()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	scene_list->get_popup()->connect("about_to_popup", callable_mp(this, &EditorSceneTabs::_update_scene_list));
+	scene_list->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
+	tabbar_container->add_child(scene_list);
 
 	// On-hover tab preview.
 
