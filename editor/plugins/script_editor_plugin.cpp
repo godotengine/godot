@@ -2503,8 +2503,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		if (flags.size()) {
 			String project_path = ProjectSettings::get_singleton()->get_resource_path();
 
-			flags = flags.replacen("{line}", itos(p_line > 0 ? p_line : 0));
-			flags = flags.replacen("{col}", itos(p_col));
+			flags = flags.replacen("{line}", itos(MAX(p_line + 1, 1)));
+			flags = flags.replacen("{col}", itos(p_col + 1));
 			flags = flags.strip_edges().replace("\\\\", "\\");
 
 			int from = 0;
