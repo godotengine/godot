@@ -3858,20 +3858,24 @@ enum DocLineState {
 	DOC_LINE_IN_KBD,
 };
 
-static String _process_doc_line(const String &p_line, const String &p_text, const String &p_space_prefix, DocLineState &r_state) {
+static void _process_doc_line(const String &p_line, String &r_text, const String &p_space_prefix, DocLineState &r_state) {
 	String line = p_line;
 	if (r_state == DOC_LINE_NORMAL) {
-		line = line.strip_edges(true, false);
+		line = line.lstrip(" \t");
 	} else {
 		line = line.trim_prefix(p_space_prefix);
 	}
 
 	String line_join;
-	if (!p_text.is_empty()) {
+	if (!r_text.is_empty()) {
 		if (r_state == DOC_LINE_NORMAL) {
-			if (p_text.ends_with("[/codeblock]")) {
+			if (r_text.ends_with("[/codeblock]")) {
 				line_join = "\n";
-			} else if (!p_text.ends_with("[br]")) {
+			} else if (r_text.ends_with("[br]")) {
+				// We want to replace `[br][br]` with `\n` (paragraph), so we move the trailing `[br]` here.
+				r_text = r_text.left(-4); // `-len("[br]")`.
+				line = "[br]" + line;
+			} else if (!r_text.ends_with("\n")) {
 				line_join = " ";
 			}
 		} else {
@@ -3901,7 +3905,14 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 				from = rb_pos + 1;
 
 				String tag = line.substr(lb_pos + 1, rb_pos - lb_pos - 1);
-				if (tag == "code" || tag.begins_with("code ")) {
+				if (tag == "br") {
+					if (line.substr(from, 4) == "[br]") { // `len("[br]")`.
+						// Replace `[br][br]` with `\n` (paragraph).
+						result += line.substr(buffer_start, lb_pos - buffer_start) + '\n';
+						from += 4; // `len("[br]")`.
+						buffer_start = from;
+					}
+				} else if (tag == "code" || tag.begins_with("code ")) {
 					r_state = DOC_LINE_IN_CODE;
 				} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
 					if (lb_pos == 0) {
@@ -3969,10 +3980,10 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 
 	result += line.substr(buffer_start);
 	if (r_state == DOC_LINE_NORMAL) {
-		result = result.strip_edges(false, true);
+		result = result.rstrip(" \t");
 	}
 
-	return line_join + result;
+	r_text += line_join + result;
 }
 
 bool GDScriptParser::has_comment(int p_line, bool p_must_be_doc) {
@@ -4035,7 +4046,7 @@ GDScriptParser::MemberDocData GDScriptParser::parse_doc_comment(int p_line, bool
 			}
 		}
 
-		result.description += _process_doc_line(doc_line, result.description, space_prefix, state);
+		_process_doc_line(doc_line, result.description, space_prefix, state);
 	}
 
 	return result;
@@ -4145,9 +4156,9 @@ GDScriptParser::ClassDocData GDScriptParser::parse_class_doc_comment(int p_line,
 		}
 
 		if (is_in_brief) {
-			result.brief += _process_doc_line(doc_line, result.brief, space_prefix, state);
+			_process_doc_line(doc_line, result.brief, space_prefix, state);
 		} else {
-			result.description += _process_doc_line(doc_line, result.description, space_prefix, state);
+			_process_doc_line(doc_line, result.description, space_prefix, state);
 		}
 	}
 
