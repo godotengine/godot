@@ -59,6 +59,8 @@ public:
 
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
+	static constexpr const char *FORMAT_CHANGED = "format_changed";
+	static constexpr const char *FRAME_CHANGED = "frame_changed";
 
 protected:
 	struct FeedFormat {
