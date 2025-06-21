@@ -65,7 +65,7 @@ Ref<ArrayMesh> ConvexPolygonShape3D::get_debug_arraymesh_faces(const Color &p_mo
 		Geometry3D::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(hull_points, md);
 		if (err == OK) {
-			verts = md.vertices;
+			verts = Vector<Vector3>(md.vertices);
 			for (int i = 0; i < verts.size(); i++) {
 				colors.push_back(p_modulate);
 			}
