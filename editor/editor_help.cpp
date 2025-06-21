@@ -2570,8 +2570,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 		}
 
 		const String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+		const String tag_beginning = tag.get_slicec(' ', 0);
+		const String tag_name = tag_beginning.get_slicec('=', 0);
+		// const String tag_value = tag_beginning.get_slicec('=', 1);
+		// const PackedStringArray tag_options = tag.split_spaces().slice(1);
+		// const PackedStringArray tag_options = tag.substr(tag.find_char(' ') + 1).split_spaces();
+		const bool is_closing_tag = !tag.is_empty() && tag[0] == '/';
+		// print_line(tag, "|", tag_beginning, "|", tag_name, "|", tag_value, "|", tag_options);
 
-		if (tag.begins_with("/")) {
+		if (is_closing_tag) {
 			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1);
 
 			if (!tag_ok) {
@@ -2592,18 +2599,17 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			} else {
 				p_rt->pop();
 			}
-		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
+		} else if (tag_name == "method" || tag_name == "constructor" || tag_name == "operator" || tag_name == "member" || tag_name == "signal" || tag_name == "enum" || tag_name == "constant" || tag_name == "annotation" || tag_name == "theme_item") {
 			const int tag_end = tag.find_char(' ');
-			const String link_tag = tag.left(tag_end);
 			const String link_target = tag.substr(tag_end + 1).lstrip(" ");
 
 			Color target_color = link_color;
 			RichTextLabel::MetaUnderline underline_mode = RichTextLabel::META_UNDERLINE_ON_HOVER;
-			if (link_tag == "method" || link_tag == "constructor" || link_tag == "operator") {
+			if (tag_name == "method" || tag_name == "constructor" || tag_name == "operator") {
 				target_color = link_method_color;
-			} else if (link_tag == "member" || link_tag == "signal" || link_tag == "theme_item") {
+			} else if (tag_name == "member" || tag_name == "signal" || tag_name == "theme_item") {
 				target_color = link_property_color;
-			} else if (link_tag == "annotation") {
+			} else if (tag_name == "annotation") {
 				target_color = link_annotation_color;
 			} else {
 				// Better visibility for constants, enums, etc.
@@ -2615,9 +2621,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_color(target_color);
-			p_rt->push_meta("@" + link_tag + " " + link_target, underline_mode);
+			p_rt->push_meta("@" + tag_name + " " + link_target, underline_mode);
 
-			if (link_tag == "member" &&
+			if (tag_name == "member" &&
 					((!link_target.contains_char('.') && (p_class == "ProjectSettings" || p_class == "EditorSettings")) ||
 							link_target.begins_with("ProjectSettings.") || link_target.begins_with("EditorSettings."))) {
 				// Special formatting for both ProjectSettings and EditorSettings.
@@ -2636,7 +2642,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 				p_rt->add_text(prefix + String(" > ").join(setting_sections));
 				p_rt->pop(); // bold
 			} else {
-				p_rt->add_text(link_target + (link_tag == "method" ? "()" : ""));
+				p_rt->add_text(link_target + (tag_name == "method" ? "()" : ""));
 			}
 
 			p_rt->pop(); // meta
@@ -2645,7 +2651,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->pop(); // font
 
 			pos = brk_end + 1;
-		} else if (tag.begins_with("param ")) {
+		} else if (tag_name == "param") {
 			const int tag_end = tag.find_char(' ');
 			const String param_name = tag.substr(tag_end + 1).lstrip(" ");
 
@@ -2698,7 +2704,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "code" || tag.begins_with("code ")) {
+		} else if (tag_name == "code") {
 			int end_pos = bbcode.find("[/code]", brk_end + 1);
 			if (end_pos < 0) {
 				end_pos = bbcode.length();
@@ -2718,7 +2724,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->pop(); // font
 
 			pos = end_pos + 7; // `len("[/code]")`.
-		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
+		} else if (tag_name == "codeblock") {
 			int end_pos = bbcode.find("[/codeblock]", brk_end + 1);
 			if (end_pos < 0) {
 				end_pos = bbcode.length();
@@ -2874,7 +2880,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
-		} else if (tag.begins_with("img")) {
+		} else if (tag_name == "img") {
 			int width = 0;
 			int height = 0;
 			bool size_in_percent = false;
@@ -2914,14 +2920,14 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			pos = end;
 			tag_stack.push_front("img");
-		} else if (tag.begins_with("color=")) {
+		} else if (tag_name == "color") {
 			String col = tag.substr(6);
 			Color color = Color::from_string(col, Color());
 			p_rt->push_color(color);
 
 			pos = brk_end + 1;
 			tag_stack.push_front("color");
-		} else if (tag.begins_with("font=")) {
+		} else if (tag_name == "font") {
 			String font_path = tag.substr(5);
 			Ref<Font> font = ResourceLoader::load(font_path, "Font");
 			if (font.is_valid()) {
