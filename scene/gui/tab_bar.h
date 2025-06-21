@@ -118,6 +118,8 @@ private:
 	bool drag_to_rearrange_enabled = false;
 	bool dragging_valid_tab = false;
 	bool scroll_to_selected = true;
+	bool scroll_on_tab_close = true;
+	bool is_closing_tab = false;
 	int tabs_rearrange_group = -1;
 
 	static const int CURRENT_TAB_UNINITIALIZED = -2;
@@ -286,6 +288,12 @@ public:
 
 	void set_scroll_to_selected(bool p_enabled);
 	bool get_scroll_to_selected() const;
+
+	void set_scroll_on_tab_close(bool p_enabled);
+	bool get_scroll_on_tab_close() const;
+
+	void set_is_closing_tab(bool closing);
+	bool get_is_closing_tab() const;
 
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
