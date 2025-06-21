@@ -3965,6 +3965,7 @@ void EditorHelpBit::_update_labels() {
 		const Color symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
 		const Color value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
 		const Color qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
+		const Color code_hint_color = get_theme_color(SNAME("font_color"), SNAME("TooltipLabel"));
 		const Ref<Font> doc_source = get_theme_font(SNAME("doc_source"), EditorStringName(EditorFonts));
 		const int doc_source_size = get_theme_font_size(SNAME("doc_source_size"), EditorStringName(EditorFonts));
 
@@ -4042,6 +4043,10 @@ void EditorHelpBit::_update_labels() {
 						title->pop(); // color
 					}
 
+					if (i == arg_index) {
+						title->push_fgcolor(code_hint_color * Color(1, 1, 1, 0.2));
+					}
+
 					title->push_color(text_color);
 					title->add_text(argument.name);
 					title->pop(); // color
@@ -4061,6 +4066,10 @@ void EditorHelpBit::_update_labels() {
 						title->add_text(_fix_constant(argument.default_value));
 						title->pop(); // color
 					}
+
+					if (i == arg_index) {
+						title->pop(); // fgcolor
+					}
 				}
 
 				if (help_data.qualifiers.contains("vararg")) {
@@ -4068,6 +4077,10 @@ void EditorHelpBit::_update_labels() {
 						title->push_color(symbol_color);
 						title->add_text(", ");
 						title->pop(); // color
+					}
+
+					if (arg_index >= help_data.arguments.size()) {
+						title->push_fgcolor(code_hint_color * Color(1, 1, 1, 0.2));
 					}
 
 					title->push_color(symbol_color);
@@ -4088,6 +4101,10 @@ void EditorHelpBit::_update_labels() {
 						_add_type_to_title({ "Array", "", false });
 					} else {
 						_add_type_to_title(rest_argument.doc_type);
+					}
+
+					if (arg_index >= help_data.arguments.size()) {
+						title->pop(); // fgcolor
 					}
 				}
 
@@ -4510,7 +4527,7 @@ void EditorHelpBit::update_content_height() {
 	content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, CLAMP(content_height, content_min_height, content_max_height)));
 }
 
-EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_allow_selection) {
+EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_allow_selection, int p_arg_index) {
 	add_theme_constant_override("separation", 0);
 
 	title = memnew(RichTextLabel);
@@ -4537,6 +4554,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 	add_child(content);
 
 	use_class_prefix = p_use_class_prefix;
+	arg_index = p_arg_index;
 
 	if (!p_symbol.is_empty()) {
 		parse_symbol(p_symbol, p_prologue);
