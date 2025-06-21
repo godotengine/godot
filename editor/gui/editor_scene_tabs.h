@@ -34,6 +34,7 @@
 
 class Button;
 class HBoxContainer;
+class MenuButton;
 class Panel;
 class PanelContainer;
 class PopupMenu;
@@ -60,6 +61,7 @@ private:
 
 	TabBar *scene_tabs = nullptr;
 	PopupMenu *scene_tabs_context_menu = nullptr;
+	MenuButton *scene_list = nullptr;
 	Button *scene_tab_add = nullptr;
 	Control *scene_tab_add_ph = nullptr;
 
@@ -80,6 +82,7 @@ private:
 	void _reposition_active_tab(int p_to_index);
 	void _update_context_menu();
 	void _custom_menu_option(int p_option);
+	void _update_scene_list();
 
 	void _tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 
