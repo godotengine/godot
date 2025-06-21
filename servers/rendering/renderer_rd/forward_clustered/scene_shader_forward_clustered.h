@@ -231,6 +231,7 @@ public:
 		DepthTest depth_test = DEPTH_TEST_ENABLED;
 
 		int blend_mode = BLEND_MODE_MIX;
+		RD::BlendFactor blend_factors[4] = { RD::BLEND_FACTOR_SRC_ALPHA, RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, RD::BLEND_FACTOR_ONE, RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA };
 		int depth_test_disabledi = 0;
 		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
@@ -238,6 +239,7 @@ public:
 		bool uses_point_size = false;
 		bool uses_alpha = false;
 		bool uses_blend_alpha = false;
+		bool uses_blend_factors = false;
 		bool uses_alpha_clip = false;
 		bool uses_alpha_antialiasing = false;
 		bool uses_depth_prepass_alpha = false;
