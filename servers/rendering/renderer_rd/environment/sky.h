@@ -100,9 +100,10 @@ private:
 		float projection[4]; // 16 - 64
 		float position[3]; // 12 - 76
 		float time; // 4 - 80
-		float pad[2]; // 8 - 88
-		float luminance_multiplier; // 4 - 92
-		float brightness_multiplier; // 4 - 96
+		float forward[3]; // 12 - 92
+		float luminance_multiplier; // 4 - 96
+		float pad[3]; // 12 - 108
+		float brightness_multiplier; // 4 - 112
 		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
@@ -120,6 +121,7 @@ private:
 
 		bool uses_time = false;
 		bool uses_position = false;
+		bool uses_forward = false;
 		bool uses_half_res = false;
 		bool uses_quarter_res = false;
 		bool uses_light = false;
@@ -134,7 +136,7 @@ private:
 		virtual ~SkyShaderData();
 	};
 
-	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_modifier);
+	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, const Vector3 &p_forward, float p_luminance_multiplier, float p_brightness_modifier);
 
 public:
 	struct SkySceneState {
