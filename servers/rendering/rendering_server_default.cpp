@@ -70,7 +70,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	TIMESTAMP_BEGIN()
 
-	uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
+	const uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
 
 	RENDER_TIMESTAMP("Prepare Render Frame");
 
@@ -91,10 +91,22 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	RSG::scene->render_probes();
 
+	// IMPORTANT BEGIN: In order for RenderingServer::CPUGPUSyncMode::CPU_GPU_SYNC_AUTO to work
+	// correctly, we need timing measures to be as accurate as possible. We need to measure all CPU & GPU
+	// work as if V-Sync were off (which is hard when V-Sync is on).
+	// GPU drivers have 2 opportunities to stall us:
+	//	1. In vkAcquireNextImageKHR (where it should be, by spec). This happens at the end of
+	//	   RSG::viewport->draw_viewports() (inside blit_render_targets_to_screen).
+	//	2. In vkQueuePresentKHR (where it often happens. Vulkan spec allows this). This happens in
+	//	   RSG::rasterizer->end_frame().
+	//
+	// We're fortunate that both vkAcquireNextImageKHR & vkQueuePresentKHR happen extremely close
+	// together. But if that ever changes in the future and significant CPU/GPU work is done between
+	// them, we must split the timers to avoid measuring time spent waiting for V-Sync and include
+	// that extra time.
 	RSG::viewport->draw_viewports(p_swap_buffers);
-	RSG::canvas_render->update();
-
 	RSG::rasterizer->end_frame(p_swap_buffers);
+	// IMPORTANT ENDS.
 
 #ifndef XR_DISABLED
 	if (xr_server != nullptr) {
@@ -106,11 +118,16 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
 
+	const uint64_t tick_pre_post_draw_steps = OS::get_singleton()->get_ticks_usec();
+
 	if (create_thread) {
 		callable_mp(this, &RenderingServerDefault::_run_post_draw_steps).call_deferred();
 	} else {
 		_run_post_draw_steps();
 	}
+
+	RenderingServer::draw_cpu_time = 0ul;
+	RenderingServer::draw_gpu_time = 0ul;
 
 	if (RSG::utilities->get_captured_timestamps_count()) {
 		Vector<FrameProfileArea> new_profile;
@@ -128,6 +145,11 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 			if (name.begins_with("vp_")) {
 				RSG::viewport->handle_timestamp(name, time_cpu, time_gpu);
+			}
+
+			if (name == "_Sync Mode Auto") {
+				RenderingServer::draw_cpu_time = (time_cpu - base_cpu) / 1000ul;
+				RenderingServer::draw_gpu_time = (time_gpu - base_gpu) / 1000ul;
 			}
 
 			if (RSG::utilities->capturing_timestamps) {
@@ -186,6 +208,9 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	}
 
 	RSG::utilities->update_memory_info();
+
+	const uint64_t tmp_tick = OS::get_singleton()->get_ticks_usec();
+	RenderingServer::draw_cpu_time += (tmp_tick - tick_pre_post_draw_steps) / 1000ul;
 }
 
 void RenderingServerDefault::_run_post_draw_steps() {
