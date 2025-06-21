@@ -81,6 +81,8 @@ void NodeDock::_notification(int p_what) {
 void NodeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &NodeDock::_save_layout_to_config);
 	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &NodeDock::_load_layout_from_config);
+
+	ClassDB::bind_method(D_METHOD("update_lists"), &NodeDock::update_lists);
 }
 
 void NodeDock::update_lists() {
