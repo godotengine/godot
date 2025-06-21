@@ -3829,7 +3829,7 @@ void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, con
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
-	Vector2i logical_max_size = p_size / window_state_get_scale_factor(&ws);
+	Vector2i logical_max_size = scale_vector2i(p_size, 1 / window_state_get_scale_factor(&ws));
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_max_size(ws.xdg_toplevel, logical_max_size.width, logical_max_size.height);
@@ -3848,7 +3848,7 @@ void WaylandThread::window_set_min_size(DisplayServer::WindowID p_window_id, con
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
-	Size2i logical_min_size = p_size / window_state_get_scale_factor(&ws);
+	Size2i logical_min_size = scale_vector2i(p_size, 1 / window_state_get_scale_factor(&ws));
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_min_size(ws.xdg_toplevel, logical_min_size.width, logical_min_size.height);
