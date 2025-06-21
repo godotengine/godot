@@ -1,7 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
 
-partial class ExportedProperties
+partial class @ExportedProperties
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
     /// <summary>

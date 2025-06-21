@@ -1,4 +1,4 @@
-partial class ExportedComplexStrings
+partial class @ExportedComplexStrings
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
 #if TOOLS
