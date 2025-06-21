@@ -98,6 +98,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
+		// Final annotation.
+		register_annotation(MethodInfo("@final"), AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::final_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
@@ -4430,6 +4432,34 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 	variable->onready = true;
 	current_class->onready_used = true;
 	return true;
+}
+
+bool GDScriptParser::final_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::FUNCTION && p_target->type != Node::CLASS, false, R"("@final" annotation can only be applied to classes or functions.)");
+
+	ClassNode *class_node = static_cast<ClassNode *>(p_target);
+	if (class_node != nullptr) {
+		if (class_node->is_final) {
+			push_error(R"("@final" annotation can only be used once per class.)", p_annotation);
+			return false;
+		} else {
+			class_node->is_final = true;
+			return true;
+		}
+	}
+
+	FunctionNode *function = static_cast<FunctionNode *>(p_target);
+	if (function != nullptr) {
+		if (function->is_final) {
+			push_error(R"("@final" annotation can only be used once per function.)", p_annotation);
+			return false;
+		} else {
+			function->is_final = true;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 static String _get_annotation_error_string(const StringName &p_annotation_name, const Vector<Variant::Type> &p_expected_types, const GDScriptParser::DataType &p_provided_type) {
