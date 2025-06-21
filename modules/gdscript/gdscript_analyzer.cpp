@@ -46,7 +46,7 @@
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
-#include "editor/renames_map_3_to_4.h"
+#include "editor/project_upgrade/renames_map_3_to_4.h"
 #endif
 
 #define UNNAMED_ENUM "<anonymous enum>"

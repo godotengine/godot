@@ -34,13 +34,13 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/translation.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_locale_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/translations/editor_locale_dialog.h"
 #include "scene/gui/split_container.h"
 
 /*************************************************************************/
