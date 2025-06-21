@@ -531,6 +531,62 @@ void Viewport::_update_viewport_path() {
 	}
 }
 
+void Viewport::apply_project_settings() {
+	// Update shadow atlas if changed.
+	int shadowmap_size = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_size");
+	bool shadowmap_16_bits = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_16_bits");
+	int atlas_q0 = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv");
+	int atlas_q1 = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv");
+	int atlas_q2 = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv");
+	int atlas_q3 = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv");
+
+	set_positional_shadow_atlas_size(shadowmap_size);
+	set_positional_shadow_atlas_16_bits(shadowmap_16_bits);
+	set_positional_shadow_atlas_quadrant_subdiv(0, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q0));
+	set_positional_shadow_atlas_quadrant_subdiv(1, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q1));
+	set_positional_shadow_atlas_quadrant_subdiv(2, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q2));
+	set_positional_shadow_atlas_quadrant_subdiv(3, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q3));
+
+	// Update MSAA, screen-space AA and debanding if changed.
+
+	const int msaa_mode = GLOBAL_GET("rendering/anti_aliasing/quality/msaa_3d");
+	set_msaa_3d(Viewport::MSAA(msaa_mode));
+	const int ssaa_mode = GLOBAL_GET("rendering/anti_aliasing/quality/screen_space_aa");
+	set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
+	const bool use_taa = GLOBAL_GET("rendering/anti_aliasing/quality/use_taa");
+	set_use_taa(use_taa);
+
+	const bool transparent_background = GLOBAL_GET("rendering/viewport/transparent_background");
+	set_transparent_background(transparent_background);
+
+	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
+	set_use_hdr_2d(use_hdr_2d);
+
+	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
+	set_use_debanding(use_debanding);
+
+	const bool use_occlusion_culling = GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling");
+	set_use_occlusion_culling(use_occlusion_culling);
+
+	const float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
+	set_mesh_lod_threshold(mesh_lod_threshold);
+
+	const Viewport::Scaling3DMode scaling_3d_mode = Viewport::Scaling3DMode(int(GLOBAL_GET("rendering/scaling_3d/mode")));
+	set_scaling_3d_mode(scaling_3d_mode);
+
+	const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
+	set_scaling_3d_scale(scaling_3d_scale);
+
+	const float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
+	set_fsr_sharpness(fsr_sharpness);
+
+	const float texture_mipmap_bias = GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias");
+	set_texture_mipmap_bias(texture_mipmap_bias);
+
+	const Viewport::AnisotropicFiltering anisotropic_filtering_level = Viewport::AnisotropicFiltering(int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level")));
+	set_anisotropic_filtering_level(anisotropic_filtering_level);
+}
+
 void Viewport::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 
