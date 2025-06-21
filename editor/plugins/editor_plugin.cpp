@@ -531,6 +531,14 @@ bool EditorPlugin::build() {
 	return success;
 }
 
+Vector<String> EditorPlugin::run_scene(const String &p_scene, const Vector<String> &p_args) {
+	Vector<String> new_args;
+	if (GDVIRTUAL_CALL(_run_scene, p_scene, p_args, new_args)) {
+		return new_args;
+	}
+	return p_args;
+}
+
 void EditorPlugin::queue_save_layout() {
 	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
@@ -665,6 +673,7 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_set_window_layout, "configuration");
 	GDVIRTUAL_BIND(_get_window_layout, "configuration");
 	GDVIRTUAL_BIND(_build);
+	GDVIRTUAL_BIND(_run_scene, "scene", "args");
 	GDVIRTUAL_BIND(_enable_plugin);
 	GDVIRTUAL_BIND(_disable_plugin);
 
