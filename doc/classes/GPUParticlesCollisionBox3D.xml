@@ -13,7 +13,7 @@
 	</tutorials>
 	<members>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(2, 2, 2)">
-			The collision box's size in 3D units.
+			The collision box's size in meters.
 		</member>
 	</members>
 </class>

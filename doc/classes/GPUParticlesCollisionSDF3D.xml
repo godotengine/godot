@@ -38,7 +38,7 @@
 			The bake resolution to use for the signed distance field [member texture]. The texture must be baked again for changes to the [member resolution] property to be effective. Higher resolutions have a greater performance cost and take more time to bake. Higher resolutions also result in larger baked textures, leading to increased VRAM and storage space requirements. To improve performance and reduce bake times, use the lowest resolution possible for the object you're representing the collision of.
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(2, 2, 2)">
-			The collision SDF's size in 3D units. To improve SDF quality, the [member size] should be set as small as possible while covering the parts of the scene you need.
+			The collision SDF's size in meters. To improve SDF quality, the [member size] should be set as small as possible while covering the parts of the scene you need.
 		</member>
 		<member name="texture" type="Texture3D" setter="set_texture" getter="get_texture">
 			The 3D texture representing the signed distance field.
