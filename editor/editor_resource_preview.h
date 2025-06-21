@@ -85,10 +85,14 @@ class EditorResourcePreview : public Node {
 	};
 
 	List<QueueItem> queue;
+	List<QueueItem> generation_queue;
 
 	Mutex preview_mutex;
+	Mutex generation_mutex;
 	Semaphore preview_sem;
+	Semaphore generation_sem;
 	Thread thread;
+	Thread generation_thread;
 	SafeFlag exiting;
 	SafeFlag exited;
 
@@ -108,9 +112,12 @@ class EditorResourcePreview : public Node {
 	int small_thumbnail_size = -1;
 
 	static void _thread_func(void *ud);
-	void _thread(); // For rendering drivers supporting async texture creation.
+	void _thread();
+	static void _generation_thread_func(void *ud);
+	void _generation_thread(); // For rendering drivers supporting async texture creation.
 	static void _idle_callback(); // For other rendering drivers (i.e., OpenGL).
 	void _iterate();
+	void _iterate_generation();
 
 	void _write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, const String &p_hash, const Dictionary &p_metadata);
 	void _read_preview_cache(Ref<FileAccess> p_file, int *r_thumbnail_size, bool *r_has_small_texture, uint64_t *r_modified_time, String *r_hash, Dictionary *r_metadata, bool *r_outdated);

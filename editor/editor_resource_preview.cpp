@@ -136,6 +136,11 @@ void EditorResourcePreview::_thread_func(void *ud) {
 	erp->_thread();
 }
 
+void EditorResourcePreview::_generation_thread_func(void *ud) {
+	EditorResourcePreview *erp = (EditorResourcePreview *)ud;
+	erp->_generation_thread();
+}
+
 void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud, const Dictionary &p_metadata) {
 	{
 		MutexLock lock(preview_mutex);
@@ -299,11 +304,12 @@ void EditorResourcePreview::_iterate() {
 
 	// Does not have it, try to load a cached thumbnail.
 
+	bool cache_valid = true;
 	String file = cache_base + ".txt";
 	Ref<FileAccess> f = FileAccess::open(file, FileAccess::READ);
 	if (f.is_null()) {
 		// No cache found, generate.
-		_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
+		cache_valid = false;
 	} else {
 		uint64_t modtime = FileAccess::get_modified_time(item.path);
 		String import_path = item.path + ".import";
@@ -317,8 +323,6 @@ void EditorResourcePreview::_iterate() {
 		String hash;
 		bool outdated;
 		_read_preview_cache(f, &tsize, &has_small_texture, &last_modtime, &hash, &preview_metadata, &outdated);
-
-		bool cache_valid = true;
 
 		if (tsize != thumbnail_size) {
 			cache_valid = false;
@@ -371,11 +375,34 @@ void EditorResourcePreview::_iterate() {
 				}
 			}
 		}
-
-		if (!cache_valid) {
-			_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
-		}
 	}
+
+	if (cache_valid) {
+		_preview_ready(item.path, 0, texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
+	} else {
+		generation_queue.push_back(item);
+		generation_sem.post();
+	}
+}
+
+void EditorResourcePreview::_iterate_generation() {
+	generation_mutex.lock();
+
+	if (generation_queue.is_empty()) {
+		generation_mutex.unlock();
+		return;
+	}
+
+	QueueItem item = generation_queue.front()->get();
+	generation_queue.pop_front();
+	generation_mutex.unlock();
+
+	Ref<ImageTexture> texture;
+	Ref<ImageTexture> small_texture;
+	Dictionary preview_metadata;
+	String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
+
+	_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
 	_preview_ready(item.path, 0, texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
 }
 
@@ -406,6 +433,13 @@ void EditorResourcePreview::_thread() {
 	exited.set();
 }
 
+void EditorResourcePreview::_generation_thread() {
+	while (!exiting.is_set()) {
+		generation_sem.wait();
+		_iterate_generation();
+	}
+}
+
 void EditorResourcePreview::_idle_callback() {
 	if (!singleton) {
 		// Just in case the shutdown of the editor involves the deletion of the singleton
@@ -416,7 +450,7 @@ void EditorResourcePreview::_idle_callback() {
 	// Process preview tasks, trying to leave a little bit of responsiveness worst case.
 	uint64_t start = OS::get_singleton()->get_ticks_msec();
 	while (!singleton->queue.is_empty() && OS::get_singleton()->get_ticks_msec() - start < 100) {
-		singleton->_iterate();
+		singleton->_iterate_generation();
 	}
 }
 
@@ -556,12 +590,15 @@ void EditorResourcePreview::start() {
 		return;
 	}
 
+	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
+	thread.start(_thread_func, this);
+
 	if (is_threaded()) {
-		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
-		thread.start(_thread_func, this);
+		ERR_FAIL_COND_MSG(generation_thread.is_started(), "Generation thread already started.");
+		generation_thread.start(_generation_thread_func, this);
 	} else {
-		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
-		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");
+		SceneTree *st = SceneTree::get_singleton();
+		ERR_FAIL_NULL_MSG(st, "SceneTree is not available. This is a bug.");
 		st->add_idle_callback(&_idle_callback);
 	}
 }
@@ -571,6 +608,7 @@ void EditorResourcePreview::stop() {
 		if (thread.is_started()) {
 			exiting.set();
 			preview_sem.post();
+			generation_sem.post();
 
 			for (int i = 0; i < preview_generators.size(); i++) {
 				preview_generators.write[i]->abort();
