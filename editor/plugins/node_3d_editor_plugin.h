@@ -505,6 +505,7 @@ private:
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
+	void _perform_safe_threaded_physics_actions();
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
