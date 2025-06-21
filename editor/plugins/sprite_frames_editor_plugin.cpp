@@ -1992,7 +1992,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	autoplay = memnew(Button);
 	autoplay->set_theme_type_variation(SceneStringName(FlatButton));
-	autoplay->set_accessibility_name(TTRC("Autoplay on Load"));
 	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
 	autoplay_container->add_child(autoplay);
 
@@ -2001,7 +2000,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_loop = memnew(Button);
 	anim_loop->set_toggle_mode(true);
 	anim_loop->set_theme_type_variation(SceneStringName(FlatButton));
-	anim_loop->set_accessibility_name(TTRC("Animation Looping"));
 	anim_loop->set_tooltip_text(TTR("Animation Looping"));
 	anim_loop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
 	hbc_animlist->add_child(anim_loop);
@@ -2013,7 +2011,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->set_step(0.01);
 	anim_speed->set_custom_arrow_step(1);
 	anim_speed->set_tooltip_text(TTR("Animation Speed"));
-	anim_speed->set_accessibility_name(TTRC("Animation Speed"));
 	anim_speed->get_line_edit()->set_expand_to_text_length_enabled(true);
 	anim_speed->get_line_edit()->connect(SceneStringName(resized), callable_mp(this, &SpriteFramesEditor::_animation_speed_resized));
 	anim_speed->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
@@ -2023,7 +2020,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(anim_search_box);
 	anim_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	anim_search_box->set_placeholder(TTR("Filter Animations"));
-	anim_search_box->set_accessibility_name(TTRC("Filter Animations"));
 	anim_search_box->set_clear_button_enabled(true);
 	anim_search_box->connect(SceneStringName(text_changed), callable_mp(this, &SpriteFramesEditor::_animation_search_text_changed));
 
@@ -2072,31 +2068,26 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
 	play_bw_from->set_tooltip_text(TTR("Play selected animation backwards from current pos. (A)"));
-	play_bw_from->set_accessibility_name(TTRC("Play Backwards"));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
 	play_bw->set_tooltip_text(TTR("Play selected animation backwards from end. (Shift+A)"));
-	play_bw->set_accessibility_name(TTRC("Play Backwards from End"));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation(SceneStringName(FlatButton));
 	stop->set_tooltip_text(TTR("Pause/stop animation playback. (S)"));
-	stop->set_accessibility_name(TTRC("Pause/Stop"));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation(SceneStringName(FlatButton));
 	play->set_tooltip_text(TTR("Play selected animation from start. (Shift+D)"));
-	play->set_accessibility_name(TTRC("Play from Start"));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
 	play_from->set_tooltip_text(TTR("Play selected animation from current pos. (D)"));
-	play_from->set_accessibility_name(TTRC("Play"));
 	playback_container->add_child(play_from);
 
 	hfc->add_child(memnew(VSeparator));
@@ -2181,7 +2172,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_duration->set_allow_lesser(false);
 	frame_duration->set_allow_greater(true);
 	frame_duration->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_frame_duration_changed));
-	frame_duration->set_accessibility_name(TTRC("Frame Duration"));
+	frame_duration->set_accessibility_name(TTRC("Frame Duration:"));
 	hbc_frame_duration->add_child(frame_duration);
 
 	// Wide empty separation control. (like BoxContainer::add_spacer())
@@ -2197,21 +2188,18 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_zoom_out));
 	zoom_out->set_flat(true);
 	zoom_out->set_tooltip_text(TTRC("Zoom Out"));
-	zoom_out->set_accessibility_name(TTRC("Zoom Out"));
 	hbc_zoom->add_child(zoom_out);
 
 	zoom_reset = memnew(Button);
 	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_zoom_reset));
 	zoom_reset->set_flat(true);
 	zoom_reset->set_tooltip_text(TTRC("Zoom Reset"));
-	zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 	hbc_zoom->add_child(zoom_reset);
 
 	zoom_in = memnew(Button);
 	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_zoom_in));
 	zoom_in->set_flat(true);
 	zoom_in->set_tooltip_text(TTRC("Zoom In"));
-	zoom_in->set_accessibility_name(TTRC("Zoom In"));
 	hbc_zoom->add_child(zoom_in);
 
 	file = memnew(EditorFileDialog);
@@ -2334,7 +2322,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	toggle_settings_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_settings_button->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_toggle_show_settings));
 	toggle_settings_button->set_tooltip_text(TTR("Toggle Settings Panel"));
-	toggle_settings_button->set_accessibility_name(TTRC("Settings Panel"));
 	split_sheet_menu_hb->add_child(toggle_settings_button);
 
 	split_sheet_vb->add_child(split_sheet_menu_hb);
@@ -2373,7 +2360,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_out->set_theme_type_variation(SceneStringName(FlatButton));
 	split_sheet_zoom_out->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_out->set_tooltip_text(TTR("Zoom Out"));
-	split_sheet_zoom_out->set_accessibility_name(TTRC("Zoom Out"));
 	split_sheet_zoom_out->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_out);
 
@@ -2381,7 +2367,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_reset->set_theme_type_variation(SceneStringName(FlatButton));
 	split_sheet_zoom_reset->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
-	split_sheet_zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 	split_sheet_zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_reset);
 
@@ -2389,7 +2374,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_in->set_theme_type_variation(SceneStringName(FlatButton));
 	split_sheet_zoom_in->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_in->set_tooltip_text(TTR("Zoom In"));
-	split_sheet_zoom_in->set_accessibility_name(TTRC("Zoom In"));
 	split_sheet_zoom_in->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_in);
 

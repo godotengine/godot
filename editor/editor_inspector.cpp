@@ -3190,7 +3190,7 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	resize_dialog->add_child(resize_dialog_vbox);
 
 	new_size_spin_box = memnew(SpinBox);
-	new_size_spin_box->set_accessibility_name(TTRC("Size"));
+	new_size_spin_box->set_accessibility_name(TTRC("New Size:"));
 	new_size_spin_box->set_max(16384);
 	new_size_spin_box->connect(SceneStringName(value_changed), callable_mp(this, &EditorInspectorArray::_new_size_spin_box_value_changed));
 	new_size_spin_box->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(this, &EditorInspectorArray::_new_size_spin_box_text_submitted));
@@ -3271,13 +3271,13 @@ EditorPaginator::EditorPaginator() {
 	add_child(first_page_button);
 
 	prev_page_button = memnew(Button);
-	prev_page_button->set_accessibility_name(TTRC("Previuos Page"));
+	prev_page_button->set_accessibility_name(TTRC("Previous Page"));
 	prev_page_button->set_flat(true);
 	prev_page_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPaginator::_prev_page_button_pressed));
 	add_child(prev_page_button);
 
 	page_line_edit = memnew(LineEdit);
-	page_line_edit->set_accessibility_name(TTRC("Page"));
+	page_line_edit->set_accessibility_name(TTRC("Page Number"));
 	page_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &EditorPaginator::_page_line_edit_text_submitted));
 	page_line_edit->add_theme_constant_override("minimum_character_width", 2);
 	add_child(page_line_edit);

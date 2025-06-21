@@ -1100,13 +1100,12 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 
 	add_var = memnew(Button);
 	add_var->set_tooltip_text(TTR("Add new font variation configuration."));
-	add_var->set_accessibility_name(TTRC("Add Configuration"));
 	page2_hb_vars->add_child(add_var);
 	add_var->connect(SceneStringName(pressed), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_add));
 
 	vars_list = memnew(Tree);
 	vars_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	vars_list->set_accessibility_name(TTRC("Configuration"));
+	vars_list->set_accessibility_name(TTRC("Configuration:"));
 	vars_list->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	vars_list->set_hide_root(true);
 	vars_list->set_columns(2);

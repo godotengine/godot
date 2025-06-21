@@ -1326,10 +1326,10 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_MOVE]->set_accessibility_name(TTRC("Move Polygon"));
 	action_buttons[ACTION_ROTATE]->set_accessibility_name(TTRC("Rotate Polygon"));
 	action_buttons[ACTION_SCALE]->set_accessibility_name(TTRC("Scale Polygon"));
-	action_buttons[ACTION_ADD_POLYGON]->set_accessibility_name(TTRC("Create Custom Polygon"));
-	action_buttons[ACTION_REMOVE_POLYGON]->set_accessibility_name(TTRC("Remove Custom Polygon"));
-	action_buttons[ACTION_PAINT_WEIGHT]->set_accessibility_name(TTRC("Paint Weights"));
-	action_buttons[ACTION_CLEAR_WEIGHT]->set_accessibility_name(TTRC("Unpaint Weights"));
+	action_buttons[ACTION_ADD_POLYGON]->set_accessibility_name(TTRC("Create a custom polygon. Enables custom polygon rendering."));
+	action_buttons[ACTION_REMOVE_POLYGON]->set_accessibility_name(TTRC("Remove a custom polygon. If none remain, custom polygon rendering is disabled."));
+	action_buttons[ACTION_PAINT_WEIGHT]->set_accessibility_name(TTRC("Paint weights with specified intensity."));
+	action_buttons[ACTION_CLEAR_WEIGHT]->set_accessibility_name(TTRC("Unpaint weights with specified intensity."));
 
 	bone_paint_strength = memnew(HSlider);
 	toolbar->add_child(bone_paint_strength);
@@ -1350,7 +1350,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_paint_radius->set_max(100);
 	bone_paint_radius->set_step(1);
 	bone_paint_radius->set_value(32);
-	bone_paint_radius->set_accessibility_name(TTRC("Radius"));
+	bone_paint_radius->set_accessibility_name(TTRC("Radius:"));
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
 	polygon_edit->add_child(uv_main_hsc);
@@ -1421,7 +1421,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_x->set_value(snap_offset.x);
 	sb_off_x->set_suffix("px");
 	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_x));
-	sb_off_x->set_accessibility_name(TTRC("Grid Offset X"));
+	sb_off_x->set_accessibility_name(TTRC("Grid Offset X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset X:"), sb_off_x);
 
 	SpinBox *sb_off_y = memnew(SpinBox);
@@ -1431,7 +1431,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_y->set_value(snap_offset.y);
 	sb_off_y->set_suffix("px");
 	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_y));
-	sb_off_y->set_accessibility_name(TTRC("Grid Offset Y"));
+	sb_off_y->set_accessibility_name(TTRC("Grid Offset Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset Y:"), sb_off_y);
 
 	SpinBox *sb_step_x = memnew(SpinBox);
@@ -1441,7 +1441,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_x->set_value(snap_step.x);
 	sb_step_x->set_suffix("px");
 	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_x));
-	sb_step_x->set_accessibility_name(TTRC("Grid Step X"));
+	sb_step_x->set_accessibility_name(TTRC("Grid Step X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step X:"), sb_step_x);
 
 	SpinBox *sb_step_y = memnew(SpinBox);
@@ -1451,7 +1451,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_y->set_value(snap_step.y);
 	sb_step_y->set_suffix("px");
 	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_y));
-	sb_step_y->set_accessibility_name(TTRC("Grid Step Y"));
+	sb_step_y->set_accessibility_name(TTRC("Grid Step Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step Y:"), sb_step_y);
 
 	zoom_widget = memnew(EditorZoomWidget);

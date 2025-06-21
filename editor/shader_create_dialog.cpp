@@ -581,7 +581,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	type_menu = memnew(OptionButton);
 	type_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	type_menu->set_accessibility_name(TTRC("Type"));
+	type_menu->set_accessibility_name(TTRC("Type:"));
 	type_menu->set_custom_minimum_size(Size2(250, 0) * EDSCALE);
 	type_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	gc->add_child(memnew(Label(TTR("Type:"))));
@@ -623,7 +623,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	mode_menu = memnew(OptionButton);
 	mode_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	mode_menu->set_accessibility_name(TTRC("Mode"));
+	mode_menu->set_accessibility_name(TTRC("Mode:"));
 	for (const String &type_name : ShaderTypes::get_singleton()->get_types_list()) {
 		mode_menu->add_item(type_name.capitalize());
 	}
@@ -634,7 +634,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	// Templates.
 
 	template_menu = memnew(OptionButton);
-	template_menu->set_accessibility_name(TTRC("Template"));
+	template_menu->set_accessibility_name(TTRC("Template:"));
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	gc->add_child(template_menu);
 	template_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_template_changed));
@@ -643,7 +643,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
-	internal->set_accessibility_name(TTRC("Built-in Shader"));
+	internal->set_accessibility_name(TTRC("Built-in Shader:"));
 	internal->connect(SceneStringName(toggled), callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
 	gc->add_child(memnew(Label(TTR("Built-in Shader:"))));
 	gc->add_child(internal);
@@ -655,6 +655,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	hb->connect(SceneStringName(sort_children), callable_mp(this, &ShaderCreateDialog::_path_hbox_sorted));
 	file_path = memnew(LineEdit);
 	file_path->connect(SceneStringName(text_changed), callable_mp(this, &ShaderCreateDialog::_path_changed));
+	file_path->set_accessibility_name(TTRC("Path:"));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
 	register_text_enter(file_path);
