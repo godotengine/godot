@@ -1518,6 +1518,7 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 	if (p_visible) {
 		WaylandThread::WindowState *ws = wayland_thread.window_get_state(p_window);
 
+		// FIXME: Re-enable libdecor and check for it here.
 		if (ws->xdg_toplevel == nullptr) {
 			ws = wayland_thread.window_get_state(MAIN_WINDOW_ID);
 		}
@@ -1525,11 +1526,21 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 		ERR_FAIL_NULL_V(ws->xdg_toplevel, ERR_BUG);
 
 		godot_embedded_client_set_embedded_window_parent(embedded_client, ws->xdg_toplevel);
+
+		double window_scale = WaylandThread::window_state_get_scale_factor(ws);
+
+		Rect2i scaled_rect = p_rect;
+		scaled_rect.position.x /= window_scale;
+		scaled_rect.position.y /= window_scale;
+		scaled_rect.size.width /= window_scale;
+		scaled_rect.size.height /= window_scale;
+
+		print_verbose(vformat("Scaling embedded rect down by %f from %s to %s.", window_scale, p_rect, scaled_rect));
+
+		godot_embedded_client_set_embedded_window_rect(embedded_client, scaled_rect.position.x, scaled_rect.position.y, scaled_rect.size.width, scaled_rect.size.height);
 	} else {
 		godot_embedded_client_set_embedded_window_parent(embedded_client, nullptr);
 	}
-
-	godot_embedded_client_set_embedded_window_rect(embedded_client, p_rect.position.x, p_rect.position.y, p_rect.size.width, p_rect.size.height);
 
 	return OK;
 }

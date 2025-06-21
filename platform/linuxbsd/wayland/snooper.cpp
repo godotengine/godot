@@ -40,6 +40,8 @@
 //  - Track and report state for all non-destructible objects on instancing
 //  (luckily there are few of them)
 //
+//  - Re-enable libdecor
+//
 //  - Keep cleaning up this mess (code still sucks)
 //
 //  - Do the mario (swing your arms from side to side)
