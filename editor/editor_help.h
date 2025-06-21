@@ -193,6 +193,7 @@ class EditorHelp : public VBoxContainer {
 	inline static String doc_version_hash;
 	inline static Thread worker_thread;
 	inline static Thread loader_thread; // Only load scripts here to avoid deadlocking with main thread.
+	inline static bool block_regen = false;
 
 	inline static SafeFlag _script_docs_loaded = SafeFlag(false);
 	inline static LocalVector<DocData::ClassDoc> _docs_to_add;
@@ -267,6 +268,12 @@ public:
 	void set_scroll(int p_scroll);
 
 	void update_toggle_files_button();
+
+	static void wait_for_threads_and_block() {
+		block_regen = true;
+		_wait_for_thread(worker_thread);
+		_wait_for_thread(loader_thread);
+	}
 
 	static void init_gdext_pointers();
 
