@@ -65,7 +65,6 @@ class BonePropertiesEditor : public VBoxContainer {
 
 	EditorInspectorSection *meta_section = nullptr;
 	AddMetadataDialog *add_meta_dialog = nullptr;
-	Button *add_metadata_button = nullptr;
 
 	Rect2 background_rects[5];
 
