@@ -1126,6 +1126,14 @@ Vector<String> String::split(const char *p_splitter, bool p_allow_empty, int p_m
 
 Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int p_maxsplit) const {
 	Vector<String> ret;
+
+	if (is_empty()) {
+		if (p_allow_empty) {
+			ret.push_back("");
+		}
+		return ret;
+	}
+
 	const int len = length();
 	int remaining_len = len;
 
@@ -1168,6 +1176,14 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 
 Vector<String> String::rsplit(const char *p_splitter, bool p_allow_empty, int p_maxsplit) const {
 	Vector<String> ret;
+
+	if (is_empty()) {
+		if (p_allow_empty) {
+			ret.push_back("");
+		}
+		return ret;
+	}
+
 	const int len = length();
 	const int splitter_length = strlen(p_splitter);
 	int remaining_len = len;
@@ -1210,6 +1226,10 @@ Vector<String> String::rsplit(const char *p_splitter, bool p_allow_empty, int p_
 }
 
 Vector<double> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
+	if (is_empty()) {
+		return Vector<double>();
+	}
+
 	Vector<double> ret;
 	int from = 0;
 	int len = length();
@@ -1237,6 +1257,10 @@ Vector<double> String::split_floats(const String &p_splitter, bool p_allow_empty
 }
 
 Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty) const {
+	if (is_empty()) {
+		return Vector<float>();
+	}
+
 	Vector<float> ret;
 	int from = 0;
 	int len = length();
@@ -1269,6 +1293,10 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 }
 
 Vector<int> String::split_ints(const String &p_splitter, bool p_allow_empty) const {
+	if (is_empty()) {
+		return Vector<int>();
+	}
+
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
@@ -1293,6 +1321,10 @@ Vector<int> String::split_ints(const String &p_splitter, bool p_allow_empty) con
 }
 
 Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty) const {
+	if (is_empty()) {
+		return Vector<int>();
+	}
+
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
