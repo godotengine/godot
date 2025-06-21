@@ -55,6 +55,17 @@ class TextureRect;
 class ViewPanner;
 class EditorValidationPanel;
 
+struct SelectedKey {
+	int track = 0;
+	int key = 0;
+	bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; }
+};
+
+struct KeyInfo {
+	float pos = 0;
+	Variant data;
+};
+
 class AnimationTrackKeyEdit : public Object {
 	GDCLASS(AnimationTrackKeyEdit, Object);
 
@@ -306,15 +317,19 @@ protected:
 
 	bool moving_selection_attempt = false;
 	bool moving_selection_effective = false;
-	float moving_selection_offset = 0.0f;
 	float moving_selection_pivot = 0.0f;
 	float moving_selection_mouse_begin_x = 0.0f;
 	float moving_selection_mouse_begin_y = 0.0f;
+
+protected:
 	bool moving_selection = false;
+	float moving_selection_offset = 0.0f;
 
 public:
 	virtual bool is_moving_selection() const;
+	virtual void set_moving_selection(bool p_value);
 	virtual float get_moving_selection_offset() const;
+	virtual void set_moving_selection_offset(float p_value);
 
 public:
 	virtual void _move_selection_begin() {}
@@ -386,17 +401,6 @@ public:
 
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 	bool _is_ui_pos_in_current_section(const Point2 &p_pos);
-
-	struct SelectedKey {
-		int track = 0;
-		int key = 0;
-		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; }
-	};
-
-	struct KeyInfo {
-		float pos = 0;
-		Variant data;
-	};
 
 	RBMap<SelectedKey, KeyInfo> selection;
 
@@ -874,10 +878,10 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
-	RBMap<AnimationKeyEdit::SelectedKey, AnimationKeyEdit::KeyInfo> selection;
+	RBMap<SelectedKey, KeyInfo> selection;
 
-	bool moving_selection = false;
-	float moving_selection_offset = 0.0f;
+	bool moving_track_selection = false;
+	float moving_track_selection_offset = 0.0f;
 
 	void _move_selection_begin();
 	void _move_selection(float p_offset);
@@ -1004,7 +1008,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Vector<TrackClipboard> track_clipboard;
 	KeyClipboard key_clipboard;
 
-	void _set_key_clipboard(int p_top_track, float p_top_time, RBMap<AnimationKeyEdit::SelectedKey, AnimationKeyEdit::KeyInfo> &p_keymap);
+	void _set_key_clipboard(int p_top_track, float p_top_time, RBMap<SelectedKey, KeyInfo> &p_keymap);
 	void _insert_animation_key(NodePath p_path, const Variant &p_value);
 
 	void _pick_track_filter_text_changed(const String &p_newtext);
@@ -1104,7 +1108,9 @@ public:
 	bool is_key_selected(const int p_track, const int p_key) const;
 	bool is_selection_active() const;
 	bool is_track_moving_selection() const;
+	void set_track_moving_selection(bool p_value);
 	float get_track_moving_selection_offset() const;
+	void set_track_moving_selection_offset(float p_value);
 	bool is_marker_selection_active() const;
 	bool is_key_clipboard_active() const;
 	bool is_snap_timeline_enabled() const;

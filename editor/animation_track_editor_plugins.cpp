@@ -42,7 +42,7 @@
 #include "scene/animation/animation_player.h"
 #include "servers/audio/audio_stream.h"
 
-/// BOOL ///
+/// ANIMATION TRACK EDIT BOOL ///
 
 AnimationTrackEditBool::AnimationTrackEditBool() {
 	key_pivot.x = 0.5;
@@ -73,7 +73,7 @@ void AnimationTrackEditBool::draw_key(const int p_index, const Rect2 &p_global_r
 	editor->_draw_texture_region_clipped(this, texture, p_global_rect, region, p_clip_left, p_clip_right);
 }
 
-/// METHOD ///
+/// ANIMATION TRACK EDIT TYPE METHOD ///
 
 AnimationTrackEditTypeMethod::AnimationTrackEditTypeMethod() {
 	key_pivot.x = 0.5;
@@ -153,7 +153,7 @@ String AnimationTrackEditTypeMethod::_make_method_text(const Dictionary &d) cons
 	return text;
 }
 
-/// COLOR ///
+/// ANIMATION TRACK EDIT COLOR ///
 
 AnimationTrackEditColor::AnimationTrackEditColor() {
 	key_pivot.x = 0.5;
@@ -238,7 +238,7 @@ void AnimationTrackEditColor::draw_key_link(const int p_index, const Rect2 &p_gl
 	}
 }
 
-/// SPRITE FRAME / FRAME_COORDS ///
+/// ANIMATION TRAK EDIT SPRITE FRAME ///
 
 AnimationTrackEditSpriteFrame::AnimationTrackEditSpriteFrame() {
 	key_pivot.x = 0.0;
@@ -385,7 +385,7 @@ void AnimationTrackEditSpriteFrame::set_as_coords() {
 	is_coords = true;
 }
 
-/// SUB ANIMATION ///
+/// ANIMATION TRACK EDIT SUB ANIM ///
 
 AnimationTrackEditSubAnim::AnimationTrackEditSubAnim() {
 	key_pivot.x = 0.0;
@@ -468,7 +468,7 @@ StringName AnimationTrackEditSubAnim::get_edit_name(const int p_index) const {
 	return AnimationTrackEditClip::get_edit_name(p_index);
 }
 
-//// VOLUME DB ////
+//// ANIMATION TRACK EDIT VOLUME DB ////
 
 AnimationTrackEditVolumeDB::AnimationTrackEditVolumeDB() {
 	key_pivot.x = 0.5;
@@ -536,7 +536,7 @@ void AnimationTrackEditVolumeDB::draw_key_link(const int p_index, const Rect2 &p
 	editor->_draw_line_clipped(this, center, center_n, color, 2, p_clip_left, p_clip_right);
 }
 
-/// AUDIO ///
+/// ANIMATION TRACK EDIT TYPE AUDIO ///
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
 	key_pivot.x = 0.0;
@@ -617,7 +617,7 @@ void AnimationTrackEditTypeAudio::set_end_offset(const int p_index, const float 
 	undo_redo->add_undo_method(get_animation().ptr(), "audio_track_set_key_end_offset", get_track(), p_index, prev_ofs);
 }
 
-/// AUDIO ///
+/// ANIMATION TRACK EDIT AUDIO ///
 
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
 	key_pivot.x = 0.0;
@@ -667,7 +667,7 @@ float AnimationTrackEditAudio::get_length(const int p_index) const {
 	return AnimationTrackEditClip::get_length(p_index);
 }
 
-/// TYPE ANIMATION ///
+/// ANIMATION TRACK EDIT TYPE ANIMATION ///
 
 AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
 	key_pivot.x = 0.0;
@@ -792,7 +792,7 @@ StringName AnimationTrackEditTypeAnimation::get_edit_name(const int p_index) con
 	return AnimationTrackEditClip::get_edit_name(p_index);
 }
 
-/// KEY ///
+/// ANIMATION TRACK EDIT CLIP ///
 
 float AnimationTrackEditClip::get_key_width(const int p_index) const {
 	float start_ofs = get_start_offset(p_index);
@@ -1227,7 +1227,7 @@ void AnimationTrackEditClip::_preview_changed(ObjectID p_which) {
 	}
 }
 
-/// PLUGIN ///
+/// ANIMATION TRACK EDIT DEFAULT PLUGIN ///
 
 AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
 	if (p_property == "playing" && (p_object->is_class("AudioStreamPlayer") || p_object->is_class("AudioStreamPlayer2D") || p_object->is_class("AudioStreamPlayer3D"))) {
