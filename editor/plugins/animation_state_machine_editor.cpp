@@ -1396,7 +1396,9 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				error = error_text;
 				error_time -= get_process_delta_time();
 			} else if (!tree->is_active()) {
-				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
+				error = TTR("The AnimationTree is inactive.\nActivate it in the inspector to enable playback; check node warnings if activation fails.");
+			} else if (!tree->is_enabled()) {
+				error = TTR("The AnimationTree node (or one of its parents) has its process mode set to Disabled.\nChange the process mode in the inspector to allow playback.");
 			} else if (tree->is_state_invalid()) {
 				error = tree->get_invalid_state_reason();
 			} else if (playback.is_null()) {
