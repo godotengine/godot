@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 5: Abstract function cannot have a body.

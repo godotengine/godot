@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 4: "@abstract" annotation can only be used once per function.
