@@ -604,8 +604,13 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 		return ERR_PARSE_ERROR;
 	}
 
-	// Check for cyclic inheritance.
 	const GDScriptParser::ClassNode *base_class = result.class_type;
+	// Check for final class' invalid inheritance.
+	if (base_class != nullptr && base_class->is_final) {
+		push_error(vformat(R"(The base class "%s" is marked as final and cannot be extended.)", base_class->fqcn.get_file()), p_class);
+		return ERR_PARSE_ERROR;
+	}
+	// Check for cyclic inheritance and final classes.
 	while (base_class) {
 		if (base_class->fqcn == p_class->fqcn) {
 			push_error("Cyclic inheritance.", p_class);
@@ -1900,6 +1905,20 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			valid = valid && current_min_argc <= parent_min_argc && parent_max_argc <= current_max_argc;
 
 			if (valid) {
+				{
+					const GDScriptParser::ClassNode *base_class = base_type.class_type;
+					while (base_class) {
+						if (base_class->has_function(p_function->identifier->name)) {
+							GDScriptParser::FunctionNode *base_function = base_class->get_member(p_function->identifier->name).function;
+							if (base_function != nullptr && base_function->is_final) {
+								push_error(vformat(R"(Function "%s" is marked as final and cannot be overridden.)", p_function->identifier->name), p_function);
+								break;
+							}
+						}
+						base_class = base_class->base_type.class_type;
+					}
+				}
+
 				int i = 0;
 				for (const GDScriptParser::DataType &parent_par_type : parameters_types) {
 					if (i >= p_function->parameters.size()) {

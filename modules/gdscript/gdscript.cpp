@@ -1073,6 +1073,8 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
+
+	ClassDB::bind_method(D_METHOD("is_final"), &GDScript::is_final);
 }
 
 void GDScript::set_path(const String &p_path, bool p_take_over) {
