@@ -2270,6 +2270,11 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 
 /// KEY EDIT ///
 
+void AnimationKeyEdit::__zoom_changed() {
+	queue_redraw();
+	play_position->queue_redraw();
+}
+
 void AnimationKeyEdit::__play_position_draw() {
 	if (animation.is_null() || play_position_pos < 0) {
 		return;
@@ -2416,21 +2421,6 @@ void AnimationMarkerEdit::_update_key_edit() {
 
 /// ANIMATION KEY EDIT ///
 
-double AnimationKeyEdit::get_global_move_key_time(const int p_index) const {
-	return editor->get_global_time(get_move_key_time(p_index));
-}
-
-double AnimationKeyEdit::get_move_key_time(const int p_index) const {
-	double time = get_key_time(p_index);
-
-	bool is_selected = is_key_selected(p_index);
-	if (is_selected && is_moving_selection()) {
-		time += get_moving_selection_offset();
-	}
-
-	return time;
-}
-
 bool AnimationKeyEdit::has_valid_track() const {
 	if (animation.is_null()) {
 		return false;
@@ -2512,7 +2502,7 @@ Rect2 KeyEdit::get_global_key_rect(const int p_index, bool p_ignore_moving_selec
 Rect2 KeyEdit::_to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection) const {
 	Rect2 global_rect = Rect2(p_local_rect);
 
-	global_rect.position.x += _get_pixels_sec(p_index, p_ignore_moving_selection);
+	global_rect.position.x += get_global_move_key_time(p_index, p_ignore_moving_selection);
 
 	float track_height = get_size().height;
 	float key_height = p_local_rect.size.y;
@@ -2540,24 +2530,28 @@ Rect2 KeyEdit::_to_local_key_rect(const int p_index, const Rect2 &p_global_rect,
 KeyEdit::KeyEdit() {
 }
 
-float KeyEdit::_get_pixels_sec(const int p_index, bool p_ignore_moving_selection) const {
-	float local_time = _get_local_time(p_index);
+double KeyEdit::get_global_move_key_time(const int p_index, bool p_ignore_moving_selection) const {
+	return editor->get_global_time(get_move_key_time(p_index, p_ignore_moving_selection));
+}
+
+double KeyEdit::get_move_key_time(const int p_index, bool p_ignore_moving_selection) const {
+	double time = get_key_time(p_index);
 
 	if (!p_ignore_moving_selection) {
-		if (is_key_selected(p_index) && is_moving_selection()) {
-			local_time += get_moving_selection_offset();
+		bool is_selected = is_key_selected(p_index);
+		if (is_selected && is_moving_selection()) {
+			time += get_moving_selection_offset();
 		}
 	}
 
-	int limit = timeline->get_name_limit();
-	float scale = timeline->get_zoom_scale();
-
-	return local_time * scale + limit;
+	return time;
 }
 
+/*
 float KeyEdit::_get_local_time(const int p_index, float p_offset) const {
 	return (get_key_time(p_index) + p_offset) - timeline->get_value();
 }
+*/
 
 bool KeyEdit::is_key_selectable_by_distance() const {
 	return true;
@@ -2595,8 +2589,16 @@ bool AnimationTrackEdit::is_moving_selection() const {
 	return editor->is_track_moving_selection();
 }
 
+void AnimationTrackEdit::set_moving_selection(bool p_value) {
+	moving_selection = p_value;
+}
+
 float AnimationTrackEdit::get_moving_selection_offset() const {
 	return editor->get_track_moving_selection_offset();
+}
+
+void AnimationTrackEdit::set_moving_selection_offset(float p_value) {
+	moving_selection_offset = p_value;
 }
 
 Vector<int> AnimationTrackEdit::get_selected_section() {
@@ -4649,6 +4651,24 @@ void AnimationTrackEditor::commit_insert_queue() {
 	insert_queue = false;
 }
 
+Vector2 AnimationTrackEditor::get_selection_key_time_range() {
+	real_t from_t = 1e20;
+	real_t to_t = -1e20;
+
+	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+		real_t t = animation->track_get_key_time(E.key.track, E.key.key);
+		if (t < from_t) {
+			from_t = t;
+		}
+
+		if (t > to_t) {
+			to_t = t;
+		}
+	}
+
+	return Vector2(from_t, to_t);
+}
+
 void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 	if (!insert_queue) {
 		insert_data.clear();
@@ -6496,11 +6516,6 @@ void AnimationTrackEditor::_move_selection_cancel() {
 
 /// KEY EDIT ///
 
-void AnimationKeyEdit::__zoom_changed() {
-	queue_redraw();
-	play_position->queue_redraw();
-}
-
 bool KeyEdit::is_moving_selection() const {
 	return moving_selection;
 }
@@ -7291,20 +7306,12 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				return;
 			}
 
-			float from_t = 1e20;
-			float to_t = -1e20;
+			Vector2 time_range = get_selection_key_time_range();
+
+			float from_t = time_range.x;
+			float to_t = -time_range.y;
 			float len = -1e20;
 			float pivot = 0;
-
-			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
-				float t = animation->track_get_key_time(E.key.track, E.key.key);
-				if (t < from_t) {
-					from_t = t;
-				}
-				if (t > to_t) {
-					to_t = t;
-				}
-			}
 
 			len = to_t - from_t;
 			if (scale_from_cursor) {
@@ -7626,13 +7633,10 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			if (moving_track_selection || selection.is_empty()) {
 				break;
 			}
-			real_t from_t = 1e20;
-			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
-				real_t t = animation->track_get_key_time(E.key.track, E.key.key);
-				if (t < from_t) {
-					from_t = t;
-				}
-			}
+
+			Vector2 time_range = get_selection_key_time_range();
+			real_t from_t = time_range.x;
+
 			_move_selection_begin();
 			_move_selection(timeline->get_play_position() - from_t);
 			_move_selection_commit();
@@ -7641,13 +7645,10 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			if (moving_track_selection || selection.is_empty()) {
 				break;
 			}
-			real_t to_t = -1e20;
-			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
-				real_t t = animation->track_get_key_time(E.key.track, E.key.key);
-				if (t > to_t) {
-					to_t = t;
-				}
-			}
+
+			Vector2 time_range = get_selection_key_time_range();
+			real_t to_t = time_range.y;
+
 			_move_selection_begin();
 			_move_selection(timeline->get_play_position() - to_t);
 			_move_selection_commit();
@@ -9121,7 +9122,7 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 					// When AnimationPlayer is playing, don't move the preview rect, so it still indicates the playback section.
 					AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-					if (moving_selection && !(player && player->is_playing())) {
+					if (is_moving_selection() && !(player && player->is_playing())) {
 						float offset = get_moving_selection_offset();
 						start_time += offset;
 						end_time += offset;
@@ -9240,7 +9241,7 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && moving_selection_attempt) {
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			moving_selection_attempt = false;
-			if (moving_selection && moving_selection_effective) {
+			if (is_moving_selection() && moving_selection_effective) {
 				float offset = get_moving_selection_offset();
 				if (Math::abs(offset) > CMP_EPSILON) {
 					_move_selection_commit();
@@ -9266,13 +9267,13 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			moving_selection = false;
+			set_moving_selection(false);
 			select_single_attempt = -1;
 		}
 
 		if (moving_selection && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			moving_selection_attempt = false;
-			moving_selection = false;
+			set_moving_selection(false);
 			_move_selection_cancel();
 		}
 	}
@@ -9297,7 +9298,7 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->reset_size();
 
 				moving_selection_attempt = false;
-				moving_selection = false;
+				set_moving_selection(false);
 
 				menu->set_position(get_screen_position() + get_local_mouse_position());
 				menu->popup();
@@ -9358,8 +9359,8 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && moving_selection_attempt) {
-		if (!moving_selection) {
-			moving_selection = true;
+		if (!is_moving_selection()) {
+			set_moving_selection(true);
 			_move_selection_begin();
 		}
 
@@ -9487,8 +9488,8 @@ void AnimationMarkerEdit::set_use_fps(bool p_use_fps) {
 }
 
 void AnimationMarkerEdit::_move_selection_begin() {
-	moving_selection = true;
-	moving_selection_offset = 0;
+	set_moving_selection(true);
+	set_moving_selection_offset(0);
 }
 
 void AnimationMarkerEdit::_move_selection(float p_offset) {
@@ -9546,7 +9547,7 @@ void AnimationMarkerEdit::_move_selection_commit() {
 }
 
 void AnimationMarkerEdit::_move_selection_cancel() {
-	moving_selection = false;
+	set_moving_selection(false);
 	queue_redraw();
 }
 

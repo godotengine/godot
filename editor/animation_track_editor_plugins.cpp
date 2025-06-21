@@ -812,7 +812,7 @@ int AnimationTrackEditClip::handle_track_resizing(const Ref<InputEventMouseMotio
 	float start_ofs = get_start_offset(p_index);
 	float end_ofs = get_end_offset(p_index);
 
-	float offset = _get_pixels_sec(p_index, true);
+	float offset = get_global_move_key_time(p_index, true);
 	Region region = _calc_key_region(p_index, start_ofs, end_ofs, len, offset);
 	region = _clip_key_region(region, p_clip_left, p_clip_right);
 
