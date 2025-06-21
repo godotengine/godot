@@ -135,17 +135,20 @@ public:
 class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
-private:
 	String for_file;
-	Mode mode;
-	Button *fdep = nullptr;
-	Label *text = nullptr;
+
 	Tree *files = nullptr;
+	DependencyEditor *deps_editor = nullptr;
+	bool force_open = false;
+
 	void ok_pressed() override;
-	void custom_action(const String &) override;
+
+	void _on_files_button_clicked(Object *p_item, int p_column, int p_id, MouseButton p_button);
+	void _check_for_resolved();
 
 public:
-	void show(const String &p_for_file, const Vector<String> &report);
+	void show(const String &p_for_file, const HashMap<String, HashSet<String>> &p_report);
+
 	DependencyErrorDialog();
 };
 
