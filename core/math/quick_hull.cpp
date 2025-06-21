@@ -236,7 +236,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		Vector3 v = p_points[f.points_over[next]];
 
 		//find lit faces and lit edges
-		List<List<Face>::Element *> lit_faces; //lit face is a death sentence
+		LocalVector<List<Face>::Element *> lit_faces; //lit face is a death sentence
 
 		HashMap<Edge, FaceConnect, Edge> lit_edges; //create this on the flight, should not be that bad for performance and simplifies code a lot
 
@@ -314,10 +314,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 		//erase lit faces
 
-		while (lit_faces.size()) {
-			faces.erase(lit_faces.front()->get());
-			lit_faces.pop_front();
+		for (List<Face>::Element *lf : lit_faces) {
+			faces.erase(lf);
 		}
+		lit_faces.clear();
 
 		//put faces that contain no points on the front
 
