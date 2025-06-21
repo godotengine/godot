@@ -783,6 +783,7 @@
 				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
+				[b]Note:[/b] Methods annotated with [annotation @rpc] cannot receive objects which define required parameters in [method Object._init]. See [method Object._init] for more details.
 			</description>
 		</annotation>
 		<annotation name="@static_unload">
