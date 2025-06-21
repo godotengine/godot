@@ -307,6 +307,7 @@ public:
 	void make_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);
 
 	void clear();
+	void fix_invalid_cells();
 
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
