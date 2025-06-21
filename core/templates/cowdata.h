@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/error/error_macros.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/os/memory.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/span.h"
@@ -88,7 +89,7 @@ private:
 	}
 
 	_FORCE_INLINE_ static USize _get_alloc_size(USize p_elements) {
-		return next_power_of_2(p_elements * (USize)sizeof(T));
+		return Math::next_power_of_2(p_elements * (USize)sizeof(T));
 	}
 
 	_FORCE_INLINE_ static bool _get_alloc_size_checked(USize p_elements, USize *out) {
@@ -103,7 +104,7 @@ private:
 			*out = 0;
 			return false;
 		}
-		*out = next_power_of_2(o);
+		*out = Math::next_power_of_2(o);
 		if (__builtin_add_overflow(o, static_cast<USize>(32), &p)) {
 			return false; // No longer allocated here.
 		}
