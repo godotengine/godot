@@ -2937,6 +2937,7 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	// if the emitter node comes later in tree order than the receiver
 	_duplicate_signals(this, dupe);
 
+	dupe->set_display_folded(is_displayed_folded());
 	return dupe;
 }
 
