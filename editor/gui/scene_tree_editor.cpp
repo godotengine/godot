@@ -1534,7 +1534,7 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 
 	if (new_name.is_empty()) {
 		// If name is still empty, fallback to class name.
-		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+		if (GLOBAL_EDITOR_GET("naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
 			new_name = Node::adjust_name_casing(p_node->get_class());
 		} else {
 			new_name = p_node->get_class();
