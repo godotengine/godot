@@ -94,6 +94,7 @@ GDScriptParser::GDScriptParser() {
 	if (unlikely(valid_annotations.is_empty())) {
 		// Script annotations.
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
+		register_annotation(MethodInfo("@hide"), AnnotationInfo::SCRIPT, &GDScriptParser::hide_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 		// Onready annotation.
@@ -628,7 +629,7 @@ void GDScriptParser::parse_program() {
 					annotation_stack.push_back(annotation);
 				} else if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
 					PUSH_PENDING_ANNOTATIONS_TO_HEAD;
-					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon")) {
+					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon") || annotation->name == SNAME("@hide")) {
 						// Some annotations need to be resolved and applied in the parser.
 						// The root class is not in any class, so `head->outer == nullptr`.
 						annotation->apply(this, head, nullptr);
@@ -4365,6 +4366,18 @@ bool GDScriptParser::tool_annotation(AnnotationNode *p_annotation, Node *p_targe
 	}
 #endif // DEBUG_ENABLED
 	_is_tool = true;
+	return true;
+}
+
+bool GDScriptParser::hide_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+#ifdef DEBUG_ENABLED
+	if (_is_hidden) {
+		push_error(R"("@hide" annotation can only be used once.)", p_annotation);
+		return false;
+	}
+#endif // DEBUG_ENABLED
+
+	_is_hidden = true;
 	return true;
 }
 
