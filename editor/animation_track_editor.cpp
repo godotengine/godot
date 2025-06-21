@@ -1992,10 +1992,6 @@ void AnimationTimelineEdit::set_hscroll(HScrollBar *p_hscroll) {
 	hscroll = p_hscroll;
 }
 
-void AnimationTimelineEdit::_track_added(int p_track) {
-	emit_signal(SNAME("track_added"), p_track);
-}
-
 void AnimationTimelineEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("zoom_changed"));
 	ADD_SIGNAL(MethodInfo("name_limit_changed"));
@@ -2028,7 +2024,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	filter_track->set_custom_minimum_size(Vector2(120 * EDSCALE, 0));
 	filter_track->set_placeholder(TTR("Filter Tracks"));
 	filter_track->set_tooltip_text(TTR("Filter tracks by entering part of their node name or property."));
-	filter_track->connect(SceneStringName(text_changed), callable_mp((AnimationTrackEditor *)this, &AnimationTrackEditor::_on_filter_updated));
+	filter_track->connect(SceneStringName(text_changed), callable_sp(this, SNAME("filter_changed")).unbind(1));
 	filter_track->set_clear_button_enabled(true);
 	filter_track->hide();
 	add_track_hb->add_child(filter_track);
@@ -2067,7 +2063,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	add_child(len_hb);
 
 	add_track->hide();
-	add_track->get_popup()->connect("index_pressed", callable_mp(this, &AnimationTimelineEdit::_track_added));
+	add_track->get_popup()->connect("index_pressed", callable_sp(this, SNAME("track_added")));
 	len_hb->hide();
 
 	panner.instantiate();
@@ -4945,10 +4941,6 @@ bool AnimationTrackEditor::can_add_reset_key() const {
 	return false;
 }
 
-void AnimationTrackEditor::_on_filter_updated(const String &p_filter) {
-	emit_signal(SNAME("filter_changed"));
-}
-
 void AnimationTrackEditor::_update_tracks() {
 	int selected = _get_track_selected();
 
@@ -5404,10 +5396,6 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 	undo_redo->commit_action();
 	step->set_block_signals(false);
 	emit_signal(SNAME("animation_step_changed"), step_value);
-}
-
-void AnimationTrackEditor::_update_length(double p_new_len) {
-	emit_signal(SNAME("animation_len_changed"), p_new_len);
 }
 
 void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
@@ -7767,7 +7755,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEditor::_name_limit_changed));
 	timeline->connect("track_added", callable_mp(this, &AnimationTrackEditor::_add_track));
 	timeline->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_timeline_value_changed));
-	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
+	timeline->connect("length_changed", callable_sp(this, SNAME("animation_len_changed")));
 	timeline->connect("filter_changed", callable_mp(this, &AnimationTrackEditor::_update_tracks));
 
 	panner.instantiate();

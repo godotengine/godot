@@ -146,10 +146,6 @@ protected:
 	void _breakpoint_set_in_tree(Ref<RefCounted> p_script, int p_line, bool p_enabled, int p_debugger);
 	void _breakpoints_cleared_in_tree(int p_debugger);
 
-	void _clear_execution(Ref<RefCounted> p_script) {
-		emit_signal(SNAME("clear_execution"), p_script);
-	}
-
 	void _text_editor_stack_goto(const ScriptEditorDebugger *p_debugger);
 	void _text_editor_stack_clear(const ScriptEditorDebugger *p_debugger);
 	void _stack_frame_selected(int p_debugger);

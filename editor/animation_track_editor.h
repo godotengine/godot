@@ -236,7 +236,6 @@ class AnimationTimelineEdit : public Range {
 	bool zoom_callback_occurred = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	void _track_added(int p_track);
 
 	float _get_zoom_scale(double p_zoom_value) const;
 	void _scroll_to_start();
@@ -652,7 +651,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_nearest_fps_label();
 	void _update_fps_compat_mode(bool p_enabled);
 	void _update_step(double p_new_step);
-	void _update_length(double p_new_len);
 	void _dropped_track(int p_from_track, int p_to_track);
 
 	void _add_track(int p_type);
@@ -956,7 +954,6 @@ public:
 	bool is_snap_keys_enabled() const;
 	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
-	void _on_filter_updated(const String &p_filter);
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();

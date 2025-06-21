@@ -76,9 +76,6 @@ private:
 	HashSet<Ref<Resource>> remote_dependencies;
 	EditorDebuggerRemoteObjects *variables = nullptr;
 
-	void _object_selected(ObjectID p_object);
-	void _objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field);
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

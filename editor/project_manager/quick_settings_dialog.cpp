@@ -222,13 +222,9 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 				ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
 			}
 			restart_required_button = add_button(TTRC("Restart Now"), ed_swap_cancel_ok != 2);
-			restart_required_button->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_request_restart));
+			restart_required_button->connect(SceneStringName(pressed), callable_sp(this, SNAME("restart_required")));
 		}
 	}
-}
-
-void QuickSettingsDialog::_request_restart() {
-	emit_signal("restart_required");
 }
 
 void QuickSettingsDialog::update_size_limits(const Size2 &p_max_popup_size) {

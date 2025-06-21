@@ -88,10 +88,6 @@ void EditorSceneTabs::_scene_tab_script_edited(int p_tab) {
 	}
 }
 
-void EditorSceneTabs::_scene_tab_closed(int p_tab) {
-	emit_signal("tab_closed", p_tab);
-}
-
 void EditorSceneTabs::_scene_tab_hovered(int p_tab) {
 	if (!bool(EDITOR_GET("interface/scene_tabs/show_thumbnail_on_hover"))) {
 		return;
@@ -422,7 +418,7 @@ EditorSceneTabs::EditorSceneTabs() {
 
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
 	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorSceneTabs::_scene_tab_script_edited));
-	scene_tabs->connect("tab_close_pressed", callable_mp(this, &EditorSceneTabs::_scene_tab_closed));
+	scene_tabs->connect("tab_close_pressed", callable_sp(this, SNAME("tab_closed")));
 	scene_tabs->connect("tab_hovered", callable_mp(this, &EditorSceneTabs::_scene_tab_hovered));
 	scene_tabs->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorSceneTabs::_scene_tab_exit));
 	scene_tabs->connect(SceneStringName(gui_input), callable_mp(this, &EditorSceneTabs::_scene_tab_input));

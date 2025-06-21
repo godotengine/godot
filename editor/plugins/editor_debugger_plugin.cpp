@@ -40,14 +40,6 @@ void EditorDebuggerSession::_breaked(bool p_really_did, bool p_can_debug, const 
 	}
 }
 
-void EditorDebuggerSession::_started() {
-	emit_signal(SNAME("started"));
-}
-
-void EditorDebuggerSession::_stopped() {
-	emit_signal(SNAME("stopped"));
-}
-
 void EditorDebuggerSession::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("send_message", "message", "data"), &EditorDebuggerSession::send_message, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("toggle_profiler", "profiler", "enable", "data"), &EditorDebuggerSession::toggle_profiler, DEFVAL(Array()));
@@ -110,8 +102,8 @@ void EditorDebuggerSession::detach_debugger() {
 	if (!debugger) {
 		return;
 	}
-	debugger->disconnect("started", callable_mp(this, &EditorDebuggerSession::_started));
-	debugger->disconnect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
+	debugger->disconnect("started", callable_sp(this, SNAME("started")));
+	debugger->disconnect("stopped", callable_sp(this, SNAME("stopped")));
 	debugger->disconnect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
 	debugger->disconnect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away));
 	for (Control *tab : tabs) {
@@ -129,8 +121,8 @@ void EditorDebuggerSession::_debugger_gone_away() {
 EditorDebuggerSession::EditorDebuggerSession(ScriptEditorDebugger *p_debugger) {
 	ERR_FAIL_NULL(p_debugger);
 	debugger = p_debugger;
-	debugger->connect("started", callable_mp(this, &EditorDebuggerSession::_started));
-	debugger->connect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
+	debugger->connect("started", callable_sp(this, SNAME("started")));
+	debugger->connect("stopped", callable_sp(this, SNAME("stopped")));
 	debugger->connect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
 	debugger->connect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away), CONNECT_ONE_SHOT);
 }

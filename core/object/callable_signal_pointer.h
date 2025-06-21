@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  status_indicator.h                                                    */
+/*  callable_signal_pointer.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,34 +30,47 @@
 
 #pragma once
 
-#include "scene/main/node.h"
-#include "servers/display_server.h"
+#include "callable_method_pointer.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/variant/callable.h"
 
-class StatusIndicator : public Node {
-	GDCLASS(StatusIndicator, Node);
-
-	Ref<Texture2D> icon;
-	String tooltip;
-	bool visible = true;
-	DisplayServer::IndicatorID iid = DisplayServer::INVALID_INDICATOR_ID;
-	NodePath menu;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
+class CallableCustomSignalPointer : public CallableCustomMethodPointerBase {
+	struct Data {
+		uint64_t object_id;
+		Object *instance;
+		StringName signal_name;
+	} data;
 
 public:
-	void set_icon(const Ref<Texture2D> &p_icon);
-	Ref<Texture2D> get_icon() const;
+	virtual ObjectID get_object() const {
+		if (ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr) {
+			return ObjectID();
+		}
+		return data.instance->get_instance_id(); // Can probably be changed to data.object_id?
+	}
 
-	void set_tooltip(const String &p_tooltip);
-	String get_tooltip() const;
+	virtual int get_argument_count(bool &r_is_valid) const {
+		// Argument count is unknown from just the signal name.
+		r_is_valid = false;
+		return 0;
+	}
 
-	void set_menu(const NodePath &p_menu);
-	NodePath get_menu() const;
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+		ERR_FAIL_NULL_MSG(ObjectDB::get_instance(ObjectID(data.object_id)), "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
+		r_return_value = data.instance->emit_signalp(data.signal_name, p_arguments, p_argcount);
+	}
 
-	void set_visible(bool p_visible);
-	bool is_visible() const;
-
-	Rect2 get_rect() const;
+	CallableCustomSignalPointer(Object *p_instance, const StringName &p_signal_name) {
+#ifdef DEBUG_ENABLED
+		set_text("Object::emit_signal"); // Include name of signal in this?
+#endif // DEBUG_ENABLED
+		data.instance = p_instance;
+		data.object_id = p_instance->get_instance_id();
+		data.signal_name = p_signal_name;
+		// Should be tightly packed.
+		_setup((uint32_t *)&data, sizeof(uint64_t) + sizeof(Object *) + sizeof(StringName));
+	}
 };
+
+#define callable_sp(I, S) Callable(memnew(CallableCustomSignalPointer(I, S)))

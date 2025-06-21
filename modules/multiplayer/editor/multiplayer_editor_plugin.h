@@ -40,7 +40,6 @@ class MultiplayerEditorDebugger : public EditorDebuggerPlugin {
 private:
 	HashMap<int, EditorNetworkProfiler *> profilers;
 
-	void _open_request(const String &p_path);
 	void _profiler_activate(bool p_enable, int p_session_id);
 
 protected:

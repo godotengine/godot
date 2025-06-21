@@ -482,7 +482,6 @@ private:
 
 	void _tile_set_changed();
 
-	void _renamed();
 	void _update_notify_local_transform();
 
 	// Internal updates.

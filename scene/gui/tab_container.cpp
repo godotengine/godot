@@ -497,14 +497,6 @@ void TabContainer::move_tab_from_tab_container(TabContainer *p_from, int p_from_
 	}
 }
 
-void TabContainer::_on_tab_clicked(int p_tab) {
-	emit_signal(SNAME("tab_clicked"), p_tab);
-}
-
-void TabContainer::_on_tab_hovered(int p_tab) {
-	emit_signal(SNAME("tab_hovered"), p_tab);
-}
-
 void TabContainer::_on_tab_changed(int p_tab) {
 	callable_mp(this, &TabContainer::_repaint).call_deferred();
 	queue_redraw();
@@ -518,14 +510,6 @@ void TabContainer::_on_tab_selected(int p_tab) {
 	}
 
 	emit_signal(SNAME("tab_selected"), p_tab);
-}
-
-void TabContainer::_on_tab_button_pressed(int p_tab) {
-	emit_signal(SNAME("tab_button_pressed"), p_tab);
-}
-
-void TabContainer::_on_active_tab_rearranged(int p_tab) {
-	emit_signal(SNAME("active_tab_rearranged"), p_tab);
 }
 
 void TabContainer::_on_tab_visibility_changed(Control *p_child) {
@@ -1178,11 +1162,11 @@ TabContainer::TabContainer() {
 	tab_bar->set_use_parent_material(true);
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));
-	tab_bar->connect("tab_clicked", callable_mp(this, &TabContainer::_on_tab_clicked));
-	tab_bar->connect("tab_hovered", callable_mp(this, &TabContainer::_on_tab_hovered));
+	tab_bar->connect("tab_clicked", callable_sp(this, SNAME("tab_clicked")));
+	tab_bar->connect("tab_hovered", callable_sp(this, SNAME("tab_hovered")));
 	tab_bar->connect("tab_selected", callable_mp(this, &TabContainer::_on_tab_selected));
-	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
-	tab_bar->connect("active_tab_rearranged", callable_mp(this, &TabContainer::_on_active_tab_rearranged));
+	tab_bar->connect("tab_button_pressed", callable_sp(this, SNAME("tab_button_pressed")));
+	tab_bar->connect("active_tab_rearranged", callable_sp(this, SNAME("active_tab_rearranged")));
 
 	connect(SceneStringName(mouse_exited), callable_mp(this, &TabContainer::_on_mouse_exited));
 }

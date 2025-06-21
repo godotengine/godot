@@ -131,10 +131,6 @@ void WindowWrapper::_set_window_rect(const Rect2 p_rect) {
 	}
 }
 
-void WindowWrapper::_window_size_changed() {
-	emit_signal(SNAME("window_size_changed"));
-}
-
 void WindowWrapper::_window_close_request() {
 	if (override_close_request) {
 		emit_signal("window_close_requested");
@@ -369,7 +365,7 @@ WindowWrapper::WindowWrapper() {
 	window->hide();
 
 	window->connect("close_requested", callable_mp(this, &WindowWrapper::_window_close_request));
-	window->connect("size_changed", callable_mp(this, &WindowWrapper::_window_size_changed));
+	window->connect("size_changed", callable_sp(this, SNAME("window_size_changed")));
 
 	ShortcutBin *capturer = memnew(ShortcutBin);
 	window->add_child(capturer);

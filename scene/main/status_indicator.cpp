@@ -44,7 +44,7 @@ void StatusIndicator::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_STATUS_INDICATOR)) {
 				if (visible && iid == DisplayServer::INVALID_INDICATOR_ID) {
-					iid = DisplayServer::get_singleton()->create_status_indicator(icon, tooltip, callable_mp(this, &StatusIndicator::_callback));
+					iid = DisplayServer::get_singleton()->create_status_indicator(icon, tooltip, callable_sp(this, SceneStringName(pressed)));
 					PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(menu));
 					if (pm) {
 						RID menu_rid = pm->bind_global_menu();
@@ -88,10 +88,6 @@ void StatusIndicator::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_icon", "get_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "menu", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PopupMenu"), "set_menu", "get_menu");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
-}
-
-void StatusIndicator::_callback(MouseButton p_index, const Point2i &p_pos) {
-	emit_signal(SceneStringName(pressed), p_index, p_pos);
 }
 
 void StatusIndicator::set_icon(const Ref<Texture2D> &p_icon) {
@@ -161,7 +157,7 @@ void StatusIndicator::set_visible(bool p_visible) {
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_STATUS_INDICATOR)) {
 		if (visible && iid == DisplayServer::INVALID_INDICATOR_ID) {
-			iid = DisplayServer::get_singleton()->create_status_indicator(icon, tooltip, callable_mp(this, &StatusIndicator::_callback));
+			iid = DisplayServer::get_singleton()->create_status_indicator(icon, tooltip, callable_sp(this, SceneStringName(pressed)));
 			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(menu));
 			if (pm) {
 				RID menu_rid = pm->bind_global_menu();

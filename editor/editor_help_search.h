@@ -89,7 +89,6 @@ class EditorHelpSearch : public ConfirmationDialog {
 	void _match_theme_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ThemeItemDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
 
 	Dictionary _native_search_cb(const String &p_search_string, int p_result_limit);
-	void _native_action_cb(const String &p_item_string);
 
 protected:
 	void _notification(int p_what);

@@ -194,7 +194,6 @@ private:
 	void _on_finished();
 	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
-	void _on_close_button_clicked();
 	void _on_result_selected();
 	void _on_item_edited();
 	void _on_replace_text_changed(const String &text);

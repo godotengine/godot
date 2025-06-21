@@ -310,8 +310,6 @@ class EditorAssetLibrary : public PanelContainer {
 	void _repository_changed(int p_repository_id);
 	void _support_toggled(int p_support);
 
-	void _install_external_asset(String p_zip_path, String p_title);
-
 	int asset_items_column_width = 0;
 
 	void _update_asset_items_columns();

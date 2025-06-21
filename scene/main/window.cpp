@@ -1325,7 +1325,7 @@ void Window::_update_window_callbacks() {
 	DisplayServer::get_singleton()->window_set_window_event_callback(callable_mp(this, &Window::_event_callback), window_id);
 	DisplayServer::get_singleton()->window_set_input_event_callback(callable_mp(this, &Window::_window_input), window_id);
 	DisplayServer::get_singleton()->window_set_input_text_callback(callable_mp(this, &Window::_window_input_text), window_id);
-	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_mp(this, &Window::_window_drop_files), window_id);
+	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_sp(this, SNAME("files_dropped")), window_id);
 }
 
 void Window::set_force_native(bool p_force_native) {
@@ -1801,10 +1801,6 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 void Window::_window_input_text(const String &p_text) {
 	push_text_input(p_text);
-}
-
-void Window::_window_drop_files(const Vector<String> &p_files) {
-	emit_signal(SNAME("files_dropped"), p_files);
 }
 
 Viewport *Window::get_parent_viewport() const {

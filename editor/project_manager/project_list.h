@@ -62,9 +62,6 @@ class ProjectListItemControl : public HBoxContainer {
 	bool is_selected = false;
 	bool is_hovering = false;
 
-	void _favorite_button_pressed();
-	void _explore_button_pressed();
-
 	ProjectList *get_list() const;
 
 	void _accessibility_action_open(const Variant &p_data);

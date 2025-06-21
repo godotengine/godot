@@ -85,8 +85,6 @@ class QuickSettingsDialog : public AcceptDialog {
 	Label *restart_required_label = nullptr;
 	Button *restart_required_button = nullptr;
 
-	void _request_restart();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

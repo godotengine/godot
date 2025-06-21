@@ -52,7 +52,6 @@ private:
 
 	void on_channel_button_toggled(bool p_unused_pressed);
 	void create_button(unsigned int p_channel_index, const String &p_text, Control *p_parent);
-	void on_toggled(bool p_pressed);
 
 	static void _bind_methods();
 
