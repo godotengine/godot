@@ -2480,6 +2480,13 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	const bool should_open = (open_dominant && !use_external_editor) || !EditorNode::get_singleton()->is_changing_scene();
 
+	// External editors expect line numbers to start from 1, but Godot starts them from 0.
+	// In the long run, we may want to make Godot work with this standard, but for now
+	// this will send external editors to the correct line.
+	if (use_external_editor) {
+		p_line += 1;
+	}
+
 	if (scr.is_valid() && scr->get_language()->overrides_external_editor()) {
 		if (should_open) {
 			Error err = scr->get_language()->open_in_external_editor(scr, p_line >= 0 ? p_line : 0, p_col);
