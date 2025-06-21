@@ -1,2 +1,2 @@
 GDTEST_PARSER_ERROR
-Expected "class" or "func" after "abstract".
+"@abstract" annotation can only be used once per function.

@@ -1540,7 +1540,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 					if (member.function->is_abstract) {
 						if (base_class == p_class) {
 							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
-							push_error(vformat(R"*(Class "%s" is not abstract but contains abstract methods. Mark the class as abstract or remove "abstract" from all methods in this class.)*", class_name), p_class);
+							push_error(vformat(R"*(Class "%s" is not abstract but contains abstract methods. Mark the class as abstract or remove "@abstract" from all methods in this class.)*", class_name), p_class);
 							break;
 						} else if (!implemented_funcs.has(member.function->identifier->name)) {
 							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
