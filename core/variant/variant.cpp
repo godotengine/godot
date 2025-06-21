@@ -1562,7 +1562,13 @@ Variant::operator String() const {
 	return stringify(0);
 }
 
-String stringify_variant_clean(const Variant &p_variant, int recursion_count) {
+String stringify_variant_clean(const Variant &p_variant, int recursion_count, bool p_dump = false) {
+#ifdef DEBUG_ENABLED
+	if (p_dump) {
+		return p_variant.dump(recursion_count);
+	}
+#endif
+
 	String s = p_variant.stringify(recursion_count);
 
 	// Wrap strings in quotes to avoid ambiguity.
@@ -1583,17 +1589,131 @@ String stringify_variant_clean(const Variant &p_variant, int recursion_count) {
 	return s;
 }
 
+#ifdef DEBUG_ENABLED
+// Returns an HTML color for coloring array items in `dump()`.
+// This function should match `dump()`'s colors as closely as possible.
+// An empty string denotes no color change (i.e. use the default printing color).
+String get_type_color(const Variant p_variant) {
+	switch (p_variant.get_type()) {
+		case Variant::NIL:
+			return "gray";
+		case Variant::BOOL:
+			return "red";
+		case Variant::INT:
+			return "cyan";
+		case Variant::FLOAT:
+			return "magenta";
+		case Variant::STRING:
+			return "yellow";
+		case Variant::VECTOR2:
+			return "magenta";
+		case Variant::VECTOR2I:
+			return "cyan";
+		case Variant::RECT2:
+			return "magenta";
+		case Variant::RECT2I:
+			return "cyan";
+		case Variant::TRANSFORM2D:
+			return "magenta";
+		case Variant::VECTOR3:
+			return "magenta";
+		case Variant::VECTOR3I:
+			return "cyan";
+		case Variant::VECTOR4:
+			return "magenta";
+		case Variant::VECTOR4I:
+			return "cyan";
+		case Variant::PLANE:
+			return "magenta";
+		case Variant::AABB:
+			return "magenta";
+		case Variant::QUATERNION:
+			return "magenta";
+		case Variant::BASIS:
+			return "magenta";
+		case Variant::TRANSFORM3D:
+			return "magenta";
+		case Variant::PROJECTION:
+			return "magenta";
+		case Variant::STRING_NAME:
+			return "yellow";
+		case Variant::NODE_PATH:
+			return "";
+		case Variant::COLOR:
+			return "";
+		case Variant::DICTIONARY:
+			return "";
+		case Variant::PACKED_VECTOR2_ARRAY:
+			return "magenta";
+		case Variant::PACKED_VECTOR3_ARRAY:
+			return "magenta";
+		case Variant::PACKED_COLOR_ARRAY:
+			return "";
+		case Variant::PACKED_STRING_ARRAY:
+			return "yellow";
+		case Variant::PACKED_BYTE_ARRAY:
+			return "cyan";
+		case Variant::PACKED_INT32_ARRAY:
+			return "cyan";
+		case Variant::PACKED_INT64_ARRAY:
+			return "cyan";
+		case Variant::PACKED_FLOAT32_ARRAY:
+			return "magenta";
+		case Variant::PACKED_FLOAT64_ARRAY:
+			return "magenta";
+		case Variant::ARRAY:
+			return "";
+		case Variant::OBJECT:
+			return "";
+		case Variant::RID:
+			return "blue";
+		default:
+			return "blue";
+	}
+}
+#endif
+
 template <typename T>
-String stringify_vector(const T &vec, int recursion_count) {
-	String str("[");
+String stringify_vector(const T &vec, int recursion_count, bool p_dump = false) {
+	String str;
+
+#ifdef DEBUG_ENABLED
+	if (p_dump) {
+		// Add leading space as the type name would be right next to the size annotation otherwise.
+		str += " [code]size = " + itos(vec.size()) + " [[/code]";
+	} else {
+		str += "[";
+	}
+#else
+	str += "[";
+#endif
+
 	for (int i = 0; i < vec.size(); i++) {
 		if (i > 0) {
 			str += ", ";
 		}
 
-		str += stringify_variant_clean(vec[i], recursion_count);
+#ifdef DEBUG_ENABLED
+		if (p_dump) {
+			// Display array index for each element (similar to PHP's `var_dump()`).
+			const String type_color = get_type_color(vec[i]);
+			if (type_color != "") {
+				str += "[color=" + type_color + "][code]" + itos(i) + ":[/code][/color] ";
+			} else {
+				str += "[code]" + itos(i) + ":[/code] ";
+			}
+		}
+#endif
+
+		str += stringify_variant_clean(vec[i], recursion_count, p_dump);
 	}
-	str += "]";
+
+	if (p_dump) {
+		str += "[code]][/code]";
+	} else {
+		str += "]";
+	}
+
 	return str;
 }
 
@@ -1740,6 +1860,180 @@ String Variant::stringify(int recursion_count) const {
 		}
 	}
 }
+
+#ifdef DEBUG_ENABLED
+String Variant::dump(int recursion_count) const {
+	switch (type) {
+		case NIL:
+			return "[color=gray]<null>[/color]";
+		case BOOL:
+			return _data._bool ? "[color=red][b]true[/b][/color]" : "[color=red][code]false[/code][/color]";
+		case INT:
+			return "[color=cyan][b]" + itos(_data._int) + "[/b][/color]";
+		case FLOAT: {
+			const float result = _data._float;
+			if (Math::is_zero_approx(Math::fract(result))) {
+				// Display trailing ".0" explicitly for floating-point numbers with no decimal part.
+				return "[color=magenta][b]" + rtos(result) + ".0[/b][/color]";
+			}
+
+			return "[color=magenta][b]" + rtos(result) + "[/b][/color]";
+		} break;
+		case STRING:
+			return "[color=yellow][b]\"" + *reinterpret_cast<const String *>(_data._mem) + "\"[/b][/color]";
+		case VECTOR2:
+			return "[color=magenta]Vector2" + operator Vector2() + "[/color]";
+		case VECTOR2I:
+			return "[color=cyan]Vector2i" + operator Vector2i() + "[/color]";
+		case RECT2:
+			return "[color=magenta]Rect2" + operator Rect2() + "[/color]";
+		case RECT2I:
+			return "[color=cyan]Rect2i" + operator Rect2i() + "[/color]";
+		case TRANSFORM2D:
+			return "[color=magenta]Transform2D" + operator Transform2D() + "[/color]";
+		case VECTOR3:
+			return "[color=magenta]Vector3" + operator Vector3() + "[/color]";
+		case VECTOR3I:
+			return "[color=cyan]Vector3i" + operator Vector3i() + "[/color]";
+		case VECTOR4:
+			return "[color=magenta]Vector4" + operator Vector4() + "[/color]";
+		case VECTOR4I:
+			return "[color=cyan]Vector4i" + operator Vector4i() + "[/color]";
+		case PLANE:
+			return "[color=magenta]Plane" + operator Plane() + "[/color]";
+		case AABB:
+			return "[color=magenta]AABB" + operator ::AABB() + "[/color]";
+		case QUATERNION:
+			return "[color=magenta]Quaternion" + operator Quaternion() + "[/color]";
+		case BASIS:
+			return "[color=magenta]Basis" + operator Basis() + "[/color]";
+		case TRANSFORM3D:
+			return "[color=magenta]Transform3D" + operator Transform3D() + "[/color]";
+		case PROJECTION:
+			return "[color=magenta]Projection" + operator Projection() + "[/color]";
+		case STRING_NAME:
+			return "[color=yellow]StringName(\"" + operator StringName() + "\")[/color]";
+		case NODE_PATH:
+			return "[i]NodePath(\"" + operator NodePath() + "\")[/i]";
+		case COLOR: {
+			const Color &color = *reinterpret_cast<const Color *>(_data._mem);
+			String text_color;
+			if (color.get_luminance() >= 0.5) {
+				text_color = "black";
+			} else {
+				text_color = "white";
+			}
+
+			if (Math::is_equal_approx(color.a, 1.0f)) {
+				// Opaque color; omit the alpha channel from the color code.
+				return "Color" + operator Color() + " [bgcolor=" + color.to_html(false) + "][color=" + text_color + "]#" + color.to_html(false) + "[/color][/bgcolor]";
+			}
+
+			return "Color" + operator Color() + " [bgcolor=" + color.to_html() + "][color=" + text_color + "]#" + color.to_html() + "[/color][/bgcolor]";
+		} break;
+		case DICTIONARY: {
+			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
+			if (recursion_count > MAX_RECURSION) {
+				ERR_PRINT("Maximum dictionary recursion reached!");
+				return "[color=red]{ ... }[/color]";
+			}
+
+			// Add leading and trailing space to Dictionary printing. This distinguishes it
+			// from array printing on fonts that have similar-looking {} and [] characters.
+			String str("Dictionary [code]size = ");
+			str += itos(d.size()) + " { [/code]";
+			List<Variant> keys;
+			d.get_key_list(&keys);
+
+			Vector<_VariantStrPair> pairs;
+
+			recursion_count++;
+			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+				_VariantStrPair sp;
+				sp.key = stringify_variant_clean(E->get(), recursion_count, true);
+				sp.value = stringify_variant_clean(d[E->get()], recursion_count, true);
+
+				pairs.push_back(sp);
+			}
+
+			for (int i = 0; i < pairs.size(); i++) {
+				if (i > 0) {
+					str += "[code], [/code]";
+				}
+				str += pairs[i].key + "[code]: [/code]" + pairs[i].value;
+			}
+			str += "[code] }[/code]";
+
+			return str;
+		} break;
+		case PACKED_VECTOR2_ARRAY: {
+			return "[color=magenta][i]PackedVector2Array" + stringify_vector(operator Vector<Vector2>(), recursion_count, true) + "[/i][/color]";
+		} break;
+		case PACKED_VECTOR3_ARRAY: {
+			return "[color=magenta][i]PackedVector3Array" + stringify_vector(operator Vector<Vector3>(), recursion_count, true) + "[/i][/color]";
+		} break;
+		case PACKED_COLOR_ARRAY: {
+			return "[i]PackedColorArray" + stringify_vector(operator Vector<Color>(), recursion_count, true) + "[/i]";
+		} break;
+		case PACKED_STRING_ARRAY: {
+			return "[color=yellow][i]PackedStringArray" + stringify_vector(operator Vector<String>(), recursion_count, true) + "[/i][/color]";
+		} break;
+		case PACKED_BYTE_ARRAY: {
+			return "[color=cyan][i]PackedByteArray" + stringify_vector(operator Vector<uint8_t>(), recursion_count, true) + "[/i][/color]";
+		} break;
+		case PACKED_INT32_ARRAY: {
+			return "[color=cyan][i]PackedInt32Array" + stringify_vector(operator Vector<int32_t>(), recursion_count, true) + "[/i][/color]";
+		} break;
+		case PACKED_INT64_ARRAY: {
+			return "[color=cyan][i]PackedInt64Array" + stringify_vector(operator Vector<int64_t>(), recursion_count, true) + "[/i][/color]";
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+			return "[color=magenta][i]PackedFloat32Array" + stringify_vector(operator Vector<float>(), recursion_count, true) + "[/i][/color]";
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+			return "[color=magenta][i]PackedFloat64Array" + stringify_vector(operator Vector<double>(), recursion_count, true) + "[/i][/color]";
+		} break;
+		case ARRAY: {
+			if (recursion_count > MAX_RECURSION) {
+				ERR_PRINT("Max recursion reached");
+				return "[color=red][...][/color]";
+			}
+
+			return "Array" + stringify_vector(operator Array(), recursion_count, true);
+
+		} break;
+		case OBJECT: {
+			if (_get_obj().obj) {
+				if (!_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+					return "[color=red][u]<Freed Object>[/u][/color]";
+				}
+
+				return "[color=green]" + _get_obj().obj->to_string() + "[/color]";
+			} else {
+				return "[color=gray][i]<Object#null>[/i][/color]";
+			}
+
+		} break;
+		case CALLABLE: {
+			const Callable &c = *reinterpret_cast<const Callable *>(_data._mem);
+			return c;
+		} break;
+		case SIGNAL: {
+			const Signal &s = *reinterpret_cast<const Signal *>(_data._mem);
+			return s;
+		} break;
+		case RID: {
+			const ::RID &s = *reinterpret_cast<const ::RID *>(_data._mem);
+			return "[color=blue]RID(" + itos(s.get_id()) + ")[/color]";
+		} break;
+		default: {
+			return "[color=blue][i]<" + get_type_name(type) + ">[/i][/color]";
+		}
+	}
+
+	return "";
+}
+#endif
 
 String Variant::to_json_string() const {
 	return JSON::stringify(*this);

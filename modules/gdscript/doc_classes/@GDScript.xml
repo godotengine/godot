@@ -197,6 +197,7 @@
 				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
 				[/codeblock]
+				For debugging, [method @GlobalScope.dump] is preferable as it provides additional information.
 				[b]Note:[/b] [method preload] is a keyword, not a function. So you cannot access it as a [Callable].
 			</description>
 		</method>
@@ -209,6 +210,7 @@
 				Test print
 				At: res://test.gd:15:_process()
 				[/codeblock]
+				For debugging, [method @GlobalScope.dump] is preferable as it provides additional information.
 				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
 			</description>
 		</method>
