@@ -758,7 +758,9 @@ void Resource::_bind_methods() {
 }
 
 Resource::Resource() :
-		remapped_list(this) {}
+		remapped_list(this) {
+	_define_ancestry(AncestralClass::RESOURCE);
+}
 
 Resource::~Resource() {
 	if (unlikely(path_cache.is_empty())) {

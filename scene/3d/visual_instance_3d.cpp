@@ -202,6 +202,8 @@ RID VisualInstance3D::get_base() const {
 }
 
 VisualInstance3D::VisualInstance3D() {
+	_define_ancestry(AncestralClass::VISUAL_INSTANCE_3D);
+
 	instance = RenderingServer::get_singleton()->instance_create();
 	RenderingServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
 	set_notify_transform(true);
@@ -643,6 +645,7 @@ void GeometryInstance3D::_bind_methods() {
 }
 
 GeometryInstance3D::GeometryInstance3D() {
+	_define_ancestry(AncestralClass::GEOMETRY_INSTANCE_3D);
 }
 
 GeometryInstance3D::~GeometryInstance3D() {

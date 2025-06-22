@@ -197,7 +197,9 @@ public:
 
 	virtual const Variant get_rpc_config() const = 0;
 
-	Script() {}
+	Script() {
+		_define_ancestry(AncestralClass::SCRIPT);
+	}
 };
 
 class ScriptLanguage : public Object {

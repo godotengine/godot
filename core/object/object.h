@@ -582,6 +582,29 @@ public:
 		CONNECT_INHERITED = 32, // Used in editor builds.
 	};
 
+	// Store on each object a bitfield to quickly test whether it is derived from some "key" classes
+	// that are commonly tested in performance sensitive code.
+	// Ensure unsigned to bitpack.
+	enum class AncestralClass : unsigned int {
+		REF_COUNTED = 1 << 0,
+		NODE = 1 << 1,
+		RESOURCE = 1 << 2,
+		SCRIPT = 1 << 3,
+
+		CANVAS_ITEM = 1 << 4,
+		CONTROL = 1 << 5,
+		NODE_2D = 1 << 6,
+		COLLISION_OBJECT_2D = 1 << 7,
+		AREA_2D = 1 << 8,
+
+		NODE_3D = 1 << 9,
+		VISUAL_INSTANCE_3D = 1 << 10,
+		GEOMETRY_INSTANCE_3D = 1 << 11,
+		COLLISION_OBJECT_3D = 1 << 12,
+		PHYSICS_BODY_3D = 1 << 13,
+		MESH_INSTANCE_3D = 1 << 14,
+	};
+
 	struct Connection {
 		::Signal signal;
 		Callable callable;
@@ -623,16 +646,19 @@ private:
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
 #endif // DEBUG_ENABLED
-	bool _block_signals = false;
 	int _predelete_ok = 0;
 	ObjectID _instance_id;
 	bool _predelete();
 	void _initialize();
 	void _postinitialize();
-	bool _can_translate = true;
-	bool _emitting = false;
+
+	uint32_t _ancestry : 15;
+
+	bool _block_signals : 1;
+	bool _can_translate : 1;
+	bool _emitting : 1;
 #ifdef TOOLS_ENABLED
-	bool _edited = false;
+	bool _edited : 1;
 	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
 #endif
@@ -658,7 +684,6 @@ private:
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
 	friend class RefCounted;
-	bool type_is_reference = false;
 
 	BinaryMutex _instance_binding_mutex;
 	struct InstanceBinding {
@@ -764,6 +789,7 @@ protected:
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
+	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
 
 	virtual bool _uses_signal_mutex() const;
 
@@ -837,6 +863,8 @@ public:
 		return (p_class == "Object");
 	}
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
+
+	bool has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
 
 	const StringName &get_class_name() const;
 
@@ -996,7 +1024,7 @@ public:
 
 	void clear_internal_resource_paths();
 
-	_ALWAYS_INLINE_ bool is_ref_counted() const { return type_is_reference; }
+	_ALWAYS_INLINE_ bool is_ref_counted() const { return has_ancestry(AncestralClass::REF_COUNTED); }
 
 	void cancel_free();
 
