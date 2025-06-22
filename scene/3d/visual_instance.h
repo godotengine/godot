@@ -58,6 +58,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::VISUAL_INSTANCE;
+
 	enum GetFacesFlags {
 		FACES_SOLID = 1, // solid geometry
 		FACES_ENCLOSING = 2,
@@ -93,6 +95,8 @@ class GeometryInstance : public VisualInstance {
 	GDCLASS(GeometryInstance, VisualInstance);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::GEOMETRY_INSTANCE;
+
 	enum Flags {
 		FLAG_USE_BAKED_LIGHT = VS::INSTANCE_FLAG_USE_BAKED_LIGHT,
 		FLAG_DRAW_NEXT_FRAME_IF_VISIBLE = VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE,

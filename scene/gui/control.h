@@ -48,6 +48,8 @@ class Control : public CanvasItem {
 	OBJ_CATEGORY("GUI Nodes");
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::CONTROL;
+
 	enum Anchor {
 
 		ANCHOR_BEGIN = 0,

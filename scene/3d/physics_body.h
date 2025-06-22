@@ -49,6 +49,8 @@ protected:
 	PhysicsBody(PhysicsServer::BodyMode p_mode);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::PHYSICS_BODY;
+
 	virtual String get_configuration_warning() const;
 
 	virtual Vector3 get_linear_velocity() const;
