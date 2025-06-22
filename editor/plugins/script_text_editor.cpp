@@ -2349,8 +2349,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	if (type == "obj_property") {
 		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
-		bool already_has_literal = te->get_line(drop_at_line).substr(0, drop_at_column).ends_with("^\"");
-		text_to_drop = add_literal && !already_has_literal ? "-" + te->get_line(drop_at_line) + "-" : "";
+		const String &line_to_caret = te->get_line(drop_at_line).substr(0, drop_at_column);
+		bool already_has_literal = line_to_caret.ends_with("^\"") || line_to_caret.ends_with("^'");
+		text_to_drop = add_literal && !already_has_literal ? "^" : "";
 		// It is unclear whether properties may contain single or double quotes.
 		// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
 		text_to_drop += _quote_drop_data(String(d["property"]));

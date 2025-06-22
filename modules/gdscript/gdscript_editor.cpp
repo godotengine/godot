@@ -2931,11 +2931,14 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 								if (opt.is_quoted()) {
 									opt = opt.unquote().quote(quote_style);
 									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
-										opt = "&" + opt;
-									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
-										const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
 										// Have to check both and not just the given quote style in case the user
 										// chooses to use "'" even without the setting enabled.
+										const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
+										if (!line_to_caret.ends_with("&\"") && !line_to_caret.ends_with("&'")) {
+											opt = "&" + opt;
+										}
+									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
+										const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
 										if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
 											opt = "^" + opt;
 										}
@@ -2983,7 +2986,10 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 									}
 									String name = E.name.quote(quote_style);
 									if (use_node_paths) {
-										name = "^" + name;
+										const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
+										if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+											name = "^" + name;
+										}
 									}
 									ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n);
 									r_result.insert(option.display, option);
@@ -3001,7 +3007,10 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 									if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 										String name = member.get_name().quote(quote_style);
 										if (use_node_paths) {
-											name = "^" + name;
+											const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
+											if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+												name = "^" + name;
+											}
 										}
 										ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n);
 										r_result.insert(option.display, option);
@@ -3028,7 +3037,10 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 						}
 						String name = E.name.quote(quote_style);
 						if (use_node_paths) {
-							name = "^" + name;
+							const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
+							if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+								name = "^" + name;
+							}
 						}
 						ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
 						r_result.insert(option.display, option);
@@ -3048,7 +3060,10 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 						String name = s.get_slicec('/', 1);
 						String path = ("/root/" + name).quote(quote_style);
 						if (use_node_paths) {
-							path = "^" + path;
+							const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
+							if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+								path = "^" + path;
+							}
 						}
 						ScriptLanguage::CodeCompletionOption option(path, ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH);
 						r_result.insert(option.display, option);
@@ -3066,7 +3081,10 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 						}
 						String name = s.get_slicec('/', 1).quote(quote_style);
 						if (use_string_names) {
-							name = "&" + name;
+							const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
+							if (!line_to_caret.ends_with("&\"") && !line_to_caret.ends_with("&'")) {
+								name = "&" + name;
+							}
 						}
 						ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
 						r_result.insert(option.display, option);
