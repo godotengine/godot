@@ -56,6 +56,8 @@ class Spatial : public Node {
 	friend class SceneTreeFTITests;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::SPATIAL;
+
 	enum MergingMode : unsigned int {
 		MERGING_MODE_INHERIT,
 		MERGING_MODE_OFF,

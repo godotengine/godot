@@ -97,6 +97,8 @@ protected:
 	void _on_transform_changed();
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::COLLISION_OBJECT;
+
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
 

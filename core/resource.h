@@ -83,6 +83,8 @@ protected:
 	void _take_over_path(const String &p_path);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::RESOURCE;
+
 	static Node *(*_get_local_scene_func)(); //used by editor
 
 	virtual bool editor_can_reload_from_file();
