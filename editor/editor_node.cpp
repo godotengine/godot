@@ -7689,6 +7689,12 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterScene> import_scene_as_animation = memnew(ResourceImporterScene("AnimationLibrary"));
 		ResourceFormatImporter::get_singleton()->add_importer(import_scene_as_animation);
 
+		Ref<ResourceImporterScene> import_scene_as_mesh_library = memnew(ResourceImporterScene("MeshLibrary"));
+		ResourceFormatImporter::get_singleton()->add_importer(import_scene_as_mesh_library);
+
+		Ref<ResourceImporterScene> import_scene_as_single_mesh = memnew(ResourceImporterScene("ArrayMesh"));
+		ResourceFormatImporter::get_singleton()->add_importer(import_scene_as_single_mesh);
+
 		{
 			Ref<EditorSceneFormatImporterCollada> import_collada;
 			import_collada.instantiate();
