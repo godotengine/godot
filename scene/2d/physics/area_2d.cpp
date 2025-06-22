@@ -678,6 +678,8 @@ void Area2D::_bind_methods() {
 
 Area2D::Area2D() :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->area_create(), true) {
+	_define_ancestry(AncestralClass::AREA_2D);
+
 	set_gravity(980);
 	set_gravity_direction(Vector2(0, 1));
 	set_monitoring(true);

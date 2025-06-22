@@ -1727,6 +1727,8 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat_in_tree() const {
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
+	_define_ancestry(AncestralClass::CANVAS_ITEM);
+
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
 }
 

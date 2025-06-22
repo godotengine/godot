@@ -510,3 +510,7 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_skew", PROPERTY_HINT_NONE, "radians_as_degrees", PROPERTY_USAGE_NONE), "set_global_skew", "get_global_skew");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_transform", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
 }
+
+Node2D::Node2D() {
+	_define_ancestry(AncestralClass::NODE_2D);
+}
