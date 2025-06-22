@@ -49,6 +49,9 @@ private:
 	GLTFCameraIndex camera = -1;
 	GLTFSkinIndex skin = -1;
 	GLTFSkeletonIndex skeleton = -1;
+    int multimesh_translation = -1;
+    int multimesh_rotation= -1;
+    int multimesh_scale = -1;
 	bool joint = false;
 	bool visible = true;
 	Vector<int> children;
@@ -85,6 +88,15 @@ public:
 
 	GLTFSkeletonIndex get_skeleton();
 	void set_skeleton(GLTFSkeletonIndex p_skeleton);
+
+	int get_multimesh_translation();
+	void set_multimesh_translation(int p_multimesh_translation);
+
+	int get_multimesh_rotation();
+	void set_multimesh_rotation(int p_multimesh_rotation);
+
+	int get_multimesh_scale();
+	void set_multimesh_scale(int p_multimesh_scale);
 
 	Vector3 get_position();
 	void set_position(const Vector3 &p_position);

@@ -40,6 +40,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/physics/area_3d.h"
@@ -689,6 +690,29 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 					mat->set_name(_fixstr(mat->get_name(), "vcol"));
 				}
 			}
+		}
+	}
+
+	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+
+		if (mi->get_multimesh().is_valid()){
+
+			Ref<MultiMesh> mm = mi->get_multimesh();
+			Ref<ImporterMesh> mesh = mi->get_mesh();
+
+			if (mesh.is_valid()){
+				mm->set_mesh(mesh->get_mesh());
+			}
+
+			MultiMeshInstance3D *mm_node = memnew(MultiMeshInstance3D);
+			mm_node->set_multimesh(mm);
+			mm_node->set_name(name);
+			_copy_meta(p_node, mm_node);
+			p_node->replace_by(mm_node);
+			p_node->set_owner(nullptr);
+			memdelete(p_node);
+			p_node = mm_node;
 		}
 	}
 

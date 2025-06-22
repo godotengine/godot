@@ -33,6 +33,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/skin.h"
+#include "scene/resources/multimesh.h"
 
 class ImporterMesh;
 
@@ -41,6 +42,7 @@ class ImporterMeshInstance3D : public Node3D {
 
 	Ref<ImporterMesh> mesh;
 	Ref<Skin> skin;
+    Ref<MultiMesh> multimesh;
 	NodePath skeleton_path;
 	Vector<Ref<Material>> surface_materials;
 	uint32_t layer_mask = 1;
@@ -60,6 +62,9 @@ public:
 
 	void set_skin(const Ref<Skin> &p_skin);
 	Ref<Skin> get_skin() const;
+
+	void set_multimesh(const Ref<MultiMesh> &p_skin);
+	Ref<MultiMesh> get_multimesh() const;
 
 	void set_surface_material(int p_idx, const Ref<Material> &p_material);
 	Ref<Material> get_surface_material(int p_idx) const;

@@ -145,6 +145,31 @@ void GLTFNode::set_skeleton(GLTFSkeletonIndex p_skeleton) {
 	skeleton = p_skeleton;
 }
 
+int GLTFNode::get_multimesh_translation() {
+	return multimesh_translation;
+}
+
+void GLTFNode::set_multimesh_translation(GLTFSkeletonIndex p_multimesh_translation) {
+	multimesh_translation = p_multimesh_translation;
+}
+
+int GLTFNode::get_multimesh_rotation() {
+	return multimesh_rotation;
+}
+
+void GLTFNode::set_multimesh_rotation(GLTFSkeletonIndex p_multimesh_rotation) {
+	multimesh_rotation = p_multimesh_rotation;
+}
+
+int GLTFNode::get_multimesh_scale() {
+	return multimesh_scale;
+}
+
+void GLTFNode::set_multimesh_scale(GLTFSkeletonIndex p_multimesh_scale) {
+	multimesh_scale = p_multimesh_scale;
+}
+
+
 Vector3 GLTFNode::get_position() {
 	return transform.origin;
 }
