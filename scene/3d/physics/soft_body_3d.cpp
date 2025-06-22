@@ -377,6 +377,11 @@ void SoftBody3D::_notification(int p_what) {
 				return;
 			}
 
+			Transform3D global_transform = get_global_transform();
+			if (global_transform == Transform3D()) {
+				return;
+			}
+
 			PhysicsServer3D::get_singleton()->soft_body_set_transform(physics_rid, get_global_transform());
 
 			// Soft body renders mesh in global space.
@@ -848,6 +853,13 @@ SoftBody3D::SoftBody3D() :
 		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()) {
 	rendering_server_handler = memnew(SoftBodyRenderingServerHandler);
 	PhysicsServer3D::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
+
+	// We want to always keep our global transform at (0, 0, 0), so receive notifications if anyone
+	// tries to change this
+	set_notify_transform(true);
+	// Disable _set_notify_transform_when_fti_off() so that we can use set_notify_transform(false)
+	// to stop receiving transform notifications temporarily while we are changing it ourselves.
+	_set_notify_transform_when_fti_off(false);
 }
 
 SoftBody3D::~SoftBody3D() {
