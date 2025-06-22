@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "multimesh_editor_plugin.h"
 
 #include "editor/editor_node.h"
@@ -398,3 +400,5 @@ MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
 
 	multimesh_editor->options->hide();
 }
+
+#endif // _3D_DISABLED

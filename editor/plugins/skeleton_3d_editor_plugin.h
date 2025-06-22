@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/add_metadata_dialog.h"
 #include "editor/editor_properties.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -43,7 +45,9 @@
 class EditorInspectorPluginSkeleton;
 class EditorPropertyVector3;
 class Joint;
+#ifndef PHYSICS_3D_DISABLED
 class PhysicalBone3D;
+#endif // PHYSICS_3D_DISABLED
 class Skeleton3DEditorPlugin;
 class Button;
 class Tree;
@@ -121,7 +125,9 @@ class Skeleton3DEditor : public VBoxContainer {
 	};
 
 	struct BoneInfo {
+#ifndef PHYSICS_3D_DISABLED
 		PhysicalBone3D *physical_bone = nullptr;
+#endif // PHYSICS_3D_DISABLED
 		Transform3D relative_rest; // Relative to skeleton node.
 	};
 
@@ -175,8 +181,10 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void insert_keys(const bool p_all_bones);
 
+#ifndef PHYSICS_3D_DISABLED
 	void create_physical_skeleton();
 	PhysicalBone3D *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
+#endif // PHYSICS_3D_DISABLED
 
 	void export_skeleton_profile();
 
@@ -294,3 +302,5 @@ public:
 	Skeleton3DGizmoPlugin();
 	~Skeleton3DGizmoPlugin();
 };
+
+#endif // _3D_DISABLED

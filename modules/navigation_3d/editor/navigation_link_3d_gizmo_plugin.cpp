@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef NAVIGATION_3D_DISABLED
+
 #include "navigation_link_3d_gizmo_plugin.h"
 
 #include "editor/editor_undo_redo_manager.h"
@@ -270,3 +272,5 @@ void NavigationLink3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 
 	ur->commit_action();
 }
+
+#endif // NAVIGATION_3D_DISABLED

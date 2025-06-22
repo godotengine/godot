@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "node_3d_editor_plugin.h"
 
 #include "core/config/project_settings.h"
@@ -50,9 +52,6 @@
 #include "editor/plugins/gizmos/audio_listener_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/audio_stream_player_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/camera_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/collision_object_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/collision_polygon_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/collision_shape_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/cpu_particles_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/decal_gizmo_plugin.h"
 #include "editor/plugins/gizmos/fog_volume_gizmo_plugin.h"
@@ -68,15 +67,22 @@
 #include "editor/plugins/gizmos/mesh_instance_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/occluder_instance_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/particles_3d_emission_shape_gizmo_plugin.h"
+#include "editor/plugins/gizmos/reflection_probe_gizmo_plugin.h"
+#include "editor/plugins/gizmos/sprite_base_3d_gizmo_plugin.h"
+#ifndef PHYSICS_3D_DISABLED
+#include "editor/plugins/gizmos/collision_object_3d_gizmo_plugin.h"
+#include "editor/plugins/gizmos/collision_polygon_3d_gizmo_plugin.h"
+#include "editor/plugins/gizmos/collision_shape_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/physics_bone_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/ray_cast_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/reflection_probe_gizmo_plugin.h"
 #include "editor/plugins/gizmos/shape_cast_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/soft_body_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/spring_arm_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/spring_bone_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/sprite_base_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/vehicle_body_3d_gizmo_plugin.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/physics_body_3d.h"
+#endif // PHYSICS_3D_DISABLED
 #include "editor/plugins/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/voxel_gi_gizmo_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
@@ -86,8 +92,6 @@
 #include "scene/3d/decal.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
@@ -4491,6 +4495,7 @@ void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, 
 }
 
 void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
+#ifndef PHYSICS_3D_DISABLED
 	CollisionObject3D *co = Object::cast_to<CollisionObject3D>(node);
 
 	if (co) {
@@ -4498,6 +4503,7 @@ void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
 	} else if (node->is_class("CSGShape3D")) { // HACK: We should avoid referencing module logic.
 		rids.insert(node->call("_get_root_collision_instance"));
 	}
+#endif // PHYSICS_3D_DISABLED
 
 	for (int i = 0; i < node->get_child_count(); i++) {
 		Node *child = node->get_child(i);
@@ -4512,7 +4518,9 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	Vector3 world_ray = get_ray(p_pos);
 	Vector3 world_pos = get_ray_pos(p_pos);
 
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
+#endif // PHYSICS_3D_DISABLED
 
 	HashSet<RID> rids;
 
@@ -4528,6 +4536,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 		}
 	}
 
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsDirectSpaceState3D::RayParameters ray_params;
 	ray_params.exclude = rids;
 	ray_params.from = world_pos;
@@ -4560,6 +4569,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 
 		return result_offset;
 	}
+#endif // PHYSICS_3D_DISABLED
 
 	const bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
 
@@ -8103,6 +8113,7 @@ HashSet<T *> _get_child_nodes(Node *parent_node) {
 	return nodes;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 HashSet<RID> _get_physics_bodies_rid(Node *node) {
 	HashSet<RID> rids = HashSet<RID>();
 	PhysicsBody3D *pb = Node::cast_to<PhysicsBody3D>(node);
@@ -8116,12 +8127,14 @@ HashSet<RID> _get_physics_bodies_rid(Node *node) {
 
 	return rids;
 }
+#endif // PHYSICS_3D_DISABLED
 
 void Node3DEditor::snap_selected_nodes_to_floor() {
 	do_snap_selected_nodes_to_floor = true;
 }
 
 void Node3DEditor::_snap_selected_nodes_to_floor() {
+#ifndef PHYSICS_3D_DISABLED
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 	Dictionary snap_data;
 
@@ -8251,6 +8264,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 			EditorNode::get_singleton()->show_warning(TTR("Couldn't find a solid floor to snap the selection to."));
 		}
 	}
+#endif // PHYSICS_3D_DISABLED
 }
 
 void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
@@ -8783,17 +8797,10 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<AudioListener3DGizmoPlugin>(memnew(AudioListener3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<MeshInstance3DGizmoPlugin>(memnew(MeshInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpriteBase3DGizmoPlugin>(memnew(SpriteBase3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GeometryInstance3DGizmoPlugin>(memnew(GeometryInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Marker3DGizmoPlugin>(memnew(Marker3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SpringBoneCollision3DGizmoPlugin>(memnew(SpringBoneCollision3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SpringBoneSimulator3DGizmoPlugin>(memnew(SpringBoneSimulator3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<VehicleWheel3DGizmoPlugin>(memnew(VehicleWheel3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<VisibleOnScreenNotifier3DGizmoPlugin>(memnew(VisibleOnScreenNotifier3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticles3DGizmoPlugin>(memnew(GPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticlesCollision3DGizmoPlugin>(memnew(GPUParticlesCollision3DGizmoPlugin)));
@@ -8804,12 +8811,21 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<VoxelGIGizmoPlugin>(memnew(VoxelGIGizmoPlugin)));
 	add_gizmo_plugin(Ref<LightmapGIGizmoPlugin>(memnew(LightmapGIGizmoPlugin)));
 	add_gizmo_plugin(Ref<LightmapProbeGizmoPlugin>(memnew(LightmapProbeGizmoPlugin)));
+	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
+#ifndef PHYSICS_3D_DISABLED
+	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SpringBoneCollision3DGizmoPlugin>(memnew(SpringBoneCollision3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SpringBoneSimulator3DGizmoPlugin>(memnew(SpringBoneSimulator3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<VehicleWheel3DGizmoPlugin>(memnew(VehicleWheel3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionObject3DGizmoPlugin>(memnew(CollisionObject3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionShape3DGizmoPlugin>(memnew(CollisionShape3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionPolygon3DGizmoPlugin>(memnew(CollisionPolygon3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
+	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
+#endif // PHYSICS_3D_DISABLED
 }
 
 void Node3DEditor::_bind_methods() {
@@ -10003,3 +10019,5 @@ Node3DEditorPlugin::Node3DEditorPlugin() {
 
 	spatial_editor->hide();
 }
+
+#endif // _3D_DISABLED

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "scene/resources/3d/mesh_library.h"
 
@@ -90,3 +92,5 @@ public:
 
 	MeshLibraryEditorPlugin();
 };
+
+#endif // _3D_DISABLED
