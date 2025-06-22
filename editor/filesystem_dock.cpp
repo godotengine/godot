@@ -2117,7 +2117,7 @@ Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> select
 }
 
 void FileSystemDock::_tree_rmb_option(int p_option) {
-	if (p_option > FILE_MENU_MAX) {
+	if (p_option > FILE_MENU_MAX && p_option < CONVERT_BASE_ID) {
 		// Extra options don't need paths.
 		_file_option(p_option, {});
 		return;
