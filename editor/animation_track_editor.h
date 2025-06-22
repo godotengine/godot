@@ -378,9 +378,7 @@ protected:
 
 	// Helper
 public:
-	//float _get_local_time(const int p_index, float p_offset = 0) const;
 	Rect2 _to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection = false) const;
-	Rect2 _to_local_key_rect(const int p_index, const Rect2 &p_global_rect, bool p_ignore_moving_selection) const;
 	void _draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
 
 	virtual String _get_tooltip(const int p_index) const { return ""; }
@@ -496,6 +494,7 @@ public:
 	virtual Ref<Texture2D> _get_key_type_icon_selected() const override;
 
 	Color get_key_color(const int p_index) const;
+	StringName get_key_name(const int p_index) const;
 
 	virtual bool has_key(const int p_index) const override;
 
@@ -545,6 +544,11 @@ public:
 	virtual Vector<int> get_selected_section() override;
 	int get_last_selection();
 	int get_first_selection();
+
+public:
+	void draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right);
+	void draw_marker_lines(CanvasItem *p_canvas_item, float p_clip_left, float p_clip_right);
+	void draw_marker_keys(CanvasItem *p_canvas_item, float p_clip_left, float p_clip_right);
 
 public:
 	AnimationMarkerEdit();
@@ -1030,7 +1034,10 @@ public:
 	void _draw_vertical_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, float p_length, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
 	void _draw_texture_region_clipped(CanvasItem *p_canvas_item, const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
 	String _make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width);
-	void _draw_markers(CanvasItem *p_canvas_item, float p_clip_left, float p_clip_right);
+
+public:
+	void draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right);
+	void draw_marker_lines(CanvasItem *p_canvas_item, float p_clip_left, float p_clip_right);
 
 protected:
 	static void _bind_methods();
@@ -1039,8 +1046,6 @@ protected:
 public:
 	PropertySelector *get_prop_selector() { return prop_selector; }
 	PropertySelector *get_method_selector() { return method_selector; }
-
-	double get_global_time(const float p_time) const;
 
 public:
 	// Public for use with callable_mp.
@@ -1111,10 +1116,6 @@ public:
 
 	bool is_key_selected(const int p_track, const int p_key) const;
 	bool is_selection_active() const;
-	bool is_track_moving_selection() const;
-	void set_track_moving_selection(bool p_value);
-	float get_track_moving_selection_offset() const;
-	void set_track_moving_selection_offset(float p_value);
 	bool is_marker_selection_active() const;
 	bool is_key_clipboard_active() const;
 	bool is_snap_timeline_enabled() const;
@@ -1130,6 +1131,11 @@ public:
 	float get_marker_moving_selection_offset() const;
 	bool is_function_name_pressed();
 
+	bool is_track_moving_selection() const;
+	void set_track_moving_selection(bool p_value);
+	float get_track_moving_selection_offset() const;
+	void set_track_moving_selection_offset(float p_value);
+
 	bool is_marker_selected(const int p_key) const;
 	Vector<int> get_selected_marker_section();
 
@@ -1142,8 +1148,8 @@ public:
 	double get_marker_move_key_time(const int p_index) const;
 	int get_marker_count() const;
 	int get_track_count() const;
-
 	int get_track_key_count(const int p_track) const;
+	double get_global_time(const float p_time) const;
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
 	void goto_prev_step(bool p_from_mouse_event);
