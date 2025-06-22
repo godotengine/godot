@@ -507,6 +507,10 @@ const GodotInput = {
 		const func = GodotRuntime.get_func(callback);
 		const canvas = GodotConfig.canvas;
 		function move_cb(evt) {
+			if (evt.pointerType == 'touch') {
+				return;
+			}
+
 			const rect = canvas.getBoundingClientRect();
 			const pos = GodotInput.computePosition(evt, rect);
 			// Scale movement
@@ -538,6 +542,10 @@ const GodotInput = {
 		const func = GodotRuntime.get_func(callback);
 		const canvas = GodotConfig.canvas;
 		function button_cb(p_pressed, evt) {
+			if (evt.pointerType == 'touch') {
+				return;
+			}
+
 			const rect = canvas.getBoundingClientRect();
 			const pos = GodotInput.computePosition(evt, rect);
 			const modifiers = GodotInput.getModifiers(evt);
@@ -550,8 +558,8 @@ const GodotInput = {
 				evt.preventDefault();
 			}
 		}
-		GodotEventListeners.add(canvas, 'mousedown', button_cb.bind(null, 1), false);
-		GodotEventListeners.add(window, 'mouseup', button_cb.bind(null, 0), false);
+		GodotEventListeners.add(canvas, 'pointerdown', button_cb.bind(null, 1), false);
+		GodotEventListeners.add(window, 'pointerup', button_cb.bind(null, 0), false);
 	},
 
 	/*
