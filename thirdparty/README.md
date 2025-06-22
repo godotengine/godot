@@ -220,6 +220,7 @@ Files extracted from upstream source:
 Important: Some files have Godot-made changes.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
+A patch is included to fix CVE-2019-2126 in libwebm.
 
 
 ## libtheora
