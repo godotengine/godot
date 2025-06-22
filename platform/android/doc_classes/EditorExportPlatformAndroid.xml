@@ -598,6 +598,10 @@
 		<member name="permissions/write_user_dictionary" type="bool" setter="" getter="">
 			Allows an application to write to the user dictionary.
 		</member>
+		<member name="screen/edge_to_edge" type="bool" setter="" getter="">
+			If [code]true[/code], this makes the navigation and status bars translucent and allows the application content to extend edge to edge.
+			[b]Note:[/b] You should ensure that none of the application content is occluded by system elements by using the [method DisplayServer.get_display_safe_area] and [method DisplayServer.get_display_cutouts] methods.
+		</member>
 		<member name="screen/immersive_mode" type="bool" setter="" getter="">
 			If [code]true[/code], hides the navigation and status bar. Set [method DisplayServer.window_set_mode] to change this at runtime.
 		</member>

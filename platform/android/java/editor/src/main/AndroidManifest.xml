@@ -104,8 +104,7 @@
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:process=":EmbeddedGodotGame"
-            android:supportsPictureInPicture="true"
-            android:screenOrientation="userLandscape" />
+            android:supportsPictureInPicture="true" />
         <activity
             android:name=".GodotXRGame"
             android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"

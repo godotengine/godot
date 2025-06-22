@@ -45,9 +45,9 @@ import android.os.Process
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.annotation.CallSuper
 import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -222,9 +222,9 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	override fun onCreate(savedInstanceState: Bundle?) {
 		installSplashScreen()
 
-		// Prevent the editor window from showing in the display cutout
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && getEditorWindowInfo() == EDITOR_MAIN_INFO) {
-			window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+		val editorWindowInfo = getEditorWindowInfo()
+		if (editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) {
+			enableEdgeToEdge()
 		}
 
 		// We exclude certain permissions from the set we request at startup, as they'll be
@@ -324,16 +324,29 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 	}
 
+	private fun updateImmersiveAndEdgeToEdgeModes() {
+		val editorWindowInfo = getEditorWindowInfo()
+		if (editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) {
+			godot?.apply {
+				enableImmersiveMode(isInImmersiveMode(), true)
+				enableEdgeToEdge(isInEdgeToEdgeMode(), true)
+			}
+		}
+	}
+
 	override fun onGodotMainLoopStarted() {
 		super.onGodotMainLoopStarted()
 		runOnUiThread {
 			// Hide the loading indicator
 			editorLoadingIndicator?.visibility = View.GONE
+			updateImmersiveAndEdgeToEdgeModes()
 		}
 	}
 
 	override fun onResume() {
 		super.onResume()
+		updateImmersiveAndEdgeToEdgeModes()
+
 		if (getEditorWindowInfo() == EDITOR_MAIN_INFO &&
 			godot?.isEditorHint() == true &&
 			(editorMessageDispatcher.hasEditorConnection(EMBEDDED_RUN_GAME_INFO) ||
@@ -431,7 +444,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		// fullscreen mode, we want to remain in fullscreen mode.
 		// This doesn't apply to the play / game window since for that window fullscreen is
 		// controlled by the game logic.
-		val updatedArgs = if (editorWindowInfo == EDITOR_MAIN_INFO &&
+		val updatedArgs = if ((editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) &&
 			godot?.isInImmersiveMode() == true &&
 			!args.contains(FULLSCREEN_ARG) &&
 			!args.contains(FULLSCREEN_ARG_SHORT)
