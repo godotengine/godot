@@ -1053,9 +1053,10 @@ void GDScriptParser::parse_class_body(bool p_first_is_abstract, bool p_is_multil
 
 	int flags = GDScriptParser::MemberFlag::FLAG_NONE;
 	// The header parsing code could consume `abstract` for the first function or inner class.
+	if (p_first_is_abstract) {
+		flags |= GDScriptParser::MemberFlag::FLAG_ABSTRACT;
+	}
 
-	bool next_is_abstract = p_first_is_abstract;
-	bool next_is_static = false;
 	while (!class_end && !is_at_end()) {
 		GDScriptTokenizer::Token token = current;
 		switch (token.type) {
