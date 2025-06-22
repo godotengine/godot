@@ -118,7 +118,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_overrides_external_editor);
 	GDVIRTUAL_BIND(_preferred_file_name_casing);
 
-	GDVIRTUAL_BIND(_complete_code, "code", "path", "owner");
+	GDVIRTUAL_BIND(_complete_code, "code", "line", "column", "path", "owner");
 	GDVIRTUAL_BIND(_lookup_code, "code", "symbol", "path", "owner");
 	GDVIRTUAL_BIND(_auto_indent_code, "code", "from_line", "to_line");
 

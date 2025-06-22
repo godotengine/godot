@@ -1130,12 +1130,12 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	}
 }
 
-void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, const int p_line, const int p_column, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
 	ScriptTextEditor *ste = (ScriptTextEditor *)p_ud;
-	ste->_code_complete_script(p_code, r_options, r_force);
+	ste->_code_complete_script(p_code, p_line, p_column, r_options, r_force);
 }
 
-void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void ScriptTextEditor::_code_complete_script(const String &p_code, const int p_line, const int p_column, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
 	if (color_panel->is_visible()) {
 		return;
 	}
@@ -1144,7 +1144,7 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
-	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
+	Error err = script->get_language()->complete_code(p_code, p_line, p_column, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);
@@ -2349,7 +2349,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	if (type == "obj_property") {
 		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
-		text_to_drop = add_literal ? "^" : "";
+		bool already_has_literal = te->get_line(drop_at_line).substr(0, drop_at_column).ends_with("^\"");
+		text_to_drop = add_literal && !already_has_literal ? "-" + te->get_line(drop_at_line) + "-" : "";
 		// It is unclear whether properties may contain single or double quotes.
 		// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
 		text_to_drop += _quote_drop_data(String(d["property"]));

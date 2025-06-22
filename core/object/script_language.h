@@ -336,7 +336,7 @@ public:
 		TypedArray<int> charac;
 	};
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String &p_code, const int p_line, const int p_column, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	enum LookupResultType {
 		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.

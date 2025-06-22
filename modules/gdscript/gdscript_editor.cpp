@@ -2854,7 +2854,7 @@ static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_co
 	}
 }
 
-static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, int p_argidx, bool p_static, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
+static void _find_call_arguments(const String &p_code, const int p_line, const int p_column, GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, int p_argidx, bool p_static, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
 	Variant base = p_base.value;
 	GDScriptParser::DataType base_type = p_base.type;
 
@@ -2933,7 +2933,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
 										opt = "&" + opt;
 									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
-										opt = "^" + opt;
+										const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
+										// Have to check both and not just the given quote style in case the user
+										// chooses to use "'" even without the setting enabled.
+										if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+											opt = "^" + opt;
+										}
 									}
 								}
 								ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
@@ -3188,7 +3193,7 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 	return false;
 }
 
-static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, const GDScriptParser::Node *p_call, int p_argidx, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, bool &r_forced, String &r_arghint) {
+static void _find_call_arguments(const String &p_code, const int p_line, const int p_column, GDScriptParser::CompletionContext &p_context, const GDScriptParser::Node *p_call, int p_argidx, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, bool &r_forced, String &r_arghint) {
 	if (p_call->type == GDScriptParser::Node::PRELOAD) {
 		if (p_argidx == 0 && bool(EDITOR_GET("text_editor/completion/complete_file_paths"))) {
 			_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), r_result);
@@ -3290,12 +3295,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	GDScriptCompletionIdentifier ci;
 	ci.type = base_type;
 	ci.value = base;
-	_find_call_arguments(p_context, ci, call->function_name, p_argidx, _static, r_result, r_arghint);
+	_find_call_arguments(p_code, p_line, p_column, p_context, ci, call->function_name, p_argidx, _static, r_result, r_arghint);
 
 	r_forced = r_result.size() > 0;
 }
 
-::Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
+::Error GDScriptLanguage::complete_code(const String &p_code, const int p_line, const int p_column, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 	GDScriptParser parser;
@@ -3544,7 +3549,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			if (!completion_context.node) {
 				break;
 			}
-			_find_call_arguments(completion_context, completion_context.node, completion_context.current_argument, options, r_forced, r_call_hint);
+			_find_call_arguments(p_code, p_line, p_column, completion_context, completion_context.node, completion_context.current_argument, options, r_forced, r_call_hint);
 		} break;
 		case GDScriptParser::COMPLETION_OVERRIDE_METHOD: {
 			GDScriptParser::DataType native_type = completion_context.current_class->base_type;
@@ -3716,7 +3721,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 #else // !TOOLS_ENABLED
 
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const int p_line, const int p_column, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 	return OK;
 }
 
