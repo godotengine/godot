@@ -75,7 +75,7 @@ private:
 	float len_resizing_rel = 0.0f;
 	bool over_drag_position = false;
 
-	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const int p_index, const Rect2 p_global_rect, const int p_clip_left, const int p_clip_right);
+	int handle_track_resizing(const Ref<InputEventMouseMotion> mm, const int p_index, const int p_clip_left, const int p_clip_right);
 
 	Region _calc_key_region(const int p_index, const float p_start_ofs, const float p_end_ofs, const float p_len, float p_offset = 0) const;
 	Region _clip_key_region(const Region &p_region, const int p_clip_left, const int p_clip_right);
@@ -92,6 +92,8 @@ public:
 public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
+
+protected:
 	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 protected:
@@ -101,7 +103,7 @@ protected:
 	virtual float get_length(const int p_index) const { return 0; } // total length of the key
 	virtual void set_start_offset(const int p_index, const float prev_ofs, const float new_ofs) {} //sets the start offset of the key
 	virtual void set_end_offset(const int p_index, const float prev_ofs, const float new_ofs) {} //sets the end offset of the key
-	virtual StringName get_edit_name(const int p_index) const; //name of the key
+	virtual StringName get_edit_name(const int p_index) const override; //name of the key
 	virtual float get_key_scale(const int p_index) const { return 1.0; }
 
 protected:
@@ -214,6 +216,8 @@ private:
 public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
+
+protected:
 	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 public:
@@ -226,14 +230,14 @@ class AnimationTrackEditTypeMethod : public AnimationTrackEdit {
 public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
-	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 	virtual String _get_tooltip(const int p_index) const override;
 
 public:
-	StringName get_edit_name(const int p_index) const; //name of the key
+	virtual StringName get_edit_name(const int p_index) const override; //name of the key
 
 protected:
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) override;
 
 private:
@@ -250,9 +254,10 @@ class AnimationTrackEditColor : public AnimationTrackEdit {
 public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
-	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
+	virtual bool is_linked(const int p_index, const int p_index_next) const override;
 
 protected:
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) override;
 
 public:
@@ -283,6 +288,8 @@ public:
 public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
+
+protected:
 	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 
 protected:
@@ -298,14 +305,15 @@ class AnimationTrackEditVolumeDB : public AnimationTrackEdit {
 public:
 	virtual float get_key_width(const int p_index) const override;
 	virtual float get_key_height(const int p_index) const override;
-	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 	virtual bool is_linked(const int p_index, const int p_index_next) const override;
 
 protected:
 	virtual void draw_bg(const float p_clip_left, const float p_clip_right) override;
-	virtual void draw_fg(const float p_clip_left, const float p_clip_right) override;
+	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) override;
 	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) override;
+	virtual void draw_fg(const float p_clip_left, const float p_clip_right) override;
 
+public:
 	virtual float get_key_y(const int p_index) const override;
 
 public:

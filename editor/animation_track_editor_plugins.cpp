@@ -89,26 +89,7 @@ float AnimationTrackEditTypeMethod::get_key_height(const int p_index) const {
 }
 
 void AnimationTrackEditTypeMethod::draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
-	float clip_r = p_clip_right - REGION_FONT_MARGIN;
-	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-		Rect2 rect_next = get_global_key_rect(p_index + 1);
-		clip_r = MIN(rect_next.position.x - REGION_FONT_MARGIN, clip_r);
-	}
-
-	float text_pos = p_global_rect.position.x + p_global_rect.size.width + REGION_FONT_MARGIN;
-	float max_width = MAX(0.0, clip_r - text_pos);
-	if (max_width > 0) {
-		const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-		color.a = 0.5;
-
-		String method_name = get_edit_name(p_index);
-		String edit_name = editor->_make_text_clipped(method_name, font, font_size, max_width);
-
-		int f_h = int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
-		draw_string(font, Vector2(text_pos, f_h), edit_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
-	}
+	draw_edit_text(p_index, p_global_rect, p_clip_left, p_clip_right, true);
 
 	AnimationTrackEdit::draw_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
 }
@@ -173,42 +154,37 @@ void AnimationTrackEditColor::draw_key(const int p_index, const Rect2 &p_global_
 	editor->_draw_grid_clipped(this, p_global_rect, color, COLOR_EDIT_RECT_INTERVAL, p_clip_left, p_clip_right);
 }
 
-void AnimationTrackEditColor::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
-	int fh = get_key_height(p_index);
+bool AnimationTrackEditColor::is_linked(const int p_index, const int p_index_next) const {
+	return true;
+}
 
+void AnimationTrackEditColor::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
+	float fh = get_key_height(p_index);
 	fh /= 3;
 
-	float x_from = p_global_rect.position.x + fh / 2.0 - 1;
-	float x_to = p_global_rect_next.position.x - fh / 2.0 + 1;
-	x_from = MAX(x_from, p_clip_left);
-	x_to = MIN(x_to, p_clip_right);
-
-	float y_from = (get_size().height - fh) / 2.0;
-
-	if (x_from > p_clip_right || x_to < p_clip_left) {
-		return;
-	}
+	int from_x = MAX(p_global_rect.position.x + p_global_rect.size.x, p_clip_left);
+	int to_x = MIN(p_global_rect_next.position.x, p_clip_right);
+	float yh = (get_size().height - fh) / 2.0;
 
 	Vector<Color> color_samples;
 	color_samples.append(get_animation()->track_get_key_value(get_track(), p_index));
 
-	if (get_animation()->track_get_type(get_track()) == Animation::TYPE_VALUE) {
-		if (get_animation()->track_get_interpolation_type(get_track()) != Animation::INTERPOLATION_NEAREST &&
-				(get_animation()->value_track_get_update_mode(get_track()) == Animation::UPDATE_CONTINUOUS ||
-						get_animation()->value_track_get_update_mode(get_track()) == Animation::UPDATE_CAPTURE) &&
-				!Math::is_zero_approx(get_animation()->track_get_key_transition(get_track(), p_index))) {
+	Animation::TrackType track_type = get_animation()->track_get_type(track);
+	if (track_type == Animation::TYPE_VALUE) {
+		if (get_animation()->track_get_interpolation_type(track) != Animation::INTERPOLATION_NEAREST &&
+				(get_animation()->value_track_get_update_mode(track) == Animation::UPDATE_CONTINUOUS ||
+						get_animation()->value_track_get_update_mode(track) == Animation::UPDATE_CAPTURE) &&
+				!Math::is_zero_approx(get_animation()->track_get_key_transition(track, p_index))) {
 			float start_time = get_key_time(p_index);
 			float end_time = get_key_time(p_index + 1);
 
-			Color color_next = get_animation()->value_track_interpolate(get_track(), end_time);
+			Color color_next = get_animation()->value_track_interpolate(track, end_time);
 
 			if (!color_samples[0].is_equal_approx(color_next)) {
-				color_samples.resize(1 + (x_to - x_from) / COLOR_EDIT_SAMPLE_INTERVAL); // Make a color sample every 64 px.
+				color_samples.resize(1 + (to_x - from_x) / COLOR_EDIT_SAMPLE_INTERVAL); // Make a color sample every 64 px.
 				for (int i = 1; i < color_samples.size(); i++) {
 					float j = i;
-					color_samples.write[i] = get_animation()->value_track_interpolate(
-							get_track(),
-							Math::lerp(start_time, end_time, j / color_samples.size()));
+					color_samples.write[i] = get_animation()->value_track_interpolate(track, Math::lerp(start_time, end_time, j / color_samples.size()));
 				}
 			}
 			color_samples.append(color_next);
@@ -221,10 +197,10 @@ void AnimationTrackEditColor::draw_key_link(const int p_index, const Rect2 &p_gl
 
 	for (int i = 0; i < color_samples.size() - 1; i++) {
 		Vector<Vector2> points = {
-			Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from),
-			Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from),
-			Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from + fh),
-			Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from + fh)
+			Vector2(Math::lerp(from_x, to_x, float(i) / (color_samples.size() - 1)), yh),
+			Vector2(Math::lerp(from_x, to_x, float(i + 1) / (color_samples.size() - 1)), yh),
+			Vector2(Math::lerp(from_x, to_x, float(i + 1) / (color_samples.size() - 1)), yh + fh),
+			Vector2(Math::lerp(from_x, to_x, float(i) / (color_samples.size() - 1)), yh + fh)
 		};
 
 		Vector<Color> colors = {
@@ -483,10 +459,6 @@ float AnimationTrackEditVolumeDB::get_key_height(const int p_index) const {
 	return AnimationTrackEdit::get_key_height(p_index);
 }
 
-void AnimationTrackEditVolumeDB::draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
-	AnimationTrackEdit::draw_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
-}
-
 void AnimationTrackEditVolumeDB::draw_bg(const float p_clip_left, const float p_clip_right) {
 	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
 	int tex_h = volume_texture->get_height();
@@ -496,6 +468,20 @@ void AnimationTrackEditVolumeDB::draw_bg(const float p_clip_left, const float p_
 
 	Color color(1, 1, 1, 0.3);
 	draw_texture_rect(volume_texture, Rect2(p_clip_left, y_from, p_clip_right - p_clip_left, y_from + y_size), false, color);
+}
+
+void AnimationTrackEditVolumeDB::draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
+	AnimationTrackEdit::draw_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
+}
+
+void AnimationTrackEditVolumeDB::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
+	Point2 center = p_global_rect.get_center();
+	Point2 center_n = p_global_rect_next.get_center();
+
+	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+	color.a *= REGION_EDGE_ALPHA;
+
+	editor->_draw_line_clipped(this, center, center_n, color, 2, p_clip_left, p_clip_right);
 }
 
 void AnimationTrackEditVolumeDB::draw_fg(const float p_clip_left, const float p_clip_right) {
@@ -524,16 +510,6 @@ float AnimationTrackEditVolumeDB::get_key_y(const int p_index) const {
 	// Scale to small range around track_alignment
 	float scale_factor = 0.5; // % of track height
 	return (norm_h - 0.5) * scale_factor;
-}
-
-void AnimationTrackEditVolumeDB::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
-	Point2 center = p_global_rect.get_center();
-	Point2 center_n = p_global_rect_next.get_center();
-
-	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-	color.a *= REGION_EDGE_ALPHA;
-
-	editor->_draw_line_clipped(this, center, center_n, color, 2, p_clip_left, p_clip_right);
 }
 
 /// ANIMATION TRACK EDIT TYPE AUDIO ///
@@ -807,15 +783,17 @@ float AnimationTrackEditClip::get_key_height(const int p_index) const {
 	return _get_theme_font_height(1.5);
 }
 
-int AnimationTrackEditClip::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const int p_index, const Rect2 p_global_rect, const int p_clip_left, const int p_clip_right) {
+int AnimationTrackEditClip::handle_track_resizing(const Ref<InputEventMouseMotion> mm, const int p_index, const int p_clip_left, const int p_clip_right) {
 	float len = get_length(p_index);
 	float start_ofs = get_start_offset(p_index);
 	float end_ofs = get_end_offset(p_index);
 
-	Rect2 global_key_rect = get_global_key_rect(p_index);
+	float offset = get_global_move_key_time(p_index, true);
+	Region region = _calc_key_region(p_index, start_ofs, end_ofs, len, offset);
+	region = _clip_key_region(region, p_clip_left, p_clip_right);
 
-	float region_begin = global_key_rect.position.x;
-	float region_end = (global_key_rect.position.x + global_key_rect.size.x);
+	float region_begin = region.x;
+	float region_end = (region.x + region.width);
 
 	if (region_begin >= p_clip_left && region_end <= p_clip_right && region_begin <= region_end) {
 		bool resize_start = false;
@@ -866,13 +844,11 @@ void AnimationTrackEditClip::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (!len_resizing && mm.is_valid()) {
 		bool use_hsize_cursor = false;
-		for (int p_index = 0; p_index < get_animation()->track_get_key_count(get_track()); p_index++) {
-			Rect2 global_rect = get_global_key_rect(p_index);
-
+		for (int p_index = 0; p_index < get_key_count(); p_index++) {
 			float clip_left = get_timeline()->get_name_limit();
 			float clip_right = get_size().width - get_timeline()->get_buttons_width();
 
-			int resizing_index = handle_track_resizing(mm, p_index, global_rect, clip_left, clip_right);
+			int resizing_index = handle_track_resizing(mm, p_index, clip_left, clip_right);
 			if (resizing_index != -1) {
 				if (!has_valid_key(resizing_index)) {
 					AnimationTrackEdit::gui_input(p_event);
@@ -1072,27 +1048,7 @@ void AnimationTrackEditClip::draw_key(const int p_index, const Rect2 &p_global_r
 		draw_rect(Rect2(region_end, rect.position.y, 1, rect.size.y), edge_color);
 	}
 
-	if (region_width > REGION_MAX_WIDTH) {
-		StringName edit_name = get_edit_name(p_index);
-		if (!edit_name.is_empty()) {
-			Color name_color;
-			if (p_selected) {
-				name_color = Color(accent_color);
-				name_color.a = 0.0;
-			} else {
-				Color font_color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-				name_color = font_color;
-			}
-
-			float max_width = region_width - REGION_FONT_MARGIN;
-
-			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-
-			int f_h = key_rect.position.y + key_rect.size.y / 2 - font->get_height(font_size) / 2 + font->get_ascent(font_size);
-			draw_string(font, Point2(region_begin + REGION_FONT_MARGIN, f_h), editor->_make_text_clipped(edit_name, font, font_size, max_width), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
-		}
-	}
+	draw_edit_text(p_index, rect, p_clip_left, p_clip_right, false);
 }
 
 bool AnimationTrackEditClip::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
