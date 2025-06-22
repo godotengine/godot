@@ -1719,6 +1719,13 @@ static bool _is_expression_named_identifier(const GDScriptParser::ExpressionNode
 	return false;
 }
 
+static bool _is_literal_prepended(const String &p_code, const int p_line, const int p_column, const String &to_check) {
+	const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
+	// Have to check both and not just the given quote style in case the user
+	// chooses to use "'" even without the setting enabled.
+	return line_to_caret.ends_with(to_check + "\"") || line_to_caret.ends_with(to_check + "'");
+}
+
 static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ExpressionNode *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
 
@@ -2931,15 +2938,11 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 								if (opt.is_quoted()) {
 									opt = opt.unquote().quote(quote_style);
 									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
-										// Have to check both and not just the given quote style in case the user
-										// chooses to use "'" even without the setting enabled.
-										const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
-										if (!line_to_caret.ends_with("&\"") && !line_to_caret.ends_with("&'")) {
+										if (!_is_literal_prepended(p_code, p_line, p_column, "&")) {
 											opt = "&" + opt;
 										}
 									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
-										const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
-										if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+										if (!_is_literal_prepended(p_code, p_line, p_column, "^")) {
 											opt = "^" + opt;
 										}
 									}
@@ -2986,8 +2989,7 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 									}
 									String name = E.name.quote(quote_style);
 									if (use_node_paths) {
-										const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
-										if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+										if (!_is_literal_prepended(p_code, p_line, p_column, "^")) {
 											name = "^" + name;
 										}
 									}
@@ -3007,8 +3009,7 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 									if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 										String name = member.get_name().quote(quote_style);
 										if (use_node_paths) {
-											const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
-											if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+											if (!_is_literal_prepended(p_code, p_line, p_column, "^")) {
 												name = "^" + name;
 											}
 										}
@@ -3037,8 +3038,7 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 						}
 						String name = E.name.quote(quote_style);
 						if (use_node_paths) {
-							const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
-							if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+							if (!_is_literal_prepended(p_code, p_line, p_column, "^")) {
 								name = "^" + name;
 							}
 						}
@@ -3060,8 +3060,7 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 						String name = s.get_slicec('/', 1);
 						String path = ("/root/" + name).quote(quote_style);
 						if (use_node_paths) {
-							const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
-							if (!line_to_caret.ends_with("^\"") && !line_to_caret.ends_with("^'")) {
+							if (!_is_literal_prepended(p_code, p_line, p_column, "^")) {
 								path = "^" + path;
 							}
 						}
@@ -3081,8 +3080,7 @@ static void _find_call_arguments(const String &p_code, const int p_line, const i
 						}
 						String name = s.get_slicec('/', 1).quote(quote_style);
 						if (use_string_names) {
-							const String &line_to_caret = p_code.split("\n")[p_line].substr(0, p_column);
-							if (!line_to_caret.ends_with("&\"") && !line_to_caret.ends_with("&'")) {
+							if (!_is_literal_prepended(p_code, p_line, p_column, "&")) {
 								name = "&" + name;
 							}
 						}
