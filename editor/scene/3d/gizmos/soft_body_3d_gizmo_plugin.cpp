@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "soft_body_3d_gizmo_plugin.h"
 
 #include "scene/3d/physics/soft_body_3d.h"
@@ -109,3 +111,5 @@ bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_giz
 	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_node_3d());
 	return soft_body->is_point_pinned(p_id);
 }
+
+#endif // PHYSICS_3D_DISABLED

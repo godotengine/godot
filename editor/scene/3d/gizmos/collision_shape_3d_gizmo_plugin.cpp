@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "collision_shape_3d_gizmo_plugin.h"
 
 #include "core/math/convex_hull.h"
@@ -667,3 +669,5 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(lines, material, false, collision_color);
 	}
 }
+
+#endif // PHYSICS_3D_DISABLED

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "spring_arm_3d_gizmo_plugin.h"
 
 #include "scene/3d/physics/spring_arm_3d.h"
@@ -64,3 +66,5 @@ String SpringArm3DGizmoPlugin::get_gizmo_name() const {
 int SpringArm3DGizmoPlugin::get_priority() const {
 	return -1;
 }
+
+#endif // PHYSICS_3D_DISABLED
