@@ -1777,6 +1777,203 @@ void ArrayMesh::_recompute_aabb() {
 	}
 }
 
+Ref<ArrayMesh> ArrayMesh::merge_array_meshes(const TypedArray<ArrayMesh> &p_array_meshes, const TypedArray<Transform3D> &p_relative_transforms, bool p_deduplicate_surfaces) {
+	// Setup and sanity checks.
+	const int mesh_count = p_array_meshes.size();
+	Ref<ArrayMesh> merged_mesh;
+	merged_mesh.instantiate();
+	ERR_FAIL_COND_V(mesh_count == 0, merged_mesh);
+	ERR_FAIL_COND_V(mesh_count != p_relative_transforms.size(), merged_mesh);
+	// Contains more than just the surface arrays, also contains some metadata to help with merging.
+	HashMap<String, Array> names_to_surfaces;
+	for (int mesh_index = 0; mesh_index < mesh_count; mesh_index++) {
+		const Ref<ArrayMesh> &array_mesh = p_array_meshes[mesh_index];
+		const Transform3D &relative_transform = p_relative_transforms[mesh_index];
+		const bool is_determinant_negative = relative_transform.basis.determinant() < 0;
+		for (int surface_index = 0; surface_index < array_mesh->get_surface_count(); surface_index++) {
+			Array this_surface_arrays = array_mesh->surface_get_arrays(surface_index);
+			ERR_FAIL_COND_V(this_surface_arrays.size() != Mesh::ARRAY_MAX, merged_mesh);
+			// Transform the data of the mesh by the node's global transform.
+			{
+				PackedVector3Array vertices = this_surface_arrays[Mesh::ARRAY_VERTEX];
+				for (int vertex_index = 0; vertex_index < vertices.size(); vertex_index++) {
+					vertices.set(vertex_index, relative_transform.xform(vertices[vertex_index]));
+				}
+				PackedVector3Array normals = this_surface_arrays[Mesh::ARRAY_NORMAL];
+				for (int normal_index = 0; normal_index < normals.size(); normal_index++) {
+					normals.set(normal_index, relative_transform.basis.xform(normals[normal_index]).normalized());
+				}
+				PackedFloat32Array tangents = this_surface_arrays[Mesh::ARRAY_TANGENT];
+				for (int tangent_index = 0; tangent_index < tangents.size(); tangent_index += 4) {
+					Vector3 tangent = Vector3(tangents[tangent_index], tangents[tangent_index + 1], tangents[tangent_index + 2]);
+					tangent = relative_transform.basis.xform(tangent).normalized();
+					tangents.set(tangent_index + 0, tangent.x);
+					tangents.set(tangent_index + 1, tangent.y);
+					tangents.set(tangent_index + 2, tangent.z);
+					// The tangent's W component is not transformed (the binormal direction sign), so we keep it as is.
+				}
+				// If the determinant is negative, we need to swap vertices to fix the winding order.
+				if (is_determinant_negative) {
+					PackedInt32Array this_indices = this_surface_arrays[Mesh::ARRAY_INDEX];
+					if (this_indices.is_empty()) {
+						// For non-indexed meshes, we need to swap the data in the arrays.
+						PackedColorArray colors = this_surface_arrays[Mesh::ARRAY_COLOR];
+						PackedVector2Array tex_uv1 = this_surface_arrays[Mesh::ARRAY_TEX_UV];
+						PackedVector2Array tex_uv2 = this_surface_arrays[Mesh::ARRAY_TEX_UV2];
+						Color temp_color;
+						Vector4 temp_vec4;
+						Vector3 temp_vec3;
+						Vector2 temp_vec2;
+						for (int i = 1; i < vertices.size() - 1; i += 3) {
+							temp_vec3 = vertices[i];
+							vertices.set(i, vertices[i + 1]);
+							vertices.set(i + 1, temp_vec3);
+						}
+						for (int i = 1; i < normals.size() - 1; i += 3) {
+							temp_vec3 = normals[i];
+							normals.set(i, normals[i + 1]);
+							normals.set(i + 1, temp_vec3);
+						}
+						for (int i = 4; i < tangents.size() - 1; i += 12) {
+							temp_vec4 = Vector4(tangents[i + 0], tangents[i + 1], tangents[i + 2], tangents[i + 3]);
+							tangents.set(i + 0, tangents[i + 4]);
+							tangents.set(i + 1, tangents[i + 5]);
+							tangents.set(i + 2, tangents[i + 6]);
+							tangents.set(i + 3, tangents[i + 7]);
+							tangents.set(i + 4, temp_vec4.x);
+							tangents.set(i + 5, temp_vec4.y);
+							tangents.set(i + 6, temp_vec4.z);
+							tangents.set(i + 7, temp_vec4.w);
+						}
+						for (int i = 1; i < colors.size() - 1; i += 3) {
+							temp_color = colors[i];
+							colors.set(i, colors[i + 1]);
+							colors.set(i + 1, temp_color);
+						}
+						for (int i = 1; i < tex_uv1.size() - 1; i += 3) {
+							temp_vec2 = tex_uv1[i];
+							tex_uv1.set(i, tex_uv1[i + 1]);
+							tex_uv1.set(i + 1, temp_vec2);
+						}
+						for (int i = 1; i < tex_uv2.size() - 1; i += 3) {
+							temp_vec2 = tex_uv2[i];
+							tex_uv2.set(i, tex_uv2[i + 1]);
+							tex_uv2.set(i + 1, temp_vec2);
+						}
+						// Put the data back into the surface arrays.
+						this_surface_arrays[Mesh::ARRAY_COLOR] = colors.is_empty() ? Variant() : Variant(colors);
+						this_surface_arrays[Mesh::ARRAY_TEX_UV] = tex_uv1.is_empty() ? Variant() : Variant(tex_uv1);
+						this_surface_arrays[Mesh::ARRAY_TEX_UV2] = tex_uv2.is_empty() ? Variant() : Variant(tex_uv2);
+					} else {
+						// For indexed meshes, we need to swap the indices.
+						for (int i = 1; i < this_indices.size() - 1; i += 3) {
+							int32_t temp = this_indices[i];
+							this_indices.set(i, this_indices[i + 1]);
+							this_indices.set(i + 1, temp);
+						}
+						this_surface_arrays[Mesh::ARRAY_INDEX] = this_indices;
+					}
+				}
+				this_surface_arrays[Mesh::ARRAY_VERTEX] = vertices;
+				this_surface_arrays[Mesh::ARRAY_NORMAL] = normals.is_empty() ? Variant() : Variant(normals);
+				this_surface_arrays[Mesh::ARRAY_TANGENT] = tangents.is_empty() ? Variant() : Variant(tangents);
+			}
+			// Insert the transformed data into the temporary HashMap.
+			const ArrayMesh::PrimitiveType mesh_prim_type = array_mesh->surface_get_primitive_type(surface_index);
+			const BitField<Mesh::ArrayFormat> mesh_format = array_mesh->surface_get_format(surface_index);
+			String surface_name = array_mesh->surface_get_name(surface_index);
+			if (surface_name.is_empty()) {
+				surface_name = String("surface_") + itos(surface_index);
+			}
+			const bool name_exists = names_to_surfaces.has(surface_name);
+			if (name_exists) {
+				// Only attempt to deduplicate surfaces if the mesh format is compatible and its flags are simple.
+				// Meaning, avoid deduplicating surfaces with custom data, bone weights, etc.
+				constexpr uint64_t avoid_duplicating = Mesh::ARRAY_FORMAT_CUSTOM0 | Mesh::ARRAY_FORMAT_CUSTOM1 | Mesh::ARRAY_FORMAT_CUSTOM2 | Mesh::ARRAY_FORMAT_CUSTOM3 | Mesh::ARRAY_FORMAT_BONES | Mesh::ARRAY_FORMAT_WEIGHTS;
+				const bool only_simple_flags = (mesh_format & avoid_duplicating) == 0;
+				if (p_deduplicate_surfaces && only_simple_flags) {
+					Array &existing_surface = names_to_surfaces[surface_name];
+					const ArrayMesh::PrimitiveType existing_prim_type = (ArrayMesh::PrimitiveType)(uint64_t)existing_surface[0];
+					const BitField<Mesh::ArrayFormat> existing_format = (BitField<Mesh::ArrayFormat>)(uint64_t)existing_surface[2];
+					if (existing_prim_type == mesh_prim_type && existing_format == mesh_format) {
+						// Duplicate surface found, insert the data into the existing surface.
+						Array merged_surface_arrays = existing_surface[1];
+						PackedVector3Array merged_vertices = merged_surface_arrays[Mesh::ARRAY_VERTEX];
+						const int32_t existing_vertex_count = merged_vertices.size();
+						if (mesh_format.has_flag(Mesh::ARRAY_FORMAT_VERTEX)) {
+							merged_vertices.append_array(this_surface_arrays[Mesh::ARRAY_VERTEX]);
+							merged_surface_arrays[Mesh::ARRAY_VERTEX] = merged_vertices;
+						}
+						if (mesh_format.has_flag(Mesh::ARRAY_FORMAT_NORMAL)) {
+							PackedVector3Array normals = merged_surface_arrays[Mesh::ARRAY_NORMAL];
+							normals.append_array(this_surface_arrays[Mesh::ARRAY_NORMAL]);
+							merged_surface_arrays[Mesh::ARRAY_NORMAL] = normals;
+						}
+						if (mesh_format.has_flag(Mesh::ARRAY_FORMAT_TANGENT)) {
+							PackedFloat32Array tangents = merged_surface_arrays[Mesh::ARRAY_TANGENT];
+							tangents.append_array(this_surface_arrays[Mesh::ARRAY_TANGENT]);
+							merged_surface_arrays[Mesh::ARRAY_TANGENT] = tangents;
+						}
+						if (mesh_format.has_flag(Mesh::ARRAY_FORMAT_COLOR)) {
+							PackedColorArray colors = merged_surface_arrays[Mesh::ARRAY_COLOR];
+							colors.append_array(this_surface_arrays[Mesh::ARRAY_COLOR]);
+							merged_surface_arrays[Mesh::ARRAY_COLOR] = colors;
+						}
+						if (mesh_format.has_flag(Mesh::ARRAY_FORMAT_TEX_UV)) {
+							PackedVector2Array tex_uv = merged_surface_arrays[Mesh::ARRAY_TEX_UV];
+							tex_uv.append_array(this_surface_arrays[Mesh::ARRAY_TEX_UV]);
+							merged_surface_arrays[Mesh::ARRAY_TEX_UV] = tex_uv;
+						}
+						if (mesh_format.has_flag(Mesh::ARRAY_FORMAT_TEX_UV2)) {
+							PackedVector2Array tex_uv2 = merged_surface_arrays[Mesh::ARRAY_TEX_UV2];
+							tex_uv2.append_array(this_surface_arrays[Mesh::ARRAY_TEX_UV2]);
+							merged_surface_arrays[Mesh::ARRAY_TEX_UV2] = tex_uv2;
+						}
+						if (mesh_format.has_flag(Mesh::ARRAY_FORMAT_INDEX)) {
+							PackedInt32Array existing_indices = merged_surface_arrays[Mesh::ARRAY_INDEX];
+							PackedInt32Array this_indices = this_surface_arrays[Mesh::ARRAY_INDEX];
+							// The indices need to be remapped to the new vertex count.
+							for (int i = 0; i < this_indices.size(); i++) {
+								this_indices.set(i, this_indices[i] + existing_vertex_count);
+							}
+							existing_indices.append_array(this_indices);
+							merged_surface_arrays[Mesh::ARRAY_INDEX] = existing_indices;
+						}
+						existing_surface.set(1, merged_surface_arrays);
+						continue; // Next surface.
+					}
+				}
+				// If the name already exists but isn't a duplicate, we need a new name for the surface.
+				int64_t discriminator = 2;
+				do {
+					surface_name = String(surface_name) + "_" + itos(discriminator);
+					discriminator++;
+				} while (names_to_surfaces.has(surface_name));
+			}
+			// Add a new entry to the temporary HashMap. The indices are based on the arguments to add_surface_from_arrays.
+			Array new_surface;
+			new_surface.resize(4);
+			new_surface[0] = mesh_prim_type;
+			new_surface[1] = this_surface_arrays;
+			new_surface[2] = mesh_format;
+			new_surface[3] = array_mesh->surface_get_material(surface_index);
+			names_to_surfaces[surface_name] = new_surface;
+		}
+	}
+	// Actually put the merged surfaces into the merged ArrayMesh.
+	int merged_surface_count = 0;
+	for (const KeyValue<String, Array> &surface_name_kvp : names_to_surfaces) {
+		Array surface = surface_name_kvp.value;
+		ArrayMesh::PrimitiveType mesh_prim_type = (ArrayMesh::PrimitiveType)(uint64_t)surface[0];
+		BitField<Mesh::ArrayFormat> mesh_format = (BitField<Mesh::ArrayFormat>)(uint64_t)surface[2];
+		merged_mesh->add_surface_from_arrays(mesh_prim_type, surface[1], TypedArray<Array>(), Dictionary(), mesh_format);
+		merged_mesh->surface_set_name(merged_surface_count, surface_name_kvp.key);
+		merged_mesh->surface_set_material(merged_surface_count, Ref<Material>(surface[3]));
+		merged_surface_count++;
+	}
+	return merged_mesh;
+}
+
 // TODO: Need to add binding to add_surface using future MeshSurfaceData object.
 void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods, const Vector4 p_uv_scale) {
 	ERR_FAIL_COND(surfaces.size() == RS::MAX_MESH_SURFACES);
@@ -2299,6 +2496,7 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &ArrayMesh::set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &ArrayMesh::get_blend_shape_mode);
 
+	ClassDB::bind_static_method("ArrayMesh", D_METHOD("merge_array_meshes", "array_meshes", "relative_transforms", "deduplicate_surfaces"), &ArrayMesh::merge_array_meshes, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "lods", "flags"), &ArrayMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("clear_surfaces"), &ArrayMesh::clear_surfaces);
 	ClassDB::bind_method(D_METHOD("surface_remove", "surf_idx"), &ArrayMesh::surface_remove);
