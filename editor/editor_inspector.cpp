@@ -4210,6 +4210,8 @@ void EditorInspector::update_tree() {
 						last_created_section->set_checkable(p.name, p.hint_string == "feature");
 						last_created_section->set_checked(value_checked.operator bool());
 
+						_toggle_sections[p.name] = last_created_section;
+
 						if (p.name.begins_with(group_base)) {
 							group_togglable_property = last_created_section;
 						} else {
@@ -4580,6 +4582,7 @@ void EditorInspector::_clear(bool p_hide_plugins) {
 	sections.clear();
 	pending.clear();
 	restart_request_props.clear();
+	_toggle_sections.clear();
 
 	if (p_hide_plugins && is_main_editor_inspector()) {
 		EditorNode::get_singleton()->hide_unused_editors(this);
@@ -5381,6 +5384,17 @@ void EditorInspector::_notification(int p_what) {
 							}
 						}
 					}
+
+					// Auto-refresh for toggleable sections.
+					for (const KeyValue<StringName, EditorInspectorSection *> &E : _toggle_sections) {
+						EditorInspectorSection *section = E.value;
+						StringName prop_name = E.key;
+						bool valid = false;
+						Variant current_value = object->get(prop_name, &valid);
+						if (valid && section->is_checked() != current_value.operator bool()) {
+							section->set_checked(current_value.operator bool());
+						}
+					}
 					refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
 				}
 			}
@@ -5395,6 +5409,17 @@ void EditorInspector::_notification(int p_what) {
 			} else {
 				while (pending.size()) {
 					StringName prop = *pending.begin();
+
+					// Update visual state for toggleable sections.
+					if (_toggle_sections.has(prop)) {
+						EditorInspectorSection *section = _toggle_sections[prop];
+						bool valid = false;
+						Variant value_checked = object->get(prop, &valid);
+						if (valid) {
+							section->set_checked(value_checked.operator bool());
+						}
+					}
+
 					if (editor_property_map.has(prop)) {
 						for (EditorProperty *E : editor_property_map[prop]) {
 							E->update_property();

@@ -448,6 +448,7 @@ public:
 	void reset_timer();
 	void set_checkable(const String &p_related_check_property, bool p_hide_feature);
 	void set_checked(bool p_checked);
+	bool is_checked() const { return checked; }
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
@@ -646,6 +647,8 @@ class EditorInspector : public ScrollContainer {
 	HashMap<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
 	HashSet<StringName> pending;
+
+	HashMap<StringName, EditorInspectorSection *> _toggle_sections;
 
 	void _clear(bool p_hide_plugins = true);
 	Object *object = nullptr;
