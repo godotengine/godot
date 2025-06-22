@@ -1429,6 +1429,12 @@ private:
 	};
 	static ParseRule *get_rule(GDScriptTokenizer::Token::Type p_token_type);
 
+	enum MemberFlag {
+		FLAG_NONE = 0,
+		FLAG_ABSTRACT = 1,
+		FLAG_STATIC = 2,
+	};
+
 	List<Node *> nodes_in_progress;
 	void complete_extents(Node *p_node);
 	void update_extents(Node *p_node);
@@ -1503,16 +1509,16 @@ private:
 
 	// Main blocks.
 	void parse_program();
-	ClassNode *parse_class(bool p_is_abstract, bool p_is_static);
+	ClassNode *parse_class(int p_flags);
 	void parse_class_name();
 	void parse_extends();
 	void parse_class_body(bool p_first_is_abstract, bool p_is_multiline);
 	template <typename T>
-	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool, bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_abstract = false, bool p_is_static = false);
-	SignalNode *parse_signal(bool p_is_abstract, bool p_is_static);
-	EnumNode *parse_enum(bool p_is_abstract, bool p_is_static);
+	void parse_class_member(T *(GDScriptParser::*p_parse_function)(int), AnnotationInfo::TargetKind p_target, const String &p_member_kind, int p_flags = GDScriptParser::MemberFlag::FLAG_NONE);
+	SignalNode *parse_signal(int p_flags);
+	EnumNode *parse_enum(int p_flags);
 	ParameterNode *parse_parameter();
-	FunctionNode *parse_function(bool p_is_abstract, bool p_is_static);
+	FunctionNode *parse_function(int p_flags);
 	void parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type, int p_signature_start);
 	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
@@ -1536,12 +1542,12 @@ private:
 	bool rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	// Statements.
 	Node *parse_statement();
-	VariableNode *parse_variable(bool p_is_abstract, bool p_is_static);
-	VariableNode *parse_variable(bool p_is_abstract, bool p_is_static, bool p_allow_property);
+	VariableNode *parse_variable(int p_flags);
+	VariableNode *parse_variable(int p_flags, bool p_allow_property);
 	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
 	void parse_property_getter(VariableNode *p_variable);
 	void parse_property_setter(VariableNode *p_variable);
-	ConstantNode *parse_constant(bool p_is_abstract, bool p_is_static);
+	ConstantNode *parse_constant(int p_flags);
 	AssertNode *parse_assert();
 	BreakNode *parse_break();
 	ContinueNode *parse_continue();
