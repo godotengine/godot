@@ -672,7 +672,7 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const LSP::Position &p_c
 			String last_part = line.substr(p_cursor.character, lines[i].length());
 			if (!p_symbol.is_empty()) {
 				String left_cursor_text;
-				for (int c = p_cursor.character - 1; c >= 0; c--) {
+				for (int c = MIN(p_cursor.character, line.length() - 1); c >= 0; c--) {
 					left_cursor_text = line.substr(c, p_cursor.character - c);
 					if (p_symbol.begins_with(left_cursor_text)) {
 						first_part = line.substr(0, c);
