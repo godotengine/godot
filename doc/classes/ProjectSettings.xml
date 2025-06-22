@@ -2314,6 +2314,9 @@
 		<member name="navigation/2d/default_link_connection_radius" type="float" setter="" getter="" default="4.0">
 			Default link connection radius for 2D navigation maps. See [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
+		<member name="navigation/2d/merge_rasterizer_cell_scale" type="float" setter="" getter="" default="1.0">
+			Default merge rasterizer cell scale for 2D navigation maps. See [method NavigationServer2D.map_set_merge_rasterizer_cell_scale].
+		</member>
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
 		</member>
