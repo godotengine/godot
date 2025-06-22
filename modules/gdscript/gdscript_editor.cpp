@@ -3567,7 +3567,11 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 								continue;
 							}
 
-							if (options.has(member.function->identifier->name) || completion_context.current_class->has_function(member.function->identifier->name)) {
+							if (options.has(member.function->identifier->name)) {
+								continue;
+							}
+
+							if (completion_context.current_class->has_function(member.get_name()) && completion_context.current_class->get_member(member.get_name()).function != function_node) {
 								continue;
 							}
 
@@ -3611,7 +3615,10 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 
 			for (const MethodInfo &mi : virtual_methods) {
-				if (options.has(mi.name) || completion_context.current_class->has_function(mi.name)) {
+				if (options.has(mi.name)) {
+					continue;
+				}
+				if (completion_context.current_class->has_function(mi.name) && completion_context.current_class->get_member(mi.name).function != function_node) {
 					continue;
 				}
 				String method_hint = mi.name;
