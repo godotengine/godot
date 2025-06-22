@@ -2085,10 +2085,15 @@ Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion, bo
 }
 
 Vector<String> FileSystemDock::_file_list_get_selected() const {
+	Vector<int> selected_ids = files->get_selected_items();
 	Vector<String> selected;
+	selected.resize(selected_ids.size());
 
-	for (int idx : files->get_selected_items()) {
-		selected.push_back(files->get_item_metadata(idx));
+	String *selected_write = selected.ptrw();
+	int i = 0;
+	for (const int id : selected_ids) {
+		selected_write[i] = files->get_item_metadata(id);
+		i++;
 	}
 	return selected;
 }
@@ -2140,18 +2145,12 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 }
 
 void FileSystemDock::_file_list_rmb_option(int p_option) {
-	Vector<String> selected;
-	if (p_option > FILE_MENU_MAX) {
+	if (p_option > FILE_MENU_MAX && p_option < CONVERT_BASE_ID) {
 		// Extra options don't need paths.
-		_file_option(p_option, selected);
+		_file_option(p_option, {});
 		return;
 	}
-
-	Vector<int> selected_id = files->get_selected_items();
-	for (int i = 0; i < selected_id.size(); i++) {
-		selected.push_back(files->get_item_metadata(selected_id[i]));
-	}
-	_file_option(p_option, selected);
+	_file_option(p_option, _file_list_get_selected());
 }
 
 void FileSystemDock::_generic_rmb_option_selected(int p_option) {
@@ -3826,7 +3825,7 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			}
 
 			if (custom_callback.is_valid()) {
-				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, files->get_selected_items());
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _file_list_get_selected());
 			} else {
 				return;
 			}
