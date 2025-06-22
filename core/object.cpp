@@ -743,7 +743,7 @@ static void _test_call_error(const StringName &p_func, const Variant::CallError 
 void Object::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
 	if (p_method == CoreStringNames::get_singleton()->_free) {
 #ifdef DEBUG_ENABLED
-		ERR_FAIL_COND_MSG(Object::cast_to<Reference>(this), "Can't 'free' a reference.");
+		ERR_FAIL_COND_MSG(this->is_reference(), "Can't 'free' a reference.");
 
 		ERR_FAIL_COND_MSG(_lock_index.get() > 1, "Object is locked and can't be freed.");
 #endif
@@ -877,7 +877,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 			r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			return Variant();
 		}
-		if (Object::cast_to<Reference>(this)) {
+		if (this->is_reference()) {
 			r_error.argument = 0;
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");

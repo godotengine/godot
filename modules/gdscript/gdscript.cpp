@@ -65,9 +65,8 @@ Variant GDScriptNativeClass::_new() {
 	Object *o = instance();
 	ERR_FAIL_COND_V_MSG(!o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
 
-	Reference *ref = Object::cast_to<Reference>(o);
-	if (ref) {
-		return REF(ref);
+	if (o->is_reference()) {
+		return REF((Reference *)o);
 	} else {
 		return o;
 	}

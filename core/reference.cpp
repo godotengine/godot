@@ -114,9 +114,8 @@ Variant WeakRef::get_ref() const {
 	if (!obj) {
 		return Variant();
 	}
-	Reference *r = cast_to<Reference>(obj);
-	if (r) {
-		return REF(r);
+	if (obj->is_reference()) {
+		return REF((Reference *)obj);
 	}
 
 	return obj;
