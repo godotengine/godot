@@ -134,9 +134,6 @@ private:
 		bool notify_local_transform : 1;
 		bool notify_transform : 1;
 
-		bool notify_transform_requested : 1;
-		bool notify_transform_when_fti_off : 1;
-
 		bool visible : 1;
 		bool disable_scale : 1;
 
@@ -201,9 +198,6 @@ protected:
 	// or requires an update in terms of interpolation
 	// (e.g. changing Camera zoom even if position hasn't changed).
 	void fti_notify_node_changed(bool p_transform_changed = true);
-
-	void _set_notify_transform_when_fti_off(bool p_enable);
-	virtual void _physics_interpolated_changed() override;
 
 	// Opportunity after FTI to update the servers
 	// with global_transform_interpolated,
