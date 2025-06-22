@@ -81,7 +81,7 @@ public:
 		return get_depth() <= MAX_NESTING_DEPTH;
 	}
 
-	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
+	bool can_reference(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
 			return false;
 		} else if (type != Variant::OBJECT) {
