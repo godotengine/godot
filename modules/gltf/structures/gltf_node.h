@@ -49,9 +49,9 @@ private:
 	GLTFCameraIndex camera = -1;
 	GLTFSkinIndex skin = -1;
 	GLTFSkeletonIndex skeleton = -1;
-    int multimesh_translation = -1;
-    int multimesh_rotation= -1;
-    int multimesh_scale = -1;
+	int multimesh_translation = -1;
+	int multimesh_rotation= -1;
+	int multimesh_scale = -1;
 	bool joint = false;
 	bool visible = true;
 	Vector<int> children;

@@ -46,11 +46,11 @@ Ref<Skin> ImporterMeshInstance3D::get_skin() const {
 	return skin;
 }
 
-void ImporterMeshInstance3D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
-    multimesh = p_multimesh;
-}
 Ref<MultiMesh> ImporterMeshInstance3D::get_multimesh() const {
-    return multimesh;
+	return multimesh;
+}
+void ImporterMeshInstance3D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
+	multimesh = p_multimesh;
 }
 
 void ImporterMeshInstance3D::set_surface_material(int p_idx, const Ref<Material> &p_material) {
@@ -144,8 +144,8 @@ void ImporterMeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &ImporterMeshInstance3D::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skin"), &ImporterMeshInstance3D::get_skin);
 
-    ClassDB::bind_method(D_METHOD("set_multimesh", "multimesh"), &ImporterMeshInstance3D::set_multimesh);
-    ClassDB::bind_method(D_METHOD("get_multimesh"), &ImporterMeshInstance3D::get_multimesh);
+	ClassDB::bind_method(D_METHOD("set_multimesh", "multimesh"), &ImporterMeshInstance3D::set_multimesh);
+	ClassDB::bind_method(D_METHOD("get_multimesh"), &ImporterMeshInstance3D::get_multimesh);
 
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &ImporterMeshInstance3D::set_skeleton_path);
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &ImporterMeshInstance3D::get_skeleton_path);
@@ -173,7 +173,7 @@ void ImporterMeshInstance3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "ImporterMesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton"), "set_skeleton_path", "get_skeleton_path");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 

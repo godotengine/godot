@@ -42,7 +42,7 @@ class ImporterMeshInstance3D : public Node3D {
 
 	Ref<ImporterMesh> mesh;
 	Ref<Skin> skin;
-    Ref<MultiMesh> multimesh;
+	Ref<MultiMesh> multimesh;
 	NodePath skeleton_path;
 	Vector<Ref<Material>> surface_materials;
 	uint32_t layer_mask = 1;
