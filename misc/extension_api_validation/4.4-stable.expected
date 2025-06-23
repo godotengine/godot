@@ -321,3 +321,11 @@ Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/a
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments': size changed value in new API, from 11 to 12.
 
 Optional argument added. Compatibility methods registered.
+
+
+GH-107952
+--------
+Validate extension JSON: API was removed: classes/ArrayMesh/methods/surface_get_format
+Validate extension JSON: API was removed: classes/ArrayMesh/methods/surface_get_primitive_type
+
+Moved methods from ArrayMesh to its parent Mesh class.  No adjustments should be necessary.
