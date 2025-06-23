@@ -737,7 +737,7 @@
 			<description>
 				Opens one or more files/directories with the specified application. The [param program_path] specifies the path to the application to use for opening the files, and [param paths] contains an array of file/directory paths to open.
 				[b]Note:[/b] This method is mostly only relevant for macOS, where opening files using [method create_process] might fail. On other platforms, this falls back to using [method create_process].
-				[b]Note:[/b] On macOS, [param program_path] should ideally be the path to an [code].app[/code] bundle.
+				[b]Note:[/b] On macOS, [param program_path] should ideally be the path to a [code].app[/code] bundle.
 			</description>
 		</method>
 		<method name="read_buffer_from_stdin">
