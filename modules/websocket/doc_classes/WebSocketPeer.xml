@@ -40,8 +40,10 @@
 		<method name="accept_stream">
 			<return type="int" enum="Error" />
 			<param index="0" name="stream" type="StreamPeer" />
+			<param index="1" name="received_headers" type="String" default="&quot;&quot;" />
 			<description>
 				Accepts a peer connection performing the HTTP handshake as a WebSocket server. The [param stream] must be a valid TCP stream retrieved via [method TCPServer.take_connection], or a TLS stream accepted via [method StreamPeerTLS.accept_stream].
+				If the WebSocket headers have already been read from the stream, they can be supplied in [param received_headers] to complete the connection.
 				[b]Note:[/b] Not supported in Web exports due to browsers' restrictions.
 			</description>
 		</method>
