@@ -611,6 +611,9 @@ protected:
 	void _disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, bool p_force = false);
 	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
 
+	// Internally used, exposed via `Object::cast_to` and `Object::derives_from`.
+	bool _has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
+
 public: //should be protected, but bug in clang++
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb(){};
@@ -643,12 +646,12 @@ public:
 
 	template <class T>
 	static T *cast_to(Object *p_object) {
-		return p_object && p_object->_is_class<T>() ? static_cast<T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from<T>() ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <class T>
 	static const T *cast_to(const Object *p_object) {
-		return p_object && p_object->_is_class<T>() ? static_cast<const T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from<T>() ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
@@ -670,10 +673,8 @@ public:
 	virtual bool is_class(const String &p_class) const { return (p_class == "Object"); }
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
-	bool has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
-
 	template <typename T>
-	bool _is_class() const;
+	bool derives_from() const;
 
 	_FORCE_INLINE_ const StringName &get_class_name() const {
 		if (!_class_ptr) {
@@ -788,20 +789,20 @@ public:
 };
 
 template <typename T>
-bool Object::_is_class() const {
+bool Object::derives_from() const {
 	static_assert(std::is_base_of<Object, T>::value, "T must be derived from Object");
 	static_assert(std::is_same<std::decay_t<T>, typename T::self_type>::value, "T must use GDCLASS or GDSOFTCLASS");
 
 	// If there is an explicitly set ancestral class on the type, we can use that.
 	if (T::static_ancestral_class != T::super_type::static_ancestral_class) {
-		return has_ancestry(T::static_ancestral_class);
+		return _has_ancestry(T::static_ancestral_class);
 	} else {
 		return is_class_ptr(T::get_class_ptr_static());
 	}
 }
 
 template <>
-inline bool Object::_is_class<Object>() const { return true; }
+inline bool Object::derives_from<Object>() const { return true; }
 
 bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);

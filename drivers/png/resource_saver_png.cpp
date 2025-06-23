@@ -77,7 +77,7 @@ PoolVector<uint8_t> ResourceSaverPNG::save_image_to_buffer(const Ref<Image> &p_i
 }
 
 bool ResourceSaverPNG::recognize(const RES &p_resource) const {
-	return (p_resource.is_valid() && p_resource->is_class("ImageTexture"));
+	return (p_resource.is_valid() && p_resource->derives_from<ImageTexture>());
 }
 
 void ResourceSaverPNG::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {

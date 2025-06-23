@@ -1330,13 +1330,13 @@ void EditorNode::_save_edited_subresources(Node *scene, Map<RES, bool> &processe
 }
 
 void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
-	if (p_node->is_class("Viewport") || (p_node != editor_data.get_edited_scene_root() && p_node->get_owner() != editor_data.get_edited_scene_root())) {
+	if (p_node->derives_from<Viewport>() || (p_node != editor_data.get_edited_scene_root() && p_node->get_owner() != editor_data.get_edited_scene_root())) {
 		return;
 	}
 
-	if (p_node->is_class("CanvasItem")) {
+	if (p_node->derives_from<CanvasItem>()) {
 		count_2d++;
-	} else if (p_node->is_class("Spatial")) {
+	} else if (p_node->derives_from<Spatial>()) {
 		count_3d++;
 	}
 
@@ -2051,8 +2051,8 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	Object *prev_inspected_object = get_inspector()->get_edited_object();
 
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
-	bool is_resource = current_obj->is_class("Resource");
-	bool is_node = current_obj->is_class("Node");
+	bool is_resource = current_obj->derives_from<Resource>();
+	bool is_node = current_obj->derives_from<Node>();
 	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/navigation/stay_in_script_editor_on_node_selected"));
 	bool skip_main_plugin = false;
 
@@ -2113,7 +2113,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		if (current_obj->is_class("ScriptEditorDebuggerInspectedObject")) {
 			editable_warning = TTR("This is a remote object, so changes to it won't be kept.\nPlease read the documentation relevant to debugging to better understand this workflow.");
 			disable_folding = true;
-		} else if (current_obj->is_class("MultiNodeEdit")) {
+		} else if (current_obj->derives_from<MultiNodeEdit>()) {
 			Node *scene = get_edited_scene();
 			if (scene) {
 				MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(current_obj);
@@ -4037,7 +4037,7 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	ERR_FAIL_COND_V(!p_object, StringName());
 
 	Ref<Script> script = p_object->get_script();
-	if (script.is_null() && p_object->is_class("Script")) {
+	if (script.is_null() && p_object->derives_from<Script>()) {
 		script = p_object;
 	}
 
@@ -4103,7 +4103,7 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 	ERR_FAIL_COND_V(!p_object || !gui_base, nullptr);
 
 	Ref<Script> script = p_object->get_script();
-	if (script.is_null() && p_object->is_class("Script")) {
+	if (script.is_null() && p_object->derives_from<Script>()) {
 		script = p_object;
 	}
 

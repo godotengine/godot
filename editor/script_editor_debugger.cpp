@@ -656,7 +656,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 						}
 					}
 				} else if (var.get_type() == Variant::OBJECT) {
-					if (((Object *)var)->is_class("EncodedObjectAsID")) {
+					if (((Object *)var)->derives_from<EncodedObjectAsID>()) {
 						var = Object::cast_to<EncodedObjectAsID>(var)->get_object_id();
 						pinfo.type = var.get_type();
 						pinfo.hint = PROPERTY_HINT_OBJECT_ID;

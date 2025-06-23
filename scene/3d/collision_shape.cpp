@@ -121,7 +121,7 @@ String CollisionShape::get_configuration_warning() const {
 		}
 		warning += TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
 	} else {
-		if (shape->is_class("PlaneShape")) {
+		if (shape->derives_from<PlaneShape>()) {
 			if (warning != String()) {
 				warning += "\n\n";
 			}
