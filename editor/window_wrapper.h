@@ -56,7 +56,6 @@ class WindowWrapper : public MarginContainer {
 
 	void _set_window_enabled_with_rect(bool p_visible, const Rect2 p_rect);
 	void _set_window_rect(const Rect2 p_rect);
-	void _window_size_changed();
 	void _window_close_request();
 
 protected:

@@ -104,10 +104,6 @@ AudioStreamPreview::AudioStreamPreview() {
 
 ////
 
-void AudioStreamPreviewGenerator::_update_emit(ObjectID p_id) {
-	emit_signal(SNAME("preview_updated"), p_id);
-}
-
 void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 	Thread::set_name("AudioStreamPreviewGenerator");
 
@@ -160,7 +156,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 		}
 
 		frames_todo -= to_read;
-		callable_mp(singleton, &AudioStreamPreviewGenerator::_update_emit).call_deferred(preview->id);
+		callable_sp(singleton, SNAME("preview_updated")).call_deferred(preview->id);
 	}
 
 	preview->preview->version++;

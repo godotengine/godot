@@ -121,10 +121,6 @@ void OpenXRActionEditor::_do_set_action_type(OpenXRAction::ActionType p_action_t
 	action_type_button->select(int(action->get_action_type()));
 }
 
-void OpenXRActionEditor::_on_remove_action() {
-	emit_signal("remove", this);
-}
-
 OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 	undo_redo = EditorUndoRedoManager::get_singleton();
 	action = p_action;
@@ -166,7 +162,7 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 	rem_action = memnew(Button);
 	rem_action->set_tooltip_text(TTR("Remove action"));
 	rem_action->set_accessibility_name(TTRC("Remove action"));
-	rem_action->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionEditor::_on_remove_action));
+	rem_action->connect(SceneStringName(pressed), callable_sp(this, SNAME("remove")).bind(this));
 	rem_action->set_flat(true);
 	add_child(rem_action);
 }

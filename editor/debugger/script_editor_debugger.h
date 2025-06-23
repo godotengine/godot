@@ -235,7 +235,6 @@ private:
 	void _update_buttons_state();
 	void _remote_object_selected(ObjectID p_object);
 	void _remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field);
-	void _remote_object_property_updated(ObjectID p_id, const String &p_property);
 
 	void _video_mem_request();
 	void _video_mem_export();

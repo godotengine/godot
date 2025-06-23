@@ -130,10 +130,6 @@ Dictionary EditorHelpSearch::_native_search_cb(const String &p_search_string, in
 	return ret;
 }
 
-void EditorHelpSearch::_native_action_cb(const String &p_item_string) {
-	emit_signal(SNAME("go_to_help"), p_item_string);
-}
-
 void EditorHelpSearch::_update_results() {
 	const String term = search_box->get_text().strip_edges();
 
@@ -206,7 +202,7 @@ void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
-				DisplayServer::get_singleton()->help_set_search_callbacks(callable_mp(this, &EditorHelpSearch::_native_search_cb), callable_mp(this, &EditorHelpSearch::_native_action_cb));
+				DisplayServer::get_singleton()->help_set_search_callbacks(callable_mp(this, &EditorHelpSearch::_native_search_cb), callable_sp(this, SNAME("go_to_help")));
 			}
 		} break;
 

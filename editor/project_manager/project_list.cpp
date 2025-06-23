@@ -188,14 +188,6 @@ void ProjectListItemControl::_accessibility_action_blur(const Variant &p_data) {
 	}
 }
 
-void ProjectListItemControl::_favorite_button_pressed() {
-	emit_signal(SNAME("favorite_pressed"));
-}
-
-void ProjectListItemControl::_explore_button_pressed() {
-	emit_signal(SNAME("explore_pressed"));
-}
-
 void ProjectListItemControl::set_project_title(const String &p_title) {
 	project_title->set_text(p_title);
 	project_title->set_accessibility_name(TTRC("Project Name"));
@@ -337,7 +329,7 @@ ProjectListItemControl::ProjectListItemControl() {
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite_box->add_child(favorite_button);
-	favorite_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
+	favorite_button->connect(SceneStringName(pressed), callable_sp(this, SNAME("favorite_pressed")));
 
 	project_icon = memnew(TextureRect);
 	project_icon->set_name("ProjectIcon");
@@ -386,7 +378,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button->set_accessibility_name(TTRC("Open in file manager"));
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
-		explore_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
+		explore_button->connect(SceneStringName(pressed), callable_sp(this, SNAME("explore_pressed")));
 
 		project_path = memnew(Label);
 		project_path->set_name("ProjectPath");

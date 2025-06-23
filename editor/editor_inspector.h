@@ -536,7 +536,6 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	int _get_array_count();
 	void _add_button_pressed();
-	void _paginator_page_changed(int p_page);
 
 	void _rmb_popup_id_pressed(int p_id);
 
@@ -593,7 +592,6 @@ class EditorPaginator : public HBoxContainer {
 	Button *next_page_button = nullptr;
 	Button *last_page_button = nullptr;
 
-	void _first_page_button_pressed();
 	void _prev_page_button_pressed();
 	void _page_line_edit_text_submitted(const String &p_text);
 	void _next_page_button_pressed();

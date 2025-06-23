@@ -731,7 +731,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_close_button = memnew(Button);
 		_close_button->set_text(TTR("Close"));
-		_close_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_close_button_clicked));
+		_close_button->connect(SceneStringName(pressed), callable_sp(this, SNAME(SIGNAL_CLOSE_BUTTON_CLICKED)));
 		hbc->add_child(_close_button);
 
 		vbc->add_child(hbc);
@@ -960,10 +960,6 @@ void FindInFilesPanel::_on_refresh_button_clicked() {
 
 void FindInFilesPanel::_on_cancel_button_clicked() {
 	stop_search();
-}
-
-void FindInFilesPanel::_on_close_button_clicked() {
-	emit_signal(SNAME(SIGNAL_CLOSE_BUTTON_CLICKED));
 }
 
 void FindInFilesPanel::_on_result_selected() {

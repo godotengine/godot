@@ -1925,10 +1925,6 @@ void TileMapLayer::_tile_set_changed() {
 	emit_signal(CoreStringName(changed));
 }
 
-void TileMapLayer::_renamed() {
-	emit_signal(CoreStringName(changed));
-}
-
 void TileMapLayer::_update_notify_local_transform() {
 	bool notify = is_using_kinematic_bodies() || is_y_sort_enabled();
 	if (!notify) {
@@ -2044,7 +2040,7 @@ void TileMapLayer::_physics_interpolated_changed() {
 void TileMapLayer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
-			connect(SNAME("renamed"), callable_mp(this, &TileMapLayer::_renamed));
+			connect(SNAME("renamed"), callable_sp(this, CoreStringName(changed)));
 			break;
 		}
 		case NOTIFICATION_ENTER_TREE: {

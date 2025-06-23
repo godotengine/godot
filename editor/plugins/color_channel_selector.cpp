@@ -134,13 +134,9 @@ void ColorChannelSelector::create_button(unsigned int p_channel_index, const Str
 	// Make it look similar to toolbar buttons.
 	button->set_theme_type_variation(SceneStringName(FlatButton));
 
-	button->connect(SceneStringName(toggled), callable_mp(this, &ColorChannelSelector::on_channel_button_toggled));
+	button->connect(SceneStringName(toggled), callable_sp(this, SNAME("selected_channels_changed")).unbind(1));
 	p_parent->add_child(button);
 	channel_buttons[p_channel_index] = button;
-}
-
-void ColorChannelSelector::on_toggled(bool p_pressed) {
-	panel->set_visible(p_pressed);
 }
 
 void ColorChannelSelector::_bind_methods() {

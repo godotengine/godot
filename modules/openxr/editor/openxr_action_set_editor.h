@@ -71,7 +71,6 @@ private:
 	void _on_action_set_localized_name_changed(const String p_new_text);
 	void _on_action_set_priority_changed(const double p_new_value);
 	void _on_add_action();
-	void _on_remove_action_set();
 
 	void _on_remove_action(Object *p_action_editor);
 

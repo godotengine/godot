@@ -757,7 +757,7 @@ void EditorAssetLibrary::_install_asset() {
 
 	if (templates_only) {
 		download->set_external_install(true);
-		download->connect("install_asset", callable_mp(this, &EditorAssetLibrary::_install_external_asset));
+		download->connect("install_asset", callable_sp(this, SNAME("install_asset")));
 	}
 }
 
@@ -1521,10 +1521,6 @@ EditorAssetLibraryItemDownload *EditorAssetLibrary::_get_asset_in_progress(int p
 	}
 
 	return nullptr;
-}
-
-void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_title) {
-	emit_signal(SNAME("install_asset"), p_zip_path, p_title);
 }
 
 void EditorAssetLibrary::_update_asset_items_columns() {

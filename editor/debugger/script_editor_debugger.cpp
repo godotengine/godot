@@ -297,10 +297,6 @@ void ScriptEditorDebugger::_remote_objects_edited(const String &p_prop, const Ty
 	request_remote_objects(p_values.keys(), false);
 }
 
-void ScriptEditorDebugger::_remote_object_property_updated(ObjectID p_id, const String &p_property) {
-	emit_signal(SNAME("remote_object_property_updated"), p_id, p_property);
-}
-
 void ScriptEditorDebugger::_video_mem_request() {
 	_put_msg("servers:memory", Array());
 }
@@ -2119,7 +2115,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		inspector->set_read_only(true);
 		inspector->connect("object_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 		inspector->connect("objects_edited", callable_mp(this, &ScriptEditorDebugger::_remote_objects_edited));
-		inspector->connect("object_property_updated", callable_mp(this, &ScriptEditorDebugger::_remote_object_property_updated));
+		inspector->connect("object_property_updated", callable_sp(this, SNAME("remote_object_property_updated")));
 		inspector->register_text_enter(search);
 		inspector->set_use_filter(true);
 		inspector_vbox->add_child(inspector);

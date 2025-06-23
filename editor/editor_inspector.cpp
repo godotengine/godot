@@ -2364,10 +2364,6 @@ void EditorInspectorArray::_add_button_pressed() {
 	_move_element(-1, -1);
 }
 
-void EditorInspectorArray::_paginator_page_changed(int p_page) {
-	emit_signal("page_change_request", p_page);
-}
-
 void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
 	switch (p_id) {
 		case OPTION_MOVE_UP:
@@ -2956,7 +2952,7 @@ void EditorInspectorArray::_setup() {
 	if (max_page > 0) {
 		EditorPaginator *paginator = memnew(EditorPaginator);
 		paginator->update(page, max_page);
-		paginator->connect("page_changed", callable_mp(this, &EditorInspectorArray::_paginator_page_changed));
+		paginator->connect("page_changed", callable_sp(this, SNAME("page_change_request")));
 		vbox->add_child(paginator);
 	}
 }
@@ -3203,10 +3199,6 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 
-void EditorPaginator::_first_page_button_pressed() {
-	emit_signal("page_changed", 0);
-}
-
 void EditorPaginator::_prev_page_button_pressed() {
 	emit_signal("page_changed", MAX(0, page - 1));
 }
@@ -3267,7 +3259,7 @@ EditorPaginator::EditorPaginator() {
 	first_page_button = memnew(Button);
 	first_page_button->set_accessibility_name(TTRC("First Page"));
 	first_page_button->set_flat(true);
-	first_page_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPaginator::_first_page_button_pressed));
+	first_page_button->connect(SceneStringName(pressed), callable_sp(this, SNAME("page_changed")).bind(0));
 	add_child(first_page_button);
 
 	prev_page_button = memnew(Button);

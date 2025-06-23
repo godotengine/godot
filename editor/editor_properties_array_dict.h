@@ -156,7 +156,6 @@ protected:
 	virtual void _change_type(Object *p_button, int p_slot_index);
 	virtual void _change_type_menu(int p_index);
 
-	virtual void _object_id_selected(const StringName &p_property, ObjectID p_id);
 	virtual void _remove_pressed(int p_index);
 
 	virtual void _button_draw();
@@ -247,7 +246,6 @@ class EditorPropertyDictionary : public EditorProperty {
 	void _change_type_menu(int p_index);
 
 	void _add_key_value();
-	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 	void _remove_pressed(int p_slot_index);
 
 	Variant::Type key_subtype;
@@ -293,7 +291,6 @@ class EditorPropertyLocalizableString : public EditorProperty {
 
 	void _add_locale_popup();
 	void _add_locale(const String &p_locale);
-	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 protected:
 	void _notification(int p_what);

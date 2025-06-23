@@ -37,6 +37,7 @@
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
 #include "core/object/callable_method_pointer.h"
+#include "core/object/callable_signal_pointer.h"
 #include "core/templates/hash_set.h"
 
 #include <type_traits>

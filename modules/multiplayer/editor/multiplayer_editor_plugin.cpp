@@ -47,10 +47,6 @@ bool MultiplayerEditorDebugger::has_capture(const String &p_capture) const {
 	return p_capture == "multiplayer";
 }
 
-void MultiplayerEditorDebugger::_open_request(const String &p_path) {
-	emit_signal("open_request", p_path);
-}
-
 bool MultiplayerEditorDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
 	ERR_FAIL_COND_V(!profilers.has(p_session), false);
 	EditorNetworkProfiler *profiler = profilers[p_session];
@@ -104,7 +100,7 @@ void MultiplayerEditorDebugger::setup_session(int p_session_id) {
 	ERR_FAIL_COND(session.is_null());
 	EditorNetworkProfiler *profiler = memnew(EditorNetworkProfiler);
 	profiler->connect("enable_profiling", callable_mp(this, &MultiplayerEditorDebugger::_profiler_activate).bind(p_session_id));
-	profiler->connect("open_request", callable_mp(this, &MultiplayerEditorDebugger::_open_request));
+	profiler->connect(SNAME("open_request"), callable_sp(this, SNAME("open_request")));
 	profiler->set_name(TTR("Network Profiler"));
 	session->connect("started", callable_mp(profiler, &EditorNetworkProfiler::started));
 	session->connect("stopped", callable_mp(profiler, &EditorNetworkProfiler::stopped));

@@ -90,8 +90,6 @@ class AudioStreamPreviewGenerator : public Node {
 
 	static void _preview_thread(void *p_preview);
 
-	void _update_emit(ObjectID p_id);
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
