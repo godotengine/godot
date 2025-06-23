@@ -380,10 +380,6 @@ void vertex_shader(in vec3 vertex,
 		model_normal_matrix = model_normal_matrix * mat3(matrix);
 	}
 
-#if defined(COLOR_USED)
-	color_interp = hvec4(color_highp);
-#endif
-
 #ifdef UV_USED
 	uv_interp = uv_attrib;
 #endif
@@ -444,6 +440,10 @@ void vertex_shader(in vec3 vertex,
 	{
 #CODE : VERTEX
 	}
+
+#if defined(COLOR_USED)
+	color_interp = hvec4(color_highp);
+#endif
 
 	half roughness = half(roughness_highp);
 
