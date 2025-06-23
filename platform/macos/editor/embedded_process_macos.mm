@@ -128,7 +128,7 @@ void EmbeddedProcessMacOS::request_close() {
 	if (current_process_id != 0 && is_embedding_completed()) {
 		script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_CLOSE_REQUEST });
 	}
-	embedding_state = EmbeddingState::CLOSED;
+	reset();
 }
 
 void EmbeddedProcessMacOS::display_state_changed() {
