@@ -392,11 +392,11 @@ public:
 		return ScriptNameCasing::SCRIPT_NAME_CASING_SNAKE_CASE;
 	}
 
-	GDVIRTUAL5RC_REQUIRED(Dictionary, _complete_code, const String &, const int32_t, const int32_t, const String &, Object *)
+	GDVIRTUAL3RC_REQUIRED(Dictionary, _complete_code, const String &, const String &, Object *)
 
-	virtual Error complete_code(const String &p_code, const int p_line, const int p_column, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
 		Dictionary ret;
-		GDVIRTUAL_CALL(_complete_code, p_code, p_line, p_column, p_path, p_owner, ret);
+		GDVIRTUAL_CALL(_complete_code, p_code, p_path, p_owner, ret);
 		if (!ret.has("result")) {
 			return ERR_UNAVAILABLE;
 		}

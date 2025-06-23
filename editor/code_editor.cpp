@@ -1032,7 +1032,7 @@ void CodeTextEditor::_complete_request() {
 	_code_complete_script(ctext, &entries);
 	bool forced = false;
 	if (code_complete_func) {
-		code_complete_func(code_complete_ud, ctext, text_editor->get_caret_line(), text_editor->get_caret_column(), &entries, forced);
+		code_complete_func(code_complete_ud, ctext, &entries, forced);
 	}
 
 	for (const ScriptLanguage::CodeCompletionOption &e : entries) {

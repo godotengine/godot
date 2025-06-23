@@ -743,7 +743,7 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<S
 		}
 
 		String code = parser->get_text_for_completion(p_params.position);
-		GDScriptLanguage::get_singleton()->complete_code(code, p_params.position.line, p_params.position.character, path, current, r_options, forced, call_hint);
+		GDScriptLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
 		if (owner_scene_node) {
 			memdelete(owner_scene_node);
 		}

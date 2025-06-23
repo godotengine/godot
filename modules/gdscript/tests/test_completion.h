@@ -116,19 +116,6 @@ static void test_directory(const String &p_dir) {
 
 			CHECK(location != -1);
 
-			int line = 0;
-			int column = 0;
-			for (int i = 0; i < code.size(); ++i) {
-				if (code.get(i) == '\n') {
-					column = 0;
-					line++;
-				} else if (i == location) {
-					break;
-				} else {
-					column++;
-				}
-			}
-
 			String res_path = ProjectSettings::get_singleton()->localize_path(path.path_join(next));
 
 			ConfigFile conf;
@@ -198,7 +185,7 @@ static void test_directory(const String &p_dir) {
 				owner->set_script(scr);
 			}
 
-			GDScriptLanguage::get_singleton()->complete_code(code, line, column, res_path, owner, &options, forced, call_hint);
+			GDScriptLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
 			ERR_PRINT_ON;
 
 			String contains_excluded;
