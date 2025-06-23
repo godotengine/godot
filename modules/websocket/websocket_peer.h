@@ -81,7 +81,7 @@ public:
 	}
 
 	virtual Error connect_to_url(const String &p_url, const Ref<TLSOptions> &p_options = Ref<TLSOptions>()) = 0;
-	virtual Error accept_stream(const Ref<StreamPeer> &p_stream) = 0;
+	virtual Error accept_stream(const Ref<StreamPeer> &p_stream, String received_headers = "") = 0;
 
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) = 0;
 	virtual void close(int p_code = 1000, const String &p_reason = "") = 0;
