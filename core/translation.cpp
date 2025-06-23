@@ -359,32 +359,46 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 }
 
 int TranslationServer::compare_locales(const String &p_locale_a, const String &p_locale_b) const {
+	if (p_locale_a == p_locale_b) {
+		// Exact match.
+		return 10;
+	}
+
+	const String cache_key = p_locale_a + "|" + p_locale_b;
+	const int *cached_result = locale_compare_cache.getptr(cache_key);
+	if (cached_result) {
+		return *cached_result;
+	}
+
 	String locale_a = standardize_locale(p_locale_a);
 	String locale_b = standardize_locale(p_locale_b);
 
 	if (locale_a == locale_b) {
 		// Exact match.
+		locale_compare_cache.set(cache_key, 10);
 		return 10;
 	}
 
 	Vector<String> locale_a_elements = locale_a.split("_");
 	Vector<String> locale_b_elements = locale_b.split("_");
-	if (locale_a_elements[0] == locale_b_elements[0]) {
-		// Matching language, both locales have extra parts.
-		// Return number of matching elements.
-		int matching_elements = 1;
-		for (int i = 1; i < locale_a_elements.size(); i++) {
-			for (int j = 1; j < locale_b_elements.size(); j++) {
-				if (locale_a_elements[i] == locale_b_elements[j]) {
-					matching_elements++;
-				}
-			}
-		}
-		return matching_elements;
-	} else {
+	if (locale_a_elements[0] != locale_b_elements[0]) {
 		// No match.
+		locale_compare_cache.set(cache_key, 0);
 		return 0;
 	}
+
+	// Matching language, both locales have extra parts.
+	// Return number of matching elements.
+	int matching_elements = 1;
+	for (int i = 1; i < locale_a_elements.size(); i++) {
+		for (int j = 1; j < locale_b_elements.size(); j++) {
+			if (locale_a_elements[i] == locale_b_elements[j]) {
+				matching_elements++;
+			}
+		}
+	}
+	locale_compare_cache.set(cache_key, matching_elements);
+	return matching_elements;
 }
 
 String TranslationServer::get_locale_name(const String &p_locale) const {
