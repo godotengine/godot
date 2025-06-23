@@ -697,7 +697,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
 		if (mi->get_multimesh().is_valid()) {
-
 			Ref<MultiMesh> mm = mi->get_multimesh();
 			Ref<ImporterMesh> mesh = mi->get_mesh();
 
