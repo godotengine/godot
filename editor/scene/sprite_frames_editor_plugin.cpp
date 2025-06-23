@@ -30,6 +30,7 @@
 
 #include "sprite_frames_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "editor/docks/filesystem_dock.h"
@@ -51,6 +52,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
+#include "scene/main/node.cpp"
 #include "scene/resources/atlas_texture.h"
 
 static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const Size2 &p_size, const Size2 &p_shadow_offset, Color p_color, Color p_shadow_color) {
@@ -662,6 +664,9 @@ void SpriteFramesEditor::_notification(int p_what) {
 			zoom_in->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 			add_anim->set_button_icon(get_editor_theme_icon(SNAME("New")));
 			duplicate_anim->set_button_icon(get_editor_theme_icon(SNAME("Duplicate")));
+			cut_anim->set_button_icon(get_editor_theme_icon(SNAME("ActionCut")));
+			copy_anim->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+			paste_anim->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
 			delete_anim->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			anim_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			split_sheet_zoom_out->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
@@ -1196,19 +1201,7 @@ void SpriteFramesEditor::_animation_duplicate() {
 		return;
 	}
 
-	int counter = 1;
-	String new_name = edited_anim;
-	PackedStringArray name_component = new_name.rsplit("_", true, 1);
-	String base_name = name_component[0];
-	if (name_component.size() > 1 && name_component[1].is_valid_int() && name_component[1].to_int() >= 0) {
-		counter = name_component[1].to_int();
-	}
-	new_name = base_name + "_" + itos(counter);
-	while (frames->has_animation(new_name)) {
-		counter++;
-		new_name = base_name + "_" + itos(counter);
-	}
-
+	String new_name = _generate_unique_animation_name(edited_anim);
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Duplicate Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_do_method(frames.ptr(), "duplicate_animation", edited_anim, new_name);
@@ -1220,6 +1213,48 @@ void SpriteFramesEditor::_animation_duplicate() {
 	undo_redo->commit_action();
 
 	animations->grab_focus();
+}
+
+void SpriteFramesEditor::_animation_cut() {
+	// Copy animation to clipboard.
+	Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, edited_anim, false);
+	EditorSettings::get_singleton()->set_resource_clipboard(clipboard_anim);
+
+	// Remove animation with undo/redo (no confirmation dialog).
+	_animation_remove_undo_redo(TTR("Cut Animation"), &clipboard_anim->animation_frames);
+}
+
+void SpriteFramesEditor::_animation_copy() {
+	Ref<ClipboardAnimation> clipboard_anim = ClipboardAnimation::from_sprite_frames(frames, edited_anim, true);
+	EditorSettings::get_singleton()->set_resource_clipboard(clipboard_anim);
+}
+void SpriteFramesEditor::_animation_paste() {
+	Ref<ClipboardAnimation> clipboard_anim = EditorSettings::get_singleton()->get_resource_clipboard();
+	if (!clipboard_anim.is_valid()) {
+		return;
+	}
+
+	if (updating) {
+		return;
+	}
+
+	String new_name = _generate_unique_animation_name(clipboard_anim->animation_name);
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Paste Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_method(frames.ptr(), "add_animation", new_name);
+	undo_redo->add_undo_method(frames.ptr(), "remove_animation", new_name);
+	undo_redo->add_do_method(frames.ptr(), "set_animation_speed", new_name, clipboard_anim->animation_speed);
+	undo_redo->add_do_method(frames.ptr(), "set_animation_loop", new_name, clipboard_anim->animation_loop);
+
+	for (ClipboardSpriteFrames::Frame &frame : clipboard_anim->animation_frames) {
+		undo_redo->add_do_method(frames.ptr(), "add_frame", new_name, frame.texture, frame.duration);
+	}
+
+	undo_redo->add_do_method(this, "_select_animation", new_name);
+	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->commit_action();
 }
 
 void SpriteFramesEditor::_animation_remove() {
@@ -1236,39 +1271,7 @@ void SpriteFramesEditor::_animation_remove() {
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
-	StringName new_edited;
-	List<StringName> anim_names;
-	frames->get_animation_list(&anim_names);
-	anim_names.sort_custom<StringName::AlphCompare>();
-	if (anim_names.size() >= 2) {
-		if (edited_anim == anim_names.get(0)) {
-			new_edited = anim_names.get(1);
-		} else {
-			new_edited = anim_names.get(0);
-		}
-	} else {
-		new_edited = StringName();
-	}
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Remove Animation"), UndoRedo::MERGE_DISABLE, frames.ptr());
-	_rename_node_animation(undo_redo, false, edited_anim, new_edited, "");
-	undo_redo->add_do_method(frames.ptr(), "remove_animation", edited_anim);
-	undo_redo->add_undo_method(frames.ptr(), "add_animation", edited_anim);
-	_rename_node_animation(undo_redo, true, edited_anim, edited_anim, edited_anim);
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
-	int fc = frames->get_frame_count(edited_anim);
-	for (int i = 0; i < fc; i++) {
-		Ref<Texture2D> texture = frames->get_frame_texture(edited_anim, i);
-		float duration = frames->get_frame_duration(edited_anim, i);
-		undo_redo->add_undo_method(frames.ptr(), "add_frame", edited_anim, texture, duration);
-	}
-	undo_redo->add_do_method(this, "_select_animation", new_edited);
-	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
-	undo_redo->commit_action();
+	_animation_remove_undo_redo(TTR("Remove Animation"), nullptr);
 }
 
 void SpriteFramesEditor::_animation_search_text_changed(const String &p_text) {
@@ -1309,6 +1312,104 @@ void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 	undo_redo->add_do_method(this, "_update_library", true);
 	undo_redo->add_undo_method(this, "_update_library", true);
 	undo_redo->commit_action();
+}
+
+void SpriteFramesEditor::_animation_remove_undo_redo(const StringName &p_action_name, const Vector<ClipboardSpriteFrames::Frame> *p_frames) {
+	StringName new_edited = _find_next_animation();
+	int frame_count = frames->get_frame_count(edited_anim);
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR(p_action_name), UndoRedo::MERGE_DISABLE, frames.ptr());
+	_rename_node_animation(undo_redo, false, edited_anim, new_edited, "");
+	undo_redo->add_do_method(frames.ptr(), "remove_animation", edited_anim);
+	undo_redo->add_undo_method(frames.ptr(), "add_animation", edited_anim);
+	_rename_node_animation(undo_redo, true, edited_anim, edited_anim, edited_anim);
+	undo_redo->add_undo_method(frames.ptr(), "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
+	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+	for (int i = 0; i < frame_count; i++) {
+		Ref<Texture2D> texture;
+		float duration;
+		if (p_frames) {
+			texture = (*p_frames)[i].texture;
+			duration = (*p_frames)[i].duration;
+		} else {
+			texture = frames->get_frame_texture(edited_anim, i);
+			duration = frames->get_frame_duration(edited_anim, i);
+		}
+		undo_redo->add_undo_method(frames.ptr(), "add_frame", edited_anim, texture, duration);
+	}
+	undo_redo->add_do_method(this, "_select_animation", new_edited);
+	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->commit_action();
+}
+
+StringName SpriteFramesEditor::_find_next_animation() {
+	List<StringName> anim_names;
+	frames->get_animation_list(&anim_names);
+	anim_names.sort_custom<StringName::AlphCompare>();
+	if (anim_names.size() >= 2) {
+		if (edited_anim == anim_names.get(0)) {
+			return anim_names.get(1);
+		} else {
+			return anim_names.get(0);
+		}
+	} else {
+		return StringName();
+	}
+}
+
+String SpriteFramesEditor::_generate_unique_animation_name(const String &p_base_name) const {
+	String nnsep;
+	switch (GLOBAL_GET("editor/naming/node_name_num_separator").operator int()) {
+		case 0:
+			nnsep = "";
+			break;
+		case 1:
+			nnsep = " ";
+			break;
+		case 2:
+			nnsep = "_";
+			break;
+		case 3:
+			nnsep = "-";
+			break;
+		default:
+			nnsep = " ";
+			break;
+	}
+
+	String name_string = p_base_name;
+	String nums;
+	for (int i = name_string.length() - 1; i >= 0; i--) {
+		char32_t n = name_string[i];
+		if (is_digit(n)) {
+			nums = String::chr(name_string[i]) + nums;
+		} else {
+			break;
+		}
+	}
+
+	int name_last_index = name_string.length() - nnsep.length() - nums.length();
+	if (nums.length() > 0 && name_string.substr(name_last_index, nnsep.length()) == nnsep) {
+		name_string = name_string.substr(0, name_last_index + nnsep.length());
+	} else {
+		nums = "";
+	}
+
+	for (;;) {
+		String attempt = name_string + nums;
+		if (!frames->has_animation(attempt)) {
+			return attempt;
+		}
+
+		if (nums.is_empty()) {
+			nums = "2";
+			name_string += nnsep;
+		} else {
+			nums = increase_numeric_string(nums);
+		}
+	}
 }
 
 void SpriteFramesEditor::_frame_list_gui_input(const Ref<InputEvent> &p_event) {
@@ -1632,6 +1733,9 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 
 	add_anim->set_disabled(read_only);
 	duplicate_anim->set_disabled(read_only);
+	cut_anim->set_disabled(read_only);
+	copy_anim->set_disabled(read_only);
+	paste_anim->set_disabled(read_only);
 	delete_anim->set_disabled(read_only);
 	anim_speed->set_editable(!read_only);
 	anim_loop->set_disabled(read_only);
@@ -1977,6 +2081,25 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	duplicate_anim->set_accessibility_name(TTRC("Duplicate Animation"));
 	hbc_animlist->add_child(duplicate_anim);
 	duplicate_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
+	duplicate_anim->set_visible(false);
+
+	cut_anim = memnew(Button);
+	cut_anim->set_theme_type_variation(SceneStringName(FlatButton));
+	cut_anim->set_accessibility_name(TTRC("Cut Animation"));
+	hbc_animlist->add_child(cut_anim);
+	cut_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_cut));
+
+	copy_anim = memnew(Button);
+	copy_anim->set_theme_type_variation(SceneStringName(FlatButton));
+	copy_anim->set_accessibility_name(TTRC("Copy Animation"));
+	hbc_animlist->add_child(copy_anim);
+	copy_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_copy));
+
+	paste_anim = memnew(Button);
+	paste_anim->set_theme_type_variation(SceneStringName(FlatButton));
+	paste_anim->set_accessibility_name(TTRC("Paste Animation"));
+	hbc_animlist->add_child(paste_anim);
+	paste_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_paste));
 
 	delete_anim = memnew(Button);
 	delete_anim->set_theme_type_variation(SceneStringName(FlatButton));
@@ -2037,6 +2160,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTRC("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));
 	duplicate_anim->set_shortcut_context(animations);
 	duplicate_anim->set_shortcut(ED_SHORTCUT("sprite_frames/duplicate_animation", TTRC("Duplicate Animation"), KeyModifierMask::CMD_OR_CTRL | Key::D));
+	cut_anim->set_shortcut_context(animations);
+	cut_anim->set_shortcut(ED_SHORTCUT("sprite_frames/cut_animation", TTRC("Cut Animation"), KeyModifierMask::CMD_OR_CTRL | Key::X));
+	copy_anim->set_shortcut_context(animations);
+	copy_anim->set_shortcut(ED_SHORTCUT("sprite_frames/copy_animation", TTRC("Copy Animation"), KeyModifierMask::CMD_OR_CTRL | Key::C));
+	paste_anim->set_shortcut_context(animations);
+	paste_anim->set_shortcut(ED_SHORTCUT("sprite_frames/paste_animation", TTRC("Paste Animation"), KeyModifierMask::CMD_OR_CTRL | Key::V));
 	delete_anim->set_shortcut_context(animations);
 	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTRC("Delete Animation"), Key::KEY_DELETE));
 
@@ -2585,4 +2714,21 @@ SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	button = EditorNode::get_bottom_panel()->add_item(TTRC("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")));
 	button->hide();
+}
+
+Ref<ClipboardAnimation> ClipboardAnimation::from_sprite_frames(const Ref<SpriteFrames> &p_frames, const String &p_anim, bool p_is_copy) {
+	Ref<ClipboardAnimation> clipboard_anim = memnew(ClipboardAnimation);
+	clipboard_anim->animation_name = p_anim;
+	clipboard_anim->animation_speed = p_frames->get_animation_speed(p_anim);
+	clipboard_anim->animation_loop = p_frames->get_animation_loop(p_anim);
+	clipboard_anim->is_copy = p_is_copy;
+
+	int frame_count = p_frames->get_frame_count(p_anim);
+	for (int i = 0; i < frame_count; ++i) {
+		ClipboardSpriteFrames::Frame frame;
+		frame.texture = p_frames->get_frame_texture(p_anim, i);
+		frame.duration = p_frames->get_frame_duration(p_anim, i);
+		clipboard_anim->animation_frames.push_back(frame);
+	}
+	return clipboard_anim;
 }
