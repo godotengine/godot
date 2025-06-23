@@ -127,7 +127,6 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 	real_t min_d = 1e10;
 
 	int r_idx = 0;
-	bool hit_once = false;
 	bool choose_closest = (p_result_max == 1);
 	for (int i = 0; i < amount; i++) {
 		if (r_idx >= p_result_max) {
@@ -186,8 +185,8 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 		if (collided) {
 			ERR_FAIL_NULL_V(res_obj, 0); // Shouldn't happen but silences warning.
 
-			// Filter to closest hit if only one return is allowed and we've already hit something
-			if (choose_closest && hit_once) {
+			// Filter to closest hit if only one return is allowed
+			if (choose_closest) {
 				real_t ld = normal.dot(shape_point);
 				if (ld > min_d) {
 					continue;
@@ -209,7 +208,6 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 				r_results[r_idx].shape = res_shape;
 			}
 
-			hit_once = true;
 			collided = false;
 
 			if (p_result_max > 1) {
@@ -227,9 +225,19 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 
 bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
 	LocalVector<RayResult> results;
-	results.push_back(r_result);
+	results.resize(1);
 
 	int n_collisions = intersect_ray_multiple(p_parameters, results.ptr(), 1);
+	if (n_collisions > 0) {
+		r_result.collider_id = results[0].collider_id;
+		r_result.collider = results[0].collider;
+		r_result.normal = results[0].normal;
+		r_result.face_index = results[0].face_index;
+		r_result.position = results[0].position;
+		r_result.rid = results[0].rid;
+		r_result.shape = results[0].shape;
+	}
+
 	return n_collisions > 0;
 }
 
