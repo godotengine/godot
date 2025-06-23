@@ -1366,6 +1366,22 @@ Ref<SceneState> SceneState::get_base_scene_state() const {
 	return Ref<SceneState>();
 }
 
+void SceneState::make_unique_inheritance() {
+	Ref<SceneState> state(this);
+
+	while (state->base_scene_idx >= 0) {
+		Ref<PackedScene> base_scene = state->variants[state->base_scene_idx];
+		ERR_FAIL_COND(base_scene.is_null());
+		Ref<SceneState> base_state = base_scene->get_state();
+
+		base_scene.instantiate();
+		base_scene->replace_state(base_state);
+		state->variants.write[state->base_scene_idx] = base_scene;
+
+		state = base_state;
+	}
+}
+
 int SceneState::find_node_by_path(const NodePath &p_node) const {
 	ERR_FAIL_COND_V_MSG(node_path_cache.is_empty(), -1, "This operation requires the node cache to have been built.");
 
