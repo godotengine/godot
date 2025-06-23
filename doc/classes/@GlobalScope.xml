@@ -362,6 +362,28 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="dump">
+			<return type="Variant" />
+			<param index="0" name="variant" type="Variant" />
+			<description>
+				Prints a value with type information and rich formatting to improve the debugging experience. Unlike [method print], this returns the evaluated value, so you can insert it in the middle of existing code as follows:
+				[codeblock]
+				dump("Hello world!")  # Prints `"Hello world!"` with visible quotes to denote that this is a String.
+				var example = dump(123)  # Prints `123`. `example` now contains 123 as an integer (not a string).
+				[/codeblock]
+				See also [method dump_string].
+				[b]Note:[/b] In release export templates, [method dump] doesn't apply any formatting and acts like [method print] (while still returning the value it evaluates, unlike [method print]).
+			</description>
+		</method>
+		<method name="dump_string">
+			<return type="String" />
+			<param index="0" name="variant" type="Variant" />
+			<description>
+				Returns a [String] containing the passed [param variant] type information and BBCode formatting to improve the debugging experience. The returned value can be displayed in a [RichTextLabel] node with [member RichTextLabel.bbcode_enabled] set to [code]true[/code], or displayed in a [method print_rich] statement.
+				See also [method dump].
+				[b]Note:[/b] In release export templates, [method dump_string] doesn't apply any formatting and acts like [method str].
+			</description>
+		</method>
 		<method name="ease" keywords="smooth">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
@@ -857,6 +879,7 @@
 				GD.Print("a", "b", a); // Prints "ab[1, 2, 3]"
 				[/csharp]
 				[/codeblocks]
+				For debugging, [method dump] is preferable as it provides additional information and also returns the value it's evaluating.
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed. See also [member Engine.print_to_stdout] and [member ProjectSettings.application/run/disable_stdout].
 			</description>
 		</method>
@@ -875,6 +898,7 @@
 				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints "Hello world!", in green with a bold font.
 				[/csharp]
 				[/codeblocks]
+				For debugging, [method dump] is preferable as it provides additional information.
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 				[b]Note:[/b] Output displayed in the editor supports clickable [code skip-lint][url=address]text[/url][/code] tags. The [code skip-lint][url][/code] tag's [code]address[/code] value is handled by [method OS.shell_open] when clicked.
 			</description>

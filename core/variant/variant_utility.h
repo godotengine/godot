@@ -139,6 +139,8 @@ struct VariantUtilityFunctions {
 	static void printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static void push_error(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static void push_warning(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
+	static Variant dump(const Variant &p_variant);
+	static String dump_string(const Variant &p_variant);
 	static String var_to_str(const Variant &p_var);
 	static Variant str_to_var(const String &p_var);
 	static PackedByteArray var_to_bytes(const Variant &p_var);
