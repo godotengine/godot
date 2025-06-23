@@ -5,6 +5,119 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [3.6.1] - TBD
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-6-1) for details.
+
+### Added
+
+#### Rendering
+
+- Physics Interpolation - Add editor warning for non-interpolated `PhysicsBody` ([GH-103355](https://github.com/godotengine/godot/pull/103355)).
+
+### Changed
+
+#### 2D
+
+- Make selected tile in `TileSet` more visible through red outline ([GH-105439](https://github.com/godotengine/godot/pull/105439)).
+
+#### Buildsystem
+
+- CI: Update Linux runners to Ubuntu 24.04, but keep 22.04 for Linux builds ([GH-98896](https://github.com/godotengine/godot/pull/98896)).
+- Improve cache handling ([GH-98992](https://github.com/godotengine/godot/pull/98992)).
+
+#### Core
+
+- JavaScript: Don't cache emsdk ([GH-99037](https://github.com/godotengine/godot/pull/99037)).
+
+#### Documentation
+
+- Document Timer autostart in tool scripts ([GH-99048](https://github.com/godotengine/godot/pull/99048)).
+- Document `radial_center_offset` bounds for `TextureProgress` ([GH-99869](https://github.com/godotengine/godot/pull/99869)).
+- Docs: Add description for `BitMap.opaque_to_polygons` method ([GH-102684](https://github.com/godotengine/godot/pull/102684)).
+
+#### GUI
+
+- Improve `TextureProgress.set_radial_initial_angle()` by removing loops ([GH-99434](https://github.com/godotengine/godot/pull/99434)).
+
+#### Thirdparty
+
+- certs: Sync with Mozilla bundle as of Oct 19, 2024 ([GH-98855](https://github.com/godotengine/godot/pull/98855)).
+- Update the `Thirdparty` section of `CHANGELOG.md` ([GH-99692](https://github.com/godotengine/godot/pull/99692)).
+- mbedtls: Update to upstream version 2.28.9 ([GH-100013](https://github.com/godotengine/godot/pull/100013)).
+- mbedTLS: Update to version 2.28.10 ([GH-104580](https://github.com/godotengine/godot/pull/104580)).
+- certs: Sync with upstream as of Apr 8 2025 ([GH-106615](https://github.com/godotengine/godot/pull/106615)).
+
+### Fixed
+
+#### 3D
+
+- Physics Interpolation - fix client interpolation pump ([GH-102184](https://github.com/godotengine/godot/pull/102184)).
+
+#### Audio
+
+- Initialize pa_buffer_attr.maxlength to -1 ([GH-102069](https://github.com/godotengine/godot/pull/102069)).
+- ResourceImporterWAV: Detect if data chunk size is larger than the actual size ([GH-107694](https://github.com/godotengine/godot/pull/107694)).
+
+#### Buildsystem
+
+- Fix VS project generation with SCons 4.8.0+ ([GH-94117](https://github.com/godotengine/godot/pull/94117)).
+- embree: Fix invalid output operators raising errors with GCC 15 ([GH-102023](https://github.com/godotengine/godot/pull/102023)).
+- Windows: Rename `PKEY_Device_FriendlyName` to avoid duplicate symbols with newer MinGW SDKs ([GH-99036](https://github.com/godotengine/godot/pull/99036)).
+
+#### C#
+
+- Mono: Move MonoGCHandle into gdmono namespace ([GH-106578](https://github.com/godotengine/godot/pull/106578)).
+
+#### Core
+
+- `Object::call()` prevent debug lock accessing dangling pointer ([GH-96862](https://github.com/godotengine/godot/pull/96862)).
+- Fix parsing of `4.` in Expression ([GH-96891](https://github.com/godotengine/godot/pull/96891)).
+- Fix error when non-ASCII characters in resource pack path ([GH-98843](https://github.com/godotengine/godot/pull/98843)).
+- Prevent inlining error printing functions ([GH-103621](https://github.com/godotengine/godot/pull/103621)).
+- Cache results for `TranslationServer.compare_locales()` ([GH-98234](https://github.com/godotengine/godot/pull/98234)).
+
+#### Editor
+
+- Cancel tooltips when the mouse leaves the window ([GH-95978](https://github.com/godotengine/godot/pull/95978)).
+
+#### GDScript
+
+- Backport "Cleanup function state connections when destroying instance" for Godot 3 ([GH-97464](https://github.com/godotengine/godot/pull/97464)).
+
+#### GUI
+
+- Fix button click detection when `Tree` is rotated ([GH-98300](https://github.com/godotengine/godot/pull/98300)).
+- Fix `PopupMenu` margin and separation calculations ([GH-98452](https://github.com/godotengine/godot/pull/98452)).
+- Fix `Button` not listing `hover_pressed` stylebox ([GH-98511](https://github.com/godotengine/godot/pull/98511)).
+- Show `TextureProgress` radial center cross only when editing the scene ([GH-99870](https://github.com/godotengine/godot/pull/99870)).
+- Revert changes to `Range::set_value` #65101 ([GH-100459](https://github.com/godotengine/godot/pull/100459)).
+- [3.x, RTL] Track external changes in the custom fonts set by BBCode / `push_font` ([GH-105266](https://github.com/godotengine/godot/pull/105266)).
+- Revert "Fix Button not listing `hover_pressed` stylebox" ([GH-107696](https://github.com/godotengine/godot/pull/107696)).
+
+#### Input
+
+- Fix Xbox Controller on Android ([GH-106021](https://github.com/godotengine/godot/pull/106021)).
+
+#### Physics
+
+- Fix physics platform behaviour regression ([GH-97316](https://github.com/godotengine/godot/pull/97316)).
+
+#### Porting
+
+- Disable Nahimic code injection ([GH-99388](https://github.com/godotengine/godot/pull/99388)).
+
+#### Rendering
+
+- Ameliorate performance regression due to directional shadow `fade_start` ([GH-99536](https://github.com/godotengine/godot/pull/99536)).
+- Hide last DirectionalLight shadow split distance property when using PSSM 3 Splits ([GH-99554](https://github.com/godotengine/godot/pull/99554)).
+
+#### Thirdparty
+
+- Fix unzSeekCurrentFile not resetting total_out_64 ([GH-106872](https://github.com/godotengine/godot/pull/106872)).
+- libwebm: Fix double free in mkvparser ContentEncoding ([GH-107781](https://github.com/godotengine/godot/pull/107781)).
+
+
 ## [3.6] - 2024-09-09
 
 See the [release announcement](https://godotengine.org/article/godot-3-6-finally-released) for details.
@@ -2951,13 +3064,14 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
-[3.6]: https://downloads.tuxfamily.org/godotengine/3.5/Godot_v3.6-stable_changelog_chrono.txt
-[3.5]: https://downloads.tuxfamily.org/godotengine/3.5/Godot_v3.5-stable_changelog_chrono.txt
-[3.4]: https://downloads.tuxfamily.org/godotengine/3.4/Godot_v3.4-stable_changelog_chrono.txt
-[3.3]: https://downloads.tuxfamily.org/godotengine/3.3/Godot_v3.3-stable_changelog_chrono.txt
-[3.2.3]: https://downloads.tuxfamily.org/godotengine/3.2.3/Godot_v3.2.3-stable_changelog_chrono.txt
-[3.2.2]: https://downloads.tuxfamily.org/godotengine/3.2.2/Godot_v3.2.2-stable_changelog_chrono.txt
-[3.2.1]: https://downloads.tuxfamily.org/godotengine/3.2.1/Godot_v3.2.1-stable_changelog_chrono.txt
-[3.2]: https://downloads.tuxfamily.org/godotengine/3.2/Godot_v3.2-stable_changelog_chrono.txt
-[3.1]: https://downloads.tuxfamily.org/godotengine/3.1/Godot_v3.1-stable_changelog_chrono.txt
-[3.0]: https://downloads.tuxfamily.org/godotengine/3.0/Godot_v3.0-stable_changelog_chrono.txt
+[3.6.1]: https://github.com/godotengine/godot/releases/tag/3.6.1-stable
+[3.6]: https://github.com/godotengine/godot/releases/tag/3.6-stable
+[3.5]: https://github.com/godotengine/godot/releases/tag/3.5-stable
+[3.4]: https://github.com/godotengine/godot/releases/tag/3.4-stable
+[3.3]: https://github.com/godotengine/godot/releases/tag/3.3-stable
+[3.2.3]: https://github.com/godotengine/godot/releases/tag/3.2.3-stable
+[3.2.2]: https://github.com/godotengine/godot/releases/tag/3.2.2-stable
+[3.2.1]: https://github.com/godotengine/godot/releases/tag/3.2.1-stable
+[3.2]: https://github.com/godotengine/godot/releases/tag/3.2-stable
+[3.1]: https://github.com/godotengine/godot/releases/tag/3.1-stable
+[3.0]: https://github.com/godotengine/godot/releases/tag/3.0-stable
