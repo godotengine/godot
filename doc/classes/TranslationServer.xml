@@ -7,6 +7,20 @@
 		The translation server is the API backend that manages all language translations.
 		Translations are stored in [TranslationDomain]s, which can be accessed by name. The most commonly used translation domain is the main translation domain. It always exists and can be accessed using an empty [StringName]. The translation server provides wrapper methods for accessing the main translation domain directly, without having to fetch the translation domain first. Custom translation domains are mainly for advanced usages like editor plugins. Names starting with [code]godot.[/code] are reserved for engine internals.
 		[b]Note:[/b] TranslationServer will not load translations in the editor. To avoid internal conflicts, use [method get_or_add_domain] to declare a custom editor domain.
+		[codeblocks]
+		[gdscript]
+		var domain #declare a custom domain to use in this script
+
+		#load the editor domain when in editor scope
+		if OS.is_editor_hint():
+			domain = TranslationServer.get_or_add_domain("editor_domain")
+			domain.add_translation(preload("res://translation.en.translation"))
+		else:
+			domain = TranslationServer.get_or_add_domain("")
+		
+		print( domain.translate("key") ) #use [domain] instead of [TranslationServer]
+		[/gdscript]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
