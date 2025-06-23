@@ -19,7 +19,7 @@
 			<return type="PackedByteArray" />
 			<description>
 				Returns the data that is sent to OpenXR when submitting the suggested interacting bindings this modifier is a part of.
-				[b]Note:[/b] This must be data compatible with a [code]XrBindingModificationBaseHeaderKHR[/code] structure.
+				[b]Note:[/b] This must be data compatible with an [code]XrBindingModificationBaseHeaderKHR[/code] structure.
 			</description>
 		</method>
 	</methods>

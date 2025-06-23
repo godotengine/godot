@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Generate an [PrimitiveMesh] from the text.
+		Generate a [PrimitiveMesh] from the text.
 	</brief_description>
 	<description>
-		Generate an [PrimitiveMesh] from the text.
+		Generate a [PrimitiveMesh] from the text.
 		TextMesh can be generated only when using dynamic fonts with vector glyph contours. Bitmap fonts (including bitmap data in the TrueType/OpenType containers, like color emoji fonts) are not supported.
 		The UV layout is arranged in 4 horizontal strips, top to bottom: 40% of the height for the front face, 40% for the back face, 10% for the outer edges and 10% for the inner edges.
 	</description>

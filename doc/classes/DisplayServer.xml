@@ -651,7 +651,7 @@
 			<return type="Image" />
 			<description>
 				Returns the user's clipboard as an image if possible.
-				[b]Note:[/b] This method uses the copied pixel data, e.g. from a image editing software or a web browser, not an image file copied from file explorer.
+				[b]Note:[/b] This method uses the copied pixel data, e.g. from an image editing software or a web browser, not an image file copied from file explorer.
 			</description>
 		</method>
 		<method name="clipboard_get_primary" qualifiers="const">
@@ -1976,7 +1976,7 @@
 			<return type="PackedStringArray" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns an [PackedStringArray] of voice identifiers for the [param language].
+				Returns a [PackedStringArray] of voice identifiers for the [param language].
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
