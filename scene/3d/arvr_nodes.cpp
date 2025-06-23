@@ -69,7 +69,7 @@ String ARVRCamera::get_configuration_warning() const {
 		warning += TTR("ARVRCamera must have an ARVROrigin node as its parent.");
 	};
 
-	if (is_physics_interpolated()) {
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
@@ -397,7 +397,7 @@ String ARVRController::get_configuration_warning() const {
 		warning += TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
 	};
 
-	if (is_physics_interpolated()) {
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
@@ -540,7 +540,7 @@ String ARVRAnchor::get_configuration_warning() const {
 		warning += TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
 	};
 
-	if (is_physics_interpolated()) {
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}

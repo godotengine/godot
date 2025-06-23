@@ -101,7 +101,7 @@ void PhysicsBody::_bind_methods() {
 String PhysicsBody::get_configuration_warning() const {
 	String warning = CollisionObject::get_configuration_warning();
 
-	if (!is_physics_interpolated()) {
+	if (SceneTree::is_fti_enabled_in_project() && !is_physics_interpolated()) {
 		if (!warning.empty()) {
 			warning += "\n\n";
 		}
