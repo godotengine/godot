@@ -137,6 +137,9 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 }
 #endif // _3D_DISABLED
 
+bool SceneTree::_physics_interpolation_enabled = false;
+bool SceneTree::_physics_interpolation_enabled_in_project = false;
+
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
 }
@@ -566,6 +569,9 @@ void SceneTree::initialize() {
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// This version is for use in editor.
+	_physics_interpolation_enabled_in_project = p_enabled;
+
 	// We never want interpolation in the editor.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		p_enabled = false;
@@ -584,10 +590,6 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	if (root) {
 		root->reset_physics_interpolation();
 	}
-}
-
-bool SceneTree::is_physics_interpolation_enabled() const {
-	return _physics_interpolation_enabled;
 }
 
 #ifndef _3D_DISABLED
