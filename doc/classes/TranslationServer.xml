@@ -9,16 +9,16 @@
 		[b]Note:[/b] TranslationServer will not load translations in the editor. To avoid internal conflicts, use [method get_or_add_domain] to declare a custom editor domain.
 		[codeblocks]
 		[gdscript]
-		var domain #declare a custom domain to use in this script
+		var domain # Declare a custom domain to use in this script.
 
-		#load the editor domain when in editor scope
+		# Load the editor domain when in editor scope.
 		if OS.is_editor_hint():
 			domain = TranslationServer.get_or_add_domain("editor_domain")
 			domain.add_translation(preload("res://translation.en.translation"))
 		else:
 			domain = TranslationServer.get_or_add_domain("")
 		
-		print( domain.translate("key") ) #use [domain] instead of [TranslationServer]
+		print( domain.translate("key") ) # Use [domain] instead of [TranslationServer].
 		[/gdscript]
 		[/codeblocks]
 	</description>
