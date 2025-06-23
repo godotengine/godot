@@ -184,7 +184,6 @@ void GLTFNode::set_multimesh_scale(GLTFSkeletonIndex p_multimesh_scale) {
 	multimesh_scale = p_multimesh_scale;
 }
 
-
 Vector3 GLTFNode::get_position() {
 	return transform.origin;
 }
