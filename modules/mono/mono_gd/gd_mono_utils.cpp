@@ -106,9 +106,9 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	gchandle->set_handle(gdmono::MonoGCHandle::new_strong_handle(mono_object), gdmono::MonoGCHandle::STRONG_HANDLE);
 
 	// Tie managed to unmanaged
-	Reference *ref = Object::cast_to<Reference>(unmanaged);
+	if (unmanaged->is_reference()) {
+		Reference *ref = (Reference *)unmanaged;
 
-	if (ref) {
 		// Unsafe refcount increment. The managed instance also counts as a reference.
 		// This way if the unmanaged world has no references to our owner
 		// but the managed instance is alive, the refcount will be 1 instead of 0.

@@ -2961,12 +2961,10 @@ Variant _ClassDB::instance(const StringName &p_class) const {
 		return Variant();
 	}
 
-	Reference *r = Object::cast_to<Reference>(obj);
-	if (r) {
-		return REF(r);
-	} else {
-		return obj;
+	if (obj->is_reference()) {
+		return REF((Reference *)obj);
 	}
+	return obj;
 }
 
 bool _ClassDB::has_signal(StringName p_class, StringName p_signal) const {

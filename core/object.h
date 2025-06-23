@@ -673,6 +673,9 @@ public:
 	virtual bool is_class(const String &p_class) const { return (p_class == "Object"); }
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
+	// Shortcut for common type.
+	bool is_reference() const { return _has_ancestry(AncestralClass::REFERENCE); }
+
 	template <typename T>
 	bool derives_from() const;
 

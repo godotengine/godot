@@ -518,9 +518,8 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 		return Variant();
 	}
 
-	Reference *r = Object::cast_to<Reference>(owner);
-	if (r) {
-		ref = REF(r);
+	if (owner->is_reference()) {
+		ref = REF((Reference *)owner);
 	}
 
 	NativeScriptInstance *instance = (NativeScriptInstance *)instance_create(owner);
