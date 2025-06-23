@@ -57,6 +57,17 @@ public:
 	Vector<Frame> frames;
 };
 
+class ClipboardAnimation : public Resource {
+	GDCLASS(ClipboardAnimation, Resource);
+
+public:
+	String animation_name;
+	Vector<ClipboardSpriteFrames::Frame> frames;
+	float animation_speed = 1.0f;
+	bool animation_loop = false;
+	bool is_copy = false;
+};
+
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
@@ -125,6 +136,9 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	Button *add_anim = nullptr;
 	Button *duplicate_anim = nullptr;
+	Button *cut_anim = nullptr;
+	Button *copy_anim = nullptr;
+	Button *paste_anim = nullptr;
 	Button *delete_anim = nullptr;
 	SpinBox *anim_speed = nullptr;
 	Button *anim_loop = nullptr;
@@ -217,6 +231,9 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_name_edited();
 	void _animation_add();
 	void _animation_duplicate();
+	void _animation_cut();
+	void _animation_copy();
+	void _animation_paste();
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
