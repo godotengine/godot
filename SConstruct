@@ -741,7 +741,7 @@ if env["arch"] == "x86_64":
         env.Append(CCFLAGS=["/d2archSSE42"])
     else:
         # `-msse2` is implied when compiling for x86_64.
-        env.Append(CCFLAGS=["-msse4.2"])
+        env.Append(CCFLAGS=["-msse4.2", "-mpopcnt"])
 elif env["arch"] == "x86_32":
     # Be more conservative with instruction sets on 32-bit x86 to improve compatibility.
     # SSE and SSE2 are present on all CPUs that support 64-bit, even if running a 32-bit OS.
