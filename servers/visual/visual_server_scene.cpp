@@ -1535,7 +1535,7 @@ Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB &p_aabb, RID 
 	for (int i = 0; i < culled; i++) {
 		Instance *instance = cull[i];
 		ERR_CONTINUE(!instance);
-		if (instance->object_id == 0) {
+		if (!instance->object_id.is_valid()) {
 			continue;
 		}
 
@@ -1557,7 +1557,7 @@ Vector<ObjectID> VisualServerScene::instances_cull_ray(const Vector3 &p_from, co
 	for (int i = 0; i < culled; i++) {
 		Instance *instance = cull[i];
 		ERR_CONTINUE(!instance);
-		if (instance->object_id == 0) {
+		if (!instance->object_id.is_valid()) {
 			continue;
 		}
 
@@ -1580,7 +1580,7 @@ Vector<ObjectID> VisualServerScene::instances_cull_convex(const Vector<Plane> &p
 	for (int i = 0; i < culled; i++) {
 		Instance *instance = cull[i];
 		ERR_CONTINUE(!instance);
-		if (instance->object_id == 0) {
+		if (!instance->object_id.is_valid()) {
 			continue;
 		}
 

@@ -178,7 +178,6 @@ private:
 			setup_pass = 0;
 			process_pass = 0;
 			object = nullptr;
-			object_id = 0;
 		}
 		virtual ~TrackCache() {}
 	};
