@@ -102,10 +102,8 @@ void VisualInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			// NOTIFICATION normally turned off for physics interpolated cases (via
-			// `notify_transform_when_fti_off`), however derived classes can still turn this back on,
-			// so always wrap with is_physics_interpolation_enabled().
-			if (is_visible_in_tree() && !(is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) && !_is_using_identity_transform()) {
+			// ToDo : Can we turn off notify transform for physics interpolated cases?
+			if (is_visible_in_tree() && !SceneTree::is_fti_enabled() && !_is_using_identity_transform()) {
 				// Physics interpolation global off, always send.
 				VisualServer::get_singleton()->instance_set_transform(instance, get_global_transform());
 			}
@@ -209,7 +207,7 @@ VisualInstance::VisualInstance() {
 	layers = 1;
 	sorting_offset = 0.0f;
 	sorting_use_aabb_center = true;
-	_set_notify_transform_when_fti_off(true);
+	set_notify_transform(true);
 }
 
 VisualInstance::~VisualInstance() {
