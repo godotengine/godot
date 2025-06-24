@@ -214,8 +214,8 @@ private:
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[HAT_MAX]);
 	JoystickList _get_output_button(String output);
 	JoystickList _get_output_axis(String output);
-	void _button_event(int p_device, int p_index, bool p_pressed);
-	void _axis_event(int p_device, int p_axis, float p_value);
+	void _button_event(int p_device, int p_index, bool p_pressed, bool p_immediate = false);
+	void _axis_event(int p_device, int p_axis, float p_value, bool p_immediate = false);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
