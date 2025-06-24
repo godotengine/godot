@@ -1928,6 +1928,30 @@ void EditorInspectorSection::_notification(int p_what) {
 				Ref<Font> light_font = theme_cache.light_font;
 				int light_font_size = theme_cache.light_font_size;
 
+				// - Keying
+				Ref<Texture2D> key = theme_cache.icon_gui_animation_key;
+				if (keying && key.is_valid()) {
+					Point2 key_position;
+					key_position.x = rtl ? (margin_end + 2 * EDSCALE) : (get_size().width - key->get_width() - margin_end - 2 * EDSCALE);
+					keying_rect = Rect2(key_position.x - 2 * EDSCALE, 0, key->get_width() + 4 * EDSCALE, header_height);
+
+					Color key_color(1, 1, 1);
+					if (keying_hover) {
+						key_color.r *= 1.2;
+						key_color.g *= 1.2;
+						key_color.b *= 1.2;
+
+						Ref<StyleBox> sb_hover = theme_cache.key_hover;
+						draw_style_box(sb_hover, keying_rect);
+					}
+					key_position.y = (header_height - key->get_height()) / 2;
+
+					draw_texture(key, key_position, key_color);
+					margin_end += key->get_width() + 6 * EDSCALE;
+				} else {
+					keying_rect = Rect2();
+				}
+
 				// - Checkbox.
 				Ref<Texture2D> checkbox = _get_checkbox();
 				if (checkbox.is_valid()) {
@@ -1936,8 +1960,8 @@ void EditorInspectorSection::_notification(int p_what) {
 					Point2 checkbox_position;
 					Point2 label_position;
 					if (rtl) {
-						label_position.x = margin_start;
-						checkbox_position.x = margin_start + label_size.width + 2 * EDSCALE;
+						label_position.x = margin_end;
+						checkbox_position.x = margin_end + label_size.width + 2 * EDSCALE;
 					} else {
 						label_position.x = get_size().width - (margin_end + label_size.width);
 						checkbox_position.x = label_position.x - checkbox->get_width() - 2 * EDSCALE;
@@ -1961,6 +1985,8 @@ void EditorInspectorSection::_notification(int p_what) {
 					draw_texture(checkbox, checkbox_position, checkbox_color);
 					draw_string(light_font, label_position, checkbox_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, check_font_color, TextServer::JUSTIFICATION_NONE);
 					margin_end += label_size.width + checkbox->get_width() + 6 * EDSCALE;
+				} else {
+					check_rect = Rect2();
 				}
 
 				int available = get_size().width - (margin_start + margin_end);
@@ -2037,6 +2063,9 @@ void EditorInspectorSection::_notification(int p_what) {
 			if (dropping_for_unfold) {
 				dropping_unfold_timer->stop();
 			}
+
+			check_hover = false;
+			keying_hover = false;
 			queue_redraw();
 		} break;
 	}
@@ -2141,9 +2170,17 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouse> me = p_event;
 	if (me.is_valid()) {
-		bool new_check_hover = check_rect.has_point(me->get_position());
+		Vector2 mpos = me->get_position();
+
+		bool new_check_hover = check_rect.has_point(mpos);
 		if (new_check_hover != check_hover) {
 			check_hover = new_check_hover;
+			queue_redraw();
+		}
+
+		bool new_keying_hover = keying_rect.has_point(mpos);
+		if (new_keying_hover != keying_hover) {
+			keying_hover = new_keying_hover;
 			queue_redraw();
 		}
 	}
@@ -2164,24 +2201,28 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		Vector2 pos = mb->get_position();
+
 		if (object->editor_is_section_unfolded(section)) {
 			int header_height = _get_header_height();
 
-			if (mb->get_position().y >= header_height) {
+			if (pos.y >= header_height) {
 				return;
 			}
 		}
 
 		accept_event();
 
-		if (checkable && check_rect.has_point(mb->get_position())) {
+		if (checkable && check_rect.has_point(pos)) {
 			checked = !checked;
 			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
 			if (checked) {
 				unfold();
 			} else if (!checkbox_only) {
-				fold();
+				vbox->hide();
 			}
+		} else if (keying && keying_rect.has_point(pos)) {
+			emit_signal(SNAME("property_keyed"), related_enable_property, false);
 		} else if (foldable) {
 			bool should_unfold = has_children_to_show && !(checkable && !checked && !checkbox_only) && !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
@@ -2221,23 +2262,22 @@ void EditorInspectorSection::_accessibility_action_expand(const Variant &p_data)
 }
 
 void EditorInspectorSection::unfold() {
-	if (!foldable && checkbox_only) {
+	if ((!foldable && !checkable) || (!checkbox_only && checkable && !checked)) {
 		return;
 	}
 
 	_test_unfold();
 
-	object->editor_set_section_unfold(section, true);
+	if (foldable) {
+		object->editor_set_section_unfold(section, true);
+	}
+
 	vbox->show();
 	queue_redraw();
 }
 
 void EditorInspectorSection::fold() {
-	if (!foldable && checkbox_only) {
-		return;
-	}
-
-	if (!vbox_added) {
+	if (!foldable || !vbox_added) {
 		return;
 	}
 
@@ -2251,21 +2291,32 @@ void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
 	queue_redraw();
 }
 
+void EditorInspectorSection::set_keying(bool p_keying) {
+	if (keying == (checkable && p_keying)) {
+		return;
+	}
+
+	keying = checkable && p_keying;
+	if (checkable) {
+		queue_redraw();
+	}
+}
+
 void EditorInspectorSection::reset_timer() {
 	if (dropping_for_unfold && !dropping_unfold_timer->is_stopped()) {
 		dropping_unfold_timer->start();
 	}
 }
 
-void EditorInspectorSection::set_checkable(const String &p_related_check_property, bool p_checkbox_only) {
+void EditorInspectorSection::set_checkable(const String &p_related_check_property, bool p_checkbox_only, bool p_checked) {
 	if (checkable == !p_related_check_property.is_empty()) {
 		return;
 	}
 
 	checkbox_only = p_checkbox_only;
 	checkable = !p_related_check_property.is_empty();
+	checked = p_checked;
 	related_enable_property = p_related_check_property;
-	queue_redraw();
 
 	if (InspectorDock::get_singleton()) {
 		if (checkable) {
@@ -2274,15 +2325,27 @@ void EditorInspectorSection::set_checkable(const String &p_related_check_propert
 			InspectorDock::get_inspector_singleton()->disconnect("property_edited", callable_mp(this, &EditorInspectorSection::_property_edited));
 		}
 	}
+
+	if (!checkbox_only && checkable && !checked) {
+		vbox->hide();
+	}
+
+	queue_redraw();
 }
 
 void EditorInspectorSection::set_checked(bool p_checked) {
+	if (checked == p_checked) {
+		return;
+	}
+
 	checked = p_checked;
-	if (!checkbox_only && !checked) {
-		fold();
-	} else {
+	if (!checkbox_only && checkable && !checked) {
+		vbox->hide();
+	} else if (!checkbox_only) {
 		unfold();
 	}
+
+	queue_redraw();
 }
 
 bool EditorInspectorSection::has_revertable_properties() const {
@@ -2303,12 +2366,20 @@ void EditorInspectorSection::property_can_revert_changed(const String &p_path, b
 
 void EditorInspectorSection::_property_edited(const String &p_property) {
 	if (!related_enable_property.is_empty() && p_property == related_enable_property) {
-		bool valid = false;
-		Variant value_checked = object->get(related_enable_property, &valid);
+		update_property();
+	}
+}
 
-		if (valid) {
-			set_checked(value_checked.operator bool());
-		}
+void EditorInspectorSection::update_property() {
+	if (!checkable) {
+		return;
+	}
+
+	bool valid = false;
+	Variant value_checked = object->get(related_enable_property, &valid);
+
+	if (valid) {
+		set_checked(value_checked.operator bool());
 	}
 }
 
@@ -2319,6 +2390,7 @@ void EditorInspectorSection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);
 
 	ADD_SIGNAL(MethodInfo("section_toggled_by_user", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "value")));
+	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING_NAME, "property")));
 }
 
 EditorInspectorSection::EditorInspectorSection() {
@@ -3362,8 +3434,10 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.arrow_collapsed_mirrored = p_control->get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
 	p_cache.icon_gui_checked = p_control->get_editor_theme_icon(SNAME("GuiChecked"));
 	p_cache.icon_gui_unchecked = p_control->get_editor_theme_icon(SNAME("GuiUnchecked"));
+	p_cache.icon_gui_animation_key = p_control->get_editor_theme_icon(SNAME("Key"));
 
 	p_cache.indent_box = p_control->get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
+	p_cache.key_hover = p_control->get_theme_stylebox(SceneStringName(hover), "Button");
 }
 
 void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control) {
@@ -3994,6 +4068,7 @@ void EditorInspector::update_tree() {
 				section->set_tooltip_text(tooltip);
 
 				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+				section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -4207,8 +4282,8 @@ void EditorInspector::update_tree() {
 					Variant value_checked = object->get(p.name, &valid);
 
 					if (valid) {
-						last_created_section->set_checkable(p.name, p.hint_string == "checkbox_only");
-						last_created_section->set_checked(value_checked.operator bool());
+						last_created_section->set_checkable(p.name, p.hint_string == "checkbox_only", value_checked.operator bool());
+						last_created_section->set_keying(keying);
 
 						if (p.name.begins_with(group_base)) {
 							group_togglable_property = last_created_section;
@@ -4415,13 +4490,15 @@ void EditorInspector::update_tree() {
 					Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
 					if (valid) {
 						section->section = corresponding_section->section;
-						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only);
-						section->set_checked(value_checked.operator bool());
+						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
+						section->set_keying(keying);
 						if (use_doc_hints) {
 							section->set_tooltip_text(corresponding_section->get_tooltip_text());
 						}
 
 						section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+						section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+						sections.push_back(section);
 					}
 				}
 			}
@@ -4452,13 +4529,15 @@ void EditorInspector::update_tree() {
 						Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
 						if (valid) {
 							section->section = corresponding_section->section;
-							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only);
-							section->set_checked(value_checked.operator bool());
+							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
+							section->set_keying(keying);
 							if (use_doc_hints) {
 								section->set_tooltip_text(corresponding_section->get_tooltip_text());
 							}
 
 							section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+							section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+							sections.push_back(section);
 						}
 					}
 				}
@@ -4554,6 +4633,12 @@ void EditorInspector::update_property(const String &p_prop) {
 		E->update_editor_property_status();
 		E->update_cache();
 	}
+
+	for (EditorInspectorSection *S : sections) {
+		if (S->is_checkable()) {
+			S->_property_edited(p_prop);
+		}
+	}
 }
 
 void EditorInspector::_clear(bool p_hide_plugins) {
@@ -4644,6 +4729,10 @@ void EditorInspector::_keying_changed() {
 				E->set_keying(keying);
 			}
 		}
+	}
+
+	for (EditorInspectorSection *S : sections) {
+		S->set_keying(keying);
 	}
 }
 
@@ -5381,6 +5470,11 @@ void EditorInspector::_notification(int p_what) {
 							}
 						}
 					}
+
+					for (EditorInspectorSection *S : sections) {
+						S->update_property();
+					}
+
 					refresh_countdown = float(EDITOR_GET("docks/property_editor/auto_refresh_interval"));
 				}
 			}
@@ -5403,6 +5497,10 @@ void EditorInspector::_notification(int p_what) {
 						}
 					}
 					pending.remove(pending.begin());
+				}
+
+				for (EditorInspectorSection *S : sections) {
+					S->update_property();
 				}
 			}
 

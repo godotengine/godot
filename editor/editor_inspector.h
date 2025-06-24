@@ -372,6 +372,7 @@ class EditorInspectorSection : public Container {
 	bool foldable = false;
 	bool checkable = false;
 	bool checked = false;
+	bool keying = false;
 	int indent_depth = 0;
 	int level = 1;
 	String related_enable_property;
@@ -381,6 +382,8 @@ class EditorInspectorSection : public Container {
 
 	Rect2 check_rect;
 	bool check_hover = false;
+	Rect2 keying_rect;
+	bool keying_hover = false;
 
 	bool checkbox_only = false;
 
@@ -419,8 +422,10 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> arrow_collapsed_mirrored;
 		Ref<Texture2D> icon_gui_checked;
 		Ref<Texture2D> icon_gui_unchecked;
+		Ref<Texture2D> icon_gui_animation_key;
 
 		Ref<StyleBoxFlat> indent_box;
+		Ref<StyleBoxFlat> key_hover;
 	} theme_cache;
 
 protected:
@@ -446,12 +451,15 @@ public:
 	void fold();
 	void set_bg_color(const Color &p_bg_color);
 	void reset_timer();
-	void set_checkable(const String &p_related_check_property, bool p_checkbox_only);
+	void set_checkable(const String &p_related_check_property, bool p_checkbox_only, bool p_checked);
+	inline bool is_checkable() const { return checkable; }
 	void set_checked(bool p_checked);
+	void set_keying(bool p_keying);
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
 	void _property_edited(const String &p_property);
+	void update_property();
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
