@@ -3937,6 +3937,7 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 
 void FileSystemDock::_update_thumbnail_size(int p_thumbnail_size) {
 	EditorSettings::get_singleton()->set("docks/filesystem/thumbnail_size", p_thumbnail_size);
+	file_list_thumbnail_scroll->set_tooltip_text("Change Thumbnail Size : " + rtos(p_thumbnail_size));
 	_update_file_list(true);
 }
 
@@ -4220,19 +4221,19 @@ FileSystemDock::FileSystemDock() {
 
 	thumbnail_scroll_container = memnew(VBoxContainer);
 	thumbnail_scroll_container->set_alignment(ALIGNMENT_CENTER);
-	thumbnail_scroll_container->set_tooltip_text("Change Thumbnail Size");
 	path_hb->add_child(thumbnail_scroll_container);
 
 	file_list_thumbnail_scroll = memnew(HScrollBar);
-	file_list_thumbnail_scroll->set_step(4);
-	file_list_thumbnail_scroll->set_custom_minimum_size(Vector2(40, 10) * EDSCALE);
+	file_list_thumbnail_scroll->set_min(16);
 	file_list_thumbnail_scroll->set_max(128);
-	file_list_thumbnail_scroll->set_min(16);
+	file_list_thumbnail_scroll->set_step(4);
 	file_list_thumbnail_scroll->set_value(EDITOR_GET("docks/filesystem/thumbnail_size"));
-	file_list_thumbnail_scroll->set_min(16);
-	thumbnail_scroll_container->add_child(file_list_thumbnail_scroll);
+	file_list_thumbnail_scroll->set_tooltip_text("Change Thumbnail Size : " + rtos(file_list_thumbnail_scroll->get_value()));
+
+	file_list_thumbnail_scroll->set_custom_minimum_size(Vector2(40, 10) * EDSCALE);
 	file_list_thumbnail_scroll->hide();
-	file_list_thumbnail_scroll->connect("value_changed", callable_mp(this, &FileSystemDock::_update_thumbnail_size).unbind(1).bind(file_list_thumbnail_scroll->get_value()));
+	thumbnail_scroll_container->add_child(file_list_thumbnail_scroll);
+	file_list_thumbnail_scroll->connect("value_changed", callable_mp(this, &FileSystemDock::_update_thumbnail_size));
 
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
