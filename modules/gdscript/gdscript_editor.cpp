@@ -841,7 +841,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->initializer);
 					if (call->is_constant && call->reduced) {
 						def_val = call->reduced_value.get_construct_string();
-					} else {
+					} else if (call->get_callee_type() == GDScriptParser::Node::IDENTIFIER) {
 						def_val = call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
 					}
 				} break;
