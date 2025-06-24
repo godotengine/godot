@@ -497,7 +497,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
-			resp->set_path(_get_owner_path() + "::"); // Assign a base path for built-in Resources.
+			resp->set_path(_get_owner_path() + "::" + resp->generate_scene_unique_id()); // Assign a base path for built-in Resources.
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
