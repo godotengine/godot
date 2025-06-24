@@ -40,6 +40,7 @@
 #include "drivers/unix/file_access_unix_pipe.h"
 #include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
+#include "drivers/unix/uds_socket_unix.h"
 #include "servers/rendering_server.h"
 
 #if defined(__APPLE__)
@@ -176,6 +177,7 @@ void OS_Unix::initialize_core() {
 #ifndef UNIX_SOCKET_UNAVAILABLE
 	NetSocketUnix::make_default();
 	IPUnix::make_default();
+	UDSSocketUnix::make_default();
 #endif
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -186,6 +188,7 @@ void OS_Unix::finalize_core() {
 	memdelete(process_map);
 #ifndef UNIX_SOCKET_UNAVAILABLE
 	NetSocketUnix::cleanup();
+	UDSSocketUnix::cleanup();
 #endif
 }
 

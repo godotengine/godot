@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerUDS" inherits="StreamPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A stream peer that handles Unix Domain Socket (UDS) connections.
+	</brief_description>
+	<description>
+		A stream peer that handles Unix Domain Socket (UDS) connections. This object can be used to connect to UDS servers, or also is returned by a UDS server. Unix Domain Sockets provide inter-process communication on the same machine using the filesystem namespace.
+		[b]Note:[/b] Unix Domain Sockets are only available on Unix-like systems (Linux, macOS, etc.) and are not supported on Windows.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bind">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Opens the UDS socket, and binds it to the specified socket path.
+				This method is generally not needed, and only used to force the subsequent call to [method connect_to_host] to use the specified [param path] as source address.
+			</description>
+		</method>
+		<method name="connect_to_host">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Connects to the specified Unix Domain Socket path. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="disconnect_from_host">
+			<return type="void" />
+			<description>
+				Disconnects from the socket.
+			</description>
+		</method>
+		<method name="get_connected_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the socket path of this peer.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="StreamPeerUDS.Status" />
+			<description>
+				Returns the status of the connection.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error" />
+			<description>
+				Poll the socket, updating its state. See [method get_status].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATUS_NONE" value="0" enum="Status">
+			The initial status of the [StreamPeerUDS]. This is also the status after disconnecting.
+		</constant>
+		<constant name="STATUS_CONNECTING" value="1" enum="Status">
+			A status representing a [StreamPeerUDS] that is connecting to a socket.
+		</constant>
+		<constant name="STATUS_CONNECTED" value="2" enum="Status">
+			A status representing a [StreamPeerUDS] that is connected to a socket.
+		</constant>
+		<constant name="STATUS_ERROR" value="3" enum="Status">
+			A status representing a [StreamPeerUDS] in error state.
+		</constant>
+	</constants>
+</class>

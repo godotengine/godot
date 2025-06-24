@@ -60,9 +60,12 @@
 #include "core/io/resource_uid.h"
 #include "core/io/stream_peer_gzip.h"
 #include "core/io/stream_peer_tls.h"
+#include "core/io/stream_peer_uds.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
 #include "core/io/udp_server.h"
+#include "core/io/uds_server.h"
+#include "core/io/uds_socket.h"
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
 #include "core/math/a_star_grid_2d.h"
@@ -203,6 +206,10 @@ void register_core_types() {
 	GDREGISTER_CLASS(StreamPeerGZIP);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
+
+	// IPC using UNIX domain sockets.
+	GDREGISTER_CLASS(StreamPeerUDS);
+	GDREGISTER_CLASS(UDSServer);
 
 	GDREGISTER_ABSTRACT_CLASS(PacketPeer);
 	GDREGISTER_CLASS(PacketPeerExtension);
