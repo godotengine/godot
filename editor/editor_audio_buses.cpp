@@ -1107,7 +1107,7 @@ void EditorAudioBuses::_rebuild_buses() {
 
 EditorAudioBuses *EditorAudioBuses::register_editor() {
 	EditorAudioBuses *audio_buses = memnew(EditorAudioBuses);
-	EditorNode::get_bottom_panel()->add_item(TTR("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
+	EditorNode::get_bottom_panel()->add_item(TTRC("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
 	return audio_buses;
 }
 

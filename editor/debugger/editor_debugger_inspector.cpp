@@ -43,12 +43,15 @@ bool EditorDebuggerRemoteObjects::_set(const StringName &p_name, const Variant &
 
 bool EditorDebuggerRemoteObjects::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field) {
 	String name = p_name;
-
-	if (name.begins_with("Metadata/")) {
-		name = name.replace_first("Metadata/", "metadata/");
-	}
 	if (!prop_values.has(name) || String(name).begins_with("Constants/")) {
 		return false;
+	}
+
+	// Change it back to the real name when fetching.
+	if (name == "Script") {
+		name = "script";
+	} else if (name.begins_with("Metadata/")) {
+		name = name.replace_first("Metadata/", "metadata/");
 	}
 
 	Dictionary &values = prop_values[p_name];
@@ -70,12 +73,15 @@ bool EditorDebuggerRemoteObjects::_set_impl(const StringName &p_name, const Vari
 
 bool EditorDebuggerRemoteObjects::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
-
-	if (name.begins_with("Metadata/")) {
-		name = name.replace_first("Metadata/", "metadata/");
-	}
 	if (!prop_values.has(name)) {
 		return false;
+	}
+
+	// Change it back to the real name when fetching.
+	if (name == "Script") {
+		name = "script";
+	} else if (name.begins_with("Metadata/")) {
+		name = name.replace_first("Metadata/", "metadata/");
 	}
 
 	r_ret = prop_values[p_name][remote_object_ids[0]];
@@ -85,11 +91,6 @@ bool EditorDebuggerRemoteObjects::_get(const StringName &p_name, Variant &r_ret)
 void EditorDebuggerRemoteObjects::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->clear(); // Sorry, don't want any categories.
 	for (const PropertyInfo &prop : prop_list) {
-		if (prop.name == "script") {
-			// Skip the script property, it's always added by the non-virtual method.
-			continue;
-		}
-
 		p_list->push_back(prop);
 	}
 }
@@ -115,6 +116,8 @@ Variant EditorDebuggerRemoteObjects::get_variant(const StringName &p_name) {
 
 void EditorDebuggerRemoteObjects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_title"), &EditorDebuggerRemoteObjects::get_title);
+	ClassDB::bind_method("_hide_script_from_inspector", &EditorDebuggerRemoteObjects::_hide_script_from_inspector);
+	ClassDB::bind_method("_hide_metadata_from_inspector", &EditorDebuggerRemoteObjects::_hide_metadata_from_inspector);
 
 	ADD_SIGNAL(MethodInfo("values_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "uint64_t:Variant"), PropertyInfo(Variant::STRING, "field")));
 }
@@ -230,10 +233,11 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	for (const SceneDebuggerObject &obj : objects) {
 		for (const SceneDebuggerObject::SceneDebuggerProperty &prop : obj.properties) {
 			PropertyInfo pinfo = prop.first;
+			// Rename those variables, so they don't conflict with the ones from the resource itself.
 			if (pinfo.name == "script") {
-				continue; // Added later manually, since this is intercepted before being set (check Variant Object::get()).
+				pinfo.name = "Script";
 			} else if (pinfo.name.begins_with("metadata/")) {
-				pinfo.name = pinfo.name.replace_first("metadata/", "Metadata/"); // Trick to not get actual metadata edited from EditorDebuggerRemoteObjects.
+				pinfo.name = pinfo.name.replace_first("metadata/", "Metadata/");
 			}
 
 			if (!usage.has(pinfo.name)) {
@@ -275,33 +279,18 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		const PropertyInfo &pinfo = KV.value.prop.first;
 		Variant var = KV.value.values[remote_objects->remote_object_ids[0]];
 
-		if (pinfo.type == Variant::OBJECT) {
-			if (var.is_string()) {
-				String path = var;
-				if (path.contains("::")) {
-					// Built-in resource.
-					String base_path = path.get_slice("::", 0);
-					Ref<Resource> dependency = ResourceLoader::load(base_path);
-					if (dependency.is_valid()) {
-						remote_dependencies.insert(dependency);
-					}
-				}
-				var = ResourceLoader::load(path);
-				KV.value.values[remote_objects->remote_object_ids[0]] = var;
-
-				if (pinfo.hint_string == "Script") {
-					if (remote_objects->get_script() != var) {
-						remote_objects->set_script(Ref<RefCounted>());
-						Ref<Script> scr(var);
-						if (scr.is_valid()) {
-							ScriptInstance *scr_instance = scr->placeholder_instance_create(remote_objects);
-							if (scr_instance) {
-								remote_objects->set_script_and_instance(var, scr_instance);
-							}
-						}
-					}
+		if (pinfo.type == Variant::OBJECT && var.is_string()) {
+			String path = var;
+			if (path.contains("::")) {
+				// Built-in resource.
+				String base_path = path.get_slice("::", 0);
+				Ref<Resource> dependency = ResourceLoader::load(base_path);
+				if (dependency.is_valid()) {
+					remote_dependencies.insert(dependency);
 				}
 			}
+			var = ResourceLoader::load(path);
+			KV.value.values[remote_objects->remote_object_ids[0]] = var;
 		}
 
 		// Always add the property, since props may have been added or removed.

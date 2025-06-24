@@ -1970,6 +1970,18 @@ Ref<Resource> SceneState::get_sub_resource(const String &p_path) {
 	return Ref<Resource>();
 }
 
+Vector<Ref<Resource>> SceneState::get_sub_resources() {
+	const String path_prefix = get_path() + "::";
+	Vector<Ref<Resource>> sub_resources;
+	for (const Variant &v : variants) {
+		const Ref<Resource> &res = v;
+		if (res.is_valid() && res->get_path().begins_with(path_prefix)) {
+			sub_resources.push_back(res);
+		}
+	}
+	return sub_resources;
+}
+
 //add
 
 int SceneState::add_name(const StringName &p_name) {

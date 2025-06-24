@@ -61,11 +61,6 @@
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Application export format (*.apk or *.aab).
 		</member>
-		<member name="gradle_build/google_play_instant" type="bool" setter="" getter="">
-			If [code]true[/code], configures the exported project for Play Instant Build.
-			Use this option when targeting Play Instant to allow users to launch the app without installation. See [url=https://developer.android.com/topic/google-play-instant/overview]Google Play Instant[/url].
-			[b]Note:[/b] Instant play games also need to be optimized for size. See [url=https://docs.godotengine.org/en/stable/contributing/development/compiling/optimizing_for_size.html]Optimizing a build for size[/url].
-		</member>
 		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
 			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.
 		</member>
@@ -602,6 +597,10 @@
 		</member>
 		<member name="permissions/write_user_dictionary" type="bool" setter="" getter="">
 			Allows an application to write to the user dictionary.
+		</member>
+		<member name="screen/edge_to_edge" type="bool" setter="" getter="">
+			If [code]true[/code], this makes the navigation and status bars translucent and allows the application content to extend edge to edge.
+			[b]Note:[/b] You should ensure that none of the application content is occluded by system elements by using the [method DisplayServer.get_display_safe_area] and [method DisplayServer.get_display_cutouts] methods.
 		</member>
 		<member name="screen/immersive_mode" type="bool" setter="" getter="">
 			If [code]true[/code], hides the navigation and status bar. Set [method DisplayServer.window_set_mode] to change this at runtime.

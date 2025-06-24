@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  terminal_logger_apple_embedded.mm                                     */
+/*  game_menu_utils_jni.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "terminal_logger_apple_embedded.h"
+#pragma once
 
-#ifdef APPLE_EMBEDDED_ENABLED
+#include <jni.h>
 
-#import <os/log.h>
-
-void TerminalLoggerAppleEmbedded::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
-	if (!should_log(true)) {
-		return;
-	}
-
-	const char *err_details;
-	if (p_rationale && p_rationale[0]) {
-		err_details = p_rationale;
-	} else {
-		err_details = p_code;
-	}
-
-	os_log_error(OS_LOG_DEFAULT,
-			"%{public}s: %{public}s\nat: %{public}s (%{public}s:%i)",
-			error_type_string(p_type), err_details, p_function, p_file, p_line);
-
-	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-		if (!backtrace->is_empty()) {
-			os_log_error(OS_LOG_DEFAULT, "%{public}s", backtrace->format().utf8().get_data());
-		}
-	}
+extern "C" {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSuspend(JNIEnv *env, jclass clazz, jboolean enabled);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_nextFrame(JNIEnv *env, jclass clazz);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setNodeType(JNIEnv *env, jclass clazz, jint type);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectMode(JNIEnv *env, jclass clazz, jint mode);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectionVisible(JNIEnv *env, jclass clazz, jboolean visible);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setCameraOverride(JNIEnv *env, jclass clazz, jboolean enabled);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setCameraManipulateMode(JNIEnv *env, jclass clazz, jint mode);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_resetCamera2DPosition(JNIEnv *env, jclass clazz);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_resetCamera3DPosition(JNIEnv *env, jclass clazz);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_playMainScene(JNIEnv *env, jclass clazz);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setDebugMuteAudio(JNIEnv *env, jclass clazz, jboolean enabled);
 }
-
-#endif // APPLE_EMBEDDED_ENABLED

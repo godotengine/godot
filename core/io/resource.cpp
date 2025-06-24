@@ -535,6 +535,10 @@ Ref<Resource> Resource::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresou
 	return dupe;
 }
 
+Ref<Resource> Resource::_duplicate_deep_bind(DeepDuplicateMode p_deep_subresources_mode) const {
+	return _duplicate_from_variant(true, (ResourceDeepDuplicateMode)p_deep_subresources_mode, 0);
+}
+
 Ref<Resource> Resource::_duplicate_from_variant(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const {
 	// A call without deep duplication would have been early-rejected at Variant::duplicate() unless it's the root call.
 	DEV_ASSERT(!(p_recursion_count > 0 && p_deep_subresources_mode == RESOURCE_DEEP_DUPLICATE_NONE));
@@ -724,12 +728,13 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "deep"), &Resource::duplicate, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("duplicate_deep", "deep_subresources_mode"), &Resource::duplicate_deep, DEFVAL(RESOURCE_DEEP_DUPLICATE_INTERNAL));
+	ClassDB::bind_method(D_METHOD("duplicate_deep", "deep_subresources_mode"), &Resource::_duplicate_deep_bind, DEFVAL(RESOURCE_DEEP_DUPLICATE_INTERNAL));
 
 	// For the bindings, it's much more natural to expose this enum from the Variant realm via Resource.
-	ClassDB::bind_integer_constant(get_class_static(), StringName("ResourceDeepDuplicateMode"), "RESOURCE_DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("ResourceDeepDuplicateMode"), "RESOURCE_DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("ResourceDeepDuplicateMode"), "RESOURCE_DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
+	// Therefore, we can't use BIND_ENUM_CONSTANT here because we need some customization.
+	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));

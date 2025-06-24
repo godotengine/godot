@@ -293,10 +293,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_variation_coordinates", "font_rid", "variation_coordinates"), &TextServer::font_set_variation_coordinates);
 	ClassDB::bind_method(D_METHOD("font_get_variation_coordinates", "font_rid"), &TextServer::font_get_variation_coordinates);
 
-#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("font_set_oversampling", "font_rid", "oversampling"), &TextServer::font_set_oversampling);
 	ClassDB::bind_method(D_METHOD("font_get_oversampling", "font_rid"), &TextServer::font_get_oversampling);
-#endif
 
 	ClassDB::bind_method(D_METHOD("font_get_size_cache_list", "font_rid"), &TextServer::font_get_size_cache_list);
 	ClassDB::bind_method(D_METHOD("font_clear_size_cache", "font_rid"), &TextServer::font_clear_size_cache);
@@ -2357,6 +2355,8 @@ TextServer::TextServer() {
 	GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"), 1);
+	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "internationalization/locale/line_breaking_strictness", PROPERTY_HINT_ENUM, "Auto,Loose,Normal,Strict"), 0);
 
 	_init_diacritics_map();
 }

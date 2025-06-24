@@ -3447,9 +3447,8 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 
 	const Transform2D tilemap_xform = p_source_geometry_data->root_node_transform * tile_map_layer->get_global_transform();
 
-	TypedArray<Vector2i> used_cells = tile_map_layer->get_used_cells();
-	for (int used_cell_index = 0; used_cell_index < used_cells.size(); used_cell_index++) {
-		const Vector2i &cell = used_cells[used_cell_index];
+	for (KeyValue<Vector2i, CellData> kv : tile_map_layer->get_tile_map_layer_data()) {
+		const Vector2i &cell = kv.key;
 
 		const TileData *tile_data = tile_map_layer->get_cell_tile_data(cell);
 		if (tile_data == nullptr) {

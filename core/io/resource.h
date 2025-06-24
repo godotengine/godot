@@ -96,6 +96,11 @@ private:
 	Variant _duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage = 0) const;
 	void _find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);
 
+	// Only for binding the deep duplicate method, so it doesn't need actual members.
+	enum DeepDuplicateMode : int;
+
+	_ALWAYS_INLINE_ Ref<Resource> _duplicate_deep_bind(DeepDuplicateMode p_deep_subresources_mode) const;
+
 protected:
 	virtual void _resource_path_changed();
 	static void _bind_methods();
@@ -183,7 +188,7 @@ public:
 	~Resource();
 };
 
-VARIANT_ENUM_CAST(ResourceDeepDuplicateMode);
+VARIANT_ENUM_CAST(Resource::DeepDuplicateMode);
 
 class ResourceCache {
 	friend class Resource;

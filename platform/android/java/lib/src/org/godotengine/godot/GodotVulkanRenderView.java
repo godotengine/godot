@@ -51,16 +51,14 @@ import androidx.annotation.Keep;
 import java.io.InputStream;
 
 class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
-	private final GodotHost host;
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
 	private final VkRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotVulkanRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler, boolean shouldBeTranslucent) {
-		super(host.getActivity());
+	public GodotVulkanRenderView(Godot godot, GodotInputHandler inputHandler, boolean shouldBeTranslucent) {
+		super(godot.getContext());
 
-		this.host = host;
 		this.godot = godot;
 		mInputHandler = inputHandler;
 		mRenderer = new VkRenderer();

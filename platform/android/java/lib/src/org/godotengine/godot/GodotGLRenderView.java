@@ -76,16 +76,14 @@ import java.io.InputStream;
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
 class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
-	private final GodotHost host;
 	private final Godot godot;
 	private final GodotInputHandler inputHandler;
 	private final GodotRenderer godotRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotGLRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
-		super(host.getActivity());
+	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
+		super(godot.getContext());
 
-		this.host = host;
 		this.godot = godot;
 		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();

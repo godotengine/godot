@@ -95,6 +95,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	void _pins_changed();
 	void _vertices_changed();
 	void _exceptions_changed();
+	void _motion_changed();
 
 public:
 	JoltSoftBody3D();

@@ -134,6 +134,30 @@ bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 				plugin->update_overlays();
 			} break;
 
+			case Drag::TOP_LEFT: {
+				selected_camera->set_limit(SIDE_LEFT, MIN(selected_camera->get_limit(SIDE_RIGHT), pos.x));
+				selected_camera->set_limit(SIDE_TOP, MIN(selected_camera->get_limit(SIDE_BOTTOM), pos.y));
+				plugin->update_overlays();
+			} break;
+
+			case Drag::TOP_RIGHT: {
+				selected_camera->set_limit(SIDE_RIGHT, MAX(selected_camera->get_limit(SIDE_LEFT), pos.x));
+				selected_camera->set_limit(SIDE_TOP, MIN(selected_camera->get_limit(SIDE_BOTTOM), pos.y));
+				plugin->update_overlays();
+			} break;
+
+			case Drag::BOTTOM_LEFT: {
+				selected_camera->set_limit(SIDE_LEFT, MIN(selected_camera->get_limit(SIDE_RIGHT), pos.x));
+				selected_camera->set_limit(SIDE_BOTTOM, MAX(selected_camera->get_limit(SIDE_TOP), pos.y));
+				plugin->update_overlays();
+			} break;
+
+			case Drag::BOTTOM_RIGHT: {
+				selected_camera->set_limit(SIDE_RIGHT, MAX(selected_camera->get_limit(SIDE_LEFT), pos.x));
+				selected_camera->set_limit(SIDE_BOTTOM, MAX(selected_camera->get_limit(SIDE_TOP), pos.y));
+				plugin->update_overlays();
+			} break;
+
 			case Drag::CENTER: {
 				Rect2 target_rect = selected_camera->get_limit_rect();
 				target_rect.position = pos - center_drag_point;
@@ -195,9 +219,18 @@ void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
 
 	const Rect2 limit_rect = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(selected_camera->get_limit_rect());
 	const float drag_tolerance = 8.0;
+	const Vector2 tolerance_vector = Vector2(1, 1) * drag_tolerance;
 
 	hover_type = Drag::NONE;
-	if (p_mouse_pos.y > limit_rect.position.y && p_mouse_pos.y < limit_rect.get_end().y) {
+	if (Rect2(limit_rect.position - tolerance_vector, tolerance_vector * 2).has_point(p_mouse_pos)) {
+		hover_type = Drag::TOP_LEFT;
+	} else if (Rect2(Vector2(limit_rect.get_end().x, limit_rect.position.y) - tolerance_vector, tolerance_vector * 2).has_point(p_mouse_pos)) {
+		hover_type = Drag::TOP_RIGHT;
+	} else if (Rect2(Vector2(limit_rect.position.x, limit_rect.get_end().y) - tolerance_vector, tolerance_vector * 2).has_point(p_mouse_pos)) {
+		hover_type = Drag::BOTTOM_LEFT;
+	} else if (Rect2(limit_rect.get_end() - tolerance_vector, tolerance_vector * 2).has_point(p_mouse_pos)) {
+		hover_type = Drag::BOTTOM_RIGHT;
+	} else if (p_mouse_pos.y > limit_rect.position.y && p_mouse_pos.y < limit_rect.get_end().y) {
 		if (Math::abs(p_mouse_pos.x - limit_rect.position.x) < drag_tolerance) {
 			hover_type = Drag::LEFT;
 		} else if (Math::abs(p_mouse_pos.x - limit_rect.get_end().x) < drag_tolerance) {
@@ -211,11 +244,21 @@ void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
 		}
 	}
 
-	/* Temporarily disabled, because it needs more changes.
 	if (hover_type == Drag::NONE && limit_rect.has_point(p_mouse_pos)) {
-		hover_type = Drag::CENTER;
+		const Rect2 editor_rect = Rect2(Vector2(), CanvasItemEditor::get_singleton()->get_viewport_control()->get_size());
+		const Rect2 transformed_rect = selected_camera->get_viewport()->get_canvas_transform().xform_inv(limit_rect);
+
+		// Only allow center drag if any limit edge is visible on screen.
+		bool edge_visible = false;
+		edge_visible = edge_visible || (transformed_rect.get_end().y > editor_rect.position.y && transformed_rect.position.y < editor_rect.get_end().y && transformed_rect.position.x > editor_rect.position.x && transformed_rect.position.x < editor_rect.get_end().x);
+		edge_visible = edge_visible || (transformed_rect.get_end().y > editor_rect.position.y && transformed_rect.position.y < editor_rect.get_end().y && transformed_rect.get_end().x > editor_rect.position.x && transformed_rect.get_end().x < editor_rect.get_end().x);
+		edge_visible = edge_visible || (transformed_rect.get_end().x > editor_rect.position.x && transformed_rect.position.x < editor_rect.get_end().x && transformed_rect.position.y > editor_rect.position.y && transformed_rect.position.y < editor_rect.get_end().y);
+		edge_visible = edge_visible || (transformed_rect.get_end().x > editor_rect.position.x && transformed_rect.position.x < editor_rect.get_end().x && transformed_rect.get_end().y > editor_rect.position.y && transformed_rect.get_end().y < editor_rect.get_end().y);
+
+		if (edge_visible) {
+			hover_type = Drag::CENTER;
+		}
 	}
-	*/
 
 	switch (hover_type) {
 		case Drag::NONE: {
@@ -228,6 +271,14 @@ void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
 		case Drag::TOP:
 		case Drag::BOTTOM: {
 			CanvasItemEditor::get_singleton()->set_cursor_shape_override(CURSOR_VSIZE);
+		} break;
+		case Drag::TOP_LEFT:
+		case Drag::BOTTOM_RIGHT: {
+			CanvasItemEditor::get_singleton()->set_cursor_shape_override(CURSOR_FDIAGSIZE);
+		} break;
+		case Drag::TOP_RIGHT:
+		case Drag::BOTTOM_LEFT: {
+			CanvasItemEditor::get_singleton()->set_cursor_shape_override(CURSOR_BDIAGSIZE);
 		} break;
 		case Drag::CENTER: {
 			CanvasItemEditor::get_singleton()->set_cursor_shape_override(CURSOR_MOVE);

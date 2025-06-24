@@ -68,7 +68,7 @@ void EditorFileDialog::_native_popup() {
 	}
 	DisplayServer::WindowID wid = w ? w->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
 
-	DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb), wid);
+	DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb), wid);
 }
 
 void EditorFileDialog::popup(const Rect2i &p_rect) {

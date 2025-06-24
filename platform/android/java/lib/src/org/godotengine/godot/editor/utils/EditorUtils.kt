@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  macos_terminal_logger.h                                               */
+/*  EditorUtils.kt                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+package org.godotengine.godot.editor.utils
 
-#ifdef MACOS_ENABLED
-
-#include "core/io/logger.h"
-
-class MacOSTerminalLogger : public StdLogger {
-public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
-};
-
-#endif // MACOS_ENABLED
+/**
+ * Utility class for accessing and using editor specific capabilities.
+ *
+ * This class is only functional on editor builds.
+ */
+object EditorUtils {
+	@JvmStatic
+	external fun runScene(scene: String, sceneArgs: Array<String>)
+}

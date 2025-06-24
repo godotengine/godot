@@ -847,7 +847,9 @@ void ScriptCreateDialog::_bind_methods() {
 }
 
 ScriptCreateDialog::ScriptCreateDialog() {
-	EDITOR_DEF("_script_setup_templates_dictionary", Dictionary());
+	if (EditorSettings::get_singleton()) {
+		EDITOR_DEF("_script_setup_templates_dictionary", Dictionary());
+	}
 
 	/* Main Controls */
 

@@ -28,13 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.utils
+package org.godotengine.godot.editor.utils
 
 import android.util.Log
 import org.godotengine.godot.GodotLib
 
 /**
  * Utility class for accessing and using game menu APIs.
+ *
+ * This class is only functional on editor builds.
  */
 object GameMenuUtils {
 	private val TAG = GameMenuUtils::class.java.simpleName

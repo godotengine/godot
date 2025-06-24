@@ -1389,7 +1389,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 void EditorFileSystem::_process_removed_files(const HashSet<String> &p_processed_files) {
 	for (const KeyValue<String, EditorFileSystem::FileCache> &kv : file_cache) {
 		if (!p_processed_files.has(kv.key)) {
-			if (ClassDB::is_parent_class(kv.value.type, SNAME("Script"))) {
+			if (ClassDB::is_parent_class(kv.value.type, SNAME("Script")) || ClassDB::is_parent_class(kv.value.type, SNAME("PackedScene"))) {
 				// A script has been removed from disk since the last startup. The documentation needs to be updated.
 				// There's no need to add the path in update_script_paths since that is exclusively for updating global class names,
 				// which is handled in _first_scan_filesystem before the full scan to ensure plugins and autoloads can be created.
@@ -1934,9 +1934,16 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 	int cpos = -1;
 	for (int i = 0; i < fs->files.size(); i++) {
-		if (fs->files[i]->file == file) {
-			cpos = i;
-			break;
+		if (fs_case_sensitive) {
+			if (fs->files[i]->file == file) {
+				cpos = i;
+				break;
+			}
+		} else {
+			if (fs->files[i]->file.to_lower() == file.to_lower()) {
+				cpos = i;
+				break;
+			}
 		}
 	}
 
@@ -2196,6 +2203,29 @@ void EditorFileSystem::_update_script_documentation() {
 		if (!efd || index < 0) {
 			// The file was removed
 			EditorHelp::remove_script_doc_by_path(path);
+			continue;
+		}
+
+		if (path.ends_with(".tscn")) {
+			Ref<PackedScene> packed_scene = ResourceLoader::load(path);
+			if (packed_scene.is_valid()) {
+				Ref<SceneState> state = packed_scene->get_state();
+				if (state.is_valid()) {
+					Vector<Ref<Resource>> sub_resources = state->get_sub_resources();
+					for (Ref<Resource> sub_resource : sub_resources) {
+						Ref<Script> scr = sub_resource;
+						if (scr.is_valid()) {
+							for (const DocData::ClassDoc &cd : scr->get_documentation()) {
+								EditorHelp::add_doc(cd);
+								if (!first_scan) {
+									// Update the documentation in the Script Editor if it is open.
+									ScriptEditor::get_singleton()->update_doc(cd.name);
+								}
+							}
+						}
+					}
+				}
+			}
 			continue;
 		}
 
@@ -2982,6 +3012,13 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 	}
 
+	for (const String &path : gen_files) {
+		Ref<Resource> cached = ResourceCache::get_ref(path);
+		if (cached.is_valid()) {
+			cached->reload_from_file();
+		}
+	}
+
 	if (ResourceUID::get_singleton()->has_id(uid)) {
 		ResourceUID::get_singleton()->set_id(uid, p_file);
 	} else {
@@ -3045,15 +3082,21 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 			return err;
 		}
 
-		// Remove uid from .import file to avoid conflict.
+		// Roll a new uid for this copied .import file to avoid conflict.
+		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id();
+
+		// Save the new .import file
 		Ref<ConfigFile> cfg;
 		cfg.instantiate();
 		cfg->load(p_from + ".import");
-		cfg->erase_section_key("remap", "uid");
+		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
 		err = cfg->save(p_to + ".import");
 		if (err != OK) {
 			return err;
 		}
+
+		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
+		ResourceUID::get_singleton()->add_id(res_uid, p_to);
 	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
 		Error err = da->copy(p_from, p_to);
@@ -3078,7 +3121,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 	return OK;
 }
 
-bool EditorFileSystem::_copy_directory(const String &p_from, const String &p_to, List<CopiedFile> *p_files) {
+bool EditorFileSystem::_copy_directory(const String &p_from, const String &p_to, HashMap<String, String> *p_files) {
 	Ref<DirAccess> old_dir = DirAccess::open(p_from);
 	ERR_FAIL_COND_V(old_dir.is_null(), false);
 
@@ -3095,10 +3138,7 @@ bool EditorFileSystem::_copy_directory(const String &p_from, const String &p_to,
 		if (old_dir->current_is_dir()) {
 			success = _copy_directory(p_from.path_join(F), p_to.path_join(F), p_files) && success;
 		} else if (F.get_extension() != "import" && F.get_extension() != "uid") {
-			CopiedFile copy;
-			copy.from = p_from.path_join(F);
-			copy.to = p_to.path_join(F);
-			p_files->push_back(copy);
+			(*p_files)[p_from.path_join(F)] = p_to.path_join(F);
 		}
 	}
 	return success;
@@ -3245,11 +3285,13 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 					int imported_count = 0;
 					while (true) {
-						ep->step(reimport_files[imported_count].path.get_file(), from + imported_count, false);
-						imported_sem.wait();
-						do {
-							imported_count++;
-						} while (imported_sem.try_wait());
+						while (true) {
+							ep->step(reimport_files[imported_count].path.get_file(), from + imported_count, false);
+							if (imported_sem.try_wait()) {
+								imported_count++;
+								break;
+							}
+						}
 						if (imported_count == item_count) {
 							break;
 						}
@@ -3493,24 +3535,46 @@ Error EditorFileSystem::copy_file(const String &p_from, const String &p_to) {
 }
 
 Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to) {
-	List<CopiedFile> files;
+	// Recursively copy directories and build a map of files to copy.
+	HashMap<String, String> files;
 	bool success = _copy_directory(p_from, p_to, &files);
 
-	EditorProgress *ep = nullptr;
-	if (files.size() > 10) {
-		ep = memnew(EditorProgress("_copy_files", TTR("Copying files..."), files.size()));
+	// Copy the files themselves
+	if (success) {
+		EditorProgress *ep = nullptr;
+		if (files.size() > 10) {
+			ep = memnew(EditorProgress("copy_directory", TTR("Copying files..."), files.size()));
+		}
+		int i = 0;
+		for (const KeyValue<String, String> &tuple : files) {
+			if (_copy_file(tuple.key, tuple.value) != OK) {
+				success = false;
+			}
+			if (ep) {
+				ep->step(tuple.key.get_file(), i++, false);
+			}
+		}
+		memdelete_notnull(ep);
 	}
 
-	int i = 0;
-	for (const CopiedFile &F : files) {
-		if (_copy_file(F.from, F.to) != OK) {
-			success = false;
+	// Now remap any internal dependencies (within the folder) to use the new files.
+	if (success) {
+		EditorProgress *ep = nullptr;
+		if (files.size() > 10) {
+			ep = memnew(EditorProgress("copy_directory", TTR("Remapping dependencies..."), files.size()));
 		}
-		if (ep) {
-			ep->step(F.from.get_file(), i++, false);
+		int i = 0;
+		for (const KeyValue<String, String> &tuple : files) {
+			if (ResourceLoader::rename_dependencies(tuple.value, files) != OK) {
+				success = false;
+			}
+			update_file(tuple.value);
+			if (ep) {
+				ep->step(tuple.key.get_file(), i++, false);
+			}
 		}
+		memdelete_notnull(ep);
 	}
-	memdelete_notnull(ep);
 
 	EditorFileSystemDirectory *efd = get_filesystem_path(p_to);
 	ERR_FAIL_NULL_V(efd, FAILED);

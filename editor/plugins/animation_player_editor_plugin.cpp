@@ -2436,7 +2436,7 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	EditorNode::get_bottom_panel()->add_item(TTR("Animation"), anim_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Bottom Panel"), KeyModifierMask::ALT | Key::N));
+	EditorNode::get_bottom_panel()->add_item(TTRC("Animation"), anim_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Bottom Panel"), KeyModifierMask::ALT | Key::N));
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {

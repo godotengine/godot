@@ -51,6 +51,10 @@ class Camera2DEditor : public Control {
 		TOP,
 		RIGHT,
 		BOTTOM,
+		TOP_LEFT,
+		TOP_RIGHT,
+		BOTTOM_LEFT,
+		BOTTOM_RIGHT,
 		CENTER,
 	};
 	Drag drag_type = Drag::NONE;

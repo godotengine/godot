@@ -181,10 +181,6 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 			ubo.ambient_light_color_energy[1] = color.g * energy;
 			ubo.ambient_light_color_energy[2] = color.b * energy;
 
-			Basis sky_transform = render_scene_render->environment_get_sky_orientation(p_env);
-			sky_transform = sky_transform.inverse() * cam_transform.basis;
-			RendererRD::MaterialStorage::store_transform_3x3(sky_transform, ubo.radiance_inverse_xform);
-
 			bool use_ambient_cubemap = (ambient_src == RS::ENV_AMBIENT_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ambient_src == RS::ENV_AMBIENT_SOURCE_SKY;
 			bool use_ambient_light = use_ambient_cubemap || ambient_src == RS::ENV_AMBIENT_SOURCE_COLOR;
 			ubo.flags |= use_ambient_cubemap ? SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP : 0;
@@ -195,6 +191,12 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 		RS::EnvironmentReflectionSource ref_src = render_scene_render->environment_get_reflection_source(p_env);
 		if ((ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ref_src == RS::ENV_REFLECTION_SOURCE_SKY) {
 			ubo.flags |= SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP;
+		}
+
+		if ((ubo.flags & SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP) || (ubo.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
+			Basis sky_transform = render_scene_render->environment_get_sky_orientation(p_env);
+			sky_transform = sky_transform.inverse() * cam_transform.basis;
+			RendererRD::MaterialStorage::store_transform_3x3(sky_transform, ubo.radiance_inverse_xform);
 		}
 
 		ubo.flags |= render_scene_render->environment_get_fog_enabled(p_env) ? SCENE_DATA_FLAGS_USE_FOG : 0;
