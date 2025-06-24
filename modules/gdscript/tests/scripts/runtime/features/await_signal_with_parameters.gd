@@ -15,11 +15,14 @@ func await_two_parameters():
 	print(result)
 
 func test():
+	@warning_ignore("missing_await")
 	await_no_parameters()
 	no_parameters.emit()
 
+	@warning_ignore("missing_await")
 	await_one_parameter()
 	one_parameter.emit(1)
 
+	@warning_ignore("missing_await")
 	await_two_parameters()
 	two_parameters.emit(1, 2)
