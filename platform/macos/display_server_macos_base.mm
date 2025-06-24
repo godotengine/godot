@@ -29,10 +29,13 @@
 /**************************************************************************/
 
 #import "display_server_macos_base.h"
+#import "key_mapping_macos.h"
 #import "tts_macos.h"
 
 #include "core/config/project_settings.h"
 #include "drivers/png/png_driver_common.h"
+
+#import <Carbon/Carbon.h>
 
 void DisplayServerMacOSBase::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
@@ -157,10 +160,161 @@ void DisplayServerMacOSBase::tts_stop() {
 	[tts stopSpeaking];
 }
 
+void DisplayServerMacOSBase::_update_keyboard_layouts() const {
+	kbd_layouts.clear();
+	current_layout = 0;
+
+	TISInputSourceRef cur_source = TISCopyCurrentKeyboardInputSource();
+	NSString *cur_name = (__bridge NSString *)TISGetInputSourceProperty(cur_source, kTISPropertyLocalizedName);
+	CFRelease(cur_source);
+
+	// Enum IME layouts.
+	NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
+	NSArray *list_ime = (__bridge NSArray *)TISCreateInputSourceList((__bridge CFDictionaryRef)filter_ime, false);
+	for (NSUInteger i = 0; i < [list_ime count]; i++) {
+		LayoutInfo ly;
+		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
+		ly.name.append_utf8([name UTF8String]);
+
+		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyInputSourceLanguages);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		kbd_layouts.push_back(ly);
+
+		if ([name isEqualToString:cur_name]) {
+			current_layout = kbd_layouts.size() - 1;
+		}
+	}
+
+	// Enum plain keyboard layouts.
+	NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
+	NSArray *list_kbd = (__bridge NSArray *)TISCreateInputSourceList((__bridge CFDictionaryRef)filter_kbd, false);
+	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
+		LayoutInfo ly;
+		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
+		ly.name.append_utf8([name UTF8String]);
+
+		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyInputSourceLanguages);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		kbd_layouts.push_back(ly);
+
+		if ([name isEqualToString:cur_name]) {
+			current_layout = kbd_layouts.size() - 1;
+		}
+	}
+
+	keyboard_layout_dirty = false;
+}
+
+void DisplayServerMacOSBase::_keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info) {
+	DisplayServerMacOSBase *ds = (DisplayServerMacOSBase *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->keyboard_layout_dirty = true;
+	}
+}
+
+int DisplayServerMacOSBase::keyboard_get_layout_count() const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+	return kbd_layouts.size();
+}
+
+void DisplayServerMacOSBase::keyboard_set_current_layout(int p_index) {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	ERR_FAIL_INDEX(p_index, kbd_layouts.size());
+
+	NSString *cur_name = [NSString stringWithUTF8String:kbd_layouts[p_index].name.utf8().get_data()];
+
+	NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
+	NSArray *list_kbd = (__bridge NSArray *)TISCreateInputSourceList((__bridge CFDictionaryRef)filter_kbd, false);
+	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
+		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
+		if ([name isEqualToString:cur_name]) {
+			TISSelectInputSource((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i]);
+			break;
+		}
+	}
+
+	NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
+	NSArray *list_ime = (__bridge NSArray *)TISCreateInputSourceList((__bridge CFDictionaryRef)filter_ime, false);
+	for (NSUInteger i = 0; i < [list_ime count]; i++) {
+		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
+		if ([name isEqualToString:cur_name]) {
+			TISSelectInputSource((__bridge TISInputSourceRef)[list_ime objectAtIndex:i]);
+			break;
+		}
+	}
+}
+
+int DisplayServerMacOSBase::keyboard_get_current_layout() const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	return current_layout;
+}
+
+String DisplayServerMacOSBase::keyboard_get_layout_language(int p_index) const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
+	return kbd_layouts[p_index].code;
+}
+
+String DisplayServerMacOSBase::keyboard_get_layout_name(int p_index) const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
+	return kbd_layouts[p_index].name;
+}
+
+Key DisplayServerMacOSBase::keyboard_get_keycode_from_physical(Key p_keycode) const {
+	if (p_keycode == Key::PAUSE || p_keycode == Key::NONE) {
+		return p_keycode;
+	}
+
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
+	unsigned int macos_keycode = KeyMappingMacOS::unmap_key(keycode_no_mod);
+	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, false) | modifiers);
+}
+
+Key DisplayServerMacOSBase::keyboard_get_label_from_physical(Key p_keycode) const {
+	if (p_keycode == Key::PAUSE || p_keycode == Key::NONE) {
+		return p_keycode;
+	}
+
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
+	unsigned int macos_keycode = KeyMappingMacOS::unmap_key(keycode_no_mod);
+	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, true) | modifiers);
+}
+
+void DisplayServerMacOSBase::show_emoji_and_symbol_picker() const {
+	[[NSApplication sharedApplication] orderFrontCharacterPalette:nil];
+}
+
 DisplayServerMacOSBase::DisplayServerMacOSBase() {
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
 		initialize_tts();
 	}
+
+	// Register to be notified on keyboard layout changes.
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
+			nullptr, _keyboard_layout_changed,
+			kTISNotifySelectedKeyboardInputSourceChanged, nullptr,
+			CFNotificationSuspensionBehaviorDeliverImmediately);
+}
+
+DisplayServerMacOSBase::~DisplayServerMacOSBase() {
+	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), nullptr, kTISNotifySelectedKeyboardInputSourceChanged, nullptr);
 }
