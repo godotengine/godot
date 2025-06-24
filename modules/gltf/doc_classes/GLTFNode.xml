@@ -27,21 +27,6 @@
 				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the return value can be anything you set. If nothing was set, the return value is [code]null[/code].
 			</description>
 		</method>
-		<method name="get_multimesh_rotation">
-			<return type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="get_multimesh_scale">
-			<return type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="get_multimesh_translation">
-			<return type="int" />
-			<description>
-			</description>
-		</method>
 		<method name="get_scene_node_path">
 			<return type="NodePath" />
 			<param index="0" name="gltf_state" type="GLTFState" />
@@ -60,24 +45,6 @@
 				The first argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the second argument can be anything you want.
 			</description>
 		</method>
-		<method name="set_multimesh_rotation">
-			<return type="void" />
-			<param index="0" name="multimesh_rotation" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="set_multimesh_scale">
-			<return type="void" />
-			<param index="0" name="multimesh_scale" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="set_multimesh_translation">
-			<return type="void" />
-			<param index="0" name="multimesh_translation" type="int" />
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="camera" type="int" setter="set_camera" getter="get_camera" default="-1">
@@ -94,6 +61,15 @@
 		</member>
 		<member name="mesh" type="int" setter="set_mesh" getter="get_mesh" default="-1">
 			If this glTF node is a mesh, the index of the [GLTFMesh] in the [GLTFState] that describes the mesh's properties. If -1, this node is not a mesh.
+		</member>
+		<member name="multimesh_rotation" type="int" setter="set_multimesh_rotation" getter="get_multimesh_rotation" default="-1">
+			The index of accessor for multimesh instances rotations. If -1, there is no accessor.
+		</member>
+		<member name="multimesh_scale" type="int" setter="set_multimesh_scale" getter="get_multimesh_scale" default="-1">
+			The index of accessor for multimesh instances scales. If -1, there is no accessor.
+		</member>
+		<member name="multimesh_translation" type="int" setter="set_multimesh_translation" getter="get_multimesh_translation" default="-1">
+			The index of accessor for multimesh instances translations. If -1, there is no accessor.
 		</member>
 		<member name="original_name" type="String" setter="set_original_name" getter="get_original_name" default="&quot;&quot;">
 			The original name of the node.
