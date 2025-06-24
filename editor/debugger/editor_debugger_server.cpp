@@ -119,12 +119,70 @@ Ref<RemoteDebuggerPeer> EditorDebuggerServerTCP::take_connection() {
 	return memnew(RemoteDebuggerPeerTCP(server->take_connection()));
 }
 
+class EditorDebuggerServerUDS : public EditorDebuggerServer {
+private:
+	Ref<UDSServer> server;
+	String endpoint;
+
+public:
+	static EditorDebuggerServer *create(const String &p_protocol);
+
+	virtual void poll() override {}
+	virtual String get_uri() const override { return endpoint; }
+	virtual Error start(const String &p_uri) override;
+	virtual void stop() override;
+	virtual bool is_active() const override;
+	virtual bool is_connection_available() const override;
+	virtual Ref<RemoteDebuggerPeer> take_connection() override;
+
+	EditorDebuggerServerUDS();
+};
+
+EditorDebuggerServer *EditorDebuggerServerUDS::create(const String &p_protocol) {
+	ERR_FAIL_COND_V(p_protocol != "unix://", nullptr);
+	return memnew(EditorDebuggerServerUDS);
+}
+
+EditorDebuggerServerUDS::EditorDebuggerServerUDS() {
+	server.instantiate();
+}
+
+Error EditorDebuggerServerUDS::start(const String &p_uri) {
+	String bind_path = p_uri.is_empty() ? String("/tmp/godot_debugger.sock") : p_uri.replace("unix://", "");
+
+	const Error err = server->listen(bind_path);
+	if (err != OK) {
+		EditorNode::get_log()->add_message(vformat("Cannot listen at path %s, remote debugging unavailable.", bind_path), EditorLog::MSG_TYPE_ERROR);
+		return err;
+	}
+	endpoint = "unix://" + bind_path;
+	return OK;
+}
+
+void EditorDebuggerServerUDS::stop() {
+	server->stop();
+}
+
+bool EditorDebuggerServerUDS::is_active() const {
+	return server->is_listening();
+}
+
+bool EditorDebuggerServerUDS::is_connection_available() const {
+	return server->is_listening() && server->is_connection_available();
+}
+
+Ref<RemoteDebuggerPeer> EditorDebuggerServerUDS::take_connection() {
+	ERR_FAIL_COND_V(!is_connection_available(), Ref<RemoteDebuggerPeer>());
+	return memnew(RemoteDebuggerPeerUDS(server->take_connection()));
+}
+
 /// EditorDebuggerServer
 HashMap<StringName, EditorDebuggerServer::CreateServerFunc> EditorDebuggerServer::protocols;
 
 EditorDebuggerServer *EditorDebuggerServer::create(const String &p_protocol) {
-	ERR_FAIL_COND_V(!protocols.has(p_protocol), nullptr);
-	return protocols[p_protocol](p_protocol);
+	CreateServerFunc *create_fn = protocols.getptr(p_protocol);
+	ERR_FAIL_NULL_V(create_fn, nullptr);
+	return (*create_fn)(p_protocol);
 }
 
 void EditorDebuggerServer::register_protocol_handler(const String &p_protocol, CreateServerFunc p_func) {
@@ -134,6 +192,9 @@ void EditorDebuggerServer::register_protocol_handler(const String &p_protocol, C
 
 void EditorDebuggerServer::initialize() {
 	register_protocol_handler("tcp://", EditorDebuggerServerTCP::create);
+#if defined(UNIX_ENABLED)
+	register_protocol_handler("unix://", EditorDebuggerServerUDS::create);
+#endif
 }
 
 void EditorDebuggerServer::deinitialize() {

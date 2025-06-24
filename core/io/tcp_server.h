@@ -35,8 +35,8 @@
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
 
-class TCPServer : public RefCounted {
-	GDCLASS(TCPServer, RefCounted);
+class SocketServer : public RefCounted {
+	GDCLASS(SocketServer, RefCounted);
 
 protected:
 	enum {
@@ -47,14 +47,34 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
-	int get_local_port() const;
 	bool is_listening() const;
 	bool is_connection_available() const;
-	Ref<StreamPeerTCP> take_connection();
 
 	void stop(); // Stop listening
 
-	TCPServer();
-	~TCPServer();
+	SocketServer();
+	~SocketServer();
+};
+
+class TCPServer : public SocketServer {
+	GDCLASS(TCPServer, RefCounted);
+
+protected:
+	static void _bind_methods();
+
+public:
+	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
+	int get_local_port() const;
+	Ref<StreamPeerTCP> take_connection();
+};
+
+class UDSServer : public SocketServer {
+	GDCLASS(UDSServer, RefCounted);
+
+protected:
+	static void _bind_methods();
+
+public:
+	Error listen(const String &p_path);
+	Ref<StreamPeerUDS> take_connection();
 };
