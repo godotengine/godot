@@ -251,7 +251,7 @@ void fog() {
 		if (is_built_in) {
 			Node *edited_scene = get_tree()->get_edited_scene_root();
 			if (likely(edited_scene)) {
-				shader->set_path(edited_scene->get_scene_file_path() + "::");
+				shader->set_path(edited_scene->get_scene_file_path() + "::" + shader->generate_scene_unique_id());
 			}
 		} else {
 			String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
