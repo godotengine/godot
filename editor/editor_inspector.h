@@ -645,7 +645,7 @@ class EditorInspector : public ScrollContainer {
 	// Map used to cache the instantiated editors.
 	HashMap<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
-	HashSet<StringName> pending;
+	LocalVector<StringName> pending;
 
 	void _clear(bool p_hide_plugins = true);
 	Object *object = nullptr;
