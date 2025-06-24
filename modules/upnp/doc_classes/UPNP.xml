@@ -173,7 +173,7 @@
 			Inconsistent parameters.
 		</constant>
 		<constant name="UPNP_RESULT_NO_SUCH_ENTRY_IN_ARRAY" value="4" enum="UPNPResult">
-			No such entry in array. May be returned if a given port, protocol combination is not found on an [UPNPDevice].
+			No such entry in array. May be returned if a given port, protocol combination is not found on a [UPNPDevice].
 		</constant>
 		<constant name="UPNP_RESULT_ACTION_FAILED" value="5" enum="UPNPResult">
 			The action failed.
