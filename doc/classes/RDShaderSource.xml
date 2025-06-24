@@ -37,6 +37,12 @@
 		<member name="source_fragment" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
 			Source code for the shader's fragment stage.
 		</member>
+		<member name="source_mesh" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
+			Source code for the shader's mesh stage.
+		</member>
+		<member name="source_mesh_task" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
+			Source code for the shader's mesh task stage.
+		</member>
 		<member name="source_tesselation_control" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
 			Source code for the shader's tessellation control stage.
 		</member>

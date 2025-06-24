@@ -3455,6 +3455,12 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 			case SHADER_STAGE_COMPUTE:
 				shader->stage_bits.set_flag(RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 				break;
+			case SHADER_STAGE_MESH_TASK:
+				shader->stage_bits.set_flag(RDD::PIPELINE_STAGE_MESH_TASK_SHADER_BIT);
+				break;
+			case SHADER_STAGE_MESH:
+				shader->stage_bits.set_flag(RDD::PIPELINE_STAGE_MESH_SHADER_BIT);
+				break;
 			default:
 				DEV_ASSERT(false && "Unknown shader stage.");
 				break;
@@ -3962,8 +3968,8 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 	ERR_FAIL_NULL_V(shader, RID());
 	ERR_FAIL_COND_V_MSG(shader->is_compute, RID(), "Compute shaders can't be used in render pipelines");
 
-	// Validate pre-raster shader. One of stages must be vertex shader or mesh shader (not implemented yet).
-	ERR_FAIL_COND_V_MSG(!shader->stage_bits.has_flag(RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT), RID(), "Pre-raster shader (vertex shader) is not provided for pipeline creation.");
+	// Validate pre-raster shader. One of stages must be vertex shader unless using mesh shader.
+	ERR_FAIL_COND_V_MSG(!shader->stage_bits.has_flag(RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT) && !shader->stage_bits.has_flag(RDD::PIPELINE_STAGE_MESH_SHADER_BIT), RID(), "Pre-raster shader (vertex shader) is not provided for pipeline creation.");
 
 	FramebufferFormat fb_format;
 	{
@@ -4999,6 +5005,157 @@ void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2 &p_r
 
 	draw_list.viewport = p_rect;
 	draw_graph.add_draw_list_set_viewport(p_rect);
+}
+
+void RenderingDevice::draw_list_dispatch_mesh(DrawListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
+	ERR_FAIL_COND(!draw_list.active);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!has_feature(SUPPORTS_MESH_SHADER),
+			"The GPU doesn't support Mesh Shaders, its your responsibility to check it does before calling this.");
+
+	ERR_FAIL_COND_MSG(p_x_groups == 0, "Dispatch amount of X mesh/task groups (" + itos(p_x_groups) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_y_groups == 0, "Dispatch amount of Y mesh/task groups (" + itos(p_y_groups) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_z_groups == 0, "Dispatch amount of Z mesh/task groups (" + itos(p_z_groups) + ") is zero.");
+
+	const Shader *shader = shader_owner.get_or_null(draw_list.state.pipeline_shader);
+	ERR_FAIL_NULL(shader);
+	if (shader->stage_bits.has_flag(RDD::PIPELINE_STAGE_MESH_TASK_SHADER_BIT)) {
+		ERR_FAIL_COND_MSG(p_x_groups > driver->limit_get(LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_X),
+				"Dispatch amount of X task groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(driver->limit_get(LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_X)) + ")");
+		ERR_FAIL_COND_MSG(p_y_groups > driver->limit_get(LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_Y),
+				"Dispatch amount of Y task groups (" + itos(p_y_groups) + ") is larger than device limit (" + itos(driver->limit_get(LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_Y)) + ")");
+		ERR_FAIL_COND_MSG(p_z_groups > driver->limit_get(LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_Z),
+				"Dispatch amount of Z task groups (" + itos(p_z_groups) + ") is larger than device limit (" + itos(driver->limit_get(LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_Z)) + ")");
+	} else if (shader->stage_bits.has_flag(RDD::PIPELINE_STAGE_MESH_SHADER_BIT)) {
+		ERR_FAIL_COND_MSG(p_x_groups > driver->limit_get(LIMIT_MAX_MESH_WORKGROUP_COUNT_X),
+				"Dispatch amount of X mesh groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(driver->limit_get(LIMIT_MAX_MESH_WORKGROUP_COUNT_X)) + ")");
+		ERR_FAIL_COND_MSG(p_y_groups > driver->limit_get(LIMIT_MAX_MESH_WORKGROUP_COUNT_Y),
+				"Dispatch amount of Y mesh groups (" + itos(p_y_groups) + ") is larger than device limit (" + itos(driver->limit_get(LIMIT_MAX_MESH_WORKGROUP_COUNT_Y)) + ")");
+		ERR_FAIL_COND_MSG(p_z_groups > driver->limit_get(LIMIT_MAX_MESH_WORKGROUP_COUNT_Z),
+				"Dispatch amount of Z mesh groups (" + itos(p_z_groups) + ") is larger than device limit (" + itos(driver->limit_get(LIMIT_MAX_MESH_WORKGROUP_COUNT_Z)) + ")");
+	} else {
+		ERR_FAIL_MSG("Unexpected pipeline stage.");
+	}
+#endif
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!draw_list.validation.pipeline_active,
+			"No render pipeline was set before attempting to draw.");
+
+	if (draw_list.validation.pipeline_push_constant_size > 0) {
+		// Using push constants, check that they were supplied.
+		ERR_FAIL_COND_MSG(!draw_list.validation.pipeline_push_constant_supplied,
+				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
+	}
+
+#endif
+
+	// Bind descriptor sets.
+
+	for (uint32_t i = 0; i < draw_list.state.set_count; i++) {
+		if (draw_list.state.sets[i].pipeline_expected_format == 0) {
+			continue; // Nothing expected by this pipeline.
+		}
+#ifdef DEBUG_ENABLED
+		if (draw_list.state.sets[i].pipeline_expected_format != draw_list.state.sets[i].uniform_set_format) {
+			if (draw_list.state.sets[i].uniform_set_format == 0) {
+				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
+			} else if (uniform_set_owner.owns(draw_list.state.sets[i].uniform_set)) {
+				UniformSet *us = uniform_set_owner.get_or_null(draw_list.state.sets[i].uniform_set);
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(draw_list.state.pipeline_shader));
+			} else {
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(draw_list.state.pipeline_shader));
+			}
+		}
+#endif
+		draw_graph.add_draw_list_uniform_set_prepare_for_use(draw_list.state.pipeline_shader_driver_id, draw_list.state.sets[i].uniform_set_driver_id, i);
+	}
+	for (uint32_t i = 0; i < draw_list.state.set_count; i++) {
+		if (draw_list.state.sets[i].pipeline_expected_format == 0) {
+			continue; // Nothing expected by this pipeline.
+		}
+		if (!draw_list.state.sets[i].bound) {
+			// All good, see if this requires re-binding.
+			draw_graph.add_draw_list_bind_uniform_set(draw_list.state.pipeline_shader_driver_id, draw_list.state.sets[i].uniform_set_driver_id, i);
+
+			UniformSet *uniform_set = uniform_set_owner.get_or_null(draw_list.state.sets[i].uniform_set);
+			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+
+			draw_list.state.sets[i].bound = true;
+		}
+	}
+
+	draw_graph.add_draw_list_dispatch_mesh(p_x_groups, p_y_groups, p_z_groups);
+}
+
+void RenderingDevice::draw_list_dispatch_mesh_indirect(DrawListID p_list, RID p_buffer, uint32_t p_offset) {
+	ERR_FAIL_COND(!draw_list.active);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!has_feature(SUPPORTS_MESH_SHADER),
+			"The GPU doesn't support Mesh Shaders, its your responsibility to check it does before calling this.");
+#endif
+
+	Buffer *buffer = storage_buffer_owner.get_or_null(p_buffer);
+	ERR_FAIL_NULL(buffer);
+
+	ERR_FAIL_COND_MSG(!buffer->usage.has_flag(RDD::BUFFER_USAGE_INDIRECT_BIT), "Buffer provided was not created to do indirect dispatch.");
+
+	ERR_FAIL_COND_MSG(p_offset + 12 > buffer->size, "Offset provided (+12) is past the end of buffer.");
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!draw_list.validation.pipeline_active,
+			"No render pipeline was set before attempting to draw.");
+
+	if (draw_list.validation.pipeline_push_constant_size > 0) {
+		// Using push constants, check that they were supplied.
+		ERR_FAIL_COND_MSG(!draw_list.validation.pipeline_push_constant_supplied,
+				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
+	}
+
+#endif
+
+	// Bind descriptor sets.
+
+	for (uint32_t i = 0; i < draw_list.state.set_count; i++) {
+		if (draw_list.state.sets[i].pipeline_expected_format == 0) {
+			continue; // Nothing expected by this pipeline.
+		}
+#ifdef DEBUG_ENABLED
+		if (draw_list.state.sets[i].pipeline_expected_format != draw_list.state.sets[i].uniform_set_format) {
+			if (draw_list.state.sets[i].uniform_set_format == 0) {
+				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
+			} else if (uniform_set_owner.owns(draw_list.state.sets[i].uniform_set)) {
+				UniformSet *us = uniform_set_owner.get_or_null(draw_list.state.sets[i].uniform_set);
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(draw_list.state.pipeline_shader));
+			} else {
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(draw_list.state.pipeline_shader));
+			}
+		}
+#endif
+		draw_graph.add_draw_list_uniform_set_prepare_for_use(draw_list.state.pipeline_shader_driver_id, draw_list.state.sets[i].uniform_set_driver_id, i);
+	}
+	for (uint32_t i = 0; i < draw_list.state.set_count; i++) {
+		if (draw_list.state.sets[i].pipeline_expected_format == 0) {
+			continue; // Nothing expected by this pipeline.
+		}
+		if (!draw_list.state.sets[i].bound) {
+			// All good, see if this requires re-binding.
+			draw_graph.add_draw_list_bind_uniform_set(draw_list.state.pipeline_shader_driver_id, draw_list.state.sets[i].uniform_set_driver_id, i);
+
+			UniformSet *uniform_set = uniform_set_owner.get_or_null(draw_list.state.sets[i].uniform_set);
+			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+
+			draw_list.state.sets[i].bound = true;
+		}
+	}
+
+	draw_graph.add_draw_list_dispatch_mesh_indirect(buffer->driver_id, p_offset);
+
+	if (buffer->draw_tracker != nullptr) {
+		draw_graph.add_draw_list_usage(buffer->draw_tracker, RDG::RESOURCE_USAGE_INDIRECT_BUFFER_READ);
+	}
 }
 
 void RenderingDevice::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
@@ -7411,6 +7568,8 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_draw", "draw_list", "use_indices", "instances", "procedural_vertex_count"), &RenderingDevice::draw_list_draw, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("draw_list_draw_indirect", "draw_list", "use_indices", "buffer", "offset", "draw_count", "stride"), &RenderingDevice::draw_list_draw_indirect, DEFVAL(0), DEFVAL(1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("draw_list_dispatch_mesh", "draw_list", "x_groups", "y_groups", "z_groups"), &RenderingDevice::draw_list_dispatch_mesh);
+	ClassDB::bind_method(D_METHOD("draw_list_dispatch_mesh_indirect", "draw_list", "buffer", "offset"), &RenderingDevice::draw_list_dispatch_mesh_indirect);
 
 	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2()));
 	ClassDB::bind_method(D_METHOD("draw_list_disable_scissor", "draw_list"), &RenderingDevice::draw_list_disable_scissor);
@@ -7962,12 +8121,16 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADER_STAGE_TESSELATION_CONTROL);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_TESSELATION_EVALUATION);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_COMPUTE);
+	BIND_ENUM_CONSTANT(SHADER_STAGE_MESH_TASK);
+	BIND_ENUM_CONSTANT(SHADER_STAGE_MESH);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_MAX);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_VERTEX_BIT);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_FRAGMENT_BIT);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_TESSELATION_CONTROL_BIT);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_TESSELATION_EVALUATION_BIT);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_COMPUTE_BIT);
+	BIND_ENUM_CONSTANT(SHADER_STAGE_MESH_TASK_BIT);
+	BIND_ENUM_CONSTANT(SHADER_STAGE_MESH_BIT);
 
 	BIND_ENUM_CONSTANT(SHADER_LANGUAGE_GLSL);
 	BIND_ENUM_CONSTANT(SHADER_LANGUAGE_HLSL);
@@ -7979,6 +8142,8 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUPPORTS_METALFX_SPATIAL);
 	BIND_ENUM_CONSTANT(SUPPORTS_METALFX_TEMPORAL);
 	BIND_ENUM_CONSTANT(SUPPORTS_BUFFER_DEVICE_ADDRESS);
+
+	BIND_ENUM_CONSTANT(SUPPORTS_MESH_SHADER);
 
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);
