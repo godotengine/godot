@@ -197,6 +197,10 @@ def configure(env: "SConsEnvironment"):
     if env["builtin_libtheora"] and env["arch"] == "x86_64":
         env["x86_libtheora_opt_gcc"] = True
 
+    if env["sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+        env.Append(LINKFLAGS=["-framework", "ForceFeedback"])
+
     ## Flags
 
     env.Prepend(CPPPATH=["#platform/macos"])
