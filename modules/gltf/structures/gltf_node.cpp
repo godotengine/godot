@@ -83,7 +83,7 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "multimesh_translation"), "set_multimesh_translation", "get_multimesh_translation"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "multimesh_rotation"), "set_multimesh_rotation", "get_multimesh_rotation"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "multimesh_scale"), "set_multimesh_scale", "get_multimesh_scale"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position"); // Vector3sco
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation"), "set_rotation", "get_rotation"); // Quaternion
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
