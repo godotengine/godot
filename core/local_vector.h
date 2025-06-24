@@ -194,6 +194,13 @@ public:
 		return data[p_index];
 	}
 
+	_FORCE_INLINE_ const T &get_unchecked(U p_index) const {
+		return data[p_index];
+	}
+	_FORCE_INLINE_ T &get_unchecked(U p_index) {
+		return data[p_index];
+	}
+
 	void fill(T p_val) {
 		for (U i = 0; i < count; i++) {
 			data[i] = p_val;
