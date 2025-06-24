@@ -251,7 +251,11 @@ void vertex_shader(in vec3 vertex,
 		in vec3 tangent_highp,
 		in vec3 binormal_highp,
 #endif
-		in uint instance_index, in uint multimesh_offset, in mat4 model_matrix,
+		in uint instance_index, in uint multimesh_offset, in mat3x4 in_model_matrix,
+#ifdef USE_DOUBLE_PRECISION
+		in vec3 model_precision,
+		in vec3 view_precision,
+#endif
 #ifdef MODE_DUAL_PARABOLOID
 		in float dual_paraboloid_side,
 		in float z_far,
@@ -264,8 +268,8 @@ void vertex_shader(in vec3 vertex,
 #ifdef USE_MULTIVIEW
 		in vec4 scene_eye_offset,
 #endif
-		in mat4 view_matrix,
-		in mat4 inv_view_matrix,
+		in mat3x4 in_view_matrix,
+		in mat3x4 in_inv_view_matrix,
 		in vec2 viewport_size,
 		in uint scene_directional_light_count,
 		out vec4 screen_position_output) {
@@ -274,16 +278,15 @@ void vertex_shader(in vec3 vertex,
 	vec4 color_highp = color_attrib;
 #endif
 
-#ifdef USE_DOUBLE_PRECISION
-	vec3 model_precision = vec3(model_matrix[0][3], model_matrix[1][3], model_matrix[2][3]);
-	model_matrix[0][3] = 0.0;
-	model_matrix[1][3] = 0.0;
-	model_matrix[2][3] = 0.0;
-	vec3 view_precision = vec3(inv_view_matrix[0][3], inv_view_matrix[1][3], inv_view_matrix[2][3]);
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
-#endif
+	mat4 inv_view_matrix = transpose(mat4(in_inv_view_matrix[0],
+			in_inv_view_matrix[1],
+			in_inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+	mat4 model_matrix = transpose(mat4(in_model_matrix[0],
+			in_model_matrix[1],
+			in_model_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 	mat3 model_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
@@ -436,9 +439,13 @@ void vertex_shader(in vec3 vertex,
 
 	float roughness_highp = 1.0;
 
-	mat4 modelview = view_matrix * model_matrix;
-	mat3 modelview_normal = mat3(view_matrix) * model_normal_matrix;
-	mat4 read_view_matrix = view_matrix;
+	mat4 read_view_matrix = transpose(mat4(scene_data.view_matrix[0],
+			scene_data.view_matrix[1],
+			scene_data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+	mat4 modelview = read_view_matrix * model_matrix;
+	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
 	vec2 read_viewport_size = viewport_size;
 
 	{
@@ -462,7 +469,7 @@ void vertex_shader(in vec3 vertex,
 	vertex = mat3(inv_view_matrix * modelview) * vertex;
 	vec3 temp_precision;
 	vertex += double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
-	vertex = mat3(view_matrix) * vertex;
+	vertex = mat3(read_view_matrix) * vertex;
 #else
 	vertex = (modelview * vec4(vertex, 1.0)).xyz;
 #endif
@@ -480,14 +487,14 @@ void vertex_shader(in vec3 vertex,
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (view_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (read_view_matrix * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
-	normal_highp = (view_matrix * vec4(normal_highp, 0.0)).xyz;
+	normal_highp = (read_view_matrix * vec4(normal_highp, 0.0)).xyz;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	binormal_highp = (view_matrix * vec4(binormal_highp, 0.0)).xyz;
-	tangent_highp = (view_matrix * vec4(tangent_highp, 0.0)).xyz;
+	binormal_highp = (read_view_matrix * vec4(binormal_highp, 0.0)).xyz;
+	tangent_highp = (read_view_matrix * vec4(tangent_highp, 0.0)).xyz;
 #endif
 #endif
 
@@ -688,6 +695,11 @@ void main() {
 			prev_binormal,
 #endif
 			draw_call.instance_index, draw_call.multimesh_motion_vectors_previous_offset, instances.data[draw_call.instance_index].prev_transform,
+#ifdef USE_DOUBLE_PRECISION
+			instances.data[draw_call.instance_index].prev_model_precision.xyz,
+			scene_data_block.prev_data.inv_view_precision,
+#endif
+
 #ifdef MODE_DUAL_PARABOLOID
 			scene_data_block.prev_data.dual_paraboloid_side,
 			scene_data_block.prev_data.z_far,
@@ -745,6 +757,10 @@ void main() {
 			binormal,
 #endif
 			draw_call.instance_index, draw_call.multimesh_motion_vectors_current_offset, instances.data[draw_call.instance_index].transform,
+#ifdef USE_DOUBLE_PRECISION
+			instances.data[draw_call.instance_index].model_precision.xyz,
+			scene_data_block.data.inv_view_precision,
+#endif
 #ifdef MODE_DUAL_PARABOLOID
 			scene_data_block.data.dual_paraboloid_side,
 			scene_data_block.data.z_far,
@@ -1028,7 +1044,12 @@ hvec4 fog_process(vec3 vertex) {
 	}
 
 	if (sc_use_fog_height_density()) {
-		float y = (scene_data_block.data.inv_view_matrix * vec4(vertex, 1.0)).y;
+		mat4 inv_view_matrix = transpose(mat4(scene_data_block.data.inv_view_matrix[0],
+				scene_data_block.data.inv_view_matrix[1],
+				scene_data_block.data.inv_view_matrix[2],
+				vec4(0.0, 0.0, 0.0, 1.0)));
+
+		float y = (inv_view_matrix * vec4(vertex, 1.0)).y;
 
 		float y_dist = y - scene_data_block.data.fog_height;
 
@@ -1158,16 +1179,14 @@ void main() {
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
-	mat4 inv_view_matrix = scene_data.inv_view_matrix;
-	mat4 read_model_matrix = instances.data[draw_call.instance_index].transform;
-#ifdef USE_DOUBLE_PRECISION
-	read_model_matrix[0][3] = 0.0;
-	read_model_matrix[1][3] = 0.0;
-	read_model_matrix[2][3] = 0.0;
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
-#endif
+	mat4 inv_view_matrix = transpose(mat4(scene_data.inv_view_matrix[0],
+			scene_data.inv_view_matrix[1],
+			scene_data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 read_model_matrix = transpose(mat4(instances.data[draw_call.instance_index].transform[0],
+			instances.data[draw_call.instance_index].transform[1],
+			instances.data[draw_call.instance_index].transform[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef LIGHT_VERTEX_USED
 	vec3 light_vertex = vertex;
@@ -1180,7 +1199,10 @@ void main() {
 		model_normal_matrix = mat3(read_model_matrix);
 	}
 
-	mat4 read_view_matrix = scene_data.view_matrix;
+	mat4 read_view_matrix = transpose(mat4(scene_data.view_matrix[0],
+			scene_data.view_matrix[1],
+			scene_data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 	vec2 read_viewport_size = scene_data.viewport_size;
 
 	{
