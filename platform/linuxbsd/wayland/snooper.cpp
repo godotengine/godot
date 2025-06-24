@@ -2216,9 +2216,6 @@ Error WaylandEmbedderProxy::init() {
 
 	ancillary_buf.resize(SNOOP_ANCILLARY_SIZE);
 
-	// FIXME: Resize dynamically.
-	clients.resize(SNOOP_MAX_CLIENTS);
-
 	proxy_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 
 	struct sockaddr_un addr = {};
@@ -2321,9 +2318,9 @@ void WaylandEmbedderProxy::handle_fd(int p_fd, int p_revents) {
 		}
 
 		if (client == nullptr) {
-			WARN_PRINT(vformat("[PROXY] Out of clients. Rejecting client %d.", client_id));
-			close(new_fd);
-			return;
+			clients.push_back({});
+			client_id = clients.size() - 1;
+			client = &clients[client_id];
 		}
 
 		pollfds.push_back({ new_fd, POLLIN, 0 });
@@ -2367,16 +2364,7 @@ void WaylandEmbedderProxy::handle_fd(int p_fd, int p_revents) {
 		return;
 	}
 
-	if (clients[0].socket >= 0 && p_fd == clients[0].socket) {
-		// TODO: Handle main client hangup.
-
-		if (p_revents & POLLIN) {
-			handle_sock(clients[0].socket, 0);
-			return;
-		}
-	}
-
-	for (size_t i = 1; i < clients.size(); ++i) {
+	for (size_t i = 0; i < clients.size(); ++i) {
 		Client &client = clients[i];
 
 		if (client.socket < 0 || p_fd != client.socket) {

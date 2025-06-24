@@ -92,9 +92,6 @@
 // deploying in production, set this to UINT32_MAX.
 #define SNOOP_ID_MAX 250
 
-// FIXME: Resize dynamically.
-#define SNOOP_MAX_CLIENTS 10
-
 class WaylandEmbedderProxy {
 private:
 	enum class ProxyDirection {
