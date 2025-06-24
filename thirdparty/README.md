@@ -418,6 +418,15 @@ Files extracted from the upstream source:
 library.
 
 
+## nvapi
+
+- Upstream: http://download.nvidia.com/XFree86/nvapi-open-source-sdk
+- Version: R525
+- License: MIT
+
+- `nvapi_minimal.h` was created by using `nvapi.h` from upstream and removing unnecessary code.
+
+
 ## oidn
 
 - Upstream: https://github.com/OpenImageDenoise/oidn
