@@ -522,10 +522,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		int err_line = _initial_line;
 		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
-		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
-			// Debugger break did not happen.
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
-		}
+		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
+		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 #endif
 		return _get_default_variant_for_data_type(return_type);
 	}
@@ -3939,11 +3937,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
 		}
 
-		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
-			// debugger break did not happen
-
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
-		}
+		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);
