@@ -219,9 +219,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			Vector2i new_size = Vector2i(1, 1) * small_thumbnail_size;
 			const real_t aspect = small_image->get_size().aspect();
 			if (aspect > 1.0) {
-				new_size.y /= aspect;
+				new_size.y = MAX(1, new_size.y / aspect);
 			} else {
-				new_size.x *= aspect;
+				new_size.x = MAX(1, new_size.x * aspect);
 			}
 			small_image->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
 			r_small_texture.instantiate();
