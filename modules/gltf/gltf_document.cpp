@@ -663,15 +663,12 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 					Dictionary instancing_attributes = mesh_gpu_instancing["attributes"];
 
 					if (instancing_attributes.has("TRANSLATION")) {
-						int instancing_translation = instancing_attributes["TRANSLATION"];
 						node->multimesh_translation = instancing_attributes["TRANSLATION"];
 					}
 					if (instancing_attributes.has("ROTATION")) {
-						int instancing_rotation = instancing_attributes["ROTATION"];
 						node->multimesh_rotation = instancing_attributes["ROTATION"];
 					}
 					if (instancing_attributes.has("SCALE")) {
-						int instancing_scale = instancing_attributes["SCALE"];
 						node->multimesh_scale = instancing_attributes["SCALE"];
 					}
 				}
@@ -4170,18 +4167,18 @@ Ref<MultiMesh> GLTFDocument::_generate_multimesh(Ref<GLTFState> p_state, Ref<GLT
 	if (p_gltf_node->multimesh_translation >= 0) {
 		Ref<GLTFAccessor> accessor = p_state->accessors[p_gltf_node->multimesh_translation];
 		if (accessor->accessor_type != GLTFAccessor::TYPE_VEC3) {
-			ERR_PRINT(vformat("glTF import: Invalid accessor_type: %i", accessor->accessor_type));
+			ERR_PRINT(vformat("glTF import: Invalid translation accessor_type: %i", accessor->accessor_type));
 			return nullptr;
 		}
 		if (accessor->component_type != GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT) {
-			ERR_PRINT(vformat("glTF import: Invalid component_type: %i" + accessor->component_type));
+			ERR_PRINT(vformat("glTF import: Invalid translation component_type: %i", accessor->component_type));
 			return nullptr;
 		}
 		Ref<GLTFBufferView> buffer_view = p_state->buffer_views[accessor->buffer_view];
 		translation_ptr = (Vector3 *)(p_state->buffers[buffer_view->get_buffer()].ptr() + buffer_view->get_byte_offset());
 
 		if (instances_count && instances_count != accessor->get_count()) {
-			ERR_PRINT(vformat("glTF import: instances_count: %i" + accessor->get_count()));
+			ERR_PRINT(vformat("glTF import: translation instances_count: %i", accessor->get_count()));
 			return nullptr;
 		}
 		instances_count = accessor->get_count();
@@ -4190,11 +4187,11 @@ Ref<MultiMesh> GLTFDocument::_generate_multimesh(Ref<GLTFState> p_state, Ref<GLT
 	if (p_gltf_node->multimesh_rotation >= 0) {
 		Ref<GLTFAccessor> accessor = p_state->accessors[p_gltf_node->multimesh_rotation];
 		if (accessor->accessor_type != GLTFAccessor::TYPE_VEC4) {
-			ERR_PRINT(vformat("glTF import: Invalid accessor_type: " + accessor->accessor_type));
+			ERR_PRINT(vformat("glTF import: Invalid rotation accessor_type: %i", accessor->accessor_type));
 			return nullptr;
 		}
 		if (accessor->component_type != GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT) {
-			ERR_PRINT(vformat("glTF import: Invalid component_type: %i", accessor->component_type));
+			ERR_PRINT(vformat("glTF import: Invalid rotation component_type: %i", accessor->component_type));
 			return nullptr;
 		}
 
@@ -4202,7 +4199,7 @@ Ref<MultiMesh> GLTFDocument::_generate_multimesh(Ref<GLTFState> p_state, Ref<GLT
 		rotation_ptr = (Quaternion *)(p_state->buffers[buffer_view->get_buffer()].ptr() + buffer_view->get_byte_offset());
 
 		if (instances_count && instances_count != accessor->get_count()) {
-			ERR_PRINT(vformat("glTF import: instances_count: %i", accessor->get_count()));
+			ERR_PRINT(vformat("glTF import: rotation instances_count: %i", accessor->get_count()));
 			return nullptr;
 		}
 		instances_count = accessor->get_count();
@@ -4211,11 +4208,11 @@ Ref<MultiMesh> GLTFDocument::_generate_multimesh(Ref<GLTFState> p_state, Ref<GLT
 	if (p_gltf_node->multimesh_scale >= 0) {
 		Ref<GLTFAccessor> accessor = p_state->accessors[p_gltf_node->multimesh_scale];
 		if (accessor->accessor_type != GLTFAccessor::TYPE_VEC3) {
-			ERR_PRINT(vformat("glTF import: Invalid accessor_type: %i", accessor->accessor_type));
+			ERR_PRINT(vformat("glTF import: Invalid scale accessor_type: %i", accessor->accessor_type));
 			return nullptr;
 		}
 		if (accessor->component_type != GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT) {
-			ERR_PRINT(vformat("glTF import: Invalid component_type: %i", accessor->component_type));
+			ERR_PRINT(vformat("glTF import: Invalid scale component_type: %i", accessor->component_type));
 			return nullptr;
 		}
 
@@ -4223,7 +4220,7 @@ Ref<MultiMesh> GLTFDocument::_generate_multimesh(Ref<GLTFState> p_state, Ref<GLT
 		scale_ptr = (Vector3 *)(p_state->buffers[buffer_view->get_buffer()].ptr() + buffer_view->get_byte_offset());
 
 		if (instances_count && instances_count != accessor->get_count()) {
-			ERR_PRINT(vformat("glTF import: instances_count: %i", accessor->get_count()));
+			ERR_PRINT(vformat("glTF import: scale instances_count: %i", accessor->get_count()));
 			return nullptr;
 		}
 		instances_count = accessor->get_count();
