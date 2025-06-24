@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tcp_server.h                                                          */
+/*  stream_peer_socket.compat.inc                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/ip.h"
-#include "core/io/socket_server.h"
-#include "core/io/stream_peer_tcp.h"
-
-class TCPServer : public SocketServer {
-	GDCLASS(TCPServer, SocketServer);
-
-protected:
-	static void _bind_methods();
-
-public:
-	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
-	int get_local_port() const;
-	Ref<StreamPeerTCP> take_connection();
-	Ref<StreamPeerSocket> take_socket_connection() override { return take_connection(); }
+namespace compat::StreamPeerTCP {
+enum class Status {
+	STATUS_NONE = StreamPeerSocket::STATUS_NONE,
+	STATUS_CONNECTING = StreamPeerSocket::STATUS_CONNECTING,
+	STATUS_CONNECTED = StreamPeerSocket::STATUS_CONNECTED,
+	STATUS_ERROR = StreamPeerSocket::STATUS_ERROR,
 };
+}
+
+VARIANT_ENUM_CAST(compat::StreamPeerTCP::Status);
+
+compat::StreamPeerTCP::Status StreamPeerSocket::_get_status_compat_107954() const {
+	return (compat::StreamPeerTCP::Status)get_status();
+}
+
+void StreamPeerSocket::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_status"), &StreamPeerSocket::_get_status_compat_107954);
+}
+
+#endif
