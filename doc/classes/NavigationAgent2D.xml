@@ -7,6 +7,7 @@
 		A 2D agent used to pathfind to a position while avoiding static and dynamic obstacles. The calculation can be used by the parent node to dynamically move it along the path. Requires navigation data to work correctly.
 		Dynamic obstacles are avoided using RVO collision avoidance. Avoidance is computed before physics, so the pathfinding information can be used safely in the physics step.
 		[b]Note:[/b] After setting the [member target_position] property, the [method get_next_path_position] method must be used once every physics frame to update the internal path logic of the navigation agent. The vector position it returns should be used as the next movement position for the agent's parent node.
+		[b]Note:[/b] Several methods of this class, such as [method get_next_path_position], can trigger a new path calculation. Calling these in your callback to an agent's signal, such as [signal waypoint_reached], can cause infinite recursion. It is recommended to call these methods in the physics step or, alternatively, delay their call until the end of the frame (see [method Object.call_deferred] or [constant Object.CONNECT_DEFERRED]).
 	</description>
 	<tutorials>
 		<link title="Using NavigationAgents">$DOCS_URL/tutorials/navigation/navigation_using_navigationagents.html</link>
