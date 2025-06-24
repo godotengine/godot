@@ -130,7 +130,14 @@ private:
 	bool _quit;
 	bool initialized;
 	bool input_handled;
-	bool _physics_interpolation_enabled;
+
+	// Static so we can get directly instead of via SceneTree pointer.
+	static bool _physics_interpolation_enabled;
+
+	// Note that physics interpolation is hard coded to OFF in the editor,
+	// therefore we have a second bool to enable e.g. configuration warnings
+	// to only take effect when the project is using physics interpolation.
+	static bool _physics_interpolation_enabled_in_project;
 
 	Size2 last_screen_size;
 	StringName tree_changed_name;
@@ -435,7 +442,11 @@ public:
 	bool is_refusing_new_network_connections() const;
 
 	void set_physics_interpolation_enabled(bool p_enabled);
-	bool is_physics_interpolation_enabled() const;
+	bool is_physics_interpolation_enabled() const { return _physics_interpolation_enabled; }
+
+	// Different name to disambiguate fast static versions from the user bound versions.
+	static bool is_fti_enabled() { return _physics_interpolation_enabled; }
+	static bool is_fti_enabled_in_project() { return _physics_interpolation_enabled_in_project; }
 
 	void client_physics_interpolation_add_spatial(SelfList<Spatial> *p_elem);
 	void client_physics_interpolation_remove_spatial(SelfList<Spatial> *p_elem);

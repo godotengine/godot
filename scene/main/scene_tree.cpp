@@ -108,6 +108,9 @@ SceneTreeTimer::SceneTreeTimer() {
 	process_pause = true;
 }
 
+bool SceneTree::_physics_interpolation_enabled = false;
+bool SceneTree::_physics_interpolation_enabled_in_project = false;
+
 // This should be called once per physics tick, to make sure the transform previous and current
 // is kept up to date on the few spatials that are using client side physics interpolation
 void SceneTree::ClientPhysicsInterpolation::physics_process() {
@@ -527,7 +530,10 @@ void SceneTree::init() {
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
-	// disallow interpolation in editor
+	// This version is for use in editor.
+	_physics_interpolation_enabled_in_project = p_enabled;
+
+	// We never want interpolation in the editor.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		p_enabled = false;
 	}
@@ -545,10 +551,6 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	if (root) {
 		root->reset_physics_interpolation();
 	}
-}
-
-bool SceneTree::is_physics_interpolation_enabled() const {
-	return _physics_interpolation_enabled;
 }
 
 void SceneTree::client_physics_interpolation_add_spatial(SelfList<Spatial> *p_elem) {
@@ -2334,7 +2336,6 @@ SceneTree::SceneTree() {
 	call_lock = 0;
 	root_lock = 0;
 	node_count = 0;
-	_physics_interpolation_enabled = false;
 
 	//create with mainloop
 
