@@ -202,7 +202,6 @@ EditorRunNative::EditorRunNative() {
 	remote_debug->get_popup()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	remote_debug->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunNative::start_run_native));
 	remote_debug->set_tooltip_text(TTRC("Remote Deploy"));
-	remote_debug->set_accessibility_name(TTRC("Remote Deploy"));
 	remote_debug->set_disabled(true);
 
 	add_child(remote_debug);

@@ -680,7 +680,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	files_to_delete_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	files_to_delete_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	files_to_delete_list->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
-	files_to_delete_list->set_accessibility_name(TTRC("Files to be Deleted"));
+	files_to_delete_list->set_accessibility_name(TTRC("Files to be deleted:"));
 	vb->add_child(files_to_delete_list);
 
 	vb_owners = memnew(VBoxContainer);

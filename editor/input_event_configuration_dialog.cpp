@@ -712,7 +712,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 		device_id_option->add_item(EventListenerLineEdit::get_device_string(i));
 	}
 	device_id_option->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
-	device_id_option->set_accessibility_name(TTRC("Device"));
+	device_id_option->set_accessibility_name(TTRC("Device:"));
 	_set_current_device(InputMap::ALL_DEVICES);
 	device_container->add_child(device_id_option);
 
@@ -767,7 +767,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	key_location->add_item(String(), (int)KeyLocation::LEFT);
 	key_location->add_item(String(), (int)KeyLocation::RIGHT);
 	key_location->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
-	key_location->set_accessibility_name(TTRC("Location"));
+	key_location->set_accessibility_name(TTRC("Physical location"));
 
 	location_container->add_child(key_location);
 	additional_options_container->add_child(location_container);

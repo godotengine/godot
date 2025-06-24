@@ -1109,7 +1109,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	hide_selection->set_theme_type_variation(SceneStringName(FlatButton));
 	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
 	hide_selection->set_tooltip_text(TTRC("Toggle Selection Visibility"));
-	hide_selection->set_accessibility_name(TTRC("Selection Visibility"));
 	hide_selection->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "hide_selection", false));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
@@ -1147,7 +1146,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	camera_override_button->set_toggle_mode(true);
 	camera_override_button->set_theme_type_variation(SceneStringName(FlatButton));
 	camera_override_button->set_tooltip_text(TTRC("Override the in-game camera."));
-	camera_override_button->set_accessibility_name(TTRC("Override In-game Camera"));
 	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_camera_override_button_toggled));
 
 	camera_override_menu = memnew(MenuButton);
@@ -1156,7 +1154,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	camera_override_menu->set_theme_type_variation("FlatMenuButton");
 	camera_override_menu->set_h_size_flags(SIZE_SHRINK_END);
 	camera_override_menu->set_tooltip_text(TTRC("Camera Override Options"));
-	camera_override_menu->set_accessibility_name(TTRC("Camera Override Options"));
 
 	PopupMenu *menu = camera_override_menu->get_popup();
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_camera_override_menu_id_pressed));
@@ -1176,7 +1173,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	fixed_size_button->set_toggle_mode(true);
 	fixed_size_button->set_theme_type_variation("FlatButton");
 	fixed_size_button->set_tooltip_text(TTRC("Embedded game size is based on project settings.\nThe 'Keep Aspect' mode is used when the Game Workspace is smaller than the desired size."));
-	fixed_size_button->set_accessibility_name(TTRC("Fixed Size"));
+	fixed_size_button->set_accessibility_name(TTRC("Embedded game size is based on project settings."));
 	fixed_size_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_FIXED));
 
 	keep_aspect_button = memnew(Button);
@@ -1184,7 +1181,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	keep_aspect_button->set_toggle_mode(true);
 	keep_aspect_button->set_theme_type_variation("FlatButton");
 	keep_aspect_button->set_tooltip_text(TTRC("Keep the aspect ratio of the embedded game."));
-	keep_aspect_button->set_accessibility_name(TTRC("Keep Aspect Ratio"));
 	keep_aspect_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_KEEP_ASPECT));
 
 	stretch_button = memnew(Button);
@@ -1192,7 +1188,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	stretch_button->set_toggle_mode(true);
 	stretch_button->set_theme_type_variation("FlatButton");
 	stretch_button->set_tooltip_text(TTRC("Embedded game size stretches to fit the Game Workspace."));
-	stretch_button->set_accessibility_name(TTRC("Stretch"));
 	stretch_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_STRETCH));
 
 	embed_options_menu = memnew(MenuButton);
@@ -1201,7 +1196,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	embed_options_menu->set_theme_type_variation("FlatMenuButton");
 	embed_options_menu->set_h_size_flags(SIZE_SHRINK_END);
 	embed_options_menu->set_tooltip_text(TTRC("Embedding Options"));
-	embed_options_menu->set_accessibility_name(TTRC("Embedding Options"));
 
 	menu = embed_options_menu->get_popup();
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_embed_options_menu_menu_id_pressed));

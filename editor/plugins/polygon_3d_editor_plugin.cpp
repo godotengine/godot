@@ -533,7 +533,6 @@ Polygon3DEditor::Polygon3DEditor() {
 
 	button_create = memnew(Button);
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
-	button_create->set_accessibility_name(TTRC("Create Polygon"));
 	button_create->set_tooltip_text(TTRC("Create Polygon"));
 	add_child(button_create);
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_CREATE));
@@ -541,7 +540,6 @@ Polygon3DEditor::Polygon3DEditor() {
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
-	button_edit->set_accessibility_name(TTRC("Edit Polygon"));
 	button_edit->set_tooltip_text(TTRC("Edit Polygon"));
 	add_child(button_edit);
 	button_edit->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_EDIT));

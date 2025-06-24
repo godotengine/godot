@@ -355,7 +355,6 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew(Button);
-	load->set_accessibility_name(TTRC("Load Resource"));
 	load->set_tooltip_text(TTR("Load Resource"));
 	hbc->add_child(load);
 

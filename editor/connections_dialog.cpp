@@ -749,7 +749,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->set_custom_minimum_size(Vector2(400 * EDSCALE, 0));
 
 	from_signal = memnew(LineEdit);
-	from_signal->set_accessibility_name(TTRC("From Signal"));
+	from_signal->set_accessibility_name(TTRC("From Signal:"));
 	vbc_left->add_margin_child(TTR("From Signal:"), from_signal);
 	from_signal->set_editable(false);
 
@@ -864,14 +864,14 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
 	bind_editor = memnew(EditorInspector);
-	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments"));
+	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments:"));
 	bind_controls.push_back(bind_editor);
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	unbind_count = memnew(SpinBox);
 	unbind_count->set_tooltip_text(TTR("Allows to drop arguments sent by signal emitter."));
-	unbind_count->set_accessibility_name(TTRC("Unbind Signal Arguments"));
+	unbind_count->set_accessibility_name(TTRC("Unbind Signal Arguments:"));
 	unbind_count->connect(SceneStringName(value_changed), callable_mp(this, &ConnectDialog::_unbind_count_changed));
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
