@@ -87,7 +87,7 @@ String cwd() {
 	const DWORD expected_size = ::GetCurrentDirectoryW(0, nullptr);
 
 	Char16String buffer;
-	buffer.resize((int)expected_size);
+	buffer.resize_uninitialized((int)expected_size);
 	if (::GetCurrentDirectoryW(expected_size, (wchar_t *)buffer.ptrw()) == 0) {
 		return ".";
 	}
@@ -139,7 +139,7 @@ String realpath(const String &p_path) {
 	}
 
 	Char16String buffer;
-	buffer.resize((int)expected_size);
+	buffer.resize_uninitialized((int)expected_size);
 	::GetFinalPathNameByHandleW(hFile, (wchar_t *)buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
 
 	::CloseHandle(hFile);

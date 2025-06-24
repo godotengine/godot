@@ -346,7 +346,7 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
-	virtual Variant get_rpc_config() const override;
+	virtual const Variant get_rpc_config() const override;
 
 	void unload_static() const;
 
@@ -448,7 +448,7 @@ class GDScriptLanguage : public ScriptLanguage {
 
 		void free() {
 			if (levels) {
-				memdelete(levels);
+				memdelete_arr(levels);
 				levels = nullptr;
 			}
 		}
@@ -583,6 +583,7 @@ public:
 
 	} strings;
 
+	_FORCE_INLINE_ bool should_track_call_stack() const { return track_call_stack; }
 	_FORCE_INLINE_ bool should_track_locals() const { return track_locals; }
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }

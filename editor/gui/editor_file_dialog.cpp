@@ -68,7 +68,7 @@ void EditorFileDialog::_native_popup() {
 	}
 	DisplayServer::WindowID wid = w ? w->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
 
-	DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb), wid);
+	DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb), wid);
 }
 
 void EditorFileDialog::popup(const Rect2i &p_rect) {
@@ -973,35 +973,6 @@ void EditorFileDialog::update_file_name() {
 	}
 }
 
-// TODO: Could use a unit test.
-Color EditorFileDialog::get_dir_icon_color(const String &p_dir_path) {
-	if (!FileSystemDock::get_singleton()) { // This dialog can be called from the project manager.
-		return theme_cache.folder_icon_color;
-	}
-
-	const HashMap<String, Color> &folder_colors = FileSystemDock::get_singleton()->get_folder_colors();
-	Dictionary assigned_folder_colors = FileSystemDock::get_singleton()->get_assigned_folder_colors();
-
-	Color folder_icon_color = theme_cache.folder_icon_color;
-
-	// Check for a folder color to inherit (if one is assigned).
-	String parent_dir = ProjectSettings::get_singleton()->localize_path(p_dir_path);
-	while (!parent_dir.is_empty() && parent_dir != "res://") {
-		if (!parent_dir.ends_with("/")) {
-			parent_dir += "/";
-		}
-		if (assigned_folder_colors.has(parent_dir)) {
-			folder_icon_color = folder_colors[assigned_folder_colors[parent_dir]];
-			if (folder_icon_color != theme_cache.folder_icon_color) {
-				break;
-			}
-		}
-		parent_dir = parent_dir.trim_suffix("/").get_base_dir();
-	}
-
-	return folder_icon_color;
-}
-
 // DO NOT USE THIS FUNCTION UNLESS NEEDED, CALL INVALIDATE() INSTEAD.
 void EditorFileDialog::update_file_list() {
 	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
@@ -1155,7 +1126,7 @@ void EditorFileDialog::update_file_list() {
 			d["bundle"] = bundle;
 
 			item_list->set_item_metadata(-1, d);
-			item_list->set_item_icon_modulate(-1, get_dir_icon_color(String(d["path"])));
+			item_list->set_item_icon_modulate(-1, FileSystemDock::get_dir_icon_color(String(d["path"]), theme_cache.folder_icon_color));
 		}
 
 		dirs.pop_front();
@@ -1840,7 +1811,7 @@ void EditorFileDialog::_update_favorites() {
 		favorites->add_item(favorited_names[i], theme_cache.folder);
 		favorites->set_item_tooltip(-1, favorited_paths[i]);
 		favorites->set_item_metadata(-1, favorited_paths[i]);
-		favorites->set_item_icon_modulate(-1, get_dir_icon_color(favorited_paths[i]));
+		favorites->set_item_icon_modulate(-1, FileSystemDock::get_dir_icon_color(favorited_paths[i], theme_cache.folder_icon_color));
 
 		if (i == current_favorite) {
 			favorite->set_pressed(true);
@@ -1925,7 +1896,7 @@ void EditorFileDialog::_update_recent() {
 		recent->add_item(recentd_names[i], theme_cache.folder);
 		recent->set_item_tooltip(-1, recentd_paths[i]);
 		recent->set_item_metadata(-1, recentd_paths[i]);
-		recent->set_item_icon_modulate(-1, get_dir_icon_color(recentd_paths[i]));
+		recent->set_item_icon_modulate(-1, FileSystemDock::get_dir_icon_color(recentd_paths[i], theme_cache.folder_icon_color));
 	}
 
 	if (modified) {
@@ -2220,7 +2191,7 @@ void EditorFileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List"), "set_display_mode", "get_display_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "file_mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"), "set_file_mode", "get_file_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE_PATH, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_ARRAY_COUNT("Options", "option_count", "set_option_count", "get_option_count", "option_");

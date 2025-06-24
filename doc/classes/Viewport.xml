@@ -101,7 +101,7 @@
 			<param index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
 			<param index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
-				Returns rendering statistics of the given type. See [enum RenderInfoType] and [enum RenderInfo] for options.
+				Returns rendering statistics of the given type.
 			</description>
 		</method>
 		<method name="get_screen_transform" qualifiers="const">
@@ -124,8 +124,8 @@
 				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
 				[codeblock]
 				func _ready():
-				    await RenderingServer.frame_post_draw
-				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
+					await RenderingServer.frame_post_draw
+					$Viewport.get_texture().get_image().save_png("user://Screenshot.png")
 				[/codeblock]
 				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image encoded in linear space.
 			</description>
@@ -317,10 +317,10 @@
 			The rendering layers in which this [Viewport] renders [CanvasItem] nodes.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
-			Sets the default filter mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureFilter] for options.
+			Sets the default filter mode used by [CanvasItem]s in this Viewport.
 		</member>
 		<member name="canvas_item_default_texture_repeat" type="int" setter="set_default_canvas_item_texture_repeat" getter="get_default_canvas_item_texture_repeat" enum="Viewport.DefaultCanvasItemTextureRepeat" default="0">
-			Sets the default repeat mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureRepeat] for options.
+			Sets the default repeat mode used by [CanvasItem]s in this Viewport.
 		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
@@ -598,7 +598,10 @@
 		<constant name="SCREEN_SPACE_AA_FXAA" value="1" enum="ScreenSpaceAA">
 			Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
 		</constant>
-		<constant name="SCREEN_SPACE_AA_MAX" value="2" enum="ScreenSpaceAA">
+		<constant name="SCREEN_SPACE_AA_SMAA" value="2" enum="ScreenSpaceAA">
+			Use subpixel morphological antialiasing. SMAA may produce clearer results than FXAA, but at a slightly higher performance cost.
+		</constant>
+		<constant name="SCREEN_SPACE_AA_MAX" value="3" enum="ScreenSpaceAA">
 			Represents the size of the [enum ScreenSpaceAA] enum.
 		</constant>
 		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
@@ -716,7 +719,7 @@
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="DebugDraw">
-			Draws the cluster used by [ReflectionProbe] nodes to optimize decal rendering.
+			Draws the cluster used by [ReflectionProbe] nodes to optimize reflection probes.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">

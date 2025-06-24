@@ -57,10 +57,6 @@ void Sprite2DEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void Sprite2DEditor::edit(Sprite2D *p_sprite) {
-	node = p_sprite;
-}
-
 Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float epsilon = 2.0) {
 	int size = points.size();
 	ERR_FAIL_COND_V(size < 2, Vector<Vector2>());
@@ -449,6 +445,21 @@ void Sprite2DEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node
 	p_new_node->set_owner(get_tree()->get_edited_scene_root());
 }
 
+void Sprite2DEditor::_sync_sprite_resize_mode() {
+	if (node != nullptr) {
+		node->_editor_set_dragging_to_resize_rect(resize_region_rect->is_pressed());
+	}
+}
+
+void Sprite2DEditor::_update_sprite_resize_mode_button() {
+	if (node == nullptr) {
+		return;
+	}
+	resize_region_rect->set_disabled(!node->is_region_enabled());
+	resize_region_rect->set_pressed(node->_editor_is_dragging_to_resiz_rect());
+	resize_region_rect->set_tooltip_text(node->is_region_enabled() ? "" : TTRC("Sprite's region needs to be enabled in the inspector."));
+}
+
 void Sprite2DEditor::_debug_uv_input(const Ref<InputEvent> &p_input) {
 	if (panner->gui_input(p_input, debug_uv->get_global_rect())) {
 		accept_event();
@@ -572,6 +583,8 @@ void Sprite2DEditor::_notification(int p_what) {
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_COLLISION_POLY_2D, get_editor_theme_icon(SNAME("CollisionPolygon2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D, get_editor_theme_icon(SNAME("LightOccluder2D")));
+
+			resize_region_rect->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
 		} break;
 	}
 }
@@ -580,10 +593,33 @@ void Sprite2DEditor::_bind_methods() {
 	ClassDB::bind_method("_add_as_sibling_or_child", &Sprite2DEditor::_add_as_sibling_or_child);
 }
 
+void Sprite2DEditor::edit(Sprite2D *p_sprite) {
+	Callable callback_update_button = callable_mp(this, &Sprite2DEditor::_update_sprite_resize_mode_button);
+	StringName signal_name = SNAME("_editor_region_rect_enabled");
+
+	if (node != nullptr && node->is_connected(signal_name, callback_update_button)) {
+		node->disconnect(signal_name, callback_update_button);
+	}
+
+	node = p_sprite;
+
+	if (node != nullptr && !node->is_connected(signal_name, callback_update_button)) {
+		node->connect(signal_name, callback_update_button);
+	}
+
+	_update_sprite_resize_mode_button();
+}
+
 Sprite2DEditor::Sprite2DEditor() {
+	// Top HBoxContainer definition
+	top_hb = memnew(HBoxContainer);
+
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(top_hb);
+
+	// Options definition
 	options = memnew(MenuButton);
 
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
+	top_hb->add_child(options);
 
 	options->set_text(TTR("Sprite2D"));
 	options->set_flat(false);
@@ -597,6 +633,18 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Sprite2DEditor::_menu_option));
 
+	// Resize region rect definition
+	resize_region_rect = memnew(Button);
+
+	resize_region_rect->set_theme_type_variation("FlatMenuButton");
+	resize_region_rect->set_toggle_mode(true);
+	resize_region_rect->set_shortcut(ED_SHORTCUT("canvas_item_editor/resize_region_rect", TTRC("Drag to Resize Region Rect"), KeyModifierMask::CMD_OR_CTRL | Key::R));
+
+	resize_region_rect->connect(SceneStringName(pressed), callable_mp(this, &Sprite2DEditor::_sync_sprite_resize_mode));
+
+	top_hb->add_child(resize_region_rect);
+
+	// Other elements definition
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
 
@@ -665,38 +713,8 @@ Sprite2DEditor::Sprite2DEditor() {
 	add_child(debug_uv_dialog);
 }
 
-void Sprite2DEditorPlugin::_editor_theme_changed() {
-	dragging_mode_hint->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
-	dragging_mode_hint->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	dragging_mode_hint->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	dragging_mode_hint->add_theme_constant_override("line_spacing", 0);
-}
-
-void Sprite2DEditorPlugin::_update_dragging_mode_hint(bool p_region_enabled) {
-	if (p_region_enabled) {
-		dragging_mode_hint->show();
-	} else {
-		dragging_mode_hint->hide();
-	}
-}
-
 void Sprite2DEditorPlugin::edit(Object *p_object) {
-	Callable update_text = callable_mp(this, &Sprite2DEditorPlugin::_update_dragging_mode_hint);
-	StringName update_signal = SNAME("_editor_region_rect_enabled");
-
-	Sprite2D *spr = sprite_editor->node;
-	if (spr != nullptr && spr->is_connected(update_signal, update_text)) {
-		spr->disconnect(update_signal, update_text);
-	}
-
-	spr = Object::cast_to<Sprite2D>(p_object);
-	sprite_editor->edit(spr);
-	if (spr != nullptr) {
-		_update_dragging_mode_hint(spr->is_editor_region_rect_draggable());
-		if (!spr->is_connected(update_signal, update_text)) {
-			spr->connect(update_signal, update_text);
-		}
-	}
+	sprite_editor->edit(Object::cast_to<Sprite2D>(p_object));
 }
 
 bool Sprite2DEditorPlugin::handles(Object *p_object) const {
@@ -705,22 +723,16 @@ bool Sprite2DEditorPlugin::handles(Object *p_object) const {
 
 void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		sprite_editor->options->show();
+		sprite_editor->top_hb->show();
 	} else {
-		sprite_editor->options->hide();
-		dragging_mode_hint->hide();
+		sprite_editor->top_hb->hide();
 		sprite_editor->edit(nullptr);
 	}
 }
 
 Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
-	sprite_editor->connect(SceneStringName(theme_changed), callable_mp(this, &Sprite2DEditorPlugin::_editor_theme_changed));
 	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
-
-	dragging_mode_hint = memnew(Label);
-	dragging_mode_hint->set_text(TTRC("When dragging:\nHold Ctrl + left mouse button to change the region_rect and position.\nHold left mouse button to modify the scale of the sprite."));
-	CanvasItemEditor::get_singleton()->get_controls_container()->add_child(dragging_mode_hint);
 
 	make_visible(false);
 	//sprite_editor->options->hide();

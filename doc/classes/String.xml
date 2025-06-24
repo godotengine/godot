@@ -118,13 +118,14 @@
 		</method>
 		<method name="chr" qualifiers="static">
 			<return type="String" />
-			<param index="0" name="char" type="int" />
+			<param index="0" name="code" type="int" />
 			<description>
-				Returns a single Unicode character from the decimal [param char]. You may use [url=https://unicodelookup.com/]unicodelookup.com[/url] or [url=https://www.unicode.org/charts/]unicode.org[/url] as points of reference.
+				Returns a single Unicode character from the integer [param code]. You may use [url=https://unicodelookup.com/]unicodelookup.com[/url] or [url=https://www.unicode.org/charts/]unicode.org[/url] as points of reference.
 				[codeblock]
 				print(String.chr(65))     # Prints "A"
 				print(String.chr(129302)) # Prints "🤖" (robot face emoji)
 				[/codeblock]
+				See also [method unicode_at], [method @GDScript.char], and [method @GDScript.ord].
 			</description>
 		</method>
 		<method name="contains" qualifiers="const">
@@ -440,7 +441,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order.
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order. This is not the same as [method contains].
 				[codeblock]
 				var text = "Wow, incredible!"
 
@@ -455,7 +456,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b].
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b]. This is not the same as [method containsn].
 			</description>
 		</method>
 		<method name="is_valid_ascii_identifier" qualifiers="const">
@@ -797,7 +798,7 @@
 			<param index="0" name="key" type="int" />
 			<param index="1" name="with" type="int" />
 			<description>
-				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be made up of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
+				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be composed of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
 			</description>
 		</method>
 		<method name="replace_chars" qualifiers="const">
@@ -1149,6 +1150,7 @@
 			<param index="0" name="at" type="int" />
 			<description>
 				Returns the character code at position [param at].
+				See also [method chr], [method @GDScript.char], and [method @GDScript.ord].
 			</description>
 		</method>
 		<method name="uri_decode" qualifiers="const">

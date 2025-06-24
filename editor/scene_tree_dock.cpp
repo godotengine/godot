@@ -184,6 +184,9 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (focus_owner && (Object::cast_to<BaseButton>(focus_owner) || Object::cast_to<Range>(focus_owner))) {
 			return;
 		}
+		if (edit_remote->is_pressed()) {
+			return;
+		}
 		_tool_selected(TOOL_RENAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/batch_rename", p_event)) {
 		_tool_selected(TOOL_BATCH_RENAME);
@@ -1215,7 +1218,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (node) {
 					Node *root = EditorNode::get_singleton()->get_edited_scene();
 					NodePath path = root->get_path().rel_path_to(node->get_path());
-					DisplayServer::get_singleton()->clipboard_set(path);
+					DisplayServer::get_singleton()->clipboard_set(String(path));
 				}
 			}
 		} break;
@@ -1995,7 +1998,7 @@ bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, 
 	if (found_root_path) {
 		NodePath root_path_new = found_root_path->value;
 		if (!root_path_new.is_empty()) {
-			NodePath old_abs_path = NodePath(String(p_root_node->get_path()).path_join(r_node_path));
+			NodePath old_abs_path = NodePath(String(p_root_node->get_path()).path_join(String(r_node_path)));
 			old_abs_path.simplify();
 			r_node_path = root_path_new.rel_path_to(old_abs_path);
 		}
@@ -2460,7 +2463,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 				NodePath fixed_node_path = NodePath(fixed_new_names, true);
 				path_renames[node] = fixed_node_path;
 			} else {
-				ERR_PRINT("Internal error. Can't find renamed path for node '" + node->get_path() + "'");
+				ERR_PRINT("Internal error. Can't find renamed path for node '" + String(node->get_path()) + "'");
 			}
 		}
 
@@ -3747,27 +3750,25 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 }
 
 void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
-	if (!EditorNode::get_singleton()->get_edited_scene()) {
-		menu->clear(false);
-		if (profile_allow_editing) {
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
-		}
-
-		menu->reset_size();
-		menu->set_position(get_screen_position() + p_menu_pos);
-		menu->popup();
-		return;
-	}
+	ERR_FAIL_COND(!EditorNode::get_singleton()->get_edited_scene());
+	menu->clear(false);
 
 	List<Node *> selection = editor_selection->get_top_selected_node_list();
 	List<Node *> full_selection = editor_selection->get_full_selected_node_list(); // Above method only returns nodes with common parent.
 
 	if (selection.is_empty()) {
+		if (!profile_allow_editing) {
+			return;
+		}
+
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
+
+		menu->reset_size();
+		menu->set_position(p_menu_pos);
+		menu->popup();
 		return;
 	}
-
-	menu->clear(false);
 
 	Ref<Script> existing_script;
 	bool existing_script_removable = true;
@@ -3969,7 +3970,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	Vector<String> p_paths;
 	Node *root = EditorNode::get_singleton()->get_edited_scene();
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-		String node_path = root->get_path().rel_path_to(E->get()->get_path());
+		String node_path = String(root->get_path().rel_path_to(E->get()->get_path()));
 		p_paths.push_back(node_path);
 	}
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_paths);

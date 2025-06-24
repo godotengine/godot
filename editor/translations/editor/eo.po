@@ -37,9 +37,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.8-dev\n"
 
-msgid "Main Thread"
-msgstr "Ĉefa Fadeno"
-
 msgid "Unset"
 msgstr "malŝalti"
 
@@ -365,9 +362,6 @@ msgstr "Animado loneco (filmeroj)"
 msgid "Animation length (seconds)"
 msgstr "Animado loneco (sekundoj)"
 
-msgid "Add Track"
-msgstr "Aldoni trakon"
-
 msgid "Animation Looping"
 msgstr "Animado Iteracianti"
 
@@ -502,6 +496,9 @@ msgstr "Aliigi Animadon Paŝon"
 
 msgid "Rearrange Tracks"
 msgstr "Rearanĝi trakojn"
+
+msgid "Add Track"
+msgstr "Aldoni trakon"
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -843,6 +840,9 @@ msgstr "Elekti trakojn por kopii"
 msgid "Select All/None"
 msgstr "Elekti Ĉiujn/Neniujn"
 
+msgid "Copy Selection"
+msgstr "Kopii elektaron"
+
 msgid "Close"
 msgstr "Fermi"
 
@@ -890,9 +890,6 @@ msgstr "Anstataŭigi Ĉiujn"
 msgid "Selection Only"
 msgstr "Nur Elektaro"
 
-msgid "Toggle Scripts Panel"
-msgstr "Baskuli Skriptoj Panelo"
-
 msgid "Zoom In"
 msgstr "Zomi"
 
@@ -938,6 +935,9 @@ msgstr "La sceno ne enhavas ajnan skriptojn."
 
 msgid "Select Method"
 msgstr "Elekti metodon"
+
+msgid "Type"
+msgstr "Tipo"
 
 msgid "Remove"
 msgstr "Forigi"
@@ -1020,11 +1020,17 @@ msgstr "Kreu novan %s"
 msgid "No results for \"%s\"."
 msgstr "Ne rezultoj por \"%s\"."
 
+msgid "Favorites"
+msgstr "Favoritaj"
+
 msgid "Favorites:"
 msgstr "Favoritaj:"
 
 msgid "Recent:"
 msgstr "Lastatempe:"
+
+msgid "Search"
+msgstr "Serĉi"
 
 msgid "Search:"
 msgstr "Serĉo:"
@@ -1032,17 +1038,38 @@ msgstr "Serĉo:"
 msgid "Matches:"
 msgstr "Matĉoj:"
 
+msgid "Description"
+msgstr "Priskribo"
+
 msgid "Description:"
 msgstr "Priskribo:"
+
+msgid "Project Founders"
+msgstr "Fondintoj de la Projekto"
+
+msgid "Lead Developer"
+msgstr "Ĉefa ellaboranto"
+
+msgid "Developers"
+msgstr "Programistoj"
+
+msgid "Platinum Sponsors"
+msgstr "Platenaj Sponsoroj"
+
+msgid "Gold Sponsors"
+msgstr "Oraj Sponsoroj"
+
+msgid "Silver Sponsors"
+msgstr "Arĝentaj Sponsoroj"
+
+msgid "Set %s"
+msgstr "Agordis %s"
 
 msgid "Debugger"
 msgstr "Sencimigilo"
 
 msgid "Debug"
 msgstr "Sencimigi"
-
-msgid "Save Branch as Scene"
-msgstr "Konservi la branĉon kiel sceno"
 
 msgid "Toggle Visibility"
 msgstr "Baskuli videblon"
@@ -1077,6 +1104,9 @@ msgstr "Kadro %"
 msgid "Physics Frame %"
 msgstr "Fiziko-kadro %"
 
+msgid "Time"
+msgstr "Tempo"
+
 msgid "Inclusive"
 msgstr "Inkluziva"
 
@@ -1089,11 +1119,11 @@ msgstr "Kadro #:"
 msgid "Name"
 msgstr "Nomo"
 
-msgid "Time"
-msgstr "Tempo"
-
 msgid "Calls"
 msgstr "Alvokoj"
+
+msgid "Main Thread"
+msgstr "Ĉefa Fadeno"
 
 msgid "Bytes:"
 msgstr "Bitokoj:"
@@ -1154,9 +1184,6 @@ msgstr "Eksporti liston al CSV dosiero"
 
 msgid "Resource Path"
 msgstr "Risurca Vojo"
-
-msgid "Type"
-msgstr "Tipo"
 
 msgid "Format"
 msgstr "Formo"
@@ -1281,32 +1308,14 @@ msgstr "Posede"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Risurcoj sen eksplicita proprieto:"
 
-msgid "Thanks from the Godot community!"
-msgstr "Dankon de la komunumo de Godot!"
-
 msgid "Godot Engine contributors"
 msgstr "Kontribuantoj de Godot Engine"
 
-msgid "Project Founders"
-msgstr "Fondintoj de la Projekto"
-
-msgid "Lead Developer"
-msgstr "Ĉefa ellaboranto"
-
-msgid "Developers"
-msgstr "Programistoj"
+msgid "Thanks from the Godot community!"
+msgstr "Dankon de la komunumo de Godot!"
 
 msgid "Authors"
 msgstr "Aŭtoroj"
-
-msgid "Platinum Sponsors"
-msgstr "Platenaj Sponsoroj"
-
-msgid "Gold Sponsors"
-msgstr "Oraj Sponsoroj"
-
-msgid "Silver Sponsors"
-msgstr "Arĝentaj Sponsoroj"
 
 msgid "Donors"
 msgstr "Donacantoj"
@@ -1719,9 +1728,6 @@ msgstr "Heredato:"
 msgid "Inherited by:"
 msgstr "Heredadas de:"
 
-msgid "Description"
-msgstr "Priskribo"
-
 msgid "Online Tutorials"
 msgstr "Retaj instruiloj"
 
@@ -1783,9 +1789,6 @@ msgstr "Signalo"
 msgid "File"
 msgstr "Dosiero"
 
-msgid "%d matches."
-msgstr "%d rekonoj."
-
 msgid "Search Help"
 msgstr "Serĉi helpon"
 
@@ -1819,14 +1822,17 @@ msgstr "Nur etosaj atributoj"
 msgid "Member Type"
 msgstr "Tipo de membro"
 
+msgid "On"
+msgstr "Ŝaltita"
+
+msgid "Move"
+msgstr "Movi"
+
 msgid "Resize Array"
 msgstr "Regrandigi Vicon"
 
-msgid "Set %s"
-msgstr "Agordis %s"
-
-msgid "Favorites"
-msgstr "Favoritaj"
+msgid "Size"
+msgstr "Grando"
 
 msgid "Creating Mesh Previews"
 msgstr "Kreas antaŭvidojn de maŝoj"
@@ -1848,9 +1854,6 @@ msgstr "Lingvo:"
 
 msgid "Clear Output"
 msgstr "Vakigi eligon"
-
-msgid "Copy Selection"
-msgstr "Kopii elektaron"
 
 msgid "Unnamed Project"
 msgstr "Sennoma projekto"
@@ -1886,14 +1889,8 @@ msgstr "Konservas scenon"
 msgid "Analyzing"
 msgstr "Analizas"
 
-msgid "Creating Thumbnail"
-msgstr "Kreas bildeton"
-
 msgid "Save scene before running..."
 msgstr "Konservu scenon antaŭ ruloto..."
-
-msgid "Save All Scenes"
-msgstr "Konservi ĉiujn scenojn"
 
 msgid "Can't overwrite scene that is still open!"
 msgstr "Ne eble anstataŭigas scenon ke estas ankoraŭ malferma!"
@@ -1957,16 +1954,6 @@ msgstr "Ne povu malfari dum musbutonoj estas premitaj."
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Ne povas reŝarĝi scenon, kiu konservis neniam."
-
-msgid "Reload Saved Scene"
-msgstr "Reŝargi konservitan scenon"
-
-msgid ""
-"The current scene has unsaved changes.\n"
-"Reload the saved scene anyway? This action cannot be undone."
-msgstr ""
-"La aktuala sceno havas malkonservitajn ŝanĝojn.\n"
-"Reŝargi la konservitan scenon spite? Tiu ĉi ago ne estas malfarebla."
 
 msgid "Save & Quit"
 msgstr "Konservi kaj foriri"
@@ -2046,9 +2033,6 @@ msgstr "Baskuli sendistran reĝimon."
 msgid "Scene"
 msgstr "Sceno"
 
-msgid "Operations with scene files."
-msgstr "Operacioj kun scenaj dosieroj."
-
 msgid "Copy Text"
 msgstr "Kopii la tekston"
 
@@ -2070,6 +2054,9 @@ msgstr "Malfermi lastaj"
 msgid "Save Scene"
 msgstr "Konservi scenon"
 
+msgid "Save All Scenes"
+msgstr "Konservi ĉiujn scenojn"
+
 msgid "Quick Open..."
 msgstr "Rapide malfermi..."
 
@@ -2081,6 +2068,9 @@ msgstr "Rapide malfermi skripton..."
 
 msgid "MeshLibrary..."
 msgstr "Maŝo biblioteko..."
+
+msgid "Reload Saved Scene"
+msgstr "Reŝargi konservitan scenon"
 
 msgid "Close Scene"
 msgstr "Fermi scenon"
@@ -2214,8 +2204,8 @@ msgstr "Avert!"
 msgid "Edit Text:"
 msgstr "Redakti tekston:"
 
-msgid "On"
-msgstr "Ŝaltita"
+msgid "Locale"
+msgstr "Lokaĵaro"
 
 msgid "No name provided."
 msgstr "Ne nomon provizis."
@@ -2268,11 +2258,11 @@ msgstr "Nova valoro:"
 msgid "Size:"
 msgstr "Grando"
 
-msgid "Remove Item"
-msgstr "Forigi elementon"
-
 msgid "Add Key/Value Pair"
 msgstr "Aldoni ŝlosilo/valoro paro"
+
+msgid "Remove Translation"
+msgstr "Forigi tradukon"
 
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
@@ -2289,9 +2279,6 @@ msgstr "Farigi unikan"
 
 msgid "Save As..."
 msgstr "Konservi kiel..."
-
-msgid "New %s"
-msgstr "Nova %s"
 
 msgid "New Script..."
 msgstr "Nova skripto..."
@@ -2341,14 +2328,14 @@ msgstr "Pakas"
 msgid "Failed to export project files."
 msgstr "Malsukcesis eksporti dosierojn de projekto."
 
-msgid "Can't open file to read from path \"%s\"."
-msgstr "Ne malfermeblas dosieron por legado el vojo \"%s\"."
-
 msgid "Custom debug template not found."
 msgstr "Propra sencimiga ŝablonon ne trovitis."
 
 msgid "Custom release template not found."
 msgstr "Propra eldona ŝablono ne trovitis."
+
+msgid "Run"
+msgstr "Ruli"
 
 msgid "Template file not found: \"%s\"."
 msgstr "Ŝablona dosiero ne troviĝas: \"%s\"."
@@ -2509,9 +2496,6 @@ msgstr "Duobligi..."
 msgid "Rename..."
 msgstr "Renomi..."
 
-msgid "Re-Scan Filesystem"
-msgstr "Reesplori dosiersistemon"
-
 msgid ""
 "Scanning Files,\n"
 "Please Wait..."
@@ -2567,9 +2551,6 @@ msgstr "Forigi el grupo"
 
 msgid "Expand Bottom Panel"
 msgstr "Etendi suban panelon"
-
-msgid "Move"
-msgstr "Movi"
 
 msgid "Select Current Folder"
 msgstr "Elekti kurantan dosierujon"
@@ -2685,6 +2666,9 @@ msgstr "Nova Fenestro"
 msgid "Add a new scene."
 msgstr "Aldoni novan scenon."
 
+msgid "Remove Item"
+msgstr "Forigi elementon"
+
 msgid "Toggle Visible"
 msgstr "Baskuli videblon"
 
@@ -2750,6 +2734,9 @@ msgstr "Eraro dum ruli post-enportan skripton:"
 msgid "Saving..."
 msgstr "Konservas..."
 
+msgid "Animation"
+msgstr "Animacio"
+
 msgid "Importer:"
 msgstr "Enportilo:"
 
@@ -2792,9 +2779,6 @@ msgstr "Kopii risurcon"
 msgid "History of recently edited objects."
 msgstr "Historio de lastatempe redaktintaj objektoj."
 
-msgid "Remove Translation"
-msgstr "Forigi tradukon"
-
 msgid "Translations"
 msgstr "Tradukoj"
 
@@ -2809,9 +2793,6 @@ msgstr "Risurcoj:"
 
 msgid "Remaps by Locale:"
 msgstr "Remapoj per lokaĵaro:"
-
-msgid "Locale"
-msgstr "Lokaĵaro"
 
 msgid "Groups"
 msgstr "Grupoj"
@@ -3031,9 +3012,6 @@ msgstr "Skali reproduktadon de animacio malloke por la nodo."
 
 msgid "Animation Tools"
 msgstr "Iloj de animacio"
-
-msgid "Animation"
-msgstr "Animacio"
 
 msgid "Edit Transitions..."
 msgstr "Redakti transpasojn..."
@@ -3520,9 +3498,6 @@ msgstr "Aldonas %s..."
 msgid "Create Node"
 msgstr "Krei nodon"
 
-msgid "Change Default Type"
-msgstr "Ŝanĝi defaŭltan tipon"
-
 msgid "Set Handle"
 msgstr "Defini stirilon"
 
@@ -3889,12 +3864,6 @@ msgstr "Fermu Ĉion"
 msgid "Close Docs"
 msgstr "Fermu Dokumentaron"
 
-msgid "Run"
-msgstr "Ruli"
-
-msgid "Search"
-msgstr "Serĉi"
-
 msgid "Go to previous edited document."
 msgstr "Iru al la antaŭa redaktita dokumento."
 
@@ -3928,11 +3897,11 @@ msgstr "Fonto"
 msgid "Target"
 msgstr "Celo"
 
-msgid "Go to Function"
-msgstr "Iri al funkcio"
-
 msgid "Pick Color"
 msgstr "Elekti koloron"
+
+msgid "Go to Function"
+msgstr "Iri al funkcio"
 
 msgid "Line"
 msgstr "Linio"
@@ -3985,11 +3954,11 @@ msgstr "Fermu Dosiero"
 msgid "Delete Animation?"
 msgstr "Forigi animacion?"
 
-msgid "Filter Animations"
-msgstr "Filtrili animacioj"
-
 msgid "Delete Animation"
 msgstr "Forigi animacion"
+
+msgid "Filter Animations"
+msgstr "Filtrili animacioj"
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "Ludi elektitan animacion retre el aktuala pozicio. (A)"
@@ -4006,9 +3975,6 @@ msgstr "Ludi elektitan animacion el aktuala pozicio. (D)"
 msgid "Zoom Reset"
 msgstr "Rekomencigi zomon"
 
-msgid "Size"
-msgstr "Grando"
-
 msgid "Reload"
 msgstr "Reŝargi"
 
@@ -4020,6 +3986,9 @@ msgstr "Eliras la editilo"
 
 msgid "Yes"
 msgstr "Jes"
+
+msgid "Remote"
+msgstr "Fora"
 
 msgid "Modified"
 msgstr "Modifita"
@@ -4202,9 +4171,6 @@ msgstr "Aldoni/Krei nova nodo."
 
 msgid "Attach a new or existing script to the selected node."
 msgstr "Alfiksi novan aŭ ekzistantan skripton al la elektinta nodo."
-
-msgid "Remote"
-msgstr "Fora"
 
 msgid "Local"
 msgstr "Loka"

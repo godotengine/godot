@@ -315,7 +315,7 @@ String OS_Android::get_version() const {
 	}
 
 	// Handles stock Android.
-	String sdk_version = get_system_property("ro.build.version.sdk_int");
+	String sdk_version = get_system_property("ro.build.version.sdk");
 	String build = get_system_property("ro.build.version.incremental");
 	if (!sdk_version.is_empty()) {
 		if (!build.is_empty()) {
@@ -325,6 +325,14 @@ String OS_Android::get_version() const {
 	}
 
 	return "";
+}
+
+String OS_Android::get_version_alias() const {
+	String release = get_system_property("ro.build.version.release_or_codename");
+	String sdk_version = get_system_property("ro.build.version.sdk");
+	String build = get_system_property("ro.build.version.incremental");
+
+	return vformat("%s (SDK %s build %s)", release, sdk_version, build);
 }
 
 MainLoop *OS_Android::get_main_loop() const {

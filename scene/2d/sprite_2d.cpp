@@ -64,7 +64,7 @@ void Sprite2D::_edit_set_rect(const Rect2 &p_rect) {
 	if (texture.is_null()) {
 		return;
 	}
-	if (!(region_enabled && hframes <= 1 && vframes <= 1 && Input::get_singleton()->is_key_label_pressed(Key::CTRL))) {
+	if (!region_enabled || hframes > 1 || vframes > 1 || !dragging_to_resize_rect) {
 		Node2D::_edit_set_rect(p_rect);
 		return;
 	}
@@ -257,7 +257,6 @@ void Sprite2D::set_region_enabled(bool p_region_enabled) {
 	region_enabled = p_region_enabled;
 	_emit_region_rect_enabled();
 	queue_redraw();
-	notify_property_list_changed();
 }
 
 bool Sprite2D::is_region_enabled() const {
@@ -428,6 +427,15 @@ bool Sprite2D::is_editor_region_rect_draggable() const {
 	return hframes <= 1 && vframes <= 1 && region_enabled;
 }
 
+#ifdef TOOLS_ENABLED
+void Sprite2D::_editor_set_dragging_to_resize_rect(bool p_dragging_to_resize_rect) {
+	dragging_to_resize_rect = p_dragging_to_resize_rect;
+}
+bool Sprite2D::_editor_is_dragging_to_resiz_rect() const {
+	return dragging_to_resize_rect;
+}
+#endif
+
 Rect2 Sprite2D::get_rect() const {
 	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
@@ -453,6 +461,9 @@ Rect2 Sprite2D::get_rect() const {
 }
 
 void Sprite2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "frame") {
 		p_property.hint = PROPERTY_HINT_RANGE;
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
@@ -461,10 +472,6 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name == "frame_coords") {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
-	}
-
-	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip_enabled")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -477,7 +484,9 @@ void Sprite2D::_texture_changed() {
 }
 
 void Sprite2D::_emit_region_rect_enabled() {
-	emit_signal("_editor_region_rect_enabled", is_editor_region_rect_draggable());
+	if (Engine::get_singleton()->is_editor_hint()) {
+		emit_signal("_editor_region_rect_enabled");
+	}
 }
 
 void Sprite2D::_bind_methods() {
@@ -537,16 +546,13 @@ void Sprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 
 	ADD_GROUP("Region", "region_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_region_enabled", "is_region_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_filter_clip_enabled"), "set_region_filter_clip_enabled", "is_region_filter_clip_enabled");
 }
 
 Sprite2D::Sprite2D() {
-#ifdef TOOLS_ENABLED
-	add_user_signal(MethodInfo("_editor_region_rect_enabled", PropertyInfo(Variant::BOOL, "enabled"))); // Sprite2DEditorPlugin listens to this.
-#endif
-}
-
-Sprite2D::~Sprite2D() {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		add_user_signal(MethodInfo("_editor_region_rect_enabled"));
+	}
 }

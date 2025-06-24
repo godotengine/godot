@@ -30,7 +30,7 @@
 				[b]Note:[/b] [method _customize_scene] will only be called for scenes that have been modified since the last export.
 			</description>
 		</method>
-		<method name="_customize_resource" qualifiers="virtual">
+		<method name="_customize_resource" qualifiers="virtual required">
 			<return type="Resource" />
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="path" type="String" />
@@ -47,7 +47,7 @@
 				- [CompressedTexture3D]
 			</description>
 		</method>
-		<method name="_customize_scene" qualifiers="virtual">
+		<method name="_customize_scene" qualifiers="virtual required">
 			<return type="Node" />
 			<param index="0" name="scene" type="Node" />
 			<param index="1" name="path" type="String" />
@@ -152,7 +152,7 @@
 				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
 			</description>
 		</method>
-		<method name="_get_customization_configuration_hash" qualifiers="virtual const">
+		<method name="_get_customization_configuration_hash" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Return a hash based on the configuration passed (for both scenes and resources). This helps keep separate caches for separate export configurations.
@@ -172,7 +172,6 @@
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<param index="1" name="option" type="String" />
 			<description>
-				[b]Optional.[/b]
 				Validates [param option] and returns the visibility for the specified [param platform]. The default implementation returns [code]true[/code] for all options.
 			</description>
 		</method>
@@ -203,24 +202,24 @@
 				Return a [Dictionary] of override values for export options, that will be used instead of user-provided values. Overridden options will be hidden from the user interface.
 				[codeblock]
 				class MyExportPlugin extends EditorExportPlugin:
-				    func _get_name() -&gt; String:
-				        return "MyExportPlugin"
+					func _get_name() -&gt; String:
+						return "MyExportPlugin"
 
-				    func _supports_platform(platform) -&gt; bool:
-				        if platform is EditorExportPlatformPC:
-				            # Run on all desktop platforms including Windows, MacOS and Linux.
-				            return true
-				        return false
+					func _supports_platform(platform) -&gt; bool:
+						if platform is EditorExportPlatformPC:
+							# Run on all desktop platforms including Windows, MacOS and Linux.
+							return true
+						return false
 
-				    func _get_export_options_overrides(platform) -&gt; Dictionary:
-				        # Override "Embed PCK" to always be enabled.
-				        return {
-				            "binary_format/embed_pck": true,
-				        }
+					func _get_export_options_overrides(platform) -&gt; Dictionary:
+						# Override "Embed PCK" to always be enabled.
+						return {
+							"binary_format/embed_pck": true,
+						}
 				[/codeblock]
 			</description>
 		</method>
-		<method name="_get_name" qualifiers="virtual const">
+		<method name="_get_name" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 				Return the name identifier of this plugin (for future identification by the exporter). The plugins are sorted by name before exporting.
@@ -231,7 +230,7 @@
 			<return type="bool" />
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<description>
-				Return [code]true[/code], if the result of [method _get_export_options] has changed and the export options of preset corresponding to [param platform] should be updated.
+				Return [code]true[/code] if the result of [method _get_export_options] has changed and the export options of the preset corresponding to [param platform] should be updated.
 			</description>
 		</method>
 		<method name="_supports_platform" qualifiers="virtual const">

@@ -106,13 +106,16 @@
 # tct123 <tct1234@protonmail.com>, 2024.
 # Silikonmanns Kanal <silvan.goeth@gmail.com>, 2025.
 # Tim Nikitin <tim.nikitin@posteo.de>, 2025.
+# Sky64Redstone <sky64redstone@gmail.com>, 2025.
+# Mirco Höhne <mirco.hoehne@gmail.com>, 2025.
+# Fabian Donner <ThunderFD@users.noreply.github.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-16 12:59+0000\n"
-"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
+"PO-Revision-Date: 2025-06-02 20:55+0000\n"
+"Last-Translator: Fabian Donner <ThunderFD@users.noreply.github.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -120,7 +123,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -178,6 +181,9 @@ msgstr "Beenden automatisch akzeptieren"
 
 msgid "Quit on Go Back"
 msgstr "Beenden beim Zurückgehen"
+
+msgid "General"
+msgstr "Allgemein"
 
 msgid "Display"
 msgstr "Anzeige"
@@ -260,9 +266,6 @@ msgstr "Busse"
 msgid "Default Bus Layout"
 msgstr "Default-Bus-Layout"
 
-msgid "General"
-msgstr "Allgemein"
-
 msgid "Default Playback Type"
 msgstr "Standardwiedergabetyp"
 
@@ -289,6 +292,9 @@ msgstr "Unterfenster"
 
 msgid "Embed Subwindows"
 msgstr "Unterfenster einbetten"
+
+msgid "Frame Pacing"
+msgstr "Frame-Taktung"
 
 msgid "Android"
 msgstr "Android"
@@ -437,6 +443,9 @@ msgstr "Maximale Größe (MB)"
 msgid "Texture Upload Region Size Px"
 msgstr "Größe der Textur-Uploadregion in Px"
 
+msgid "Texture Download Region Size Px"
+msgstr "Größe der Textur-Uploadregion in Px"
+
 msgid "Pipeline Cache"
 msgstr "Pipeline-Cache"
 
@@ -499,6 +508,39 @@ msgstr "Panning- und Skalierungs-Gesten aktivieren"
 
 msgid "Rotary Input Scroll Axis"
 msgstr "Scrollachse der Dreheingabe"
+
+msgid "Navigation"
+msgstr "Navigation"
+
+msgid "Avoidance"
+msgstr "Ausweichen"
+
+msgid "Thread Model"
+msgstr "Thread-Modell"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "Ausweichen benutzt mehrere Threads"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Ausweichen benutzt Threads mit hoher Priorität"
+
+msgid "Pathfinding"
+msgstr "Wegfindung"
+
+msgid "Max Threads"
+msgstr "Max. Threads"
+
+msgid "Baking"
+msgstr "Backen"
+
+msgid "Use Crash Prevention Checks"
+msgstr "Crash-Vermeidungs-Checks verwenden"
+
+msgid "Baking Use Multiple Threads"
+msgstr "Backen benutzt mehrere Threads"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Backen benutzt mehrere Threads mit hoher Priorität"
 
 msgid "Low Processor Usage Mode"
 msgstr "Prozessorenergiesparmodus"
@@ -799,9 +841,6 @@ msgstr "Threading"
 
 msgid "Worker Pool"
 msgstr "Arbeiter-Pool"
-
-msgid "Max Threads"
-msgstr "Max. Threads"
 
 msgid "Low Priority Thread Ratio"
 msgstr "Verhältnis für Threads mit niedriger Priorität"
@@ -1130,9 +1169,6 @@ msgstr "Touchscreen"
 msgid "Scale Gizmo Handles"
 msgstr "Gizmogriffe skalieren"
 
-msgid "Increase Scrollbar Touch Area"
-msgstr "Vergrößere Scrollbar-Touch-Bereich"
-
 msgid "Scene Tabs"
 msgstr "Szenen-Tabs"
 
@@ -1259,9 +1295,6 @@ msgstr "Farbton von Unterressourcen"
 msgid "Text Editor"
 msgstr "Texteditor"
 
-msgid "Line Spacing"
-msgstr "Zeilenzwischenraum"
-
 msgid "Color Theme"
 msgstr "Farbschema"
 
@@ -1340,11 +1373,11 @@ msgstr "Tabulatoren anzeigen"
 msgid "Draw Spaces"
 msgstr "Leerzeichen anzeigen"
 
+msgid "Line Spacing"
+msgstr "Zeilenzwischenraum"
+
 msgid "Behavior"
 msgstr "Verhalten"
-
-msgid "Navigation"
-msgstr "Navigation"
 
 msgid "Move Caret on Right Click"
 msgstr "Textcursor bei Rechtsklick bewegen"
@@ -1991,6 +2024,9 @@ msgstr "Instanzvariablenfarbe"
 msgid "Mark Color"
 msgstr "Markierungsfarbe"
 
+msgid "Warning Color"
+msgstr "Warnung-Farbe"
+
 msgid "Bookmark Color"
 msgstr "Lesezeichenfarbe"
 
@@ -2071,6 +2107,117 @@ msgstr "Eigene Vorlage"
 
 msgid "Release"
 msgstr "Release"
+
+msgid "Architectures"
+msgstr "Architekturen"
+
+msgid "App Store Team ID"
+msgstr "App Store Team ID"
+
+msgid "Export Method Debug"
+msgstr "Exportmethode Debug"
+
+msgid "Code Sign Identity Debug"
+msgstr "Codesignierungsidentität Debug"
+
+msgid "Code Sign Identity Release"
+msgstr "Codesignierungsidentität Release"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "Provisioning-Profil-UUID Debug"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "Provisioning-Profil-UUID Release"
+
+msgid "Export Method Release"
+msgstr "Exportmethode Release"
+
+msgid "Bundle Identifier"
+msgstr "Bundle-Bezeichner"
+
+msgid "Signature"
+msgstr "Signatur"
+
+msgid "Short Version"
+msgstr "Kurzversion"
+
+msgid "Additional Plist Content"
+msgstr "Zusätzlicher Plist-Inhalt"
+
+msgid "Icon Interpolation"
+msgstr "Icon-Interpolation"
+
+msgid "Export Project Only"
+msgstr "Nur Projekt exportieren"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "Alte Exportdateien bedingungslos löschen"
+
+msgid "Plugins"
+msgstr "Plugins"
+
+msgid "Entitlements"
+msgstr "Ansprüche"
+
+msgid "Increased Memory Limit"
+msgstr "Erhöhtes Speicherlimit"
+
+msgid "Push Notifications"
+msgstr "Push-Benachrichtigungen"
+
+msgid "Capabilities"
+msgstr "Fähigkeiten"
+
+msgid "Access Wi-Fi"
+msgstr "Zugriff auf WLAN"
+
+msgid "Performance Gaming Tier"
+msgstr "Performance Gaming-Stufe"
+
+msgid "Performance A 12"
+msgstr "Performance A 12"
+
+msgid "Enabled"
+msgstr "Aktiviert"
+
+msgid "User Data"
+msgstr "Nutzerdaten"
+
+msgid "Accessible From Files App"
+msgstr "Zugreifbar über Dateiverwaltung"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Zugreifbar über iTunes-Sharing"
+
+msgid "Privacy"
+msgstr "Privatsphäre"
+
+msgid "Camera Usage Description"
+msgstr "Kamera-Nutzungsbeschreibung"
+
+msgid "Camera Usage Description Localized"
+msgstr "Kamera-Nutzungsbeschreibung Lokalisierung"
+
+msgid "Microphone Usage Description"
+msgstr "Mikrofon-Nutzungsbeschreibung"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Mikrofon-Nutzungsbeschreibung Lokalisierung"
+
+msgid "Photolibrary Usage Description"
+msgstr "Fotobibliothek-Nutzungsbeschreibung"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "Fotobibliothek-Nutzungsbeschreibung Lokalisierung"
+
+msgid "Tracking Enabled"
+msgstr "Tracking aktiviert"
+
+msgid "Tracking Domains"
+msgstr "Tracking-Domänen"
+
+msgid "Icons"
+msgstr "Icons"
 
 msgid "Export Console Wrapper"
 msgstr "Konsolenwrapper exportieren"
@@ -2297,9 +2444,6 @@ msgstr "Vereinfachungsdistanz"
 msgid "Save to File"
 msgstr "In Datei speichern"
 
-msgid "Enabled"
-msgstr "Aktiviert"
-
 msgid "Shadow Meshes"
 msgstr "Schatten-Meshes"
 
@@ -2450,9 +2594,6 @@ msgstr "Hinting"
 msgid "Subpixel Positioning"
 msgstr "Subpixel-Positionierung"
 
-msgid "Oversampling"
-msgstr "Oversampling"
-
 msgid "Metadata Overrides"
 msgstr "Metadaten-Überschreibungen"
 
@@ -2554,6 +2695,12 @@ msgstr "Anordnung"
 
 msgid "Layout"
 msgstr "Layout"
+
+msgid "Base Scale"
+msgstr "Grundskalierung"
+
+msgid "Saturation"
+msgstr "Sättigung"
 
 msgid "Normal Map"
 msgstr "Normal-Map"
@@ -2822,9 +2969,6 @@ msgstr "Erlaubt"
 
 msgid "Threads"
 msgstr "Threads"
-
-msgid "Thread Model"
-msgstr "Thread-Modell"
 
 msgid "Display Server"
 msgstr "Anzeigeserver"
@@ -3201,9 +3345,6 @@ msgstr "Kommentarmarker"
 msgid "Critical Color"
 msgstr "Kritisch-Farbe"
 
-msgid "Warning Color"
-msgstr "Warnung-Farbe"
-
 msgid "Notice Color"
 msgstr "Hinweis-Farbe"
 
@@ -3317,6 +3458,9 @@ msgstr "Bildformat"
 
 msgid "Root Node Mode"
 msgstr "Root-Node-Modus"
+
+msgid "Visibility Mode"
+msgstr "Sichtbarkeitsmodus"
 
 msgid "Json"
 msgstr "JSON"
@@ -3485,6 +3629,9 @@ msgstr "Child-Elemente"
 
 msgid "Light"
 msgstr "Licht"
+
+msgid "Visible"
+msgstr "Sichtbar"
 
 msgid "Object Model Type"
 msgstr "Objektmodell-Typ"
@@ -3834,6 +3981,9 @@ msgstr "Alpha-Blending"
 msgid "Enable Hole Punch"
 msgstr "Hole Punch aktivieren"
 
+msgid "Border Color"
+msgstr "Rahmenfarbe"
+
 msgid "Aspect Ratio"
 msgstr "Seitenverhältnis"
 
@@ -3999,9 +4149,6 @@ msgstr "Gradle-Buildverzeichnis"
 msgid "Android Source Template"
 msgstr "Android Quell-Vorlage"
 
-msgid "Compress Native Libraries"
-msgstr "Native Bibliotheken komprimieren"
-
 msgid "Export Format"
 msgstr "Exportformat"
 
@@ -4010,12 +4157,6 @@ msgstr "Min SDK"
 
 msgid "Target SDK"
 msgstr "Ziel SDK"
-
-msgid "Plugins"
-msgstr "Plugins"
-
-msgid "Architectures"
-msgstr "Architekturen"
 
 msgid "Keystore"
 msgstr "Keystore"
@@ -4122,8 +4263,29 @@ msgstr "Eigene Berechtigungen"
 msgid "iOS Deploy"
 msgstr "iOS-Auslieferung"
 
-msgid "Icons"
-msgstr "Icons"
+msgid "Targeted Device Family"
+msgstr "Zielgeräteklasse"
+
+msgid "Min iOS Version"
+msgstr "Mindest-iOS-Version"
+
+msgid "Storyboard"
+msgstr "Storyboard"
+
+msgid "Image Scale Mode"
+msgstr "Bildskalierungsmodus"
+
+msgid "Custom Image @2x"
+msgstr "Eigenes Bild @2x"
+
+msgid "Custom Image @3x"
+msgstr "Eigenes Bild @3x"
+
+msgid "Use Custom BG Color"
+msgstr "Eigene Hintergrundfarbe verwenden"
+
+msgid "Custom BG Color"
+msgstr "Eigene Hintergrundfarbe"
 
 msgid "Settings 58 X 58"
 msgstr "Einstellungen 58 X 58"
@@ -4154,129 +4316,6 @@ msgstr "iPad 152 x 152"
 
 msgid "App Store 1024 X 1024"
 msgstr "App Store 1024 x 1024"
-
-msgid "App Store Team ID"
-msgstr "App Store Team ID"
-
-msgid "Export Method Debug"
-msgstr "Exportmethode Debug"
-
-msgid "Code Sign Identity Debug"
-msgstr "Codesignierungsidentität Debug"
-
-msgid "Code Sign Identity Release"
-msgstr "Codesignierungsidentität Release"
-
-msgid "Provisioning Profile UUID Debug"
-msgstr "Provisioning-Profil-UUID Debug"
-
-msgid "Provisioning Profile UUID Release"
-msgstr "Provisioning-Profil-UUID Release"
-
-msgid "Export Method Release"
-msgstr "Exportmethode Release"
-
-msgid "Targeted Device Family"
-msgstr "Zielgeräteklasse"
-
-msgid "Bundle Identifier"
-msgstr "Bundle-Bezeichner"
-
-msgid "Signature"
-msgstr "Signatur"
-
-msgid "Short Version"
-msgstr "Kurzversion"
-
-msgid "Min iOS Version"
-msgstr "Mindest-iOS-Version"
-
-msgid "Additional Plist Content"
-msgstr "Zusätzlicher Plist-Inhalt"
-
-msgid "Icon Interpolation"
-msgstr "Icon-Interpolation"
-
-msgid "Export Project Only"
-msgstr "Nur Projekt exportieren"
-
-msgid "Delete Old Export Files Unconditionally"
-msgstr "Alte Exportdateien bedingungslos löschen"
-
-msgid "Entitlements"
-msgstr "Ansprüche"
-
-msgid "Increased Memory Limit"
-msgstr "Erhöhtes Speicherlimit"
-
-msgid "Push Notifications"
-msgstr "Push-Benachrichtigungen"
-
-msgid "Capabilities"
-msgstr "Fähigkeiten"
-
-msgid "Access Wi-Fi"
-msgstr "Zugriff auf WLAN"
-
-msgid "Performance Gaming Tier"
-msgstr "Performance Gaming-Stufe"
-
-msgid "Performance A 12"
-msgstr "Performance A 12"
-
-msgid "User Data"
-msgstr "Nutzerdaten"
-
-msgid "Accessible From Files App"
-msgstr "Zugreifbar über Dateiverwaltung"
-
-msgid "Accessible From iTunes Sharing"
-msgstr "Zugreifbar über iTunes-Sharing"
-
-msgid "Privacy"
-msgstr "Privatsphäre"
-
-msgid "Camera Usage Description"
-msgstr "Kamera-Nutzungsbeschreibung"
-
-msgid "Camera Usage Description Localized"
-msgstr "Kamera-Nutzungsbeschreibung Lokalisierung"
-
-msgid "Microphone Usage Description"
-msgstr "Mikrofon-Nutzungsbeschreibung"
-
-msgid "Microphone Usage Description Localized"
-msgstr "Mikrofon-Nutzungsbeschreibung Lokalisierung"
-
-msgid "Photolibrary Usage Description"
-msgstr "Fotobibliothek-Nutzungsbeschreibung"
-
-msgid "Photolibrary Usage Description Localized"
-msgstr "Fotobibliothek-Nutzungsbeschreibung Lokalisierung"
-
-msgid "Tracking Enabled"
-msgstr "Tracking aktiviert"
-
-msgid "Tracking Domains"
-msgstr "Tracking-Domänen"
-
-msgid "Storyboard"
-msgstr "Storyboard"
-
-msgid "Image Scale Mode"
-msgstr "Bildskalierungsmodus"
-
-msgid "Custom Image @2x"
-msgstr "Eigenes Bild @2x"
-
-msgid "Custom Image @3x"
-msgstr "Eigenes Bild @3x"
-
-msgid "Use Custom BG Color"
-msgstr "Eigene Hintergrundfarbe verwenden"
-
-msgid "Custom BG Color"
-msgstr "Eigene Hintergrundfarbe"
 
 msgid "Architecture"
 msgstr "Architektur"
@@ -5049,9 +5088,6 @@ msgstr "Gizmo-Ausmaße"
 msgid "Multimesh"
 msgstr "Multimesh"
 
-msgid "Pathfinding"
-msgstr "Wegfindung"
-
 msgid "Path Desired Distance"
 msgstr "Gewünschte Pfaddistanz"
 
@@ -5078,9 +5114,6 @@ msgstr "Pfad vereinfachen"
 
 msgid "Simplify Epsilon"
 msgstr "Epsilon vereinfachen"
-
-msgid "Avoidance"
-msgstr "Ausweichen"
 
 msgid "Avoidance Enabled"
 msgstr "Ausweichen aktiviert"
@@ -5195,9 +5228,6 @@ msgstr "Rollen"
 
 msgid "Base Offset"
 msgstr "Grundversatz"
-
-msgid "Base Scale"
-msgstr "Grundskalierung"
 
 msgid "Limit Begin"
 msgstr "Anfangsgrenze"
@@ -5325,8 +5355,8 @@ msgstr "Deaktiviert"
 msgid "One Way Collision"
 msgstr "Einseitige Kollision"
 
-msgid "One Way Collision Margin"
-msgstr "Grenze für einseitige Kollisionen"
+msgid "Margin"
+msgstr "Rand"
 
 msgid "Debug Color"
 msgstr "Debug-Farbe"
@@ -5473,14 +5503,29 @@ msgstr "Kraft"
 msgid "Torque"
 msgstr "Drehmoment"
 
-msgid "Margin"
-msgstr "Rand"
-
 msgid "Constant Linear Velocity"
 msgstr "Konstante lineare Geschwindigkeit"
 
 msgid "Constant Angular Velocity"
 msgstr "Konstante Winkelgeschwindigkeit"
+
+msgid "Texture Normal"
+msgstr "Textur normal"
+
+msgid "Texture Pressed"
+msgstr "Textur gedrückt"
+
+msgid "Bitmask"
+msgstr "Bitmaske"
+
+msgid "Shape Centered"
+msgstr "Shape zentriert"
+
+msgid "Shape Visible"
+msgstr "Shape sichtbar"
+
+msgid "Passby Press"
+msgstr "Druckaktivierung bleibt bei Verlassen"
 
 msgid "UV"
 msgstr "UV"
@@ -5556,30 +5601,6 @@ msgstr "Kollision aktiviert"
 
 msgid "Use Kinematic Bodies"
 msgstr "Kinematische Bodys verwenden"
-
-msgid "Navigation Enabled"
-msgstr "Navigation aktiviert"
-
-msgid "Texture Normal"
-msgstr "Textur normal"
-
-msgid "Texture Pressed"
-msgstr "Textur gedrückt"
-
-msgid "Bitmask"
-msgstr "Bitmaske"
-
-msgid "Shape Centered"
-msgstr "Shape zentriert"
-
-msgid "Shape Visible"
-msgstr "Shape sichtbar"
-
-msgid "Passby Press"
-msgstr "Druckaktivierung bleibt bei Verlassen"
-
-msgid "Visibility Mode"
-msgstr "Sichtbarkeitsmodus"
 
 msgid "Enabling"
 msgstr "Aktivieren"
@@ -6023,14 +6044,14 @@ msgstr "Top-Level"
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
-msgid "Visible"
-msgstr "Sichtbar"
-
 msgid "Visibility Parent"
 msgstr "Sichtbarkeit Parent"
 
 msgid "Bake"
 msgstr "Backen"
+
+msgid "Debug Shape"
+msgstr "Debug-Shape"
 
 msgid "Rotation Mode"
 msgstr "Rotationsmodus"
@@ -6269,8 +6290,38 @@ msgstr "Z Winkel"
 msgid "Hit Back Faces"
 msgstr "Backfaces treffen"
 
-msgid "Debug Shape"
-msgstr "Debug-Shape"
+msgid "Pinned Points"
+msgstr "Angeheftete Elemente"
+
+msgid "Attachments"
+msgstr "Anhänge"
+
+msgid "Point Index"
+msgstr "Punkte-Index"
+
+msgid "Spatial Attachment Path"
+msgstr "Pfad der räumlichen Anhänge"
+
+msgid "Parent Collision Ignore"
+msgstr "Parent-Kollision ignorieren"
+
+msgid "Simulation Precision"
+msgstr "Simulationsgenauigkeit"
+
+msgid "Total Mass"
+msgstr "Gesamtmasse"
+
+msgid "Linear Stiffness"
+msgstr "Lineare Steifheit"
+
+msgid "Pressure Coefficient"
+msgstr "Druckkoeffizient"
+
+msgid "Damping Coefficient"
+msgstr "Dämpfungskoeffizient"
+
+msgid "Drag Coefficient"
+msgstr "Zugkoeffizient"
 
 msgid "Spring Length"
 msgstr "Federlänge"
@@ -6385,39 +6436,6 @@ msgstr "Aktiv"
 
 msgid "Influence"
 msgstr "Einfluss"
-
-msgid "Pinned Points"
-msgstr "Angeheftete Elemente"
-
-msgid "Attachments"
-msgstr "Anhänge"
-
-msgid "Point Index"
-msgstr "Punkte-Index"
-
-msgid "Spatial Attachment Path"
-msgstr "Pfad der räumlichen Anhänge"
-
-msgid "Parent Collision Ignore"
-msgstr "Parent-Kollision ignorieren"
-
-msgid "Simulation Precision"
-msgstr "Simulationsgenauigkeit"
-
-msgid "Total Mass"
-msgstr "Gesamtmasse"
-
-msgid "Linear Stiffness"
-msgstr "Lineare Steifheit"
-
-msgid "Pressure Coefficient"
-msgstr "Druckkoeffizient"
-
-msgid "Damping Coefficient"
-msgstr "Dämpfungskoeffizient"
-
-msgid "Drag Coefficient"
-msgstr "Zugkoeffizient"
 
 msgid "Position Offset"
 msgstr "Positionsversatz"
@@ -6947,6 +6965,12 @@ msgstr "Ausrichtung des letzten Umbruchs"
 msgid "Reverse Fill"
 msgstr "Füllung Rückseite"
 
+msgid "Folded"
+msgstr "Eingeklappt"
+
+msgid "Title"
+msgstr "Titel"
+
 msgid "Show Grid"
 msgstr "Raster anzeigen"
 
@@ -7003,9 +7027,6 @@ msgstr "Ziehbar"
 
 msgid "Selected"
 msgstr "Ausgewählt"
-
-msgid "Title"
-msgstr "Titel"
 
 msgid "Autoshrink Enabled"
 msgstr "Auto-Schrumpfen aktiviert"
@@ -7154,9 +7175,6 @@ msgstr "Zwischen Graphemen"
 msgid "Secret"
 msgstr "Geheimnis"
 
-msgid "Secret Character"
-msgstr "Geheimes Zeichen"
-
 msgid "Underline"
 msgstr "Unterstreichen"
 
@@ -7240,9 +7258,6 @@ msgstr "Erlaube Mehr"
 
 msgid "Allow Lesser"
 msgstr "Erlaube Weniger"
-
-msgid "Border Color"
-msgstr "Rahmenfarbe"
 
 msgid "Border Width"
 msgstr "Rahmenbreite"
@@ -7847,6 +7862,9 @@ msgstr "Quad 3"
 
 msgid "Canvas Cull Mask"
 msgstr "Canvas-Cull-Maske"
+
+msgid "Oversampling"
+msgstr "Oversampling"
 
 msgid "Size 2D Override"
 msgstr "2D-Größenüberschreibung"
@@ -8643,9 +8661,6 @@ msgstr "Anpassungen"
 msgid "Brightness"
 msgstr "Helligkeit"
 
-msgid "Saturation"
-msgstr "Sättigung"
-
 msgid "Color Correction"
 msgstr "Farbkorrektur"
 
@@ -8783,9 +8798,6 @@ msgstr "Binormale invertieren"
 
 msgid "Flip Texture"
 msgstr "Textur spiegeln"
-
-msgid "Subsurface Scattering"
-msgstr "Subsurface Scattering"
 
 msgid "Skin Mode"
 msgstr "Skin-Modus"
@@ -9398,9 +9410,6 @@ msgstr "Ausführende Zeile"
 
 msgid "Can Fold"
 msgstr "Kann einklappen"
-
-msgid "Folded"
-msgstr "Eingeklappt"
 
 msgid "Can Fold Code Region"
 msgstr "Kann Coderegion einklappen"
@@ -10206,33 +10215,6 @@ msgstr "Default-Kantenverbindungsabstand"
 msgid "Default Link Connection Radius"
 msgstr "Default-Kantenverbindungsradius"
 
-msgid "Default Cell Height"
-msgstr "Default-Zellenhöhe"
-
-msgid "Default Up"
-msgstr "Default oben"
-
-msgid "Merge Rasterizer Cell Scale"
-msgstr "Zusammenführen Rasterisierer-Zellenskalierung"
-
-msgid "Avoidance Use Multiple Threads"
-msgstr "Ausweichen benutzt mehrere Threads"
-
-msgid "Avoidance Use High Priority Threads"
-msgstr "Ausweichen benutzt Threads mit hoher Priorität"
-
-msgid "Baking"
-msgstr "Backen"
-
-msgid "Use Crash Prevention Checks"
-msgstr "Crash-Vermeidungs-Checks verwenden"
-
-msgid "Baking Use Multiple Threads"
-msgstr "Backen benutzt mehrere Threads"
-
-msgid "Baking Use High Priority Threads"
-msgstr "Backen benutzt mehrere Threads mit hoher Priorität"
-
 msgid "Edge Connection Color"
 msgstr "Kantenverbindungsfarbe"
 
@@ -10260,14 +10242,8 @@ msgstr "Agentpfadfarbe"
 msgid "Enable Edge Connections"
 msgstr "Kantenverbindungen aktivieren"
 
-msgid "Enable Edge Connections X-Ray"
-msgstr "Kantenverbindungen Röntgenblick aktivieren"
-
 msgid "Enable Edge Lines"
 msgstr "Randlinien aktivieren"
-
-msgid "Enable Edge Lines X-Ray"
-msgstr "Kantenlinen Röntgenblick aktivieren"
 
 msgid "Enable Geometry Face Random Color"
 msgstr "Zufällige Geometrieflächenfarbe aktivieren"
@@ -10275,14 +10251,8 @@ msgstr "Zufällige Geometrieflächenfarbe aktivieren"
 msgid "Enable Link Connections"
 msgstr "Link-Verbindungen aktivieren"
 
-msgid "Enable Link Connections X-Ray"
-msgstr "Link-Verbindungen-Röntgenblick aktivieren"
-
 msgid "Enable Agent Paths"
 msgstr "Agentpfade aktivieren"
-
-msgid "Enable Agent Paths X-Ray"
-msgstr "Agentpfad-Röntgenblick aktivieren"
 
 msgid "Agent Path Point Size"
 msgstr "Agentpfadpunktgröße"
@@ -10313,6 +10283,27 @@ msgstr "Hindernisradius aktivieren"
 
 msgid "Enable Obstacles Static"
 msgstr "Hindernis-Static aktivieren"
+
+msgid "Default Cell Height"
+msgstr "Default-Zellenhöhe"
+
+msgid "Default Up"
+msgstr "Default oben"
+
+msgid "Merge Rasterizer Cell Scale"
+msgstr "Zusammenführen Rasterisierer-Zellenskalierung"
+
+msgid "Enable Edge Connections X-Ray"
+msgstr "Kantenverbindungen Röntgenblick aktivieren"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "Kantenlinen Röntgenblick aktivieren"
+
+msgid "Enable Link Connections X-Ray"
+msgstr "Link-Verbindungen-Röntgenblick aktivieren"
+
+msgid "Enable Agent Paths X-Ray"
+msgstr "Agentpfad-Röntgenblick aktivieren"
 
 msgid "Inverse Mass"
 msgstr "Umgekehrte Masse"
@@ -10700,6 +10691,9 @@ msgstr "Screen-Space-Reflexion"
 
 msgid "Roughness Quality"
 msgstr "Grobheitsqualität"
+
+msgid "Subsurface Scattering"
+msgstr "Subsurface Scattering"
 
 msgid "Subsurface Scattering Quality"
 msgstr "Qualität Subsurface Scattering"

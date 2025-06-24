@@ -56,6 +56,7 @@ class EditorResourcePicker : public HBoxContainer {
 	Button *assign_button = nullptr;
 	TextureRect *preview_rect = nullptr;
 	Button *edit_button = nullptr;
+	Button *quick_load_button = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
 
 	ConfirmationDialog *duplicate_resources_dialog = nullptr;
@@ -74,6 +75,7 @@ class EditorResourcePicker : public HBoxContainer {
 		OBJ_MENU_SAVE_AS,
 		OBJ_MENU_COPY,
 		OBJ_MENU_PASTE,
+		OBJ_MENU_PASTE_AS_UNIQUE,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM,
 
 		TYPE_BASE_ID = 100,
@@ -99,6 +101,7 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
 
+	String _get_owner_path() const;
 	String _get_resource_type(const Ref<Resource> &p_resource) const;
 	void _ensure_allowed_types() const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;

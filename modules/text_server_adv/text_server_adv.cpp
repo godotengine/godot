@@ -397,6 +397,12 @@ void TextServerAdvanced::_free_rid(const RID &p_rid) {
 		MutexLock ftlock(ft_mutex);
 
 		FontAdvanced *fd = font_owner.get_or_null(p_rid);
+		for (const KeyValue<Vector2i, FontForSizeAdvanced *> &ffsd : fd->cache) {
+			OversamplingLevel *ol = oversampling_levels.getptr(ffsd.value->viewport_oversampling);
+			if (ol != nullptr) {
+				ol->fonts.erase(ffsd.value);
+			}
+		}
 		{
 			MutexLock lock(fd->mutex);
 			font_owner.free(p_rid);
@@ -847,17 +853,17 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 		// Could not find texture to fit, create one.
 		int texsize = MAX(p_data->size.x * 0.125, 256);
 
-		texsize = next_power_of_2(texsize);
+		texsize = next_power_of_2((uint32_t)texsize);
 		if (p_msdf) {
 			texsize = MIN(texsize, 2048);
 		} else {
 			texsize = MIN(texsize, 1024);
 		}
 		if (mw > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2(mw);
+			texsize = next_power_of_2((uint32_t)mw);
 		}
 		if (mh > texsize) { // Special case, adapt to it?
-			texsize = next_power_of_2(mh);
+			texsize = next_power_of_2((uint32_t)mh);
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
@@ -1498,7 +1504,7 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 					continue;
 				}
 				unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
-				p_font_data->font_name.resize(text_size);
+				p_font_data->font_name.resize_uninitialized(text_size);
 				hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)p_font_data->font_name.ptrw());
 			}
 			if (p_font_data->font_name.is_empty() && fd->face->family_name != nullptr) {
@@ -1756,6 +1762,33 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 				}
 			}
 
+			// Validate script sample strings.
+			{
+				LocalVector<uint32_t> failed_scripts;
+
+				Vector<UChar> sample_buf;
+				sample_buf.resize(255);
+				for (const uint32_t &scr_tag : p_font_data->supported_scripts) {
+					if ((hb_script_t)scr_tag == HB_SCRIPT_COMMON) {
+						continue;
+					}
+					UErrorCode icu_err = U_ZERO_ERROR;
+					int32_t len = uscript_getSampleString(hb_icu_script_from_script((hb_script_t)scr_tag), sample_buf.ptrw(), 255, &icu_err);
+					if (U_SUCCESS(icu_err) && len > 0) {
+						String sample = String::utf16(sample_buf.ptr(), len);
+						for (int ch = 0; ch < sample.length(); ch++) {
+							if (FT_Get_Char_Index(fd->face, sample[ch]) == 0) {
+								failed_scripts.push_back(scr_tag);
+								break;
+							}
+						}
+					}
+				}
+				for (const uint32_t &scr_tag : failed_scripts) {
+					p_font_data->supported_scripts.erase(scr_tag);
+				}
+			}
+
 			// Read OpenType feature tags.
 			p_font_data->supported_features.clear();
 			count = hb_ot_layout_table_get_feature_tags(hb_face, HB_OT_TAG_GSUB, 0, nullptr, nullptr);
@@ -1829,6 +1862,18 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 			}
 			p_font_data->face_init = true;
 		}
+
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+		if (p_font_data->font_name == ".Apple Color Emoji UI" || p_font_data->font_name == "Apple Color Emoji") {
+			// The baseline offset is missing from the Apple Color Emoji UI font data, so add it manually.
+			// This issue doesn't occur with other system emoji fonts.
+			if (!FT_Load_Glyph(fd->face, FT_Get_Char_Index(fd->face, 0x1F92E), FT_LOAD_DEFAULT | FT_LOAD_COLOR)) {
+				if (fd->face->glyph->metrics.horiBearingY == fd->face->glyph->metrics.height) {
+					p_font_data->baseline_offset = 0.15;
+				}
+			}
+		}
+#endif
 
 		// Write variations.
 		if (fd->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
@@ -2290,7 +2335,7 @@ Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) 
 		}
 		String text;
 		unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
-		text.resize(text_size);
+		text.resize_uninitialized(text_size);
 		hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)text.ptrw());
 		if (!text.is_empty()) {
 			Dictionary &id_string = names_for_lang[String(hb_language_to_string(names[i].language))];
@@ -2670,6 +2715,25 @@ void TextServerAdvanced::_font_set_variation_coordinates(const RID &p_font_rid, 
 	if (!fd->variation_coordinates.recursive_equal(p_variation_coordinates, 1)) {
 		_font_clear_cache(fd);
 		fd->variation_coordinates = p_variation_coordinates.duplicate();
+	}
+}
+
+double TextServerAdvanced::_font_get_oversampling(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, -1.0);
+
+	MutexLock lock(fd->mutex);
+	return fd->oversampling_override;
+}
+
+void TextServerAdvanced::_font_set_oversampling(const RID &p_font_rid, double p_oversampling) {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->oversampling_override != p_oversampling) {
+		_font_clear_cache(fd);
+		fd->oversampling_override = p_oversampling;
 	}
 }
 
@@ -3857,7 +3921,9 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 	bool viewport_oversampling = false;
 	float oversampling_factor = p_oversampling;
 	if (p_oversampling <= 0.0) {
-		if (vp_oversampling > 0.0) {
+		if (fd->oversampling_override > 0.0) {
+			oversampling_factor = fd->oversampling_override;
+		} else if (vp_oversampling > 0.0) {
 			oversampling_factor = vp_oversampling;
 			viewport_oversampling = true;
 		} else {
@@ -4001,7 +4067,9 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 	bool viewport_oversampling = false;
 	float oversampling_factor = p_oversampling;
 	if (p_oversampling <= 0.0) {
-		if (vp_oversampling > 0.0) {
+		if (fd->oversampling_override > 0.0) {
+			oversampling_factor = fd->oversampling_override;
+		} else if (vp_oversampling > 0.0) {
 			oversampling_factor = vp_oversampling;
 			viewport_oversampling = true;
 		} else {
@@ -6289,7 +6357,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 			// No data - use fallback.
 			int limit = 0;
 			for (int i = 0; i < sd->text.length(); i++) {
-				if (is_whitespace(data[i])) {
+				if (is_whitespace(sd->text[i])) {
 					int ks = _generate_kashida_justification_opportunities(sd->text, limit, i) + sd->start;
 					if (ks != -1) {
 						sd->jstops[ks] = true;
@@ -6495,7 +6563,17 @@ UBreakIterator *TextServerAdvanced::_create_line_break_iterator_for_locale(const
 	// Creating UBreakIterator (ubrk_open) is surprisingly costly.
 	// However, cloning (ubrk_clone) is cheaper, so we keep around blueprints to accelerate creating new ones.
 
-	const String language = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	String language = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	if (!language.contains("@")) {
+		if (lb_strictness == LB_LOOSE) {
+			language += "@lb=loose";
+		} else if (lb_strictness == LB_NORMAL) {
+			language += "@lb=normal";
+		} else if (lb_strictness == LB_STRICT) {
+			language += "@lb=strict";
+		}
+	}
+
 	_THREAD_SAFE_METHOD_
 	const HashMap<String, UBreakIterator *>::Iterator key_value = line_break_iterators_per_language.find(language);
 	if (key_value) {
@@ -8048,12 +8126,14 @@ bool TextServerAdvanced::_is_valid_letter(uint64_t p_unicode) const {
 
 void TextServerAdvanced::_update_settings() {
 	lcd_subpixel_layout.set((TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout"));
+	lb_strictness = (LineBreakStrictness)(int)GLOBAL_GET("internationalization/locale/line_breaking_strictness");
 }
 
 TextServerAdvanced::TextServerAdvanced() {
 	_insert_num_systems_lang();
 	_insert_feature_sets();
 	_bmp_create_font_funcs();
+	_update_settings();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerAdvanced::_update_settings));
 }
 

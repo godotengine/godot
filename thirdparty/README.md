@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.15.1 (0d1da94a33708041b07c61eb702c67cfa3a5f95b, 2025)
+- Version: 0.16.0 (06c1779473ff4304f42ea254f77fef2e33f982b0, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -120,7 +120,7 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.5.2 (6901921c4be75126d1de60bfd24bd86a61319fd0, 2025)
+- Version: 1.5.4 (ef88ee97c0e759792e43a2b2d8072def6c9244e8, 2025)
 - License: BSL 1.0
 
 Files extracted from upstream source:
@@ -131,7 +131,6 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-disable-exceptions.patch` (GH-80796)
-- `0002-llvm-disable-int128-math.patch` (GH-95964)
 
 
 ## cvtt
@@ -188,13 +187,17 @@ Patches:
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.11 (ae7a13539fb71f270b87eb2e874fbac80bc8dda2, 2023)
+- Version: 2.4.12 (1da23a3e8119ec5cce4f9388e91b065e20bf06f5, 2025)
 - License: MIT
 
 Files extracted from upstream source:
 
 - `doctest/doctest.h` as `doctest.h`
 - `LICENSE.txt`
+
+Patches:
+
+- `0001-ciso646-version.patch` (GH-105913)
 
 
 ## embree
@@ -415,10 +418,25 @@ Files extracted from upstream source:
 - `COPYING`
 
 
+## grisu2
+
+- Upstream: https://github.com/simdjson/simdjson/blob/master/src/to_chars.cpp
+- Version: git (4f4e81668ecb9d4d37fd5f59a1556d492507421d, 2023)
+- License: Apache and MIT
+
+Files extracted from upstream source:
+
+- The `src/to_chars.cpp` file renamed to `grisu2.h` and slightly modified.
+
+Patches:
+
+- `0001-godot-changes.patch` (GH-98750)
+
+
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 10.4.0 (3ef8709829a5884517ad91a97b32b9435b2f20d1, 2025)
+- Version: 11.2.1 (33a3f8de60dcad7535f14f07d6710144548853ac, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -490,7 +508,7 @@ Patches:
 ## libjpeg-turbo
 
 - Upstream: https://github.com/libjpeg-turbo/libjpeg-turbo
-- Version: git (20ade4dea9589515a69793e447a6c6220b464535, 2024)
+- Version: 3.1.0 (20ade4dea9589515a69793e447a6c6220b464535, 2024)
 - License: BSD-3-Clause and IJG
 
 Files extracted from upstream source:
@@ -506,19 +524,20 @@ Patches:
 - `0002-disable-16bitlossless.patch` (GH-104347)
 - `0003-remove-bmp-ppm-support.patch` (GH-104347)
 
+
 ## libktx
 
 - Upstream: https://github.com/KhronosGroup/KTX-Software
-- Version: 4.3.2 (91ace88675ac59a97e55d0378a6602a9ae6b98bd, 2024)
-- License: Apache-2.0
+- Version: 4.4.0 (beef80159525d9fb7abb8645ea85f4c4f6842e8f, 2025)
+- License: Apache 2.0
 
 Files extracted from upstream source:
 
 - `LICENSE.md`
-- `include/`
-- `lib/dfdutils/LICENSE.adoc` as `LICENSE.dfdutils.adoc` (in root)
-- `lib/dfdutils/LICENSES/Apache-2.0.txt` as `Apache-2.0.txt` (in root)
-- `lib/dfdutils/{KHR/,dfd.h,colourspaces.c,createdfd.c,interpretdfd.c,printdfd.c,queries.c,dfd2vk.inl,vk2dfd.*}`
+- `include/` minus `.clang-format`
+- `external/dfdutils/LICENSE.adoc` as `LICENSE.dfdutils.adoc` (in root)
+- `external/dfdutils/LICENSES/Apache-2.0.txt` as `Apache-2.0.txt` (in root)
+- `external/dfdutils/{KHR/,dfd.h,colourspaces.c,createdfd.c,interpretdfd.c,printdfd.c,queries.c,dfd2vk.inl,vk2dfd.*}`
 - `lib/{basis_sgd.h,formatsize.h,gl_format.h,ktxint.h,uthash.h,vk_format.h,vkformat_enum.h,checkheader.c,swap.c,hashlist.c,vkformat_check.c,vkformat_typesize.c,basis_transcode.cpp,miniz_wrapper.cpp,filestream.*,memstream.*,texture*}`
 - `other_include/KHR/`
 - `utils/unused.h`
@@ -546,7 +565,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.47 (872555f4ba910252783af1507f9e7fe1653be252, 2025)
+- Version: 1.6.48 (ea127968204cc5d10f3fc9250c306b9e8cbd9b80, 2025)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -560,7 +579,7 @@ Files extracted from upstream source:
 ## libtheora
 
 - Upstream: https://www.theora.org
-- Version: git (7180717276af1ebc7da15c83162d6c5d6203aabf, 2020)
+- Version: 1.2.0 (8e4808736e9c181b971306cc3f05df9e61354004, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -609,12 +628,12 @@ See `linuxbsd_headers/README.md`.
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
-- Version: 3.0.1 (98b8142519d35c13e0e25cfa9fd6e3a271403be6, 2024)
+- Version: 3.1.1 (2f4741e0b1de44d6d461b869e481351335340b44, 2025)
 - License: Apache 2.0
 
 File extracted from upstream source:
 
-- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.cpp` and `meshIO.{cpp,h}`
+- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.h` and `meshIO.{cpp,h}`
 - `AUTHORS`, `LICENSE`
 
 
@@ -647,17 +666,13 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.22 (4affad044571506a5724c9a6f15424f43e86f731, 2024)
+- Version: 0.23 (3e9d1ff3135794f519f3237515277c8d9a3fd3f2, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
 
 - All files in `src/`
 - `LICENSE.md`
-
-Patches:
-
-- `0001-simplifier-distance-only-error.patch` (GH-98529)
 
 
 ## mingw-std-threads
@@ -702,7 +717,7 @@ Patches:
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.8 (b55145ec095652289a59c33603f3abafee898273, 2024)
+- Version: 2.3.3 (bf4215a7574f88aa55859db9db00e3ae58cf42d6, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -823,7 +838,7 @@ Collection of single-file libraries used in Godot components.
 ## msdfgen
 
 - Upstream: https://github.com/Chlumsky/msdfgen
-- Version: 1.12 (85e8b3d47b3d1a42e4a5ebda0a24fb1cc2e669e0, 2024)
+- Version: 1.12.1 (6574da1310df433c97ca0fddcab7e463c31e58f8, 2025)
 - License: MIT
 
 Files extracted from the upstream source:
@@ -836,7 +851,7 @@ Files extracted from the upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.41 (7d1c0961351bac61fd7bb72d402649d5ac3f2935, 2024)
+- Version: 1.1.49 (977f6675bc0057d5a54ed290cb5c71c699b1c0ab, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -859,10 +874,6 @@ Exclude:
 - All following files (and their `.license` files):
   `*.{def,expsym,in,json,map,pom,rc,txt}`
 - All dotfiles
-
-Patches:
-
-- `0001-glad-egl.patch` (GH-98824)
 
 
 ## pcre2
@@ -919,6 +930,18 @@ and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
 
 
+## smaa
+
+- Upstream: https://github.com/iryoku/smaa
+- Version: git (71c806a838bdd7d517df19192a20f0c61b3ca29d, 2013)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `LICENSE`
+- Textures generated using the Python scripts in the `Scripts` folder
+
+
 ## spirv-cross
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Cross
@@ -956,10 +979,23 @@ Patches:
 - `0002-zero-size-for-sc-sized-arrays.patch` (GH-94985)
 
 
+## swappy-frame-pacing
+
+- Upstream: https://android.googlesource.com/platform/frameworks/opt/gamesdk/ via https://github.com/godotengine/godot-swappy
+- Version: git (1198bb06b041e2df5d42cc5cf18fac81fcefa03f, 2025)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `include/common/`
+- `include/swappy/{swappy_common.h,swappyVk.h}`
+- `LICENSE`
+
+
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.15.12 (91bd6f35b94e92abfc1a320632e66cd124943524, 2025)
+- Version: 0.15.13 (c597365b99f27cb46e2a5ac2942da45bb73d5a55, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -970,13 +1006,12 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
-- `0002-png-explicit-variable-scope.patch` (GH-105093)
 
 
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.9 (5fcb4dcb6e3abf96214b67e5c54db1ceec6a455c, 2024)
+- Version: 1.0.12 (735ff73ce5959cf005eb99ce517c9bcecab89dfb, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -991,7 +1026,7 @@ Patches:
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.18.0 (729ab835444f5f229e5f7cff332692ce6c00415d, 2025)
+- Version: 0.18.2 (5b5494b9b6c2cdb0fc0ae873bdbf8718cdeb85af, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1166,7 +1201,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.5.6 (794ea1b0afca0f020f4e57b6732332231fb23c70, 2024)
+- Version: 1.5.7 (f8745da6ff1ad1e7bab384bd1f9d742439278e99, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

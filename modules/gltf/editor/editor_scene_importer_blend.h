@@ -57,7 +57,8 @@ public:
 	};
 	enum {
 		BLEND_MATERIAL_EXPORT_PLACEHOLDER,
-		BLEND_MATERIAL_EXPORT_EXPORT
+		BLEND_MATERIAL_EXPORT_EXPORT,
+		BLEND_MATERIAL_EXPORT_NAMED_PLACEHOLDER,
 	};
 	enum {
 		BLEND_MODIFIERS_NONE,
@@ -72,6 +73,7 @@ public:
 			List<ResourceImporter::ImportOption> *r_options) override;
 	virtual Variant get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
 			const HashMap<StringName, Variant> &p_options) override;
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
 };
 
 class LineEdit;

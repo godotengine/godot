@@ -73,7 +73,7 @@ def get_flags():
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "loongarch64"]
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc64", "loongarch64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     ## Build type
@@ -257,14 +257,20 @@ def configure(env: "SConsEnvironment"):
     if not env["builtin_libtheora"]:
         env["builtin_libogg"] = False  # Needed to link against system libtheora
         env["builtin_libvorbis"] = False  # Needed to link against system libtheora
-        env.ParseConfig("pkg-config theora theoradec --cflags --libs")
+        if env.editor_build:
+            env.ParseConfig("pkg-config theora theoradec theoraenc --cflags --libs")
+        else:
+            env.ParseConfig("pkg-config theora theoradec --cflags --libs")
     else:
         if env["arch"] in ["x86_64", "x86_32"]:
             env["x86_libtheora_opt_gcc"] = True
 
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
-        env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
+        if env.editor_build:
+            env.ParseConfig("pkg-config vorbis vorbisfile vorbisenc --cflags --libs")
+        else:
+            env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
 
     if not env["builtin_libogg"]:
         env.ParseConfig("pkg-config ogg --cflags --libs")
@@ -336,7 +342,7 @@ def configure(env: "SConsEnvironment"):
         else:
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
-    if env["dbus"]:
+    if env["dbus"] and env["threads"]:  # D-Bus functionality expects threads.
         if not env["use_sowrap"]:
             if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
                 env.ParseConfig("pkg-config dbus-1 --cflags --libs")

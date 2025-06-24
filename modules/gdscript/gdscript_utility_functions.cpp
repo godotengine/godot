@@ -35,7 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
-#include "core/templates/oa_hash_map.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/typed_array.h"
 
@@ -120,8 +120,17 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void _char(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		DEBUG_VALIDATE_ARG_COUNT(1, 1);
 		DEBUG_VALIDATE_ARG_TYPE(0, Variant::INT);
-		char32_t result[2] = { *p_args[0], 0 };
-		*r_ret = String(result);
+		const int64_t code = *p_args[0];
+		VALIDATE_ARG_CUSTOM(0, Variant::INT, code < 0 || code > UINT32_MAX, RTR("Expected an integer between 0 and 2^32 - 1."));
+		*r_ret = String::chr(code);
+	}
+
+	static inline void ord(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		DEBUG_VALIDATE_ARG_COUNT(1, 1);
+		DEBUG_VALIDATE_ARG_TYPE(0, Variant::STRING);
+		const String string = *p_args[0];
+		VALIDATE_ARG_CUSTOM(0, Variant::STRING, string.length() != 1, RTR("Expected a string of length 1 (a character)."));
+		*r_ret = string.get(0);
 	}
 
 	static inline void range(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
@@ -514,7 +523,7 @@ struct GDScriptUtilityFunctionInfo {
 	bool is_constant = false;
 };
 
-static OAHashMap<StringName, GDScriptUtilityFunctionInfo> utility_function_table;
+static AHashMap<StringName, GDScriptUtilityFunctionInfo> utility_function_table;
 static List<StringName> utility_function_name_table;
 
 static void _register_function(const StringName &p_name, const MethodInfo &p_method_info, GDScriptUtilityFunctions::FunctionPtr p_function, bool p_is_const) {
@@ -575,7 +584,8 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_FUNC( convert,        true,  RETVAR,             ARGS( ARGVAR("what"), ARGTYPE("type") ), false, varray(     ));
 #endif // DISABLE_DEPRECATED
 	REGISTER_FUNC( type_exists,    true,  RET(BOOL),          ARGS( ARG("type", STRING_NAME)        ), false, varray(     ));
-	REGISTER_FUNC( _char,          true,  RET(STRING),        ARGS( ARG("char", INT)                ), false, varray(     ));
+	REGISTER_FUNC( _char,          true,  RET(STRING),        ARGS( ARG("code", INT)                ), false, varray(     ));
+	REGISTER_FUNC( ord,            true,  RET(INT),           ARGS( ARG("char", STRING)             ), false, varray(     ));
 	REGISTER_FUNC( range,          false, RET(ARRAY),         NOARGS,                                  true,  varray(     ));
 	REGISTER_FUNC( load,           false, RETCLS("Resource"), ARGS( ARG("path", STRING)             ), false, varray(     ));
 #ifndef DISABLE_DEPRECATED
@@ -598,50 +608,50 @@ void GDScriptUtilityFunctions::unregister_functions() {
 }
 
 GDScriptUtilityFunctions::FunctionPtr GDScriptUtilityFunctions::get_function(const StringName &p_function) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, nullptr);
 	return info->function;
 }
 
 bool GDScriptUtilityFunctions::has_function_return_value(const StringName &p_function) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, false);
 	return info->info.return_val.type != Variant::NIL || bool(info->info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 }
 
 Variant::Type GDScriptUtilityFunctions::get_function_return_type(const StringName &p_function) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, Variant::NIL);
 	return info->info.return_val.type;
 }
 
 StringName GDScriptUtilityFunctions::get_function_return_class(const StringName &p_function) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, StringName());
 	return info->info.return_val.class_name;
 }
 
 Variant::Type GDScriptUtilityFunctions::get_function_argument_type(const StringName &p_function, int p_arg) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, Variant::NIL);
 	ERR_FAIL_INDEX_V(p_arg, info->info.arguments.size(), Variant::NIL);
 	return info->info.arguments[p_arg].type;
 }
 
 int GDScriptUtilityFunctions::get_function_argument_count(const StringName &p_function) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, 0);
 	return info->info.arguments.size();
 }
 
 bool GDScriptUtilityFunctions::is_function_vararg(const StringName &p_function) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, false);
 	return (bool)(info->info.flags & METHOD_FLAG_VARARG);
 }
 
 bool GDScriptUtilityFunctions::is_function_constant(const StringName &p_function) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, false);
 	return info->is_constant;
 }
@@ -657,7 +667,7 @@ void GDScriptUtilityFunctions::get_function_list(List<StringName> *r_functions) 
 }
 
 MethodInfo GDScriptUtilityFunctions::get_function_info(const StringName &p_function) {
-	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
+	GDScriptUtilityFunctionInfo *info = utility_function_table.getptr(p_function);
 	ERR_FAIL_NULL_V(info, MethodInfo());
 	return info->info;
 }

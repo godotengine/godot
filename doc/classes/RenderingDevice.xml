@@ -73,7 +73,7 @@
 				[b]Note:[/b] Downloading large buffers can have a prohibitive cost for real-time even when using the asynchronous method due to hardware bandwidth limitations. When dealing with large resources, you can adjust settings such as [member ProjectSettings.rendering/rendering_device/staging_buffer/block_size_kb] to improve the transfer speed at the cost of extra memory.
 				[codeblock]
 				func _buffer_get_data_callback(array):
-				    value = array.decode_u32(0)
+					value = array.decode_u32(0)
 
 				...
 
@@ -132,9 +132,9 @@
 				rd.compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1)
 
 				for i in atlas_slices:
-				    rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
-				    rd.compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z)
-				    # No barrier, let them run all together.
+					rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
+					rd.compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z)
+					# No barrier, let them run all together.
 
 				rd.compute_list_end()
 				[/codeblock]
@@ -630,7 +630,7 @@
 			<param index="1" name="rid" type="RID" />
 			<param index="2" name="index" type="int" />
 			<description>
-				Returns the unique identifier of the driver [param resource] for the specified [param rid]. Some driver resource types ignore the specified [param rid] (see [enum DriverResource] descriptions). [param index] is always ignored but must be specified anyway.
+				Returns the unique identifier of the driver [param resource] for the specified [param rid]. Some driver resource types ignore the specified [param rid]. [param index] is always ignored but must be specified anyway.
 			</description>
 		</method>
 		<method name="get_driver_total_memory" qualifiers="const">
@@ -918,6 +918,7 @@
 			<description>
 				Creates a new texture. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				[b]Note:[/b] [param data] takes an [Array] of [PackedByteArray]s. For [constant TEXTURE_TYPE_1D], [constant TEXTURE_TYPE_2D], and [constant TEXTURE_TYPE_3D] types, this array should only have one element, a [PackedByteArray] containing all the data for the texture. For [code]_ARRAY[/code] and [code]_CUBE[/code] types, the length should be the same as the number of [member RDTextureFormat.array_layers] in [param format].
 				[b]Note:[/b] Not to be confused with [method RenderingServer.texture_2d_create], which creates the Godot-specific [Texture2D] resource as opposed to the graphics API's own texture type.
 			</description>
 		</method>
@@ -981,7 +982,7 @@
 				[b]Note:[/b] Downloading large textures can have a prohibitive cost for real-time even when using the asynchronous method due to hardware bandwidth limitations. When dealing with large resources, you can adjust settings such as [member ProjectSettings.rendering/rendering_device/staging_buffer/texture_download_region_size_px] and [member ProjectSettings.rendering/rendering_device/staging_buffer/block_size_kb] to improve the transfer speed at the cost of extra memory.
 				[codeblock]
 				func _texture_get_data_callback(array):
-				    value = array.decode_u32(0)
+					value = array.decode_u32(0)
 
 				...
 
@@ -1146,23 +1147,23 @@
 		</constant>
 		<constant name="DRIVER_RESOURCE_LOGICAL_DEVICE" value="0" enum="DriverResource">
 			Specific device object based on a physical device.
-			- Vulkan: Vulkan device driver resource ([code]VkDevice[/code]). ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: Vulkan device driver resource ([code]VkDevice[/code]) ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_PHYSICAL_DEVICE" value="1" enum="DriverResource">
 			Physical device the specific logical device is based on.
-			- Vulkan: [code]VkDevice[/code]. ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: [code]VkDevice[/code] ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_TOPMOST_OBJECT" value="2" enum="DriverResource">
 			Top-most graphics API entry object.
-			- Vulkan: [code]VkInstance[/code]. ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: [code]VkInstance[/code] ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_COMMAND_QUEUE" value="3" enum="DriverResource">
 			The main graphics-compute command queue.
-			- Vulkan: [code]VkQueue[/code]. ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: [code]VkQueue[/code] ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_QUEUE_FAMILY" value="4" enum="DriverResource">
 			The specific family the main queue belongs to.
-			- Vulkan: the queue family index, an [code]uint32_t[/code]. ([code]rid[/code] argument doesn't apply.)
+			- Vulkan: The queue family index, a [code]uint32_t[/code] ([code]rid[/code] parameter is ignored).
 		</constant>
 		<constant name="DRIVER_RESOURCE_TEXTURE" value="5" enum="DriverResource">
 			- Vulkan: [code]VkImage[/code].
@@ -2101,8 +2102,8 @@
 			rd = RenderingServer.get_rendering_device()
 
 			if rd.has_feature(RenderingDevice.SUPPORTS_BUFFER_DEVICE_ADDRESS):
-			      storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.STORAGE_BUFFER_USAGE_SHADER_DEVICE_ADDRESS):
-			      storage_buffer_address = rd.buffer_get_device_address(storage_buffer)
+				storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.STORAGE_BUFFER_USAGE_SHADER_DEVICE_ADDRESS)
+				storage_buffer_address = rd.buffer_get_device_address(storage_buffer)
 			[/gdscript]
 			[/codeblocks]
 		</constant>
@@ -2164,7 +2165,7 @@
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLES_WITH_ADJACENCY" value="6" enum="RenderPrimitive">
 			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-triangle-lists-with-adjacency]Triangle list rendering primitive with adjacency.[/url]
-			 [b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
+			[b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS" value="7" enum="RenderPrimitive">
 			Triangle strip rendering primitive. Triangles drawn are connected to the previous triangle.
@@ -2624,30 +2625,43 @@
 			Returned by functions that return a format ID if a value is invalid.
 		</constant>
 		<constant name="NONE" value="0" enum="BreadcrumbMarker">
+			No breadcrumb marker will be added.
 		</constant>
 		<constant name="REFLECTION_PROBES" value="65536" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"REFLECTION_PROBES"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="SKY_PASS" value="131072" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"SKY_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="LIGHTMAPPER_PASS" value="196608" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"LIGHTMAPPER_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="SHADOW_PASS_DIRECTIONAL" value="262144" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"SHADOW_PASS_DIRECTIONAL"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="SHADOW_PASS_CUBE" value="327680" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"SHADOW_PASS_CUBE"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="OPAQUE_PASS" value="393216" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"OPAQUE_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="ALPHA_PASS" value="458752" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"ALPHA_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="TRANSPARENT_PASS" value="524288" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"TRANSPARENT_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="POST_PROCESSING_PASS" value="589824" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"POST_PROCESSING_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="BLIT_PASS" value="655360" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"BLIT_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="UI_PASS" value="720896" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"UI_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="DEBUG_PASS" value="786432" enum="BreadcrumbMarker">
+			During a GPU crash in dev or debug mode, Godot's error message will include [code]"DEBUG_PASS"[/code] for added context as to when the crash occurred.
 		</constant>
 		<constant name="DRAW_DEFAULT_ALL" value="0" enum="DrawFlags" is_bitfield="true">
 			Do not clear or ignore any attachments.

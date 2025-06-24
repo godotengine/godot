@@ -868,10 +868,10 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		particles->process_buffer_stride_cache = sizeof(float) * 4 * particles->num_attrib_arrays_cache;
 
 		PackedByteArray data;
-		data.resize_zeroed(particles->process_buffer_stride_cache * total_amount);
+		data.resize_initialized(particles->process_buffer_stride_cache * total_amount);
 
 		PackedByteArray instance_data;
-		instance_data.resize_zeroed(particles->instance_buffer_size_cache);
+		instance_data.resize_initialized(particles->instance_buffer_size_cache);
 
 		{
 			glGenVertexArrays(1, &particles->front_vertex_array);

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/config_file.h"
+#include "core/os/time.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/scroll_container.h"
 
@@ -168,6 +169,15 @@ public:
 
 		_FORCE_INLINE_ bool operator==(const Item &l) const {
 			return path == l.path;
+		}
+
+		String get_last_edited_string() const {
+			if (missing) {
+				return TTR("Missing Date");
+			}
+
+			OS::TimeZoneInfo tz = OS::get_singleton()->get_time_zone_info();
+			return Time::get_singleton()->get_datetime_string_from_unix_time(last_edited + tz.bias * 60, true);
 		}
 	};
 

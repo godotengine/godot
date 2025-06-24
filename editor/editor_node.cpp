@@ -96,6 +96,8 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
+#include "editor/editor_run.h"
+#include "editor/editor_script.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_settings_dialog.h"
 #include "editor/editor_translation_parser.h"
@@ -154,6 +156,7 @@
 #include "editor/plugins/plugin_config_dialog.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_text_editor.h"
+#include "editor/plugins/shader_baker_export_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
@@ -165,6 +168,18 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/window_wrapper.h"
+
+#ifdef VULKAN_ENABLED
+#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_vulkan.h"
+#endif
+
+#ifdef D3D12_ENABLED
+#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_d3d12.h"
+#endif
+
+#ifdef METAL_ENABLED
+#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_metal.h"
+#endif
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
@@ -508,6 +523,8 @@ void EditorNode::_update_from_settings() {
 
 	ResourceImporterTexture::get_singleton()->update_imports();
 
+	_update_translations();
+
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));
 	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color"));
@@ -541,6 +558,63 @@ void EditorNode::_gdextensions_reloaded() {
 	// Regenerate documentation without using script documentation cache since that would
 	// revert doc changes during this session.
 	EditorHelp::generate_doc(true, false);
+}
+
+void EditorNode::_update_translations() {
+	Ref<TranslationDomain> main = TranslationServer::get_singleton()->get_main_domain();
+
+	main->clear();
+	TranslationServer::get_singleton()->load_translations();
+
+	if (main->is_enabled()) {
+		// Check for the exact locale.
+		// `get_potential_translations("zh_CN")` could return translations for "zh".
+		if (main->get_loaded_locales().has(main->get_locale_override())) {
+			// The set of translation resources for the current locale changed.
+			const HashSet<Ref<Translation>> translations = main->get_potential_translations(main->get_locale_override());
+			if (translations != tracked_translations) {
+				_translation_resources_changed();
+			}
+		} else {
+			// Translations for the current preview locale is removed.
+			main->set_enabled(false);
+			main->set_locale_override(String());
+			_translation_resources_changed();
+		}
+	}
+}
+
+void EditorNode::_translation_resources_changed() {
+	for (const Ref<Translation> &E : tracked_translations) {
+		E->disconnect_changed(callable_mp(this, &EditorNode::_queue_translation_notification));
+	}
+	tracked_translations.clear();
+
+	const Ref<TranslationDomain> main = TranslationServer::get_singleton()->get_main_domain();
+	if (main->is_enabled()) {
+		const HashSet<Ref<Translation>> translations = main->get_potential_translations(main->get_locale_override());
+		tracked_translations.reserve(translations.size());
+		for (const Ref<Translation> &translation : translations) {
+			translation->connect_changed(callable_mp(this, &EditorNode::_queue_translation_notification));
+			tracked_translations.insert(translation);
+		}
+	}
+
+	_queue_translation_notification();
+	emit_signal(SNAME("preview_locale_changed"));
+}
+
+void EditorNode::_queue_translation_notification() {
+	if (pending_translation_notification) {
+		return;
+	}
+	pending_translation_notification = true;
+	callable_mp(this, &EditorNode::_propagate_translation_notification).call_deferred();
+}
+
+void EditorNode::_propagate_translation_notification() {
+	pending_translation_notification = false;
+	scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 void EditorNode::_update_theme(bool p_skip_creation) {
@@ -737,6 +811,12 @@ void EditorNode::_notification(int p_what) {
 				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_execute_upgrades), CONNECT_ONE_SHOT);
 				EditorFileSystem::get_singleton()->scan();
 			}
+
+			if (settings_overrides_changed) {
+				EditorSettings::get_singleton()->notify_changes();
+				EditorSettings::get_singleton()->emit_signal(SNAME("settings_changed"));
+				settings_overrides_changed = false;
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -899,6 +979,7 @@ void EditorNode::_notification(int p_what) {
 			use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
 
 			if (EditorThemeManager::is_generated_theme_outdated()) {
+				class_icon_cache.clear();
 				_update_theme();
 				_build_icon_type_cache();
 				recent_scenes->reset_size();
@@ -968,7 +1049,7 @@ void EditorNode::_update_update_spinner() {
 	update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_WHEN_CHANGED), !update_continuously);
 
 	if (update_continuously) {
-		update_spinner->set_tooltip_text(TTR("Spins when the editor window redraws.\nUpdate Continuously is enabled, which can increase power usage. Click to disable it."));
+		update_spinner->set_tooltip_text(TTRC("Spins when the editor window redraws.\nUpdate Continuously is enabled, which can increase power usage. Click to disable it."));
 
 		// Use a different color for the update spinner when Update Continuously is enabled,
 		// as this feature should only be enabled for troubleshooting purposes.
@@ -977,7 +1058,7 @@ void EditorNode::_update_update_spinner() {
 		const bool dark_theme = EditorThemeManager::is_dark_theme();
 		update_spinner->set_self_modulate(theme->get_color(SNAME("error_color"), EditorStringName(Editor)) * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
 	} else {
-		update_spinner->set_tooltip_text(TTR("Spins when the editor window redraws."));
+		update_spinner->set_tooltip_text(TTRC("Spins when the editor window redraws."));
 		update_spinner->set_self_modulate(Color(1, 1, 1));
 	}
 
@@ -1304,21 +1385,27 @@ void EditorNode::_scan_external_changes() {
 	disk_changed_list->set_hide_root(true);
 	bool need_reload = false;
 
-	// Check if any edited scene has changed.
+	disk_changed_scenes.clear();
+	disk_changed_project = false;
 
+	// Check if any edited scene has changed.
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (editor_data.get_scene_path(i) == "" || !da->file_exists(editor_data.get_scene_path(i))) {
+
+		const String scene_path = editor_data.get_scene_path(i);
+
+		if (scene_path == "" || !da->file_exists(scene_path)) {
 			continue;
 		}
 
 		uint64_t last_date = editor_data.get_scene_modified_time(i);
-		uint64_t date = FileAccess::get_modified_time(editor_data.get_scene_path(i));
+		uint64_t date = FileAccess::get_modified_time(scene_path);
 
 		if (date > last_date) {
 			TreeItem *ti = disk_changed_list->create_item(r);
-			ti->set_text(0, editor_data.get_scene_path(i).get_file());
+			ti->set_text(0, scene_path.get_file());
 			need_reload = true;
+			disk_changed_scenes.push_back(scene_path);
 		}
 	}
 
@@ -1327,6 +1414,7 @@ void EditorNode::_scan_external_changes() {
 		TreeItem *ti = disk_changed_list->create_item(r);
 		ti->set_text(0, "project.godot");
 		need_reload = true;
+		disk_changed_project = true;
 	}
 
 	if (need_reload) {
@@ -1334,9 +1422,15 @@ void EditorNode::_scan_external_changes() {
 	}
 }
 
-void EditorNode::_resave_scenes(String p_str) {
-	save_all_scenes();
-	ProjectSettings::get_singleton()->save();
+void EditorNode::_resave_externally_modified_scenes(String p_str) {
+	for (const String &scene_path : disk_changed_scenes) {
+		_save_scene(scene_path);
+	}
+
+	if (disk_changed_project) {
+		ProjectSettings::get_singleton()->save();
+	}
+
 	disk_changed->hide();
 }
 
@@ -2533,7 +2627,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 }
 
 void EditorNode::push_node_item(Node *p_node) {
-	if (p_node || Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object()) || Object::cast_to<MultiNodeEdit>(InspectorDock::get_inspector_singleton()->get_edited_object())) {
+	if (p_node || !InspectorDock::get_inspector_singleton()->get_edited_object() || Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object()) || Object::cast_to<MultiNodeEdit>(InspectorDock::get_inspector_singleton()->get_edited_object())) {
 		// Don't push null if the currently edited object is not a Node.
 		push_item(p_node);
 	}
@@ -3146,6 +3240,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			project_settings_editor->popup_project_settings();
 		} break;
 
+		case PROJECT_FIND_IN_FILES: {
+			ScriptEditor::get_singleton()->open_find_in_files_dialog("");
+		} break;
+
 		case PROJECT_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
 				if (export_template_manager->is_android_template_installed(android_export_preset)) {
@@ -3434,14 +3532,39 @@ void EditorNode::_request_screenshot() {
 
 void EditorNode::_screenshot(bool p_use_utc) {
 	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).remove_char(':') + ".png";
-	NodePath path = String("user://") + name;
-	_save_screenshot(path);
-	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
-		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(path), true);
+	String path = String("user://") + name;
+
+	if (!EditorRun::request_screenshot(callable_mp(this, &EditorNode::_save_screenshot_with_embedded_process).bind(path))) {
+		_save_screenshot(path);
 	}
 }
 
-void EditorNode::_save_screenshot(NodePath p_path) {
+void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h, const String &p_emb_path, const Rect2i &p_rect, const String &p_path) {
+	Control *main_screen_control = editor_main_screen->get_control();
+	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
+	Viewport *viewport = main_screen_control->get_viewport();
+	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the editor main screen.");
+	Ref<ViewportTexture> texture = viewport->get_texture();
+	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
+	Ref<Image> img = texture->get_image();
+	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
+	img->convert(Image::FORMAT_RGBA8);
+	ERR_FAIL_COND(p_emb_path.is_empty());
+	Ref<Image> overlay = Image::load_from_file(p_emb_path);
+	DirAccess::remove_absolute(p_emb_path);
+	ERR_FAIL_COND_MSG(overlay.is_null(), "Cannot get an image from a embedded process.");
+	overlay->convert(Image::FORMAT_RGBA8);
+	overlay->resize(p_rect.size.x, p_rect.size.y);
+	img->blend_rect(overlay, Rect2i(0, 0, p_w, p_h), p_rect.position);
+	Error error = img->save_png(p_path);
+	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
+
+	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
+		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(p_path), true);
+	}
+}
+
+void EditorNode::_save_screenshot(const String &p_path) {
 	Control *main_screen_control = editor_main_screen->get_control();
 	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
 	Viewport *viewport = main_screen_control->get_viewport();
@@ -3452,6 +3575,10 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
+
+	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
+		OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(p_path), true);
+	}
 }
 
 void EditorNode::_check_system_theme_changed() {
@@ -3968,9 +4095,10 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 }
 
 void EditorNode::_remove_scene(int index, bool p_change_tab) {
-	// Clear icon cache in case some scripts are no longer needed.
+	// Clear icon cache in case some scripts are no longer needed or class icons are outdated.
 	// FIXME: Ideally the cache should never be cleared and only updated on per-script basis, when an icon changes.
 	editor_data.clear_script_icon_cache();
+	class_icon_cache.clear();
 
 	if (editor_data.get_edited_scene() == index) {
 		// Scene to remove is current scene.
@@ -4005,6 +4133,26 @@ void EditorNode::set_edited_scene_root(Node *p_scene, bool p_auto_add) {
 	if (p_auto_add && p_scene) {
 		scene_root->add_child(p_scene, true);
 	}
+}
+
+String EditorNode::get_preview_locale() const {
+	const Ref<TranslationDomain> &main_domain = TranslationServer::get_singleton()->get_main_domain();
+	return main_domain->is_enabled() ? main_domain->get_locale_override() : String();
+}
+
+void EditorNode::set_preview_locale(const String &p_locale) {
+	const String &prev_locale = get_preview_locale();
+	if (prev_locale == p_locale) {
+		return;
+	}
+
+	// Texts set in the editor could be identifiers that should never be translated.
+	// So we need to disable translation entirely.
+	Ref<TranslationDomain> main_domain = TranslationServer::get_singleton()->get_main_domain();
+	main_domain->set_enabled(!p_locale.is_empty());
+	main_domain->set_locale_override(p_locale);
+
+	_translation_resources_changed();
 }
 
 Dictionary EditorNode::_get_main_scene_state() {
@@ -4132,9 +4280,11 @@ void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 	p_picker->set_editor_settings(EditorSettings::get_singleton());
 	int default_color_mode = EditorSettings::get_singleton()->get_project_metadata("color_picker", "color_mode", EDITOR_GET("interface/inspector/default_color_picker_mode"));
 	int picker_shape = EditorSettings::get_singleton()->get_project_metadata("color_picker", "picker_shape", EDITOR_GET("interface/inspector/default_color_picker_shape"));
+	bool show_intensity = EditorSettings::get_singleton()->get_project_metadata("color_picker", "show_intensity", EDITOR_GET("interface/inspector/color_picker_show_intensity"));
 
 	p_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	p_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+	p_picker->set_edit_intensity(show_intensity);
 
 	p_picker->set_quick_open_callback(callable_mp(this, &EditorNode::_palette_quick_open_dialog));
 	p_picker->set_palette_saved_callback(callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::update_file));
@@ -4907,6 +5057,19 @@ bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
 	return false;
 }
 
+bool EditorNode::close_scene() {
+	int tab_index = editor_data.get_edited_scene();
+	if (tab_index == 0 && get_edited_scene() == nullptr && editor_data.get_scene_path(tab_index).is_empty()) {
+		return false;
+	}
+
+	tab_closing_idx = tab_index;
+	current_menu_option = SCENE_CLOSE;
+	_discard_changes();
+	changing_scene = false;
+	return true;
+}
+
 bool EditorNode::is_scene_in_use(const String &p_path) {
 	Node *es = get_edited_scene();
 	if (es) {
@@ -5122,6 +5285,15 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
+	const Pair<String, String> key(p_class, p_fallback);
+
+	// Take from the local cache, if available.
+	{
+		Ref<Texture2D> *icon = class_icon_cache.getptr(key);
+		if (icon) {
+			return *icon;
+		}
+	}
 
 	String script_path;
 	if (ScriptServer::is_global_class(p_class)) {
@@ -5130,7 +5302,9 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		script_path = p_class;
 	}
 
-	return _get_class_or_script_icon(p_class, script_path, p_fallback, true);
+	Ref<Texture2D> icon = _get_class_or_script_icon(p_class, script_path, p_fallback, true);
+	class_icon_cache[key] = icon;
+	return icon;
 }
 
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
@@ -5346,6 +5520,12 @@ String EditorNode::_get_system_info() const {
 	info.push_back(graphics);
 
 	info.push_back(vformat("%s (%d threads)", processor_name, processor_count));
+
+	const int64_t system_ram = OS::get_singleton()->get_memory_info()["physical"];
+	if (system_ram > 0) {
+		// If the memory info is available, display it.
+		info.push_back(vformat("%s memory", String::humanize_size(system_ram)));
+	}
 
 	return String(" - ").join(info);
 }
@@ -5749,6 +5929,41 @@ bool EditorNode::validate_custom_directory() {
 	}
 
 	return true;
+}
+
+void EditorNode::run_editor_script(const Ref<Script> &p_script) {
+	Error err = p_script->reload(true); // Always hard reload the script before running.
+	if (err != OK || !p_script->is_valid()) {
+		EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it contains errors, check the output log."), EditorToaster::SEVERITY_WARNING);
+		return;
+	}
+
+	// Perform additional checks on the script to evaluate if it's runnable.
+
+	bool is_runnable = true;
+	if (!ClassDB::is_parent_class(p_script->get_instance_base_type(), "EditorScript")) {
+		is_runnable = false;
+
+		EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it doesn't extend EditorScript."), EditorToaster::SEVERITY_WARNING);
+	}
+	if (!p_script->is_tool()) {
+		is_runnable = false;
+
+		if (p_script->get_class() == "GDScript") {
+			EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the @tool annotation at the top)."), EditorToaster::SEVERITY_WARNING);
+		} else if (p_script->get_class() == "CSharpScript") {
+			EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the [Tool] attribute above the class definition)."), EditorToaster::SEVERITY_WARNING);
+		} else {
+			EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script."), EditorToaster::SEVERITY_WARNING);
+		}
+	}
+	if (!is_runnable) {
+		return;
+	}
+
+	Ref<EditorScript> es = memnew(EditorScript);
+	es->set_script(p_script);
+	es->run();
 }
 
 void EditorNode::_immediate_dialog_confirmed() {
@@ -6510,7 +6725,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			// it's a multi-level inheritance scene. We should use
 			NodePath scene_path_to_node = current_edited_scene->get_path_to(original_node);
 			Ref<SceneState> scene_state = current_edited_scene->get_scene_inherited_state();
-			if (scene_path_to_node != "." && scene_state.is_valid() && scene_state->get_path() != instance_modifications.instance_path && scene_state->find_node_by_path(scene_path_to_node) >= 0) {
+			if (String(scene_path_to_node) != "." && scene_state.is_valid() && scene_state->get_path() != instance_modifications.instance_path && scene_state->find_node_by_path(scene_path_to_node) >= 0) {
 				Node *root_node = scene_state->instantiate(SceneState::GenEditState::GEN_EDIT_STATE_INSTANCE);
 				instantiated_node = root_node->get_node(scene_path_to_node);
 
@@ -6920,7 +7135,8 @@ void EditorNode::_add_renderer_entry(const String &p_renderer_name, bool p_mark_
 		item_text = TTR("Compatibility");
 	}
 	if (p_mark_overridden) {
-		item_text += " " + TTR("(Overridden)");
+		// TRANSLATORS: The placeholder is the rendering method that has overridden the default one.
+		item_text = vformat(TTR("%s (Overridden)"), item_text);
 	}
 	renderer->add_item(item_text);
 }
@@ -7007,6 +7223,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("preview_locale_changed"));
 }
 
 static Node *_resource_get_edited_scene() {
@@ -7014,7 +7231,11 @@ static Node *_resource_get_edited_scene() {
 }
 
 void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
-	callable_mp_static(&EditorNode::_print_handler_impl).call_deferred(p_string, p_error, p_rich);
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(&EditorNode::_print_handler_impl).call_deferred(p_string, p_error, p_rich);
+	} else {
+		_print_handler_impl(p_string, p_error, p_rich);
+	}
 }
 
 void EditorNode::_print_handler_impl(const String &p_string, bool p_error, bool p_rich) {
@@ -7239,6 +7460,15 @@ GameViewPluginBase *get_game_view_plugin() {
 }
 #endif
 
+void EditorNode::open_setting_override(const String &p_property) {
+	editor_settings_dialog->hide();
+	project_settings_editor->popup_for_override(p_property);
+}
+
+void EditorNode::notify_settings_overrides_changed() {
+	settings_overrides_changed = true;
+}
+
 EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);
 	singleton = this;
@@ -7297,7 +7527,7 @@ EditorNode::EditorNode() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
-	TranslationServer::get_singleton()->set_enabled(false);
+	TranslationServer::get_singleton()->get_main_domain()->set_enabled(false);
 	// Load settings.
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
@@ -7710,6 +7940,8 @@ EditorNode::EditorNode() {
 	editor_main_screen->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(SubViewport);
+	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+	scene_root->set_translation_domain(StringName());
 	scene_root->set_embedding_subwindows(true);
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);
@@ -7802,7 +8034,7 @@ EditorNode::EditorNode() {
 
 	recent_scenes = memnew(PopupMenu);
 	recent_scenes->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	file_menu->add_submenu_node_item(TTR("Open Recent"), recent_scenes, SCENE_OPEN_RECENT);
+	file_menu->add_submenu_node_item(TTRC("Open Recent"), recent_scenes, SCENE_OPEN_RECENT);
 	recent_scenes->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_open_recent_scene));
 
 	file_menu->add_separator();
@@ -7819,7 +8051,7 @@ EditorNode::EditorNode() {
 
 	file_menu->add_separator();
 	export_as_menu = memnew(PopupMenu);
-	file_menu->add_submenu_node_item(TTR("Export As..."), export_as_menu);
+	file_menu->add_submenu_node_item(TTRC("Export As..."), export_as_menu);
 	export_as_menu->add_shortcut(ED_SHORTCUT("editor/export_as_mesh_library", TTRC("MeshLibrary...")), FILE_EXPORT_MESH_LIBRARY);
 	export_as_menu->connect("index_pressed", callable_mp(this, &EditorNode::_export_as_menu_option));
 
@@ -7858,22 +8090,25 @@ EditorNode::EditorNode() {
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), Key::NONE, TTRC("Project Settings")), PROJECT_OPEN_SETTINGS);
 	project_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 
+	ED_SHORTCUT_AND_COMMAND("editor/find_in_files", TTRC("Find in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
+	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), PROJECT_FIND_IN_FILES);
+
 	project_menu->add_separator();
-	project_menu->add_item(TTR("Version Control"), PROJECT_VERSION_CONTROL);
+	project_menu->add_item(TTRC("Version Control"), PROJECT_VERSION_CONTROL);
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTRC("Export..."), Key::NONE, TTRC("Export")), PROJECT_EXPORT);
-	project_menu->add_item(TTR("Pack Project as ZIP..."), PROJECT_PACK_AS_ZIP);
+	project_menu->add_item(TTRC("Pack Project as ZIP..."), PROJECT_PACK_AS_ZIP);
 #ifndef ANDROID_ENABLED
-	project_menu->add_item(TTR("Install Android Build Template..."), PROJECT_INSTALL_ANDROID_SOURCE);
-	project_menu->add_item(TTR("Open User Data Folder"), PROJECT_OPEN_USER_DATA_FOLDER);
+	project_menu->add_item(TTRC("Install Android Build Template..."), PROJECT_INSTALL_ANDROID_SOURCE);
+	project_menu->add_item(TTRC("Open User Data Folder"), PROJECT_OPEN_USER_DATA_FOLDER);
 #endif
 
 	project_menu->add_separator();
 
 	tool_menu = memnew(PopupMenu);
 	tool_menu->connect("index_pressed", callable_mp(this, &EditorNode::_tool_menu_option));
-	project_menu->add_submenu_node_item(TTR("Tools"), tool_menu);
+	project_menu->add_submenu_node_item(TTRC("Tools"), tool_menu);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/orphan_resource_explorer", TTRC("Orphan Resource Explorer...")), TOOLS_ORPHAN_RESOURCES);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTRC("Engine Compilation Configuration Editor...")), TOOLS_BUILD_PROFILE_MANAGER);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_project", TTRC("Upgrade Project Files...")), TOOLS_PROJECT_UPGRADE);
@@ -7925,10 +8160,10 @@ EditorNode::EditorNode() {
 	settings_menu->add_shortcut(ED_SHORTCUT("editor/command_palette", TTRC("Command Palette..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::P), EDITOR_COMMAND_PALETTE);
 	settings_menu->add_separator();
 
-	settings_menu->add_submenu_node_item(TTR("Editor Docks"), editor_dock_manager->get_docks_menu());
+	settings_menu->add_submenu_node_item(TTRC("Editor Docks"), editor_dock_manager->get_docks_menu());
 
 	editor_layouts = memnew(PopupMenu);
-	settings_menu->add_submenu_node_item(TTR("Editor Layout"), editor_layouts);
+	settings_menu->add_submenu_node_item(TTRC("Editor Layout"), editor_layouts);
 	editor_layouts->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_layout_menu_option));
 	settings_menu->add_separator();
 
@@ -7936,7 +8171,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/take_screenshot", "macos", KeyModifierMask::META | Key::F12);
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/take_screenshot"), EDITOR_TAKE_SCREENSHOT);
 
-	settings_menu->set_item_tooltip(-1, TTR("Screenshots are stored in the user data folder (\"user://\")."));
+	settings_menu->set_item_tooltip(-1, TTRC("Screenshots are stored in the user data folder (\"user://\")."));
 
 	ED_SHORTCUT_AND_COMMAND("editor/fullscreen_mode", TTRC("Toggle Fullscreen"), KeyModifierMask::SHIFT | Key::F11);
 	ED_SHORTCUT_OVERRIDE("editor/fullscreen_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
@@ -7946,19 +8181,19 @@ EditorNode::EditorNode() {
 #ifndef ANDROID_ENABLED
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
 		// Configuration and data folders are located in the same place (Windows/macOS).
-		settings_menu->add_item(TTR("Open Editor Data/Settings Folder"), EDITOR_OPEN_DATA_FOLDER);
+		settings_menu->add_item(TTRC("Open Editor Data/Settings Folder"), EDITOR_OPEN_DATA_FOLDER);
 	} else {
 		// Separate configuration and data folders (Linux).
-		settings_menu->add_item(TTR("Open Editor Data Folder"), EDITOR_OPEN_DATA_FOLDER);
-		settings_menu->add_item(TTR("Open Editor Settings Folder"), EDITOR_OPEN_CONFIG_FOLDER);
+		settings_menu->add_item(TTRC("Open Editor Data Folder"), EDITOR_OPEN_DATA_FOLDER);
+		settings_menu->add_item(TTRC("Open Editor Settings Folder"), EDITOR_OPEN_CONFIG_FOLDER);
 	}
 	settings_menu->add_separator();
 #endif
 
-	settings_menu->add_item(TTR("Manage Editor Features..."), EDITOR_MANAGE_FEATURE_PROFILES);
-	settings_menu->add_item(TTR("Manage Export Templates..."), EDITOR_MANAGE_EXPORT_TEMPLATES);
+	settings_menu->add_item(TTRC("Manage Editor Features..."), EDITOR_MANAGE_FEATURE_PROFILES);
+	settings_menu->add_item(TTRC("Manage Export Templates..."), EDITOR_MANAGE_EXPORT_TEMPLATES);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-	settings_menu->add_item(TTR("Configure FBX Importer..."), EDITOR_CONFIGURE_FBX_IMPORTER);
+	settings_menu->add_item(TTRC("Configure FBX Importer..."), EDITOR_CONFIGURE_FBX_IMPORTER);
 #endif
 
 	help_menu = memnew(PopupMenu);
@@ -8010,8 +8245,10 @@ EditorNode::EditorNode() {
 	renderer->set_flat(true);
 	renderer->set_theme_type_variation("TopBarOptionButton");
 	renderer->set_fit_to_longest_item(false);
-	renderer->set_focus_mode(Control::FOCUS_NONE);
-	renderer->set_tooltip_text(TTR("Choose a rendering method.\n\nNotes:\n- On mobile platforms, the Mobile rendering method is used if Forward+ is selected here.\n- On the web platform, the Compatibility rendering method is always used."));
+	renderer->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	renderer->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	renderer->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+	renderer->set_tooltip_text(TTRC("Choose a rendering method.\n\nNotes:\n- On mobile platforms, the Mobile rendering method is used if Forward+ is selected here.\n- On the web platform, the Compatibility rendering method is always used."));
 	renderer->set_accessibility_name(TTRC("Rendering Method"));
 
 	right_menu_hb->add_child(renderer);
@@ -8075,10 +8312,10 @@ EditorNode::EditorNode() {
 	update_spinner->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	update_spinner->set_accessibility_name(TTRC("Update Mode"));
 	PopupMenu *p = update_spinner->get_popup();
-	p->add_radio_check_item(TTR("Update Continuously"), SPINNER_UPDATE_CONTINUOUSLY);
-	p->add_radio_check_item(TTR("Update When Changed"), SPINNER_UPDATE_WHEN_CHANGED);
+	p->add_radio_check_item(TTRC("Update Continuously"), SPINNER_UPDATE_CONTINUOUSLY);
+	p->add_radio_check_item(TTRC("Update When Changed"), SPINNER_UPDATE_WHEN_CHANGED);
 	p->add_separator();
-	p->add_item(TTR("Hide Update Spinner"), SPINNER_UPDATE_SPINNER_HIDE);
+	p->add_item(TTRC("Hide Update Spinner"), SPINNER_UPDATE_SPINNER_HIDE);
 	_update_update_spinner();
 
 	// Instantiate and place editor docks.
@@ -8146,7 +8383,7 @@ EditorNode::EditorNode() {
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
 	log = memnew(EditorLog);
-	Button *output_button = bottom_panel->add_item(TTR("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
+	Button *output_button = bottom_panel->add_item(TTRC("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
 	log->set_tool_button(output_button);
 
 	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
@@ -8293,7 +8530,7 @@ EditorNode::EditorNode() {
 		disk_changed->set_ok_button_text(TTR("Reload from disk"));
 
 		disk_changed->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
-		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_scenes));
+		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_externally_modified_scenes));
 	}
 
 	gui_base->add_child(disk_changed);
@@ -8334,8 +8571,8 @@ EditorNode::EditorNode() {
 
 	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
 	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
-	vcs_actions_menu->add_item(TTR("Create/Override Version Control Metadata..."), VCS_METADATA);
-	vcs_actions_menu->add_item(TTR("Version Control Settings..."), VCS_SETTINGS);
+	vcs_actions_menu->add_item(TTRC("Create/Override Version Control Metadata..."), VCS_METADATA);
+	vcs_actions_menu->add_item(TTRC("Version Control Settings..."), VCS_SETTINGS);
 	project_menu->set_item_submenu_node(project_menu->get_item_index(PROJECT_VERSION_CONTROL), vcs_actions_menu);
 
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
@@ -8419,6 +8656,29 @@ EditorNode::EditorNode() {
 	dedicated_server_export_plugin.instantiate();
 
 	EditorExport::get_singleton()->add_export_plugin(dedicated_server_export_plugin);
+
+	Ref<ShaderBakerExportPlugin> shader_baker_export_plugin;
+	shader_baker_export_plugin.instantiate();
+
+#ifdef VULKAN_ENABLED
+	Ref<ShaderBakerExportPluginPlatformVulkan> shader_baker_export_plugin_platform_vulkan;
+	shader_baker_export_plugin_platform_vulkan.instantiate();
+	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_vulkan);
+#endif
+
+#ifdef D3D12_ENABLED
+	Ref<ShaderBakerExportPluginPlatformD3D12> shader_baker_export_plugin_platform_d3d12;
+	shader_baker_export_plugin_platform_d3d12.instantiate();
+	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_d3d12);
+#endif
+
+#ifdef METAL_ENABLED
+	Ref<ShaderBakerExportPluginPlatformMetal> shader_baker_export_plugin_platform_metal;
+	shader_baker_export_plugin_platform_metal.instantiate();
+	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_metal);
+#endif
+
+	EditorExport::get_singleton()->add_export_plugin(shader_baker_export_plugin);
 
 	Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
 	packed_scene_translation_parser_plugin.instantiate();

@@ -109,7 +109,9 @@ protected:
 	void _get_base_emission_mask(PackedVector2Array &r_valid_positions, PackedVector2Array &r_valid_normals, PackedByteArray &r_valid_colors, Vector2i &r_image_size);
 	virtual void _generate_emission_mask() = 0;
 	void _notification(int p_what);
+	void _set_show_gizmos(Node *p_node, bool p_show);
 	void _selection_changed();
+	void _node_removed(Node *p_node);
 
 public:
 	Particles2DEditorPlugin();

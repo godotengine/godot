@@ -249,6 +249,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	}
 	default_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	Dictionary default_fc_opentype;
+	default_fc_opentype["weight"] = 400;
+	default_fc->set_variation_opentype(default_fc_opentype);
 
 	Ref<FontVariation> default_fc_msdf;
 	default_fc_msdf.instantiate();
@@ -265,6 +268,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	}
 	default_fc_msdf->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	default_fc_msdf->set_variation_opentype(default_fc_opentype);
 
 	Ref<FontVariation> bold_fc;
 	bold_fc.instantiate();
@@ -289,6 +293,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	}
 	bold_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	bold_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	Dictionary bold_fc_opentype;
+	bold_fc_opentype["weight"] = 700;
+	bold_fc->set_variation_opentype(bold_fc_opentype);
 
 	Ref<FontVariation> bold_fc_msdf;
 	bold_fc_msdf.instantiate();
@@ -313,6 +320,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	}
 	bold_fc_msdf->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	bold_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	bold_fc_msdf->set_variation_opentype(bold_fc_opentype);
 
 	Ref<FontVariation> mono_fc;
 	mono_fc.instantiate();

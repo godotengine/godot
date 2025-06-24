@@ -143,11 +143,13 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
 	config["experimentalVK"] = p_preset->get("html/experimental_virtual_keyboard");
 	config["focusCanvas"] = p_preset->get("html/focus_canvas_on_start");
+	config["godotPoolSize"] = p_preset->get("variant/godot_pool_size");
 	config["gdextensionLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
 	config["fileSizes"] = p_file_sizes;
 	config["ensureCrossOriginIsolationHeaders"] = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
+	config["emscriptenPoolSize"] = p_preset->get("variant/emscripten_pool_size");
 
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
@@ -351,6 +353,11 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 	} else {
 		r_features->push_back("nothreads");
 	}
+	if (p_preset->get("variant/extensions_support").operator bool()) {
+		r_features->push_back("web_extensions");
+	} else {
+		r_features->push_back("web_noextensions");
+	}
 	r_features->push_back("wasm32");
 }
 
@@ -360,6 +367,8 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/extensions_support"), false)); // GDExtension support.
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), false)); // Thread support (i.e. run with or without COEP/COOP headers).
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "variant/emscripten_pool_size"), 8));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "variant/godot_pool_size"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 

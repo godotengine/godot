@@ -32,6 +32,7 @@
 
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_help.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
@@ -88,6 +89,7 @@ void EditorResourcePicker::_update_resource() {
 	}
 
 	assign_button->set_disabled(!editable && edited_resource.is_null());
+	quick_load_button->set_visible(editable && edited_resource.is_null());
 }
 
 void EditorResourcePicker::_update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj) {
@@ -289,6 +291,7 @@ void EditorResourcePicker::_update_menu_items() {
 
 		if (paste_valid) {
 			edit_menu->add_item(TTR("Paste"), OBJ_MENU_PASTE);
+			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
 		}
 	}
 
@@ -438,12 +441,20 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			EditorSettings::get_singleton()->set_resource_clipboard(edited_resource);
 		} break;
 
-		case OBJ_MENU_PASTE: {
+		case OBJ_MENU_PASTE:
+		case OBJ_MENU_PASTE_AS_UNIQUE: {
 			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (edited_resource->is_built_in() && EditorNode::get_singleton()->get_edited_scene() &&
-					edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
-				// Automatically make resource unique if it belongs to another scene.
-				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+			if (p_which == OBJ_MENU_PASTE_AS_UNIQUE ||
+					(EditorNode::get_singleton()->get_edited_scene() && edited_resource->is_built_in() && edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path())) {
+				// Automatically make resource unique if it belongs to another scene,
+				// or if requested by the user with the Paste as Unique option.
+				if (p_which == OBJ_MENU_PASTE_AS_UNIQUE) {
+					// Use the recursive version when using Paste as Unique.
+					// This will show up a dialog to select which resources to make unique.
+					_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+				} else {
+					_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+				}
 				return;
 			}
 			_resource_changed();
@@ -486,6 +497,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
+			resp->set_path(_get_owner_path() + "::"); // Assign a base path for built-in Resources.
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
@@ -577,6 +589,32 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 			edit_menu->popup();
 		}
 	}
+}
+
+String EditorResourcePicker::_get_owner_path() const {
+	EditorProperty *property = Object::cast_to<EditorProperty>(get_parent());
+	if (!property) {
+		return String();
+	}
+	Object *obj = property->get_edited_object();
+
+	Node *node = Object::cast_to<Node>(obj);
+	if (node) {
+		if (node->get_scene_file_path().is_empty()) {
+			node = node->get_owner();
+		}
+		if (node) {
+			return node->get_scene_file_path();
+		}
+		return String();
+	}
+
+	Resource *res = Object::cast_to<Resource>(obj);
+	if (res && !res->is_built_in()) {
+		return res->get_path();
+	}
+	// TODO: It would be nice to handle deeper Resource nesting.
+	return String();
 }
 
 String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource) const {
@@ -863,6 +901,7 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
+			quick_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -1004,6 +1043,7 @@ void EditorResourcePicker::set_resource_owner(Object *p_object) {
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
 	assign_button->set_disabled(!editable && edited_resource.is_null());
+	quick_load_button->set_visible(editable && edited_resource.is_null());
 	edit_button->set_visible(editable);
 }
 
@@ -1127,6 +1167,11 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 		preview_rect->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 		assign_button->add_child(preview_rect);
 	}
+
+	quick_load_button = memnew(Button);
+	quick_load_button->set_tooltip_text(TTRC("Quick Load"));
+	add_child(quick_load_button);
+	quick_load_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_QUICKLOAD));
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(false);

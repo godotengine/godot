@@ -102,12 +102,6 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 }
 #endif // DEBUG_ENABLED
 
-void Polygon2D::_validate_property(PropertyInfo &p_property) const {
-	if (!invert && p_property.name == "invert_border") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-}
-
 void Polygon2D::_skeleton_bone_setup_changed() {
 	queue_redraw();
 }
@@ -505,7 +499,6 @@ Size2 Polygon2D::get_texture_scale() const {
 void Polygon2D::set_invert(bool p_invert) {
 	invert = p_invert;
 	queue_redraw();
-	notify_property_list_changed();
 }
 
 bool Polygon2D::get_invert() const {
@@ -718,7 +711,7 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton2D"), "set_skeleton", "get_skeleton");
 
 	ADD_GROUP("Invert", "invert_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_invert_enabled", "get_invert_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_invert_enabled", "get_invert_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1,suffix:px"), "set_invert_border", "get_invert_border");
 
 	ADD_GROUP("Data", "");

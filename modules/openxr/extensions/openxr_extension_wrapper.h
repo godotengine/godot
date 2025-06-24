@@ -120,6 +120,7 @@ public:
 	// this happens right before physics process and normal processing is run.
 	// This is when controller data is queried and made available to game logic.
 	virtual void on_process();
+	virtual void on_sync_actions(); // `on_sync_actions` is called right after we sync our action sets.
 	virtual void on_pre_render(); // `on_pre_render` is called right before we start rendering our XR viewports.
 	virtual void on_main_swapchains_created(); // `on_main_swapchains_created` is called right after our main swapchains are (re)created.
 	virtual void on_pre_draw_viewport(RID p_render_target); // `on_pre_draw_viewport` is called right before we start rendering this viewport
@@ -131,6 +132,7 @@ public:
 	GDVIRTUAL0(_on_instance_destroyed);
 	GDVIRTUAL1(_on_session_created, uint64_t);
 	GDVIRTUAL0(_on_process);
+	GDVIRTUAL0(_on_sync_actions);
 	GDVIRTUAL0(_on_pre_render);
 	GDVIRTUAL0(_on_main_swapchains_created);
 	GDVIRTUAL0(_on_session_destroyed);

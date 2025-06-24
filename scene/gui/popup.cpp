@@ -148,6 +148,9 @@ void Popup::_post_popup() {
 }
 
 void Popup::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (
 			p_property.name == "transient" ||
 			p_property.name == "exclusive" ||
@@ -167,7 +170,7 @@ Rect2i Popup::_popup_adjust_rect() const {
 
 	Rect2i current(get_position(), get_size());
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+	if (!is_embedded() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
 		// We're fine as is, the Display Server will take care of that for us.
 		return current;
 	}
@@ -387,6 +390,7 @@ void PopupPanel::_notification(int p_what) {
 #endif
 		} break;
 
+		case Control::NOTIFICATION_TRANSLATION_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_visible()) {
 				_update_shadow_offsets();

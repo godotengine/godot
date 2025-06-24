@@ -44,10 +44,6 @@
 
 namespace {
 
-bool is_face_degenerate(const int p_face[3]) {
-	return p_face[0] == p_face[1] || p_face[0] == p_face[2] || p_face[1] == p_face[2];
-}
-
 template <typename TJoltVertex>
 void pin_vertices(const JoltSoftBody3D &p_body, const HashSet<int> &p_pinned_vertices, const LocalVector<int> &p_mesh_to_physics, JPH::Array<TJoltVertex> &r_physics_vertices) {
 	const int mesh_vertex_count = p_mesh_to_physics.size();
@@ -114,7 +110,7 @@ void JoltSoftBody3D::_add_to_space() {
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
 
-	JPH::Body *new_jolt_body = space->add_soft_body(*this, *jolt_settings);
+	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings);
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -163,7 +159,6 @@ bool JoltSoftBody3D::_ref_shared_data() {
 
 		for (int i = 0; i < mesh_index_count; i += 3) {
 			int physics_face[3];
-			int mesh_face[3];
 
 			for (int j = 0; j < 3; ++j) {
 				const int mesh_index = mesh_indices[i + j];
@@ -173,16 +168,16 @@ bool JoltSoftBody3D::_ref_shared_data() {
 
 				if (iter_physics_index == vertex_to_physics.end()) {
 					physics_vertices.emplace_back(JPH::Float3((float)vertex.x, (float)vertex.y, (float)vertex.z), JPH::Float3(0.0f, 0.0f, 0.0f), 1.0f);
-
 					iter_physics_index = vertex_to_physics.insert(vertex, physics_index_count++);
 				}
 
-				mesh_face[j] = mesh_index;
 				physics_face[j] = iter_physics_index->value;
 				mesh_to_physics[mesh_index] = iter_physics_index->value;
 			}
 
-			ERR_CONTINUE_MSG(is_face_degenerate(physics_face), vformat("Failed to append face to soft body '%s'. Face was found to be degenerate. Face consist of indices %d, %d and %d.", to_string(), mesh_face[0], mesh_face[1], mesh_face[2]));
+			if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
+				continue; // We skip degenerate faces, since they're problematic, and Jolt will assert about it anyway.
+			}
 
 			// Jolt uses a different winding order, so we swap the indices to account for that.
 			physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
@@ -202,6 +197,10 @@ bool JoltSoftBody3D::_ref_shared_data() {
 		vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
 
 		settings.CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
+		float multiplier = 1.0f - shrinking_factor;
+		for (JPH::SoftBodySharedSettings::Edge &e : settings.mEdgeConstraints) {
+			e.mRestLength *= multiplier;
+		}
 		settings.Optimize();
 	} else {
 		iter_shared_data->value.ref_count++;
@@ -327,6 +326,10 @@ void JoltSoftBody3D::_exceptions_changed() {
 	_update_group_filter();
 }
 
+void JoltSoftBody3D::_motion_changed() {
+	wake_up();
+}
+
 JoltSoftBody3D::JoltSoftBody3D() :
 		JoltObject3D(OBJECT_TYPE_SOFT_BODY) {
 	jolt_settings->mRestitution = 0.0f;
@@ -396,18 +399,61 @@ bool JoltSoftBody3D::is_sleeping() const {
 	}
 }
 
+void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse) {
+	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+
+	ERR_FAIL_NULL(shared);
+	ERR_FAIL_INDEX(p_index, (int)shared->mesh_to_physics.size());
+	const size_t physics_index = (size_t)shared->mesh_to_physics[p_index];
+	ERR_FAIL_COND_MSG(pinned_vertices.has(physics_index), vformat("Failed to apply impulse to point at index %d for '%s'. Point was found to be pinned.", static_cast<int>(physics_index), to_string()));
+
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
+
+	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
+	JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
+
+	physics_vertex.mVelocity += to_jolt(p_impulse) * physics_vertex.mInvMass;
+
+	_motion_changed();
+}
+
+void JoltSoftBody3D::apply_vertex_force(int p_index, const Vector3 &p_force) {
+	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+
+	apply_vertex_impulse(p_index, p_force * space->get_last_step());
+}
+
+void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
+	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply central impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
+	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
+
+	const JPH::Vec3 impulse = to_jolt(p_impulse) / physics_vertices.size();
+
+	for (JPH::SoftBodyVertex &physics_vertex : physics_vertices) {
+		if (physics_vertex.mInvMass > 0.0f) {
+			physics_vertex.mVelocity += impulse * physics_vertex.mInvMass;
+		}
+	}
+
+	_motion_changed();
+}
+
+void JoltSoftBody3D::apply_central_force(const Vector3 &p_force) {
+	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply central force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+
+	jolt_body->AddForce(to_jolt(p_force));
+
+	_motion_changed();
+}
+
 void JoltSoftBody3D::set_is_sleeping(bool p_enabled) {
 	if (!in_space()) {
 		return;
 	}
 
-	JPH::BodyInterface &body_iface = space->get_body_iface();
-
-	if (p_enabled) {
-		body_iface.DeactivateBody(jolt_body->GetID());
-	} else {
-		body_iface.ActivateBody(jolt_body->GetID());
-	}
+	space->set_is_object_sleeping(jolt_body->GetID(), p_enabled);
 }
 
 bool JoltSoftBody3D::is_sleep_allowed() const {
@@ -452,6 +498,14 @@ float JoltSoftBody3D::get_stiffness_coefficient() const {
 
 void JoltSoftBody3D::set_stiffness_coefficient(float p_coefficient) {
 	stiffness_coefficient = CLAMP(p_coefficient, 0.0f, 1.0f);
+}
+
+float JoltSoftBody3D::get_shrinking_factor() const {
+	return shrinking_factor;
+}
+
+void JoltSoftBody3D::set_shrinking_factor(float p_shrinking_factor) {
+	shrinking_factor = p_shrinking_factor;
 }
 
 void JoltSoftBody3D::set_pressure(float p_pressure) {

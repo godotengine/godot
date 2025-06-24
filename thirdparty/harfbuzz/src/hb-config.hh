@@ -146,6 +146,7 @@
 
 #ifdef HB_NO_DRAW
 #define HB_NO_OUTLINE
+#define HB_NO_PAINT
 #endif
 
 #ifdef HB_NO_GETENV
@@ -191,7 +192,6 @@
 #ifdef HB_MINIMIZE_MEMORY_USAGE
 #define HB_NO_GDEF_CACHE
 #define HB_NO_OT_LAYOUT_LOOKUP_CACHE
-#define HB_NO_OT_FONT_ADVANCE_CACHE
 #define HB_NO_OT_FONT_CMAP_CACHE
 #endif
 

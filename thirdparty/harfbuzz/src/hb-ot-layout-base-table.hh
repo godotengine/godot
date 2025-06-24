@@ -182,7 +182,7 @@ struct BaseCoord
   void collect_variation_indices (hb_set_t& varidx_set /* OUT */) const
   {
     switch (u.format) {
-    case 3: hb_barrier (); u.format3.collect_variation_indices (varidx_set);
+    case 3: hb_barrier (); u.format3.collect_variation_indices (varidx_set); return;
     default:return;
     }
   }

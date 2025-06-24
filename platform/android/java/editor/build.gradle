@@ -180,6 +180,8 @@ android {
 }
 
 dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
+
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation project(":lib")
 

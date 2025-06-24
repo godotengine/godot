@@ -173,7 +173,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
 
 	return p_bbcode.dedent()
-			.remove_chars("\t\r")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -4009,7 +4009,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		List<Pair<MethodInfo, uint32_t>> method_list_with_hashes;
 		ClassDB::get_method_list_with_compatibility(type_cname, &method_list_with_hashes, true);
-		method_list_with_hashes.sort_custom_inplace<SortMethodWithHashes>();
+		method_list_with_hashes.sort_custom<SortMethodWithHashes>();
 
 		List<MethodInterface> compat_methods;
 		for (const Pair<MethodInfo, uint32_t> &E : method_list_with_hashes) {

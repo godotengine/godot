@@ -32,13 +32,14 @@
 
 #include "scene/gui/control.h"
 
-class Button;
-class HBoxContainer;
-class EventListenerLineEdit;
-class LineEdit;
-class CheckButton;
 class AcceptDialog;
+class Button;
+class CheckButton;
+class EditorEventSearchBar;
+class EventListenerLineEdit;
+class HBoxContainer;
 class InputEventConfigurationDialog;
+class LineEdit;
 class Tree;
 
 class ActionMapEditor : public Control {
@@ -82,9 +83,7 @@ private:
 
 	bool show_builtin_actions = false;
 	CheckButton *show_builtin_actions_checkbutton = nullptr;
-	LineEdit *action_list_search = nullptr;
-	EventListenerLineEdit *action_list_search_by_event = nullptr;
-	Button *clear_all_search = nullptr;
+	EditorEventSearchBar *action_list_search_bar = nullptr;
 
 	HBoxContainer *add_hbox = nullptr;
 	LineEdit *add_edit = nullptr;
@@ -101,16 +100,14 @@ private:
 
 	void _tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _tree_item_activated();
-	void _search_term_updated(const String &p_search_term);
-	void _search_by_event(const Ref<InputEvent> &p_event);
+	void _on_search_bar_value_changed();
 	bool _should_display_action(const String &p_name, const Array &p_events) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	void _on_filter_focused();
-	void _on_filter_unfocused();
+	void _set_show_builtin_actions(bool p_show);
 
 protected:
 	void _notification(int p_what);
@@ -124,10 +121,6 @@ public:
 	// Dictionary represents an Action with "events" (Array) and "deadzone" (float) items. Pass with no param to update list from cached action map.
 	void update_action_list(const Vector<ActionInfo> &p_action_infos = Vector<ActionInfo>());
 	void show_message(const String &p_message);
-
-	void set_show_builtin_actions(bool p_show);
-
-	void use_external_search_box(LineEdit *p_searchbox);
 
 	ActionMapEditor();
 };

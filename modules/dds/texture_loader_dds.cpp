@@ -177,7 +177,6 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 				break;
 
 			case DDS_BGR5A1:
-			case DDS_BGRA4:
 			case DDS_B2GR3A8:
 			case DDS_LUMINANCE_ALPHA_4:
 				size = size * 2;
@@ -235,22 +234,13 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 
 			} break;
 			case DDS_BGRA4: {
-				// To RGBA8.
-				int colcount = size / 4;
+				// To RGBA4.
+				for (uint32_t i = 0; i < size; i += 2) {
+					uint8_t ar = wb[i + 0];
+					uint8_t gb = wb[i + 1];
 
-				for (int i = colcount - 1; i >= 0; i--) {
-					int src_ofs = i * 2;
-					int dst_ofs = i * 4;
-
-					uint8_t b = wb[src_ofs] & 0x0F;
-					uint8_t g = wb[src_ofs] & 0xF0;
-					uint8_t r = wb[src_ofs + 1] & 0x0F;
-					uint8_t a = wb[src_ofs + 1] & 0xF0;
-
-					wb[dst_ofs] = (r << 4) | r;
-					wb[dst_ofs + 1] = g | (g >> 4);
-					wb[dst_ofs + 2] = (b << 4) | b;
-					wb[dst_ofs + 3] = a | (a >> 4);
+					wb[i + 0] = ((ar & 0x0F) << 4) | ((gb & 0xF0) >> 4);
+					wb[i + 1] = ((ar & 0xF0) >> 4) | ((gb & 0x0F) << 4);
 				}
 
 			} break;

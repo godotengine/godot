@@ -670,7 +670,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 		Vector<String> tokens = p_filters[i].split(";");
 		if (tokens.size() >= 1) {
 			String flt = tokens[0].strip_edges();
-			String mime = (tokens.size() >= 2) ? tokens[2].strip_edges() : String();
+			String mime = (tokens.size() >= 3) ? tokens[2].strip_edges() : String();
 			if (!flt.is_empty() || !mime.is_empty()) {
 				if (tokens.size() >= 2) {
 					if (flt == "*.*") {

@@ -542,6 +542,13 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	MeshInstance3D *mi = memnew(MeshInstance3D);
 	mi->set_mesh(mesho);
+
+	Node *skeleton = node->get_node_or_null(node->get_skeleton_path());
+	if (skeleton && node->get_skin().is_valid()) {
+		mi->set_skin(node->get_skin());
+		mi->set_skeleton_path("../" + String(node->get_path_to(skeleton)));
+	}
+
 	Node *owner = get_tree()->get_edited_scene_root();
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();

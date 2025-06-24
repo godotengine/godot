@@ -314,6 +314,10 @@ void OptionButton::set_item_count(int p_count) {
 		return;
 	}
 
+	if (current > p_count - 1) {
+		_select(p_count - 1, false);
+	}
+
 	popup->set_item_count(p_count);
 
 	if (p_count > count_old) {
@@ -537,6 +541,10 @@ void OptionButton::show_popup() {
 
 	Rect2 rect = get_screen_rect();
 	rect.position.y += rect.size.height;
+	if (get_viewport()->is_embedding_subwindows() && popup->get_force_native()) {
+		Transform2D xform = get_viewport()->get_popup_base_transform_native();
+		rect = xform.xform(rect);
+	}
 	rect.size.height = 0;
 	popup->popup(rect);
 }
@@ -621,6 +629,8 @@ void OptionButton::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &OptionButton::_dummy_setter, &OptionButton::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &OptionButton::_dummy_setter, &OptionButton::is_item_separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);
+
+	ADD_CLASS_DEPENDENCY("PopupMenu");
 }
 
 void OptionButton::set_disable_shortcuts(bool p_disabled) {

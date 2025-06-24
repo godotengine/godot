@@ -256,31 +256,37 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 	int64_t pck_start_pos = f->get_position() - 4;
 
+	// Read header.
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
-	f->get_32(); // patch number, not used for validation.
+	uint32_t ver_patch = f->get_32(); // Not used for validation.
 
-	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION, false, vformat("Pack version unsupported: %d.", version));
-	ERR_FAIL_COND_V_MSG(ver_major > GODOT_VERSION_MAJOR || (ver_major == GODOT_VERSION_MAJOR && ver_minor > GODOT_VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.", ver_major, ver_minor));
+	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION_V3 && version != PACK_FORMAT_VERSION_V2, false, vformat("Pack version unsupported: %d.", version));
+	ERR_FAIL_COND_V_MSG(ver_major > GODOT_VERSION_MAJOR || (ver_major == GODOT_VERSION_MAJOR && ver_minor > GODOT_VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.%d.", ver_major, ver_minor, ver_patch));
 
 	uint32_t pack_flags = f->get_32();
-	uint64_t file_base = f->get_64();
-
 	bool enc_directory = (pack_flags & PACK_DIR_ENCRYPTED);
-	bool rel_filebase = (pack_flags & PACK_REL_FILEBASE);
+	bool rel_filebase = (pack_flags & PACK_REL_FILEBASE); // Note: Always enabled for V3.
 
-	for (int i = 0; i < 16; i++) {
-		//reserved
-		f->get_32();
-	}
-
-	int file_count = f->get_32();
-
-	if (rel_filebase) {
+	uint64_t file_base = f->get_64();
+	if ((version == PACK_FORMAT_VERSION_V3) || (version == PACK_FORMAT_VERSION_V2 && rel_filebase)) {
 		file_base += pck_start_pos;
 	}
 
+	if (version == PACK_FORMAT_VERSION_V3) {
+		// V3: Read directory offset and skip reserved part of the header.
+		uint64_t dir_offset = f->get_64() + pck_start_pos;
+		f->seek(dir_offset);
+	} else if (version == PACK_FORMAT_VERSION_V2) {
+		// V2: Directory directly after the header.
+		for (int i = 0; i < 16; i++) {
+			f->get_32(); // Reserved.
+		}
+	}
+
+	// Read directory.
+	int file_count = f->get_32();
 	if (enc_directory) {
 		Ref<FileAccessEncrypted> fae;
 		fae.instantiate();
@@ -300,7 +306,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	for (int i = 0; i < file_count; i++) {
 		uint32_t sl = f->get_32();
 		CharString cs;
-		cs.resize(sl + 1);
+		cs.resize_uninitialized(sl + 1);
 		f->get_buffer((uint8_t *)cs.ptr(), sl);
 		cs[sl] = 0;
 
@@ -314,7 +320,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		if (flags & PACK_FILE_REMOVAL) { // The file was removed.
 			PackedData::get_singleton()->remove_path(path);
 		} else {
-			PackedData::get_singleton()->add_path(p_path, path, file_base + ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
+			PackedData::get_singleton()->add_path(p_path, path, file_base + ofs, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
 		}
 	}
 

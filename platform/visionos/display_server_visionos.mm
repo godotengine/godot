@@ -54,14 +54,26 @@ String DisplayServerVisionOS::get_name() const {
 }
 
 int DisplayServerVisionOS::screen_get_dpi(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	// TODO(Apple): Compute this properly from SwiftUI Metric APIs
 	return 72;
 }
 
 float DisplayServerVisionOS::screen_get_refresh_rate(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	return 90;
 }
 
 float DisplayServerVisionOS::screen_get_scale(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	return 1;
 }

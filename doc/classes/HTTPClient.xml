@@ -62,8 +62,8 @@
 				Returns all response headers as a [Dictionary]. Each entry is composed by the header name, and a [String] containing the values separated by [code]"; "[/code]. The casing is kept the same as the headers were received.
 				[codeblock]
 				{
-				    "content-length": 12,
-				    "Content-Type": "application/json; charset=UTF-8",
+					"content-length": 12,
+					"Content-Type": "application/json; charset=UTF-8",
 				}
 				[/codeblock]
 			</description>
@@ -99,7 +99,7 @@
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblocks]
 				[gdscript]
-				var fields = {"username": "user", "password": "pass"}
+				var fields = { "username": "user", "password": "pass" }
 				var query_string = http_client.query_string_from_dict(fields)
 				# Returns "username=user&amp;password=pass"
 				[/gdscript]
@@ -112,16 +112,16 @@
 				Furthermore, if a key has a [code]null[/code] value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
 				[codeblocks]
 				[gdscript]
-				var fields = {"single": 123, "not_valued": null, "multiple": [22, 33, 44]}
+				var fields = { "single": 123, "not_valued": null, "multiple": [22, 33, 44] }
 				var query_string = http_client.query_string_from_dict(fields)
 				# Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary
 				{
-				    { "single", 123 },
-				    { "notValued", default },
-				    { "multiple", new Godot.Collections.Array { 22, 33, 44 } },
+					{ "single", 123 },
+					{ "notValued", default },
+					{ "multiple", new Godot.Collections.Array { 22, 33, 44 } },
 				};
 				string queryString = httpClient.QueryStringFromDict(fields);
 				// Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
@@ -142,13 +142,13 @@
 			<param index="2" name="headers" type="PackedStringArray" />
 			<param index="3" name="body" type="String" default="&quot;&quot;" />
 			<description>
-				Sends a request to the connected host.
+				Sends an HTTP request to the connected host with the given [param method].
 				The URL parameter is usually just the part after the host, so for [code]https://example.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
-				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
+				[param headers] are HTTP request headers.
 				To create a POST request with query strings to push to the server, do:
 				[codeblocks]
 				[gdscript]
-				var fields = {"username" : "user", "password" : "pass"}
+				var fields = { "username": "user", "password": "pass" }
 				var query_string = http_client.query_string_from_dict(fields)
 				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(query_string.length())]
 				var result = http_client.request(http_client.METHOD_POST, "/index.php", headers, query_string)
@@ -170,9 +170,9 @@
 			<param index="2" name="headers" type="PackedStringArray" />
 			<param index="3" name="body" type="PackedByteArray" />
 			<description>
-				Sends a raw request to the connected host.
+				Sends a raw HTTP request to the connected host with the given [param method].
 				The URL parameter is usually just the part after the host, so for [code]https://example.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
-				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
+				[param headers] are HTTP request headers.
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
 		</method>

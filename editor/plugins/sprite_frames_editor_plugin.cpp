@@ -2371,7 +2371,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_zoom_out = memnew(Button);
 	split_sheet_zoom_out->set_theme_type_variation(SceneStringName(FlatButton));
-	split_sheet_zoom_out->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_out->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_out->set_tooltip_text(TTR("Zoom Out"));
 	split_sheet_zoom_out->set_accessibility_name(TTRC("Zoom Out"));
 	split_sheet_zoom_out->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
@@ -2379,7 +2379,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_zoom_reset = memnew(Button);
 	split_sheet_zoom_reset->set_theme_type_variation(SceneStringName(FlatButton));
-	split_sheet_zoom_reset->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_reset->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
 	split_sheet_zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 	split_sheet_zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
@@ -2387,7 +2387,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_zoom_in = memnew(Button);
 	split_sheet_zoom_in->set_theme_type_variation(SceneStringName(FlatButton));
-	split_sheet_zoom_in->set_focus_mode(FOCUS_NONE);
+	split_sheet_zoom_in->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_in->set_tooltip_text(TTR("Zoom In"));
 	split_sheet_zoom_in->set_accessibility_name(TTRC("Zoom In"));
 	split_sheet_zoom_in->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
@@ -2599,6 +2599,6 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor = memnew(SpriteFramesEditor);
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_bottom_panel()->add_item(TTR("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")));
+	button = EditorNode::get_bottom_panel()->add_item(TTRC("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")));
 	button->hide();
 }

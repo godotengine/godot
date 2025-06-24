@@ -212,6 +212,11 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 		}
 
 	} else if (self->geometry_instance_pair_mask & (1 << RS::INSTANCE_REFLECTION_PROBE) && B->base_type == RS::INSTANCE_REFLECTION_PROBE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
+		if (!(A->layer_mask & RSG::light_storage->reflection_probe_get_reflection_mask(B->base))) {
+			// Early return if the object's layer mask doesn't match the reflection mask.
+			return;
+		}
+
 		InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(B->base_data);
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 

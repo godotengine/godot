@@ -44,6 +44,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	Button *button_create = nullptr;
 	Button *button_edit = nullptr;
 	Button *button_delete = nullptr;
+	Button *button_center = nullptr;
 
 	struct Vertex {
 		Vertex() {}
@@ -85,6 +86,11 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	bool wip_active = false;
 	bool wip_destructive = false;
 
+	Vector<Vector<Vector2>> pre_center_move_edit;
+	bool center_drag = false;
+	Vector2 center_drag_origin;
+	bool edit_origin_and_center = false;
+
 	bool _polygon_editing_enabled = false;
 
 	CanvasItemEditor *canvas_item_editor = nullptr;
@@ -97,6 +103,7 @@ protected:
 		MODE_EDIT,
 		MODE_DELETE,
 		MODE_CONT,
+		CENTER_POLY,
 	};
 
 	int mode = MODE_EDIT;
@@ -108,6 +115,8 @@ protected:
 
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
+
+	bool _commit_drag();
 
 	void remove_point(const Vertex &p_vertex);
 	Vertex get_active_point() const;
@@ -132,6 +141,8 @@ protected:
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon);
 	virtual void _commit_action();
 
+	virtual Vector2 _get_geometric_center() const;
+
 	virtual bool _has_resource() const;
 	virtual void _create_resource();
 
@@ -140,6 +151,7 @@ public:
 
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
+	void set_edit_origin_and_center(bool p_enabled);
 
 	void edit(Node *p_polygon);
 	AbstractPolygon2DEditor(bool p_wip_destructive = true);

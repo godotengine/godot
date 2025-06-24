@@ -200,7 +200,7 @@ void TextEditor::_validate_script() {
 		code_editor->set_error("");
 
 		if (json_file->parse(te->get_text(), true) != OK) {
-			code_editor->set_error(json_file->get_error_message());
+			code_editor->set_error(json_file->get_error_message().replace("[", "[lb]"));
 			code_editor->set_error_pos(json_file->get_error_line(), 0);
 			te->set_line_background_color(code_editor->get_error_pos().x, EDITOR_GET("text_editor/theme/highlighting/mark_color"));
 		}
@@ -410,11 +410,9 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
 			tx->fold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_UNFOLD_ALL_LINES: {
 			tx->unfold_all_lines();
-			tx->queue_redraw();
 		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
@@ -565,7 +563,7 @@ void TextEditor::_prepare_edit_menu() {
 void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position) {
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
-		context_menu->add_item(TTR("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
+		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}
 	if (p_selection) {
@@ -630,7 +628,7 @@ TextEditor::TextEditor() {
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_shortcut_context(this);
 	edit_hb->add_child(edit_menu);
-	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_text(TTRC("Edit"));
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->connect("about_to_popup", callable_mp(this, &TextEditor::_prepare_edit_menu));
 	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
@@ -663,14 +661,14 @@ TextEditor::TextEditor() {
 
 	edit_menu->get_popup()->add_separator();
 	PopupMenu *convert_case = memnew(PopupMenu);
-	edit_menu->get_popup()->add_submenu_node_item(TTR("Convert Case"), convert_case);
+	edit_menu->get_popup()->add_submenu_node_item(TTRC("Convert Case"), convert_case);
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/capitalize"), EDIT_CAPITALIZE);
 	convert_case->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
 
 	highlighter_menu = memnew(PopupMenu);
-	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
+	edit_menu->get_popup()->add_submenu_node_item(TTRC("Syntax Highlighter"), highlighter_menu);
 	highlighter_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_change_syntax_highlighter));
 
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
@@ -685,7 +683,7 @@ TextEditor::TextEditor() {
 	search_menu = memnew(MenuButton);
 	search_menu->set_shortcut_context(this);
 	edit_hb->add_child(search_menu);
-	search_menu->set_text(TTR("Search"));
+	search_menu->set_text(TTRC("Search"));
 	search_menu->set_switch_on_hover(true);
 	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
 
@@ -694,13 +692,13 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
 	edit_hb->add_child(goto_menu);
-	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_text(TTRC("Go To"));
 	goto_menu->set_switch_on_hover(true);
 	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditor::_edit_option));
 
@@ -708,7 +706,7 @@ TextEditor::TextEditor() {
 	goto_menu->get_popup()->add_separator();
 
 	bookmarks_menu = memnew(PopupMenu);
-	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
+	goto_menu->get_popup()->add_submenu_node_item(TTRC("Bookmarks"), bookmarks_menu);
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &TextEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextEditor::_bookmark_item_pressed));

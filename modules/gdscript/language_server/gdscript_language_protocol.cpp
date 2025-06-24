@@ -171,6 +171,28 @@ void GDScriptLanguageProtocol::_bind_methods() {
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	LSP::InitializeResult ret;
 
+	{
+		// Warn if the workspace root does not match with the project that is currently open in Godot,
+		// since it might lead to unexpected behavior, like wrong warnings about duplicate class names.
+
+		String root;
+		Variant root_uri_var = p_params["rootUri"];
+		Variant root_var = p_params["rootPath"];
+		if (root_uri_var.is_string()) {
+			root = get_workspace()->get_file_path(root_uri_var);
+		} else if (root_var.is_string()) {
+			root = root_var;
+		}
+
+		if (ProjectSettings::get_singleton()->localize_path(root) != "res://") {
+			LSP::ShowMessageParams params{
+				LSP::MessageType::Warning,
+				"The GDScript Language Server might not work correctly with other projects than the one opened in Godot."
+			};
+			notify_client("window/showMessage", params.to_json());
+		}
+	}
+
 	String root_uri = p_params["rootUri"];
 	String root = p_params["rootPath"];
 	bool is_same_workspace;

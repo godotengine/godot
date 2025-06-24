@@ -129,7 +129,7 @@
 			<return type="float" />
 			<param index="0" name="statistic" type="int" enum="ENetConnection.HostStatistic" />
 			<description>
-				Returns and resets host statistics. See [enum HostStatistic] for more info.
+				Returns and resets host statistics.
 			</description>
 		</method>
 		<method name="refuse_new_connections">

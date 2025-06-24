@@ -148,10 +148,14 @@ static void _add_qualifiers_to_rt(const String &p_qualifiers, RichTextLabel *p_r
 			hint = TTR("This method supports a variable number of arguments.");
 		} else if (qualifier == "virtual") {
 			hint = TTR("This method is called by the engine.\nIt can be overridden to customize built-in behavior.");
+		} else if (qualifier == "required") {
+			hint = TTR("This method is required to be overridden when extending its base class.");
 		} else if (qualifier == "const") {
 			hint = TTR("This method has no side effects.\nIt does not modify the object in any way.");
 		} else if (qualifier == "static") {
 			hint = TTR("This method does not need an instance to be called.\nIt can be called directly using the class name.");
+		} else if (qualifier == "abstract") {
+			hint = TTR("This method must be implemented to complete the abstract class.");
 		}
 
 		p_rt->add_text(" ");
@@ -578,14 +582,20 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	for (int j = 0; j < p_method.arguments.size(); j++) {
 		const DocData::ArgumentDoc &argument = p_method.arguments[j];
 
-		class_desc->push_color(theme_cache.text_color);
-
 		if (j > 0) {
+			class_desc->push_color(theme_cache.symbol_color);
 			class_desc->add_text(", ");
+			class_desc->pop(); // color
 		}
 
+		class_desc->push_color(theme_cache.text_color);
 		class_desc->add_text(argument.name);
+		class_desc->pop(); // color
+
+		class_desc->push_color(theme_cache.symbol_color);
 		class_desc->add_text(colon_nbsp);
+		class_desc->pop(); // color
+
 		_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 		if (!argument.default_value.is_empty()) {
@@ -597,13 +607,11 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 			class_desc->add_text(_fix_constant(argument.default_value));
 			class_desc->pop(); // color
 		}
-
-		class_desc->pop(); // color
 	}
 
 	if (is_vararg) {
 		if (!p_method.arguments.is_empty()) {
-			class_desc->push_color(theme_cache.text_color);
+			class_desc->push_color(theme_cache.symbol_color);
 			class_desc->add_text(", ");
 			class_desc->pop(); // color
 		}
@@ -611,6 +619,22 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->push_color(theme_cache.symbol_color);
 		class_desc->add_text("...");
 		class_desc->pop(); // color
+
+		const DocData::ArgumentDoc &rest_argument = p_method.rest_argument;
+
+		class_desc->push_color(theme_cache.text_color);
+		class_desc->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+		class_desc->pop(); // color
+
+		class_desc->push_color(theme_cache.symbol_color);
+		class_desc->add_text(colon_nbsp);
+		class_desc->pop(); // color
+
+		if (rest_argument.type.is_empty()) {
+			_add_type("Array");
+		} else {
+			_add_type(rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield);
+		}
 	}
 
 	class_desc->push_color(theme_cache.symbol_color);
@@ -1554,14 +1578,20 @@ void EditorHelp::_update_doc() {
 			for (int j = 0; j < signal.arguments.size(); j++) {
 				const DocData::ArgumentDoc &argument = signal.arguments[j];
 
-				class_desc->push_color(theme_cache.text_color);
-
 				if (j > 0) {
+					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(", ");
+					class_desc->pop(); // color
 				}
 
+				class_desc->push_color(theme_cache.text_color);
 				class_desc->add_text(argument.name);
+				class_desc->pop(); // color
+
+				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text(colon_nbsp);
+				class_desc->pop(); // color
+
 				_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 				// Signals currently do not support default argument values, neither the core nor GDScript.
@@ -1575,8 +1605,6 @@ void EditorHelp::_update_doc() {
 					class_desc->add_text(_fix_constant(argument.default_value));
 					class_desc->pop(); // color
 				}
-
-				class_desc->pop(); // color
 			}
 
 			class_desc->push_color(theme_cache.symbol_color);
@@ -1998,14 +2026,20 @@ void EditorHelp::_update_doc() {
 				for (int j = 0; j < annotation.arguments.size(); j++) {
 					const DocData::ArgumentDoc &argument = annotation.arguments[j];
 
-					class_desc->push_color(theme_cache.text_color);
-
 					if (j > 0) {
+						class_desc->push_color(theme_cache.symbol_color);
 						class_desc->add_text(", ");
+						class_desc->pop(); // color
 					}
 
+					class_desc->push_color(theme_cache.text_color);
 					class_desc->add_text(argument.name);
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(colon_nbsp);
+					class_desc->pop(); // color
+
 					_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 					if (!argument.default_value.is_empty()) {
@@ -2017,13 +2051,11 @@ void EditorHelp::_update_doc() {
 						class_desc->add_text(_fix_constant(argument.default_value));
 						class_desc->pop(); // color
 					}
-
-					class_desc->pop(); // color
 				}
 
 				if (annotation.qualifiers.contains("vararg")) {
 					if (!annotation.arguments.is_empty()) {
-						class_desc->push_color(theme_cache.text_color);
+						class_desc->push_color(theme_cache.symbol_color);
 						class_desc->add_text(", ");
 						class_desc->pop(); // color
 					}
@@ -2031,6 +2063,22 @@ void EditorHelp::_update_doc() {
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text("...");
 					class_desc->pop(); // color
+
+					const DocData::ArgumentDoc &rest_argument = annotation.rest_argument;
+
+					class_desc->push_color(theme_cache.text_color);
+					class_desc->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text(colon_nbsp);
+					class_desc->pop(); // color
+
+					if (rest_argument.type.is_empty()) {
+						_add_type("Array");
+					} else {
+						_add_type(rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield);
+					}
 				}
 
 				class_desc->push_color(theme_cache.symbol_color);
@@ -2316,12 +2364,31 @@ void EditorHelp::_request_help(const String &p_string) {
 }
 
 void EditorHelp::_help_callback(const String &p_topic) {
-	String what = p_topic.get_slicec(':', 0);
-	String clss = p_topic.get_slicec(':', 1);
-	String name;
-	if (p_topic.get_slice_count(":") == 3) {
-		name = p_topic.get_slicec(':', 2);
+	Vector<String> parts;
+	{
+		int from = 0;
+		int buffer_start = 0;
+		while (true) {
+			const int pos = p_topic.find_char(':', from);
+			if (pos < 0) {
+				parts.push_back(p_topic.substr(buffer_start));
+				break;
+			}
+
+			if (pos + 1 < p_topic.length() && p_topic[pos + 1] == ':') {
+				// `::` used in built-in scripts.
+				from = pos + 2;
+			} else {
+				parts.push_back(p_topic.substr(buffer_start, pos - buffer_start));
+				from = pos + 1;
+				buffer_start = from;
+			}
+		}
 	}
+
+	const String what = parts[0]; // `parts` is always non-empty.
+	const String clss = (parts.size() > 1) ? parts[1] : String();
+	const String name = (parts.size() > 2) ? parts[2] : String();
 
 	_request_help(clss); // First go to class.
 
@@ -2393,7 +2460,8 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 		}
 	}
 
-	const bool using_tab_indent = int(EDITOR_GET("text_editor/behavior/indent/type")) == 0;
+	const bool using_space_indent = int(EDITOR_GET("text_editor/behavior/indent/type")) == 1;
+	const int indent_size = MAX(1, int(EDITOR_GET("text_editor/behavior/indent/size")));
 
 	const Ref<Font> doc_font = p_owner_node->get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
 	const Ref<Font> doc_bold_font = p_owner_node->get_theme_font(SNAME("doc_bold"), EditorStringName(EditorFonts));
@@ -2419,7 +2487,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 	const Color kbd_bg_color = p_owner_node->get_theme_color(SNAME("kbd_bg_color"), SNAME("EditorHelp"));
 	const Color param_bg_color = p_owner_node->get_theme_color(SNAME("param_bg_color"), SNAME("EditorHelp"));
 
-	String bbcode = p_bbcode.dedent().remove_chars("\t\r").strip_edges();
+	String bbcode = p_bbcode.dedent().remove_chars("\r").strip_edges();
 
 	// Select the correct code examples.
 	switch ((int)EDITOR_GET("text_editor/help/class_reference_examples")) {
@@ -2659,19 +2727,19 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			const String codeblock_text = bbcode.substr(brk_end + 1, end_pos - (brk_end + 1)).strip_edges();
 
 			String codeblock_copy_text = codeblock_text;
-			if (using_tab_indent) {
-				// Replace the code block's space indentation with tabs.
+			if (using_space_indent) {
+				// Replace the code block's tab indentation with spaces.
 				StringBuilder builder;
 				PackedStringArray text_lines = codeblock_copy_text.split("\n");
 				for (const String &line : text_lines) {
 					const String stripped_line = line.dedent();
-					const int space_count = line.length() - stripped_line.length();
+					const int tab_count = line.length() - stripped_line.length();
 
 					if (builder.num_strings_appended() > 0) {
 						builder.append("\n");
 					}
-					if (space_count > 0) {
-						builder.append(String("\t").repeat(MAX(space_count / 4, 1)) + stripped_line);
+					if (tab_count > 0) {
+						builder.append(String(" ").repeat(tab_count * indent_size) + stripped_line);
 					} else {
 						builder.append(line);
 					}
@@ -3249,9 +3317,26 @@ void EditorHelp::_notification(int p_what) {
 			update_toggle_files_button();
 		} break;
 
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (update_pending && is_visible_in_tree()) {
+				_update_doc();
+			}
+			update_toggle_files_button();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (!is_ready()) {
+				break;
+			}
+
+			if (is_visible_in_tree()) {
+				_update_doc();
+			} else {
+				update_pending = true;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			update_toggle_files_button();
 		} break;
 	}
@@ -3372,6 +3457,7 @@ EditorHelp::EditorHelp() {
 
 	toggle_files_button = memnew(Button);
 	toggle_files_button->set_accessibility_name(TTRC("Scripts"));
+	toggle_files_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	toggle_files_button->set_flat(true);
 	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_files_pressed));
 	status_bar->add_child(toggle_files_button);
@@ -3707,10 +3793,13 @@ EditorHelpBit::HelpData EditorHelpBit::_get_method_help_data(const StringName &p
 			}
 			current.doc_type = { method.return_type, method.return_enum, method.return_is_bitfield };
 			for (const DocData::ArgumentDoc &argument : method.arguments) {
-				const DocType argument_type = { argument.type, argument.enumeration, argument.is_bitfield };
-				current.arguments.push_back({ argument.name, argument_type, argument.default_value });
+				const DocType argument_doc_type = { argument.type, argument.enumeration, argument.is_bitfield };
+				current.arguments.push_back({ argument.name, argument_doc_type, argument.default_value });
 			}
 			current.qualifiers = method.qualifiers;
+			const DocData::ArgumentDoc &rest_argument = method.rest_argument;
+			const DocType rest_argument_doc_type = { rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield };
+			current.rest_argument = { rest_argument.name, rest_argument_doc_type, rest_argument.default_value };
 
 			if (method.name == p_method_name) {
 				result = current;
@@ -3872,6 +3961,7 @@ void EditorHelpBit::_update_labels() {
 
 		title->pop(); // font
 
+		const Color text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
 		const Color symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
 		const Color value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
 		const Color qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
@@ -3947,10 +4037,14 @@ void EditorHelpBit::_update_labels() {
 					const ArgumentData &argument = help_data.arguments[i];
 
 					if (i > 0) {
+						title->push_color(symbol_color);
 						title->add_text(", ");
+						title->pop(); // color
 					}
 
+					title->push_color(text_color);
 					title->add_text(argument.name);
+					title->pop(); // color
 
 					title->push_color(symbol_color);
 					title->add_text(colon_nbsp);
@@ -3971,12 +4065,30 @@ void EditorHelpBit::_update_labels() {
 
 				if (help_data.qualifiers.contains("vararg")) {
 					if (!help_data.arguments.is_empty()) {
+						title->push_color(symbol_color);
 						title->add_text(", ");
+						title->pop(); // color
 					}
 
 					title->push_color(symbol_color);
 					title->add_text("...");
 					title->pop(); // color
+
+					const ArgumentData &rest_argument = help_data.rest_argument;
+
+					title->push_color(text_color);
+					title->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+					title->pop(); // color
+
+					title->push_color(symbol_color);
+					title->add_text(colon_nbsp);
+					title->pop(); // color
+
+					if (rest_argument.doc_type.type.is_empty()) {
+						_add_type_to_title({ "Array", "", false });
+					} else {
+						_add_type_to_title(rest_argument.doc_type);
+					}
 				}
 
 				title->push_color(symbol_color);
@@ -4779,7 +4891,7 @@ FindBar::FindBar() {
 	find_prev->set_tooltip_text(TTR("Previous Match"));
 	find_prev->set_accessibility_name(TTRC("Previous Match"));
 	add_child(find_prev);
-	find_prev->set_focus_mode(FOCUS_NONE);
+	find_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
@@ -4788,14 +4900,14 @@ FindBar::FindBar() {
 	find_next->set_tooltip_text(TTR("Next Match"));
 	find_next->set_accessibility_name(TTRC("Next Match"));
 	add_child(find_next);
-	find_next->set_focus_mode(FOCUS_NONE);
+	find_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
 
 	hide_button = memnew(Button);
 	hide_button->set_flat(true);
 	hide_button->set_tooltip_text(TTR("Hide"));
 	hide_button->set_accessibility_name(TTRC("Hide"));
-	hide_button->set_focus_mode(FOCUS_NONE);
+	hide_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 	add_child(hide_button);
