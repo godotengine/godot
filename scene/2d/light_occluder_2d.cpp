@@ -206,7 +206,7 @@ void LightOccluder2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated()) {
+			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
 				// Explicitly make sure the transform is up to date in RenderingServer before
 				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
 				// is normally deferred, and a client change to transform will not always be sent

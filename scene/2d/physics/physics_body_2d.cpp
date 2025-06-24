@@ -173,7 +173,7 @@ void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
 PackedStringArray PhysicsBody2D::get_configuration_warnings() const {
 	PackedStringArray warnings = CollisionObject2D::get_configuration_warnings();
 
-	if (!is_physics_interpolated()) {
+	if (SceneTree::is_fti_enabled_in_project() && !is_physics_interpolated()) {
 		warnings.push_back(RTR("PhysicsBody2D will not work correctly on a non-interpolated branch of the SceneTree.\nCheck the node's inherited physics_interpolation_mode."));
 	}
 
