@@ -216,7 +216,8 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 		}
 	}
 
-	if (choose_closest) {
+	// Indicate a successful return if constricting to closest and a hit was found
+	if (choose_closest && res_obj != nullptr) {
 		r_idx = 1;
 	}
 
