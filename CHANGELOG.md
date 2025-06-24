@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [3.6.1] - TBD
+## [3.6.1] - 2025-06-25
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-6-1) for details.
 
