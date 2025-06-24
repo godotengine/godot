@@ -232,6 +232,12 @@ Size2 EditorProperty::get_minimum_size() const {
 		if (c == bottom_editor) {
 			continue;
 		}
+		if (c == left_container) {
+			continue;
+		}
+		if (c == right_container) {
+			continue;
+		}
 
 		Size2 minsize = c->get_combined_minimum_size();
 		ms = ms.max(minsize);
@@ -248,6 +254,14 @@ Size2 EditorProperty::get_minimum_size() const {
 	if (checkable) {
 		ms.width += theme_cache.checked_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
 	}
+
+	Size2 ls = left_container->get_combined_minimum_size();
+	ms.width += ls.x;
+	ms.height = MAX(ms.height, ls.y);
+
+	Size2 rs = right_container->get_combined_minimum_size();
+	ms.width += rs.x;
+	ms.height = MAX(ms.height, rs.y);
 
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
 		ms.height += label.is_empty() ? 0 : _get_v_separation();
@@ -318,9 +332,11 @@ void EditorProperty::_notification(int p_what) {
 					}
 
 					Size2 minsize = c->get_combined_minimum_size();
-					child_room = MAX(child_room, minsize.width);
+					if (c != left_container && c != right_container) {
+						child_room = MAX(child_room, minsize.width);
+						no_children = false;
+					}
 					height = MAX(height, minsize.height);
-					no_children = false;
 				}
 
 				if (no_children) {
@@ -335,6 +351,13 @@ void EditorProperty::_notification(int p_what) {
 						rect = Rect2(1, 0, child_room, height);
 					} else {
 						rect = Rect2(size.width - child_room, 0, child_room, height);
+					}
+				}
+
+				if (rect.size.x > 1) {
+					rect.size.x -= right_container->get_combined_minimum_size().x;
+					if (is_layout_rtl()) {
+						rect.position.x += right_container->get_combined_minimum_size().x;
 					}
 				}
 
@@ -396,6 +419,12 @@ void EditorProperty::_notification(int p_what) {
 				if (c == bottom_editor) {
 					continue;
 				}
+				if (c == left_container) {
+					continue;
+				}
+				if (c == right_container) {
+					continue;
+				}
 
 				fit_child_in_rect(c, rect);
 				right_child_rect = rect;
@@ -404,6 +433,21 @@ void EditorProperty::_notification(int p_what) {
 			if (bottom_editor) {
 				fit_child_in_rect(bottom_editor, bottom_rect);
 				bottom_child_rect = bottom_rect;
+			}
+
+			Size2 rs = right_container->get_combined_minimum_size();
+			if (is_layout_rtl()) {
+				fit_child_in_rect(right_container, Rect2(0, 0, rs.width, rs.y));
+			} else {
+				fit_child_in_rect(right_container, Rect2(size.width - rs.width, 0, rs.width, rs.y));
+			}
+
+			Size2 ls = left_container->get_combined_minimum_size();
+			real_t right_size = rect.size.x + rs.x;
+			if (is_layout_rtl()) {
+				fit_child_in_rect(left_container, Rect2(right_size, 0, size.x - right_size, ls.y));
+			} else {
+				fit_child_in_rect(left_container, Rect2(0, 0, size.x - right_size, ls.y));
 			}
 
 			queue_redraw(); //need to redraw text
@@ -419,6 +463,8 @@ void EditorProperty::_notification(int p_what) {
 				size.height = bottom_editor->get_offset(SIDE_TOP) - _get_v_separation();
 			} else if (label_reference) {
 				size.height = label_reference->get_size().height;
+			} else if (label_overlayed) {
+				size.height = left_container->get_size().height;
 			}
 
 			// Only draw the label if it's not empty.
@@ -455,6 +501,10 @@ void EditorProperty::_notification(int p_what) {
 			int text_limit = text_size - ofs;
 			int half_padding = EDITOR_GET("interface/theme/base_spacing");
 			int padding = half_padding * 2;
+
+			int left_ofs = left_container->get_combined_minimum_size().x;
+			ofs += left_ofs;
+			text_limit -= left_ofs;
 
 			if (checkable) {
 				Ref<Texture2D> checkbox;
@@ -549,6 +599,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			ofs = size.width;
+			ofs -= right_container->get_minimum_size().x;
 
 			if (keying) {
 				Ref<Texture2D> key;
@@ -963,6 +1014,22 @@ bool EditorProperty::is_selected() const {
 	return selected;
 }
 
+void EditorProperty::add_inline_control(Control *p_control, InlineControlSide p_side) {
+	Node *parent = p_control->get_parent();
+	if (parent != nullptr) {
+		parent->remove_child(p_control);
+	}
+	if (p_side == INLINE_CONTROL_LEFT) {
+		left_container->add_child(p_control);
+	} else {
+		right_container->add_child(p_control);
+	}
+}
+
+void EditorProperty::set_label_overlayed(bool p_overlay) {
+	label_overlayed = p_overlay;
+}
+
 void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -1141,6 +1208,14 @@ const Color *EditorProperty::_get_property_colors() {
 
 void EditorProperty::set_label_reference(Control *p_control) {
 	label_reference = p_control;
+}
+
+HBoxContainer *EditorProperty::get_inline_container(InlineControlSide p_side) {
+	if (p_side == INLINE_CONTROL_LEFT) {
+		return left_container;
+	} else {
+		return right_container;
+	}
 }
 
 void EditorProperty::set_bottom_editor(Control *p_control) {
@@ -1467,6 +1542,15 @@ EditorProperty::EditorProperty() {
 	label_reference = nullptr;
 	bottom_editor = nullptr;
 	menu = nullptr;
+
+	left_container = memnew(HBoxContainer);
+	left_container->add_theme_constant_override(SNAME("separation"), 0);
+	add_child(left_container);
+
+	right_container = memnew(HBoxContainer);
+	right_container->add_theme_constant_override(SNAME("separation"), 0);
+	add_child(right_container);
+
 	set_process_shortcut_input(true);
 }
 
