@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerSocket" inherits="StreamPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for interacting with socket streams.
+	</brief_description>
+	<description>
+		StreamPeerSocket is an abstract base class that defines common behavior for socket-based streams.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="disconnect_from_host">
+			<return type="void" />
+			<description>
+				Disconnects from host.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="StreamPeerSocket.Status" />
+			<description>
+				Returns the status of the connection.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error" />
+			<description>
+				Polls the socket, updating its state. See [method get_status].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATUS_NONE" value="0" enum="Status">
+			The initial status of the [StreamPeerSocket]. This is also the status after disconnecting.
+		</constant>
+		<constant name="STATUS_CONNECTING" value="1" enum="Status">
+			A status representing a [StreamPeerSocket] that is connecting to a host.
+		</constant>
+		<constant name="STATUS_CONNECTED" value="2" enum="Status">
+			A status representing a [StreamPeerSocket] that is connected to a host.
+		</constant>
+		<constant name="STATUS_ERROR" value="3" enum="Status">
+			A status representing a [StreamPeerSocket] in error state.
+		</constant>
+	</constants>
+</class>

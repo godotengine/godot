@@ -62,6 +62,7 @@
 #include "tests/core/io/test_stream_peer_gzip.h"
 #include "tests/core/io/test_tcp_server.h"
 #include "tests/core/io/test_udp_server.h"
+#include "tests/core/io/test_uds_server.h"
 #include "tests/core/io/test_xml_parser.h"
 #include "tests/core/math/test_aabb.h"
 #include "tests/core/math/test_astar.h"

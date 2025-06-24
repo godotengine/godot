@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  net_socket_web.h                                                      */
+/*  stream_peer_socket.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,41 +31,63 @@
 #pragma once
 
 #include "core/io/net_socket.h"
+#include "core/io/stream_peer.h"
 
-#include <sys/socket.h>
+#ifndef DISABLE_DEPRECATED
+namespace compat::StreamPeerTCP {
+enum class Status;
+} //namespace compat::StreamPeerTCP
+#endif
 
-class NetSocketWeb : public NetSocket {
-	GDSOFTCLASS(NetSocketWeb, NetSocket);
-
-protected:
-	static NetSocket *_create_func();
+class StreamPeerSocket : public StreamPeer {
+	GDCLASS(StreamPeerSocket, StreamPeer);
 
 public:
-	static void make_default();
+	enum Status {
+		STATUS_NONE,
+		STATUS_CONNECTING,
+		STATUS_CONNECTED,
+		STATUS_ERROR,
+	};
 
-	virtual Error open(Family p_family, Type p_sock_type, IP::Type &ip_type) override { return ERR_UNAVAILABLE; }
-	virtual void close() override {}
-	virtual Error bind(Address p_addr) override { return ERR_UNAVAILABLE; }
-	virtual Error listen(int p_max_pending) override { return ERR_UNAVAILABLE; }
-	virtual Error connect_to_host(Address p_addr) override { return ERR_UNAVAILABLE; }
-	virtual Error poll(PollType p_type, int timeout) const override { return ERR_UNAVAILABLE; }
-	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) override { return ERR_UNAVAILABLE; }
-	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddress &r_ip, uint16_t &r_port, bool p_peek = false) override { return ERR_UNAVAILABLE; }
-	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) override { return ERR_UNAVAILABLE; }
-	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) override { return ERR_UNAVAILABLE; }
-	virtual Ref<NetSocket> accept(Address &r_addr) override { return Ref<NetSocket>(); }
+protected:
+#ifndef DISABLE_DEPRECATED
+	compat::StreamPeerTCP::Status _get_status_compat_107954() const;
+	static void _bind_compatibility_methods();
+#endif
 
-	virtual bool is_open() const override { return false; }
-	virtual int get_available_bytes() const override { return -1; }
-	virtual Error get_socket_address(Address *r_addr) const override { return ERR_UNAVAILABLE; }
+	Ref<NetSocket> _sock;
+	uint64_t timeout = 0;
+	Status status = STATUS_NONE;
+	NetSocket::Address peer_address;
 
-	virtual Error set_broadcasting_enabled(bool p_enabled) override { return ERR_UNAVAILABLE; }
-	virtual void set_blocking_enabled(bool p_enabled) override {}
-	virtual void set_ipv6_only_enabled(bool p_enabled) override {}
-	virtual void set_tcp_no_delay_enabled(bool p_enabled) override {}
-	virtual void set_reuse_address_enabled(bool p_enabled) override {}
-	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override { return ERR_UNAVAILABLE; }
-	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override { return ERR_UNAVAILABLE; }
+	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
+	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
 
-	NetSocketWeb() {}
+	static void _bind_methods();
+
+public:
+	virtual void accept_socket(Ref<NetSocket> p_sock, const NetSocket::Address &p_addr) = 0;
+
+	void disconnect_from_host();
+
+	int get_available_bytes() const override;
+	Status get_status() const;
+
+	// Poll socket updating its state.
+	Error poll();
+
+	// Wait or check for writable, readable.
+	Error wait(NetSocket::PollType p_type, int p_timeout = 0);
+
+	// Read/Write from StreamPeer
+	Error put_data(const uint8_t *p_data, int p_bytes) override;
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
+	Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
+
+	StreamPeerSocket();
+	virtual ~StreamPeerSocket();
 };
+
+VARIANT_ENUM_CAST(StreamPeerSocket::Status);
