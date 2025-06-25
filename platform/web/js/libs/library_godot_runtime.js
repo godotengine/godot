@@ -128,6 +128,23 @@ const GodotRuntime = {
 		stringToHeap: function (p_str, p_ptr, p_len) {
 			return stringToUTF8Array(p_str, HEAP8, p_ptr, p_len);
 		},
+
+		ToJsInt : function (ptr) {
+			const memoryBuffer = HEAPU8.buffer;
+			const dataView = new DataView(memoryBuffer);
+			const low = dataView.getUint32(ptr, true);  // 低32位
+			const high = dataView.getUint32(ptr + 4, true);  // 高32位
+			//const int64Value = BigInt(high) << 32n | BigInt(low);
+			return {
+				low : low,
+				high : high
+			};
+		},
+	
+		ToJsObj : function (ptr) {
+			return GodotRuntime.ToJsInt(ptr);
+		},
+		
 	},
 };
 autoAddDeps(GodotRuntime, '$GodotRuntime');

@@ -33,7 +33,7 @@
 
 #include "servers/audio/audio_stream.h"
 
-#include <minimp3_ex.h>
+#include "thirdparty/minimp3/minimp3_ex.h"
 
 class AudioStreamMP3;
 

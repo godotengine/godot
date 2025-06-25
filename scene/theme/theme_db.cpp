@@ -99,6 +99,11 @@ void ThemeDB::initialize_theme_noproject() {
 
 	_init_default_theme_context();
 }
+void ThemeDB::set_default_font(Ref<Font> font) {
+	_finalize_theme_contexts();
+	make_default_theme(1.0, font);
+	_init_default_theme_context();
+}
 
 void ThemeDB::finalize_theme() {
 	if (!RenderingServer::get_singleton()) {

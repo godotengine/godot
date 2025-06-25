@@ -32,6 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "scene/gui/label.h"
+#include "core/extension/spx_engine.h"
+#include "core/extension/spx_ui_mgr.h"
+#include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
 void BaseButton::_unpress_group() {
@@ -196,6 +199,9 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 }
 
 void BaseButton::pressed() {
+	if(spx_owner != nullptr) {
+		SpxEngine::get_singleton()->get_ui()->on_click(spx_owner);
+	}
 }
 
 void BaseButton::toggled(bool p_pressed) {

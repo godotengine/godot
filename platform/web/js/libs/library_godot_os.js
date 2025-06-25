@@ -112,6 +112,10 @@ const GodotFS = {
 	$GodotFS__postset: [
 		'Module["initFS"] = GodotFS.init;',
 		'Module["copyToFS"] = GodotFS.copy_to_fs;',
+		'Module["deleteDirFS"] = GodotFS.rm_dir;',
+		'Module["copyToAdapter"] = GodotFS.copy_to_adapter;',
+		'Module["updateGameDatas"] = GodotFS.update_game_datas;',
+		
 	].join(''),
 	$GodotFS: {
 		// ERRNO_CODES works every odd version of emscripten, but this will break too eventually.
@@ -119,7 +123,15 @@ const GodotFS = {
 		_idbfs: false,
 		_syncing: false,
 		_mount_points: [],
-
+		_game_datas: null,
+		_set_game_data_cb: null,
+		
+		update_game_datas: function (path, files) {
+			GodotFS._game_datas = { path: path, files: files }
+			if(GodotFS._set_game_data_cb){
+				GodotFS._set_game_data_cb(path, files)
+			}
+		},
 		is_persistent: function () {
 			return GodotFS._idbfs ? 1 : 0;
 		},
@@ -167,7 +179,24 @@ const GodotFS = {
 				});
 			});
 		},
-
+		copy_to_adapter: function (path, adapter) {
+			const promises = [];
+			const dirs = FS.readdir(path).filter(function (value) {
+				return value != '.' && value != '..';
+			});
+			dirs.forEach(function (dir) {
+				const _path = `${path}/${dir}`;
+				const stat = FS.stat(_path);
+				if (FS.isFile(stat.mode)) {
+					const array = FS.readFile(_path);
+					promises.push(adapter.writeFile(_path, array));
+				}
+				if (FS.isDir(stat.mode)) {
+					promises.push(GodotFS.copy_to_adapter(_path, adapter));
+				}
+			});
+			return promises;
+		},
 		// Deinit godot file system, making sure to unmount file systems, and close IDBFS(s).
 		deinit: function () {
 			GodotFS._mount_points.forEach(function (path) {
@@ -203,6 +232,13 @@ const GodotFS = {
 			});
 		},
 
+		try_sync: function () {
+			if (GodotFS._syncing) {
+				return Promise.resolve();
+			}
+			return GodotFS.sync();
+		},
+
 		// Copies a buffer to the internal file system. Creating directories recursively.
 		copy_to_fs: function (path, buffer) {
 			const idx = path.lastIndexOf('/');
@@ -220,6 +256,19 @@ const GodotFS = {
 				FS.mkdirTree(dir);
 			}
 			FS.writeFile(path, new Uint8Array(buffer));
+		},
+
+		rm_dir: function (path) {
+			const analysis = FS.analyzePath(path);
+			if (analysis.exists && analysis.object && FS.isDir(analysis.object.mode)) {
+			  FS.rmdir(path);
+			}
+		},
+
+		refresh_fs: function () {
+			if ( !GodotFS._syncing ) {
+				GodotFS.sync()
+			}
 		},
 	},
 };

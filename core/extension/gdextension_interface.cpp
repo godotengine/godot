@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
+#include "core/extension/gdextension_spx_ext.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/xml_parser.h"
@@ -1665,7 +1666,43 @@ static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data)
 
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
+static void gdextension_spx_string_new_with_latin1_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
+	gdextension_string_new_with_latin1_chars(r_dest, p_contents);
+}
+static void gdextension_spx_string_new_with_utf8_chars(GDExtensionUninitializedStringPtr r_dest, const char *p_contents) {
+	gdextension_string_new_with_utf8_chars(r_dest, p_contents);
+}
+static void gdextension_spx_string_new_with_latin1_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	gdextension_string_new_with_latin1_chars_and_len(r_dest, p_contents, p_size);
+}
+static void gdextension_spx_string_new_with_utf8_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	gdextension_string_new_with_utf8_chars_and_len(r_dest, p_contents, p_size);
+}
+static GDExtensionInt gdextension_spx_string_to_latin1_chars(GDExtensionConstStringPtr p_self, char *r_text, GDExtensionInt p_max_write_length) {
+	return gdextension_string_to_latin1_chars(p_self, r_text, p_max_write_length);
+}
+static GDExtensionInt gdextension_spx_string_to_utf8_chars(GDExtensionConstStringPtr p_self, char *r_text, GDExtensionInt p_max_write_length) {
+	return gdextension_string_to_utf8_chars(p_self, r_text, p_max_write_length);
+}
+static GDExtensionPtrConstructor gdextension_spx_variant_get_ptr_constructor(GDExtensionVariantType p_type, int32_t p_constructor) {
+	return gdextension_variant_get_ptr_constructor(p_type, p_constructor);
+}
+static GDExtensionPtrDestructor gdextension_spx_variant_get_ptr_destructor(GDExtensionVariantType p_type) {
+	return gdextension_variant_get_ptr_destructor(p_type);
+}
+void setup_spx_interface() {
+	REGISTER_INTERFACE_FUNC(spx_string_new_with_latin1_chars);
+	REGISTER_INTERFACE_FUNC(spx_string_new_with_utf8_chars);
+	REGISTER_INTERFACE_FUNC(spx_string_new_with_latin1_chars_and_len);
+	REGISTER_INTERFACE_FUNC(spx_string_new_with_utf8_chars_and_len);
+	REGISTER_INTERFACE_FUNC(spx_string_to_latin1_chars);
+	REGISTER_INTERFACE_FUNC(spx_string_to_utf8_chars);
+	REGISTER_INTERFACE_FUNC(spx_variant_get_ptr_constructor);
+	REGISTER_INTERFACE_FUNC(spx_variant_get_ptr_destructor);
+	gdextension_spx_setup_interface();
+}
 void gdextension_setup_interface() {
+	setup_spx_interface();
 	REGISTER_INTERFACE_FUNC(get_godot_version);
 	REGISTER_INTERFACE_FUNC(mem_alloc);
 	REGISTER_INTERFACE_FUNC(mem_realloc);

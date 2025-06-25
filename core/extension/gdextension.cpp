@@ -42,6 +42,7 @@ extern GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *
 
 typedef GDExtensionBool (*GDExtensionLegacyInitializationFunction)(void *p_interface, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization);
 
+String GDExtension::ext_path = "";
 String GDExtension::get_extension_list_config_file() {
 	return ProjectSettings::get_singleton()->get_project_data_path().path_join("extension_list.cfg");
 }
@@ -701,6 +702,8 @@ Error GDExtension::open_library(const String &p_path, const Ref<GDExtensionLoade
 	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, vformat("GDExtension dynamic library not found: '%s'.", p_path));
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Can't open GDExtension dynamic library: '%s'.", p_path));
 
+
+	initialization = GDExtensionInitialization();
 	err = loader->initialize(&gdextension_get_proc_address, this, &initialization);
 
 	if (err != OK) {
@@ -805,8 +808,12 @@ void GDExtension::finalize_gdextensions() {
 	gdextension_interface_functions.clear();
 }
 
-Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension) {
+Error GDExtensionResourceLoader::load_gdextension_resource(const String &pp_path, Ref<GDExtension> &p_extension) {
 	ERR_FAIL_COND_V_MSG(p_extension.is_valid() && p_extension->is_library_open(), ERR_ALREADY_IN_USE, "Cannot load GDExtension resource into already opened library.");
+	String p_path = GDExtension::ext_path;
+	if (p_path == "") {
+		p_path = pp_path;
+	}
 
 	GDExtensionManager *extension_manager = GDExtensionManager::get_singleton();
 

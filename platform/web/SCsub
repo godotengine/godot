@@ -30,6 +30,9 @@ web_files = [
     "ip_web.cpp",
     "net_socket_web.cpp",
     "os_web.cpp",
+    "godot_js_spx.cpp",
+    "godot_js_spx_callback.cpp",
+    "godot_js_spx_util.cpp",
 ]
 
 if env["target"] == "editor":
@@ -46,6 +49,7 @@ sys_env.AddJSLibraries(
         "js/libs/library_godot_runtime.js",
         "js/libs/library_godot_input.js",
         "js/libs/library_godot_webgl2.js",
+        "js/libs/library_godot_gdspx.js",
     ]
 )
 sys_env.AddJSExterns(
@@ -88,6 +92,7 @@ if env["dlink_enabled"]:
     wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
     build = sys + [wasm[0]]
 else:
+    # gdspx export cpp function to js
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
     build = sys_env.Program(build_targets, web_files + ["web_runtime.cpp"])
@@ -97,10 +102,13 @@ sys_env.Depends(build[0], sys_env["JS_PRE"])
 sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
 
 engine = [
+    "js/engine/go_wasm_exec.js",
     "js/engine/features.js",
     "js/engine/preloader.js",
     "js/engine/config.js",
     "js/engine/engine.js",
+    "js/engine/gdspx.js",
+    "js/engine/gdspx.util.js",
 ]
 externs = [env.File("#platform/web/js/engine/engine.externs.js")]
 js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs, env["threads"])

@@ -38,10 +38,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/extension/gdextension_interface.h"
+#include "core/extension/gdextension_spx_ext.h"
+#include "core/extension/spx_engine.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 
+#include "godot_js_spx.h"
 #include "modules/modules_enabled.gen.h" // For websocket.
 
 #include <dlfcn.h>
@@ -291,4 +295,5 @@ OS_Web::OS_Web() {
 
 	FileAccessUnix::close_notification_func = file_access_close_callback;
 	DirAccessUnix::remove_notification_func = dir_access_remove_callback;
+	register_spx_callbacks();
 }
