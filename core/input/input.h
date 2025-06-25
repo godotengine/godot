@@ -146,6 +146,42 @@ private:
 
 	HashMap<int, VibrationInfo> joy_vibration;
 
+	struct MotionInfo {
+		bool has_accelerometer = false;
+		bool has_gyroscope = false;
+		bool accelerometer_enabled = false;
+		bool gyroscope_enabled = false;
+		float sensor_data_rate = 0.0f;
+		Vector3 accelerometer;
+		Vector3 gravity;
+		Vector3 gyroscope;
+		struct {
+			bool in_progress = false;
+			bool calibrated = false;
+			Vector<Vector3> accelerometer_steps;
+			Vector<Vector3> gyroscope_steps;
+			Vector3 accelerometer_offset;
+			Vector3 gyroscope_offset;
+			float accelerometer_deadzone = 0.0f;
+			float gyroscope_deadzone = 0.0f;
+		} calibration;
+	};
+
+	HashMap<int, MotionInfo> joy_motion;
+
+	struct TouchpadFingerInfo {
+		Vector2 position = Vector2();
+		float pressure = 0.0f;
+	};
+
+	struct TouchpadInfo {
+		int num_touchpads = 0;
+		// The first int index refers to touchpad ID, the second one refers to finger ID on that touchpad.
+		HashMap<int, HashMap<int, TouchpadFingerInfo>> touchpad_fingers;
+	};
+
+	HashMap<int, TouchpadInfo> joy_touch;
+
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
 		Vector2 velocity;
@@ -171,6 +207,14 @@ private:
 		int mapping = -1;
 		int hat_current = 0;
 		Dictionary info;
+		JoyModel model = JoyModel::INVALID;
+		JoyDeviceType device_type = JoyDeviceType::INVALID;
+		int num_buttons = -1;
+		int num_axes = -1;
+		bool has_light = false;
+		int battery_percent = -1;
+		JoyPowerState power_state = JoyPowerState::INVALID;
+		JoyConnectionState connection_state = JoyConnectionState::INVALID;
 	};
 
 	VelocityTrack mouse_velocity_track;
@@ -260,6 +304,7 @@ private:
 #endif
 
 	friend class DisplayServer;
+	friend class JoypadSDL;
 
 	static void (*set_mouse_mode_func)(MouseMode);
 	static MouseMode (*get_mouse_mode_func)();
@@ -325,6 +370,49 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	bool is_joy_accelerometer_enabled(int p_device) const;
+	bool is_joy_gyroscope_enabled(int p_device) const;
+
+	Vector3 get_joy_accelerometer(int p_device) const;
+	Vector3 get_joy_gravity(int p_device) const;
+	Vector3 get_joy_gyroscope(int p_device) const;
+
+	float get_joy_sensor_rate(int p_device) const;
+
+	JoyModel get_joy_model(int p_device) const;
+	JoyScheme get_joy_scheme(int p_device) const;
+	JoyDeviceType get_joy_device_type(int p_device) const;
+
+	JoyPowerState get_joy_power_state(int p_device) const;
+	int get_joy_battery_percent(int p_device) const;
+	JoyConnectionState get_joy_connection_state(int p_device) const;
+
+	String get_joy_axis_string(int p_device, JoyAxis p_axis) const;
+	String get_joy_button_string(int p_device, JoyButton p_button) const;
+	String get_joy_model_axis_string(JoyModel p_model, JoyAxis p_axis) const;
+	String get_joy_model_button_string(JoyModel p_model, JoyButton p_button) const;
+	bool has_joy_axis(int p_device, JoyAxis p_axis) const;
+	bool has_joy_button(int p_device, JoyButton p_button) const;
+
+	Vector2 get_joy_touchpad_finger_position(int p_device, int p_touchpad, int p_finger) const;
+	float get_joy_touchpad_finger_pressure(int p_device, int p_touchpad, int p_finger) const;
+	TypedArray<int> get_joy_touchpad_fingers(int p_device, int p_touchpad) const;
+
+	int get_joy_num_buttons(int p_device) const;
+	int get_joy_num_axes(int p_device) const;
+	int get_joy_num_touchpads(int p_device) const;
+
+	void start_joy_motion_calibration(int p_device);
+	void step_joy_motion_calibration(int p_device);
+	void stop_joy_motion_calibration(int p_device);
+	void clear_joy_motion_calibration(int p_device);
+
+	Dictionary get_joy_motion_calibration(int p_device) const;
+	void set_joy_motion_calibration(int p_device, Dictionary p_calibration_info);
+
+	bool is_joy_motion_calibrated(int p_device) const;
+	bool is_joy_motion_calibrating(int p_device) const;
+
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
 	Vector2 get_last_mouse_screen_velocity();
@@ -341,9 +429,39 @@ public:
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
+	bool set_joy_light(int p_device, Color p_color);
+
+	bool set_joy_accelerometer_enabled(int p_device, bool p_enable);
+	bool set_joy_gyroscope_enabled(int p_device, bool p_enable);
+
+	void set_joy_accelerometer(int p_device, const Vector3 &p_value);
+	void set_joy_gyroscope(int p_device, const Vector3 &p_value);
+
+	void set_joy_sensor_rate(int p_device, float p_rate);
+	void set_joy_power_info(int p_device, JoyPowerState p_power_state, int p_power_percent);
+
+	void set_joy_touchpad_finger(int p_device, int p_touchpad, int p_finger, float p_pressure, Vector2 p_value);
+
+	bool has_joy_light(int p_device) const;
+	bool has_joy_accelerometer(int p_device) const;
+	bool has_joy_gyroscope(int p_device) const;
+
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
+
+	void joy_adaptive_triggers_off(int p_device, JoyAxis p_axis);
+	void joy_adaptive_triggers_feedback(int p_device, JoyAxis p_axis, int p_position, int p_strength);
+	void joy_adaptive_triggers_weapon(int p_device, JoyAxis p_axis, int p_start_position, int p_end_position, int p_strength);
+	void joy_adaptive_triggers_vibration(int p_device, JoyAxis p_axis, int p_position, int p_amplitude, int p_frequency);
+	void joy_adaptive_triggers_multi_feedback(int p_device, JoyAxis p_axis, TypedArray<int> p_strengths);
+	void joy_adaptive_triggers_slope_feedback(int p_device, JoyAxis p_axis, int p_start_position, int p_end_position, int p_start_strength, int p_end_strength);
+	void joy_adaptive_triggers_multi_vibration(int p_device, JoyAxis p_axis, int p_frequency, TypedArray<int> p_amplitudes);
+
+	void start_joy_triggers_vibration(int p_device, float p_left_intensity, float p_right_intensity, float p_duration);
+	void stop_joy_triggers_vibration(int p_device);
+
+	bool send_joy_packet(int p_device, PackedByteArray p_packet);
 
 	void set_mouse_position(const Point2 &p_posf);
 

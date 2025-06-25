@@ -53,6 +53,11 @@ Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
 
+Files: core/input/input.cpp ("joy_adaptive_triggers_*" methods)
+Comment: Factories for all DualSense trigger effects
+Copyright: 2021-2022 John "Nielk1" Klein
+License: Expat
+
 Files: core/math/convex_hull.cpp
  core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library

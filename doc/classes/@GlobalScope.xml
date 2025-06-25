@@ -2442,6 +2442,33 @@
 		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON2" value="256" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 2 mask.
 		</constant>
+		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
+			An invalid game controller axis.
+		</constant>
+		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxis">
+			Game controller left joystick x-axis.
+		</constant>
+		<constant name="JOY_AXIS_LEFT_Y" value="1" enum="JoyAxis">
+			Game controller left joystick y-axis.
+		</constant>
+		<constant name="JOY_AXIS_RIGHT_X" value="2" enum="JoyAxis">
+			Game controller right joystick x-axis.
+		</constant>
+		<constant name="JOY_AXIS_RIGHT_Y" value="3" enum="JoyAxis">
+			Game controller right joystick y-axis.
+		</constant>
+		<constant name="JOY_AXIS_TRIGGER_LEFT" value="4" enum="JoyAxis">
+			Game controller left trigger axis.
+		</constant>
+		<constant name="JOY_AXIS_TRIGGER_RIGHT" value="5" enum="JoyAxis">
+			Game controller right trigger axis.
+		</constant>
+		<constant name="JOY_AXIS_SDL_MAX" value="6" enum="JoyAxis">
+			The number of SDL game controller axes.
+		</constant>
+		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
+			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
+		</constant>
 		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButton">
 			An invalid game controller button.
 		</constant>
@@ -2517,32 +2544,192 @@
 			- [b]Linux:[/b] Up to 80 buttons.
 			- [b]Windows[/b] and [b]macOS:[/b] Up to 128 buttons.
 		</constant>
-		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
-			An invalid game controller axis.
+		<constant name="JOY_MODEL_INVALID" value="-1" enum="JoyModel">
+			An invalid game controller model.
 		</constant>
-		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxis">
-			Game controller left joystick x-axis.
+		<constant name="JOY_MODEL_UNKNOWN" value="0" enum="JoyModel">
+			An unknown game controller model. The game controller with this model ID is a valid controller,
+			but Godot doesn't have a mapping for it inside of controller database.
 		</constant>
-		<constant name="JOY_AXIS_LEFT_Y" value="1" enum="JoyAxis">
-			Game controller left joystick y-axis.
+		<constant name="JOY_MODEL_STANDARD" value="1" enum="JoyModel">
+			A standard game controller model with the button layout similar to an Xbox 360 controller.
+			A game controller with this model ID has A/B/X/Y face buttons,
+			a directional pad, and it might have Back/Guide/Start buttons, left/right shoulder buttons and triggers.
 		</constant>
-		<constant name="JOY_AXIS_RIGHT_X" value="2" enum="JoyAxis">
-			Game controller right joystick x-axis.
+		<constant name="JOY_MODEL_XBOX360" value="2" enum="JoyModel">
+			A game controller model that represents the Xbox 360 controller.
+			A game controller with this model ID has A/B/X/Y face buttons,
+			a directional pad, left and right sticks, Back/Guide/Start buttons,
+			LB/RB shoulder buttons and LT/RT trigger axes.
 		</constant>
-		<constant name="JOY_AXIS_RIGHT_Y" value="3" enum="JoyAxis">
-			Game controller right joystick y-axis.
+		<constant name="JOY_MODEL_XBOXONE" value="3" enum="JoyModel">
+			A game controller model that represents the Xbox One controller.
+			A game controller with this model ID has A/B/X/Y face buttons,
+			a directional pad, left and right sticks, View/Xbox/Menu buttons,
+			LB/RB shoulder buttons and LT/RT trigger axes.
 		</constant>
-		<constant name="JOY_AXIS_TRIGGER_LEFT" value="4" enum="JoyAxis">
-			Game controller left trigger axis.
+		<constant name="JOY_MODEL_PS3" value="4" enum="JoyModel">
+			A game controller model that represents the PlayStation 3 (Dualshock 3) controller.
+			A game controller with this model ID has Cross/Circle/Square/Triangle face buttons,
+			a directional pad, left and right sticks, Select/PS/Start buttons,
+			L1/R1 shoulder buttons, L2/R2 trigger axes, accelerometer and gyroscope sensors.
 		</constant>
-		<constant name="JOY_AXIS_TRIGGER_RIGHT" value="5" enum="JoyAxis">
-			Game controller right trigger axis.
+		<constant name="JOY_MODEL_PS4" value="5" enum="JoyModel">
+			A game controller model that represents the PlayStation 4 (Dualshock 4) controller.
+			A game controller with this layout scheme has Cross/Circle/Square/Triangle face buttons,
+			a directional pad, left and right sticks, Share/PS/Options buttons,
+			L1/R1 shoulder buttons, L2/R2 trigger axes, accelerometer and gyroscope sensors and a touchpad.
 		</constant>
-		<constant name="JOY_AXIS_SDL_MAX" value="6" enum="JoyAxis">
-			The number of SDL game controller axes.
+		<constant name="JOY_MODEL_PS5" value="6" enum="JoyModel">
+			A game controller model that represents the PlayStation 5 (Dualsense) controller.
+			A game controller with this layout scheme has Cross/Circle/Square/Triangle face buttons,
+			a directional pad, left and right sticks, Share/PS/Options buttons,
+			L1/R1 shoulder buttons, L2/R2 trigger axes, accelerometer and gyroscope sensors, a touchpad
+			and adaptive triggers.
 		</constant>
-		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
-			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
+		<constant name="JOY_MODEL_SWITCH_PRO" value="7" enum="JoyModel">
+			A game controller model that represents the Nintendo Switch Pro Controller.
+			A game controller with this model ID has B/A/Y/X face buttons,
+			a directional pad, left and right sticks, Minus/Home/Plus buttons,
+			L/R shoulder buttons, ZL/ZR trigger axes (with a value of either 0 or 1)
+			a Capture button, accelerometer and gyroscope sensors.
+		</constant>
+		<constant name="JOY_MODEL_JOYCON_LEFT" value="8" enum="JoyModel">
+			A game controller model that represents the left Nintendo Switch Joycon that is held horizontally.
+			A game controller with this model ID has Face South/Face East/Face West/Face North face buttons,
+			a left stick, SL and SR buttons, Minus/Capture/L/ZL buttons, accelerometer and gyroscope sensors.
+		</constant>
+		<constant name="JOY_MODEL_JOYCON_RIGHT" value="9" enum="JoyModel">
+			A game controller model that represents the right Nintendo Switch Joycon that is held horizontally.
+			A game controller with this model ID has Face South/Face East/Face West/Face North face buttons,
+			a left stick, SL and SR buttons, Plus/Home/R/ZR buttons, accelerometer and gyroscope sensors.
+		</constant>
+		<constant name="JOY_MODEL_JOYCON_PAIR" value="10" enum="JoyModel">
+			A game controller model that represents the pair of Nintendo Switch Joycon controllers,
+			with a similar layout to Nintendo Switch Pro Controller.
+			A game controller with this model ID has B/A/Y/X face buttons,
+			a directional pad, left and right sticks, Minus/Home/Plus buttons,
+			L/R shoulder buttons, ZL/ZR trigger axes (with a value of either 0 or 1)
+			a Capture button, accelerometer and gyroscope sensors (the sensors of the right Joycon controller are being used).
+		</constant>
+		<constant name="JOY_SCHEME_INVALID" value="-1" enum="JoyScheme">
+			An invalid game controller layout scheme.
+		</constant>
+		<constant name="JOY_SCHEME_UNKNOWN" value="0" enum="JoyScheme">
+			An unknown game controller layout scheme.
+		</constant>
+		<constant name="JOY_SCHEME_STANDARD" value="1" enum="JoyScheme">
+			A standard game controller layout scheme similar to the Xbox controller layout.
+			A game controller with this layout scheme has A/B/X/Y face buttons,
+			a directional pad, and it might have Back/Guide/Start buttons, left/right shoulder buttons and triggers.
+		</constant>
+		<constant name="JOY_SCHEME_XBOX" value="2" enum="JoyScheme">
+			A game controller layout scheme that represents the Xbox controller layout.
+			A game controller with this layout scheme has A/B/X/Y face buttons,
+			a directional pad, left and right sticks, Back/Guide/Start (or View/Xbox/Menu) buttons,
+			LB/RB shoulder buttons and LT/RT trigger axes.
+		</constant>
+		<constant name="JOY_SCHEME_PLAYSTATION" value="3" enum="JoyScheme">
+			A game controller layout scheme that represents the PlayStation controller layout.
+			A game controller with this layout scheme has Cross/Circle/Square/Triangle face buttons,
+			a directional pad, left and right sticks, Select/PS/Start (or Share/PS/Options) buttons,
+			L1/R1 shoulder buttons, L2/R2 trigger axes and a touchpad in case of PS4 and PS5 controllers.
+		</constant>
+		<constant name="JOY_SCHEME_NINTENDO" value="4" enum="JoyScheme">
+			A game controller layout scheme that represents the Nintendo controller layout.
+			A game controller with this layout scheme has B/A/Y/X face buttons,
+			a directional pad, left and right sticks, Minus/Home/Plus buttons,
+			L/R shoulder buttons, ZL/ZR trigger axes (with a value of either 0 or 1)
+			and possibly a Capture button in case of Nintendo Switch Pro Controller.
+		</constant>
+		<constant name="JOY_SCHEME_JOYCON_HORIZONTAL" value="5" enum="JoyScheme">
+			A game controller layout scheme that represents the layout of a
+			Nintendo Switch Joycon controller that is being held horizontally.
+			A game controller with this layout scheme has Face South/Face East/Face West/Face North face buttons,
+			a left stick, SL and SR buttons and either Minus/Capture/L/ZL or Plus/Home/R/ZR buttons.
+		</constant>
+		<constant name="JOY_DEVICE_INVALID" value="-1" enum="JoyDeviceType">
+			An invalid joy device type.
+		</constant>
+		<constant name="JOY_DEVICE_UNKNOWN" value="0" enum="JoyDeviceType">
+			An unknown joy device type.
+		</constant>
+		<constant name="JOY_DEVICE_GAMEPAD" value="1" enum="JoyDeviceType">
+			Gamepad controller.
+			Includes Left and Right Sticks, Left and Right Triggers, Directional Pad,
+			and all standard buttons (A, B, X, Y, START, BACK, LB, RB, LSB, RSB).
+		</constant>
+		<constant name="JOY_DEVICE_WHEEL" value="2" enum="JoyDeviceType">
+			Racing wheel controller.
+			Left Stick X reports the wheel rotation, Right Trigger is the acceleration pedal, and Left Trigger is the brake pedal.
+			Includes Directional Pad and most standard buttons (A, B, X, Y, START, BACK, LB, RB). LSB and RSB are optional.
+		</constant>
+		<constant name="JOY_DEVICE_ARCADE_STICK" value="3" enum="JoyDeviceType">
+			Arcade stick controller.
+			Includes a Digital Stick that reports as a DPAD (up, down, left, right), and most standard buttons (A, B, X, Y, START, BACK).
+			The Left and Right Triggers are implemented as digital buttons and report either 0 or 1. LB, LSB, RB, and RSB are optional.
+		</constant>
+		<constant name="JOY_DEVICE_FLIGHT_STICK" value="4" enum="JoyDeviceType">
+			Flight stick controller.
+			Includes a pitch and roll stick that reports as the Left Stick, a POV Hat which reports as the Right Stick,
+			a rudder (handle twist or rocker) that reports as Left Trigger, and a throttle control as the Right Trigger.
+			Includes support for a primary weapon (A), secondary weapon (B), and other standard buttons (X, Y, START, BACK).
+			LB, LSB, RB, and RSB are optional.
+		</constant>
+		<constant name="JOY_DEVICE_DANCE_PAD" value="5" enum="JoyDeviceType">
+			Dance pad controller.
+			Includes the Directional Pad and standard buttons (A, B, X, Y) on the pad, plus BACK and START.
+		</constant>
+		<constant name="JOY_DEVICE_GUITAR" value="6" enum="JoyDeviceType">
+			Guitar controller.
+			The strum bar maps to DPAD (up and down), and the frets are assigned to A (green), B (red), Y (yellow), X (blue), and LB (orange).
+			Right Stick Y is associated with a vertical orientation sensor; Right Stick X is the whammy bar.
+			Includes support for BACK, START, DPAD (left, right). Left Trigger (pickup selector), Right Trigger, RB, LSB (fret modifier), RSB are optional.
+		</constant>
+		<constant name="JOY_DEVICE_DRUM_KIT" value="7" enum="JoyDeviceType">
+			Drum controller.
+			The drum pads are assigned to buttons: A for green (Floor Tom), B for red (Snare Drum),
+			X for blue (Low Tom), Y for yellow (High Tom), and LB for the pedal (Bass Drum).
+			Includes Directional-Pad, BACK, and START. RB, LSB, and RSB are optional.
+		</constant>
+		<constant name="JOY_DEVICE_ARCADE_PAD" value="8" enum="JoyDeviceType">
+			Arcade pad controller.
+			Includes Directional Pad and most standard buttons (A, B, X, Y, START, BACK, LB, RB).
+			The Left and Right Triggers are implemented as digital buttons and report either 0 or 1.
+			Left Stick, Right Stick, LSB, and RSB are optional.
+		</constant>
+		<constant name="JOY_DEVICE_THROTTLE" value="9" enum="JoyDeviceType">
+			A throttle controller.
+		</constant>
+		<constant name="JOY_POWER_INVALID" value="-1" enum="JoyPowerState">
+			An invalid joypad power state. Most likely there was an error while determining the power status.
+		</constant>
+		<constant name="JOY_POWER_UNKNOWN" value="0" enum="JoyPowerState">
+			An unknown joypad power state. Godot cannot determine the power status of this joypad.
+		</constant>
+		<constant name="JOY_POWER_ON_BATTERY" value="1" enum="JoyPowerState">
+			The joypad is not plugged in and is running on the battery.
+		</constant>
+		<constant name="JOY_POWER_NO_BATTERY" value="2" enum="JoyPowerState">
+			The joypad is plugged in and has no battery available.
+		</constant>
+		<constant name="JOY_POWER_CHARGING" value="3" enum="JoyPowerState">
+			The joypad is plugged in and its battery is currently charging.
+		</constant>
+		<constant name="JOY_POWER_FULL_BATTERY" value="4" enum="JoyPowerState">
+			The joypad is plugged in and its battery is fully charged.
+		</constant>
+		<constant name="JOY_CONNECTION_INVALID" value="-1" enum="JoyConnectionState">
+			An invalid joypad connection state. Most likely there was an error while determining the connection state.
+		</constant>
+		<constant name="JOY_CONNECTION_UNKNOWN" value="0" enum="JoyConnectionState">
+			An unknown joypad connection state.
+		</constant>
+		<constant name="JOY_CONNECTION_WIRED" value="1" enum="JoyConnectionState">
+			The joypad is currently using a wired connection to the computer.
+		</constant>
+		<constant name="JOY_CONNECTION_WIRELESS" value="2" enum="JoyConnectionState">
+			The joypad is currently using a wireless connection to the computer.
 		</constant>
 		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage">
 			Does not correspond to any MIDI message. This is the default value of [member InputEventMIDI.message].
