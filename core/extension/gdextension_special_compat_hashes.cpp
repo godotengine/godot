@@ -555,6 +555,9 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "add_item", 3043792800, 2697778442 },
 		{ "add_icon_item", 3944051090, 3781678508 },
 	});
+	mappings.insert("PackedScene", {
+		{ "instantiate", 2628778455, 180049032 },
+	});
 	mappings.insert("PCKPacker", {
 		{ "pck_start", 3232891339, 508410629 },
 	});

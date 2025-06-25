@@ -91,8 +91,10 @@
 		<method name="instantiate" qualifiers="const" keywords="create, make, spawn, new">
 			<return type="Node" />
 			<param index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0" />
+			<param index="1" name="flags" type="int" default="0" />
 			<description>
 				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_SCENE_INSTANTIATED] notification on the root node.
+				The [param flags] parameter can be used to modify the instantiation behavior. For example, [constant INSTANTIATION_NO_SCRIPTS] can be used to instantiate the scene without attaching any scripts. These flags apply to child scenes as well.
 			</description>
 		</method>
 		<method name="pack">
@@ -118,6 +120,12 @@
 		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
 			It's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="INSTANTIATION_DEFAULT" value="0" enum="InstantiationFlags">
+			Default instantiation behavior with no special flags.
+		</constant>
+		<constant name="INSTANTIATION_NO_SCRIPTS" value="1" enum="InstantiationFlags">
+			If passed to [method instantiate], the scene will be instantiated without any attached scripts. This applies to child scenes as well.
 		</constant>
 	</constants>
 </class>
