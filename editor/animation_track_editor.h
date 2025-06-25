@@ -211,7 +211,7 @@ class AnimationTimelineEdit : public Range {
 	int name_limit = 0;
 	Range *zoom = nullptr;
 	Range *h_scroll = nullptr;
-	float play_position_pos = 0.0f;
+	float play_cursor_pos = 0.0f;
 
 	HBoxContainer *add_track_hb = nullptr;
 	HBoxContainer *len_hb = nullptr;
@@ -221,7 +221,7 @@ class AnimationTimelineEdit : public Range {
 
 	MenuButton *add_track = nullptr;
 	LineEdit *filter_track = nullptr;
-	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
+	Control *play_cursor = nullptr; //separate control used to draw so updates for only position changed are much faster
 	HScrollBar *hscroll = nullptr;
 
 	void _zoom_changed(double);
@@ -259,14 +259,14 @@ protected:
 	void _notification(int p_what);
 
 public:
-	double _get_timeline_pos(const double pos) const;
+	double get_timeline_pos(const double p_pos) const;
 
 	void set_editor(AnimationTrackEditor *p_editor);
 	AnimationTrackEditor *get_editor() const { return editor; }
 
 public:
-	int get_name_limit() const;
-	int get_buttons_width() const;
+	float get_name_limit() const;
+	float get_buttons_width() const;
 
 	float get_zoom_scale() const;
 
@@ -296,6 +296,10 @@ public:
 class KeyEdit : public Control {
 	GDCLASS(KeyEdit, Control);
 
+public:
+	AnimationTimelineEdit *timeline = nullptr;
+	AnimationTrackEditor *editor = nullptr;
+
 protected:
 	void _update_key_type_icon();
 
@@ -306,9 +310,6 @@ protected:
 	virtual Ref<Texture2D> _get_key_type_icon_selected() const = 0;
 
 protected:
-	AnimationTimelineEdit *timeline = nullptr;
-	AnimationTrackEditor *editor = nullptr;
-
 	Vector2 key_pivot;
 	float track_alignment = 0.0;
 
@@ -316,7 +317,7 @@ protected:
 
 	bool hovered = false;
 	int hovering_key_idx = -1;
-	int select_single_attempt = -1;
+	int selected_key_idx = -1;
 
 	float insert_at_pos = 0.0f;
 
@@ -326,7 +327,7 @@ protected:
 	float moving_selection_mouse_begin_x = 0.0f;
 	float moving_selection_mouse_begin_y = 0.0f;
 
-protected:
+private:
 	bool moving_selection = false;
 	float moving_selection_offset = 0.0f;
 
@@ -346,22 +347,19 @@ public:
 	virtual void try_select(const int p_index, bool p_is_single) = 0;
 	virtual void try_deselect(const int p_index) = 0;
 
-public:
+protected:
 	virtual int get_key_count() const = 0;
 	virtual double get_key_time(const int p_index) const = 0;
+	virtual Variant get_key_value(const int p_index) const = 0;
 
 	virtual float get_key_width(const int p_index) const = 0;
 	virtual float get_key_height(const int p_index) const = 0;
-
-	virtual Variant get_key_value(const int p_index) const = 0;
 
 	virtual bool has_valid_track() const = 0;
 	virtual bool has_valid_key(const int p_index) const = 0;
 	virtual bool has_key(const int p_index) const = 0;
 
 	virtual bool is_key_selected(const int p_index) const = 0;
-
-	virtual StringName get_edit_name(const int p_index) const { return StringName(); }
 
 protected:
 	virtual void draw_bg(const float p_clip_left, const float p_clip_right) {}
@@ -370,33 +368,35 @@ protected:
 	virtual void draw_fg(const float p_clip_left, const float p_clip_right) {}
 
 	void draw_timeline(const float p_clip_left, const float p_clip_right);
-	void draw_edit_text(const int p_index, const Rect2 &p_global_rect, const float p_clip_left, const float p_clip_right, const bool outside = false);
+	void draw_edit_text(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right, const bool outside = false);
 
 public:
-	int find_closest_key(const Point2 &p_pos) const;
+	Control *play_cursor = nullptr; // Separate control used to draw so updates for only position changed are much faster.
+	float play_cursor_pos = 0.0f;
+
+protected:
 	virtual bool is_key_selectable_by_distance() const;
 	virtual bool is_linked(const int p_index, const int p_index_next) const { return false; }
 
 	virtual Color get_key_color(const int p_index) const;
+	virtual StringName get_edit_name(const int p_index) const { return StringName(); }
+
+	virtual float get_key_y(const int p_index) const { return 0.0; }
+	virtual String _get_tooltip(const int p_index) const { return String(); }
 
 public:
 	Rect2 get_key_rect(const int p_index) const;
 	Rect2 get_global_key_rect(const int p_index, bool p_ignore_moving_selection = false) const;
 
-	void try_draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
-
 	double get_move_key_time(const int p_index, bool p_ignore_moving_selection = false) const;
 	double get_global_move_key_time(const int p_index, bool p_ignore_moving_selection = false) const;
 
-protected:
-	virtual float get_key_y(const int p_index) const { return 0.0; }
+	void try_draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
 
-	// Helper
-public:
+protected:
+	int find_closest_key(const Point2 &p_pos) const;
 	Rect2 _to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection = false) const;
 	void _draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
-
-	virtual String _get_tooltip(const int p_index) const { return ""; }
 
 public:
 	KeyEdit();
@@ -431,13 +431,6 @@ public:
 
 	virtual bool is_compressed() const = 0;
 	virtual Vector<int> get_selected_section() = 0;
-
-public:
-	void __zoom_changed();
-	void __play_position_draw();
-
-	Control *play_position = nullptr; // Separate control used to draw so updates for only position changed are much faster.
-	float play_position_pos = 0.0f;
 };
 
 class AnimationMarkerEdit : public AnimationKeyEdit {
@@ -1053,6 +1046,7 @@ public:
 public:
 	void draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right);
 	void draw_marker_lines(CanvasItem *p_canvas_item, float p_clip_left, float p_clip_right);
+	void draw_play_position(CanvasItem *p_canvas_item, const double p_time, const float p_height, const float p_clip_left, const float p_clip_right, const bool p_draw_head = false);
 
 protected:
 	static void _bind_methods();
