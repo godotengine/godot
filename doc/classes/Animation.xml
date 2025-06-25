@@ -696,6 +696,9 @@
 	<constants>
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be interpolated. For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.
+			The following types can be interpolated: [bool], [int], [float], [Vector2], [Vector3], [Vector4], [Vector2i], [Vector3i], [Vector4i], [Plane], [Color], [Rect2], [Rect2i], [AABB], [Basis], [Quaternion], [Transform2D], [Transform3D], [String], [StringName], [Array], and packed arrays (with the exception of [PackedByteArray]).
+			For [String] and [StringName], interpolation is performed by shifting Unicode codepoints of the characters in the string. This can give modified characters in the string a "scrambled" appearance during the interpolation.
+			For [Array] and Packed*Array, individual values are interpolated between the previous array and the current array. If the either array has fewer values than the other array, interpolation is performed using the last element of the smaller array as a basis for interpolation for all values that are only present in the larger array.
 		</constant>
 		<constant name="TYPE_POSITION_3D" value="1" enum="TrackType">
 			3D position track (values are stored in [Vector3]s).
