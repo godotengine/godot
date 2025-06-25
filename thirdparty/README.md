@@ -489,6 +489,12 @@ Files generated from upstream source:
 5. Copy `source/data/out/icudt{ICU_VERSION}l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt_godot.dat`
 
 
+## isteamdualsense
+
+- Upstream: https://github.com/ValveSoftware/Proton/blob/proton_10.0/lsteamclient/steamworks_sdk_162/isteamdualsense.h
+- Version: ? (a62e072e949676917c9f7724bcd34b4e2f8bb53d, 2025)
+- License: Unknown
+
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics

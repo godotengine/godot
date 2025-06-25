@@ -35,6 +35,8 @@
 
 typedef uint32_t SDL_JoystickID;
 typedef struct HWND__ *HWND;
+typedef struct SDL_Joystick SDL_Joystick;
+typedef struct SDL_Gamepad SDL_Gamepad;
 
 class JoypadSDL {
 public:
@@ -48,6 +50,19 @@ public:
 #ifdef WINDOWS_ENABLED
 	void setup_sdl_helper_window(HWND p_hwnd);
 #endif
+
+	bool enable_accelerometer(int p_pad_idx, bool p_enable);
+	bool enable_gyroscope(int p_pad_idx, bool p_enable);
+
+	bool set_light(int p_pad_idx, Color p_color);
+
+	String get_axis_string(int p_pad_idx, JoyAxis p_axis) const;
+	String get_button_string(int p_pad_idx, JoyButton p_button) const;
+
+	void get_joypad_features(int p_pad_idx, Input::Joypad &p_js);
+
+	void send_effect(int p_pad_idx, void *p_data, int p_size);
+	void start_triggers_vibration(int p_pad_idx, float p_left_rumble, float p_right_rumble, float p_duration);
 
 private:
 	struct Joypad {
@@ -66,4 +81,6 @@ private:
 	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;
 
 	void close_joypad(int p_pad_idx);
+	SDL_Joystick *get_sdl_joystick(int p_pad_idx) const;
+	SDL_Gamepad *get_sdl_gamepad(int p_pad_idx) const;
 };

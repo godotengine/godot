@@ -182,6 +182,7 @@ if env["builtin_sdl"]:
             "joystick/windows/SDL_windows_gaming_input.c",
             "joystick/windows/SDL_windowsjoystick.c",
             "joystick/windows/SDL_xinputjoystick.c",
+            "sensor/windows/SDL_windowssensor.c",
             "thread/windows/SDL_syscond_cv.c",
             "thread/windows/SDL_sysmutex.c",
             "thread/windows/SDL_sysrwlock_srw.c",
