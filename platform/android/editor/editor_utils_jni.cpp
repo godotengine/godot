@@ -33,7 +33,7 @@
 #include "jni_utils.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/gui/editor_run_bar.h"
+#include "editor/run/editor_run_bar.h"
 #include "main/main.h"
 #endif
 

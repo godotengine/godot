@@ -32,8 +32,8 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/multi_node_edit.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/inspector/multi_node_edit.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
