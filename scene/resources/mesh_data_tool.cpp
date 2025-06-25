@@ -135,17 +135,17 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		}
 
 		if (we) {
-			v.weights.push_back(we[i * 4 + 0]);
-			v.weights.push_back(we[i * 4 + 1]);
-			v.weights.push_back(we[i * 4 + 2]);
-			v.weights.push_back(we[i * 4 + 3]);
+			int bone_count = format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+			for (int j = 0; j < bone_count; j++) {
+				v.weights.push_back(we[i * bone_count + j]);
+			}
 		}
 
 		if (bo) {
-			v.bones.push_back(bo[i * 4 + 0]);
-			v.bones.push_back(bo[i * 4 + 1]);
-			v.bones.push_back(bo[i * 4 + 2]);
-			v.bones.push_back(bo[i * 4 + 3]);
+			int bone_count = format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+			for (int j = 0; j < bone_count; j++) {
+				v.bones.push_back(bo[i * bone_count + j]);
+			}
 		}
 
 		vertices.write[i] = v;
@@ -244,13 +244,21 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh, uint64_t p_c
 
 		int *bo = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_BONES) {
-			b.resize(vcount * 4);
+			if (format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) {
+				b.resize(vcount * 8);
+			} else {
+				b.resize(vcount * 4);
+			}
 			bo = b.ptrw();
 		}
 
 		real_t *we = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_WEIGHTS) {
-			w.resize(vcount * 4);
+			if (format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) {
+				w.resize(vcount * 8);
+			} else {
+				w.resize(vcount * 4);
+			}
 			we = w.ptrw();
 		}
 
@@ -278,17 +286,17 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh, uint64_t p_c
 			}
 
 			if (we) {
-				we[i * 4 + 0] = vtx.weights[0];
-				we[i * 4 + 1] = vtx.weights[1];
-				we[i * 4 + 2] = vtx.weights[2];
-				we[i * 4 + 3] = vtx.weights[3];
+				int bone_count = format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+				for (int j = 0; j < bone_count; j++) {
+					we[i * bone_count + j] = vtx.weights[j];
+				}
 			}
 
 			if (bo) {
-				bo[i * 4 + 0] = vtx.bones[0];
-				bo[i * 4 + 1] = vtx.bones[1];
-				bo[i * 4 + 2] = vtx.bones[2];
-				bo[i * 4 + 3] = vtx.bones[3];
+				int bone_count = format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+				for (int j = 0; j < bone_count; j++) {
+					bo[i * bone_count + j] = vtx.bones[j];
+				}
 			}
 		}
 
@@ -422,7 +430,11 @@ Vector<int> MeshDataTool::get_vertex_bones(int p_idx) const {
 
 void MeshDataTool::set_vertex_bones(int p_idx, const Vector<int> &p_bones) {
 	ERR_FAIL_INDEX(p_idx, vertices.size());
-	ERR_FAIL_COND(p_bones.size() != 4);
+	if (format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) {
+		ERR_FAIL_COND(p_bones.size() != 8);
+	} else {
+		ERR_FAIL_COND(p_bones.size() != 4);
+	}
 	vertices.write[p_idx].bones = p_bones;
 	format |= Mesh::ARRAY_FORMAT_BONES;
 }
@@ -434,7 +446,11 @@ Vector<float> MeshDataTool::get_vertex_weights(int p_idx) const {
 
 void MeshDataTool::set_vertex_weights(int p_idx, const Vector<float> &p_weights) {
 	ERR_FAIL_INDEX(p_idx, vertices.size());
-	ERR_FAIL_COND(p_weights.size() != 4);
+	if (format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) {
+		ERR_FAIL_COND(p_weights.size() != 8);
+	} else {
+		ERR_FAIL_COND(p_weights.size() != 4);
+	}
 	vertices.write[p_idx].weights = p_weights;
 	format |= Mesh::ARRAY_FORMAT_WEIGHTS;
 }
