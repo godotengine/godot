@@ -89,8 +89,7 @@ float AnimationTrackEditTypeMethod::get_key_height(const int p_index) const {
 }
 
 void AnimationTrackEditTypeMethod::draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
-	draw_edit_text(p_index, p_global_rect, p_clip_left, p_clip_right, true);
-
+	draw_edit_text(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right, true);
 	AnimationTrackEdit::draw_key(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right);
 }
 
@@ -1017,12 +1016,12 @@ void AnimationTrackEditClip::draw_key(const int p_index, const Rect2 &p_global_r
 	}
 
 	Color bg_color = REGION_BG_COLOR;
-	Rect2 rect = Rect2(region_begin, key_rect.position.y, region_width, key_rect.size.y);
-	draw_rect(rect, bg_color);
+	Rect2 virtual_rect = Rect2(region_begin, key_rect.position.y, region_width, key_rect.size.y);
+	draw_rect(virtual_rect, bg_color);
 
 	{
 		Vector<Vector2> points;
-		points.resize(Math::ceil(rect.size.x) * 2);
+		points.resize(Math::ceil(virtual_rect.size.x) * 2);
 
 		Vector<Color> colors;
 		if (p_selected) {
@@ -1032,7 +1031,7 @@ void AnimationTrackEditClip::draw_key(const int p_index, const Rect2 &p_global_r
 		}
 
 		Region region_shift = _calc_key_region_shift(orig_region, region);
-		get_key_region_data(resource, points, rect, scale, start_ofs_ + region_shift.x / scale);
+		get_key_region_data(resource, points, virtual_rect, scale, start_ofs_ + region_shift.x / scale);
 
 		if (!points.is_empty()) {
 			draw_multiline_colors(points, colors);
@@ -1042,13 +1041,13 @@ void AnimationTrackEditClip::draw_key(const int p_index, const Rect2 &p_global_r
 	Color edge_color = Color(accent_color);
 	edge_color.a = REGION_EDGE_ALPHA;
 	if (start_ofs_ > 0 && region_begin > p_clip_left) {
-		draw_rect(Rect2(region_begin, rect.position.y, 1, rect.size.y), edge_color);
+		draw_rect(Rect2(region_begin, virtual_rect.position.y, 1, virtual_rect.size.y), edge_color);
 	}
 	if (end_ofs_ > 0 && region_end < p_clip_right) {
-		draw_rect(Rect2(region_end, rect.position.y, 1, rect.size.y), edge_color);
+		draw_rect(Rect2(region_end, virtual_rect.position.y, 1, virtual_rect.size.y), edge_color);
 	}
 
-	draw_edit_text(p_index, rect, p_clip_left, p_clip_right, false);
+	draw_edit_text(p_index, virtual_rect, p_selected, p_clip_left, p_clip_right, false);
 }
 
 bool AnimationTrackEditClip::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
