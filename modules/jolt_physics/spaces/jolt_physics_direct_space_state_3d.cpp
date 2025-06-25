@@ -475,7 +475,7 @@ int JoltPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p
 		}
 	}
 
-	space->try_optimize();
+	space->flush_pending_objects();
 
 	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude, p_parameters.pick_ray);
 
@@ -496,7 +496,7 @@ int JoltPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p
 	const int hit_count = collector.get_hit_count();
 
 	for (int i = 0; i < hit_count; ++i) {
-		const JPH::RayCastResult &hit = collector.get_hit();
+		const JPH::RayCastResult &hit = collector.get_hit(i);
 
 		const JPH::BodyID &body_id = hit.mBodyID;
 		const JPH::SubShapeID &sub_shape_id = hit.mSubShapeID2;
@@ -517,6 +517,7 @@ int JoltPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p
 			}
 		}
 
+		RayResult &r_result = *r_results++;
 		r_result.position = to_godot(position);
 		r_result.normal = to_godot(normal);
 		r_result.rid = object->get_rid();
@@ -538,7 +539,7 @@ int JoltPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p
 bool JoltPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_ray must not be called while the physics space is being stepped.");
 
-	space->try_optimize();
+	space->flush_pending_objects();
 
 	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude, p_parameters.pick_ray);
 
