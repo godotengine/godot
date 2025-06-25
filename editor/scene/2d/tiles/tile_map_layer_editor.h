@@ -52,6 +52,7 @@ class TileMapLayerSubEditorPlugin : public Object {
 protected:
 	ObjectID edited_tile_map_layer_id;
 	TileMapLayer *_get_edited_layer() const;
+	static void _add_to_output_if_tile_changed(HashMap<Vector2i, TileMapCell> &p_output, const TileMapLayer *p_layer, Vector2i p_coords, const TileMapCell &p_cell);
 
 public:
 	struct TabData {
