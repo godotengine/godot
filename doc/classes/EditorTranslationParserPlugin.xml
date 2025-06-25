@@ -103,13 +103,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_recognized_extensions" qualifiers="virtual const">
+		<method name="_get_recognized_extensions" qualifiers="virtual required const">
 			<return type="PackedStringArray" />
 			<description>
 				Gets the list of file extensions to associate with this parser, e.g. [code]["csv"][/code].
 			</description>
 		</method>
-		<method name="_parse_file" qualifiers="virtual">
+		<method name="_parse_file" qualifiers="virtual required">
 			<return type="PackedStringArray[]" />
 			<param index="0" name="path" type="String" />
 			<description>

@@ -128,7 +128,7 @@
 				Callback for [method MultiplayerAPI.poll].
 			</description>
 		</method>
-		<method name="_rpc" qualifiers="virtual">
+		<method name="_rpc" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="peer" type="int" />
 			<param index="1" name="object" type="Object" />
