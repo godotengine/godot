@@ -244,6 +244,7 @@ class ProjectManager : public Control {
 	Label *ask_update_label = nullptr;
 	CheckBox *ask_update_backup = nullptr;
 	Button *full_convert_button = nullptr;
+	Button *migration_guide_button = nullptr;
 
 	String version_convert_feature;
 	bool open_in_recovery_mode = false;
@@ -253,6 +254,7 @@ class ProjectManager : public Control {
 	void _minor_project_migrate();
 #endif
 	void _full_convert_button_pressed();
+	void _migration_guide_button_pressed();
 	void _perform_full_project_conversion();
 
 	// Input and I/O.
