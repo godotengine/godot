@@ -143,6 +143,7 @@ public:
 	_FORCE_INLINE_ const Vector<LSP::Diagnostic> &get_diagnostics() const { return diagnostics; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
+	Error parse_result;
 
 	Error get_left_function_call(const LSP::Position &p_position, LSP::Position &r_func_pos, int &r_arg_index) const;
 
@@ -166,5 +167,5 @@ public:
 	const Array &get_member_completions();
 	Dictionary generate_api() const;
 
-	Error parse(const String &p_code, const String &p_path);
+	void parse(const String &p_code, const String &p_path);
 };
