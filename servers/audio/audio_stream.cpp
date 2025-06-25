@@ -33,23 +33,15 @@
 #include "core/config/project_settings.h"
 
 void AudioStreamPlayback::start(double p_from_pos) {
-	if (GDVIRTUAL_CALL(_start, p_from_pos)) {
-		return;
-	}
-	ERR_FAIL_MSG("AudioStreamPlayback::start unimplemented!");
+	GDVIRTUAL_CALL(_start, p_from_pos);
 }
 void AudioStreamPlayback::stop() {
-	if (GDVIRTUAL_CALL(_stop)) {
-		return;
-	}
-	ERR_FAIL_MSG("AudioStreamPlayback::stop unimplemented!");
+	GDVIRTUAL_CALL(_stop);
 }
 bool AudioStreamPlayback::is_playing() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_playing, ret)) {
-		return ret;
-	}
-	ERR_FAIL_V_MSG(false, "AudioStreamPlayback::is_playing unimplemented!");
+	bool ret = false;
+	GDVIRTUAL_CALL(_is_playing, ret);
+	return ret;
 }
 
 int AudioStreamPlayback::get_loop_count() const {
@@ -59,11 +51,9 @@ int AudioStreamPlayback::get_loop_count() const {
 }
 
 double AudioStreamPlayback::get_playback_position() const {
-	double ret;
-	if (GDVIRTUAL_CALL(_get_playback_position, ret)) {
-		return ret;
-	}
-	ERR_FAIL_V_MSG(0, "AudioStreamPlayback::get_playback_position unimplemented!");
+	double ret = 0.0;
+	GDVIRTUAL_CALL(_get_playback_position, ret);
+	return ret;
 }
 void AudioStreamPlayback::seek(double p_time) {
 	GDVIRTUAL_CALL(_seek, p_time);
@@ -250,10 +240,8 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 
 Ref<AudioStreamPlayback> AudioStream::instantiate_playback() {
 	Ref<AudioStreamPlayback> ret;
-	if (GDVIRTUAL_CALL(_instantiate_playback, ret)) {
-		return ret;
-	}
-	ERR_FAIL_V_MSG(Ref<AudioStreamPlayback>(), "Method must be implemented!");
+	GDVIRTUAL_CALL(_instantiate_playback, ret);
+	return ret;
 }
 String AudioStream::get_stream_name() const {
 	String ret;

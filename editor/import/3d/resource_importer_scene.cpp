@@ -59,14 +59,10 @@
 
 void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {
 	Vector<String> arr;
-	if (GDVIRTUAL_CALL(_get_extensions, arr)) {
-		for (int i = 0; i < arr.size(); i++) {
-			r_extensions->push_back(arr[i]);
-		}
-		return;
+	GDVIRTUAL_CALL(_get_extensions, arr);
+	for (int i = 0; i < arr.size(); i++) {
+		r_extensions->push_back(arr[i]);
 	}
-
-	ERR_FAIL();
 }
 
 Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
@@ -75,11 +71,8 @@ Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_f
 		options_dict[elem.key] = elem.value;
 	}
 	Object *ret = nullptr;
-	if (GDVIRTUAL_CALL(_import_scene, p_path, p_flags, options_dict, ret)) {
-		return Object::cast_to<Node>(ret);
-	}
-
-	ERR_FAIL_V(nullptr);
+	GDVIRTUAL_CALL(_import_scene, p_path, p_flags, options_dict, ret);
+	return Object::cast_to<Node>(ret);
 }
 
 void EditorSceneFormatImporter::add_import_option(const String &p_name, const Variant &p_default_value) {
