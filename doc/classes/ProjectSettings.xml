@@ -586,9 +586,6 @@
 		<member name="debug/gdscript/warnings/override_without_override_annotation" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a method tries to override the one annotated with a [code]@virtual[/code] from the base class, without an explicit [code]@override[/code] annotation.
 		</member>
-		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
-		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
 		</member>
