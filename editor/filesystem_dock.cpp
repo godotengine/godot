@@ -4016,8 +4016,8 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 }
 
 void FileSystemDock::_update_thumbnail_size(int p_thumbnail_size) {
-	EditorSettings::get_singleton()->set("docks/filesystem/thumbnail_size", p_thumbnail_size);
-	file_list_thumbnail_scroll->set_tooltip_text("Change Thumbnail Size : " + rtos(p_thumbnail_size));
+	thumbnail_size_setting = p_thumbnail_size;
+	file_list_thumbnail_scroll->set_tooltip_text("Change Thumbnail Size : " + rtos(thumbnail_size_setting));
 	_update_file_list(true);
 }
 
