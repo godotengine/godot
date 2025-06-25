@@ -704,6 +704,9 @@
 			If [code]true[/code], the label's minimum size will be automatically updated to fit its content, matching the behavior of [Label].
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
+		<member name="font_aliases" type="Dictionary[String, Font]" setter="set_font_aliases" getter="get_font_aliases" default="{}">
+			Dictionary of font aliases that can be used in [code]font[/code] BBCode tag.
+		</member>
 		<member name="hint_underlined" type="bool" setter="set_hint_underline" getter="is_hint_underlined" default="true">
 			If [code]true[/code], the label underlines hint tags such as [code skip-lint][hint=description]{text}[/hint][/code].
 		</member>

@@ -415,6 +415,7 @@ public:
 	virtual void font_set_kerning(const RID &p_font_rid, int64_t p_size, const Vector2i &p_glyph_pair, const Vector2 &p_kerning) = 0;
 	virtual Vector2 font_get_kerning(const RID &p_font_rid, int64_t p_size, const Vector2i &p_glyph_pair) const = 0;
 
+	virtual int64_t font_get_glyph_by_name(const RID &p_font_rid, int64_t p_size, const String &p_name) const = 0;
 	virtual int64_t font_get_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_char, int64_t p_variation_selector) const = 0;
 	virtual int64_t font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const = 0;
 

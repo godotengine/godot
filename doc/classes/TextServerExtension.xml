@@ -215,6 +215,15 @@
 				Returns glyph advance (offset of the next glyph).
 			</description>
 		</method>
+		<method name="_font_get_glyph_by_name" qualifiers="virtual required const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="name" type="String" />
+			<description>
+				Return the glyph index of a glyph with given [param name].
+			</description>
+		</method>
 		<method name="_font_get_glyph_contours" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<param index="0" name="font_rid" type="RID" />

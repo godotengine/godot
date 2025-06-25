@@ -32,6 +32,7 @@
 
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
+#include "core/variant/typed_dictionary.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/image_texture.h"
@@ -613,6 +614,8 @@ private:
 	bool context_menu_enabled = false;
 	bool shortcut_keys_enabled = true;
 
+	TypedDictionary<String, Ref<Font>> aliases;
+
 	// Context menu.
 	PopupMenu *menu = nullptr;
 	void _generate_context_menu();
@@ -962,6 +965,9 @@ public:
 
 	void set_visible_ratio(float p_ratio);
 	float get_visible_ratio() const;
+
+	void set_font_aliases(const TypedDictionary<String, Ref<Font>> &p_aliases);
+	TypedDictionary<String, Ref<Font>> get_font_aliases() const;
 
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
