@@ -444,7 +444,7 @@ static Ref<Resource> _dds_create_texture(const Vector<Ref<Image>> &p_images, uin
 			return ImageTexture::create_from_image(p_images[0]);
 		}
 
-	} else if ((p_layer_count & DDST_TYPE_MASK) == DDST_CUBEMAP) {
+	} else if ((p_dds_type & DDST_TYPE_MASK) == DDST_CUBEMAP) {
 		ERR_FAIL_COND_V(p_layer_count % 6 != 0, Ref<Resource>());
 
 		if (p_dds_type & DDST_ARRAY) {
