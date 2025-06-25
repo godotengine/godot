@@ -56,7 +56,7 @@
 			<return type="Color" />
 			<param index="0" name="offset" type="float" />
 			<description>
-				Returns the interpolated color specified by [param offset].
+				Returns the interpolated color specified by [param offset]. [param offset] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). Using a value lower than [code]0.0[/code] will return the same color as [code]0.0[/code], and using a value higher than [code]1.0[/code] will return the same color as [code]1.0[/code]. If your input value is not within this range, consider using [method @GlobalScope.remap] on the input value with output values set to [code]0.0[/code] and [code]1.0[/code].
 			</description>
 		</method>
 		<method name="set_color">
