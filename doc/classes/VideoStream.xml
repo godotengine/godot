@@ -11,7 +11,7 @@
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
-		<method name="_instantiate_playback" qualifiers="virtual">
+		<method name="_instantiate_playback" qualifiers="virtual required">
 			<return type="VideoStreamPlayback" />
 			<description>
 				Called when the video starts playing, to initialize and return a subclass of [VideoStreamPlayback].

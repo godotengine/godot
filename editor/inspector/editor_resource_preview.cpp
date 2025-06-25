@@ -46,18 +46,14 @@
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success = false;
-	if (GDVIRTUAL_CALL(_handles, p_type, success)) {
-		return success;
-	}
-	ERR_FAIL_V_MSG(false, "EditorResourcePreviewGenerator::_handles needs to be overridden.");
+	GDVIRTUAL_CALL(_handles, p_type, success);
+	return success;
 }
 
 Ref<Texture2D> EditorResourcePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
 	Ref<Texture2D> preview;
-	if (GDVIRTUAL_CALL(_generate, p_from, p_size, p_metadata, preview)) {
-		return preview;
-	}
-	ERR_FAIL_V_MSG(Ref<Texture2D>(), "EditorResourcePreviewGenerator::_generate needs to be overridden.");
+	GDVIRTUAL_CALL(_generate, p_from, p_size, p_metadata, preview);
+	return preview;
 }
 
 Ref<Texture2D> EditorResourcePreviewGenerator::generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const {
