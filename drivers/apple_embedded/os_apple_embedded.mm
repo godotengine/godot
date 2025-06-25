@@ -43,6 +43,7 @@
 #import "drivers/apple/os_log_logger.h"
 #include "main/main.h"
 
+#import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
 #import <UIKit/UIKit.h>
@@ -733,4 +734,35 @@ Rect2 OS_AppleEmbedded::calculate_boot_screen_rect(const Size2 &p_window_size, c
 	}
 }
 
+bool OS_AppleEmbedded::request_permission(const String &p_name) {
+	if (p_name == "appleembedded.permission.AUDIO_RECORD") {
+		if (@available(iOS 17.0, *)) {
+			AVAudioApplicationRecordPermission permission = [AVAudioApplication sharedInstance].recordPermission;
+			if (permission == AVAudioApplicationRecordPermissionGranted) {
+				// Permission already granted, you can start recording.
+				return true;
+			} else if (permission == AVAudioApplicationRecordPermissionDenied) {
+				// Permission denied, or not yet granted.
+				return false;
+			} else {
+				// Request the permission, but for now return false as documented.
+				[AVAudioApplication requestRecordPermissionWithCompletionHandler:^(BOOL granted) {
+					get_main_loop()->emit_signal(SNAME("on_request_permissions_result"), p_name, granted);
+				}];
+			}
+		}
+	}
+	return false;
+}
+
+Vector<String> OS_AppleEmbedded::get_granted_permissions() const {
+	Vector<String> ret;
+
+	if (@available(iOS 17.0, *)) {
+		if ([AVAudioApplication sharedInstance].recordPermission == AVAudioApplicationRecordPermissionGranted) {
+			ret.push_back("appleembedded.permission.AUDIO_RECORD");
+		}
+	}
+	return ret;
+}
 #endif // APPLE_EMBEDDED_ENABLED
