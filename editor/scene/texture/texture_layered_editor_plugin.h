@@ -57,6 +57,8 @@ class TextureLayeredEditor : public Control {
 	Control *texture_rect = nullptr;
 
 	bool setting = false;
+	Vector2 original_mouse_pos;
+	bool use_rotation = false;
 
 	ColorChannelSelector *channel_selector = nullptr;
 
