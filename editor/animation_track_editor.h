@@ -211,7 +211,7 @@ class AnimationTimelineEdit : public Range {
 	int name_limit = 0;
 	Range *zoom = nullptr;
 	Range *h_scroll = nullptr;
-	float play_cursor_pos = 0.0f;
+	double play_cursor_pos = 0;
 
 	HBoxContainer *add_track_hb = nullptr;
 	HBoxContainer *len_hb = nullptr;
@@ -263,6 +263,7 @@ public:
 
 	void set_editor(AnimationTrackEditor *p_editor);
 	AnimationTrackEditor *get_editor() const { return editor; }
+	Control *get_play_cursor() const { return play_cursor; }
 
 public:
 	float get_name_limit() const;
@@ -319,11 +320,11 @@ protected:
 	int hovering_key_idx = -1;
 	int selected_key_idx = -1;
 
-	float insert_at_pos = 0.0f;
+	double insert_at_pos = 0.0f;
 
 	bool moving_selection_attempt = false;
 	bool moving_selection_effective = false;
-	float moving_selection_pivot = 0.0f;
+	double moving_selection_pivot = 0.0f;
 	float moving_selection_mouse_begin_x = 0.0f;
 	float moving_selection_mouse_begin_y = 0.0f;
 
@@ -372,7 +373,7 @@ protected:
 
 public:
 	Control *play_cursor = nullptr; // Separate control used to draw so updates for only position changed are much faster.
-	float play_cursor_pos = 0.0f;
+	double play_cursor_pos = 0;
 
 protected:
 	virtual bool is_key_selectable_by_distance() const;
@@ -422,6 +423,7 @@ public:
 public:
 	virtual bool has_valid_track() const override;
 	virtual Size2 get_minimum_size() const override;
+	virtual float get_track_height() const;
 
 public:
 	virtual float get_key_width(const int p_index) const override;
@@ -555,6 +557,8 @@ public:
 	virtual Vector<int> get_selected_section() override;
 	int get_last_selection();
 	int get_first_selection();
+
+	virtual float get_track_height() const override;
 
 public:
 	void draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right);
@@ -1036,17 +1040,18 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_snap_unit();
 
 public:
-	void _draw_rect_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, bool p_filled, int p_clip_left, int p_clip_right);
-	void _draw_grid_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, int p_raster_size, int p_clip_left, int p_clip_right);
-	void _draw_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
-	void _draw_vertical_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, float p_length, const Color &p_color, float p_width, int p_clip_left, int p_clip_right);
-	void _draw_texture_region_clipped(CanvasItem *p_canvas_item, const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, int p_clip_left, int p_clip_right, const Color &p_modulate = Color(1, 1, 1));
-	String _make_text_clipped(const String &text, const Ref<Font> &font, int font_size, float max_width);
+	void _draw_rect_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, bool p_filled, const float p_clip_left, const float p_clip_right);
+	void _draw_grid_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, int p_raster_size, const float p_clip_left, const float p_clip_right);
+	void _draw_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, const float p_width, const float p_clip_left, const float p_clip_right);
+	void _draw_vertical_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, const float p_length, const Color &p_color, const float p_width, const float p_clip_left, const float p_clip_right);
+	void _draw_texture_region_clipped(CanvasItem *p_canvas_item, const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, const float p_clip_left, const float p_clip_right, const Color &p_modulate = Color(1, 1, 1));
+	String _make_text_clipped(const String &text, const Ref<Font> &font, const int font_size, const float max_width);
 
 public:
 	void draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right);
 	void draw_marker_lines(CanvasItem *p_canvas_item, float p_clip_left, float p_clip_right);
-	void draw_play_position(CanvasItem *p_canvas_item, const double p_time, const float p_height, const float p_clip_left, const float p_clip_right, const bool p_draw_head = false);
+	void draw_play_position(CanvasItem *p_canvas_item, const double p_time, const float p_height, const float p_clip_left, const float p_clip_right);
+	void draw_play_cursor(CanvasItem *p_canvas_item, const double p_time, const float p_clip_left, const float p_clip_right);
 
 protected:
 	static void _bind_methods();
