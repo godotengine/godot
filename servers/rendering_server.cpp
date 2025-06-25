@@ -1731,7 +1731,7 @@ Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) con
 			const uint16_t *rptr = (const uint16_t *)r;
 			int *w = lods.ptrw();
 			for (uint32_t j = 0; j < lc; j++) {
-				w[j] = rptr[i];
+				w[j] = rptr[j];
 			}
 		} else {
 			uint32_t lc = sd.lods[i].index_data.size() / 4;
@@ -1740,7 +1740,7 @@ Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) con
 			const uint32_t *rptr = (const uint32_t *)r;
 			int *w = lods.ptrw();
 			for (uint32_t j = 0; j < lc; j++) {
-				w[j] = rptr[i];
+				w[j] = rptr[j];
 			}
 		}
 
