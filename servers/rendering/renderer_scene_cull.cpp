@@ -3347,8 +3347,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 					} break;
 					case RS::LIGHT_SPOT: {
 						float range = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
-						float angle_deg = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_SPOT_ANGLE);
-						float angle = Math::deg_to_rad(angle_deg);
+						float angle = Math::deg_to_rad(RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_SPOT_ANGLE));
 
 						// Radius of the cone at the base
 						float w = range * Math::sin(angle);
@@ -3356,11 +3355,11 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 						float screen_diameter = 0.0f;
 
 						if (p_camera_data->is_orthogonal) {
-							// If camera is orthogonal - radius of the cone at the base is the
-							// best coverage diameter approximation.
+							// If camera is orthogonal - diameter of the cone at the base is the
+							// best screen diameter approximation.
 							screen_diameter = w * 2.0f;
 						} else {
-							// Coverage approximation for spot light with perspective projection:
+							// Screen diameter approximation for spot light with perspective projection:
 							// 1. Pick a sphere on the *far base* of the cone.
 							// 2. Project that sphere and measure its diameter on the near plane.
 							// 3. Repeat for the point on the cone axis that is closest to the camera.
