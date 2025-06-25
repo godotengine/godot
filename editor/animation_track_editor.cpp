@@ -2773,10 +2773,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			// Draw.
 
+			float h = get_size().height;
+
 			draw_bg(limit, limit_end);
 			editor->draw_marker_section(this, limit, limit_end);
 			if (valid_track) {
-				editor->draw_marker_lines(this, limit, limit_end);
+				editor->draw_marker_lines(this, h, limit, limit_end);
 				draw_timeline(limit, limit_end);
 			}
 			draw_fg(limit, limit_end);
@@ -3026,8 +3028,18 @@ void AnimationTrackEditor::draw_marker_section(CanvasItem *p_canvas_item, const 
 	marker_edit->draw_marker_section(p_canvas_item, p_clip_left, p_clip_right);
 }
 
-void AnimationTrackEditor::draw_marker_lines(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right) {
-	marker_edit->draw_marker_lines(p_canvas_item, p_clip_left, p_clip_right);
+void AnimationTrackEditor::draw_marker_lines(CanvasItem *p_canvas_item, const float p_height, const float p_clip_left, const float p_clip_right) {
+	for (int i = 0; i < get_marker_count(); i++) {
+		double marker_time = marker_edit->get_move_key_time(i);
+		if (marker_time >= 0) {
+			double time = get_global_time(marker_time);
+
+			Color marker_color = get_marker_color(i);
+			marker_color.a = 0.2;
+
+			_draw_vertical_line_clipped(p_canvas_item, Point2(time, 0), p_height, marker_color, 2, p_clip_left, p_clip_right);
+		}
+	}
 }
 
 int AnimationTrackEdit::get_key_count() const {
@@ -3056,7 +3068,7 @@ bool AnimationTrackEdit::has_key(const int p_index) const {
 }
 
 double AnimationTrackEdit::get_key_time(const int p_index) const {
-	return animation->track_get_key_time(track, p_index);
+	return editor->get_track_key_time(track, p_index);
 }
 
 void AnimationTrackEdit::draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) {
@@ -4046,6 +4058,10 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_method_track_edit() {
 
 /// ANIMATION TRACK EDIT GROUP ///
 
+AnimationTrackEditGroup::AnimationTrackEditGroup() {
+	set_mouse_filter(MOUSE_FILTER_PASS);
+}
+
 void AnimationTrackEditGroup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -4086,8 +4102,10 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			float limit = timeline->get_name_limit();
 			float limit_end = get_size().width - timeline->get_buttons_width();
 
+			float h = get_size().height;
+
 			editor->draw_marker_section(this, limit, limit_end);
-			editor->draw_marker_lines(this, limit, limit_end);
+			editor->draw_marker_lines(this, h, limit, limit_end);
 
 			draw_line(Point2(), Point2(get_size().width, 0), h_line_color, Math::round(EDSCALE));
 			draw_line(Point2(limit, 0), Point2(limit, get_size().height), v_line_color, Math::round(EDSCALE));
@@ -4100,7 +4118,6 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 			//
 
-			float h = get_size().height;
 			editor->draw_play_position(this, timeline->get_play_position(), h, limit, limit_end);
 
 		} break;
@@ -4170,11 +4187,11 @@ void AnimationTrackEditGroup::_zoom_changed() {
 	queue_redraw();
 }
 
-AnimationTrackEditGroup::AnimationTrackEditGroup() {
-	set_mouse_filter(MOUSE_FILTER_PASS);
-}
-
 /// ANIMATION TRACK EDITOR ///
+
+double AnimationTrackEditor::get_track_key_time(const int track, const int p_index) const {
+	return animation->track_get_key_time(track, p_index);
+}
 
 StringName AnimationTrackEditor::get_marker_name(const int p_index) const {
 	PackedStringArray markers = animation->get_marker_names();
@@ -9011,8 +9028,7 @@ Variant AnimationMarkerEdit::get_key_value(const int p_index) const {
 }
 
 double AnimationMarkerEdit::get_key_time(const int p_index) const {
-	StringName marker_name = editor->get_marker_name(p_index);
-	return animation->get_marker_time(marker_name);
+	return editor->get_marker_time(p_index);
 }
 
 int AnimationMarkerEdit::get_key_count() const {
@@ -9175,22 +9191,6 @@ void AnimationMarkerEdit::_notification(int p_what) {
 			hovering_key_idx = -1;
 			queue_redraw();
 			break;
-	}
-}
-
-
-void AnimationMarkerEdit::draw_marker_lines(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right) {
-	for (int i = 0; i < get_key_count(); i++) {
-		double marker_time = get_move_key_time(i);
-		if (marker_time >= 0) {
-			double time = editor->get_global_time(marker_time);
-
-			Color marker_color = get_key_color(i);
-			marker_color.a = 0.2;
-
-			float h = get_size().height;
-			editor->_draw_vertical_line_clipped(p_canvas_item, Point2(time, 0), h, marker_color, 2, p_clip_left, p_clip_right);
-		}
 	}
 }
 
