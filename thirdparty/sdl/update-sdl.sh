@@ -63,8 +63,12 @@ mkdir $target/sensor
 cp -rv sensor/{*.{c,h},dummy} $target/sensor
 
 mkdir $target/thread
-cp -rv thread/{*.{c,h},generic,pthread,windows} $target/thread
-rm -f $target/thread/generic/SDL_{sysmutex*.{c,h},systls.c}
+cp -rv thread/{*.{c,h},pthread,windows} $target/thread
+# Despite being 'generic', syssem.c is included in the Unix driver for macOS,
+# and syscond/sysrwlock are used by the Windows driver.
+# systhread_c.h is included by all these, but we should NOT compile the matching .c file.
+mkdir $target/thread/generic
+cp -v thread/generic/SDL_{syssem.c,{syscond,sysrwlock}*.{c,h},systhread_c.h} $target/thread/generic
 
 mkdir $target/timer
 cp -rv timer/{*.{c,h},unix,windows} $target/timer
