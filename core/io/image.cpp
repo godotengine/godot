@@ -2451,22 +2451,22 @@ bool Image::is_invisible() const {
 		} break;
 		case FORMAT_RGBAH: {
 			// The alpha mask accounts for the sign bit.
-			const int pixel_count = len / 4;
+			const int pixel_count = len / 8;
 			const uint16_t *pixeldata = reinterpret_cast<const uint16_t *>(data.ptr());
 
-			for (int i = 0; i < pixel_count; i += 4) {
-				if ((pixeldata[i + 3] & 0x7FFF) != 0) {
+			for (int i = 0; i < pixel_count; i++) {
+				if ((pixeldata[i * 4 + 3] & 0x7FFF) != 0) {
 					return false;
 				}
 			}
 		} break;
 		case FORMAT_RGBAF: {
 			// The alpha mask accounts for the sign bit.
-			const int pixel_count = len / 4;
+			const int pixel_count = len / 16;
 			const uint32_t *pixeldata = reinterpret_cast<const uint32_t *>(data.ptr());
 
-			for (int i = 0; i < pixel_count; i += 4) {
-				if ((pixeldata[i + 3] & 0x7FFFFFFF) != 0) {
+			for (int i = 0; i < pixel_count; i++) {
+				if ((pixeldata[i * 4 + 3] & 0x7FFFFFFF) != 0) {
 					return false;
 				}
 			}
