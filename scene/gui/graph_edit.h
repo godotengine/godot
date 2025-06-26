@@ -32,8 +32,10 @@
 
 #include "core/variant/typed_dictionary.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/graph_connection.h"
 #include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
+#include "scene/gui/graph_port.h"
 
 class Button;
 class GraphEdit;
@@ -114,28 +116,6 @@ class GraphEdit : public Control {
 	GDCLASS(GraphEdit, Control);
 
 public:
-	struct Connection : RefCounted {
-		StringName from_node;
-		StringName to_node;
-		int from_port = 0;
-		int to_port = 0;
-		float activity = 0.0;
-		bool keep_alive = true;
-
-	private:
-		struct Cache {
-			bool dirty = true;
-			Vector2 from_pos; // In graph space.
-			Vector2 to_pos; // In graph space.
-			Color from_color;
-			Color to_color;
-			Rect2 aabb; // In local screen space.
-			Line2D *line = nullptr; // In local screen space.
-		} _cache;
-
-		friend class GraphEdit;
-	};
-
 	// Should be in sync with ControlScheme in ViewPanner.
 	enum PanningScheme {
 		SCROLL_ZOOMS,
@@ -148,28 +128,6 @@ public:
 	};
 
 private:
-	struct ConnectionType {
-		union {
-			uint64_t key = 0;
-			struct {
-				uint32_t type_a;
-				uint32_t type_b;
-			};
-		};
-
-		static uint32_t hash(const ConnectionType &p_conn) {
-			return hash_one_uint64(p_conn.key);
-		}
-		bool operator==(const ConnectionType &p_type) const {
-			return key == p_type.key;
-		}
-
-		ConnectionType(uint32_t a = 0, uint32_t b = 0) {
-			type_a = a;
-			type_b = b;
-		}
-	};
-
 	Label *zoom_label = nullptr;
 	Button *zoom_minus_button = nullptr;
 	Button *zoom_reset_button = nullptr;
@@ -201,18 +159,13 @@ private:
 
 	bool keyboard_connecting = false;
 	bool connecting = false;
-	StringName connecting_from_node;
-	bool connecting_from_output = false;
-	int connecting_type = 0;
-	Color connecting_color;
-	Vector2 connecting_to_point; // In local screen space.
+	bool connecting_valid = false;
 	bool connecting_target_valid = false;
-	StringName connecting_target_node;
-	int connecting_from_port_index = 0;
-	int connecting_target_port_index = 0;
+	Ref<GraphPort> connecting_from_port;
+	Vector2 connecting_to_point; // In local screen space.
+	Ref<GraphPort> connecting_to_port;
 
 	bool just_disconnected = false;
-	bool connecting_valid = false;
 
 	Vector2 click_pos;
 
@@ -236,13 +189,13 @@ private:
 	List<GraphElement *> prev_selected;
 
 	bool setting_scroll_offset = false;
-	bool right_disconnects = false;
+	bool input_disconnects = false;
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
 
-	Vector<Ref<Connection>> connections;
-	HashMap<StringName, List<Ref<Connection>>> connection_map;
-	Ref<Connection> hovered_connection;
+	TypedArray<Ref<GraphConnection>> connections;
+	HashMap<Ref<GraphPort>, TypedArray<Ref<GraphConnection>>> connection_map;
+	Ref<GraphConnection> hovered_connection;
 
 	float lines_thickness = 4.0f;
 	float lines_curvature = 0.5f;
@@ -263,9 +216,10 @@ private:
 
 	Ref<GraphEditArranger> arranger;
 
-	HashSet<ConnectionType, ConnectionType> valid_connection_types;
-	HashSet<int> valid_left_disconnect_types;
-	HashSet<int> valid_right_disconnect_types;
+	HashSet<GraphConnection::ConnectionType, GraphConnection::ConnectionType> valid_connection_types;
+	HashSet<int> valid_input_disconnect_types;
+	HashSet<int> valid_output_disconnect_types;
+	HashSet<int> valid_undirected_disconnect_types;
 
 	struct ThemeCache {
 		float base_scale = 1.0;
@@ -295,8 +249,9 @@ private:
 		Ref<Texture2D> minimap_toggle;
 		Ref<Texture2D> layout;
 
-		float port_hotzone_inner_extent = 0.0;
-		float port_hotzone_outer_extent = 0.0;
+		float port_hotzone_input_extent = 0.0;
+		float port_hotzone_output_extent = 0.0;
+		float port_hotzone_undirected_extent = 0.0;
 	} theme_cache;
 
 	// This separates the children in two layers to ensure the order
@@ -321,7 +276,7 @@ private:
 	void _graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node);
 	void _graph_frame_autoshrink_changed(const Vector2 &p_new_minsize, GraphFrame *p_frame);
 	void _graph_element_moved(Node *p_node);
-	void _graph_node_slot_updated(int p_index, Node *p_node);
+	void _graph_node_ports_updated(Node *p_node);
 	void _graph_node_rect_changed(GraphNode *p_node);
 
 	void _ensure_node_order_from_root(const StringName &p_node);
@@ -336,6 +291,7 @@ private:
 	float _get_shader_line_width();
 	void _draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color);
 	void _invalidate_connection_line_cache();
+	void _invalidate_graph_node_connections(GraphNode *p_node);
 	void _update_top_connection_layer();
 	void _update_connections();
 
@@ -343,13 +299,15 @@ private:
 	void _minimap_draw();
 	void _draw_grid();
 
-	bool is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
+	bool is_in_port_hotzone(const Ref<GraphPort> p_port, const Vector2 &p_mouse_pos);
+	Vector2 get_hotzone_extent(const Ref<GraphPort> p_port);
 
-	void set_connections(const TypedArray<Dictionary> &p_connections);
-	TypedArray<Dictionary> _get_connection_list() const;
-	Dictionary _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
-	TypedArray<Dictionary> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
-	TypedArray<Dictionary> _get_connection_list_from_node(const StringName &p_node) const;
+	void set_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
+	TypedArray<Ref<GraphConnection>> _get_connections() const;
+	Ref<GraphConnection> _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
+	TypedArray<Ref<GraphConnection>> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+	TypedDictionary<Ref<GraphPort>, TypedArray<Ref<GraphConnection>>> _get_connections_from_node(const Ref<GraphNode> &p_node) const;
+	bool _is_connection_valid(const Ref<GraphPort> p_port);
 
 	Rect2 _compute_shrinked_frame_rect(const GraphFrame *p_frame);
 	void _set_drag_frame_attached_nodes(GraphFrame *p_frame, bool p_drag);
@@ -385,13 +343,10 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
-	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
-	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
-
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
 	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
 	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
-	GDVIRTUAL4R(bool, _is_node_hover_valid, StringName, int, StringName, int);
+	GDVIRTUAL2R(bool, _is_node_hover_valid, Ref<GraphPort>, Ref<GraphPort>);
 
 public:
 	static void init_shaders();
@@ -406,31 +361,37 @@ public:
 	void _update_graph_frame(GraphFrame *p_frame);
 
 	// Connection related methods.
-	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, bool keep_alive = false);
-	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
-	int get_connection_count(const StringName &p_node, int p_port);
-	GraphNode *get_input_connection_target(const StringName &p_node, int p_port);
-	GraphNode *get_output_connection_target(const StringName &p_node, int p_port);
-	String get_connections_description(const StringName &p_node, int p_port);
-	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
+	Error connect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port, bool keep_alive = false);
+	Error connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool keep_alive = false);
+	bool is_connected(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
+	int get_connection_count(const Ref<GraphPort> p_port);
+	Ref<GraphNode> get_connection_target(const Ref<GraphPort> p_port);
+	String get_connections_description(const Ref<GraphPort> p_port);
+	void disconnect(const Ref<GraphConnection> p_connection);
+	void disconnect_all_by_port(const Ref<GraphPort> p_port);
+	void disconnect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
+	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
+	void move_connections(const Ref<GraphPort> p_from_port, const Ref<GraphPort> p_to_port);
 
 	void force_connection_drag_end();
-	const Vector<Ref<Connection>> &get_connections() const;
+	const Ref<GraphConnection> get_connection(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
+	const TypedArray<Ref<GraphConnection>> &get_connections() const;
+	const TypedArray<Ref<GraphConnection>> &get_connections_by_port(const Ref<GraphPort> p_port) const;
 	void clear_connections();
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
-	Ref<Connection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
-	List<Ref<Connection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+	Ref<GraphConnection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
+	TypedArray<Ref<GraphConnection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
 
 	bool is_keyboard_connecting() const { return keyboard_connecting; }
-	void start_keyboard_connecting(GraphNode *p_node, int p_in_port, int p_out_port);
-	void end_keyboard_connecting(GraphNode *p_node, int p_in_port, int p_out_port);
+	void start_connecting(const Ref<GraphPort> p_port, bool is_keyboard);
+	void end_connecting(const Ref<GraphPort> p_port, bool is_keyboard);
 
 	Dictionary get_type_names() const;
 	void set_type_names(const Dictionary &p_names);
 
-	virtual bool is_node_hover_valid(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
+	virtual bool is_node_hover_valid(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
 
-	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
+	void set_connection_activity(Ref<GraphConnection> p_conn, float p_activity);
 	void reset_all_connection_activity();
 
 	void add_valid_connection_type(int p_type, int p_with_type);
@@ -485,14 +446,17 @@ public:
 
 	void override_connections_shader(const Ref<Shader> &p_shader);
 
-	void set_right_disconnects(bool p_enable);
-	bool is_right_disconnects_enabled() const;
+	void set_input_disconnects(bool p_enable);
+	bool is_input_disconnects_enabled() const;
 
-	void add_valid_right_disconnect_type(int p_type);
-	void remove_valid_right_disconnect_type(int p_type);
+	void add_valid_input_disconnect_type(int p_type);
+	void remove_valid_input_disconnect_type(int p_type);
 
-	void add_valid_left_disconnect_type(int p_type);
-	void remove_valid_left_disconnect_type(int p_type);
+	void add_valid_output_disconnect_type(int p_type);
+	void remove_valid_output_disconnect_type(int p_type);
+
+	void add_valid_undirected_disconnect_type(int p_type);
+	void remove_valid_undirected_disconnect_type(int p_type);
 
 	void set_scroll_offset(const Vector2 &p_ofs);
 	Vector2 get_scroll_offset() const;

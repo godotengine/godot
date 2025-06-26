@@ -35,6 +35,7 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_node_indexed.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 
@@ -67,12 +68,12 @@ public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
-class VSGraphNode : public GraphNode {
-	GDCLASS(VSGraphNode, GraphNode);
+class VSGraphNode : public GraphNodeIndexed {
+	GDCLASS(VSGraphNode, GraphNodeIndexed);
 
 protected:
-	void _draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color, const Color &p_rim_color);
-	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
+	void _draw_port(const Ref<GraphPort> p_port, const Color &p_rim_color);
+	virtual void draw_port(const Ref<GraphPort> p_port) override;
 };
 
 class VSRerouteNode : public VSGraphNode {
@@ -85,7 +86,7 @@ class VSRerouteNode : public VSGraphNode {
 protected:
 	void _notification(int p_what);
 
-	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
+	virtual void draw_port(const Ref<GraphPort> p_port) override;
 
 public:
 	VSRerouteNode();
@@ -491,7 +492,7 @@ class VisualShaderEditor : public ShaderEditor {
 	int from_node = -1;
 	int from_slot = -1;
 
-	Ref<GraphEdit::Connection> clicked_connection;
+	Ref<GraphConnection> clicked_connection;
 	bool connection_node_insert_requested = false;
 
 	HashSet<int> selected_constants;
@@ -511,7 +512,7 @@ class VisualShaderEditor : public ShaderEditor {
 	void _connection_drag_ended();
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
-	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphEdit::Connection> *r_closest_connection, int *r_node_id = nullptr, int *r_to_port = nullptr);
+	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphConnection> *r_closest_connection, int *r_from_port = nullptr, int *r_to_port = nullptr);
 	void _handle_node_drop_on_connection();
 
 	void _frame_title_popup_show(const Point2 &p_position, int p_node_id);

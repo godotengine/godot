@@ -38,88 +38,64 @@
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
 
-	if (!str.begins_with("slot/")) {
+	if (!str.begins_with("port/")) {
 		return false;
 	}
 
 	int idx = str.get_slicec('/', 1).to_int();
-	String slot_property_name = str.get_slicec('/', 2);
+	String property_name = str.get_slicec('/', 2);
 
-	Slot slot;
-	if (slot_table.has(idx)) {
-		slot = slot_table[idx];
-	}
-
-	if (slot_property_name == "left_enabled") {
-		slot.enable_left = p_value;
-	} else if (slot_property_name == "left_type") {
-		slot.type_left = p_value;
-	} else if (slot_property_name == "left_icon") {
-		slot.custom_port_icon_left = p_value;
-	} else if (slot_property_name == "left_color") {
-		slot.color_left = p_value;
-	} else if (slot_property_name == "right_enabled") {
-		slot.enable_right = p_value;
-	} else if (slot_property_name == "right_type") {
-		slot.type_right = p_value;
-	} else if (slot_property_name == "right_color") {
-		slot.color_right = p_value;
-	} else if (slot_property_name == "right_icon") {
-		slot.custom_port_icon_right = p_value;
-	} else if (slot_property_name == "draw_stylebox") {
-		slot.draw_stylebox = p_value;
+	Ref<GraphPort> port;
+	if (ports.size() > idx) {
+		port = ports[idx];
 	} else {
 		return false;
 	}
 
-	set_slot(idx,
-			slot.enable_left,
-			slot.type_left,
-			slot.color_left,
-			slot.enable_right,
-			slot.type_right,
-			slot.color_right,
-			slot.custom_port_icon_left,
-			slot.custom_port_icon_right,
-			slot.draw_stylebox);
+	if (property_name == "enabled") {
+		port->set_enabled(p_value);
+	} else if (property_name == "type") {
+		port->set_type(p_value);
+	} else if (property_name == "icon") {
+		port->icon = p_value;
+	} else if (property_name == "color") {
+		port->color = p_value;
+	} else if (property_name == "direction") {
+		port->set_direction(p_value);
+	} else {
+		return false;
+	}
 
-	queue_redraw();
 	return true;
 }
 
 bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 	String str = p_name;
 
-	if (!str.begins_with("slot/")) {
+	if (!str.begins_with("port/")) {
 		return false;
 	}
 
 	int idx = str.get_slicec('/', 1).to_int();
-	StringName slot_property_name = str.get_slicec('/', 2);
+	StringName property_name = str.get_slicec('/', 2);
 
-	Slot slot;
-	if (slot_table.has(idx)) {
-		slot = slot_table[idx];
+	Ref<GraphPort> port;
+	if (ports.size() > idx) {
+		port = ports[idx];
+	} else {
+		return false;
 	}
 
-	if (slot_property_name == "left_enabled") {
-		r_ret = slot.enable_left;
-	} else if (slot_property_name == "left_type") {
-		r_ret = slot.type_left;
-	} else if (slot_property_name == "left_color") {
-		r_ret = slot.color_left;
-	} else if (slot_property_name == "left_icon") {
-		r_ret = slot.custom_port_icon_left;
-	} else if (slot_property_name == "right_enabled") {
-		r_ret = slot.enable_right;
-	} else if (slot_property_name == "right_type") {
-		r_ret = slot.type_right;
-	} else if (slot_property_name == "right_color") {
-		r_ret = slot.color_right;
-	} else if (slot_property_name == "right_icon") {
-		r_ret = slot.custom_port_icon_right;
-	} else if (slot_property_name == "draw_stylebox") {
-		r_ret = slot.draw_stylebox;
+	if (property_name == "enabled") {
+		r_ret = port->get_enabled();
+	} else if (property_name == "type") {
+		r_ret = port->get_type();
+	} else if (property_name == "icon") {
+		r_ret = port->icon;
+	} else if (property_name == "color") {
+		r_ret = port->color;
+	} else if (property_name == "direction") {
+		r_ret = port->get_direction();
 	} else {
 		return false;
 	}
@@ -129,22 +105,13 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 	int idx = 0;
-	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::IGNORE);
-		if (!child) {
-			continue;
-		}
+	for (Ref<GraphPort> port : ports) {
+		String base = "port/" + itos(idx) + "/";
 
-		String base = "slot/" + itos(idx) + "/";
-
-		p_list->push_back(PropertyInfo(Variant::BOOL, base + "left_enabled"));
-		p_list->push_back(PropertyInfo(Variant::INT, base + "left_type"));
-		p_list->push_back(PropertyInfo(Variant::COLOR, base + "left_color"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "left_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, base + "right_enabled"));
-		p_list->push_back(PropertyInfo(Variant::INT, base + "right_type"));
-		p_list->push_back(PropertyInfo(Variant::COLOR, base + "right_color"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, base + "enabled"));
+		p_list->push_back(PropertyInfo(Variant::INT, base + "type"));
+		p_list->push_back(PropertyInfo(Variant::COLOR, base + "color"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, base + "draw_stylebox"));
 		idx++;
 	}
@@ -165,7 +132,6 @@ void GraphNode::_resort() {
 	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
 
 	// First pass, determine minimum size AND amount of stretchable elements.
-	Ref<StyleBox> sb_slot = theme_cache.slot;
 	int separation = theme_cache.separation;
 
 	int children_count = 0;
@@ -180,7 +146,7 @@ void GraphNode::_resort() {
 			continue;
 		}
 
-		Size2i size = child->get_combined_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
+		Size2i size = child->get_combined_minimum_size();
 
 		stretch_min += size.height;
 
@@ -197,9 +163,8 @@ void GraphNode::_resort() {
 
 		children_count++;
 	}
-	slot_count = children_count;
-	if (selected_slot >= slot_count) {
-		selected_slot = -1;
+	if (selected_port >= get_port_count()) {
+		selected_port = -1;
 	}
 
 	if (children_count == 0) {
@@ -254,8 +219,8 @@ void GraphNode::_resort() {
 	// Final pass, draw and stretch elements.
 
 	int ofs_y = sb_panel->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
-
-	slot_y_cache.clear();
+	// TODO: Move to GraphNodeIndexed
+	//slot_y_cache.clear();
 	int width = new_size.width - sb_panel->get_minimum_size().width;
 	int valid_children_idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
@@ -279,12 +244,13 @@ void GraphNode::_resort() {
 		}
 
 		int height = to_y_pos - from_y_pos;
-		float margin = sb_panel->get_margin(SIDE_LEFT) + (slot_table[i].draw_stylebox ? sb_slot->get_margin(SIDE_LEFT) : 0);
-		float final_width = width - (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().x : 0);
+		float margin = sb_panel->get_margin(SIDE_LEFT);
+		float final_width = width;
 		Rect2 rect(margin, from_y_pos, final_width, height);
 		fit_child_in_rect(child, rect);
 
-		slot_y_cache.push_back(child->get_rect().position.y + child->get_rect().size.height * 0.5);
+		// TODO: Move to GraphNodeIndexed
+		//slot_y_cache.push_back(child->get_rect().position.y + child->get_rect().size.height * 0.5);
 
 		ofs_y = to_y_pos;
 		valid_children_idx++;
@@ -295,13 +261,12 @@ void GraphNode::_resort() {
 	port_pos_dirty = true;
 }
 
-void GraphNode::draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) {
-	if (GDVIRTUAL_CALL(_draw_port, p_slot_index, p_pos, p_left, p_color)) {
+void GraphNode::draw_port(const Ref<GraphPort> p_port) {
+	if (GDVIRTUAL_CALL(_draw_port, p_port)) {
 		return;
 	}
 
-	Slot slot = slot_table[p_slot_index];
-	Ref<Texture2D> port_icon = p_left ? slot.custom_port_icon_left : slot.custom_port_icon_right;
+	Ref<Texture2D> port_icon = p_port->icon;
 
 	Point2 icon_offset;
 	if (port_icon.is_null()) {
@@ -309,97 +274,34 @@ void GraphNode::draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Co
 	}
 
 	icon_offset = -port_icon->get_size() * 0.5;
-	port_icon->draw(get_canvas_item(), p_pos + icon_offset, p_color);
+	port_icon->draw(get_canvas_item(), p_port->position + icon_offset, p_port->color);
 }
 
-void GraphNode::_accessibility_action_slot(const Variant &p_data) {
+void GraphNode::_accessibility_action_port(const Variant &p_data) {
 	CustomAccessibilityAction action = (CustomAccessibilityAction)p_data.operator int();
+	if (!ports.has(selected_port)) {
+		return;
+	}
+	Ref<GraphPort> port = get_port(selected_port);
+	ERR_FAIL_COND(!port->get_enabled());
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	ERR_FAIL_NULL(graph);
 	switch (action) {
-		case ACTION_CONNECT_INPUT: {
-			if (slot_table.has(selected_slot)) {
-				const Slot &slot = slot_table[selected_slot];
-				if (slot.enable_left) {
-					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-					if (graph) {
-						for (int i = 0; i < left_port_cache.size(); i++) {
-							if (left_port_cache[i].slot_index == selected_slot) {
-								if (graph->is_keyboard_connecting()) {
-									graph->end_keyboard_connecting(this, i, -1);
-								} else {
-									graph->start_keyboard_connecting(this, i, -1);
-								}
-								queue_accessibility_update();
-								queue_redraw();
-								break;
-							}
-						}
-					}
-				}
+		case ACTION_CONNECT:
+			if (graph->is_keyboard_connecting()) {
+				graph->end_connecting(port, true);
+			} else {
+				graph->start_connecting(port, true);
 			}
-		} break;
-
-		case ACTION_CONNECT_OUTPUT: {
-			if (slot_table.has(selected_slot)) {
-				const Slot &slot = slot_table[selected_slot];
-				if (slot.enable_right) {
-					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-					if (graph) {
-						for (int i = 0; i < right_port_cache.size(); i++) {
-							if (right_port_cache[i].slot_index == selected_slot) {
-								if (graph->is_keyboard_connecting()) {
-									graph->end_keyboard_connecting(this, -1, i);
-								} else {
-									graph->start_keyboard_connecting(this, -1, i);
-								}
-								queue_accessibility_update();
-								queue_redraw();
-								break;
-							}
-						}
-					}
-				}
+			queue_accessibility_update();
+			queue_redraw();
+			break;
+		case ACTION_FOLLOW:
+			Ref<GraphNode> target = graph->get_connection_target(port);
+			if (target.is_valid()) {
+				target->grab_focus();
 			}
-		} break;
-
-		case ACTION_FOLLOW_INPUT: {
-			if (slot_table.has(selected_slot)) {
-				const Slot &slot = slot_table[selected_slot];
-				if (slot.enable_left) {
-					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-					if (graph) {
-						for (int i = 0; i < left_port_cache.size(); i++) {
-							if (left_port_cache[i].slot_index == selected_slot) {
-								GraphNode *target = graph->get_input_connection_target(get_name(), i);
-								if (target) {
-									target->grab_focus();
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		} break;
-
-		case ACTION_FOLLOW_OUTPUT: {
-			if (slot_table.has(selected_slot)) {
-				const Slot &slot = slot_table[selected_slot];
-				if (slot.enable_right) {
-					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-					if (graph) {
-						for (int i = 0; i < right_port_cache.size(); i++) {
-							if (right_port_cache[i].slot_index == selected_slot) {
-								GraphNode *target = graph->get_output_connection_target(get_name(), i);
-								if (target) {
-									target->grab_focus();
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		} break;
+			break;
 	}
 }
 
@@ -408,18 +310,19 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 		_port_pos_update();
 	}
 
-	if (p_event->is_pressed() && slot_count > 0) {
+	int port_count = get_port_count();
+	if (p_event->is_pressed() && port_count > 0) {
 		if (p_event->is_action("ui_up", true)) {
-			selected_slot--;
-			if (selected_slot < 0) {
-				selected_slot = -1;
+			selected_port--;
+			if (selected_port < 0) {
+				selected_port = -1;
 			} else {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_down", true)) {
-			selected_slot++;
-			if (selected_slot >= slot_count) {
-				selected_slot = -1;
+			selected_port++;
+			if (selected_port >= port_count) {
+				selected_port = -1;
 			} else {
 				accept_event();
 			}
@@ -432,101 +335,44 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (p_event->is_action("ui_graph_delete", true)) {
 			GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 			if (graph && graph->is_keyboard_connecting()) {
-				graph->end_keyboard_connecting(this, -1, -1);
+				graph->end_connecting(nullptr, false);
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_graph_follow_left", true)) {
-			if (slot_table.has(selected_slot)) {
-				const Slot &slot = slot_table[selected_slot];
-				if (slot.enable_left) {
+		} else if (p_event->is_action("ui_graph_follow_left", true) || p_event->is_action("ui_graph_follow_right", true)) {
+			if (ports.has(selected_port)) {
+				const Ref<GraphPort> port = get_port(selected_port);
+				if (port.is_valid() && port->get_enabled()) {
 					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 					if (graph) {
-						for (int i = 0; i < left_port_cache.size(); i++) {
-							if (left_port_cache[i].slot_index == selected_slot) {
-								GraphNode *target = graph->get_input_connection_target(get_name(), i);
-								if (target) {
-									target->grab_focus();
-									accept_event();
-									break;
-								}
-							}
+						Ref<GraphNode> target = graph->get_connection_target(port);
+						if (target.is_valid()) {
+							target->grab_focus();
+							accept_event();
 						}
 					}
 				}
 			}
-		} else if (p_event->is_action("ui_graph_follow_right", true)) {
-			if (slot_table.has(selected_slot)) {
-				const Slot &slot = slot_table[selected_slot];
-				if (slot.enable_right) {
+		} else if (p_event->is_action("ui_left", true) || p_event->is_action("ui_right", true)) {
+			if (ports.has(selected_port)) {
+				const Ref<GraphPort> port = get_port(selected_port);
+				if (port.is_valid() && port->get_enabled()) {
 					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 					if (graph) {
-						for (int i = 0; i < right_port_cache.size(); i++) {
-							if (right_port_cache[i].slot_index == selected_slot) {
-								GraphNode *target = graph->get_output_connection_target(get_name(), i);
-								if (target) {
-									target->grab_focus();
-									accept_event();
-									break;
-								}
-							}
+						if (graph->is_keyboard_connecting()) {
+							graph->end_connecting(port, true);
+						} else {
+							graph->start_connecting(port, true);
 						}
-					}
-				}
-			}
-		} else if (p_event->is_action("ui_left", true)) {
-			if (slot_table.has(selected_slot)) {
-				const Slot &slot = slot_table[selected_slot];
-				if (slot.enable_left) {
-					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-					if (graph) {
-						for (int i = 0; i < left_port_cache.size(); i++) {
-							if (left_port_cache[i].slot_index == selected_slot) {
-								if (graph->is_keyboard_connecting()) {
-									graph->end_keyboard_connecting(this, i, -1);
-								} else {
-									graph->start_keyboard_connecting(this, i, -1);
-								}
-								accept_event();
-								break;
-							}
-						}
-					}
-				}
-			}
-		} else if (p_event->is_action("ui_right", true)) {
-			if (slot_table.has(selected_slot)) {
-				const Slot &slot = slot_table[selected_slot];
-				if (slot.enable_right) {
-					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-					if (graph) {
-						for (int i = 0; i < right_port_cache.size(); i++) {
-							if (right_port_cache[i].slot_index == selected_slot) {
-								if (graph->is_keyboard_connecting()) {
-									graph->end_keyboard_connecting(this, -1, i);
-								} else {
-									graph->start_keyboard_connecting(this, -1, i);
-								}
-								accept_event();
-								break;
-							}
-						}
+						accept_event();
 					}
 				}
 			}
 		} else if (p_event->is_action("ui_accept", true)) {
-			if (slot_table.has(selected_slot)) {
-				int idx = 0;
-				for (int i = 0; i < get_child_count(false); i++) {
-					Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::IGNORE);
-					if (!child) {
-						continue;
-					}
-					if (idx == selected_slot) {
-						selected_slot = -1;
-						child->grab_focus();
-						break;
-					}
-					idx++;
+			if (ports.has(selected_port)) {
+				Control *accessible_node = get_accessibility_node_by_port(selected_port);
+				if (accessible_node) {
+					selected_port = -1;
+					accessible_node->grab_focus();
 				}
 				accept_event();
 			}
@@ -534,6 +380,10 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 		queue_accessibility_update();
 		queue_redraw();
 	}
+}
+
+Control *GraphNode::get_accessibility_node_by_port(int p_port_idx) {
+	return this;
 }
 
 void GraphNode::_notification(int p_what) {
@@ -548,50 +398,27 @@ void GraphNode::_notification(int p_what) {
 			}
 			name = vformat(ETR("graph node %s (%s)"), name, get_title());
 
-			if (slot_table.has(selected_slot)) {
+			if (ports.has(selected_port)) {
 				GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 				Dictionary type_info;
 				if (graph) {
 					type_info = graph->get_type_names();
 				}
-				const Slot &slot = slot_table[selected_slot];
-				name += ", " + vformat(ETR("slot %d of %d"), selected_slot + 1, slot_count);
-				if (slot.enable_left) {
-					if (type_info.has(slot.type_left)) {
-						name += "," + vformat(ETR("input port, type: %s"), type_info[slot.type_left]);
-					} else {
-						name += "," + vformat(ETR("input port, type: %d"), slot.type_left);
-					}
-					if (graph) {
-						for (int i = 0; i < left_port_cache.size(); i++) {
-							if (left_port_cache[i].slot_index == selected_slot) {
-								String cd = graph->get_connections_description(get_name(), i);
-								if (cd.is_empty()) {
-									name += " " + ETR("no connections");
-								} else {
-									name += " " + cd;
-								}
-								break;
-							}
+				const Ref<GraphPort> port = get_port(selected_port);
+				if (port.is_valid()) {
+					name += ", " + vformat(ETR("port %d of %d"), selected_port + 1, get_port_count());
+					if (port->get_enabled()) {
+						if (type_info.has(port->get_type())) {
+							name += "," + vformat(ETR("type: %s"), type_info[port->get_type()]);
+						} else {
+							name += "," + vformat(ETR("type: %d"), port->get_type());
 						}
-					}
-				}
-				if (slot.enable_left) {
-					if (type_info.has(slot.type_right)) {
-						name += "," + vformat(ETR("output port, type: %s"), type_info[slot.type_right]);
-					} else {
-						name += "," + vformat(ETR("output port, type: %d"), slot.type_right);
-					}
-					if (graph) {
-						for (int i = 0; i < right_port_cache.size(); i++) {
-							if (right_port_cache[i].slot_index == selected_slot) {
-								String cd = graph->get_connections_description(get_name(), i);
-								if (cd.is_empty()) {
-									name += " " + ETR("no connections");
-								} else {
-									name += " " + cd;
-								}
-								break;
+						if (graph) {
+							String cd = graph->get_connections_description(port);
+							if (cd.is_empty()) {
+								name += " " + ETR("no connections");
+							} else {
+								name += " " + cd;
 							}
 						}
 					}
@@ -600,18 +427,16 @@ void GraphNode::_notification(int p_what) {
 					name += ", " + ETR("currently selecting target port");
 				}
 			} else {
-				name += ", " + vformat(ETR("has %d slots"), slot_count);
+				name += ", " + vformat(ETR("has %d ports"), get_port_count());
 			}
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST);
 			DisplayServer::get_singleton()->accessibility_update_set_name(ae, name);
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_INPUT, ETR("Edit Input Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_OUTPUT, ETR("Edit Output Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_INPUT, ETR("Follow Input Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_OUTPUT, ETR("Follow Output Port Connection"));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CUSTOM, callable_mp(this, &GraphNode::_accessibility_action_slot));
+			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT, ETR("Edit Port Connection"));
+			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW, ETR("Follow Port Connection"));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CUSTOM, callable_mp(this, &GraphNode::_accessibility_action_port));
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
-			selected_slot = -1;
+			selected_port = -1;
 			queue_redraw();
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -622,8 +447,7 @@ void GraphNode::_notification(int p_what) {
 			Ref<StyleBox> sb_to_draw_panel = selected ? theme_cache.panel_selected : theme_cache.panel;
 			Ref<StyleBox> sb_to_draw_titlebar = selected ? theme_cache.titlebar_selected : theme_cache.titlebar;
 
-			Ref<StyleBox> sb_slot = theme_cache.slot;
-			Ref<StyleBox> sb_slot_selected = theme_cache.slot_selected;
+			Ref<StyleBox> sb_port_selected = theme_cache.port_selected;
 
 			int port_h_offset = theme_cache.port_h_offset;
 
@@ -645,6 +469,21 @@ void GraphNode::_notification(int p_what) {
 
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
+			// Take ports into account
+			for (Ref<GraphPort> port : ports) {
+				draw_port(port);
+			}
+			if (selected_port >= 0) {
+				Ref<GraphPort> port = get_port(selected_port);
+				if (port.is_valid()) {
+					Size2i port_sz = theme_cache.port->get_size();
+					Vector2 port_pos = port->get_position();
+					draw_style_box(sb_port_selected, Rect2i(port_pos.x + port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
+					draw_style_box(sb_port_selected, Rect2i(port_pos.x + get_size().x - port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
+				}
+			}
+			// TODO: Move to GraphNodeIndexed
+			/*
 			// Take the HboxContainer child into account.
 			if (get_child_count(false) > 0) {
 				int slot_index = 0;
@@ -688,6 +527,7 @@ void GraphNode::_notification(int p_what) {
 					slot_index++;
 				}
 			}
+			*/
 
 			if (resizable) {
 				draw_texture(theme_cache.resizer, get_size() - theme_cache.resizer->get_size(), theme_cache.resizer_color);
@@ -696,242 +536,32 @@ void GraphNode::_notification(int p_what) {
 	}
 }
 
-void GraphNode::set_slot(int p_slot_index, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right, bool p_draw_stylebox) {
-	ERR_FAIL_COND_MSG(p_slot_index < 0, vformat("Cannot set slot with index (%d) lesser than zero.", p_slot_index));
+void GraphNode::set_port(int p_port_index, const Ref<GraphPort> port) {
+	ERR_FAIL_COND_MSG(p_port_index < 0, vformat("Cannot set port with index (%d) lesser than zero.", p_port_index));
 
-	if (!p_enable_left && p_type_left == 0 && p_color_left == Color(1, 1, 1, 1) &&
-			!p_enable_right && p_type_right == 0 && p_color_right == Color(1, 1, 1, 1) &&
-			p_custom_left.is_null() && p_custom_right.is_null()) {
-		slot_table.erase(p_slot_index);
-		return;
-	}
-
-	Slot slot;
-	slot.enable_left = p_enable_left;
-	slot.type_left = p_type_left;
-	slot.color_left = p_color_left;
-	slot.enable_right = p_enable_right;
-	slot.type_right = p_type_right;
-	slot.color_right = p_color_right;
-	slot.custom_port_icon_left = p_custom_left;
-	slot.custom_port_icon_right = p_custom_right;
-	slot.draw_stylebox = p_draw_stylebox;
-	slot_table[p_slot_index] = slot;
+	ports.set(p_port_index, port);
 
 	queue_accessibility_update();
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_slot_index);
+	emit_signal(SNAME("port_updated"), p_port_index);
 }
 
-void GraphNode::clear_slot(int p_slot_index) {
-	slot_table.erase(p_slot_index);
+void GraphNode::clear_port(int p_port_index) {
+	ports.remove_at(p_port_index);
 
 	queue_accessibility_update();
 	queue_redraw();
 	port_pos_dirty = true;
 }
 
-void GraphNode::clear_all_slots() {
-	slot_table.clear();
+void GraphNode::clear_all_ports() {
+	ports.clear();
 
 	queue_accessibility_update();
 	queue_redraw();
 	port_pos_dirty = true;
-}
-
-bool GraphNode::is_slot_enabled_left(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return false;
-	}
-	return slot_table[p_slot_index].enable_left;
-}
-
-void GraphNode::set_slot_enabled_left(int p_slot_index, bool p_enable) {
-	ERR_FAIL_COND_MSG(p_slot_index < 0, vformat("Cannot set enable_left for the slot with index (%d) lesser than zero.", p_slot_index));
-
-	if (slot_table[p_slot_index].enable_left == p_enable) {
-		return;
-	}
-
-	slot_table[p_slot_index].enable_left = p_enable;
-
-	queue_accessibility_update();
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
-}
-
-void GraphNode::set_slot_type_left(int p_slot_index, int p_type) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set type_left for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
-
-	if (slot_table[p_slot_index].type_left == p_type) {
-		return;
-	}
-
-	slot_table[p_slot_index].type_left = p_type;
-
-	queue_accessibility_update();
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
-}
-
-int GraphNode::get_slot_type_left(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return 0;
-	}
-	return slot_table[p_slot_index].type_left;
-}
-
-void GraphNode::set_slot_color_left(int p_slot_index, const Color &p_color) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set color_left for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
-
-	if (slot_table[p_slot_index].color_left == p_color) {
-		return;
-	}
-
-	slot_table[p_slot_index].color_left = p_color;
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
-}
-
-Color GraphNode::get_slot_color_left(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return Color(1, 1, 1, 1);
-	}
-	return slot_table[p_slot_index].color_left;
-}
-
-void GraphNode::set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set custom_port_icon_left for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
-
-	if (slot_table[p_slot_index].custom_port_icon_left == p_custom_icon) {
-		return;
-	}
-
-	slot_table[p_slot_index].custom_port_icon_left = p_custom_icon;
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
-}
-
-Ref<Texture2D> GraphNode::get_slot_custom_icon_left(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return Ref<Texture2D>();
-	}
-	return slot_table[p_slot_index].custom_port_icon_left;
-}
-
-bool GraphNode::is_slot_enabled_right(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return false;
-	}
-	return slot_table[p_slot_index].enable_right;
-}
-
-void GraphNode::set_slot_enabled_right(int p_slot_index, bool p_enable) {
-	ERR_FAIL_COND_MSG(p_slot_index < 0, vformat("Cannot set enable_right for the slot with index (%d) lesser than zero.", p_slot_index));
-
-	if (slot_table[p_slot_index].enable_right == p_enable) {
-		return;
-	}
-
-	slot_table[p_slot_index].enable_right = p_enable;
-
-	queue_accessibility_update();
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
-}
-
-void GraphNode::set_slot_type_right(int p_slot_index, int p_type) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set type_right for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
-
-	if (slot_table[p_slot_index].type_right == p_type) {
-		return;
-	}
-
-	slot_table[p_slot_index].type_right = p_type;
-
-	queue_accessibility_update();
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
-}
-
-int GraphNode::get_slot_type_right(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return 0;
-	}
-	return slot_table[p_slot_index].type_right;
-}
-
-void GraphNode::set_slot_color_right(int p_slot_index, const Color &p_color) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set color_right for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
-
-	if (slot_table[p_slot_index].color_right == p_color) {
-		return;
-	}
-
-	slot_table[p_slot_index].color_right = p_color;
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
-}
-
-Color GraphNode::get_slot_color_right(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return Color(1, 1, 1, 1);
-	}
-	return slot_table[p_slot_index].color_right;
-}
-
-void GraphNode::set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set custom_port_icon_right for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
-
-	if (slot_table[p_slot_index].custom_port_icon_right == p_custom_icon) {
-		return;
-	}
-
-	slot_table[p_slot_index].custom_port_icon_right = p_custom_icon;
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
-}
-
-Ref<Texture2D> GraphNode::get_slot_custom_icon_right(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return Ref<Texture2D>();
-	}
-	return slot_table[p_slot_index].custom_port_icon_right;
-}
-
-bool GraphNode::is_slot_draw_stylebox(int p_slot_index) const {
-	if (!slot_table.has(p_slot_index)) {
-		return false;
-	}
-	return slot_table[p_slot_index].draw_stylebox;
-}
-
-void GraphNode::set_slot_draw_stylebox(int p_slot_index, bool p_enable) {
-	ERR_FAIL_COND_MSG(p_slot_index < 0, vformat("Cannot set draw_stylebox for the slot with p_index (%d) lesser than zero.", p_slot_index));
-
-	slot_table[p_slot_index].draw_stylebox = p_enable;
-	queue_redraw();
-	port_pos_dirty = true;
-
-	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
 void GraphNode::set_ignore_invalid_connection_type(bool p_ignore) {
@@ -942,10 +572,26 @@ bool GraphNode::is_ignoring_valid_connection_type() const {
 	return ignore_invalid_connection_type;
 }
 
+Ref<GraphPort> GraphNode::get_port(int p_port_idx) {
+	ERR_FAIL_INDEX_V(p_port_idx, ports.size(), Ref<GraphPort>(nullptr));
+	return ports[p_port_idx];
+}
+
+TypedArray<Ref<GraphPort>> GraphNode::get_ports() {
+	return ports;
+}
+
+int GraphNode::index_of_port(const Ref<GraphPort> p_port) {
+	return ports.find(p_port);
+}
+
+int GraphNode::get_port_count() {
+	return ports.size();
+}
+
 Size2 GraphNode::get_minimum_size() const {
 	Ref<StyleBox> sb_panel = theme_cache.panel;
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
-	Ref<StyleBox> sb_slot = theme_cache.slot;
 
 	int separation = theme_cache.separation;
 	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
@@ -958,9 +604,10 @@ Size2 GraphNode::get_minimum_size() const {
 
 		Size2i size = child->get_combined_minimum_size();
 		size.width += sb_panel->get_minimum_size().width;
-		if (slot_table.has(i)) {
+		// TODO: Move to GraphNodeIndexed
+		/*if (slot_table.has(i)) {
 			size += slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2();
-		}
+		}*/
 
 		minsize.height += size.height;
 		minsize.width = MAX(minsize.width, size.width);
@@ -978,136 +625,71 @@ Size2 GraphNode::get_minimum_size() const {
 void GraphNode::_port_pos_update() {
 	int edgeofs = theme_cache.port_h_offset;
 
-	left_port_cache.clear();
-	right_port_cache.clear();
-	int slot_index = 0;
+	port_cache.clear();
 
-	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::IGNORE);
-		if (!child) {
+	for (Ref<GraphPort> port : ports) {
+		if (port.is_null()) {
 			continue;
 		}
+		Vector2 pos = port->get_position();
 
-		Size2i size = child->get_rect().size;
-		Point2 pos = child->get_position();
-
-		if (slot_table.has(slot_index)) {
-			if (slot_table[slot_index].enable_left) {
-				PortCache port_cache;
-				port_cache.pos = Point2i(edgeofs, pos.y + size.height / 2);
-				port_cache.type = slot_table[slot_index].type_left;
-				port_cache.color = slot_table[slot_index].color_left;
-				port_cache.slot_index = slot_index;
-				left_port_cache.push_back(port_cache);
-			}
-			if (slot_table[slot_index].enable_right) {
-				PortCache port_cache;
-				port_cache.pos = Point2i(get_size().width - edgeofs, pos.y + size.height / 2);
-				port_cache.type = slot_table[slot_index].type_right;
-				port_cache.color = slot_table[slot_index].color_right;
-				port_cache.slot_index = slot_index;
-				right_port_cache.push_back(port_cache);
-			}
-		}
-
-		slot_index++;
+		PortCache cached_port;
+		cached_port.pos = Point2i(edgeofs + pos.x, pos.y);
+		cached_port.type = port->get_type();
+		cached_port.color = port->color;
+		port_cache.push_back(cached_port);
 	}
-	slot_count = slot_index;
-	if (selected_slot >= slot_count) {
-		selected_slot = -1;
+	if (selected_port >= get_port_count()) {
+		selected_port = -1;
 	}
 
 	port_pos_dirty = false;
+	// TODO: Move some of this to GraphNodeIndexed
+	/*
+
+		int slot_index = 0;
+
+		for (int i = 0; i < get_child_count(false); i++) {
+			Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::IGNORE);
+			if (!child) {
+				continue;
+			}
+
+			Size2i size = child->get_rect().size;
+			Point2 pos = child->get_position();
+
+			if (slot_table.has(slot_index)) {
+				if (slot_table[slot_index].enable_left) {
+					PortCache port_cache;
+					port_cache.pos = Point2i(edgeofs, pos.y + size.height / 2);
+					port_cache.type = slot_table[slot_index].type_left;
+					port_cache.color = slot_table[slot_index].color_left;
+					port_cache.slot_index = slot_index;
+					left_port_cache.push_back(port_cache);
+				}
+				if (slot_table[slot_index].enable_right) {
+					PortCache port_cache;
+					port_cache.pos = Point2i(get_size().width - edgeofs, pos.y + size.height / 2);
+					port_cache.type = slot_table[slot_index].type_right;
+					port_cache.color = slot_table[slot_index].color_right;
+					port_cache.slot_index = slot_index;
+					right_port_cache.push_back(port_cache);
+				}
+			}
+
+			slot_index++;
+		}
+	*/
 }
 
-int GraphNode::get_input_port_count() {
+Vector2 GraphNode::update_port_position(int p_port_idx) {
 	if (port_pos_dirty) {
 		_port_pos_update();
 	}
 
-	return left_port_cache.size();
-}
-
-int GraphNode::get_output_port_count() {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	return right_port_cache.size();
-}
-
-Vector2 GraphNode::get_input_port_position(int p_port_idx) {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	ERR_FAIL_INDEX_V(p_port_idx, left_port_cache.size(), Vector2());
-	Vector2 pos = left_port_cache[p_port_idx].pos;
+	ERR_FAIL_INDEX_V(p_port_idx, ports.size(), Vector2());
+	Vector2 pos = get_port(p_port_idx)->position;
 	return pos;
-}
-
-int GraphNode::get_input_port_type(int p_port_idx) {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	ERR_FAIL_INDEX_V(p_port_idx, left_port_cache.size(), 0);
-	return left_port_cache[p_port_idx].type;
-}
-
-Color GraphNode::get_input_port_color(int p_port_idx) {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	ERR_FAIL_INDEX_V(p_port_idx, left_port_cache.size(), Color());
-	return left_port_cache[p_port_idx].color;
-}
-
-int GraphNode::get_input_port_slot(int p_port_idx) {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	ERR_FAIL_INDEX_V(p_port_idx, left_port_cache.size(), -1);
-	return left_port_cache[p_port_idx].slot_index;
-}
-
-Vector2 GraphNode::get_output_port_position(int p_port_idx) {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	ERR_FAIL_INDEX_V(p_port_idx, right_port_cache.size(), Vector2());
-	Vector2 pos = right_port_cache[p_port_idx].pos;
-	return pos;
-}
-
-int GraphNode::get_output_port_type(int p_port_idx) {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	ERR_FAIL_INDEX_V(p_port_idx, right_port_cache.size(), 0);
-	return right_port_cache[p_port_idx].type;
-}
-
-Color GraphNode::get_output_port_color(int p_port_idx) {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	ERR_FAIL_INDEX_V(p_port_idx, right_port_cache.size(), Color());
-	return right_port_cache[p_port_idx].color;
-}
-
-int GraphNode::get_output_port_slot(int p_port_idx) {
-	if (port_pos_dirty) {
-		_port_pos_update();
-	}
-
-	ERR_FAIL_INDEX_V(p_port_idx, right_port_cache.size(), -1);
-	return right_port_cache[p_port_idx].slot_index;
 }
 
 String GraphNode::get_accessibility_container_name(const Node *p_node) const {
@@ -1183,51 +765,12 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphNode::get_titlebar_hbox);
 
-	ClassDB::bind_method(D_METHOD("set_slot", "slot_index", "enable_left_port", "type_left", "color_left", "enable_right_port", "type_right", "color_right", "custom_icon_left", "custom_icon_right", "draw_stylebox"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("clear_slot", "slot_index"), &GraphNode::clear_slot);
-	ClassDB::bind_method(D_METHOD("clear_all_slots"), &GraphNode::clear_all_slots);
-
-	ClassDB::bind_method(D_METHOD("is_slot_enabled_left", "slot_index"), &GraphNode::is_slot_enabled_left);
-	ClassDB::bind_method(D_METHOD("set_slot_enabled_left", "slot_index", "enable"), &GraphNode::set_slot_enabled_left);
-
-	ClassDB::bind_method(D_METHOD("set_slot_type_left", "slot_index", "type"), &GraphNode::set_slot_type_left);
-	ClassDB::bind_method(D_METHOD("get_slot_type_left", "slot_index"), &GraphNode::get_slot_type_left);
-
-	ClassDB::bind_method(D_METHOD("set_slot_color_left", "slot_index", "color"), &GraphNode::set_slot_color_left);
-	ClassDB::bind_method(D_METHOD("get_slot_color_left", "slot_index"), &GraphNode::get_slot_color_left);
-
-	ClassDB::bind_method(D_METHOD("set_slot_custom_icon_left", "slot_index", "custom_icon"), &GraphNode::set_slot_custom_icon_left);
-	ClassDB::bind_method(D_METHOD("get_slot_custom_icon_left", "slot_index"), &GraphNode::get_slot_custom_icon_left);
-
-	ClassDB::bind_method(D_METHOD("is_slot_enabled_right", "slot_index"), &GraphNode::is_slot_enabled_right);
-	ClassDB::bind_method(D_METHOD("set_slot_enabled_right", "slot_index", "enable"), &GraphNode::set_slot_enabled_right);
-
-	ClassDB::bind_method(D_METHOD("set_slot_type_right", "slot_index", "type"), &GraphNode::set_slot_type_right);
-	ClassDB::bind_method(D_METHOD("get_slot_type_right", "slot_index"), &GraphNode::get_slot_type_right);
-
-	ClassDB::bind_method(D_METHOD("set_slot_color_right", "slot_index", "color"), &GraphNode::set_slot_color_right);
-	ClassDB::bind_method(D_METHOD("get_slot_color_right", "slot_index"), &GraphNode::get_slot_color_right);
-
-	ClassDB::bind_method(D_METHOD("set_slot_custom_icon_right", "slot_index", "custom_icon"), &GraphNode::set_slot_custom_icon_right);
-	ClassDB::bind_method(D_METHOD("get_slot_custom_icon_right", "slot_index"), &GraphNode::get_slot_custom_icon_right);
-
-	ClassDB::bind_method(D_METHOD("is_slot_draw_stylebox", "slot_index"), &GraphNode::is_slot_draw_stylebox);
-	ClassDB::bind_method(D_METHOD("set_slot_draw_stylebox", "slot_index", "enable"), &GraphNode::set_slot_draw_stylebox);
+	ClassDB::bind_method(D_METHOD("set_port", "port_index", "port", "draw_stylebox"), &GraphNode::set_port, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("clear_port", "port_index"), &GraphNode::clear_port);
+	ClassDB::bind_method(D_METHOD("clear_all_ports"), &GraphNode::clear_all_ports);
 
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);
-
-	ClassDB::bind_method(D_METHOD("get_input_port_count"), &GraphNode::get_input_port_count);
-	ClassDB::bind_method(D_METHOD("get_input_port_position", "port_idx"), &GraphNode::get_input_port_position);
-	ClassDB::bind_method(D_METHOD("get_input_port_type", "port_idx"), &GraphNode::get_input_port_type);
-	ClassDB::bind_method(D_METHOD("get_input_port_color", "port_idx"), &GraphNode::get_input_port_color);
-	ClassDB::bind_method(D_METHOD("get_input_port_slot", "port_idx"), &GraphNode::get_input_port_slot);
-
-	ClassDB::bind_method(D_METHOD("get_output_port_count"), &GraphNode::get_output_port_count);
-	ClassDB::bind_method(D_METHOD("get_output_port_position", "port_idx"), &GraphNode::get_output_port_position);
-	ClassDB::bind_method(D_METHOD("get_output_port_type", "port_idx"), &GraphNode::get_output_port_type);
-	ClassDB::bind_method(D_METHOD("get_output_port_color", "port_idx"), &GraphNode::get_output_port_color);
-	ClassDB::bind_method(D_METHOD("get_output_port_slot", "port_idx"), &GraphNode::get_output_port_slot);
 
 	GDVIRTUAL_BIND(_draw_port, "slot_index", "position", "left", "color")
 
@@ -1241,8 +784,7 @@ void GraphNode::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel_focus);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, titlebar);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, titlebar_selected);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, slot);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, slot_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, port_selected);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphNode, separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphNode, port_h_offset);

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  graph_node.h                                                          */
+/*  graph_port.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,106 +30,85 @@
 
 #pragma once
 
-#include "scene/gui/graph_element.h"
+#include "core/io/resource.h"
+#include "core/variant/typed_array.h"
+#include "scene/gui/graph_connection.h"
+#include "scene/gui/graph_node.h"
+#include "scene/resources/texture.h"
 
-class HBoxContainer;
-
-class GraphNode : public GraphElement {
-	GDCLASS(GraphNode, GraphElement);
-
-	friend class GraphEdit;
-
-	struct PortCache {
-		Vector2 pos;
-		int type = 0;
-		Color color;
+class GraphPort : public Resource {
+public:
+	enum PortDirection {
+		INPUT,
+		OUTPUT,
+		UNDIRECTED
 	};
 
-	struct _MinSizeCache {
-		int min_size = 0;
-		bool will_stretch = false;
-		int final_size = 0;
+	enum DisconnectBehaviour {
+		DISCONNECT_ALL,
+		MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT,
+		MOVE_TO_NEXT_PORT_OR_DISCONNECT
 	};
 
-	enum CustomAccessibilityAction {
-		ACTION_CONNECT,
-		ACTION_FOLLOW,
-	};
-	void _accessibility_action_port(const Variant &p_data);
+	bool exclusive;
+	Color color = Color(1, 1, 1, 1);
+	Ref<Texture2D> icon;
+	DisconnectBehaviour on_disabled_behaviour = DisconnectBehaviour::DISCONNECT_ALL;
 
-	HBoxContainer *titlebar_hbox = nullptr;
-	Label *title_label = nullptr;
-
-	String title;
-
-	TypedArray<Ref<GraphPort>> ports;
-	Vector<PortCache> port_cache;
-
-	int selected_port = -1;
-
-	bool port_pos_dirty = true;
-
-	bool ignore_invalid_connection_type = false;
-
-	void _port_pos_update();
+	GraphNode *graph_node;
+	Vector2 position = Vector2(0.0, 0.0);
 
 protected:
-	struct ThemeCache {
-		Ref<StyleBox> panel;
-		Ref<StyleBox> panel_selected;
-		Ref<StyleBox> panel_focus;
-		Ref<StyleBox> titlebar;
-		Ref<StyleBox> titlebar_selected;
-		Ref<StyleBox> port_selected;
+	bool visible = true;
+	bool enabled;
+	int type = 0;
+	PortDirection direction = PortDirection::UNDIRECTED;
 
-		int separation = 0;
-		int port_h_offset = 0;
-
-		Ref<Texture2D> port;
-		Ref<Texture2D> resizer;
-		Color resizer_color;
-	} theme_cache;
-
-	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _resort() override;
+	void _enabled();
+	void _disabled();
 
-	virtual void draw_port(const Ref<GraphPort> p_port);
-	GDVIRTUAL1(_draw_port, const Ref<GraphPort>);
+	void _connected(const Ref<GraphConnection> p_connection);
+	void _disconnected(const Ref<GraphConnection> p_connection);
+
+	void _changed_direction(const PortDirection p_direction);
+	void _mark_all_connections_dirty();
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	virtual String get_accessibility_container_name(const Node *p_node) const override;
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	Control *get_accessibility_node_by_port(int p_port_idx);
+	void set(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
 
-	void set_title(const String &p_title);
-	String get_title() const;
+	int get_index();
 
-	HBoxContainer *get_titlebar_hbox();
+	void enable();
+	void disable();
+	void set_enabled(bool p_enabled);
+	bool get_enabled();
 
-	Ref<GraphPort> get_port(int p_port_idx);
-	TypedArray<Ref<GraphPort>> get_ports();
-	int index_of_port(const Ref<GraphPort> p_port);
-	void set_port(int p_port_index, const Ref<GraphPort> p_port);
-	void clear_port(int p_port_index);
-	void clear_all_ports();
-	int get_port_count();
-	Vector2 update_port_position(int p_port_idx);
+	void show();
+	void hide();
+	bool get_visible();
+	void set_visible(bool p_visible);
 
-	void set_ignore_invalid_connection_type(bool p_ignore);
-	bool is_ignoring_valid_connection_type() const;
+	int get_type();
+	void set_type(int p_type);
 
-	virtual Size2 get_minimum_size() const override;
+	PortDirection get_direction();
+	void set_direction(PortDirection p_direction);
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	TypedArray<Ref<GraphConnection>> get_connections();
+	bool is_connected(const Ref<GraphPort> other);
+	void disconnect_all();
 
-	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
-	virtual Vector<int> get_allowed_size_flags_vertical() const override;
+	Vector2 get_position();
+	GraphNode *get_graph_node();
 
-	GraphNode();
+	GraphPort(GraphNode *p_graph_node);
+	GraphPort(GraphNode *p_graph_node, bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon);
+
+	friend class GraphEdit;
 };
