@@ -121,6 +121,12 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 	features.simdPermute = [p_device supportsFamily:MTLGPUFamilyApple6];
 	features.simdReduction = [p_device supportsFamily:MTLGPUFamilyApple7];
 	features.argument_buffers_tier = p_device.argumentBuffersSupport;
+	features.supports_image_atomic_32_bit = [p_device supportsFamily:MTLGPUFamilyApple6];
+	features.supports_image_atomic_64_bit = [p_device supportsFamily:MTLGPUFamilyApple8];
+	if (OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_IMAGE_ATOMICS") == "1") {
+		features.supports_image_atomic_32_bit = false;
+		features.supports_image_atomic_64_bit = false;
+	}
 
 	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
 		features.needs_arg_encoders = !([p_device supportsFamily:MTLGPUFamilyMetal3] && features.argument_buffers_tier == MTLArgumentBuffersTier2);

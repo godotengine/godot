@@ -977,7 +977,7 @@ Its version and license is described in this file under `hidapi`.
 ## spirv-cross
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Cross
-- Version: git (6173e24b31f09a0c3217103a130e74c4ddec14a6, 2024)
+- Version: git (d7440cbc6c50332600fdf21c45e6a5df0b07e54c, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
