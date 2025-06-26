@@ -122,6 +122,7 @@ private:
 	bool is_bound = false;
 	bool started = false;
 	bool running = true;
+	bool in_step = false;
 	bool dead = false;
 	bool valid = false;
 	bool default_parallel = false;
