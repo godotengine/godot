@@ -253,13 +253,16 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p, const Vector2 &p_scr
 	velocity = accum / accum_t;
 	screen_velocity = screen_accum / accum_t;
 	accum = Vector2();
+	screen_accum = Vector2();
 	accum_t = 0;
 }
 
 void Input::VelocityTrack::reset() {
 	last_tick = OS::get_singleton()->get_ticks_usec();
 	velocity = Vector2();
+	screen_velocity = Vector2();
 	accum = Vector2();
+	screen_accum = Vector2();
 	accum_t = 0;
 }
 
