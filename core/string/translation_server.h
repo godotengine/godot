@@ -40,9 +40,11 @@ class TranslationServer : public Object {
 	String fallback;
 
 	Ref<TranslationDomain> main_domain;
+#ifdef TOOLS_ENABLED
 	Ref<TranslationDomain> editor_domain;
 	Ref<TranslationDomain> property_domain;
 	Ref<TranslationDomain> doc_domain;
+#endif // TOOLS_ENABLED
 	HashMap<StringName, Ref<TranslationDomain>> custom_domains;
 
 	mutable HashMap<String, int> locale_compare_cache;
@@ -94,8 +96,13 @@ class TranslationServer : public Object {
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
 
+	// Built-in domain accessors. For engine code only, user code should use `get_or_add_domain()` instead.
 	Ref<TranslationDomain> get_main_domain() const { return main_domain; }
+#ifdef TOOLS_ENABLED
 	Ref<TranslationDomain> get_editor_domain() const { return editor_domain; }
+	Ref<TranslationDomain> get_property_domain() const { return property_domain; }
+	Ref<TranslationDomain> get_doc_domain() const { return doc_domain; }
+#endif // TOOLS_ENABLED
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
@@ -133,11 +140,6 @@ public:
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
 	String get_tool_locale();
-	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	StringName property_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	bool has_domain(const StringName &p_domain) const;
 	Ref<TranslationDomain> get_or_add_domain(const StringName &p_domain);
