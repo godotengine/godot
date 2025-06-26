@@ -967,7 +967,7 @@ layout(location = 0) out vec4 diffuse_buffer; //diffuse (rgb) and roughness
 layout(location = 1) out vec4 specular_buffer; //specular and SSS (subsurface scatter)
 #else
 
-layout(location = 0) out hvec4 frag_color;
+layout(location = 0) out vec4 frag_color;
 #endif // MODE_MULTIPLE_RENDER_TARGETS
 
 #endif // RENDER DEPTH
@@ -1481,9 +1481,11 @@ void main() {
 #ifdef NORMAL_USED
 	if (sc_scene_roughness_limiter_enabled()) {
 		//https://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
+		// SPIR-V Validation claims that derivatives of FP16 vectors are not valid code generation (see #108009).
+		vec3 dn = vec3(normal);
+		vec3 dndu = dFdx(dn), dndv = dFdy(dn);
 		half roughness2 = roughness * roughness;
-		hvec3 dndu = dFdx(normal), dndv = dFdy(normal);
-		half variance = half(scene_data.roughness_limiter_amount) * (dot(dndu, dndu) + dot(dndv, dndv));
+		half variance = half(scene_data.roughness_limiter_amount) * half(dot(dndu, dndu) + dot(dndv, dndv));
 		half kernelRoughness2 = min(half(2.0) * variance, half(scene_data.roughness_limiter_limit));
 		half filteredRoughness2 = min(half(1.0), roughness2 + kernelRoughness2);
 		roughness = sqrt(filteredRoughness2);
@@ -2182,22 +2184,24 @@ void main() {
 #else //MODE_MULTIPLE_RENDER_TARGETS
 
 #ifdef MODE_UNSHADED
-	frag_color = hvec4(albedo, alpha);
+	hvec4 out_color = hvec4(albedo, alpha);
 #else // MODE_UNSHADED
-	frag_color = hvec4(emission + ambient_light + diffuse_light + direct_specular_light + indirect_specular_light, alpha);
+	hvec4 out_color = hvec4(emission + ambient_light + diffuse_light + direct_specular_light + indirect_specular_light, alpha);
 #endif // MODE_UNSHADED
 
 #ifndef FOG_DISABLED
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
-	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	out_color.rgb = mix(out_color.rgb, fog.rgb, fog.a);
 #endif // !FOG_DISABLED
 
 	// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
 	// We divide by sc_luminance_multiplier to support a range from 0.0 - 2.0 both increasing precision on bright and darker images
-	frag_color.rgb = frag_color.rgb / sc_luminance_multiplier();
+	out_color.rgb = out_color.rgb / sc_luminance_multiplier();
 #ifdef PREMUL_ALPHA_USED
-	frag_color.rgb *= premul_alpha;
+	out_color.rgb *= premul_alpha;
 #endif
+
+	frag_color = out_color;
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 
@@ -2207,10 +2211,10 @@ void main() {
 	// These motion vectors are in NDC space (as opposed to screen space) to fit the OpenXR XR_FB_space_warp specification.
 	// https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#XR_FB_space_warp
 
-	hvec3 ndc = hvec3(screen_position.xyz / screen_position.w);
+	vec3 ndc = screen_position.xyz / screen_position.w;
 	ndc.y = -ndc.y;
-	hvec3 prev_ndc = hvec3(prev_screen_position.xyz / prev_screen_position.w);
+	vec3 prev_ndc = prev_screen_position.xyz / prev_screen_position.w;
 	prev_ndc.y = -prev_ndc.y;
-	frag_color = hvec4(ndc - prev_ndc, half(0.0));
+	frag_color = vec4(ndc - prev_ndc, 0.0);
 #endif
 }
