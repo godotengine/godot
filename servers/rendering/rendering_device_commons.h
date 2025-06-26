@@ -952,6 +952,7 @@ public:
 		// If not supported, a fragment shader with only side effects (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
+		SUPPORTS_IMAGE_ATOMIC_32_BIT,
 	};
 
 	enum SubgroupOperations {
