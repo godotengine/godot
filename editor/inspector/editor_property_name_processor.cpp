@@ -120,7 +120,7 @@ String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_s
 		case STYLE_LOCALIZED: {
 			const String capitalized = _capitalize_name(p_name);
 			if (TranslationServer::get_singleton()) {
-				return TranslationServer::get_singleton()->property_translate(capitalized, _get_context(p_name, p_property, p_class));
+				return TranslationServer::get_singleton()->get_property_domain()->translate(capitalized, _get_context(p_name, p_property, p_class));
 			}
 			return capitalized;
 		} break;
@@ -130,7 +130,7 @@ String EditorPropertyNameProcessor::process_name(const String &p_name, Style p_s
 
 String EditorPropertyNameProcessor::translate_group_name(const String &p_name) const {
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->property_translate(p_name);
+		return TranslationServer::get_singleton()->get_property_domain()->translate(p_name, StringName());
 	}
 	return p_name;
 }
