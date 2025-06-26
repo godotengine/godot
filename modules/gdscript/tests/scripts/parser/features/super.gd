@@ -1,11 +1,11 @@
 class Say:
 	var prefix = "S"
 
-	func greet():
+	@virtual func greet():
 		prefix = "S Greeted"
 		print("hello")
 
-	func say(name):
+	@virtual func say(name):
 		print(prefix, " say something ", name)
 
 
@@ -13,11 +13,11 @@ class SayAnotherThing extends Say:
 	# This currently crashes the engine.
 	#var prefix = "SAT"
 
-	func greet():
+	@override func greet():
 		prefix = "SAT Greeted"
 		print("hi")
 
-	func say(name):
+	@override func say(name):
 		print(prefix, " say another thing ", name)
 
 
@@ -25,7 +25,7 @@ class SayNothing extends Say:
 	# This currently crashes the engine.
 	#var prefix = "SN"
 
-	func greet():
+	@override func greet():
 		super()
 		prefix = "SN Greeted"
 		print("howdy, see above")
@@ -35,7 +35,7 @@ class SayNothing extends Say:
 		super.greet()
 		print("howdy, see above")
 
-	func say(name):
+	@override func say(name):
 		@warning_ignore("unsafe_call_argument")
 		super(name + " super'd")
 		print(prefix, " say nothing... or not? ", name)

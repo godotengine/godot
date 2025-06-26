@@ -162,6 +162,15 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+		case OVERRIDE_NON_VIRTUAL_METHOD:
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(The method "%s()" overrides a non-virtual method from the base class. This may cause unexpected and unsafe behaviors.)*", symbols[0]);
+		case OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION:
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(The method "%s()" overrides a virtual method from the base class without the "@override" annotation. Annotating the method with the annotation can better help you understand and clarify the code structure.)*", symbols[0]);
+		case OVERRIDE_INEXISTENT_METHOD_FROM_BASE:
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(The method "%s()" is annotated with the "@override" annotation, but the method is not found in the base class. Consider removing the "@override" annotation in this case.)*", symbols[0]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -238,6 +247,9 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("NATIVE_METHOD_OVERRIDE"),
 		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),
 		PNAME("ONREADY_WITH_EXPORT"),
+		PNAME("OVERRIDE_NON_VIRTUAL_METHOD"),
+		PNAME("OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION"),
+		PNAME("OVERRIDE_INEXISTENT_METHOD_FROM_BASE"),
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",

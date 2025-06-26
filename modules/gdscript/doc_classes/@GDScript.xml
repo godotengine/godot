@@ -782,6 +782,27 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@override">
+			<return type="void" />
+			<description>
+				Mark that the following method overrides the one annotated by [annotation @virtual] from the base class.
+				If you override a method from the base class without this annotation, you will get a warning (or an error).
+				[codeblock]
+				func _init():
+				    B.new().test() # Prints B
+
+
+				class A:
+				    @virtual func test():
+				        print("A")
+
+				class B extends A:
+				    func test():
+				        print("B") # Warning (or an error) about overriding a virtual method without explicit overriding.
+				[/codeblock]
+				You can ignore the warning as long as you know what you are doing.
+			</description>
+		</annotation>
 		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
@@ -825,6 +846,41 @@
 				extends Node
 				[/codeblock]
 				[b]Note:[/b] As annotations describe their subject, the [annotation @tool] annotation must be placed before the class definition and inheritance.
+			</description>
+		</annotation>
+		<annotation name="@virtual">
+			<return type="void" />
+			<description>
+				Mark a method as a virtual method. A virtual method is a method that can be overridden by subclasses.
+				To override a virtual method, it is better to use an [annotation @override] annotation for the method in the subclass.
+				[codeblock]
+				func _init():
+				    B.new().test() # Prints B.
+
+
+				class A:
+				    @virtual func test():
+				        print("A")
+
+				class B extends A:
+				    @override func test():
+				        print("B")
+				[/codeblock]
+				If a method is trying to override a non-virtual method, a warning (or an error) will be thrown.
+				[codeblock]
+				func _init():
+				    B.new().test() # Prints B
+
+
+				class A:
+				    func test():
+				        print("A")
+
+				class B extends A:
+				    func test():
+				        print("B") # Warning (or an error) about overriding a non-virtual method.
+				[/codeblock]
+				You can ignore the warning as long as you know what you are doing.
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
