@@ -36,11 +36,24 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			if (!response.ok) {
 				return Promise.reject(new Error(`Failed loading file '${file}'`));
 			}
-			const tr = getTrackedResponse(response, tracker[file]);
-			if (raw) {
-				return Promise.resolve(tr);
+			if (miniEngine){
+				return new Promise((resolve, reject) => {
+					const fs = miniEngine.getFileSystemManager();
+					fs.readFile({
+						filePath: file,
+						success: res => resolve(res.data),
+						fail: reason => {
+							reject(reason.errMsg);
+						}
+					});
+				});
+			}else{
+				const tr = getTrackedResponse(response, tracker[file]);
+				if (raw) {
+					return Promise.resolve(tr);
+				}
+				return tr.arrayBuffer();
 			}
-			return tr.arrayBuffer();
 		});
 	}
 

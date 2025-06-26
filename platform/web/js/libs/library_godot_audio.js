@@ -1235,7 +1235,12 @@ const _GodotAudio = {
 			}
 			// Do not specify, leave 'interactive' for good performance.
 			// opts['latencyHint'] = latency / 1000;
-			const ctx = new (window.AudioContext || window.webkitAudioContext)(opts);
+			let ctx = null;
+			if (miniEngine){
+				ctx = miniEngine.createWebAudioContext();
+			}else{
+				ctx = new (window.AudioContext || window.webkitAudioContext)(opts);
+			}
 			GodotAudio.ctx = ctx;
 			ctx.onstatechange = function () {
 				let state = 0;

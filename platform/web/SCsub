@@ -102,7 +102,6 @@ sys_env.Depends(build[0], sys_env["JS_PRE"])
 sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
 
 engine = [
-    "js/engine/go_wasm_exec.js",
     "js/engine/features.js",
     "js/engine/preloader.js",
     "js/engine/config.js",

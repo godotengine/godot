@@ -36,10 +36,13 @@
 #include "spx_input_proxy.h"
 #include "spx_sprite.h"
 #include "spx_ui.h"
-
+#include "core/io/dir_access.h"
+#include "modules/zip/zip_reader.h"
+ 
 #define SPX_ENGINE SpxEngine::get_singleton()
 bool Spx::initialed = false;
 bool Spx::debug_mode = false;
+String Spx::project_data_path;
 
 void Spx::register_types() {
 	ClassDB::register_class<SpxSprite>();
@@ -47,7 +50,33 @@ void Spx::register_types() {
 }
 
 void Spx::on_start(void *p_tree) {
-	print_verbose("Spx::on_start");
+	if (!project_data_path.is_empty()) {
+		Ref<ZIPReader> zip = memnew(ZIPReader);
+		if (zip->open(project_data_path) == OK) {
+			String target_dir = project_data_path.get_base_dir();
+			DirAccess::make_dir_recursive_absolute(target_dir);
+
+			PackedStringArray zfiles = zip->get_files();
+			for (int i = 0; i < zfiles.size(); ++i) {
+				String zfile = zfiles[i];
+				PackedByteArray pdata = zip->read_file(zfile, false);
+				String out_path = target_dir + String("/") + zfile;
+				print_line("Extracting file: " + out_path);
+				DirAccess::make_dir_recursive_absolute(out_path.get_base_dir());
+				Ref<FileAccess> fout = FileAccess::open(out_path, FileAccess::WRITE);
+				if (fout.is_valid()) {
+					fout->store_buffer(pdata);
+				}
+			}
+			zip->close();
+			print_line("Extracted project data zip to: " + target_dir);
+		} else {
+			print_line("Failed to open project data zip file: " + project_data_path);
+		}
+	}else{
+		print_line("Spx::on_start, project_data_path is empty");
+	}
+
 	initialed = true;
 	if (!SpxEngine::has_initialed()) {
 		return;

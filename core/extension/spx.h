@@ -30,11 +30,13 @@
 
 #ifndef SPX_H
 #define SPX_H
+#include "core/string/ustring.h"
 
 class Spx {
 public:
 	static bool initialed;
 	static bool debug_mode;
+	static String project_data_path;
 public:
 	static void register_types();
 	static void on_start(void *p_tree);

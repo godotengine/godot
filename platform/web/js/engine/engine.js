@@ -81,6 +81,9 @@ const Engine = (function () {
 					return Promise.resolve();
 				}
 				loadPath = this.config.executable;
+				if(miniEngine){
+					loadPath = "js/"+loadPath;
+				}
 				GodotEngine = this;
 				const me = this;
 				function doInit() {
@@ -89,17 +92,22 @@ const Engine = (function () {
 					// Make sure to test that when refactoring.
 					return new Promise(function (resolve, reject) {
 						// Now proceed with Godot and other logic
-						gdmodule = me.config.getModuleConfig(loadPath, me.config.wasmEngine);
+						let gdmodule = me.config.getModuleConfig(loadPath, me.config.wasmEngine);
 						Godot(gdmodule).then(function (module) {
 							GodotModule = gdmodule
 							const paths = me.config.persistentPaths;
-							module['initFS'](paths).then(function (err) {
+							if (!miniEngine){
+								module['initFS'](paths).then(function (err) {
+									me.rtenv = module;
+									if (me.config.unloadAfterInit) {
+										Engine.unload();
+									}
+									resolve();
+								});
+							}else{
 								me.rtenv = module;
-								if (me.config.unloadAfterInit) {
-									Engine.unload();
-								}
 								resolve();
-							});
+							}
 						});
 					});
 				}
@@ -127,8 +135,14 @@ const Engine = (function () {
 			preloadFile: function (file, path) {
 				return preloader.preload(file, path, this.config.fileSizes[file]);
 			},
-			unpackGameData: function (dir, datas) {
-				files = []
+			unpackGameData:async function (dir,projectName, projectData, pckName, pckData) {
+				let datas = []
+				datas.push({ "path": projectName, "data": projectData})	
+				if ( pckName != "" ){
+					datas.push({ "path": pckName, "data": pckData })
+				} 
+				// write project data to file	
+				let files = []
 				this.rtenv['deleteDirFS'](dir);
 				for (let info of datas) {
 					files.push(info.path)
@@ -240,6 +254,18 @@ const Engine = (function () {
 				}
 				this.rtenv['copyToFS'](path, buffer);
 			},
+
+            copyFSToAdapter: function (adapter) {
+                if (this.rtenv == null) {
+                    throw new Error('Engine must be inited before copying files');
+                }
+                const me = this;
+                var promises = [];
+                this.config.persistentPaths.forEach(function (path) {
+                    promises.push(me.rtenv['copyToAdapter'](path, adapter));
+                });
+                return Promise.all(promises);
+            },
 
 			/**
 			 * Request that the current instance quit.
