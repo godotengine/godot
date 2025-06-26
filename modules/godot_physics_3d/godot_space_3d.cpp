@@ -119,6 +119,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 	int amount = space->broadphase->cull_segment(begin, end, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
 	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
+
 	bool collided = false;
 	Vector3 res_point, res_normal;
 	int res_face_index = -1;
@@ -216,7 +217,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &
 		}
 	}
 
-	// Indicate a successful return if constricting to closest and a hit was found
+	// Indicate a successful return if restricting to closest and a hit was found
 	if (choose_closest && res_obj != nullptr) {
 		r_idx = 1;
 	}
@@ -229,7 +230,8 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 	results.resize(1);
 
 	int n_collisions = intersect_ray_multiple(p_parameters, results.ptr(), 1);
-	if (n_collisions > 0) {
+	bool hit = n_collisions > 0;
+	if (hit) {
 		r_result.collider_id = results[0].collider_id;
 		r_result.collider = results[0].collider;
 		r_result.normal = results[0].normal;
@@ -238,8 +240,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		r_result.rid = results[0].rid;
 		r_result.shape = results[0].shape;
 	}
-
-	return n_collisions > 0;
+	return hit;
 }
 
 int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
