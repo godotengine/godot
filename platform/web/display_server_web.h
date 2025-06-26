@@ -104,6 +104,8 @@ private:
 	bool swap_cancel_ok = false;
 	NativeMenu *native_menu = nullptr;
 
+	int gamepad_count = 0;
+
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
 	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
 	bool mouse_mode_override_enabled = false;

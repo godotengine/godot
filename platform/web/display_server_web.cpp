@@ -829,6 +829,12 @@ void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char
 }
 
 void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid) {
+	if (p_connected) {
+		DisplayServerWeb::get_singleton()->gamepad_count += 1;
+	} else {
+		DisplayServerWeb::get_singleton()->gamepad_count -= 1;
+	}
+
 	Input *input = Input::get_singleton();
 	if (p_connected) {
 		input->joy_connection_changed(p_index, true, p_id, p_guid);
@@ -1432,8 +1438,11 @@ DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsyn
 void DisplayServerWeb::process_events() {
 	process_keys();
 	Input::get_singleton()->flush_buffered_events();
-	if (godot_js_input_gamepad_sample() == OK) {
-		process_joypads();
+
+	if (gamepad_count > 0) {
+		if (godot_js_input_gamepad_sample() == OK) {
+			process_joypads();
+		}
 	}
 }
 
