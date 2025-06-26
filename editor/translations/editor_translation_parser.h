@@ -40,8 +40,8 @@ class EditorTranslationParserPlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1R(TypedArray<PackedStringArray>, _parse_file, String)
-	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL1R_REQUIRED(TypedArray<PackedStringArray>, _parse_file, String)
+	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_recognized_extensions)
 
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL3_COMPAT(_parse_file_bind_compat_99297, _parse_file, String, TypedArray<String>, TypedArray<Array>)

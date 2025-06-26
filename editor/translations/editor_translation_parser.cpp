@@ -75,12 +75,9 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vec
 
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
 	Vector<String> extensions;
-	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
-		for (int i = 0; i < extensions.size(); i++) {
-			r_extensions->push_back(extensions[i]);
-		}
-	} else {
-		ERR_PRINT("Custom translation parser plugin's \"func get_recognized_extensions()\" is undefined.");
+	GDVIRTUAL_CALL(_get_recognized_extensions, extensions);
+	for (int i = 0; i < extensions.size(); i++) {
+		r_extensions->push_back(extensions[i]);
 	}
 }
 
