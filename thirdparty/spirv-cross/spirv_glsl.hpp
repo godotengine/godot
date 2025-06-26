@@ -297,6 +297,9 @@ public:
 		float_formatter = formatter;
 	}
 
+	// Returns the macro name corresponding to constant id
+	std::string constant_value_macro_name(uint32_t id) const;
+
 protected:
 	struct ShaderSubgroupSupportHelper
 	{
@@ -450,6 +453,7 @@ protected:
 	virtual std::string variable_decl(const SPIRType &type, const std::string &name, uint32_t id = 0);
 	virtual bool variable_decl_is_remapped_storage(const SPIRVariable &var, spv::StorageClass storage) const;
 	virtual std::string to_func_call_arg(const SPIRFunction::Parameter &arg, uint32_t id);
+	virtual void emit_workgroup_initialization(const SPIRVariable &var);
 
 	struct TextureFunctionBaseArguments
 	{
@@ -622,6 +626,8 @@ protected:
 		const char *uint16_t_literal_suffix = "us";
 		const char *nonuniform_qualifier = "nonuniformEXT";
 		const char *boolean_mix_function = "mix";
+		const char *printf_function = "debugPrintfEXT";
+		std::string constant_null_initializer = "";
 		SPIRType::BaseType boolean_in_struct_remapped_type = SPIRType::Boolean;
 		bool swizzle_is_function = false;
 		bool shared_is_implied = false;
@@ -629,6 +635,7 @@ protected:
 		bool explicit_struct_type = false;
 		bool use_initializer_list = false;
 		bool use_typed_initializer_list = false;
+		bool requires_matching_array_initializer = false;
 		bool can_declare_struct_inline = true;
 		bool can_declare_arrays_inline = true;
 		bool native_row_major_matrix = true;
@@ -679,7 +686,6 @@ protected:
 	                                    const SmallVector<uint32_t> &indices);
 	void emit_block_chain(SPIRBlock &block);
 	void emit_hoisted_temporaries(SmallVector<std::pair<TypeID, ID>> &temporaries);
-	std::string constant_value_macro_name(uint32_t id);
 	int get_constant_mapping_to_workgroup_component(const SPIRConstant &constant) const;
 	void emit_constant(const SPIRConstant &constant);
 	void emit_specialization_constant_op(const SPIRConstantOp &constant);
@@ -695,6 +701,7 @@ protected:
 	void emit_variable_temporary_copies(const SPIRVariable &var);
 
 	bool should_dereference(uint32_t id);
+	bool should_dereference_caller_param(uint32_t id);
 	bool should_forward(uint32_t id) const;
 	bool should_suppress_usage_tracking(uint32_t id) const;
 	void emit_mix_op(uint32_t result_type, uint32_t id, uint32_t left, uint32_t right, uint32_t lerp);
@@ -762,7 +769,7 @@ protected:
 	spv::StorageClass get_expression_effective_storage_class(uint32_t ptr);
 	virtual bool access_chain_needs_stage_io_builtin_translation(uint32_t base);
 
-	virtual void check_physical_type_cast(std::string &expr, const SPIRType *type, uint32_t physical_type);
+	virtual bool check_physical_type_cast(std::string &expr, const SPIRType *type, uint32_t physical_type);
 	virtual bool prepare_access_chain_for_scalar_access(std::string &expr, const SPIRType &type,
 	                                                    spv::StorageClass storage, bool &is_packed);
 
@@ -792,8 +799,9 @@ protected:
 	std::string declare_temporary(uint32_t type, uint32_t id);
 	void emit_uninitialized_temporary(uint32_t type, uint32_t id);
 	SPIRExpression &emit_uninitialized_temporary_expression(uint32_t type, uint32_t id);
-	void append_global_func_args(const SPIRFunction &func, uint32_t index, SmallVector<std::string> &arglist);
+	virtual void append_global_func_args(const SPIRFunction &func, uint32_t index, SmallVector<std::string> &arglist);
 	std::string to_non_uniform_aware_expression(uint32_t id);
+	std::string to_atomic_ptr_expression(uint32_t id);
 	std::string to_expression(uint32_t id, bool register_expression_read = true);
 	std::string to_composite_constructor_expression(const SPIRType &parent_type, uint32_t id, bool block_like_type);
 	std::string to_rerolled_array_expression(const SPIRType &parent_type, const std::string &expr, const SPIRType &type);
@@ -1009,6 +1017,8 @@ protected:
 	const Instruction *get_next_instruction_in_block(const Instruction &instr);
 	static uint32_t mask_relevant_memory_semantics(uint32_t semantics);
 
+	std::string convert_floate4m3_to_string(const SPIRConstant &value, uint32_t col, uint32_t row);
+	std::string convert_floate5m2_to_string(const SPIRConstant &value, uint32_t col, uint32_t row);
 	std::string convert_half_to_string(const SPIRConstant &value, uint32_t col, uint32_t row);
 	std::string convert_float_to_string(const SPIRConstant &value, uint32_t col, uint32_t row);
 	std::string convert_double_to_string(const SPIRConstant &value, uint32_t col, uint32_t row);
