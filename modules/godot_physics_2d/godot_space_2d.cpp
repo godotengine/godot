@@ -135,7 +135,6 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 	real_t min_d = 1e10;
 
 	int r_idx = 0;
-	bool hit_once = false;
 	bool choose_closest = (p_result_max == 1);
 
 	for (int i = 0; i < amount; i++) {
@@ -143,6 +142,7 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 		if (r_idx >= p_result_max) {
 			break;
 		}
+
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
 		}
@@ -189,7 +189,9 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 
 		if (collided) {
 			ERR_FAIL_NULL_V(res_obj, 0); // Shouldn't happen but silences warning.
-			if (choose_closest && hit_once) {
+
+			// Filter to closest hit if only one return is allowed
+			if (choose_closest) {
 				real_t ld = normal.dot(shape_point);
 				if (ld > min_d) {
 					continue;
@@ -201,6 +203,8 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 				r_results[r_idx].collider_id = res_obj->get_instance_id();
 				if (r_results[r_idx].collider_id.is_valid()) {
 					r_results[r_idx].collider = ObjectDB::get_instance(r_results[r_idx].collider_id);
+				} else {
+					r_results[r_idx].collider = nullptr;
 				}
 				r_results[r_idx].normal = res_normal;
 				r_results[r_idx].position = res_point;
@@ -208,7 +212,6 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 				r_results[r_idx].shape = res_shape;
 			}
 
-			hit_once = true;
 			collided = false;
 
 			if (p_result_max > 1) {
@@ -217,7 +220,8 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 		}
 	}
 
-	if (choose_closest) {
+	// Indicate a successful return if restricting to closest and a hit was found
+	if (choose_closest && res_obj != nullptr) {
 		r_idx = 1;
 	}
 
@@ -226,10 +230,19 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 
 bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
 	LocalVector<RayResult> results;
-	results.push_back(r_result);
+	results.resize(1);
 
 	int n_collisions = intersect_ray_multiple(p_parameters, results.ptr(), 1);
-	return n_collisions > 0;
+	bool hit = n_collisions > 0;
+	if (hit) {
+		r_result.collider_id = results[0].collider_id;
+		r_result.collider = results[0].collider;
+		r_result.normal = results[0].normal;
+		r_result.position = results[0].position;
+		r_result.rid = results[0].rid;
+		r_result.shape = results[0].shape;
+	}
+	return hit;
 }
 
 int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
