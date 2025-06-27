@@ -376,6 +376,10 @@ public:
 	double play_cursor_pos = 0;
 
 protected:
+	bool command_or_control_pressed = false;
+	bool in_group = false;
+
+protected:
 	virtual bool is_key_selectable_by_distance() const;
 	virtual bool is_linked(const int p_index, const int p_index_next) const { return false; }
 
@@ -410,6 +414,7 @@ class AnimationKeyEdit : public KeyEdit {
 
 protected:
 	Ref<Animation> animation;
+	PopupMenu *menu = nullptr;
 
 public:
 	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
@@ -433,6 +438,12 @@ public:
 
 	virtual bool is_compressed() const = 0;
 	virtual Vector<int> get_selected_section() = 0;
+
+protected:
+	virtual void create_popup_menu(PopupMenu *p_menu, bool p_selected) {}
+	virtual void _on_mouse_pressed(const Ref<InputEventMouseButton> &mb) {}
+	virtual void _on_mouse_unpressed(const Ref<InputEventMouseButton> &mb) {}
+	void show_popup_menu(Ref<InputEventMouseButton> &mb);
 };
 
 class AnimationMarkerEdit : public AnimationKeyEdit {
@@ -445,8 +456,6 @@ class AnimationMarkerEdit : public AnimationKeyEdit {
 		MENU_KEY_DELETE,
 		MENU_KEY_TOGGLE_MARKER_NAMES,
 	};
-
-	PopupMenu *menu = nullptr;
 
 	void _zoom_changed();
 
@@ -565,6 +574,11 @@ public:
 	
 	virtual StringName get_edit_name(const int p_index) const override; //name of the key
 
+protected:
+	virtual void create_popup_menu(PopupMenu *p_menu, bool p_selected) override;
+	virtual void _on_mouse_pressed(const Ref<InputEventMouseButton> &mb) override;
+	virtual void _on_mouse_unpressed(const Ref<InputEventMouseButton> &mb) override;
+
 public:
 	AnimationMarkerEdit();
 };
@@ -609,8 +623,6 @@ class AnimationTrackEdit : public AnimationKeyEdit {
 	Rect2 loop_wrap_rect;
 	Rect2 remove_rect;
 
-	PopupMenu *menu = nullptr;
-
 	bool clicking_on_name = false;
 
 	void _zoom_changed();
@@ -628,10 +640,6 @@ class AnimationTrackEdit : public AnimationKeyEdit {
 	bool _lookup_key(int p_key_idx) const;
 
 	mutable int dropping_at = 0;
-
-	bool command_or_control_pressed = false;
-
-	bool in_group = false;
 
 protected:
 	static void _bind_methods();
@@ -703,6 +711,11 @@ public:
 
 public:
 	int _get_theme_font_height(float p_scale) const;
+
+protected:
+	virtual void create_popup_menu(PopupMenu *p_menu, bool p_selected) override;
+	virtual void _on_mouse_pressed(const Ref<InputEventMouseButton> &mb) override;
+	virtual void _on_mouse_unpressed(const Ref<InputEventMouseButton> &mb) override;
 
 public:
 	AnimationTrackEdit();
@@ -1158,9 +1171,13 @@ public:
 	StringName get_marker_name(const int p_index) const;
 	int get_marker_index(const StringName marker) const;
 	double get_marker_time(const int p_index) const;
+	int get_marker_at_time(double p_time) const;
 	double get_marker_move_key_time(const int p_index) const;
 	int get_marker_count() const;
 	int get_track_count() const;
+	double get_length() const;
+	double set_length(double p_len, bool p_use_fps = false);
+	double get_step() const;
 	int get_track_key_count(const int p_track) const;
 	double get_global_time(const float p_time) const;
 	double get_track_key_time(const int track, const int p_index) const;
