@@ -261,6 +261,12 @@
 		<member name="max_tab_width" type="int" setter="set_max_tab_width" getter="get_max_tab_width" default="0">
 			Sets the maximum width which all tabs should be limited to. Unlimited if set to [code]0[/code].
 		</member>
+		<member name="navigation_buttons_always_visible" type="bool" setter="set_navigation_buttons_always_visible" getter="get_navigation_buttons_always_visible" default="false">
+			If [code]true[/code], navigation buttons will be visible even when there's enough space for all tabs.
+		</member>
+		<member name="navigation_buttons_switch_tabs" type="bool" setter="set_navigation_buttons_switch_tabs" getter="get_navigation_buttons_switch_tabs" default="false">
+			If [code]true[/code], navigation buttons will switch tabs instead of scrolling through them.
+		</member>
 		<member name="scroll_to_selected" type="bool" setter="set_scroll_to_selected" getter="get_scroll_to_selected" default="true">
 			If [code]true[/code], the tab offset will be changed to keep the currently selected tab visible.
 		</member>

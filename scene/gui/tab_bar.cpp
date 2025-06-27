@@ -106,6 +106,8 @@ Size2 TabBar::get_minimum_size() const {
 
 	if (clip_tabs) {
 		ms.width = 0;
+	} else if (navigation_buttons_always_visible) {
+		ms.width += theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width();
 	}
 
 	return ms;
@@ -219,35 +221,19 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			if (buttons_visible) {
 				if (is_layout_rtl()) {
 					if (pos.x < theme_cache.decrement_icon->get_width()) {
-						if (missing_right) {
-							offset++;
-							_update_cache();
-							queue_redraw();
-						}
+						_handle_increment();
 						return;
 					} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
-						if (offset > 0) {
-							offset--;
-							_update_cache();
-							queue_redraw();
-						}
+						_handle_decrement();
 						return;
 					}
 				} else {
 					int limit = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 					if (pos.x > limit + theme_cache.decrement_icon->get_width()) {
-						if (missing_right) {
-							offset++;
-							_update_cache();
-							queue_redraw();
-						}
+						_handle_increment();
 						return;
 					} else if (pos.x > limit) {
-						if (offset > 0) {
-							offset--;
-							_update_cache();
-							queue_redraw();
-						}
+						_handle_decrement();
 						return;
 					}
 				}
@@ -384,6 +370,26 @@ void TabBar::_accessibility_action_scroll_into_view(const Variant &p_data, int p
 
 void TabBar::_accessibility_action_focus(const Variant &p_data, int p_index) {
 	set_current_tab(p_index);
+}
+
+void TabBar::_handle_increment() {
+	if (navigation_buttons_switch_tabs) {
+		set_current_tab(MIN(current + 1, tabs.size() - 1));
+	} else if (missing_right) {
+		offset++;
+	}
+	_update_cache();
+	queue_redraw();
+}
+
+void TabBar::_handle_decrement() {
+	if (navigation_buttons_switch_tabs) {
+		set_current_tab(MAX(current - 1, 0));
+	} else if (offset > 0) {
+		offset--;
+	}
+	_update_cache();
+	queue_redraw();
 }
 
 void TabBar::_notification(int p_what) {
@@ -545,25 +551,25 @@ void TabBar::_notification(int p_what) {
 				int vofs = (size.height - theme_cache.increment_icon->get_size().height) / 2;
 
 				if (rtl) {
-					if (missing_right) {
+					if ((navigation_buttons_switch_tabs && current > 0) || (!navigation_buttons_switch_tabs && missing_right)) {
 						draw_texture(highlight_arrow == 1 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon, Point2(0, vofs));
 					} else {
 						draw_texture(theme_cache.decrement_icon, Point2(0, vofs), Color(1, 1, 1, 0.5));
 					}
 
-					if (offset > 0) {
+					if ((navigation_buttons_switch_tabs && current < tabs.size() - 1) || (!navigation_buttons_switch_tabs && offset > 0)) {
 						draw_texture(highlight_arrow == 0 ? theme_cache.increment_hl_icon : theme_cache.increment_icon, Point2(theme_cache.increment_icon->get_size().width, vofs));
 					} else {
 						draw_texture(theme_cache.increment_icon, Point2(theme_cache.increment_icon->get_size().width, vofs), Color(1, 1, 1, 0.5));
 					}
 				} else {
-					if (offset > 0) {
+					if ((navigation_buttons_switch_tabs && current > 0) || (!navigation_buttons_switch_tabs && offset > 0)) {
 						draw_texture(highlight_arrow == 0 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon, Point2(limit_minus_buttons, vofs));
 					} else {
 						draw_texture(theme_cache.decrement_icon, Point2(limit_minus_buttons, vofs), Color(1, 1, 1, 0.5));
 					}
 
-					if (missing_right) {
+					if ((navigation_buttons_switch_tabs && current < tabs.size() - 1) || (!navigation_buttons_switch_tabs && missing_right)) {
 						draw_texture(highlight_arrow == 1 ? theme_cache.increment_hl_icon : theme_cache.increment_icon, Point2(limit_minus_buttons + theme_cache.decrement_icon->get_size().width, vofs));
 					} else {
 						draw_texture(theme_cache.increment_icon, Point2(limit_minus_buttons + theme_cache.decrement_icon->get_size().width, vofs), Color(1, 1, 1, 0.5));
@@ -1185,7 +1191,7 @@ void TabBar::_update_cache(bool p_update_hover) {
 		w += tabs[i].size_cache;
 
 		// Check if all tabs would fit inside the area.
-		if (clip_tabs && i > offset && (w > limit || (offset > 0 && w > limit_minus_buttons))) {
+		if (clip_tabs && i > offset && (w > limit || ((offset > 0 || navigation_buttons_always_visible) && w > limit_minus_buttons))) {
 			tabs.write[i].ofs_cache = 0;
 
 			w -= tabs[i].size_cache;
@@ -1210,7 +1216,7 @@ void TabBar::_update_cache(bool p_update_hover) {
 	}
 
 	missing_right = max_drawn_tab < tabs.size() - 1;
-	buttons_visible = offset > 0 || missing_right;
+	buttons_visible = navigation_buttons_always_visible || offset > 0 || missing_right;
 
 	if (tab_alignment == ALIGNMENT_LEFT) {
 		if (p_update_hover) {
@@ -1630,6 +1636,31 @@ bool TabBar::get_clip_tabs() const {
 	return clip_tabs;
 }
 
+void TabBar::set_navigation_buttons_switch_tabs(bool p_navigation_buttons_switch_tabs) {
+	if (navigation_buttons_switch_tabs == p_navigation_buttons_switch_tabs) {
+		return;
+	}
+	navigation_buttons_switch_tabs = p_navigation_buttons_switch_tabs;
+	queue_redraw();
+}
+
+bool TabBar::get_navigation_buttons_switch_tabs() const {
+	return navigation_buttons_switch_tabs;
+}
+
+void TabBar::set_navigation_buttons_always_visible(bool p_navigation_buttons_always_visible) {
+	if (navigation_buttons_always_visible == p_navigation_buttons_always_visible) {
+		return;
+	}
+	navigation_buttons_always_visible = p_navigation_buttons_always_visible;
+	_update_cache();
+	queue_redraw();
+}
+
+bool TabBar::get_navigation_buttons_always_visible() const {
+	return navigation_buttons_always_visible;
+}
+
 void TabBar::set_tab_style_v_flip(bool p_tab_style_v_flip) {
 	tab_style_v_flip = p_tab_style_v_flip;
 }
@@ -1994,6 +2025,10 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabBar::get_tab_alignment);
 	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabBar::set_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &TabBar::get_clip_tabs);
+	ClassDB::bind_method(D_METHOD("set_navigation_buttons_switch_tabs", "navigation_buttons_switch_tabs"), &TabBar::set_navigation_buttons_switch_tabs);
+	ClassDB::bind_method(D_METHOD("get_navigation_buttons_switch_tabs"), &TabBar::get_navigation_buttons_switch_tabs);
+	ClassDB::bind_method(D_METHOD("set_navigation_buttons_always_visible", "navigation_buttons_always_visible"), &TabBar::set_navigation_buttons_always_visible);
+	ClassDB::bind_method(D_METHOD("get_navigation_buttons_always_visible"), &TabBar::get_navigation_buttons_always_visible);
 	ClassDB::bind_method(D_METHOD("get_tab_offset"), &TabBar::get_tab_offset);
 	ClassDB::bind_method(D_METHOD("get_offset_buttons_visible"), &TabBar::get_offset_buttons_visible);
 	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &TabBar::ensure_tab_visible);
@@ -2031,6 +2066,8 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_buttons_switch_tabs"), "set_navigation_buttons_switch_tabs", "get_navigation_buttons_switch_tabs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_buttons_always_visible"), "set_navigation_buttons_always_visible", "get_navigation_buttons_always_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "close_with_middle_mouse"), "set_close_with_middle_mouse", "get_close_with_middle_mouse");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
