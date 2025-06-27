@@ -99,7 +99,6 @@ private:
 
 	DisableMode disable_mode = DISABLE_MODE_REMOVE;
 
-	RID owned_mesh;
 	uint32_t collision_mask = 1;
 	uint32_t collision_layer = 1;
 	NodePath parent_collision_ignore;
@@ -120,7 +119,6 @@ private:
 	void _commit_soft_mesh(real_t p_interpolation_fraction);
 
 	void _prepare_physics_server();
-	void _become_mesh_owner();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -145,6 +143,8 @@ protected:
 
 public:
 	RID get_physics_rid() const { return physics_rid; }
+
+	virtual void set_mesh(const Ref<Mesh> &p_mesh) override;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
