@@ -184,7 +184,7 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (focus_owner && (Object::cast_to<BaseButton>(focus_owner) || Object::cast_to<Range>(focus_owner))) {
 			return;
 		}
-		if (edit_remote->is_pressed()) {
+		if (!scene_tree->is_visible_in_tree()) {
 			return;
 		}
 		_tool_selected(TOOL_RENAME);
