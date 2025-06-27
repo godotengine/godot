@@ -1,0 +1,7 @@
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/code_completion_prefixes': type changed value in new API, from "PackedStringArray" to "typedarray::String".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/delimiter_comments': type changed value in new API, from "PackedStringArray" to "typedarray::String".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/delimiter_strings': type changed value in new API, from "PackedStringArray" to "typedarray::String".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/indent_automatic_prefixes': type changed value in new API, from "PackedStringArray" to "typedarray::String".
+Validate extension JSON: Error: Field 'classes/CodeEdit/properties/line_length_guidelines': type changed value in new API, from "PackedInt32Array" to "typedarray::int".
+
+Changed property types, from Packed*Array to the respective TypedArray, to match their setters and getters.
