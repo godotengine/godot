@@ -390,6 +390,14 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	HBoxContainer *hboxcontainer = memnew(HBoxContainer);
 	vbox_container->add_child(hboxcontainer);
 
+	EditorPropertyRangeHint range_hint;
+	range_hint.min = -1;
+	range_hint.hide_control = false;
+	range_hint.or_less = false;
+
+	EditorPropertyRangeHint coords_property_editor_range_hint;
+	coords_property_editor_range_hint.min = -1;
+
 	// From
 	VBoxContainer *vboxcontainer_from = memnew(VBoxContainer);
 	vboxcontainer_from->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -401,7 +409,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	source_from_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	source_from_property_editor->set_selectable(false);
 	source_from_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	source_from_property_editor->setup(-1, 99999, 1, false, false, true, false);
+	source_from_property_editor->setup(range_hint);
 	vboxcontainer_from->add_child(source_from_property_editor);
 
 	coords_from_property_editor = memnew(EditorPropertyVector2i);
@@ -410,7 +418,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	coords_from_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	coords_from_property_editor->set_selectable(false);
 	coords_from_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	coords_from_property_editor->setup(-1, 99999, true);
+	coords_from_property_editor->setup(coords_property_editor_range_hint);
 	coords_from_property_editor->hide();
 	vboxcontainer_from->add_child(coords_from_property_editor);
 
@@ -420,7 +428,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	alternative_from_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	alternative_from_property_editor->set_selectable(false);
 	alternative_from_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	alternative_from_property_editor->setup(-1, 99999, 1, false, false, true, false);
+	alternative_from_property_editor->setup(range_hint);
 	alternative_from_property_editor->hide();
 	vboxcontainer_from->add_child(alternative_from_property_editor);
 
@@ -435,7 +443,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	source_to_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	source_to_property_editor->set_selectable(false);
 	source_to_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	source_to_property_editor->setup(-1, 99999, 1, false, false, true, false);
+	source_to_property_editor->setup(range_hint);
 	vboxcontainer_to->add_child(source_to_property_editor);
 
 	coords_to_property_editor = memnew(EditorPropertyVector2i);
@@ -444,7 +452,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	coords_to_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	coords_to_property_editor->set_selectable(false);
 	coords_to_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	coords_to_property_editor->setup(-1, 99999, true);
+	coords_to_property_editor->setup(coords_property_editor_range_hint);
 	coords_to_property_editor->hide();
 	vboxcontainer_to->add_child(coords_to_property_editor);
 
@@ -454,7 +462,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	alternative_to_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	alternative_to_property_editor->set_selectable(false);
 	alternative_to_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	alternative_to_property_editor->setup(-1, 99999, 1, false, false, true, false);
+	alternative_to_property_editor->setup(range_hint);
 	alternative_to_property_editor->hide();
 	vboxcontainer_to->add_child(alternative_to_property_editor);
 
