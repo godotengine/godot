@@ -256,7 +256,7 @@ void GodotPinJoint2D::solve(real_t p_step) {
 		}
 	}
 
-	if (motor_enabled && !is_joint_at_limit && motor_target_velocity != 0.0 && B) {
+	if (motor_enabled && motor_target_velocity != 0.0 && B) {
 		if (A->get_inv_inertia() != 0.0) {
 			A->apply_torque_impulse(-motor_target_velocity * p_step / A->get_inv_inertia() / A->get_space()->get_solver_iterations());
 		}
