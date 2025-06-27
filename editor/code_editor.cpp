@@ -1421,14 +1421,6 @@ Variant CodeTextEditor::get_edit_state() {
 	return state;
 }
 
-Variant CodeTextEditor::get_previous_state() {
-	return previous_state;
-}
-
-void CodeTextEditor::store_previous_state() {
-	previous_state = get_navigation_state();
-}
-
 bool CodeTextEditor::is_previewing_navigation_change() const {
 	return preview_navigation_change;
 }
@@ -1447,8 +1439,11 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	Dictionary state = p_state;
 
 	/* update the row first as it sets the column to 0 */
+	text_editor->set_block_signals(true);
 	text_editor->set_caret_line(state["row"]);
 	text_editor->set_caret_column(state["column"]);
+	text_editor->set_block_signals(false);
+
 	if (int(state["scroll_position"]) == -1) {
 		// Special case for previous state.
 		text_editor->center_viewport_to_caret();
@@ -1482,10 +1477,6 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 		for (int i = 0; i < bookmarks.size(); i++) {
 			text_editor->set_line_as_bookmarked(bookmarks[i], true);
 		}
-	}
-
-	if (previous_state.is_empty()) {
-		previous_state = p_state;
 	}
 }
 
