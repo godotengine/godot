@@ -875,20 +875,28 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 			char list_id[4];
 			file->get_buffer((uint8_t *)&list_id, 4);
+			uint32_t end_of_chunk = file_pos + chunksize - 8;
 
 			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
 				// 'INFO' list type.
 				// The size of an entry can be arbitrary.
-				uint32_t end_of_chunk = file_pos + chunksize - 4;
 				while (file->get_position() < end_of_chunk) {
 					char info_id[4];
 					file->get_buffer((uint8_t *)&info_id, 4);
 
 					uint32_t text_size = file->get_32();
+					if (text_size == 0) {
+						continue;
+					}
 
 					Vector<char> text;
 					text.resize(text_size);
 					file->get_buffer((uint8_t *)&text[0], text_size);
+
+					// Skip padding byte if text_size is odd
+					if (text_size & 1) {
+						file->get_8();
+					}
 
 					// The data is always an ASCII string. ASCII is a subset of UTF-8.
 					String tag;

@@ -228,6 +228,10 @@ private:
 	float zoom_min = 0.0;
 	float zoom_max = 0.0;
 
+	Vector2 min_scroll_offset;
+	Vector2 max_scroll_offset;
+	Vector2 scroll_offset;
+
 	bool box_selecting = false;
 	bool box_selection_mode_additive = false;
 	Point2 box_selecting_from;
@@ -327,9 +331,9 @@ private:
 	void _ensure_node_order_from_root(const StringName &p_node);
 	void _ensure_node_order_from(Node *p_node);
 
-	void _update_scroll();
+	void _update_scrollbars();
 	void _update_scroll_offset();
-	void _scroll_moved(double);
+	void _scrollbar_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 	void _top_connection_layer_input(const Ref<InputEvent> &p_ev);
 

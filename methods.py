@@ -665,7 +665,11 @@ def is_apple_clang(env):
     if not using_clang(env):
         return False
     try:
-        version = subprocess.check_output(shlex.split(env.subst(env["CXX"])) + ["--version"]).strip().decode("utf-8")
+        version = (
+            subprocess.check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
+            .strip()
+            .decode("utf-8")
+        )
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
         return False
@@ -737,7 +741,7 @@ def get_compiler_version(env):
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
         version = subprocess.check_output(
-            shlex.split(env.subst(env["CXX"])) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
+            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
@@ -1288,6 +1292,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
             )
         output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
+
+        # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built
+        # platform, which means VS can't properly render code that's inside module-specific ifdefs. This adds those defines to the
+        # platform-specific VS props file, so that VS knows which defines are enabled for the selected platform.
+        env.Append(VSHINT_DEFINES=[f"MODULE_{module.upper()}_ENABLED" for module in env.module_list])
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()

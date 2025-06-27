@@ -1283,5 +1283,19 @@ namespace Godot
         {
             return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)})";
         }
+
+        internal readonly Vector3 GetAnyPerpendicular()
+        {
+            // Return the any perpendicular vector by cross product with the Vector3.RIGHT or Vector3.UP,
+            // whichever has the greater angle to the current vector with the sign of each element positive.
+            // The only essence is "to avoid being parallel to the current vector", and there is no mathematical basis for using Vector3.RIGHT and Vector3.UP,
+            // since it could be a different vector depending on the prior branching code Math::abs(x) <= Math::abs(y) && Math::abs(x) <= Math::abs(z).
+            // However, it would be reasonable to use any of the axes of the basis, as it is simpler to calculate.
+            if (IsZeroApprox())
+            {
+                throw new ArgumentException("The Vector3 must not be zero.");
+            }
+            return Cross((Mathf.Abs(X) <= Mathf.Abs(Y) && Mathf.Abs(X) <= Mathf.Abs(Z)) ? new Vector3(1, 0, 0) : new Vector3(0, 1, 0)).Normalized();
+        }
     }
 }

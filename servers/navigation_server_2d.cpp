@@ -50,6 +50,8 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_is_active", "map"), &NavigationServer2D::map_is_active);
 	ClassDB::bind_method(D_METHOD("map_set_cell_size", "map", "cell_size"), &NavigationServer2D::map_set_cell_size);
 	ClassDB::bind_method(D_METHOD("map_get_cell_size", "map"), &NavigationServer2D::map_get_cell_size);
+	ClassDB::bind_method(D_METHOD("map_set_merge_rasterizer_cell_scale", "map", "scale"), &NavigationServer2D::map_set_merge_rasterizer_cell_scale);
+	ClassDB::bind_method(D_METHOD("map_get_merge_rasterizer_cell_scale", "map"), &NavigationServer2D::map_get_merge_rasterizer_cell_scale);
 	ClassDB::bind_method(D_METHOD("map_set_use_edge_connections", "map", "enabled"), &NavigationServer2D::map_set_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("map_get_use_edge_connections", "map"), &NavigationServer2D::map_get_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("map_set_edge_connection_margin", "map", "margin"), &NavigationServer2D::map_set_edge_connection_margin);
@@ -222,6 +224,7 @@ NavigationServer2D::NavigationServer2D() {
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults2D::NAV_MESH_CELL_SIZE_HINT), NavigationDefaults2D::NAV_MESH_CELL_SIZE);
 	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "navigation/2d/merge_rasterizer_cell_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001,or_greater"), 1.0);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::EDGE_CONNECTION_MARGIN);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::LINK_CONNECTION_RADIUS);
 

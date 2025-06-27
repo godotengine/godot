@@ -272,6 +272,7 @@ private:
 	};
 	RID_Owner<Tracker, true> tracker_owner;
 	RID get_tracker_rid(XrPath p_path);
+	bool interaction_profile_changed = true; // If true we need to check for updates to our active_profile_rid.
 
 	struct ActionSet { // Action sets define a set of actions that can be enabled together
 		String name; // Name for this action set (i.e. "godot_action_set")
@@ -420,6 +421,7 @@ public:
 	XrInstance get_instance() const { return instance; }
 	XrSystemId get_system_id() const { return system_id; }
 	XrSession get_session() const { return session; }
+	XrSessionState get_session_state() const { return session_state; }
 	OpenXRGraphicsExtensionWrapper *get_graphics_extension() const { return graphics_extension; }
 	String get_runtime_name() const { return runtime_name; }
 	String get_runtime_version() const { return runtime_version; }
@@ -435,6 +437,7 @@ public:
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
 	XrPath get_xr_path(const String &p_path);
+	String get_xr_path_name(const XrPath &p_path);
 	bool is_top_level_path_supported(const String &p_toplevel_path);
 	bool is_interaction_profile_supported(const String &p_ip_path);
 	bool interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path);

@@ -510,8 +510,15 @@ bool SceneThemeEditorPreview::set_preview_scene(const String &p_path) {
 	}
 
 	Node *instance = loaded_scene->instantiate();
-	if (!instance || !Object::cast_to<Control>(instance)) {
+
+	if (!instance) {
+		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, could not instantiate it."));
+		return false;
+	}
+
+	if (!Object::cast_to<Control>(instance)) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, must have a Control node at its root."));
+		memdelete(instance);
 		return false;
 	}
 

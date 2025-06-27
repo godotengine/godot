@@ -756,15 +756,15 @@ Dictionary TextServerExtension::font_get_variation_coordinates(const RID &p_font
 	return ret;
 }
 
-#ifndef DISABLE_DEPRECATED
 void TextServerExtension::font_set_oversampling(const RID &p_font_rid, double p_oversampling) {
-	// NOP
+	GDVIRTUAL_CALL(_font_set_oversampling, p_font_rid, p_oversampling);
 }
 
 double TextServerExtension::font_get_oversampling(const RID &p_font_rid) const {
-	return 1.0;
+	double ret = -1.0;
+	GDVIRTUAL_CALL(_font_get_oversampling, p_font_rid, ret);
+	return ret;
 }
-#endif
 
 TypedArray<Vector2i> TextServerExtension::font_get_size_cache_list(const RID &p_font_rid) const {
 	TypedArray<Vector2i> ret;

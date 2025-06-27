@@ -602,7 +602,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	//outline_dialog->set_child_rect(outline_dialog_vbc);
 
 	outline_size = memnew(SpinBox);
-	outline_size->set_accessibility_name(TTRC("Outline Size"));
+	outline_size->set_accessibility_name(TTRC("Outline Size:"));
 	outline_size->set_min(0.001);
 	outline_size->set_max(1024);
 	outline_size->set_step(0.001);

@@ -2749,7 +2749,6 @@ Vector<String> GDScriptLanguage::get_reserved_words() const {
 		"when",
 		"while",
 		// Declarations.
-		"abstract",
 		"class",
 		"class_name",
 		"const",
@@ -2915,7 +2914,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		*r_icon_path = c->simplified_icon_path;
 	}
 	if (r_is_abstract) {
-		*r_is_abstract = false;
+		*r_is_abstract = c->is_abstract;
 	}
 	if (r_is_tool) {
 		*r_is_tool = parser.is_tool();
@@ -2964,6 +2963,12 @@ GDScriptLanguage::GDScriptLanguage() {
 		String path = GDScriptWarning::get_settings_path_from_code(code);
 		GLOBAL_DEF(GDScriptWarning::get_property_info(code), default_enabled);
 	}
+
+#ifndef DISABLE_DEPRECATED
+	ProjectSettings::get_singleton()->set_as_internal("debug/gdscript/warnings/property_used_as_function", true);
+	ProjectSettings::get_singleton()->set_as_internal("debug/gdscript/warnings/constant_used_as_function", true);
+	ProjectSettings::get_singleton()->set_as_internal("debug/gdscript/warnings/function_used_as_property", true);
+#endif
 #endif // DEBUG_ENABLED
 }
 

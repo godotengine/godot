@@ -822,14 +822,6 @@ VisualShaderNodeCustom::VisualShaderNodeCustom() {
 
 /////////////////////////////////////////////////////////
 
-void VisualShader::set_shader_type(Type p_type) {
-	current_type = p_type;
-}
-
-VisualShader::Type VisualShader::get_shader_type() const {
-	return current_type;
-}
-
 void VisualShader::add_varying(const String &p_name, VaryingMode p_mode, VaryingType p_type) {
 	ERR_FAIL_COND(!p_name.is_valid_ascii_identifier());
 	ERR_FAIL_INDEX((int)p_mode, (int)VARYING_MODE_MAX);
@@ -1466,14 +1458,6 @@ void VisualShader::set_mode(Mode p_mode) {
 	notify_property_list_changed();
 }
 
-void VisualShader::set_graph_offset(const Vector2 &p_offset) {
-	graph_offset = p_offset;
-}
-
-Vector2 VisualShader::get_graph_offset() const {
-	return graph_offset;
-}
-
 Shader::Mode VisualShader::get_mode() const {
 	return shader_mode;
 }
@@ -1481,6 +1465,17 @@ Shader::Mode VisualShader::get_mode() const {
 bool VisualShader::is_text_shader() const {
 	return false;
 }
+
+#ifndef DISABLE_DEPRECATED
+void VisualShader::set_graph_offset(const Vector2 &p_offset) {
+	WARN_DEPRECATED_MSG("graph_offset property is deprecated. Setting it has no effect.");
+}
+
+Vector2 VisualShader::get_graph_offset() const {
+	WARN_DEPRECATED_MSG("graph_offset property is deprecated. Getting it always returns Vector2().");
+	return Vector2();
+}
+#endif
 
 String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &default_tex_params) const {
 	Ref<VisualShaderNode> node = get_node(p_type, p_node);
@@ -3157,9 +3152,6 @@ void VisualShader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_node_connections", "type"), &VisualShader::_get_node_connections);
 
-	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
-	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
-
 	ClassDB::bind_method(D_METHOD("attach_node_to_frame", "type", "id", "frame"), &VisualShader::attach_node_to_frame);
 	ClassDB::bind_method(D_METHOD("detach_node_from_frame", "type", "id"), &VisualShader::detach_node_from_frame);
 
@@ -3173,7 +3165,11 @@ void VisualShader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
+	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_graph_offset", "get_graph_offset");
+#endif
 
 	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 
@@ -3662,6 +3658,9 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 				case PORT_TYPE_SCALAR_INT: {
 					code = "	" + p_output_vars[0] + " = 0;\n";
 				} break;
+				case PORT_TYPE_SCALAR_UINT: {
+					code = "	" + p_output_vars[0] + " = 0u;\n";
+				} break;
 				case PORT_TYPE_VECTOR_2D: {
 					code = "	" + p_output_vars[0] + " = vec2(0.0);\n";
 				} break;
@@ -3673,6 +3672,9 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 				} break;
 				case PORT_TYPE_BOOLEAN: {
 					code = "	" + p_output_vars[0] + " = false;\n";
+				} break;
+				case PORT_TYPE_TRANSFORM: {
+					code = "	" + p_output_vars[0] + " = mat4(1.0);\n";
 				} break;
 				default:
 					break;

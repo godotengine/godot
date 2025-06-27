@@ -2364,12 +2364,31 @@ void EditorHelp::_request_help(const String &p_string) {
 }
 
 void EditorHelp::_help_callback(const String &p_topic) {
-	String what = p_topic.get_slicec(':', 0);
-	String clss = p_topic.get_slicec(':', 1);
-	String name;
-	if (p_topic.get_slice_count(":") == 3) {
-		name = p_topic.get_slicec(':', 2);
+	Vector<String> parts;
+	{
+		int from = 0;
+		int buffer_start = 0;
+		while (true) {
+			const int pos = p_topic.find_char(':', from);
+			if (pos < 0) {
+				parts.push_back(p_topic.substr(buffer_start));
+				break;
+			}
+
+			if (pos + 1 < p_topic.length() && p_topic[pos + 1] == ':') {
+				// `::` used in built-in scripts.
+				from = pos + 2;
+			} else {
+				parts.push_back(p_topic.substr(buffer_start, pos - buffer_start));
+				from = pos + 1;
+				buffer_start = from;
+			}
+		}
 	}
+
+	const String what = parts[0]; // `parts` is always non-empty.
+	const String clss = (parts.size() > 1) ? parts[1] : String();
+	const String name = (parts.size() > 2) ? parts[2] : String();
 
 	_request_help(clss); // First go to class.
 
@@ -4870,7 +4889,6 @@ FindBar::FindBar() {
 	find_prev->set_flat(true);
 	find_prev->set_disabled(results_count < 1);
 	find_prev->set_tooltip_text(TTR("Previous Match"));
-	find_prev->set_accessibility_name(TTRC("Previous Match"));
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
@@ -4879,7 +4897,6 @@ FindBar::FindBar() {
 	find_next->set_flat(true);
 	find_next->set_disabled(results_count < 1);
 	find_next->set_tooltip_text(TTR("Next Match"));
-	find_next->set_accessibility_name(TTRC("Next Match"));
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
@@ -4887,7 +4904,6 @@ FindBar::FindBar() {
 	hide_button = memnew(Button);
 	hide_button->set_flat(true);
 	hide_button->set_tooltip_text(TTR("Hide"));
-	hide_button->set_accessibility_name(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);

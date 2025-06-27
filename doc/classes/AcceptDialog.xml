@@ -15,7 +15,8 @@
 			<param index="1" name="right" type="bool" default="false" />
 			<param index="2" name="action" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with label [param text] and a custom [param action] to the dialog and returns the created button. [param action] will be passed to the [signal custom_action] signal when pressed.
+				Adds a button with label [param text] and a custom [param action] to the dialog and returns the created button.
+				If [param action] is not empty, pressing the button will emit the [signal custom_action] signal with the specified action string.
 				If [code]true[/code], [param right] will place the button to the right of any sibling buttons.
 				You can use [method remove_button] method to remove a button created with this method from the dialog.
 			</description>
@@ -97,7 +98,7 @@
 		<signal name="custom_action">
 			<param index="0" name="action" type="StringName" />
 			<description>
-				Emitted when a custom button is pressed. See [method add_button].
+				Emitted when a custom button with an action is pressed. See [method add_button].
 			</description>
 		</signal>
 	</signals>

@@ -642,37 +642,29 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	}
 
 	{ //buffers
-		Vector<uint8_t> vb = vertex_array.to_byte_array();
-		vertex_buffer = rd->storage_buffer_create(vb.size(), vb);
+		vertex_buffer = rd->storage_buffer_create(vertex_array.size() * sizeof(Vertex), vertex_array.span().reinterpret<uint8_t>());
 
-		Vector<uint8_t> tb = triangles.to_byte_array();
-		triangle_buffer = rd->storage_buffer_create(tb.size(), tb);
+		triangle_buffer = rd->storage_buffer_create(triangles.size() * sizeof(Triangle), triangles.span().reinterpret<uint8_t>());
 
-		Vector<uint8_t> tib = triangle_indices.to_byte_array();
-		r_triangle_indices_buffer = rd->storage_buffer_create(tib.size(), tib);
+		r_triangle_indices_buffer = rd->storage_buffer_create(triangle_indices.size() * sizeof(uint32_t), triangle_indices.span().reinterpret<uint8_t>());
 
-		Vector<uint8_t> cib = cluster_indices.to_byte_array();
-		r_cluster_indices_buffer = rd->storage_buffer_create(cib.size(), cib);
+		r_cluster_indices_buffer = rd->storage_buffer_create(cluster_indices.size() * sizeof(uint32_t), cluster_indices.span().reinterpret<uint8_t>());
 
-		Vector<uint8_t> cab = cluster_aabbs.to_byte_array();
-		r_cluster_aabbs_buffer = rd->storage_buffer_create(cab.size(), cab);
+		r_cluster_aabbs_buffer = rd->storage_buffer_create(cluster_aabbs.size() * sizeof(ClusterAABB), cluster_aabbs.span().reinterpret<uint8_t>());
 
-		Vector<uint8_t> lb = lights.to_byte_array();
-		if (lb.is_empty()) {
-			lb.resize(sizeof(Light)); //even if no lights, the buffer must exist
-		}
+		// Even when there are no lights, the buffer must exist.
+		static const Light empty_lights[1];
+		Span<uint8_t> lb = (lights.is_empty() ? Span(empty_lights) : lights.span()).reinterpret<uint8_t>();
 		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
 
-		Vector<uint8_t> sb = seam_buffer_vec.to_byte_array();
-		if (sb.is_empty()) {
-			sb.resize(sizeof(Vector2i) * 2); //even if no seams, the buffer must exist
-		}
+		// Even when there are no seams, the buffer must exist.
+		static const Vector2i empty_seams[2];
+		Span<uint8_t> sb = (seam_buffer_vec.is_empty() ? Span(empty_seams) : seam_buffer_vec.span()).reinterpret<uint8_t>();
 		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 
-		Vector<uint8_t> pb = p_probe_positions.to_byte_array();
-		if (pb.is_empty()) {
-			pb.resize(sizeof(Probe));
-		}
+		// Even when there are no probes, the buffer must exist.
+		static const Probe empty_probes[1];
+		Span<uint8_t> pb = (p_probe_positions.is_empty() ? Span(empty_probes) : p_probe_positions.span()).reinterpret<uint8_t>();
 		probe_positions_buffer = rd->storage_buffer_create(pb.size(), pb);
 	}
 

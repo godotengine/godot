@@ -437,6 +437,21 @@ public:
 		_init_from(p_other);
 	}
 
+	bool operator==(const HashSet &p_other) const {
+		if (num_elements != p_other.num_elements) {
+			return false;
+		}
+		for (uint32_t i = 0; i < num_elements; i++) {
+			if (!p_other.has(keys[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	bool operator!=(const HashSet &p_other) const {
+		return !(*this == p_other);
+	}
+
 	HashSet(uint32_t p_initial_capacity) {
 		// Capacity can't be 0.
 		capacity_index = 0;

@@ -450,7 +450,7 @@
 				- Element [code]0[/code] is the [Node], or [code]null[/code] if not found;
 				- Element [code]1[/code] is the subname's last nested [Resource], or [code]null[/code] if not found;
 				- Element [code]2[/code] is the remaining [NodePath], referring to an existing, non-[Resource] property (see [method Object.get_indexed]).
-				[b]Example:[/b] Assume that the child's [member Sprite2D.texture] has been assigned a [AtlasTexture]:
+				[b]Example:[/b] Assume that the child's [member Sprite2D.texture] has been assigned an [AtlasTexture]:
 				[codeblocks]
 				[gdscript]
 				var a = get_node_and_resource("Area2D/Sprite2D")
@@ -1008,7 +1008,7 @@
 			<return type="void" />
 			<param index="0" name="load_placeholder" type="bool" />
 			<description>
-				If set to [code]true[/code], the node becomes a [InstancePlaceholder] when packed and instantiated from a [PackedScene]. See also [method get_scene_instance_load_placeholder].
+				If set to [code]true[/code], the node becomes an [InstancePlaceholder] when packed and instantiated from a [PackedScene]. See also [method get_scene_instance_load_placeholder].
 			</description>
 		</method>
 		<method name="set_thread_safe">

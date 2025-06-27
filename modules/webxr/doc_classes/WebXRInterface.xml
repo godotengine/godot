@@ -174,7 +174,7 @@
 		</member>
 		<member name="requested_reference_space_types" type="String" setter="set_requested_reference_space_types" getter="get_requested_reference_space_types">
 			A comma-seperated list of reference space types used by [method XRInterface.initialize] when setting up the WebXR session.
-			The reference space types are requested in order, and the first one supported by the users device or browser will be used. The [member reference_space_type] property contains the reference space type that was ultimately selected.
+			The reference space types are requested in order, and the first one supported by the user's device or browser will be used. The [member reference_space_type] property contains the reference space type that was ultimately selected.
 			This doesn't have any effect on the interface when already initialized.
 			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
 		</member>

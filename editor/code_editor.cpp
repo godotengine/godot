@@ -127,7 +127,7 @@ GotoLinePopup::GotoLinePopup() {
 	line_input->set_select_all_on_focus(true);
 	line_input->connect(SceneStringName(text_changed), callable_mp(this, &GotoLinePopup::_goto_line).unbind(1));
 	line_input->connect(SceneStringName(text_submitted), callable_mp(this, &GotoLinePopup::_submit).unbind(1));
-	line_input->set_accessibility_name(TTRC("Line Number"));
+	line_input->set_accessibility_name(TTRC("Line Number:"));
 	vbc->add_child(line_input);
 }
 
@@ -802,7 +802,6 @@ FindReplaceBar::FindReplaceBar() {
 	find_prev->set_flat(true);
 	find_prev->set_disabled(results_count < 1);
 	find_prev->set_tooltip_text(TTRC("Previous Match"));
-	find_prev->set_accessibility_name(TTRC("Previous Match"));
 	hbc_button_search->add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_prev));
@@ -811,7 +810,6 @@ FindReplaceBar::FindReplaceBar() {
 	find_next->set_flat(true);
 	find_next->set_disabled(results_count < 1);
 	find_next->set_tooltip_text(TTRC("Next Match"));
-	find_next->set_accessibility_name(TTRC("Next Match"));
 	hbc_button_search->add_child(find_next);
 	find_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_next));
@@ -856,7 +854,6 @@ FindReplaceBar::FindReplaceBar() {
 	hide_button = memnew(Button);
 	hide_button->set_flat(true);
 	hide_button->set_tooltip_text(TTRC("Hide"));
-	hide_button->set_accessibility_name(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_hide_bar));
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
@@ -1947,7 +1944,6 @@ CodeTextEditor::CodeTextEditor() {
 	error_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	error_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_error_button_pressed));
 	error_button->set_tooltip_text(TTRC("Errors"));
-	error_button->set_accessibility_name(TTRC("Errors"));
 
 	// Warnings
 	warning_button = memnew(Button);
@@ -1957,7 +1953,6 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip_text(TTRC("Warnings"));
-	warning_button->set_accessibility_name(TTRC("Warnings"));
 
 	status_bar->add_child(memnew(VSeparator));
 
@@ -1989,7 +1984,7 @@ CodeTextEditor::CodeTextEditor() {
 	line_and_col_txt->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	line_and_col_txt->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	line_and_col_txt->set_tooltip_text(TTRC("Line and column numbers."));
-	line_and_col_txt->set_accessibility_name(TTRC("Line and Column Numbers"));
+	line_and_col_txt->set_accessibility_name(TTRC("Line and column numbers."));
 	line_and_col_txt->set_focus_mode(FOCUS_ACCESSIBILITY);
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 

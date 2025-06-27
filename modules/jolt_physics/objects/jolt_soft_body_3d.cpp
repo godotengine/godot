@@ -74,7 +74,8 @@ JPH::ObjectLayer JoltSoftBody3D::_get_object_layer() const {
 void JoltSoftBody3D::_space_changing() {
 	JoltObject3D::_space_changing();
 
-	if (in_space()) {
+	// Note that we should not use `in_space()` as the condition here, since we could have cleared the mesh at this point.
+	if (jolt_body != nullptr) {
 		jolt_settings = new JPH::SoftBodyCreationSettings(jolt_body->GetSoftBodyCreationSettings());
 		jolt_settings->mSettings = nullptr;
 	}

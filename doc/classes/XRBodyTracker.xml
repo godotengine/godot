@@ -304,20 +304,20 @@
 		<constant name="JOINT_RIGHT_WRIST_TWIST" value="80" enum="Joint">
 			Right wrist twist joint.
 		</constant>
-		<constant name="JOINT_LEFT_ANKLE_TWIST" value="81" enum="Joint">
-			Left ankle twist joint.
+		<constant name="JOINT_LEFT_FOOT_TWIST" value="81" enum="Joint">
+			Left foot twist joint.
 		</constant>
-		<constant name="JOINT_LEFT_ANKLE" value="82" enum="Joint">
-			Left ankle joint.
+		<constant name="JOINT_LEFT_HEEL" value="82" enum="Joint">
+			Left heel joint.
 		</constant>
 		<constant name="JOINT_LEFT_MIDDLE_FOOT" value="83" enum="Joint">
 			Left middle foot joint.
 		</constant>
-		<constant name="JOINT_RIGHT_ANKLE_TWIST" value="84" enum="Joint">
-			Right ankle twist joint.
+		<constant name="JOINT_RIGHT_FOOT_TWIST" value="84" enum="Joint">
+			Right foot twist joint.
 		</constant>
-		<constant name="JOINT_RIGHT_ANKLE" value="85" enum="Joint">
-			Right ankle joint.
+		<constant name="JOINT_RIGHT_HEEL" value="85" enum="Joint">
+			Right heel joint.
 		</constant>
 		<constant name="JOINT_RIGHT_MIDDLE_FOOT" value="86" enum="Joint">
 			Right middle foot joint.

@@ -2003,7 +2003,7 @@ bool ShaderLanguage::_validate_operator(const BlockNode *p_block, const Function
 			DataType nb = p_op->arguments[1]->get_datatype();
 			DataType nc = p_op->arguments[2]->get_datatype();
 
-			valid = na == TYPE_BOOL && (nb == nc);
+			valid = na == TYPE_BOOL && (nb == nc) && !is_sampler_type(nb);
 			ret_type = nb;
 			ret_size = sa;
 		} break;

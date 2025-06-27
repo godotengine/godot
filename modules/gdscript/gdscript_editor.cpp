@@ -81,11 +81,15 @@ bool GDScriptLanguage::is_using_templates() {
 Ref<Script> GDScriptLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
 	Ref<GDScript> scr;
 	scr.instantiate();
+
 	String processed_template = p_template;
-	bool type_hints = false;
+
 #ifdef TOOLS_ENABLED
-	type_hints = EDITOR_GET("text_editor/completion/add_type_hints");
+	const bool type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
+#else
+	const bool type_hints = true;
 #endif
+
 	if (!type_hints) {
 		processed_template = processed_template.replace(": int", "")
 									 .replace(": Shader.Mode", "")
@@ -109,6 +113,7 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 								 .replace("_CLASS_", p_class_name.to_pascal_case().validate_unicode_identifier())
 								 .replace("_TS_", _get_indentation());
 	scr->set_source_code(processed_template);
+
 	return scr;
 }
 
@@ -524,29 +529,33 @@ void GDScriptLanguage::get_public_annotations(List<MethodInfo> *p_annotations) c
 
 String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 #ifdef TOOLS_ENABLED
-	bool th = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
+	const bool type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
 #else
-	bool th = false;
+	const bool type_hints = true;
 #endif
 
-	String s = "func " + p_name + "(";
+	String result = "func " + p_name + "(";
 	if (p_args.size()) {
 		for (int i = 0; i < p_args.size(); i++) {
 			if (i > 0) {
-				s += ", ";
+				result += ", ";
 			}
-			s += p_args[i].get_slicec(':', 0);
-			if (th) {
-				String type = p_args[i].get_slicec(':', 1);
-				if (!type.is_empty()) {
-					s += ": " + type;
+
+			const String name_unstripped = p_args[i].get_slicec(':', 0);
+			result += name_unstripped.strip_edges();
+
+			if (type_hints) {
+				const String type_stripped = p_args[i].right(name_unstripped.length() + 1).strip_edges();
+				if (!type_stripped.is_empty()) {
+					result += ": " + type_stripped;
 				}
 			}
 		}
 	}
-	s += String(")") + (th ? " -> void" : "") + ":\n" + _get_indentation() + "pass # Replace with function body.\n";
+	result += String(")") + (type_hints ? " -> void" : "") + ":\n" +
+			_get_indentation() + "pass # Replace with function body.\n";
 
-	return s;
+	return result;
 }
 
 //////// COMPLETION //////////
@@ -832,7 +841,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->initializer);
 					if (call->is_constant && call->reduced) {
 						def_val = call->reduced_value.get_construct_string();
-					} else {
+					} else if (call->get_callee_type() == GDScriptParser::Node::IDENTIFIER) {
 						def_val = call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
 					}
 				} break;
@@ -1523,7 +1532,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	static const char *_keywords_with_space[] = {
 		"and", "not", "or", "in", "as", "class", "class_name", "extends", "is", "func", "signal", "await",
-		"const", "enum", "abstract", "static", "var", "if", "elif", "else", "for", "match", "when", "while",
+		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "when", "while",
 		nullptr
 	};
 
@@ -3558,7 +3567,11 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 								continue;
 							}
 
-							if (options.has(member.function->identifier->name) || completion_context.current_class->has_function(member.function->identifier->name)) {
+							if (options.has(member.function->identifier->name)) {
+								continue;
+							}
+
+							if (completion_context.current_class->has_function(member.get_name()) && completion_context.current_class->get_member(member.get_name()).function != function_node) {
 								continue;
 							}
 
@@ -3588,7 +3601,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				break;
 			}
 
-			bool use_type_hint = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints").operator bool();
+			const bool type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
 
 			List<MethodInfo> virtual_methods;
 			if (is_static) {
@@ -3602,7 +3615,10 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 
 			for (const MethodInfo &mi : virtual_methods) {
-				if (options.has(mi.name) || completion_context.current_class->has_function(mi.name)) {
+				if (options.has(mi.name)) {
+					continue;
+				}
+				if (completion_context.current_class->has_function(mi.name) && completion_context.current_class->get_member(mi.name).function != function_node) {
 					continue;
 				}
 				String method_hint = mi.name;
@@ -3620,7 +3636,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						arg = arg.substr(0, arg.find_char(':'));
 					}
 					method_hint += arg;
-					if (use_type_hint) {
+					if (type_hints) {
 						method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
 					}
 				}
@@ -3629,12 +3645,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						method_hint += ", ";
 					}
 					method_hint += "...args"; // `MethodInfo` does not support the rest parameter name.
-					if (use_type_hint) {
+					if (type_hints) {
 						method_hint += ": Array";
 					}
 				}
 				method_hint += ")";
-				if (use_type_hint) {
+				if (type_hints) {
 					method_hint += " -> " + _get_visual_datatype(mi.return_val, false, class_name);
 				}
 				method_hint += ":";

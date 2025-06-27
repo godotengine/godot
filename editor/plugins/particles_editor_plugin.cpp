@@ -853,7 +853,7 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	generate_aabb->add_child(genvb);
 
 	generate_seconds = memnew(SpinBox);
-	generate_seconds->set_accessibility_name(TTRC("Generation Time"));
+	generate_seconds->set_accessibility_name(TTRC("Generation Time (sec)"));
 	generate_seconds->set_min(0.1);
 	generate_seconds->set_max(25);
 	generate_seconds->set_value(2);
@@ -878,14 +878,14 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	emission_dialog->add_child(emd_vb);
 
 	emission_amount = memnew(SpinBox);
-	emission_amount->set_accessibility_name(TTRC("Emission Points"));
+	emission_amount->set_accessibility_name(TTRC("Emission Points:"));
 	emission_amount->set_min(1);
 	emission_amount->set_max(100000);
 	emission_amount->set_value(512);
 	emd_vb->add_margin_child(TTR("Emission Points:"), emission_amount);
 
 	emission_fill = memnew(OptionButton);
-	emission_fill->set_accessibility_name(TTRC("Emission Source"));
+	emission_fill->set_accessibility_name(TTRC("Emission Source:"));
 	emission_fill->add_item(TTR("Surface Points"));
 	emission_fill->add_item(TTR("Surface Points+Normal (Directed)"));
 	emission_fill->add_item(TTR("Volume"));

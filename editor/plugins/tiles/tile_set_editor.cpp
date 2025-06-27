@@ -846,7 +846,6 @@ TileSetEditor::TileSetEditor() {
 	source_sort_button->set_flat(false);
 	source_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
-	source_sort_button->set_accessibility_name(TTRC("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_set_source_sort));

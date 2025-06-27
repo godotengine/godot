@@ -310,7 +310,7 @@ void CollisionPolygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
 	ADD_GROUP("One Way Collision", "one_way_collision");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision", PROPERTY_HINT_GROUP_ENABLE), "set_one_way_collision", "is_one_way_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 
 	BIND_ENUM_CONSTANT(BUILD_SOLIDS);

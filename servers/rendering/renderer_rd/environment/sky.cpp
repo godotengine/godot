@@ -1065,7 +1065,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 	}
 
 	sky_scene_state.ubo.directional_light_count = 0;
-	if (shader_data->uses_light) {
+	if (shader_data->uses_light || (RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment) && RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_render_data->environment) > 0.001)) {
 		const PagedArray<RID> &lights = *p_render_data->lights;
 		// Run through the list of lights in the scene and pick out the Directional Lights.
 		// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called

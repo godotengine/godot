@@ -84,7 +84,7 @@
 		<method name="get_stack">
 			<return type="Array" />
 			<description>
-				Returns an array of dictionaries representing the current call stack. See also [method print_stack].
+				Returns an array of dictionaries representing the current call stack.
 				[codeblock]
 				func _ready():
 					foo()
@@ -99,8 +99,8 @@
 				[codeblock lang=text]
 				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
 				[/codeblock]
-				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method get_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will return an empty array.
+				See also [method print_debug], [method print_stack], and [method Engine.capture_script_backtraces].
+				[b]Note:[/b] By default, backtraces are only available in editor builds and debug builds. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
 			</description>
 		</method>
 		<method name="inst_to_dict" deprecated="Consider using [method JSON.from_native] or [method Object.get_property_list] instead.">
@@ -209,19 +209,20 @@
 				Test print
 				At: res://test.gd:15:_process()
 				[/codeblock]
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
+				See also [method print_stack], [method get_stack], and [method Engine.capture_script_backtraces].
+				[b]Note:[/b] By default, backtraces are only available in editor builds and debug builds. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
 			</description>
 		</method>
 		<method name="print_stack">
 			<return type="void" />
 			<description>
-				Prints a stack trace at the current code location. See also [method get_stack].
+				Prints a stack trace at the current code location.
 				The output in the console may look like the following:
 				[codeblock lang=text]
 				Frame 0 - res://test.gd:16 in function '_process'
 				[/codeblock]
-				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method print_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
+				See also [method print_debug], [method get_stack], and [method Engine.capture_script_backtraces].
+				[b]Note:[/b] By default, backtraces are only available in editor builds and debug builds. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
 			</description>
 		</method>
 		<method name="range" qualifiers="vararg" keywords="seq">
@@ -295,6 +296,27 @@
 		</constant>
 	</constants>
 	<annotations>
+		<annotation name="@abstract">
+			<return type="void" />
+			<description>
+				Marks a class or a method as abstract.
+				An abstract class is a class that cannot be instantiated directly. Instead, it is meant to be inherited by other classes. Attempting to instantiate an abstract class will result in an error.
+				An abstract method is a method that has no implementation. Therefore, a newline or a semicolon is expected after the function header. This defines a contract that inheriting classes must conform to, because the method signature must be compatible when overriding.
+				Inheriting classes must either provide implementations for all abstract methods, or the inheriting class must be marked as abstract. If a class has at least one abstract method (either its own or an unimplemented inherited one), then it must also be marked as abstract. However, the reverse is not true: an abstract class is allowed to have no abstract methods.
+				[codeblock]
+				@abstract class Shape:
+					@abstract func draw()
+
+				class Circle extends Shape:
+					func draw():
+						print("Drawing a circle.")
+
+				class Square extends Shape:
+					func draw():
+						print("Drawing a square.")
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export">
 			<return type="void" />
 			<description>
@@ -783,6 +805,7 @@
 				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
+				[b]Note:[/b] Methods annotated with [annotation @rpc] cannot receive objects which define required parameters in [method Object._init]. See [method Object._init] for more details.
 			</description>
 		</annotation>
 		<annotation name="@static_unload">

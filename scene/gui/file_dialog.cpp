@@ -80,9 +80,9 @@ void FileDialog::_native_popup() {
 	DisplayServer::WindowID wid = w ? w->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
+		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
 	}
 }
 
@@ -2096,20 +2096,17 @@ FileDialog::FileDialog() {
 
 	dir_prev = memnew(Button);
 	dir_prev->set_theme_type_variation(SceneStringName(FlatButton));
-	dir_prev->set_accessibility_name(ETR("Previous"));
 	dir_prev->set_tooltip_text(ETR("Go to previous folder."));
 	top_toolbar->add_child(dir_prev);
 	dir_prev->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_go_back));
 
 	dir_next = memnew(Button);
-	dir_next->set_accessibility_name(ETR("Next"));
 	dir_next->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_next->set_tooltip_text(ETR("Go to next folder."));
 	top_toolbar->add_child(dir_next);
 	dir_next->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_go_forward));
 
 	dir_up = memnew(Button);
-	dir_up->set_accessibility_name(ETR("Parent Folder"));
 	dir_up->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_up->set_tooltip_text(ETR("Go to parent folder."));
 	top_toolbar->add_child(dir_up);
@@ -2129,7 +2126,7 @@ FileDialog::FileDialog() {
 	top_toolbar->add_child(drives);
 
 	directory_edit = memnew(LineEdit);
-	directory_edit->set_accessibility_name(ETR("Directory Path"));
+	directory_edit->set_accessibility_name(ETR("Path:"));
 	directory_edit->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	directory_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	top_toolbar->add_child(directory_edit);
@@ -2140,14 +2137,12 @@ FileDialog::FileDialog() {
 
 	refresh_button = memnew(Button);
 	refresh_button->set_theme_type_variation(SceneStringName(FlatButton));
-	refresh_button->set_accessibility_name(ETR("Refresh"));
 	refresh_button->set_tooltip_text(ETR("Refresh files."));
 	top_toolbar->add_child(refresh_button);
 	refresh_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::update_file_list));
 
 	favorite_button = memnew(Button);
 	favorite_button->set_theme_type_variation(SceneStringName(FlatButton));
-	favorite_button->set_accessibility_name(TTRC("(Un)favorite Folder"));
 	favorite_button->set_tooltip_text(TTRC("(Un)favorite current folder."));
 	top_toolbar->add_child(favorite_button);
 	favorite_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_favorite_pressed));
@@ -2159,7 +2154,6 @@ FileDialog::FileDialog() {
 
 	make_dir_button = memnew(Button);
 	make_dir_button->set_theme_type_variation(SceneStringName(FlatButton));
-	make_dir_button->set_accessibility_name(ETR("Create New Folder"));
 	make_dir_button->set_tooltip_text(ETR("Create a new folder."));
 	make_dir_container->add_child(make_dir_button);
 	make_dir_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_make_dir));
@@ -2198,7 +2192,7 @@ FileDialog::FileDialog() {
 		favorite_list = memnew(ItemList);
 		favorite_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		favorite_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-		favorite_list->set_accessibility_name(ETR("Favorites"));
+		favorite_list->set_accessibility_name(ETR("Favorites:"));
 		favorite_vbox->add_child(favorite_list);
 		favorite_list->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_favorite_selected));
 
@@ -2214,7 +2208,7 @@ FileDialog::FileDialog() {
 		recent_list = memnew(ItemList);
 		recent_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		recent_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-		recent_list->set_accessibility_name(ETR("Recent"));
+		recent_list->set_accessibility_name(ETR("Recent:"));
 		recent_vbox->add_child(recent_list);
 		recent_list->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_recent_selected));
 	}
@@ -2236,7 +2230,6 @@ FileDialog::FileDialog() {
 	show_hidden->set_theme_type_variation(SceneStringName(FlatButton));
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
-	show_hidden->set_accessibility_name(ETR("Show Hidden Files"));
 	show_hidden->set_tooltip_text(ETR("Toggle the visibility of hidden files."));
 	lower_toolbar->add_child(show_hidden);
 	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_hidden_files));
@@ -2255,7 +2248,6 @@ FileDialog::FileDialog() {
 	thumbnail_mode_button->set_pressed(true);
 	thumbnail_mode_button->set_button_group(view_mode_group);
 	thumbnail_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
-	thumbnail_mode_button->set_accessibility_name(ETR("View as Thumbnails"));
 	thumbnail_mode_button->set_tooltip_text(ETR("View items as a grid of thumbnails."));
 	layout_container->add_child(thumbnail_mode_button);
 	thumbnail_mode_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::set_display_mode).bind(DISPLAY_THUMBNAILS));
@@ -2264,7 +2256,6 @@ FileDialog::FileDialog() {
 	list_mode_button->set_toggle_mode(true);
 	list_mode_button->set_button_group(view_mode_group);
 	list_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
-	list_mode_button->set_accessibility_name(ETR("View as List"));
 	list_mode_button->set_tooltip_text(ETR("View items as a list."));
 	layout_container->add_child(list_mode_button);
 	list_mode_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::set_display_mode).bind(DISPLAY_LIST));
@@ -2276,7 +2267,6 @@ FileDialog::FileDialog() {
 	show_filename_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_filename_filter_button->set_toggle_mode(true);
 	show_filename_filter_button->set_pressed(false);
-	show_filename_filter_button->set_accessibility_name(ETR("Filter File Names"));
 	show_filename_filter_button->set_tooltip_text(ETR("Toggle the visibility of the filter for file names."));
 	lower_toolbar->add_child(show_filename_filter_button);
 	show_filename_filter_button->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_filename_filter));
@@ -2285,7 +2275,6 @@ FileDialog::FileDialog() {
 	file_sort_button->set_flat(false);
 	file_sort_button->set_theme_type_variation("FlatMenuButton");
 	file_sort_button->set_tooltip_text(ETR("Sort files"));
-	file_sort_button->set_accessibility_name(ETR("Sort Files"));
 
 	PopupMenu *sort_menu = file_sort_button->get_popup();
 	sort_menu->add_radio_check_item(ETR("Sort by Name (Ascending)"), int(FileSortOption::NAME));
@@ -2301,7 +2290,7 @@ FileDialog::FileDialog() {
 	file_list = memnew(ItemList);
 	file_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	file_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	file_list->set_accessibility_name(ETR("Directories and Files"));
+	file_list->set_accessibility_name(ETR("Directories & Files:"));
 	file_list->set_allow_rmb_select(true);
 	file_vbox->add_child(file_list);
 	file_list->connect("multi_selected", callable_mp(this, &FileDialog::_file_list_multi_selected));
@@ -2332,7 +2321,7 @@ FileDialog::FileDialog() {
 	filename_filter->set_stretch_ratio(4);
 	filename_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filename_filter->set_clear_button_enabled(true);
-	filename_filter->set_accessibility_name(ETR("Filename Filter"));
+	filename_filter->set_accessibility_name(ETR("Filename Filter:"));
 	filename_filter_box->add_child(filename_filter);
 	filename_filter->connect(SceneStringName(text_changed), callable_mp(this, &FileDialog::_filename_filter_changed).unbind(1));
 	filename_filter->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_filename_filter_selected).unbind(1));
@@ -2346,7 +2335,7 @@ FileDialog::FileDialog() {
 	}
 
 	filename_edit = memnew(LineEdit);
-	filename_edit->set_accessibility_name(ETR("File Name"));
+	filename_edit->set_accessibility_name(ETR("File:"));
 	filename_edit->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	filename_edit->set_stretch_ratio(4);
 	filename_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);

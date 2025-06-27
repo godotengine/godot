@@ -1043,7 +1043,7 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 		for (float &weight : mi->blend_weights) {
 			weight = 0;
 		}
-		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.to_byte_array());
+		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.span().reinterpret<uint8_t>());
 		mi->weights_dirty = true;
 	}
 

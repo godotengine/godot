@@ -70,6 +70,9 @@ public:
 	virtual void map_set_cell_size(RID p_map, real_t p_cell_size) = 0;
 	virtual real_t map_get_cell_size(RID p_map) const = 0;
 
+	virtual void map_set_merge_rasterizer_cell_scale(RID p_map, float p_value) = 0;
+	virtual float map_get_merge_rasterizer_cell_scale(RID p_map) const = 0;
+
 	virtual void map_set_use_edge_connections(RID p_map, bool p_enabled) = 0;
 	virtual bool map_get_use_edge_connections(RID p_map) const = 0;
 
