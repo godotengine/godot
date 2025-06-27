@@ -32,10 +32,13 @@
 
 #include "core/io/resource.h"
 #include "scene/2d/line_2d.h"
-#include "scene/gui/graph_port.h"
 
 class GraphConnection : public Resource {
 	GDCLASS(GraphConnection, Resource);
+
+	friend class GraphEdit;
+	friend class GraphPort;
+	friend class GraphNode;
 
 public:
 	Ref<GraphPort> first_port;
@@ -44,6 +47,7 @@ public:
 
 	Ref<GraphPort> get_other(Ref<GraphPort> port);
 	Pair<Pair<String, int>, Pair<String, int>> _to_legacy_data();
+	bool matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
 
 	struct ConnectionType {
 		union {
@@ -67,6 +71,7 @@ public:
 		}
 	};
 
+	GraphConnection();
 	GraphConnection(Ref<GraphPort> p_first_port, Ref<GraphPort> p_second_port, bool p_clear_if_invalid);
 
 protected:
@@ -81,7 +86,4 @@ protected:
 		Rect2 aabb; // In local screen space.
 		Line2D *line = nullptr; // In local screen space.
 	} _cache;
-
-	friend class GraphEdit;
-	friend class GraphPort;
 };

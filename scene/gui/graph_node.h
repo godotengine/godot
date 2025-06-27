@@ -31,14 +31,18 @@
 #pragma once
 
 #include "scene/gui/graph_element.h"
+#include "scene/property_list_helper.h"
 
 class HBoxContainer;
+class GraphPort;
+class GraphConnection;
 
 class GraphNode : public GraphElement {
 	GDCLASS(GraphNode, GraphElement);
 
 	friend class GraphEdit;
 
+protected:
 	struct PortCache {
 		Vector2 pos;
 		int type = 0;
@@ -57,6 +61,9 @@ class GraphNode : public GraphElement {
 	};
 	void _accessibility_action_port(const Variant &p_data);
 
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
+
 	HBoxContainer *titlebar_hbox = nullptr;
 	Label *title_label = nullptr;
 
@@ -73,7 +80,6 @@ class GraphNode : public GraphElement {
 
 	void _port_pos_update();
 
-protected:
 	struct ThemeCache {
 		Ref<StyleBox> panel;
 		Ref<StyleBox> panel_selected;
@@ -98,6 +104,9 @@ protected:
 	virtual void draw_port(const Ref<GraphPort> p_port);
 	GDVIRTUAL1(_draw_port, const Ref<GraphPort>);
 
+	void _set_ports(const TypedArray<Ref<GraphPort>> &p_ports);
+	const TypedArray<Ref<GraphPort>> &_get_ports();
+
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -113,11 +122,13 @@ public:
 	HBoxContainer *get_titlebar_hbox();
 
 	Ref<GraphPort> get_port(int p_port_idx);
-	TypedArray<Ref<GraphPort>> get_ports();
+	void set_ports(Array p_ports);
+	Array get_ports();
 	int index_of_port(const Ref<GraphPort> p_port);
+	void add_port(const Ref<GraphPort> port);
 	void set_port(int p_port_index, const Ref<GraphPort> p_port);
-	void clear_port(int p_port_index);
-	void clear_all_ports();
+	void remove_port(int p_port_index);
+	void remove_all_ports();
 	int get_port_count();
 	Vector2 update_port_position(int p_port_idx);
 

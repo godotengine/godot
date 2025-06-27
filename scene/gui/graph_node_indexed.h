@@ -32,7 +32,6 @@
 
 #include "core/variant/typed_dictionary.h"
 #include "scene/gui/graph_node.h"
-#include "scene/gui/graph_port.h"
 
 class GraphNodeIndexed : public GraphNode {
 	GDCLASS(GraphNodeIndexed, GraphNode);
@@ -41,12 +40,14 @@ protected:
 	struct Slot {
 		Ref<GraphPort> left_port;
 		Ref<GraphPort> right_port;
-		bool draw_stylebox;
+		bool draw_stylebox = true;
 
+		Slot();
 		Slot(Ref<GraphPort> lp, Ref<GraphPort> rp, bool draw_sb) :
 				left_port(lp), right_port(rp), draw_stylebox(draw_sb) {}
 	};
 	Vector<Slot> slots;
+	TypedDictionary<StringName, int> _slot_node_map_cache;
 
 	struct ThemeCacheIndexed : ThemeCache {
 		Ref<StyleBox> theme_cache_slot;
@@ -62,9 +63,7 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 public:
-	void _notification(int p_what);
-
-	TypedDictionary<Control *, int> slot_index_map;
+	//void _notification(int p_what);
 
 	void create_slot(int p_slot_index, Ref<GraphPort> p_left_port, Ref<GraphPort> p_right_port, bool draw_stylebox);
 	void create_slot_and_ports(int p_slot_index, bool draw_stylebox);
@@ -86,4 +85,6 @@ public:
 
 	bool get_slot_draw_stylebox(int p_slot_index);
 	void set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox);
+
+	GraphNodeIndexed();
 };

@@ -32,10 +32,27 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_port.h"
 #include "scene/gui/label.h"
 #include "scene/theme/theme_db.h"
 
+void GraphNode::_set_ports(const TypedArray<Ref<GraphPort>> &p_ports) {
+	remove_all_ports();
+
+	for (Ref<GraphPort> port : p_ports) {
+		add_port(port);
+	}
+}
+
+const TypedArray<Ref<GraphPort>> &GraphNode::_get_ports() {
+	return ports;
+}
+
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
+	if (property_helper.property_set_value(p_name, p_value)) {
+		return true;
+	}
+
 	String str = p_name;
 
 	if (!str.begins_with("port/")) {
@@ -44,11 +61,13 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 
 	int idx = str.get_slicec('/', 1).to_int();
 	String property_name = str.get_slicec('/', 2);
+	if (ports.size() <= idx) {
+		return false;
+	}
 
 	Ref<GraphPort> port;
-	if (ports.size() > idx) {
-		port = ports[idx];
-	} else {
+	port = ports[idx];
+	if (port.is_null()) {
 		return false;
 	}
 
@@ -78,24 +97,26 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 
 	int idx = str.get_slicec('/', 1).to_int();
 	StringName property_name = str.get_slicec('/', 2);
+	if (ports.size() <= idx) {
+		return false;
+	}
 
 	Ref<GraphPort> port;
-	if (ports.size() > idx) {
-		port = ports[idx];
-	} else {
+	port = ports[idx];
+	if (port.is_null()) {
 		return false;
 	}
 
 	if (property_name == "enabled") {
-		r_ret = port->get_enabled();
+		r_ret = port->enabled;
 	} else if (property_name == "type") {
-		r_ret = port->get_type();
+		r_ret = port->type;
 	} else if (property_name == "icon") {
 		r_ret = port->icon;
 	} else if (property_name == "color") {
 		r_ret = port->color;
 	} else if (property_name == "direction") {
-		r_ret = port->get_direction();
+		r_ret = port->direction;
 	} else {
 		return false;
 	}
@@ -297,8 +318,8 @@ void GraphNode::_accessibility_action_port(const Variant &p_data) {
 			queue_redraw();
 			break;
 		case ACTION_FOLLOW:
-			Ref<GraphNode> target = graph->get_connection_target(port);
-			if (target.is_valid()) {
+			GraphNode *target = graph->get_connection_target(port);
+			if (target) {
 				target->grab_focus();
 			}
 			break;
@@ -344,8 +365,8 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 				if (port.is_valid() && port->get_enabled()) {
 					GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 					if (graph) {
-						Ref<GraphNode> target = graph->get_connection_target(port);
-						if (target.is_valid()) {
+						GraphNode *target = graph->get_connection_target(port);
+						if (target) {
 							target->grab_focus();
 							accept_event();
 						}
@@ -471,7 +492,9 @@ void GraphNode::_notification(int p_what) {
 
 			// Take ports into account
 			for (Ref<GraphPort> port : ports) {
-				draw_port(port);
+				if (port.is_valid()) {
+					draw_port(port);
+				}
 			}
 			if (selected_port >= 0) {
 				Ref<GraphPort> port = get_port(selected_port);
@@ -536,32 +559,52 @@ void GraphNode::_notification(int p_what) {
 	}
 }
 
-void GraphNode::set_port(int p_port_index, const Ref<GraphPort> port) {
-	ERR_FAIL_COND_MSG(p_port_index < 0, vformat("Cannot set port with index (%d) lesser than zero.", p_port_index));
-
-	ports.set(p_port_index, port);
+void GraphNode::add_port(const Ref<GraphPort> p_port) {
+	ports.append(p_port);
 
 	queue_accessibility_update();
 	queue_redraw();
 	port_pos_dirty = true;
+	notify_property_list_changed();
 
-	emit_signal(SNAME("port_updated"), p_port_index);
+	emit_signal(SNAME("port_added"), p_port);
 }
 
-void GraphNode::clear_port(int p_port_index) {
+void GraphNode::set_port(int p_port_index, const Ref<GraphPort> p_port) {
+	ERR_FAIL_INDEX(p_port_index, ports.size());
+
+	Ref<GraphPort> old_port = ports[p_port_index];
+	ports.set(p_port_index, p_port);
+
+	queue_accessibility_update();
+	queue_redraw();
+	port_pos_dirty = true;
+	notify_property_list_changed();
+
+	emit_signal(SNAME("port_replaced"), old_port, p_port);
+}
+
+void GraphNode::remove_port(int p_port_index) {
+	ERR_FAIL_INDEX(p_port_index, ports.size());
+
+	Ref<GraphPort> old_port = ports[p_port_index];
 	ports.remove_at(p_port_index);
 
 	queue_accessibility_update();
 	queue_redraw();
 	port_pos_dirty = true;
+	notify_property_list_changed();
+
+	emit_signal(SNAME("port_removed"), old_port);
 }
 
-void GraphNode::clear_all_ports() {
+void GraphNode::remove_all_ports() {
 	ports.clear();
 
 	queue_accessibility_update();
 	queue_redraw();
 	port_pos_dirty = true;
+	notify_property_list_changed();
 }
 
 void GraphNode::set_ignore_invalid_connection_type(bool p_ignore) {
@@ -577,8 +620,12 @@ Ref<GraphPort> GraphNode::get_port(int p_port_idx) {
 	return ports[p_port_idx];
 }
 
-TypedArray<Ref<GraphPort>> GraphNode::get_ports() {
-	return ports;
+void GraphNode::set_ports(Array p_ports) {
+	_set_ports(p_ports);
+}
+
+Array GraphNode::get_ports() {
+	return _get_ports();
 }
 
 int GraphNode::index_of_port(const Ref<GraphPort> p_port) {
@@ -765,19 +812,30 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphNode::get_titlebar_hbox);
 
-	ClassDB::bind_method(D_METHOD("set_port", "port_index", "port", "draw_stylebox"), &GraphNode::set_port, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("clear_port", "port_index"), &GraphNode::clear_port);
-	ClassDB::bind_method(D_METHOD("clear_all_ports"), &GraphNode::clear_all_ports);
+	ClassDB::bind_method(D_METHOD("set_port", "port_index", "port"), &GraphNode::set_port, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("set_ports", "ports"), &GraphNode::_set_ports);
+	ClassDB::bind_method(D_METHOD("get_ports"), &GraphNode::_get_ports);
+	ClassDB::bind_method(D_METHOD("remove_port", "port_index"), &GraphNode::remove_port);
+	ClassDB::bind_method(D_METHOD("remove_all_ports"), &GraphNode::remove_all_ports);
 
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);
 
-	GDVIRTUAL_BIND(_draw_port, "slot_index", "position", "left", "color")
+	GDVIRTUAL_BIND(_draw_port, "port")
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"), "set_ignore_invalid_connection_type", "is_ignoring_valid_connection_type");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "ports", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("GraphPort")), "set_ports", "get_ports");
 
-	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "slot_index")));
+	//GraphPort default_port;
+	//base_property_helper.set_prefix("ports_");
+	//base_property_helper.set_array_length_getter(&GraphNode::get_port_count);
+	//base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), default_port, &GraphNode::set_port, &GraphNode::get_port);
+	//PropertyListHelper::register_base_helper(&base_property_helper);
+
+	ADD_SIGNAL(MethodInfo("port_added", PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
+	ADD_SIGNAL(MethodInfo("port_removed", PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
+	ADD_SIGNAL(MethodInfo("port_replaced", PropertyInfo(Variant::OBJECT, "old_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::OBJECT, "new_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel_selected);
@@ -807,4 +865,6 @@ GraphNode::GraphNode() {
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_focus_mode(FOCUS_ACCESSIBILITY);
+
+	property_helper.setup_for_instance(base_property_helper, this);
 }

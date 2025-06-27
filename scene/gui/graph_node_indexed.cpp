@@ -28,10 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
 #include "graph_node_indexed.h"
 
+#include "scene/gui/box_container.h"
+#include "scene/gui/graph_connection.h"
+#include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_port.h"
+#include "scene/gui/label.h"
+#include "scene/theme/theme_db.h"
+/*
 void GraphNodeIndexed::_notification(int p_what) {
 	return;
 	switch (p_what) {
@@ -39,34 +44,41 @@ void GraphNodeIndexed::_notification(int p_what) {
 			slots.clear();
 		} break;
 	}
-}
+}*/
+
 void GraphNodeIndexed::add_child_notify(Node *p_child) {
 	GraphNode::add_child_notify(p_child);
+
+	if (p_child->is_internal()) {
+		return;
+	}
 
 	Control *control = Object::cast_to<Control>(p_child);
 	if (!control) {
 		return;
 	}
 
-	int index = p_child->get_index();
-	Slot new_slot = {
-		memnew(GraphPort(this)),
-		memnew(GraphPort(this)),
-		true
-	};
-	slots.insert(index, new_slot);
+	int index = p_child->get_index(false);
+	create_slot_and_ports(index, true);
+	_slot_node_map_cache[p_child->get_name()] = index;
 }
 
 void GraphNodeIndexed::move_child_notify(Node *p_child) {
 	GraphNode::move_child_notify(p_child);
 
+	if (p_child->is_internal()) {
+		return;
+	}
+
 	Control *control = Object::cast_to<Control>(p_child);
 	if (!control) {
 		return;
 	}
 
-	int new_index = p_child->get_index();
-	int old_index = slot_index_map[new_index];
+	StringName node_name = p_child->get_name();
+	int new_index = p_child->get_index(false);
+	int old_index = _slot_node_map_cache[node_name];
+	_slot_node_map_cache[node_name] = new_index;
 
 	Slot swap_buffer = slots[new_index];
 	slots.set(new_index, slots[old_index]);
@@ -76,22 +88,25 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	GraphNode::remove_child_notify(p_child);
 
+	if (p_child->is_internal()) {
+		return;
+	}
+
 	Control *control = Object::cast_to<Control>(p_child);
 	if (!control) {
 		return;
 	}
 
-	int index = p_child->get_index();
+	int index = p_child->get_index(false);
+	ERR_FAIL_INDEX(index, slots.size());
 
 	Slot slot = slots[index];
 	slots.remove_at(index);
+	_slot_node_map_cache.erase(p_child->get_name());
 }
 
 void GraphNodeIndexed::create_slot(int p_slot_index, Ref<GraphPort> p_left_port, Ref<GraphPort> p_right_port, bool draw_stylebox) {
-	TypedArray<Ref<GraphPort>> ret;
-	ret.push_back(p_left_port);
-	ret.push_back(p_right_port);
-	Slot new_slot = { ret[0], ret[1], true };
+	Slot new_slot = { p_left_port, p_right_port, true };
 	slots.insert(p_slot_index, new_slot);
 }
 
@@ -263,4 +278,13 @@ void GraphNodeIndexed::set_slot_draw_stylebox(int p_slot_index, bool p_draw_styl
 	ERR_FAIL_INDEX(p_slot_index, slots.size());
 	Slot old_slot = slots[p_slot_index];
 	slots.set(p_slot_index, Slot(old_slot.left_port, old_slot.right_port, p_draw_stylebox));
+}
+
+GraphNodeIndexed::GraphNodeIndexed() {
+	GraphNode::GraphNode();
+}
+
+GraphNodeIndexed::Slot::Slot() {
+	left_port = Ref<GraphPort>(nullptr);
+	right_port = Ref<GraphPort>(nullptr);
 }

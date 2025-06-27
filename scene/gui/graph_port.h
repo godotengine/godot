@@ -32,12 +32,16 @@
 
 #include "core/io/resource.h"
 #include "core/variant/typed_array.h"
-#include "scene/gui/graph_connection.h"
-#include "scene/gui/graph_node.h"
 #include "scene/resources/texture.h"
 
 class GraphPort : public Resource {
-public:
+	GDCLASS(GraphPort, Resource);
+
+	friend class GraphEdit;
+	friend class GraphNode;
+	friend class GraphConnection;
+
+protected:
 	enum PortDirection {
 		INPUT,
 		OUTPUT,
@@ -50,19 +54,16 @@ public:
 		MOVE_TO_NEXT_PORT_OR_DISCONNECT
 	};
 
+	bool enabled;
 	bool exclusive;
+	int type = 0;
 	Color color = Color(1, 1, 1, 1);
 	Ref<Texture2D> icon;
+	PortDirection direction = PortDirection::UNDIRECTED;
 	DisconnectBehaviour on_disabled_behaviour = DisconnectBehaviour::DISCONNECT_ALL;
 
 	GraphNode *graph_node;
 	Vector2 position = Vector2(0.0, 0.0);
-
-protected:
-	bool visible = true;
-	bool enabled;
-	int type = 0;
-	PortDirection direction = PortDirection::UNDIRECTED;
 
 	static void _bind_methods();
 
@@ -89,26 +90,32 @@ public:
 	void set_enabled(bool p_enabled);
 	bool get_enabled();
 
-	void show();
-	void hide();
-	bool get_visible();
-	void set_visible(bool p_visible);
-
 	int get_type();
 	void set_type(int p_type);
 
-	PortDirection get_direction();
-	void set_direction(PortDirection p_direction);
+	Color get_color();
+	void set_color(Color p_color);
+
+	bool get_exclusive();
+	void set_exclusive(bool p_exclusive);
+
+	Ref<Texture2D> get_icon();
+	void set_icon(Ref<Texture2D> p_icon);
+
+	PortDirection get_direction() const;
+	void set_direction(const PortDirection p_direction);
 
 	TypedArray<Ref<GraphConnection>> get_connections();
-	bool is_connected(const Ref<GraphPort> other);
+	bool has_connection(const Ref<GraphPort> other);
 	void disconnect_all();
 
 	Vector2 get_position();
 	GraphNode *get_graph_node();
 
+	GraphPort();
 	GraphPort(GraphNode *p_graph_node);
 	GraphPort(GraphNode *p_graph_node, bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon);
-
-	friend class GraphEdit;
 };
+
+VARIANT_ENUM_CAST(GraphPort::PortDirection);
+VARIANT_ENUM_CAST(GraphPort::DisconnectBehaviour);

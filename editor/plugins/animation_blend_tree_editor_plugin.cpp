@@ -987,7 +987,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 				if (!tree->is_state_invalid()) {
 					activity = tree->get_connection_activity(path, E.input_index);
 				}
-				graph->set_connection_activity(E.output_node, 0, E.input_node, E.input_index, activity);
+				graph->set_connection_activity_indexed(E.output_node, 0, E.input_node, E.input_index, activity);
 			}
 
 			for (const KeyValue<StringName, ProgressBar *> &E : animations) {

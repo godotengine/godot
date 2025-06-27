@@ -4165,7 +4165,7 @@ void VisualShaderEditor::_connection_from_empty(const String &p_to, int p_to_slo
 	_show_members_dialog(true, input_port_type, output_port_type);
 }
 
-bool VisualShaderEditor::_check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphConnection> *r_closest_connection, int *r_from_port = nullptr, int *r_to_port = nullptr) {
+bool VisualShaderEditor::_check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphConnection> *r_closest_connection, int *r_from_port, int *r_to_port) {
 	VisualShader::Type shader_type = get_current_shader_type();
 
 	// Get selected graph node.
@@ -4817,7 +4817,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 		menu_point = graph->get_local_mouse_position();
 		Point2 gpos = get_screen_position() + get_local_mouse_position();
 
-		Ref<GraphEdit::Connection> closest_connection = graph->get_closest_connection_at_point(menu_point);
+		Ref<GraphConnection> closest_connection = graph->get_closest_connection_at_point(menu_point);
 		if (closest_connection.is_valid()) {
 			clicked_connection = closest_connection;
 			saved_node_pos = graph->get_local_mouse_position();

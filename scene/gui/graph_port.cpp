@@ -32,6 +32,8 @@
 
 #include "scene/gui/graph_connection.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_node.h"
+#include "scene/theme/theme_db.h"
 
 bool GraphPort::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "enabled") {
@@ -82,7 +84,7 @@ void GraphPort::_mark_all_connections_dirty() {
 	}
 }
 
-void GraphPort::set(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr)) {
+void GraphPort::set(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
 	exclusive = p_exclusive;
 	type = p_type;
 	color = p_color;
@@ -97,41 +99,13 @@ int GraphPort::get_index() {
 
 void GraphPort::enable() {
 	enabled = true;
+	notify_property_list_changed();
 	_enabled();
 }
 
 void GraphPort::disable() {
-	GraphEdit *graph = Object::cast_to<GraphEdit>(graph_node->get_parent());
-	ERR_FAIL_NULL(graph);
-	switch (on_disabled_behaviour) {
-		case DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT: {
-			int prev_port_idx = get_index() - 1;
-			if (prev_port_idx >= 0) {
-				Ref<GraphPort> prev_port = graph_node->get_port(prev_port_idx);
-				if (prev_port.is_valid()) {
-					graph->move_connections(this, prev_port);
-					break;
-				}
-			}
-			disconnect_all();
-		} break;
-		case DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT: {
-			int next_port_idx = get_index() + 1;
-			if (next_port_idx < graph_node->get_port_count()) {
-				Ref<GraphPort> next_port = graph_node->get_port(next_port_idx);
-				if (next_port.is_valid()) {
-					graph->move_connections(this, next_port);
-					break;
-				}
-			}
-			disconnect_all();
-		} break;
-		case DisconnectBehaviour::DISCONNECT_ALL:
-		default: {
-			disconnect_all();
-		} break;
-	}
 	enabled = false;
+	notify_property_list_changed();
 	_disabled();
 }
 
@@ -150,40 +124,49 @@ bool GraphPort::get_enabled() {
 	return enabled;
 }
 
-void GraphPort::show() {
-	set_visible(true);
-}
-
-void GraphPort::hide() {
-	set_visible(false);
-}
-
-bool GraphPort::get_visible() {
-	return visible;
-}
-
-void GraphPort::set_visible(bool p_visible) {
-	if (visible == p_visible) {
-		return;
-	}
-	visible = p_visible;
-	_mark_all_connections_dirty();
-}
-
 int GraphPort::get_type() {
 	return type;
 }
 
 void GraphPort::set_type(int p_type) {
 	type = p_type;
+	notify_property_list_changed();
 }
 
-GraphPort::PortDirection GraphPort::get_direction() {
+Color GraphPort::get_color() {
+	return color;
+}
+
+void GraphPort::set_color(Color p_color) {
+	color = p_color;
+	notify_property_list_changed();
+}
+
+bool GraphPort::get_exclusive() {
+	return exclusive;
+}
+
+void GraphPort::set_exclusive(bool p_exclusive) {
+	exclusive = p_exclusive;
+	notify_property_list_changed();
+}
+
+Ref<Texture2D> GraphPort::get_icon() {
+	return icon;
+}
+
+void GraphPort::set_icon(Ref<Texture2D> p_icon) {
+	icon = p_icon;
+	notify_property_list_changed();
+}
+
+GraphPort::PortDirection GraphPort::get_direction() const {
 	return direction;
 }
 
-void GraphPort::set_direction(PortDirection p_direction) {
+void GraphPort::set_direction(GraphPort::PortDirection p_direction) {
 	direction = p_direction;
+	notify_property_list_changed();
 	_changed_direction(p_direction);
 }
 
@@ -191,7 +174,7 @@ GraphNode *GraphPort::get_graph_node() {
 	return graph_node;
 }
 
-bool GraphPort::is_connected(const Ref<GraphPort> other) {
+bool GraphPort::has_connection(const Ref<GraphPort> other) {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(graph_node->get_parent());
 	if (!graph) {
 		return false;
@@ -217,26 +200,24 @@ Vector2 GraphPort::get_position() {
 
 TypedArray<Ref<GraphConnection>> GraphPort::get_connections() {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(graph_node->get_parent());
-	if (!graph) {
-		return;
-	}
+	ERR_FAIL_NULL_V(graph, TypedArray<Ref<GraphConnection>>());
 	return graph->get_connections_by_port(this);
 }
 
 void GraphPort::_enabled() {
-	emit_signal(SNAME("enabled"));
+	emit_signal(SNAME("enabled"), this);
 }
 
 void GraphPort::_disabled() {
-	emit_signal(SNAME("disabled"));
+	emit_signal(SNAME("disabled"), this);
 }
 
 void GraphPort::_connected(const Ref<GraphConnection> p_connection) {
-	emit_signal(SNAME("connected"), p_connection);
+	//emit_signal(SNAME("connected"), p_connection);
 }
 
 void GraphPort::_disconnected(const Ref<GraphConnection> p_connection) {
-	emit_signal(SNAME("disconnected"), p_connection);
+	//emit_signal(SNAME("disconnected"), p_connection);
 }
 
 void GraphPort::_changed_direction(const PortDirection p_direction) {
@@ -244,11 +225,55 @@ void GraphPort::_changed_direction(const PortDirection p_direction) {
 }
 
 void GraphPort::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("_enabled"));
-	ADD_SIGNAL(MethodInfo("_disabled"));
-	ADD_SIGNAL(MethodInfo("_connected"), PropertyInfo(Ref<GraphConnection>, "connection"));
-	ADD_SIGNAL(MethodInfo("_disconnected"), PropertyInfo(Ref<GraphConnection>, "connection"));
-	ADD_SIGNAL(MethodInfo("_changed_direction", PropertyInfo(Variant::INT, "direction")));
+	ClassDB::bind_method(D_METHOD("get_index"), &GraphPort::get_index);
+
+	ClassDB::bind_method(D_METHOD("get_connections"), &GraphPort::get_connections);
+	ClassDB::bind_method(D_METHOD("has_connection"), &GraphPort::has_connection);
+	ClassDB::bind_method(D_METHOD("disconnect_all"), &GraphPort::disconnect_all);
+
+	ClassDB::bind_method(D_METHOD("get_position"), &GraphPort::get_position);
+	ClassDB::bind_method(D_METHOD("get_graph_node"), &GraphPort::get_graph_node);
+
+	ClassDB::bind_method(D_METHOD("enable"), &GraphPort::enable);
+	ClassDB::bind_method(D_METHOD("disable"), &GraphPort::disable);
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &GraphPort::set_enabled);
+	ClassDB::bind_method(D_METHOD("get_enabled"), &GraphPort::get_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_type", "type"), &GraphPort::set_type);
+	ClassDB::bind_method(D_METHOD("get_type"), &GraphPort::get_type);
+
+	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &GraphPort::set_icon);
+	ClassDB::bind_method(D_METHOD("get_icon"), &GraphPort::get_icon);
+
+	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &GraphPort::set_exclusive);
+	ClassDB::bind_method(D_METHOD("get_exclusive"), &GraphPort::get_exclusive);
+
+	ClassDB::bind_method(D_METHOD("set_color", "color"), &GraphPort::set_color);
+	ClassDB::bind_method(D_METHOD("get_color"), &GraphPort::get_color);
+
+	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &GraphPort::set_direction);
+	ClassDB::bind_method(D_METHOD("get_direction"), &GraphPort::get_direction);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_icon", "get_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
+	//ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "", "");
+
+	ADD_SIGNAL(MethodInfo("enabled"));
+	ADD_SIGNAL(MethodInfo("disabled"));
+	ADD_SIGNAL(MethodInfo("changed_direction", PropertyInfo(Variant::INT, "direction")));
+	//ADD_SIGNAL(MethodInfo("connected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, MAKE_RESOURCE_TYPE_HINT("GraphConnection"))));
+	//ADD_SIGNAL(MethodInfo("disconnected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, MAKE_RESOURCE_TYPE_HINT("GraphConnection"))));
+
+	//BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphPort, icon);
+	//BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, port_selected);
+}
+
+GraphPort::GraphPort() {
+	set(false, false, 0, Color(1, 1, 1, 1), GraphPort::PortDirection::UNDIRECTED);
 }
 
 GraphPort::GraphPort(GraphNode *p_graph_node) {
