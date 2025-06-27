@@ -245,7 +245,7 @@ real_t HeightMapShape3D::get_max_height() const {
 
 void HeightMapShape3D::update_map_data_from_image(const Ref<Image> &p_image, real_t p_height_min, real_t p_height_max) {
 	ERR_FAIL_COND_MSG(p_image.is_null(), "Heightmap update image requires a valid Image reference.");
-	ERR_FAIL_COND_MSG(p_image->get_format() != Image::FORMAT_RF && p_image->get_format() != Image::FORMAT_RH && p_image->get_format() != Image::FORMAT_R8, "Heightmap update image requires Image in format FORMAT_RF (32 bit), FORMAT_RH (16 bit), or FORMAT_R8 (8 bit).");
+	ERR_FAIL_COND_MSG(p_image->get_format() != Image::FORMAT_RF && p_image->get_format() != Image::FORMAT_RH && p_image->get_format() != Image::FORMAT_R8 && p_image->get_format() != Image::FORMAT_L8, "Heightmap update image requires Image in format FORMAT_RF (32 bit), FORMAT_RH (16 bit), FORMAT_R8 or FORMAT_L8 (8 bit).");
 	ERR_FAIL_COND_MSG(p_image->get_width() < 2, "Heightmap update image requires a minimum Image width of 2.");
 	ERR_FAIL_COND_MSG(p_image->get_height() < 2, "Heightmap update image requires a minimum Image height of 2.");
 	ERR_FAIL_COND_MSG(p_height_min > p_height_max, "Heightmap update image requires height_max to be greater than height_min.");
@@ -307,7 +307,8 @@ void HeightMapShape3D::update_map_data_from_image(const Ref<Image> &p_image, rea
 
 		} break;
 
-		case Image::FORMAT_R8: {
+		case Image::FORMAT_R8:
+		case Image::FORMAT_L8: {
 			const uint8_t *image_data_ptr = (uint8_t *)p_image->get_data().ptr();
 
 			for (int i = 0; i < map_data.size(); i++) {
