@@ -303,6 +303,16 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness = RD::PipelineColorBlendState::create_disabled(1);
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness_giprobe = RD::PipelineColorBlendState::create_disabled(2);
 
+	RD::PipelineColorBlendState blend_state_no_color;
+	{
+		RD::PipelineColorBlendState::Attachment attachment_stencil;
+		attachment_stencil.write_r = false;
+		attachment_stencil.write_g = false;
+		attachment_stencil.write_b = false;
+		attachment_stencil.write_a = false;
+		blend_state_no_color.attachments.push_back(attachment_stencil);
+	}
+
 	//update pipelines
 
 	RD::PipelineDepthStencilState depth_stencil_state;
@@ -325,8 +335,9 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS,
 	};
 
-	depth_stencil_state.enable_stencil = stencil_enabled;
-	if (stencil_enabled) {
+	bool use_stencil = stencil_enabled && !p_pipeline_key.depth_only;
+	depth_stencil_state.enable_stencil = use_stencil;
+	if (use_stencil) {
 		static const RD::CompareOperator stencil_compare_rd_table[STENCIL_COMPARE_MAX] = {
 			RD::COMPARE_OP_LESS,
 			RD::COMPARE_OP_EQUAL,
@@ -401,7 +412,14 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		}
 	} else {
 		if (p_pipeline_key.version == SHADER_VERSION_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_MOTION_VECTORS_MULTIVIEW) {
-			blend_state = blend_state_opaque;
+			if (p_pipeline_key.depth_only) {
+				blend_state = blend_state_no_color;
+			} else {
+				blend_state = blend_state_opaque;
+				if (stencil_enabled) {
+					depth_stencil_state.enable_depth_write = false;
+				}
+			}
 		} else if (p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS || p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS_DP) {
 			// Contains nothing.
 		} else if (p_pipeline_key.version == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {

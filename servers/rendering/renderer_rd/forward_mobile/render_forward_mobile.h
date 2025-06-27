@@ -103,6 +103,7 @@ private:
 		PASS_MODE_COLOR,
 		// PASS_MODE_COLOR_SPECULAR,
 		PASS_MODE_COLOR_TRANSPARENT,
+		PASS_MODE_COLOR_STENCIL,
 		PASS_MODE_SHADOW,
 		PASS_MODE_SHADOW_DP,
 		// PASS_MODE_DEPTH,
@@ -289,6 +290,7 @@ private:
 		bool used_screen_texture = false;
 		bool used_depth_texture = false;
 		bool used_lightmap = false;
+		bool used_opaque_stencil = false;
 
 		struct ShadowPass {
 			uint32_t element_from;
@@ -448,6 +450,7 @@ protected:
 			FLAG_USES_NORMAL_TEXTURE = 16384,
 			FLAG_USES_DOUBLE_SIDED_SHADOWS = 32768,
 			FLAG_USES_PARTICLE_TRAILS = 65536,
+			FLAG_USES_STENCIL = 131072,
 		};
 
 		union {

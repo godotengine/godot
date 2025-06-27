@@ -1209,6 +1209,18 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 		RD::get_singleton()->draw_command_end_label(); //Render Opaque
 
+		if (scene_state.used_opaque_stencil) {
+			RD::get_singleton()->draw_command_begin_label("Render Stencil Pass");
+
+			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR_STENCIL, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+			render_list_params.framebuffer_format = fb_format;
+			render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass();
+
+			_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+
+			RD::get_singleton()->draw_command_end_label(); //Render Stencil
+		}
+
 		if (draw_sky || draw_sky_fog_only) {
 			RD::get_singleton()->draw_command_begin_label("Draw Sky");
 
@@ -1286,7 +1298,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
 				//_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
-				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 				render_list_params.framebuffer_format = fb_format;
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
@@ -2149,6 +2161,9 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE) {
 					scene_state.used_depth_texture = true;
 				}
+				if ((surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_STENCIL) && !force_alpha && (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE))) {
+					scene_state.used_opaque_stencil = true;
+				}
 
 			} else if (p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) {
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW) {
@@ -2202,6 +2217,9 @@ void RenderForwardMobile::_render_list(RenderingDevice::DrawListID p_draw_list, 
 		} break;
 		case PASS_MODE_COLOR_TRANSPARENT: {
 			_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
+		} break;
+		case PASS_MODE_COLOR_STENCIL: {
+			_render_list_template<PASS_MODE_COLOR_STENCIL>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_SHADOW: {
 			_render_list_template<PASS_MODE_SHADOW>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
@@ -2263,6 +2281,10 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		const GeometryInstanceForwardMobile *inst = surf->owner;
 
 		if (inst->instance_count == 0) {
+			continue;
+		}
+
+		if (p_pass_mode == PASS_MODE_COLOR_STENCIL && !(surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_STENCIL)) {
 			continue;
 		}
 
@@ -2343,12 +2365,14 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 		switch (p_params->pass_mode) {
 			case PASS_MODE_COLOR:
-			case PASS_MODE_COLOR_TRANSPARENT: {
+			case PASS_MODE_COLOR_TRANSPARENT:
+			case PASS_MODE_COLOR_STENCIL: {
 				if (element_info.uses_lightmap) {
 					pipeline_key.version = p_params->view_count > 1 ? SceneShaderForwardMobile::SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW : SceneShaderForwardMobile::SHADER_VERSION_LIGHTMAP_COLOR_PASS;
 				} else {
 					pipeline_key.version = p_params->view_count > 1 ? SceneShaderForwardMobile::SHADER_VERSION_COLOR_PASS_MULTIVIEW : SceneShaderForwardMobile::SHADER_VERSION_COLOR_PASS;
 				}
+				pipeline_key.depth_only = p_pass_mode == PASS_MODE_COLOR && (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_STENCIL);
 			} break;
 			case PASS_MODE_SHADOW: {
 				pipeline_key.version = p_params->view_count > 1 ? SceneShaderForwardMobile::SHADER_VERSION_SHADOW_PASS_MULTIVIEW : SceneShaderForwardMobile::SHADER_VERSION_SHADOW_PASS;
@@ -2670,6 +2694,10 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 
 	if (ginstance->data->cast_double_sided_shadows) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_DOUBLE_SIDED_SHADOWS;
+	}
+
+	if (p_material->shader_data->stencil_enabled) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_STENCIL;
 	}
 
 	if (p_material->shader_data->uses_alpha_pass()) {
