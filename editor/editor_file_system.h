@@ -72,6 +72,7 @@ class EditorFileSystemDirectory : public Object {
 			String icon_path;
 			bool is_abstract = false;
 			bool is_tool = false;
+			bool is_hidden = false;
 		};
 		ScriptClassInfo class_info;
 	};
@@ -98,6 +99,7 @@ public:
 	uint64_t get_file_modified_time(int p_idx) const;
 	uint64_t get_file_import_modified_time(int p_idx) const;
 	String get_file_script_class_name(int p_idx) const; //used for scripts
+	bool get_file_script_class_hidden(int p_idx) const; //used for scripts
 	String get_file_script_class_extends(int p_idx) const; //used for scripts
 	String get_file_script_class_icon_path(int p_idx) const; //used for scripts
 	String get_file_icon_path(int p_idx) const; //used for FileSystemDock
@@ -309,6 +311,7 @@ class EditorFileSystem : public Node {
 			update.icon_path = p_fi->class_info.icon_path;
 			update.is_abstract = p_fi->class_info.is_abstract;
 			update.is_tool = p_fi->class_info.is_tool;
+			update.is_hidden = p_fi->class_info.is_hidden;
 			return update;
 		}
 	};

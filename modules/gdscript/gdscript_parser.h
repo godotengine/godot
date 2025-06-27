@@ -741,6 +741,7 @@ public:
 
 		IdentifierNode *identifier = nullptr;
 		String icon_path;
+		bool hidden = false;
 		String simplified_icon_path;
 		Vector<Member> members;
 		HashMap<StringName, int> members_indices;
@@ -1330,6 +1331,7 @@ private:
 	friend class GDScriptParserRef;
 
 	bool _is_tool = false;
+	bool _is_hidden = false;
 	String script_path;
 	bool for_completion = false;
 	bool parse_body = true;
@@ -1521,6 +1523,7 @@ private:
 	bool validate_annotation_arguments(AnnotationNode *p_annotation);
 	void clear_unused_annotations();
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool hide_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1594,6 +1597,7 @@ public:
 	Error parse_binary(const Vector<uint8_t> &p_binary, const String &p_script_path);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
+	bool is_hidden() const { return _is_hidden; }
 	Ref<GDScriptParserRef> get_depended_parser_for(const String &p_path);
 	const HashMap<String, Ref<GDScriptParserRef>> &get_depended_parsers();
 	ClassNode *find_class(const String &p_qualified_name) const;

@@ -198,6 +198,9 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		if (!EditorNode::get_editor_data().script_class_is_parent(p_type, base_type)) {
 			return true; // Wrong inheritance.
 		}
+		if (ScriptServer::is_global_class_hidden(p_type)) {
+			return true;
+		}
 
 		StringName native_type = ScriptServer::get_global_class_native_base(p_type);
 		if (ClassDB::class_exists(native_type)) {

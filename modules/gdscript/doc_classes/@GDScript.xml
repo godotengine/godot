@@ -739,6 +739,16 @@
 				[b]Note:[/b] Avoid storing lambda callables in member variables of [RefCounted]-based classes (e.g. resources), as this can lead to memory leaks. Use only method callables and optionally [method Callable.bind] or [method Callable.unbind].
 			</description>
 		</annotation>
+		<annotation name="@hide">
+			<return type="void" />
+			<description>
+				Prevent the current class from appearing in the Create Node dialog.
+				[codeblock]
+				@hide class_name MyClass
+				[/codeblock]
+				[b]Note:[/b] As annotations describe their subject, the [annotation @hide] annotation must be placed before the class definition and inheritance.
+			</description>
+		</annotation>
 		<annotation name="@icon">
 			<return type="void" />
 			<param index="0" name="icon_path" type="String" />
