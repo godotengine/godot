@@ -45,8 +45,8 @@ Ref<GraphPort> GraphConnection::get_other(Ref<GraphPort> port) {
 
 Pair<Pair<String, int>, Pair<String, int>> GraphConnection::_to_legacy_data() {
 	GraphNode *first_node = Object::cast_to<GraphNode>(first_port->graph_node);
-	ERR_FAIL_NULL_V(first_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
 	GraphNode *second_node = Object::cast_to<GraphNode>(second_port->graph_node);
+	ERR_FAIL_NULL_V(first_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
 	ERR_FAIL_NULL_V(second_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
 	return Pair(Pair(String(first_node->get_name()), first_node->index_of_port(first_port)), Pair(String(second_node->get_name()), second_node->index_of_port(second_port)));
 }
@@ -56,8 +56,8 @@ bool GraphConnection::matches_legacy_data(String p_first_node, int p_first_port,
 	ERR_FAIL_COND_V(second_port.is_null(), false);
 	ERR_FAIL_NULL_V(first_port->graph_node, false);
 	ERR_FAIL_NULL_V(second_port->graph_node, false);
-	return first_port->get_index() == p_first_port &&
-			second_port->get_index() == p_second_port &&
+	return first_port->graph_node->index_of_port(first_port) == p_first_port &&
+			second_port->graph_node->index_of_port(second_port) == p_second_port &&
 			String(first_port->graph_node->get_name()) == p_first_node &&
 			String(second_port->graph_node->get_name()) != p_second_node;
 }

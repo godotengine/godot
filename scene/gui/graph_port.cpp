@@ -78,12 +78,6 @@ void GraphPort::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 }
 
-void GraphPort::_mark_all_connections_dirty() {
-	for (Ref<GraphConnection> conn : get_connections()) {
-		conn->_cache.dirty = true;
-	}
-}
-
 void GraphPort::set(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
 	exclusive = p_exclusive;
 	type = p_type;
@@ -91,10 +85,6 @@ void GraphPort::set(bool p_enabled, bool p_exclusive, int p_type, Color p_color,
 	icon = p_icon;
 	set_direction(p_direction);
 	set_enabled(p_enabled);
-}
-
-int GraphPort::get_index() {
-	return graph_node->index_of_port(this);
 }
 
 void GraphPort::enable() {
@@ -170,38 +160,12 @@ void GraphPort::set_direction(GraphPort::PortDirection p_direction) {
 	_changed_direction(p_direction);
 }
 
-GraphNode *GraphPort::get_graph_node() {
-	return graph_node;
-}
-
-bool GraphPort::has_connection(const Ref<GraphPort> other) {
-	GraphEdit *graph = Object::cast_to<GraphEdit>(graph_node->get_parent());
-	if (!graph) {
-		return false;
-	}
-	for (Ref<GraphConnection> connection : graph->get_connections_by_port(this)) {
-		if (connection->get_other(this) == other) {
-			return true;
-		}
-	}
-	return false;
-}
-
-void GraphPort::disconnect_all() {
-	GraphEdit *graph = Object::cast_to<GraphEdit>(graph_node->get_parent());
-	if (graph) {
-		graph->disconnect_all_by_port(this);
-	}
-}
-
 Vector2 GraphPort::get_position() {
 	return position;
 }
 
-TypedArray<Ref<GraphConnection>> GraphPort::get_connections() {
-	GraphEdit *graph = Object::cast_to<GraphEdit>(graph_node->get_parent());
-	ERR_FAIL_NULL_V(graph, TypedArray<Ref<GraphConnection>>());
-	return graph->get_connections_by_port(this);
+GraphNode *GraphPort::get_graph_node() {
+	return graph_node;
 }
 
 void GraphPort::_enabled() {
@@ -212,27 +176,15 @@ void GraphPort::_disabled() {
 	emit_signal(SNAME("disabled"), this);
 }
 
-void GraphPort::_connected(const Ref<GraphConnection> p_connection) {
-	//emit_signal(SNAME("connected"), p_connection);
-}
-
-void GraphPort::_disconnected(const Ref<GraphConnection> p_connection) {
-	//emit_signal(SNAME("disconnected"), p_connection);
-}
-
 void GraphPort::_changed_direction(const PortDirection p_direction) {
 	emit_signal(SNAME("changed_direction"), p_direction);
 }
+void GraphPort::_changed_type(const int p_type) {
+	emit_signal(SNAME("changed_type"), p_type);
+}
 
 void GraphPort::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_index"), &GraphPort::get_index);
-
-	ClassDB::bind_method(D_METHOD("get_connections"), &GraphPort::get_connections);
-	ClassDB::bind_method(D_METHOD("has_connection"), &GraphPort::has_connection);
-	ClassDB::bind_method(D_METHOD("disconnect_all"), &GraphPort::disconnect_all);
-
 	ClassDB::bind_method(D_METHOD("get_position"), &GraphPort::get_position);
-	ClassDB::bind_method(D_METHOD("get_graph_node"), &GraphPort::get_graph_node);
 
 	ClassDB::bind_method(D_METHOD("enable"), &GraphPort::enable);
 	ClassDB::bind_method(D_METHOD("disable"), &GraphPort::disable);
@@ -264,12 +216,8 @@ void GraphPort::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("enabled"));
 	ADD_SIGNAL(MethodInfo("disabled"));
-	ADD_SIGNAL(MethodInfo("changed_direction", PropertyInfo(Variant::INT, "direction")));
-	//ADD_SIGNAL(MethodInfo("connected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, MAKE_RESOURCE_TYPE_HINT("GraphConnection"))));
-	//ADD_SIGNAL(MethodInfo("disconnected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, MAKE_RESOURCE_TYPE_HINT("GraphConnection"))));
-
-	//BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphPort, icon);
-	//BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, port_selected);
+	ADD_SIGNAL(MethodInfo("changed_direction", PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected")));
+	ADD_SIGNAL(MethodInfo("changed_type", PropertyInfo(Variant::INT, "type")));
 }
 
 GraphPort::GraphPort() {

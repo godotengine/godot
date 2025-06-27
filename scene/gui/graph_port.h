@@ -41,7 +41,7 @@ class GraphPort : public Resource {
 	friend class GraphNode;
 	friend class GraphConnection;
 
-protected:
+public:
 	enum PortDirection {
 		INPUT,
 		OUTPUT,
@@ -54,6 +54,7 @@ protected:
 		MOVE_TO_NEXT_PORT_OR_DISCONNECT
 	};
 
+protected:
 	bool enabled;
 	bool exclusive;
 	int type = 0;
@@ -70,11 +71,8 @@ protected:
 	void _enabled();
 	void _disabled();
 
-	void _connected(const Ref<GraphConnection> p_connection);
-	void _disconnected(const Ref<GraphConnection> p_connection);
-
 	void _changed_direction(const PortDirection p_direction);
-	void _mark_all_connections_dirty();
+	void _changed_type(const int p_type);
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -82,8 +80,6 @@ protected:
 
 public:
 	void set(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
-
-	int get_index();
 
 	void enable();
 	void disable();
@@ -104,10 +100,6 @@ public:
 
 	PortDirection get_direction() const;
 	void set_direction(const PortDirection p_direction);
-
-	TypedArray<Ref<GraphConnection>> get_connections();
-	bool has_connection(const Ref<GraphPort> other);
-	void disconnect_all();
 
 	Vector2 get_position();
 	GraphNode *get_graph_node();

@@ -312,6 +312,7 @@ private:
 	// should be converted to TypedDictionary<Ref<GraphPort>, TypedArray<Ref<GraphConnection>>> once nested container types are implemented
 	TypedDictionary<Ref<GraphPort>, Array> _get_connections_from_node(GraphNode *p_node) const;
 	bool _is_connection_valid(const Ref<GraphPort> p_port);
+	void _mark_connections_dirty_by_port(const Ref<GraphPort> p_port);
 
 	Rect2 _compute_shrinked_frame_rect(const GraphFrame *p_frame);
 	void _set_drag_frame_attached_nodes(GraphFrame *p_frame, bool p_drag);

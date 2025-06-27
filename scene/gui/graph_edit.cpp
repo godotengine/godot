@@ -290,9 +290,6 @@ Error GraphEdit::connect_nodes(Ref<GraphPort> p_first_port, Ref<GraphPort> p_sec
 	connections_layer->add_child(line);
 	c->_cache.line = line;
 
-	c->first_port->_connected(c);
-	c->second_port->_connected(c);
-
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
@@ -326,9 +323,6 @@ void GraphEdit::disconnect(Ref<GraphConnection> p_connection) {
 		connection_map[p_connection->second_port].erase(p_connection);
 		connections.erase(p_connection);
 		p_connection->_cache.line->queue_free();
-
-		p_connection->first_port->_disconnected(p_connection);
-		p_connection->second_port->_disconnected(p_connection);
 
 		minimap->queue_redraw();
 		queue_redraw();
@@ -1132,6 +1126,15 @@ bool GraphEdit::_is_connection_valid(const Ref<GraphPort> p_port) {
 	return from_type == to_type ||
 			connecting_from_port->graph_node->is_ignoring_valid_connection_type() ||
 			valid_connection_types.has(GraphConnection::ConnectionType(from_type, to_type));
+}
+
+void GraphEdit::_mark_connections_dirty_by_port(const Ref<GraphPort> p_port) {
+	ERR_FAIL_NULL(p_port);
+	for (Ref<GraphConnection> conn : get_connections_by_port(p_port)) {
+		if (conn.is_valid()) {
+			conn->_cache.dirty = true;
+		}
+	}
 }
 
 void GraphEdit::end_connecting(const Ref<GraphPort> p_port, bool is_keyboard) {

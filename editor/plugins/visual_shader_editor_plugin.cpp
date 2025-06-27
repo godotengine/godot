@@ -112,7 +112,7 @@ void VisualShaderNodePlugin::_bind_methods() {
 ///////////////////
 
 void VSGraphNode::_draw_port(const Ref<GraphPort> p_port, const Color &p_rim_color) {
-	Ref<Texture2D> port_icon = p_port->icon;
+	Ref<Texture2D> port_icon = p_port->get_icon();
 
 	Point2 icon_offset;
 	if (port_icon.is_null()) {
@@ -123,7 +123,7 @@ void VSGraphNode::_draw_port(const Ref<GraphPort> p_port, const Color &p_rim_col
 
 	// Draw "shadow"/outline in the connection rim color.
 	draw_texture_rect(port_icon, Rect2(p_port->get_position() + (icon_offset - Size2(2, 2)) * EDSCALE, (port_icon->get_size() + Size2(4, 4)) * EDSCALE), false, p_rim_color);
-	draw_texture_rect(port_icon, Rect2(p_port->get_position() + icon_offset * EDSCALE, port_icon->get_size() * EDSCALE), false, p_port->color);
+	draw_texture_rect(port_icon, Rect2(p_port->get_position() + icon_offset * EDSCALE, port_icon->get_size() * EDSCALE), false, p_port->get_color());
 }
 
 void VSGraphNode::draw_port(const Ref<GraphPort> p_port) {
@@ -5784,16 +5784,18 @@ void VisualShaderEditor::_member_create() {
 			saved_node_pos_dirty = true;
 
 			// Find both graph nodes and get their positions.
-			ERR_FAIL_NULL(clicked_connection->first_port);
-			ERR_FAIL_NULL(clicked_connection->first_port->graph_node);
-			ERR_FAIL_NULL(clicked_connection->second_port);
-			ERR_FAIL_NULL(clicked_connection->second_port->graph_node);
+			ERR_FAIL_COND(clicked_connection->first_port.is_null());
+			ERR_FAIL_COND(clicked_connection->second_port.is_null());
+			GraphNode *first_node = clicked_connection->first_port->get_graph_node();
+			GraphNode *second_node = clicked_connection->second_port->get_graph_node();
+			ERR_FAIL_NULL(first_node);
+			ERR_FAIL_NULL(second_node);
 
 			// Since the size of the node to add is not known yet, it's not possible to center it exactly.
 			float zoom = graph->get_zoom();
 
-			Vector2 first_port_pos = clicked_connection->first_port->graph_node->get_position() + zoom * clicked_connection->first_port->get_position();
-			Vector2 second_port_pos = clicked_connection->second_port->graph_node->get_position() + zoom * clicked_connection->second_port->get_position();
+			Vector2 first_port_pos = first_node->get_position() + zoom * clicked_connection->first_port->get_position();
+			Vector2 second_port_pos = second_node->get_position() + zoom * clicked_connection->second_port->get_position();
 			saved_node_pos = 0.5 * (first_port_pos + second_port_pos);
 		}
 		_add_node(idx, add_options[idx].ops);
