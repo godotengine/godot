@@ -535,7 +535,6 @@ void GridMapEditor::_set_clipboard_data() {
 				item.cell_item = itm;
 				item.grid_offset = Vector3(selected) - selection.begin;
 				item.orientation = node->get_cell_item_orientation(selected);
-				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 
 				if (mesh.is_valid()) {
 					item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
