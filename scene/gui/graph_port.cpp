@@ -34,7 +34,7 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_node.h"
 #include "scene/theme/theme_db.h"
-
+/*
 bool GraphPort::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "enabled") {
 		enabled = p_value;
@@ -46,6 +46,10 @@ bool GraphPort::_set(const StringName &p_name, const Variant &p_value) {
 		color = p_value;
 	} else if (p_name == "direction") {
 		direction = p_value;
+	} else if (p_name == "exclusive") {
+		exclusive = p_value;
+	} else if (p_name == "icon") {
+		icon = p_value;
 	} else {
 		return false;
 	}
@@ -64,6 +68,10 @@ bool GraphPort::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = color;
 	} else if (p_name == "direction") {
 		r_ret = direction;
+	} else if (p_name == "exclusive") {
+		r_ret = exclusive;
+	} else if (p_name == "icon") {
+		r_ret = icon;
 	} else {
 		return false;
 	}
@@ -75,14 +83,17 @@ void GraphPort::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::BOOL, "enabled"));
 	p_list->push_back(PropertyInfo(Variant::INT, "type"));
 	p_list->push_back(PropertyInfo(Variant::COLOR, "color"));
+	p_list->push_back(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "exclusive"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
-}
+	//p_list->push_back(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"));
+}*/
 
-void GraphPort::set(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
+void GraphPort::populate(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
 	exclusive = p_exclusive;
-	type = p_type;
 	color = p_color;
 	icon = p_icon;
+	set_type(p_type);
 	set_direction(p_direction);
 	set_enabled(p_enabled);
 }
@@ -121,6 +132,7 @@ int GraphPort::get_type() {
 void GraphPort::set_type(int p_type) {
 	type = p_type;
 	notify_property_list_changed();
+	_changed_type(p_type);
 }
 
 Color GraphPort::get_color() {
@@ -221,15 +233,20 @@ void GraphPort::_bind_methods() {
 }
 
 GraphPort::GraphPort() {
-	set(false, false, 0, Color(1, 1, 1, 1), GraphPort::PortDirection::UNDIRECTED);
+	icon = Ref<Texture2D>(nullptr);
 }
 
 GraphPort::GraphPort(GraphNode *p_graph_node) {
 	graph_node = p_graph_node;
-	set(false, false, 0, Color(1, 1, 1, 1), GraphPort::PortDirection::UNDIRECTED);
+	icon = Ref<Texture2D>(nullptr);
 }
 
 GraphPort::GraphPort(GraphNode *p_graph_node, bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
 	graph_node = p_graph_node;
-	set(p_enabled, p_exclusive, p_type, p_color, p_direction, p_icon);
+	enabled = p_enabled;
+	exclusive = p_exclusive;
+	type = p_type;
+	color = p_color;
+	direction = p_direction;
+	icon = p_icon;
 }

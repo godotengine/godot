@@ -149,13 +149,13 @@ int GraphNodeIndexed::slot_index_of_port(const Ref<GraphPort> p_port) {
 void GraphNodeIndexed::set_input(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon) {
 	Ref<GraphPort> port = get_input_port(p_slot_index);
 	ERR_FAIL_COND(port.is_null());
-	port->set(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::INPUT, p_icon);
+	port->populate(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::INPUT, p_icon);
 }
 
 void GraphNodeIndexed::set_output(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon) {
 	Ref<GraphPort> port = get_output_port(p_slot_index);
 	ERR_FAIL_COND(port.is_null());
-	port->set(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::OUTPUT, p_icon);
+	port->populate(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::OUTPUT, p_icon);
 }
 
 Ref<GraphPort> GraphNodeIndexed::get_input_port(int p_slot_index) {

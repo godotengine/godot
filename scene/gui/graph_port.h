@@ -55,15 +55,15 @@ public:
 	};
 
 protected:
-	bool enabled;
-	bool exclusive;
+	bool enabled = false;
+	bool exclusive = false;
 	int type = 0;
 	Color color = Color(1, 1, 1, 1);
 	Ref<Texture2D> icon;
 	PortDirection direction = PortDirection::UNDIRECTED;
 	DisconnectBehaviour on_disabled_behaviour = DisconnectBehaviour::DISCONNECT_ALL;
 
-	GraphNode *graph_node;
+	GraphNode *graph_node = nullptr;
 	Vector2 position = Vector2(0.0, 0.0);
 
 	static void _bind_methods();
@@ -74,12 +74,12 @@ protected:
 	void _changed_direction(const PortDirection p_direction);
 	void _changed_type(const int p_type);
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	//bool _set(const StringName &p_name, const Variant &p_value);
+	//bool _get(const StringName &p_name, Variant &r_ret) const;
+	//void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void set(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
+	void populate(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
 
 	void enable();
 	void disable();

@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/gui/graph_element.h"
-#include "scene/property_list_helper.h"
+//#include "scene/property_list_helper.h"
 
 class HBoxContainer;
 class GraphPort;
@@ -61,8 +61,8 @@ protected:
 	};
 	void _accessibility_action_port(const Variant &p_data);
 
-	static inline PropertyListHelper base_property_helper;
-	PropertyListHelper property_helper;
+	//static inline PropertyListHelper base_property_helper;
+	//PropertyListHelper property_helper;
 
 	HBoxContainer *titlebar_hbox = nullptr;
 	Label *title_label = nullptr;
@@ -107,9 +107,9 @@ protected:
 	void _set_ports(const TypedArray<Ref<GraphPort>> &p_ports);
 	const TypedArray<Ref<GraphPort>> &_get_ports();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	//bool _set(const StringName &p_name, const Variant &p_value);
+	//bool _get(const StringName &p_name, Variant &r_ret) const;
+	//void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;

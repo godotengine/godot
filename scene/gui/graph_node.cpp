@@ -47,43 +47,28 @@ void GraphNode::_set_ports(const TypedArray<Ref<GraphPort>> &p_ports) {
 const TypedArray<Ref<GraphPort>> &GraphNode::_get_ports() {
 	return ports;
 }
-
+/*
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
-	if (property_helper.property_set_value(p_name, p_value)) {
-		return true;
-	}
+	//if (property_helper.property_set_value(p_name, p_value)) {
+	//	return true;
+	//}
 
 	String str = p_name;
 
-	if (!str.begins_with("port/")) {
-		return false;
+	if (str == "title") {
+		title = p_value;
+		return true;
+	} else if (str == "ignore_invalid_connection_type") {
+		ignore_invalid_connection_type = p_value;
+		return true;
 	}
 
 	int idx = str.get_slicec('/', 1).to_int();
-	String property_name = str.get_slicec('/', 2);
 	if (ports.size() <= idx) {
 		return false;
 	}
 
-	Ref<GraphPort> port;
-	port = ports[idx];
-	if (port.is_null()) {
-		return false;
-	}
-
-	if (property_name == "enabled") {
-		port->set_enabled(p_value);
-	} else if (property_name == "type") {
-		port->set_type(p_value);
-	} else if (property_name == "icon") {
-		port->icon = p_value;
-	} else if (property_name == "color") {
-		port->color = p_value;
-	} else if (property_name == "direction") {
-		port->set_direction(p_value);
-	} else {
-		return false;
-	}
+	set_port(idx, p_value);
 
 	return true;
 }
@@ -91,52 +76,36 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 	String str = p_name;
 
+	if (str == "title") {
+		r_ret = title;
+		return true;
+	} else if (str == "ignore_invalid_connection_type") {
+		r_ret = ignore_invalid_connection_type;
+		return true;
+	}
+
 	if (!str.begins_with("port/")) {
 		return false;
 	}
 
 	int idx = str.get_slicec('/', 1).to_int();
-	StringName property_name = str.get_slicec('/', 2);
 	if (ports.size() <= idx) {
 		return false;
 	}
 
-	Ref<GraphPort> port;
-	port = ports[idx];
-	if (port.is_null()) {
-		return false;
-	}
-
-	if (property_name == "enabled") {
-		r_ret = port->enabled;
-	} else if (property_name == "type") {
-		r_ret = port->type;
-	} else if (property_name == "icon") {
-		r_ret = port->icon;
-	} else if (property_name == "color") {
-		r_ret = port->color;
-	} else if (property_name == "direction") {
-		r_ret = port->direction;
-	} else {
-		return false;
-	}
-
+	r_ret = ports[idx];
 	return true;
 }
 
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::STRING, "title"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"));
 	int idx = 0;
 	for (Ref<GraphPort> port : ports) {
-		String base = "port/" + itos(idx) + "/";
-
-		p_list->push_back(PropertyInfo(Variant::BOOL, base + "enabled"));
-		p_list->push_back(PropertyInfo(Variant::INT, base + "type"));
-		p_list->push_back(PropertyInfo(Variant::COLOR, base + "color"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
-		p_list->push_back(PropertyInfo(Variant::BOOL, base + "draw_stylebox"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "port/" + itos(idx), PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"));
 		idx++;
 	}
-}
+}*/
 
 void GraphNode::_resort() {
 	Size2 new_size = get_size();
@@ -866,5 +835,5 @@ GraphNode::GraphNode() {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_focus_mode(FOCUS_ACCESSIBILITY);
 
-	property_helper.setup_for_instance(base_property_helper, this);
+	//property_helper.setup_for_instance(base_property_helper, this);
 }
