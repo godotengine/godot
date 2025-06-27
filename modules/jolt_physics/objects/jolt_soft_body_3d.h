@@ -75,6 +75,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	virtual void _space_changed() override;
 
 	virtual void _add_to_space() override;
+	virtual void _remove_from_space() override;
 
 	bool _ref_shared_data();
 	void _deref_shared_data();

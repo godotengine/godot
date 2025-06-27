@@ -73,12 +73,6 @@ JPH::ObjectLayer JoltSoftBody3D::_get_object_layer() const {
 
 void JoltSoftBody3D::_space_changing() {
 	JoltObject3D::_space_changing();
-
-	if (in_space()) {
-		jolt_settings = new JPH::SoftBodyCreationSettings(jolt_body->GetSoftBodyCreationSettings());
-		jolt_settings->mSettings = nullptr;
-	}
-
 	_deref_shared_data();
 }
 
@@ -119,6 +113,15 @@ void JoltSoftBody3D::_add_to_space() {
 
 	delete jolt_settings;
 	jolt_settings = nullptr;
+}
+
+void JoltSoftBody3D::_remove_from_space() {
+	if (in_space()) {
+		jolt_settings = new JPH::SoftBodyCreationSettings(jolt_body->GetSoftBodyCreationSettings());
+		jolt_settings->mSettings = nullptr;
+	}
+
+	JoltObject3D::_remove_from_space();
 }
 
 bool JoltSoftBody3D::_ref_shared_data() {
@@ -214,6 +217,11 @@ bool JoltSoftBody3D::_ref_shared_data() {
 void JoltSoftBody3D::_deref_shared_data() {
 	if (unlikely(shared == nullptr)) {
 		return;
+	}
+
+	if (in_space()) {
+		jolt_settings = new JPH::SoftBodyCreationSettings(jolt_body->GetSoftBodyCreationSettings());
+		jolt_settings->mSettings = nullptr;
 	}
 
 	HashMap<RID, Shared>::Iterator iter = mesh_to_shared.find(mesh);
