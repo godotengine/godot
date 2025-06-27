@@ -31,6 +31,7 @@
 #include "keyboard.h"
 
 #include "core/os/os.h"
+#include "modules/regex/regex.h"
 
 struct _KeyCodeText {
 	Key code;
@@ -435,6 +436,12 @@ Key find_keycode(const String &p_codestr) {
 			keycode |= KeyModifierMask::META;
 		} else if (code_part.nocasecmp_to(find_keycode_name(Key::ALT)) == 0) {
 			keycode |= KeyModifierMask::ALT;
+		} else if (RegEx("(?i)(?:command/ctrl)|(?:ctrl/command)").search(code_part).is_valid()) {
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+				keycode |= KeyModifierMask::META;
+			} else {
+				keycode |= KeyModifierMask::CTRL;
+			}
 		}
 	}
 
