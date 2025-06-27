@@ -121,6 +121,8 @@ private:
 
 	void _prepare_physics_server();
 	void _become_mesh_owner();
+	bool _check_mesh_supported();
+	RID _create_dynamic_mesh();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
