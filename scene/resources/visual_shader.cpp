@@ -3658,6 +3658,9 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 				case PORT_TYPE_SCALAR_INT: {
 					code = "	" + p_output_vars[0] + " = 0;\n";
 				} break;
+				case PORT_TYPE_SCALAR_UINT: {
+					code = "	" + p_output_vars[0] + " = 0u;\n";
+				} break;
 				case PORT_TYPE_VECTOR_2D: {
 					code = "	" + p_output_vars[0] + " = vec2(0.0);\n";
 				} break;
@@ -3669,6 +3672,9 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 				} break;
 				case PORT_TYPE_BOOLEAN: {
 					code = "	" + p_output_vars[0] + " = false;\n";
+				} break;
+				case PORT_TYPE_TRANSFORM: {
+					code = "	" + p_output_vars[0] + " = mat4(1.0);\n";
 				} break;
 				default:
 					break;
