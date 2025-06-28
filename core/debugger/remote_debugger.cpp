@@ -233,11 +233,10 @@ void RemoteDebugger::flush_output() {
 		output_strings.clear();
 	}
 
-	while (errors.size()) {
-		ErrorMessage oe = errors.front()->get();
+	for (const ErrorMessage &oe : errors) {
 		_put_msg("error", oe.serialize());
-		errors.pop_front();
 	}
+	errors.clear();
 
 	// Update limits
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec() / 1000;

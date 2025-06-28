@@ -60,7 +60,7 @@ private:
 		MessageType type;
 	};
 	List<OutputString> output_strings;
-	List<ErrorMessage> errors;
+	LocalVector<ErrorMessage> errors;
 
 	int n_messages_dropped = 0;
 	int max_errors_per_second = 0;
