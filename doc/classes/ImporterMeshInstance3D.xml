@@ -13,6 +13,8 @@
 		</member>
 		<member name="mesh" type="ImporterMesh" setter="set_mesh" getter="get_mesh">
 		</member>
+		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
+		</member>
 		<member name="skeleton_path" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;&quot;)">
 		</member>
 		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
