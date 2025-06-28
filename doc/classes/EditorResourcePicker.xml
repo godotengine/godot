@@ -21,8 +21,9 @@
 			<return type="void" />
 			<param index="0" name="menu_node" type="Object" />
 			<description>
-				This virtual method is called when updating the context menu of [EditorResourcePicker]. Implement this method to override the "New ..." items with your own options. [param menu_node] is a reference to the [PopupMenu] node.
+				This virtual method is called when updating the context menu of an [member editable] [EditorResourcePicker]. Implement this method to override the "New ..." items with your own options. [param menu_node] is a reference to the [PopupMenu] node.
 				[b]Note:[/b] Implement [method _handle_menu_selected] to handle these custom items.
+				[b]Note:[/b] Relevant built-in options ("Load", "Copy", "Paste", etc.) are automatically added to the [PopupMenu] afterwards, using their hard-coded IDs starting from [code]0[/code]. Custom options need to use non-colliding IDs to be handled properly. Using [code]id = 100 + custom_option_index[/code] is safe (this is what the default "New ..." options use).
 			</description>
 		</method>
 		<method name="get_allowed_types" qualifiers="const">
