@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
 #include "core/variant/variant.h"
 
 class FuzzyTokenMatch;
@@ -81,20 +82,134 @@ public:
 	Vector<FuzzyTokenMatch> token_matches;
 };
 
-class FuzzySearch {
-	Vector<FuzzySearchToken> tokens;
+class FuzzyMatch : public RefCounted {
+	GDCLASS(FuzzyMatch, RefCounted)
 
-	bool case_sensitive = false;
-	void sort_and_filter(Vector<FuzzySearchResult> &p_results) const;
+protected:
+	static void _bind_methods();
 
 public:
+	FuzzySearchResult result;
+
+	void set_target(const String &p_target) {
+		result.target = p_target;
+	}
+
+	String get_target() const {
+		return result.target;
+	}
+
+	void set_score(float p_score) {
+		result.score = p_score;
+	}
+
+	float get_score() const {
+		return result.score;
+	}
+
+	void set_original_index(int p_original_index) {
+		result.original_index = p_original_index;
+	}
+
+	int get_original_index() const {
+		return result.original_index;
+	}
+
+	TypedArray<Vector2i> get_matched_substrings();
+};
+
+class FuzzySearch : public RefCounted {
+	GDCLASS(FuzzySearch, RefCounted)
+
+	String query;
 	int start_offset = 0;
 	int max_results = 100;
 	int max_misses = 2;
-	bool allow_subsequences = true;
+	bool exact_token_matches = false;
+	bool case_sensitive = false;
+	bool dirty_tokens = false;
+	bool filter_low_scores = true;
+	float filter_factor = 0.1f;
+	float filter_cutoff = 30.0f;
+	Vector<FuzzySearchToken> tokens;
+
+	void update_tokens();
+	void sort_and_filter(Vector<FuzzySearchResult> &p_results) const;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_start_offset(int p_offset) {
+		start_offset = p_offset;
+	}
+
+	int get_start_offset() const {
+		return start_offset;
+	}
+
+	void set_max_results(int p_max_results) {
+		max_results = p_max_results;
+	}
+
+	int get_max_results() const {
+		return max_results;
+	}
+
+	void set_max_misses(int p_max_misses) {
+		max_misses = p_max_misses;
+	}
+
+	int get_max_misses() const {
+		return max_misses;
+	}
+
+	void set_use_exact_tokens(bool p_use_exact_tokens) {
+		exact_token_matches = p_use_exact_tokens;
+	}
+
+	bool get_use_exact_tokens() const {
+		return exact_token_matches;
+	}
+
+	void set_case_sensitive(bool p_case_sensitive);
+
+	bool get_case_sensitive() const {
+		return case_sensitive;
+	}
+
+	void set_filter_low_scores(bool p_filter_low_scores) {
+		filter_low_scores = p_filter_low_scores;
+	}
+
+	bool get_filter_low_scores() const {
+		return filter_low_scores;
+	}
+
+	void set_filter_factor(float p_filter_factor) {
+		filter_factor = p_filter_factor;
+	}
+
+	float get_filter_factor() const {
+		return filter_factor;
+	}
+
+	void set_filter_cutoff(float p_filter_cutoff) {
+		filter_cutoff = p_filter_cutoff;
+	}
+
+	float get_filter_cutoff() const {
+		return filter_cutoff;
+	}
 
 	void set_query(const String &p_query);
-	void set_query(const String &p_query, bool p_case_sensitive);
-	bool search(const String &p_target, FuzzySearchResult &p_result) const;
-	void search_all(const PackedStringArray &p_targets, Vector<FuzzySearchResult> &p_results) const;
+
+	String get_query() const {
+		return query;
+	}
+
+	bool search(const String &p_target, FuzzySearchResult &r_result) const;
+	void search_all(const PackedStringArray &p_targets, Vector<FuzzySearchResult> &r_results) const;
+	Ref<FuzzyMatch> search_wrapped(const String &p_target) const;
+	TypedArray<Ref<FuzzyMatch>> search_all_wrapped(const PackedStringArray &p_targets) const;
 };
