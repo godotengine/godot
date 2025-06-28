@@ -41,7 +41,9 @@ ColorChannelSelector::ColorChannelSelector() {
 	toggle_button->set_flat(true);
 	toggle_button->set_toggle_mode(true);
 	toggle_button->connect(SceneStringName(toggled), callable_mp(this, &ColorChannelSelector::on_toggled));
-	toggle_button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
+	toggle_button->set_tooltip_text(TTRC("Toggle color channel preview selection."));
+	toggle_button->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	toggle_button->set_theme_type_variation("PreviewLightButton");
 	add_child(toggle_button);
 
 	panel = memnew(PanelContainer);
@@ -71,11 +73,10 @@ void ColorChannelSelector::_notification(int p_what) {
 		ERR_FAIL_COND(bg_style.is_null());
 		bg_style = bg_style->duplicate();
 		// The default content margin makes the widget become a bit too large. It should be like mini-toolbar.
-		const float editor_scale = EditorScale::get_scale();
-		bg_style->set_content_margin(SIDE_LEFT, 1.0f * editor_scale);
-		bg_style->set_content_margin(SIDE_RIGHT, 1.0f * editor_scale);
-		bg_style->set_content_margin(SIDE_TOP, 1.0f * editor_scale);
-		bg_style->set_content_margin(SIDE_BOTTOM, 1.0f * editor_scale);
+		bg_style->set_content_margin(SIDE_LEFT, 1.0f * EDSCALE);
+		bg_style->set_content_margin(SIDE_RIGHT, 1.0f * EDSCALE);
+		bg_style->set_content_margin(SIDE_TOP, 1.0f * EDSCALE);
+		bg_style->set_content_margin(SIDE_BOTTOM, 1.0f * EDSCALE);
 		panel->add_theme_style_override(SceneStringName(panel), bg_style);
 
 		Ref<Texture2D> icon = get_editor_theme_icon(SNAME("TexturePreviewChannels"));
@@ -110,7 +111,7 @@ uint32_t ColorChannelSelector::get_selected_channels_mask() const {
 Vector4 ColorChannelSelector::get_selected_channel_factors() const {
 	Vector4 channel_factors;
 	const uint32_t mask = get_selected_channels_mask();
-	for (unsigned int i = 0; i < 4; ++i) {
+	for (unsigned int i = 0; i < CHANNEL_COUNT; ++i) {
 		if ((mask & (1 << i)) != 0) {
 			channel_factors[i] = 1;
 		}
@@ -123,6 +124,7 @@ void ColorChannelSelector::create_button(unsigned int p_channel_index, const Str
 	ERR_FAIL_COND(channel_buttons[p_channel_index] != nullptr);
 	Button *button = memnew(Button);
 	button->set_text(p_text);
+	button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	button->set_toggle_mode(true);
 	button->set_pressed(true);
 

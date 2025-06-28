@@ -45,6 +45,7 @@ constexpr const char *const NAV_MESH_CELL_SIZE_HINT = "0.001,100,0.001,or_greate
 
 constexpr float EDGE_CONNECTION_MARGIN = 0.25f;
 constexpr float LINK_CONNECTION_RADIUS = 1.0f;
+constexpr int path_search_max_polygons = 4096;
 
 // Agent.
 
@@ -71,6 +72,7 @@ constexpr const char *const NAV_MESH_CELL_SIZE_HINT = "0.001,100,0.001,or_greate
 
 constexpr float EDGE_CONNECTION_MARGIN = 1.0f;
 constexpr float LINK_CONNECTION_RADIUS = 4.0f;
+constexpr int path_search_max_polygons = 4096;
 
 // Agent.
 

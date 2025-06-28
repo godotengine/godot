@@ -15,7 +15,7 @@
 			<param index="0" name="filter" type="String" />
 			<param index="1" name="description" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a comma-delimited file name [param filter] option to the [EditorFileDialog] with an optional [param description], which restricts what files can be picked.
+				Adds a comma-separated file name [param filter] option to the [EditorFileDialog] with an optional [param description], which restricts what files can be picked.
 				A [param filter] should be of the form [code]"filename.extension"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
 				For example, a [param filter] of [code]"*.tscn, *.scn"[/code] and a [param description] of [code]"Scenes"[/code] results in filter text "Scenes (*.tscn, *.scn)".
 			</description>

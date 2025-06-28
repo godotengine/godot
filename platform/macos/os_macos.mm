@@ -37,11 +37,15 @@
 #import "display_server_macos.h"
 #import "godot_application.h"
 #import "godot_application_delegate.h"
-#import "macos_terminal_logger.h"
 
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
+#include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
+
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 
 #include <dlfcn.h>
 #include <libproc.h>
@@ -230,13 +234,22 @@ void OS_MacOS::finalize() {
 
 	delete_main_loop();
 
-	if (joypad_apple) {
-		memdelete(joypad_apple);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
 	}
+#endif
 }
 
 void OS_MacOS::initialize_joypads() {
-	joypad_apple = memnew(JoypadApple());
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -825,6 +838,18 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
 		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton() && !Engine::get_singleton()->is_project_manager_hint() && !Engine::get_singleton()->is_editor_hint()) {
+			// Project started from the editor, inject "path" argument to set instance working directory.
+			char cwd[PATH_MAX];
+			if (::getcwd(cwd, sizeof(cwd)) != nullptr) {
+				List<String> arguments = p_arguments;
+				arguments.push_back("--path");
+				arguments.push_back(String::utf8(cwd));
+				return create_process(path, arguments, r_child_id, false);
+			}
+		}
+#endif
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
@@ -1011,9 +1036,9 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 		}
 		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
 	}
-
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(MacOSTerminalLogger));
+	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
+	loggers.push_back(memnew(UnixTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 #ifdef COREAUDIO_ENABLED
@@ -1066,7 +1091,11 @@ void OS_MacOS_NSApp::start_main() {
 							} else if (ds) {
 								ds->process_events();
 							}
-							joypad_apple->process_joypads();
+#ifdef SDL_ENABLED
+							if (joypad_sdl) {
+								joypad_sdl->process_events();
+							}
+#endif
 
 							if (Main::iteration() || sig_received) {
 								terminate();

@@ -161,15 +161,21 @@ class EditorPropertyPath : public EditorProperty {
 	bool folder = false;
 	bool global = false;
 	bool save_mode = false;
+	bool enable_uid = false;
+	bool display_uid = false;
+
 	EditorFileDialog *dialog = nullptr;
 	LineEdit *path = nullptr;
+	Button *toggle_uid = nullptr;
 	Button *path_edit = nullptr;
 
-	String _get_path_text();
+	String _get_path_text(bool p_allow_uid = false);
 
 	void _path_selected(const String &p_path);
 	void _path_pressed();
 	void _path_focus_exited();
+	void _toggle_uid_display();
+	void _update_uid_icon();
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 
@@ -178,7 +184,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global);
+	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global, bool p_enable_uid);
 	void set_save_mode();
 	virtual void update_property() override;
 	EditorPropertyPath();

@@ -429,16 +429,27 @@ struct glyf_accelerator_t
   }
 
   public:
-  bool get_extents (hb_font_t *font, hb_codepoint_t gid, hb_glyph_extents_t *extents) const
+
+  bool get_extents (hb_font_t *font,
+		    hb_codepoint_t gid,
+		    hb_glyph_extents_t *extents) const
+  { return get_extents_at (font, gid, extents, hb_array (font->coords, font->num_coords)); }
+
+  bool get_extents_at (hb_font_t *font,
+		       hb_codepoint_t gid,
+		       hb_glyph_extents_t *extents,
+		       hb_array_t<const int> coords) const
   {
     if (unlikely (gid >= num_glyphs)) return false;
 
 #ifndef HB_NO_VAR
-    if (font->num_coords)
+    if (coords)
     {
       hb_glyf_scratch_t scratch;
-      return get_points (font, gid, points_aggregator_t (font, extents, nullptr, true),
-			 hb_array (font->coords, font->num_coords),
+      return get_points (font,
+			 gid,
+			 points_aggregator_t (font, extents, nullptr, true),
+			 coords,
 			 scratch);
     }
 #endif
@@ -532,7 +543,7 @@ struct glyf_accelerator_t
   unsigned int num_glyphs;
   hb_blob_ptr_t<loca> loca_table;
   hb_blob_ptr_t<glyf> glyf_table;
-  hb_atomic_ptr_t<hb_glyf_scratch_t> cached_scratch;
+  mutable hb_atomic_t<hb_glyf_scratch_t *> cached_scratch;
 };
 
 

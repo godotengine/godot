@@ -32,8 +32,8 @@ func test_override_func_1() -> void
 func test_override_func_2() -> void
 func test_func_b1() -> void
 func test_func_b2() -> void
-abstract func test_abstract_func_1() -> void
-abstract func test_abstract_func_2() -> void
+@abstract func test_abstract_func_1() -> void
+@abstract func test_abstract_func_2() -> void
 func test_override_func_1() -> void
 func test_override_func_2() -> void
 --- C ---
@@ -53,8 +53,8 @@ func test_override_func_1() -> void
 func test_override_func_2() -> void
 func test_func_b1() -> void
 func test_func_b2() -> void
-abstract func test_abstract_func_1() -> void
-abstract func test_abstract_func_2() -> void
+@abstract func test_abstract_func_1() -> void
+@abstract func test_abstract_func_2() -> void
 func test_override_func_1() -> void
 func test_override_func_2() -> void
 === Signals ===

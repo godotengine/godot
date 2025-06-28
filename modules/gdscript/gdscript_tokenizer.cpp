@@ -101,7 +101,6 @@ static const char *token_names[] = {
 	"match", // MATCH,
 	"when", // WHEN,
 	// Keywords
-	"abstract", // ABSTRACT,
 	"as", // AS,
 	"assert", // ASSERT,
 	"await", // AWAIT,
@@ -200,7 +199,6 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 		case IDENTIFIER:
 		case MATCH: // Used in String.match().
 		case WHEN: // New keyword, avoid breaking existing code.
-		case ABSTRACT:
 		// Allow constants to be treated as regular identifiers.
 		case CONST_PI:
 		case CONST_INF:
@@ -216,7 +214,6 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 	// This is meant to allow keywords with the $ notation, but not as general identifiers.
 	switch (type) {
 		case IDENTIFIER:
-		case ABSTRACT:
 		case AND:
 		case AS:
 		case ASSERT:
@@ -271,12 +268,9 @@ String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 
 void GDScriptTokenizerText::set_source_code(const String &p_source_code) {
 	source = p_source_code;
-	if (source.is_empty()) {
-		_source = U"";
-	} else {
-		_source = source.ptr();
-	}
+	_source = source.get_data();
 	_current = _source;
+	_start = _source;
 	line = 1;
 	column = 1;
 	length = p_source_code.length();
@@ -494,7 +488,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 
 #define KEYWORDS(KEYWORD_GROUP, KEYWORD)     \
 	KEYWORD_GROUP('a')                       \
-	KEYWORD("abstract", Token::ABSTRACT)     \
 	KEYWORD("as", Token::AS)                 \
 	KEYWORD("and", Token::AND)               \
 	KEYWORD("assert", Token::ASSERT)         \

@@ -607,6 +607,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_hinting(cache[p_cache_index], hinting);
 			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
 			TS->font_set_keep_rounding_remainders(cache[p_cache_index], keep_rounding_remainders);
+			TS->font_set_oversampling(cache[p_cache_index], oversampling_override);
 		}
 	}
 }
@@ -941,12 +942,8 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_keep_rounding_remainders", "keep_rounding_remainders"), &FontFile::set_keep_rounding_remainders);
 	ClassDB::bind_method(D_METHOD("get_keep_rounding_remainders"), &FontFile::get_keep_rounding_remainders);
 
-#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &FontFile::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &FontFile::get_oversampling);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", 0), "set_oversampling", "get_oversampling");
-#endif
 
 	ClassDB::bind_method(D_METHOD("get_cache_count"), &FontFile::get_cache_count);
 	ClassDB::bind_method(D_METHOD("clear_cache"), &FontFile::clear_cache);
@@ -1066,9 +1063,13 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size_scale_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size_scale_mode", "get_fixed_size_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_opentype_feature_overrides", "get_opentype_feature_overrides");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
 }
 
 void FontFile::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "fallbacks") {
 		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
 	}
@@ -1423,6 +1424,7 @@ void FontFile::reset_state() {
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	keep_rounding_remainders = true;
+	oversampling_override = 0.0;
 	msdf_pixel_range = 14;
 	msdf_size = 128;
 	fixed_size = 0;
@@ -2336,6 +2338,21 @@ bool FontFile::get_keep_rounding_remainders() const {
 	return keep_rounding_remainders;
 }
 
+void FontFile::set_oversampling(real_t p_oversampling) {
+	if (oversampling_override != p_oversampling) {
+		oversampling_override = p_oversampling;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_oversampling(cache[i], oversampling_override);
+		}
+		emit_changed();
+	}
+}
+
+real_t FontFile::get_oversampling() const {
+	return oversampling_override;
+}
+
 RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
@@ -3126,12 +3143,8 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msdf_size", "msdf_size"), &SystemFont::set_msdf_size);
 	ClassDB::bind_method(D_METHOD("get_msdf_size"), &SystemFont::get_msdf_size);
 
-#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &SystemFont::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &SystemFont::get_oversampling);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", 0), "set_oversampling", "get_oversampling");
-#endif
 
 	ClassDB::bind_method(D_METHOD("get_font_names"), &SystemFont::get_font_names);
 	ClassDB::bind_method(D_METHOD("set_font_names", "names"), &SystemFont::set_font_names);
@@ -3157,6 +3170,7 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size"), "set_msdf_size", "get_msdf_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling"), "set_oversampling", "get_oversampling");
 }
 
 void SystemFont::_update_rids() const {
@@ -3260,6 +3274,7 @@ void SystemFont::_update_base_font() {
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
 		file->set_keep_rounding_remainders(keep_rounding_remainders);
+		file->set_oversampling(oversampling_override);
 		file->set_multichannel_signed_distance_field(msdf);
 		file->set_msdf_pixel_range(msdf_pixel_range);
 		file->set_msdf_size(msdf_size);
@@ -3304,6 +3319,7 @@ void SystemFont::reset_state() {
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	keep_rounding_remainders = true;
+	oversampling_override = 0.0;
 	msdf = false;
 
 	Font::reset_state();
@@ -3482,6 +3498,20 @@ void SystemFont::set_keep_rounding_remainders(bool p_keep_rounding_remainders) {
 
 bool SystemFont::get_keep_rounding_remainders() const {
 	return keep_rounding_remainders;
+}
+
+void SystemFont::set_oversampling(real_t p_oversampling) {
+	if (oversampling_override != p_oversampling) {
+		oversampling_override = p_oversampling;
+		if (base_font.is_valid()) {
+			base_font->set_oversampling(oversampling_override);
+		}
+		emit_changed();
+	}
+}
+
+real_t SystemFont::get_oversampling() const {
+	return oversampling_override;
 }
 
 void SystemFont::set_multichannel_signed_distance_field(bool p_msdf) {

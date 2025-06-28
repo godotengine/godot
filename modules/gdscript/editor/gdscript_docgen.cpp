@@ -303,7 +303,9 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 		} break;
 		case GDP::Node::CALL: {
 			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
-			return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+			if (call->get_callee_type() == GDP::Node::IDENTIFIER) {
+				return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+			}
 		} break;
 		case GDP::Node::DICTIONARY: {
 			const GDP::DictionaryNode *dict = static_cast<const GDP::DictionaryNode *>(p_expression);
@@ -314,9 +316,11 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 			return id->name;
 		} break;
 		default: {
-			return "<unknown>";
+			// Nothing to do.
 		} break;
 	}
+
+	return "<unknown>";
 }
 
 void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {

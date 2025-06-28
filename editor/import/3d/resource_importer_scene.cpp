@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/import/3d/scene_import_settings.h"
@@ -1062,7 +1063,7 @@ Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, con
 		}
 	}
 
-	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
+	String import_id = p_node->get_meta("import_id", "PATH:" + String(p_root->get_path_to(p_node)));
 
 	Dictionary node_settings;
 	if (p_node_data.has(import_id)) {
@@ -1110,7 +1111,7 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 		}
 	}
 
-	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
+	String import_id = p_node->get_meta("import_id", "PATH:" + String(p_root->get_path_to(p_node)));
 
 	Dictionary node_settings;
 	if (p_node_data.has(import_id)) {
@@ -1437,7 +1438,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	bool isroot = p_node == p_root;
 
-	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
+	String import_id = p_node->get_meta("import_id", "PATH:" + String(p_root->get_path_to(p_node)));
 
 	Dictionary node_settings;
 	if (p_node_data.has(import_id)) {
@@ -2955,6 +2956,15 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 	}
 }
 
+void ResourceImporterScene::_generate_editor_preview_for_scene(const String &p_path, Node *p_scene) {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_path.is_empty(), "Path is empty, cannot generate preview.");
+	ERR_FAIL_NULL_MSG(p_scene, "Scene is null, cannot generate preview.");
+	EditorInterface::get_singleton()->make_scene_preview(p_path, p_scene, 1024);
+}
+
 Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = p_source_file.get_extension().to_lower();
@@ -3342,6 +3352,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
 		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
+		_generate_editor_preview_for_scene(p_source_file, scene);
 	} else {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown scene import type: " + _scene_import_type);
 	}

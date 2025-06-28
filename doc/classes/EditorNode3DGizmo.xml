@@ -4,7 +4,7 @@
 		Gizmo for editing [Node3D] objects.
 	</brief_description>
 	<description>
-		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for [Node3D] objects. Can be overridden to create custom gizmos, but for simple gizmos creating a [EditorNode3DGizmoPlugin] is usually recommended.
+		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for [Node3D] objects. Can be overridden to create custom gizmos, but for simple gizmos creating an [EditorNode3DGizmoPlugin] is usually recommended.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -43,6 +43,8 @@ public:
 	bool map_is_active(RID p_map) const override { return false; }
 	void map_set_cell_size(RID p_map, real_t p_cell_size) override {}
 	real_t map_get_cell_size(RID p_map) const override { return 0; }
+	void map_set_merge_rasterizer_cell_scale(RID p_map, float p_value) override {}
+	float map_get_merge_rasterizer_cell_scale(RID p_map) const override { return 1.0; }
 	void map_set_use_edge_connections(RID p_map, bool p_enabled) override {}
 	bool map_get_use_edge_connections(RID p_map) const override { return false; }
 	void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) override {}
@@ -64,6 +66,8 @@ public:
 
 	RID region_create() override { return RID(); }
 	uint32_t region_get_iteration_id(RID p_region) const override { return 0; }
+	void region_set_use_async_iterations(RID p_region, bool p_enabled) override {}
+	bool region_get_use_async_iterations(RID p_region) const override { return false; }
 	void region_set_enabled(RID p_region, bool p_enabled) override {}
 	bool region_get_enabled(RID p_region) const override { return false; }
 	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}

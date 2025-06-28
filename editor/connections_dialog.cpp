@@ -290,7 +290,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 
 	LocalVector<Pair<Variant::Type, StringName>> effective_args;
 	int unbind = get_unbinds();
-	effective_args.reserve(p_signal.arguments.size() - unbind);
+	effective_args.reserve(MAX(p_signal.arguments.size() - unbind, 0));
 	for (int64_t i = 0; i < p_signal.arguments.size() - unbind; i++) {
 		PropertyInfo pi = p_signal.arguments[i];
 		effective_args.push_back(Pair(pi.type, pi.class_name));
@@ -749,7 +749,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->set_custom_minimum_size(Vector2(400 * EDSCALE, 0));
 
 	from_signal = memnew(LineEdit);
-	from_signal->set_accessibility_name(TTRC("From Signal"));
+	from_signal->set_accessibility_name(TTRC("From Signal:"));
 	vbc_left->add_margin_child(TTR("From Signal:"), from_signal);
 	from_signal->set_editable(false);
 
@@ -864,14 +864,14 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
 	bind_editor = memnew(EditorInspector);
-	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments"));
+	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments:"));
 	bind_controls.push_back(bind_editor);
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	unbind_count = memnew(SpinBox);
 	unbind_count->set_tooltip_text(TTR("Allows to drop arguments sent by signal emitter."));
-	unbind_count->set_accessibility_name(TTRC("Unbind Signal Arguments"));
+	unbind_count->set_accessibility_name(TTRC("Unbind Signal Arguments:"));
 	unbind_count->connect(SceneStringName(value_changed), callable_mp(this, &ConnectDialog::_unbind_count_changed));
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
@@ -931,7 +931,7 @@ ConnectDialog::~ConnectDialog() {
 
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	// If it's not a doc tooltip, fallback to the default one.
-	if (p_text.is_empty() || p_text.contains("::")) {
+	if (p_text.is_empty() || p_text.contains(" :: ")) {
 		return nullptr;
 	}
 

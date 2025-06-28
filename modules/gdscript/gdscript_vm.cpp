@@ -177,7 +177,7 @@ String GDScriptFunction::_get_call_error(const String &p_where, const Variant **
 			return "Invalid type in " + p_where + ". Cannot convert argument " + itos(p_err.argument + 1) + " from " + Variant::get_type_name(p_argptrs[p_err.argument]->get_type()) + " to " + Variant::get_type_name(Variant::Type(p_err.expected)) + ".";
 		case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 		case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
-			return "Invalid call to " + p_where + ". Expected " + itos(p_err.expected) + " arguments.";
+			return "Invalid call to " + p_where + ". Expected " + itos(p_err.expected) + " argument(s).";
 		case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 			return "Attempt to call " + p_where + " on a null instance.";
 		case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
@@ -522,10 +522,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		int err_line = _initial_line;
 		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
-		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
-			// Debugger break did not happen.
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
-		}
+		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
+		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 #endif
 		return _get_default_variant_for_data_type(return_type);
 	}
@@ -3939,11 +3937,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
 		}
 
-		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
-			// debugger break did not happen
-
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
-		}
+		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);

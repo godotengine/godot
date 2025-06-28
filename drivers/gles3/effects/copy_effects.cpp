@@ -115,31 +115,56 @@ CopyEffects::~CopyEffects() {
 	copy.shader.version_free(copy.shader_version);
 }
 
-void CopyEffects::copy_to_rect(const Rect2 &p_rect) {
-	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
+void CopyEffects::copy_to_rect(const Rect2 &p_rect, bool p_linear_to_srgb) {
+	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
+
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION, specializations);
 	if (!success) {
 		return;
 	}
 
-	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION, specializations);
 	draw_screen_quad();
 }
 
-void CopyEffects::copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type, float p_lod) {
+void CopyEffects::copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type, float p_lod, bool p_linear_to_srgb) {
 	ERR_FAIL_COND(p_type != Texture::TYPE_LAYERED && p_type != Texture::TYPE_3D);
 
 	CopyShaderGLES3::ShaderVariant variant = p_type == Texture::TYPE_LAYERED
 			? CopyShaderGLES3::MODE_COPY_SECTION_2D_ARRAY
 			: CopyShaderGLES3::MODE_COPY_SECTION_3D;
+	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
 
-	bool success = copy.shader.version_bind_shader(copy.shader_version, variant);
+	bool success = copy.shader.version_bind_shader(copy.shader_version, variant, specializations);
 	if (!success) {
 		return;
 	}
 
-	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, variant);
-	copy.shader.version_set_uniform(CopyShaderGLES3::LAYER, p_layer, copy.shader_version, variant);
-	copy.shader.version_set_uniform(CopyShaderGLES3::LOD, p_lod, copy.shader_version, variant);
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LAYER, p_layer, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LOD, p_lod, copy.shader_version, variant, specializations);
+	draw_screen_quad();
+}
+
+void CopyEffects::copy_with_lens_distortion(const Rect2 &p_rect, float p_layer, const Vector2 &p_eye_center, float p_k1, float p_k2, float p_upscale, float p_aspect_ration, bool p_linear_to_srgb) {
+	CopyShaderGLES3::ShaderVariant variant = CopyShaderGLES3::MODE_LENS_DISTORTION;
+
+	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
+
+	bool success = copy.shader.version_bind_shader(copy.shader_version, variant, specializations);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LAYER, p_layer, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LOD, 0.0, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::EYE_CENTER, p_eye_center.x, p_eye_center.y, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::K1, p_k1, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::K2, p_k1, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::UPSCALE, p_upscale, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::ASPECT_RATIO, p_aspect_ration, copy.shader_version, variant, specializations);
+
 	draw_screen_quad();
 }
 

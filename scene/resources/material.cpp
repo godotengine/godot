@@ -861,6 +861,17 @@ void BaseMaterial3D::_update_shader() {
 	}
 	if (flags[FLAG_DISABLE_DEPTH_TEST]) {
 		code += ", depth_test_disabled";
+	} else {
+		switch (depth_test) {
+			case DEPTH_TEST_DEFAULT:
+				// depth_test_default is the default behavior, no need to emit it here.
+				break;
+			case DEPTH_TEST_INVERTED:
+				code += ", depth_test_inverted";
+				break;
+			case DEPTH_TEST_MAX:
+				break; // Internal value, skip.
+		}
 	}
 	if (flags[FLAG_PARTICLE_TRAILS_MODE]) {
 		code += ", particle_trails";
@@ -900,6 +911,56 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	code += ";\n";
+
+	if (stencil_mode != STENCIL_MODE_DISABLED && stencil_flags != 0) {
+		code += "stencil_mode ";
+
+		if (stencil_flags & STENCIL_FLAG_READ) {
+			code += "read";
+		}
+
+		if (stencil_flags & STENCIL_FLAG_WRITE) {
+			if (stencil_flags & STENCIL_FLAG_READ) {
+				code += ", ";
+			}
+			code += "write";
+		}
+
+		if (stencil_flags & STENCIL_FLAG_WRITE_DEPTH_FAIL) {
+			if (stencil_flags & (STENCIL_FLAG_READ | STENCIL_FLAG_WRITE)) {
+				code += ", ";
+			}
+			code += "write_depth_fail";
+		}
+
+		switch (stencil_compare) {
+			case STENCIL_COMPARE_ALWAYS:
+				code += ", compare_always";
+				break;
+			case STENCIL_COMPARE_LESS:
+				code += ", compare_less";
+				break;
+			case STENCIL_COMPARE_EQUAL:
+				code += ", compare_equal";
+				break;
+			case STENCIL_COMPARE_LESS_OR_EQUAL:
+				code += ", compare_less_or_equal";
+				break;
+			case STENCIL_COMPARE_GREATER:
+				code += ", compare_greater";
+				break;
+			case STENCIL_COMPARE_NOT_EQUAL:
+				code += ", compare_not_equal";
+				break;
+			case STENCIL_COMPARE_GREATER_OR_EQUAL:
+				code += ", compare_greater_or_equal";
+				break;
+			case STENCIL_COMPARE_MAX:
+				break;
+		}
+
+		code += vformat(", %s;\n", stencil_reference);
+	}
 
 	// Generate list of uniforms.
 	code += vformat(R"(
@@ -1684,8 +1745,12 @@ void fragment() {)";
 	if (features[FEATURE_BENT_NORMAL_MAPPING]) {
 		code += R"(
 	// Bent Normal Map: Enabled
-	BENT_NORMAL_MAP = texture(texture_bent_normal, base_uv).rgb;
 )";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "	BENT_NORMAL_MAP = triplanar_texture(texture_bent_normal, uv1_power_normal, uv1_triplanar_pos).rgb;\n";
+		} else {
+			code += "	BENT_NORMAL_MAP = texture(texture_bent_normal, base_uv).rgb;\n";
+		}
 	}
 
 	if (features[FEATURE_EMISSION]) {
@@ -2354,6 +2419,19 @@ BaseMaterial3D::DepthDrawMode BaseMaterial3D::get_depth_draw_mode() const {
 	return depth_draw_mode;
 }
 
+void BaseMaterial3D::set_depth_test(DepthTest p_func) {
+	if (depth_test == p_func) {
+		return;
+	}
+
+	depth_test = p_func;
+	_queue_shader_change();
+}
+
+BaseMaterial3D::DepthTest BaseMaterial3D::get_depth_test() const {
+	return depth_test;
+}
+
 void BaseMaterial3D::set_cull_mode(CullMode p_mode) {
 	if (cull_mode == p_mode) {
 		return;
@@ -2410,7 +2488,8 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 			p_flag == FLAG_UV1_USE_TRIPLANAR ||
 			p_flag == FLAG_UV2_USE_TRIPLANAR ||
 			p_flag == FLAG_USE_Z_CLIP_SCALE ||
-			p_flag == FLAG_USE_FOV_OVERRIDE) {
+			p_flag == FLAG_USE_FOV_OVERRIDE ||
+			p_flag == FLAG_DISABLE_DEPTH_TEST) {
 		notify_property_list_changed();
 	}
 
@@ -2489,48 +2568,50 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "grow_amount" && !grow_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "grow_amount" && !grow_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "uv1_triplanar_sharpness" || p_property.name == "uv1_world_triplanar") && !flags[FLAG_UV1_USE_TRIPLANAR]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if ((p_property.name == "uv1_triplanar_sharpness" || p_property.name == "uv1_world_triplanar") && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if ((p_property.name == "uv2_triplanar_sharpness" || p_property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if ((p_property.name == "uv2_triplanar_sharpness" || p_property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "z_clip_scale" && !flags[FLAG_USE_Z_CLIP_SCALE]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
+		if (p_property.name == "z_clip_scale" && !flags[FLAG_USE_Z_CLIP_SCALE]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 
-	if (p_property.name == "fov_override" && !flags[FLAG_USE_FOV_OVERRIDE]) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		if (p_property.name == "fov_override" && !flags[FLAG_USE_FOV_OVERRIDE]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 
 	// you can only enable anti-aliasing (in materials) on alpha scissor and alpha hash
@@ -2563,6 +2644,28 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 
 	if ((p_property.name == "heightmap_min_layers" || p_property.name == "heightmap_max_layers") && !deep_parallax) {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "depth_test" && flags[FLAG_DISABLE_DEPTH_TEST]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (p_property.name == "stencil_reference" && stencil_mode == STENCIL_MODE_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if ((p_property.name == "stencil_flags" || p_property.name == "stencil_compare") && stencil_mode != STENCIL_MODE_CUSTOM) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (p_property.name == "stencil_color" && stencil_mode != STENCIL_MODE_OUTLINE && stencil_mode != STENCIL_MODE_XRAY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (p_property.name == "stencil_outline_thickness" && stencil_mode != STENCIL_MODE_OUTLINE) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 
 	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (p_property.name == "subsurf_scatter_transmittance_color" || p_property.name == "subsurf_scatter_transmittance_texture")) {
@@ -3037,6 +3140,186 @@ RID BaseMaterial3D::get_rid() const {
 	return _get_material();
 }
 
+void BaseMaterial3D::_prepare_stencil_effect() {
+	const Ref<Material> current_next_pass = get_next_pass();
+
+	if (stencil_mode == STENCIL_MODE_DISABLED || stencil_mode == STENCIL_MODE_CUSTOM) {
+		if (current_next_pass.is_valid() && current_next_pass->has_meta("_stencil_owned")) {
+			set_next_pass(current_next_pass->get_next_pass());
+		}
+		return;
+	}
+
+	Ref<BaseMaterial3D> stencil_next_pass;
+
+	if (current_next_pass.is_null() || !current_next_pass->has_meta("_stencil_owned")) {
+		stencil_next_pass = Ref<BaseMaterial3D>(memnew(StandardMaterial3D));
+		stencil_next_pass->set_meta("_stencil_owned", true);
+		stencil_next_pass->set_next_pass(current_next_pass);
+		set_next_pass(stencil_next_pass);
+	} else {
+		stencil_next_pass = current_next_pass;
+	}
+
+	switch (stencil_mode) {
+		case STENCIL_MODE_DISABLED:
+			break;
+		case STENCIL_MODE_OUTLINE:
+			set_stencil_flags(STENCIL_FLAG_WRITE);
+			set_stencil_compare(STENCIL_COMPARE_ALWAYS);
+			stencil_next_pass->set_render_priority(get_render_priority() + 1);
+			stencil_next_pass->set_shading_mode(SHADING_MODE_UNSHADED);
+			stencil_next_pass->set_transparency(TRANSPARENCY_ALPHA);
+			stencil_next_pass->set_flag(FLAG_DISABLE_DEPTH_TEST, false);
+			stencil_next_pass->set_grow_enabled(true);
+			stencil_next_pass->set_grow(stencil_effect_outline_thickness);
+			stencil_next_pass->set_albedo(stencil_effect_color);
+			stencil_next_pass->set_stencil_mode(STENCIL_MODE_CUSTOM);
+			stencil_next_pass->set_stencil_flags(STENCIL_FLAG_READ);
+			stencil_next_pass->set_stencil_compare(STENCIL_COMPARE_NOT_EQUAL);
+			stencil_next_pass->set_stencil_reference(stencil_reference);
+			break;
+		case STENCIL_MODE_XRAY:
+			set_stencil_flags(STENCIL_FLAG_WRITE);
+			set_stencil_compare(STENCIL_COMPARE_ALWAYS);
+			stencil_next_pass->set_render_priority(get_render_priority() + 1);
+			stencil_next_pass->set_shading_mode(SHADING_MODE_UNSHADED);
+			stencil_next_pass->set_transparency(TRANSPARENCY_ALPHA);
+			stencil_next_pass->set_flag(FLAG_DISABLE_DEPTH_TEST, true);
+			stencil_next_pass->set_grow_enabled(false);
+			stencil_next_pass->set_grow(0);
+			stencil_next_pass->set_albedo(stencil_effect_color);
+			stencil_next_pass->set_stencil_mode(STENCIL_MODE_CUSTOM);
+			stencil_next_pass->set_stencil_flags(STENCIL_FLAG_READ);
+			stencil_next_pass->set_stencil_compare(STENCIL_COMPARE_NOT_EQUAL);
+			stencil_next_pass->set_stencil_reference(stencil_reference);
+			break;
+		case STENCIL_MODE_CUSTOM:
+			break;
+		case STENCIL_MODE_MAX:
+			break;
+	}
+}
+
+Ref<BaseMaterial3D> BaseMaterial3D::_get_stencil_next_pass() const {
+	const Ref<Material> current_next_pass = get_next_pass();
+	Ref<BaseMaterial3D> stencil_next_pass;
+
+	if (current_next_pass.is_valid() && current_next_pass->has_meta("_stencil_owned")) {
+		stencil_next_pass = current_next_pass;
+	}
+
+	return stencil_next_pass;
+}
+
+void BaseMaterial3D::set_stencil_mode(StencilMode p_stencil_mode) {
+	if (stencil_mode == p_stencil_mode) {
+		return;
+	}
+
+	stencil_mode = p_stencil_mode;
+	_prepare_stencil_effect();
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+BaseMaterial3D::StencilMode BaseMaterial3D::get_stencil_mode() const {
+	return stencil_mode;
+}
+
+void BaseMaterial3D::set_stencil_flags(int p_stencil_flags) {
+	if (stencil_flags == p_stencil_flags) {
+		return;
+	}
+
+	// If enabling read while already writing, switch to read only.
+	if ((p_stencil_flags & STENCIL_FLAG_READ) && (stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL))) {
+		p_stencil_flags = p_stencil_flags & STENCIL_FLAG_READ;
+	}
+
+	// If enabling write while already reading, switch to write or write_depth_fail.
+	if ((p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL)) && (stencil_flags & STENCIL_FLAG_READ)) {
+		p_stencil_flags = p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL);
+	}
+
+	// If enabling read+write while already doing neither, only allow read.
+	if ((p_stencil_flags & STENCIL_FLAG_READ) && (p_stencil_flags & (STENCIL_FLAG_WRITE | STENCIL_FLAG_WRITE_DEPTH_FAIL))) {
+		p_stencil_flags = p_stencil_flags & STENCIL_FLAG_READ;
+	}
+
+	stencil_flags = p_stencil_flags;
+	_queue_shader_change();
+}
+
+int BaseMaterial3D::get_stencil_flags() const {
+	return stencil_flags;
+}
+
+void BaseMaterial3D::set_stencil_compare(BaseMaterial3D::StencilCompare p_op) {
+	if (stencil_compare == p_op) {
+		return;
+	}
+
+	stencil_compare = p_op;
+	_queue_shader_change();
+}
+
+BaseMaterial3D::StencilCompare BaseMaterial3D::get_stencil_compare() const {
+	return stencil_compare;
+}
+
+void BaseMaterial3D::set_stencil_reference(int p_reference) {
+	if (stencil_reference == p_reference) {
+		return;
+	}
+
+	stencil_reference = p_reference;
+	_queue_shader_change();
+
+	Ref<BaseMaterial3D> stencil_next_pass = _get_stencil_next_pass();
+	if (stencil_next_pass.is_valid()) {
+		stencil_next_pass->set_stencil_reference(p_reference);
+	}
+}
+
+int BaseMaterial3D::get_stencil_reference() const {
+	return stencil_reference;
+}
+
+void BaseMaterial3D::set_stencil_effect_color(const Color &p_color) {
+	if (stencil_effect_color == p_color) {
+		return;
+	}
+
+	stencil_effect_color = p_color;
+
+	Ref<BaseMaterial3D> stencil_next_pass = _get_stencil_next_pass();
+	if (stencil_next_pass.is_valid()) {
+		stencil_next_pass->set_albedo(p_color);
+	}
+}
+
+Color BaseMaterial3D::get_stencil_effect_color() const {
+	return stencil_effect_color;
+}
+
+void BaseMaterial3D::set_stencil_effect_outline_thickness(float p_outline_thickness) {
+	if (stencil_effect_outline_thickness == p_outline_thickness) {
+		return;
+	}
+
+	stencil_effect_outline_thickness = p_outline_thickness;
+
+	Ref<BaseMaterial3D> stencil_next_pass = _get_stencil_next_pass();
+	if (stencil_next_pass.is_valid()) {
+		stencil_next_pass->set_grow(p_outline_thickness);
+	}
+}
+
+float BaseMaterial3D::get_stencil_effect_outline_thickness() const {
+	return stencil_effect_outline_thickness;
+}
+
 RID BaseMaterial3D::get_shader_rid() const {
 	const_cast<BaseMaterial3D *>(this)->_update_shader();
 	return shader_rid;
@@ -3132,6 +3415,9 @@ void BaseMaterial3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_depth_draw_mode", "depth_draw_mode"), &BaseMaterial3D::set_depth_draw_mode);
 	ClassDB::bind_method(D_METHOD("get_depth_draw_mode"), &BaseMaterial3D::get_depth_draw_mode);
+
+	ClassDB::bind_method(D_METHOD("set_depth_test", "depth_test"), &BaseMaterial3D::set_depth_test);
+	ClassDB::bind_method(D_METHOD("get_depth_test"), &BaseMaterial3D::get_depth_test);
 
 	ClassDB::bind_method(D_METHOD("set_cull_mode", "cull_mode"), &BaseMaterial3D::set_cull_mode);
 	ClassDB::bind_method(D_METHOD("get_cull_mode"), &BaseMaterial3D::get_cull_mode);
@@ -3259,6 +3545,24 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fov_override", "scale"), &BaseMaterial3D::set_fov_override);
 	ClassDB::bind_method(D_METHOD("get_fov_override"), &BaseMaterial3D::get_fov_override);
 
+	ClassDB::bind_method(D_METHOD("set_stencil_mode", "stencil_mode"), &BaseMaterial3D::set_stencil_mode);
+	ClassDB::bind_method(D_METHOD("get_stencil_mode"), &BaseMaterial3D::get_stencil_mode);
+
+	ClassDB::bind_method(D_METHOD("set_stencil_flags", "stencil_flags"), &BaseMaterial3D::set_stencil_flags);
+	ClassDB::bind_method(D_METHOD("get_stencil_flags"), &BaseMaterial3D::get_stencil_flags);
+
+	ClassDB::bind_method(D_METHOD("set_stencil_compare", "stencil_compare"), &BaseMaterial3D::set_stencil_compare);
+	ClassDB::bind_method(D_METHOD("get_stencil_compare"), &BaseMaterial3D::get_stencil_compare);
+
+	ClassDB::bind_method(D_METHOD("set_stencil_reference", "stencil_reference"), &BaseMaterial3D::set_stencil_reference);
+	ClassDB::bind_method(D_METHOD("get_stencil_reference"), &BaseMaterial3D::get_stencil_reference);
+
+	ClassDB::bind_method(D_METHOD("set_stencil_effect_color", "stencil_color"), &BaseMaterial3D::set_stencil_effect_color);
+	ClassDB::bind_method(D_METHOD("get_stencil_effect_color"), &BaseMaterial3D::get_stencil_effect_color);
+
+	ClassDB::bind_method(D_METHOD("set_stencil_effect_outline_thickness", "stencil_outline_thickness"), &BaseMaterial3D::set_stencil_effect_outline_thickness);
+	ClassDB::bind_method(D_METHOD("get_stencil_effect_outline_thickness"), &BaseMaterial3D::get_stencil_effect_outline_thickness);
+
 	ADD_GROUP("Transparency", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transparency", PROPERTY_HINT_ENUM, "Disabled,Alpha,Alpha Scissor,Alpha Hash,Depth Pre-Pass"), "set_transparency", "get_transparency");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
@@ -3269,6 +3573,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_test", PROPERTY_HINT_ENUM, "Default,Inverted"), "set_depth_test", "get_depth_test");
 
 	ADD_GROUP("Shading", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
@@ -3303,7 +3608,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "roughness_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_roughness_texture_channel", "get_roughness_texture_channel");
 
 	ADD_GROUP("Emission", "emission_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_EMISSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_EMISSION);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy_multiplier", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy_multiplier", "get_emission_energy_multiplier");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_intensity", PROPERTY_HINT_RANGE, "0,100000.0,0.01,or_greater,suffix:nt"), "set_emission_intensity", "get_emission_intensity");
@@ -3313,40 +3618,40 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_EMISSION);
 
 	ADD_GROUP("Normal Map", "normal_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "normal_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_NORMAL_MAPPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "normal_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_NORMAL_MAPPING);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_normal_scale", "get_normal_scale");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_NORMAL);
 
 	ADD_GROUP("Bent Normal Map", "bent_normal_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "bent_normal_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_BENT_NORMAL_MAPPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "bent_normal_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_BENT_NORMAL_MAPPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "bent_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_BENT_NORMAL);
 
 	ADD_GROUP("Rim", "rim_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "rim_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_RIM);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "rim_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_RIM);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rim", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_rim", "get_rim");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rim_tint", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_rim_tint", "get_rim_tint");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "rim_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_RIM);
 
 	ADD_GROUP("Clearcoat", "clearcoat_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "clearcoat_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_CLEARCOAT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "clearcoat_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_CLEARCOAT);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat", "get_clearcoat");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat_roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat_roughness", "get_clearcoat_roughness");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clearcoat_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_CLEARCOAT);
 
 	ADD_GROUP("Anisotropy", "anisotropy_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "anisotropy_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_ANISOTROPY);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "anisotropy_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_ANISOTROPY);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anisotropy", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_anisotropy", "get_anisotropy");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anisotropy_flowmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_FLOWMAP);
 
 	ADD_GROUP("Ambient Occlusion", "ao_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_AMBIENT_OCCLUSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao_light_affect", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_light_affect", "get_ao_light_affect");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "ao_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_on_uv2"), "set_flag", "get_flag", FLAG_AO_ON_UV2);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ao_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_ao_texture_channel", "get_ao_texture_channel");
 
 	ADD_GROUP("Height", "heightmap_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_HEIGHT_MAPPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_HEIGHT_MAPPING);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "heightmap_scale", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_heightmap_scale", "get_heightmap_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "heightmap_deep_parallax"), "set_heightmap_deep_parallax", "is_heightmap_deep_parallax_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_min_layers", PROPERTY_HINT_RANGE, "1,64,1"), "set_heightmap_deep_parallax_min_layers", "get_heightmap_deep_parallax_min_layers");
@@ -3357,31 +3662,31 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_flip_texture"), "set_flag", "get_flag", FLAG_INVERT_HEIGHTMAP);
 
 	ADD_GROUP("Subsurf Scatter", "subsurf_scatter_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_SUBSURFACE_SCATTERING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_SUBSURFACE_SCATTERING);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_subsurface_scattering_strength", "get_subsurface_scattering_strength");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_skin_mode"), "set_flag", "get_flag", FLAG_SUBSURFACE_MODE_SKIN);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_SCATTERING);
 
 	ADD_SUBGROUP("Transmittance", "subsurf_scatter_transmittance_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_transmittance_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_SUBSURFACE_TRANSMITTANCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_transmittance_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_SUBSURFACE_TRANSMITTANCE);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "subsurf_scatter_transmittance_color"), "set_transmittance_color", "get_transmittance_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_transmittance_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_TRANSMITTANCE);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_depth", PROPERTY_HINT_RANGE, "0.001,8,0.001,or_greater"), "set_transmittance_depth", "get_transmittance_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_boost", PROPERTY_HINT_RANGE, "0.00,1.0,0.01"), "set_transmittance_boost", "get_transmittance_boost");
 
 	ADD_GROUP("Back Lighting", "backlight_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "backlight_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_BACKLIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "backlight_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_BACKLIGHT);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "backlight", PROPERTY_HINT_COLOR_NO_ALPHA), "set_backlight", "get_backlight");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "backlight_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_BACKLIGHT);
 
 	ADD_GROUP("Refraction", "refraction_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "refraction_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_REFRACTION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "refraction_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_REFRACTION);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "refraction_scale", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_refraction", "get_refraction");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "refraction_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_REFRACTION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "refraction_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_refraction_texture_channel", "get_refraction_texture_channel");
 
 	ADD_GROUP("Detail", "detail_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "detail_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_feature", "get_feature", FEATURE_DETAIL);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "detail_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_DETAIL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "detail_mask", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_DETAIL_MASK);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "detail_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply"), "set_detail_blend_mode", "get_detail_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "detail_uv_layer", PROPERTY_HINT_ENUM, "UV1,UV2"), "set_detail_uv", "get_detail_uv");
@@ -3444,6 +3749,15 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
+
+	ADD_GROUP("Stencil", "stencil_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stencil_mode", PROPERTY_HINT_ENUM, "Disabled,Outline,X-Ray,Custom"), "set_stencil_mode", "get_stencil_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stencil_flags", PROPERTY_HINT_FLAGS, "Read,Write,Write Depth Fail"), "set_stencil_flags", "get_stencil_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stencil_compare", PROPERTY_HINT_ENUM, "Always,Less,Equal,Less Or Equal,Greater,Not Equal,Greater Or Equal"), "set_stencil_compare", "get_stencil_compare");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stencil_reference", PROPERTY_HINT_RANGE, "0,255,1"), "set_stencil_reference", "get_stencil_reference");
+
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "stencil_color", PROPERTY_HINT_NONE), "set_stencil_effect_color", "get_stencil_effect_color");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stencil_outline_thickness", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"), "set_stencil_effect_outline_thickness", "get_stencil_effect_outline_thickness");
 
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
@@ -3518,6 +3832,9 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_ALWAYS);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_DISABLED);
 
+	BIND_ENUM_CONSTANT(DEPTH_TEST_DEFAULT);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_INVERTED);
+
 	BIND_ENUM_CONSTANT(CULL_BACK);
 	BIND_ENUM_CONSTANT(CULL_FRONT);
 	BIND_ENUM_CONSTANT(CULL_DISABLED);
@@ -3576,6 +3893,23 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_ALPHA);
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_DITHER);
 	BIND_ENUM_CONSTANT(DISTANCE_FADE_OBJECT_DITHER);
+
+	BIND_ENUM_CONSTANT(STENCIL_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(STENCIL_MODE_OUTLINE);
+	BIND_ENUM_CONSTANT(STENCIL_MODE_XRAY);
+	BIND_ENUM_CONSTANT(STENCIL_MODE_CUSTOM);
+
+	BIND_ENUM_CONSTANT(STENCIL_FLAG_READ);
+	BIND_ENUM_CONSTANT(STENCIL_FLAG_WRITE);
+	BIND_ENUM_CONSTANT(STENCIL_FLAG_WRITE_DEPTH_FAIL);
+
+	BIND_ENUM_CONSTANT(STENCIL_COMPARE_ALWAYS);
+	BIND_ENUM_CONSTANT(STENCIL_COMPARE_LESS);
+	BIND_ENUM_CONSTANT(STENCIL_COMPARE_EQUAL);
+	BIND_ENUM_CONSTANT(STENCIL_COMPARE_LESS_OR_EQUAL);
+	BIND_ENUM_CONSTANT(STENCIL_COMPARE_GREATER);
+	BIND_ENUM_CONSTANT(STENCIL_COMPARE_NOT_EQUAL);
+	BIND_ENUM_CONSTANT(STENCIL_COMPARE_GREATER_OR_EQUAL);
 }
 
 BaseMaterial3D::BaseMaterial3D(bool p_orm) :
@@ -3643,6 +3977,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	set_z_clip_scale(1.0);
 	set_fov_override(75.0);
+
+	set_stencil_mode(STENCIL_MODE_DISABLED);
 
 	flags[FLAG_ALBEDO_TEXTURE_MSDF] = false;
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;

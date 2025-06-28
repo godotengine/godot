@@ -614,20 +614,18 @@ void ScriptTextEditor::_update_background_color() {
 	// Set the warning background.
 	if (warning_line_color.a != 0.0) {
 		for (const ScriptLanguage::Warning &warning : warnings) {
-			int folder_line_header = te->get_folded_line_header(warning.end_line - 2);
-			bool is_folded = folder_line_header != (warning.end_line - 2);
+			int warning_start_line = CLAMP(warning.start_line - 1, 0, te->get_line_count() - 1);
+			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
+			int folded_line_header = te->get_folded_line_header(warning_start_line);
 
-			if (is_folded) {
-				te->set_line_background_color(folder_line_header, warning_line_color);
-			} else if (warning.end_line - warning.start_line > 0 && warning.end_line - warning.start_line < 20) {
-				// If the warning spans below 20 lines (arbitrary), set the background color for all lines.
-				// (W.end_line - W.start_line > 0) ensures that we set the background for single line warnings.
-				for (int i = warning.start_line - 1; i < warning.end_line - 1; i++) {
+			// If the warning highlight is too long, only highlight the start line.
+			const int warning_max_lines = 20;
+
+			te->set_line_background_color(folded_line_header, warning_line_color);
+			if (warning_end_line - warning_start_line < warning_max_lines) {
+				for (int i = warning_start_line + 1; i <= warning_end_line; i++) {
 					te->set_line_background_color(i, warning_line_color);
 				}
-			} else {
-				// Otherwise, just set the background color for the start line of the warning.
-				te->set_line_background_color(warning.start_line - 1, warning_line_color);
 			}
 		}
 	}
@@ -635,14 +633,10 @@ void ScriptTextEditor::_update_background_color() {
 	// Set the error background.
 	if (marked_line_color.a != 0.0) {
 		for (const ScriptLanguage::ScriptError &error : errors) {
-			int folder_line_header = te->get_folded_line_header(error.line - 1);
-			bool is_folded_code = folder_line_header != (error.line - 1);
+			int error_line = CLAMP(error.line - 1, 0, te->get_line_count() - 1);
+			int folded_line_header = te->get_folded_line_header(error_line);
 
-			if (is_folded_code) {
-				te->set_line_background_color(folder_line_header, marked_line_color);
-			} else {
-				te->set_line_background_color(error.line - 1, marked_line_color);
-			}
+			te->set_line_background_color(folded_line_header, marked_line_color);
 		}
 	}
 }
@@ -825,10 +819,12 @@ void ScriptTextEditor::_validate_script() {
 		}
 
 		if (errors.size() > 0) {
-			// TRANSLATORS: Script error pointing to a line and column number.
-			String error_text = vformat(TTR("Error at (%d, %d):"), errors.front()->get().line, errors.front()->get().column) + " " + errors.front()->get().message;
+			const int line = errors.front()->get().line;
+			const int column = errors.front()->get().column;
+			const String message = errors.front()->get().message.replace("[", "[lb]");
+			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), line, column, line, column) + " " + message;
 			code_editor->set_error(error_text);
-			code_editor->set_error_pos(errors.front()->get().line - 1, errors.front()->get().column - 1);
+			code_editor->set_error_pos(line - 1, column - 1);
 		}
 		script_is_valid = false;
 	} else {
@@ -867,8 +863,8 @@ void ScriptTextEditor::_update_warnings() {
 			warnings_panel->push_table(1);
 			for (const Connection &connection : missing_connections) {
 				String base_path = base->get_name();
-				String source_path = base == connection.signal.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.signal.get_object()));
-				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.callable.get_object()));
+				String source_path = base == connection.signal.get_object() ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.signal.get_object())));
+				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.callable.get_object())));
 
 				warnings_panel->push_cell();
 				warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -2414,7 +2410,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			}
 		}
 
-		String word_at_pos = tx->get_word_at_pos(local_pos);
+		String word_at_pos = tx->get_lookup_word(mouse_line, mouse_column);
 		if (word_at_pos.is_empty()) {
 			word_at_pos = tx->get_word_under_caret(selection_clicked);
 		}
@@ -2586,7 +2582,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		}
 	}
 
-	const PackedStringArray paths = { code_editor->get_text_editor()->get_path() };
+	const PackedStringArray paths = { String(code_editor->get_text_editor()->get_path()) };
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, paths);
 
 	const CodeEdit *tx = code_editor->get_text_editor();

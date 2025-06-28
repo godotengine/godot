@@ -40,6 +40,9 @@ float StyleBoxFlat::get_style_margin(Side p_side) const {
 }
 
 void StyleBoxFlat::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (!anti_aliased && p_property.name == "anti_aliasing_size") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

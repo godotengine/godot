@@ -96,6 +96,14 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #define inv_projection_matrix scene_data_block.data.inv_projection_matrix
 
 	vec2 read_viewport_size = scene_data_block.data.viewport_size;
+
+#ifdef LIGHT_BACKLIGHT_USED
+	vec3 backlight_highp = vec3(backlight);
+#endif
+	float roughness_highp = float(roughness);
+	float metallic_highp = float(metallic);
+	vec3 albedo_highp = vec3(albedo);
+	float alpha_highp = float(alpha);
 	vec3 normal_highp = vec3(N);
 	vec3 light_highp = vec3(L);
 	vec3 view_highp = vec3(V);
@@ -107,6 +115,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 
 #CODE : LIGHT
 
+	alpha = half(alpha_highp);
 	diffuse_light = hvec3(diffuse_light_highp);
 	specular_light = hvec3(specular_light_highp);
 #else // !LIGHT_CODE_USED

@@ -588,6 +588,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("center_grabber", "HSlider", 0);
 	theme->set_constant("grabber_offset", "HSlider", 0);
+	theme->set_constant("tick_offset", "HSlider", 0);
 
 	// VSlider
 
@@ -602,6 +603,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("center_grabber", "VSlider", 0);
 	theme->set_constant("grabber_offset", "VSlider", 0);
+	theme->set_constant("tick_offset", "VSlider", 0);
 
 	// SpinBox
 
@@ -1153,6 +1155,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("focus", "RichTextLabel", focus);
 	theme->set_stylebox(CoreStringName(normal), "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
+
+	Ref<Image> solid_img = Image::create_empty(2, 2, false, Image::FORMAT_RGBA8);
+	solid_img->fill(Color(1, 1, 1, 1));
+	Ref<Texture2D> solid_icon = ImageTexture::create_from_image(solid_img);
+
+	theme->set_icon("horizontal_rule", "RichTextLabel", solid_icon);
 
 	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
 	theme->set_font("bold_font", "RichTextLabel", bold_font);

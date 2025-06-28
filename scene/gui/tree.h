@@ -68,7 +68,7 @@ private:
 		String text;
 		String xl_text;
 		Node::AutoTranslateMode auto_translate_mode = Node::AUTO_TRANSLATE_MODE_INHERIT;
-		String alt_text;
+		String description;
 		bool edit_multiline = false;
 		String suffix;
 		Ref<TextParagraph> text_buf;
@@ -115,7 +115,7 @@ private:
 			Ref<Texture2D> texture;
 			Color color = Color(1, 1, 1, 1);
 			String tooltip;
-			String alt_text;
+			String description;
 		};
 
 		Vector<Button> buttons;
@@ -271,8 +271,8 @@ public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
 
-	void set_alt_text(int p_column, String p_text);
-	String get_alt_text(int p_column) const;
+	void set_description(int p_column, String p_text);
+	String get_description(int p_column) const;
 
 	void set_text_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_text_direction(int p_column) const;
@@ -311,7 +311,7 @@ public:
 	int get_icon_max_width(int p_column) const;
 
 	void clear_buttons();
-	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "", const String &p_alt_text = "");
+	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "", const String &p_description = "");
 	int get_button_count(int p_column) const;
 	String get_button_tooltip_text(int p_column, int p_index) const;
 	Ref<Texture2D> get_button(int p_column, int p_index) const;
@@ -321,7 +321,7 @@ public:
 	Color get_button_color(int p_column, int p_index) const;
 	void set_button_tooltip_text(int p_column, int p_index, const String &p_tooltip);
 	void set_button(int p_column, int p_index, const Ref<Texture2D> &p_button);
-	void set_button_alt_text(int p_column, int p_index, const String &p_alt_text);
+	void set_button_description(int p_column, int p_index, const String &p_description);
 	void set_button_color(int p_column, int p_index, const Color &p_color);
 	void set_button_disabled(int p_column, int p_index, bool p_disabled);
 	bool is_button_disabled(int p_column, int p_index) const;

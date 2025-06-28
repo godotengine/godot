@@ -34,6 +34,7 @@
 #include "core/templates/rid_owner.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/text_paragraph.h"
 
 class CharFXTransform;
@@ -143,6 +144,8 @@ protected:
 	void _set_table_column_expand_bind_compat_101482(int p_column, bool p_expand, int p_ratio);
 	void _push_underline_bind_compat_106300();
 	void _push_strikethrough_bind_compat_106300();
+	void _add_image_bind_compat_107347(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false, const String &p_alt_text = String());
+	void _update_image_bind_compat_107347(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -269,7 +272,8 @@ private:
 		String alt_text;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 		bool pad = false;
-		bool size_in_percent = false;
+		bool width_in_percent = false;
+		bool height_in_percent = false;
 		Rect2 region;
 		Size2 size;
 		Size2 rq_size;
@@ -281,6 +285,9 @@ private:
 			if (image.is_valid()) {
 				RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
 				if (owner_rtl) {
+					if (owner_rtl->hr_list.has(rid)) {
+						owner_rtl->hr_list.erase((rid));
+					}
 					image->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_texture_changed));
 				}
 			}
@@ -564,6 +571,7 @@ private:
 
 	RID_PtrOwner<Item> items;
 	List<String> tag_stack;
+	HashSet<RID> hr_list;
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
@@ -716,6 +724,8 @@ private:
 		Ref<StyleBox> progress_bg_style;
 		Ref<StyleBox> progress_fg_style;
 
+		Ref<Texture2D> horizontal_rule;
+
 		int line_separation;
 		int paragraph_separation;
 
@@ -763,8 +773,9 @@ public:
 
 	String get_parsed_text() const;
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false, const String &p_alt_text = String());
-	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
+	void add_hr(int p_width = 90, int p_height = 2, const Color &p_color = Color(1.0, 1.0, 1.0), HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, bool p_width_in_percent = true, bool p_height_in_percent = false);
+	void add_image(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false, const String &p_alt_text = String());
+	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false);
 	void add_newline();
 	bool remove_paragraph(int p_paragraph, bool p_no_invalidate = false);
 	bool invalidate_paragraph(int p_paragraph);

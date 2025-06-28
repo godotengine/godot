@@ -997,7 +997,6 @@ CurveEditor::CurveEditor() {
 
 	snap_button = memnew(Button);
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
-	snap_button->set_accessibility_name(TTRC("Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
 	snap_button->connect(SceneStringName(toggled), callable_mp(this, &CurveEditor::_set_snap_enabled));

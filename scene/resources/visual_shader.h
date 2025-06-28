@@ -114,8 +114,6 @@ public:
 	};
 
 private:
-	Type current_type;
-
 	struct Node {
 		Ref<VisualShaderNode> node;
 		Vector2 position;
@@ -133,10 +131,13 @@ private:
 
 	TypedArray<Dictionary> _get_node_connections(Type p_type) const;
 
-	Vector2 graph_offset;
-
 	HashMap<String, int> modes;
 	HashSet<StringName> flags;
+
+	bool stencil_enabled = false;
+	HashMap<String, int> stencil_modes;
+	HashSet<StringName> stencil_flags;
+	int stencil_reference = 1;
 
 	HashMap<String, Varying> varyings;
 #ifdef TOOLS_ENABLED
@@ -175,9 +176,6 @@ protected:
 	virtual void reset_state() override;
 
 public: // internal methods
-	void set_shader_type(Type p_type);
-	Type get_shader_type() const;
-
 	enum {
 		NODE_ID_INVALID = -1,
 		NODE_ID_OUTPUT = 0,
@@ -244,8 +242,10 @@ public: // internal methods
 
 	virtual bool is_text_shader() const override;
 
+#ifndef DISABLE_DEPRECATED
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
+#endif
 
 	String generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
 

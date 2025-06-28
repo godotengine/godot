@@ -28,7 +28,7 @@
 #include "hb.hh"
 
 #include "hb-decycler.hh"
-#include "hb-paint-extents.hh"
+#include "hb-paint-bounded.hh"
 
 #include FT_COLOR_H
 
@@ -80,15 +80,30 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
 
 struct hb_ft_paint_context_t
 {
-  hb_ft_paint_context_t (const hb_ft_font_t *ft_font,
-			 hb_font_t *font,
+  hb_ft_paint_context_t (const hb_ft_font_t *ft_font_,
+			 hb_font_t *font_,
 			 hb_paint_funcs_t *paint_funcs, void *paint_data,
-			 FT_Color *palette,
+			 hb_array_t<const FT_Color> palette,
 			 unsigned palette_index,
 			 hb_color_t foreground) :
-    ft_font (ft_font), font(font),
+    ft_font (ft_font_), font (font_),
     funcs (paint_funcs), data (paint_data),
-    palette (palette), palette_index (palette_index), foreground (foreground) {}
+    palette (palette), palette_index (palette_index), foreground (foreground)
+  {
+    if (font->is_synthetic ())
+    {
+      font = hb_font_create_sub_font (font);
+      hb_font_set_synthetic_bold (font, 0, 0, true);
+      hb_font_set_synthetic_slant (font, 0);
+    }
+    else
+      hb_font_reference (font);
+  }
+
+  ~hb_ft_paint_context_t ()
+  {
+    hb_font_destroy (font);
+  }
 
   void recurse (FT_OpaquePaint paint)
   {
@@ -103,7 +118,7 @@ struct hb_ft_paint_context_t
   hb_font_t *font;
   hb_paint_funcs_t *funcs;
   void *data;
-  FT_Color *palette;
+  hb_array_t<const FT_Color> palette;
   unsigned palette_index;
   hb_color_t foreground;
   hb_decycler_t glyphs_decycler;
@@ -167,7 +182,7 @@ _hb_ft_color_line_get_color_stops (hb_color_line_t *color_line,
 					 hb_color_get_red (color),
 					 (hb_color_get_alpha (color) * stop.color.alpha) >> 14);
 	}
-	else
+	else if (c->palette)
 	{
 	  FT_Color ft_color = c->palette[stop.color.palette_index];
 	  color_stops->color = HB_COLOR (ft_color.blue,
@@ -175,6 +190,8 @@ _hb_ft_color_line_get_color_stops (hb_color_line_t *color_line,
 					 ft_color.red,
 					 (ft_color.alpha * stop.color.alpha) >> 14);
 	}
+	else
+	  color_stops->color = HB_COLOR (0, 0, 0, 0);
       }
 
       color_stops++;
@@ -229,9 +246,7 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
 	if (unlikely (!node.visit ((uintptr_t) other_paint.p)))
 	  continue;
 
-	c->funcs->push_group (c->data);
 	c->recurse (other_paint);
-	c->funcs->pop_group (c->data, HB_PAINT_COMPOSITE_MODE_SRC_OVER);
       }
     }
     break;
@@ -316,11 +331,11 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
     break;
     case FT_COLR_PAINTFORMAT_GLYPH:
     {
-      c->funcs->push_inverse_root_transform (c->data, c->font);
+      c->funcs->push_inverse_font_transform (c->data, c->font);
       c->ft_font->lock.unlock ();
       c->funcs->push_clip_glyph (c->data, paint.u.glyph.glyphID, c->font);
       c->ft_font->lock.lock ();
-      c->funcs->push_root_transform (c->data, c->font);
+      c->funcs->push_font_transform (c->data, c->font);
       c->recurse (paint.u.glyph.paint);
       c->funcs->pop_transform (c->data);
       c->funcs->pop_clip (c->data);
@@ -335,7 +350,7 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
       if (unlikely (!node.visit (gid)))
 	return;
 
-      c->funcs->push_inverse_root_transform (c->data, c->font);
+      c->funcs->push_inverse_font_transform (c->data, c->font);
       c->ft_font->lock.unlock ();
       if (c->funcs->color_glyph (c->data, gid, c->font))
       {
@@ -451,10 +466,12 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
     break;
     case FT_COLR_PAINTFORMAT_COMPOSITE:
     {
+      c->funcs->push_group (c->data);
       c->recurse (paint.u.composite.backdrop_paint);
       c->funcs->push_group (c->data);
       c->recurse (paint.u.composite.source_paint);
       c->funcs->pop_group (c->data, _hb_ft_paint_composite_mode (paint.u.composite.composite_mode));
+      c->funcs->pop_group (c->data, HB_PAINT_COMPOSITE_MODE_SRC_OVER);
     }
     break;
 
@@ -479,17 +496,24 @@ hb_ft_paint_glyph_colr (hb_font_t *font,
 
   /* Face is locked. */
 
-  FT_Error error;
-  FT_Color*         palette;
+  FT_Palette_Data   palette_data = {};
+  FT_Color*         palette = NULL;
   FT_LayerIterator  iterator;
 
   FT_Bool  have_layers;
   FT_UInt  layer_glyph_index;
   FT_UInt  layer_color_index;
 
-  error = FT_Palette_Select(ft_face, palette_index, &palette);
-  if (error)
-    palette = NULL;
+  (void) FT_Palette_Data_Get(ft_face, &palette_data);
+  (void) FT_Palette_Select(ft_face, palette_index, &palette);
+  if (!palette)
+  {
+    // https://github.com/harfbuzz/harfbuzz/issues/5116
+    (void) FT_Palette_Select(ft_face, 0, &palette);
+  }
+
+  auto palette_array = hb_array ((const FT_Color *) palette,
+				 palette ? palette_data.num_palette_entries : 0);
 
   /* COLRv1 */
   FT_OpaquePaint paint = {0};
@@ -499,56 +523,45 @@ hb_ft_paint_glyph_colr (hb_font_t *font,
   {
     hb_ft_paint_context_t c (ft_font, font,
 			     paint_funcs, paint_data,
-			     palette, palette_index, foreground);
+			     palette_array, palette_index, foreground);
     hb_decycler_node_t node (c.glyphs_decycler);
     node.visit (gid);
 
-    bool is_bounded = true;
+    bool clip = false;
+    bool is_bounded = false;
     FT_ClipBox clip_box;
     if (FT_Get_Color_Glyph_ClipBox (ft_face, gid, &clip_box))
     {
       c.funcs->push_clip_rectangle (c.data,
-				    clip_box.bottom_left.x +
-				      roundf (hb_min (font->slant_xy * clip_box.bottom_left.y,
-						      font->slant_xy * clip_box.top_left.y)),
+				    clip_box.bottom_left.x,
 				    clip_box.bottom_left.y,
-				    clip_box.top_right.x +
-				      roundf (hb_max (font->slant_xy * clip_box.bottom_right.y,
-						      font->slant_xy * clip_box.top_right.y)),
+				    clip_box.top_right.x,
 				    clip_box.top_right.y);
+      clip = true;
+      is_bounded = true;
     }
-    else
+    if (!is_bounded)
     {
-
-      auto *extents_funcs = hb_paint_extents_get_funcs ();
-      hb_paint_extents_context_t extents_data;
+      auto *bounded_funcs = hb_paint_bounded_get_funcs ();
+      hb_paint_bounded_context_t bounded_data;
       hb_ft_paint_context_t ce (ft_font, font,
-			        extents_funcs, &extents_data,
-			        palette, palette_index, foreground);
+			        bounded_funcs, &bounded_data,
+			        palette_array, palette_index, foreground);
       hb_decycler_node_t node2 (ce.glyphs_decycler);
       node2.visit (gid);
-      ce.funcs->push_root_transform (ce.data, font);
       ce.recurse (paint);
-      ce.funcs->pop_transform (ce.data);
-      hb_extents_t extents = extents_data.get_extents ();
-      is_bounded = extents_data.is_bounded ();
-
-      c.funcs->push_clip_rectangle (c.data,
-				    extents.xmin,
-				    extents.ymin,
-				    extents.xmax,
-				    extents.ymax);
+      is_bounded = bounded_data.is_bounded ();
     }
 
-    c.funcs->push_root_transform (c.data, font);
+    c.funcs->push_font_transform (c.data, font);
 
     if (is_bounded)
-     {
       c.recurse (paint);
-     }
 
     c.funcs->pop_transform (c.data);
-    c.funcs->pop_clip (c.data);
+
+    if (clip)
+      c.funcs->pop_clip (c.data);
 
     return true;
   }

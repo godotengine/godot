@@ -51,8 +51,17 @@ public:
 			std::is_same<T, wchar_t>>;
 
 	_FORCE_INLINE_ constexpr Span() = default;
-	_FORCE_INLINE_ constexpr Span(const T *p_ptr, uint64_t p_len) :
-			_ptr(p_ptr), _len(p_len) {}
+
+	_FORCE_INLINE_ Span(const T *p_ptr, uint64_t p_len) :
+			_ptr(p_ptr), _len(p_len) {
+#ifdef DEBUG_ENABLED
+		// TODO In c++20, make this check run only in non-consteval, and make this constructor constexpr.
+		if (_ptr == nullptr && _len > 0) {
+			ERR_PRINT("Internal bug, please report: Span was created from nullptr with size > 0. Recovering by using size = 0.");
+			_len = 0;
+		}
+#endif
+	}
 
 	// Allows creating Span directly from C arrays and string literals.
 	template <size_t N>
@@ -81,6 +90,11 @@ public:
 
 	_FORCE_INLINE_ constexpr const T *begin() const { return _ptr; }
 	_FORCE_INLINE_ constexpr const T *end() const { return _ptr + _len; }
+
+	template <typename T1>
+	_FORCE_INLINE_ constexpr Span<T1> reinterpret() const {
+		return Span<T1>(reinterpret_cast<const T1 *>(_ptr), _len * sizeof(T) / sizeof(T1));
+	}
 
 	// Algorithms.
 	constexpr int64_t find(const T &p_val, uint64_t p_from = 0) const;

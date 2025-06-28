@@ -651,8 +651,8 @@
 		<member name="opentype_feature_overrides" type="Dictionary" setter="set_opentype_feature_overrides" getter="get_opentype_feature_overrides" default="{}">
 			Font OpenType feature set override.
 		</member>
-		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" deprecated="Use the [code skip-lint]oversampling[/code] argument of the [code skip-lint]draw_*[/code] methods instead.">
-			Deprecated. This property does nothing.
+		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
+			If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods.
 		</member>
 		<member name="style_name" type="String" setter="set_font_style_name" getter="get_font_style_name" default="&quot;&quot;">
 			Font style name.

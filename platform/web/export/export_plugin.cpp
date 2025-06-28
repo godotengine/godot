@@ -353,6 +353,11 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 	} else {
 		r_features->push_back("nothreads");
 	}
+	if (p_preset->get("variant/extensions_support").operator bool()) {
+		r_features->push_back("web_extensions");
+	} else {
+		r_features->push_back("web_noextensions");
+	}
 	r_features->push_back("wasm32");
 }
 

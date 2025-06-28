@@ -382,6 +382,13 @@ void ShaderEditorPlugin::_shader_selected(int p_index) {
 
 	shader_tabs->set_current_tab(p_index);
 	shader_list->select(p_index);
+
+	// Avoid `Shader` being edited when editing `ShaderInclude` due to inspector refreshing.
+	if (edited_shaders[p_index].shader.is_valid()) {
+		EditorNode::get_singleton()->push_item_no_inspector(edited_shaders[p_index].shader.ptr());
+	} else {
+		EditorNode::get_singleton()->push_item_no_inspector(edited_shaders[p_index].shader_inc.ptr());
+	}
 }
 
 void ShaderEditorPlugin::_shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index) {
@@ -454,6 +461,7 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	Control *c = shader_tabs->get_tab_control(p_index);
 	VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(c);
 	if (vs_editor) {
+		vs_editor->save_editor_layout();
 		file_menu->get_parent()->remove_child(file_menu);
 		menu_hb->add_child(file_menu);
 		menu_hb->move_child(file_menu, 0);
@@ -938,7 +946,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	empty.instantiate();
 	shader_tabs->add_theme_style_override(SceneStringName(panel), empty);
 
-	button = EditorNode::get_bottom_panel()->add_item(TTR("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
+	button = EditorNode::get_bottom_panel()->add_item(TTRC("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
 	files_split->add_child(shader_create_dialog);

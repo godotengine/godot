@@ -180,7 +180,7 @@ namespace Godot
         ///     static void Trampoline(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret)
         ///     {
         ///         if (args.Count != 1)
-        ///             throw new ArgumentException($&quot;Callable expected {1} arguments but received {args.Count}.&quot;);
+        ///             throw new ArgumentException($&quot;Callable expected {1} argument but received {args.Count}.&quot;);
         ///
         ///         TResult res = ((Func&lt;int, string&gt;)delegateObj)(
         ///             VariantConversionCallbacks.GetToManagedCallback&lt;int&gt;()(args[0])

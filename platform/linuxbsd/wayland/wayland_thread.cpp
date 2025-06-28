@@ -1728,15 +1728,27 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 		}
 	}
 
-	if (pd.pointed_id == DisplayServer::INVALID_WINDOW_ID) {
+	WindowState *ws = nullptr;
+
+	// NOTE: At least on sway, with wl_pointer version 5 or greater,
+	// wl_pointer::leave might be emitted with other events (like
+	// wl_pointer::button) within the same wl_pointer::frame. Because of this, we
+	// need to account for when the currently pointed window might be invalid
+	// (third-party or even none) and fall back to the old one.
+	if (pd.pointed_id != DisplayServer::INVALID_WINDOW_ID) {
+		ws = ss->wayland_thread->window_get_state(pd.pointed_id);
+		ERR_FAIL_NULL(ws);
+	} else if (old_pd.pointed_id != DisplayServer::INVALID_WINDOW_ID) {
+		ws = ss->wayland_thread->window_get_state(old_pd.pointed_id);
+		ERR_FAIL_NULL(ws);
+	}
+
+	if (ws == nullptr) {
 		// We're probably on a decoration or some other third-party thing. Let's
 		// "commit" the data and call it a day.
 		old_pd = pd;
 		return;
 	}
-
-	WindowState *ws = ss->wayland_thread->window_get_state(pd.pointed_id);
-	ERR_FAIL_NULL(ws);
 
 	double scale = window_state_get_scale_factor(ws);
 
@@ -3817,7 +3829,7 @@ void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, con
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
-	Vector2i logical_max_size = p_size / window_state_get_scale_factor(&ws);
+	Vector2i logical_max_size = scale_vector2i(p_size, 1 / window_state_get_scale_factor(&ws));
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_max_size(ws.xdg_toplevel, logical_max_size.width, logical_max_size.height);
@@ -3836,7 +3848,7 @@ void WaylandThread::window_set_min_size(DisplayServer::WindowID p_window_id, con
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
-	Size2i logical_min_size = p_size / window_state_get_scale_factor(&ws);
+	Size2i logical_min_size = scale_vector2i(p_size, 1 / window_state_get_scale_factor(&ws));
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_min_size(ws.xdg_toplevel, logical_min_size.width, logical_min_size.height);

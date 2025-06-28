@@ -436,7 +436,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 10.4.0 (3ef8709829a5884517ad91a97b32b9435b2f20d1, 2025)
+- Version: 11.2.1 (33a3f8de60dcad7535f14f07d6710144548853ac, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -445,6 +445,20 @@ Files extracted from upstream source:
 - From the `src` folder, recursively:
   - All the `.cc`, `.h`, `.hh` files
   - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`, `wasm/*`
+
+
+## hidapi
+
+- Upstream: https://github.com/libsdl-org/SDL/tree/main/src/hidapi
+- Version: 0.14.0 (8d604353a53853fa56d1bdce0363535605ca868f, 2025)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- See `thirdparty/sdl/update-sdl.sh`
+
+The source code of this library is being bundled with SDL's source code files.
+The files of hidapi are stored in `thirdparty/sdl/hidapi/` folder.
 
 
 ## icu4c
@@ -666,7 +680,7 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.23 (3e9d1ff3135794f519f3237515277c8d9a3fd3f2, 2025)
+- Version: 0.24 (7b2d4f4c817aea55d74dcd65d9763ac2ca608026, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -717,7 +731,7 @@ Patches:
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.8 (b55145ec095652289a59c33603f3abafee898273, 2024)
+- Version: 2.3.3 (bf4215a7574f88aa55859db9db00e3ae58cf42d6, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -942,6 +956,25 @@ Files extracted from upstream source:
 - Textures generated using the Python scripts in the `Scripts` folder
 
 
+## sdl
+
+- Upstream: https://github.com/libsdl-org/SDL
+- Version: 3.2.14 (8d604353a53853fa56d1bdce0363535605ca868f, 2025)
+- License: Zlib
+
+Files extracted from upstream source:
+
+- See `thirdparty/sdl/update-sdl.sh`
+
+Patches:
+
+- `0001-remove-unnecessary-subsystems.patch` (GH-106218)
+- `0002-msvc-constants-fpstrict.patch` (GH-106218)
+
+The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
+Its version and license is described in this file under `hidapi`.
+
+
 ## spirv-cross
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Cross
@@ -1026,7 +1059,7 @@ Patches:
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.18.2 (5b5494b9b6c2cdb0fc0ae873bdbf8718cdeb85af, 2025)
+- Version: 0.20.0 (a63ff0a47485328880b3300e7bcdf01413343a45, 2025)
 - License: MIT
 
 Files extracted from upstream source:

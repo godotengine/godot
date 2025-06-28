@@ -1048,7 +1048,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 		Ref<Resource> scr = se->get_edited_resource();
 
 		if (scr->is_built_in()) {
-			continue; //internal script, who cares
+			continue; // Internal script, who cares.
 		}
 
 		if (trim_trailing_whitespace_on_save) {
@@ -1128,10 +1128,9 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 		Ref<Script> scr = edited_res;
 		if (scr.is_valid()) {
 			trigger_live_script_reload(scr->get_path());
-
-			if (scr->is_tool()) {
-				scr->reload(true);
-			}
+			clear_docs_from_script(scr);
+			scr->reload(true);
+			update_docs_from_script(scr);
 		}
 	}
 }
@@ -1193,7 +1192,7 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 			}
 
 			if (edited_res->is_built_in()) {
-				continue; //internal script, who cares
+				continue; // Internal script, who cares.
 			}
 
 			uint64_t last_date = se->edited_file_data.last_modified_time;
@@ -2504,8 +2503,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		if (flags.size()) {
 			String project_path = ProjectSettings::get_singleton()->get_resource_path();
 
-			flags = flags.replacen("{line}", itos(p_line > 0 ? p_line : 0));
-			flags = flags.replacen("{col}", itos(p_col));
+			flags = flags.replacen("{line}", itos(MAX(p_line + 1, 1)));
+			flags = flags.replacen("{col}", itos(p_col + 1));
 			flags = flags.strip_edges().replace("\\\\", "\\");
 
 			int from = 0;
@@ -2770,30 +2769,31 @@ void ScriptEditor::save_all_scripts() {
 			se->apply_code();
 		}
 
+		Ref<Script> scr = edited_res;
+
+		if (scr.is_valid()) {
+			clear_docs_from_script(scr);
+		}
+
 		if (!edited_res->is_built_in()) {
 			Ref<TextFile> text_file = edited_res;
-			Ref<Script> scr = edited_res;
-
 			if (text_file.is_valid()) {
 				_save_text_file(text_file, text_file->get_path());
 				continue;
 			}
 
-			if (scr.is_valid()) {
-				clear_docs_from_script(scr);
-			}
-
-			EditorNode::get_singleton()->save_resource(edited_res); //external script, save it
-
-			if (scr.is_valid()) {
-				update_docs_from_script(scr);
-			}
+			// External script, save it.
+			EditorNode::get_singleton()->save_resource(edited_res);
 		} else {
 			// For built-in scripts, save their scenes instead.
 			const String scene_path = edited_res->get_path().get_slice("::", 0);
 			if (!scene_path.is_empty() && !scenes_to_save.has(scene_path)) {
 				scenes_to_save.insert(scene_path);
 			}
+		}
+
+		if (scr.is_valid()) {
+			update_docs_from_script(scr);
 		}
 	}
 
@@ -4153,6 +4153,7 @@ void ScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("goto_help", "topic"), &ScriptEditor::goto_help);
 	ClassDB::bind_method(D_METHOD("update_docs_from_script", "script"), &ScriptEditor::update_docs_from_script);
+	ClassDB::bind_method(D_METHOD("clear_docs_from_script", "script"), &ScriptEditor::clear_docs_from_script);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
@@ -4234,7 +4235,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	members_overview_alphabeta_sort_button = memnew(Button);
 	members_overview_alphabeta_sort_button->set_flat(true);
-	members_overview_alphabeta_sort_button->set_accessibility_name(TTRC("Alphabetical Sorting"));
 	members_overview_alphabeta_sort_button->set_tooltip_text(TTRC("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
@@ -4408,7 +4408,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_child(memnew(VSeparator));
 
 	script_back = memnew(Button);
-	script_back->set_accessibility_name(TTRC("Previous"));
 	script_back->set_flat(true);
 	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
@@ -4416,7 +4415,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_back->set_tooltip_text(TTRC("Go to previous edited document."));
 
 	script_forward = memnew(Button);
-	script_forward->set_accessibility_name(TTRC("Next"));
 	script_forward->set_flat(true);
 	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
@@ -4469,7 +4467,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 		disk_changed_list = memnew(Tree);
 		disk_changed_list->set_hide_root(true);
 		disk_changed_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-		disk_changed_list->set_accessibility_name(TTRC("The following files are newer on disk"));
+		disk_changed_list->set_accessibility_name(TTRC("The following files are newer on disk:"));
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 		vbc->add_child(disk_changed_list);
 

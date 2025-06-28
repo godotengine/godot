@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<style name="GodotEditorTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
-		<item name="android:statusBarColor">@android:color/transparent</item>
-		<item name ="android:navigationBarColor">@android:color/transparent</item>
-		<item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+	</style>
+
+	<style name="GodotGameTheme" parent="GodotEditorTheme">
+		<item name="android:windowIsTranslucent">true</item>
 	</style>
 
 	<style name="GodotEditorSplashScreenTheme" parent="Theme.SplashScreen.IconBackground">

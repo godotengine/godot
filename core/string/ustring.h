@@ -186,7 +186,9 @@ public:
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<T> span() const { return Span(ptr(), length()); }
 
-	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.template resize<false>(p_size); }
+	/// Resizes the string. The given size must include the null terminator.
+	/// New characters are not initialized, and should be set by the caller.
+	_FORCE_INLINE_ Error resize_uninitialized(int64_t p_size) { return _cowdata.template resize<false>(p_size); }
 
 	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
@@ -221,7 +223,7 @@ public:
 	}
 	_FORCE_INLINE_ CharStringT<T> &operator+=(T p_char) {
 		const int lhs_len = length();
-		resize(lhs_len + 2);
+		resize_uninitialized(lhs_len + 2);
 
 		T *dst = ptrw();
 		dst[lhs_len] = p_char;
@@ -233,17 +235,17 @@ public:
 protected:
 	void copy_from(const T *p_cstr) {
 		if (!p_cstr) {
-			resize(0);
+			resize_uninitialized(0);
 			return;
 		}
 
 		size_t len = strlen(p_cstr);
 		if (len == 0) {
-			resize(0);
+			resize_uninitialized(0);
 			return;
 		}
 
-		Error err = resize(++len); // include terminating null char.
+		Error err = resize_uninitialized(++len); // include terminating null char.
 
 		ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
 
@@ -320,11 +322,14 @@ public:
 
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
-	_FORCE_INLINE_ void clear() { resize(0); }
+	_FORCE_INLINE_ void clear() { resize_uninitialized(0); }
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	Error resize(int p_size) { return _cowdata.resize<false>(p_size); }
+
+	/// Resizes the string. The given size must include the null terminator.
+	/// New characters are not initialized, and should be set by the caller.
+	Error resize_uninitialized(int64_t p_size) { return _cowdata.resize<false>(p_size); }
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
@@ -781,8 +786,6 @@ _FORCE_INLINE_ String ETRN(const String &p_text, const String &p_text_plural, in
 	}
 	return p_text_plural;
 }
-
-bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
 template <typename... P>
 _FORCE_INLINE_ Vector<String> sarray(P... p_args) {

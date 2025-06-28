@@ -43,6 +43,7 @@ class MenuButton;
 class OptionButton;
 class PopupMenu;
 class VBoxContainer;
+class VSeparator;
 
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
@@ -134,6 +135,17 @@ public:
 		ITEM_MENU_SHOW_BUNDLE_CONTENT,
 	};
 
+	enum Customization {
+		CUSTOMIZATION_HIDDEN_FILES,
+		CUSTOMIZATION_CREATE_FOLDER,
+		CUSTOMIZATION_FILE_FILTER,
+		CUSTOMIZATION_FILE_SORT,
+		CUSTOMIZATION_FAVORITES,
+		CUSTOMIZATION_RECENT,
+		CUSTOMIZATION_LAYOUT,
+		CUSTOMIZATION_MAX
+	};
+
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(FileDialog *);
 
@@ -148,6 +160,7 @@ private:
 	inline static bool default_show_hidden_files = false;
 	bool show_hidden_files = false;
 	bool use_native_dialog = false;
+	bool customization_flags[CUSTOMIZATION_MAX]; // Initialized to true in the constructor.
 
 	inline static LocalVector<String> global_favorites;
 	inline static LocalVector<String> global_recents;
@@ -191,16 +204,23 @@ private:
 
 	Button *refresh_button = nullptr;
 	Button *favorite_button = nullptr;
+	HBoxContainer *make_dir_container = nullptr;
 	Button *make_dir_button = nullptr;
+
 	Button *show_hidden = nullptr;
+	VSeparator *show_hidden_separator = nullptr;
+	HBoxContainer *layout_container = nullptr;
+	VSeparator *layout_separator = nullptr;
 	Button *thumbnail_mode_button = nullptr;
 	Button *list_mode_button = nullptr;
 	Button *show_filename_filter_button = nullptr;
 	MenuButton *file_sort_button = nullptr;
 
+	VBoxContainer *favorite_vbox = nullptr;
 	Button *fav_up_button = nullptr;
 	Button *fav_down_button = nullptr;
 	ItemList *favorite_list = nullptr;
+	VBoxContainer *recent_vbox = nullptr;
 	ItemList *recent_list = nullptr;
 
 	ItemList *file_list = nullptr;
@@ -260,6 +280,7 @@ private:
 	void update_filename_filter();
 	void update_filename_filter_gui();
 	void update_filters();
+	void update_customization();
 
 	void _item_menu_id_pressed(int p_option);
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
@@ -307,6 +328,7 @@ private:
 
 	void _invalidate();
 	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
+	void _update_make_dir_visible();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
@@ -386,6 +408,9 @@ public:
 	void set_display_mode(DisplayMode p_mode);
 	DisplayMode get_display_mode() const;
 
+	void set_customization_flag_enabled(Customization p_flag, bool p_enabled);
+	bool is_customization_flag_enabled(Customization p_flag) const;
+
 	VBoxContainer *get_vbox() { return main_vbox; }
 	LineEdit *get_line_edit() { return filename_edit; }
 
@@ -410,3 +435,4 @@ public:
 VARIANT_ENUM_CAST(FileDialog::FileMode);
 VARIANT_ENUM_CAST(FileDialog::Access);
 VARIANT_ENUM_CAST(FileDialog::DisplayMode);
+VARIANT_ENUM_CAST(FileDialog::Customization);

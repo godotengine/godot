@@ -425,7 +425,9 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 }
 
 void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position) {
-	if (orbiting_index == p_index && gizmo_activated) {
+	Point2 mouse_pos = get_local_mouse_position();
+	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4 * EDSCALE;
+	if (orbiting_index == p_index && gizmo_activated && movement_threshold_passed) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 			orbiting_mouse_start = p_position;
@@ -460,6 +462,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 			_process_click(100, mb->get_position(), mb->is_pressed());
 			if (mb->is_pressed()) {
 				gizmo_activated = true;
+				original_mouse_pos = get_local_mouse_position();
 				grab_focus();
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
@@ -1631,7 +1634,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
 
-			String node_path = "/" + root_name + "/" + root_path.rel_path_to(spat->get_path());
+			String node_path = "/" + root_name + "/" + String(root_path.rel_path_to(spat->get_path()));
 
 			int locked = 0;
 			if (_is_node_locked(spat)) {
@@ -1668,6 +1671,33 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	}
 }
 
+// Helper function to redirect mouse events to the active freelook viewport
+static bool _redirect_freelook_input(const Ref<InputEvent> &p_event, Node3DEditorViewport *p_exclude_viewport = nullptr) {
+	if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
+		return false;
+	}
+
+	Node3DEditor *editor = Node3DEditor::get_singleton();
+	if (!editor->get_freelook_viewport()) {
+		return false;
+	}
+
+	Node3DEditorViewport *freelook_vp = editor->get_freelook_viewport();
+	if (freelook_vp == p_exclude_viewport) {
+		return false;
+	}
+
+	Ref<InputEventMouse> mouse_event = p_event;
+	if (!mouse_event.is_valid()) {
+		return false;
+	}
+
+	Control *target_surface = freelook_vp->get_surface();
+
+	target_surface->emit_signal(SceneStringName(gui_input), p_event);
+	return true;
+}
+
 // This is only active during instant transforms,
 // to capture and wrap mouse events outside the control.
 void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
@@ -1683,6 +1713,10 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	if (previewing || get_viewport()->gui_get_drag_data()) {
 		return; //do NONE
+	}
+
+	if (_redirect_freelook_input(p_event, this)) {
+		return;
 	}
 
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
@@ -1985,7 +2019,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					surface->queue_redraw();
 				} else {
-					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_RULER) {
+					if (ruler->is_inside_tree()) {
 						EditorNode::get_singleton()->get_scene_root()->remove_child(ruler);
 						ruler_start_point->set_visible(false);
 						ruler_end_point->set_visible(false);
@@ -2267,27 +2301,36 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (_edit.instant) {
 			// In a Blender-style transform, numbers set the magnitude of the transform.
 			// E.g. pressing g4.5x means "translate 4.5 units along the X axis".
-			// Use the Unicode value because we care about the text, not the actual keycode.
-			// This ensures numbers work consistently across different keyboard language layouts.
 			bool processed = true;
-			Key key = k->get_physical_keycode();
-			char32_t unicode = k->get_unicode();
-			if (unicode >= '0' && unicode <= '9') {
-				uint32_t value = uint32_t(unicode - Key::KEY_0);
+			Key keycode = k->get_keycode();
+			Key physical_keycode = k->get_physical_keycode();
+
+			// Use physical keycode for main keyboard numbers (for non-QWERTY layouts like AZERTY)
+			// but regular keycode for numpad numbers.
+			if ((physical_keycode >= Key::KEY_0 && physical_keycode <= Key::KEY_9) || (keycode >= Key::KP_0 && keycode <= Key::KP_9)) {
+				uint32_t value;
+				if (physical_keycode >= Key::KEY_0 && physical_keycode <= Key::KEY_9) {
+					value = uint32_t(physical_keycode - Key::KEY_0);
+				} else {
+					value = uint32_t(keycode - Key::KP_0);
+				}
+
 				if (_edit.numeric_next_decimal < 0) {
 					_edit.numeric_input = _edit.numeric_input + value * Math::pow(10.0, _edit.numeric_next_decimal--);
 				} else {
 					_edit.numeric_input = _edit.numeric_input * 10 + value;
 				}
 				update_transform_numeric();
-			} else if (unicode == '-') {
+			} else if (keycode == Key::MINUS || keycode == Key::KP_SUBTRACT) {
 				_edit.numeric_negate = !_edit.numeric_negate;
 				update_transform_numeric();
-			} else if (unicode == '.') {
+			} else if (keycode == Key::PERIOD || physical_keycode == Key::KP_PERIOD) {
+				// Use physical keycode for KP_PERIOD to ensure numpad period works consistently
+				// across different keyboard layouts (like nordic keyboards).
 				if (_edit.numeric_next_decimal == 0) {
 					_edit.numeric_next_decimal = -1;
 				}
-			} else if (key == Key::ENTER || key == Key::KP_ENTER || key == Key::SPACE) {
+			} else if (keycode == Key::ENTER || keycode == Key::KP_ENTER || keycode == Key::SPACE) {
 				commit_transform();
 			} else {
 				processed = false;
@@ -2690,12 +2733,16 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 
 		previous_mouse_position = get_local_mouse_position();
 
+		spatial_editor->set_freelook_viewport(this);
+
 		// Hide mouse like in an FPS (warping doesn't work)
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
 		cursor = camera_cursor;
+
+		spatial_editor->set_freelook_viewport(nullptr);
 
 		// Restore mouse
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
@@ -5978,6 +6025,10 @@ Node3DEditorViewport::~Node3DEditorViewport() {
 void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+	if (_redirect_freelook_input(p_event)) {
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
@@ -6072,7 +6123,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (mouseover) {
+			if (mouseover && Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
 				Ref<Texture2D> h_grabber = get_theme_icon(SNAME("grabber"), SNAME("HSplitContainer"));
 				Ref<Texture2D> v_grabber = get_theme_icon(SNAME("grabber"), SNAME("VSplitContainer"));
 
@@ -9191,7 +9242,6 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_LIST_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_LIST_SELECT));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTRC("Show list of selectable nodes at position clicked."));
-	tool_button[TOOL_MODE_LIST_SELECT]->set_accessibility_name(TTRC("Show List of Selectable Nodes"));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
@@ -9263,7 +9313,7 @@ Node3DEditor::Node3DEditor() {
 	sun_button = memnew(Button);
 	sun_button->set_tooltip_text(TTRC("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
 	sun_button->set_toggle_mode(true);
-	sun_button->set_accessibility_name(TTRC("Preview Sunlight"));
+	sun_button->set_accessibility_name(TTRC("Toggle preview sunlight."));
 	sun_button->set_theme_type_variation(SceneStringName(FlatButton));
 	sun_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
@@ -9274,7 +9324,7 @@ Node3DEditor::Node3DEditor() {
 	environ_button = memnew(Button);
 	environ_button->set_tooltip_text(TTRC("Toggle preview environment.\nIf a WorldEnvironment node is added to the scene, preview environment is disabled."));
 	environ_button->set_toggle_mode(true);
-	environ_button->set_accessibility_name(TTRC("Preview Environment"));
+	environ_button->set_accessibility_name(TTRC("Toggle preview environment."));
 	environ_button->set_theme_type_variation(SceneStringName(FlatButton));
 	environ_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
@@ -9285,7 +9335,6 @@ Node3DEditor::Node3DEditor() {
 	sun_environ_settings = memnew(Button);
 	sun_environ_settings->set_tooltip_text(TTRC("Edit Sun and Environment settings."));
 	sun_environ_settings->set_theme_type_variation(SceneStringName(FlatButton));
-	sun_environ_settings->set_accessibility_name(TTRC("Edit Sun and Environment"));
 	sun_environ_settings->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
 
 	main_menu_hbox->add_child(sun_environ_settings);
@@ -9432,17 +9481,17 @@ Node3DEditor::Node3DEditor() {
 
 	snap_translate = memnew(LineEdit);
 	snap_translate->set_select_all_on_focus(true);
-	snap_translate->set_accessibility_name(TTRC("Translate Snap"));
+	snap_translate->set_accessibility_name(TTRC("Translate Snap:"));
 	snap_dialog_vbc->add_margin_child(TTRC("Translate Snap:"), snap_translate);
 
 	snap_rotate = memnew(LineEdit);
 	snap_rotate->set_select_all_on_focus(true);
-	snap_rotate->set_accessibility_name(TTRC("Rotate Snap"));
+	snap_rotate->set_accessibility_name(TTRC("Rotate Snap (deg.):"));
 	snap_dialog_vbc->add_margin_child(TTRC("Rotate Snap (deg.):"), snap_rotate);
 
 	snap_scale = memnew(LineEdit);
 	snap_scale->set_select_all_on_focus(true);
-	snap_scale->set_accessibility_name(TTRC("Scale Snap"));
+	snap_scale->set_accessibility_name(TTRC("Scale Snap (%):"));
 	snap_dialog_vbc->add_margin_child(TTRC("Scale Snap (%):"), snap_scale);
 
 	/* SETTINGS DIALOG */
@@ -9461,14 +9510,14 @@ Node3DEditor::Node3DEditor() {
 	settings_fov->set_value(EDITOR_GET("editors/3d/default_fov"));
 	settings_fov->set_select_all_on_focus(true);
 	settings_fov->set_tooltip_text(TTRC("FOV is defined as a vertical value, as the editor camera always uses the Keep Height aspect mode."));
-	settings_fov->set_accessibility_name(TTRC("Perspective VFOV"));
+	settings_fov->set_accessibility_name(TTRC("Perspective VFOV (deg.):"));
 	settings_vbc->add_margin_child(TTRC("Perspective VFOV (deg.):"), settings_fov);
 
 	settings_znear = memnew(SpinBox);
 	settings_znear->set_max(MAX_Z);
 	settings_znear->set_min(MIN_Z);
 	settings_znear->set_step(0.01);
-	settings_znear->set_accessibility_name(TTRC("View Z-Near"));
+	settings_znear->set_accessibility_name(TTRC("View Z-Near:"));
 	settings_znear->set_value(EDITOR_GET("editors/3d/default_z_near"));
 	settings_znear->set_select_all_on_focus(true);
 	settings_vbc->add_margin_child(TTRC("View Z-Near:"), settings_znear);
@@ -9477,7 +9526,7 @@ Node3DEditor::Node3DEditor() {
 	settings_zfar->set_max(MAX_Z);
 	settings_zfar->set_min(MIN_Z);
 	settings_zfar->set_step(0.1);
-	settings_zfar->set_accessibility_name(TTRC("View Z-Far"));
+	settings_zfar->set_accessibility_name(TTRC("View Z-Far:"));
 	settings_zfar->set_value(EDITOR_GET("editors/3d/default_z_far"));
 	settings_zfar->set_select_all_on_focus(true);
 	settings_vbc->add_margin_child(TTRC("View Z-Far:"), settings_zfar);

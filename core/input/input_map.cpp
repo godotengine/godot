@@ -408,7 +408,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
 	{ "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
 	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
-	{ "ui_colorpicker_delete_preset",                  TTRC("Toggle License Notices") },
+	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
 	{ "ui_accessibility_drag_and_drop",                TTRC("Accessibility: Keyboard Drag and Drop") },
 	{ "",                                              ""}
 	/* clang-format on */

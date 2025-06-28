@@ -194,9 +194,9 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 	vp_pending = false;
 
 	Node *vpn = p_loc_scene->get_node_or_null(path);
-	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + path + "'.");
+	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + String(path) + "'.");
 	vp = Object::cast_to<Viewport>(vpn);
-	ERR_FAIL_NULL_MSG(vp, "Path to node does not point to a viewport: '" + path + "'.");
+	ERR_FAIL_NULL_MSG(vp, "Path to node does not point to a viewport: '" + String(path) + "'.");
 
 	vp->viewport_textures.insert(this);
 
@@ -353,7 +353,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 
 		const real_t title_space = r.size.width - panel->get_minimum_size().x - close_h_ofs;
 		if (title_space > 0) {
-			TextLine title_text = TextLine(p_window->get_translated_title(), title_font, font_size);
+			TextLine title_text = TextLine(p_window->get_displayed_title(), title_font, font_size);
 			title_text.set_width(title_space);
 			title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 			int x = (r.size.width - title_text.get_size().x) / 2;
@@ -5294,6 +5294,9 @@ void Viewport::_bind_methods() {
 }
 
 void Viewport::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (vrs_mode != VRS_TEXTURE && (p_property.name == "vrs_texture")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -5555,6 +5558,9 @@ void SubViewport::_bind_methods() {
 }
 
 void SubViewport::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "size") {
 		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 		if (parent_svc && parent_svc->is_stretch_enabled()) {

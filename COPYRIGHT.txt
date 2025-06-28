@@ -416,7 +416,7 @@ License: CC0-1.0
 
 Files: thirdparty/miniupnpc/*
 Comment: MiniUPnP Project
-Copyright: 2005-2024, Thomas Bernard
+Copyright: 2005-2025, Thomas Bernard
 License: BSD-3-clause
 
 Files: thirdparty/minizip/*
@@ -540,6 +540,16 @@ Files: thirdparty/rvo2/*
 Comment: RVO2
 Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache-2.0
+
+Files: thirdparty/sdl/*
+Comment: SDL
+Copyright: 1997-2025, Sam Lantinga
+License: Zlib
+
+Files: thirdparty/sdl/hidapi/*
+Comment: hidapi
+Copyright: 2010, Alan Ott, Signal 11 Software
+License: BSD-3-Clause
 
 Files: thirdparty/spirv-cross/*
 Comment: SPIRV-Cross

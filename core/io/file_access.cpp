@@ -159,7 +159,7 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 	//try packed data first
 
 	Ref<FileAccess> ret;
-	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
+	if (!(p_mode_flags & WRITE) && !(p_mode_flags & SKIP_PACK) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
 		if (ret.is_valid()) {
 			if (r_error) {
@@ -170,7 +170,7 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 	}
 
 	ret = create_for_path(p_path);
-	Error err = ret->open_internal(p_path, p_mode_flags);
+	Error err = ret->open_internal(p_path, p_mode_flags & ~SKIP_PACK);
 
 	if (r_error) {
 		*r_error = err;
@@ -258,7 +258,12 @@ String FileAccess::fix_path(const String &p_path) const {
 		case ACCESS_RESOURCES: {
 			if (ProjectSettings::get_singleton()) {
 				if (r_path.begins_with("uid://")) {
-					r_path = ResourceUID::uid_to_path(r_path);
+					ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(r_path);
+					if (ResourceUID::get_singleton()->has_id(uid)) {
+						r_path = ResourceUID::get_singleton()->get_id_path(uid);
+					} else {
+						r_path.clear();
+					}
 				}
 
 				if (r_path.begins_with("res://")) {
@@ -769,7 +774,7 @@ bool FileAccess::store_pascal_string(const String &p_string) {
 String FileAccess::get_pascal_string() {
 	uint32_t sl = get_32();
 	CharString cs;
-	cs.resize(sl + 1);
+	cs.resize_uninitialized(sl + 1);
 	get_buffer((uint8_t *)cs.ptr(), sl);
 	cs[sl] = 0;
 

@@ -148,7 +148,7 @@
 			The peer is currently connected and ready to communicate with.
 		</constant>
 		<constant name="STATE_DISCONNECT_LATER" value="6" enum="PeerState">
-			The peer is slated to disconnect after it has no more outgoing packets to send.
+			The peer is expected to disconnect after it has no more outgoing packets to send.
 		</constant>
 		<constant name="STATE_DISCONNECTING" value="7" enum="PeerState">
 			The peer is currently disconnecting.

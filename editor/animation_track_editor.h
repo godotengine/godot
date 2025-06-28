@@ -802,7 +802,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _edit_menu_about_to_popup();
 	void _edit_menu_pressed(int p_option);
-	int last_menu_track_opt = 0;
+	bool scale_from_cursor = false;
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 

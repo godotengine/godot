@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from emscripten_helpers import (
@@ -114,6 +115,14 @@ def configure(env: "SConsEnvironment"):
     except Exception:
         print_error("Initial memory must be a valid integer")
         sys.exit(255)
+
+    # Add Emscripten to the included paths (for compile_commands.json completion)
+    emcc_path = Path(str(WhereIs("emcc")))
+    while emcc_path.is_symlink():
+        # For some reason, mypy trips on `Path.readlink` not being defined, somehow.
+        emcc_path = emcc_path.readlink()  # type: ignore[attr-defined]
+    emscripten_include_path = emcc_path.parent.joinpath("cache", "sysroot", "include")
+    env.Append(CPPPATH=[emscripten_include_path])
 
     ## Build type
 
@@ -247,7 +256,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
-        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE='Module[\"emscriptenPoolSize\"]||8'"])
+        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=\"Module['emscriptenPoolSize']||8\""])
         env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
         if not env["dlink_enabled"]:
             # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
@@ -267,6 +276,7 @@ def configure(env: "SConsEnvironment"):
             print_warning("GDExtension support requires proxy_to_pthread=no, disabling proxy to pthread.")
             env["proxy_to_pthread"] = False
 
+        env.Append(CPPDEFINES=["WEB_DLINK_ENABLED"])
         env.Append(CCFLAGS=["-sSIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])

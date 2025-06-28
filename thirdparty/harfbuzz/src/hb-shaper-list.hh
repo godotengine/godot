@@ -57,6 +57,10 @@ HB_SHAPER_IMPLEMENT (directwrite)
 HB_SHAPER_IMPLEMENT (coretext)
 #endif
 
+#ifdef HAVE_HARFRUZZ
+HB_SHAPER_IMPLEMENT (harfruzz)
+#endif
+
 #ifndef HB_NO_FALLBACK_SHAPE
 HB_SHAPER_IMPLEMENT (fallback) /* <--- This should be last. */
 #endif
