@@ -358,40 +358,26 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_text_dedent",                                TTRC("Dedent") },
 	{ "ui_text_backspace",                             TTRC("Backspace") },
 	{ "ui_text_backspace_word",                        TTRC("Backspace Word") },
-	{ "ui_text_backspace_word.macos",                  TTRC("Backspace Word") },
 	{ "ui_text_backspace_all_to_left",                 TTRC("Backspace all to Left") },
-	{ "ui_text_backspace_all_to_left.macos",           TTRC("Backspace all to Left") },
 	{ "ui_text_delete",                                TTRC("Delete") },
 	{ "ui_text_delete_word",                           TTRC("Delete Word") },
-	{ "ui_text_delete_word.macos",                     TTRC("Delete Word") },
 	{ "ui_text_delete_all_to_right",                   TTRC("Delete all to Right") },
-	{ "ui_text_delete_all_to_right.macos",             TTRC("Delete all to Right") },
 	{ "ui_text_caret_left",                            TTRC("Caret Left") },
 	{ "ui_text_caret_word_left",                       TTRC("Caret Word Left") },
-	{ "ui_text_caret_word_left.macos",                 TTRC("Caret Word Left") },
 	{ "ui_text_caret_right",                           TTRC("Caret Right") },
 	{ "ui_text_caret_word_right",                      TTRC("Caret Word Right") },
-	{ "ui_text_caret_word_right.macos",                TTRC("Caret Word Right") },
 	{ "ui_text_caret_up",                              TTRC("Caret Up") },
 	{ "ui_text_caret_down",                            TTRC("Caret Down") },
 	{ "ui_text_caret_line_start",                      TTRC("Caret Line Start") },
-	{ "ui_text_caret_line_start.macos",                TTRC("Caret Line Start") },
 	{ "ui_text_caret_line_end",                        TTRC("Caret Line End") },
-	{ "ui_text_caret_line_end.macos",                  TTRC("Caret Line End") },
 	{ "ui_text_caret_page_up",                         TTRC("Caret Page Up") },
 	{ "ui_text_caret_page_down",                       TTRC("Caret Page Down") },
 	{ "ui_text_caret_document_start",                  TTRC("Caret Document Start") },
-	{ "ui_text_caret_document_start.macos",            TTRC("Caret Document Start") },
 	{ "ui_text_caret_document_end",                    TTRC("Caret Document End") },
-	{ "ui_text_caret_document_end.macos",              TTRC("Caret Document End") },
 	{ "ui_text_caret_add_below",                       TTRC("Caret Add Below") },
-	{ "ui_text_caret_add_below.macos",                 TTRC("Caret Add Below") },
 	{ "ui_text_caret_add_above",                       TTRC("Caret Add Above") },
-	{ "ui_text_caret_add_above.macos",                 TTRC("Caret Add Above") },
 	{ "ui_text_scroll_up",                             TTRC("Scroll Up") },
-	{ "ui_text_scroll_up.macos",                       TTRC("Scroll Up") },
 	{ "ui_text_scroll_down",                           TTRC("Scroll Down") },
-	{ "ui_text_scroll_down.macos",                     TTRC("Scroll Down") },
 	{ "ui_text_select_all",                            TTRC("Select All") },
 	{ "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
 	{ "ui_text_add_selection_for_next_occurrence",     TTRC("Add Selection for Next Occurrence") },
@@ -415,10 +401,11 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 };
 
 String InputMap::get_builtin_display_name(const String &p_name) const {
+	Vector<String> split = p_name.split(".");
+	const String &name = split[0];
 	constexpr int len = std::size(_builtin_action_display_names);
-
 	for (int i = 0; i < len; i++) {
-		if (_builtin_action_display_names[i].name == p_name) {
+		if (_builtin_action_display_names[i].name == name) {
 			return _builtin_action_display_names[i].display_name;
 		}
 	}
@@ -583,6 +570,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_backspace_word.macos", inputs);
+	default_builtin_cache.insert("ui_text_backspace_word.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_backspace_all_to_left", inputs);
@@ -590,6 +578,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_backspace_all_to_left.macos", inputs);
+	default_builtin_cache.insert("ui_text_backspace_all_to_left.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
@@ -602,6 +591,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_delete_word.macos", inputs);
+	default_builtin_cache.insert("ui_text_delete_word.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_delete_all_to_right", inputs);
@@ -609,6 +599,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_delete_all_to_right.macos", inputs);
+	default_builtin_cache.insert("ui_text_delete_all_to_right.web_macos", inputs);
 
 	// Text Caret Movement Left/Right
 
@@ -623,6 +614,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_caret_word_left.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_word_left.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT));
@@ -635,6 +627,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_caret_word_right.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_word_right.web_macos", inputs);
 
 	// Text Caret Movement Up/Down
 
@@ -657,6 +650,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::HOME));
 	default_builtin_cache.insert("ui_text_caret_line_start.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_line_start.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::END));
@@ -667,6 +661,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::END));
 	default_builtin_cache.insert("ui_text_caret_line_end.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_line_end.web_macos", inputs);
 
 	// Text Caret Movement Page Up/Down
 
@@ -688,6 +683,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::HOME | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_start.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_document_start.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::END | KeyModifierMask::CMD_OR_CTRL));
@@ -697,6 +693,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::END | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_document_end.web_macos", inputs);
 
 	// Text Caret Addition Below/Above
 
@@ -707,6 +704,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_add_below.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_add_below.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
@@ -715,6 +713,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::O | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_add_above.macos", inputs);
+	default_builtin_cache.insert("ui_text_caret_add_above.web_macos", inputs);
 
 	// Text Scrolling
 
@@ -725,6 +724,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_scroll_up.macos", inputs);
+	default_builtin_cache.insert("ui_text_scroll_up.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL));
@@ -733,6 +733,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_scroll_down.macos", inputs);
+	default_builtin_cache.insert("ui_text_scroll_down.web_macos", inputs);
 
 	// Text Misc
 
@@ -747,6 +748,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::G | KeyModifierMask::CTRL | KeyModifierMask::META));
 	default_builtin_cache.insert("ui_text_select_word_under_caret.macos", inputs);
+	default_builtin_cache.insert("ui_text_select_word_under_caret.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::D | KeyModifierMask::CMD_OR_CTRL));
@@ -794,6 +796,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_graph_follow_left.macos", inputs);
+	default_builtin_cache.insert("ui_graph_follow_left.web_macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL));
@@ -802,6 +805,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_graph_follow_right.macos", inputs);
+	default_builtin_cache.insert("ui_graph_follow_right.web_macos", inputs);
 
 	// ///// UI File Dialog Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
