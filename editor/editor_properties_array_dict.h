@@ -111,7 +111,7 @@ class EditorPropertyArray : public EditorProperty {
 
 	EditorVariantTypePopupMenu *change_type = nullptr;
 
-	bool preview_value = false;
+	bool preview_value = true;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
@@ -225,7 +225,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	EditorVariantTypePopupMenu *change_type = nullptr;
 	bool updating = false;
 
-	bool preview_value = false;
+	bool preview_value = true;
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
