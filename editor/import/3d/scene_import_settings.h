@@ -61,6 +61,29 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		ACTION_CHOOSE_ANIMATION_SAVE_PATHS,
 	};
 
+	enum {
+		VIEW_TOP,
+		VIEW_BOTTOM,
+		VIEW_LEFT,
+		VIEW_RIGHT,
+		VIEW_FRONT,
+		VIEW_REAR,
+		VIEW_PERSPECTIVE,
+		VIEW_ORTHOGONAL,
+		VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL,
+		VIEW_MAX
+	};
+
+	enum ViewType {
+		VIEW_TYPE_USER,
+		VIEW_TYPE_TOP,
+		VIEW_TYPE_BOTTOM,
+		VIEW_TYPE_LEFT,
+		VIEW_TYPE_RIGHT,
+		VIEW_TYPE_FRONT,
+		VIEW_TYPE_REAR,
+	};
+
 	Node *scene = nullptr;
 
 	HSplitContainer *tree_split = nullptr;
@@ -81,6 +104,11 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Ref<ProceduralSkyMaterial> procedural_sky_material;
 	bool first_aabb = false;
 	AABB contents_aabb;
+
+	ViewType view_type;
+	void _view_menu_option(int p_option);
+	bool orthogonal;
+	MenuButton *view_display_menu = nullptr;
 
 	Button *light_1_switch = nullptr;
 	Button *light_2_switch = nullptr;
@@ -179,6 +207,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	bool selecting = false;
 
 	void _update_view_gizmos();
+	void _update_view_type_name();
 	void _update_camera();
 	void _select(Tree *p_from, const String &p_type, const String &p_id);
 	void _inspector_property_edited(const String &p_name);
@@ -222,6 +251,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	int current_action = 0;
 
+	int current_camera_view = 0;
+
 	Vector<TreeItem *> save_path_items;
 
 	TreeItem *save_path_item = nullptr;
@@ -243,6 +274,11 @@ protected:
 	void _notification(int p_what);
 
 public:
+	enum CameraView {
+		CAMERA_VIEW_ORTHOGRAPHIC,
+		CAMERA_VIEW_PERSPECTIVE,
+	};
+
 	bool is_editing_animation() const { return editing_animation; }
 	void request_generate_collider();
 	void update_view();
