@@ -50,6 +50,7 @@
 				Creates an item in the tree and adds it as a child of [param parent], which can be either a valid [TreeItem] or [code]null[/code].
 				If [param parent] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
 				The new item will be the [param index]-th child of parent, or it will be the last child if there are not enough siblings.
+				Returns [code]null[/code] if called while a mouse selection occurs.
 			</description>
 		</method>
 		<method name="deselect_all">
