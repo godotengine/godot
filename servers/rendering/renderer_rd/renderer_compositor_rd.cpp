@@ -96,6 +96,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		blit.push_constant.upscale = p_render_targets[i].lens_distortion.upscale;
 		blit.push_constant.aspect_ratio = p_render_targets[i].lens_distortion.aspect_ratio;
 		blit.push_constant.convert_to_srgb = texture_storage->render_target_is_using_hdr(p_render_targets[i].render_target);
+		blit.push_constant.use_debanding = use_debanding;
 
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 		RD::get_singleton()->draw_list_draw(draw_list, true);
@@ -257,6 +258,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	blit.push_constant.upscale = 1.0;
 	blit.push_constant.aspect_ratio = 1.0;
 	blit.push_constant.convert_to_srgb = false;
+	blit.push_constant.use_debanding = false;
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);
@@ -315,6 +317,8 @@ RendererCompositorRD::RendererCompositorRD() {
 			ShaderRD::set_shader_cache_res_dir(shader_cache_res_dir);
 		}
 	}
+
+	use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCompositorRD singleton already exists.");
 	singleton = this;
