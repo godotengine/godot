@@ -144,16 +144,6 @@ bool EditorPropertyFontOTObject::_property_get_revert(const StringName &p_name, 
 /* EditorPropertyFontMetaOverride                                        */
 /*************************************************************************/
 
-void EditorPropertyFontMetaOverride::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			if (button_add) {
-				button_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			}
-		} break;
-	}
-}
-
 void EditorPropertyFontMetaOverride::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
@@ -255,7 +245,6 @@ void EditorPropertyFontMetaOverride::update_property() {
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
 				property_vbox->get_child(i)->queue_free();
 			}
-			button_add = nullptr;
 		}
 
 		int size = dict.size();
@@ -302,11 +291,17 @@ void EditorPropertyFontMetaOverride::update_property() {
 			prop->update_property();
 		}
 
+		EditorInspectorActionButton *button_add;
 		if (script_editor) {
+			// This property editor is currently only used inside the font import settings dialog.
+			// Usually, the dialog needs to be closed in order to change the editor's language.
+			// So we can ignore the auto-translation here.
+
 			// TRANSLATORS: Script refers to a writing system.
-			button_add = EditorInspector::create_inspector_action_button(TTR("Add Script", "Locale"));
+			button_add = memnew(EditorInspectorActionButton(TTR("Add Script", "Locale"), SNAME("Add")));
+			button_add->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		} else {
-			button_add = EditorInspector::create_inspector_action_button(TTR("Add Locale"));
+			button_add = memnew(EditorInspectorActionButton(TTRC("Add Locale"), SNAME("Add")));
 		}
 		button_add->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_add_menu));
 		property_vbox->add_child(button_add);
@@ -316,7 +311,6 @@ void EditorPropertyFontMetaOverride::update_property() {
 		if (container) {
 			set_bottom_editor(nullptr);
 			memdelete(container);
-			button_add = nullptr;
 			container = nullptr;
 		}
 	}
@@ -549,16 +543,6 @@ EditorPropertyOTVariation::EditorPropertyOTVariation() {
 /* EditorPropertyOTFeatures                                              */
 /*************************************************************************/
 
-void EditorPropertyOTFeatures::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			if (button_add) {
-				button_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			}
-		} break;
-	}
-}
-
 void EditorPropertyOTFeatures::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
@@ -630,7 +614,6 @@ void EditorPropertyOTFeatures::update_property() {
 		if (container) {
 			set_bottom_editor(nullptr);
 			memdelete(container);
-			button_add = nullptr;
 			container = nullptr;
 		}
 		return;
@@ -667,7 +650,6 @@ void EditorPropertyOTFeatures::update_property() {
 			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
 				property_vbox->get_child(i)->queue_free();
 			}
-			button_add = nullptr;
 		}
 
 		// Update add menu items.
@@ -799,8 +781,7 @@ void EditorPropertyOTFeatures::update_property() {
 			}
 		}
 
-		button_add = EditorInspector::create_inspector_action_button(TTR("Add Feature"));
-		button_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+		EditorInspectorActionButton *button_add = memnew(EditorInspectorActionButton(TTRC("Add Feature"), SNAME("Add")));
 		button_add->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTFeatures::_add_menu));
 		property_vbox->add_child(button_add);
 
@@ -809,7 +790,6 @@ void EditorPropertyOTFeatures::update_property() {
 		if (container) {
 			set_bottom_editor(nullptr);
 			memdelete(container);
-			button_add = nullptr;
 			container = nullptr;
 		}
 	}
