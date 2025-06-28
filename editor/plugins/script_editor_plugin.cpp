@@ -2760,6 +2760,10 @@ void ScriptEditor::save_all_scripts() {
 			se->trim_final_newlines();
 		}
 
+		if (JSON_truncate_integers) {
+			se->format_ints();
+		}
+
 		if (!se->is_unsaved()) {
 			continue;
 		}
@@ -3024,6 +3028,7 @@ void ScriptEditor::_apply_editor_settings() {
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
+	JSON_truncate_integers = EDITOR_GET("text_editor/behavior/files/JSON_truncate_integers");
 
 	members_overview_enabled = EDITOR_GET("text_editor/script_list/show_members_overview");
 	help_overview_enabled = EDITOR_GET("text_editor/help/show_help_index");
@@ -4517,6 +4522,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
+	JSON_truncate_integers = EDITOR_GET("text_editor/behavior/files/JSON_truncate_integers");
 
 	ScriptServer::edit_request_func = _open_script_request;
 

@@ -1254,6 +1254,106 @@ void CodeTextEditor::insert_final_newline() {
 	}
 }
 
+void CodeTextEditor::format_ints() {
+	auto is_num_char = [](char32_t c) {
+		return (c >= U'0' && c <= U'9') || c == U'.' || c == U'-' ||
+				c == U'+' || c == U'e' || c == U'E';
+	};
+
+	const int line_count = text_editor->get_line_count();
+
+	if (line_count == 0) {
+		return;
+	}
+
+	text_editor->begin_complex_operation();
+
+	bool doc_changed = false;
+
+	for (int line_idx = 0; line_idx < line_count; ++line_idx) {
+		const String &orig = text_editor->get_line(line_idx);
+		if (orig.is_empty()) {
+			continue;
+		}
+
+		bool line_changed = false;
+		bool escape_next = false;
+		bool in_string = false;
+		StringBuilder out;
+		int seg_start = 0;
+
+		int i = 0;
+		while (i < orig.length()) {
+			char32_t ch = orig[i];
+
+			// handle JSON strings so we don't rewrite inside them
+			if (in_string) {
+				if (escape_next) {
+					escape_next = false;
+				} else if (ch == U'\\') {
+					escape_next = true;
+				} else if (ch == U'"') {
+					in_string = false;
+				}
+				++i;
+				continue;
+			}
+			if (ch == U'"') {
+				++i;
+				in_string = true;
+				continue;
+			}
+
+			// detect number literal
+			if (ch == U'-' || (ch >= U'0' && ch <= U'9')) {
+				int tok_end = i + 1;
+				while (tok_end < orig.length() && is_num_char(orig[tok_end])) {
+					++tok_end;
+				}
+
+				String token = orig.substr(i, tok_end - i);
+
+				// Only floats (must contain a dot) are candidates for conversion
+				if (token.find_char('.') != -1) {
+					double val = token.to_float();
+					double rounded = Math::round(val);
+
+					if (Math::abs(val - rounded) < CMP_EPSILON) {
+						// Flush preceding part of the line
+						out.append(orig.substr(seg_start, i - seg_start));
+						// Append the integer replacement
+						out.append(itos((int64_t)rounded));
+
+						seg_start = tok_end;
+						line_changed = true;
+					}
+				}
+
+				i = tok_end;
+				continue;
+			}
+
+			++i; // ordinary char
+		}
+
+		// Flush the tail of the line
+		if (seg_start < orig.length()) {
+			out.append(orig.substr(seg_start, orig.length() - seg_start));
+		}
+
+		if (line_changed) {
+			text_editor->set_line(line_idx, out.as_string());
+			doc_changed = true;
+		}
+	}
+
+	if (doc_changed) {
+		text_editor->merge_overlapping_carets();
+	}
+
+	text_editor->end_complex_operation();
+}
+
 void CodeTextEditor::convert_case(CaseStyle p_case) {
 	if (!text_editor->has_selection()) {
 		return;

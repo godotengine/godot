@@ -723,6 +723,10 @@ void ScriptTextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
+void ScriptTextEditor::format_ints() {
+	code_editor->format_ints();
+}
+
 void ScriptTextEditor::convert_indent() {
 	code_editor->get_text_editor()->convert_indent();
 }
