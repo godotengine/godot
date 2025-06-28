@@ -1,5 +1,5 @@
 using Godot;
 [ScriptPathAttribute("res://Bar.cs")]
-partial class Bar
+partial class @Bar
 {
 }

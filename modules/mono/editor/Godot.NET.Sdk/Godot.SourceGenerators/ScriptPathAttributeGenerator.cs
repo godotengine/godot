@@ -137,7 +137,7 @@ namespace Godot.SourceGenerators
             }
 
             source.Append(attributes);
-            source.Append("\npartial class ");
+            source.Append("\npartial class @");
             source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n}\n");
 
