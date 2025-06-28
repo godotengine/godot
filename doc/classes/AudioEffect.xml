@@ -12,6 +12,14 @@
 		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
 	</tutorials>
 	<methods>
+		<method name="_init_instance" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="instance" type="AudioEffectInstance" />
+			<description>
+				Called by the [AudioServer] after current_channel is set on the effect instance.
+				Override this method if channel specific initialization is required for the [AudioEffectInstance].
+			</description>
+		</method>
 		<method name="_instantiate" qualifiers="virtual required">
 			<return type="AudioEffectInstance" />
 			<description>
