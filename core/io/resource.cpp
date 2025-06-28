@@ -671,7 +671,7 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 	}
 }
 
-//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
+// Helps keep IDs the same when loading/saving scenes. An empty ID clears the entry, and an empty ID is returned when not found.
 void Resource::set_id_for_path(const String &p_path, const String &p_id) {
 #ifdef TOOLS_ENABLED
 	if (p_id.is_empty()) {
