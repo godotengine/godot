@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
+#include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"

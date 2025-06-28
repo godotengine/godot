@@ -44,7 +44,9 @@ class EditorMainScreen : public PanelContainer {
 public:
 	enum EditorTable {
 		EDITOR_2D = 0,
+#ifndef _3D_DISABLED
 		EDITOR_3D,
+#endif // _3D_DISABLED
 		EDITOR_SCRIPT,
 		EDITOR_GAME,
 		EDITOR_ASSETLIB,

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "physical_bone_3d_editor_plugin.h"
 
 #include "editor/editor_node.h"
@@ -99,3 +101,5 @@ void PhysicalBone3DEditorPlugin::edit(Object *p_node) {
 		physical_bone_editor.set_selected(selected);
 	}
 }
+
+#endif // PHYSICS_3D_DISABLED

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
 class Gizmo3DHelper;
@@ -55,3 +57,5 @@ public:
 
 	CollisionShape3DGizmoPlugin();
 };
+
+#endif // PHYSICS_3D_DISABLED

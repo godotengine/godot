@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
 class SpringArm3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -43,3 +45,5 @@ public:
 
 	SpringArm3DGizmoPlugin();
 };
+
+#endif // PHYSICS_3D_DISABLED

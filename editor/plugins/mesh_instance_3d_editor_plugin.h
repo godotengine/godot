@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/option_button.h"
@@ -72,9 +74,11 @@ class MeshInstance3DEditor : public Control {
 	ConfirmationDialog *outline_dialog = nullptr;
 	SpinBox *outline_size = nullptr;
 
+#ifndef PHYSICS_3D_DISABLED
 	ConfirmationDialog *shape_dialog = nullptr;
 	OptionButton *shape_type = nullptr;
 	OptionButton *shape_placement = nullptr;
+#endif // PHYSICS_3D_DISABLED
 
 	AcceptDialog *err_dialog = nullptr;
 
@@ -86,7 +90,9 @@ class MeshInstance3DEditor : public Control {
 	ConfirmationDialog *navigation_mesh_dialog = nullptr;
 
 	void _create_collision_shape();
+#ifndef PHYSICS_3D_DISABLED
 	Vector<Ref<Shape3D>> create_shape_from_mesh(Ref<Mesh> p_mesh, int p_option, bool p_verbose);
+#endif // PHYSICS_3D_DISABLED
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
 	void _create_navigation_mesh();
@@ -120,3 +126,5 @@ public:
 
 	MeshInstance3DEditorPlugin();
 };
+
+#endif // _3D_DISABLED

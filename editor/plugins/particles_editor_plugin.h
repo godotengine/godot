@@ -153,7 +153,7 @@ public:
 	CPUParticles2DEditorPlugin();
 };
 
-// 3D /////////////////////////////////////////////
+#ifndef _3D_DISABLED
 
 class Particles3DEditorPlugin : public ParticlesEditorPlugin {
 	GDCLASS(Particles3DEditorPlugin, ParticlesEditorPlugin);
@@ -213,3 +213,5 @@ protected:
 public:
 	CPUParticles3DEditorPlugin();
 };
+
+#endif // _3D_DISABLED

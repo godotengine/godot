@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
 class CollisionPolygon3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -44,3 +46,5 @@ public:
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 	CollisionPolygon3DGizmoPlugin();
 };
+
+#endif // PHYSICS_3D_DISABLED

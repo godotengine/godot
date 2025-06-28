@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "occluder_instance_3d_editor_plugin.h"
 
 #include "editor/editor_node.h"
@@ -119,3 +121,5 @@ OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin() {
 	file_dialog->connect("file_selected", callable_mp(this, &OccluderInstance3DEditorPlugin::_bake_select_file));
 	bake->add_child(file_dialog);
 }
+
+#endif // _3D_DISABLED

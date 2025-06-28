@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/script_language.h"
 #include "scene/gui/control.h"
 
 class ScriptEditorDebugger;

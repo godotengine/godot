@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/voxel_gi.h"
 
@@ -67,3 +69,5 @@ public:
 
 	VoxelGIEditorPlugin();
 };
+
+#endif // _3D_DISABLED

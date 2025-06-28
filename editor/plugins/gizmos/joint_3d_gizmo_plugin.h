@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
 class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -94,3 +96,5 @@ public:
 	static void draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform3D &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse = false);
 	static void draw_cone(const Transform3D &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points);
 };
+
+#endif // PHYSICS_3D_DISABLED

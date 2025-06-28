@@ -5,6 +5,8 @@ Import("env")
 
 env.add_source_files(env.editor_sources, "*.cpp")
 
-SConscript("gizmos/SCsub")
+if not env["disable_3d"]:
+    SConscript("gizmos/SCsub")
+
 SConscript("shader_baker/SCsub")
 SConscript("tiles/SCsub")

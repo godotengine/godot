@@ -31,24 +31,27 @@
 #include "grid_map.h"
 
 #include "core/io/marshalls.h"
-#include "core/math/convex_hull.h"
 #include "core/templates/a_hash_map.h"
+#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/surface_tool.h"
+#include "servers/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "core/math/convex_hull.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
-#include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/physics_material.h"
-#include "scene/resources/surface_tool.h"
-#include "servers/rendering_server.h"
+#endif // PHYSICS_3D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_server_3d.h"
 
 Callable GridMap::_navmesh_source_geometry_parsing_callback;
@@ -1234,7 +1237,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
+#ifndef PHYSICS_3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
+#endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size", PROPERTY_HINT_NONE, "suffix:m"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_octant_size", PROPERTY_HINT_RANGE, "1,1024,1"), "set_octant_size", "get_octant_size");

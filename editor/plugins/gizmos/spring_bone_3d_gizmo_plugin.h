@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/spring_bone_collision_3d.h"
@@ -84,3 +86,5 @@ public:
 	SpringBoneCollision3DGizmoPlugin();
 	~SpringBoneCollision3DGizmoPlugin();
 };
+
+#endif // PHYSICS_3D_DISABLED
