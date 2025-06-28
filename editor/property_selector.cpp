@@ -69,6 +69,8 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_event) {
 void PropertySelector::_update_search() {
 	if (properties) {
 		set_title(TTR("Select Property"));
+	} else if (signals) {
+		set_title(TTR("Select Signal"));
 	} else if (virtuals_only) {
 		set_title(TTR("Select Virtual Method"));
 	} else {
@@ -171,7 +173,102 @@ void PropertySelector::_update_search() {
 			callable_mp(search_options, &Tree::scroll_to_item).call_deferred(search_options->get_selected(), true);
 		}
 
-	} else {
+	} else if (signals) {
+		set_title(TTR("Select Signal"));
+
+		List<MethodInfo> signal_list;
+
+		if (instance) {
+			instance->get_signal_list(&signal_list);
+		} else {
+			Ref<Script> script_ref = ObjectDB::get_ref<Script>(script);
+			if (script_ref.is_valid()) {
+				if (script_ref->is_built_in()) {
+					script_ref->reload(true);
+				}
+
+				signal_list.push_back(MethodInfo("*Script Signals"));
+				List<MethodInfo> script_signals;
+				script_ref->get_script_signal_list(&script_signals);
+				for (const MethodInfo &mi : script_signals) {
+					signal_list.push_back(mi);
+				}
+			}
+
+			StringName base = base_type;
+			while (base) {
+				signal_list.push_back(MethodInfo("*" + String(base)));
+				ClassDB::get_signal_list(base, &signal_list, true);
+				base = ClassDB::get_parent_class(base);
+			}
+		}
+
+		TreeItem *category = nullptr;
+		bool found = false;
+
+		for (MethodInfo &mi : signal_list) {
+			if (mi.name.begins_with("*")) {
+				if (category && category->get_first_child() == nullptr) {
+					memdelete(category); // old category was unused
+				}
+				category = search_options->create_item(root);
+				category->set_text(0, mi.name.replace_first("*", ""));
+				category->set_selectable(0, false);
+
+				Ref<Texture2D> icon;
+				String rep = mi.name.remove_char('*');
+				if (rep == "Script Signals") {
+					icon = search_options->get_editor_theme_icon(SNAME("Script"));
+				} else {
+					icon = EditorNode::get_singleton()->get_class_icon(rep);
+				}
+				category->set_icon(0, icon);
+
+				continue;
+			}
+
+			String name = mi.name;
+			if (!search_box->get_text().is_empty() && !name.containsn(search_text)) {
+				continue;
+			}
+
+			TreeItem *item = search_options->create_item(category ? category : root);
+			String desc = vformat("%s(", name);
+
+			for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+				if (i > 0) {
+					desc += ", ";
+				}
+
+				const PropertyInfo &arg = mi.arguments[i];
+				desc += arg.name + ": " + Variant::get_type_name(arg.type);
+			}
+
+			desc += ")";
+
+			item->set_text(0, desc);
+			item->set_metadata(0, name);
+			item->set_selectable(0, true);
+
+			if (!found && !search_box->get_text().is_empty() && name.containsn(search_text)) {
+				item->select(0);
+				found = true;
+			} else if (!found && search_box->get_text().is_empty() && name == selected) {
+				item->select(0);
+				found = true;
+			}
+		}
+
+		if (category && category->get_first_child() == nullptr) {
+			memdelete(category); // old category was unused
+		}
+
+		if (found) {
+			callable_mp(search_options, &Tree::scroll_to_item).call_deferred(search_options->get_selected(), true);
+		}
+	}
+
+	else {
 		List<MethodInfo> methods;
 
 		if (type != Variant::NIL) {
@@ -580,6 +677,75 @@ void PropertySelector::select_method_from_instance(Object *p_instance, const Str
 			script = scr->get_instance_id();
 		}
 	}
+	properties = false;
+	instance = nullptr;
+	virtuals_only = false;
+
+	popup_centered_ratio(0.6);
+	search_box->set_text("");
+	search_box->grab_focus();
+	_update_search();
+}
+
+void PropertySelector::select_signal_from_base_type(const String &p_base, const String &p_current, bool p_virtuals_only) {
+	base_type = p_base;
+	selected = p_current;
+	type = Variant::NIL;
+	script = ObjectID();
+	properties = false;
+	instance = nullptr;
+	virtuals_only = p_virtuals_only;
+
+	popup_centered_ratio(0.6);
+	search_box->set_text("");
+	search_box->grab_focus();
+	_update_search();
+}
+
+void PropertySelector::select_signal_from_script(const Ref<Script> &p_script, const String &p_current) {
+	ERR_FAIL_COND(p_script.is_null());
+	base_type = p_script->get_instance_base_type();
+	selected = p_current;
+	type = Variant::NIL;
+	script = p_script->get_instance_id();
+	properties = false;
+	instance = nullptr;
+	virtuals_only = false;
+
+	popup_centered_ratio(0.6);
+	search_box->set_text("");
+	search_box->grab_focus();
+	_update_search();
+}
+
+void PropertySelector::select_signal_from_basic_type(Variant::Type p_type, const String &p_current) {
+	ERR_FAIL_COND(p_type == Variant::NIL);
+	base_type = "";
+	selected = p_current;
+	type = p_type;
+	script = ObjectID();
+	properties = false;
+	instance = nullptr;
+	virtuals_only = false;
+
+	popup_centered_ratio(0.6);
+	search_box->set_text("");
+	search_box->grab_focus();
+	_update_search();
+}
+
+void PropertySelector::select_signal_from_instance(Object *p_instance, const String &p_current) {
+	base_type = p_instance->get_class_name();
+	selected = p_current;
+	type = Variant::NIL;
+	script = ObjectID();
+	{
+		Ref<Script> scr = p_instance->get_script();
+		if (scr.is_valid()) {
+			script = scr->get_instance_id();
+		}
+	}
+	signals = true;
 	properties = false;
 	instance = nullptr;
 	virtuals_only = false;

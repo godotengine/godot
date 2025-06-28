@@ -61,6 +61,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
+#include "scene/resources/animation.h"
 #include "servers/audio/audio_stream.h"
 
 constexpr double FPS_DECIMAL = 1.0;
@@ -272,6 +273,72 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 			}
 			return true;
 		} break;
+		case Animation::TYPE_SIGNAL: {
+			Dictionary d_old = animation->track_get_key_value(track, key);
+			Dictionary d_new = d_old.duplicate();
+
+			bool change_notify_deserved = false;
+			bool mergeable = false;
+
+			if (name == "name") {
+				d_new["signal"] = p_value;
+			} else if (name == "arg_count") {
+				Vector<Variant> args = d_old["args"];
+				args.resize(p_value);
+				d_new["args"] = args;
+				change_notify_deserved = true;
+			} else if (name.begins_with("args/")) {
+				Vector<Variant> args = d_old["args"];
+				int idx = name.get_slicec('/', 1).to_int();
+				ERR_FAIL_INDEX_V(idx, args.size(), false);
+
+				String what = name.get_slicec('/', 2);
+				if (what == "type") {
+					Variant::Type t = Variant::Type(int(p_value));
+
+					if (t != args[idx].get_type()) {
+						Callable::CallError err;
+						if (Variant::can_convert_strict(args[idx].get_type(), t)) {
+							Variant old = args[idx];
+							Variant *ptrs[1] = { &old };
+							Variant::construct(t, args.write[idx], (const Variant **)ptrs, 1, err);
+						} else {
+							Variant::construct(t, args.write[idx], nullptr, 0, err);
+						}
+						change_notify_deserved = true;
+						d_new["args"] = args;
+					}
+				} else if (what == "value") {
+					Variant value = p_value;
+					if (value.get_type() == Variant::NODE_PATH) {
+						_fix_node_path(value);
+					}
+
+					args.write[idx] = value;
+					d_new["args"] = args;
+					mergeable = true;
+				}
+			}
+			if (mergeable) {
+				undo_redo->create_action(TTR("Animation Change Signal"), UndoRedo::MERGE_ENDS);
+			} else {
+				undo_redo->create_action(TTR("Animation Change Signal"));
+			}
+
+			setting = true;
+			undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
+			undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old);
+			undo_redo->add_do_method(this, "_update_obj", animation);
+			undo_redo->add_undo_method(this, "_update_obj", animation);
+			undo_redo->commit_action();
+
+			setting = false;
+			if (change_notify_deserved) {
+				notify_change();
+			}
+			return true;
+		} break;
+
 		case Animation::TYPE_BEZIER: {
 			if (name == "value") {
 				const Variant &value = p_value;
@@ -495,6 +562,40 @@ bool AnimationTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) const
 			}
 
 		} break;
+		case Animation::TYPE_SIGNAL: {
+			Dictionary d = animation->track_get_key_value(track, key);
+
+			if (name == "name") {
+				ERR_FAIL_COND_V(!d.has("signal"), false);
+				r_ret = d["signal"];
+				return true;
+			}
+
+			ERR_FAIL_COND_V(!d.has("args"), false);
+
+			Vector<Variant> args = d["args"];
+
+			if (name == "arg_count") {
+				r_ret = args.size();
+				return true;
+			}
+
+			if (name.begins_with("args/")) {
+				int idx = name.get_slicec('/', 1).to_int();
+				ERR_FAIL_INDEX_V(idx, args.size(), false);
+
+				String what = name.get_slicec('/', 2);
+				if (what == "type") {
+					r_ret = args[idx].get_type();
+					return true;
+				}
+
+				if (what == "value") {
+					r_ret = args[idx];
+					return true;
+				}
+			}
+		} break;
 		case Animation::TYPE_BEZIER: {
 			if (name == "value") {
 				r_ret = animation->bezier_track_get_key_value(track, key);
@@ -616,6 +717,29 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 				}
 			}
 
+		} break;
+		case Animation::TYPE_SIGNAL: {
+			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("name")));
+			p_list->push_back(PropertyInfo(Variant::INT, PNAME("arg_count"), PROPERTY_HINT_RANGE, "0,32,1,or_greater"));
+
+			Dictionary d = animation->track_get_key_value(track, key);
+			ERR_FAIL_COND(!d.has("args"));
+			Vector<Variant> args = d["args"];
+
+			String vtypes;
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				if (i > 0) {
+					vtypes += ",";
+				}
+				vtypes += Variant::get_type_name(Variant::Type(i));
+			}
+
+			for (int i = 0; i < args.size(); i++) {
+				p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%d/%s", PNAME("args"), i, PNAME("type")), PROPERTY_HINT_ENUM, vtypes));
+				if (args[i].get_type() != Variant::NIL) {
+					p_list->push_back(PropertyInfo(args[i].get_type(), vformat("%s/%d/%s", PNAME("args"), i, PNAME("value"))));
+				}
+			}
 		} break;
 		case Animation::TYPE_BEZIER: {
 			Animation::HandleMode hm = animation->bezier_track_get_key_handle_mode(track, key);
@@ -881,6 +1005,68 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old);
 					update_obj = true;
 				} break;
+				case Animation::TYPE_SIGNAL: {
+					Dictionary d_old = animation->track_get_key_value(track, key);
+					Dictionary d_new = d_old.duplicate();
+
+					bool mergeable = false;
+
+					if (name == "name") {
+						d_new["signal"] = p_value;
+					} else if (name == "arg_count") {
+						Vector<Variant> args = d_old["args"];
+						args.resize(p_value);
+						d_new["args"] = args;
+						change_notify_deserved = true;
+					} else if (name.begins_with("args/")) {
+						Vector<Variant> args = d_old["args"];
+						int idx = name.get_slicec('/', 1).to_int();
+						ERR_FAIL_INDEX_V(idx, args.size(), false);
+
+						String what = name.get_slicec('/', 2);
+						if (what == "type") {
+							Variant::Type t = Variant::Type(int(p_value));
+
+							if (t != args[idx].get_type()) {
+								Callable::CallError err;
+								if (Variant::can_convert_strict(args[idx].get_type(), t)) {
+									Variant old = args[idx];
+									Variant *ptrs[1] = { &old };
+									Variant::construct(t, args.write[idx], (const Variant **)ptrs, 1, err);
+								} else {
+									Variant::construct(t, args.write[idx], nullptr, 0, err);
+								}
+								change_notify_deserved = true;
+								d_new["args"] = args;
+							}
+						} else if (what == "value") {
+							Variant value = p_value;
+							if (value.get_type() == Variant::NODE_PATH) {
+								_fix_node_path(value, base_map[track]);
+							}
+
+							args.write[idx] = value;
+							d_new["args"] = args;
+							mergeable = true;
+						}
+					}
+
+					Variant prev = animation->track_get_key_value(track, key);
+
+					if (!setting) {
+						if (mergeable) {
+							undo_redo->create_action(TTR("Animation Multi Change Signal"), UndoRedo::MERGE_ENDS);
+						} else {
+							undo_redo->create_action(TTR("Animation Multi Change Signal"));
+						}
+
+						setting = true;
+					}
+
+					undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
+					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old);
+					update_obj = true;
+				} break;
 				case Animation::TYPE_BEZIER: {
 					if (name == "value") {
 						const Variant &value = p_value;
@@ -1072,6 +1258,40 @@ bool AnimationMultiTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) 
 					}
 
 				} break;
+				case Animation::TYPE_SIGNAL: {
+					Dictionary d = animation->track_get_key_value(track, key);
+
+					if (name == "name") {
+						ERR_FAIL_COND_V(!d.has("signal"), false);
+						r_ret = d["signal"];
+						return true;
+					}
+
+					ERR_FAIL_COND_V(!d.has("args"), false);
+
+					Vector<Variant> args = d["args"];
+
+					if (name == "arg_count") {
+						r_ret = args.size();
+						return true;
+					}
+
+					if (name.begins_with("args/")) {
+						int idx = name.get_slicec('/', 1).to_int();
+						ERR_FAIL_INDEX_V(idx, args.size(), false);
+
+						String what = name.get_slicec('/', 2);
+						if (what == "type") {
+							r_ret = args[idx].get_type();
+							return true;
+						}
+
+						if (what == "value") {
+							r_ret = args[idx];
+							return true;
+						}
+					}
+				} break;
 				case Animation::TYPE_BEZIER: {
 					if (name == "value") {
 						r_ret = animation->bezier_track_get_key_value(track, key);
@@ -1214,6 +1434,30 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 				Dictionary d = animation->track_get_key_value(first_track, first_key);
 				ERR_FAIL_COND(!d.has("args"));
 				Vector<Variant> args = d["args"];
+				String vtypes;
+				for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+					if (i > 0) {
+						vtypes += ",";
+					}
+					vtypes += Variant::get_type_name(Variant::Type(i));
+				}
+
+				for (int i = 0; i < args.size(); i++) {
+					p_list->push_back(PropertyInfo(Variant::INT, "args/" + itos(i) + "/type", PROPERTY_HINT_ENUM, vtypes));
+					if (args[i].get_type() != Variant::NIL) {
+						p_list->push_back(PropertyInfo(args[i].get_type(), "args/" + itos(i) + "/value"));
+					}
+				}
+			} break;
+			case Animation::TYPE_SIGNAL: {
+				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
+
+				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,32,1,or_greater"));
+
+				Dictionary d = animation->track_get_key_value(first_track, first_key);
+				ERR_FAIL_COND(!d.has("args"));
+				Vector<Variant> args = d["args"];
+
 				String vtypes;
 				for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 					if (i > 0) {
@@ -1466,7 +1710,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyXRotation")), TTR("3D Rotation Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyXScale")), TTR("3D Scale Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBlendShape")), TTR("Blend Shape Track..."));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyCall")), TTR("Call Method Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyMethod")), TTR("Call Method Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeySignal")), TTR("Emit Signal Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBezier")), TTR("Bezier Curve Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAudio")), TTR("Audio Playback Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTR("Animation Playback Track..."));
@@ -2167,6 +2412,8 @@ void AnimationTrackEdit::_notification(int p_what) {
 				if (in_group) {
 					if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
 						text = TTR("Functions:");
+					} else if (animation->track_get_type(track) == Animation::TYPE_SIGNAL) {
+						text = TTR("Signals:");
 					} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
 						text = TTR("Audio Clips:");
 					} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
@@ -2534,7 +2781,7 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 
 	Variant current = animation->track_get_key_value(get_track(), p_index);
 	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
-	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD) {
+	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_SIGNAL) {
 		return;
 	}
 
@@ -2601,6 +2848,41 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 
 		int limit = ((p_selected && editor->is_moving_selection()) || editor->is_function_name_pressed()) ? 0 : MAX(0, p_clip_right - p_x - icon_to_draw->get_width() * 2);
 
+		if (limit > 0) {
+			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
+		}
+	}
+
+	if (animation->track_get_type(track) == Animation::TYPE_SIGNAL) {
+		const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+		Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+		color.a = 0.5;
+
+		Dictionary d = animation->track_get_key_value(track, p_index);
+		String text;
+
+		if (d.has("signal")) {
+			text += String(d["signal"]);
+		}
+		text += "(";
+
+		Vector<Variant> args;
+		if (d.has("args")) {
+			args = d["args"];
+		}
+
+		for (int i = 0; i < args.size(); i++) {
+			if (i > 0) {
+				text += ", ";
+			}
+			text += args[i].get_construct_string();
+		}
+		text += ")";
+
+		int limit = ((p_selected && editor->is_moving_selection()) || editor->is_function_name_pressed()) ? 0 : MAX(0, p_clip_right - p_x - icon_to_draw->get_width() * 2);
+
+		// If the limit allows, draw the signal text string.
 		if (limit > 0) {
 			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
 		}
@@ -2789,13 +3071,14 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 }
 
 Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
-	const Ref<Texture2D> type_icons[9] = {
+	const Ref<Texture2D> type_icons[10] = {
 		get_editor_theme_icon(SNAME("KeyValue")),
 		get_editor_theme_icon(SNAME("KeyTrackPosition")),
 		get_editor_theme_icon(SNAME("KeyTrackRotation")),
 		get_editor_theme_icon(SNAME("KeyTrackScale")),
 		get_editor_theme_icon(SNAME("KeyTrackBlendShape")),
-		get_editor_theme_icon(SNAME("KeyCall")),
+		get_editor_theme_icon(SNAME("KeyMethod")),
+		get_editor_theme_icon(SNAME("KeySignal")),
 		get_editor_theme_icon(SNAME("KeyBezier")),
 		get_editor_theme_icon(SNAME("KeyAudio")),
 		get_editor_theme_icon(SNAME("KeyAnimation"))
@@ -2922,6 +3205,24 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					}
 					text += ")\n";
 
+				} break;
+				case Animation::TYPE_SIGNAL: {
+					Dictionary d = animation->track_get_key_value(track, key_idx);
+					if (d.has("signal")) {
+						text += String(d["signal"]);
+					}
+					text += "(";
+					Vector<Variant> args;
+					if (d.has("args")) {
+						args = d["args"];
+					}
+					for (int i = 0; i < args.size(); i++) {
+						if (i > 0) {
+							text += ", ";
+						}
+						text += args[i].get_construct_string();
+					}
+					text += ")\n";
 				} break;
 				case Animation::TYPE_BEZIER: {
 					float h = animation->bezier_track_get_key_value(track, key_idx);
@@ -4937,7 +5238,7 @@ bool AnimationTrackEditor::is_bezier_editor_active() const {
 bool AnimationTrackEditor::can_add_reset_key() const {
 	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
 		const Animation::TrackType track_type = animation->track_get_type(E.key.track);
-		if (track_type != Animation::TYPE_ANIMATION && track_type != Animation::TYPE_AUDIO && track_type != Animation::TYPE_METHOD) {
+		if (track_type != Animation::TYPE_ANIMATION && track_type != Animation::TYPE_AUDIO && track_type != Animation::TYPE_METHOD && track_type != Animation::TYPE_SIGNAL) {
 			return true;
 		}
 	}
@@ -5467,6 +5768,14 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			undo_redo->commit_action();
 
 		} break;
+		case Animation::TYPE_SIGNAL: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Add Signal Track"));
+			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
+			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
+			undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
+			undo_redo->commit_action();
+		} break;
 		case Animation::TYPE_BEZIER: {
 			Vector<Variant::Type> filter;
 			filter.push_back(Variant::INT);
@@ -5715,6 +6024,14 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 		return;
 	}
 
+	if (animation->track_get_type(p_track) == Animation::TYPE_SIGNAL) {
+		signal_selector->select_signal_from_instance(node);
+
+		insert_key_from_track_call_ofs = p_ofs;
+		insert_key_from_track_call_track = p_track;
+		return;
+	}
+
 	InsertData id;
 	id.path = animation->track_get_path(p_track);
 	id.advance = false;
@@ -5775,6 +6092,15 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			ERR_FAIL_NULL(base);
 
 			method_selector->select_method_from_instance(base);
+
+			insert_key_from_track_call_ofs = p_ofs;
+			insert_key_from_track_call_track = p_track;
+
+		} break;
+		case Animation::TYPE_SIGNAL: {
+			Node *base = root->get_node_or_null(animation->track_get_path(p_track));
+			ERR_FAIL_NULL(base);
+			signal_selector->select_signal_from_instance(base);
 
 			insert_key_from_track_call_ofs = p_ofs;
 			insert_key_from_track_call_track = p_track;
@@ -5849,6 +6175,51 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 	}
 
 	EditorNode::get_singleton()->show_warning(TTR("Method not found in object:") + " " + p_method);
+}
+
+void AnimationTrackEditor::_add_signal_key(const String &p_signal) {
+	if (!root->has_node(animation->track_get_path(insert_key_from_track_call_track))) {
+		EditorNode::get_singleton()->show_warning(TTR("Track path is invalid, so can't add a signal key."));
+		return;
+	}
+	Node *base = root->get_node_or_null(animation->track_get_path(insert_key_from_track_call_track));
+	ERR_FAIL_NULL(base);
+
+	List<MethodInfo> sinfo;
+	base->get_signal_list(&sinfo);
+
+	for (const MethodInfo &E : sinfo) {
+		if (E.name == p_signal) {
+			Dictionary d;
+			d["signal"] = p_signal;
+			Array args;
+
+			int64_t first_defarg = E.arguments.size() - E.default_arguments.size();
+			for (int64_t i = 0; i < E.arguments.size(); ++i) {
+				if (i >= first_defarg) {
+					Variant arg = E.default_arguments[i - first_defarg];
+					args.push_back(arg);
+				} else {
+					Callable::CallError ce;
+					Variant arg;
+					Variant::construct(E.arguments[i].type, arg, nullptr, 0, ce);
+					args.push_back(arg);
+				}
+			}
+			d["args"] = args;
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Add Signal Track Key"));
+			undo_redo->add_do_method(animation.ptr(), "track_insert_key", insert_key_from_track_call_track, insert_key_from_track_call_ofs, d);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", insert_key_from_track_call_track, insert_key_from_track_call_ofs);
+			undo_redo->commit_action();
+
+			return;
+		}
+	}
+
+	EditorNode::get_singleton()->show_warning(TTR("Signal not found in object:") + " " + p_signal);
 }
 
 void AnimationTrackEditor::_key_selected(int p_key, bool p_single, int p_track) {
@@ -6733,6 +7104,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					case Animation::TYPE_METHOD:
 						track_type = TTR("Methods");
 						break;
+					case Animation::TYPE_SIGNAL:
+						track_type = TTR("Signals");
+						break;
 					case Animation::TYPE_BEZIER:
 						track_type = TTR("Bezier");
 						break;
@@ -7173,7 +7547,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				const SelectedKey &sk = E.key;
 
 				const Animation::TrackType track_type = animation->track_get_type(E.key.track);
-				if (track_type == Animation::TYPE_ANIMATION || track_type == Animation::TYPE_AUDIO || track_type == Animation::TYPE_METHOD) {
+				if (track_type == Animation::TYPE_ANIMATION || track_type == Animation::TYPE_AUDIO || track_type == Animation::TYPE_METHOD || track_type == Animation::TYPE_SIGNAL) {
 					continue;
 				}
 
@@ -8053,6 +8427,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_child(method_selector);
 	method_selector->connect("selected", callable_mp(this, &AnimationTrackEditor::_add_method_key));
 	method_selector->set_accessibility_name(TTRC("Method Key"));
+
+	signal_selector = memnew(PropertySelector);
+	add_child(signal_selector);
+	signal_selector->connect("selected", callable_mp(this, &AnimationTrackEditor::_add_signal_key));
+	signal_selector->set_accessibility_name(TTRC("Signal Key"));
 
 	insert_confirm = memnew(ConfirmationDialog);
 	add_child(insert_confirm);
