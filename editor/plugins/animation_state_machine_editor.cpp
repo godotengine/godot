@@ -39,6 +39,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
+#include "scene/animation/animation_node_state_machine.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -850,13 +851,28 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 	connecting = false;
 }
 
-void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group, float p_opacity) {
+void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, AnimationNodeStateMachineTransition::ConnectionType p_type, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group, float p_opacity) {
 	Color line_color = p_enabled ? theme_cache.transition_color : theme_cache.transition_disabled_color;
-	Color icon_color = p_enabled ? theme_cache.transition_icon_color : theme_cache.transition_icon_disabled_color;
 	Color highlight_color = p_enabled ? theme_cache.highlight_color : theme_cache.highlight_disabled_color;
 
+	switch (p_type) {
+		case AnimationNodeStateMachineTransition::CONNECTION_TYPE_INCOMING: {
+			line_color = theme_cache.transition_in_color;
+			line_color.a = p_enabled ? 1.0 : 0.2;
+			break;
+		}
+		case AnimationNodeStateMachineTransition::CONNECTION_TYPE_OUTGOING: {
+			line_color = theme_cache.transition_out_color;
+			line_color.a = p_enabled ? 1.0 : 0.2;
+			break;
+		}
+		default:
+			if (p_auto_advance) {
+				line_color = theme_cache.transition_icon_auto_color;
+			}
+	}
+
 	line_color.a *= p_opacity;
-	icon_color.a *= p_opacity;
 	highlight_color.a *= p_opacity;
 
 	if (p_travel) {
@@ -870,9 +886,9 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	if (p_fade_ratio > 0.0) {
 		Color fade_line_color = highlight_color;
-		fade_line_color.set_hsv(1.0, fade_line_color.get_s(), fade_line_color.get_v());
+		fade_line_color.set_hsv(0.16, fade_line_color.get_s(), fade_line_color.get_v());
 		fade_line_color.a *= p_opacity;
-		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_line_color, 2);
+		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_line_color, 4);
 	}
 
 	const int ICON_COUNT = std::size(theme_cache.transition_icons);
@@ -887,7 +903,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	state_machine_draw->draw_set_transform_matrix(xf);
 	if (!p_is_across_group) {
-		state_machine_draw->draw_texture(icon, Vector2(), icon_color);
+		state_machine_draw->draw_texture(icon, Vector2(), line_color);
 	}
 	state_machine_draw->draw_set_transform_matrix(Transform2D());
 }
@@ -1040,7 +1056,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			}
 		}
 
-		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), true, false, false, 0.0, false, false);
+		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), AnimationNodeStateMachineTransition::CONNECTION_TYPE_DEFAULT, true, false, false, 0.0, auto_advance->is_pressed(), false);
 	}
 
 	// TransitionImmediateBig
@@ -1065,6 +1081,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.advance_condition_name = tr->get_advance_condition_name();
 		tl.advance_condition_state = false;
 		tl.mode = tr->get_switch_mode();
+		tl.type = AnimationNodeStateMachineTransition::CONNECTION_TYPE_DEFAULT;
 		tl.width = tr_bidi_offset;
 		tl.travel = false;
 		tl.fade_ratio = 0.0;
@@ -1137,6 +1154,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 				if (connected_nodes.has(selected_node)) {
 					// Only keep full opacity for transitions directly connected to the selected node.
 					if (tl.from_node == selected_node || tl.to_node == selected_node) {
+						tl.type = tl.to_node == selected_node ? AnimationNodeStateMachineTransition::CONNECTION_TYPE_INCOMING : AnimationNodeStateMachineTransition::CONNECTION_TYPE_OUTGOING;
 						opacity = 1.0;
 					}
 				} else {
@@ -1148,7 +1166,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 				opacity = 1.0;
 			}
 
-			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.fade_ratio, tl.auto_advance, tl.is_across_group, opacity);
+			_connection_draw(tl.from, tl.to, tl.mode, tl.type, !tl.disabled, tl.selected, tl.travel, tl.fade_ratio, tl.auto_advance, tl.is_across_group, opacity);
 		}
 	}
 
@@ -1733,8 +1751,11 @@ void AnimationNodeStateMachineEditor::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, edit_node, "Edit", "EditorIcons");
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_color, "transition_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_in_color, "transition_in_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_out_color, "transition_out_color", "GraphStateMachine");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_disabled_color, "transition_disabled_color", "GraphStateMachine");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_color, "transition_icon_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_auto_color, "transition_icon_auto_color", "GraphStateMachine");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_disabled_color, "transition_icon_disabled_color", "GraphStateMachine");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, highlight_color, "highlight_color", "GraphStateMachine");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, highlight_disabled_color, "highlight_disabled_color", "GraphStateMachine");
