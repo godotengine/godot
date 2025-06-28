@@ -82,18 +82,14 @@ public:
 				Vector3 corner = Vector3(p_bounds[0] * c.x + p_bounds[3] * nc.x, p_bounds[1] * c.y + p_bounds[4] * nc.y, p_bounds[2] * c.z + p_bounds[5] * nc.z);
 				Vector3 view = p_cam_inv_transform.xform(corner);
 
-				Plane vp = Plane(view, 1.0);
-				Plane projected = p_cam_projection.xform4(vp);
+				Vector3 projected = p_cam_projection.xform(view);
 				min_depth = MIN(min_depth, -view.z);
 
-				float w = projected.d;
-				if (w < 1.0) {
-					rect_min = Vector2(0.0f, 0.0f);
-					rect_max = Vector2(1.0f, 1.0f);
-					break;
+				if (-view.z < 0.0) {
+					return false;
 				}
 
-				Vector2 normalized = Vector2(projected.normal.x / w * 0.5f + 0.5f, projected.normal.y / w * 0.5f + 0.5f);
+				Vector2 normalized = Vector2(projected.x * 0.5f + 0.5f, projected.y * 0.5f + 0.5f);
 				rect_min = rect_min.min(normalized);
 				rect_max = rect_max.max(normalized);
 			}
