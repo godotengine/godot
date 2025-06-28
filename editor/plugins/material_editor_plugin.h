@@ -41,6 +41,7 @@ class ColorRect;
 class DirectionalLight3D;
 class HBoxContainer;
 class MeshInstance3D;
+class ReflectionProbe;
 class SubViewport;
 class SubViewportContainer;
 class Button;
@@ -49,7 +50,17 @@ class Label;
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
-	Vector2 rot;
+	enum class Shape {
+		SPHERE,
+		BOX,
+		QUAD,
+	};
+
+	enum class Switch {
+		LIGHT_1,
+		LIGHT_2,
+		FLOOR,
+	};
 
 	SubViewportContainer *vc_2d = nullptr;
 	SubViewport *viewport_2d = nullptr;
@@ -62,14 +73,17 @@ class MaterialEditor : public Control {
 	MeshInstance3D *sphere_instance = nullptr;
 	MeshInstance3D *box_instance = nullptr;
 	MeshInstance3D *quad_instance = nullptr;
+	MeshInstance3D *floor_instance = nullptr;
 	DirectionalLight3D *light1 = nullptr;
 	DirectionalLight3D *light2 = nullptr;
+	ReflectionProbe *probe = nullptr;
 	Camera3D *camera = nullptr;
 	Ref<CameraAttributesPractical> camera_attributes;
 
 	Ref<SphereMesh> sphere_mesh;
 	Ref<BoxMesh> box_mesh;
 	Ref<QuadMesh> quad_mesh;
+	Ref<PlaneMesh> floor_mesh;
 
 	VBoxContainer *layout_error = nullptr;
 	Label *error_label = nullptr;
@@ -84,29 +98,37 @@ class MaterialEditor : public Control {
 	Button *quad_switch = nullptr;
 	Button *light_1_switch = nullptr;
 	Button *light_2_switch = nullptr;
+	Button *floor_switch = nullptr;
+
+	Shape shape = Shape::SPHERE;
+
+	Vector2 rot;
+	float cam_zoom = 3.0f;
+	AABB contents_aabb;
+
+	Ref<BaseMaterial3D> default_floor_material;
 
 	struct ThemeCache {
 		Ref<Texture2D> light_1_icon;
 		Ref<Texture2D> light_2_icon;
+		Ref<Texture2D> floor_icon;
 		Ref<Texture2D> sphere_icon;
 		Ref<Texture2D> box_icon;
 		Ref<Texture2D> quad_icon;
 		Ref<Texture2D> checkerboard;
 	} theme_cache;
 
-	void _on_light_1_switch_pressed();
-	void _on_light_2_switch_pressed();
-	void _on_sphere_switch_pressed();
-	void _on_box_switch_pressed();
-	void _on_quad_switch_pressed();
+	void _on_visibility_switch_pressed(int p_shape);
+	void _on_shape_switch_pressed(int p_shape);
+
+	void _update_environment();
 
 protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	void gui_input(const Ref<InputEvent> &p_event) override;
-	void _set_rotation(real_t p_x_degrees, real_t p_y_degrees);
-	void _store_rotation_metadata();
-	void _update_rotation();
+	void _store_camera_metadata();
+	void _update_camera();
 
 public:
 	void edit(Ref<Material> p_material, const Ref<Environment> &p_env);
@@ -115,7 +137,7 @@ public:
 
 class EditorInspectorPluginMaterial : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginMaterial, EditorInspectorPlugin);
-	Ref<Environment> env;
+	Ref<Environment> default_environment;
 
 public:
 	virtual bool can_handle(Object *p_object) override;
