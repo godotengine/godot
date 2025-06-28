@@ -221,11 +221,41 @@ private:
 	Node3D *ruler_start_point = nullptr;
 	Node3D *ruler_end_point = nullptr;
 	Ref<ImmediateMesh> geometry;
+	Ref<ImmediateMesh> geometry_x;
+	Ref<ImmediateMesh> geometry_y;
+	Ref<ImmediateMesh> geometry_z;
+	Ref<ImmediateMesh> geometry_x_z;
 	MeshInstance3D *ruler_line = nullptr;
 	MeshInstance3D *ruler_line_xray = nullptr;
+	MeshInstance3D *ruler_line_x = nullptr;
+	MeshInstance3D *ruler_line_x_xray = nullptr;
+	MeshInstance3D *ruler_line_y = nullptr;
+	MeshInstance3D *ruler_line_y_xray = nullptr;
+	MeshInstance3D *ruler_line_z = nullptr;
+	MeshInstance3D *ruler_line_z_xray = nullptr;
+	MeshInstance3D *ruler_line_x_z = nullptr;
+	MeshInstance3D *ruler_line_x_z_xray = nullptr;
 	Label *ruler_label = nullptr;
+	Label *ruler_label_x = nullptr;
+	Label *ruler_label_y = nullptr;
+	Label *ruler_label_z = nullptr;
+	Label *ruler_label_x_z = nullptr;
+
+	Label *angle_label_theta_1 = nullptr;
+	Label *angle_label_theta_2 = nullptr;
+	Label *angle_label_phi_1 = nullptr;
+	Label *angle_label_phi_2 = nullptr;
+
 	Ref<StandardMaterial3D> ruler_material;
+	Ref<StandardMaterial3D> ruler_material_x;
+	Ref<StandardMaterial3D> ruler_material_y;
+	Ref<StandardMaterial3D> ruler_material_z;
+	Ref<StandardMaterial3D> ruler_material_x_z;
 	Ref<StandardMaterial3D> ruler_material_xray;
+	Ref<StandardMaterial3D> ruler_material_x_xray;
+	Ref<StandardMaterial3D> ruler_material_y_xray;
+	Ref<StandardMaterial3D> ruler_material_z_xray;
+	Ref<StandardMaterial3D> ruler_material_x_z_xray;
 
 	int index;
 	ViewType view_type;
