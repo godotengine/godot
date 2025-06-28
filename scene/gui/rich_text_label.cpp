@@ -2561,6 +2561,10 @@ void RichTextLabel::_notification(int p_what) {
 }
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
+	if (vscroll && vscroll->is_panning()) {
+		return CURSOR_MOVE;
+	}
+
 	if (selection.click_item) {
 		return CURSOR_IBEAM;
 	}
@@ -2572,6 +2576,7 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 	if (item && !outside && const_cast<RichTextLabel *>(this)->_find_meta(item, nullptr)) {
 		return CURSOR_POINTING_HAND;
 	}
+
 	return get_default_cursor_shape();
 }
 
@@ -2975,6 +2980,10 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			if (prev_meta->underline == META_UNDERLINE_ON_HOVER) {
 				queue_redraw();
 			}
+		}
+
+		if (vscroll && vscroll->is_panning()) {
+			vscroll->_pan_callback(m, this);
 		}
 	}
 }
