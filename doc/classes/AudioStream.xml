@@ -113,6 +113,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
+			Volume offset, in decibels, to apply to this audio stream.
+		</member>
+	</members>
 	<signals>
 		<signal name="parameter_list_changed">
 			<description>
