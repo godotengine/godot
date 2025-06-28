@@ -39,7 +39,24 @@ struct Vector2;
 struct Vector3i;
 
 struct [[nodiscard]] Vector3 {
-	static const int AXIS_COUNT = 3;
+	static const Vector3 ZERO;
+	static const Vector3 ONE;
+	static const Vector3 INF;
+	static const Vector3 NaN;
+	static const Vector3 LEFT;
+	static const Vector3 RIGHT;
+	static const Vector3 UP;
+	static const Vector3 DOWN;
+	static const Vector3 FORWARD;
+	static const Vector3 BACK;
+	static const Vector3 MODEL_LEFT;
+	static const Vector3 MODEL_RIGHT;
+	static const Vector3 MODEL_TOP;
+	static const Vector3 MODEL_BOTTOM;
+	static const Vector3 MODEL_FRONT;
+	static const Vector3 MODEL_REAR;
+
+	static constexpr int AXIS_COUNT = 3;
 
 	enum Axis {
 		AXIS_X,
@@ -194,6 +211,23 @@ struct [[nodiscard]] Vector3 {
 	constexpr Vector3(real_t p_x, real_t p_y, real_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };
+
+inline constexpr Vector3 Vector3::ZERO = { 0, 0, 0 };
+inline constexpr Vector3 Vector3::ONE = { 1, 1, 1 };
+inline constexpr Vector3 Vector3::INF = { (real_t)Math::INF, (real_t)Math::INF, (real_t)Math::INF };
+inline constexpr Vector3 Vector3::NaN = { (real_t)Math::NaN, (real_t)Math::NaN, (real_t)Math::NaN };
+inline constexpr Vector3 Vector3::LEFT = { -1, 0, 0 };
+inline constexpr Vector3 Vector3::RIGHT = { 1, 0, 0 };
+inline constexpr Vector3 Vector3::UP = { 0, 1, 0 };
+inline constexpr Vector3 Vector3::DOWN = { 0, -1, 0 };
+inline constexpr Vector3 Vector3::FORWARD = { 0, 0, -1 };
+inline constexpr Vector3 Vector3::BACK = { 0, 0, 1 };
+inline constexpr Vector3 Vector3::MODEL_LEFT = { 1, 0, 0 };
+inline constexpr Vector3 Vector3::MODEL_RIGHT = { -1, 0, 0 };
+inline constexpr Vector3 Vector3::MODEL_TOP = { 0, 1, 0 };
+inline constexpr Vector3 Vector3::MODEL_BOTTOM = { 0, -1, 0 };
+inline constexpr Vector3 Vector3::MODEL_FRONT = { 0, 0, 1 };
+inline constexpr Vector3 Vector3::MODEL_REAR = { 0, 0, -1 };
 
 Vector3 Vector3::cross(const Vector3 &p_with) const {
 	Vector3 ret(

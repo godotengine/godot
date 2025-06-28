@@ -181,35 +181,32 @@ TEST_CASE("[Transform2D] Interpolation") {
 }
 
 TEST_CASE("[Transform2D] Finite number checks") {
-	constexpr Vector2 x = Vector2(0, 1);
-	constexpr Vector2 infinite = Vector2(Math::NaN, Math::NaN);
-
 	CHECK_MESSAGE(
-			Transform2D(x, x, x).is_finite(),
+			Transform2D(Vector2::ZERO, Vector2::ZERO, Vector2::ZERO).is_finite(),
 			"Transform2D with all components finite should be finite");
 
 	CHECK_FALSE_MESSAGE(
-			Transform2D(infinite, x, x).is_finite(),
+			Transform2D(Vector2::INF, Vector2::ZERO, Vector2::ZERO).is_finite(),
 			"Transform2D with one component infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Transform2D(x, infinite, x).is_finite(),
+			Transform2D(Vector2::ZERO, Vector2::INF, Vector2::ZERO).is_finite(),
 			"Transform2D with one component infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Transform2D(x, x, infinite).is_finite(),
+			Transform2D(Vector2::ZERO, Vector2::ZERO, Vector2::INF).is_finite(),
 			"Transform2D with one component infinite should not be finite.");
 
 	CHECK_FALSE_MESSAGE(
-			Transform2D(infinite, infinite, x).is_finite(),
+			Transform2D(Vector2::INF, Vector2::INF, Vector2::ZERO).is_finite(),
 			"Transform2D with two components infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Transform2D(infinite, x, infinite).is_finite(),
+			Transform2D(Vector2::INF, Vector2::ZERO, Vector2::INF).is_finite(),
 			"Transform2D with two components infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			Transform2D(x, infinite, infinite).is_finite(),
+			Transform2D(Vector2::ZERO, Vector2::INF, Vector2::INF).is_finite(),
 			"Transform2D with two components infinite should not be finite.");
 
 	CHECK_FALSE_MESSAGE(
-			Transform2D(infinite, infinite, infinite).is_finite(),
+			Transform2D(Vector2::INF, Vector2::INF, Vector2::INF).is_finite(),
 			"Transform2D with three components infinite should not be finite.");
 }
 

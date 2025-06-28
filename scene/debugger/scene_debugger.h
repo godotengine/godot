@@ -267,7 +267,7 @@ private:
 
 	bool has_selection = false;
 	int max_selection = 1;
-	Point2 selection_position = Point2(Math::INF, Math::INF);
+	Point2 selection_position = Point2::INF;
 	Rect2 selection_drag_area;
 	PopupMenu *selection_list = nullptr;
 	Color selection_area_fill;

@@ -43,6 +43,12 @@ struct Transform3D;
 struct Vector2;
 
 struct [[nodiscard]] Projection {
+	static const Projection ZERO;
+	static const Projection ONE;
+	static const Projection INF;
+	static const Projection NaN;
+	static const Projection IDENTITY;
+
 	enum Planes {
 		PLANE_NEAR,
 		PLANE_FAR,
@@ -168,6 +174,12 @@ struct [[nodiscard]] Projection {
 			} {}
 	Projection(const Transform3D &p_transform);
 };
+
+inline constexpr Projection Projection::ZERO = { Vector4::ZERO, Vector4::ZERO, Vector4::ZERO, Vector4::ZERO };
+inline constexpr Projection Projection::ONE = { Vector4::ONE, Vector4::ONE, Vector4::ONE, Vector4::ONE };
+inline constexpr Projection Projection::INF = { Vector4::INF, Vector4::INF, Vector4::INF, Vector4::INF };
+inline constexpr Projection Projection::NaN = { Vector4::NaN, Vector4::NaN, Vector4::NaN, Vector4::NaN };
+inline constexpr Projection Projection::IDENTITY = { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
 
 constexpr Projection Projection::operator*(const Projection &p_matrix) const {
 	Projection new_matrix;

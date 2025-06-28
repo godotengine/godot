@@ -460,22 +460,19 @@ TEST_CASE("[AABB] Expanding") {
 }
 
 TEST_CASE("[AABB] Finite number checks") {
-	constexpr Vector3 x(0, 1, 2);
-	constexpr Vector3 infinite(Math::NaN, Math::NaN, Math::NaN);
-
 	CHECK_MESSAGE(
-			AABB(x, x).is_finite(),
+			AABB(Vector3::ZERO, Vector3::ZERO).is_finite(),
 			"AABB with all components finite should be finite");
 
 	CHECK_FALSE_MESSAGE(
-			AABB(infinite, x).is_finite(),
+			AABB(Vector3::INF, Vector3::ZERO).is_finite(),
 			"AABB with one component infinite should not be finite.");
 	CHECK_FALSE_MESSAGE(
-			AABB(x, infinite).is_finite(),
+			AABB(Vector3::ZERO, Vector3::INF).is_finite(),
 			"AABB with one component infinite should not be finite.");
 
 	CHECK_FALSE_MESSAGE(
-			AABB(infinite, infinite).is_finite(),
+			AABB(Vector3::INF, Vector3::INF).is_finite(),
 			"AABB with two components infinite should not be finite.");
 }
 
