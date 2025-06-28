@@ -1166,12 +1166,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (tocopy != editor_data->get_edited_scene_root() && !tocopy->get_scene_file_path().is_empty()) {
-				accept->set_text(TTR("Can't save the branch of an already instantiated scene.\nTo create a variation of a scene, you can make an inherited scene based on the instantiated scene using Scene > New Inherited Scene... instead."));
-				accept->popup_centered();
-				break;
-			}
-
 			if (tocopy->get_owner() != scene) {
 				accept->set_text(TTR("Can't save a branch which is a child of an already instantiated scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
 				accept->popup_centered();
@@ -1183,32 +1177,34 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				accept->popup_centered();
 				break;
 			}
+			// TODO - I will keep these for now since the file browse is not finished yet
+			// new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+			// if (determine_path_automatically) {
+			// 	new_scene_from_dialog->set_current_dir(editor_data->get_edited_scene_root()->get_scene_file_path().get_base_dir());
+			// } else {
+			// 	determine_path_automatically = true;
+			// }
 
-			new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-			if (determine_path_automatically) {
-				new_scene_from_dialog->set_current_dir(editor_data->get_edited_scene_root()->get_scene_file_path().get_base_dir());
-			} else {
-				determine_path_automatically = true;
-			}
+			// List<String> extensions;
+			// Ref<PackedScene> sd = memnew(PackedScene);
+			// ResourceSaver::get_recognized_extensions(sd, &extensions);
+			// new_scene_from_dialog->clear_filters();
+			// for (const String &extension : extensions) {
+			// 	new_scene_from_dialog->add_filter("*." + extension, extension.to_upper());
+			// }
 
-			List<String> extensions;
-			Ref<PackedScene> sd = memnew(PackedScene);
-			ResourceSaver::get_recognized_extensions(sd, &extensions);
-			new_scene_from_dialog->clear_filters();
-			for (const String &extension : extensions) {
-				new_scene_from_dialog->add_filter("*." + extension, extension.to_upper());
-			}
+			// String existing;
+			// if (extensions.size()) {
+			// 	String root_name(tocopy->get_name());
+			// 	root_name = EditorNode::adjust_scene_name_casing(root_name);
+			// 	existing = root_name + "." + extensions.front()->get().to_lower();
+			// }
+			// new_scene_from_dialog->set_current_path(existing);
 
-			String existing;
-			if (extensions.size()) {
-				String root_name(tocopy->get_name());
-				root_name = EditorNode::adjust_scene_name_casing(root_name);
-				existing = root_name + "." + extensions.front()->get().to_lower();
-			}
-			new_scene_from_dialog->set_current_path(existing);
-
-			new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
-			new_scene_from_dialog->popup_file_dialog();
+			// new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
+			// new_scene_from_dialog->popup_file_dialog();
+			new_scene_from_dialog->config(tocopy);
+			new_scene_from_dialog->popup_centered();
 		} break;
 		case TOOL_COPY_NODE_PATH: {
 			List<Node *> selection = editor_selection->get_top_selected_node_list();
@@ -3363,6 +3359,7 @@ void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 }
 
 void SceneTreeDock::_new_scene_from(const String &p_file) {
+	// FIXME - [] The validation should be done before the operation was initialized. The data should probably be transferred someway instead of getting the node separately that might cause inconsistency.
 	List<Node *> selection = editor_selection->get_top_selected_node_list();
 
 	if (selection.size() != 1) {
@@ -3379,79 +3376,7 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 
 	Node *base = selection.front()->get();
 
-	HashMap<const Node *, Node *> duplimap;
-	HashMap<const Node *, Node *> inverse_duplimap;
-	Node *copy = base->duplicate_from_editor(duplimap);
-
-	for (const KeyValue<const Node *, Node *> &item : duplimap) {
-		inverse_duplimap[item.value] = const_cast<Node *>(item.key);
-	}
-
-	if (copy) {
-		// Handle Unique Nodes.
-		for (int i = 0; i < copy->get_child_count(false); i++) {
-			_set_node_owner_recursive(copy->get_child(i, false), copy, inverse_duplimap);
-		}
-		// Root node cannot ever be unique name in its own Scene!
-		copy->set_unique_name_in_owner(false);
-
-		const Dictionary dict = new_scene_from_dialog->get_selected_options();
-		bool reset_position = dict.get(TTR("Reset Position"), true);
-		bool reset_scale = dict.get(TTR("Reset Scale"), false);
-		bool reset_rotation = dict.get(TTR("Reset Rotation"), false);
-
-		Node2D *copy_2d = Object::cast_to<Node2D>(copy);
-		if (copy_2d != nullptr) {
-			if (reset_position) {
-				copy_2d->set_position(Vector2(0, 0));
-			}
-			if (reset_rotation) {
-				copy_2d->set_rotation(0);
-			}
-			if (reset_scale) {
-				copy_2d->set_scale(Size2(1, 1));
-			}
-		}
-		Node3D *copy_3d = Object::cast_to<Node3D>(copy);
-		if (copy_3d != nullptr) {
-			if (reset_position) {
-				copy_3d->set_position(Vector3(0, 0, 0));
-			}
-			if (reset_rotation) {
-				copy_3d->set_rotation(Vector3(0, 0, 0));
-			}
-			if (reset_scale) {
-				copy_3d->set_scale(Vector3(1, 1, 1));
-			}
-		}
-
-		Ref<PackedScene> sdata = memnew(PackedScene);
-		Error err = sdata->pack(copy);
-		memdelete(copy);
-
-		if (err != OK) {
-			accept->set_text(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
-			accept->popup_centered();
-			return;
-		}
-
-		int flg = 0;
-		if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
-			flg |= ResourceSaver::FLAG_COMPRESS;
-		}
-
-		err = ResourceSaver::save(sdata, p_file, flg);
-		if (err != OK) {
-			accept->set_text(TTR("Error saving scene."));
-			accept->popup_centered();
-			return;
-		}
-		_replace_with_branch_scene(p_file, base);
-	} else {
-		accept->set_text(TTR("Error duplicating scene to save it."));
-		accept->popup_centered();
-		return;
-	}
+	_replace_with_branch_scene(p_file, base);
 }
 
 void SceneTreeDock::_set_node_owner_recursive(Node *p_node, Node *p_owner, const HashMap<const Node *, Node *> &p_inverse_duplimap) {
@@ -4078,8 +4003,9 @@ void SceneTreeDock::set_filter(const String &p_filter) {
 }
 
 void SceneTreeDock::save_branch_to_file(const String &p_directory) {
-	new_scene_from_dialog->set_current_dir(p_directory);
-	determine_path_automatically = false;
+	// TODO - I will keep the code for now
+	// new_scene_from_dialog->set_current_dir(p_directory);
+	// determine_path_automatically = false;
 	_tool_selected(TOOL_NEW_SCENE_FROM);
 }
 
@@ -4684,6 +4610,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/reparent_to_new_node", TTRC("Reparent to New Node..."));
 	ED_SHORTCUT("scene_tree/make_root", TTRC("Make Scene Root"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTRC("Save Branch as Scene..."));
+	ED_SHORTCUT("scene_tree/save_branch_as_new_variant", TTRC("Save Branch as a New Variant Scene..."));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTRC("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTRC("Show in FileSystem"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTRC("Toggle Access as Unique Name"));
@@ -4866,13 +4793,14 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	add_child(placeholder_editable_instance_remove_dialog);
 	placeholder_editable_instance_remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_toggle_placeholder_from_selection));
 
-	new_scene_from_dialog = memnew(EditorFileDialog);
-	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	new_scene_from_dialog->add_option(TTR("Reset Position"), Vector<String>(), true);
-	new_scene_from_dialog->add_option(TTR("Reset Rotation"), Vector<String>(), false);
-	new_scene_from_dialog->add_option(TTR("Reset Scale"), Vector<String>(), false);
+	new_scene_from_dialog = memnew(NewSceneFromDialog);
+	// new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	// new_scene_from_dialog->add_option(TTR("Reset Position"), Vector<String>(), true);
+	// new_scene_from_dialog->add_option(TTR("Reset Rotation"), Vector<String>(), false);
+	// new_scene_from_dialog->add_option(TTR("Reset Scale"), Vector<String>(), false);
 	add_child(new_scene_from_dialog);
-	new_scene_from_dialog->connect("file_selected", callable_mp(this, &SceneTreeDock::_new_scene_from));
+	// TODO: Add a signal to create new scene
+	new_scene_from_dialog->connect(SNAME("create_branch_scene"), callable_mp(this, &SceneTreeDock::_new_scene_from));
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
