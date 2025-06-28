@@ -204,8 +204,6 @@ void CameraFeedLinux::_read_frame() {
 	if (ioctl(file_descriptor, VIDIOC_QBUF, &buffer) == -1) {
 		print_error(vformat("ioctl(VIDIOC_QBUF) error: %d.", errno));
 	}
-
-	emit_signal(SNAME("frame_changed"));
 }
 
 void CameraFeedLinux::_stop_capturing() {
