@@ -2486,6 +2486,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_color("kbd_bg_color", "EditorHelp", p_config.dark_color_1);
 		p_theme->set_color("param_bg_color", "EditorHelp", p_config.dark_color_1);
 		p_theme->set_constant(SceneStringName(line_separation), "EditorHelp", Math::round(6 * EDSCALE));
+		p_theme->set_constant("paragraph_separation", "EditorHelp", Math::round(18 * EDSCALE));
 		p_theme->set_constant("table_h_separation", "EditorHelp", 16 * EDSCALE);
 		p_theme->set_constant("table_v_separation", "EditorHelp", 6 * EDSCALE);
 		p_theme->set_constant("text_highlight_h_padding", "EditorHelp", 1 * EDSCALE);
