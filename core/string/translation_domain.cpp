@@ -460,6 +460,7 @@ void TranslationDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationDomain::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationDomain::remove_translation);
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationDomain::clear);
+	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationDomain::get_loaded_locales);
 	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationDomain::translate, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("translate_plural", "message", "message_plural", "n", "context"), &TranslationDomain::translate_plural, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_locale_override"), &TranslationDomain::get_locale_override);
