@@ -1835,9 +1835,9 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 		} break;
 		case Image::FORMAT_RGB565: {
 			r_format.format = RD::DATA_FORMAT_B5G6R5_UNORM_PACK16;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
 		case Image::FORMAT_RF: {
@@ -2345,9 +2345,9 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 		case RD::DATA_FORMAT_B5G6R5_UNORM_PACK16: {
 			r_format.image_format = Image::FORMAT_RGB565;
 			r_format.rd_format = RD::DATA_FORMAT_B5G6R5_UNORM_PACK16;
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
 		case RD::DATA_FORMAT_R32_SFLOAT: {
