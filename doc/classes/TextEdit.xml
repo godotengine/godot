@@ -1241,7 +1241,7 @@
 			<return type="void" />
 			<param index="0" name="callback" type="Callable" />
 			<description>
-				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code].
+				Provide custom tooltip text. The callback method must take the following argument: [code]hovered_word: String[/code]. Return an empty string to disable the tooltip.
 			</description>
 		</method>
 		<method name="skip_selection_for_next_occurrence">
