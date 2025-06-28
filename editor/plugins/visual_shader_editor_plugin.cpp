@@ -2258,7 +2258,8 @@ void VisualShaderEditor::_update_options_menu() {
 	members->clear();
 	TreeItem *root = members->create_item();
 
-	String filter = node_filter->get_text().strip_edges();
+	// Ignore all whitespace in the filter. This allows filter strings like "float constant" to match FloatConstant.
+	String filter = node_filter->get_text().strip_edges().replace(" ", "");
 	bool use_filter = !filter.is_empty();
 
 	bool is_first_item = true;
