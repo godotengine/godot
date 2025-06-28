@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include "core/variant/typed_dictionary.h"
 #include "scene/gui/graph_node.h"
+
+#include "core/variant/typed_dictionary.h"
 
 class GraphNodeIndexed : public GraphNode {
 	GDCLASS(GraphNodeIndexed, GraphNode);
@@ -47,7 +48,7 @@ protected:
 				left_port(lp), right_port(rp), draw_stylebox(draw_sb) {}
 	};
 	Vector<Slot> slots;
-	TypedDictionary<StringName, int> _slot_node_map_cache;
+	HashMap<StringName, int> _slot_node_map_cache;
 
 	struct ThemeCacheIndexed : ThemeCache {
 		Ref<StyleBox> theme_cache_slot;
@@ -56,7 +57,8 @@ protected:
 
 	Vector<Slot> _get_slots();
 	Slot _get_slot(int p_slot_index);
-	void _set_slot(int p_slot_index, const Ref<GraphPort> p_left_port, const Ref<GraphPort> p_right_port, bool draw_stylebox);
+	void _set_slot(int p_slot_index, const Slot p_slot);
+	void _remove_slot(int p_slot_index);
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
@@ -68,6 +70,7 @@ public:
 	void create_slot(int p_slot_index, Ref<GraphPort> p_left_port, Ref<GraphPort> p_right_port, bool draw_stylebox);
 	void create_slot_and_ports(int p_slot_index, bool draw_stylebox);
 	TypedArray<Array> get_slots();
+	Array get_slot(int p_slot_index);
 	void set_slot(int p_slot_index, const Ref<GraphPort> p_left_port, const Ref<GraphPort> p_right_port, bool draw_stylebox);
 	int slot_index_of_port(const Ref<GraphPort> p_port);
 

@@ -96,6 +96,7 @@ void GraphPort::populate(bool p_enabled, bool p_exclusive, int p_type, Color p_c
 	set_type(p_type);
 	set_direction(p_direction);
 	set_enabled(p_enabled);
+	notify_property_list_changed();
 }
 
 void GraphPort::enable() {
