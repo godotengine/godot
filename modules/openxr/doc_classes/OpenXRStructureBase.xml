@@ -1,0 +1,1068 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRStructureBase" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing OpenXR structure data.
+	</brief_description>
+	<description>
+		Object for storing OpenXR structure data that is passed when calling into OpenXR APIs.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_header" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="next" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_structure_type">
+			<return type="int" enum="OpenXRStructureBase.XrStructureType" />
+			<description>
+				Returns the structure type (OpenXR [code]XrStructureType[/code]) used for this structure.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="next" type="OpenXRStructureBase" setter="set_next" getter="get_next">
+			Setting another structure object here chains these structures together to extend the API functionality. Consult OpenXR documentation for which structures can be used with a given API call.
+		</member>
+	</members>
+	<constants>
+		<constant name="XR_TYPE_UNKNOWN" value="0" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_API_LAYER_PROPERTIES" value="1" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EXTENSION_PROPERTIES" value="2" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INSTANCE_CREATE_INFO" value="3" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_GET_INFO" value="4" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_PROPERTIES" value="5" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIEW_LOCATE_INFO" value="6" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIEW" value="7" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SESSION_CREATE_INFO" value="8" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_CREATE_INFO" value="9" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SESSION_BEGIN_INFO" value="10" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIEW_STATE" value="11" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FRAME_END_INFO" value="12" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAPTIC_VIBRATION" value="13" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_BUFFER" value="16" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING" value="17" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED" value="18" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTION_STATE_BOOLEAN" value="23" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTION_STATE_FLOAT" value="24" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTION_STATE_VECTOR2F" value="25" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTION_STATE_POSE" value="27" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTION_SET_CREATE_INFO" value="28" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTION_CREATE_INFO" value="29" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INSTANCE_PROPERTIES" value="32" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FRAME_WAIT_INFO" value="33" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_PROJECTION" value="35" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_QUAD" value="36" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_REFERENCE_SPACE_CREATE_INFO" value="37" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTION_SPACE_CREATE_INFO" value="38" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING" value="40" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIEW_CONFIGURATION_VIEW" value="41" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_LOCATION" value="42" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_VELOCITY" value="43" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FRAME_STATE" value="44" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIEW_CONFIGURATION_PROPERTIES" value="45" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FRAME_BEGIN_INFO" value="46" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW" value="48" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_EVENTS_LOST" value="49" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING" value="51" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED" value="52" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INTERACTION_PROFILE_STATE" value="53" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO" value="55" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO" value="56" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO" value="57" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTION_STATE_GET_INFO" value="58" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAPTIC_ACTION_INFO" value="59" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO" value="60" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTIONS_SYNC_INFO" value="61" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BOUND_SOURCES_FOR_ACTION_ENUMERATE_INFO" value="62" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INPUT_SOURCE_LOCALIZED_NAME_GET_INFO" value="63" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACES_LOCATE_INFO" value="1000471000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_LOCATIONS" value="1000471001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_VELOCITIES" value="1000471002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_CUBE_KHR" value="1000006000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR" value="1000008000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR" value="1000010000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VULKAN_SWAPCHAIN_FORMAT_LIST_CREATE_INFO_KHR" value="1000014000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_PERF_SETTINGS_EXT" value="1000015000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR" value="1000017000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_EQUIRECT_KHR" value="1000018000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT" value="1000019000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT" value="1000019001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT" value="1000019002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_DEBUG_UTILS_LABEL_EXT" value="1000019003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR" value="1000023000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR" value="1000023001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_OPENGL_XCB_KHR" value="1000023002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR" value="1000023003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR" value="1000023004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR" value="1000023005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR" value="1000024001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR" value="1000024002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR" value="1000024003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR" value="1000025000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR" value="1000025001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR" value="1000025002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_D3D11_KHR" value="1000027000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_D3D11_KHR" value="1000027001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR" value="1000027002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_D3D12_KHR" value="1000028000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_D3D12_KHR" value="1000028001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_REQUIREMENTS_D3D12_KHR" value="1000028002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_METAL_KHR" value="1000029000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_METAL_KHR" value="1000029001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_REQUIREMENTS_METAL_KHR" value="1000029002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_EYE_GAZE_INTERACTION_PROPERTIES_EXT" value="1000030000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EYE_GAZE_SAMPLE_TIME_EXT" value="1000030001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VISIBILITY_MASK_KHR" value="1000031000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR" value="1000031001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX" value="1000033000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX" value="1000033003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR" value="1000034000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_MSFT" value="1000039000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT" value="1000039001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_IMAGE_LAYOUT_FB" value="1000040000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_ALPHA_BLEND_FB" value="1000041001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT" value="1000046000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GRAPHICS_BINDING_EGL_MNDX" value="1000048004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_GRAPH_NODE_SPACE_CREATE_INFO_MSFT" value="1000049000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_GRAPH_STATIC_NODE_BINDING_CREATE_INFO_MSFT" value="1000049001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_GRAPH_NODE_BINDING_PROPERTIES_GET_INFO_MSFT" value="1000049002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_GRAPH_NODE_BINDING_PROPERTIES_MSFT" value="1000049003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT" value="1000051000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_TRACKER_CREATE_INFO_EXT" value="1000051001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_JOINTS_LOCATE_INFO_EXT" value="1000051002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_JOINT_LOCATIONS_EXT" value="1000051003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_JOINT_VELOCITIES_EXT" value="1000051004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_HAND_TRACKING_MESH_PROPERTIES_MSFT" value="1000052000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_MESH_SPACE_CREATE_INFO_MSFT" value="1000052001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_MESH_UPDATE_INFO_MSFT" value="1000052002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_MESH_MSFT" value="1000052003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_POSE_TYPE_INFO_MSFT" value="1000052004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SECONDARY_VIEW_CONFIGURATION_SESSION_BEGIN_INFO_MSFT" value="1000053000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SECONDARY_VIEW_CONFIGURATION_STATE_MSFT" value="1000053001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_STATE_MSFT" value="1000053002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT" value="1000053003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT" value="1000053004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SECONDARY_VIEW_CONFIGURATION_SWAPCHAIN_CREATE_INFO_MSFT" value="1000053005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CONTROLLER_MODEL_KEY_STATE_MSFT" value="1000055000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT" value="1000055001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CONTROLLER_MODEL_PROPERTIES_MSFT" value="1000055002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CONTROLLER_MODEL_NODE_STATE_MSFT" value="1000055003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CONTROLLER_MODEL_STATE_MSFT" value="1000055004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC" value="1000059000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HOLOGRAPHIC_WINDOW_ATTACHMENT_MSFT" value="1000063000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_REPROJECTION_INFO_MSFT" value="1000066000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_REPROJECTION_PLANE_OVERRIDE_MSFT" value="1000066001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ANDROID_SURFACE_SWAPCHAIN_CREATE_INFO_FB" value="1000070000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_SECURE_CONTENT_FB" value="1000072000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_TRACKER_CREATE_INFO_FB" value="1000076001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_JOINTS_LOCATE_INFO_FB" value="1000076002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_BODY_TRACKING_PROPERTIES_FB" value="1000076004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_JOINT_LOCATIONS_FB" value="1000076005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_SKELETON_FB" value="1000076006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INTERACTION_PROFILE_DPAD_BINDING_EXT" value="1000078000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INTERACTION_PROFILE_ANALOG_THRESHOLD_VALVE" value="1000079000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_JOINTS_MOTION_RANGE_INFO_EXT" value="1000080000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR" value="1000089000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR" value="1000090000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR" value="1000090001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR" value="1000090003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR" value="1000091000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_OBSERVER_CREATE_INFO_MSFT" value="1000097000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_CREATE_INFO_MSFT" value="1000097001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_NEW_SCENE_COMPUTE_INFO_MSFT" value="1000097002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VISUAL_MESH_COMPUTE_LOD_INFO_MSFT" value="1000097003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_COMPONENTS_MSFT" value="1000097004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_COMPONENTS_GET_INFO_MSFT" value="1000097005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_COMPONENT_LOCATIONS_MSFT" value="1000097006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_COMPONENTS_LOCATE_INFO_MSFT" value="1000097007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_OBJECTS_MSFT" value="1000097008" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_COMPONENT_PARENT_FILTER_INFO_MSFT" value="1000097009" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_OBJECT_TYPES_FILTER_INFO_MSFT" value="1000097010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_PLANES_MSFT" value="1000097011" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_PLANE_ALIGNMENT_FILTER_INFO_MSFT" value="1000097012" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MESHES_MSFT" value="1000097013" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MESH_BUFFERS_GET_INFO_MSFT" value="1000097014" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MESH_BUFFERS_MSFT" value="1000097015" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MESH_VERTEX_BUFFER_MSFT" value="1000097016" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MESH_INDICES_UINT32_MSFT" value="1000097017" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MESH_INDICES_UINT16_MSFT" value="1000097018" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SERIALIZED_SCENE_FRAGMENT_DATA_GET_INFO_MSFT" value="1000098000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_DESERIALIZE_INFO_MSFT" value="1000098001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_DISPLAY_REFRESH_RATE_CHANGED_FB" value="1000101000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIVE_TRACKER_PATHS_HTCX" value="1000103000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_VIVE_TRACKER_CONNECTED_HTCX" value="1000103001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_FACIAL_TRACKING_PROPERTIES_HTC" value="1000104000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACIAL_TRACKER_CREATE_INFO_HTC" value="1000104001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACIAL_EXPRESSIONS_HTC" value="1000104002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB" value="1000108000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_TRACKING_MESH_FB" value="1000110001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_TRACKING_SCALE_FB" value="1000110003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_TRACKING_AIM_STATE_FB" value="1000111001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_TRACKING_CAPSULES_STATE_FB" value="1000112000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_ENTITY_PROPERTIES_FB" value="1000113004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_FB" value="1000113003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_COMPONENT_STATUS_SET_INFO_FB" value="1000113007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_COMPONENT_STATUS_FB" value="1000113001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPATIAL_ANCHOR_CREATE_COMPLETE_FB" value="1000113005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPACE_SET_STATUS_COMPLETE_FB" value="1000113006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FOVEATION_PROFILE_CREATE_INFO_FB" value="1000114000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_CREATE_INFO_FOVEATION_FB" value="1000114001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_STATE_FOVEATION_FB" value="1000114002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FOVEATION_LEVEL_PROFILE_CREATE_INFO_FB" value="1000115000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_KEYBOARD_SPACE_CREATE_INFO_FB" value="1000116009" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_KEYBOARD_TRACKING_QUERY_FB" value="1000116004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_KEYBOARD_TRACKING_PROPERTIES_FB" value="1000116002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_TRIANGLE_MESH_CREATE_INFO_FB" value="1000117001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES_FB" value="1000118000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_CREATE_INFO_FB" value="1000118001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_LAYER_CREATE_INFO_FB" value="1000118002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB" value="1000118003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GEOMETRY_INSTANCE_CREATE_INFO_FB" value="1000118004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GEOMETRY_INSTANCE_TRANSFORM_FB" value="1000118005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES2_FB" value="1000118006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_STYLE_FB" value="1000118020" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_COLOR_MAP_MONO_TO_RGBA_FB" value="1000118021" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_COLOR_MAP_MONO_TO_MONO_FB" value="1000118022" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_BRIGHTNESS_CONTRAST_SATURATION_FB" value="1000118023" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_PASSTHROUGH_STATE_CHANGED_FB" value="1000118030" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_PATH_INFO_FB" value="1000119000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_PROPERTIES_FB" value="1000119001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_BUFFER_FB" value="1000119002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_LOAD_INFO_FB" value="1000119003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_RENDER_MODEL_PROPERTIES_FB" value="1000119004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_CAPABILITIES_REQUEST_FB" value="1000119005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BINDING_MODIFICATIONS_KHR" value="1000120000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIEW_LOCATE_FOVEATED_RENDERING_VARJO" value="1000121000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FOVEATED_VIEW_CONFIGURATION_VIEW_VARJO" value="1000121001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_FOVEATED_RENDERING_PROPERTIES_VARJO" value="1000121002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_DEPTH_TEST_VARJO" value="1000122000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_MARKER_TRACKING_PROPERTIES_VARJO" value="1000124000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_MARKER_TRACKING_UPDATE_VARJO" value="1000124001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_SPACE_CREATE_INFO_VARJO" value="1000124002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FRAME_END_INFO_ML" value="1000135000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_GLOBAL_DIMMER_FRAME_END_INFO_ML" value="1000136000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COORDINATE_SPACE_CREATE_INFO_ML" value="1000137000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_MARKER_UNDERSTANDING_PROPERTIES_ML" value="1000138000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_DETECTOR_CREATE_INFO_ML" value="1000138001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_DETECTOR_ARUCO_INFO_ML" value="1000138002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_DETECTOR_SIZE_INFO_ML" value="1000138003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_DETECTOR_APRIL_TAG_INFO_ML" value="1000138004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_DETECTOR_CUSTOM_PROFILE_INFO_ML" value="1000138005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_DETECTOR_SNAPSHOT_INFO_ML" value="1000138006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_DETECTOR_STATE_ML" value="1000138007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MARKER_SPACE_CREATE_INFO_ML" value="1000138008" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_LOCALIZATION_MAP_ML" value="1000139000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_LOCALIZATION_CHANGED_ML" value="1000139001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_MAP_LOCALIZATION_REQUEST_INFO_ML" value="1000139002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_LOCALIZATION_MAP_IMPORT_INFO_ML" value="1000139003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_LOCALIZATION_ENABLE_EVENTS_INFO_ML" value="1000139004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_CREATE_INFO_FROM_POSE_ML" value="1000140000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CREATE_SPATIAL_ANCHORS_COMPLETION_ML" value="1000140001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_STATE_ML" value="1000140002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_CREATE_STORAGE_INFO_ML" value="1000141000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_QUERY_INFO_RADIUS_ML" value="1000141001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_QUERY_COMPLETION_ML" value="1000141002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_CREATE_INFO_FROM_UUIDS_ML" value="1000141003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_PUBLISH_INFO_ML" value="1000141004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_PUBLISH_COMPLETION_ML" value="1000141005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_DELETE_INFO_ML" value="1000141006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_DELETE_COMPLETION_ML" value="1000141007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_UPDATE_EXPIRATION_INFO_ML" value="1000141008" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_UPDATE_EXPIRATION_COMPLETION_ML" value="1000141009" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_PUBLISH_COMPLETION_DETAILS_ML" value="1000141010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_DELETE_COMPLETION_DETAILS_ML" value="1000141011" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHORS_UPDATE_EXPIRATION_COMPLETION_DETAILS_ML" value="1000141012" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_HEADSET_FIT_CHANGED_ML" value="1000472000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_EYE_CALIBRATION_CHANGED_ML" value="1000472001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_USER_CALIBRATION_ENABLE_EVENTS_INFO_ML" value="1000472002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_PERSISTENCE_INFO_MSFT" value="1000142000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_FROM_PERSISTED_ANCHOR_CREATE_INFO_MSFT" value="1000142001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MARKERS_MSFT" value="1000147000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MARKER_TYPE_FILTER_MSFT" value="1000147001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_MARKER_QR_CODES_MSFT" value="1000147002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_QUERY_INFO_FB" value="1000156001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_QUERY_RESULTS_FB" value="1000156002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_STORAGE_LOCATION_FILTER_INFO_FB" value="1000156003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_UUID_FILTER_INFO_FB" value="1000156054" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_COMPONENT_FILTER_INFO_FB" value="1000156052" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPACE_QUERY_RESULTS_AVAILABLE_FB" value="1000156103" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPACE_QUERY_COMPLETE_FB" value="1000156104" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_SAVE_INFO_FB" value="1000158000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_ERASE_INFO_FB" value="1000158001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPACE_SAVE_COMPLETE_FB" value="1000158106" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPACE_ERASE_COMPLETE_FB" value="1000158107" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_IMAGE_FOVEATION_VULKAN_FB" value="1000160000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_STATE_ANDROID_SURFACE_DIMENSIONS_FB" value="1000161000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_STATE_SAMPLER_OPENGL_ES_FB" value="1000162000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SWAPCHAIN_STATE_SAMPLER_VULKAN_FB" value="1000163000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_SHARE_INFO_FB" value="1000169001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPACE_SHARE_COMPLETE_FB" value="1000169002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_SPACE_WARP_INFO_FB" value="1000171000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPACE_WARP_PROPERTIES_FB" value="1000171001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAPTIC_AMPLITUDE_ENVELOPE_VIBRATION_FB" value="1000173001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SEMANTIC_LABELS_FB" value="1000175000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ROOM_LAYOUT_FB" value="1000175001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BOUNDARY_2D_FB" value="1000175002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SEMANTIC_LABELS_SUPPORT_INFO_FB" value="1000175010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_DIGITAL_LENS_CONTROL_ALMALENCE" value="1000196000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SCENE_CAPTURE_COMPLETE_FB" value="1000198001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_CAPTURE_REQUEST_INFO_FB" value="1000198050" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_CONTAINER_FB" value="1000199000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FOVEATION_EYE_TRACKED_PROFILE_CREATE_INFO_META" value="1000200000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FOVEATION_EYE_TRACKED_STATE_META" value="1000200001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_FOVEATION_EYE_TRACKED_PROPERTIES_META" value="1000200002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_FACE_TRACKING_PROPERTIES_FB" value="1000201004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACE_TRACKER_CREATE_INFO_FB" value="1000201005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACE_EXPRESSION_INFO_FB" value="1000201002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACE_EXPRESSION_WEIGHTS_FB" value="1000201006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EYE_TRACKER_CREATE_INFO_FB" value="1000202001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EYE_GAZES_INFO_FB" value="1000202002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EYE_GAZES_FB" value="1000202003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_EYE_TRACKING_PROPERTIES_FB" value="1000202004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_KEYBOARD_HANDS_INTENSITY_FB" value="1000203002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_SETTINGS_FB" value="1000204000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAPTIC_PCM_VIBRATION_FB" value="1000209001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_DEVICE_PCM_SAMPLE_RATE_STATE_FB" value="1000209002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FRAME_SYNTHESIS_INFO_EXT" value="1000211000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FRAME_SYNTHESIS_CONFIG_VIEW_EXT" value="1000211001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_DEPTH_TEST_FB" value="1000212000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_LOCAL_DIMMING_FRAME_END_INFO_META" value="1000216000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_PREFERENCES_META" value="1000217000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_VIRTUAL_KEYBOARD_PROPERTIES_META" value="1000219001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_CREATE_INFO_META" value="1000219002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_SPACE_CREATE_INFO_META" value="1000219003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_LOCATION_INFO_META" value="1000219004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_MODEL_VISIBILITY_SET_INFO_META" value="1000219005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_ANIMATION_STATE_META" value="1000219006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_MODEL_ANIMATION_STATES_META" value="1000219007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_TEXTURE_DATA_META" value="1000219009" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_INPUT_INFO_META" value="1000219010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VIRTUAL_KEYBOARD_TEXT_CONTEXT_CHANGE_INFO_META" value="1000219011" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_VIRTUAL_KEYBOARD_COMMIT_TEXT_META" value="1000219014" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_VIRTUAL_KEYBOARD_BACKSPACE_META" value="1000219015" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_VIRTUAL_KEYBOARD_ENTER_META" value="1000219016" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_VIRTUAL_KEYBOARD_SHOWN_META" value="1000219017" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_VIRTUAL_KEYBOARD_HIDDEN_META" value="1000219018" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EXTERNAL_CAMERA_OCULUS" value="1000226000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_VULKAN_SWAPCHAIN_CREATE_INFO_META" value="1000227000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PERFORMANCE_METRICS_STATE_META" value="1000232001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PERFORMANCE_METRICS_COUNTER_META" value="1000232002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_LIST_SAVE_INFO_FB" value="1000238000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPACE_LIST_SAVE_COMPLETE_FB" value="1000238001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_USER_CREATE_INFO_FB" value="1000241001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_HEADSET_ID_PROPERTIES_META" value="1000245000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RECOMMENDED_LAYER_RESOLUTION_META" value="1000254000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RECOMMENDED_LAYER_RESOLUTION_GET_INFO_META" value="1000254001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META" value="1000266000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_COLOR_LUT_CREATE_INFO_META" value="1000266001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_COLOR_LUT_UPDATE_INFO_META" value="1000266002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_COLOR_MAP_LUT_META" value="1000266100" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META" value="1000266101" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_TRIANGLE_MESH_GET_INFO_META" value="1000269001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_TRIANGLE_MESH_META" value="1000269002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_PROPERTIES_BODY_TRACKING_FULL_BODY_META" value="1000274000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_PASSTHROUGH_LAYER_RESUMED_META" value="1000282000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_FACE_TRACKING_PROPERTIES2_FB" value="1000287013" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB" value="1000287014" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACE_EXPRESSION_INFO2_FB" value="1000287015" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACE_EXPRESSION_WEIGHTS2_FB" value="1000287016" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_ENTITY_SHARING_PROPERTIES_META" value="1000290000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SHARE_SPACES_INFO_META" value="1000290001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SHARE_SPACES_COMPLETE_META" value="1000290002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ENVIRONMENT_DEPTH_PROVIDER_CREATE_INFO_META" value="1000291000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_CREATE_INFO_META" value="1000291001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_STATE_META" value="1000291002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_ACQUIRE_INFO_META" value="1000291003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_VIEW_META" value="1000291004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META" value="1000291005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META" value="1000291006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META" value="1000291007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_CREATE_INFO_EXT" value="1000300000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_PROPERTIES_GET_INFO_EXT" value="1000300001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_PROPERTIES_EXT" value="1000300002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_SPACE_CREATE_INFO_EXT" value="1000300003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_STATE_GET_INFO_EXT" value="1000300004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_STATE_EXT" value="1000300005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_ASSET_CREATE_INFO_EXT" value="1000300006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_ASSET_DATA_GET_INFO_EXT" value="1000300007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_ASSET_DATA_EXT" value="1000300008" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_ASSET_PROPERTIES_GET_INFO_EXT" value="1000300009" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_RENDER_MODEL_ASSET_PROPERTIES_EXT" value="1000300010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INTERACTION_RENDER_MODEL_IDS_ENUMERATE_INFO_EXT" value="1000301000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INTERACTION_RENDER_MODEL_SUBACTION_PATH_INFO_EXT" value="1000301001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_INTERACTION_RENDER_MODELS_CHANGED_EXT" value="1000301002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_INTERACTION_RENDER_MODEL_TOP_LEVEL_USER_PATH_GET_INFO_EXT" value="1000301003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC" value="1000317001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_COLOR_HTC" value="1000317002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC" value="1000317003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_HTC" value="1000317004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FOVEATION_APPLY_INFO_HTC" value="1000318000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FOVEATION_DYNAMIC_MODE_INFO_HTC" value="1000318001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FOVEATION_CUSTOM_MODE_INFO_HTC" value="1000318002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_ANCHOR_PROPERTIES_HTC" value="1000319000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_HTC" value="1000319001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_BODY_TRACKING_PROPERTIES_HTC" value="1000320000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_TRACKER_CREATE_INFO_HTC" value="1000320001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_JOINTS_LOCATE_INFO_HTC" value="1000320002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_JOINT_LOCATIONS_HTC" value="1000320003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_SKELETON_HTC" value="1000320004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ACTIVE_ACTION_SET_PRIORITIES_EXT" value="1000373000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_FORCE_FEEDBACK_CURL_PROPERTIES_MNDX" value="1000375000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FORCE_FEEDBACK_CURL_APPLY_LOCATIONS_MNDX" value="1000375001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_TRACKER_CREATE_INFO_BD" value="1000385001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_JOINTS_LOCATE_INFO_BD" value="1000385002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_BODY_JOINT_LOCATIONS_BD" value="1000385003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_BODY_TRACKING_PROPERTIES_BD" value="1000385004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_SENSING_PROPERTIES_BD" value="1000389000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_COMPONENT_GET_INFO_BD" value="1000389001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_LOCATION_GET_INFO_BD" value="1000389002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_LOCATION_BD" value="1000389003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_SEMANTIC_BD" value="1000389004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_BOUNDING_BOX_2D_BD" value="1000389005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_POLYGON_BD" value="1000389006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_BOUNDING_BOX_3D_BD" value="1000389007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_TRIANGLE_MESH_BD" value="1000389008" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_BD" value="1000389009" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SENSE_DATA_PROVIDER_START_INFO_BD" value="1000389010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SENSE_DATA_PROVIDER_STATE_CHANGED_BD" value="1000389011" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SENSE_DATA_UPDATED_BD" value="1000389012" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SENSE_DATA_QUERY_INFO_BD" value="1000389013" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SENSE_DATA_QUERY_COMPLETION_BD" value="1000389014" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SENSE_DATA_FILTER_UUID_BD" value="1000389015" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SENSE_DATA_FILTER_SEMANTIC_BD" value="1000389016" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_QUERIED_SENSE_DATA_GET_INFO_BD" value="1000389017" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_QUERIED_SENSE_DATA_BD" value="1000389018" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_STATE_BD" value="1000389019" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_ANCHOR_CREATE_INFO_BD" value="1000389020" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_ANCHOR_SPACE_CREATE_INFO_BD" value="1000389021" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_ANCHOR_PROPERTIES_BD" value="1000390000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_BD" value="1000390001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_CREATE_COMPLETION_BD" value="1000390002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_PERSIST_INFO_BD" value="1000390003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_UNPERSIST_INFO_BD" value="1000390004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_ANCHOR_SHARING_PROPERTIES_BD" value="1000391000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_SHARE_INFO_BD" value="1000391001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SHARED_SPATIAL_ANCHOR_DOWNLOAD_INFO_BD" value="1000391002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_SCENE_PROPERTIES_BD" value="1000392000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SCENE_CAPTURE_INFO_BD" value="1000392001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_MESH_PROPERTIES_BD" value="1000393000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_SPATIAL_MESH_BD" value="1000393001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FUTURE_POLL_RESULT_PROGRESS_BD" value="1000394001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_PLANE_PROPERTIES_BD" value="1000396000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_PLANE_ORIENTATION_BD" value="1000396001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SENSE_DATA_FILTER_PLANE_ORIENTATION_BD" value="1000396002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT" value="1000428000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_HAND_TRACKING_DATA_SOURCE_STATE_EXT" value="1000428001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PLANE_DETECTOR_CREATE_INFO_EXT" value="1000429001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PLANE_DETECTOR_BEGIN_INFO_EXT" value="1000429002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PLANE_DETECTOR_GET_INFO_EXT" value="1000429003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PLANE_DETECTOR_LOCATIONS_EXT" value="1000429004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PLANE_DETECTOR_LOCATION_EXT" value="1000429005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PLANE_DETECTOR_POLYGON_BUFFER_EXT" value="1000429006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_PLANE_DETECTION_PROPERTIES_EXT" value="1000429007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FUTURE_CANCEL_INFO_EXT" value="1000469000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FUTURE_POLL_INFO_EXT" value="1000469001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FUTURE_COMPLETION_EXT" value="1000469002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FUTURE_POLL_RESULT_EXT" value="1000469003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT" value="1000470000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_USER_PRESENCE_PROPERTIES_EXT" value="1000470001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_NOTIFICATIONS_SET_INFO_ML" value="1000473000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_DETECTOR_CREATE_INFO_ML" value="1000474001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_STATE_REQUEST_INFO_ML" value="1000474002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_BLOCK_STATE_ML" value="1000474003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_STATE_REQUEST_COMPLETION_ML" value="1000474004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_BUFFER_RECOMMENDED_SIZE_INFO_ML" value="1000474005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_BUFFER_SIZE_ML" value="1000474006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_BUFFER_ML" value="1000474007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_BLOCK_REQUEST_ML" value="1000474008" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_GET_INFO_ML" value="1000474009" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_BLOCK_ML" value="1000474010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_REQUEST_COMPLETION_ML" value="1000474011" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_WORLD_MESH_REQUEST_COMPLETION_INFO_ML" value="1000474012" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_FACIAL_EXPRESSION_PROPERTIES_ML" value="1000482004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACIAL_EXPRESSION_CLIENT_CREATE_INFO_ML" value="1000482005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACIAL_EXPRESSION_BLEND_SHAPE_GET_INFO_ML" value="1000482006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_FACIAL_EXPRESSION_BLEND_SHAPE_PROPERTIES_ML" value="1000482007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SIMULTANEOUS_HANDS_AND_CONTROLLERS_PROPERTIES_META" value="1000532001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SIMULTANEOUS_HANDS_AND_CONTROLLERS_TRACKING_RESUME_INFO_META" value="1000532002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SIMULTANEOUS_HANDS_AND_CONTROLLERS_TRACKING_PAUSE_INFO_META" value="1000532003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COLOCATION_DISCOVERY_START_INFO_META" value="1000571010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COLOCATION_DISCOVERY_STOP_INFO_META" value="1000571011" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COLOCATION_ADVERTISEMENT_START_INFO_META" value="1000571012" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_COLOCATION_ADVERTISEMENT_STOP_INFO_META" value="1000571013" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_START_COLOCATION_ADVERTISEMENT_COMPLETE_META" value="1000571020" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_STOP_COLOCATION_ADVERTISEMENT_COMPLETE_META" value="1000571021" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_COLOCATION_ADVERTISEMENT_COMPLETE_META" value="1000571022" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_START_COLOCATION_DISCOVERY_COMPLETE_META" value="1000571023" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_COLOCATION_DISCOVERY_RESULT_META" value="1000571024" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_COLOCATION_DISCOVERY_COMPLETE_META" value="1000571025" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_STOP_COLOCATION_DISCOVERY_COMPLETE_META" value="1000571026" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_COLOCATION_DISCOVERY_PROPERTIES_META" value="1000571030" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SHARE_SPACES_RECIPIENT_GROUPS_META" value="1000572000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPACE_GROUP_UUID_FILTER_INFO_META" value="1000572001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SYSTEM_SPATIAL_ENTITY_GROUP_SHARING_PROPERTIES_META" value="1000572100" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CAPABILITY_COMPONENT_TYPES_EXT" value="1000740000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CONTEXT_CREATE_INFO_EXT" value="1000740001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CREATE_SPATIAL_CONTEXT_COMPLETION_EXT" value="1000740002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_DISCOVERY_SNAPSHOT_CREATE_INFO_EXT" value="1000740003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CREATE_SPATIAL_DISCOVERY_SNAPSHOT_COMPLETION_INFO_EXT" value="1000740004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CREATE_SPATIAL_DISCOVERY_SNAPSHOT_COMPLETION_EXT" value="1000740005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_DATA_QUERY_CONDITION_EXT" value="1000740006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_DATA_QUERY_RESULT_EXT" value="1000740007" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_BUFFER_GET_INFO_EXT" value="1000740008" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_BOUNDED_2D_LIST_EXT" value="1000740009" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_BOUNDED_3D_LIST_EXT" value="1000740010" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_PARENT_LIST_EXT" value="1000740011" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_MESH_3D_LIST_EXT" value="1000740012" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_FROM_ID_CREATE_INFO_EXT" value="1000740013" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_UPDATE_SNAPSHOT_CREATE_INFO_EXT" value="1000740014" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_EVENT_DATA_SPATIAL_DISCOVERY_RECOMMENDED_EXT" value="1000740015" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_FILTER_TRACKING_STATE_EXT" value="1000740016" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_PLANE_TRACKING_EXT" value="1000741000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_PLANE_ALIGNMENT_LIST_EXT" value="1000741001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_MESH_2D_LIST_EXT" value="1000741002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_POLYGON_2D_LIST_EXT" value="1000741003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_PLANE_SEMANTIC_LABEL_LIST_EXT" value="1000741004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_QR_CODE_EXT" value="1000743000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_MICRO_QR_CODE_EXT" value="1000743001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_ARUCO_MARKER_EXT" value="1000743002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_APRIL_TAG_EXT" value="1000743003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_MARKER_SIZE_EXT" value="1000743004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_MARKER_STATIC_OPTIMIZATION_EXT" value="1000743005" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_MARKER_LIST_EXT" value="1000743006" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_ANCHOR_EXT" value="1000762000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_ANCHOR_LIST_EXT" value="1000762001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_EXT" value="1000762002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_PERSISTENCE_CONTEXT_CREATE_INFO_EXT" value="1000763000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_CREATE_SPATIAL_PERSISTENCE_CONTEXT_COMPLETION_EXT" value="1000763001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_CONTEXT_PERSISTENCE_CONFIG_EXT" value="1000763002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_DISCOVERY_PERSISTENCE_UUID_FILTER_EXT" value="1000763003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_COMPONENT_PERSISTENCE_LIST_EXT" value="1000763004" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT" value="1000781000" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT" value="1000781001" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT" value="1000781002" enum="XrStructureType">
+		</constant>
+		<constant name="XR_TYPE_UNPERSIST_SPATIAL_ENTITY_COMPLETION_EXT" value="1000781003" enum="XrStructureType">
+		</constant>
+		<constant name="XR_STRUCTURE_TYPE_MAX_ENUM" value="2147483647" enum="XrStructureType">
+		</constant>
+	</constants>
+</class>

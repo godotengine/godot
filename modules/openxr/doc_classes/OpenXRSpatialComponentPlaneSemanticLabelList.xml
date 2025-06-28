@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialComponentPlaneSemanticLabelList" inherits="OpenXRSpatialComponentData" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing the queries plane semantic label result data.
+	</brief_description>
+	<description>
+		Object for storing the queries plane semantic label result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_plane_semantic_label" qualifiers="const">
+			<return type="int" enum="OpenXRSpatialComponentPlaneSemanticLabelList.XrSpatialPlaneSemanticLabelEXT" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the plane semantic label for the parent entity at this [param index].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="XR_SPATIAL_PLANE_SEMANTIC_LABEL_UNCATEGORIZED_EXT" value="1" enum="XrSpatialPlaneSemanticLabelEXT">
+			Uncategorized plane.
+		</constant>
+		<constant name="XR_SPATIAL_PLANE_SEMANTIC_LABEL_FLOOR_EXT" value="2" enum="XrSpatialPlaneSemanticLabelEXT">
+			Plane represents a floor.
+		</constant>
+		<constant name="XR_SPATIAL_PLANE_SEMANTIC_LABEL_WALL_EXT" value="3" enum="XrSpatialPlaneSemanticLabelEXT">
+			Plane represents a wall.
+		</constant>
+		<constant name="XR_SPATIAL_PLANE_SEMANTIC_LABEL_CEILING_EXT" value="4" enum="XrSpatialPlaneSemanticLabelEXT">
+			Plane represents a ceiling.
+		</constant>
+		<constant name="XR_SPATIAL_PLANE_SEMANTIC_LABEL_TABLE_EXT" value="5" enum="XrSpatialPlaneSemanticLabelEXT">
+			Plane represents the surface of a table.
+		</constant>
+		<constant name="XR_SPATIAL_PLANE_SEMANTIC_LABEL_MAX_ENUM_EXT" value="2147483647" enum="XrSpatialPlaneSemanticLabelEXT">
+			Maximum label value. Do not use for looping!
+		</constant>
+	</constants>
+</class>
