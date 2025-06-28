@@ -73,6 +73,7 @@ ignore-words-list = [
 	"expct",
 	"findn",
 	"gird",
+	"grey",
 	"hel",
 	"inout",
 	"labelin",
