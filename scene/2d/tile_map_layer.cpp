@@ -1571,6 +1571,7 @@ void TileMapLayer::_scenes_update_cell(CellData &r_cell_data) {
 						Transform2D xform;
 						xform.set_origin(tile_set->map_to_local(r_cell_data.coords));
 						scene_as_node2d->set_transform(xform * scene_as_node2d->get_transform());
+						_set_scene_transformed_alternative(c.alternative_tile, scene_as_node2d);
 					}
 					if (tile_map_node) {
 						// Compatibility with TileMap.
@@ -1630,6 +1631,49 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 	}
 }
 #endif // DEBUG_ENABLED
+
+void TileMapLayer::_set_scene_transformed_alternative(const int p_alternative_id, Node2D *p_scene) {
+	// Determine the transformations based on the alternative ID.
+	bool transform_flip_h = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_H;
+	bool transform_flip_v = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V;
+	bool transform_transpose = p_alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
+
+	double scene_rotation = 0.0;
+	Vector2 scene_scale = p_scene->get_scale();
+
+	// Determine the scene rotation and scale based on the transformation flags.
+	if (!transform_flip_h && !transform_flip_v && !transform_transpose) {
+		scene_rotation = 0.0;
+		scene_scale.x = 1;
+	} else if (transform_flip_h && !transform_flip_v && transform_transpose) {
+		scene_rotation = 90.0;
+		scene_scale.x = 1;
+	} else if (transform_flip_h && transform_flip_v && !transform_transpose) {
+		scene_rotation = 180.0;
+		scene_scale.x = 1;
+	} else if (!transform_flip_h && transform_flip_v && transform_transpose) {
+		scene_rotation = 270.0;
+		scene_scale.x = 1;
+	} else if (transform_flip_h && !transform_flip_v && !transform_transpose) {
+		scene_rotation = 0.0;
+		scene_scale.x = -1;
+	} else if (transform_flip_h && transform_flip_v && transform_transpose) {
+		scene_rotation = 90.0;
+		scene_scale.x = -1;
+	} else if (!transform_flip_h && transform_flip_v && !transform_transpose) {
+		scene_rotation = 180.0;
+		scene_scale.x = -1;
+	} else if (!transform_flip_h && !transform_flip_v && transform_transpose) {
+		scene_rotation = 270.0;
+		scene_scale.x = -1;
+	}
+
+	// Apply the transformations to the scene.
+	double current_rotation = p_scene->get_rotation_degrees() + scene_rotation;
+	Vector2 current_scale = p_scene->get_scale() + scene_scale;
+	p_scene->set_rotation_degrees(current_rotation);
+	p_scene->set_scale(current_scale);
+}
 
 /////////////////////////////////////////////////////////////////////
 
