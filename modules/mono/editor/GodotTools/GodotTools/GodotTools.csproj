@@ -37,6 +37,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
     <PackageReference Include="JetBrains.Rider.PathLocator" Version="1.0.12" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <Reference Include="GodotSharp">
       <HintPath>$(GodotApiAssembliesDir)/GodotSharp.dll</HintPath>
