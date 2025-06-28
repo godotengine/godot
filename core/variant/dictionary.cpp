@@ -323,11 +323,26 @@ void Dictionary::sort() {
 
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+
 	for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 		Variant key = E.key;
 		Variant value = E.value;
-		ERR_FAIL_COND(!_p->typed_key.validate(key, "merge"));
-		ERR_FAIL_COND(!_p->typed_value.validate(value, "merge"));
+
+		// Enhanced validation for nested types
+		if (_p->typed_key.is_nested()) {
+			ERR_FAIL_COND_MSG(!_p->typed_key.validate(key, "merge nested key"),
+					vformat("Key failed nested type validation during merge."));
+		} else {
+			ERR_FAIL_COND(!_p->typed_key.validate(key, "merge"));
+		}
+
+		if (_p->typed_value.is_nested()) {
+			ERR_FAIL_COND_MSG(!_p->typed_value.validate(value, "merge nested value"),
+					vformat("Value failed nested type validation during merge."));
+		} else {
+			ERR_FAIL_COND(!_p->typed_value.validate(value, "merge"));
+		}
+
 		if (p_overwrite || !has(key)) {
 			operator[](key) = value;
 		}
@@ -378,7 +393,13 @@ uint32_t Dictionary::recursive_hash(int recursion_count) const {
 Array Dictionary::keys() const {
 	Array varr;
 	if (is_typed_key()) {
-		varr.set_typed(get_typed_key_builtin(), get_typed_key_class_name(), get_typed_key_script());
+		if (_p->typed_key.is_nested()) {
+			// Set typed with nested type information
+			ContainerType key_type = get_key_type();
+			varr.set_typed(key_type);
+		} else {
+			varr.set_typed(get_typed_key_builtin(), get_typed_key_class_name(), get_typed_key_script());
+		}
 	}
 	if (_p->variant_map.is_empty()) {
 		return varr;
@@ -398,7 +419,13 @@ Array Dictionary::keys() const {
 Array Dictionary::values() const {
 	Array varr;
 	if (is_typed_value()) {
-		varr.set_typed(get_typed_value_builtin(), get_typed_value_class_name(), get_typed_value_script());
+		if (_p->typed_value.is_nested()) {
+			// Set typed with nested type information
+			ContainerType value_type = get_value_type();
+			varr.set_typed(value_type);
+		} else {
+			varr.set_typed(get_typed_value_builtin(), get_typed_value_class_name(), get_typed_value_script());
+		}
 	}
 	if (_p->variant_map.is_empty()) {
 		return varr;
@@ -422,17 +449,58 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 	const ContainerTypeValidate &typed_value = _p->typed_value;
 	const ContainerTypeValidate &typed_value_source = p_dictionary._p->typed_value;
 
-	if ((typed_key == typed_key_source || typed_key.type == Variant::NIL || (typed_key_source.type == Variant::OBJECT && typed_key.can_reference(typed_key_source))) &&
-			(typed_value == typed_value_source || typed_value.type == Variant::NIL || (typed_value_source.type == Variant::OBJECT && typed_value.can_reference(typed_value_source)))) {
-		// From same to same or,
-		// from anything to variants or,
-		// from subclasses to base classes.
-		_p->variant_map = p_dictionary._p->variant_map;
+	// Check if we can do a direct assignment (same types or compatible nested types)
+	bool key_compatible = (typed_key == typed_key_source || typed_key.type == Variant::NIL ||
+			(typed_key_source.type == Variant::OBJECT && typed_key.can_reference(typed_key_source)));
+	bool value_compatible = (typed_value == typed_value_source || typed_value.type == Variant::NIL ||
+			(typed_value_source.type == Variant::OBJECT && typed_value.can_reference(typed_value_source)));
+
+	// Handle nested type compatibility
+	if (typed_key.is_nested() && typed_key_source.is_nested()) {
+		key_compatible = typed_key.can_reference(typed_key_source);
+		ERR_FAIL_COND_MSG(!key_compatible,
+				vformat("Cannot assign Dictionary with nested key type structure to incompatible nested key type structure."));
+	}
+
+	if (typed_value.is_nested() && typed_value_source.is_nested()) {
+		value_compatible = typed_value.can_reference(typed_value_source);
+		ERR_FAIL_COND_MSG(!value_compatible,
+				vformat("Cannot assign Dictionary with nested value type structure to incompatible nested value type structure."));
+	}
+
+	// If direct assignment is possible
+	if (key_compatible && value_compatible) {
+		// For nested types, validate each element during assignment
+		if (typed_key.is_nested() || typed_value.is_nested()) {
+			HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> validated_map;
+			for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
+				Variant key = E.key;
+				Variant value = E.value;
+
+				if (typed_key.is_nested()) {
+					ERR_FAIL_COND_MSG(!typed_key.validate(key, "assign nested key"),
+							vformat("Dictionary key failed nested type validation during assignment."));
+				}
+
+				if (typed_value.is_nested()) {
+					ERR_FAIL_COND_MSG(!typed_value.validate(value, "assign nested value"),
+							vformat("Dictionary value failed nested type validation during assignment."));
+				}
+
+				validated_map[key] = value;
+			}
+			_p->variant_map = validated_map;
+		} else {
+			// Simple direct assignment for non-nested compatible types
+			_p->variant_map = p_dictionary._p->variant_map;
+		}
 		return;
 	}
 
+	// Fall back to element-by-element conversion for incompatible types
 	int size = p_dictionary._p->variant_map.size();
-	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map = HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>(size);
+	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map =
+			HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>(size);
 
 	Vector<Variant> key_array;
 	key_array.resize(size);
@@ -442,31 +510,32 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 	value_array.resize(size);
 	Variant *value_data = value_array.ptrw();
 
-	if (typed_key == typed_key_source || typed_key.type == Variant::NIL || (typed_key_source.type == Variant::OBJECT && typed_key.can_reference(typed_key_source))) {
-		// From same to same or,
-		// from anything to variants or,
-		// from subclasses to base classes.
+	// Convert keys
+	if (typed_key == typed_key_source || typed_key.type == Variant::NIL ||
+			(typed_key_source.type == Variant::OBJECT && typed_key.can_reference(typed_key_source))) {
+		// Direct key assignment
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
-			const Variant *key = &E.key;
-			key_data[i++] = *key;
+			key_data[i++] = E.key;
 		}
-	} else if ((typed_key_source.type == Variant::NIL && typed_key.type == Variant::OBJECT) || (typed_key_source.type == Variant::OBJECT && typed_key_source.can_reference(typed_key))) {
-		// From variants to objects or,
-		// from base classes to subclasses.
+	} else if ((typed_key_source.type == Variant::NIL && typed_key.type == Variant::OBJECT) ||
+			(typed_key_source.type == Variant::OBJECT && typed_key_source.can_reference(typed_key))) {
+		// Object validation for keys
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *key = &E.key;
 			if (key->get_type() != Variant::NIL && (key->get_type() != Variant::OBJECT || !typed_key.validate_object(*key, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)",
+						Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
 			}
 			key_data[i++] = *key;
 		}
 	} else if (typed_key.type == Variant::OBJECT || typed_key_source.type == Variant::OBJECT) {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)",
+				Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
 				Variant::get_type_name(typed_key.type), Variant::get_type_name(typed_value.type)));
 	} else if (typed_key_source.type == Variant::NIL && typed_key.type != Variant::OBJECT) {
-		// From variants to primitives.
+		// Variant to primitive conversion for keys
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *key = &E.key;
@@ -475,14 +544,15 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 				continue;
 			}
 			if (!Variant::can_convert_strict(key->get_type(), typed_key.type)) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)",
+						Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed_key.type, key_data[i++], &key, 1, ce);
 			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
 		}
 	} else if (Variant::can_convert_strict(typed_key_source.type, typed_key.type)) {
-		// From primitives to different convertible primitives.
+		// Primitive to primitive conversion for keys
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *key = &E.key;
@@ -491,35 +561,37 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.type)));
 		}
 	} else {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)",
+				Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
 				Variant::get_type_name(typed_key.type), Variant::get_type_name(typed_value.type)));
 	}
 
-	if (typed_value == typed_value_source || typed_value.type == Variant::NIL || (typed_value_source.type == Variant::OBJECT && typed_value.can_reference(typed_value_source))) {
-		// From same to same or,
-		// from anything to variants or,
-		// from subclasses to base classes.
+	// Convert values (similar logic as keys)
+	if (typed_value == typed_value_source || typed_value.type == Variant::NIL ||
+			(typed_value_source.type == Variant::OBJECT && typed_value.can_reference(typed_value_source))) {
+		// Direct value assignment
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
-			const Variant *value = &E.value;
-			value_data[i++] = *value;
+			value_data[i++] = E.value;
 		}
-	} else if (((typed_value_source.type == Variant::NIL && typed_value.type == Variant::OBJECT) || (typed_value_source.type == Variant::OBJECT && typed_value_source.can_reference(typed_value)))) {
-		// From variants to objects or,
-		// from base classes to subclasses.
+	} else if ((typed_value_source.type == Variant::NIL && typed_value.type == Variant::OBJECT) ||
+			(typed_value_source.type == Variant::OBJECT && typed_value_source.can_reference(typed_value))) {
+		// Object validation for values
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *value = &E.value;
 			if (value->get_type() != Variant::NIL && (value->get_type() != Variant::OBJECT || !typed_value.validate_object(*value, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)",
+						key_data[i], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
 			}
 			value_data[i++] = *value;
 		}
 	} else if (typed_value.type == Variant::OBJECT || typed_value_source.type == Variant::OBJECT) {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)",
+				Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
 				Variant::get_type_name(typed_key.type), Variant::get_type_name(typed_value.type)));
 	} else if (typed_value_source.type == Variant::NIL && typed_value.type != Variant::OBJECT) {
-		// From variants to primitives.
+		// Variant to primitive conversion for values
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *value = &E.value;
@@ -528,14 +600,15 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 				continue;
 			}
 			if (!Variant::can_convert_strict(value->get_type(), typed_value.type)) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)",
+						key_data[i], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed_value.type, value_data[i++], &value, 1, ce);
 			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
 		}
 	} else if (Variant::can_convert_strict(typed_value_source.type, typed_value.type)) {
-		// From primitives to different convertible primitives.
+		// Primitive to primitive conversion for values
 		int i = 0;
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *value = &E.value;
@@ -544,10 +617,12 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.type)));
 		}
 	} else {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)",
+				Variant::get_type_name(typed_key_source.type), Variant::get_type_name(typed_value_source.type),
 				Variant::get_type_name(typed_key.type), Variant::get_type_name(typed_value.type)));
 	}
 
+	// Build the final map
 	for (int i = 0; i < size; i++) {
 		variant_map.insert(key_data[i], value_data[i]);
 	}
@@ -629,7 +704,21 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMod
 }
 
 void Dictionary::set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type) {
-	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_key_type.script);
+	// Convert nested types recursively for keys
+	Vector<ContainerTypeValidate> key_nested_validators;
+	for (const ContainerType &nested : p_key_type.nested_types) {
+		key_nested_validators.push_back(convert_container_type(nested));
+	}
+
+	// Convert nested types recursively for values
+	Vector<ContainerTypeValidate> value_nested_validators;
+	for (const ContainerType &nested : p_value_type.nested_types) {
+		value_nested_validators.push_back(convert_container_type(nested));
+	}
+
+	// Call the enhanced set_typed method
+	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, key_nested_validators,
+			p_value_type.builtin_type, p_value_type.class_name, p_value_type.script, value_nested_validators);
 }
 
 void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
@@ -651,6 +740,61 @@ void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_na
 	_p->typed_value.type = Variant::Type(p_value_type);
 	_p->typed_value.class_name = p_value_class_name;
 	_p->typed_value.script = value_script;
+	_p->typed_value.where = "TypedDictionary.Value";
+}
+void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script,
+		const Vector<ContainerTypeValidate> &p_key_nested_types,
+		uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script,
+		const Vector<ContainerTypeValidate> &p_value_nested_types) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->variant_map.size() > 0, "Type can only be set when dictionary is empty.");
+	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when dictionary has no more than one user.");
+	ERR_FAIL_COND_MSG(_p->typed_key.type != Variant::NIL || _p->typed_value.type != Variant::NIL, "Type can only be set once.");
+	ERR_FAIL_COND_MSG((p_key_class_name != StringName() && p_key_type != Variant::OBJECT) ||
+					(p_value_class_name != StringName() && p_value_type != Variant::OBJECT),
+			"Class names can only be set for type OBJECT.");
+
+	Ref<Script> key_script = p_key_script;
+	ERR_FAIL_COND_MSG(key_script.is_valid() && p_key_class_name == StringName(),
+			"Script class can only be set together with base class name.");
+	Ref<Script> value_script = p_value_script;
+	ERR_FAIL_COND_MSG(value_script.is_valid() && p_value_class_name == StringName(),
+			"Script class can only be set together with base class name.");
+
+	// Validate nested types structure for keys
+	if (!p_key_nested_types.is_empty()) {
+		ERR_FAIL_COND_MSG(p_key_type != Variant::ARRAY && p_key_type != Variant::DICTIONARY,
+				"Nested types can only be set for Array or Dictionary key types");
+
+		// Basic sanity check for nesting depth
+		for (const ContainerTypeValidate &nested_type : p_key_nested_types) {
+			ERR_FAIL_COND_MSG(!nested_type.is_depth_valid(), vformat("Nested key type depth exceeds maximum (%d levels)", ContainerTypeValidate::MAX_NESTING_DEPTH));
+		}
+	}
+
+	// Validate nested types structure for values
+	if (!p_value_nested_types.is_empty()) {
+		ERR_FAIL_COND_MSG(p_value_type != Variant::ARRAY && p_value_type != Variant::DICTIONARY,
+				"Nested types can only be set for Array or Dictionary value types");
+
+		// Basic sanity check for nesting depth
+		for (const ContainerTypeValidate &nested_type : p_value_nested_types) {
+			ERR_FAIL_COND_MSG(!nested_type.is_depth_valid(), vformat("Nested value type depth exceeds maximum (%d levels)", ContainerTypeValidate::MAX_NESTING_DEPTH));
+		}
+	}
+
+	// Set key type information
+	_p->typed_key.type = Variant::Type(p_key_type);
+	_p->typed_key.class_name = p_key_class_name;
+	_p->typed_key.script = key_script;
+	_p->typed_key.nested_types = p_key_nested_types;
+	_p->typed_key.where = "TypedDictionary.Key";
+
+	// Set value type information
+	_p->typed_value.type = Variant::Type(p_value_type);
+	_p->typed_value.class_name = p_value_class_name;
+	_p->typed_value.script = value_script;
+	_p->typed_value.nested_types = p_value_nested_types;
 	_p->typed_value.where = "TypedDictionary.Value";
 }
 
@@ -682,20 +826,19 @@ bool Dictionary::is_same_typed_value(const Dictionary &p_other) const {
 	return _p->typed_value == p_other._p->typed_value;
 }
 
+bool Dictionary::is_nested_key() const {
+	return _p->typed_key.is_nested();
+}
+bool Dictionary::is_nested_value() const {
+	return _p->typed_value.is_nested();
+}
+
 ContainerType Dictionary::get_key_type() const {
-	ContainerType type;
-	type.builtin_type = _p->typed_key.type;
-	type.class_name = _p->typed_key.class_name;
-	type.script = _p->typed_key.script;
-	return type;
+	return convert_validator_to_container(_p->typed_key);
 }
 
 ContainerType Dictionary::get_value_type() const {
-	ContainerType type;
-	type.builtin_type = _p->typed_value.type;
-	type.class_name = _p->typed_value.class_name;
-	type.script = _p->typed_value.script;
-	return type;
+	return convert_validator_to_container(_p->typed_value);
 }
 
 uint32_t Dictionary::get_typed_key_builtin() const {
@@ -761,4 +904,33 @@ Dictionary::Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init)
 
 Dictionary::~Dictionary() {
 	_unref();
+}
+
+// Helper function to recursively convert ContainerType to ContainerTypeValidate
+ContainerTypeValidate Dictionary::convert_container_type(const ContainerType &container) {
+	ContainerTypeValidate validator;
+	validator.type = container.builtin_type;
+	validator.class_name = container.class_name;
+	validator.script = container.script;
+	validator.where = "NestedType";
+
+	// Recursively convert all nested types
+	for (const ContainerType &nested : container.nested_types) {
+		validator.nested_types.push_back(convert_container_type(nested));
+	}
+
+	return validator;
+}
+ContainerType Dictionary::convert_validator_to_container(const ContainerTypeValidate &validator) {
+	ContainerType type;
+	type.builtin_type = validator.type;
+	type.class_name = validator.class_name;
+	type.script = validator.script;
+
+	// Recursively convert all nested types
+	for (const ContainerTypeValidate &nested : validator.nested_types) {
+		type.nested_types.push_back(convert_validator_to_container(nested));
+	}
+
+	return type;
 }
