@@ -41,6 +41,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 
 #include "modules/modules_enabled.gen.h" // For websocket.
 
@@ -77,6 +78,8 @@ void OS_Web::fs_sync_callback() {
 }
 
 bool OS_Web::main_loop_iterate() {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_Web::main_loop_iterate");
 	if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
 		idb_is_syncing = true;
 		idb_needs_sync = false;
