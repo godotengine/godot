@@ -226,6 +226,7 @@ public:
 
 	void set_label_reference(Control *p_control);
 	void set_bottom_editor(Control *p_control);
+	inline Control *get_bottom_editor() const { return bottom_editor; }
 
 	void set_use_folding(bool p_use_folding);
 	bool is_using_folding() const;
