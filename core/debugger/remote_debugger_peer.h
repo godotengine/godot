@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer_uds.h"
 #include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -90,4 +91,43 @@ public:
 
 	RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_stream = Ref<StreamPeerTCP>());
 	~RemoteDebuggerPeerTCP();
+};
+
+class RemoteDebuggerPeerUDS : public RemoteDebuggerPeer {
+private:
+	Ref<StreamPeerUDS> local_client;
+	Mutex mutex;
+	Thread thread;
+	List<Array> in_queue;
+	List<Array> out_queue;
+	int out_left = 0;
+	int out_pos = 0;
+	Vector<uint8_t> out_buf;
+	int in_left = 0;
+	int in_pos = 0;
+	Vector<uint8_t> in_buf;
+	bool connected = false;
+	bool running = false;
+
+	static void _thread_func(void *p_ud);
+
+	void _poll();
+	void _write_out();
+	void _read_in();
+
+public:
+	static RemoteDebuggerPeer *create(const String &p_uri);
+
+	Error connect_to_host(const String &p_path);
+
+	bool is_peer_connected() override;
+	int get_max_message_size() const override;
+	bool has_message() override;
+	Error put_message(const Array &p_arr) override;
+	Array get_message() override;
+	void poll() override;
+	void close() override;
+
+	RemoteDebuggerPeerUDS(Ref<StreamPeerUDS> p_stream = Ref<StreamPeerUDS>());
+	~RemoteDebuggerPeerUDS();
 };

@@ -246,3 +246,199 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create(const String &p_uri) {
 RemoteDebuggerPeer::RemoteDebuggerPeer() {
 	max_queued_messages = (int)GLOBAL_GET("network/limits/debugger/max_queued_messages");
 }
+
+// --- RemoteDebuggerPeerUDS Implementation ---
+
+bool RemoteDebuggerPeerUDS::is_peer_connected() {
+	return connected;
+}
+
+bool RemoteDebuggerPeerUDS::has_message() {
+	return in_queue.size() > 0;
+}
+
+Array RemoteDebuggerPeerUDS::get_message() {
+	MutexLock lock(mutex);
+	List<Array>::Element *E = in_queue.front();
+	ERR_FAIL_NULL_V(E, Array());
+
+	Array out = E->get();
+	in_queue.pop_front();
+	return out;
+}
+
+Error RemoteDebuggerPeerUDS::put_message(const Array &p_arr) {
+	MutexLock lock(mutex);
+	if (out_queue.size() >= max_queued_messages) {
+		return ERR_OUT_OF_MEMORY;
+	}
+
+	out_queue.push_back(p_arr);
+	return OK;
+}
+
+int RemoteDebuggerPeerUDS::get_max_message_size() const {
+	return 8 << 20; // 8 MiB
+}
+
+void RemoteDebuggerPeerUDS::close() {
+	running = false;
+	if (thread.is_started()) {
+		thread.wait_to_finish();
+	}
+	if (local_client.is_valid()) {
+		local_client->disconnect_from_host();
+	}
+	out_buf.clear();
+	in_buf.clear();
+}
+
+RemoteDebuggerPeerUDS::RemoteDebuggerPeerUDS(Ref<StreamPeerUDS> p_stream) {
+	in_buf.resize((8 << 20) + 4);
+	out_buf.resize(8 << 20);
+	local_client = p_stream;
+	if (local_client.is_valid() && local_client->get_status() == StreamPeerUDS::STATUS_CONNECTED) {
+		connected = true;
+		running = true;
+		thread.start(_thread_func, this);
+	} else {
+		local_client.instantiate();
+	}
+}
+
+RemoteDebuggerPeerUDS::~RemoteDebuggerPeerUDS() {
+	close();
+}
+
+void RemoteDebuggerPeerUDS::_write_out() {
+	while (local_client->get_status() == StreamPeerUDS::STATUS_CONNECTED && local_client->wait(UDSSocket::POLL_TYPE_OUT) == OK) {
+		uint8_t *buf = out_buf.ptrw();
+		if (out_left <= 0) {
+			mutex.lock();
+			List<Array>::Element *E = out_queue.front();
+			if (!E) {
+				mutex.unlock();
+				break;
+			}
+			Variant var = E->get();
+			out_queue.pop_front();
+			mutex.unlock();
+			int size = 0;
+			Error err = encode_variant(var, nullptr, size);
+			ERR_CONTINUE(err != OK || size > out_buf.size() - 4);
+			encode_uint32(size, buf);
+			encode_variant(var, buf + 4, size);
+			out_left = size + 4;
+			out_pos = 0;
+		}
+		int sent = 0;
+		local_client->put_partial_data(buf + out_pos, out_left, sent);
+		out_left -= sent;
+		out_pos += sent;
+	}
+}
+
+void RemoteDebuggerPeerUDS::_read_in() {
+	while (local_client->get_status() == StreamPeerUDS::STATUS_CONNECTED && local_client->wait(UDSSocket::POLL_TYPE_IN) == OK) {
+		uint8_t *buf = in_buf.ptrw();
+		if (in_left <= 0) {
+			if (in_queue.size() > max_queued_messages) {
+				break;
+			}
+			if (local_client->get_available_bytes() < 4) {
+				break;
+			}
+			uint32_t size = 0;
+			int read = 0;
+			Error err = local_client->get_partial_data((uint8_t *)&size, 4, read);
+			ERR_CONTINUE(read != 4 || err != OK || size > (uint32_t)in_buf.size());
+			in_left = size;
+			in_pos = 0;
+		}
+		int read = 0;
+		local_client->get_partial_data(buf + in_pos, in_left, read);
+		in_left -= read;
+		in_pos += read;
+		if (in_left == 0) {
+			Variant var;
+			Error err = decode_variant(var, buf, in_pos, &read);
+			ERR_CONTINUE(read != in_pos || err != OK);
+			ERR_CONTINUE_MSG(var.get_type() != Variant::ARRAY, "Malformed packet received, not an Array.");
+			MutexLock lock(mutex);
+			in_queue.push_back(var);
+		}
+	}
+}
+
+Error RemoteDebuggerPeerUDS::connect_to_host(const String &p_path) {
+	Error err = local_client->connect_to_host(p_path);
+	if (err != OK && err != ERR_BUSY) {
+		ERR_PRINT("Remote Debugger UDS: Unable to connect.");
+		return FAILED;
+	}
+	// Wait for connection
+	const int tries = 6;
+	const int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
+
+	for (int i = 0; i < tries; i++) {
+		local_client->poll();
+		if (local_client->get_status() == StreamPeerUDS::STATUS_CONNECTED) {
+			print_verbose("Remote Debugger UDS: Connected!");
+			break;
+		} else {
+			const int ms = waits[i];
+			OS::get_singleton()->delay_usec(ms * 1000);
+			print_verbose("Remote Debugger UDS: Connection failed with status: '" + String::num_int64(local_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
+		}
+	}
+	if (local_client->get_status() != StreamPeerUDS::STATUS_CONNECTED) {
+		ERR_PRINT(vformat("Remote Debugger UDS: Unable to connect. Status: %s.", String::num_int64(local_client->get_status())));
+		return FAILED;
+	}
+	connected = true;
+	running = true;
+	thread.start(_thread_func, this);
+	return OK;
+}
+
+void RemoteDebuggerPeerUDS::_thread_func(void *p_ud) {
+	const uint64_t min_tick = 6900;
+	RemoteDebuggerPeerUDS *peer = static_cast<RemoteDebuggerPeerUDS *>(p_ud);
+	while (peer->running && peer->is_peer_connected()) {
+		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();
+		peer->_poll();
+		if (!peer->is_peer_connected()) {
+			break;
+		}
+		ticks_usec = OS::get_singleton()->get_ticks_usec() - ticks_usec;
+		if (ticks_usec < min_tick) {
+			OS::get_singleton()->delay_usec(min_tick - ticks_usec);
+		}
+	}
+}
+
+void RemoteDebuggerPeerUDS::poll() {
+	// Nothing to do, polling is done in thread.
+}
+
+void RemoteDebuggerPeerUDS::_poll() {
+	local_client->poll();
+	if (connected) {
+		_write_out();
+		_read_in();
+		connected = local_client->get_status() == StreamPeerUDS::STATUS_CONNECTED;
+	}
+}
+
+RemoteDebuggerPeer *RemoteDebuggerPeerUDS::create(const String &p_uri) {
+	ERR_FAIL_COND_V(!p_uri.begins_with("unix://"), nullptr);
+
+	String path = p_uri.replace("unix://", "");
+	RemoteDebuggerPeerUDS *peer = memnew(RemoteDebuggerPeerUDS);
+	Error err = peer->connect_to_host(path);
+	if (err != OK) {
+		memdelete(peer);
+		return nullptr;
+	}
+	return peer;
+}
