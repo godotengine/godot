@@ -629,8 +629,13 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 
 	const int physics_vertex_count = (int)physics_vertices.size();
 
+	normals.clear();
 	normals.resize(physics_vertex_count);
 
+	// Compute vertex normals using smooth-shading:
+	// Each vertex should use the average normal of all faces it is a part of.
+	// Iterate over each face, and add the face normal to each of the face vertices.
+	// By the end of the loop, each vertex normal will be the sum of all face normals it belongs to.
 	for (const SoftBodyFace &physics_face : physics_faces) {
 		// Jolt uses a different winding order, so we swap the indices to account for that.
 
@@ -644,9 +649,18 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 
 		const Vector3 normal = (v2 - v0).cross(v1 - v0).normalized();
 
-		normals[i0] = normal;
-		normals[i1] = normal;
-		normals[i2] = normal;
+		normals[i0] += normal;
+		normals[i1] += normal;
+		normals[i2] += normal;
+	}
+	// Normalize the vertex normals to have length 1.0
+	for (Vector3 &n : normals) {
+		real_t len = n.length();
+		// Some normals may have length 0 if the face was degenerate,
+		// so don't divide by zero.
+		if (len > CMP_EPSILON) {
+			n /= len;
+		}
 	}
 
 	const int mesh_vertex_count = shared->mesh_to_physics.size();
