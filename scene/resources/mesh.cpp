@@ -388,7 +388,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	}
 
 	triangle_mesh.instantiate();
-	triangle_mesh->create(faces);
+	triangle_mesh->create(faces, surface_indices);
 
 	return triangle_mesh;
 }
