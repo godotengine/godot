@@ -96,7 +96,11 @@ public:
  * Writes messages to stdout/stderr.
  */
 class StdLogger : public Logger {
+	static bool _print_timestamps;
+
 public:
+	static void set_print_timestamps(bool p_value);
+
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual ~StdLogger() {}
 };
@@ -111,15 +115,20 @@ class RotatedFileLogger : public Logger {
 	String base_path;
 	int max_files;
 
+	static bool _log_timestamps;
+
 	Ref<FileAccess> file;
 
 	void clear_old_backups();
 	void rotate_file();
+	void store_to_log(const Ref<FileAccess> p_file, const uint8_t *p_buf, int p_len);
 
 	Ref<RegEx> strip_ansi_regex;
 
 public:
 	explicit RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
+
+	static void set_log_timestamps(bool p_value);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 };
