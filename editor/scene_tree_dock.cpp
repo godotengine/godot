@@ -30,6 +30,7 @@
 
 #include "scene_tree_dock.h"
 
+#include "connections_dialog.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
@@ -2811,6 +2812,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		}
 
 		//delete for read
+		bool connections_changed = false;
 		for (Node *n : remove_list) {
 			if (!n->is_inside_tree() || !n->get_parent()) {
 				continue;
@@ -2821,6 +2823,22 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 			Array owners;
 			for (Node *F : owned) {
 				owners.push_back(F);
+			}
+
+			// Cleanup any signals connected to this node.
+			List<Connection> connections_for_removed_node;
+			n->get_signals_connected_to_this(&connections_for_removed_node);
+			for (Connection conn : connections_for_removed_node) {
+				ConnectDialog::ConnectionData cd = conn;
+				if (!remove_list.find(cd.source)) {
+					Node *source = cd.source;
+					Callable callable = cd.get_callable();
+
+					undo_redo->add_do_method(source, "disconnect", cd.signal, callable);
+					undo_redo->add_undo_method(source, "connect", cd.signal, callable, cd.flags);
+
+					connections_changed = true;
+				}
 			}
 
 			undo_redo->add_do_method(n->get_parent(), "remove_child", n);
@@ -2835,6 +2853,10 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 			EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 			undo_redo->add_do_method(ed, "live_debug_remove_and_keep_node", edited_scene->get_path_to(n), n->get_instance_id());
 			undo_redo->add_undo_method(ed, "live_debug_restore_node", n->get_instance_id(), edited_scene->get_path_to(n->get_parent()), n->get_index(false));
+		}
+		if (connections_changed) {
+			undo_redo->add_do_method(NodeDock::get_singleton(), "update_lists");
+			undo_redo->add_undo_method(NodeDock::get_singleton(), "update_lists");
 		}
 	}
 	undo_redo->commit_action();
