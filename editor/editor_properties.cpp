@@ -3399,7 +3399,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
 		resource_picker = shader_picker;
 		connect(SceneStringName(ready), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
-	} else if (p_base_type == "AudioStream") {
+	} else if (ClassDB::is_parent_class(p_base_type, "AudioStream")) {
 		EditorAudioStreamPicker *astream_picker = memnew(EditorAudioStreamPicker);
 		resource_picker = astream_picker;
 	} else {
