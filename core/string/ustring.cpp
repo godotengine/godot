@@ -5930,7 +5930,7 @@ Vector<uint8_t> String::to_multibyte_char_buffer(const String &p_encoding) const
  * NOTE: Only use `TTR()` in editor-only code (typically within the `editor/` folder).
  * For translations that can be supplied by exported projects, use `RTR()` instead.
  */
-String TTR(const String &p_text, const String &p_context) {
+String TTR(const StringName &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		return TranslationServer::get_singleton()->tool_translate(p_text, p_context);
 	}
@@ -5950,7 +5950,7 @@ String TTR(const String &p_text, const String &p_context) {
  * NOTE: Only use `TTRN()` in editor-only code (typically within the `editor/` folder).
  * For translations that can be supplied by exported projects, use `RTRN()` instead.
  */
-String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
+String TTRN(const StringName &p_text, const StringName &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		return TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
 	}
@@ -6012,7 +6012,7 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
  * NOTE: Do not use `RTR()` in editor-only code (typically within the `editor/`
  * folder). For editor translations, use `TTR()` instead.
  */
-String RTR(const String &p_text, const String &p_context) {
+String RTR(const StringName &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
 		if (rtr.is_empty() || rtr == p_text) {
@@ -6035,7 +6035,7 @@ String RTR(const String &p_text, const String &p_context) {
  * NOTE: Do not use `RTRN()` in editor-only code (typically within the `editor/`
  * folder). For editor translations, use `TTRN()` instead.
  */
-String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
+String RTRN(const StringName &p_text, const StringName &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
 		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
