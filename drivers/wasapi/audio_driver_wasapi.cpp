@@ -928,6 +928,8 @@ void AudioDriverWASAPI::process_audio_output(uint32_t &avail_frames, uint32_t &w
 			if (err != OK) {
 				ERR_PRINT("WASAPI: finish_output_device error");
 			}
+			// Reset avail_frames to force regeneration of audio data with new buffer size
+			avail_frames = 0;
 		}
 	}
 }
@@ -944,18 +946,44 @@ void AudioDriverWASAPI::process_audio_input(uint32_t &read_frames) {
 		if (hr == S_OK) {
 			while (packet_length != 0) {
 				hr = audio_input.capture_client->GetBuffer(&data, &num_frames_available, &flags, nullptr, nullptr);
-				ERR_BREAK(hr != S_OK);
+				if (hr == S_OK) {
+					read_audio_buffer(data, num_frames_available, flags);
 
-				read_audio_buffer(data, num_frames_available, flags);
+					read_frames += num_frames_available;
 
-				read_frames += num_frames_available;
-
-				hr = audio_input.capture_client->ReleaseBuffer(num_frames_available);
-				ERR_BREAK(hr != S_OK);
+					hr = audio_input.capture_client->ReleaseBuffer(num_frames_available);
+					if (hr != S_OK) {
+						ERR_PRINT("WASAPI: Release buffer error");
+						break;
+					}
+				} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
+					// Input device is not valid anymore, reopen it
+					WARN_PRINT("WASAPI: Current input device invalidated, closing input device");
+					Error err = finish_input_device();
+					if (err != OK) {
+						ERR_PRINT("WASAPI: finish_input_device error");
+					}
+					break;
+				} else {
+					ERR_PRINT("WASAPI: Get buffer error");
+					break;
+				}
 
 				hr = audio_input.capture_client->GetNextPacketSize(&packet_length);
-				ERR_BREAK(hr != S_OK);
+				if (hr != S_OK) {
+					ERR_PRINT("WASAPI: GetNextPacketSize error");
+					break;
+				}
 			}
+		} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
+			// Input device is not valid anymore
+			WARN_PRINT("WASAPI: Current input device invalidated, closing input device");
+			Error err = finish_input_device();
+			if (err != OK) {
+				ERR_PRINT("WASAPI: finish_input_device error");
+			}
+		} else if (hr != S_OK) {
+			ERR_PRINT("WASAPI: GetNextPacketSize error");
 		}
 	}
 }
@@ -981,12 +1009,16 @@ void AudioDriverWASAPI::handle_output_device_changes() {
 		}
 	}
 
+	// Reinitialize device if it's not available (either due to invalidation or user change)
 	if (!audio_output.audio_client) {
 		if (output_reinit_countdown < 1) {
 			Error err = init_output_device(true);
 			if (err == OK) {
 				start();
+				// Reset countdown on successful initialization
+				output_reinit_countdown = 0;
 			} else {
+				// Only increment countdown on failure to allow immediate retry on success
 				output_reinit_countdown = 1000;
 			}
 		} else {
@@ -998,31 +1030,29 @@ void AudioDriverWASAPI::handle_output_device_changes() {
 // Helper function to handle input device changes
 void AudioDriverWASAPI::handle_input_device_changes() {
 	if (audio_input.active.is_set()) {
+		bool reinitDevice = false;
+
 		// If we're using the Default input device and it changed finish it so we'll re-init the input device
 		if (audio_input.device_name == "Default" && default_input_device_changed) {
-			Error err = finish_input_device();
-			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_input_device error");
-			}
-
+			reinitDevice = audio_input.active.is_set();
 			default_input_device_changed = false;
 		}
-
 		// User selected a new input device, finish the current one so we'll init the new input device
 		if (audio_input.device_name != audio_input.new_device) {
 			audio_input.device_name = audio_input.new_device;
-			Error err = finish_input_device();
-			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_input_device error");
-			}
+			reinitDevice = audio_input.active.is_set();
 		}
 
-		if (!audio_input.audio_client) {
+		// Reinitialize device if it's not available (either due to invalidation or user change)
+		if (reinitDevice) {
 			if (input_reinit_countdown < 1) {
 				Error err = init_input_device(true);
 				if (err == OK) {
 					input_start();
+					// Reset countdown on successful initialization
+					input_reinit_countdown = 0;
 				} else {
+					// Only increment countdown on failure to allow immediate retry on success
 					input_reinit_countdown = 1000;
 				}
 			} else {
@@ -1063,15 +1093,17 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			ad->unlock();
 		}
 
+		// 2. Handle device changes (outside the main audio processing lock to prevent deadlocks)
+		ad->lock();
+		ad->handle_output_device_changes();
+		ad->handle_input_device_changes();
+		ad->unlock();
+
 		ad->lock();
 		ad->start_counting_ticks();
 
-		// 2. Process audio output
+		// 3. Process audio output
 		ad->process_audio_output(avail_frames, write_ofs, written_frames);
-
-		// 3. Handle device changes
-		ad->handle_output_device_changes();
-		ad->handle_input_device_changes();
 
 		// 4. Process audio input
 		ad->process_audio_input(read_frames);
@@ -1117,14 +1149,14 @@ void AudioDriverWASAPI::finish() {
 }
 
 Error AudioDriverWASAPI::input_start() {
+	if (audio_input.active.is_set()) {
+		return FAILED;
+	}
+
 	Error err = init_input_device();
 	if (err != OK) {
 		ERR_PRINT("WASAPI: init_input_device error");
 		return err;
-	}
-
-	if (audio_input.active.is_set()) {
-		return FAILED;
 	}
 
 	audio_input.audio_client->Start();
@@ -1133,14 +1165,17 @@ Error AudioDriverWASAPI::input_start() {
 }
 
 Error AudioDriverWASAPI::input_stop() {
-	if (audio_input.active.is_set()) {
-		audio_input.audio_client->Stop();
-		audio_input.active.clear();
-
-		return OK;
+	if (!audio_input.active.is_set()) {
+		return FAILED;
 	}
 
-	return FAILED;
+	Error err = finish_input_device();
+	if (err != OK) {
+		ERR_PRINT("WASAPI: finish_input_device error");
+		return err;
+	}
+
+	return OK;
 }
 
 PackedStringArray AudioDriverWASAPI::get_input_device_list() {
