@@ -75,6 +75,7 @@ public:
 	bool is_stopped() const;
 
 	double get_time_left() const;
+	void set_time_left(double p_time_left);
 
 	PackedStringArray get_configuration_warnings() const override;
 
