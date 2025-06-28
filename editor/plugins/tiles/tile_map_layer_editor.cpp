@@ -136,7 +136,7 @@ void TileMapLayerEditorTilesPlugin::_update_transform_buttons() {
 	}
 
 	if (has_scene_tile) {
-		_set_transform_buttons_state({}, { transform_button_rotate_left, transform_button_rotate_right, transform_button_flip_h, transform_button_flip_v },
+		_set_transform_buttons_state({ transform_button_rotate_left, transform_button_rotate_right }, { transform_button_flip_h, transform_button_flip_v },
 				TTR("Can't transform scene tiles."));
 	} else if (tile_set->get_tile_shape() != TileSet::TILE_SHAPE_SQUARE && selection_pattern->get_size() != Vector2i(1, 1)) {
 		_set_transform_buttons_state({ transform_button_flip_h, transform_button_flip_v }, { transform_button_rotate_left, transform_button_rotate_right },
@@ -4257,6 +4257,9 @@ void TileMapLayerEditor::_draw_overlay() {
 		if (tile_source_id >= 0) {
 			Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
 			int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
+			if (Object::cast_to<TileSetScenesCollectionSource>(tile_set->get_source(tile_source_id).ptr())) {
+				tile_alternative_tile = TileSetAtlasSource::alternative_no_transform(tile_alternative_tile);
+			}
 
 			TileSetSource *source = nullptr;
 			if (tile_set->has_source(tile_source_id)) {
