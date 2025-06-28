@@ -575,14 +575,12 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					}
 
 					int closest = -1;
-					real_t closest_dist = 1e20;
 
-					for (int i = editing_points.size() - internal_vertices; i < editing_points.size(); i++) {
+					for (int i = editing_points.size() - 1; i >= editing_points.size() - internal_vertices; i--) {
 						Vector2 tuv = mtx.xform(previous_polygon[i]);
-						real_t dist = tuv.distance_to(mb->get_position());
-						if (dist < 8 && dist < closest_dist) {
+						if (tuv.distance_to(mb->get_position()) < 8) {
 							closest = i;
-							closest_dist = dist;
+							break;
 						}
 					}
 
