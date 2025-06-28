@@ -545,7 +545,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 			result += name_unstripped.strip_edges();
 
 			if (type_hints) {
-				const String type_stripped = p_args[i].right(name_unstripped.length() + 1).strip_edges();
+				const String type_stripped = p_args[i].substr(name_unstripped.length() + 1).strip_edges();
 				if (!type_stripped.is_empty()) {
 					result += ": " + type_stripped;
 				}
