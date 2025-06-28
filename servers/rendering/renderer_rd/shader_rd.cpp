@@ -987,7 +987,9 @@ Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &
 		ERR_PRINT(error);
 
 #ifdef DEBUG_ENABLED
-		ERR_PRINT("code:\n" + p_stage_sources[compilation_failed_stage].get_with_code_lines());
+		if (is_print_verbose_enabled()) {
+			ERR_PRINT("code:\n" + p_stage_sources[compilation_failed_stage].get_with_code_lines());
+		}
 #endif
 
 		return Vector<RD::ShaderStageSPIRVData>();
