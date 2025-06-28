@@ -84,6 +84,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String version;
 	};
 
+	bool _should_update_export_options = false;
+
 #ifndef DISABLE_DEPRECATED
 	mutable Vector<PluginConfigAndroid> android_plugins;
 	mutable SafeFlag android_plugins_changed;
@@ -278,6 +280,12 @@ public:
 	virtual void get_platform_features(List<String> *r_features) const override;
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
+
+	virtual void export_option_set(const String &p_edited_property) override {
+		if (p_edited_property == "gradle_build/use_gradle_build") {
+			_should_update_export_options = true;
+		}
+	}
 
 	EditorExportPlatformAndroid();
 
