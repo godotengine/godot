@@ -7069,7 +7069,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		case MENU_LOCK_SELECTED: {
 			undo_redo->create_action(TTR("Lock Selected"));
 
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> &selection = editor_selection->get_full_selected_node_list();
 
 			for (Node *E : selection) {
 				Node3D *spatial = Object::cast_to<Node3D>(E);
@@ -7090,7 +7090,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		case MENU_UNLOCK_SELECTED: {
 			undo_redo->create_action(TTR("Unlock Selected"));
 
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> &selection = editor_selection->get_full_selected_node_list();
 
 			for (Node *E : selection) {
 				Node3D *spatial = Object::cast_to<Node3D>(E);
