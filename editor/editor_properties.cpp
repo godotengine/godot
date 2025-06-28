@@ -2132,14 +2132,26 @@ void EditorPropertyQuaternion::_custom_value_changed(double val) {
 	_value_changed(-1, "");
 }
 
-void EditorPropertyQuaternion::_value_changed(double val, const String &p_name) {
-	Quaternion p;
-	p.x = spin[0]->get_value();
-	p.y = spin[1]->get_value();
-	p.z = spin[2]->get_value();
-	p.w = spin[3]->get_value();
+void EditorPropertyQuaternion::_refresh_edit_from_internal() {
+	edit_quaternion = get_edited_property_value();
+	refresh_button->hide();
+	update_property();
+}
 
+void EditorPropertyQuaternion::_refresh_internal_quaternion_from_edit(const String &p_name) {
+	Quaternion p = edit_quaternion;
+	p.normalize();
 	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyQuaternion::_value_changed(double val, const String &p_name) {
+	edit_quaternion.x = spin[0]->get_value();
+	edit_quaternion.y = spin[1]->get_value();
+	edit_quaternion.z = spin[2]->get_value();
+	edit_quaternion.w = spin[3]->get_value();
+
+	_refresh_internal_quaternion_from_edit(p_name);
+	refresh_button->show();
 }
 
 bool EditorPropertyQuaternion::is_grabbing_euler() {
@@ -2151,7 +2163,7 @@ bool EditorPropertyQuaternion::is_grabbing_euler() {
 }
 
 void EditorPropertyQuaternion::update_property() {
-	Quaternion val = get_edited_property_value();
+	Quaternion val = edit_quaternion;
 	spin[0]->set_value_no_signal(val.x);
 	spin[1]->set_value_no_signal(val.y);
 	spin[2]->set_value_no_signal(val.z);
@@ -2173,6 +2185,9 @@ void EditorPropertyQuaternion::_warning_pressed() {
 
 void EditorPropertyQuaternion::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_refresh_edit_from_internal();
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2252,6 +2267,12 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
 	}
+
+	refresh_button = memnew(Button);
+	refresh_button->set_text("Refresh");
+	default_layout->add_child(refresh_button);
+	refresh_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_refresh_edit_from_internal));
+	refresh_button->hide();
 
 	warning = memnew(Button);
 	warning->set_text(TTR("Temporary Euler may be changed implicitly!"));
