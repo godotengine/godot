@@ -129,5 +129,10 @@
 				Emitted when editor is about to close the active script. Argument is a [Script] that is going to be closed.
 			</description>
 		</signal>
+		<signal name="script_editor_resize">
+			<description>
+				Emitted when Script editor resize.
+			</description>
+		</signal>
 	</signals>
 </class>
