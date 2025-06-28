@@ -650,50 +650,25 @@ void ScriptEditor::_update_history_arrows() {
 }
 
 void ScriptEditor::_save_history() {
-	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
-		Node *n = tab_container->get_current_tab_control();
-
-		if (Object::cast_to<ScriptEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
-		}
-		if (Object::cast_to<EditorHelp>(n)) {
-			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
-		}
-	}
-
-	history.resize(history_pos + 1);
-	ScriptHistory sh;
-	sh.control = tab_container->get_current_tab_control();
-	sh.state = Variant();
-
-	history.push_back(sh);
-	history_pos++;
-
-	_update_history_arrows();
-}
-
-void ScriptEditor::_save_previous_state(Dictionary p_state) {
-	if (lock_history) {
-		// Done as a result of a deferred call triggered by set_edit_state().
-		lock_history = false;
+	Control *control = tab_container->get_current_tab_control();
+	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(control);
+	if (seb) {
+		_save_history_state(seb->get_navigation_state());
 		return;
 	}
-
-	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
-		Node *n = tab_container->get_current_tab_control();
-
-		if (Object::cast_to<ScriptTextEditor>(n)) {
-			history.write[history_pos].state = p_state;
-		}
+	EditorHelp *eh = Object::cast_to<EditorHelp>(control);
+	if (eh) {
+		_save_history_state(eh->get_scroll());
 	}
+}
 
-	history.resize(history_pos + 1);
-	ScriptHistory sh;
-	sh.control = tab_container->get_current_tab_control();
-	sh.state = Variant();
-
-	history.push_back(sh);
+void ScriptEditor::_save_history_state(const Variant &p_state) {
 	history_pos++;
+	history.resize(history_pos + 1);
+
+	ScriptHistory &current_history = history.write[history_pos];
+	current_history.control = tab_container->get_current_tab_control();
+	current_history.state = p_state;
 
 	_update_history_arrows();
 }
@@ -711,26 +686,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		return;
 	}
 
-	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
-		Node *n = tab_container->get_current_tab_control();
-
-		if (Object::cast_to<ScriptEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
-		}
-		if (Object::cast_to<EditorHelp>(n)) {
-			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
-		}
-	}
-
-	history.resize(history_pos + 1);
-	ScriptHistory sh;
-	sh.control = c;
-	sh.state = Variant();
-
-	if (!lock_history && (history.is_empty() || history[history.size() - 1].control != sh.control)) {
-		history.push_back(sh);
-		history_pos++;
-	}
+	_save_history();
 
 	tab_container->set_current_tab(p_idx);
 
@@ -757,6 +713,8 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 			Object::cast_to<EditorHelp>(c)->set_focused();
 		}
 	}
+
+	_save_history();
 
 	c->set_meta("__editor_pass", ++edit_pass);
 	_update_history_arrows();
@@ -2648,10 +2606,6 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	if (script_editor_cache->has_section(p_resource->get_path())) {
 		se->set_edit_state(script_editor_cache->get_value(p_resource->get_path(), "state"));
-		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(se);
-		if (ste) {
-			ste->store_previous_state();
-		}
 	}
 
 	_sort_list_on_update = true;
@@ -2663,7 +2617,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	se->connect("request_open_script_at_line", callable_mp(this, &ScriptEditor::_goto_script_line));
 	se->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
-	se->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state));
+	se->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_history_state));
 	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog));
 	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
 	se->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
@@ -3798,20 +3752,10 @@ void ScriptEditor::_update_selected_editor_menu() {
 	}
 }
 
-void ScriptEditor::_update_history_pos(int p_new_pos) {
-	Node *n = tab_container->get_current_tab_control();
-
-	if (Object::cast_to<ScriptEditorBase>(n)) {
-		history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
-	}
-	if (Object::cast_to<EditorHelp>(n)) {
-		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
-	}
-
-	history_pos = p_new_pos;
+void ScriptEditor::_update_history_pos() {
 	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(history[history_pos].control));
 
-	n = history[history_pos].control;
+	Node *n = history[history_pos].control;
 
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(n);
 	if (seb) {
@@ -3839,13 +3783,15 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 
 void ScriptEditor::_history_forward() {
 	if (history_pos < history.size() - 1) {
-		_update_history_pos(history_pos + 1);
+		history_pos++;
+		_update_history_pos();
 	}
 }
 
 void ScriptEditor::_history_back() {
 	if (history_pos > 0) {
-		_update_history_pos(history_pos - 1);
+		history_pos--;
+		_update_history_pos();
 	}
 }
 
@@ -4412,14 +4358,14 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
-	script_back->set_tooltip_text(TTRC("Go to previous edited document."));
+	script_back->set_tooltip_text(TTRC("Go back in editing history."));
 
 	script_forward = memnew(Button);
 	script_forward->set_flat(true);
 	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
-	script_forward->set_tooltip_text(TTRC("Go to next edited document."));
+	script_forward->set_tooltip_text(TTRC("Go forward in editing history."));
 
 	menu_hb->add_child(memnew(VSeparator));
 
@@ -4510,8 +4456,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files->connect(FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED, callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
 	find_in_files->hide();
 	find_in_files_button->hide();
-
-	history_pos = -1;
 
 	edit_pass = 0;
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");

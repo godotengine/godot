@@ -393,7 +393,7 @@ class ScriptEditor : public PanelContainer {
 	};
 
 	Vector<ScriptHistory> history;
-	int history_pos;
+	int history_pos = -1;
 
 	List<String> previous_scripts;
 	List<int> script_close_queue;
@@ -535,9 +535,9 @@ class ScriptEditor : public PanelContainer {
 	bool _help_tab_goto(const String &p_name, const String &p_desc);
 	void _update_history_arrows();
 	void _save_history();
-	void _save_previous_state(Dictionary p_state);
+	void _save_history_state(const Variant &p_state);
 	void _go_to_tab(int p_idx);
-	void _update_history_pos(int p_new_pos);
+	void _update_history_pos();
 	void _update_script_colors();
 	void _update_modified_scripts_for_external_editor(Ref<Script> p_for_script = Ref<Script>());
 

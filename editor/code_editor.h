@@ -187,7 +187,6 @@ class CodeTextEditor : public VBoxContainer {
 	int error_column;
 
 	bool preview_navigation_change = false;
-	Dictionary previous_state;
 
 	void _update_text_editor_theme();
 	void _update_font_ligatures();
@@ -264,8 +263,6 @@ public:
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
 	Variant get_navigation_state();
-	Variant get_previous_state();
-	void store_previous_state();
 
 	bool is_previewing_navigation_change() const;
 	void set_preview_navigation_change(bool p_preview);

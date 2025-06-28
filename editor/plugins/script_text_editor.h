@@ -297,9 +297,6 @@ public:
 
 	virtual void validate() override;
 
-	Variant get_previous_state();
-	void store_previous_state();
-
 	ScriptTextEditor();
 	~ScriptTextEditor();
 };

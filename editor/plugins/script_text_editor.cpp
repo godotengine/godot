@@ -699,14 +699,6 @@ Variant ScriptTextEditor::get_navigation_state() {
 	return code_editor->get_navigation_state();
 }
 
-Variant ScriptTextEditor::get_previous_state() {
-	return code_editor->get_previous_state();
-}
-
-void ScriptTextEditor::store_previous_state() {
-	return code_editor->store_previous_state();
-}
-
 void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }
@@ -1204,7 +1196,6 @@ void ScriptTextEditor::_on_caret_moved() {
 		nav_state["row"] = previous_line;
 		nav_state["scroll_position"] = -1;
 		emit_signal(SNAME("request_save_previous_state"), nav_state);
-		store_previous_state();
 	}
 	previous_line = current_line;
 }
