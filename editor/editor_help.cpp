@@ -156,6 +156,8 @@ static void _add_qualifiers_to_rt(const String &p_qualifiers, RichTextLabel *p_r
 			hint = TTR("This method does not need an instance to be called.\nIt can be called directly using the class name.");
 		} else if (qualifier == "abstract") {
 			hint = TTR("This method must be implemented to complete the abstract class.");
+		} else if (qualifier == "multilevel") {
+			hint = TTR("This method is called automatically for every script that overrides it.\nThis means that the base implementation should not be called via super in GDScript\nor its equivalents in other languages.");
 		}
 
 		p_rt->add_text(" ");
