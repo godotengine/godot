@@ -227,7 +227,7 @@ Error GDExtensionLibraryLoader::initialize(GDExtensionInterfaceGetProcAddress p_
 
 	GDExtensionInitializationFunction initialization_function = (GDExtensionInitializationFunction)entry_funcptr;
 
-	GDExtensionBool ret = initialization_function(p_get_proc_address, p_extension.ptr(), r_initialization);
+	GDExtensionBool ret = initialization_function(p_get_proc_address, to_gdextension(p_extension.ptr()), r_initialization);
 
 	if (ret) {
 		return OK;
