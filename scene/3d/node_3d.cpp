@@ -905,7 +905,7 @@ void Node3D::remove_gizmo(Ref<Node3DGizmo> p_gizmo) {
 #ifdef TOOLS_ENABLED
 	int idx = data.gizmos.find(p_gizmo);
 	if (idx != -1) {
-		p_gizmo->free();
+		p_gizmo->free_gizmo();
 		data.gizmos.remove_at(idx);
 	}
 #endif
@@ -915,7 +915,7 @@ void Node3D::clear_gizmos() {
 	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	for (int i = 0; i < data.gizmos.size(); i++) {
-		data.gizmos.write[i]->free();
+		data.gizmos.write[i]->free_gizmo();
 	}
 	data.gizmos.clear();
 #endif
