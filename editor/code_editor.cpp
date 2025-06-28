@@ -211,7 +211,10 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 
 	if (pos.x != -1) {
 		if (!preserve_cursor && !is_selection_only()) {
-			text_editor->unfold_line(pos.y);
+			_temp_unfold_line(pos.y);
+			text_editor->set_caret_line(pos.y, false);
+			text_editor->set_caret_column(pos.x + text.length(), false);
+			text_editor->center_viewport_to_caret(0);
 			text_editor->select(pos.y, pos.x, pos.y, pos.x + text.length());
 			text_editor->center_viewport_to_caret(0);
 			text_editor->set_code_hint("");
@@ -507,6 +510,34 @@ void FindReplaceBar::_update_matches_display() {
 	replace_all->set_disabled(search_text->get_text().is_empty());
 }
 
+void FindReplaceBar::_temp_unfold_line(int p_line) {
+	// Unfold p_line, then walk back to find which was the first line that had to be unfolded so p_line can be shown.
+	// Mark that line as temporarily unfolded, so it's folded back on the next temporarily unfolding - unless the user for example edits the text.
+	if (temp_unfolded_line != -1) {
+		text_editor->fold_line(temp_unfolded_line);
+	}
+
+	if (!text_editor->is_line_folded(p_line)) {
+		temp_unfolded_line = p_line;
+		while (temp_unfolded_line >= 0) {
+			if (text_editor->is_line_folded(temp_unfolded_line)) {
+				break;
+			} else {
+				String line_text = text_editor->get_line(temp_unfolded_line);
+				// If at the start of a lowest-level foldable block, don't backtrack further.
+				// TODO This should likely be refined in its own CodeEdit function, but when this was written such a function didn't exist.
+				if (text_editor->can_fold_line(temp_unfolded_line) && !is_whitespace(line_text[0]) && text_editor->is_in_comment(temp_unfolded_line, 0) == -1 && text_editor->is_in_string(temp_unfolded_line, 0) == -1) {
+					temp_unfolded_line = -1;
+					break;
+				}
+			}
+			temp_unfolded_line--;
+		}
+
+		text_editor->unfold_line(p_line);
+	}
+}
+
 bool FindReplaceBar::search_current() {
 	_update_flags(false);
 
@@ -575,6 +606,7 @@ void FindReplaceBar::_hide_bar() {
 	}
 
 	text_editor->set_search_text("");
+	temp_unfolded_line = -1;
 	result_line = -1;
 	result_col = -1;
 	hide();
@@ -657,6 +689,7 @@ void FindReplaceBar::_search_options_changed(bool p_pressed) {
 }
 
 void FindReplaceBar::_editor_text_changed() {
+	temp_unfolded_line = -1;
 	results_count = -1;
 	results_count_to_current = -1;
 	needs_to_count_results = true;
