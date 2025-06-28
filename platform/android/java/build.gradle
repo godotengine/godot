@@ -176,10 +176,6 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                         from("app/build/outputs/apk/${edition}/${target}") {
                             include("android_${filenameSuffix}.apk")
                         }
-                        from("app/build/outputs/native-debug-symbols/${edition}${capitalizedTarget}") {
-                            include("native-debug-symbols.zip")
-                            rename ("native-debug-symbols.zip", "android-template-${edition}-${target}-native-debug-symbols.zip")
-                        }
                         into(binDir)
                     }
                 }
@@ -193,10 +189,6 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                         dependsOn ":editor:assemble${capitalizedAndroidDistro}${capitalizedTarget}"
                         from("editor/build/outputs/apk/${androidDistro}/${target}") {
                             include("android_editor-${androidDistro}-${target}*.apk")
-                        }
-                        from("editor/build/outputs/native-debug-symbols/${androidDistro}${capitalizedTarget}") {
-                            include("native-debug-symbols.zip")
-                            rename ("native-debug-symbols.zip", "android-editor-${androidDistro}-${target}-native-debug-symbols.zip")
                         }
                         into(androidEditorBuildsDir)
                     }
@@ -323,17 +315,11 @@ task cleanGodotTemplates(type: Delete) {
 
     // Delete the Godot templates in the Godot bin directory
     delete("$binDir/android_debug.apk")
-    delete("$binDir/android-template-standard-debug-native-debug-symbols.zip")
     delete("$binDir/android_dev.apk")
-    delete("$binDir/android-template-standard-dev-native-debug-symbols.zip")
     delete("$binDir/android_release.apk")
-    delete("$binDir/android-template-standard-release-native-debug-symbols.zip")
     delete("$binDir/android_monoDebug.apk")
-    delete("$binDir/android-template-mono-debug-native-debug-symbols.zip")
     delete("$binDir/android_monoDev.apk")
-    delete("$binDir/android-template-mono-dev-native-debug-symbols.zip")
     delete("$binDir/android_monoRelease.apk")
-    delete("$binDir/android-template-mono-release-native-debug-symbols.zip")
     delete("$binDir/android_source.zip")
     delete("$binDir/godot-lib.template_debug.aar")
     delete("$binDir/godot-lib.template_debug.dev.aar")
@@ -343,4 +329,12 @@ task cleanGodotTemplates(type: Delete) {
     delete("$binDir/godot-lib.debug.aar")
     delete("$binDir/godot-lib.dev.aar")
     delete("$binDir/godot-lib.release.aar")
+
+    // Delete the native debug symbols files.
+    delete("$binDir/android-editor-debug-native-symbols.zip")
+    delete("$binDir/android-editor-dev-native-symbols.zip")
+    delete("$binDir/android-editor-release-native-symbols.zip")
+    delete("$binDir/android-template-debug-native-symbols.zip")
+    delete("$binDir/android-template-dev-native-symbols.zip")
+    delete("$binDir/android-template-release-native-symbols.zip")
 }

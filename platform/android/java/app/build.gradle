@@ -101,7 +101,7 @@ android {
         }
 
         ndk {
-            debugSymbolLevel 'FULL'
+            debugSymbolLevel 'NONE'
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
@@ -127,9 +127,11 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // 'doNotStrip' is enabled for development within Android Studio
+        // Debug symbols are kept for development within Android Studio.
         if (shouldNotStrip()) {
-            doNotStrip '**/*.so'
+            jniLibs {
+                keepDebugSymbols += '**/*.so'
+            }
         }
 
         // Always select Godot's version of libc++_shared.so in case deps have their own
