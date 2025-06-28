@@ -606,6 +606,7 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 		vertex.mPosition = vertex.mPreviousPosition = relative_transform * vertex.mPosition;
 		vertex.mVelocity = JPH::Vec3::sZero();
 	}
+	wake_up();
 }
 
 AABB JoltSoftBody3D::get_bounds() const {
