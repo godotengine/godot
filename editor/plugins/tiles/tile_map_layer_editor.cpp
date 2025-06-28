@@ -2490,6 +2490,10 @@ void TileMapLayerEditorTerrainsPlugin::_update_toolbar() {
 		tools_settings_vsep->show();
 		picker_button->show();
 		erase_button->show();
+		if (tool_buttons_group->get_pressed_button() == paint_tool_button) {
+			tools_settings_vsep_2->show();
+			paint_2x2_checkbox->show();
+		}
 	} else {
 		tools_settings_vsep->show();
 		picker_button->show();
@@ -3019,12 +3023,23 @@ bool TileMapLayerEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputE
 		switch (drag_type) {
 			case DRAG_TYPE_PAINT: {
 				if (selected_terrain_set >= 0) {
-					HashMap<Vector2i, TileMapCell> to_draw = _draw_line(tile_set->local_to_map(drag_last_mouse_pos), tile_set->local_to_map(mpos), drag_erasing);
-					for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
-						if (!drag_modified.has(E.key)) {
-							drag_modified[E.key] = edited_layer->get_cell(E.key);
+					if (paint_2x2_checkbox->is_pressed()) {
+						Vector2 drawpos = mpos - tile_set->get_tile_size() / 2;
+						HashMap<Vector2i, TileMapCell> to_draw = _draw_rect(tile_set->local_to_map(drawpos), tile_set->local_to_map(drawpos) + Vector2i(1, 1), drag_erasing);
+						for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
+							if (!drag_modified.has(E.key)) {
+								drag_modified[E.key] = edited_layer->get_cell(E.key);
+							}
+							edited_layer->set_cell(E.key, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 						}
-						edited_layer->set_cell(E.key, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
+					} else {
+						HashMap<Vector2i, TileMapCell> to_draw = _draw_line(tile_set->local_to_map(drag_last_mouse_pos), tile_set->local_to_map(mpos), drag_erasing);
+						for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
+							if (!drag_modified.has(E.key)) {
+								drag_modified[E.key] = edited_layer->get_cell(E.key);
+							}
+							edited_layer->set_cell(E.key, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
+						}
 					}
 				}
 			} break;
@@ -3151,7 +3166,15 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 			bool expand_grid = false;
 			if (tool_buttons_group->get_pressed_button() == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a single tile.
-				preview.insert(tile_set->local_to_map(mpos));
+				if (paint_2x2_checkbox->is_pressed()) {
+					Vector2 prev_pos = mpos - tile_set->get_tile_size() / 2;
+					preview.insert(tile_set->local_to_map(prev_pos));
+					preview.insert(tile_set->local_to_map(prev_pos) + Vector2i(1, 0));
+					preview.insert(tile_set->local_to_map(prev_pos) + Vector2i(0, 1));
+					preview.insert(tile_set->local_to_map(prev_pos) + Vector2i(1, 1));
+				} else {
+					preview.insert(tile_set->local_to_map(mpos));
+				}
 				expand_grid = true;
 			} else if (tool_buttons_group->get_pressed_button() == line_tool_button || drag_type == DRAG_TYPE_LINE) {
 				if (drag_type == DRAG_TYPE_NONE) {
@@ -3595,12 +3618,21 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	tools_settings_vsep_2 = memnew(VSeparator);
 	tools_settings->add_child(tools_settings_vsep_2);
 
+	// Paint 2x2 checkbox.
+	paint_2x2_checkbox = memnew(CheckBox);
+	paint_2x2_checkbox->set_flat(true);
+	paint_2x2_checkbox->set_text(TTR("Paint 2x2"));
+	paint_2x2_checkbox->set_pressed(false);
+	tools_settings->add_child(paint_2x2_checkbox);
+
 	// Continuous checkbox.
 	bucket_contiguous_checkbox = memnew(CheckBox);
 	bucket_contiguous_checkbox->set_flat(true);
 	bucket_contiguous_checkbox->set_text(TTR("Contiguous"));
 	bucket_contiguous_checkbox->set_pressed(true);
 	tools_settings->add_child(bucket_contiguous_checkbox);
+
+	_update_toolbar();
 }
 
 TileMapLayer *TileMapLayerEditor::_get_edited_layer() const {
