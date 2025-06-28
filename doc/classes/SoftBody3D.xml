@@ -7,6 +7,7 @@
 		A deformable 3D physics mesh. Used to create elastic or deformable objects such as cloth, rubber, or other flexible materials.
 		Additionally, [SoftBody3D] is subject to wind forces defined in [Area3D] (see [member Area3D.wind_source_path], [member Area3D.wind_force_magnitude], and [member Area3D.wind_attenuation_factor]).
 		[b]Note:[/b] It's recommended to use Jolt Physics when using [SoftBody3D] instead of the default GodotPhysics3D, as Jolt Physics' soft body implementation is faster and more reliable. You can switch the physics engine using the [member ProjectSettings.physics/3d/physics_engine] project setting.
+		[b]Note:[/b] You may want to disable LOD generation in the Import dock or tweak the generation settings when importing meshes that you plan to use with [SoftBody3D], as the default settings may overly simplify areas of the mesh intended to be dynamic.  See [url=$DOCS_URL/tutorials/physics/soft_body.html#using-imported-meshes]Using Imported Meshes[/url] for more details.
 	</description>
 	<tutorials>
 		<link title="SoftBody">$DOCS_URL/tutorials/physics/soft_body.html</link>
