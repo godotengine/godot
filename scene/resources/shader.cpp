@@ -295,7 +295,7 @@ Shader::Shader() {
 Shader::~Shader() {
 	if (shader_rid.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(shader_rid);
+		RenderingServer::get_singleton()->free_rid(shader_rid);
 	}
 }
 

@@ -106,19 +106,19 @@ World2D::World2D() {
 
 World2D::~World2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(canvas);
+	RenderingServer::get_singleton()->free_rid(canvas);
 
 #ifndef NAVIGATION_2D_DISABLED
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	if (navigation_map.is_valid()) {
-		NavigationServer2D::get_singleton()->free(navigation_map);
+		NavigationServer2D::get_singleton()->free_rid(navigation_map);
 	}
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
 	if (space.is_valid()) {
-		PhysicsServer2D::get_singleton()->free(space);
+		PhysicsServer2D::get_singleton()->free_rid(space);
 	}
 #endif // PHYSICS_2D_DISABLED
 }

@@ -904,5 +904,5 @@ GPUParticles3D::GPUParticles3D() {
 
 GPUParticles3D::~GPUParticles3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(particles);
+	RS::get_singleton()->free_rid(particles);
 }

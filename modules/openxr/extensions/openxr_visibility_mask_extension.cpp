@@ -120,19 +120,19 @@ void OpenXRVisibilityMaskExtension::on_session_destroyed() {
 
 	// Free our mesh.
 	if (mesh.is_valid()) {
-		rendering_server->free(mesh);
+		rendering_server->free_rid(mesh);
 		mesh = RID();
 	}
 
 	// Free our material.
 	if (material.is_valid()) {
-		rendering_server->free(material);
+		rendering_server->free_rid(material);
 		material = RID();
 	}
 
 	// Free our shader.
 	if (shader.is_valid()) {
-		rendering_server->free(shader);
+		rendering_server->free_rid(shader);
 		shader = RID();
 	}
 

@@ -804,7 +804,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 		//no barrier, let them run all together
 	}
 	rd->compute_list_end();
-	rd->free(compute_shader_dilate);
+	rd->free_rid(compute_shader_dilate);
 
 #ifdef DEBUG_TEXTURES
 	for (int i = 0; i < atlas_slices; i++) {
@@ -841,7 +841,7 @@ LightmapperRD::BakeError LightmapperRD::_pack_l1(RenderingDevice *rd, Ref<RDShad
 		//no barrier, let them run all together
 	}
 	rd->compute_list_end();
-	rd->free(compute_shader_pack);
+	rd->free_rid(compute_shader_pack);
 
 	return BAKE_OK;
 }
@@ -1051,8 +1051,8 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 		}
 	}
 
-	p_rd->free(compute_shader_denoise);
-	p_rd->free(denoise_params_buffer);
+	p_rd->free_rid(compute_shader_denoise);
+	p_rd->free_rid(denoise_params_buffer);
 
 	return BAKE_OK;
 }
@@ -1167,19 +1167,19 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID shadowmask_tex;
 	RID shadowmask_tex2;
 
-#define FREE_TEXTURES                \
-	rd->free(albedo_array_tex);      \
-	rd->free(emission_array_tex);    \
-	rd->free(normal_tex);            \
-	rd->free(position_tex);          \
-	rd->free(unocclude_tex);         \
-	rd->free(light_source_tex);      \
-	rd->free(light_accum_tex2);      \
-	rd->free(light_accum_tex);       \
-	rd->free(light_environment_tex); \
-	if (p_bake_shadowmask) {         \
-		rd->free(shadowmask_tex);    \
-		rd->free(shadowmask_tex2);   \
+#define FREE_TEXTURES                    \
+	rd->free_rid(albedo_array_tex);      \
+	rd->free_rid(emission_array_tex);    \
+	rd->free_rid(normal_tex);            \
+	rd->free_rid(position_tex);          \
+	rd->free_rid(unocclude_tex);         \
+	rd->free_rid(light_source_tex);      \
+	rd->free_rid(light_accum_tex2);      \
+	rd->free_rid(light_accum_tex);       \
+	rd->free_rid(light_environment_tex); \
+	if (p_bake_shadowmask) {             \
+		rd->free_rid(shadowmask_tex);    \
+		rd->free_rid(shadowmask_tex2);   \
 	}
 
 	{ // create all textures
@@ -1284,17 +1284,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	Vector<int> slice_seam_count;
 
-#define FREE_BUFFERS                   \
-	rd->free(bake_parameters_buffer);  \
-	rd->free(vertex_buffer);           \
-	rd->free(triangle_buffer);         \
-	rd->free(lights_buffer);           \
-	rd->free(triangle_indices_buffer); \
-	rd->free(cluster_indices_buffer);  \
-	rd->free(cluster_aabbs_buffer);    \
-	rd->free(grid_texture);            \
-	rd->free(seams_buffer);            \
-	rd->free(probe_positions_buffer);
+#define FREE_BUFFERS                       \
+	rd->free_rid(bake_parameters_buffer);  \
+	rd->free_rid(vertex_buffer);           \
+	rd->free_rid(triangle_buffer);         \
+	rd->free_rid(lights_buffer);           \
+	rd->free_rid(triangle_indices_buffer); \
+	rd->free_rid(cluster_indices_buffer);  \
+	rd->free_rid(cluster_aabbs_buffer);    \
+	rd->free_rid(grid_texture);            \
+	rd->free_rid(seams_buffer);            \
+	rd->free_rid(probe_positions_buffer);
 
 	const uint32_t cluster_size = 16;
 	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, cluster_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_indices_buffer, cluster_indices_buffer, cluster_aabbs_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
@@ -1535,10 +1535,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-#define FREE_RASTER_RESOURCES   \
-	rd->free(rasterize_shader); \
-	rd->free(sampler);          \
-	rd->free(raster_depth_buffer);
+#define FREE_RASTER_RESOURCES       \
+	rd->free_rid(rasterize_shader); \
+	rd->free_rid(sampler);          \
+	rd->free_rid(raster_depth_buffer);
 
 	/* Plot direct light */
 
@@ -1596,11 +1596,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	RID compute_base_uniform_set = rd->uniform_set_create(base_uniforms, compute_shader_primary, 0);
 
-#define FREE_COMPUTE_RESOURCES          \
-	rd->free(compute_shader_unocclude); \
-	rd->free(compute_shader_primary);   \
-	rd->free(compute_shader_secondary); \
-	rd->free(compute_shader_light_probes);
+#define FREE_COMPUTE_RESOURCES              \
+	rd->free_rid(compute_shader_unocclude); \
+	rd->free_rid(compute_shader_primary);   \
+	rd->free_rid(compute_shader_secondary); \
+	rd->free_rid(compute_shader_light_probes);
 
 	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1);
 	rd->submit();
@@ -1957,7 +1957,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				FREE_RASTER_RESOURCES
 				FREE_COMPUTE_RESOURCES
 				if (probe_positions.size() > 0) {
-					rd->free(light_probe_buffer);
+					rd->free_rid(light_probe_buffer);
 				}
 				memdelete(rd);
 				if (rcd != nullptr) {
@@ -2038,7 +2038,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					FREE_RASTER_RESOURCES
 					FREE_COMPUTE_RESOURCES
 					if (probe_positions.size() > 0) {
-						rd->free(light_probe_buffer);
+						rd->free_rid(light_probe_buffer);
 					}
 					memdelete(rd);
 					if (rcd != nullptr) {
@@ -2073,7 +2073,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				FREE_RASTER_RESOURCES
 				FREE_COMPUTE_RESOURCES
 				if (probe_positions.size() > 0) {
-					rd->free(light_probe_buffer);
+					rd->free_rid(light_probe_buffer);
 				}
 				memdelete(rd);
 				if (rcd != nullptr) {
@@ -2169,9 +2169,9 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	ERR_FAIL_COND_V(blendseams_triangle_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-#define FREE_BLENDSEAMS_RESOURCES            \
-	rd->free(blendseams_line_raster_shader); \
-	rd->free(blendseams_triangle_raster_shader);
+#define FREE_BLENDSEAMS_RESOURCES                \
+	rd->free_rid(blendseams_line_raster_shader); \
+	rd->free_rid(blendseams_triangle_raster_shader);
 
 	{
 		//pre copy
@@ -2331,7 +2331,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		probe_values.resize(probe_positions.size() * 9);
 		Vector<uint8_t> probe_data = rd->buffer_get_data(light_probe_buffer);
 		memcpy(probe_values.ptrw(), probe_data.ptr(), probe_data.size());
-		rd->free(light_probe_buffer);
+		rd->free_rid(light_probe_buffer);
 
 #ifdef DEBUG_TEXTURES
 		{

@@ -280,7 +280,7 @@ public:
 	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) override;
 
 public:
-	COMMAND_1(free, RID, p_object);
+	COMMAND_1(free_rid, RID, p_object);
 
 	virtual void set_active(bool p_active) override;
 

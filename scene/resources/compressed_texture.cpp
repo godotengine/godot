@@ -457,7 +457,7 @@ void CompressedTexture2D::_bind_methods() {
 CompressedTexture2D::~CompressedTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 
@@ -641,7 +641,7 @@ void CompressedTexture3D::_bind_methods() {
 CompressedTexture3D::~CompressedTexture3D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 
@@ -834,7 +834,7 @@ CompressedTextureLayered::CompressedTextureLayered(LayeredType p_type) {
 CompressedTextureLayered::~CompressedTextureLayered() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 

@@ -359,5 +359,5 @@ CanvasLayer::CanvasLayer() {
 
 CanvasLayer::~CanvasLayer() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(canvas);
+	RS::get_singleton()->free_rid(canvas);
 }

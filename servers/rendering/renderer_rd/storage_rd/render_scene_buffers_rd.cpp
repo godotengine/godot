@@ -93,7 +93,7 @@ void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
 
 void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
 	if (p_named_texture.texture.is_valid()) {
-		RD::get_singleton()->free(p_named_texture.texture);
+		RD::get_singleton()->free_rid(p_named_texture.texture);
 	}
 	p_named_texture.texture = RID();
 	p_named_texture.slices.clear(); // slices should be freed automatically as dependents...
@@ -135,7 +135,7 @@ void RenderSceneBuffersRD::cleanup() {
 	// Clear weight_buffer / blur textures.
 	for (WeightBuffers &weight_buffer : weight_buffers) {
 		if (weight_buffer.weight.is_valid()) {
-			RD::get_singleton()->free(weight_buffer.weight);
+			RD::get_singleton()->free_rid(weight_buffer.weight);
 			weight_buffer.weight = RID();
 		}
 	}

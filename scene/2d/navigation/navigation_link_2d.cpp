@@ -440,6 +440,6 @@ NavigationLink2D::NavigationLink2D() {
 
 NavigationLink2D::~NavigationLink2D() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
-	NavigationServer2D::get_singleton()->free(link);
+	NavigationServer2D::get_singleton()->free_rid(link);
 	link = RID();
 }
