@@ -74,6 +74,7 @@ private:
 	real_t v_offset = 0.0;
 	real_t h_offset = 0.0;
 	KeepAspect keep_aspect = KEEP_HEIGHT;
+	Projection override_projection;
 
 	RID camera;
 	RID scenario_id;
@@ -153,6 +154,7 @@ public:
 	real_t get_far() const;
 	real_t get_near() const;
 	Vector2 get_frustum_offset() const;
+	Projection get_override_projection() const;
 
 	ProjectionType get_projection() const;
 
@@ -161,6 +163,7 @@ public:
 	void set_far(real_t p_far);
 	void set_near(real_t p_near);
 	void set_frustum_offset(Vector2 p_offset);
+	void set_override_projection(const Projection &p_matrix);
 
 	virtual Transform3D get_camera_transform() const;
 	virtual Projection get_camera_projection() const;
