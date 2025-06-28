@@ -1252,7 +1252,7 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 
 void EditorAudioBuses::_server_save() {
 	Ref<AudioBusLayout> state = AudioServer::get_singleton()->generate_bus_layout();
-	ResourceSaver::save(state, edited_path);
+	ResourceSaver::save(state, edited_path, ResourceSaver::FLAG_COMPRESS);
 }
 
 void EditorAudioBuses::_select_layout() {
@@ -1295,7 +1295,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 			AudioServer::get_singleton()->set_bus_layout(empty_state);
 		}
 
-		Error err = ResourceSaver::save(AudioServer::get_singleton()->generate_bus_layout(), p_string);
+		Error err = ResourceSaver::save(AudioServer::get_singleton()->generate_bus_layout(), p_string, ResourceSaver::FLAG_COMPRESS);
 		if (err != OK) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file: %s"), p_string));
 			return;
