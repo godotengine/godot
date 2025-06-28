@@ -425,15 +425,22 @@ Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 
 String EditorExportPlatform::find_export_template(const String &template_file_name, String *err) const {
 	String current_version = GODOT_VERSION_FULL_CONFIG;
-	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(template_file_name);
 
-	if (FileAccess::exists(template_path)) {
-		return template_path;
+	for (auto const &dir : EditorPaths::get_singleton()->get_export_templates_search_paths()) {
+		String template_path = dir.path_join(current_version).path_join(template_file_name);
+
+		if (FileAccess::exists(template_path)) {
+			return template_path;
+		}
 	}
 
 	// Not found
 	if (err) {
-		*err += TTR("No export template found at the expected path:") + "\n" + template_path + "\n";
+		*err += TTR("No export template found at the expected path:") + "\n";
+		for (auto const &dir : EditorPaths::get_singleton()->get_export_templates_search_paths()) {
+			String template_path = dir.path_join(current_version).path_join(template_file_name);
+			*err += template_path + "\n";
+		}
 	}
 	return String();
 }
@@ -980,13 +987,16 @@ Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExpor
 				}
 			} else {
 				String current_version = GODOT_VERSION_FULL_CONFIG;
-				String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
-				if (p_debug && p_preset->has("custom_template/debug") && p_preset->get("custom_template/debug") != "") {
-					template_path = p_preset->get("custom_template/debug").operator String().get_base_dir();
-				} else if (!p_debug && p_preset->has("custom_template/release") && p_preset->get("custom_template/release") != "") {
-					template_path = p_preset->get("custom_template/release").operator String().get_base_dir();
+				String custom_preset_name = p_debug ? "custom_template/debug" : "custom_template/release";
+				String template_path = p_preset->get(custom_preset_name).operator String().strip_edges();
+
+				String data_file_name;
+				if (template_path.is_empty()) {
+					data_file_name = find_export_template(ts_name);
+				} else {
+					data_file_name = template_path.get_base_dir().path_join(ts_name);
 				}
-				String data_file_name = template_path.path_join(ts_name);
+
 				if (FileAccess::exists(data_file_name)) {
 					const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(data_file_name);
 					if (!ts_data.is_empty()) {
