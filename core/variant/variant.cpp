@@ -186,7 +186,14 @@ Variant::Type Variant::get_type_by_name(const String &p_type_name) {
 	return (ptr == nullptr) ? VARIANT_MAX : *ptr;
 }
 
+bool Variant::can_convert_strict(Type p_type_from, Type p_type_to) {
+	return _can_convert(p_type_from, p_type_to, true);
+}
 bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
+	return _can_convert(p_type_from, p_type_to, false);
+}
+
+bool Variant::_can_convert(Variant::Type p_type_from, Variant::Type p_type_to, bool strict) {
 	if (p_type_from == p_type_to) {
 		return true;
 	}
@@ -209,8 +216,13 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				STRING,
 				NIL,
 			};
-
-			valid_types = valid;
+			static const Type strict_valid[] = {
+				INT,
+				FLOAT,
+				//STRING,
+				NIL,
+			};
+			valid_types = strict ? strict_valid : valid;
 		} break;
 		case INT: {
 			static const Type valid[] = {
@@ -219,9 +231,13 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				STRING,
 				NIL,
 			};
-
-			valid_types = valid;
-
+			static const Type strict_valid[] = {
+				BOOL,
+				FLOAT,
+				//STRING,
+				NIL,
+			};
+			valid_types = strict ? strict_valid : valid;
 		} break;
 		case FLOAT: {
 			static const Type valid[] = {
@@ -231,7 +247,14 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				NIL,
 			};
 
-			valid_types = valid;
+			static const Type strict_valid[] = {
+				BOOL,
+				INT,
+				//STRING,
+				NIL,
+			};
+
+			valid_types = strict ? strict_valid : valid;
 
 		} break;
 		case STRING: {
@@ -240,7 +263,18 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				NIL
 			};
 
-			invalid_types = invalid;
+			static const Type strict_valid[] = {
+				NODE_PATH,
+				STRING_NAME,
+				NIL
+			};
+
+			if (strict) {
+				valid_types = strict_valid;
+			} else {
+				invalid_types = invalid;
+			}
+
 		} break;
 		case VECTOR2: {
 			static const Type valid[] = {
@@ -524,338 +558,6 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		}
 
 		return true;
-	}
-
-	return false;
-}
-
-bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type_to) {
-	if (p_type_from == p_type_to) {
-		return true;
-	}
-	if (p_type_to == NIL) { //nil can convert to anything
-		return true;
-	}
-
-	if (p_type_from == NIL) {
-		return (p_type_to == OBJECT);
-	}
-
-	const Type *valid_types = nullptr;
-
-	switch (p_type_to) {
-		case BOOL: {
-			static const Type valid[] = {
-				INT,
-				FLOAT,
-				//STRING,
-				NIL,
-			};
-
-			valid_types = valid;
-		} break;
-		case INT: {
-			static const Type valid[] = {
-				BOOL,
-				FLOAT,
-				//STRING,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case FLOAT: {
-			static const Type valid[] = {
-				BOOL,
-				INT,
-				//STRING,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case STRING: {
-			static const Type valid[] = {
-				NODE_PATH,
-				STRING_NAME,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case VECTOR2: {
-			static const Type valid[] = {
-				VECTOR2I,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case VECTOR2I: {
-			static const Type valid[] = {
-				VECTOR2,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case RECT2: {
-			static const Type valid[] = {
-				RECT2I,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case RECT2I: {
-			static const Type valid[] = {
-				RECT2,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case TRANSFORM2D: {
-			static const Type valid[] = {
-				TRANSFORM3D,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case VECTOR3: {
-			static const Type valid[] = {
-				VECTOR3I,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case VECTOR3I: {
-			static const Type valid[] = {
-				VECTOR3,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case VECTOR4: {
-			static const Type valid[] = {
-				VECTOR4I,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-		case VECTOR4I: {
-			static const Type valid[] = {
-				VECTOR4,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-
-		case QUATERNION: {
-			static const Type valid[] = {
-				BASIS,
-				NIL
-			};
-
-			valid_types = valid;
-
-		} break;
-		case BASIS: {
-			static const Type valid[] = {
-				QUATERNION,
-				NIL
-			};
-
-			valid_types = valid;
-
-		} break;
-		case TRANSFORM3D: {
-			static const Type valid[] = {
-				TRANSFORM2D,
-				QUATERNION,
-				BASIS,
-				PROJECTION,
-				NIL
-			};
-
-			valid_types = valid;
-
-		} break;
-		case PROJECTION: {
-			static const Type valid[] = {
-				TRANSFORM3D,
-				NIL
-			};
-
-			valid_types = valid;
-
-		} break;
-
-		case COLOR: {
-			static const Type valid[] = {
-				STRING,
-				INT,
-				NIL,
-			};
-
-			valid_types = valid;
-
-		} break;
-
-		case RID: {
-			static const Type valid[] = {
-				OBJECT,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case OBJECT: {
-			static const Type valid[] = {
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case STRING_NAME: {
-			static const Type valid[] = {
-				STRING,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case NODE_PATH: {
-			static const Type valid[] = {
-				STRING,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case ARRAY: {
-			static const Type valid[] = {
-				PACKED_BYTE_ARRAY,
-				PACKED_INT32_ARRAY,
-				PACKED_INT64_ARRAY,
-				PACKED_FLOAT32_ARRAY,
-				PACKED_FLOAT64_ARRAY,
-				PACKED_STRING_ARRAY,
-				PACKED_COLOR_ARRAY,
-				PACKED_VECTOR2_ARRAY,
-				PACKED_VECTOR3_ARRAY,
-				PACKED_VECTOR4_ARRAY,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		// arrays
-		case PACKED_BYTE_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case PACKED_INT32_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-			valid_types = valid;
-		} break;
-		case PACKED_INT64_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-			valid_types = valid;
-		} break;
-		case PACKED_FLOAT32_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case PACKED_FLOAT64_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-
-			valid_types = valid;
-		} break;
-		case PACKED_STRING_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-			valid_types = valid;
-		} break;
-		case PACKED_VECTOR2_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-			valid_types = valid;
-
-		} break;
-		case PACKED_VECTOR3_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-			valid_types = valid;
-
-		} break;
-		case PACKED_COLOR_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-
-			valid_types = valid;
-
-		} break;
-		case PACKED_VECTOR4_ARRAY: {
-			static const Type valid[] = {
-				ARRAY,
-				NIL
-			};
-			valid_types = valid;
-
-		} break;
-		default: {
-		}
-	}
-
-	if (valid_types) {
-		int i = 0;
-		while (valid_types[i] != NIL) {
-			if (p_type_from == valid_types[i]) {
-				return true;
-			}
-			i++;
-		}
 	}
 
 	return false;

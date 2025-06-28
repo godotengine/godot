@@ -391,6 +391,8 @@ private:
 	Variant(const Variant *) {}
 	Variant(const Variant **) {}
 
+	static bool _can_convert(Type p_type_from, Type p_type_to, bool strict = false);
+
 public:
 	_FORCE_INLINE_ Type get_type() const {
 		return type;
