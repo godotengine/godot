@@ -1046,4 +1046,8 @@
 			The source object is automatically bound when a [PackedScene] is instantiated. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="ConnectFlags">
+		</enum>
+	</enums>
 </class>

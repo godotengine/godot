@@ -51,4 +51,8 @@
 			The message received is a shader error.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="ErrorType">
+		</enum>
+	</enums>
 </class>

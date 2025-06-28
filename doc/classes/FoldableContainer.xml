@@ -85,6 +85,10 @@
 			Makes the title appear at the bottom of the container. Also makes all StyleBoxes flipped vertically.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="TitlePosition">
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="collapsed_font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The title's font color when collapsed.
