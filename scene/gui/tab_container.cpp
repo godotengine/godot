@@ -790,6 +790,22 @@ bool TabContainer::get_clip_tabs() const {
 	return tab_bar->get_clip_tabs();
 }
 
+void TabContainer::set_navigation_buttons_switch_tabs(bool p_navigation_buttons_switch_tabs) {
+	tab_bar->set_navigation_buttons_switch_tabs(p_navigation_buttons_switch_tabs);
+}
+
+bool TabContainer::get_navigation_buttons_switch_tabs() const {
+	return tab_bar->get_navigation_buttons_switch_tabs();
+}
+
+void TabContainer::set_navigation_buttons_always_visible(bool p_navigation_buttons_always_visible) {
+	tab_bar->set_navigation_buttons_always_visible(p_navigation_buttons_always_visible);
+}
+
+bool TabContainer::get_navigation_buttons_always_visible() const {
+	return tab_bar->get_navigation_buttons_always_visible();
+}
+
 void TabContainer::set_tabs_visible(bool p_visible) {
 	if (p_visible == tabs_visible) {
 		return;
@@ -1073,6 +1089,10 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tabs_position"), &TabContainer::get_tabs_position);
 	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabContainer::set_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &TabContainer::get_clip_tabs);
+	ClassDB::bind_method(D_METHOD("set_navigation_buttons_switch_tabs", "navigation_buttons_switch_tabs"), &TabContainer::set_navigation_buttons_switch_tabs);
+	ClassDB::bind_method(D_METHOD("get_navigation_buttons_switch_tabs"), &TabContainer::get_navigation_buttons_switch_tabs);
+	ClassDB::bind_method(D_METHOD("set_navigation_buttons_always_visible", "navigation_buttons_always_visible"), &TabContainer::set_navigation_buttons_always_visible);
+	ClassDB::bind_method(D_METHOD("get_navigation_buttons_always_visible"), &TabContainer::get_navigation_buttons_always_visible);
 	ClassDB::bind_method(D_METHOD("set_tabs_visible", "visible"), &TabContainer::set_tabs_visible);
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
 	ClassDB::bind_method(D_METHOD("set_all_tabs_in_front", "is_front"), &TabContainer::set_all_tabs_in_front);
@@ -1120,6 +1140,8 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_tabs_position", "get_tabs_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_buttons_switch_tabs"), "set_navigation_buttons_switch_tabs", "get_navigation_buttons_switch_tabs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_buttons_always_visible"), "set_navigation_buttons_always_visible", "get_navigation_buttons_always_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
