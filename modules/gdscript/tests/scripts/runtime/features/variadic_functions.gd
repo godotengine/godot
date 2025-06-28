@@ -1,17 +1,17 @@
 class A:
-	func f(x: int) -> void:
+	@virtual func f(x: int) -> void:
 		print(x)
 
 class B extends A:
-	func f(x: int, ...args: Array) -> void:
+	@virtual @override func f(x: int, ...args: Array) -> void:
 		prints(x, args)
 
 class C extends B:
-	func f(x: int, y: int = 0, ...args: Array) -> void:
+	@virtual @override func f(x: int, y: int = 0, ...args: Array) -> void:
 		prints(x, y, args)
 
 class D extends C:
-	func f(...args: Array) -> void:
+	@override func f(...args: Array) -> void:
 		print(args)
 
 func test_func(x: int, y: int = 0, ...args: Array) -> void:

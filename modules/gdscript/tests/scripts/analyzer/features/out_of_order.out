@@ -1,5 +1,4 @@
 GDTEST_OK
-~~ WARNING at line 20: (OVERRIDE_NON_VIRTUAL_METHOD) The method "fn()" overrides a non-virtual method from the base class. This may cause unexpected and unsafe behaviors.
 v1: p1=4, p2=3
 v1 is String: true
 v2: true

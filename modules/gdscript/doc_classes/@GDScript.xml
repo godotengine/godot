@@ -785,7 +785,7 @@
 		<annotation name="@override">
 			<return type="void" />
 			<description>
-				Mark that the following method overrides the one annotated by [annotation @virtual] from the base class.
+				Mark that the following method overrides the one annotated by [annotation @virtual] or modified by [code]abstract[/code] from the base class.
 				If you override a method from the base class without this annotation, you will get a warning (or an error).
 				[codeblock]
 				func _init():
@@ -799,8 +799,15 @@
 				class B extends A:
 				    func test():
 				        print("B") # Warning (or an error) about overriding a virtual method without explicit overriding.
+
+				abstract class C:
+					abstract func test():
+
+				class D extends C:
+				    func test():
+				        print("D") # Warning (or an error) about overriding an abstract method without explicit overriding.
 				[/codeblock]
-				You can ignore the warning as long as you know what you are doing.
+				Due to that this annotation improves code readability, it is recommended to use it whenever possible. You can ignore the warning as long as you know what you are doing.
 			</description>
 		</annotation>
 		<annotation name="@rpc">
@@ -880,7 +887,7 @@
 				    func test():
 				        print("B") # Warning (or an error) about overriding a non-virtual method.
 				[/codeblock]
-				You can ignore the warning as long as you know what you are doing.
+				Due to that this annotation improves code readability, it is recommended to use it whenever possible. You can ignore the warning as long as you know what you are doing.
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">

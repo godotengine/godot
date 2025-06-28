@@ -23,6 +23,17 @@ class ChildOverrideInexistentMethod extends ParentSafe:
     @override func test_():
         pass
 
+abstract class AbstractParent:
+    abstract func test()
+    abstract func test2()
+
+class ChildAbstract extends AbstractParent:
+    func test():
+        pass
+
+    @override func test2():
+        pass
+
 
 func test():
     pass

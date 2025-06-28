@@ -4420,7 +4420,10 @@ bool GDScriptParser::virtual_annotation(AnnotationNode *p_annotation, Node *p_ta
 	ERR_FAIL_COND_V_MSG(p_target->type == Node::LAMBDA, false, R"("@virtual" annotation cannot be applied to lambdas.)");
 
 	FunctionNode *method = static_cast<FunctionNode *>(p_target);
-	if (method->is_annotated_virtual) {
+	if (method->is_abstract) {
+		push_error(R"(The usage of "@virtual" annotation conflicts with the "abstract" keyword. Either remove the "@virtual" annotation or "abstract" keyword from the method's declaration.)", p_annotation);
+		return false;
+	} else if (method->is_annotated_virtual) {
 		push_error(R"("@virtual" annotation can only be used once per method.)", p_annotation);
 		return false;
 	}

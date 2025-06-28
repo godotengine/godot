@@ -429,7 +429,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					if (!method_doc.qualifiers.is_empty()) {
 						method_doc.qualifiers += " ";
 					}
-					method_doc.qualifiers += String(m_func->identifier->name).begins_with("_") ? "virtual_annotated" : "virtual_annotated_underscored";
+					method_doc.qualifiers += String(m_func->identifier->name).begins_with("_") ? "virtual_annotated_underscored" : "virtual_annotated";
 				}
 				if (m_func->is_static) {
 					if (!method_doc.qualifiers.is_empty()) {

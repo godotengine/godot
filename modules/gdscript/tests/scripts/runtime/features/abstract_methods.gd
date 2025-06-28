@@ -13,14 +13,14 @@
 		print(get_text_1())
 
 @abstract class B extends A:
-	func get_text_1() -> String:
+	@override func get_text_1() -> String:
 		return "text_1b"
 
 	func print_text_2() -> void:
 		print(get_text_2())
 
 class C extends B:
-	func get_text_2() -> String:
+	@virtual @override func get_text_2() -> String:
 		return "text_2c"
 
 	func func_with_param(param: int) -> int: return param
@@ -33,11 +33,11 @@ class C extends B:
 @abstract class D extends C:
 	@abstract func get_text_1() -> String
 
-	func get_text_2() -> String:
+	@override func get_text_2() -> String:
 		return super() + " text_2d"
 
 class E extends D:
-	func get_text_1() -> String:
+	@override func get_text_1() -> String:
 		return "text_1e"
 
 func test():

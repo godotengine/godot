@@ -1870,10 +1870,10 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		int default_par_count = 0;
 		BitField<MethodFlags> method_flags = {};
 		StringName native_base;
-		
+
 		if (!p_is_lambda) {
 			bool is_overriding = get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base);
-			
+
 			if (is_overriding) {
 				bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
 
@@ -1955,27 +1955,21 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 					} else {
 						parent_signature += return_type;
 					}
-
-					// (Non-)virtual methods overriding warnings
-					if (base_type.class_type != nullptr && base_type.class_type->has_function(p_function->identifier->name)) {
-						GDScriptParser::FunctionNode *parent_func = base_type.class_type->get_member(p_function->identifier->name).function;
-						if (parent_func->is_abstract) {
-							push_error(R"(The usage of the annotation '@virtual' conflicts with an abstract method. Either remove the '@virtual' annotation or 'abstract' keyword from the method declaration.)");
-							return;
-						}
-						if (!parent_func->is_annotated_virtual) {
-							parser->push_warning(p_function, GDScriptWarning::OVERRIDE_NON_VIRTUAL_METHOD, function_name);
-						} else if (!p_function->is_annotated_overriding) {
-							parser->push_warning(p_function, GDScriptWarning::OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION, function_name);
-						}
-					}
-
 					push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
+				}
+				// (Non-)virtual methods overriding warnings
+				if (base_type.class_type != nullptr && base_type.class_type->has_function(p_function->identifier->name)) {
+					GDScriptParser::FunctionNode *parent_func = base_type.class_type->get_member(p_function->identifier->name).function;
+					if (!parent_func->is_annotated_virtual && !parent_func->is_abstract) {
+						parser->push_warning(p_function, GDScriptWarning::OVERRIDE_NON_VIRTUAL_METHOD, function_name);
+					} else if (!p_function->is_annotated_overriding) {
+						parser->push_warning(p_function, GDScriptWarning::OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION, function_name);
+					}
 				}
 			} else if (p_function->is_annotated_overriding) {
 				parser->push_warning(p_function, GDScriptWarning::OVERRIDE_INEXISTENT_METHOD_FROM_BASE, function_name);
 			}
-			
+
 #ifdef DEBUG_ENABLED
 			if (native_base != StringName()) {
 				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, native_base);
