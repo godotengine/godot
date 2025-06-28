@@ -34,6 +34,7 @@
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_version_button.h"
 #include "editor/themes/editor_scale.h"
@@ -158,6 +159,17 @@ void EditorBottomPanel::_pin_button_toggled(bool p_pressed) {
 
 void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 	EditorNode::get_top_split()->set_visible(!p_pressed);
+
+	Button *distraction_free = EditorNode::get_singleton()->get_distraction_free_button();
+	distraction_free->set_meta("_scene_tabs_owned", !p_pressed);
+	EditorNode::get_singleton()->update_distraction_free_button_theme();
+	if (p_pressed) {
+		distraction_free->reparent(bottom_hbox);
+		bottom_hbox->move_child(distraction_free, -2);
+	} else {
+		distraction_free->get_parent()->remove_child(distraction_free);
+		EditorSceneTabs::get_singleton()->add_extra_button(distraction_free);
+	}
 }
 
 bool EditorBottomPanel::_button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control) {
