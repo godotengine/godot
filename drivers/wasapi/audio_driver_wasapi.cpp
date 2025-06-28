@@ -196,16 +196,13 @@ GODOT_GCC_WARNING_POP
 
 static CMMNotificationClient notif_client;
 
-Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit, bool p_no_audio_client_3) {
-	// This function can be called recursively, so clean up before starting:
-	audio_device_finish(p_device);
-
-	WAVEFORMATEX *pwfex;
+// Helper function to find the correct audio device (default or by name)
+ComPtr<IMMDevice> AudioDriverWASAPI::find_output_device(AudioDeviceWASAPI *p_device, bool p_input) {
 	ComPtr<IMMDeviceEnumerator> enumerator = nullptr;
 	ComPtr<IMMDevice> output_device = nullptr;
 
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
-	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V(hr != S_OK, nullptr);
 
 	if (p_device->device_name == "Default") {
 		hr = enumerator->GetDefaultAudioEndpoint(p_input ? eCapture : eRender, eConsole, &output_device);
@@ -213,14 +210,14 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		ComPtr<IMMDeviceCollection> devices = nullptr;
 
 		hr = enumerator->EnumAudioEndpoints(p_input ? eCapture : eRender, DEVICE_STATE_ACTIVE, &devices);
-		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V(hr != S_OK, nullptr);
 
 		LPWSTR strId = nullptr;
 		bool found = false;
 
 		UINT count = 0;
 		hr = devices->GetCount(&count);
-		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V(hr != S_OK, nullptr);
 
 		for (ULONG i = 0; i < count && !found; i++) {
 			ComPtr<IMMDevice> tmp_device = nullptr;
@@ -265,70 +262,54 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		}
 	}
 
-	if (p_reinit) {
-		// In case we're trying to re-initialize the device, prevent throwing this error on the console,
-		// otherwise if there is currently no device available this will spam the console.
-		if (hr != S_OK) {
-			return ERR_CANT_OPEN;
-		}
-	} else {
-		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
-	}
+	return output_device;
+}
 
+// Helper function to register/unregister notification callbacks
+void AudioDriverWASAPI::register_notification_callback(ComPtr<IMMDeviceEnumerator> &enumerator) {
 	if (notif_client.enumerator != nullptr) {
 		notif_client.enumerator->UnregisterEndpointNotificationCallback(&notif_client);
 		notif_client.enumerator = nullptr;
 	}
-	hr = enumerator->RegisterEndpointNotificationCallback(&notif_client);
+	HRESULT hr = enumerator->RegisterEndpointNotificationCallback(&notif_client);
 	if (hr == S_OK) {
 		notif_client.enumerator = enumerator;
 	} else {
 		ERR_PRINT("WASAPI: RegisterEndpointNotificationCallback error");
 	}
+}
 
-	using_audio_client_3 = !p_input; // IID_IAudioClient3 is only used for adjustable output latency (not input)
-
-	if (p_no_audio_client_3) {
-		using_audio_client_3 = false;
-	}
-
-	if (using_audio_client_3) {
-		hr = output_device->Activate(IID_IAudioClient3, CLSCTX_ALL, nullptr, (void **)&p_device->audio_client);
+// Helper function to activate audio client (IAudioClient3 or IAudioClient)
+HRESULT AudioDriverWASAPI::activate_audio_client(ComPtr<IMMDevice> &device, bool use_client3, IAudioClient **out_client) {
+	HRESULT hr = S_OK;
+	
+	if (use_client3) {
+		hr = device->Activate(IID_IAudioClient3, CLSCTX_ALL, nullptr, (void **)out_client);
 		if (hr != S_OK) {
 			// IID_IAudioClient3 will never activate on OS versions before Windows 10.
 			// Older Windows versions should fall back gracefully.
-			using_audio_client_3 = false;
-			print_verbose("WASAPI: Couldn't activate output_device with IAudioClient3 interface, falling back to IAudioClient interface");
+			print_verbose("WASAPI: Couldn't activate device with IAudioClient3 interface, falling back to IAudioClient interface");
+			return S_FALSE; // Signal to fall back to IAudioClient
 		} else {
-			print_verbose("WASAPI: Activated output_device using IAudioClient3 interface");
+			print_verbose("WASAPI: Activated device using IAudioClient3 interface");
 		}
 	}
-	if (!using_audio_client_3) {
-		hr = output_device->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr, (void **)&p_device->audio_client);
+	
+	if (!use_client3 || hr == S_FALSE) {
+		hr = device->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr, (void **)out_client);
 	}
+	
+	return hr;
+}
 
-	if (p_reinit) {
-		if (hr != S_OK) {
-			return ERR_CANT_OPEN;
-		}
-	} else {
-		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
-	}
-
-	if (using_audio_client_3) {
-		AudioClientProperties audioProps{};
-		audioProps.cbSize = sizeof(AudioClientProperties);
-		audioProps.bIsOffload = FALSE;
-		audioProps.eCategory = AudioCategory_GameEffects;
-
-		hr = ((IAudioClient3 *)p_device->audio_client)->SetClientProperties(&audioProps);
-		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: SetClientProperties failed with error 0x" + String::num_uint64(hr, 16) + ".");
-	}
-
-	hr = p_device->audio_client->GetMixFormat(&pwfex);
-	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+// Helper function to get and validate mix format
+WAVEFORMATEX* AudioDriverWASAPI::get_and_validate_mix_format(IAudioClient *audio_client, bool &used_closest) {
+	WAVEFORMATEX *pwfex = nullptr;
+	HRESULT hr = audio_client->GetMixFormat(&pwfex);
+	ERR_FAIL_COND_V(hr != S_OK, nullptr);
+	
 	// From this point onward, CoTaskMemFree(pwfex) must be called before returning or pwfex will leak!
-
+	
 	print_verbose("WASAPI: wFormatTag = " + itos(pwfex->wFormatTag));
 	print_verbose("WASAPI: nChannels = " + itos(pwfex->nChannels));
 	print_verbose("WASAPI: nSamplesPerSec = " + itos(pwfex->nSamplesPerSec));
@@ -338,9 +319,9 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	print_verbose("WASAPI: cbSize = " + itos(pwfex->cbSize));
 
 	WAVEFORMATEX *closest = nullptr;
-	hr = p_device->audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, pwfex, &closest);
+	hr = audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, pwfex, &closest);
 	if (hr == S_FALSE) {
-		WARN_PRINT("WASAPI: Mix format is not supported by the output_device");
+		WARN_PRINT("WASAPI: Mix format is not supported by the device");
 		if (closest) {
 			print_verbose("WASAPI: closest->wFormatTag = " + itos(closest->wFormatTag));
 			print_verbose("WASAPI: closest->nChannels = " + itos(closest->nChannels));
@@ -353,9 +334,17 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 			WARN_PRINT("WASAPI: Using closest match instead");
 			CoTaskMemFree(pwfex);
 			pwfex = closest;
+			used_closest = true;
 		}
+	} else {
+		used_closest = false;
 	}
+	
+	return pwfex;
+}
 
+// Helper function to validate and set format
+bool AudioDriverWASAPI::validate_and_set_format(AudioDeviceWASAPI *p_device, WAVEFORMATEX *pwfex) {
 	// Since we're using WASAPI Shared Mode we can't control any of these, we just tag along
 	p_device->channels = pwfex->nChannels;
 	p_device->format_tag = pwfex->wFormatTag;
@@ -371,18 +360,23 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 			p_device->format_tag = WAVE_FORMAT_IEEE_FLOAT;
 		} else {
 			ERR_PRINT("WASAPI: Format not supported");
-			CoTaskMemFree(pwfex);
-			ERR_FAIL_V(ERR_CANT_OPEN);
+			return false;
 		}
 	} else {
 		if (p_device->format_tag != WAVE_FORMAT_PCM && p_device->format_tag != WAVE_FORMAT_IEEE_FLOAT) {
 			ERR_PRINT("WASAPI: Format not supported");
-			CoTaskMemFree(pwfex);
-			ERR_FAIL_V(ERR_CANT_OPEN);
+			return false;
 		}
 	}
+	
+	return true;
+}
 
-	if (!using_audio_client_3) {
+// Helper function to initialize audio client
+HRESULT AudioDriverWASAPI::initialize_audio_client(AudioDeviceWASAPI *p_device, WAVEFORMATEX *pwfex, bool p_input, bool use_client3) {
+	HRESULT hr = S_OK;
+	
+	if (!use_client3) {
 		DWORD streamflags = 0;
 		if ((DWORD)mix_rate != pwfex->nSamplesPerSec) {
 			streamflags |= AUDCLNT_STREAMFLAGS_RATEADJUST;
@@ -390,41 +384,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 			pwfex->nAvgBytesPerSec = pwfex->nSamplesPerSec * pwfex->nChannels * (pwfex->wBitsPerSample / 8);
 		}
 		hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_input ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
-
-		if (p_reinit) {
-			// In case we're trying to re-initialize the device, prevent throwing this error on the console,
-			// otherwise if there is currently no device available this will spam the console.
-			if (hr != S_OK) {
-				print_verbose("WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
-				CoTaskMemFree(pwfex);
-				return ERR_CANT_OPEN;
-			}
-		} else {
-			if (unlikely(hr != S_OK)) {
-				CoTaskMemFree(pwfex);
-				ERR_FAIL_V_MSG(ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
-			}
-		}
-
-		UINT32 max_frames;
-		hr = p_device->audio_client->GetBufferSize(&max_frames);
-		if (unlikely(hr != S_OK)) {
-			CoTaskMemFree(pwfex);
-			ERR_FAIL_V(ERR_CANT_OPEN);
-		}
-
-		// Due to WASAPI Shared Mode we have no control of the buffer size
-		if (!p_input) {
-			buffer_frames = max_frames;
-
-			int64_t latency = 0;
-			audio_output.audio_client->GetStreamLatency(&latency);
-			// WASAPI REFERENCE_TIME units are 100 nanoseconds per unit
-			// https://docs.microsoft.com/en-us/windows/win32/directshow/reference-time
-			// Convert REFTIME to seconds as godot uses for latency
-			real_latency = (float)latency / (float)REFTIMES_PER_SEC;
-		}
-
 	} else {
 		IAudioClient3 *device_audio_client_3 = (IAudioClient3 *)p_device->audio_client;
 
@@ -442,8 +401,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 				&max_period_frames);
 		if (hr != S_OK) {
 			print_verbose("WASAPI: GetSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
-			CoTaskMemFree(pwfex);
-			return audio_device_init(p_device, p_input, p_reinit, true);
+			return S_FALSE; // Signal to fall back to IAudioClient
 		}
 
 		// Period frames must be an integral multiple of fundamental_period_frames or IAudioClient3 initialization will fail,
@@ -463,36 +421,160 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		hr = device_audio_client_3->InitializeSharedAudioStream(0, period_frames, pwfex, nullptr);
 		if (hr != S_OK) {
 			print_verbose("WASAPI: InitializeSharedAudioStream failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
-			CoTaskMemFree(pwfex);
-			return audio_device_init(p_device, p_input, p_reinit, true);
-		} else {
-			uint32_t output_latency_in_frames;
-			WAVEFORMATEX *current_pwfex;
-			hr = device_audio_client_3->GetCurrentSharedModeEnginePeriod(&current_pwfex, &output_latency_in_frames);
-			if (hr == OK) {
-				real_latency = (float)output_latency_in_frames / (float)current_pwfex->nSamplesPerSec;
-				CoTaskMemFree(current_pwfex);
-			} else {
-				print_verbose("WASAPI: GetCurrentSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
-				CoTaskMemFree(pwfex);
-				return audio_device_init(p_device, p_input, p_reinit, true);
-			}
+			return S_FALSE; // Signal to fall back to IAudioClient
 		}
 	}
+	
+	return hr;
+}
 
+// Helper function to setup buffer and latency
+void AudioDriverWASAPI::setup_buffer_and_latency(AudioDeviceWASAPI *p_device, bool p_input, bool use_client3, WAVEFORMATEX *pwfex) {
+	if (!use_client3) {
+		UINT32 max_frames;
+		HRESULT hr = p_device->audio_client->GetBufferSize(&max_frames);
+		if (unlikely(hr != S_OK)) {
+			ERR_PRINT("WASAPI: GetBufferSize failed");
+			return;
+		}
+
+		// Due to WASAPI Shared Mode we have no control of the buffer size
+		if (!p_input) {
+			buffer_frames = max_frames;
+
+			int64_t latency = 0;
+			audio_output.audio_client->GetStreamLatency(&latency);
+			// WASAPI REFERENCE_TIME units are 100 nanoseconds per unit
+			// https://docs.microsoft.com/en-us/windows/win32/directshow/reference-time
+			// Convert REFTIME to seconds as godot uses for latency
+			real_latency = (float)latency / (float)REFTIMES_PER_SEC;
+		}
+	} else {
+		IAudioClient3 *device_audio_client_3 = (IAudioClient3 *)p_device->audio_client;
+		uint32_t output_latency_in_frames;
+		WAVEFORMATEX *current_pwfex;
+		HRESULT hr = device_audio_client_3->GetCurrentSharedModeEnginePeriod(&current_pwfex, &output_latency_in_frames);
+		if (hr == OK) {
+			real_latency = (float)output_latency_in_frames / (float)current_pwfex->nSamplesPerSec;
+			CoTaskMemFree(current_pwfex);
+		} else {
+			print_verbose("WASAPI: GetCurrentSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
+		}
+	}
+}
+
+// Helper function to acquire service clients
+HRESULT AudioDriverWASAPI::acquire_service_clients(AudioDeviceWASAPI *p_device, bool p_input) {
+	HRESULT hr = S_OK;
+	
 	if (p_input) {
 		hr = p_device->audio_client->GetService(IID_IAudioCaptureClient, (void **)&p_device->capture_client);
 	} else {
 		hr = p_device->audio_client->GetService(IID_IAudioRenderClient, (void **)&p_device->render_client);
 	}
+	
+	return hr;
+}
+
+Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit, bool p_no_audio_client_3) {
+	// This function can be called recursively, so clean up before starting:
+	audio_device_finish(p_device);
+
+	// 1. Find the correct audio device
+	ComPtr<IMMDevice> output_device = find_output_device(p_device, p_input);
+	if (!output_device) {
+		if (p_reinit) {
+			return ERR_CANT_OPEN;
+		} else {
+			ERR_FAIL_COND_V_MSG(false, ERR_CANT_OPEN, "WASAPI: Failed to find audio device");
+		}
+	}
+
+	// 2. Register notification callback
+	ComPtr<IMMDeviceEnumerator> enumerator = nullptr;
+	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
+	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	
+	register_notification_callback(enumerator);
+
+	// 3. Determine if we should use IAudioClient3
+	using_audio_client_3 = !p_input; // IID_IAudioClient3 is only used for adjustable output latency (not input)
+	if (p_no_audio_client_3) {
+		using_audio_client_3 = false;
+	}
+
+	// 4. Activate audio client
+	hr = activate_audio_client(output_device, using_audio_client_3, &p_device->audio_client);
+	if (hr == S_FALSE) {
+		// Fall back to IAudioClient
+		using_audio_client_3 = false;
+		hr = activate_audio_client(output_device, false, &p_device->audio_client);
+	}
+
+	if (p_reinit) {
+		if (hr != S_OK) {
+			return ERR_CANT_OPEN;
+		}
+	} else {
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	}
+
+	// 5. Set client properties for IAudioClient3
+	if (using_audio_client_3) {
+		AudioClientProperties audioProps{};
+		audioProps.cbSize = sizeof(AudioClientProperties);
+		audioProps.bIsOffload = FALSE;
+		audioProps.eCategory = AudioCategory_GameEffects;
+
+		hr = ((IAudioClient3 *)p_device->audio_client)->SetClientProperties(&audioProps);
+		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: SetClientProperties failed with error 0x" + String::num_uint64(hr, 16) + ".");
+	}
+
+	// 6. Get and validate mix format
+	bool used_closest = false;
+	WAVEFORMATEX *pwfex = get_and_validate_mix_format(p_device->audio_client, used_closest);
+	if (!pwfex) {
+		return ERR_CANT_OPEN;
+	}
+
+	// 7. Validate and set format
+	if (!validate_and_set_format(p_device, pwfex)) {
+		CoTaskMemFree(pwfex);
+		return ERR_CANT_OPEN;
+	}
+
+	// 8. Initialize audio client
+	hr = initialize_audio_client(p_device, pwfex, p_input, using_audio_client_3);
+	if (hr == S_FALSE) {
+		// Fall back to IAudioClient
+		using_audio_client_3 = false;
+		hr = initialize_audio_client(p_device, pwfex, p_input, false);
+	}
+	
+	if (p_reinit) {
+		if (hr != S_OK) {
+			CoTaskMemFree(pwfex);
+			return ERR_CANT_OPEN;
+		}
+	} else {
+		if (unlikely(hr != S_OK)) {
+			CoTaskMemFree(pwfex);
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
+		}
+	}
+
+	// 9. Setup buffer and latency
+	setup_buffer_and_latency(p_device, p_input, using_audio_client_3, pwfex);
+
+	// 10. Acquire service clients
+	hr = acquire_service_clients(p_device, p_input);
 	if (unlikely(hr != S_OK)) {
 		CoTaskMemFree(pwfex);
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	// Free memory
+	// 11. Cleanup
 	CoTaskMemFree(pwfex);
-
 	return OK;
 }
 
@@ -838,8 +920,9 @@ void AudioDriverWASAPI::process_audio_output(uint32_t &avail_frames, uint32_t &w
 			ERR_PRINT("WASAPI: GetCurrentPadding error");
 		}
 
-			if (invalidated) {
-				WARN_PRINT("WASAPI: Current output_device invalidated, closing output_device");
+		if (invalidated) {
+			// output_device is not valid anymore
+			WARN_PRINT("WASAPI: Current output_device invalidated, closing output_device");
 
 			Error err = finish_output_device();
 			if (err != OK) {

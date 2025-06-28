@@ -95,6 +95,16 @@ class AudioDriverWASAPI : public AudioDriver {
 	Error audio_device_finish(AudioDeviceWASAPI *p_device);
 	PackedStringArray audio_device_get_list(bool p_input);
 
+	// Helper functions for audio_device_init refactoring
+	ComPtr<IMMDevice> find_output_device(AudioDeviceWASAPI *p_device, bool p_input);
+	void register_notification_callback(ComPtr<IMMDeviceEnumerator> &enumerator);
+	HRESULT activate_audio_client(ComPtr<IMMDevice> &device, bool use_client3, IAudioClient **out_client);
+	WAVEFORMATEX* get_and_validate_mix_format(IAudioClient *audio_client, bool &used_closest);
+	bool validate_and_set_format(AudioDeviceWASAPI *p_device, WAVEFORMATEX *pwfex);
+	HRESULT initialize_audio_client(AudioDeviceWASAPI *p_device, WAVEFORMATEX *pwfex, bool p_input, bool use_client3);
+	void setup_buffer_and_latency(AudioDeviceWASAPI *p_device, bool p_input, bool use_client3, WAVEFORMATEX *pwfex);
+	HRESULT acquire_service_clients(AudioDeviceWASAPI *p_device, bool p_input);
+
 	// Helper functions for thread_func refactoring
 	void process_audio_output(uint32_t &avail_frames, uint32_t &write_ofs, uint32_t &written_frames);
 	void process_audio_input(uint32_t &read_frames);
