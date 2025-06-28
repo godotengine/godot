@@ -1922,7 +1922,7 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 		}
 	}
 	anim->set_path(res_path, true); // Set path to save externally.
-	Error err = ResourceSaver::save(anim, res_path, ResourceSaver::FLAG_CHANGE_PATH);
+	Error err = ResourceSaver::save(anim, res_path);
 
 	ERR_FAIL_COND_V_MSG(err != OK, anim, "Saving of animation failed: " + res_path);
 	if (p_save_to_path.begins_with("uid://")) {

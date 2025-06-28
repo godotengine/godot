@@ -236,10 +236,7 @@ void fog() {
 	}
 
 	if (shader.is_null()) {
-		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
-		shader_inc->set_path(lpath);
-
-		Error error = ResourceSaver::save(shader_inc, lpath, ResourceSaver::FLAG_CHANGE_PATH);
+		Error error = ResourceSaver::save(shader_inc, file_path->get_text(), ResourceSaver::FLAG_CHANGE_PATH);
 		if (error != OK) {
 			alert->set_text(TTR("Error - Could not create shader include in filesystem."));
 			alert->popup_centered();
@@ -254,10 +251,7 @@ void fog() {
 				shader->set_path(edited_scene->get_scene_file_path() + "::" + shader->generate_scene_unique_id());
 			}
 		} else {
-			String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
-			shader->set_path(lpath);
-
-			Error error = ResourceSaver::save(shader, lpath, ResourceSaver::FLAG_CHANGE_PATH);
+			Error error = ResourceSaver::save(shader, file_path->get_text(), ResourceSaver::FLAG_CHANGE_PATH);
 			if (error != OK) {
 				alert->set_text(TTR("Error - Could not create shader in filesystem."));
 				alert->popup_centered();
