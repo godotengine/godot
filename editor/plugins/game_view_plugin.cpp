@@ -415,6 +415,13 @@ void GameView::_play_pressed() {
 	}
 
 	if (embed_on_play && _get_embed_available() == EMBED_AVAILABLE) {
+		PopupMenu *menu = embed_options_menu->get_popup();
+
+		distraction_free_on_play = menu->is_item_checked(menu->get_item_index(EMBED_DISTRACTION_FREE_MODE)) && !EditorInterface::get_singleton()->is_distraction_free_mode_enabled();
+		if (distraction_free_on_play && !make_floating_on_play) {
+			EditorInterface::get_singleton()->set_distraction_free_mode(true);
+		}
+
 		// It's important to disable the low power mode when unfocused because otherwise
 		// the button in the editor are not responsive and if the user moves the mouse quickly,
 		// the mouse clicks are not registered.
@@ -438,6 +445,10 @@ void GameView::_stop_pressed() {
 
 	_detach_script_debugger();
 	paused = false;
+
+	if (embed_on_play && distraction_free_on_play) {
+		EditorInterface::get_singleton()->set_distraction_free_mode(false);
+	}
 
 	EditorNode::get_singleton()->set_unfocused_low_processor_usage_mode_enabled(true);
 	embedded_process->reset();
@@ -578,6 +589,13 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 				EditorSettings::get_singleton()->set_project_metadata("game_view", "make_floating_on_play", make_floating_on_play);
 			}
 		} break;
+		case EMBED_DISTRACTION_FREE_MODE: {
+			distraction_free_on_play = !distraction_free_on_play;
+			int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
+			if (game_mode == 0) { // Save only if not overridden by editor.
+				EditorSettings::get_singleton()->set_project_metadata("game_view", "distraction_free_on_play", distraction_free_on_play);
+			}
+		} break;
 	}
 	_update_embed_menu_options();
 	_update_ui();
@@ -684,8 +702,10 @@ void GameView::_update_embed_menu_options() {
 	PopupMenu *menu = embed_options_menu->get_popup();
 	menu->set_item_checked(menu->get_item_index(EMBED_RUN_GAME_EMBEDDED), embed_on_play);
 	menu->set_item_checked(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), make_floating_on_play && is_multi_window);
+	menu->set_item_checked(menu->get_item_index(EMBED_DISTRACTION_FREE_MODE), distraction_free_on_play);
 
 	menu->set_item_disabled(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), !embed_on_play || !is_multi_window);
+	menu->set_item_disabled(menu->get_item_index(EMBED_DISTRACTION_FREE_MODE), !embed_on_play || (make_floating_on_play && is_multi_window));
 
 	fixed_size_button->set_pressed(embed_size_mode == SIZE_MODE_FIXED);
 	keep_aspect_button->set_pressed(embed_size_mode == SIZE_MODE_KEEP_ASPECT);
@@ -808,18 +828,22 @@ void GameView::_notification(int p_what) {
 					case -1: { // Disabled.
 						embed_on_play = false;
 						make_floating_on_play = false;
+						distraction_free_on_play = false;
 					} break;
 					case 1: { // Embed.
 						embed_on_play = true;
 						make_floating_on_play = false;
+						distraction_free_on_play = false;
 					} break;
 					case 2: { // Floating.
 						embed_on_play = true;
 						make_floating_on_play = true;
+						distraction_free_on_play = false;
 					} break;
 					default: {
 						embed_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_on_play", true);
 						make_floating_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "make_floating_on_play", true);
+						distraction_free_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "distraction_free_on_play", false);
 					} break;
 				}
 				embed_size_mode = (EmbedSizeMode)(int)EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_size_mode", SIZE_MODE_FIXED);
@@ -1201,6 +1225,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_embed_options_menu_menu_id_pressed));
 	menu->add_check_item(TTRC("Embed Game on Next Play"), EMBED_RUN_GAME_EMBEDDED);
 	menu->add_check_item(TTRC("Make Game Workspace Floating on Next Play"), EMBED_MAKE_FLOATING_ON_PLAY);
+	menu->add_check_item(TTRC("Distraction Free Mode on Next Play"), EMBED_DISTRACTION_FREE_MODE);
 
 	main_menu_hbox->add_spacer();
 
