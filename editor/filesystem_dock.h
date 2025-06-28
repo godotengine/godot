@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "editor/dependency_editor.h"
 #include "editor/editor_file_system.h"
 #include "editor/file_info.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -38,19 +37,23 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
 class CreateDialog;
+class DependencyEditor;
+class DependencyEditorOwners;
+class DependencyRemoveDialog;
+class DirectoryCreateDialog;
 class EditorDirDialog;
+class EditorResourceTooltipPlugin;
 class ItemList;
 class LineEdit;
 class ProgressBar;
 class SceneCreateDialog;
 class ShaderCreateDialog;
-class DirectoryCreateDialog;
-class EditorResourceTooltipPlugin;
 
 class FileSystemTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
