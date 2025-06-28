@@ -41,5 +41,6 @@ static const char* const E_SPV_EXT_shader_atomic_float_min_max = "SPV_EXT_shader
 static const char* const E_SPV_EXT_shader_image_int64 = "SPV_EXT_shader_image_int64";
 static const char* const E_SPV_EXT_shader_tile_image = "SPV_EXT_shader_tile_image";
 static const char* const E_SPV_EXT_mesh_shader = "SPV_EXT_mesh_shader";
+static const char* const E_SPV_ARM_cooperative_matrix_layouts = "SPV_ARM_cooperative_matrix_layouts";
 
 #endif  // #ifndef GLSLextEXT_H

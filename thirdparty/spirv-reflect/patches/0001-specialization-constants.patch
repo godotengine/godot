@@ -1,8 +1,8 @@
 diff --git a/thirdparty/spirv-reflect/spirv_reflect.c b/thirdparty/spirv-reflect/spirv_reflect.c
-index b4f6bc17c2..ba64a3f54d 100644
+index 50986b52d6..d7e6bd78f1 100644
 --- a/thirdparty/spirv-reflect/spirv_reflect.c
 +++ b/thirdparty/spirv-reflect/spirv_reflect.c
-@@ -1571,6 +1571,8 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
+@@ -1605,6 +1605,8 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
        } break;
  
        case SpvDecorationSpecId: {
@@ -11,7 +11,7 @@ index b4f6bc17c2..ba64a3f54d 100644
          spec_constant_count++;
        } break;
  
-@@ -1692,21 +1694,43 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
+@@ -1726,21 +1728,43 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
    }
    for (uint32_t i = 0; i < p_parser->node_count; ++i) {
      SpvReflectPrvNode* p_node = &(p_parser->nodes[i]);
@@ -69,10 +69,10 @@ index b4f6bc17c2..ba64a3f54d 100644
  
    return SPV_REFLECT_RESULT_SUCCESS;
 diff --git a/thirdparty/spirv-reflect/spirv_reflect.h b/thirdparty/spirv-reflect/spirv_reflect.h
-index 9a42f14eed..cf8cfe2183 100644
+index eea30bd711..3db0092440 100644
 --- a/thirdparty/spirv-reflect/spirv_reflect.h
 +++ b/thirdparty/spirv-reflect/spirv_reflect.h
-@@ -568,6 +568,15 @@ typedef struct SpvReflectCapability {
+@@ -572,6 +572,15 @@ typedef struct SpvReflectCapability {
  } SpvReflectCapability;
  
  
@@ -88,7 +88,7 @@ index 9a42f14eed..cf8cfe2183 100644
  /*! @struct SpvReflectSpecId
  
  */
-@@ -575,6 +584,11 @@ typedef struct SpvReflectSpecializationConstant {
+@@ -579,6 +588,11 @@ typedef struct SpvReflectSpecializationConstant {
    uint32_t spirv_id;
    uint32_t constant_id;
    const char* name;

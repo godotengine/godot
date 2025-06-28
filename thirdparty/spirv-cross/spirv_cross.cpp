@@ -210,6 +210,7 @@ bool Compiler::block_is_pure(const SPIRBlock &block)
 
 		case OpCopyMemory:
 		case OpStore:
+		case OpCooperativeMatrixStoreKHR:
 		{
 			auto &type = expression_type(ops[0]);
 			if (type.storage != StorageClassFunction)
@@ -370,6 +371,7 @@ void Compiler::register_global_read_dependencies(const SPIRBlock &block, uint32_
 		}
 
 		case OpLoad:
+		case OpCooperativeMatrixLoadKHR:
 		case OpImageRead:
 		{
 			// If we're in a storage class which does not get invalidated, adding dependencies here is no big deal.
@@ -587,6 +589,7 @@ const SPIRType &Compiler::expression_type(uint32_t id) const
 bool Compiler::expression_is_lvalue(uint32_t id) const
 {
 	auto &type = expression_type(id);
+
 	switch (type.basetype)
 	{
 	case SPIRType::SampledImage:
@@ -818,6 +821,7 @@ bool Compiler::InterfaceVariableAccessHandler::handle(Op opcode, const uint32_t 
 
 	case OpAtomicStore:
 	case OpStore:
+	case OpCooperativeMatrixStoreKHR:
 		// Invalid SPIR-V.
 		if (length < 1)
 			return false;
@@ -910,6 +914,7 @@ bool Compiler::InterfaceVariableAccessHandler::handle(Op opcode, const uint32_t 
 	case OpInBoundsAccessChain:
 	case OpPtrAccessChain:
 	case OpLoad:
+	case OpCooperativeMatrixLoadKHR:
 	case OpCopyObject:
 	case OpImageTexelPointer:
 	case OpAtomicLoad:
@@ -3461,6 +3466,7 @@ bool Compiler::AnalyzeVariableScopeAccessHandler::handle(spv::Op op, const uint3
 	switch (op)
 	{
 	case OpStore:
+	case OpCooperativeMatrixStoreKHR:
 	{
 		if (length < 2)
 			return false;
@@ -3581,6 +3587,7 @@ bool Compiler::AnalyzeVariableScopeAccessHandler::handle(spv::Op op, const uint3
 	}
 
 	case OpLoad:
+	case OpCooperativeMatrixLoadKHR:
 	{
 		if (length < 3)
 			return false;
@@ -3800,6 +3807,7 @@ bool Compiler::StaticExpressionAccessHandler::handle(spv::Op op, const uint32_t 
 	switch (op)
 	{
 	case OpStore:
+	case OpCooperativeMatrixStoreKHR:
 		if (length < 2)
 			return false;
 		if (args[0] == variable_id)
@@ -3810,6 +3818,7 @@ bool Compiler::StaticExpressionAccessHandler::handle(spv::Op op, const uint32_t 
 		break;
 
 	case OpLoad:
+	case OpCooperativeMatrixLoadKHR:
 		if (length < 3)
 			return false;
 		if (args[2] == variable_id && static_expression == 0) // Tried to read from variable before it was initialized.
@@ -4285,6 +4294,7 @@ bool Compiler::may_read_undefined_variable_in_block(const SPIRBlock &block, uint
 		switch (op.op)
 		{
 		case OpStore:
+		case OpCooperativeMatrixStoreKHR:
 		case OpCopyMemory:
 			if (ops[0] == var)
 				return false;
@@ -4323,6 +4333,7 @@ bool Compiler::may_read_undefined_variable_in_block(const SPIRBlock &block, uint
 
 		case OpCopyObject:
 		case OpLoad:
+		case OpCooperativeMatrixLoadKHR:
 			if (ops[2] == var)
 				return true;
 			break;
@@ -4462,6 +4473,7 @@ bool Compiler::ActiveBuiltinHandler::handle(spv::Op opcode, const uint32_t *args
 	switch (opcode)
 	{
 	case OpStore:
+	case OpCooperativeMatrixStoreKHR:
 		if (length < 1)
 			return false;
 
@@ -4478,6 +4490,7 @@ bool Compiler::ActiveBuiltinHandler::handle(spv::Op opcode, const uint32_t *args
 
 	case OpCopyObject:
 	case OpLoad:
+	case OpCooperativeMatrixLoadKHR:
 		if (length < 3)
 			return false;
 
@@ -4910,13 +4923,16 @@ void Compiler::make_constant_null(uint32_t id, uint32_t type)
 		uint32_t parent_id = ir.increase_bound_by(1);
 		make_constant_null(parent_id, constant_type.parent_type);
 
-		if (!constant_type.array_size_literal.back())
-			SPIRV_CROSS_THROW("Array size of OpConstantNull must be a literal.");
-
-		SmallVector<uint32_t> elements(constant_type.array.back());
-		for (uint32_t i = 0; i < constant_type.array.back(); i++)
+		// The array size of OpConstantNull can be either literal or specialization constant.
+		// In the latter case, we cannot take the value as-is, as it can be changed to anything.
+		// Rather, we assume it to be *one* for the sake of initializer.
+		bool is_literal_array_size = constant_type.array_size_literal.back();
+		uint32_t count = is_literal_array_size ? constant_type.array.back() : 1;
+		SmallVector<uint32_t> elements(count);
+		for (uint32_t i = 0; i < count; i++)
 			elements[i] = parent_id;
-		set<SPIRConstant>(id, type, elements.data(), uint32_t(elements.size()), false);
+		auto &constant = set<SPIRConstant>(id, type, elements.data(), uint32_t(elements.size()), false);
+		constant.is_null_array_specialized_length = !is_literal_array_size;
 	}
 	else if (!constant_type.member_types.empty())
 	{
@@ -5252,6 +5268,13 @@ bool Compiler::PhysicalStorageBufferPointerHandler::handle(Op op, const uint32_t
 		break;
 	}
 
+	case OpCooperativeMatrixLoadKHR:
+	case OpCooperativeMatrixStoreKHR:
+	{
+		// TODO: Can we meaningfully deal with this?
+		break;
+	}
+
 	default:
 		break;
 	}
@@ -5407,6 +5430,7 @@ bool Compiler::InterlockedResourceAccessHandler::handle(Op opcode, const uint32_
 	switch (opcode)
 	{
 	case OpLoad:
+	case OpCooperativeMatrixLoadKHR:
 	{
 		if (length < 3)
 			return false;
@@ -5484,6 +5508,7 @@ bool Compiler::InterlockedResourceAccessHandler::handle(Op opcode, const uint32_
 	case OpStore:
 	case OpImageWrite:
 	case OpAtomicStore:
+	case OpCooperativeMatrixStoreKHR:
 	{
 		if (length < 1)
 			return false;

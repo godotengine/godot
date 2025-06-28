@@ -536,6 +536,10 @@ public:
 		// if the fragment does not modify the depth value.
 		bool input_attachment_is_ds_attachment = false;
 
+		// If BuiltInPosition is not written, automatically disable rasterization.
+		// The result can be queried with get_is_rasterization_disabled.
+		bool auto_disable_rasterization = false;
+
 		bool is_ios() const
 		{
 			return platform == iOS;
@@ -756,6 +760,11 @@ public:
 	void set_combined_sampler_suffix(const char *suffix);
 	const char *get_combined_sampler_suffix() const;
 
+	// Information about specialization constants that are translated into MSL macros
+	// instead of using function constant
+	// These must only be called after a successful call to CompilerMSL::compile().
+	bool specialization_constant_is_macro(uint32_t constant_id) const;
+
 protected:
 	// An enum of SPIR-V functions that are implemented in additional
 	// source code that is added to the shader if necessary.
@@ -784,12 +793,11 @@ protected:
 		SPVFuncImplInverse4x4,
 		SPVFuncImplInverse3x3,
 		SPVFuncImplInverse2x2,
-		// It is very important that this come before *Swizzle and ChromaReconstruct*, to ensure it's
-		// emitted before them.
-		SPVFuncImplForwardArgs,
-		// Likewise, this must come before *Swizzle.
+		// It is very important that this come before *Swizzle, to ensure it's emitted before them.
 		SPVFuncImplGetSwizzle,
 		SPVFuncImplTextureSwizzle,
+		SPVFuncImplGatherReturn,
+		SPVFuncImplGatherCompareReturn,
 		SPVFuncImplGatherSwizzle,
 		SPVFuncImplGatherCompareSwizzle,
 		SPVFuncImplGatherConstOffsets,
@@ -841,6 +849,7 @@ protected:
 		SPVFuncImplTextureCast,
 		SPVFuncImplMulExtended,
 		SPVFuncImplSetMeshOutputsEXT,
+		SPVFuncImplAssume,
 	};
 
 	// If the underlying resource has been used for comparison then duplicate loads of that resource must be too
@@ -872,6 +881,7 @@ protected:
 	void emit_mesh_entry_point();
 	void emit_mesh_outputs();
 	void emit_mesh_tasks(SPIRBlock &block) override;
+	void emit_workgroup_initialization(const SPIRVariable &var) override;
 
 	// Allow Metal to use the array<T> template to make arrays a value type
 	std::string type_to_array_glsl(const SPIRType &type, uint32_t variable_id) override;
@@ -985,6 +995,7 @@ protected:
 	void add_tess_level_input_to_interface_block(const std::string &ib_var_ref, SPIRType &ib_type, SPIRVariable &var);
 	void add_tess_level_input(const std::string &base_ref, const std::string &mbr_name, SPIRVariable &var);
 
+	void ensure_struct_members_valid_vecsizes(SPIRType &struct_type, uint32_t &location);
 	void fix_up_interface_member_indices(spv::StorageClass storage, uint32_t ib_type_id);
 
 	void mark_location_as_used_by_shader(uint32_t location, const SPIRType &type,
@@ -1133,6 +1144,7 @@ protected:
 	void emit_store_statement(uint32_t lhs_expression, uint32_t rhs_expression) override;
 
 	void analyze_sampled_image_usage();
+	void analyze_workgroup_variables();
 
 	bool access_chain_needs_stage_io_builtin_translation(uint32_t base) override;
 	bool prepare_access_chain_for_scalar_access(std::string &expr, const SPIRType &type, spv::StorageClass storage,
@@ -1167,6 +1179,7 @@ protected:
 	std::set<std::string> pragma_lines;
 	std::set<std::string> typedef_lines;
 	SmallVector<uint32_t> vars_needing_early_declaration;
+	std::unordered_set<uint32_t> constant_macro_ids;
 
 	std::unordered_map<StageSetBinding, std::pair<MSLResourceBinding, bool>, InternalHasher> resource_bindings;
 	std::unordered_map<StageSetBinding, uint32_t, InternalHasher> resource_arg_buff_idx_to_binding_number;
@@ -1214,6 +1227,7 @@ protected:
 	bool needs_subgroup_size = false;
 	bool needs_sample_id = false;
 	bool needs_helper_invocation = false;
+	bool needs_workgroup_zero_init = false;
 	bool writes_to_depth = false;
 	std::string qual_pos_var_name;
 	std::string stage_in_var_name = "in";
@@ -1276,6 +1290,7 @@ protected:
 
 	bool suppress_missing_prototypes = false;
 	bool suppress_incompatible_pointer_types_discard_qualifiers = false;
+	bool suppress_sometimes_unitialized = false;
 
 	void add_spv_func_and_recompile(SPVFuncImpl spv_func);
 
