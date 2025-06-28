@@ -470,8 +470,7 @@ void TranslationServer::setup() {
 String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		const PackedStringArray &locales = editor_domain->get_loaded_locales();
-		if (locales.has(locale)) {
+		if (editor_domain->has_translation_for_locale(locale)) {
 			return locale;
 		}
 		return "en";
@@ -486,26 +485,6 @@ String TranslationServer::get_tool_locale() {
 		}
 		return t->get_locale();
 	}
-}
-
-StringName TranslationServer::tool_translate(const StringName &p_message, const StringName &p_context) const {
-	return editor_domain->translate(p_message, p_context);
-}
-
-StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	return editor_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
-}
-
-StringName TranslationServer::property_translate(const StringName &p_message, const StringName &p_context) const {
-	return property_domain->translate(p_message, p_context);
-}
-
-StringName TranslationServer::doc_translate(const StringName &p_message, const StringName &p_context) const {
-	return doc_domain->translate(p_message, p_context);
-}
-
-StringName TranslationServer::doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	return doc_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
@@ -623,9 +602,14 @@ void TranslationServer::load_translations() {
 
 TranslationServer::TranslationServer() {
 	singleton = this;
+
 	main_domain.instantiate();
+
+#ifdef TOOLS_ENABLED
 	editor_domain = get_or_add_domain("godot.editor");
 	property_domain = get_or_add_domain("godot.properties");
 	doc_domain = get_or_add_domain("godot.documentation");
+#endif // TOOLS_ENABLED
+
 	init_locale_info();
 }
