@@ -3867,7 +3867,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	String arg_list = "";
 
 	for (int i = 0; i < shader->vfunctions.size(); i++) {
-		if (name != shader->vfunctions[i].name) {
+		if (rname != shader->vfunctions[i].rname) {
 			continue;
 		}
 		exists = true;
@@ -6158,7 +6158,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					// Test if function was parsed first.
 					int function_index = -1;
 					for (int i = 0, max_valid_args = 0; i < shader->vfunctions.size(); i++) {
-						if (!shader->vfunctions[i].callable || shader->vfunctions[i].rname != rname) {
+						if (!shader->vfunctions[i].callable || shader->vfunctions[i].rname != rname || func->arguments.size() - 1 != shader->vfunctions[i].function->arguments.size()) {
 							continue;
 						}
 
@@ -6167,11 +6167,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 						// Search for correct overload.
 						for (int j = 1; j < func->arguments.size(); j++) {
-							if (j - 1 == shader->vfunctions[i].function->arguments.size()) {
-								found = false;
-								break;
-							}
-
 							const FunctionNode::Argument &a = shader->vfunctions[i].function->arguments[j - 1];
 							Node *b = func->arguments[j];
 
