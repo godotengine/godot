@@ -732,6 +732,223 @@ void AudioDriverWASAPI::write_sample(WORD format_tag, int bits_per_sample, BYTE 
 	}
 }
 
+// Helper function to write audio buffer with channel conversion
+void AudioDriverWASAPI::write_audio_buffer(BYTE *buffer, UINT32 write_frames, uint32_t &write_ofs) {
+	// We're using WASAPI Shared Mode so we must convert the buffer
+	if (channels == audio_output.channels) {
+		for (unsigned int i = 0; i < write_frames * channels; i++) {
+			write_sample(audio_output.format_tag, audio_output.bits_per_sample, buffer, i, samples_in.write[write_ofs++]);
+		}
+	} else if (channels == audio_output.channels + 1) {
+		// Pass all channels except the last two as-is, and then mix the last two
+		// together as one channel. E.g. stereo -> mono, or 3.1 -> 2.1.
+		unsigned int last_chan = audio_output.channels - 1;
+		for (unsigned int i = 0; i < write_frames; i++) {
+			for (unsigned int j = 0; j < last_chan; j++) {
+				write_sample(audio_output.format_tag, audio_output.bits_per_sample, buffer, i * audio_output.channels + j, samples_in.write[write_ofs++]);
+			}
+			int32_t l = samples_in.write[write_ofs++];
+			int32_t r = samples_in.write[write_ofs++];
+			int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
+			write_sample(audio_output.format_tag, audio_output.bits_per_sample, buffer, i * audio_output.channels + last_chan, c);
+		}
+	} else {
+		for (unsigned int i = 0; i < write_frames; i++) {
+			for (unsigned int j = 0; j < MIN(channels, audio_output.channels); j++) {
+				write_sample(audio_output.format_tag, audio_output.bits_per_sample, buffer, i * audio_output.channels + j, samples_in.write[write_ofs++]);
+			}
+			if (audio_output.channels > channels) {
+				for (unsigned int j = channels; j < audio_output.channels; j++) {
+					write_sample(audio_output.format_tag, audio_output.bits_per_sample, buffer, i * audio_output.channels + j, 0);
+				}
+			}
+		}
+	}
+}
+
+// Helper function to read audio buffer from input
+void AudioDriverWASAPI::read_audio_buffer(BYTE *data, UINT32 num_frames_available, DWORD flags) {
+	// fixme: Only works for floating point atm
+	for (UINT32 j = 0; j < num_frames_available; j++) {
+		int32_t l, r;
+
+		if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
+			l = r = 0;
+		} else {
+			if (audio_input.channels == 2) {
+				l = read_sample(audio_input.format_tag, audio_input.bits_per_sample, data, j * 2);
+				r = read_sample(audio_input.format_tag, audio_input.bits_per_sample, data, j * 2 + 1);
+			} else if (audio_input.channels == 1) {
+				l = r = read_sample(audio_input.format_tag, audio_input.bits_per_sample, data, j);
+			} else {
+				l = r = 0;
+				ERR_PRINT("WASAPI: unsupported channel count in microphone!");
+			}
+		}
+
+		input_buffer_write(l);
+		input_buffer_write(r);
+	}
+}
+
+// Helper function to process audio output
+void AudioDriverWASAPI::process_audio_output(uint32_t &avail_frames, uint32_t &write_ofs, uint32_t &written_frames) {
+	if (avail_frames > 0 && audio_output.audio_client) {
+		UINT32 buffer_size;
+		UINT32 cur_frames;
+		bool invalidated = false;
+		HRESULT hr = audio_output.audio_client->GetBufferSize(&buffer_size);
+		if (hr != S_OK) {
+			ERR_PRINT("WASAPI: GetBufferSize error");
+		}
+		hr = audio_output.audio_client->GetCurrentPadding(&cur_frames);
+		if (hr == S_OK) {
+			// Check how much frames are available on the WASAPI buffer
+			UINT32 write_frames = MIN(buffer_size - cur_frames, avail_frames);
+			if (write_frames > 0) {
+				BYTE *buffer = nullptr;
+				hr = audio_output.render_client->GetBuffer(write_frames, &buffer);
+				if (hr == S_OK) {
+					write_audio_buffer(buffer, write_frames, write_ofs);
+
+					hr = audio_output.render_client->ReleaseBuffer(write_frames, 0);
+					if (hr != S_OK) {
+						ERR_PRINT("WASAPI: Release buffer error");
+					}
+
+					avail_frames -= write_frames;
+					written_frames += write_frames;
+				} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
+					// output_device is not valid anymore, reopen it
+					Error err = finish_output_device();
+					if (err != OK) {
+						ERR_PRINT("WASAPI: finish_output_device error");
+					} else {
+						// We reopened the output device and samples_in may have resized, so invalidate the current avail_frames
+						avail_frames = 0;
+					}
+				} else {
+					ERR_PRINT("WASAPI: Get buffer error");
+					exit_thread.set();
+				}
+			}
+		} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
+			invalidated = true;
+		} else {
+			ERR_PRINT("WASAPI: GetCurrentPadding error");
+		}
+
+			if (invalidated) {
+				WARN_PRINT("WASAPI: Current output_device invalidated, closing output_device");
+
+			Error err = finish_output_device();
+			if (err != OK) {
+				ERR_PRINT("WASAPI: finish_output_device error");
+			}
+		}
+	}
+}
+
+// Helper function to process audio input
+void AudioDriverWASAPI::process_audio_input(uint32_t &read_frames) {
+	if (audio_input.active.is_set()) {
+		UINT32 packet_length = 0;
+		BYTE *data;
+		UINT32 num_frames_available;
+		DWORD flags;
+
+		HRESULT hr = audio_input.capture_client->GetNextPacketSize(&packet_length);
+		if (hr == S_OK) {
+			while (packet_length != 0) {
+				hr = audio_input.capture_client->GetBuffer(&data, &num_frames_available, &flags, nullptr, nullptr);
+				ERR_BREAK(hr != S_OK);
+
+				read_audio_buffer(data, num_frames_available, flags);
+
+				read_frames += num_frames_available;
+
+				hr = audio_input.capture_client->ReleaseBuffer(num_frames_available);
+				ERR_BREAK(hr != S_OK);
+
+				hr = audio_input.capture_client->GetNextPacketSize(&packet_length);
+				ERR_BREAK(hr != S_OK);
+			}
+		}
+	}
+}
+
+// Helper function to handle output device changes
+void AudioDriverWASAPI::handle_output_device_changes() {
+	// If we're using the Default output device and it changed finish it so we'll re-init the output device
+	if (audio_output.device_name == "Default" && default_output_device_changed) {
+		Error err = finish_output_device();
+		if (err != OK) {
+			ERR_PRINT("WASAPI: finish_output_device error");
+		}
+
+		default_output_device_changed = false;
+	}
+
+	// User selected a new output device, finish the current one so we'll init the new output device
+	if (audio_output.device_name != audio_output.new_device) {
+		audio_output.device_name = audio_output.new_device;
+		Error err = finish_output_device();
+		if (err != OK) {
+			ERR_PRINT("WASAPI: finish_output_device error");
+		}
+	}
+
+	if (!audio_output.audio_client) {
+		if (output_reinit_countdown < 1) {
+			Error err = init_output_device(true);
+			if (err == OK) {
+				start();
+			} else {
+				output_reinit_countdown = 1000;
+			}
+		} else {
+			output_reinit_countdown--;
+		}
+	}
+}
+
+// Helper function to handle input device changes
+void AudioDriverWASAPI::handle_input_device_changes() {
+	if (audio_input.active.is_set()) {
+		// If we're using the Default input device and it changed finish it so we'll re-init the input device
+		if (audio_input.device_name == "Default" && default_input_device_changed) {
+			Error err = finish_input_device();
+			if (err != OK) {
+				ERR_PRINT("WASAPI: finish_input_device error");
+			}
+
+			default_input_device_changed = false;
+		}
+
+		// User selected a new input device, finish the current one so we'll init the new input device
+		if (audio_input.device_name != audio_input.new_device) {
+			audio_input.device_name = audio_input.new_device;
+			Error err = finish_input_device();
+			if (err != OK) {
+				ERR_PRINT("WASAPI: finish_input_device error");
+			}
+		}
+
+		if (!audio_input.audio_client) {
+			if (input_reinit_countdown < 1) {
+				Error err = init_input_device(true);
+				if (err == OK) {
+					input_start();
+				} else {
+					input_reinit_countdown = 1000;
+				}
+			} else {
+				input_reinit_countdown--;
+			}
+		}
+	}
+}
+
 void AudioDriverWASAPI::thread_func(void *p_udata) {
 	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
@@ -743,6 +960,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		uint32_t read_frames = 0;
 		uint32_t written_frames = 0;
 
+		// 1. Generate audio data if needed
 		if (avail_frames == 0) {
 			ad->lock();
 			ad->start_counting_ticks();
@@ -765,208 +983,20 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		ad->lock();
 		ad->start_counting_ticks();
 
-		if (avail_frames > 0 && ad->audio_output.audio_client) {
-			UINT32 buffer_size;
-			UINT32 cur_frames;
-			bool invalidated = false;
-			HRESULT hr = ad->audio_output.audio_client->GetBufferSize(&buffer_size);
-			if (hr != S_OK) {
-				ERR_PRINT("WASAPI: GetBufferSize error");
-			}
-			hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
-			if (hr == S_OK) {
-				// Check how much frames are available on the WASAPI buffer
-				UINT32 write_frames = MIN(buffer_size - cur_frames, avail_frames);
-				if (write_frames > 0) {
-					BYTE *buffer = nullptr;
-					hr = ad->audio_output.render_client->GetBuffer(write_frames, &buffer);
-					if (hr == S_OK) {
-						// We're using WASAPI Shared Mode so we must convert the buffer
-						if (ad->channels == ad->audio_output.channels) {
-							for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i, ad->samples_in.write[write_ofs++]);
-							}
-						} else if (ad->channels == ad->audio_output.channels + 1) {
-							// Pass all channels except the last two as-is, and then mix the last two
-							// together as one channel. E.g. stereo -> mono, or 3.1 -> 2.1.
-							unsigned int last_chan = ad->audio_output.channels - 1;
-							for (unsigned int i = 0; i < write_frames; i++) {
-								for (unsigned int j = 0; j < last_chan; j++) {
-									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
-								}
-								int32_t l = ad->samples_in.write[write_ofs++];
-								int32_t r = ad->samples_in.write[write_ofs++];
-								int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
-								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, c);
-							}
-						} else {
-							for (unsigned int i = 0; i < write_frames; i++) {
-								for (unsigned int j = 0; j < MIN(ad->channels, ad->audio_output.channels); j++) {
-									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
-								}
-								if (ad->audio_output.channels > ad->channels) {
-									for (unsigned int j = ad->channels; j < ad->audio_output.channels; j++) {
-										ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, 0);
-									}
-								}
-							}
-						}
+		// 2. Process audio output
+		ad->process_audio_output(avail_frames, write_ofs, written_frames);
 
-						hr = ad->audio_output.render_client->ReleaseBuffer(write_frames, 0);
-						if (hr != S_OK) {
-							ERR_PRINT("WASAPI: Release buffer error");
-						}
+		// 3. Handle device changes
+		ad->handle_output_device_changes();
+		ad->handle_input_device_changes();
 
-						avail_frames -= write_frames;
-						written_frames += write_frames;
-					} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
-						// output_device is not valid anymore, reopen it
-
-						Error err = ad->finish_output_device();
-						if (err != OK) {
-							ERR_PRINT("WASAPI: finish_output_device error");
-						} else {
-							// We reopened the output device and samples_in may have resized, so invalidate the current avail_frames
-							avail_frames = 0;
-						}
-					} else {
-						ERR_PRINT("WASAPI: Get buffer error");
-						ad->exit_thread.set();
-					}
-				}
-			} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
-				invalidated = true;
-			} else {
-				ERR_PRINT("WASAPI: GetCurrentPadding error");
-			}
-
-			if (invalidated) {
-				// output_device is not valid anymore
-				WARN_PRINT("WASAPI: Current output_device invalidated, closing output_device");
-
-				Error err = ad->finish_output_device();
-				if (err != OK) {
-					ERR_PRINT("WASAPI: finish_output_device error");
-				}
-			}
-		}
-
-		// If we're using the Default output device and it changed finish it so we'll re-init the output device
-		if (ad->audio_output.device_name == "Default" && default_output_device_changed) {
-			Error err = ad->finish_output_device();
-			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_output_device error");
-			}
-
-			default_output_device_changed = false;
-		}
-
-		// User selected a new output device, finish the current one so we'll init the new output device
-		if (ad->audio_output.device_name != ad->audio_output.new_device) {
-			ad->audio_output.device_name = ad->audio_output.new_device;
-			Error err = ad->finish_output_device();
-			if (err != OK) {
-				ERR_PRINT("WASAPI: finish_output_device error");
-			}
-		}
-
-		if (!ad->audio_output.audio_client) {
-			if (output_reinit_countdown < 1) {
-				Error err = ad->init_output_device(true);
-				if (err == OK) {
-					ad->start();
-				} else {
-					output_reinit_countdown = 1000;
-				}
-			} else {
-				output_reinit_countdown--;
-			}
-
-			avail_frames = 0;
-			write_ofs = 0;
-		}
-
-		if (ad->audio_input.active.is_set()) {
-			UINT32 packet_length = 0;
-			BYTE *data;
-			UINT32 num_frames_available;
-			DWORD flags;
-
-			HRESULT hr = ad->audio_input.capture_client->GetNextPacketSize(&packet_length);
-			if (hr == S_OK) {
-				while (packet_length != 0) {
-					hr = ad->audio_input.capture_client->GetBuffer(&data, &num_frames_available, &flags, nullptr, nullptr);
-					ERR_BREAK(hr != S_OK);
-
-					// fixme: Only works for floating point atm
-					for (UINT32 j = 0; j < num_frames_available; j++) {
-						int32_t l, r;
-
-						if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
-							l = r = 0;
-						} else {
-							if (ad->audio_input.channels == 2) {
-								l = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2);
-								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
-							} else if (ad->audio_input.channels == 1) {
-								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
-							} else {
-								l = r = 0;
-								ERR_PRINT("WASAPI: unsupported channel count in microphone!");
-							}
-						}
-
-						ad->input_buffer_write(l);
-						ad->input_buffer_write(r);
-					}
-
-					read_frames += num_frames_available;
-
-					hr = ad->audio_input.capture_client->ReleaseBuffer(num_frames_available);
-					ERR_BREAK(hr != S_OK);
-
-					hr = ad->audio_input.capture_client->GetNextPacketSize(&packet_length);
-					ERR_BREAK(hr != S_OK);
-				}
-			}
-
-			// If we're using the Default output device and it changed finish it so we'll re-init the output device
-			if (ad->audio_input.device_name == "Default" && default_input_device_changed) {
-				Error err = ad->finish_input_device();
-				if (err != OK) {
-					ERR_PRINT("WASAPI: finish_input_device error");
-				}
-
-				default_input_device_changed = false;
-			}
-
-			// User selected a new input device, finish the current one so we'll init the new input device
-			if (ad->audio_input.device_name != ad->audio_input.new_device) {
-				ad->audio_input.device_name = ad->audio_input.new_device;
-				Error err = ad->finish_input_device();
-				if (err != OK) {
-					ERR_PRINT("WASAPI: finish_input_device error");
-				}
-			}
-
-			if (!ad->audio_input.audio_client) {
-				if (input_reinit_countdown < 1) {
-					Error err = ad->init_input_device(true);
-					if (err == OK) {
-						ad->input_start();
-					} else {
-						input_reinit_countdown = 1000;
-					}
-				} else {
-					input_reinit_countdown--;
-				}
-			}
-		}
+		// 4. Process audio input
+		ad->process_audio_input(read_frames);
 
 		ad->stop_counting_ticks();
 		ad->unlock();
 
-		// Let the thread rest a while if we haven't read or write anything
+		// 5. Thread control - let the thread rest if no work was done
 		if (written_frames == 0 && read_frames == 0) {
 			OS::get_singleton()->delay_usec(1000);
 		}
