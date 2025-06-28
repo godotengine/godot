@@ -45,7 +45,6 @@ import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.PixelFormat;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -81,14 +80,14 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final GodotRenderer godotRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
+	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl) {
 		super(godot.getContext());
 
 		this.godot = godot;
 		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
-		init(xrMode, shouldBeTranslucent, useDebugOpengl);
+		init(xrMode, useDebugOpengl);
 	}
 
 	@Override
@@ -234,7 +233,7 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 		return getPointerIcon();
 	}
 
-	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl) {
+	private void init(XRMode xrMode, boolean useDebugOpengl) {
 		setPreserveEGLContextOnPause(true);
 		setFocusableInTouchMode(true);
 		switch (xrMode) {
@@ -251,15 +250,6 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 
 			case REGULAR:
 			default:
-				/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
-				 * If we want a translucent one, we should change the surface's
-				 * format here, using PixelFormat.TRANSLUCENT for GL Surfaces
-				 * is interpreted as any 32-bit surface with alpha by SurfaceFlinger.
-				 */
-				if (translucent) {
-					this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-				}
-
 				/* Setup the context factory for 2.0 rendering.
 				 * See ContextFactory class definition below
 				 */

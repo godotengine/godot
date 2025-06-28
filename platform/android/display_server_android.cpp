@@ -592,13 +592,17 @@ bool DisplayServerAndroid::window_is_maximize_allowed(DisplayServer::WindowID p_
 }
 
 void DisplayServerAndroid::window_set_flag(DisplayServer::WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window) {
-	// Not supported on Android.
+	ERR_FAIL_COND(p_window != MAIN_WINDOW_ID);
+	if (p_flag == WindowFlags::WINDOW_FLAG_TRANSPARENT && is_window_transparency_available()) {
+		OS_Android::get_singleton()->get_godot_java()->set_window_flag(p_flag, p_enabled);
+	}
 }
 
 bool DisplayServerAndroid::window_get_flag(DisplayServer::WindowFlags p_flag, DisplayServer::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, false);
 	switch (p_flag) {
 		case WindowFlags::WINDOW_FLAG_TRANSPARENT:
-			return is_window_transparency_available();
+			return is_window_transparency_available() && OS_Android::get_singleton()->get_godot_java()->get_window_flag(p_flag);
 
 		default:
 			return false;
