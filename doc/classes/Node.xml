@@ -325,6 +325,14 @@
 				[b]Note:[/b] This method should be called only during accessibility information updates ([constant NOTIFICATION_ACCESSIBILITY_UPDATE]).
 			</description>
 		</method>
+		<method name="find_parent_by_class_or_null" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="class_name" type="String" />
+			<description>
+				Finds the first parent of the current node whose class matches [param class_name] as in [method Object.is_class].
+				If no match is found, null is returned.
+			</description>
+		</method>
 		<method name="get_child" qualifiers="const">
 			<return type="Node" />
 			<param index="0" name="idx" type="int" />
