@@ -48,6 +48,11 @@
 TileSetEditor *TileSetEditor::singleton = nullptr;
 
 void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	// Skip processing if data is invalid (prevents spurious error messages)
+	if (p_data.get_type() == Variant::NIL || !p_data.is_dictionary()) {
+		return;
+	}
+	
 	ERR_FAIL_COND(tile_set.is_null());
 
 	if (!_can_drop_data_fw(p_point, p_data, p_from)) {
