@@ -758,6 +758,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->connect("category_changed", callable_mp(this, &ProjectSettingsEditor::_on_category_changed));
 	general_settings_inspector->get_inspector()->set_use_filter(true);
 	general_settings_inspector->get_inspector()->set_mark_unsaved(false);
+	general_settings_inspector->get_inspector()->remap_doc_property_class(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX, "EditorSettings");
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
 	general_settings_inspector->get_inspector()->connect("property_deleted", callable_mp(this, &ProjectSettingsEditor::_on_editor_override_deleted));
