@@ -145,6 +145,12 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 			}
 
+			// Is it currently in compatibility mode?
+			if (RD::get_singleton() == nullptr) {
+				WARN_PRINT("The current mode is the compatibility mode! Falling back to Bilinear scaling.");
+				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+			}
+
 			if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) {
 				if (RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL)) {
 					// Prefer MetalFX spatial if it is supported, which will be much more efficient than FSR2,
@@ -220,6 +226,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
+				case RS::VIEWPORT_SCALING_3D_MODE_SGSR1:
 					target_width = p_viewport->size.width;
 					target_height = p_viewport->size.height;
 					render_width = MAX(target_width * scaling_3d_scale, 1.0); // target_width / (target_width * scaling)
