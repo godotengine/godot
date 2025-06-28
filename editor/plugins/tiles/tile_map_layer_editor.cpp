@@ -2301,7 +2301,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	random_tile_toggle = memnew(Button);
 	random_tile_toggle->set_theme_type_variation(SceneStringName(FlatButton));
 	random_tile_toggle->set_toggle_mode(true);
-	random_tile_toggle->set_tooltip_text(TTR("Place Random Tile"));
+	random_tile_toggle->set_shortcut(ED_SHORTCUT("tiles_editor/place_random_tile", TTRC("Place Random Tile"), KeyModifierMask::CTRL + Key::R));
 	random_tile_toggle->connect(SceneStringName(toggled), callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_random_tile_checkbox_toggled));
 	tools_settings->add_child(random_tile_toggle);
 
