@@ -2102,7 +2102,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	// Instant transforms process mouse motion in input() to handle wrapping.
 	if (m.is_valid() && !_edit.instant) {
-		_edit.mouse_pos = m->get_position();
+		if (cursor.region_select || ruler->is_inside_tree()) {
+			_edit.mouse_pos = m->get_position();
+		} else {
+			_edit.mouse_pos += _get_warped_mouse_motion(m);
+		}
 
 		if (spatial_editor->get_single_selected_node()) {
 			Vector<Ref<Node3DGizmo>> gizmos = spatial_editor->get_single_selected_node()->get_gizmos();
@@ -2145,7 +2149,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		NavigationMode nav_mode = NAVIGATION_NONE;
 
 		if (_edit.gizmo.is_valid()) {
-			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, m->get_position());
+			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, _edit.mouse_pos);
 			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
