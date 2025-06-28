@@ -3145,10 +3145,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_clip_text(true);
 	assign->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	assign->set_expand_icon(true);
-	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_node_assign));
-	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::gui_input));
 	assign->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyNodePath::_assign_draw));
-	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::_select_node_in_scene_tree));
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_on_click));
 	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::gui_input));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);

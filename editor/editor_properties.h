@@ -663,8 +663,6 @@ class EditorPropertyNodePath : public EditorProperty {
 	Vector<StringName> valid_types;
 	void _on_click();
 	void _node_selected(const NodePath &p_path, bool p_absolute = true);
-	void _node_assign();
-	Node *get_base_node() const;
 	void _assign_draw();
 	Node *get_base_node();
 	void _update_menu();
@@ -672,8 +670,8 @@ class EditorPropertyNodePath : public EditorProperty {
 	void _accept_text();
 	void _text_submitted(const String &p_text);
 	const NodePath _get_node_path() const;
-	Node *_get_node_in_scene_tree() const;
-	void _select_node_in_scene_tree() const;
+	Node *_get_node_in_scene_tree();
+	void _select_node_in_scene_tree();
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
