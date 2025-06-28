@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterGLTFMeshLibrary" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Imports glTF files as a [MeshLibrary] resource.
+	</brief_description>
+	<description>
+		ResourceImporterGLTFMeshLibrary is a resource importer for glTF files which outputs a [MeshLibrary] resource containing the meshes from the glTF file converted to [ArrayMesh] resources. Optionally, the meshes can be saved to separate files, which allows them to be used independently of the MeshLibrary. This is useful for glTF files intended to be used as a collection of meshes, rather than a single model or scene.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="save_meshes_to_files" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], each mesh will be saved to a separate file, next to the source file. The mesh library will contain references to these files. This allows using the meshes separately if desired. If [code]false[/code], the meshes will be saved only in the imported mesh library.
+			[b]Note:[/b] Saved meshes will be overwritten every time the source file is imported, and therefore should be considered read-only. Any changes made to the mesh files will be lost when the source file is re-imported. To change the materials, set the surface material overrides in the MeshInstance3D nodes using the meshes.
+		</member>
+		<member name="use_node_names_as_mesh_names" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the mesh names will be set to the names of the nodes in the glTF file. If [code]false[/code], the mesh names will be set to the names of the meshes in the glTF file. Enabling this is a common work-around when the author of the glTF file did not properly set the mesh names in Blender or other 3D modeling apps. For example, a file may have a node named "Turret" with a mesh named "Cube.002", so enabling this option will set the mesh name to "Turret" instead of "Cube_002".
+		</member>
+	</members>
+</class>
