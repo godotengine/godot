@@ -5894,6 +5894,13 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
 			return buffer_device_address_support;
+		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
+#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
+			// MoltenVK has previously had issues with 32-bit atomics on images.
+			return false;
+#else
+			return true;
+#endif
 		default:
 			return false;
 	}
