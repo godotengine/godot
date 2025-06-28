@@ -592,11 +592,11 @@ namespace Godot.SourceGenerators
                     hintString: hintString, PropertyUsageFlags.ScriptVariable, exported: false);
             }
 
+            var constructorArguments = exportAttr.ConstructorArguments;
+
             if (!TryGetMemberExportHint(typeCache, memberType, exportAttr, memberVariantType,
                     isTypeArgument: false, out var hint, out hintString))
             {
-                var constructorArguments = exportAttr.ConstructorArguments;
-
                 if (constructorArguments.Length > 0)
                 {
                     var hintValue = exportAttr.ConstructorArguments[0].Value;
@@ -618,7 +618,21 @@ namespace Godot.SourceGenerators
                 }
             }
 
-            var propUsage = PropertyUsageFlags.Default | PropertyUsageFlags.ScriptVariable;
+            var propUsage = PropertyUsageFlags.Default;
+
+            if (constructorArguments.Length > 2)
+            {
+                var usageValue = exportAttr.ConstructorArguments[2].Value;
+
+                propUsage = usageValue switch
+                {
+                    null => PropertyUsageFlags.Default,
+                    int intValue => (PropertyUsageFlags)intValue,
+                    _ => (PropertyUsageFlags)(long)usageValue
+                };
+            }
+
+            propUsage |= PropertyUsageFlags.ScriptVariable;
 
             if (memberVariantType == VariantType.Nil)
                 propUsage |= PropertyUsageFlags.NilIsVariant;
