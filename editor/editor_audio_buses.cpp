@@ -613,14 +613,17 @@ void EditorAudioBus::_effects_gui_input(Ref<InputEvent> p_event) {
 }
 
 void EditorAudioBus::_bus_popup_pressed(int p_option) {
-	if (p_option == 2) {
+	if (p_option == 3) {
 		// Reset volume
 		emit_signal(SNAME("vol_reset_request"));
-	} else if (p_option == 1) {
+	} else if (p_option == 2) {
 		emit_signal(SNAME("delete_request"));
+	} else if (p_option == 1) {
+		//duplicate (unique effects)
+		emit_signal(SNAME("duplicate_request"), get_index(), true);
 	} else if (p_option == 0) {
 		//duplicate
-		emit_signal(SNAME("duplicate_request"), get_index());
+		emit_signal(SNAME("duplicate_request"), get_index(), false);
 	}
 }
 
@@ -1020,6 +1023,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	bus_popup = bus_options->get_popup();
 	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTRC("Duplicate Bus"), KeyModifierMask::CMD_OR_CTRL | Key::D));
+	bus_popup->add_item(TTR("Duplicate Bus (unique effects)"));
 	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTRC("Delete Bus"), Key::KEY_DELETE));
 	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
@@ -1195,7 +1199,7 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 	ur->commit_action();
 }
 
-void EditorAudioBuses::_duplicate_bus(int p_which) {
+void EditorAudioBuses::_duplicate_bus(int p_which, bool make_effects_unique) {
 	int add_at_pos = p_which + 1;
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Duplicate Audio Bus"));
@@ -1207,7 +1211,12 @@ void EditorAudioBuses::_duplicate_bus(int p_which) {
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_mute", add_at_pos, AudioServer::get_singleton()->is_bus_mute(p_which));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_bypass_effects", add_at_pos, AudioServer::get_singleton()->is_bus_bypassing_effects(p_which));
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_effect_count(p_which); i++) {
-		ur->add_do_method(AudioServer::get_singleton(), "add_bus_effect", add_at_pos, AudioServer::get_singleton()->get_bus_effect(p_which, i));
+		if (make_effects_unique) {
+			ur->add_do_method(AudioServer::get_singleton(), "add_bus_effect", add_at_pos, AudioServer::get_singleton()->get_bus_effect(p_which, i)->duplicate());
+		} else {
+			ur->add_do_method(AudioServer::get_singleton(), "add_bus_effect", add_at_pos, AudioServer::get_singleton()->get_bus_effect(p_which, i));
+		}
+
 		ur->add_do_method(AudioServer::get_singleton(), "set_bus_effect_enabled", add_at_pos, i, AudioServer::get_singleton()->is_bus_effect_enabled(p_which, i));
 	}
 	ur->add_do_method(this, "_update_bus", add_at_pos);
