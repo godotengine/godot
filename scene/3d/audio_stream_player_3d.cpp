@@ -591,11 +591,7 @@ float AudioStreamPlayer3D::get_pitch_scale() const {
 	return internal->pitch_scale;
 }
 
-void AudioStreamPlayer3D::play(float p_from_pos) {
-	Ref<AudioStreamPlayback> stream_playback = internal->play_basic();
-	if (stream_playback.is_null()) {
-		return;
-	}
+void AudioStreamPlayer3D::_play_internal(Ref<AudioStreamPlayback> stream_playback, double p_from_pos) {
 	setplayback = stream_playback;
 	setplay.set(p_from_pos);
 
@@ -607,6 +603,14 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 
 		AudioServer::get_singleton()->start_sample_playback(sample_playback);
 	}
+}
+
+void AudioStreamPlayer3D::play(float p_from_pos) {
+	Ref<AudioStreamPlayback> stream_playback = internal->play_basic();
+	if (stream_playback.is_null()) {
+		return;
+	}
+	_play_internal(stream_playback, p_from_pos);
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {

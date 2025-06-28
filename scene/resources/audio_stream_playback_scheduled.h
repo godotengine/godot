@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_stream_player.h                                                 */
+/*  audio_stream_playback_scheduled.h                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,93 +30,54 @@
 
 #pragma once
 
-#include "scene/main/node.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_stream.h"
 
-struct AudioFrame;
-class AudioStream;
-class AudioStreamPlayback;
-class AudioStreamPlayerInternal;
+class AudioStreamPlaybackScheduled : public AudioStreamPlayback {
+	GDCLASS(AudioStreamPlaybackScheduled, AudioStreamPlayback);
 
-class AudioStreamPlayer : public Node {
-	GDCLASS(AudioStreamPlayer, Node);
+	Ref<AudioStreamPlayback> base_playback;
 
-public:
-	enum MixTarget {
-		MIX_TARGET_STEREO,
-		MIX_TARGET_SURROUND,
-		MIX_TARGET_CENTER
-	};
+	uint64_t scheduled_start_frame = 0;
+	uint64_t scheduled_end_frame = 0;
+
+	bool active = false;
 
 protected:
-	AudioStreamPlayerInternal *internal = nullptr;
-
-private:
-	MixTarget mix_target = MIX_TARGET_STEREO;
-
-	void _set_playing(bool p_enable);
-	bool _is_active() const;
-
-	Vector<AudioFrame> _get_volume_vector();
-
-protected:
-	void _validate_property(PropertyInfo &p_property) const;
-	void _notification(int p_what);
 	static void _bind_methods();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-	void _play_internal(Ref<AudioStreamPlayback> stream_playback, double p_from_pos = 0.0);
-
-#ifndef DISABLE_DEPRECATED
-	bool _is_autoplay_enabled_bind_compat_86907();
-	static void _bind_compatibility_methods();
-#endif // DISABLE_DEPRECATED
-
 public:
-	void set_stream(Ref<AudioStream> p_stream);
-	Ref<AudioStream> get_stream() const;
+	virtual void start(double p_from_pos = 0.0) override;
+	virtual void stop() override;
+	virtual bool is_playing() const override;
 
-	void set_volume_db(float p_volume);
-	float get_volume_db() const;
+	virtual int get_loop_count() const override; //times it looped
 
-	void set_volume_linear(float p_volume);
-	float get_volume_linear() const;
+	virtual double get_playback_position() const override;
+	virtual void seek(double p_time) override;
 
-	void set_pitch_scale(float p_pitch_scale);
-	float get_pitch_scale() const;
+	virtual void tag_used_streams() override;
 
-	void set_max_polyphony(int p_max_polyphony);
-	int get_max_polyphony() const;
+	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
+	virtual Variant get_parameter(const StringName &p_name) const override;
 
-	void play(float p_from_pos = 0.0);
-	void seek(float p_seconds);
-	void stop();
-	bool is_playing() const;
-	float get_playback_position();
+	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	void set_bus(const StringName &p_bus);
-	StringName get_bus() const;
+	virtual void set_is_sample(bool p_is_sample) override;
+	virtual bool get_is_sample() const override;
+	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
+	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
 
-	void set_autoplay(bool p_enable);
-	bool is_autoplay_enabled() const;
+	void cancel();
+	bool is_scheduled() const;
 
-	void set_mix_target(MixTarget p_target);
-	MixTarget get_mix_target() const;
+	void set_base_playback(const Ref<AudioStreamPlayback> &p_playback);
+	Ref<AudioStreamPlayback> get_base_playback() const;
 
-	void set_stream_paused(bool p_pause);
-	bool get_stream_paused() const;
+	void set_scheduled_start_time(double p_start_time);
+	double get_scheduled_start_time() const;
 
-	bool has_stream_playback();
-	Ref<AudioStreamPlayback> get_stream_playback();
+	void set_scheduled_end_time(double p_end_time);
+	double get_scheduled_end_time() const;
 
-	AudioServer::PlaybackType get_playback_type() const;
-	void set_playback_type(AudioServer::PlaybackType p_playback_type);
-
-	AudioStreamPlayer();
-	~AudioStreamPlayer();
+	AudioStreamPlaybackScheduled() {}
 };
-
-VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
