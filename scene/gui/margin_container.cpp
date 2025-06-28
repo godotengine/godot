@@ -94,17 +94,18 @@ int MarginContainer::get_margin_size(Side p_side) const {
 void MarginContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-			Size2 s = get_size();
+			const Size2 size = get_size();
+			const Rect2 fit_rect(
+					theme_cache.margin_left,
+					theme_cache.margin_top,
+					size.width - theme_cache.margin_left - theme_cache.margin_right,
+					size.height - theme_cache.margin_top - theme_cache.margin_bottom);
 
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = as_sortable_control(get_child(i));
-				if (!c) {
-					continue;
+				if (c) {
+					fit_child_in_rect(c, fit_rect);
 				}
-
-				int w = s.width - theme_cache.margin_left - theme_cache.margin_right;
-				int h = s.height - theme_cache.margin_top - theme_cache.margin_bottom;
-				fit_child_in_rect(c, Rect2(theme_cache.margin_left, theme_cache.margin_top, w, h));
 			}
 		} break;
 
