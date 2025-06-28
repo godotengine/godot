@@ -298,10 +298,24 @@ StringName OptimizedTranslation::get_plural_message(const StringName &p_src_text
 	return get_message(p_src_text, p_context);
 }
 
+Vector<String> OptimizedTranslation::_get_message_list() const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+	return {};
+}
+
+void OptimizedTranslation::get_message_list(List<StringName> *r_messages) const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+}
+
+int OptimizedTranslation::get_message_count() const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+	return 0;
+}
+
 void OptimizedTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table"));
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table"));
-	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, "Translation", PROPERTY_USAGE_EDITOR));
 }
 

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		An optimized translation, used by default for CSV Translations. Uses real-time compressed translations, which results in very small dictionaries.
+		[b]Note:[/b] This class does not store the message texts to be translated for optimization purposes. Therefore, [method Translation.get_message_list] always returns an empty array, and [method Translation.get_message_count] always returns [code]0[/code]. Currently, the actual message count is equal to the size of the array returned by [method Translation.get_translated_message_list]. However, this is an implementation detail and should not be depended upon.
 	</description>
 	<tutorials>
 	</tutorials>
