@@ -48,7 +48,7 @@ protected:
 	Ref<Skin> skin;
 	Ref<Skin> skin_internal;
 	Ref<SkinReference> skin_ref;
-	NodePath skeleton_path = NodePath("..");
+	NodePath skeleton_path = NodePath();
 
 	LocalVector<float> blend_shape_tracks;
 	HashMap<StringName, int> blend_shape_properties;

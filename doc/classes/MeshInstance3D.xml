@@ -128,7 +128,7 @@
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] resource for the instance.
 		</member>
-		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;..&quot;)">
+		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;&quot;)">
 			[NodePath] to the [Skeleton3D] associated with the instance.
 		</member>
 		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
