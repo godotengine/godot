@@ -115,7 +115,7 @@ int GodotPhysicsDirectSpaceState2D::intersect_point(const PointParameters &p_par
 	return cc;
 }
 
-bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) {
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector2 begin, end;
@@ -134,7 +134,15 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 	const GodotCollisionObject2D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
+	int r_idx = 0;
+	bool choose_closest = (p_result_max == 1);
+
 	for (int i = 0; i < amount; i++) {
+		collided = false;
+		if (r_idx >= p_result_max) {
+			break;
+		}
+
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
 		}
@@ -164,45 +172,77 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 				res_shape = shape_idx;
 				res_obj = col_obj;
 				collided = true;
-				break;
 			} else {
 				// Ignore shape when starting inside.
 				continue;
 			}
-		}
-
-		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
+		} else if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
 			Transform2D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 
-			real_t ld = normal.dot(shape_point);
+			res_point = shape_point;
+			res_normal = inv_xform.basis_xform_inv(shape_normal).normalized();
+			res_shape = shape_idx;
+			res_obj = col_obj;
+			collided = true;
+		}
 
-			if (ld < min_d) {
+		if (collided) {
+			ERR_FAIL_NULL_V(res_obj, 0); // Shouldn't happen but silences warning.
+
+			// Filter to closest hit if only one return is allowed
+			if (choose_closest) {
+				real_t ld = normal.dot(shape_point);
+				if (ld > min_d) {
+					continue;
+				}
 				min_d = ld;
-				res_point = shape_point;
-				res_normal = inv_xform.basis_xform_inv(shape_normal).normalized();
-				res_shape = shape_idx;
-				res_obj = col_obj;
-				collided = true;
+			}
+
+			if (r_results) {
+				r_results[r_idx].collider_id = res_obj->get_instance_id();
+				if (r_results[r_idx].collider_id.is_valid()) {
+					r_results[r_idx].collider = ObjectDB::get_instance(r_results[r_idx].collider_id);
+				} else {
+					r_results[r_idx].collider = nullptr;
+				}
+				r_results[r_idx].normal = res_normal;
+				r_results[r_idx].position = res_point;
+				r_results[r_idx].rid = res_obj->get_self();
+				r_results[r_idx].shape = res_shape;
+			}
+
+			collided = false;
+
+			if (p_result_max > 1) {
+				r_idx += 1;
 			}
 		}
 	}
 
-	if (!collided) {
-		return false;
+	// Indicate a successful return if restricting to closest and a hit was found
+	if (choose_closest && res_obj != nullptr) {
+		r_idx = 1;
 	}
-	ERR_FAIL_NULL_V(res_obj, false); // Shouldn't happen but silences warning.
 
-	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id.is_valid()) {
-		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
+	return r_idx;
+}
+
+bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+	LocalVector<RayResult> results;
+	results.resize(1);
+
+	int n_collisions = intersect_ray_multiple(p_parameters, results.ptr(), 1);
+	bool hit = n_collisions > 0;
+	if (hit) {
+		r_result.collider_id = results[0].collider_id;
+		r_result.collider = results[0].collider;
+		r_result.normal = results[0].normal;
+		r_result.position = results[0].position;
+		r_result.rid = results[0].rid;
+		r_result.shape = results[0].shape;
 	}
-	r_result.normal = res_normal;
-	r_result.position = res_point;
-	r_result.rid = res_obj->get_self();
-	r_result.shape = res_shape;
-
-	return true;
+	return hit;
 }
 
 int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
