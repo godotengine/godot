@@ -79,7 +79,7 @@ protected:
 	//void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void populate(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
+	void set_properties(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
 
 	void enable();
 	void disable();

@@ -36,21 +36,16 @@
 #include "scene/gui/graph_port.h"
 #include "scene/gui/label.h"
 #include "scene/theme/theme_db.h"
-/*
-void GraphNodeIndexed::_notification(int p_what) {
-	return;
-	switch (p_what) {
-		case NOTIFICATION_CHILD_ORDER_CHANGED: {
-			slots.clear();
-		} break;
-	}
-}*/
 
 void GraphNodeIndexed::add_child_notify(Node *p_child) {
-	WARN_PRINT("add child notification received");
 	GraphNode::add_child_notify(p_child);
 
 	if (p_child->is_internal()) {
+		return;
+	}
+
+	if (!is_ready()) {
+		_slot_node_map_cache[p_child->get_name()] = p_child->get_index(false);
 		return;
 	}
 
@@ -61,14 +56,12 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 
 	int index = p_child->get_index(false);
 	create_slot_and_ports(index, true);
-	WARN_PRINT("add child notification completed");
 }
 
 void GraphNodeIndexed::move_child_notify(Node *p_child) {
-	WARN_PRINT("move child notification received");
 	GraphNode::move_child_notify(p_child);
 
-	if (p_child->is_internal()) {
+	if (p_child->is_internal() || !is_ready()) {
 		return;
 	}
 
@@ -96,15 +89,12 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 		}
 		_set_slot(old_index, swap_buffer);
 	}
-
-	WARN_PRINT("move child notification completed");
 }
 
 void GraphNodeIndexed::remove_child_notify(Node *p_child) {
-	WARN_PRINT("remove child notification received");
 	GraphNode::remove_child_notify(p_child);
 
-	if (p_child->is_internal()) {
+	if (p_child->is_internal() || !is_ready()) {
 		return;
 	}
 
@@ -117,25 +107,28 @@ void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	ERR_FAIL_INDEX(index, slots.size());
 
 	_remove_slot(index);
-	WARN_PRINT("remove child notification completed");
 }
 
 void GraphNodeIndexed::create_slot(int p_slot_index, Ref<GraphPort> p_left_port, Ref<GraphPort> p_right_port, bool draw_stylebox) {
 	Slot new_slot = { p_left_port, p_right_port, true };
-	slots.insert(p_slot_index, new_slot);
-
-	int p_left_port_index = slot_to_port_index(p_slot_index, true);
-	ports.insert(p_left_port_index, p_left_port);
-	int p_right_port_index = slot_to_port_index(p_slot_index, false);
-	ports.insert(p_right_port_index, p_right_port);
-
-	_slot_node_map_cache[get_child(p_slot_index)->get_name()] = p_slot_index;
-
-	notify_property_list_changed();
+	_insert_slot(p_slot_index, new_slot);
 }
 
 void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool draw_stylebox) {
-	return create_slot(p_slot_index, memnew(GraphPort(this)), memnew(GraphPort(this)), draw_stylebox);
+	Ref<GraphPort> p_left = memnew(GraphPort(this, false, false, 0, Color(1, 1, 1, 1), GraphPort::PortDirection::INPUT, Ref<Texture2D>(nullptr)));
+	Ref<GraphPort> p_right = memnew(GraphPort(this, false, false, 0, Color(1, 1, 1, 1), GraphPort::PortDirection::OUTPUT, Ref<Texture2D>(nullptr)));
+	return create_slot(p_slot_index, p_left, p_right, draw_stylebox);
+}
+
+void GraphNodeIndexed::set_slots(TypedArray<Array> p_slots) {
+	_remove_all_slots();
+	int i = 0;
+	for (Array p_slot : p_slots) {
+		GraphNodeIndexed::Slot slot = Slot(p_slot[0], p_slot[1], p_slot[2]);
+		_insert_slot(i, slot, false);
+		i++;
+	}
+	notify_property_list_changed();
 }
 
 TypedArray<Array> GraphNodeIndexed::get_slots() {
@@ -150,7 +143,16 @@ TypedArray<Array> GraphNodeIndexed::get_slots() {
 	return ret;
 }
 
-Vector<GraphNodeIndexed::Slot> GraphNodeIndexed::_get_slots() {
+void GraphNodeIndexed::_set_slots(const Vector<Slot> &p_slots) {
+	_remove_all_slots();
+	int i = 0;
+	for (Slot slot : p_slots) {
+		_insert_slot(i, slot, true);
+		i++;
+	}
+}
+
+const Vector<GraphNodeIndexed::Slot> &GraphNodeIndexed::_get_slots() {
 	return slots;
 }
 
@@ -163,6 +165,23 @@ GraphNodeIndexed::Slot GraphNodeIndexed::_get_slot(int p_slot_index) {
 	return slots[p_slot_index];
 }
 
+void GraphNodeIndexed::_insert_slot(int p_slot_index, const Slot p_slot, bool p_insert_ports) {
+	slots.insert(p_slot_index, p_slot);
+
+	if (p_insert_ports) {
+		int p_left_port_index = slot_to_port_index(p_slot_index, true);
+		ports.insert(p_left_port_index, p_slot.left_port);
+		int p_right_port_index = slot_to_port_index(p_slot_index, false);
+		ports.insert(p_right_port_index, p_slot.right_port);
+	}
+
+	if (p_slot_index < get_child_count(false)) {
+		_slot_node_map_cache[get_child(p_slot_index)->get_name()] = p_slot_index;
+	}
+
+	notify_property_list_changed();
+}
+
 void GraphNodeIndexed::_set_slot(int p_slot_index, const Slot p_slot) {
 	slots.set(p_slot_index, p_slot);
 
@@ -171,7 +190,9 @@ void GraphNodeIndexed::_set_slot(int p_slot_index, const Slot p_slot) {
 	int p_right_port_index = slot_to_port_index(p_slot_index, false);
 	ports.set(p_right_port_index, p_slot.right_port);
 
-	_slot_node_map_cache[get_child(p_slot_index)->get_name()] = p_slot_index;
+	if (p_slot_index < get_child_count(false)) {
+		_slot_node_map_cache[get_child(p_slot_index)->get_name()] = p_slot_index;
+	}
 
 	notify_property_list_changed();
 }
@@ -194,6 +215,12 @@ void GraphNodeIndexed::_remove_slot(int p_slot_index) {
 	notify_property_list_changed();
 }
 
+void GraphNodeIndexed::_remove_all_slots() {
+	for (size_t i = slots.size() - 1; i >= 0; i--) {
+		_remove_slot(i);
+	}
+}
+
 void GraphNodeIndexed::set_slot(int p_slot_index, const Ref<GraphPort> p_left_port, const Ref<GraphPort> p_right_port, bool draw_stylebox) {
 	_set_slot(p_slot_index, Slot({ p_left_port, p_right_port, draw_stylebox }));
 }
@@ -202,16 +229,16 @@ int GraphNodeIndexed::slot_index_of_port(const Ref<GraphPort> p_port) {
 	return port_to_slot_index(index_of_port(p_port));
 }
 
-void GraphNodeIndexed::set_input(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon) {
+void GraphNodeIndexed::set_input_port_properties(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon) {
 	Ref<GraphPort> port = get_input_port(p_slot_index);
 	ERR_FAIL_COND(port.is_null());
-	port->populate(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::INPUT, p_icon);
+	port->set_properties(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::INPUT, p_icon);
 }
 
-void GraphNodeIndexed::set_output(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon) {
+void GraphNodeIndexed::set_output_port_properties(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon) {
 	Ref<GraphPort> port = get_output_port(p_slot_index);
 	ERR_FAIL_COND(port.is_null());
-	port->populate(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::OUTPUT, p_icon);
+	port->set_properties(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::OUTPUT, p_icon);
 }
 
 Ref<GraphPort> GraphNodeIndexed::get_input_port(int p_slot_index) {
@@ -337,11 +364,19 @@ bool GraphNodeIndexed::get_slot_draw_stylebox(int p_slot_index) {
 void GraphNodeIndexed::set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox) {
 	ERR_FAIL_INDEX(p_slot_index, slots.size());
 	Slot old_slot = slots[p_slot_index];
+	// set slot directly since ports aren't changed
 	slots.set(p_slot_index, Slot(old_slot.left_port, old_slot.right_port, p_draw_stylebox));
+	notify_property_list_changed();
+}
+
+void GraphNodeIndexed::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_slots", "slots"), &GraphNodeIndexed::set_slots);
+	ClassDB::bind_method(D_METHOD("get_slots"), &GraphNodeIndexed::get_slots);
+
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_slots", "get_slots");
 }
 
 GraphNodeIndexed::GraphNodeIndexed() {
-	GraphNode::GraphNode();
 }
 
 GraphNodeIndexed::Slot::Slot() {

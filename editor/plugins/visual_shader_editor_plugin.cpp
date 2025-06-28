@@ -1262,8 +1262,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		if (!is_frame) {
 			GraphNodeIndexed *graph_node = Object::cast_to<GraphNodeIndexed>(node);
 
-			graph_node->set_input(idx, valid_left, true, port_left, type_color[port_left]);
-			graph_node->set_output(idx, valid_right, false, port_right, type_color[port_right]);
+			graph_node->set_input_port_properties(idx, valid_left, true, port_left, type_color[port_left]);
+			graph_node->set_output_port_properties(idx, valid_right, false, port_right, type_color[port_right]);
 
 			if (vsnode->_is_output_port_expanded(i)) {
 				int p_cnt = 0;
@@ -1285,7 +1285,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 				}
 				for (size_t p = 0; p < p_cnt; p++) {
 					port_offset++;
-					graph_node->set_output(i + port_offset, true, false, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[p]);
+					graph_node->set_output_port_properties(i + port_offset, true, false, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[p]);
 				}
 			}
 		}

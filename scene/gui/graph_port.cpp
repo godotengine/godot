@@ -89,7 +89,7 @@ void GraphPort::_get_property_list(List<PropertyInfo> *p_list) const {
 	//p_list->push_back(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"));
 }*/
 
-void GraphPort::populate(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
+void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
 	exclusive = p_exclusive;
 	color = p_color;
 	icon = p_icon;
