@@ -1793,6 +1793,10 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 	}
 	complete_extents(annotation);
 
+	while (match(GDScriptTokenizer::Token::SEMICOLON)) {
+		// Semicolons after annotation are optional.
+	}
+
 	match(GDScriptTokenizer::Token::NEWLINE); // Newline after annotation is optional.
 
 	if (valid) {
