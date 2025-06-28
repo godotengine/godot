@@ -4447,6 +4447,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	}
 
 	new_scene->set_scene_instance_state(Ref<SceneState>());
+	// Unlink inherited SceneState from its PackedScene to avoid updating its modified time externally.
+	make_unique_inheritance(new_scene);
 
 	set_edited_scene(new_scene);
 
@@ -4847,6 +4849,22 @@ void EditorNode::replace_history_reimported_nodes(Node *p_original_root_node, No
 
 bool EditorNode::has_previous_closed_scenes() const {
 	return !prev_closed_scenes.is_empty();
+}
+
+void EditorNode::make_unique_inheritance(Node *p_node) {
+	Ref<SceneState> state = p_node->get_scene_inherited_state();
+	if (state.is_valid()) {
+		state->make_unique_inheritance();
+	}
+
+	state = p_node->get_scene_instance_state();
+	if (state.is_valid()) {
+		state->make_unique_inheritance();
+	}
+
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		make_unique_inheritance(p_node->get_child(i, false));
+	}
 }
 
 void EditorNode::edit_foreign_resource(Ref<Resource> p_resource) {
