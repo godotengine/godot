@@ -2883,7 +2883,8 @@ bool Window::is_layout_rtl() const {
 					String locale = OS::get_singleton()->get_locale();
 					return TS->is_locale_right_to_left(locale);
 				} else {
-					String locale = TranslationServer::get_singleton()->get_tool_locale();
+					const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
+					String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
 					return TS->is_locale_right_to_left(locale);
 				}
 			}
