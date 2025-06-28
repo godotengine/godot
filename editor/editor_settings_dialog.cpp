@@ -899,6 +899,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
+	show_modified_switch = memnew(CheckButton(TTRC("Modified")));
+	show_modified_switch->set_tooltip_text(TTRC("Only display editor settings that have been modified from their default value."));
+	hbc->add_child(show_modified_switch);
+
 	advanced_switch = memnew(CheckButton(TTRC("Advanced Settings")));
 	hbc->add_child(advanced_switch);
 
@@ -911,6 +915,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	inspector->get_inspector()->set_mark_unsaved(false);
 	inspector->register_search_box(search_box);
 	inspector->register_advanced_toggle(advanced_switch);
+	inspector->register_modified_toggle(show_modified_switch);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(inspector);
 	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
