@@ -4835,7 +4835,7 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 	if (p_property.is_empty()) {
 		update_tree_pending = true;
 	} else {
-		pending.insert(p_property);
+		pending.push_back(p_property);
 	}
 }
 
@@ -5390,11 +5390,8 @@ void EditorInspector::_notification(int p_what) {
 			if (update_tree_pending) {
 				update_tree();
 				update_tree_pending = false;
-				pending.clear();
-
 			} else {
-				while (pending.size()) {
-					StringName prop = *pending.begin();
+				for (const StringName &prop : pending) {
 					if (editor_property_map.has(prop)) {
 						for (EditorProperty *E : editor_property_map[prop]) {
 							E->update_property();
@@ -5402,9 +5399,10 @@ void EditorInspector::_notification(int p_what) {
 							E->update_cache();
 						}
 					}
-					pending.remove(pending.begin());
 				}
 			}
+
+			pending.clear();
 
 			changing--;
 		} break;
