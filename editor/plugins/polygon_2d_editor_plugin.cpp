@@ -589,6 +589,9 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					if (closest == -1) {
 						return;
 					}
+					if (closest == hovered_point) {
+						hovered_point = -1;
+					}
 
 					previous_polygon.remove_at(closest);
 					previous_uv.remove_at(closest);
@@ -775,6 +778,41 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
+		// Highlight a point near the cursor.
+		if (current_mode == MODE_POINTS || current_mode == MODE_POLYGONS || current_mode == MODE_UV) {
+			if (is_creating) {
+				if (editing_points.size() > 2 && mtx.affine_inverse().xform(mm->get_position()).distance_to(node->get_polygon()[0]) < (8 / draw_zoom)) {
+					if (hovered_point != 0) {
+						hovered_point = 0;
+						canvas->queue_redraw();
+					}
+				} else if (hovered_point == 0) {
+					hovered_point = -1;
+					canvas->queue_redraw();
+				}
+			} else {
+				Vector<Vector2> points;
+				if (current_mode == MODE_POINTS || current_mode == MODE_POLYGONS) {
+					points = node->get_polygon();
+				} else {
+					points = node->get_uv();
+				}
+				int i = points.size() - 1;
+				for (; i >= 0; i--) {
+					if (mtx.affine_inverse().xform(mm->get_position()).distance_to(points[i]) < (8 / draw_zoom)) {
+						if (hovered_point != i) {
+							hovered_point = i;
+							canvas->queue_redraw();
+						}
+						break;
+					}
+				}
+				if (i == -1 && hovered_point >= 0) {
+					hovered_point = -1;
+					canvas->queue_redraw();
+				}
+			}
+		}
 		if (is_dragging) {
 			Vector2 uv_drag_to = mm->get_position();
 			uv_drag_to = snap_point(uv_drag_to);
@@ -1178,12 +1216,17 @@ void Polygon2DEditor::_canvas_draw() {
 			float weight = weight_r[i];
 			canvas->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), Color(weight, weight, weight, 1.0), Math::round(EDSCALE));
 		} else {
-			if (i < uv_draw_max) {
-				canvas->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5);
-			} else {
+			Color mod(1, 1, 1);
+			Color highlight = Color(0.35, 0.35, 0.35, 0);
+			if (i >= uv_draw_max) {
 				// Internal vertex
-				canvas->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5, Color(0.6, 0.8, 1));
+				mod = Color(0.6, 0.8, 1);
+				highlight = Color(0.25, 0.25, 0.25, 0);
 			}
+			if (i == hovered_point) {
+				mod -= highlight;
+			}
+			canvas->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5, mod);
 		}
 	}
 
