@@ -873,25 +873,9 @@ public:
 	}
 };
 
-//typedef Dictionary Dictionary; no
-//typedef Array Array;
-
 template <typename... VarArgs>
 Vector<Variant> varray(VarArgs... p_args) {
-	Vector<Variant> v;
-
-	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-	uint32_t argc = sizeof...(p_args);
-
-	if (argc > 0) {
-		v.resize(argc);
-		Variant *vw = v.ptrw();
-
-		for (uint32_t i = 0; i < argc; i++) {
-			vw[i] = args[i];
-		}
-	}
-	return v;
+	return Vector<Variant>{ p_args... };
 }
 
 struct VariantHasher {
