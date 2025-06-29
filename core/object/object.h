@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/disabled_classes.gen.h"
 #include "core/extension/gdextension_interface.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
@@ -134,9 +133,6 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
 };
-
-// Respective values are defined by disabled_classes.gen.h
-#define GD_IS_CLASS_ENABLED(m_class) m_class::_class_is_enabled
 
 #define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, StringName(m_setter), StringName(m_getter))
@@ -498,7 +494,6 @@ private:                                                                        
 	friend class ::ClassDB;                                                                                                                 \
                                                                                                                                             \
 public:                                                                                                                                     \
-	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;             \
 	virtual const StringName *_get_class_namev() const override {                                                                           \
 		return &get_class_static();                                                                                                         \
 	}                                                                                                                                       \
@@ -786,8 +781,6 @@ public: // Should be protected, but bug in clang++.
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
-	static constexpr bool _class_is_enabled = true;
-
 	void notify_property_list_changed();
 
 	static void *get_class_ptr_static() {
