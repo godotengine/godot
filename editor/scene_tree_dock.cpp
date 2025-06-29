@@ -2911,6 +2911,18 @@ void SceneTreeDock::_selection_changed() {
 		_push_item(nullptr);
 	}
 
+	// Track script changes in selected nodes
+	for (int i = 0; i < node_previous_selection.size(); i++) {
+		Node *node = node_previous_selection.get(i);
+		node->disconnect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_update_script_button));
+	}
+
+	node_previous_selection.clear();
+	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
+		Node *node = E.key;
+		node_previous_selection.push_back(node);
+		node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_update_script_button));
+	}
 	_update_script_button();
 }
 
