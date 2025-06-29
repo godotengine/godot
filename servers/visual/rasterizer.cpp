@@ -91,6 +91,9 @@ void RasterizerStorage::update_interpolation_tick(bool p_process) {
 
 			// make sure are updated one more time to ensure the AABBs are correct
 			//_instance_queue_update(instance, true);
+
+			// Update the actual stable buffer to the backend.
+			_multimesh_set_as_bulk_array(rid, mmi->_data_interpolated);
 		}
 
 		if (!mmi) {
