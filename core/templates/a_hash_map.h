@@ -130,7 +130,7 @@ private:
 			tag_hash = DELETED_HASH + 1;
 		}
 
-		return HashSplit{.tag_hash = tag_hash, .pos_hash = _hash_to_pos(p_hash)};
+		return HashSplit{ .tag_hash = tag_hash, .pos_hash = _hash_to_pos(p_hash) };
 	}
 
 	_FORCE_INLINE_ bool _lookup_pos(const TKey &p_key, uint32_t &r_pos, uint32_t &r_hash_pos) const {
