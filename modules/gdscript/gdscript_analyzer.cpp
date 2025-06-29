@@ -273,11 +273,6 @@ Error GDScriptAnalyzer::check_native_member_name_conflict(const StringName &p_me
 		return ERR_PARSE_ERROR;
 	}
 
-	if (class_exists(p_member_name)) {
-		push_error(vformat(R"(The member "%s" shadows a native class.)", p_member_name), p_member_node);
-		return ERR_PARSE_ERROR;
-	}
-
 	if (GDScriptParser::get_builtin_type(p_member_name) < Variant::VARIANT_MAX) {
 		push_error(vformat(R"(The member "%s" cannot have the same name as a builtin type.)", p_member_name), p_member_node);
 		return ERR_PARSE_ERROR;
@@ -717,6 +712,46 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		} else {
 			push_error(vformat(R"(Local %s "%s" cannot be used as a type.)", local.get_name(), first), first_id);
 			return bad_type;
+		}
+	}
+
+	if (!type_found && parser->current_class->has_member(first_id->name)) {
+		GDScriptParser::ClassNode::Member member = parser->current_class->get_member(first_id->name);
+		switch (member.type) {
+			case GDScriptParser::ClassNode::Member::CONSTANT: {
+				result = member.constant->get_datatype();
+				if (!result.is_set()) {
+					resolve_constant(member.constant, false);
+					result = member.constant->get_datatype();
+				}
+				if (result.is_meta_type) {
+					type_found = true;
+				} else if (Ref<Script>(member.constant->initializer->reduced_value).is_valid()) {
+					Ref<GDScript> gdscript = member.constant->initializer->reduced_value;
+					if (gdscript.is_valid()) {
+						Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(gdscript->get_script_path());
+						if (ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
+							push_error(vformat(R"(Could not parse script from "%s".)", gdscript->get_script_path()), first_id);
+							return bad_type;
+						}
+						result = ref->get_parser()->head->get_datatype();
+					} else {
+						result = make_script_meta_type(member.constant->initializer->reduced_value);
+					}
+					type_found = true;
+				} else {
+					push_error(vformat(R"(Constant "%s" is not a valid type.)", first), first_id);
+					return bad_type;
+				}
+			} break;
+			case GDScriptParser::ClassNode::Member::VARIABLE:
+			case GDScriptParser::ClassNode::Member::FUNCTION:
+			case GDScriptParser::ClassNode::Member::SIGNAL:
+			case GDScriptParser::ClassNode::Member::ENUM_VALUE:
+				push_error(vformat(R"(Member %s "%s" cannot be used as a type.)", member.get_type_name(), first), first_id);
+				return bad_type;
+			default:
+				break;
 		}
 	}
 
@@ -4423,6 +4458,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		case GDScriptParser::IdentifierNode::UNDEFINED_SOURCE:
 		case GDScriptParser::IdentifierNode::MEMBER_FUNCTION:
 		case GDScriptParser::IdentifierNode::MEMBER_CLASS:
+		case GDScriptParser::IdentifierNode::NATIVE_CLASS:
 			break;
 	}
 
@@ -4493,6 +4529,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 				case GDScriptParser::IdentifierNode::MEMBER_CLASS:
 				case GDScriptParser::IdentifierNode::INHERITED_VARIABLE:
 				case GDScriptParser::IdentifierNode::STATIC_VARIABLE:
+				case GDScriptParser::IdentifierNode::NATIVE_CLASS:
 					return; // No need to capture.
 			}
 
@@ -4525,6 +4562,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	if (class_exists(name)) {
+		p_identifier->source = GDScriptParser::IdentifierNode::NATIVE_CLASS;
 		p_identifier->set_datatype(make_native_meta_type(name));
 		return;
 	}
@@ -5976,7 +6014,7 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 		if (Variant::has_utility_function(name)) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
 			return;
-		} else if (ClassDB::class_exists(name)) {
+		} else if (class_exists(name)) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "native class");
 			return;
 		} else if (ScriptServer::is_global_class(name)) {
