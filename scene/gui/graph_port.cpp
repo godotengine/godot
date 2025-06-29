@@ -180,6 +180,16 @@ void GraphPort::set_direction(GraphPort::PortDirection p_direction) {
 	_modified();
 }
 
+GraphPort::DisconnectBehaviour GraphPort::get_disabled_behaviour() const {
+	return on_disabled_behaviour;
+}
+
+void GraphPort::set_disabled_behaviour(GraphPort::DisconnectBehaviour p_disconnect_behaviour) {
+	on_disabled_behaviour = p_disconnect_behaviour;
+	notify_property_list_changed();
+	_modified();
+}
+
 void GraphPort::set_position(const Vector2 p_position) {
 	position = p_position;
 	_modified();
@@ -235,6 +245,9 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &GraphPort::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &GraphPort::get_direction);
 
+	ClassDB::bind_method(D_METHOD("set_disabled_behaviour", "on_disabled_behaviour"), &GraphPort::set_disabled_behaviour);
+	ClassDB::bind_method(D_METHOD("get_disabled_behaviour"), &GraphPort::get_disabled_behaviour);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
@@ -242,7 +255,7 @@ void GraphPort::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
-	//ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "set_disabled_behaviour", "get_disabled_behaviour");
 
 	ADD_SIGNAL(MethodInfo("enabled"));
 	ADD_SIGNAL(MethodInfo("disabled"));

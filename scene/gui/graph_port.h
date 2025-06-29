@@ -102,6 +102,9 @@ public:
 	PortDirection get_direction() const;
 	void set_direction(const PortDirection p_direction);
 
+	GraphPort::DisconnectBehaviour get_disabled_behaviour() const;
+	void set_disabled_behaviour(GraphPort::DisconnectBehaviour p_disconnect_behaviour);
+
 	void set_position(const Vector2 p_position);
 	Vector2 get_position();
 	GraphNode *get_graph_node();
