@@ -48,6 +48,12 @@
 		<member name="bytecode_fragment" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
 			The SPIR-V bytecode for the fragment shader stage.
 		</member>
+		<member name="bytecode_mesh" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
+			The SPIR-V bytecode for the mesh shader stage.
+		</member>
+		<member name="bytecode_mesh_task" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
+			The SPIR-V bytecode for the mesh task shader stage.
+		</member>
 		<member name="bytecode_tesselation_control" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
 			The SPIR-V bytecode for the tessellation control shader stage.
 		</member>
@@ -62,6 +68,12 @@
 		</member>
 		<member name="compile_error_fragment" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
 			The compilation error message for the fragment shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.
+		</member>
+		<member name="compile_error_mesh" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+			The compilation error message for the mesh shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.
+		</member>
+		<member name="compile_error_mesh_task" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+			The compilation error message for the mesh task shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.
 		</member>
 		<member name="compile_error_tesselation_control" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
 			The compilation error message for the tessellation control shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.

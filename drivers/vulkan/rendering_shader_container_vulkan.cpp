@@ -95,7 +95,7 @@ RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatVulk
 }
 
 RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatVulkan::get_shader_spirv_version() const {
-	return SHADER_SPIRV_VERSION_1_3;
+	return SHADER_SPIRV_VERSION_1_4;
 }
 
 RenderingShaderContainerFormatVulkan::RenderingShaderContainerFormatVulkan() {}

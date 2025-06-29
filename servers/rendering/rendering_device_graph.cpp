@@ -886,6 +886,16 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 				driver->command_render_draw_indexed_indirect(p_command_buffer, draw_indexed_indirect_instruction->buffer, draw_indexed_indirect_instruction->offset, draw_indexed_indirect_instruction->draw_count, draw_indexed_indirect_instruction->stride);
 				instruction_data_cursor += sizeof(DrawListDrawIndexedIndirectInstruction);
 			} break;
+			case DrawListInstruction::TYPE_DISPATCH_MESH: {
+				const DrawListDispatchMeshInstruction *dispatch_mesh_instruction = reinterpret_cast<const DrawListDispatchMeshInstruction *>(instruction);
+				driver->command_render_dispatch_mesh(p_command_buffer, dispatch_mesh_instruction->x_groups, dispatch_mesh_instruction->y_groups, dispatch_mesh_instruction->z_groups);
+				instruction_data_cursor += sizeof(DrawListDispatchMeshInstruction);
+			} break;
+			case DrawListInstruction::TYPE_DISPATCH_MESH_INDIRECT: {
+				const DrawListDispatchMeshIndirectInstruction *dispatch_mesh_indirect_instruction = reinterpret_cast<const DrawListDispatchMeshIndirectInstruction *>(instruction);
+				driver->command_render_dispatch_mesh_indirect(p_command_buffer, dispatch_mesh_indirect_instruction->buffer, dispatch_mesh_indirect_instruction->offset, 1, 0);
+				instruction_data_cursor += sizeof(DrawListDispatchMeshIndirectInstruction);
+			} break;
 			case DrawListInstruction::TYPE_EXECUTE_COMMANDS: {
 				const DrawListExecuteCommandsInstruction *execute_commands_instruction = reinterpret_cast<const DrawListExecuteCommandsInstruction *>(instruction);
 				driver->command_buffer_execute_secondary(p_command_buffer, execute_commands_instruction->command_buffer);
@@ -1450,6 +1460,16 @@ void RenderingDeviceGraph::_print_draw_list(const uint8_t *p_instruction_data, u
 				print_line("\tDRAW INDEXED INDIRECT BUFFER ID", itos(draw_indexed_indirect_instruction->buffer.id), "OFFSET", draw_indexed_indirect_instruction->offset, "DRAW COUNT", draw_indexed_indirect_instruction->draw_count, "STRIDE", draw_indexed_indirect_instruction->stride);
 				instruction_data_cursor += sizeof(DrawListDrawIndexedIndirectInstruction);
 			} break;
+			case DrawListInstruction::TYPE_DISPATCH_MESH: {
+				const DrawListDispatchMeshInstruction *dispatch_mesh_instruction = reinterpret_cast<const DrawListDispatchMeshInstruction *>(instruction);
+				print_line("\tDISPATCH MESH", dispatch_mesh_instruction->x_groups, dispatch_mesh_instruction->y_groups, dispatch_mesh_instruction->z_groups);
+				instruction_data_cursor += sizeof(DrawListDispatchMeshInstruction);
+			} break;
+			case DrawListInstruction::TYPE_DISPATCH_MESH_INDIRECT: {
+				const DrawListDispatchMeshIndirectInstruction *dispatch_mesh_indirect_instruction = reinterpret_cast<const DrawListDispatchMeshIndirectInstruction *>(instruction);
+				print_line("\tDISPATCH MESH INDIRECT BUFFER ID", itos(dispatch_mesh_indirect_instruction->buffer.id), "OFFSET", dispatch_mesh_indirect_instruction->offset);
+				instruction_data_cursor += sizeof(DrawListDispatchMeshIndirectInstruction);
+			} break;
 			case DrawListInstruction::TYPE_EXECUTE_COMMANDS: {
 				print_line("\tEXECUTE COMMANDS");
 				instruction_data_cursor += sizeof(DrawListExecuteCommandsInstruction);
@@ -1921,6 +1941,21 @@ void RenderingDeviceGraph::add_draw_list_draw_indexed_indirect(RDD::BufferID p_b
 	instruction->draw_count = p_draw_count;
 	instruction->stride = p_stride;
 	draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT);
+}
+
+void RenderingDeviceGraph::add_draw_list_dispatch_mesh(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
+	DrawListDispatchMeshInstruction *instruction = reinterpret_cast<DrawListDispatchMeshInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListDispatchMeshInstruction)));
+	instruction->type = DrawListInstruction::TYPE_DISPATCH_MESH;
+	instruction->x_groups = p_x_groups;
+	instruction->y_groups = p_y_groups;
+	instruction->z_groups = p_z_groups;
+}
+
+void RenderingDeviceGraph::add_draw_list_dispatch_mesh_indirect(RDD::BufferID p_buffer, uint32_t p_offset) {
+	DrawListDispatchMeshIndirectInstruction *instruction = reinterpret_cast<DrawListDispatchMeshIndirectInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListDispatchMeshIndirectInstruction)));
+	instruction->type = DrawListInstruction::TYPE_DISPATCH_MESH_INDIRECT;
+	instruction->buffer = p_buffer;
+	instruction->offset = p_offset;
 }
 
 void RenderingDeviceGraph::add_draw_list_execute_commands(RDD::CommandBufferID p_command_buffer) {
