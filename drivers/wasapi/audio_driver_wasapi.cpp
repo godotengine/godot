@@ -282,7 +282,7 @@ void AudioDriverWASAPI::register_notification_callback(ComPtr<IMMDeviceEnumerato
 // Helper function to activate audio client (IAudioClient3 or IAudioClient)
 HRESULT AudioDriverWASAPI::activate_audio_client(ComPtr<IMMDevice> &device, bool use_client3, IAudioClient **out_client) {
 	HRESULT hr = S_OK;
-	
+
 	if (use_client3) {
 		hr = device->Activate(IID_IAudioClient3, CLSCTX_ALL, nullptr, (void **)out_client);
 		if (hr != S_OK) {
@@ -294,22 +294,22 @@ HRESULT AudioDriverWASAPI::activate_audio_client(ComPtr<IMMDevice> &device, bool
 			print_verbose("WASAPI: Activated device using IAudioClient3 interface");
 		}
 	}
-	
+
 	if (!use_client3 || hr == S_FALSE) {
 		hr = device->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr, (void **)out_client);
 	}
-	
+
 	return hr;
 }
 
 // Helper function to get and validate mix format
-WAVEFORMATEX* AudioDriverWASAPI::get_and_validate_mix_format(IAudioClient *audio_client, bool &used_closest) {
+WAVEFORMATEX *AudioDriverWASAPI::get_and_validate_mix_format(IAudioClient *audio_client, bool &used_closest) {
 	WAVEFORMATEX *pwfex = nullptr;
 	HRESULT hr = audio_client->GetMixFormat(&pwfex);
 	ERR_FAIL_COND_V(hr != S_OK, nullptr);
-	
+
 	// From this point onward, CoTaskMemFree(pwfex) must be called before returning or pwfex will leak!
-	
+
 	print_verbose("WASAPI: wFormatTag = " + itos(pwfex->wFormatTag));
 	print_verbose("WASAPI: nChannels = " + itos(pwfex->nChannels));
 	print_verbose("WASAPI: nSamplesPerSec = " + itos(pwfex->nSamplesPerSec));
@@ -339,7 +339,7 @@ WAVEFORMATEX* AudioDriverWASAPI::get_and_validate_mix_format(IAudioClient *audio
 	} else {
 		used_closest = false;
 	}
-	
+
 	return pwfex;
 }
 
@@ -368,14 +368,14 @@ bool AudioDriverWASAPI::validate_and_set_format(AudioDeviceWASAPI *p_device, WAV
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 
 // Helper function to initialize audio client
 HRESULT AudioDriverWASAPI::initialize_audio_client(AudioDeviceWASAPI *p_device, WAVEFORMATEX *pwfex, bool p_input, bool use_client3) {
 	HRESULT hr = S_OK;
-	
+
 	if (!use_client3) {
 		DWORD streamflags = 0;
 		if ((DWORD)mix_rate != pwfex->nSamplesPerSec) {
@@ -424,7 +424,7 @@ HRESULT AudioDriverWASAPI::initialize_audio_client(AudioDeviceWASAPI *p_device, 
 			return S_FALSE; // Signal to fall back to IAudioClient
 		}
 	}
-	
+
 	return hr;
 }
 
@@ -466,13 +466,13 @@ void AudioDriverWASAPI::setup_buffer_and_latency(AudioDeviceWASAPI *p_device, bo
 // Helper function to acquire service clients
 HRESULT AudioDriverWASAPI::acquire_service_clients(AudioDeviceWASAPI *p_device, bool p_input) {
 	HRESULT hr = S_OK;
-	
+
 	if (p_input) {
 		hr = p_device->audio_client->GetService(IID_IAudioCaptureClient, (void **)&p_device->capture_client);
 	} else {
 		hr = p_device->audio_client->GetService(IID_IAudioRenderClient, (void **)&p_device->render_client);
 	}
-	
+
 	return hr;
 }
 
@@ -494,7 +494,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	ComPtr<IMMDeviceEnumerator> enumerator = nullptr;
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
-	
+
 	register_notification_callback(enumerator);
 
 	// 3. Determine if we should use IAudioClient3
@@ -550,7 +550,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		using_audio_client_3 = false;
 		hr = initialize_audio_client(p_device, pwfex, p_input, false);
 	}
-	
+
 	if (p_reinit) {
 		if (hr != S_OK) {
 			CoTaskMemFree(pwfex);
