@@ -230,6 +230,10 @@ void MultiMesh::reset_instance_physics_interpolation(int p_instance) {
 	VisualServer::get_singleton()->multimesh_instance_reset_physics_interpolation(multimesh, p_instance);
 }
 
+void MultiMesh::reset_instances_physics_interpolation() {
+	VisualServer::get_singleton()->multimesh_instances_reset_physics_interpolation(multimesh);
+}
+
 void MultiMesh::set_instance_transform(int p_instance, const Transform &p_transform) {
 	VisualServer::get_singleton()->multimesh_instance_set_transform(multimesh, p_instance, p_transform);
 }
@@ -332,6 +336,7 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("reset_instance_physics_interpolation", "instance"), &MultiMesh::reset_instance_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("reset_instances_physics_interpolation"), &MultiMesh::reset_instances_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("set_as_bulk_array", "array"), &MultiMesh::set_as_bulk_array);
 	ClassDB::bind_method(D_METHOD("set_as_bulk_array_interpolated", "array_current", "array_previous"), &MultiMesh::set_as_bulk_array_interpolated);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
