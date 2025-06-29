@@ -35,9 +35,9 @@
 #include "core/profiling/profiling.h"
 #include "main/main.h"
 
-#if defined(SANITIZERS_ENABLED)
+#ifdef defined(ASAN_ENABLED)
 #include <sys/resource.h>
-#endif
+#endif // defined(ASAN_ENABLED)
 
 int main(int argc, char **argv) {
 	godot_init_profiler();
@@ -47,11 +47,11 @@ int main(int argc, char **argv) {
 	setenv("MVK_CONFIG_SWAPCHAIN_MIN_MAG_FILTER_USE_NEAREST", "0", 1); // MoltenVK - use linear surface scaling. TODO: remove when full DPI scaling is implemented.
 #endif
 
-#if defined(SANITIZERS_ENABLED)
+#if defined(ASAN_ENABLED)
 	// Note: Set stack size to be at least 30 MB (vs 8 MB default) to avoid overflow, address sanitizer can increase stack usage up to 3 times.
 	struct rlimit stack_lim = { 0x1E00000, 0x1E00000 };
 	setrlimit(RLIMIT_STACK, &stack_lim);
-#endif
+#endif // defined(ASAN_ENABLED)
 
 	LocalVector<char *> args;
 	args.resize(argc);

@@ -36,16 +36,6 @@
 
 #include "tests/test_macros.h"
 
-#ifdef SANITIZERS_ENABLED
-#ifdef __has_feature
-#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
-#define ASAN_OR_TSAN_ENABLED
-#endif
-#elif defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
-#define ASAN_OR_TSAN_ENABLED
-#endif
-#endif
-
 // Declared in global namespace because of GDCLASS macro warning (Windows):
 // "Unqualified friend declaration referring to type outside of the nearest enclosing namespace
 // is a Microsoft extension; add a nested name specifier".
@@ -537,7 +527,7 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 
 		// This has to be static because ~Object() also destroys the script instance.
 		static void free_self(Object *p_self) {
-#if defined(ASAN_OR_TSAN_ENABLED)
+#if defined(ASAN_ENABLED) || defined(TSAN_ENABLED)
 			// Regular deletion is enough becausa asan/tsan will catch a potential heap-after-use.
 			memdelete(p_self);
 #else

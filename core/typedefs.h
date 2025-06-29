@@ -56,6 +56,32 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 
 // IWYU pragma: end_exports
 
+#if defined(__has_feature)
+#define GD_HAS_FEATURE(m_feature) __has_feature(m_feature)
+#else
+#define GD_HAS_FEATURE(m_feature) 0
+#endif // defined(__has_feature)
+
+#if GD_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#define ASAN_ENABLED
+#endif // GD_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+
+#if GD_HAS_FEATURE(leak_sanitizer) || defined(__SANITIZE_LEAKS__)
+#define LSAN_ENABLED
+#endif // GD_HAS_FEATURE(leak_sanitizer) || defined(__SANITIZE_LEAKS__)
+
+#if GD_HAS_FEATURE(memory_sanitizer) || defined(__SANITIZE_MEMORY__)
+#define MSAN_ENABLED
+#endif // GD_HAS_FEATURE(memory_sanitizer) || defined(__SANITIZE_MEMORY__)
+
+#if GD_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#define TSAN_ENABLED
+#endif // GD_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+
+#if GD_HAS_FEATURE(undefined_behavior_sanitizer) || defined(__UNDEFINED_SANITIZER__)
+#define UBSAN_ENABLED
+#endif // GD_HAS_FEATURE(undefined_behavior_sanitizer) || defined(__UNDEFINED_SANITIZER__)
+
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
 #ifndef _STR

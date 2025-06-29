@@ -87,11 +87,11 @@
 #define RTLD_DEEPBIND 0
 #endif
 
-#ifndef SANITIZERS_ENABLED
+#if !defined(ASAN_ENABLED)
 #define GODOT_DLOPEN_MODE RTLD_NOW | RTLD_DEEPBIND
 #else
 #define GODOT_DLOPEN_MODE RTLD_NOW
-#endif
+#endif // !defined(ASAN_ENABLED)
 
 #if defined(MACOS_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
 // Random location for getentropy. Fitting.

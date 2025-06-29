@@ -37,21 +37,9 @@
 
 #include "tests/test_macros.h"
 
-#ifdef THREADS_ENABLED
-#ifdef SANITIZERS_ENABLED
-#ifdef __has_feature
-#if __has_feature(thread_sanitizer)
-#define TSAN_ENABLED
-#endif
-#elif defined(__SANITIZE_THREAD__)
-#define TSAN_ENABLED
-#endif
-#endif // SANITIZERS_ENABLED
-#endif // THREADS_ENABLED
-
-#ifdef TSAN_ENABLED
+#if defined(TSAN_ENABLED)
 #include <sanitizer/tsan_interface.h>
-#endif
+#endif // defined(TSAN_ENABLED)
 
 namespace TestRID {
 TEST_CASE("[RID] Default Constructor") {
@@ -201,9 +189,9 @@ TEST_CASE("[RID_Owner] Thread safety") {
 								char expected_unique_byte = _compute_thread_unique_byte(th_idx);
 								RID rid = RID::from_uint64(rot->rids[th_idx].load(std::memory_order_relaxed));
 								DataHolder *data = rot->rid_owner.get_or_null(rid);
-#ifdef TSAN_ENABLED
+#if defined(TSAN_ENABLED)
 								__tsan_acquire(data); // We know not a race in practice.
-#endif
+#endif // defined(TSAN_ENABLED)
 								bool ok = true;
 								for (uint32_t j = 0; j < Thread::CACHE_LINE_BYTES; j++) {
 									if (data->data[j] != expected_unique_byte) {
@@ -214,9 +202,9 @@ TEST_CASE("[RID_Owner] Thread safety") {
 								if (ok) {
 									local_correct++;
 								}
-#ifdef TSAN_ENABLED
+#if defined(TSAN_ENABLED)
 								__tsan_release(data);
-#endif
+#endif // defined(TSAN_ENABLED)
 							}
 
 							rot->lockstep(2);
