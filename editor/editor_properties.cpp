@@ -3438,8 +3438,10 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_doc_hints(true);
 
 				EditorInspector *parent_inspector = get_parent_inspector();
-				ERR_FAIL_NULL(parent_inspector);
-				sub_inspector->set_root_inspector(parent_inspector->get_root_inspector());
+				if (parent_inspector) {
+					sub_inspector->set_root_inspector(parent_inspector->get_root_inspector());
+					sub_inspector->register_text_enter(parent_inspector->search_box);
+				}
 
 				sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
 
@@ -3454,7 +3456,6 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_focus_mode(FocusMode::FOCUS_NONE);
 
 				sub_inspector->set_use_filter(use_filter);
-				sub_inspector->register_text_enter(parent_inspector->search_box);
 
 				add_child(sub_inspector);
 				set_bottom_editor(sub_inspector);
