@@ -1719,22 +1719,6 @@ static bool _is_expression_named_identifier(const GDScriptParser::ExpressionNode
 	return false;
 }
 
-static bool _is_literal_prepended(const String &p_code, const String &to_check) {
-	Vector<String> lines = p_code.split("\n");
-	for (int i = 0; i < lines.size(); ++i) {
-		const String &line = lines[i];
-		if (line.contains(String::chr(0xFFFF))) {
-			const String& line_to_caret = line.substr(0, line.find(String::chr(0xFFFF)));
-			
-			// Have to check both and not just the given quote style in case the user
-			// chooses to use "'" even without the setting enabled.
-			return line_to_caret.ends_with(to_check + "\"") || line_to_caret.ends_with(to_check + "'");
-		}
-	}
-
-	return false;
-}
-
 static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ExpressionNode *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
 
@@ -2870,9 +2854,10 @@ static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_co
 	}
 }
 
-static void _find_call_arguments(const String &p_code, GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, int p_argidx, bool p_static, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
+static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const GDScriptParser::CallNode *p_call, int p_argidx, bool p_static, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
 	Variant base = p_base.value;
 	GDScriptParser::DataType base_type = p_base.type;
+	const StringName &p_method = p_call->function_name;
 
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 	const bool use_string_names = EDITOR_GET("text_editor/completion/add_string_name_literals");
@@ -2947,11 +2932,13 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 								if (opt.is_quoted()) {
 									opt = opt.unquote().quote(quote_style);
 									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
-										if (!_is_literal_prepended(p_code, "&")) {
+										GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+										if (literal->value.get_type() == Variant::STRING) {
 											opt = "&" + opt;
 										}
 									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
-										if (!_is_literal_prepended(p_code, "^")) {
+										GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+										if (literal->value.get_type() == Variant::STRING) {
 											opt = "^" + opt;
 										}
 									}
@@ -2974,11 +2961,11 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 
 				if (p_argidx == 1 && p_context.node && p_context.node->type == GDScriptParser::Node::CALL && ClassDB::is_parent_class(class_name, SNAME("Tween")) && p_method == SNAME("tween_property")) {
 					// Get tweened objects properties.
-					if (static_cast<GDScriptParser::CallNode *>(p_context.node)->arguments.is_empty()) {
+					if (p_call->arguments.is_empty()) {
 						base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 						break;
 					}
-					GDScriptParser::ExpressionNode *tweened_object = static_cast<GDScriptParser::CallNode *>(p_context.node)->arguments[0];
+					GDScriptParser::ExpressionNode *tweened_object = p_call->arguments[0];
 					if (!tweened_object) {
 						base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 						break;
@@ -2998,7 +2985,8 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 									}
 									String name = E.name.quote(quote_style);
 									if (use_node_paths) {
-										if (!_is_literal_prepended(p_code, "^")) {
+										GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+										if (literal->value.get_type() == Variant::STRING) {
 											name = "^" + name;
 										}
 									}
@@ -3018,7 +3006,8 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 									if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 										String name = member.get_name().quote(quote_style);
 										if (use_node_paths) {
-											if (!_is_literal_prepended(p_code, "^")) {
+											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+											if (literal->value.get_type() == Variant::STRING) {
 												name = "^" + name;
 											}
 										}
@@ -3047,7 +3036,8 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 						}
 						String name = E.name.quote(quote_style);
 						if (use_node_paths) {
-							if (!_is_literal_prepended(p_code, "^")) {
+							GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+							if (literal->value.get_type() == Variant::STRING) {
 								name = "^" + name;
 							}
 						}
@@ -3069,7 +3059,8 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 						String name = s.get_slicec('/', 1);
 						String path = ("/root/" + name).quote(quote_style);
 						if (use_node_paths) {
-							if (!_is_literal_prepended(p_code, "^")) {
+							GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+							if (literal->value.get_type() == Variant::STRING) {
 								path = "^" + path;
 							}
 						}
@@ -3089,7 +3080,8 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 						}
 						String name = s.get_slicec('/', 1).quote(quote_style);
 						if (use_string_names) {
-							if (!_is_literal_prepended(p_code, "&")) {
+							GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+							if (literal->value.get_type() == Variant::STRING) {
 								name = "&" + name;
 							}
 						}
@@ -3218,7 +3210,7 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 	return false;
 }
 
-static void _find_call_arguments(const String &p_code, GDScriptParser::CompletionContext &p_context, const GDScriptParser::Node *p_call, int p_argidx, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, bool &r_forced, String &r_arghint) {
+static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, const GDScriptParser::Node *p_call, int p_argidx, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, bool &r_forced, String &r_arghint) {
 	if (p_call->type == GDScriptParser::Node::PRELOAD) {
 		if (p_argidx == 0 && bool(EDITOR_GET("text_editor/completion/complete_file_paths"))) {
 			_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), r_result);
@@ -3320,7 +3312,7 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 	GDScriptCompletionIdentifier ci;
 	ci.type = base_type;
 	ci.value = base;
-	_find_call_arguments(p_code, p_context, ci, call->function_name, p_argidx, _static, r_result, r_arghint);
+	_find_call_arguments(p_context, ci, call, p_argidx, _static, r_result, r_arghint);
 
 	r_forced = r_result.size() > 0;
 }
@@ -3574,7 +3566,7 @@ static void _find_call_arguments(const String &p_code, GDScriptParser::Completio
 			if (!completion_context.node) {
 				break;
 			}
-			_find_call_arguments(p_code, completion_context, completion_context.node, completion_context.current_argument, options, r_forced, r_call_hint);
+			_find_call_arguments(completion_context, completion_context.node, completion_context.current_argument, options, r_forced, r_call_hint);
 		} break;
 		case GDScriptParser::COMPLETION_OVERRIDE_METHOD: {
 			GDScriptParser::DataType native_type = completion_context.current_class->base_type;
