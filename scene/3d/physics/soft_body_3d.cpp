@@ -371,19 +371,25 @@ void SoftBody3D::_notification(int p_what) {
 				_reset_points_offsets();
 				return;
 			}
+			Transform3D global_transform = get_global_transform();
+			if (global_transform == Transform3D()) {
+				// We want to always keep global transform as the identity transform.
+				// If it is already the identity, we have nothing else to do.  This prevents
+				// us from trying to do work on notifications about our own changes to reset
+				// the transform.
+				return;
+			}
 
 			if (!simulation_started) {
 				// Avoid rendering mesh at the origin before simulation.
 				return;
 			}
 
-			PhysicsServer3D::get_singleton()->soft_body_set_transform(physics_rid, get_global_transform());
+			PhysicsServer3D::get_singleton()->soft_body_set_transform(physics_rid, global_transform);
 
 			// Soft body renders mesh in global space.
-			set_notify_transform(false);
 			set_as_top_level(true);
 			set_transform(Transform3D());
-			set_notify_transform(true);
 		} break;
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
 			if (mesh.is_valid() && rendering_server_handler->is_ready(mesh->get_rid())) {
