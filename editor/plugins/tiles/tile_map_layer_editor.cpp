@@ -114,6 +114,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 		random_tile_toggle->show();
 		scatter_controls_container->set_visible(random_tile_toggle->is_pressed());
 	}
+	CanvasItemEditor::update_tool();
 }
 
 void TileMapLayerEditorTilesPlugin::_update_transform_buttons() {
@@ -3652,6 +3653,12 @@ void TileMapLayerEditor::_node_change(Node *p_node) {
 
 void TileMapLayerEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				CanvasItemEditor::update_tool();
+			}
+		} break;
+
 		case NOTIFICATION_READY: {
 			toggle_grid_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/display_grid"));
 			toggle_highlight_selected_layer_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/highlight_selected_layer"));

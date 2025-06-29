@@ -580,6 +580,8 @@ public:
 	Tool get_current_tool() { return tool; }
 	void set_current_tool(Tool p_tool);
 
+	static void update_tool();
+
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
