@@ -36,7 +36,8 @@ struct HashSplit {
 	uint8_t tag_hash;
 	uint32_t pos_hash;
 
-	HashSplit(uint8_t tag, uint32_t pos) : tag_hash(tag), pos_hash(pos) {}
+	HashSplit(uint8_t tag, uint32_t pos) :
+			tag_hash(tag), pos_hash(pos) {}
 };
 
 static_assert(sizeof(HashSplit) == 8);
