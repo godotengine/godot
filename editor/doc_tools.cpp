@@ -881,6 +881,16 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 
 			if (method.name == cname) {
+				// Duplicate the constructor for typed constructors
+				// true if METHOD_FLAG_ACCEPTS_TYPE and the method contains type information arguments.
+				if ((mi.flags & METHOD_FLAG_ACCEPTS_TYPE) && method.arguments.size() >= 3) {
+					DocData::MethodDoc typed_converter_constructor = method;
+					typed_converter_constructor.qualifiers += "typed";
+					// Removes `type`, `class_name`, and `script` arguments from doc
+					int arg_count = typed_converter_constructor.arguments.size();
+					typed_converter_constructor.arguments.resize(arg_count - 3);
+					c.constructors.push_back(typed_converter_constructor);
+				}
 				c.constructors.push_back(method);
 			} else if (method.name.begins_with("operator")) {
 				c.operators.push_back(method);

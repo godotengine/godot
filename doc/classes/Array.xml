@@ -76,6 +76,13 @@
 				[/codeblock]
 			</description>
 		</constructor>
+		<constructor name="Array" qualifiers="typed">
+			<return type="Array" />
+			<param index="0" name="base" type="Array" />
+			<description>
+				Alias for [code]Array(base, type, class_name, script)[/code]. Implicitly fills type-related parameters from the type provided. Creates a typed array from the [param base] array.
+			</description>
+		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
 			<param index="0" name="from" type="Array" />
