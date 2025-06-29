@@ -724,6 +724,7 @@ void CanvasItem::set_as_toplevel(bool p_toplevel) {
 	_enter_canvas();
 
 	_notify_transform();
+	reset_physics_interpolation();
 }
 
 bool CanvasItem::is_set_as_toplevel() const {
