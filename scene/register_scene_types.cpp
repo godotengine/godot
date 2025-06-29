@@ -371,17 +371,17 @@ void register_scene_types() {
 
 	Node::init_node_hrcr();
 
-	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
+	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
 		resource_loader_stream_texture.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
 	}
 
-	if (GD_IS_CLASS_ENABLED(TextureLayered)) {
+	if constexpr (GD_IS_CLASS_ENABLED(TextureLayered)) {
 		resource_loader_texture_layered.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_texture_layered);
 	}
 
-	if (GD_IS_CLASS_ENABLED(Texture3D)) {
+	if constexpr (GD_IS_CLASS_ENABLED(Texture3D)) {
 		resource_loader_texture_3d.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_texture_3d);
 	}
@@ -392,7 +392,7 @@ void register_scene_types() {
 	resource_loader_text.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_text, true);
 
-	if (GD_IS_CLASS_ENABLED(Shader)) {
+	if constexpr (GD_IS_CLASS_ENABLED(Shader)) {
 		resource_saver_shader.instantiate();
 		ResourceSaver::add_resource_format_saver(resource_saver_shader, true);
 
@@ -400,7 +400,7 @@ void register_scene_types() {
 		ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
 	}
 
-	if (GD_IS_CLASS_ENABLED(ShaderInclude)) {
+	if constexpr (GD_IS_CLASS_ENABLED(ShaderInclude)) {
 		resource_saver_shader_include.instantiate();
 		ResourceSaver::add_resource_format_saver(resource_saver_shader_include, true);
 
@@ -1390,17 +1390,17 @@ void unregister_scene_types() {
 
 	SceneDebugger::deinitialize();
 
-	if (GD_IS_CLASS_ENABLED(TextureLayered)) {
+	if constexpr (GD_IS_CLASS_ENABLED(TextureLayered)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 		resource_loader_texture_layered.unref();
 	}
 
-	if (GD_IS_CLASS_ENABLED(Texture3D)) {
+	if constexpr (GD_IS_CLASS_ENABLED(Texture3D)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_texture_3d);
 		resource_loader_texture_3d.unref();
 	}
 
-	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
+	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 		resource_loader_stream_texture.unref();
 	}
@@ -1411,7 +1411,7 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_text);
 	resource_loader_text.unref();
 
-	if (GD_IS_CLASS_ENABLED(Shader)) {
+	if constexpr (GD_IS_CLASS_ENABLED(Shader)) {
 		ResourceSaver::remove_resource_format_saver(resource_saver_shader);
 		resource_saver_shader.unref();
 
@@ -1419,7 +1419,7 @@ void unregister_scene_types() {
 		resource_loader_shader.unref();
 	}
 
-	if (GD_IS_CLASS_ENABLED(ShaderInclude)) {
+	if constexpr (GD_IS_CLASS_ENABLED(ShaderInclude)) {
 		ResourceSaver::remove_resource_format_saver(resource_saver_shader_include);
 		resource_saver_shader_include.unref();
 
