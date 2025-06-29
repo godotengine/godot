@@ -329,6 +329,17 @@ void RendererMeshStorage::multimesh_instance_reset_physics_interpolation(RID p_m
 	}
 }
 
+void RendererMeshStorage::multimesh_instances_reset_physics_interpolation(RID p_multimesh) {
+	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
+	if (mmi && mmi->_data_curr.size()) {
+		// We don't want to invoke COW here, so copy the data directly.
+		ERR_FAIL_COND(mmi->_data_prev.size() != mmi->_data_curr.size());
+		float *w = mmi->_data_prev.ptrw();
+		const float *r = mmi->_data_curr.ptr();
+		memcpy(w, r, sizeof(float) * mmi->_data_curr.size());
+	}
+}
+
 void RendererMeshStorage::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
 	return _multimesh_set_visible_instances(p_multimesh, p_visible);
 }

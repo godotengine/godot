@@ -59,6 +59,13 @@
 				This allows you to move instances instantaneously, and should usually be used when initially placing an instance such as a bullet to prevent graphical glitches.
 			</description>
 		</method>
+		<method name="reset_instances_physics_interpolation">
+			<return type="void" />
+			<description>
+				When using [i]physics interpolation[/i], this function allows you to prevent interpolation for all instances in the current physics tick.
+				This allows you to move all instances instantaneously, and should usually be used when initially placing instances to prevent graphical glitches.
+			</description>
+		</method>
 		<method name="set_buffer_interpolated">
 			<return type="void" />
 			<param index="0" name="buffer_curr" type="PackedFloat32Array" />
