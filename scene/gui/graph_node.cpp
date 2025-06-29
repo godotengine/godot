@@ -209,8 +209,6 @@ void GraphNode::_resort() {
 	// Final pass, draw and stretch elements.
 
 	int ofs_y = sb_panel->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
-	// TODO: Move to GraphNodeIndexed
-	//slot_y_cache.clear();
 	int width = new_size.width - sb_panel->get_minimum_size().width;
 	int valid_children_idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
@@ -238,9 +236,6 @@ void GraphNode::_resort() {
 		float final_width = width;
 		Rect2 rect(margin, from_y_pos, final_width, height);
 		fit_child_in_rect(child, rect);
-
-		// TODO: Move to GraphNodeIndexed
-		//slot_y_cache.push_back(child->get_rect().position.y + child->get_rect().size.height * 0.5);
 
 		ofs_y = to_y_pos;
 		valid_children_idx++;
@@ -460,8 +455,11 @@ void GraphNode::_notification(int p_what) {
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
 			// Take ports into account
+			if (port_pos_dirty) {
+				_port_pos_update();
+			}
 			for (Ref<GraphPort> port : ports) {
-				if (port.is_valid()) {
+				if (port.is_valid() && port->enabled) {
 					draw_port(port);
 				}
 			}
@@ -474,52 +472,6 @@ void GraphNode::_notification(int p_what) {
 					draw_style_box(sb_port_selected, Rect2i(port_pos.x + get_size().x - port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
 				}
 			}
-			// TODO: Move to GraphNodeIndexed
-			/*
-			// Take the HboxContainer child into account.
-			if (get_child_count(false) > 0) {
-				int slot_index = 0;
-				for (const KeyValue<int, Slot> &E : slot_table) {
-					if (E.key < 0 || E.key >= slot_y_cache.size()) {
-						continue;
-					}
-					if (!slot_table.has(E.key)) {
-						continue;
-					}
-					const Slot &slot = slot_table[E.key];
-
-					// Left port.
-					if (slot.enable_left) {
-						draw_port(slot_index, Point2i(port_h_offset, slot_y_cache[E.key]), true, slot.color_left);
-					}
-
-					// Right port.
-					if (slot.enable_right) {
-						draw_port(slot_index, Point2i(get_size().x - port_h_offset, slot_y_cache[E.key]), false, slot.color_right);
-					}
-
-					if (slot_index == selected_slot) {
-						Size2i port_sz = theme_cache.port->get_size();
-						draw_style_box(sb_slot_selected, Rect2i(port_h_offset - port_sz.x, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
-						draw_style_box(sb_slot_selected, Rect2i(get_size().x - port_h_offset - port_sz.x, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
-					}
-
-					// Draw slot stylebox.
-					if (slot.draw_stylebox) {
-						Control *child = Object::cast_to<Control>(get_child(E.key, false));
-						if (!child || !child->is_visible_in_tree()) {
-							continue;
-						}
-						Rect2 child_rect = child->get_rect();
-						child_rect.position.x = sb_panel->get_margin(SIDE_LEFT);
-						child_rect.size.width = width;
-						draw_style_box(sb_slot, child_rect);
-					}
-
-					slot_index++;
-				}
-			}
-			*/
 
 			if (resizable) {
 				draw_texture(theme_cache.resizer, get_size() - theme_cache.resizer->get_size(), theme_cache.resizer_color);
@@ -531,10 +483,25 @@ void GraphNode::_notification(int p_what) {
 void GraphNode::add_port(const Ref<GraphPort> p_port) {
 	ports.append(p_port);
 
-	queue_accessibility_update();
-	queue_redraw();
-	port_pos_dirty = true;
-	notify_property_list_changed();
+	if (p_port.is_valid()) {
+		p_port->graph_node = this;
+		p_port->connect("modified", callable_mp(this, &GraphNode::_port_modified));
+	}
+
+	_port_modified();
+
+	emit_signal(SNAME("port_added"), p_port);
+}
+
+void GraphNode::insert_port(int p_port_index, const Ref<GraphPort> p_port) {
+	ports.insert(p_port_index, p_port);
+
+	if (p_port.is_valid()) {
+		p_port->graph_node = this;
+		p_port->connect("modified", callable_mp(this, &GraphNode::_port_modified));
+	}
+
+	_port_modified();
 
 	emit_signal(SNAME("port_added"), p_port);
 }
@@ -545,10 +512,15 @@ void GraphNode::set_port(int p_port_index, const Ref<GraphPort> p_port) {
 	Ref<GraphPort> old_port = ports[p_port_index];
 	ports.set(p_port_index, p_port);
 
-	queue_accessibility_update();
-	queue_redraw();
-	port_pos_dirty = true;
-	notify_property_list_changed();
+	if (old_port.is_valid()) {
+		old_port->disconnect("modified", callable_mp(this, &GraphNode::_port_modified));
+	}
+	if (p_port.is_valid()) {
+		p_port->graph_node = this;
+		p_port->connect("modified", callable_mp(this, &GraphNode::_port_modified));
+	}
+
+	_port_modified();
 
 	emit_signal(SNAME("port_replaced"), old_port, p_port);
 }
@@ -559,17 +531,28 @@ void GraphNode::remove_port(int p_port_index) {
 	Ref<GraphPort> old_port = ports[p_port_index];
 	ports.remove_at(p_port_index);
 
-	queue_accessibility_update();
-	queue_redraw();
-	port_pos_dirty = true;
-	notify_property_list_changed();
+	if (old_port.is_valid()) {
+		old_port->disconnect("modified", callable_mp(this, &GraphNode::_port_modified));
+	}
+
+	_port_modified();
 
 	emit_signal(SNAME("port_removed"), old_port);
 }
 
 void GraphNode::remove_all_ports() {
-	ports.clear();
+	if (ports.is_empty()) {
+		return;
+	}
+	TypedArray<Ref<GraphPort>> old_ports = ports;
+	for (int i = ports.size() - 1; i >= 0; i--) {
+		remove_port(i);
+	}
 
+	emit_signal(SNAME("ports_cleared"), old_ports);
+}
+
+void GraphNode::_port_modified() {
 	queue_accessibility_update();
 	queue_redraw();
 	port_pos_dirty = true;
@@ -639,63 +622,19 @@ Size2 GraphNode::get_minimum_size() const {
 }
 
 void GraphNode::_port_pos_update() {
-	int edgeofs = theme_cache.port_h_offset;
-
 	port_cache.clear();
 
 	for (Ref<GraphPort> port : ports) {
 		if (port.is_null()) {
 			continue;
 		}
-		Vector2 pos = port->get_position();
-
-		PortCache cached_port;
-		cached_port.pos = Point2i(edgeofs + pos.x, pos.y);
-		cached_port.type = port->get_type();
-		cached_port.color = port->color;
-		port_cache.push_back(cached_port);
+		port_cache.push_back(PortCache(port));
 	}
 	if (selected_port >= get_port_count()) {
 		selected_port = -1;
 	}
 
 	port_pos_dirty = false;
-	// TODO: Move some of this to GraphNodeIndexed
-	/*
-
-		int slot_index = 0;
-
-		for (int i = 0; i < get_child_count(false); i++) {
-			Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::IGNORE);
-			if (!child) {
-				continue;
-			}
-
-			Size2i size = child->get_rect().size;
-			Point2 pos = child->get_position();
-
-			if (slot_table.has(slot_index)) {
-				if (slot_table[slot_index].enable_left) {
-					PortCache port_cache;
-					port_cache.pos = Point2i(edgeofs, pos.y + size.height / 2);
-					port_cache.type = slot_table[slot_index].type_left;
-					port_cache.color = slot_table[slot_index].color_left;
-					port_cache.slot_index = slot_index;
-					left_port_cache.push_back(port_cache);
-				}
-				if (slot_table[slot_index].enable_right) {
-					PortCache port_cache;
-					port_cache.pos = Point2i(get_size().width - edgeofs, pos.y + size.height / 2);
-					port_cache.type = slot_table[slot_index].type_right;
-					port_cache.color = slot_table[slot_index].color_right;
-					port_cache.slot_index = slot_index;
-					right_port_cache.push_back(port_cache);
-				}
-			}
-
-			slot_index++;
-		}
-	*/
 }
 
 Vector2 GraphNode::update_port_position(int p_port_idx) {
@@ -704,8 +643,7 @@ Vector2 GraphNode::update_port_position(int p_port_idx) {
 	}
 
 	ERR_FAIL_INDEX_V(p_port_idx, ports.size(), Vector2());
-	Vector2 pos = get_port(p_port_idx)->position;
-	return pos;
+	return get_port(p_port_idx)->position;
 }
 
 String GraphNode::get_accessibility_container_name(const Node *p_node) const {
@@ -790,21 +728,23 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);
 
-	GDVIRTUAL_BIND(_draw_port, "port")
+	GDVIRTUAL_BIND(_draw_port, "port");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"), "set_ignore_invalid_connection_type", "is_ignoring_valid_connection_type");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "ports", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("GraphPort")), "set_ports", "get_ports");
 
-	//GraphPort default_port;
-	//base_property_helper.set_prefix("ports_");
-	//base_property_helper.set_array_length_getter(&GraphNode::get_port_count);
-	//base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), default_port, &GraphNode::set_port, &GraphNode::get_port);
-	//PropertyListHelper::register_base_helper(&base_property_helper);
+	/* GraphPort *default_port = memnew(GraphPort);
+	base_property_helper.set_prefix("ports_");
+	base_property_helper.set_array_length_getter(&GraphNode::get_port_count);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), default_port, &GraphNode::set_port, &GraphNode::get_port);
+	PropertyListHelper::register_base_helper(&base_property_helper);
+	memdelete(default_port);*/
 
 	ADD_SIGNAL(MethodInfo("port_added", PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
 	ADD_SIGNAL(MethodInfo("port_removed", PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
 	ADD_SIGNAL(MethodInfo("port_replaced", PropertyInfo(Variant::OBJECT, "old_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::OBJECT, "new_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
+	ADD_SIGNAL(MethodInfo("ports_cleared", PropertyInfo(Variant::ARRAY, "old_ports", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("GraphPort"))));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel_selected);

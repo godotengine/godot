@@ -103,12 +103,14 @@ void GraphPort::enable() {
 	enabled = true;
 	notify_property_list_changed();
 	_enabled();
+	_modified();
 }
 
 void GraphPort::disable() {
 	enabled = false;
 	notify_property_list_changed();
 	_disabled();
+	_modified();
 }
 
 void GraphPort::set_enabled(bool p_enabled) {
@@ -134,6 +136,7 @@ void GraphPort::set_type(int p_type) {
 	type = p_type;
 	notify_property_list_changed();
 	_changed_type(p_type);
+	_modified();
 }
 
 Color GraphPort::get_color() {
@@ -143,6 +146,7 @@ Color GraphPort::get_color() {
 void GraphPort::set_color(Color p_color) {
 	color = p_color;
 	notify_property_list_changed();
+	_modified();
 }
 
 bool GraphPort::get_exclusive() {
@@ -152,6 +156,7 @@ bool GraphPort::get_exclusive() {
 void GraphPort::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
 	notify_property_list_changed();
+	_modified();
 }
 
 Ref<Texture2D> GraphPort::get_icon() {
@@ -161,6 +166,7 @@ Ref<Texture2D> GraphPort::get_icon() {
 void GraphPort::set_icon(Ref<Texture2D> p_icon) {
 	icon = p_icon;
 	notify_property_list_changed();
+	_modified();
 }
 
 GraphPort::PortDirection GraphPort::get_direction() const {
@@ -171,6 +177,12 @@ void GraphPort::set_direction(GraphPort::PortDirection p_direction) {
 	direction = p_direction;
 	notify_property_list_changed();
 	_changed_direction(p_direction);
+	_modified();
+}
+
+void GraphPort::set_position(const Vector2 p_position) {
+	position = p_position;
+	_modified();
 }
 
 Vector2 GraphPort::get_position() {
@@ -195,8 +207,12 @@ void GraphPort::_changed_direction(const PortDirection p_direction) {
 void GraphPort::_changed_type(const int p_type) {
 	emit_signal(SNAME("changed_type"), p_type);
 }
+void GraphPort::_modified() {
+	emit_signal(SNAME("modified"));
+}
 
 void GraphPort::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &GraphPort::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &GraphPort::get_position);
 
 	ClassDB::bind_method(D_METHOD("enable"), &GraphPort::enable);
@@ -221,16 +237,18 @@ void GraphPort::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_icon", "get_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_icon", "get_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
 	//ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "", "");
 
 	ADD_SIGNAL(MethodInfo("enabled"));
 	ADD_SIGNAL(MethodInfo("disabled"));
 	ADD_SIGNAL(MethodInfo("changed_direction", PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected")));
 	ADD_SIGNAL(MethodInfo("changed_type", PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(MethodInfo("modified"));
 }
 
 GraphPort::GraphPort() {

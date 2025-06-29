@@ -86,4 +86,15 @@ protected:
 		Rect2 aabb; // In local screen space.
 		Line2D *line = nullptr; // In local screen space.
 	} _cache;
+
+	void set_first_port(const Ref<GraphPort> p_port);
+	Ref<GraphPort> get_first_port();
+
+	void set_second_port(const Ref<GraphPort> p_port);
+	Ref<GraphPort> get_second_port();
+
+	void set_clear_if_invalid(bool p_clear_if_invalid);
+	bool get_clear_if_invalid();
+
+	static void _bind_methods();
 };

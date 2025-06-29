@@ -1705,19 +1705,17 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_stylebox("titlebar_selected", "GraphElement", gn_titlebar_selected_style);
 
 			p_theme->set_color("resizer_color", "GraphElement", gn_decoration_color);
-			p_theme->set_icon("resizer", "GraphElement", p_theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons)));
+			Ref<ImageTexture> resizer_icon = p_theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons));
+			p_theme->set_icon("resizer", "GraphElement", resizer_icon);
 
 			// GraphNode.
-
-			Ref<StyleBoxEmpty> gn_slot_style = make_empty_stylebox(12, 0, 12, 0);
 
 			p_theme->set_stylebox(SceneStringName(panel), "GraphNode", gn_panel_style);
 			p_theme->set_stylebox("panel_selected", "GraphNode", gn_panel_selected_style);
 			p_theme->set_stylebox("panel_focus", "GraphNode", p_config.button_style_focus);
 			p_theme->set_stylebox("titlebar", "GraphNode", gn_titlebar_style);
 			p_theme->set_stylebox("titlebar_selected", "GraphNode", gn_titlebar_selected_style);
-			p_theme->set_stylebox("slot", "GraphNode", gn_slot_style);
-			p_theme->set_stylebox("slot_selected", "GraphNode", p_config.button_style_focus);
+			p_theme->set_stylebox("port_selected", "GraphNode", p_config.button_style_focus);
 
 			p_theme->set_color("resizer_color", "GraphNode", gn_decoration_color);
 
@@ -1737,6 +1735,13 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("shadow_offset_x", "GraphNodeTitleLabel", 0);
 			p_theme->set_constant("shadow_offset_y", "GraphNodeTitleLabel", 1);
 			p_theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
+
+			// GraphNodeIndexed
+
+			Ref<StyleBoxEmpty> gn_slot_style = make_empty_stylebox(12, 0, 12, 0);
+
+			p_theme->set_stylebox("slot", "GraphNodeIndexed", gn_slot_style);
+			p_theme->set_stylebox("slot_selected", "GraphNodeIndexed", p_config.button_style_focus);
 
 			// GraphFrame.
 

@@ -73,6 +73,7 @@ protected:
 
 	void _changed_direction(const PortDirection p_direction);
 	void _changed_type(const int p_type);
+	void _modified();
 
 	//bool _set(const StringName &p_name, const Variant &p_value);
 	//bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -101,6 +102,7 @@ public:
 	PortDirection get_direction() const;
 	void set_direction(const PortDirection p_direction);
 
+	void set_position(const Vector2 p_position);
 	Vector2 get_position();
 	GraphNode *get_graph_node();
 

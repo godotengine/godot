@@ -302,15 +302,16 @@ private:
 	void _minimap_draw();
 	void _draw_grid();
 
-	bool is_in_port_hotzone(const Ref<GraphPort> p_port, const Vector2 &p_mouse_pos);
+	bool is_in_port_hotzone(const Ref<GraphPort> p_port, const Vector2 &p_local_pos);
 	Vector2 get_hotzone_extent(const Ref<GraphPort> p_port);
 
-	void set_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
+	void set_connections(const TypedArray<Ref<GraphConnection>> p_connections);
 	const TypedArray<Ref<GraphConnection>> &_get_connections() const;
 	Ref<GraphConnection> _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
 	// should be converted to TypedDictionary<Ref<GraphPort>, TypedArray<Ref<GraphConnection>>> once nested container types are implemented
-	TypedDictionary<Ref<GraphPort>, Array> _get_connections_from_node(GraphNode *p_node) const;
+	TypedDictionary<Ref<GraphPort>, Array> _get_connections_by_node(GraphNode *p_node) const;
+	Error _add_connection(Ref<GraphConnection> p_connection);
 	bool _is_connection_valid(const Ref<GraphPort> p_port);
 	void _mark_connections_dirty_by_port(const Ref<GraphPort> p_port);
 
@@ -372,7 +373,7 @@ public:
 	int get_connection_count(const Ref<GraphPort> p_port);
 	GraphNode *get_connection_target(const Ref<GraphPort> p_port);
 	String get_connections_description(const Ref<GraphPort> p_port);
-	void disconnect(const Ref<GraphConnection> p_connection);
+	void disconnect_by_connection(const Ref<GraphConnection> p_connection);
 	void disconnect_all_by_port(const Ref<GraphPort> p_port);
 	void disconnect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
 	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);

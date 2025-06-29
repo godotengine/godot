@@ -62,6 +62,44 @@ bool GraphConnection::matches_legacy_data(String p_first_node, int p_first_port,
 			String(second_port->graph_node->get_name()) != p_second_node;
 }
 
+void GraphConnection::set_first_port(const Ref<GraphPort> p_port) {
+	first_port = p_port;
+}
+
+Ref<GraphPort> GraphConnection::get_first_port() {
+	return first_port;
+}
+
+void GraphConnection::set_second_port(const Ref<GraphPort> p_port) {
+	second_port = p_port;
+}
+
+Ref<GraphPort> GraphConnection::get_second_port() {
+	return second_port;
+}
+
+void GraphConnection::set_clear_if_invalid(bool p_clear_if_invalid) {
+	clear_if_invalid = p_clear_if_invalid;
+}
+
+bool GraphConnection::get_clear_if_invalid() {
+	return clear_if_invalid;
+}
+
+void GraphConnection::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_first_port", "port"), &GraphConnection::set_first_port);
+	ClassDB::bind_method(D_METHOD("get_first_port"), &GraphConnection::get_first_port);
+	ClassDB::bind_method(D_METHOD("set_second_port", "port"), &GraphConnection::set_second_port);
+	ClassDB::bind_method(D_METHOD("get_second_port"), &GraphConnection::get_second_port);
+
+	ClassDB::bind_method(D_METHOD("set_clear_if_invalid", "clear_if_invalid"), &GraphConnection::set_clear_if_invalid);
+	ClassDB::bind_method(D_METHOD("get_clear_if_invalid"), &GraphConnection::get_clear_if_invalid);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "first_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort", PROPERTY_USAGE_DEFAULT), "set_first_port", "get_first_port");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "second_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort", PROPERTY_USAGE_DEFAULT), "set_second_port", "get_second_port");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clear_if_invalid"), "set_clear_if_invalid", "get_clear_if_invalid");
+}
+
 GraphConnection::GraphConnection() {
 	first_port = Ref<GraphPort>(nullptr);
 	second_port = Ref<GraphPort>(nullptr);

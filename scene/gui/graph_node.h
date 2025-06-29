@@ -31,10 +31,10 @@
 #pragma once
 
 #include "scene/gui/graph_element.h"
+#include "scene/gui/graph_port.h"
 //#include "scene/property_list_helper.h"
 
 class HBoxContainer;
-class GraphPort;
 class GraphConnection;
 
 class GraphNode : public GraphElement {
@@ -44,9 +44,18 @@ class GraphNode : public GraphElement {
 
 protected:
 	struct PortCache {
-		Vector2 pos;
+		Vector2 pos = Vector2(0.0, 0.0);
 		int type = 0;
-		Color color;
+		Color color = Color(1, 1, 1, 1);
+
+		PortCache() {}
+		PortCache(const Vector2 p_pos, int p_type, const Color p_color) :
+				pos(p_pos), type(p_type), color(p_color) {}
+		PortCache(const Ref<GraphPort> p_port) {
+			pos = p_port->position;
+			type = p_port->type;
+			color = p_port->color;
+		}
 	};
 
 	struct _MinSizeCache {
@@ -78,8 +87,6 @@ protected:
 
 	bool ignore_invalid_connection_type = false;
 
-	void _port_pos_update();
-
 	struct ThemeCache {
 		Ref<StyleBox> panel;
 		Ref<StyleBox> panel_selected;
@@ -107,6 +114,8 @@ protected:
 	void _set_ports(const TypedArray<Ref<GraphPort>> &p_ports);
 	const TypedArray<Ref<GraphPort>> &_get_ports();
 
+	virtual void _port_pos_update();
+	void _port_modified();
 	//bool _set(const StringName &p_name, const Variant &p_value);
 	//bool _get(const StringName &p_name, Variant &r_ret) const;
 	//void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -126,6 +135,7 @@ public:
 	Array get_ports();
 	int index_of_port(const Ref<GraphPort> p_port);
 	void add_port(const Ref<GraphPort> port);
+	void insert_port(int p_port_index, const Ref<GraphPort> p_port);
 	void set_port(int p_port_index, const Ref<GraphPort> p_port);
 	void remove_port(int p_port_index);
 	void remove_all_ports();

@@ -49,19 +49,36 @@ protected:
 	};
 	Vector<Slot> slots;
 	HashMap<StringName, int> _slot_node_map_cache;
+	Vector<float> _slot_y_cache;
 
-	struct ThemeCacheIndexed : ThemeCache {
-		Ref<StyleBox> theme_cache_slot;
-		Ref<StyleBox> theme_cache_slot_selected;
-	};
+	struct ThemeCache {
+		Ref<StyleBox> panel;
+		Ref<StyleBox> panel_selected;
+		Ref<StyleBox> panel_focus;
+		Ref<StyleBox> titlebar;
+		Ref<StyleBox> titlebar_selected;
+		Ref<StyleBox> port_selected;
+
+		int separation = 0;
+		int port_h_offset = 0;
+
+		Ref<Texture2D> port;
+		Ref<Texture2D> resizer;
+		Color resizer_color;
+
+		Ref<StyleBox> slot;
+		Ref<StyleBox> slot_selected;
+	} theme_cache;
 
 	void _set_slots(const Vector<Slot> &p_slots);
 	const Vector<Slot> &_get_slots();
+	void _set_slot(int p_slot_index, const Slot p_slot, bool p_with_ports = true);
 	Slot _get_slot(int p_slot_index);
-	void _set_slot(int p_slot_index, const Slot p_slot);
-	void _remove_slot(int p_slot_index);
-	void _remove_all_slots();
-	void _insert_slot(int p_slot_index, const Slot p_slot, bool p_insert_ports = true);
+	void _insert_slot(int p_slot_index, const Slot p_slot, bool p_with_ports = true);
+	void _remove_all_slots(bool p_with_ports = true);
+	void _remove_slot(int p_slot_index, bool p_with_ports = true);
+
+	virtual void _port_pos_update() override;
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
@@ -70,7 +87,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	//void _notification(int p_what);
+	void _notification(int p_what);
 
 	void create_slot(int p_slot_index, Ref<GraphPort> p_left_port, Ref<GraphPort> p_right_port, bool draw_stylebox);
 	void create_slot_and_ports(int p_slot_index, bool draw_stylebox);

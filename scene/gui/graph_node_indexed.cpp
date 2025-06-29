@@ -109,6 +109,52 @@ void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	_remove_slot(index);
 }
 
+void GraphNodeIndexed::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			// Used for layout calculations.
+			Ref<StyleBox> sb_panel = theme_cache.panel;
+
+			Ref<StyleBox> sb_slot = theme_cache.slot;
+			Ref<StyleBox> sb_slot_selected = theme_cache.slot_selected;
+
+			int port_h_offset = theme_cache.port_h_offset;
+
+			int width = get_size().width - sb_panel->get_minimum_size().x;
+
+			if (get_child_count(false) > 0) {
+				int slot_index = 0;
+				for (Slot slot : slots) {
+					// TODO: keyboard navigation override for slot selection
+					/* if (slot_index == selected_slot) {
+						Size2i port_sz = theme_cache.port->get_size();
+						draw_style_box(sb_slot_selected, Rect2i(port_h_offset - port_sz.x, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
+						draw_style_box(sb_slot_selected, Rect2i(get_size().x - port_h_offset - port_sz.x, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
+					}*/
+
+					// Draw slot stylebox.
+					if (slot.draw_stylebox) {
+						Control *child = Object::cast_to<Control>(get_child(slot_index, false));
+						if (!child || !child->is_visible_in_tree()) {
+							continue;
+						}
+						Rect2 child_rect = child->get_rect();
+						child_rect.position.x = sb_panel->get_margin(SIDE_LEFT);
+						child_rect.size.width = width;
+						draw_style_box(sb_slot, child_rect);
+					}
+
+					slot_index++;
+				}
+			}
+
+			if (resizable) {
+				draw_texture(theme_cache.resizer, get_size() - theme_cache.resizer->get_size(), theme_cache.resizer_color);
+			}
+		} break;
+	}
+}
+
 void GraphNodeIndexed::create_slot(int p_slot_index, Ref<GraphPort> p_left_port, Ref<GraphPort> p_right_port, bool draw_stylebox) {
 	Slot new_slot = { p_left_port, p_right_port, true };
 	_insert_slot(p_slot_index, new_slot);
@@ -120,6 +166,15 @@ void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool draw_stylebo
 	return create_slot(p_slot_index, p_left, p_right, draw_stylebox);
 }
 
+void GraphNodeIndexed::_set_slots(const Vector<Slot> &p_slots) {
+	_remove_all_slots();
+	int i = 0;
+	for (Slot slot : p_slots) {
+		_insert_slot(i, slot, true);
+		i++;
+	}
+}
+
 void GraphNodeIndexed::set_slots(TypedArray<Array> p_slots) {
 	_remove_all_slots();
 	int i = 0;
@@ -129,6 +184,10 @@ void GraphNodeIndexed::set_slots(TypedArray<Array> p_slots) {
 		i++;
 	}
 	notify_property_list_changed();
+}
+
+const Vector<GraphNodeIndexed::Slot> &GraphNodeIndexed::_get_slots() {
+	return slots;
 }
 
 TypedArray<Array> GraphNodeIndexed::get_slots() {
@@ -143,17 +202,8 @@ TypedArray<Array> GraphNodeIndexed::get_slots() {
 	return ret;
 }
 
-void GraphNodeIndexed::_set_slots(const Vector<Slot> &p_slots) {
-	_remove_all_slots();
-	int i = 0;
-	for (Slot slot : p_slots) {
-		_insert_slot(i, slot, true);
-		i++;
-	}
-}
-
-const Vector<GraphNodeIndexed::Slot> &GraphNodeIndexed::_get_slots() {
-	return slots;
+GraphNodeIndexed::Slot GraphNodeIndexed::_get_slot(int p_slot_index) {
+	return slots[p_slot_index];
 }
 
 Array GraphNodeIndexed::get_slot(int p_slot_index) {
@@ -161,49 +211,24 @@ Array GraphNodeIndexed::get_slot(int p_slot_index) {
 	return Array({ slot.left_port, slot.right_port, slot.draw_stylebox });
 }
 
-GraphNodeIndexed::Slot GraphNodeIndexed::_get_slot(int p_slot_index) {
-	return slots[p_slot_index];
+void GraphNodeIndexed::_remove_all_slots(bool p_with_ports) {
+	if (slots.is_empty()) {
+		return;
+	}
+	for (int i = slots.size() - 1; i >= 0; i--) {
+		_remove_slot(i, p_with_ports);
+	}
 }
 
-void GraphNodeIndexed::_insert_slot(int p_slot_index, const Slot p_slot, bool p_insert_ports) {
-	slots.insert(p_slot_index, p_slot);
-
-	if (p_insert_ports) {
+void GraphNodeIndexed::_remove_slot(int p_slot_index, bool p_with_ports) {
+	if (p_with_ports) {
 		int p_left_port_index = slot_to_port_index(p_slot_index, true);
-		ports.insert(p_left_port_index, p_slot.left_port);
+		remove_port(p_left_port_index);
 		int p_right_port_index = slot_to_port_index(p_slot_index, false);
-		ports.insert(p_right_port_index, p_slot.right_port);
+		remove_port(p_right_port_index);
 	}
 
-	if (p_slot_index < get_child_count(false)) {
-		_slot_node_map_cache[get_child(p_slot_index)->get_name()] = p_slot_index;
-	}
-
-	notify_property_list_changed();
-}
-
-void GraphNodeIndexed::_set_slot(int p_slot_index, const Slot p_slot) {
-	slots.set(p_slot_index, p_slot);
-
-	int p_left_port_index = slot_to_port_index(p_slot_index, true);
-	ports.set(p_left_port_index, p_slot.left_port);
-	int p_right_port_index = slot_to_port_index(p_slot_index, false);
-	ports.set(p_right_port_index, p_slot.right_port);
-
-	if (p_slot_index < get_child_count(false)) {
-		_slot_node_map_cache[get_child(p_slot_index)->get_name()] = p_slot_index;
-	}
-
-	notify_property_list_changed();
-}
-
-void GraphNodeIndexed::_remove_slot(int p_slot_index) {
 	slots.remove_at(p_slot_index);
-
-	int p_left_port_index = slot_to_port_index(p_slot_index, true);
-	ports.remove_at(p_left_port_index);
-	int p_right_port_index = slot_to_port_index(p_slot_index, false);
-	ports.remove_at(p_right_port_index);
 
 	for (const KeyValue<StringName, int> kv_pair : _slot_node_map_cache) {
 		if (kv_pair.value == p_slot_index) {
@@ -215,14 +240,69 @@ void GraphNodeIndexed::_remove_slot(int p_slot_index) {
 	notify_property_list_changed();
 }
 
-void GraphNodeIndexed::_remove_all_slots() {
-	for (size_t i = slots.size() - 1; i >= 0; i--) {
-		_remove_slot(i);
+void GraphNodeIndexed::_insert_slot(int p_slot_index, const Slot p_slot, bool p_with_ports) {
+	slots.insert(p_slot_index, p_slot);
+
+	if (p_with_ports) {
+		int p_left_port_index = slot_to_port_index(p_slot_index, true);
+		insert_port(p_left_port_index, p_slot.left_port);
+		int p_right_port_index = slot_to_port_index(p_slot_index, false);
+		insert_port(p_right_port_index, p_slot.right_port);
 	}
+
+	if (p_slot_index < get_child_count(false)) {
+		_slot_node_map_cache[get_child(p_slot_index, false)->get_name()] = p_slot_index;
+	}
+
+	notify_property_list_changed();
+}
+
+void GraphNodeIndexed::_set_slot(int p_slot_index, const Slot p_slot, bool p_with_ports) {
+	slots.set(p_slot_index, p_slot);
+
+	if (p_with_ports) {
+		int p_left_port_index = slot_to_port_index(p_slot_index, true);
+		set_port(p_left_port_index, p_slot.left_port);
+		int p_right_port_index = slot_to_port_index(p_slot_index, false);
+		set_port(p_right_port_index, p_slot.right_port);
+	}
+
+	if (p_slot_index < get_child_count(false)) {
+		_slot_node_map_cache[get_child(p_slot_index, false)->get_name()] = p_slot_index;
+	}
+
+	notify_property_list_changed();
 }
 
 void GraphNodeIndexed::set_slot(int p_slot_index, const Ref<GraphPort> p_left_port, const Ref<GraphPort> p_right_port, bool draw_stylebox) {
 	_set_slot(p_slot_index, Slot({ p_left_port, p_right_port, draw_stylebox }));
+}
+
+void GraphNodeIndexed::_port_pos_update() {
+	int edgeofs = theme_cache.port_h_offset;
+
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::IGNORE);
+		if (!child) {
+			continue;
+		}
+
+		Size2i size = child->get_rect().size;
+		Point2 pos = child->get_position();
+
+		if (_slot_node_map_cache.has(child->get_name())) {
+			int slot_index = _slot_node_map_cache[child->get_name()];
+			Slot slot = slots[slot_index];
+			if (slot.left_port.is_valid()) {
+				slot.left_port->set_position(Vector2(edgeofs, pos.y + size.height / 2));
+			}
+			if (slot.right_port.is_valid()) {
+				slot.right_port->set_position(Vector2(get_size().width - edgeofs, pos.y + size.height / 2));
+			}
+		}
+	}
+
+	GraphNode::_port_pos_update();
 }
 
 int GraphNodeIndexed::slot_index_of_port(const Ref<GraphPort> p_port) {
@@ -374,6 +454,23 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slots"), &GraphNodeIndexed::get_slots);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_slots", "get_slots");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, panel);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, panel_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, panel_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, titlebar);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, titlebar_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, port_selected);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphNodeIndexed, separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphNodeIndexed, port_h_offset);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphNodeIndexed, port);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphNodeIndexed, resizer);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphNodeIndexed, resizer_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, slot);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, slot_selected);
 }
 
 GraphNodeIndexed::GraphNodeIndexed() {
