@@ -149,7 +149,6 @@ private:
 		uint8_t tag = split.tag_hash;
 		bool found_invalid = false;
 
-		uint32_t distance = 0;
 		while (true) {
 			uint8_t data_hash = hash_vec[pos];
 			if (data_hash == tag) {
@@ -169,7 +168,6 @@ private:
 			}
 
 			pos = (pos + 1) & capacity;
-			distance++;
 		}
 	}
 
@@ -177,7 +175,9 @@ private:
 		uint32_t pos = split.pos_hash;
 		uint8_t tag = split.tag_hash;
 
+#ifdef DEV_ENABLED
 		uint32_t distance = 0;
+#endif
 		while (true) {
 			if (!_valid_hash_mask(hash_vec[pos])) {
 #ifdef DEV_ENABLED
@@ -197,7 +197,9 @@ private:
 			}
 
 			pos = (pos + 1) & capacity;
+#ifdef DEV_ENABLED
 			distance++;
+#endif
 		}
 	}
 
