@@ -3585,6 +3585,7 @@ void FileSystemDock::_tree_empty_selected() {
 	if (file_list_vb->is_visible()) {
 		_update_file_list(false);
 	}
+	emit_signal(SNAME("selection_changed"));
 }
 
 void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -3650,6 +3651,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
 	file_list_popup->popup();
+	emit_signal(SNAME("selection_changed"));
 }
 
 void FileSystemDock::select_file(const String &p_file) {
@@ -3878,6 +3880,8 @@ void FileSystemDock::_update_import_dock() {
 		return;
 	}
 
+	emit_signal(SNAME("selection_changed"));
+
 	// List selected.
 	Vector<String> selected;
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
@@ -4080,6 +4084,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
 	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
 	ADD_SIGNAL(MethodInfo("folder_color_changed"));
+	ADD_SIGNAL(MethodInfo("selection_changed"));
 
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
