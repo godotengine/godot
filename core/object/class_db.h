@@ -41,6 +41,24 @@
 
 #include <type_traits>
 
+template <typename T, typename = void>
+struct is_class_enabled;
+
+template <>
+struct is_class_enabled<Object> : std::true_type {};
+
+template <typename T>
+struct is_class_enabled<T, std::enable_if_t<std::is_base_of_v<Object, T>>> {
+	static constexpr bool value = is_class_enabled<typename T::super_type>::value;
+};
+
+template <typename T>
+inline constexpr bool is_class_enabled_v = is_class_enabled<T>::value;
+
+#define GD_IS_CLASS_ENABLED(m_class) is_class_enabled_v<m_class>
+
+#include "core/disabled_classes.gen.h"
+
 #define DEFVAL(m_defval) (m_defval)
 #define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
 
@@ -551,25 +569,24 @@ public:
 
 #endif // DEBUG_ENABLED
 
-#define GDREGISTER_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {         \
-		::ClassDB::register_class<m_class>(); \
+#define GDREGISTER_CLASS(m_class)                 \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
+		::ClassDB::register_class<m_class>();     \
 	}
 #define GDREGISTER_VIRTUAL_CLASS(m_class)         \
-	if (m_class::_class_is_enabled) {             \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_class<m_class>(true); \
 	}
 #define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
 #define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
 		::ClassDB::register_internal_class<m_class>(); \
 	}
-
 #define GDREGISTER_RUNTIME_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                 \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {     \
 		::ClassDB::register_runtime_class<m_class>(); \
 	}
 

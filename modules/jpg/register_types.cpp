@@ -39,7 +39,7 @@ static MovieWriterMJPEG *writer_mjpeg = nullptr;
 void initialize_jpg_module(ModuleInitializationLevel p_level) {
 	switch (p_level) {
 		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
-			if (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
+			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
 				writer_mjpeg = memnew(MovieWriterMJPEG);
 				MovieWriter::add_writer(writer_mjpeg);
 			}
@@ -63,7 +63,7 @@ void uninitialize_jpg_module(ModuleInitializationLevel p_level) {
 		} break;
 
 		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
-			if (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
+			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
 				memdelete(writer_mjpeg);
 			}
 		} break;
