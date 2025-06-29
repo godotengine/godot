@@ -1551,16 +1551,19 @@ void TileMapLayer::_scenes_update_cell(CellData &r_cell_data) {
 	_scenes_clear_cell(r_cell_data);
 
 	// Create the scene.
-	const TileMapCell &c = r_cell_data.cell;
+	TileMapCell &c = r_cell_data.cell;
 
 	TileSetSource *source;
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
 
+		int alternative_tile = c.alternative_tile; // Store the original alternative tile value.
+		c.alternative_tile = TileSetAtlasSource::alternative_no_transform(alternative_tile); // Remove any transformation flags to get the original tile.
 		if (source->has_tile(c.get_atlas_coords()) && source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
 			TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 			if (scenes_collection_source) {
 				Ref<PackedScene> packed_scene = scenes_collection_source->get_scene_tile_scene(c.alternative_tile);
+				c.alternative_tile = alternative_tile; // Restore the original alternative tile value.
 				if (packed_scene.is_valid()) {
 					Node *scene = packed_scene->instantiate();
 					Control *scene_as_control = Object::cast_to<Control>(scene);
@@ -1571,6 +1574,8 @@ void TileMapLayer::_scenes_update_cell(CellData &r_cell_data) {
 						Transform2D xform;
 						xform.set_origin(tile_set->map_to_local(r_cell_data.coords));
 						scene_as_node2d->set_transform(xform * scene_as_node2d->get_transform());
+						int scene_rotation = _get_scene_rotation(alternative_tile);
+						scene_as_node2d->set_rotation_degrees(scene_rotation);
 					}
 					if (tile_map_node) {
 						// Compatibility with TileMap.
@@ -1630,6 +1635,23 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 	}
 }
 #endif // DEBUG_ENABLED
+
+int TileMapLayer::_get_scene_rotation(const int p_alternative_id) {
+	bool transform_flip_h = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_H;
+	bool transform_flip_v = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V;
+	bool transform_transpose = p_alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
+
+	if (transform_flip_h && !transform_flip_v && transform_transpose) {
+		return 90;
+	}
+	else if (transform_flip_h && transform_flip_v && !transform_transpose) {
+		return 180;
+	}
+	else if (!transform_flip_h && transform_flip_v && transform_transpose) {
+		return 270;
+	}
+	return 0;
+}
 
 /////////////////////////////////////////////////////////////////////
 
