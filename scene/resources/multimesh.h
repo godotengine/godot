@@ -120,6 +120,7 @@ public:
 	Color get_instance_custom_data(int p_instance) const;
 
 	void reset_instance_physics_interpolation(int p_instance);
+	void reset_instances_physics_interpolation();
 
 	void set_as_bulk_array(const PoolVector<float> &p_array);
 	void set_as_bulk_array_interpolated(const PoolVector<float> &p_array_curr, const PoolVector<float> &p_array_prev);

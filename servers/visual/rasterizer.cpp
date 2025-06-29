@@ -490,6 +490,20 @@ void RasterizerStorage::multimesh_instance_reset_physics_interpolation(RID p_mul
 	}
 }
 
+void RasterizerStorage::multimesh_instances_reset_physics_interpolation(RID p_multimesh) {
+	MMInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
+	if (mmi && mmi->_data_curr.size()) {
+		// We don't want to invoke COW here, so copy the data directly.
+		ERR_FAIL_COND(mmi->_data_prev.size() != mmi->_data_curr.size());
+		PoolVector<float>::Read read = mmi->_data_curr.read();
+		PoolVector<float>::Write write = mmi->_data_prev.write();
+
+		const float *r = read.ptr();
+		float *w = write.ptr();
+		memcpy(w, r, sizeof(float) * mmi->_data_curr.size());
+	}
+}
+
 void RasterizerStorage::_multimesh_add_to_interpolation_lists(RID p_multimesh, MMInterpolator &r_mmi) {
 	if (!r_mmi.on_interpolate_update_list) {
 		r_mmi.on_interpolate_update_list = true;
