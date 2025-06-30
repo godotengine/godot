@@ -5560,6 +5560,18 @@ Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
 	return singleton->icon_type_cache["Object"];
 }
 
+Ref<Texture2D> EditorNode::_file_dialog_get_thumbnail(const String &p_path, const Callable &p_callback) {
+	Ref<ImageTexture> texture;
+	texture.instantiate();
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, EditorNode::get_singleton(), "_file_dialog_thumbnail_callback", p_callback);
+	return texture;
+}
+
+void EditorNode::_file_dialog_thumbnail_callback(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
+	Callable callback = p_udata;
+	callback.call(p_preview);
+}
+
 void EditorNode::_build_icon_type_cache() {
 	List<StringName> tl;
 	theme->get_icon_list(EditorStringName(EditorIcons), &tl);
@@ -7217,6 +7229,8 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
 
+	ClassDB::bind_method("_file_dialog_thumbnail_callback", &EditorNode::_file_dialog_thumbnail_callback);
+
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
@@ -7734,7 +7748,8 @@ EditorNode::EditorNode() {
 	EditorContextMenuPluginManager::create();
 
 	// Used for previews.
-	FileDialog::get_icon_func = _file_dialog_get_icon;
+	FileDialog::set_get_icon_callback(callable_mp_static(_file_dialog_get_icon));
+	FileDialog::set_get_thumbnail_callback(callable_mp_static(_file_dialog_get_thumbnail));
 	FileDialog::register_func = _file_dialog_register;
 	FileDialog::unregister_func = _file_dialog_unregister;
 
@@ -8847,7 +8862,6 @@ EditorNode::~EditorNode() {
 	GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
 	GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;
 
-	FileDialog::get_icon_func = nullptr;
 	FileDialog::register_func = nullptr;
 	FileDialog::unregister_func = nullptr;
 
