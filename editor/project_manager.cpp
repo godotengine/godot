@@ -1009,21 +1009,11 @@ void ProjectManager::_set_new_tag_name(const String p_name) {
 		return;
 	}
 
-	if (p_name.contains_char(' ')) {
-		tag_error->set_text(TTRC("Tag name can't contain spaces."));
-		return;
-	}
-
 	for (const String &c : forbidden_tag_characters) {
 		if (p_name.contains(c)) {
 			tag_error->set_text(vformat(TTRC("These characters are not allowed in tags: %s."), String(" ").join(forbidden_tag_characters)));
 			return;
 		}
-	}
-
-	if (p_name.to_lower() != p_name) {
-		tag_error->set_text(TTRC("Tag name must be lowercase."));
-		return;
 	}
 
 	tag_error->set_text("");
@@ -1035,8 +1025,12 @@ void ProjectManager::_create_new_tag() {
 		return;
 	}
 	create_tag_dialog->hide(); // When using text_submitted, need to hide manually.
-	add_new_tag(new_tag_name->get_text());
-	_add_project_tag(new_tag_name->get_text());
+
+	// Enforce a valid tag name (no spaces, lowercase only) automatically.
+	// The project manager displays underscores as spaces, and capitalization is performed automatically.
+	const String new_tag = new_tag_name->get_text().strip_edges().to_lower().replace(" ", "_");
+	add_new_tag(new_tag);
+	_add_project_tag(new_tag);
 }
 
 void ProjectManager::add_new_tag(const String &p_tag) {
@@ -1817,6 +1811,7 @@ ProjectManager::ProjectManager() {
 		new_tag_name = memnew(LineEdit);
 		tag_vb->add_child(new_tag_name);
 		new_tag_name->set_accessibility_name(TTRC("New Tag Name"));
+		new_tag_name->set_placeholder(TTRC("example_tag (will display as Example Tag)"));
 		new_tag_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_set_new_tag_name));
 		new_tag_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
 		create_tag_dialog->connect("about_to_popup", callable_mp(new_tag_name, &LineEdit::clear));
