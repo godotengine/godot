@@ -1078,13 +1078,13 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		}
 		int caret_column_tmp = caret_column;
 		bool is_inside_sel = selection.enabled && caret_column >= selection.begin && caret_column <= selection.end;
-		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+		if (Input::get_singleton()->is_command_or_control_pressed()) {
 			is_inside_sel = selection.enabled && caret_column > selection.begin && caret_column < selection.end;
 		}
 		if (selection.drag_attempt) {
 			selection.drag_attempt = false;
 			if (!is_inside_sel) {
-				if (!Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+				if (!Input::get_singleton()->is_command_or_control_pressed()) {
 					if (caret_column_tmp > selection.end) {
 						caret_column_tmp = caret_column_tmp - (selection.end - selection.begin);
 					}
@@ -1627,7 +1627,7 @@ void LineEdit::_notification(int p_what) {
 			if (is_drag_successful()) {
 				if (selection.drag_attempt) {
 					selection.drag_attempt = false;
-					if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+					if (is_editable() && !Input::get_singleton()->is_command_or_control_pressed()) {
 						selection_delete();
 					} else if (deselect_on_focus_loss_enabled) {
 						deselect();
