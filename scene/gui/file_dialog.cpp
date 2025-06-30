@@ -577,6 +577,24 @@ bool FileDialog::_is_open_should_be_disabled() {
 	return false;
 }
 
+void FileDialog::_thumbnail_callback(const Ref<Texture2D> &p_texture, const String &p_path) {
+	if (display_mode == DISPLAY_LIST || p_texture.is_null()) {
+		return;
+	}
+
+	if (!p_path.begins_with(full_dir)) {
+		return;
+	}
+
+	const String file_name = p_path.get_file();
+	for (int i = 0; i < file_list->get_item_count(); i++) {
+		if (file_list->get_item_text(i) == file_name) {
+			file_list->set_item_icon(i, p_texture);
+			break;
+		}
+	}
+}
+
 void FileDialog::_go_up() {
 	_change_dir("..");
 	_push_history();
@@ -778,7 +796,7 @@ void FileDialog::update_file_list() {
 		file_list->set_max_columns(1);
 		file_list->set_max_text_lines(1);
 		file_list->set_fixed_column_width(0);
-		file_list->set_fixed_icon_size(Size2());
+		file_list->set_fixed_icon_size(theme_cache.file->get_size());
 	}
 
 	dir_access->list_dir_begin();
@@ -948,13 +966,44 @@ void FileDialog::update_file_list() {
 
 	for (const FileInfo &info : filtered_files) {
 		file_list->add_item(info.name);
-		if (get_icon_func) {
-			Ref<Texture2D> icon = get_icon_func(base_dir.path_join(info.name));
+		const String path = base_dir.path_join(info.name);
+
+		if (display_mode == DISPLAY_LIST) {
+			Ref<Texture2D> icon;
+			if (get_icon_callback.is_valid()) {
+				const Variant &v = path;
+				const Variant *argptrs[1] = { &v };
+				Variant vicon;
+
+				Callable::CallError ce;
+				get_icon_callback.callp(argptrs, 1, vicon, ce);
+				if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
+					ERR_PRINT(vformat("Error calling FileDialog's icon callback: %s.", Variant::get_callable_error_text(get_icon_callback, argptrs, 1, ce)));
+				}
+				icon = vicon;
+			}
+			if (icon.is_null()) {
+				icon = theme_cache.file;
+			}
 			file_list->set_item_icon(-1, icon);
-		} else if (display_mode == DISPLAY_THUMBNAILS) {
-			file_list->set_item_icon(-1, theme_cache.file_thumbnail);
-		} else {
-			file_list->set_item_icon(-1, theme_cache.file);
+		} else { // DISPLAY_THUMBNAILS
+			Ref<Texture2D> icon;
+			if (get_thumbnail_callback.is_valid()) {
+				const Variant &v = path;
+				const Variant *argptrs[1] = { &v };
+				Variant vicon;
+
+				Callable::CallError ce;
+				get_thumbnail_callback.callp(argptrs, 1, vicon, ce);
+				if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
+					ERR_PRINT(vformat("Error calling FileDialog's thumbnail callback: %s.", Variant::get_callable_error_text(get_thumbnail_callback, argptrs, 1, ce)));
+				}
+				icon = vicon;
+			}
+			if (icon.is_null()) {
+				icon = theme_cache.file;
+			}
+			file_list->set_item_icon(-1, icon);
 		}
 		file_list->set_item_icon_modulate(-1, theme_cache.file_icon_color);
 
@@ -1983,6 +2032,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_static_method("FileDialog", D_METHOD("get_favorite_list"), &FileDialog::get_favorite_list);
 	ClassDB::bind_static_method("FileDialog", D_METHOD("set_recent_list", "recents"), &FileDialog::set_recent_list);
 	ClassDB::bind_static_method("FileDialog", D_METHOD("get_recent_list"), &FileDialog::get_recent_list);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("set_get_icon_callback", "callback"), &FileDialog::set_get_icon_callback);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("set_get_thumbnail_callback", "callback"), &FileDialog::set_get_thumbnail_callback);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
 
@@ -2118,6 +2169,14 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 	default_show_hidden_files = p_show;
 }
 
+void FileDialog::set_get_icon_callback(const Callable &p_callback) {
+	get_icon_callback = p_callback;
+}
+
+void FileDialog::set_get_thumbnail_callback(const Callable &p_callback) {
+	get_thumbnail_callback = p_callback;
+}
+
 void FileDialog::set_use_native_dialog(bool p_native) {
 	use_native_dialog = p_native;
 
@@ -2143,6 +2202,7 @@ FileDialog::FileDialog() {
 	set_hide_on_ok(false);
 	set_size(Size2(640, 360));
 	set_default_ok_text(ETR("Save")); // Default mode text.
+	thumbnail_callback = callable_mp(this, &FileDialog::_thumbnail_callback);
 
 	for (int i = 0; i < CUSTOMIZATION_MAX; i++) {
 		customization_flags[i] = true;

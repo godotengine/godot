@@ -146,10 +146,11 @@ public:
 		CUSTOMIZATION_MAX
 	};
 
-	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(FileDialog *);
 
-	inline static GetIconFunc get_icon_func = nullptr;
+	inline static Callable get_icon_callback;
+	inline static Callable get_thumbnail_callback;
+
 	inline static RegisterFunc register_func = nullptr;
 	inline static RegisterFunc unregister_func = nullptr;
 
@@ -189,6 +190,7 @@ private:
 	String root_prefix;
 	String full_dir;
 
+	Callable thumbnail_callback;
 	bool is_invalidating = false;
 
 	VBoxContainer *main_vbox = nullptr;
@@ -338,6 +340,7 @@ private:
 	void _native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
 
 	bool _is_open_should_be_disabled();
+	void _thumbnail_callback(const Ref<Texture2D> &p_texture, const String &p_path);
 
 	TypedArray<Dictionary> _get_options() const;
 	void _update_option_controls();
@@ -429,6 +432,9 @@ public:
 	bool get_show_filename_filter() const;
 
 	static void set_default_show_hidden_files(bool p_show);
+
+	static void set_get_icon_callback(const Callable &p_callback);
+	static void set_get_thumbnail_callback(const Callable &p_callback);
 
 	void invalidate();
 
