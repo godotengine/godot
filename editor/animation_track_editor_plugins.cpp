@@ -894,7 +894,7 @@ void AnimationTrackEditClip::gui_input(const Ref<InputEvent> &p_event) {
 		len_resizing_from_px = mb->get_position().x;
 		len_resizing_rel = 0;
 
-		emit_signal(SNAME("select_key"), len_resizing_index, true);
+		_select_key(len_resizing_index, true);
 
 		queue_redraw();
 		accept_event();
@@ -922,9 +922,9 @@ void AnimationTrackEditClip::gui_input(const Ref<InputEvent> &p_event) {
 				set_start_offset(len_resizing_index, prev_ofs, new_ofs);
 				undo_redo->commit_action();
 
-				emit_signal(SNAME("move_selection_begin"));
-				emit_signal(SNAME("move_selection"), offset);
-				emit_signal(SNAME("move_selection_commit"));
+				_move_selection_begin();
+				_move_selection(offset);
+				_move_selection_commit();
 			}
 		} else {
 			float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();

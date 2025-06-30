@@ -345,8 +345,8 @@ public:
 	virtual void _move_selection_cancel() {}
 
 public:
-	virtual void try_select(const int p_index, bool p_is_single) = 0;
-	virtual void try_deselect(const int p_index) = 0;
+	virtual void _select_key(const int p_index, bool p_is_single) = 0;
+	virtual void _deselect_key(const int p_index) = 0;
 
 protected:
 	virtual int get_key_count() const = 0;
@@ -439,8 +439,11 @@ public:
 	virtual bool is_compressed() const = 0;
 	virtual Vector<int> get_selected_section() = 0;
 
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 protected:
 	virtual void create_popup_menu(PopupMenu *p_menu, bool p_selected) {}
+	virtual void _on_pressed(const Ref<InputEvent> &p_event) {}
 	virtual void _on_mouse_pressed(const Ref<InputEventMouseButton> &mb) {}
 	virtual void _on_mouse_unpressed(const Ref<InputEventMouseButton> &mb) {}
 	void show_popup_menu(Ref<InputEventMouseButton> &mb);
@@ -466,8 +469,6 @@ class AnimationMarkerEdit : public AnimationKeyEdit {
 	void _play_position_draw();
 
 	virtual void _clear_selection_for_anim(const Ref<Animation> &p_anim) override;
-	void _select_key(const StringName &p_name, bool is_single = false);
-	void _deselect_key(const StringName &p_name);
 
 	void _insert_marker(float p_ofs);
 	void _rename_marker(const StringName &p_name);
@@ -505,8 +506,6 @@ class AnimationMarkerEdit : public AnimationKeyEdit {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual float get_key_width(const int p_index) const override;
@@ -548,8 +547,8 @@ public:
 	// For use by AnimationTrackEditor.
 	void _clear_selection(bool p_update);
 
-	virtual void try_select(const int p_index, bool is_single) override;
-	virtual void try_deselect(const int p_index) override;
+	virtual void _select_key(const int p_index, bool is_single) override;
+	virtual void _deselect_key(const int p_index) override;
 
 	virtual bool is_compressed() const override;
 
@@ -576,6 +575,7 @@ public:
 
 protected:
 	virtual void create_popup_menu(PopupMenu *p_menu, bool p_selected) override;
+	virtual void _on_pressed(const Ref<InputEvent> &p_event) override;
 	virtual void _on_mouse_pressed(const Ref<InputEventMouseButton> &mb) override;
 	virtual void _on_mouse_unpressed(const Ref<InputEventMouseButton> &mb) override;
 
@@ -645,8 +645,6 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-
 	Node *get_root() const { return root; }
 
 public:
@@ -706,14 +704,20 @@ public:
 	void set_in_group(bool p_enable);
 	void append_to_selection(const Rect2 &p_box, bool p_deselection);
 
-	virtual void try_select(const int p_index, bool is_single) override;
-	virtual void try_deselect(const int p_index) override;
+	virtual void _select_key(const int p_index, bool is_single) override;
+	virtual void _deselect_key(const int p_index) override;
+
+	virtual void _move_selection_begin() override;
+	virtual void _move_selection(float p_offset) override;
+	virtual void _move_selection_commit() override;
+	virtual void _move_selection_cancel() override;
 
 public:
 	int _get_theme_font_height(float p_scale) const;
 
 protected:
 	virtual void create_popup_menu(PopupMenu *p_menu, bool p_selected) override;
+	virtual void _on_pressed(const Ref<InputEvent> &p_event) override;
 	virtual void _on_mouse_pressed(const Ref<InputEventMouseButton> &mb) override;
 	virtual void _on_mouse_unpressed(const Ref<InputEventMouseButton> &mb) override;
 
@@ -914,12 +918,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	bool moving_track_selection = false;
 	float moving_track_selection_offset = 0.0f;
-
-	void _move_selection_begin();
-	void _move_selection(float p_offset);
-	void _move_selection_commit();
-	void _move_selection_cancel();
-
+	
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();
@@ -1052,6 +1051,12 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_snap_unit();
 
 public:
+	void _move_selection_begin();
+	void _move_selection(float p_offset);
+	void _move_selection_commit();
+	void _move_selection_cancel();
+
+public:
 	void _draw_rect_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, bool p_filled, const float p_clip_left, const float p_clip_right);
 	void _draw_grid_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, int p_raster_size, const float p_clip_left, const float p_clip_right);
 	void _draw_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, const float p_width, const float p_clip_left, const float p_clip_right);
@@ -1076,8 +1081,9 @@ public:
 public:
 	// Public for use with callable_mp.
 	void _clear_selection(bool p_update = false);
-	void _key_selected(int p_key, bool p_single, int p_track);
-	void _key_deselected(int p_key, int p_track);
+
+	void _select_key(const int p_key, const bool p_single, const int p_track);
+	void _deselect_key(const int p_key, const int p_track);
 
 	enum {
 		EDIT_COPY_TRACKS,
