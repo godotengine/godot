@@ -818,34 +818,24 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			bool MOVING_DOWN = (p_tool == TOOL_MOVE_DOWN);
 			bool MOVING_UP = !MOVING_DOWN;
 
-			Node *common_parent = scene_tree->get_selected()->get_parent();
-			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			List<Node *> selection = editor_selection->get_full_selected_node_list();
 			selection.sort_custom<Node::Comparator>(); // sort by index
 			if (MOVING_DOWN) {
 				selection.reverse();
 			}
 
-			int lowest_id = common_parent->get_child_count(false) - 1;
-			int highest_id = 0;
+			bool is_nowhere_to_move = false;
 			for (Node *E : selection) {
 				// `move_child` + `get_index` doesn't really work for internal nodes.
 				ERR_FAIL_COND_MSG(E->is_internal(), "Trying to move internal node, this is not supported.");
-				int index = E->get_index(false);
 
-				if (index > highest_id) {
-					highest_id = index;
-				}
-				if (index < lowest_id) {
-					lowest_id = index;
-				}
-
-				if (E->get_parent() != common_parent) {
-					common_parent = nullptr;
+				if ((MOVING_DOWN && (E->get_index() == E->get_parent()->get_child_count(false) - 1)) || (MOVING_UP && (E->get_index() == 0))) {
+					is_nowhere_to_move = true;
+					break;
 				}
 			}
-
-			if (!common_parent || (MOVING_DOWN && highest_id >= common_parent->get_child_count(false) - MOVING_DOWN) || (MOVING_UP && lowest_id == 0)) {
-				break; // one or more nodes can not be moved
+			if (is_nowhere_to_move) {
+				break;
 			}
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
