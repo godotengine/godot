@@ -3283,6 +3283,12 @@ void Control::_notification(int p_notification) {
 			saving = false;
 		} break;
 #endif // TOOLS_ENABLED
+		case NOTIFICATION_PREDELETE: {
+			if (spx_owner != nullptr) {
+				spx_owner->on_destroy_call();
+			}
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			data.initialized = true;
 

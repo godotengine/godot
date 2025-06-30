@@ -8,6 +8,8 @@
  * @module Engine
  * @header Web export JavaScript reference
  */
+var GodotModule = null;
+var GodotEngine = null;
 const Engine = (function () {
 	const preloader = new Preloader();
 
@@ -74,40 +76,35 @@ const Engine = (function () {
 			 * @param {string=} basePath Base path of the engine to load.
 			 * @return {Promise} A ``Promise`` that resolves once the engine is loaded and initialized.
 			 */
-			init: function (basePath) {
-				if (initPromise) {
-					return initPromise;
+			init: function () {
+				if(initPromise != null){
+					return Promise.resolve();
 				}
-				if (loadPromise == null) {
-					if (!basePath) {
-						initPromise = Promise.reject(new Error('A base path must be provided when calling `init` and the engine is not loaded.'));
-						return initPromise;
-					}
-					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`]);
-				}
+				loadPath = this.config.executable;
+				GodotEngine = this;
 				const me = this;
-				function doInit(promise) {
+				function doInit() {
 					// Care! Promise chaining is bogus with old emscripten versions.
 					// This caused a regression with the Mono build (which uses an older emscripten version).
 					// Make sure to test that when refactoring.
 					return new Promise(function (resolve, reject) {
-						promise.then(function (response) {
-							const cloned = new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] });
-							Godot(me.config.getModuleConfig(loadPath, cloned)).then(function (module) {
-								const paths = me.config.persistentPaths;
-								module['initFS'](paths).then(function (err) {
-									me.rtenv = module;
-									if (me.config.unloadAfterInit) {
-										Engine.unload();
-									}
-									resolve();
-								});
+						// Now proceed with Godot and other logic
+						gdmodule = me.config.getModuleConfig(loadPath, me.config.wasmEngine);
+						Godot(gdmodule).then(function (module) {
+							GodotModule = gdmodule
+							const paths = me.config.persistentPaths;
+							module['initFS'](paths).then(function (err) {
+								me.rtenv = module;
+								if (me.config.unloadAfterInit) {
+									Engine.unload();
+								}
+								resolve();
 							});
 						});
 					});
 				}
 				preloader.setProgressFunc(this.config.onProgress);
-				initPromise = doInit(loadPromise);
+				initPromise = doInit();
 				return initPromise;
 			},
 
@@ -130,7 +127,15 @@ const Engine = (function () {
 			preloadFile: function (file, path) {
 				return preloader.preload(file, path, this.config.fileSizes[file]);
 			},
-
+			unpackGameData: function (dir, datas) {
+				files = []
+				this.rtenv['deleteDirFS'](dir);
+				for (let info of datas) {
+					files.push(info.path)
+					this.rtenv['copyToFS'](dir + "/" + info.path, info.data);
+				}
+				this.rtenv['updateGameDatas'](dir, files);
+			},
 			/**
 			 * Start the engine instance using the given override configuration (if any).
 			 * :js:meth:`startGame <Engine.prototype.startGame>` can be used in typical cases instead.
@@ -151,6 +156,7 @@ const Engine = (function () {
 						return Promise.reject(new Error('The engine must be initialized before it can be started'));
 					}
 
+					initPromise = null
 					let config = {};
 					try {
 						config = me.config.getGodotConfig(function () {
@@ -167,16 +173,28 @@ const Engine = (function () {
 						return Promise.reject(new Error('GDExtension libraries are not supported by this engine version. '
 							+ 'Enable "Extensions Support" for your export preset and/or build your custom template with "dlink_enabled=yes".'));
 					}
-					return new Promise(function (resolve, reject) {
-						for (const file of preloader.preloadedFiles) {
-							me.rtenv['copyToFS'](file.path, file.buffer);
+					me.config.gdextensionLibs.forEach(function (lib) {
+						// gdspx is special, it must be loaded before the others.
+						if(lib.startsWith('gdspx')) {
+							console.log('Loading gdspx dynamic library:', lib);
+							return 
 						}
-						preloader.preloadedFiles.length = 0; // Clear memory
-						me.rtenv['callMain'](me.config.args);
-						initPromise = null;
-						me.installServiceWorker();
-						resolve();
+						libs.push(me.rtenv['loadDynamicLibrary'](lib, { 'loadAsync': true }));
 					});
+					function executeMainLogic() {
+						return new Promise(function (resolve, reject) {
+							preloader.preloadedFiles.forEach(function (file) {
+								me.rtenv['copyToFS'](file.path, file.buffer);
+							});
+							preloader.preloadedFiles.length = 0; // Clear memory
+							me.rtenv['callMain'](me.config.args);
+							initPromise = null;
+							me.installServiceWorker();
+							resolve();
+						});
+					}
+					return executeMainLogic();
+					
 				});
 			},
 
@@ -194,6 +212,7 @@ const Engine = (function () {
 			 * @return {Promise} Promise that resolves once the game started.
 			 */
 			startGame: function (override) {
+				GodotEngine = this;
 				this.config.update(override);
 				// Add main-pack argument.
 				const exe = this.config.executable;

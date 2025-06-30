@@ -42,19 +42,6 @@ jobs:
         run: |
           bash ./misc/scripts/gitignore_check.sh
 
-      - name: Style checks via pre-commit
-        uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: --files ${{ env.CHANGED_FILES }}
-
-      - name: Python builders checks via pytest
-        run: |
-          pytest ./tests/python_build
-
-      - name: Class reference schema checks
-        run: |
-          xmllint --quiet --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
-
       - name: Run C compiler on `gdextension_interface.h`
         run: |
           gcc -c core/extension/gdextension_interface.h

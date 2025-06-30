@@ -129,6 +129,7 @@ protected:
 public:
 	void initialize_theme();
 	void initialize_theme_noproject();
+	void set_default_font(Ref<Font> font);
 	void finalize_theme();
 
 	// Global Theme resources.

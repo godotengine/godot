@@ -46,6 +46,9 @@ class CollisionShape2D : public Node2D {
 	bool one_way_collision = false;
 	real_t one_way_collision_margin = 1.0;
 
+	// spx
+	bool is_enable_spx_debug;
+
 	void _shape_changed();
 	void _update_in_shape_owner(bool p_xform_only = false);
 
@@ -89,6 +92,7 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	void set_spx_debug_color(const Color &p_color);
 	CollisionShape2D();
 };
 

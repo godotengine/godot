@@ -31,6 +31,8 @@
 #include "animated_sprite_2d.h"
 
 #include "scene/main/viewport.h"
+#include "scene/resources/atlas_texture.h"
+#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite2D::_edit_get_state() const {
@@ -83,6 +85,39 @@ Rect2 AnimatedSprite2D::get_anchorable_rect() const {
 	return _get_rect();
 }
 
+Rect2 AnimatedSprite2D::get_uv_rect() const {
+	auto default_uv = Rect2(0, 0, 1, 1);
+	if (frames.is_null() || !frames->has_animation(animation)) {
+		return default_uv;
+	}
+	if (frame < 0 || frame >= frames->get_frame_count(animation)) {
+		return default_uv;
+	}
+
+	Ref<Texture2D> t;
+	if (animation) {
+		t = frames->get_frame_texture(animation, frame);
+	}
+	if (t.is_null()) {
+		return default_uv;
+	}
+	Ref<AtlasTexture> tex_ref = Object::cast_to<AtlasTexture>(t.ptr());
+	if (!tex_ref.is_valid()) {
+		return default_uv;
+	}
+	auto region = tex_ref->get_region();
+	auto altas_tex = tex_ref->get_atlas();
+	if (!altas_tex.is_valid()) {
+		return default_uv;
+	}
+	auto size = altas_tex->get_size();
+	auto uv = Rect2();
+	uv.position.x = region.position.x / size.width;
+	uv.position.y = region.position.y / size.height;
+	uv.size.x = region.size.x / size.width;
+	uv.size.y = region.size.y / size.height;
+	return uv;
+}
 Rect2 AnimatedSprite2D::_get_rect() const {
 	if (frames.is_null() || !frames->has_animation(animation)) {
 		return Rect2();

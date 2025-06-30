@@ -31,9 +31,11 @@
 #ifndef RESOURCE_IMPORTER_WAV_H
 #define RESOURCE_IMPORTER_WAV_H
 
+#include "core/extension/spx_importer_wav.h"
 #include "core/io/resource_importer.h"
 #include "scene/resources/audio_stream_wav.h"
 
+class AudioStreamWAV;
 class ResourceImporterWAV : public ResourceImporter {
 	GDCLASS(ResourceImporterWAV, ResourceImporter);
 
@@ -53,6 +55,11 @@ public:
 	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	virtual bool can_import_threaded() const override { return true; }
+	static void _compress_ima_adpcm(const Vector<float> &p_data, Vector<uint8_t> &dst_data) {
+		return SpxImporterWav::_compress_ima_adpcm(p_data,dst_data);
+	}
+
+	virtual Error import_asset(Ref<AudioStreamWAV>& ret_ref,const String &p_source_file,const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
 
 	ResourceImporterWAV();
 };

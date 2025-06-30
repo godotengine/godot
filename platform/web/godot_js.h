@@ -133,6 +133,11 @@ extern void godot_js_display_vk_cb(void (*p_input)(const char *p_text, int p_cur
 extern void godot_js_display_vk_show(const char *p_text, int p_type, int p_start, int p_end);
 extern void godot_js_display_vk_hide();
 
+//spx extension
+extern void godot_js_on_game_datas_set_callback(void (*p_callback)(const char *p_path, const char **p_filev, int p_filec));
+extern void godot_js_display_window_size_get_ext(int32_t *p_x, int32_t *p_y);
+#include "godot_js_spx.h"
+
 #ifdef __cplusplus
 }
 #endif

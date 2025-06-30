@@ -841,7 +841,9 @@ class Bus {
 	 */
 	static getBus(index) {
 		if (index < 0 || index >= GodotAudio.buses.length) {
-			throw new ReferenceError(`invalid bus index "${index}"`);
+			// spxext fix: invalid bus index
+			//throw new ReferenceError(`invalid bus index "${index}"`);
+			index = 0;
 		}
 		return GodotAudio.buses[index];
 	}

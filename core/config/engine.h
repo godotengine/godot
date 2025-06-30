@@ -90,6 +90,7 @@ private:
 	bool recovery_mode_hint = false;
 
 	bool _print_header = true;
+	String install_project_name = "";
 
 	static Engine *singleton;
 
@@ -154,6 +155,8 @@ public:
 	bool is_singleton_user_created(const StringName &p_name) const;
 	bool is_singleton_editor_only(const StringName &p_name) const;
 
+	_FORCE_INLINE_ void set_install_project_name(String p_name) { install_project_name = p_name; }
+	_FORCE_INLINE_ String get_install_project_name() const { return install_project_name; }
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_editor_hint() const { return editor_hint; }

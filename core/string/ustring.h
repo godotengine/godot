@@ -321,6 +321,7 @@ class String {
 	String _camelcase_to_underscore() const;
 
 public:
+	String clone() const;
 	enum {
 		npos = -1 ///<for "some" compatibility with std::string (npos is a huge value in std::string)
 	};

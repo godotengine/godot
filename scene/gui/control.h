@@ -43,8 +43,18 @@ class Panel;
 class ThemeOwner;
 class ThemeContext;
 
+class ISpxUi {
+public:
+	virtual void on_destroy_call() = 0;
+	virtual void on_start() = 0;
+	virtual int64_t get_gid() = 0;
+	virtual ~ISpxUi() = default; // Added virtual destructor to fix -Werror=non-virtual-dtor
+};
+
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
+public:
+	ISpxUi *spx_owner = nullptr;
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
@@ -457,6 +467,11 @@ public:
 	GrowDirection get_h_grow_direction() const;
 	void set_v_grow_direction(GrowDirection p_direction);
 	GrowDirection get_v_grow_direction() const;
+
+	// spx export
+	void set_layout_mode(LayoutMode mode){ return _set_layout_mode(mode);}
+	int get_layout_mode() const { return _get_layout_mode();}
+	int get_anchors_preset() const { return _get_anchors_layout_preset();}
 
 	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets = true);
 	void set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);

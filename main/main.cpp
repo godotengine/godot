@@ -37,6 +37,7 @@
 #include "core/extension/extension_api_dump.h"
 #include "core/extension/gdextension_interface_dump.gen.h"
 #include "core/extension/gdextension_manager.h"
+#include "core/extension/spx.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
@@ -189,6 +190,7 @@ static int audio_driver_idx = -1;
 static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
+static String install_project_name = "";
 static bool cmdline_tool = false;
 static String locale;
 static String log_file;
@@ -666,6 +668,9 @@ void Main::print_help(const char *p_binary) {
 #ifdef TESTS_ENABLED
 	print_help_option("--test [--help]", "Run unit tests. Use --test --help for more information.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
+    // spx args
+	print_help_option("--gdextpath <path>","Specify the gdextension path. The path should be absolute.\n");
+
 #endif
 	OS::get_singleton()->print("\n");
 }
@@ -1815,6 +1820,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
+		} else if (arg == "--gdextpath") { // set path of project to start or edit
+			if (N) {
+				GDExtension::ext_path = N->get();
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing relative or absolute gdextension path, aborting.\n");
+				goto error;
+			}
 		} else {
 			main_args.push_back(arg);
 		}
@@ -3991,7 +4004,7 @@ int Main::start() {
 	}
 
 	OS::get_singleton()->set_main_loop(main_loop);
-
+	Spx::register_types();
 	SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
 	if (sml) {
 #ifdef DEBUG_ENABLED
@@ -4329,6 +4342,7 @@ int Main::start() {
 			}
 
 			OS::get_singleton()->benchmark_end_measure("Startup", "Load Game");
+			Spx::on_start(sml);
 		}
 
 #ifdef TOOLS_ENABLED
@@ -4481,7 +4495,7 @@ bool Main::iteration() {
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
-
+		Spx::on_fixed_update(physics_step * time_scale);
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
 #ifndef _3D_DISABLED
 			PhysicsServer3D::get_singleton()->end_sync();
@@ -4556,6 +4570,7 @@ bool Main::iteration() {
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
+	Spx::on_update(process_step * time_scale);
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
 	}
@@ -4687,6 +4702,8 @@ void Main::cleanup(bool p_force) {
 
 	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
+
+	Spx::on_destroy();
 
 	OS::get_singleton()->delete_main_loop();
 
