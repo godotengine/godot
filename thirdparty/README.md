@@ -579,7 +579,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.48 (ea127968204cc5d10f3fc9250c306b9e8cbd9b80, 2025)
+- Version: 1.6.49 (640204280f8109d7165f95d2b177f89baf20b253, 2025)
 - License: libpng/zlib
 
 Files extracted from upstream source:

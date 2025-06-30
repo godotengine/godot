@@ -809,7 +809,8 @@ png_read_destroy(png_structrp png_ptr)
 #endif
 
 #if defined(PNG_READ_EXPAND_SUPPORTED) && \
-    defined(PNG_ARM_NEON_IMPLEMENTATION)
+    (defined(PNG_ARM_NEON_IMPLEMENTATION) || \
+     defined(PNG_RISCV_RVV_IMPLEMENTATION))
    png_free(png_ptr, png_ptr->riffled_palette);
    png_ptr->riffled_palette = NULL;
 #endif

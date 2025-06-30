@@ -13,7 +13,7 @@
 #include "pngpriv.h"
 
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef png_libpng_version_1_6_48 Your_png_h_is_not_version_1_6_48;
+typedef png_libpng_version_1_6_49 Your_png_h_is_not_version_1_6_49;
 
 /* Sanity check the chunks definitions - PNG_KNOWN_CHUNKS from pngpriv.h and the
  * corresponding macro definitions.  This causes a compile time failure if
@@ -815,7 +815,7 @@ png_get_copyright(png_const_structrp png_ptr)
    return PNG_STRING_COPYRIGHT
 #else
    return PNG_STRING_NEWLINE \
-      "libpng version 1.6.48" PNG_STRING_NEWLINE \
+      "libpng version 1.6.49" PNG_STRING_NEWLINE \
       "Copyright (c) 2018-2025 Cosmin Truta" PNG_STRING_NEWLINE \
       "Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" \
       PNG_STRING_NEWLINE \
