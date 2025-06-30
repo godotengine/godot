@@ -3546,7 +3546,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_SHOW_IN_EXPLORER), is_directory ? TTRC("Open in File Manager") : TTRC("Show in File Manager"));
 
 		if (is_directory && bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
-			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
 		}
 #endif
 
@@ -3597,7 +3597,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
 	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
 	if (bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
-		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
+		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
 	}
 	
 #endif
@@ -3677,7 +3677,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
 
 	if (bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
-		file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
+		file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
 	}
 
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
