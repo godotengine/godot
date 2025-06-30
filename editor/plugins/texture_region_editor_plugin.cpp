@@ -395,7 +395,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 						for (const Rect2 &E : autoslice_cache) {
 							if (E.has_point(point)) {
 								rect = E;
-								if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !(Input::get_singleton()->is_key_pressed(Key(Key::SHIFT | Key::ALT)))) {
+								if (Input::get_singleton()->is_command_or_control_pressed() && !(Input::get_singleton()->is_key_pressed(Key(Key::SHIFT | Key::ALT)))) {
 									Rect2 r;
 									if (node_sprite_2d) {
 										r = node_sprite_2d->get_region_rect();

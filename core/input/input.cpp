@@ -312,6 +312,20 @@ bool Input::is_anything_pressed_except_mouse() const {
 	return false;
 }
 
+bool Input::is_command_or_control_pressed() const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		return keys_pressed.has(Key::META);
+	} else {
+		return keys_pressed.has(Key::CTRL);
+	}
+}
+
 bool Input::is_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 
