@@ -542,8 +542,13 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 	}
 
 	_compute_node_heights(p_state);
-	Error err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons,
-			p_state->get_import_as_skeleton_bones() ? p_state->root_nodes : Vector<GLTFNodeIndex>());
+
+	Error err = OK;
+	if (p_state->get_import_as_skeleton_bones()) {
+		err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->root_nodes, true);
+	} else {
+		err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, Vector<GLTFNodeIndex>(), false);
+	}
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	err = SkinTool::_create_skins(p_state->skins, p_state->nodes, p_state->use_named_skin_binds, p_state->unique_names);
