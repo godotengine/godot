@@ -369,6 +369,7 @@ private:
 	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 	void _update_thumbnail_size(int p_thumbnail_size);
+	void _update_thumbnail_tooltip();
 
 private:
 	inline static FileSystemDock *singleton = nullptr;
