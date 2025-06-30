@@ -2215,6 +2215,25 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_OPEN_IN_EXTERNAL_EDITOR: {
+			String fpath = current_path;
+
+			const String text_editor_exec_path_setting = EDITOR_GET("text_editor/external/exec_path");
+			if (text_editor_exec_path_setting.is_empty()) {
+				EditorNode::get_singleton()->show_warning(TTR("External editor path is empty."));
+				return;
+			}
+			
+			List<String> args;
+
+			args.push_back(ProjectSettings::get_singleton()->globalize_path(fpath));
+			Error err = OS::get_singleton()->execute(text_editor_exec_path_setting, args, nullptr, nullptr, false);
+			if (err != OK) {
+				EditorNode::get_singleton()->show_warning(vformat(TTR("Could not start external editor: %s"), text_editor_exec_path_setting));
+			}
+
+		} break;
+
 		case FILE_MENU_OPEN_IN_TERMINAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
@@ -2679,6 +2698,8 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_OPEN_EXTERNAL;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_key)) {
 		return FILE_MENU_OPEN_IN_TERMINAL;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_editor", p_key)) {
+		return FILE_MENU_OPEN_IN_EXTERNAL_EDITOR;
 	} else if (ED_IS_SHORTCUT("file_dialog/focus_path", p_key)) {
 		return EXTRA_FOCUS_PATH;
 	} else if (ED_IS_SHORTCUT("editor/open_search", p_key)) {
@@ -3523,6 +3544,10 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
 		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_SHOW_IN_EXPLORER), is_directory ? TTRC("Open in File Manager") : TTRC("Show in File Manager"));
+
+		if (is_directory && bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
+		}
 #endif
 
 		current_path = fpath;
@@ -3571,6 +3596,10 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->add_separator();
 	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
 	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
+	if (bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
+		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
+	}
+	
 #endif
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
@@ -3646,6 +3675,10 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
+
+	if (bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
+		file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
+	}
 
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
@@ -4168,6 +4201,7 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTRC("Open in File Manager"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R);
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTRC("Open in External Program"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::E);
 	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTRC("Open in Terminal"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
+	ED_SHORTCUT("filesystem_dock/open_in_external_editor", TTRC("Open in External Editor"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::Y);
 #endif
 
 	// Properly translating color names would require a separate HashMap, so for simplicity they are provided as comments.
