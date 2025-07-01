@@ -369,7 +369,7 @@ protected:
 	virtual void draw_fg(const float p_clip_left, const float p_clip_right) {}
 	
 	void draw_timeline(const float p_clip_left, const float p_clip_right);
-	void draw_edit_text(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right, const bool outside = false);
+	void draw_edit_text(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right, const bool outside = false, const float p_offset_y = 0);
 
 public:
 	Control *play_cursor = nullptr; // Separate control used to draw so updates for only position changed are much faster.
@@ -426,6 +426,9 @@ public:
 	RBMap<SelectedKey, KeyInfo> selection;
 
 public:
+	int get_selection_count() const;
+	bool is_selection_active() const;
+
 	virtual bool has_valid_track() const override;
 	virtual Size2 get_minimum_size() const override;
 	virtual float get_track_height() const;
@@ -447,6 +450,8 @@ protected:
 	virtual void _on_mouse_pressed(const Ref<InputEventMouseButton> &mb) {}
 	virtual void _on_mouse_unpressed(const Ref<InputEventMouseButton> &mb) {}
 	void show_popup_menu(Ref<InputEventMouseButton> &mb);
+
+	void _on_mouse_release(const Ref<InputEventMouseButton> &mb, bool handle_timeline = false);
 };
 
 class AnimationMarkerEdit : public AnimationKeyEdit {
@@ -558,9 +563,7 @@ public:
 	virtual void _move_selection_cancel() override;
 
 	void clear_selection();
-	int get_selection_count() const;
 	void insert_selection(const int p_index);
-	bool is_selection_active() const;
 
 	virtual Vector<int> get_selected_section() override;
 	int get_last_selection();
@@ -918,7 +921,9 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	bool moving_track_selection = false;
 	float moving_track_selection_offset = 0.0f;
-	
+
+	int get_selection_count() const { return selection.size(); }
+
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();

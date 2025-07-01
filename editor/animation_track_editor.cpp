@@ -2268,6 +2268,14 @@ void AnimationTimelineEdit::_bind_methods() {
 
 /// KEY EDIT ///
 
+int AnimationKeyEdit::get_selection_count() const {
+	return selection.size();
+}
+
+bool AnimationKeyEdit::is_selection_active() const {
+	return get_selection_count() > 0;
+}
+
 void AnimationKeyEdit::show_popup_menu(Ref<InputEventMouseButton> &mb) {
 	Point2 pos = mb->get_position();
 
@@ -2399,15 +2407,20 @@ HBoxContainer *AnimationMarkerEdit::_create_hbox_labeled_control(const String &p
 
 void AnimationMarkerEdit::_update_key_edit() {
 	_clear_key_edit();
+
 	if (animation.is_null()) {
 		return;
 	}
 
 	if (get_selection_count() == 1) {
+		RBMap<SelectedKey, KeyInfo>::Iterator E = selection.front();
+		KeyInfo ki = E->value;
+		StringName marker_name = ki.data;
+
 		key_edit = memnew(AnimationMarkerKeyEdit);
 		key_edit->animation = animation;
 		key_edit->animation_read_only = read_only;
-		key_edit->marker_name = get_key_name(get_first_selection());
+		key_edit->marker_name = marker_name;
 		key_edit->use_fps = timeline->is_using_fps();
 		key_edit->marker_edit = this;
 
@@ -2421,10 +2434,9 @@ void AnimationMarkerEdit::_update_key_edit() {
 		multi_key_edit->marker_edit = this;
 
 		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
-			SelectedKey key = E->key;
-			int key_index = key.key;
+			KeyInfo ki = E->value;
+			StringName marker_name = ki.data;
 
-			StringName marker_name = get_key_name(key_index);
 			multi_key_edit->marker_names.push_back(marker_name);
 		}
 
@@ -2542,11 +2554,7 @@ Color KeyEdit::get_key_color(const int p_index) const {
 	return color;
 }
 
-void KeyEdit::draw_edit_text(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right, const bool outside) {
-	if (p_selected) {
-		return;
-	}
-
+void KeyEdit::draw_edit_text(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right, const bool outside, const float p_offset_y) {
 	float clip_r = p_clip_right - REGION_FONT_MARGIN;
 	if (get_key_count() > p_index + 1) {
 		Rect2 rect_next = get_global_key_rect(p_index + 1);
@@ -2567,16 +2575,18 @@ void KeyEdit::draw_edit_text(const int p_index, const Rect2 &p_global_rect, cons
 	if (max_width > 0) {
 		const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-		color.a = 0.5;
-
+		
 		String key_name = get_edit_name(p_index);
 		Color key_color = get_key_color(p_index);
 		String edit_name = editor->_make_text_clipped(key_name, font, font_size, max_width);
 
-		int f_h = int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
+		if (p_selected) {
+			key_color.a = 0.2;
+		}
+
+		float f_h = ((p_global_rect.position.y + p_global_rect.size.y / 2) - font->get_height(font_size) / 2) + font->get_ascent(font_size) + p_offset_y;
+		draw_string_outline(font, Vector2(text_pos, f_h), edit_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, 2, key_color.darkened(0.8));
 		draw_string(font, Vector2(text_pos, f_h), edit_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, key_color);
-		draw_string_outline(font, Vector2(text_pos, f_h), edit_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, 1, color);
 	}
 }
 
@@ -3705,20 +3715,7 @@ void AnimationTrackEdit::_on_mouse_unpressed(const Ref<InputEventMouseButton> &m
 		clicking_on_name = false;
 	}
 
-	if (moving_selection_attempt) {
-		moving_selection_attempt = false;
-		if (is_moving_selection() && moving_selection_effective) {
-			float offset = get_moving_selection_offset();
-			if (Math::abs(offset) > CMP_EPSILON) {
-				_move_selection_commit();
-				accept_event(); // So play position doesn't snap to the end of move selection.
-			}
-		} else if (selected_key_idx != -1) {
-			_select_key(selected_key_idx, true);
-		}
-		set_moving_selection(false);
-		selected_key_idx = -1;
-	}
+	_on_mouse_release(mb);
 }
 
 void AnimationTrackEdit::_select_key(const int p_index, bool p_is_single) {
@@ -6360,24 +6357,29 @@ void AnimationTrackEditor::_clear_selection(bool p_update) {
 
 void AnimationTrackEditor::_update_key_edit() {
 	_clear_key_edit();
+
 	if (animation.is_null()) {
 		return;
 	}
 
-	if (selection.size() == 1) {
+	if (get_selection_count() == 1) {
+		RBMap<SelectedKey, KeyInfo>::Iterator E = selection.front();
+		const SelectedKey &sk = E->key;
+
 		key_edit = memnew(AnimationTrackKeyEdit);
 		key_edit->animation = animation;
 		key_edit->animation_read_only = read_only;
-		key_edit->track = selection.front()->key().track;
+		key_edit->track = sk.track;
 		key_edit->use_fps = timeline->is_using_fps();
 		key_edit->editor = this;
 
-		int key_id = selection.front()->key().key;
-		if (key_id >= animation->track_get_key_count(key_edit->track)) {
+		int key_index = selection.front()->key().key;
+		if (key_index >= animation->track_get_key_count(key_edit->track)) {
 			_clear_key_edit();
 			return; // Probably in the process of rearranging the keys.
 		}
-		float ofs = animation->track_get_key_time(key_edit->track, key_id);
+
+		float ofs = animation->track_get_key_time(key_edit->track, key_index);
 		key_edit->key_ofs = ofs;
 		key_edit->root_path = root;
 
@@ -6386,7 +6388,7 @@ void AnimationTrackEditor::_update_key_edit() {
 		key_edit->base = np;
 
 		EditorNode::get_singleton()->push_item(key_edit);
-	} else if (selection.size() > 1) {
+	} else if (get_selection_count() > 1) {
 		multi_key_edit = memnew(AnimationMultiTrackKeyEdit);
 		multi_key_edit->animation = animation;
 		multi_key_edit->animation_read_only = read_only;
@@ -6395,8 +6397,12 @@ void AnimationTrackEditor::_update_key_edit() {
 		RBMap<int, List<float>> key_ofs_map;
 		RBMap<int, NodePath> base_map;
 		int first_track = -1;
-		for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
-			int track = E.key.track;
+		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
+			const SelectedKey &sk = E->key;
+
+			int key_index = sk.key;
+			int track = sk.track;
+
 			if (first_track < 0) {
 				first_track = track;
 			}
@@ -6406,12 +6412,11 @@ void AnimationTrackEditor::_update_key_edit() {
 				base_map[track] = NodePath();
 			}
 
-			int key_id = E.key.key;
-			if (key_id >= animation->track_get_key_count(track)) {
+			if (key_index >= animation->track_get_key_count(track)) {
 				_clear_key_edit();
 				return; // Probably in the process of rearranging the keys.
 			}
-			key_ofs_map[track].push_back(animation->track_get_key_time(track, E.key.key));
+			key_ofs_map[track].push_back(animation->track_get_key_time(track, key_index));
 		}
 		multi_key_edit->key_ofs_map = key_ofs_map;
 		multi_key_edit->base_map = base_map;
@@ -8967,11 +8972,6 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	key_pivot.y = 1.0;
 	track_alignment = 1.0;
 
-	//connect("move_selection_begin", callable_mp(this, &AnimationMarkerEdit::_move_selection_begin));
-	//connect("move_selection", callable_mp(this, &AnimationMarkerEdit::_move_selection));
-	//connect("move_selection_commit", callable_mp(this, &AnimationMarkerEdit::_move_selection_commit));
-	//connect("move_selection_cancel", callable_mp(this, &AnimationMarkerEdit::_move_selection_cancel));
-
 	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationMarkerEdit::_play_position_draw));
 
 	set_focus_mode(FOCUS_CLICK);
@@ -9028,7 +9028,7 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 }
 
 float AnimationMarkerEdit::get_track_height() const {
-	return timeline->get_play_cursor()->get_size().height;
+	return timeline->get_size().height;
 }
 
 bool AnimationMarkerEdit::is_key_selected(const int p_index) const {
@@ -9084,8 +9084,8 @@ Vector<int> AnimationMarkerEdit::get_selected_section() {
 		double max_time = -Math::INF;
 
 		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
-			SelectedKey key = E->key;
-			int key_index = key.key;
+			const SelectedKey &sk = E->key;
+			int key_index = sk.key;
 
 			double time = get_key_time(key_index);
 			if (time < min_time) {
@@ -9135,8 +9135,8 @@ int AnimationMarkerEdit::get_first_selection() {
 		return -1;
 	}
 
-	RBMap<SelectedKey, KeyInfo>::Iterator it = selection.front();
-	return it->key.key;
+	RBMap<SelectedKey, KeyInfo>::Iterator E = selection.front();
+	return E->key.key;
 }
 
 int AnimationMarkerEdit::get_last_selection() {
@@ -9178,11 +9178,6 @@ void AnimationMarkerEdit::_bind_methods() {
 	ClassDB::bind_method("_clear_selection_for_anim", &AnimationMarkerEdit::_clear_selection_for_anim);
 	ClassDB::bind_method("_select_key", &AnimationMarkerEdit::_select_key);
 	ClassDB::bind_method("_deselect_key", &AnimationMarkerEdit::_deselect_key);
-
-	//ADD_SIGNAL(MethodInfo("move_selection_begin"));
-	//ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::FLOAT, "offset")));
-	//ADD_SIGNAL(MethodInfo("move_selection_commit"));
-	//ADD_SIGNAL(MethodInfo("move_selection_cancel"));
 }
 
 void AnimationMarkerEdit::_notification(int p_what) {
@@ -9257,6 +9252,10 @@ void AnimationMarkerEdit::_on_mouse_pressed(const Ref<InputEventMouseButton> &mb
 }
 
 void AnimationMarkerEdit::_on_mouse_unpressed(const Ref<InputEventMouseButton> &mb) {
+	_on_mouse_release(mb, true);
+}
+
+void AnimationKeyEdit::_on_mouse_release(const Ref<InputEventMouseButton> &mb, bool handle_timeline) {
 	if (moving_selection_attempt) {
 		moving_selection_attempt = false;
 		if (is_moving_selection() && moving_selection_effective) {
@@ -9268,20 +9267,25 @@ void AnimationMarkerEdit::_on_mouse_unpressed(const Ref<InputEventMouseButton> &
 		} else if (selected_key_idx != -1) {
 			_select_key(selected_key_idx, true);
 
-			// First select click should not affect play position.
-			if (!is_key_selected(selected_key_idx)) {
-				accept_event();
-			} else {
-				// Second click and onwards should snap to marker time.
-				double ofs = get_key_time(selected_key_idx);
-				timeline->set_play_position(ofs);
-				timeline->emit_signal(SNAME("timeline_changed"), ofs, mb->is_alt_pressed());
-				accept_event();
+			if (handle_timeline) {
+				// First select click should not affect play position.
+				if (!is_key_selected(selected_key_idx)) {
+					accept_event();
+				} else {
+					// Second click and onwards should snap to marker time.
+					double ofs = get_key_time(selected_key_idx);
+					timeline->set_play_position(ofs);
+					timeline->emit_signal(SNAME("timeline_changed"), ofs, mb->is_alt_pressed());
+					accept_event();
+				}
 			}
+			
 		} else {
-			// First select click should not affect play position.
-			if (!is_key_selected(selected_key_idx)) {
-				accept_event();
+			if (handle_timeline) {
+				// First select click should not affect play position.
+				if (!is_key_selected(selected_key_idx)) {
+					accept_event();
+				}
 			}
 		}
 
@@ -9416,7 +9420,7 @@ void AnimationMarkerEdit::draw_key(const int p_index, const Rect2 &p_global_rect
 
 	//
 	if (should_show_all_marker_names) {
-		draw_edit_text(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right, true);
+		draw_edit_text(p_index, p_global_rect, p_selected, p_clip_left, p_clip_right, true, 20);
 	}
 }
 
@@ -9556,8 +9560,8 @@ void AnimationMarkerEdit::_delete_selected_markers() {
 		undo_redo->create_action(TTR("Animation Delete Markers"));
 
 		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
-			SelectedKey key = E->key;
-			int key_index = key.key;
+			const SelectedKey &sk = E->key;
+			int key_index = sk.key;
 
 			StringName marker_name = get_key_name(key_index);
 			double time = get_key_time(key_index);
@@ -9601,10 +9605,6 @@ void AnimationMarkerEdit::_clear_selection_for_anim(const Ref<Animation> &p_anim
 	_clear_selection(true);
 }
 
-int AnimationMarkerEdit::get_selection_count() const {
-	return selection.size();
-}
-
 void AnimationMarkerEdit::insert_selection(const int p_index) {
 	SelectedKey sk;
 	sk.key = p_index;
@@ -9612,16 +9612,10 @@ void AnimationMarkerEdit::insert_selection(const int p_index) {
 
 	KeyInfo ki;
 	ki.pos = get_key_time(p_index);
-	ki.data = get_key_color(p_index);
+	ki.data = get_key_name(p_index);
 
 	selection.insert(sk, ki);
 	_update_key_edit();
-
-	//_clear_selection(is_selection_active());
-}
-
-bool AnimationMarkerEdit::is_selection_active() const {
-	return selection.size();
 }
 
 void AnimationMarkerEdit::_select_key(const int p_index, bool is_single) {
@@ -9745,30 +9739,33 @@ void AnimationMarkerEdit::_marker_insert_new_name_changed(const String &p_text) 
 }
 
 void AnimationMarkerEdit::_marker_rename_confirmed() {
-	StringName new_name = marker_rename_new_name->get_text();
-	StringName prev_name = marker_rename_prev_name;
+	int new_idx = editor->get_marker_index(marker_rename_new_name->get_text());
+	int prev_idx = editor->get_marker_index(marker_rename_prev_name);
 
-	if (new_name == StringName()) {
+	if (new_idx == -1) {
 		marker_rename_error_dialog->set_text(TTR("Empty marker names are not allowed."));
 		marker_rename_error_dialog->popup_centered();
 		return;
 	}
 
-	if (new_name != prev_name && animation->has_marker(new_name)) {
-		marker_rename_error_dialog->set_text(vformat(TTR("Marker '%s' already exists!"), new_name));
+	if (new_idx != prev_idx && has_key(new_idx)) {
+		marker_rename_error_dialog->set_text(vformat(TTR("Marker '%s' already exists!"), get_key_name(new_idx)));
 		marker_rename_error_dialog->popup_centered();
 		return;
 	}
 
-	if (prev_name != new_name) {
+	if (prev_idx != new_idx) {
+		StringName new_name = get_key_name(new_idx);
+		StringName prev_name = get_key_name(prev_idx);
+
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Rename Marker"));
 		undo_redo->add_do_method(animation.ptr(), "remove_marker", prev_name);
-		undo_redo->add_do_method(animation.ptr(), "add_marker", new_name, animation->get_marker_time(prev_name));
-		undo_redo->add_do_method(animation.ptr(), "set_marker_color", new_name, animation->get_marker_color(prev_name));
+		undo_redo->add_do_method(animation.ptr(), "add_marker", new_name, get_key_time(prev_idx));
+		undo_redo->add_do_method(animation.ptr(), "set_marker_color", new_name, get_key_color(prev_idx));
 		undo_redo->add_undo_method(animation.ptr(), "remove_marker", new_name);
-		undo_redo->add_undo_method(animation.ptr(), "add_marker", prev_name, animation->get_marker_time(prev_name));
-		undo_redo->add_undo_method(animation.ptr(), "set_marker_color", prev_name, animation->get_marker_color(prev_name));
+		undo_redo->add_undo_method(animation.ptr(), "add_marker", prev_name, get_key_time(prev_idx));
+		undo_redo->add_undo_method(animation.ptr(), "set_marker_color", prev_name, get_key_color(prev_idx));
 		undo_redo->add_do_method(this, "_select_key", new_name, true);
 		undo_redo->add_undo_method(this, "_select_key", prev_name, true);
 		undo_redo->commit_action();
