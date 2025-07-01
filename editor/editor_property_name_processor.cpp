@@ -35,7 +35,7 @@
 EditorPropertyNameProcessor *EditorPropertyNameProcessor::singleton = nullptr;
 
 EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_default_inspector_style() {
-	const Style style = (Style)EDITOR_GET("interface/inspector/default_property_name_style").operator int();
+	const Style style = (Style)EDITOR_GET_CACHED(int, "interface/inspector/default_property_name_style");
 	if (style == STYLE_LOCALIZED && !is_localization_available()) {
 		return STYLE_CAPITALIZED;
 	}
@@ -43,7 +43,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_default_insp
 }
 
 EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_settings_style() {
-	const bool translate = EDITOR_GET("interface/editor/localize_settings");
+	const bool translate = EDITOR_GET_CACHED(bool, "interface/editor/localize_settings");
 	return translate ? STYLE_LOCALIZED : STYLE_CAPITALIZED;
 }
 

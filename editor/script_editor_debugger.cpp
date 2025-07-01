@@ -828,7 +828,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			if (!EditorNode::get_log()->is_visible()) {
 				if (EditorNode::get_singleton()->are_bottom_panels_hidden()) {
-					if (EDITOR_GET("run/output/always_open_output_on_play")) {
+					if (EDITOR_GET_CACHED(bool, "run/output/always_open_output_on_play")) {
 						EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
 					}
 				}

@@ -1507,17 +1507,17 @@ void CodeTextEditor::_on_settings_change() {
 
 	// Auto brace completion.
 	text_editor->set_auto_brace_completion(
-			EDITOR_GET("text_editor/completion/auto_brace_complete"));
+			EDITOR_GET_CACHED(bool, "text_editor/completion/auto_brace_complete"));
 
 	code_complete_timer->set_wait_time(
-			EDITOR_GET("text_editor/completion/code_complete_delay"));
+			EDITOR_GET_CACHED(float, "text_editor/completion/code_complete_delay"));
 
 	// Call hint settings.
 	text_editor->set_callhint_settings(
-			EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"),
-			EDITOR_GET("text_editor/completion/callhint_tooltip_offset"));
+			EDITOR_GET_CACHED(bool, "text_editor/completion/put_callhint_tooltip_below_current_line"),
+			EDITOR_GET_CACHED(Vector2, "text_editor/completion/callhint_tooltip_offset"));
 
-	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
+	idle->set_wait_time(EDITOR_GET_CACHED(float, "text_editor/completion/idle_parse_delay"));
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {

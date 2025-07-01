@@ -1599,7 +1599,7 @@ void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector2::EditorPropertyVector2() {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector2_editing");
+	bool horizontal = EDITOR_GET_CACHED(bool, "interface/inspector/horizontal_vector2_editing");
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1693,7 +1693,7 @@ void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyRect2::EditorPropertyRect2() {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = EDITOR_GET_CACHED(bool, "interface/inspector/horizontal_vector_types_editing");
 
 	BoxContainer *bc;
 
@@ -1830,7 +1830,7 @@ void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector3::EditorPropertyVector3() {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = EDITOR_GET_CACHED(bool, "interface/inspector/horizontal_vector_types_editing");
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1925,7 +1925,7 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyPlane::EditorPropertyPlane() {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = EDITOR_GET_CACHED(bool, "interface/inspector/horizontal_vector_types_editing");
 
 	BoxContainer *bc;
 
@@ -2007,7 +2007,7 @@ void EditorPropertyQuat::setup(double p_min, double p_max, double p_step, bool p
 }
 
 EditorPropertyQuat::EditorPropertyQuat() {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = EDITOR_GET_CACHED(bool, "interface/inspector/horizontal_vector_types_editing");
 
 	BoxContainer *bc;
 
@@ -2373,7 +2373,7 @@ void EditorPropertyColor::_popup_closed() {
 
 void EditorPropertyColor::_picker_created() {
 	// get default color picker mode from editor settings
-	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	int default_color_mode = EDITOR_GET_CACHED(int, "interface/inspector/default_color_picker_mode");
 	if (default_color_mode == 1) {
 		picker->get_picker()->set_hsv_mode(true);
 	} else if (default_color_mode == 2) {
@@ -2920,7 +2920,7 @@ void EditorPropertyResource::_bind_methods() {
 }
 
 EditorPropertyResource::EditorPropertyResource() {
-	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
+	use_sub_inspector = EDITOR_GET_CACHED(bool, "interface/inspector/open_resources_in_current_inspector");
 
 	add_to_group("_editor_resource_properties");
 }
@@ -2936,7 +2936,7 @@ void EditorInspectorDefaultPlugin::parse_begin(Object *p_object) {
 }
 
 bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage) {
-	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
+	double default_float_step = EDITOR_GET_CACHED(double, "interface/inspector/default_float_step");
 
 	switch (p_type) {
 		// atomic types

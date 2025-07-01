@@ -829,7 +829,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 
 	bool need_ask = false;
 	bool need_reload = false;
-	bool use_autoreload = EDITOR_GET("text_editor/files/auto_reload_scripts_on_external_change");
+	bool use_autoreload = EDITOR_GET_CACHED(bool, "text_editor/files/auto_reload_scripts_on_external_change");
 
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -2636,7 +2636,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 void ScriptEditor::_input(const Ref<InputEvent> &p_event) {
 	// This feature can be disabled to avoid interfering with other uses of the additional
 	// mouse buttons, such as push-to-talk in a VoIP program.
-	if (EDITOR_GET("text_editor/navigation/mouse_extra_buttons_navigate_history")) {
+	if (EDITOR_GET_CACHED(bool, "text_editor/navigation/mouse_extra_buttons_navigate_history")) {
 		const Ref<InputEventMouseButton> mb = p_event;
 
 		// Navigate the script history using additional mouse buttons present on some mice.

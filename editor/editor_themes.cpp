@@ -135,7 +135,7 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 #endif
 
 float get_gizmo_handle_scale(const String &gizmo_handle_name = "") {
-	const float scale_gizmo_handles_for_touch = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
+	const float scale_gizmo_handles_for_touch = EDITOR_GET_CACHED(float, "interface/touchscreen/scale_gizmo_handles");
 	if (scale_gizmo_handles_for_touch > 1.0f) {
 		// The names of the icons that require custom scaling.
 		static Set<StringName> gizmo_to_scale;
@@ -772,12 +772,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
 	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
 
+	float subresource_hue_tint = EDITOR_GET("docks/property_editor/subresource_hue_tint");
+
 	for (int i = 0; i < 16; i++) {
 		Color si_base_color = accent_color;
 
 		float hue_rotate = (i * 2 % 16) / 16.0;
 		si_base_color.set_hsv(Math::fmod(float(si_base_color.get_h() + hue_rotate), float(1.0)), si_base_color.get_s(), si_base_color.get_v());
-		si_base_color = accent_color.linear_interpolate(si_base_color, float(EDITOR_GET("docks/property_editor/subresource_hue_tint")));
+		si_base_color = accent_color.linear_interpolate(si_base_color, subresource_hue_tint);
 
 		Ref<StyleBoxFlat> sub_inspector_bg;
 
