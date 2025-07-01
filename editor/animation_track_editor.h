@@ -56,9 +56,17 @@ class ViewPanner;
 class EditorValidationPanel;
 
 struct SelectedKey {
-	int track = 0;
-	int key = 0;
-	bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; }
+	int track = -1;
+	int key = -1;
+	StringName id = StringName();
+
+	bool operator<(const SelectedKey &p_key) const {
+		if (key != -1) {
+			return track == p_key.track ? key < p_key.key : track < p_key.track;
+		} else if (id != StringName()) {
+			return track == p_key.track && id != p_key.id;
+		}
+	}
 };
 
 struct KeyInfo {

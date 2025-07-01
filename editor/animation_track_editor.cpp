@@ -2413,13 +2413,16 @@ void AnimationMarkerEdit::_update_key_edit() {
 
 	if (get_selection_count() == 1) {
 		RBMap<SelectedKey, KeyInfo>::Iterator E = selection.front();
-		KeyInfo ki = E->value;
-		StringName marker_name = ki.data;
+		const SelectedKey &sk = E->key;
+		const StringName selected_name = sk.id;
+		const int key_index = editor->get_marker_index(selected_name);
+
+		StringName key_name = get_key_name(key_index);
 
 		key_edit = memnew(AnimationMarkerKeyEdit);
 		key_edit->animation = animation;
 		key_edit->animation_read_only = read_only;
-		key_edit->marker_name = marker_name;
+		key_edit->marker_name = key_name;
 		key_edit->use_fps = timeline->is_using_fps();
 		key_edit->marker_edit = this;
 
@@ -2433,10 +2436,13 @@ void AnimationMarkerEdit::_update_key_edit() {
 		multi_key_edit->marker_edit = this;
 
 		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
-			KeyInfo ki = E->value;
-			StringName marker_name = ki.data;
+			const SelectedKey &sk = E->key;
+			const StringName selected_name = sk.id;
+			const int key_index = editor->get_marker_index(selected_name);
 
-			multi_key_edit->marker_names.push_back(marker_name);
+			StringName key_name = get_key_name(key_index);
+
+			multi_key_edit->marker_names.push_back(key_name);
 		}
 
 		EditorNode::get_singleton()->push_item(multi_key_edit);
@@ -9032,7 +9038,7 @@ float AnimationMarkerEdit::get_track_height() const {
 
 bool AnimationMarkerEdit::is_key_selected(const int p_index) const {
 	SelectedKey sk;
-	sk.key = p_index;
+	sk.id = get_key_name(p_index);
 	sk.track = 0;
 
 	return selection.has(sk);
@@ -9084,7 +9090,8 @@ Vector<int> AnimationMarkerEdit::get_selected_section() {
 
 		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
 			const SelectedKey &sk = E->key;
-			int key_index = sk.key;
+			const StringName selected_name = sk.id;
+			const int key_index = editor->get_marker_index(selected_name);
 
 			double time = get_key_time(key_index);
 			if (time < min_time) {
@@ -9500,7 +9507,10 @@ void AnimationMarkerEdit::_move_selection_commit() {
 	undo_redo->create_action(TTR("Animation Move Markers"));
 
 	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-		int key_index = E->key().key;
+		const SelectedKey &sk = E->key();
+		const StringName selected_name = sk.id;
+		const int key_index = editor->get_marker_index(selected_name);
+
 		StringName key_name = get_key_name(key_index);
 		Color key_color = get_key_color(key_index);
 		double time = get_key_time(key_index);
@@ -9560,13 +9570,16 @@ void AnimationMarkerEdit::_delete_selected_markers() {
 
 		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
 			const SelectedKey &sk = E->key;
-			int key_index = sk.key;
+			const StringName selected_name = sk.id;
+			const int key_index = editor->get_marker_index(selected_name);
 
-			StringName marker_name = get_key_name(key_index);
-			double time = get_key_time(key_index);
-			undo_redo->add_do_method(animation.ptr(), "remove_marker", marker_name);
-			undo_redo->add_undo_method(animation.ptr(), "add_marker", marker_name, time);
-			undo_redo->add_undo_method(animation.ptr(), "set_marker_color", marker_name, get_key_color(key_index));
+			StringName key_name = get_key_name(key_index);
+			double key_time = get_key_time(key_index);
+			Color key_color = get_key_color(key_index);
+
+			undo_redo->add_do_method(animation.ptr(), "remove_marker", key_name);
+			undo_redo->add_undo_method(animation.ptr(), "add_marker", key_name, key_time);
+			undo_redo->add_undo_method(animation.ptr(), "set_marker_color", key_name, key_color);
 		}
 		_clear_selection_for_anim(animation);
 
@@ -9606,12 +9619,11 @@ void AnimationMarkerEdit::_clear_selection_for_anim(const Ref<Animation> &p_anim
 
 void AnimationMarkerEdit::insert_selection(const int p_index) {
 	SelectedKey sk;
-	sk.key = p_index;
+	sk.id = get_key_name(p_index);
 	sk.track = 0;
 
 	KeyInfo ki;
 	ki.pos = get_key_time(p_index);
-	ki.data = get_key_name(p_index);
 
 	selection.insert(sk, ki);
 	_update_key_edit();
@@ -9646,7 +9658,7 @@ void AnimationMarkerEdit::_select_key(const int p_index, bool is_single) {
 
 void AnimationMarkerEdit::_deselect_key(const int p_index) {
 	SelectedKey sk;
-	sk.key = p_index;
+	sk.id = get_key_name(p_index);
 	sk.track = 0;
 
 	selection.erase(sk);
