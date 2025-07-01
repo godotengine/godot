@@ -2296,34 +2296,6 @@ void AnimationKeyEdit::show_popup_menu(Ref<InputEventMouseButton> &mb) {
 			moving_selection_attempt = false;
 			set_moving_selection(false);
 
-			<<<<<<< animation-track-offset
-			menu->clear();
-			create_popup_menu(menu, selected);
-			menu->reset_size();
-
-			moving_selection_attempt = false;
-			set_moving_selection(false);
-
-	length = memnew(EditorSpinSlider);
-	length->set_min(SECOND_DECIMAL);
-	length->set_max(36000);
-	length->set_step(SECOND_DECIMAL);
-	length->set_allow_greater(true);
-	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
-	length->set_hide_slider(true);
-	length->set_tooltip_text(TTR("Animation length (seconds)"));
-	length->set_accessibility_name(TTRC("Animation length (seconds)"));
-	length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
-	len_hb->add_child(length);
-
-	loop = memnew(Button);
-	loop->set_flat(true);
-	loop->set_tooltip_text(TTR("Animation Looping"));
-	loop->connect(SceneStringName(pressed), callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
-	loop->set_toggle_mode(true);
-	len_hb->add_child(loop);
-	add_child(len_hb);
-
 			menu->set_position(get_screen_position() + get_local_mouse_position());
 			menu->popup();
 
@@ -8812,12 +8784,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ease_selection->add_item(TTR("OutIn", "Ease Type"), Tween::EASE_OUT_IN);
 	ease_selection->select(Tween::EASE_IN_OUT); // Default
 	ease_selection->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Translation context is needed.
-	ease_fps = memnew(SpinBox);
-	ease_fps->set_min(FPS_DECIMAL);
-	ease_fps->set_max(999);
-	ease_fps->set_step(FPS_DECIMAL);
-	ease_fps->set_value(30); // Default
-	ease_fps->set_accessibility_name(TTRC("FPS:"));
+	ease_fps_sp = memnew(SpinBox);
+	ease_fps_sp->set_min(FPS_DECIMAL);
+	ease_fps_sp->set_max(999);
+	ease_fps_sp->set_step(FPS_DECIMAL);
+	ease_fps_sp->set_value(30); // Default
+	ease_fps_sp->set_accessibility_name(TTRC("FPS"));
 	ease_grid->add_child(memnew(Label(TTR("Transition Type:"))));
 	ease_grid->add_child(transition_selection);
 	ease_grid->add_child(memnew(Label(TTR("Ease Type:"))));
@@ -9806,64 +9778,6 @@ void AnimationMarkerEdit::_marker_rename_new_name_changed(const String &p_text) 
 }
 
 /// ANIMATION MARKER KEY EDIT ///
-AnimationMarkerEdit::AnimationMarkerEdit() {
-	play_position = memnew(Control);
-	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
-	add_child(play_position);
-	play_position->connect(SceneStringName(draw), callable_mp(this, &AnimationMarkerEdit::_play_position_draw));
-	set_focus_mode(FOCUS_CLICK);
-	set_mouse_filter(MOUSE_FILTER_PASS); // Scroll has to work too for selection.
-
-	menu = memnew(PopupMenu);
-	add_child(menu);
-	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationMarkerEdit::_menu_selected));
-	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/rename_marker", TTRC("Rename Marker"), Key::R), MENU_KEY_RENAME);
-	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/delete_selection", TTRC("Delete Marker(s)"), Key::KEY_DELETE), MENU_KEY_DELETE);
-	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/toggle_marker_names", TTRC("Show All Marker Names"), Key::M), MENU_KEY_TOGGLE_MARKER_NAMES);
-
-	marker_insert_confirm = memnew(ConfirmationDialog);
-	marker_insert_confirm->set_title(TTR("Insert Marker"));
-	marker_insert_confirm->set_hide_on_ok(false);
-	marker_insert_confirm->connect(SceneStringName(confirmed), callable_mp(this, &AnimationMarkerEdit::_marker_insert_confirmed));
-	add_child(marker_insert_confirm);
-	VBoxContainer *marker_insert_vbox = memnew(VBoxContainer);
-	marker_insert_vbox->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
-	marker_insert_confirm->add_child(marker_insert_vbox);
-	marker_insert_new_name = memnew(LineEdit);
-	marker_insert_new_name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationMarkerEdit::_marker_insert_new_name_changed));
-	marker_insert_confirm->register_text_enter(marker_insert_new_name);
-	marker_insert_vbox->add_child(_create_hbox_labeled_control(TTR("Marker Name"), marker_insert_new_name));
-	marker_insert_color = memnew(ColorPickerButton);
-	marker_insert_color->set_edit_alpha(false);
-	marker_insert_color->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(marker_insert_color->get_picker()));
-	marker_insert_vbox->add_child(_create_hbox_labeled_control(TTR("Marker Color"), marker_insert_color));
-	marker_insert_error_dialog = memnew(AcceptDialog);
-	marker_insert_error_dialog->set_ok_button_text(TTR("Close"));
-	marker_insert_error_dialog->set_title(TTR("Error!"));
-	marker_insert_confirm->add_child(marker_insert_error_dialog);
-
-	marker_rename_confirm = memnew(ConfirmationDialog);
-	marker_rename_confirm->set_title(TTR("Rename Marker"));
-	marker_rename_confirm->set_hide_on_ok(false);
-	marker_rename_confirm->connect(SceneStringName(confirmed), callable_mp(this, &AnimationMarkerEdit::_marker_rename_confirmed));
-	add_child(marker_rename_confirm);
-	VBoxContainer *marker_rename_vbox = memnew(VBoxContainer);
-	marker_rename_vbox->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
-	marker_rename_confirm->add_child(marker_rename_vbox);
-	Label *marker_rename_new_name_label = memnew(Label);
-	marker_rename_new_name_label->set_text(TTR("Change Marker Name:"));
-	marker_rename_vbox->add_child(marker_rename_new_name_label);
-	marker_rename_new_name = memnew(LineEdit);
-	marker_rename_new_name->set_accessibility_name(TTRC("Change Marker Name:"));
-	marker_rename_new_name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationMarkerEdit::_marker_rename_new_name_changed));
-	marker_rename_confirm->register_text_enter(marker_rename_new_name);
-	marker_rename_vbox->add_child(marker_rename_new_name);
-
-	marker_rename_error_dialog = memnew(AcceptDialog);
-	marker_rename_error_dialog->set_ok_button_text(TTR("Close"));
-	marker_rename_error_dialog->set_title(TTR("Error!"));
-	marker_rename_confirm->add_child(marker_rename_error_dialog);
-}
 
 float AnimationMarkerKeyEdit::get_time() const {
 	return animation->get_marker_time(marker_name);
