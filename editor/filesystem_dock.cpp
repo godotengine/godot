@@ -2223,7 +2223,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				EditorNode::get_singleton()->show_warning(TTR("External editor path is empty."));
 				return;
 			}
-			
+
 			List<String> args;
 
 			args.push_back(ProjectSettings::get_singleton()->globalize_path(fpath));
@@ -3599,7 +3599,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	if (bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
 		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_editor"), FILE_MENU_OPEN_IN_EXTERNAL_EDITOR);
 	}
-	
+
 #endif
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
