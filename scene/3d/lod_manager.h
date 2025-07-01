@@ -66,6 +66,9 @@ private:
 		Queue queues[NUM_LOD_QUEUES];
 		BinaryMutex mutex;
 		bool saving = false;
+
+		// Used to disable LODManager updates when there are no LODs in use (reduces CPU utilization).
+		int32_t total_lods = 0;
 	} data;
 
 	static bool _enabled;
