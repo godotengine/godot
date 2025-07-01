@@ -2284,44 +2284,41 @@ void AnimationKeyEdit::show_popup_menu(Ref<InputEventMouseButton> &mb) {
 	if (pos.x >= limit && pos.x <= limit_end) {
 		float scale = timeline->get_zoom_scale();
 
-		length = memnew(EditorSpinSlider);
-		length->set_min(SECOND_DECIMAL);
-		length->set_max(36000);
-		length->set_step(SECOND_DECIMAL);
-		length->set_allow_greater(true);
-		length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
-		length->set_hide_slider(true);
-		length->set_tooltip_text(TTR("Animation length (seconds)"));
-		length->set_accessibility_name(TTRC("Animation length (seconds)"));
-		length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
-		len_hb->add_child(length);
+	length = memnew(EditorSpinSlider);
+	length->set_min(SECOND_DECIMAL);
+	length->set_max(36000);
+	length->set_step(SECOND_DECIMAL);
+	length->set_allow_greater(true);
+	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
+	length->set_hide_slider(true);
+	length->set_tooltip_text(TTR("Animation length (seconds)"));
+	length->set_accessibility_name(TTRC("Animation length (seconds)"));
+	length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
+	len_hb->add_child(length);
 
-		loop = memnew(Button);
-		loop->set_flat(true);
-		loop->set_tooltip_text(TTR("Animation Looping"));
-		loop->connect(SceneStringName(pressed), callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
-		loop->set_toggle_mode(true);
-		len_hb->add_child(loop);
-		add_child(len_hb);
+	loop = memnew(Button);
+	loop->set_flat(true);
+	loop->set_tooltip_text(TTR("Animation Looping"));
+	loop->connect(SceneStringName(pressed), callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
+	loop->set_toggle_mode(true);
+	len_hb->add_child(loop);
+	add_child(len_hb);
 
-			moving_selection_attempt = false;
-			set_moving_selection(false);
+		menu->set_position(get_screen_position() + get_local_mouse_position());
+		menu->popup();
 
-			menu->set_position(get_screen_position() + get_local_mouse_position());
-			menu->popup();
-
-			insert_at_pos = offset + timeline->get_value();
-			accept_event();
-		}
+		insert_at_pos = offset + timeline->get_value();
+		accept_event();
 	}
+}
 
+if (is_moving_selection()) {
 	if (is_moving_selection()) {
-		if (is_moving_selection()) {
-			moving_selection_attempt = false;
-			set_moving_selection(false);
-			_move_selection_cancel();
-		}
+		moving_selection_attempt = false;
+		set_moving_selection(false);
+		_move_selection_cancel();
 	}
+}
 }
 
 bool AnimationKeyEdit::is_linked(const int p_index, const int p_index_next) const {
