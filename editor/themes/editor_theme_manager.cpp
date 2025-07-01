@@ -2633,109 +2633,109 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 	}
 }
 
-void EditorThemeManager::_generate_text_editor_defaults(ThemeConfiguration &p_config) {
-	// Adaptive colors for comments and elements with lower relevance.
-	const Color dim_color = Color(p_config.font_color, 0.5);
-	const float mono_value = p_config.mono_color.r;
-	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
-	const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
-	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.27);
-
-	/* clang-format off */
-	// Syntax highlight token colors.
-	const Color symbol_color =               p_config.dark_theme ? Color(0.67, 0.79, 1)      : Color(0, 0, 0.61);
-	const Color keyword_color =              p_config.dark_theme ? Color(1.0, 0.44, 0.52)    : Color(0.9, 0.135, 0.51);
-	const Color control_flow_keyword_color = p_config.dark_theme ? Color(1.0, 0.55, 0.8)     : Color(0.743, 0.12, 0.8);
-	const Color base_type_color =            p_config.dark_theme ? Color(0.26, 1.0, 0.76)    : Color(0, 0.6, 0.2);
-	const Color engine_type_color =          p_config.dark_theme ? Color(0.56, 1, 0.86)      : Color(0.11, 0.55, 0.4);
-	const Color user_type_color =            p_config.dark_theme ? Color(0.78, 1, 0.93)      : Color(0.18, 0.45, 0.4);
-	const Color comment_color =              p_config.dark_theme ? dim_color                 : Color(0.08, 0.08, 0.08, 0.5);
-	const Color doc_comment_color =          p_config.dark_theme ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
-	const Color string_color =               p_config.dark_theme ? Color(1, 0.93, 0.63)      : Color(0.6, 0.42, 0);
-
-	// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
-	const Color te_background_color =             p_config.dark_theme ? p_config.dark_color_2 : p_config.dark_color_3;
-	const Color completion_background_color =     p_config.dark_theme ? p_config.base_color : p_config.dark_color_2;
-	const Color completion_selected_color =       alpha1;
-	const Color completion_existing_color =       alpha2;
-	// Same opacity as the scroll grabber editor icon.
-	const Color completion_scroll_color =         Color(mono_value, mono_value, mono_value, 0.29);
-	const Color completion_scroll_hovered_color = Color(mono_value, mono_value, mono_value, 0.4);
-	const Color completion_font_color =           p_config.font_color;
-	const Color text_color =                      p_config.font_color;
-	const Color line_number_color =               dim_color;
-	const Color safe_line_number_color =          p_config.dark_theme ? (dim_color * Color(1, 1.2, 1, 1.5)) : Color(0, 0.4, 0, 0.75);
-	const Color caret_color =                     p_config.mono_color;
-	const Color caret_background_color =          p_config.mono_color.inverted();
-	const Color text_selected_color =             Color(0, 0, 0, 0);
-	const Color selection_color =                 p_config.selection_color;
-	const Color brace_mismatch_color =            p_config.dark_theme ? p_config.error_color : Color(1, 0.08, 0, 1);
-	const Color current_line_color =              alpha1;
-	const Color line_length_guideline_color =     p_config.dark_theme ? p_config.base_color : p_config.dark_color_2;
-	const Color word_highlighted_color =          alpha1;
-	const Color number_color =                    p_config.dark_theme ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
-	const Color function_color =                  p_config.dark_theme ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
-	const Color member_variable_color =           p_config.dark_theme ? Color(0.34, 0.7, 1.0).lerp(p_config.mono_color, 0.6) : Color(0, 0.4, 0.68, 1);
-	const Color mark_color =                      Color(p_config.error_color.r, p_config.error_color.g, p_config.error_color.b, 0.3);
-	const Color warning_color =                   Color(p_config.warning_color.r, p_config.warning_color.g, p_config.warning_color.b, 0.15);
-	const Color bookmark_color =                  Color(0.08, 0.49, 0.98);
-	const Color breakpoint_color =                p_config.dark_theme ? p_config.error_color : Color(1, 0.27, 0.2, 1);
-	const Color executing_line_color =            Color(0.98, 0.89, 0.27);
-	const Color code_folding_color =              alpha3;
-	const Color folded_code_region_color =        Color(0.68, 0.46, 0.77, 0.2);
-	const Color search_result_color =             alpha1;
-	const Color search_result_border_color =      p_config.dark_theme ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
-	/* clang-format on */
-
-	EditorSettings *setting = EditorSettings::get_singleton();
-
-	/* clang-format off */
-	setting->set_initial_value("text_editor/theme/highlighting/symbol_color",                    symbol_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/keyword_color",                   keyword_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/control_flow_keyword_color",      control_flow_keyword_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/base_type_color",                 base_type_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/engine_type_color",               engine_type_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/user_type_color",                 user_type_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/comment_color",                   comment_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/doc_comment_color",               doc_comment_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/string_color",                    string_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/background_color",                te_background_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/completion_background_color",     completion_background_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/completion_selected_color",       completion_selected_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/completion_existing_color",       completion_existing_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/completion_scroll_color",         completion_scroll_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/completion_scroll_hovered_color", completion_scroll_hovered_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/completion_font_color",           completion_font_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/text_color",                      text_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/line_number_color",               line_number_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/safe_line_number_color",          safe_line_number_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/caret_color",                     caret_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/caret_background_color",          caret_background_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/text_selected_color",             text_selected_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/selection_color",                 selection_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/brace_mismatch_color",            brace_mismatch_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/current_line_color",              current_line_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/line_length_guideline_color",     line_length_guideline_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/word_highlighted_color",          word_highlighted_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/number_color",                    number_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/function_color",                  function_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/member_variable_color",           member_variable_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/mark_color",                      mark_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/warning_color",                   warning_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/bookmark_color",                  bookmark_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/breakpoint_color",                breakpoint_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/executing_line_color",            executing_line_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/code_folding_color",              code_folding_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/folded_code_region_color",        folded_code_region_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/search_result_color",             search_result_color, true);
-	setting->set_initial_value("text_editor/theme/highlighting/search_result_border_color",      search_result_border_color, true);
-	/* clang-format on */
-}
-
 void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
 	String text_editor_color_theme = EDITOR_GET("text_editor/theme/color_theme");
-	if (text_editor_color_theme == "Default") {
-		_generate_text_editor_defaults(p_config);
+	if (text_editor_color_theme == "Default" || text_editor_color_theme == "Custom") {
+		// Adaptive colors for comments and elements with lower relevance.
+		const Color dim_color = Color(p_config.font_color, 0.5);
+		const float mono_value = p_config.mono_color.r;
+		const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
+		const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
+		const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.27);
+
+		/* clang-format off */
+		// Syntax highlight token colors.
+		const Color symbol_color =               p_config.dark_theme ? Color(0.67, 0.79, 1)      : Color(0, 0, 0.61);
+		const Color keyword_color =              p_config.dark_theme ? Color(1.0, 0.44, 0.52)    : Color(0.9, 0.135, 0.51);
+		const Color control_flow_keyword_color = p_config.dark_theme ? Color(1.0, 0.55, 0.8)     : Color(0.743, 0.12, 0.8);
+		const Color base_type_color =            p_config.dark_theme ? Color(0.26, 1.0, 0.76)    : Color(0, 0.6, 0.2);
+		const Color engine_type_color =          p_config.dark_theme ? Color(0.56, 1, 0.86)      : Color(0.11, 0.55, 0.4);
+		const Color user_type_color =            p_config.dark_theme ? Color(0.78, 1, 0.93)      : Color(0.18, 0.45, 0.4);
+		const Color comment_color =              p_config.dark_theme ? dim_color                 : Color(0.08, 0.08, 0.08, 0.5);
+		const Color doc_comment_color =          p_config.dark_theme ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
+		const Color string_color =               p_config.dark_theme ? Color(1, 0.93, 0.63)      : Color(0.6, 0.42, 0);
+
+		// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
+		const Color te_background_color =             p_config.dark_theme ? p_config.dark_color_2 : p_config.dark_color_3;
+		const Color completion_background_color =     p_config.dark_theme ? p_config.base_color : p_config.dark_color_2;
+		const Color completion_selected_color =       alpha1;
+		const Color completion_existing_color =       alpha2;
+		// Same opacity as the scroll grabber editor icon.
+		const Color completion_scroll_color =         Color(mono_value, mono_value, mono_value, 0.29);
+		const Color completion_scroll_hovered_color = Color(mono_value, mono_value, mono_value, 0.4);
+		const Color completion_font_color =           p_config.font_color;
+		const Color text_color =                      p_config.font_color;
+		const Color line_number_color =               dim_color;
+		const Color safe_line_number_color =          p_config.dark_theme ? (dim_color * Color(1, 1.2, 1, 1.5)) : Color(0, 0.4, 0, 0.75);
+		const Color caret_color =                     p_config.mono_color;
+		const Color caret_background_color =          p_config.mono_color.inverted();
+		const Color text_selected_color =             Color(0, 0, 0, 0);
+		const Color selection_color =                 p_config.selection_color;
+		const Color brace_mismatch_color =            p_config.dark_theme ? p_config.error_color : Color(1, 0.08, 0, 1);
+		const Color current_line_color =              alpha1;
+		const Color line_length_guideline_color =     p_config.dark_theme ? p_config.base_color : p_config.dark_color_2;
+		const Color word_highlighted_color =          alpha1;
+		const Color number_color =                    p_config.dark_theme ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
+		const Color function_color =                  p_config.dark_theme ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
+		const Color member_variable_color =           p_config.dark_theme ? Color(0.34, 0.7, 1.0).lerp(p_config.mono_color, 0.6) : Color(0, 0.4, 0.68, 1);
+		const Color mark_color =                      Color(p_config.error_color.r, p_config.error_color.g, p_config.error_color.b, 0.3);
+		const Color warning_color =                   Color(p_config.warning_color.r, p_config.warning_color.g, p_config.warning_color.b, 0.15);
+		const Color bookmark_color =                  Color(0.08, 0.49, 0.98);
+		const Color breakpoint_color =                p_config.dark_theme ? p_config.error_color : Color(1, 0.27, 0.2, 1);
+		const Color executing_line_color =            Color(0.98, 0.89, 0.27);
+		const Color code_folding_color =              alpha3;
+		const Color folded_code_region_color =        Color(0.68, 0.46, 0.77, 0.2);
+		const Color search_result_color =             alpha1;
+		const Color search_result_border_color =      p_config.dark_theme ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
+		/* clang-format on */
+
+		HashMap<StringName, Color> colors;
+		colors["text_editor/theme/highlighting/symbol_color"] = symbol_color;
+		colors["text_editor/theme/highlighting/keyword_color"] = keyword_color;
+		colors["text_editor/theme/highlighting/control_flow_keyword_color"] = control_flow_keyword_color;
+		colors["text_editor/theme/highlighting/base_type_color"] = base_type_color;
+		colors["text_editor/theme/highlighting/engine_type_color"] = engine_type_color;
+		colors["text_editor/theme/highlighting/user_type_color"] = user_type_color;
+		colors["text_editor/theme/highlighting/comment_color"] = comment_color;
+		colors["text_editor/theme/highlighting/doc_comment_color"] = doc_comment_color;
+		colors["text_editor/theme/highlighting/string_color"] = string_color;
+		colors["text_editor/theme/highlighting/background_color"] = te_background_color;
+		colors["text_editor/theme/highlighting/completion_background_color"] = completion_background_color;
+		colors["text_editor/theme/highlighting/completion_selected_color"] = completion_selected_color;
+		colors["text_editor/theme/highlighting/completion_existing_color"] = completion_existing_color;
+		colors["text_editor/theme/highlighting/completion_scroll_color"] = completion_scroll_color;
+		colors["text_editor/theme/highlighting/completion_scroll_hovered_color"] = completion_scroll_hovered_color;
+		colors["text_editor/theme/highlighting/completion_font_color"] = completion_font_color;
+		colors["text_editor/theme/highlighting/text_color"] = text_color;
+		colors["text_editor/theme/highlighting/line_number_color"] = line_number_color;
+		colors["text_editor/theme/highlighting/safe_line_number_color"] = safe_line_number_color;
+		colors["text_editor/theme/highlighting/caret_color"] = caret_color;
+		colors["text_editor/theme/highlighting/caret_background_color"] = caret_background_color;
+		colors["text_editor/theme/highlighting/text_selected_color"] = text_selected_color;
+		colors["text_editor/theme/highlighting/selection_color"] = selection_color;
+		colors["text_editor/theme/highlighting/brace_mismatch_color"] = brace_mismatch_color;
+		colors["text_editor/theme/highlighting/current_line_color"] = current_line_color;
+		colors["text_editor/theme/highlighting/line_length_guideline_color"] = line_length_guideline_color;
+		colors["text_editor/theme/highlighting/word_highlighted_color"] = word_highlighted_color;
+		colors["text_editor/theme/highlighting/number_color"] = number_color;
+		colors["text_editor/theme/highlighting/function_color"] = function_color;
+		colors["text_editor/theme/highlighting/member_variable_color"] = member_variable_color;
+		colors["text_editor/theme/highlighting/mark_color"] = mark_color;
+		colors["text_editor/theme/highlighting/warning_color"] = warning_color;
+		colors["text_editor/theme/highlighting/bookmark_color"] = bookmark_color;
+		colors["text_editor/theme/highlighting/breakpoint_color"] = breakpoint_color;
+		colors["text_editor/theme/highlighting/executing_line_color"] = executing_line_color;
+		colors["text_editor/theme/highlighting/code_folding_color"] = code_folding_color;
+		colors["text_editor/theme/highlighting/folded_code_region_color"] = folded_code_region_color;
+		colors["text_editor/theme/highlighting/search_result_color"] = search_result_color;
+		colors["text_editor/theme/highlighting/search_result_border_color"] = search_result_border_color;
+
+		for (const KeyValue<StringName, Color> &setting : colors) {
+			EditorSettings::get_singleton()->set_initial_value(setting.key, setting.value);
+			if (text_editor_color_theme == "Default") {
+				EditorSettings::get_singleton()->set_manually(setting.key, setting.value);
+			}
+		}
 	} else if (text_editor_color_theme == "Godot 2") {
 		EditorSettings::get_singleton()->load_text_editor_theme();
 	}
