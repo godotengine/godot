@@ -34,8 +34,6 @@
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
 
-#include <atomic>
-
 class CameraFeedWeb : public CameraFeed {
 	GDSOFTCLASS(CameraFeedWeb, CameraFeed);
 
@@ -63,7 +61,7 @@ class CameraWeb : public CameraServer {
 
 private:
 	CameraDriverWeb *camera_driver_web = nullptr;
-	std::atomic<bool> activating;
+	SafeFlag activating;
 	void _cleanup();
 	void _update_feeds();
 	static void _on_get_cameras_callback(void *context, const Vector<CameraInfo> &camera_info);

@@ -151,11 +151,11 @@ void CameraWeb::_on_get_cameras_callback(void *context, const Vector<CameraInfo>
 		server->add_feed(feed);
 	}
 	server->CameraServer::set_monitoring_feeds(true);
-	server->activating = false;
+	server->activating.clear();
 }
 
 void CameraWeb::_update_feeds() {
-	activating = true;
+	activating.set();
 	camera_driver_web->get_cameras((void *)this, &_on_get_cameras_callback);
 }
 
@@ -168,7 +168,7 @@ void CameraWeb::_cleanup() {
 }
 
 void CameraWeb::set_monitoring_feeds(bool p_monitoring_feeds) {
-	if (p_monitoring_feeds == monitoring_feeds || activating) {
+	if (p_monitoring_feeds == monitoring_feeds || activating.is_set()) {
 		return;
 	}
 
