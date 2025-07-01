@@ -37,6 +37,7 @@
 class CameraLinux : public CameraServer {
 private:
 	SafeFlag exit_flag;
+	SafeFlag activating;
 	Thread camera_thread;
 	Mutex camera_mutex;
 

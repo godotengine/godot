@@ -49,6 +49,23 @@
 		<member name="monitoring_feeds" type="bool" setter="set_monitoring_feeds" getter="is_monitoring_feeds" default="false">
 			If [code]true[/code], the server is actively monitoring available camera feeds.
 			This has a performance cost, so only set it to [code]true[/code] when you're actively accessing the camera.
+			[b]Note:[/b] After setting this to [code]true[/code], camera feeds will be available a few frames later.
+			[codeblocks]
+			[gdscript]
+			CameraServer.monitoring_feeds = true
+			while not CameraServer.monitoring_feeds:
+				await get_tree().process_frame
+			var feeds = CameraServer.feeds()
+			[/gdscript]
+			[csharp]
+			CameraServer.MonitoringFeeds = true
+			while (!CameraServer.MonitoringFeeds)
+			{
+				await GetTree().ProcessFrame;
+			}
+			var feeds = CameraServer.Feeds();
+			[/csharp]
+			[/codeblocks]
 		</member>
 	</members>
 	<signals>
