@@ -278,14 +278,14 @@ private:
 		&wl_region_interface,
 		&wl_registry_interface,
 		&wl_seat_interface,
-		//&wl_shell_interface,
-		//&wl_shell_surface_interface,
+		//&wl_shell_interface, // Deprecated.
+		//&wl_shell_surface_interface, // Deprecated.
 		&wl_shm_interface,
 		&wl_shm_pool_interface,
 		&wl_subcompositor_interface,
 		&wl_subsurface_interface,
 		&wl_surface_interface,
-		//&wl_touch_interface,
+		//&wl_touch_interface, // Unused (at the moment).
 
 		// xdg-shell
 		&xdg_wm_base_interface,
