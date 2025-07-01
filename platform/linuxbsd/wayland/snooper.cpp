@@ -38,9 +38,7 @@
 //  - Implement custom focusing logic for tablet
 //
 //  - Track and report state for all non-destructible objects on instancing
-//  (luckily there are few of them)
-//
-//  - Re-enable libdecor
+//    (luckily there are few of them)
 //
 //  - Keep cleaning up this mess (code still sucks)
 //
