@@ -817,6 +817,7 @@ void Spatial::set_as_toplevel(bool p_enabled) {
 	} else {
 		data.toplevel = p_enabled;
 	}
+	reset_physics_interpolation();
 }
 
 bool Spatial::is_set_as_toplevel() const {
