@@ -2064,13 +2064,16 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 						break;
 					}
 
-					{
+					if (base.type.is_constant && index.type.is_constant) {
 						bool valid;
-						Variant value = base.value.get(index.value, &valid);
-						if (valid) {
-							r_type = _type_from_variant(value, p_context);
-							found = true;
-							break;
+						bool has_key = base.value.has_key(index.value, valid);
+						if (has_key) {
+							Variant value = base.value.get(index.value, &valid);
+							if (valid) {
+								r_type = _type_from_variant(value, p_context);
+								found = true;
+								break;
+							}
 						}
 					}
 
