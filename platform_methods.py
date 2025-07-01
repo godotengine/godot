@@ -199,7 +199,7 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     dbg_target_bin_sim = lipo(bin_dir + "/" + dbg_prefix, ".simulator" + extra_suffix + ".a")
     # Assemble Xcode project bundle.
     app_dir = env.Dir("#bin/" + platform + "_xcode").abspath
-    templ = env.Dir("#misc/dist/" + platform + "_xcode").abspath
+    templ = env.Dir("#misc/dist/apple_embedded_xcode").abspath
     if os.path.exists(app_dir):
         shutil.rmtree(app_dir)
     shutil.copytree(templ, app_dir)
@@ -225,6 +225,14 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
             dbg_target_bin_sim,
             app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir_sim + "/libgodot.a",
         )
+
+    # Remove other platform xcframeworks
+    for entry in os.listdir(app_dir):
+        if entry.startswith("libgodot.") and entry.endswith(".xcframework"):
+            parts = entry.split(".")
+            if len(parts) >= 3 and parts[1] != platform:
+                full_path = os.path.join(app_dir, entry)
+                shutil.rmtree(full_path)
 
     if use_mkv:
         mvk_path = detect_mvk(env, "ios-arm64")

@@ -47,6 +47,8 @@ class EditorExportPlatformVisionOS : public EditorExportPlatformAppleEmbedded {
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 
+	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) override;
+
 public:
 	virtual String get_name() const override { return "visionOS"; }
 	virtual String get_os_name() const override { return "visionOS"; }
