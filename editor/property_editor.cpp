@@ -834,7 +834,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				color_picker->connect("color_changed", this, "_color_changed");
 
 				// get default color picker mode from editor settings
-				int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+				int default_color_mode = EDITOR_GET_CACHED(int, "interface/inspector/default_color_picker_mode");
 				if (default_color_mode == 1) {
 					color_picker->set_hsv_mode(true);
 				} else if (default_color_mode == 2) {

@@ -808,7 +808,7 @@ void TileMapEditor::_erase_selection() {
 }
 
 void TileMapEditor::_draw_grid(Control *p_viewport, const Rect2 &p_rect) const {
-	if (!EDITOR_GET("editors/tile_map/display_grid")) {
+	if (!EDITOR_GET_CACHED(bool, "editors/tile_map/display_grid")) {
 		return;
 	}
 
@@ -821,8 +821,8 @@ void TileMapEditor::_draw_grid(Control *p_viewport, const Rect2 &p_rect) const {
 	if (distance_fade <= 0) {
 		return;
 	}
-	const Color grid_color = Color(EDITOR_GET("editors/tile_map/grid_color")) * Color(1, 1, 1, distance_fade);
-	const Color axis_color = Color(EDITOR_GET("editors/tile_map/axis_color")) * Color(1, 1, 1, distance_fade);
+	const Color grid_color = EDITOR_GET_CACHED(Color, "editors/tile_map/grid_color") * Color(1, 1, 1, distance_fade);
+	const Color axis_color = EDITOR_GET_CACHED(Color, "editors/tile_map/axis_color") * Color(1, 1, 1, distance_fade);
 
 	const int fade = 5;
 	const Rect2i si = p_rect.grow(fade);

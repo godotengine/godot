@@ -2049,6 +2049,8 @@ bool Main::start() {
 		EditorNode *editor_node = nullptr;
 		if (editor) {
 			editor_node = memnew(EditorNode);
+			EditorSettingsQuick::refresh();
+
 			sml->get_root()->add_child(editor_node);
 
 			if (_export_preset != "") {

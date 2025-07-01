@@ -871,12 +871,12 @@ void VisualShaderEditor::_update_graph() {
 			expression_node->set_control(expression_box, 0);
 			node->add_child(expression_box);
 
-			Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
-			Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
-			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-			Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
-			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
-			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
+			Color background_color = EDITOR_GET_CACHED(Color, "text_editor/highlighting/background_color");
+			Color text_color = EDITOR_GET_CACHED(Color, "text_editor/highlighting/text_color");
+			Color keyword_color = EDITOR_GET_CACHED(Color, "text_editor/highlighting/keyword_color");
+			Color control_flow_keyword_color = EDITOR_GET_CACHED(Color, "text_editor/highlighting/control_flow_keyword_color");
+			Color comment_color = EDITOR_GET_CACHED(Color, "text_editor/highlighting/comment_color");
+			Color symbol_color = EDITOR_GET_CACHED(Color, "text_editor/highlighting/symbol_color");
 
 			expression_box->set_syntax_coloring(true);
 			expression_box->add_color_override("background_color", background_color);

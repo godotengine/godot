@@ -34,6 +34,7 @@
 #include "core/object.h"
 
 #include "core/io/config_file.h"
+#include "core/os/spin_lock.h"
 #include "core/os/thread_safe.h"
 #include "core/resource.h"
 #include "core/translation.h"
@@ -41,11 +42,28 @@
 
 class EditorPlugin;
 
+// Fast access to frequently used settings.
+class EditorSettingsQuick {
+	struct Data {
+		bool text_editor_completion_use_single_quotes = false;
+	};
+	static Data data;
+
+public:
+	static bool get_text_editor_completion_use_single_quotes() { return data.text_editor_completion_use_single_quotes; }
+
+	static void refresh();
+};
+
 class EditorSettings : public Resource {
 	GDCLASS(EditorSettings, Resource);
 
 private:
 	_THREAD_SAFE_CLASS_
+
+	// Starting version from 1 ensures that all callers can reset their tested version to 0,
+	// and will always detect the initial editor settings as a "change".
+	uint32_t _version = 1;
 
 public:
 	struct Plugin {
@@ -199,6 +217,9 @@ public:
 
 	void notify_changes();
 
+	// Testing a version allows fast cached EDITOR_GET macros.
+	uint32_t get_version() const { return _version; }
+
 	EditorSettings();
 	~EditorSettings();
 };
@@ -215,5 +236,28 @@ Variant _EDITOR_GET(const String &p_setting);
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
 Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
 Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path);
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Cached versions of EDITOR_GET.
+// Cached but uses a typed variable for storage, this can be more efficient.
+// Variables prefixed with _egc_ to avoid shadowing warnings.
+#define EDITOR_GET_CACHED(m_type, m_setting_name) ([](const char *p_egc_name) -> m_type {\
+static_assert(std::is_trivially_destructible<m_type>::value, "EDITOR_GET_CACHED must use a trivial type that allows static lifetime.");\
+static m_type _egc_local_var;\
+static uint32_t _egc_local_version = 0;\
+static SpinLock _egc_spin;\
+uint32_t _egc_new_version = EditorSettings::get_singleton()->get_version();\
+if (_egc_local_version != _egc_new_version) {\
+	_egc_spin.lock();\
+	_egc_local_version = _egc_new_version;\
+	_egc_local_var = _EDITOR_GET(p_egc_name);\
+	m_type _egc_temp = _egc_local_var;\
+	_egc_spin.unlock();\
+	return _egc_temp;\
+}\
+_egc_spin.lock();\
+m_type _egc_temp2 = _egc_local_var;\
+_egc_spin.unlock();\
+return _egc_temp2; })(m_setting_name)
 
 #endif // EDITOR_SETTINGS_H

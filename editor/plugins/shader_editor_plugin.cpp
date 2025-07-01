@@ -432,7 +432,7 @@ void ShaderEditor::_check_for_external_edit() {
 		return;
 	}
 
-	bool use_autoreload = EDITOR_GET("text_editor/files/auto_reload_scripts_on_external_change");
+	bool use_autoreload = EDITOR_GET_CACHED(bool, "text_editor/files/auto_reload_scripts_on_external_change");
 	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
 		if (use_autoreload) {
 			_reload_shader_from_disk();

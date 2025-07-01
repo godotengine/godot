@@ -480,16 +480,17 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 		//-------
 		// Perform smoothing
 
+		const float orbit_inertia = EDITOR_GET_CACHED(float, "editors/3d/navigation_feel/orbit_inertia");
+
 		if (is_freelook_active()) {
 			// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
 			// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
-			const real_t inertia = EDITOR_GET("editors/3d/freelook/freelook_inertia");
+			const real_t inertia = EDITOR_GET_CACHED(real_t, "editors/3d/freelook/freelook_inertia");
 			real_t factor = (1.0 / inertia) * p_interp_delta;
 
 			// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
 			camera_cursor.eye_pos = old_camera_cursor.eye_pos.linear_interpolate(cursor.eye_pos, CLAMP(factor, 0, 1));
 
-			const float orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
 			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 
@@ -504,9 +505,8 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 			camera_cursor.pos = camera_cursor.eye_pos + forward * camera_cursor.distance;
 
 		} else {
-			const float orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
-			const float translation_inertia = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
-			const float zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
+			const float translation_inertia = EDITOR_GET_CACHED(float, "editors/3d/navigation_feel/translation_inertia");
+			const float zoom_inertia = EDITOR_GET_CACHED(float, "editors/3d/navigation_feel/zoom_inertia");
 
 			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
@@ -1744,7 +1744,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				Vector3 ray_pos = _get_ray_pos(m->get_position());
 				Vector3 ray = _get_ray(m->get_position());
-				double snap = EDITOR_GET("interface/inspector/default_float_step");
+				double snap = EDITOR_GET_CACHED(double, "interface/inspector/default_float_step");
 				int snap_step_decimals = Math::range_step_decimals(snap);
 
 				switch (_edit.mode) {
@@ -7530,7 +7530,7 @@ SpatialEditorPlugin::~SpatialEditorPlugin() {
 }
 
 void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
-	Color instanced_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
+	Color instanced_color = EDITOR_GET_CACHED(Color, "editors/3d_gizmos/gizmo_colors/instanced");
 
 	Vector<Ref<Material3D>> mats;
 
@@ -7571,7 +7571,7 @@ void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color
 }
 
 void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture> &p_texture, bool p_on_top, const Color &p_albedo) {
-	Color instanced_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
+	Color instanced_color = EDITOR_GET_CACHED(Color, "editors/3d_gizmos/gizmo_colors/instanced");
 
 	Vector<Ref<Material3D>> icons;
 

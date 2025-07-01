@@ -3458,14 +3458,14 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 			insert_confirm->popup_centered_minsize();
 			insert_query = true;
 		} else {
-			call_deferred("_insert_delay", reset_allowed && EDITOR_GET("editors/animation/default_create_reset_tracks"), all_bezier && EDITOR_GET("editors/animation/default_create_bezier_tracks"));
+			call_deferred("_insert_delay", reset_allowed && EDITOR_GET_CACHED(bool, "editors/animation/default_create_reset_tracks"), all_bezier && EDITOR_GET_CACHED(bool, "editors/animation/default_create_bezier_tracks"));
 			insert_queue = true;
 		}
 
 	} else {
 		if (!insert_query && !insert_queue) {
 			// Create Beziers wouldn't make sense in this case, where no tracks are being created
-			call_deferred("_insert_delay", reset_allowed && EDITOR_GET("editors/animation/default_create_reset_tracks"), false);
+			call_deferred("_insert_delay", reset_allowed && EDITOR_GET_CACHED(bool, "editors/animation/default_create_reset_tracks"), false);
 			insert_queue = true;
 		}
 	}

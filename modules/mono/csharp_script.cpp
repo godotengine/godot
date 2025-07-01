@@ -507,10 +507,10 @@ String CSharpLanguage::make_function(const String &, const String &, const PoolS
 String CSharpLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_space_indentation = EDITOR_GET("text_editor/indent/type");
+		bool use_space_indentation = EDITOR_GET_CACHED(bool, "text_editor/indent/type");
 
 		if (use_space_indentation) {
-			int indent_size = EDITOR_GET("text_editor/indent/size");
+			int indent_size = EDITOR_GET_CACHED(int, "text_editor/indent/size");
 
 			String space_indent = "";
 			for (int i = 0; i < indent_size; i++) {

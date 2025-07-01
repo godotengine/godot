@@ -281,7 +281,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 
 	if (item.kind == lsp::CompletionItemKind::Event) {
 		if (params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter && (params.context.triggerCharacter == "(")) {
-			const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+			const String quote_style = EditorSettingsQuick::get_text_editor_completion_use_single_quotes() ? "'" : "\"";
 			item.insertText = quote_style + item.label + quote_style;
 		}
 	}

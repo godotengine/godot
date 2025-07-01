@@ -47,6 +47,12 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 
+EditorSettingsQuick::Data EditorSettingsQuick::data = EditorSettingsQuick::Data();
+
+void EditorSettingsQuick::refresh() {
+	data.text_editor_completion_use_single_quotes = EDITOR_GET_CACHED(bool, "text_editor/completion/use_single_quotes");
+}
+
 // PRIVATE METHODS
 
 Ref<EditorSettings> EditorSettings::singleton = nullptr;
@@ -106,6 +112,10 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 				changed = true;
 			}
 		}
+	}
+
+	if (changed) {
+		_version++;
 	}
 
 	return changed;
@@ -1155,6 +1165,7 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 	}
 	props[p_setting].initial = p_value;
 	props[p_setting].has_default_value = true;
+
 	if (p_update_current) {
 		set(p_setting, p_value);
 	}
@@ -1604,6 +1615,8 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 
 void EditorSettings::notify_changes() {
 	_THREAD_SAFE_METHOD_
+
+	EditorSettingsQuick::refresh();
 
 	SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 
