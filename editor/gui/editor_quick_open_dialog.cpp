@@ -525,15 +525,14 @@ void QuickOpenResultContainer::_use_default_candidates() {
 	if (history) {
 		candidates.append_array(*history);
 	}
-	int count = candidates.size();
 	candidates.resize(MIN(max_total_results, filepaths.size()));
+	int count = candidates.size();
+	int i = 0;
 	for (const String &filepath : filepaths) {
-		if (count >= max_total_results) {
+		if (i >= count) {
 			break;
 		}
-		if (!history || !history_set.has(filepath)) {
-			_setup_candidate(candidates.write[count++], filepath);
-		}
+		_setup_candidate(candidates.write[i++], filepath);
 	}
 }
 
