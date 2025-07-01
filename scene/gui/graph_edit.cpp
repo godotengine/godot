@@ -39,6 +39,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit_arranger.h"
+#include "scene/gui/graph_node_indexed.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_bar.h"
@@ -327,16 +328,30 @@ Error GraphEdit::connect_nodes_indexed(String p_first_node, int p_first_port, St
 	return connect_nodes(first_node->get_port(p_first_port), second_node->get_port(p_second_port), !keep_alive);
 }
 
-bool GraphEdit::is_connected(Ref<GraphPort> p_first_port, Ref<GraphPort> p_second_port) {
-	for (Ref<GraphConnection> conn : connection_map[p_first_port]) {
-		if (conn.is_null()) {
-			continue;
-		}
-		if (conn->second_port == p_second_port) {
-			return true;
-		}
-	}
-	return false;
+// These legacy methods are used by the visual shader system, which tracks connections using per-side port indices.
+// Ideally, visual shaders will be overhauled in the future to behave better, but for now, the goal is to get this feature done without breaking visual shaders.
+Error GraphEdit::connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool keep_alive) {
+	GraphNodeIndexed *first_node = Object::cast_to<GraphNodeIndexed>(get_node_or_null(NodePath(p_from_node)));
+	GraphNodeIndexed *second_node = Object::cast_to<GraphNodeIndexed>(get_node_or_null(NodePath(p_to_node)));
+	ERR_FAIL_NULL_V(first_node, FAILED);
+	ERR_FAIL_NULL_V(second_node, FAILED);
+	return connect_nodes(first_node->get_output_port(p_from_port), second_node->get_input_port(p_to_port), !keep_alive);
+}
+
+void GraphEdit::disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port) {
+	GraphNode *first_node = Object::cast_to<GraphNode>(get_node_or_null(NodePath(p_first_node)));
+	GraphNode *second_node = Object::cast_to<GraphNode>(get_node_or_null(NodePath(p_second_node)));
+	ERR_FAIL_NULL(first_node);
+	ERR_FAIL_NULL(second_node);
+	disconnect_nodes(first_node->get_port(p_first_port), second_node->get_port(p_second_port));
+}
+
+void GraphEdit::disconnect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port) {
+	GraphNodeIndexed *first_node = Object::cast_to<GraphNodeIndexed>(get_node_or_null(NodePath(p_from_node)));
+	GraphNodeIndexed *second_node = Object::cast_to<GraphNodeIndexed>(get_node_or_null(NodePath(p_to_node)));
+	ERR_FAIL_NULL(first_node);
+	ERR_FAIL_NULL(second_node);
+	disconnect_nodes(first_node->get_output_port(p_from_port), second_node->get_input_port(p_to_port));
 }
 
 void GraphEdit::disconnect_by_connection(Ref<GraphConnection> p_connection) {
@@ -364,6 +379,10 @@ void GraphEdit::disconnect_all_by_port(const Ref<GraphPort> p_port) {
 	}
 }
 
+void GraphEdit::disconnect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port) {
+	disconnect_by_connection(get_connection(p_first_port, p_second_port));
+}
+
 void GraphEdit::move_connections(const Ref<GraphPort> p_from_port, const Ref<GraphPort> p_to_port) {
 	for (Ref<GraphConnection> conn : connection_map[p_from_port]) {
 		if (conn.is_null()) {
@@ -374,16 +393,16 @@ void GraphEdit::move_connections(const Ref<GraphPort> p_from_port, const Ref<Gra
 	}
 }
 
-void GraphEdit::disconnect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port) {
-	disconnect_by_connection(get_connection(p_first_port, p_second_port));
-}
-
-void GraphEdit::disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port) {
-	GraphNode *first_node = Object::cast_to<GraphNode>(get_node_or_null(NodePath(p_first_node)));
-	GraphNode *second_node = Object::cast_to<GraphNode>(get_node_or_null(NodePath(p_second_node)));
-	ERR_FAIL_NULL(first_node);
-	ERR_FAIL_NULL(second_node);
-	disconnect_nodes(first_node->get_port(p_first_port), second_node->get_port(p_second_port));
+bool GraphEdit::is_connected(Ref<GraphPort> p_first_port, Ref<GraphPort> p_second_port) {
+	for (Ref<GraphConnection> conn : connection_map[p_first_port]) {
+		if (conn.is_null()) {
+			continue;
+		}
+		if (conn->second_port == p_second_port) {
+			return true;
+		}
+	}
+	return false;
 }
 
 const Ref<GraphConnection> GraphEdit::get_connection(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port) {
@@ -1612,8 +1631,10 @@ void GraphEdit::_update_top_connection_layer() {
 	}
 
 	ERR_FAIL_COND(connecting_from_port.is_null());
+	ERR_FAIL_NULL(connecting_from_port->get_graph_node());
 
-	Vector2 from_pos = connecting_from_port->get_position() / zoom;
+	Vector2 from_node_pos = connecting_from_port->get_graph_node()->get_position();
+	Vector2 from_pos = (from_node_pos / zoom) + connecting_from_port->get_position();
 	Vector2 to_pos = connecting_to_point / zoom;
 	int from_type = connecting_from_port->get_type();
 	int to_type = from_type;
@@ -1622,6 +1643,7 @@ void GraphEdit::_update_top_connection_layer() {
 
 	if (connecting_target_valid) {
 		ERR_FAIL_COND(connecting_to_port.is_null());
+		ERR_FAIL_NULL(connecting_to_port->get_graph_node());
 		to_type = connecting_to_port->get_type();
 		to_color = connecting_to_port->color;
 
@@ -1630,8 +1652,8 @@ void GraphEdit::_update_top_connection_layer() {
 		to_color = to_color.blend(theme_cache.connection_valid_target_tint_color);
 	}
 
-	if (connecting_to_port->get_direction() == GraphPort::PortDirection::OUTPUT ||
-			connecting_from_port->get_direction() == GraphPort::PortDirection::INPUT) {
+	if (connecting_from_port->get_direction() == GraphPort::PortDirection::INPUT ||
+			(connecting_to_port.is_valid() && connecting_to_port->get_direction() == GraphPort::PortDirection::OUTPUT)) {
 		SWAP(from_pos, to_pos);
 		SWAP(from_type, to_type);
 		SWAP(from_color, to_color);

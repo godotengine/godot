@@ -44,8 +44,9 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 		return;
 	}
 
+	int index = p_child->get_index(false);
 	if (!is_ready()) {
-		_slot_node_map_cache[p_child->get_name()] = p_child->get_index(false);
+		_slot_node_map_cache[p_child->get_name()] = index;
 		return;
 	}
 
@@ -54,7 +55,6 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	int index = p_child->get_index(false);
 	create_slot_and_ports(index, true);
 }
 
@@ -306,19 +306,39 @@ void GraphNodeIndexed::_port_pos_update() {
 }
 
 int GraphNodeIndexed::slot_index_of_port(const Ref<GraphPort> p_port) {
-	return port_to_slot_index(index_of_port(p_port));
+	int idx = 0;
+	for (Slot slot : slots) {
+		if (slot.left_port == p_port || slot.right_port == p_port) {
+			return idx;
+		}
+		idx++;
+	}
+	return -1;
 }
 
-void GraphNodeIndexed::set_input_port_properties(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon) {
+int GraphNodeIndexed::index_of_input_port(const Ref<GraphPort> p_port, bool p_include_disabled) {
+	return filtered_index_of_port(p_port, p_include_disabled);
+}
+
+int GraphNodeIndexed::index_of_output_port(const Ref<GraphPort> p_port, bool p_include_disabled) {
+	return filtered_index_of_port(p_port, p_include_disabled);
+}
+
+void GraphNodeIndexed::set_slot_properties(int p_slot_index, bool p_input_enabled, bool p_input_type, Color p_input_color, bool p_output_enabled, bool p_output_type, Color p_output_color) {
+	set_input_port_properties(p_slot_index, p_input_enabled, p_input_type, p_input_color);
+	set_output_port_properties(p_slot_index, p_output_enabled, p_output_type, p_output_color);
+}
+
+void GraphNodeIndexed::set_input_port_properties(int p_slot_index, bool p_enabled, int p_type, Color p_color, Ref<Texture2D> p_icon) {
 	Ref<GraphPort> port = get_input_port(p_slot_index);
 	ERR_FAIL_COND(port.is_null());
-	port->set_properties(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::INPUT, p_icon);
+	port->set_properties(p_enabled, true, p_type, p_color, GraphPort::PortDirection::INPUT, p_icon);
 }
 
-void GraphNodeIndexed::set_output_port_properties(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon) {
+void GraphNodeIndexed::set_output_port_properties(int p_slot_index, bool p_enabled, int p_type, Color p_color, Ref<Texture2D> p_icon) {
 	Ref<GraphPort> port = get_output_port(p_slot_index);
 	ERR_FAIL_COND(port.is_null());
-	port->set_properties(p_enabled, p_exclusive, p_type, p_color, GraphPort::PortDirection::OUTPUT, p_icon);
+	port->set_properties(p_enabled, false, p_type, p_color, GraphPort::PortDirection::OUTPUT, p_icon);
 }
 
 Ref<GraphPort> GraphNodeIndexed::get_input_port(int p_slot_index) {
@@ -345,17 +365,25 @@ void GraphNodeIndexed::set_output_port(int p_slot_index, const Ref<GraphPort> p_
 	notify_property_list_changed();
 }
 
-int GraphNodeIndexed::port_to_slot_index(int p_port_index) {
+int GraphNodeIndexed::get_input_port_count() {
+	return get_filtered_port_count(GraphPort::PortDirection::INPUT);
+}
+
+int GraphNodeIndexed::get_output_port_count() {
+	return get_filtered_port_count(GraphPort::PortDirection::OUTPUT);
+}
+
+int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabled) {
 	int idx = 0;
 	int slot_idx = 0;
 	for (Slot slot : slots) {
-		if (slot.left_port.is_valid() && slot.left_port->get_enabled()) {
+		if (slot.left_port.is_valid() && (p_include_disabled || slot.left_port->get_enabled())) {
 			if (idx == p_port_index) {
 				return slot_idx;
 			}
 			idx++;
 		}
-		if (slot.right_port.is_valid() && slot.right_port->get_enabled()) {
+		if (slot.right_port.is_valid() && (p_include_disabled || slot.right_port->get_enabled())) {
 			if (idx == p_port_index) {
 				return slot_idx;
 			}
@@ -366,74 +394,34 @@ int GraphNodeIndexed::port_to_slot_index(int p_port_index) {
 	return -1;
 }
 
-int GraphNodeIndexed::split_port_to_slot_index(int p_port_index, bool p_input) {
-	int idx = 0;
-	int slot_idx = 0;
-	for (Slot slot : slots) {
-		if (p_input && slot.left_port.is_valid() && slot.left_port->get_enabled()) {
-			if (idx == p_port_index) {
-				return slot_idx;
-			}
-			idx++;
-		}
-		if (!p_input && slot.right_port.is_valid() && slot.right_port->get_enabled()) {
-			if (idx == p_port_index) {
-				return slot_idx;
-			}
-			idx++;
-		}
-		slot_idx++;
+int GraphNodeIndexed::slot_to_port_index(int p_slot_index, bool p_input, bool p_include_disabled) {
+	int idx = p_slot_index * 2 + (p_input ? 0 : 1);
+	if (p_include_disabled) {
+		return idx;
+	} else {
+		PortCache p_cache = port_cache[idx];
+		return p_cache.enabled_index;
 	}
-	return -1;
 }
 
-int GraphNodeIndexed::slot_to_port_index(int p_slot_index, bool p_input) {
-	int idx = 0;
-	int slot_idx = 0;
-	for (Slot slot : slots) {
-		if (slot_idx == p_slot_index) {
-			if (p_input) {
-				ERR_FAIL_COND_V(slot.left_port.is_null(), -1);
-			} else {
-				ERR_FAIL_COND_V(slot.right_port.is_null(), -1);
-				if (slot.left_port.is_valid() && slot.left_port->get_enabled()) {
-					idx++;
-				}
-			}
-			return idx;
-		}
-		if (slot.left_port.is_valid() && slot.left_port->get_enabled()) {
-			idx++;
-		}
-		if (slot.right_port.is_valid() && slot.right_port->get_enabled()) {
-			idx++;
-		}
-		slot_idx++;
-	}
-	return -1;
+int GraphNodeIndexed::slot_to_input_port_index(int p_slot_index, bool p_include_disabled) {
+	PortCache p_cache = port_cache[p_slot_index * 2];
+	return p_include_disabled ? p_cache.filtered_index : p_cache.filtered_enabled_index;
 }
 
-int GraphNodeIndexed::slot_to_split_port_index(int p_slot_index, bool p_input) {
-	int idx = 0;
-	int slot_idx = 0;
-	for (Slot slot : slots) {
-		if (slot_idx == p_slot_index) {
-			if (p_input) {
-				ERR_FAIL_COND_V(slot.left_port.is_null(), -1);
-			} else {
-				ERR_FAIL_COND_V(slot.right_port.is_null(), -1);
-			}
-			return idx;
-		}
-		if (p_input && slot.left_port.is_valid() && slot.left_port->get_enabled()) {
-			idx++;
-		}
-		if (!p_input && slot.right_port.is_valid() && slot.right_port->get_enabled()) {
-			idx++;
-		}
-		slot_idx++;
-	}
-	return -1;
+int GraphNodeIndexed::slot_to_output_port_index(int p_slot_index, bool p_include_disabled) {
+	PortCache p_cache = port_cache[p_slot_index * 2 + 1];
+	return p_include_disabled ? p_cache.filtered_index : p_cache.filtered_enabled_index;
+}
+
+int GraphNodeIndexed::input_port_to_slot_index(int p_port_index, bool p_include_disabled) {
+	Ref<GraphPort> port = get_filtered_port(p_port_index, GraphPort::PortDirection::INPUT, p_include_disabled);
+	return slot_index_of_port(port);
+}
+
+int GraphNodeIndexed::output_port_to_slot_index(int p_port_index, bool p_include_disabled) {
+	Ref<GraphPort> port = get_filtered_port(p_port_index, GraphPort::PortDirection::OUTPUT, p_include_disabled);
+	return slot_index_of_port(port);
 }
 
 bool GraphNodeIndexed::get_slot_draw_stylebox(int p_slot_index) {
@@ -449,9 +437,67 @@ void GraphNodeIndexed::set_slot_draw_stylebox(int p_slot_index, bool p_draw_styl
 	notify_property_list_changed();
 }
 
+Size2 GraphNodeIndexed::get_minimum_size() const {
+	Ref<StyleBox> sb_panel = theme_cache.panel;
+	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
+	Ref<StyleBox> sb_slot = theme_cache.slot;
+
+	int separation = theme_cache.separation;
+	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child) {
+			continue;
+		}
+
+		Size2i size = child->get_combined_minimum_size();
+		size.width += sb_panel->get_minimum_size().width;
+
+		if (i < slots.size()) {
+			size += slots[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2();
+		}
+
+		minsize.height += size.height;
+		minsize.width = MAX(minsize.width, size.width);
+
+		if (i > 0) {
+			minsize.height += separation;
+		}
+	}
+
+	minsize.height += sb_panel->get_minimum_size().height;
+
+	return minsize;
+}
+
 void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slots", "slots"), &GraphNodeIndexed::set_slots);
 	ClassDB::bind_method(D_METHOD("get_slots"), &GraphNodeIndexed::get_slots);
+
+	ClassDB::bind_method(D_METHOD("set_slot_properties", "slot_index", "input_enabled", "input_type", "input_color", "output_enabled", "output_type", "output_color"), &GraphNodeIndexed::set_slot_properties);
+	ClassDB::bind_method(D_METHOD("set_input_port_properties", "slot_index", "enabled", "type", "color", "icon"), &GraphNodeIndexed::set_input_port_properties, DEFVAL(Ref<Texture2D>()));
+	ClassDB::bind_method(D_METHOD("set_output_port_properties", "slot_index", "enabled", "type", "color", "icon"), &GraphNodeIndexed::set_output_port_properties, DEFVAL(Ref<Texture2D>()));
+
+	ClassDB::bind_method(D_METHOD("set_input_port", "port"), &GraphNodeIndexed::set_input_port);
+	ClassDB::bind_method(D_METHOD("set_output_port", "port"), &GraphNodeIndexed::set_output_port);
+	ClassDB::bind_method(D_METHOD("get_input_port"), &GraphNodeIndexed::get_input_port);
+	ClassDB::bind_method(D_METHOD("get_output_port"), &GraphNodeIndexed::get_output_port);
+
+	ClassDB::bind_method(D_METHOD("get_input_port_count"), &GraphNodeIndexed::get_input_port_count);
+	ClassDB::bind_method(D_METHOD("get_output_port_count"), &GraphNodeIndexed::get_output_port_count);
+
+	ClassDB::bind_method(D_METHOD("slot_index_of_port", "port"), &GraphNodeIndexed::slot_index_of_port);
+	ClassDB::bind_method(D_METHOD("index_of_input_port", "port", "include_disabled"), &GraphNodeIndexed::index_of_input_port, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("index_of_output_port", "port", "include_disabled"), &GraphNodeIndexed::index_of_output_port, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("port_to_slot_index", "port_index", "include_disabled"), &GraphNodeIndexed::port_to_slot_index, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("slot_to_port_index", "slot_index", "is_input_port", "include_disabled"), &GraphNodeIndexed::slot_to_port_index, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("slot_to_input_port_index", "slot_index", "include_disabled"), &GraphNodeIndexed::slot_to_input_port_index, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("slot_to_output_port_index", "slot_index", "include_disabled"), &GraphNodeIndexed::slot_to_output_port_index, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("input_port_to_slot_index", "port_index", "include_disabled"), &GraphNodeIndexed::input_port_to_slot_index, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("output_port_to_slot_index", "port_index", "include_disabled"), &GraphNodeIndexed::output_port_to_slot_index, DEFVAL(true));
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_slots", "get_slots");
 

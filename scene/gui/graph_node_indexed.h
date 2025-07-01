@@ -91,26 +91,41 @@ public:
 
 	void create_slot(int p_slot_index, Ref<GraphPort> p_left_port, Ref<GraphPort> p_right_port, bool draw_stylebox);
 	void create_slot_and_ports(int p_slot_index, bool draw_stylebox);
+
 	void set_slots(TypedArray<Array> p_slots);
 	TypedArray<Array> get_slots();
-	Array get_slot(int p_slot_index);
-	void set_slot(int p_slot_index, const Ref<GraphPort> p_left_port, const Ref<GraphPort> p_right_port, bool draw_stylebox);
-	int slot_index_of_port(const Ref<GraphPort> p_port);
 
-	void set_input_port_properties(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
-	void set_output_port_properties(int p_slot_index, bool p_enabled, bool p_exclusive, int p_type, Color p_color, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
-	Ref<GraphPort> get_input_port(int p_slot_index);
-	Ref<GraphPort> get_output_port(int p_slot_index);
+	void set_slot(int p_slot_index, const Ref<GraphPort> p_left_port, const Ref<GraphPort> p_right_port, bool draw_stylebox);
+	Array get_slot(int p_slot_index);
+
+	void set_slot_properties(int p_slot_index, bool p_input_enabled, bool p_input_type, Color p_input_color, bool p_output_enabled, bool p_output_type, Color p_output_color);
+	void set_input_port_properties(int p_slot_index, bool p_enabled, int p_type, Color p_color, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
+	void set_output_port_properties(int p_slot_index, bool p_enabled, int p_type, Color p_color, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
+
 	void set_input_port(int p_slot_index, const Ref<GraphPort> p_port);
 	void set_output_port(int p_slot_index, const Ref<GraphPort> p_port);
+	Ref<GraphPort> get_input_port(int p_slot_index);
+	Ref<GraphPort> get_output_port(int p_slot_index);
 
-	int port_to_slot_index(int p_port_index);
-	int split_port_to_slot_index(int p_port_index, bool p_input);
-	int slot_to_port_index(int p_slot_index, bool p_input);
-	int slot_to_split_port_index(int p_port_index, bool p_input);
+	int get_input_port_count();
+	int get_output_port_count();
+
+	int slot_index_of_port(const Ref<GraphPort> p_port);
+	int index_of_input_port(const Ref<GraphPort> p_port, bool p_include_disabled = true);
+	int index_of_output_port(const Ref<GraphPort> p_port, bool p_include_disabled = true);
+
+	int port_to_slot_index(int p_port_index, bool p_include_disabled = true);
+	int slot_to_port_index(int p_slot_index, bool p_input, bool p_include_disabled = true);
+
+	int slot_to_input_port_index(int p_slot_index, bool p_include_disabled = true);
+	int slot_to_output_port_index(int p_slot_index, bool p_include_disabled = true);
+	int input_port_to_slot_index(int p_port_index, bool p_include_disabled = true);
+	int output_port_to_slot_index(int p_port_index, bool p_include_disabled = true);
 
 	bool get_slot_draw_stylebox(int p_slot_index);
 	void set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox);
+
+	virtual Size2 get_minimum_size() const override;
 
 	GraphNodeIndexed();
 };

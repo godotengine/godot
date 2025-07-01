@@ -469,8 +469,8 @@ class VisualShaderEditor : public ShaderEditor {
 	void _nodes_dragged();
 	bool updating = false;
 
-	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
-	void _disconnection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
+	void _connection_request(Ref<GraphPort> p_from_port, Ref<GraphPort> p_to_port);
+	void _disconnection_request(Ref<GraphPort> p_from_port, Ref<GraphPort> p_to_port);
 
 	void _scroll_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);
@@ -510,8 +510,8 @@ class VisualShaderEditor : public ShaderEditor {
 	void _unlink_node_from_parent_frame(int p_node_id);
 
 	void _connection_drag_ended();
-	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
-	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
+	void _connection_to_empty(Ref<GraphPort> p_from_port, const Vector2 &p_release_position);
+	void _connection_from_empty(Ref<GraphPort> p_to_port, const Vector2 &p_release_position);
 	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphConnection> *r_closest_connection, int *r_from_port = nullptr, int *r_to_port = nullptr);
 	void _handle_node_drop_on_connection();
 

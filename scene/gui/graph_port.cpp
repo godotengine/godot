@@ -203,6 +203,16 @@ GraphNode *GraphPort::get_graph_node() {
 	return graph_node;
 }
 
+int GraphPort::get_index(bool p_include_disabled) {
+	ERR_FAIL_NULL_V(graph_node, -1);
+	return graph_node->index_of_port(this, p_include_disabled);
+}
+
+int GraphPort::get_filtered_index(bool p_include_disabled) {
+	ERR_FAIL_NULL_V(graph_node, -1);
+	return graph_node->filtered_index_of_port(this, p_include_disabled);
+}
+
 void GraphPort::_enabled() {
 	emit_signal(SNAME("enabled"), this);
 }

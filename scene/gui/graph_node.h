@@ -47,14 +47,20 @@ protected:
 		Vector2 pos = Vector2(0.0, 0.0);
 		int type = 0;
 		Color color = Color(1, 1, 1, 1);
+		int enabled_index = 0;
+		int filtered_index = 0;
+		int filtered_enabled_index = 0;
 
 		PortCache() {}
-		PortCache(const Vector2 p_pos, int p_type, const Color p_color) :
-				pos(p_pos), type(p_type), color(p_color) {}
-		PortCache(const Ref<GraphPort> p_port) {
+		PortCache(const Vector2 p_pos, int p_type, const Color p_color, int p_enabled_index, int p_filtered_index, int p_filtered_enabled_index) :
+				pos(p_pos), type(p_type), color(p_color), enabled_index(p_enabled_index), filtered_index(p_filtered_index), filtered_enabled_index(p_filtered_enabled_index) {}
+		PortCache(const Ref<GraphPort> p_port, int p_enabled_index, int p_filtered_index, int p_filtered_enabled_index) {
 			pos = p_port->position;
 			type = p_port->type;
 			color = p_port->color;
+			enabled_index = p_enabled_index;
+			filtered_index = p_filtered_index;
+			filtered_enabled_index = p_filtered_enabled_index;
 		}
 	};
 
@@ -81,6 +87,10 @@ protected:
 	TypedArray<Ref<GraphPort>> ports;
 	Vector<PortCache> port_cache;
 
+	int port_count = 0;
+	int enabled_port_count = 0;
+	PackedByteArray directed_port_count = { 0, 0, 0 };
+	PackedByteArray directed_enabled_port_count = { 0, 0, 0 };
 	int selected_port = -1;
 
 	bool port_pos_dirty = true;
@@ -115,6 +125,7 @@ protected:
 	const TypedArray<Ref<GraphPort>> &_get_ports();
 
 	virtual void _port_pos_update();
+	virtual void _port_rebuild_cache();
 	void _port_modified();
 	//bool _set(const StringName &p_name, const Variant &p_value);
 	//bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -123,24 +134,31 @@ protected:
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	Control *get_accessibility_node_by_port(int p_port_idx);
+	Control *get_accessibility_node_by_port(int p_port_index);
 
 	void set_title(const String &p_title);
 	String get_title() const;
 
 	HBoxContainer *get_titlebar_hbox();
 
-	Ref<GraphPort> get_port(int p_port_idx);
 	void set_ports(Array p_ports);
 	Array get_ports();
-	int index_of_port(const Ref<GraphPort> p_port);
-	void add_port(const Ref<GraphPort> port);
-	void insert_port(int p_port_index, const Ref<GraphPort> p_port);
-	void set_port(int p_port_index, const Ref<GraphPort> p_port);
-	void remove_port(int p_port_index);
 	void remove_all_ports();
-	int get_port_count();
-	Vector2 update_port_position(int p_port_idx);
+	void set_port(int p_port_index, const Ref<GraphPort> p_port, bool p_include_disabled = true);
+	Ref<GraphPort> get_port(int p_port_index, bool p_include_disabled = true);
+	Ref<GraphPort> get_filtered_port(int p_port_index, GraphPort::PortDirection p_direction, bool p_include_disabled = true);
+	void add_port(const Ref<GraphPort> port);
+	void insert_port(int p_port_index, const Ref<GraphPort> p_port, bool p_include_disabled = true);
+	void remove_port(int p_port_index, bool p_include_disabled = true);
+
+	int get_port_count(bool p_include_disabled = true);
+	int get_filtered_port_count(GraphPort::PortDirection p_filter_direction, bool p_include_disabled = true);
+	int index_of_port(const Ref<GraphPort> p_port, bool p_include_disabled = true);
+	int filtered_index_of_port(const Ref<GraphPort> p_port, bool p_include_disabled = true);
+	int enabled_index_to_port_index(int p_port_index);
+	int port_index_to_enabled_index(int p_port_index);
+
+	Vector2 update_port_position(int p_port_index, bool p_include_disabled = true);
 
 	void set_ignore_invalid_connection_type(bool p_ignore);
 	bool is_ignoring_valid_connection_type() const;

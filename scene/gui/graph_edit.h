@@ -369,15 +369,17 @@ public:
 	// Connection related methods.
 	Error connect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port, bool keep_alive = false);
 	Error connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool keep_alive = false);
+	Error connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool keep_alive = false);
+	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
+	void disconnect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port);
+	void disconnect_by_connection(const Ref<GraphConnection> p_connection);
+	void disconnect_all_by_port(const Ref<GraphPort> p_port);
+	void disconnect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
+	void move_connections(const Ref<GraphPort> p_from_port, const Ref<GraphPort> p_to_port);
 	bool is_connected(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
 	int get_connection_count(const Ref<GraphPort> p_port);
 	GraphNode *get_connection_target(const Ref<GraphPort> p_port);
 	String get_connections_description(const Ref<GraphPort> p_port);
-	void disconnect_by_connection(const Ref<GraphConnection> p_connection);
-	void disconnect_all_by_port(const Ref<GraphPort> p_port);
-	void disconnect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
-	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
-	void move_connections(const Ref<GraphPort> p_from_port, const Ref<GraphPort> p_to_port);
 
 	void force_connection_drag_end();
 	const Ref<GraphConnection> get_connection(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);

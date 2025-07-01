@@ -165,7 +165,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->set_expand_to_text_length_enabled(true);
 			name->set_custom_minimum_size(Vector2(100, 0) * EDSCALE);
 			node->add_child(name);
-			node->set_output_port_properties(0, true, false, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
+			node->set_output_port_properties(0, true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
 			name->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
@@ -187,7 +187,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			Label *in_name = memnew(Label);
 			node->add_child(in_name);
 			in_name->set_text(agnode->get_input_name(i));
-			node->set_input_port_properties(base + i, true, false, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
+			node->set_input_port_properties(base + i, true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
 		}
 
 		List<PropertyInfo> pinfo;

@@ -39,6 +39,7 @@ class GraphPort : public Resource {
 
 	friend class GraphEdit;
 	friend class GraphNode;
+	friend class GraphNodeIndexed;
 	friend class GraphConnection;
 
 public:
@@ -108,6 +109,9 @@ public:
 	void set_position(const Vector2 p_position);
 	Vector2 get_position();
 	GraphNode *get_graph_node();
+
+	int get_index(bool p_include_disabled = true);
+	int get_filtered_index(bool p_include_disabled = true);
 
 	GraphPort();
 	GraphPort(GraphNode *p_graph_node);
