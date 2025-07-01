@@ -2284,41 +2284,33 @@ void AnimationKeyEdit::show_popup_menu(Ref<InputEventMouseButton> &mb) {
 	if (pos.x >= limit && pos.x <= limit_end) {
 		float scale = timeline->get_zoom_scale();
 
-	length = memnew(EditorSpinSlider);
-	length->set_min(SECOND_DECIMAL);
-	length->set_max(36000);
-	length->set_step(SECOND_DECIMAL);
-	length->set_allow_greater(true);
-	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
-	length->set_hide_slider(true);
-	length->set_tooltip_text(TTR("Animation length (seconds)"));
-	length->set_accessibility_name(TTRC("Animation length (seconds)"));
-	length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
-	len_hb->add_child(length);
+		// Can do something with menu too! show insert keyl.
+		float offset = (pos.x - limit) / scale;
+		if (!read_only) {
+			bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
 
-	loop = memnew(Button);
-	loop->set_flat(true);
-	loop->set_tooltip_text(TTR("Animation Looping"));
-	loop->connect(SceneStringName(pressed), callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
-	loop->set_toggle_mode(true);
-	len_hb->add_child(loop);
-	add_child(len_hb);
+			menu->clear();
+			create_popup_menu(menu, selected);
+			menu->reset_size();
 
-		menu->set_position(get_screen_position() + get_local_mouse_position());
-		menu->popup();
+			moving_selection_attempt = false;
+			set_moving_selection(false);
 
-		insert_at_pos = offset + timeline->get_value();
-		accept_event();
+			menu->set_position(get_screen_position() + get_local_mouse_position());
+			menu->popup();
+
+			insert_at_pos = offset + timeline->get_value();
+			accept_event();
+		}
 	}
-}
 
-if (is_moving_selection()) {
 	if (is_moving_selection()) {
-		moving_selection_attempt = false;
-		set_moving_selection(false);
-		_move_selection_cancel();
+		if (is_moving_selection()) {
+			moving_selection_attempt = false;
+			set_moving_selection(false);
+			_move_selection_cancel();
+		}
 	}
-}
 }
 
 bool AnimationKeyEdit::is_linked(const int p_index, const int p_index_next) const {
@@ -8792,12 +8784,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ease_selection->add_item(TTR("OutIn", "Ease Type"), Tween::EASE_OUT_IN);
 	ease_selection->select(Tween::EASE_IN_OUT); // Default
 	ease_selection->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Translation context is needed.
-	ease_fps_sp = memnew(SpinBox);
-	ease_fps_sp->set_min(FPS_DECIMAL);
-	ease_fps_sp->set_max(999);
-	ease_fps_sp->set_step(FPS_DECIMAL);
-	ease_fps_sp->set_value(30); // Default
-	ease_fps_sp->set_accessibility_name(TTRC("FPS"));
+	ease_fps = memnew(SpinBox);
+	ease_fps->set_min(FPS_DECIMAL);
+	ease_fps->set_max(999);
+	ease_fps->set_step(FPS_DECIMAL);
+	ease_fps->set_value(30); // Default
+	ease_fps->set_accessibility_name(TTRC("FPS:"));
 	ease_grid->add_child(memnew(Label(TTR("Transition Type:"))));
 	ease_grid->add_child(transition_selection);
 	ease_grid->add_child(memnew(Label(TTR("Ease Type:"))));
