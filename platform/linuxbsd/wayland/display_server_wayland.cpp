@@ -1518,14 +1518,16 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 	if (p_visible) {
 		WaylandThread::WindowState *ws = wayland_thread.window_get_state(p_window);
 
-		// FIXME: Re-enable libdecor and check for it here.
-		if (ws->xdg_toplevel == nullptr) {
-			ws = wayland_thread.window_get_state(MAIN_WINDOW_ID);
-		}
-		ERR_FAIL_NULL_V(ws, ERR_BUG);
-		ERR_FAIL_NULL_V(ws->xdg_toplevel, ERR_BUG);
+		struct xdg_toplevel *toplevel = ws->xdg_toplevel;
 
-		godot_embedded_client_set_embedded_window_parent(embedded_client, ws->xdg_toplevel);
+		if (toplevel == nullptr && ws->libdecor_frame) {
+			toplevel = libdecor_frame_get_xdg_toplevel(ws->libdecor_frame);
+		}
+
+		ERR_FAIL_NULL_V(ws, ERR_BUG);
+		ERR_FAIL_NULL_V(toplevel, ERR_CANT_CREATE);
+
+		godot_embedded_client_set_embedded_window_parent(embedded_client, toplevel);
 
 		double window_scale = WaylandThread::window_state_get_scale_factor(ws);
 

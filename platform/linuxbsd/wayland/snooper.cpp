@@ -680,7 +680,11 @@ bool WaylandEmbedderProxy::global_surface_is_window(uint32_t p_wl_surface_id) {
 	return (role_object && role_object->interface == &xdg_toplevel_interface);
 }
 
-bool WaylandEmbedderProxy::handle_generic_msg(Client *client, const struct wl_interface *interface, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id) {
+bool WaylandEmbedderProxy::handle_generic_msg(Client *client, const WaylandObject *p_object, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id) {
+	ERR_FAIL_NULL_V(p_object, false);
+
+	const struct wl_interface *interface = p_object->interface;
+
 	bool valid = true;
 
 	if (info->direction == ProxyDirection::COMPOSITOR) {
@@ -703,6 +707,8 @@ bool WaylandEmbedderProxy::handle_generic_msg(Client *client, const struct wl_in
 		if (sym >= '0' && sym <= '?') {
 			// We don't care about version notices and nullability symbols. We can skip
 			// those.
+
+			// FIXME: No `++arg_idx`?
 			continue;
 		}
 
@@ -755,7 +761,7 @@ bool WaylandEmbedderProxy::handle_generic_msg(Client *client, const struct wl_in
 				}
 
 				const struct wl_interface *new_interface = message->types[arg_idx];
-				uint32_t new_version = interface->version;
+				uint32_t new_version = p_object->version;
 
 				if (!new_interface && last_str_len != 0) {
 					// When the protocol definition does not define an interface it reports a
@@ -981,7 +987,7 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 				strncpy((char *)write_head, (char *)(body + 2), interface_name_len);
 				write_head += wl_array_word_offset(interface_name_len);
 
-				*write_head = global_info.version;
+				*write_head = version;
 				++write_head;
 
 				*write_head = instance_gid;
@@ -1001,26 +1007,27 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 
 				client->registry_globals_instances[global_name].insert(new_local_id);
 
-				if (global_info.global_id == INVALID_ID) {
+				if (global_info.global_ids[version] == INVALID_ID) {
 					uint32_t header[2] = { REGISTRY_ID, (uint32_t)(msg_len << 16) };
 
 					body[0] = global_info.compositor_name;
 
 					DEBUG_LOG_WAYLAND_SNOOPER(vformat("Binding new global #%d iface %s ver %d", global_name, global_info.interface->name, version));
 
-					global_info.global_id = new_object(global_info.interface, version);
-					registry_globals_names[global_info.global_id] = global_name;
+					uint32_t new_gid = new_object(global_info.interface, version);
+					global_info.global_ids[version] = new_gid;
+					registry_globals_names[new_gid] = global_name;
 
-					send_raw_message(compositor_socket, { { header, sizeof header }, { body, body_len - WORD_SIZE }, { &global_info.global_id, sizeof global_info.global_id } });
+					send_raw_message(compositor_socket, { { header, sizeof header }, { body, body_len - WORD_SIZE }, { &new_gid, sizeof new_gid } });
 				}
 
-				CRASH_COND(global_info.global_id == INVALID_ID);
+				CRASH_COND(global_info.global_ids[version] == INVALID_ID);
 
-				shared_objects[global_info.interface] = global_info.global_id;
+				shared_objects[global_info.interface] = global_info.global_ids[version];
 
 				instance = client->new_global_instance(new_local_id, global_info.interface, version);
 
-				DEBUG_LOG_WAYLAND_SNOOPER(vformat("Instancing global #%d iface %s ver %d new id l0x%x g0x%x", global_name, global_info.interface->name, version, new_local_id, global_info.global_id));
+				DEBUG_LOG_WAYLAND_SNOOPER(vformat("Instancing global #%d iface %s ver %d new id l0x%x g0x%x", global_name, global_info.interface->name, version, new_local_id, global_info.global_ids[version]));
 
 				// Some interfaces report their state as soon as they're bound. Since
 				// instances are handled by us, we need to track and report the relevant
@@ -1037,8 +1044,8 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 				}
 
 				// FIXME: Multiple associations?
-				client->global_ids[new_local_id] = global_info.global_id;
-				client->local_ids[global_info.global_id] = new_local_id;
+				client->global_ids[new_local_id] = global_info.global_ids[version];
+				client->local_ids[global_info.global_ids[version]] = new_local_id;
 			}
 
 			ERR_FAIL_NULL_V(instance, false);
@@ -1710,7 +1717,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 					uint32_t header[2] = { p_global_id, 0 };
 					header[1] = (sizeof header + body_len + sizeof xdg_wm_base_id) << 16; // opcode is 0.
 
-					registry_globals[new_global_name].global_id = xdg_wm_base_id;
+					registry_globals[new_global_name].global_ids[global_info.version] = xdg_wm_base_id;
 					registry_globals_names[xdg_wm_base_id] = new_global_name;
 
 					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
@@ -1725,7 +1732,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 					uint32_t header[2] = { p_global_id, 0 };
 					header[1] = (sizeof header + body_len + sizeof wl_compositor_id) << 16; // opcode is 0.
 
-					registry_globals[new_global_name].global_id = wl_compositor_id;
+					registry_globals[new_global_name].global_ids[global_info.version] = wl_compositor_id;
 					registry_globals_names[wl_compositor_id] = new_global_name;
 
 					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
@@ -1740,7 +1747,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 					uint32_t header[2] = { p_global_id, 0 };
 					header[1] = (sizeof header + body_len + sizeof wl_subcompositor_id) << 16; // opcode is 0.
 
-					registry_globals[new_global_name].global_id = wl_subcompositor_id;
+					registry_globals[new_global_name].global_ids[global_info.version] = wl_subcompositor_id;
 					registry_globals_names[wl_subcompositor_id] = new_global_name;
 
 					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
@@ -1955,7 +1962,7 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 
 		DEBUG_LOG_WAYLAND_SNOOPER("Falling back to generic handler.");
 
-		if (handle_generic_msg(client, interface, message, info, buf)) {
+		if (handle_generic_msg(client, object, message, info, buf)) {
 			send_raw_message(compositor_socket, { { buf, info->size } }, sent_fds);
 		}
 	} else {
@@ -2003,7 +2010,7 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 
 						copy[0] = instance_id;
 
-						if (handle_generic_msg(&c, interface, message, info, copy, instance_id)) {
+						if (handle_generic_msg(&c, local_obj.get(), message, info, copy, instance_id)) {
 							send_raw_message(c.socket, { { copy, info->size } }, sent_fds);
 						}
 
@@ -2032,7 +2039,7 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 					uint32_t *copy = (uint32_t *)malloc(info->size);
 					memcpy((char *)copy, (char *)buf, info->size);
 
-					if (handle_generic_msg(&c, interface, message, info, copy)) {
+					if (handle_generic_msg(&c, local_obj.get(), message, info, copy)) {
 						send_raw_message(c.socket, { { copy, info->size } }, sent_fds);
 					}
 
@@ -2052,7 +2059,7 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 				DEBUG_LOG_WAYLAND_SNOOPER(vformat("%s::%s(%s) g0x%x -> l0x%x", interface->name, message->name, message->signature, global_id, local_id));
 				buf[0] = local_id;
 
-				if (handle_generic_msg(client, interface, message, info, buf)) {
+				if (handle_generic_msg(client, local_obj.get(), message, info, buf)) {
 					send_raw_message(client->socket, { { buf, info->size } }, sent_fds);
 				}
 			}

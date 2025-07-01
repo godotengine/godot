@@ -4454,8 +4454,7 @@ Error WaylandThread::init() {
 	}
 #endif // SOWRAP_ENABLED
 
-	// DEBUG
-	if (false && libdecor_found) {
+	if (libdecor_found) {
 		libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
 	} else {
 		print_verbose("libdecor not found. Client-side decorations disabled.");
