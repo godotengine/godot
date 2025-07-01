@@ -2854,10 +2854,10 @@ static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_co
 	}
 }
 
-static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const GDScriptParser::CallNode *p_call, int p_argidx, bool p_static, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
+static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const GDScriptParser::CallNode *p_call, int p_argidx, bool p_static, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
 	Variant base = p_base.value;
 	GDScriptParser::DataType base_type = p_base.type;
-	const StringName &p_method = p_call->function_name;
+	const StringName &method = p_call->function_name;
 
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 	const bool use_string_names = EDITOR_GET("text_editor/completion/add_string_name_literals");
@@ -2866,7 +2866,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	while (base_type.is_set() && !base_type.is_variant()) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
-				if (base_type.is_meta_type && p_method == SNAME("new")) {
+				if (base_type.is_meta_type && method == SNAME("new")) {
 					const GDScriptParser::ClassNode *current = base_type.class_type;
 
 					do {
@@ -2885,8 +2885,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					return;
 				}
 
-				if (base_type.class_type->has_member(p_method)) {
-					const GDScriptParser::ClassNode::Member &member = base_type.class_type->get_member(p_method);
+				if (base_type.class_type->has_member(method)) {
+					const GDScriptParser::ClassNode::Member &member = base_type.class_type->get_member(method);
 
 					if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
 						r_arghint = _make_arguments_hint(member.function, p_argidx);
@@ -2897,8 +2897,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				base_type = base_type.class_type->base_type;
 			} break;
 			case GDScriptParser::DataType::SCRIPT: {
-				if (base_type.script_type->is_valid() && base_type.script_type->has_method(p_method)) {
-					r_arghint = _make_arguments_hint(base_type.script_type->get_method_info(p_method), p_argidx);
+				if (base_type.script_type->is_valid() && base_type.script_type->has_method(method)) {
+					r_arghint = _make_arguments_hint(base_type.script_type->get_method_info(method), p_argidx);
 					return;
 				}
 				Ref<Script> base_script = base_type.script_type->get_base_script();
@@ -2920,25 +2920,33 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				MethodInfo info;
 				int method_args = 0;
 
-				if (ClassDB::get_method_info(class_name, p_method, &info)) {
+				if (ClassDB::get_method_info(class_name, method, &info)) {
 					method_args = info.arguments.size();
 					if (base.get_type() == Variant::OBJECT) {
 						Object *obj = base.operator Object *();
 						if (obj) {
 							List<String> options;
-							obj->get_argument_options(p_method, p_argidx, &options);
+							obj->get_argument_options(method, p_argidx, &options);
 							for (String &opt : options) {
 								// Handle user preference.
 								if (opt.is_quoted()) {
 									opt = opt.unquote().quote(quote_style);
 									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
-										GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-										if (literal->value.get_type() == Variant::STRING) {
+										if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+											if (literal->value.get_type() == Variant::STRING) {
+												opt = "&" + opt;
+											}
+										} else {
 											opt = "&" + opt;
 										}
 									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
-										GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-										if (literal->value.get_type() == Variant::STRING) {
+										if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+											if (literal->value.get_type() == Variant::STRING) {
+												opt = "^" + opt;
+											}
+										} else {
 											opt = "^" + opt;
 										}
 									}
@@ -2959,7 +2967,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					r_arghint = _make_arguments_hint(info, p_argidx);
 				}
 
-				if (p_argidx == 1 && p_context.node && p_context.node->type == GDScriptParser::Node::CALL && ClassDB::is_parent_class(class_name, SNAME("Tween")) && p_method == SNAME("tween_property")) {
+				if (p_argidx == 1 && p_call && ClassDB::is_parent_class(class_name, SNAME("Tween")) && method == SNAME("tween_property")) {
 					// Get tweened objects properties.
 					if (p_call->arguments.is_empty()) {
 						base_type.kind = GDScriptParser::DataType::UNRESOLVED;
@@ -2985,8 +2993,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 									}
 									String name = E.name.quote(quote_style);
 									if (use_node_paths) {
-										GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-										if (literal->value.get_type() == Variant::STRING) {
+										if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+											if (literal->value.get_type() == Variant::STRING) {
+												name = "^" + name;
+											}
+										} else {
 											name = "^" + name;
 										}
 									}
@@ -3006,8 +3018,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 									if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 										String name = member.get_name().quote(quote_style);
 										if (use_node_paths) {
-											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-											if (literal->value.get_type() == Variant::STRING) {
+											if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+												GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+												if (literal->value.get_type() == Variant::STRING) {
+													name = "^" + name;
+												}
+											} else {
 												name = "^" + name;
 											}
 										}
@@ -3036,8 +3052,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						}
 						String name = E.name.quote(quote_style);
 						if (use_node_paths) {
-							GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-							if (literal->value.get_type() == Variant::STRING) {
+							if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+								GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+								if (literal->value.get_type() == Variant::STRING) {
+									name = "^" + name;
+								}
+							} else {
 								name = "^" + name;
 							}
 						}
@@ -3046,7 +3066,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 				}
 
-				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, SNAME("Node")) && (p_method == SNAME("get_node") || p_method == SNAME("has_node"))) {
+				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, SNAME("Node")) && (method == SNAME("get_node") || method == SNAME("has_node"))) {
 					// Get autoloads
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
@@ -3059,8 +3079,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						String name = s.get_slicec('/', 1);
 						String path = ("/root/" + name).quote(quote_style);
 						if (use_node_paths) {
-							GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-							if (literal->value.get_type() == Variant::STRING) {
+							if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+								GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+								if (literal->value.get_type() == Variant::STRING) {
+									path = "^" + path;
+								}
+							} else {
 								path = "^" + path;
 							}
 						}
@@ -3069,7 +3093,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 				}
 
-				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, SNAME("InputEvent")) && p_method.operator String().contains("action")) {
+				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, SNAME("InputEvent")) && method.operator String().contains("action")) {
 					// Get input actions
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
@@ -3080,8 +3104,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						}
 						String name = s.get_slicec('/', 1).quote(quote_style);
 						if (use_string_names) {
-							GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-							if (literal->value.get_type() == Variant::STRING) {
+							if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+								GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+								if (literal->value.get_type() == Variant::STRING) {
+									name = "&" + name;
+								}
+							} else {
 								name = "&" + name;
 							}
 						}
@@ -3090,7 +3118,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 				}
 				if (EDITOR_GET("text_editor/completion/complete_file_paths")) {
-					if (p_argidx == 0 && p_method == SNAME("change_scene_to_file") && ClassDB::is_parent_class(class_name, SNAME("SceneTree"))) {
+					if (p_argidx == 0 && method == SNAME("change_scene_to_file") && ClassDB::is_parent_class(class_name, SNAME("SceneTree"))) {
 						HashMap<String, ScriptLanguage::CodeCompletionOption> list;
 						_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), list, SNAME("PackedScene"));
 						for (const KeyValue<String, ScriptLanguage::CodeCompletionOption> &key_value_pair : list) {
@@ -3114,7 +3142,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				List<MethodInfo> methods;
 				base.get_method_list(&methods);
 				for (const MethodInfo &E : methods) {
-					if (E.name == p_method) {
+					if (E.name == method) {
 						r_arghint = _make_arguments_hint(E, p_argidx);
 						return;
 					}
@@ -3312,7 +3340,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	GDScriptCompletionIdentifier ci;
 	ci.type = base_type;
 	ci.value = base;
-	_find_call_arguments(p_context, ci, call, p_argidx, _static, r_result, r_arghint);
+	_list_call_arguments(p_context, ci, call, p_argidx, _static, r_result, r_arghint);
 
 	r_forced = r_result.size() > 0;
 }
