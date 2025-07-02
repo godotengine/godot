@@ -2698,7 +2698,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			if (animation.is_null()) {
 				return;
 			}
-			ERR_FAIL_INDEX(track, animation->get_track_count());
+			ERR_FAIL_INDEX(track, editor->get_track_count());
 
 			float limit = timeline->get_name_limit();
 			float limit_end = get_size().width - timeline->get_buttons_width();
@@ -2747,7 +2747,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				draw_texture(key_type_icon, Point2(ofs, (get_size().height - key_type_icon->get_height()) / 2).round());
 				ofs += key_type_icon->get_width() + h_separation;
 
-				NodePath anim_path = animation->track_get_path(track);
+				NodePath anim_path = get_path();
 				Node *node = nullptr;
 				if (root) {
 					node = root->get_node_or_null(anim_path);
@@ -3260,18 +3260,18 @@ void AnimationTrackEdit::_path_submitted(const String &p_text) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Track Path"));
 	undo_redo->add_do_method(animation.ptr(), "track_set_path", track, p_text);
-	undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, animation->track_get_path(track));
+	undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, get_path());
 	undo_redo->commit_action();
 	path_popup->hide();
 }
 
 bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const {
-	if (root == nullptr || !root->has_node_and_resource(animation->track_get_path(track))) {
+	if (root == nullptr || !root->has_node_and_resource(get_path())) {
 		return false;
 	}
 	Ref<Resource> res;
 	Vector<StringName> leftover_path;
-	Node *node = root->get_node_and_resource(animation->track_get_path(track), res, leftover_path);
+	Node *node = root->get_node_and_resource(get_path(), res, leftover_path);
 
 	Object *obj = nullptr;
 	if (res.is_valid()) {
@@ -3333,7 +3333,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 	// Don't overlap track keys if they start at 0.
 	if (path_rect.has_point(p_pos + Size2(type_icon->get_width(), 0))) {
-		return String(animation->track_get_path(track));
+		return String(get_path());
 	}
 
 	if (update_mode_rect.has_point(p_pos)) {
@@ -3495,8 +3495,6 @@ void AnimationKeyEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && moving_selection_attempt) {
 		float limit = timeline->get_name_limit();
-		float limit_end = get_size().width - timeline->get_buttons_width();
-
 		float scale = timeline->get_zoom_scale();
 
 		if (!is_moving_selection()) {
@@ -3556,8 +3554,6 @@ void AnimationTrackEdit::_on_pressed(const Ref<InputEvent> &p_event) {
 
 void AnimationTrackEdit::_on_mouse_pressed(const Ref<InputEventMouseButton> &mb) {
 	float limit = timeline->get_name_limit();
-	float limit_end = get_size().width - timeline->get_buttons_width();
-
 	float scale = timeline->get_zoom_scale();
 
 	Point2 pos = mb->get_position();
@@ -3627,7 +3623,7 @@ void AnimationTrackEdit::_on_mouse_pressed(const Ref<InputEventMouseButton> &mb)
 			if (ape) {
 				AnimationPlayer *ap = ape->get_player();
 				if (ap) {
-					NodePath npath = animation->track_get_path(track);
+					NodePath npath = get_path();
 					Node *a_ap_root_node = ap->get_node_or_null(ap->get_root_node());
 					Node *nd = nullptr;
 					// We must test that we have a valid a_ap_root_node before trying to access its content to init the nd Node.
@@ -3705,7 +3701,7 @@ void AnimationTrackEdit::_on_mouse_unpressed(const Ref<InputEventMouseButton> &m
 			path->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationTrackEdit::_path_submitted));
 		}
 
-		path->set_text(String(animation->track_get_path(track)));
+		path->set_text(String(get_path()));
 		const Vector2 theme_ofs = path->get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"))->get_offset();
 
 		moving_selection_attempt = false;
@@ -3731,12 +3727,12 @@ void AnimationTrackEdit::_deselect_key(const int p_index) {
 }
 
 bool AnimationTrackEdit::_lookup_key(int p_key_idx) const {
-	if (p_key_idx < 0 || p_key_idx >= animation->track_get_key_count(track)) {
+	if (p_key_idx < 0 || p_key_idx >= get_key_count()) {
 		return false;
 	}
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-		Node *target = root->get_node_or_null(animation->track_get_path(track));
+		Node *target = root->get_node_or_null(get_path());
 		if (target) {
 			StringName method = animation->method_track_get_name(track, p_key_idx);
 			// First, check every script in the inheritance chain.
@@ -3807,7 +3803,7 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 
 	// Don't allow moving tracks outside their groups.
 	if (get_editor()->is_grouping_tracks()) {
-		String base_path = String(animation->track_get_path(track));
+		String base_path = String(get_path());
 		base_path = base_path.get_slicec(':', 0); // Remove sub-path.
 		if (d["group"] != base_path) {
 			return false;

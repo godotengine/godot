@@ -1808,7 +1808,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					AHashMap<int, PlayingAnimationInfo> &map = track_info.anim_info;
 
 					AnimationPlayer *animation_playback = Object::cast_to<AnimationPlayer>(t_obj);
-					float animation_playback_speed_scale = animation_playback->get_speed_scale();
 
 					// Find animation.
 					int idx = -1;

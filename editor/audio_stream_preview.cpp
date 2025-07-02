@@ -216,7 +216,6 @@ void AudioStreamPreview::create_key_region_data(Vector<Vector2> &points, const R
 	float pixel_begin = rect.position.x;
 
 	float from_x = rect.position.x;
-	float to_x = rect.position.x + rect.size.x;
 
 	float pixel_len = preview_len * p_pixels_sec;
 

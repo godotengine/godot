@@ -66,6 +66,7 @@ struct SelectedKey {
 		} else if (id != StringName()) {
 			return track == p_key.track && id != p_key.id;
 		}
+		return false;
 	}
 };
 
@@ -667,10 +668,10 @@ public:
 	virtual Vector<int> get_selected_section() override;
 
 public:
-	virtual bool is_moving_selection() const;
-	virtual void set_moving_selection(bool p_value);
-	virtual float get_moving_selection_offset() const;
-	virtual void set_moving_selection_offset(float p_value);
+	virtual bool is_moving_selection() const override;
+	virtual void set_moving_selection(bool p_value) override;
+	virtual float get_moving_selection_offset() const override;
+	virtual void set_moving_selection_offset(float p_value) override;
 
 protected:
 	NodePath node_path;
