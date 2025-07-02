@@ -553,6 +553,9 @@
 		<member name="editors/animation/onion_layers_past_color" type="Color" setter="" getter="">
 			The modulate color to use for "past" frames displayed in the animation editor's onion skinning feature.
 		</member>
+		<member name="editors/spriteframes/default_animation_speed" type="float" setter="" getter="">
+			The default FPS for every new SpriteFrames animation.
+		</member>
 		<member name="editors/bone_mapper/handle_colors/error" type="Color" setter="" getter="">
 		</member>
 		<member name="editors/bone_mapper/handle_colors/missing" type="Color" setter="" getter="">

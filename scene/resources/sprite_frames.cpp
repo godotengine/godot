@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "sprite_frames.h"
+#include "editor/editor_settings.h"
 
 #include "scene/scene_string_names.h"
 
@@ -98,8 +99,12 @@ void SpriteFrames::clear_all() {
 
 void SpriteFrames::add_animation(const StringName &p_anim) {
 	ERR_FAIL_COND_MSG(animations.has(p_anim), "SpriteFrames already has animation '" + p_anim + "'.");
-
+#ifdef TOOLS_ENABLED
+	double default_animation_speed = EDITOR_GET("editors/spriteframes/default_animation_speed");
+	animations[p_anim] = Anim(default_animation_speed);
+#else
 	animations[p_anim] = Anim();
+#endif	
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
