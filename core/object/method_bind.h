@@ -50,14 +50,21 @@ class MethodBind {
 	bool _returns_raw_obj_ptr = false;
 
 protected:
-	Variant::Type *argument_types = nullptr;
+	bool _argument_types_dynamic_allocated = true;
+	// {Return Type, Arg1 Type, Arg2 Type, ..., ArgN Type}
+	const Variant::Type *argument_types = nullptr;
 #ifdef DEBUG_ENABLED
 	Vector<StringName> arg_names;
 #endif // DEBUG_ENABLED
 	void _set_const(bool p_const);
 	void _set_static(bool p_static);
 	void _set_returns(bool p_returns);
-	virtual Variant::Type _gen_argument_type(int p_arg) const = 0;
+	virtual Variant::Type _get_argument_type(int p_arg) const {
+		if (p_arg < 0 || p_arg >= argument_count) {
+			p_arg = -1;
+		}
+		return argument_types[p_arg + 1];
+	}
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const = 0;
 	void _generate_argument_types(int p_count);
 
@@ -155,7 +162,7 @@ public:
 		}
 	}
 
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual Variant::Type _get_argument_type(int p_arg) const override {
 		return _gen_argument_type_info(p_arg).type;
 	}
 
