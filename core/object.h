@@ -797,7 +797,7 @@ bool Object::derives_from() const {
 	static_assert(std::is_same<std::decay_t<T>, typename T::self_type>::value, "T must use GDCLASS or GDSOFTCLASS");
 
 	// If there is an explicitly set ancestral class on the type, we can use that.
-	if (T::static_ancestral_class != T::super_type::static_ancestral_class) {
+	if constexpr (T::static_ancestral_class != T::super_type::static_ancestral_class) {
 		return _has_ancestry(T::static_ancestral_class);
 	} else {
 		return is_class_ptr(T::get_class_ptr_static());
