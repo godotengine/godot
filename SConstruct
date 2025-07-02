@@ -469,6 +469,74 @@ if selected_platform in platform_list:
     if env["lto"] != "none":
         print("Using LTO: " + env["lto"])
 
+    # Enforce our minimal compiler version requirements
+    cc_version = methods.get_compiler_version_ex(env)
+    cc_version_major = cc_version["major"]
+    cc_version_minor = cc_version["minor"]
+    cc_version_metadata1 = cc_version["metadata1"]
+
+    if cc_version_major == -1:
+        print_warning(
+            "Couldn't detect compiler version, skipping version checks. "
+            "Build may fail if the compiler doesn't support C++17 fully."
+        )
+    elif methods.using_gcc(env):
+        if cc_version_major < 9:
+            print_error(
+                "Detected GCC version older than 9, which does not fully support "
+                "C++17, or has bugs when compiling Godot. Supported versions are 9 "
+                "and later. Use a newer GCC version, or Clang 6 or later by passing "
+                '"use_llvm=yes" to the SCons command line.'
+            )
+            Exit(255)
+        elif cc_version_metadata1 == "win32":
+            print_error(
+                "Detected mingw version is not using posix threads. Only posix "
+                "version of mingw is supported. "
+                'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
+                "to switch to posix threads."
+            )
+            Exit(255)
+    elif methods.using_clang(env):
+        # Apple LLVM versions differ from upstream LLVM version \o/, compare
+        # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
+        if methods.is_apple_clang(env):
+            if cc_version_major < 10:
+                print_error(
+                    "Detected Apple Clang version older than 10, which does not fully "
+                    "support C++17. Supported versions are Apple Clang 10 and later."
+                )
+                Exit(255)
+        else:
+            if cc_version_major < 6:
+                print_error(
+                    "Detected Clang version older than 6, which does not fully support "
+                    "C++17. Supported versions are Clang 6 and later."
+                )
+                Exit(255)
+
+    elif env.msvc:
+        # Ensure latest minor builds of Visual Studio 2017/2019.
+        # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
+        if cc_version_major == 16 and cc_version_minor < 11:
+            print_error(
+                "Detected Visual Studio 2019 version older than 16.11, which has bugs "
+                "when compiling Godot. Use a newer VS2019 version, or VS2022."
+            )
+            Exit(255)
+        if cc_version_major == 15 and cc_version_minor < 9:
+            print_error(
+                "Detected Visual Studio 2017 version older than 15.9, which has bugs "
+                "when compiling Godot. Use a newer VS2017 version, or VS2019/VS2022."
+            )
+            Exit(255)
+        if cc_version_major < 15:
+            print_error(
+                "Detected Visual Studio 2015 or earlier, which is unsupported in Godot. "
+                "Supported versions are Visual Studio 2017 and later."
+            )
+            Exit(255)
+
     # Set our C and C++ standard requirements.
     # Prepending to make it possible to override
     # This needs to come after `configure`, otherwise we don't have env.msvc.
