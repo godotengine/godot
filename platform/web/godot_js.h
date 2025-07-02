@@ -55,6 +55,7 @@ extern void godot_js_os_shell_open(const char *p_uri);
 extern int godot_js_os_hw_concurrency_get();
 extern int godot_js_os_thread_pool_size_get();
 extern int godot_js_os_has_feature(const char *p_ftr);
+extern char *godot_js_os_get_operating_system();
 extern int godot_js_pwa_cb(void (*p_callback)());
 extern int godot_js_pwa_update();
 

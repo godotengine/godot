@@ -167,6 +167,10 @@ bool OS::is_delta_smoothing_enabled() const {
 	return _delta_smoothing_enabled;
 }
 
+Key OS::get_command_key() const {
+	return Key::CMD_OR_CTRL;
+}
+
 String OS::get_executable_path() const {
 	return _execpath;
 }

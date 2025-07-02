@@ -203,6 +203,8 @@ public:
 	void set_delta_smoothing(bool p_enabled);
 	bool is_delta_smoothing_enabled() const;
 
+	Key get_command_key() const;
+
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 	void crash(const String &p_message);
 

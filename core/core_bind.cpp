@@ -336,6 +336,10 @@ bool OS::is_delta_smoothing_enabled() const {
 	return ::OS::get_singleton()->is_delta_smoothing_enabled();
 }
 
+Key OS::get_command_key() const {
+	return ::OS::get_singleton()->get_command_key();
+}
+
 void OS::alert(const String &p_alert, const String &p_title) {
 	::OS::get_singleton()->alert(p_alert, p_title);
 }
@@ -833,6 +837,8 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_logger", "logger"), &OS::add_logger);
 	ClassDB::bind_method(D_METHOD("remove_logger", "logger"), &OS::remove_logger);
+
+	ClassDB::bind_method(D_METHOD("get_command_key"), &OS::get_command_key);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");

@@ -48,6 +48,24 @@
 #include <emscripten.h>
 #include <cstdlib>
 
+Key OS_Web::get_command_key() const {
+	if (command_key != Key::NONE) {
+		return command_key;
+	}
+
+	char *operating_system_ptr = godot_js_os_get_operating_system();
+	String operating_system = String::utf8(operating_system_ptr);
+	memfree(operating_system_ptr);
+
+	if (operating_system == "macOS" || operating_system == "iOS") {
+		command_key = Key::META;
+	} else {
+		command_key = Key::CTRL;
+	}
+
+	return command_key;
+}
+
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());
 }
