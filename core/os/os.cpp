@@ -621,6 +621,13 @@ bool OS::has_feature(const String &p_feature) {
 	return false;
 }
 
+bool OS::is_apple_platform() {
+	const String os_name = get_name();
+	const bool has_apple_feature = has_feature("web_macos") || has_feature("web_ios") || has_feature("web_visionos");
+
+	return os_name == "macOS" || os_name == "iOS" || os_name == "visionOS" || has_apple_feature;
+}
+
 bool OS::is_sandboxed() const {
 	return false;
 }
