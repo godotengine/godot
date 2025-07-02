@@ -591,7 +591,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 	if (base_cache.is_valid() && base_cache->is_valid()) {
 		for (int i = 0; i < base_caches.size(); i++) {
-			if (base_caches[i] == base_cache.ptr()) {
+			if (base_caches[i]->get_fully_qualified_name() == base_cache->get_fully_qualified_name()) {
 				if (r_err) {
 					*r_err = true;
 				}
@@ -601,7 +601,15 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				base_cache.unref();
 				base.unref();
 				_base = nullptr;
-				ERR_FAIL_V_MSG(false, "Cyclic inheritance in script class.");
+
+				String cycle_str;
+				for (int j = i; j < base_caches.size(); j++) {
+					cycle_str += GDScript::debug_get_script_name(base_caches[j]);
+					cycle_str += " -> ";
+				}
+				cycle_str += GDScript::debug_get_script_name(base_caches[i]);
+
+				ERR_FAIL_V_MSG(false, vformat("Cyclic inheritance in script class: %s.", cycle_str));
 			}
 		}
 		if (base_cache->_update_exports(r_err, true)) {
