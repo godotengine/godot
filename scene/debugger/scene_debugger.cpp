@@ -833,6 +833,9 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 			if (exported_members.has(E)) {
 				continue; // Exported variables already show up in the inspector.
 			}
+			if (String(E).begins_with("@")) {
+				continue; // Skip groups.
+			}
 
 			Variant m;
 			if (p_instance->get(E, m)) {
