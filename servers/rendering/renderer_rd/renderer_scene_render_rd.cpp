@@ -478,7 +478,14 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	bool dest_is_msaa_2d = rb->get_view_count() == 1 && texture_storage->render_target_get_msaa(render_target) != RS::VIEWPORT_MSAA_DISABLED;
 
-	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes)) {
+	bool using_dof = RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes);
+
+	if (using_dof && p_render_data->transparent_bg) {
+		WARN_PRINT_ONCE("Depth of field is not supported in viewports with a transparent background. Disabling DoF in transparent viewport.");
+		using_dof = false;
+	}
+
+	if (can_use_effects && using_dof) {
 		RENDER_TIMESTAMP("Depth of Field");
 		RD::get_singleton()->draw_command_begin_label("DOF");
 
