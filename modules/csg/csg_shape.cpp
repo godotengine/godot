@@ -373,17 +373,20 @@ void CSGShape::_update_shape() {
 				}
 
 				int k = last + order[j];
-				surfaces[idx].verticesw[k] = v;
-				surfaces[idx].uvsw[k] = n->faces[i].uvs[j];
-				surfaces[idx].normalsw[k] = normal;
+
+				ShapeUpdateSurface &surface = surfaces.ptrw()[idx];
+
+				surface.verticesw[k] = v;
+				surface.uvsw[k] = n->faces[i].uvs[j];
+				surface.normalsw[k] = normal;
 
 				if (calculate_tangents) {
 					// zero out our tangents for now
 					k *= 4;
-					surfaces[idx].tansw[k++] = 0.0;
-					surfaces[idx].tansw[k++] = 0.0;
-					surfaces[idx].tansw[k++] = 0.0;
-					surfaces[idx].tansw[k++] = 0.0;
+					surface.tansw[k++] = 0.0;
+					surface.tansw[k++] = 0.0;
+					surface.tansw[k++] = 0.0;
+					surface.tansw[k++] = 0.0;
 				}
 			}
 
