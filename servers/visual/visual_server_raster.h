@@ -288,6 +288,7 @@ public:
 	BIND2(multimesh_set_physics_interpolated, RID, bool)
 	BIND2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
 	BIND2(multimesh_instance_reset_physics_interpolation, RID, int)
+	BIND1(multimesh_instances_reset_physics_interpolation, RID)
 
 	BIND2(multimesh_set_visible_instances, RID, int)
 	BIND1RC(int, multimesh_get_visible_instances, RID)
