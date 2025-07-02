@@ -104,7 +104,7 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 	animations[p_anim] = Anim(default_animation_speed);
 #else
 	animations[p_anim] = Anim();
-#endif	
+#endif
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {

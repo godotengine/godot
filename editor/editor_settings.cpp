@@ -1002,7 +1002,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// SpriteFrames
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/spriteframes/default_animation_speed", 5.0, "0,60,0.1");
-	
+
 	// Shader editor
 	_initial_set("editors/shader_editor/behavior/files/restore_shaders_on_load", true, true);
 

@@ -47,7 +47,8 @@ class SpriteFrames : public Resource {
 		bool loop = true;
 		Vector<Frame> frames;
 		Anim() = default;
-		Anim(double spd): speed(spd) {}
+		Anim(double spd) :
+				speed(spd) {}
 	};
 
 	HashMap<StringName, Anim> animations;
