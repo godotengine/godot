@@ -331,8 +331,6 @@ public:
 
 	bool has_feature(const String &p_feature);
 
-	bool is_apple_platform();
-
 	virtual bool is_sandboxed() const;
 
 	void set_has_server_feature_callback(HasServerFeatureCallback p_callback);
