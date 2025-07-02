@@ -450,6 +450,7 @@ public:
 	FUNCRIDSPLIT(directional_light)
 	FUNCRIDSPLIT(omni_light)
 	FUNCRIDSPLIT(spot_light)
+	FUNCRIDSPLIT(area_light)
 
 	FUNC2(light_set_color, RID, const Color &)
 	FUNC3(light_set_param, RID, LightParam, float)

@@ -1783,8 +1783,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 				InstanceLightData *light_data = static_cast<InstanceLightData *>(p_instance->base_data);
 				idata.instance_data_rid = light_data->instance.get_id();
 				light_data->uses_projector = RSG::light_storage->light_has_projector(p_instance->base);
-				light_data->uses_softshadow = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SIZE) > CMP_EPSILON;
-
+				light_data->uses_softshadow = RSG::light_storage->light_get_type(p_instance->base) == RS::LIGHT_AREA || RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SIZE) > CMP_EPSILON;
 			} break;
 			case RS::INSTANCE_REFLECTION_PROBE: {
 				idata.instance_data_rid = static_cast<InstanceReflectionProbeData *>(p_instance->base_data)->instance.get_id();
@@ -2584,6 +2583,73 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 			shadow_data.pass = 0;
 
 		} break;
+		case RS::LIGHT_AREA: {
+			if (max_shadows_used + 1 > MAX_UPDATE_SHADOWS) {
+				return true;
+			}
+			RENDER_TIMESTAMP("Cull AreaLight3D Shadow Paraboloid");
+
+			real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
+			real_t half_width = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_AREA_WIDTH) / 2.0;
+			real_t half_height = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_AREA_HEIGHT) / 2.0;
+
+			real_t z = -1;
+			Vector<Plane> planes;
+			planes.resize(6);
+			planes.write[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
+			planes.write[1] = light_transform.xform(Plane(Vector3(1, 0, 0).normalized(), radius + half_width));
+			planes.write[2] = light_transform.xform(Plane(Vector3(-1, 0, 0).normalized(), radius + half_width));
+			planes.write[3] = light_transform.xform(Plane(Vector3(0, 1, 0).normalized(), radius + half_height));
+			planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, 0).normalized(), radius + half_height));
+			planes.write[5] = light_transform.xform(Plane(Vector3(0, 0, -z), 0));
+
+			instance_shadow_cull_result.clear();
+
+			Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&planes[0], planes.size());
+
+			struct CullConvex {
+				PagedArray<Instance *> *result;
+				_FORCE_INLINE_ bool operator()(void *p_data) {
+					Instance *p_instance = (Instance *)p_data;
+					result->push_back(p_instance);
+					return false;
+				}
+			};
+
+			CullConvex cull_convex;
+			cull_convex.result = &instance_shadow_cull_result;
+
+			p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
+
+			RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
+
+			if (!light->is_shadow_update_full()) {
+				light_culler->cull_regular_light(instance_shadow_cull_result);
+			}
+
+			for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
+				Instance *instance = instance_shadow_cull_result[j];
+				if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base))) {
+					continue;
+				} else {
+					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+						animated_material_found = true;
+					}
+
+					if (instance->mesh_instance.is_valid()) {
+						RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
+					}
+				}
+
+				shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+			}
+
+			RSG::mesh_storage->update_mesh_instances();
+
+			RSG::light_storage->light_instance_set_shadow_transform(light->instance, Projection(), light_transform, radius, 0, 0, 0);
+			shadow_data.light = light->instance;
+			shadow_data.pass = 0;
+		}
 	}
 
 	return animated_material_found;
@@ -3374,6 +3440,30 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
 						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 
+					} break;
+					case RS::LIGHT_AREA: {
+						float diagonal = Vector2(RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_AREA_WIDTH), RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_AREA_HEIGHT)).length();
+						float radius = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE) + diagonal;
+
+						//get two points parallel to near plane
+						Vector3 points[2] = {
+							ins->transform.origin,
+							ins->transform.origin + cam_xf.basis.get_column(0) * radius
+						};
+
+						if (!p_camera_data->is_orthogonal) {
+							//if using perspetive, map them to near plane
+							for (int j = 0; j < 2; j++) {
+								if (p.distance_to(points[j]) < 0) {
+									points[j].z = -zn; //small hack to keep size constant when hitting the screen
+								}
+
+								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+							}
+						}
+
+						float screen_diameter = points[0].distance_to(points[1]) * 2;
+						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 					} break;
 					default: {
 						ERR_PRINT("Invalid Light Type");

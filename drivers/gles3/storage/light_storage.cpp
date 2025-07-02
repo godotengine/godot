@@ -112,6 +112,14 @@ void LightStorage::spot_light_initialize(RID p_rid) {
 	_light_initialize(p_rid, RS::LIGHT_SPOT);
 }
 
+RID LightStorage::area_light_allocate() {
+	return light_owner.allocate_rid();
+}
+
+void LightStorage::area_light_initialize(RID p_rid) {
+	_light_initialize(p_rid, RS::LIGHT_AREA);
+}
+
 void LightStorage::light_free(RID p_rid) {
 	light_set_projector(p_rid, RID()); //clear projector
 
@@ -363,6 +371,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 		case RS::LIGHT_OMNI: {
 			float r = light->param[RS::LIGHT_PARAM_RANGE];
 			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
+		};
+		case RS::LIGHT_AREA: {
+			float len = light->param[RS::LIGHT_PARAM_RANGE];
+
+			float width = light->param[RS::LIGHT_PARAM_AREA_WIDTH] / 2.0 + len;
+			float height = light->param[RS::LIGHT_PARAM_AREA_HEIGHT] / 2.0 + len;
+
+			return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
 		};
 		case RS::LIGHT_DIRECTIONAL: {
 			return AABB();
