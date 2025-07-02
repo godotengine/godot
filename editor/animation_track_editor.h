@@ -375,7 +375,7 @@ protected:
 	virtual void draw_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right) = 0;
 	virtual void draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right);
 	virtual void draw_fg(const float p_clip_left, const float p_clip_right) {}
-	
+
 	void draw_timeline(const float p_clip_left, const float p_clip_right);
 	void draw_edit_text(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right, const bool outside = false, const float p_offset_y = 0);
 
@@ -581,7 +581,7 @@ public:
 
 public:
 	void draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right);
-	
+
 	virtual StringName get_edit_name(const int p_index) const override; //name of the key
 
 protected:

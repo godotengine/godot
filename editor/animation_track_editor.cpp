@@ -2572,15 +2572,14 @@ void KeyEdit::draw_edit_text(const int p_index, const Rect2 &p_global_rect, cons
 	if (outside) {
 		text_pos += p_global_rect.size.x;
 		max_width = MAX(0.0, clip_r - text_pos);
-	}
-	else {
+	} else {
 		max_width = MIN(max_width, clip_r - text_pos);
 	}
 
 	if (max_width > 0) {
 		const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		
+
 		String key_name = get_edit_name(p_index);
 		Color key_color = get_key_color(p_index);
 		String edit_name = editor->_make_text_clipped(key_name, font, font_size, max_width);
@@ -9285,7 +9284,7 @@ void AnimationKeyEdit::_on_mouse_release(const Ref<InputEventMouseButton> &mb, b
 					accept_event();
 				}
 			}
-			
+
 		} else {
 			if (handle_timeline) {
 				// First select click should not affect play position.
@@ -9430,7 +9429,7 @@ void AnimationMarkerEdit::draw_key(const int p_index, const Rect2 &p_global_rect
 	}
 }
 
-void AnimationMarkerEdit::draw_marker_section(CanvasItem * p_canvas_item, const float p_clip_left, const float p_clip_right) {
+void AnimationMarkerEdit::draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right) {
 	float scale = timeline->get_zoom_scale();
 
 	Vector<int> section = get_selected_section();

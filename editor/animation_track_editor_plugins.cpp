@@ -912,10 +912,10 @@ void AnimationTrackEditClip::gui_input(const Ref<InputEvent> &p_event) {
 			float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
 			float prev_ofs = get_start_offset(len_resizing_index);
 			float prev_time = get_animation()->track_get_key_time(get_track(), len_resizing_index);
-			// Raster die neue Zeit
+
 			float new_time = editor->snap_time(prev_time + ofs_local);
 			float new_ofs = prev_ofs + (new_time - prev_time);
-			if (Math::abs(prev_time - new_time) > CMP_EPSILON) { // Prüfe relevante Änderung
+			if (Math::abs(prev_time - new_time) > CMP_EPSILON) {
 				float offset = new_time - prev_time;
 
 				undo_redo->create_action(TTR("Change Track Clip Start Offset"));
@@ -929,10 +929,9 @@ void AnimationTrackEditClip::gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
 			float prev_ofs = get_end_offset(len_resizing_index);
-			// Raster die neue Zeit
-			float new_time = editor->snap_time(prev_ofs + ofs_local);
-			float new_ofs = new_time; // End-Offset ist absolut
-			if (Math::abs(prev_ofs - new_ofs) > CMP_EPSILON) { // Prüfe relevante Änderung
+
+			float new_ofs = editor->snap_time(prev_ofs + ofs_local);
+			if (Math::abs(prev_ofs - new_ofs) > CMP_EPSILON) {
 				undo_redo->create_action(TTR("Change Track Clip End Offset"));
 				set_end_offset(len_resizing_index, prev_ofs, new_ofs);
 				undo_redo->commit_action();
