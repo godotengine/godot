@@ -45,6 +45,7 @@ Light3DGizmoPlugin::Light3DGizmoPlugin() {
 	create_icon_material("light_directional_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoDirectionalLight"), EditorStringName(EditorIcons)));
 	create_icon_material("light_omni_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoLight"), EditorStringName(EditorIcons)));
 	create_icon_material("light_spot_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoSpotLight"), EditorStringName(EditorIcons)));
+	create_icon_material("light_area_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoAreaLight"), EditorStringName(EditorIcons)));
 
 	create_handle_material("handles");
 	create_handle_material("handles_billboard", true);
@@ -64,19 +65,35 @@ int Light3DGizmoPlugin::get_priority() const {
 
 String Light3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	if (p_id == 0) {
-		return "Radius";
+		if (Object::cast_to<AreaLight3D>(p_gizmo->get_node_3d())) {
+			return "Area width";
+		} else {
+			return "Radius";
+		}
 	} else {
-		return "Aperture";
+		if (Object::cast_to<AreaLight3D>(p_gizmo->get_node_3d())) {
+			return "Area height";
+		} else {
+			return "Aperture";
+		}
 	}
 }
 
 Variant Light3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_node_3d());
 	if (p_id == 0) {
-		return light->get_param(Light3D::PARAM_RANGE);
+		if (Object::cast_to<AreaLight3D>(light)) {
+			return light->get_param(Light3D::PARAM_AREA_WIDTH);
+		} else {
+			return light->get_param(Light3D::PARAM_RANGE);
+		}
 	}
 	if (p_id == 1) {
-		return light->get_param(Light3D::PARAM_SPOT_ANGLE);
+		if (Object::cast_to<AreaLight3D>(light)) {
+			return light->get_param(Light3D::PARAM_AREA_HEIGHT);
+		} else {
+			return light->get_param(Light3D::PARAM_SPOT_ANGLE);
+		}
 	}
 
 	return Variant();
@@ -118,31 +135,74 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 
 				light->set_param(Light3D::PARAM_RANGE, r);
 			}
-		}
 
+		} else if (Object::cast_to<AreaLight3D>(light)) {
+			Plane lp = Plane(gt.basis.get_column(2), gt.origin);
+
+			Vector3 inters;
+			if (lp.intersects_ray(ray_from, ray_dir, &inters)) {
+				Vector3 inv = gi.xform(inters);
+
+				float a = inv.x;
+				if (a >= 0) {
+					light->set_param(Light3D::PARAM_AREA_WIDTH, MAX(a * 2, 0.001));
+				}
+			}
+		}
 	} else if (p_id == 1) {
-		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], light->get_param(Light3D::PARAM_RANGE), gt);
-		light->set_param(Light3D::PARAM_SPOT_ANGLE, CLAMP(a, 0.01, 89.99));
+		if (Object::cast_to<SpotLight3D>(light)) {
+			float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], light->get_param(Light3D::PARAM_RANGE), gt);
+			light->set_param(Light3D::PARAM_SPOT_ANGLE, CLAMP(a, 0.01, 89.99));
+		} else if (Object::cast_to<AreaLight3D>(light)) {
+			Plane cp = Plane(gt.basis.get_column(2), gt.origin);
+
+			Vector3 inters;
+			if (cp.intersects_ray(ray_from, ray_dir, &inters)) {
+				Vector3 inv = gi.xform(inters);
+
+				float b = inv.y;
+				if (b >= 0) {
+					light->set_param(Light3D::PARAM_AREA_HEIGHT, MAX(b * 2, 0.001));
+				}
+			}
+		}
 	}
 }
 
 void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_node_3d());
 	if (p_cancel) {
-		light->set_param(p_id == 0 ? Light3D::PARAM_RANGE : Light3D::PARAM_SPOT_ANGLE, p_restore);
-
+		if (Object::cast_to<AreaLight3D>(light)) {
+			light->set_param(p_id == 0 ? Light3D::PARAM_AREA_WIDTH : Light3D::PARAM_AREA_HEIGHT, p_restore);
+		} else {
+			light->set_param(p_id == 0 ? Light3D::PARAM_RANGE : Light3D::PARAM_SPOT_ANGLE, p_restore);
+		}
 	} else if (p_id == 0) {
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Change Light Radius"));
-		ur->add_do_method(light, "set_param", Light3D::PARAM_RANGE, light->get_param(Light3D::PARAM_RANGE));
-		ur->add_undo_method(light, "set_param", Light3D::PARAM_RANGE, p_restore);
-		ur->commit_action();
+		if (Object::cast_to<AreaLight3D>(light)) {
+			ur->create_action(TTR("Change Area Light Width"));
+			ur->add_do_method(light, "set_param", Light3D::PARAM_AREA_WIDTH, light->get_param(Light3D::PARAM_AREA_WIDTH));
+			ur->add_undo_method(light, "set_param", Light3D::PARAM_AREA_WIDTH, p_restore);
+			ur->commit_action();
+		} else {
+			ur->create_action(TTR("Change Light Radius"));
+			ur->add_do_method(light, "set_param", Light3D::PARAM_RANGE, light->get_param(Light3D::PARAM_RANGE));
+			ur->add_undo_method(light, "set_param", Light3D::PARAM_RANGE, p_restore);
+			ur->commit_action();
+		}
 	} else if (p_id == 1) {
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Change Light Radius"));
-		ur->add_do_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, light->get_param(Light3D::PARAM_SPOT_ANGLE));
-		ur->add_undo_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, p_restore);
-		ur->commit_action();
+		if (Object::cast_to<AreaLight3D>(light)) {
+			ur->create_action(TTR("Change Area Light Height"));
+			ur->add_do_method(light, "set_param", Light3D::PARAM_AREA_HEIGHT, light->get_param(Light3D::PARAM_AREA_HEIGHT));
+			ur->add_undo_method(light, "set_param", Light3D::PARAM_AREA_HEIGHT, p_restore);
+			ur->commit_action();
+		} else {
+			ur->create_action(TTR("Change Light Radius"));
+			ur->add_do_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, light->get_param(Light3D::PARAM_SPOT_ANGLE));
+			ur->add_undo_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, p_restore);
+			ur->commit_action();
+		}
 	}
 }
 
@@ -284,6 +344,39 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 
 		const Ref<Material> icon = get_material("light_spot_icon", p_gizmo);
+		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
+	}
+
+	if (Object::cast_to<AreaLight3D>(light)) {
+		if (p_gizmo->is_selected()) {
+			const Ref<Material> material = get_material("lines_primary", p_gizmo);
+			Vector<Vector3> points;
+
+			AreaLight3D *cl = Object::cast_to<AreaLight3D>(light);
+			float a = cl->get_param(Light3D::PARAM_AREA_WIDTH);
+			float b = cl->get_param(Light3D::PARAM_AREA_HEIGHT);
+
+			// Draw rectangle
+			points.push_back(Vector3(-a / 2, b / 2, 0));
+			points.push_back(Vector3(a / 2, b / 2, 0));
+			points.push_back(Vector3(a / 2, b / 2, 0));
+			points.push_back(Vector3(a / 2, -b / 2, 0));
+			points.push_back(Vector3(a / 2, -b / 2, 0));
+			points.push_back(Vector3(-a / 2, -b / 2, 0));
+			points.push_back(Vector3(-a / 2, -b / 2, 0));
+			points.push_back(Vector3(-a / 2, b / 2, 0));
+
+			p_gizmo->add_lines(points, material, false, color);
+
+			Vector<Vector3> handles = {
+				Vector3(a / 2, 0, 0),
+				Vector3(0, b / 2, 0)
+			};
+
+			p_gizmo->add_handles(handles, get_material("handles"));
+		}
+
+		const Ref<Material> icon = get_material("light_area_icon", p_gizmo);
 		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
 	}
 }

@@ -4264,6 +4264,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_DISABLE_LOD:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS:
+		case VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_DECALS:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES:
 		case VIEW_DISPLAY_DEBUG_OCCLUDERS:
@@ -4292,6 +4293,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 				VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
 				VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+				VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS,
 				VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
 				VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 				VIEW_DISPLAY_DEBUG_OCCLUDERS,
@@ -4322,6 +4324,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_SDFGI_PROBES,
 				Viewport::DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
 				Viewport::DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
+				Viewport::DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
 				Viewport::DEBUG_DRAW_CLUSTER_DECALS,
 				Viewport::DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 				Viewport::DEBUG_DRAW_OCCLUDERS,
@@ -6168,6 +6171,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 			TTRC("Highlights tiles of pixels that are affected by at least one OmniLight3D."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SpotLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Highlights tiles of pixels that are affected by at least one SpotLight3D."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("AreaLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Highlights tiles of pixels that are affected by at least one AreaLight3D."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Decal Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_DECALS, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Highlights tiles of pixels that are affected by at least one Decal."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("ReflectionProbe Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
