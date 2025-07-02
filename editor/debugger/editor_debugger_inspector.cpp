@@ -47,7 +47,7 @@ bool EditorDebuggerRemoteObjects::_set_impl(const StringName &p_name, const Vari
 		return false;
 	}
 
-	// Change it back to the real name when fetching.
+	// Change it back to the real name when sending it.
 	if (name == "Script") {
 		name = "script";
 	} else if (name.begins_with("Metadata/")) {
@@ -72,16 +72,8 @@ bool EditorDebuggerRemoteObjects::_set_impl(const StringName &p_name, const Vari
 }
 
 bool EditorDebuggerRemoteObjects::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	if (!prop_values.has(name)) {
+	if (!prop_values.has(p_name)) {
 		return false;
-	}
-
-	// Change it back to the real name when fetching.
-	if (name == "Script") {
-		name = "script";
-	} else if (name.begins_with("Metadata/")) {
-		name = name.replace_first("Metadata/", "metadata/");
 	}
 
 	r_ret = prop_values[p_name][remote_object_ids[0]];
@@ -200,34 +192,6 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		remote_objects_list.push_back(remote_objects);
 	}
 
-	StringName class_name = objects[0].class_name;
-	if (class_name != SNAME("Object")) {
-		// Search for the common class between all selected objects.
-		bool check_type_again = true;
-		while (check_type_again) {
-			check_type_again = false;
-
-			if (class_name == SNAME("Object") || class_name == StringName()) {
-				// All objects inherit from Object, so no need to continue checking.
-				class_name = SNAME("Object");
-				break;
-			}
-
-			// Check that all objects inherit from type_name.
-			for (const SceneDebuggerObject &obj : objects) {
-				if (obj.class_name == class_name || ClassDB::is_parent_class(obj.class_name, class_name)) {
-					continue; // class_name is the same or a parent of the object's class.
-				}
-
-				// class_name is not a parent of the node's class, so check again with the parent class.
-				class_name = ClassDB::get_parent_class(class_name);
-				check_type_again = true;
-				break;
-			}
-		}
-	}
-	remote_objects->type_name = class_name;
-
 	// Search for properties that are present in all selected objects.
 	struct UsageData {
 		int qty = 0;
@@ -310,6 +274,70 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 
 		remote_objects->prop_values[pinfo.name] = KV.value.values;
 	}
+
+	StringName class_name = objects[0].class_name;
+	bool has_custom_class = true;
+
+	if (usage.has("Script")) {
+		// Check if all objects have the same script.
+		Ref<Script> common_scr;
+		LocalVector<Variant> keys = usage["Script"].values.get_key_list();
+		for (const Variant &key : keys) {
+			Ref<Script> scr = usage["Script"].values[key];
+			if (scr.is_null()) {
+				has_custom_class = false;
+				break;
+			}
+
+			if (common_scr.is_null()) {
+				common_scr = scr;
+			} else if (scr != common_scr) {
+				has_custom_class = false;
+				break;
+			}
+		}
+
+		if (has_custom_class) {
+			// Now check if the script has a custom class.
+			if (common_scr.is_null()) {
+				has_custom_class = false;
+			} else {
+				const StringName scr_class = common_scr->get_global_name();
+				if (scr_class.is_empty()) {
+					has_custom_class = false;
+				} else {
+					class_name = scr_class;
+				}
+			}
+		}
+	}
+
+	if (!has_custom_class && class_name != SNAME("Object")) {
+		// Search for the common class between all selected objects.
+		bool check_type_again = true;
+		while (check_type_again) {
+			check_type_again = false;
+
+			if (class_name.is_empty() || class_name == SNAME("Object")) {
+				// All objects inherit from Object, so no need to continue checking.
+				class_name = SNAME("Object");
+				break;
+			}
+
+			// Check that all objects inherit from type_name.
+			for (const SceneDebuggerObject &obj : objects) {
+				if (obj.class_name == class_name || ClassDB::is_parent_class(obj.class_name, class_name)) {
+					continue; // class_name is the same or a parent of the object's class.
+				}
+
+				// class_name is not a parent of the node's class, so check again with the parent class.
+				class_name = ClassDB::get_parent_class(class_name);
+				check_type_again = true;
+				break;
+			}
+		}
+	}
+	remote_objects->type_name = class_name;
 
 	if (old_prop_size == remote_objects->prop_list.size() && new_props_added == 0) {
 		// Only some may have changed, if so, then update those, if they exist.
