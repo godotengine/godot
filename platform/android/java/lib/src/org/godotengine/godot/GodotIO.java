@@ -231,11 +231,11 @@ public class GodotIO {
 				WindowInsetsCompat insetsCompat = WindowInsetsCompat.toWindowInsetsCompat(topView.getRootWindowInsets(), topView);
 				Insets insets = insetsCompat.getInsets(insetTypes);
 
-				if (godot.isInEdgeToEdgeMode()) {
+				if (godot.isInEdgeToEdgeMode() || godot.isInImmersiveMode()) {
 					result[0] = insets.left;
 					result[1] = insets.top;
 				} else {
-					// If edge-to-edge mode is disabled, then top and left padding (if required) is already applied.
+					// The top and left padding (if required) is already applied.
 					result[0] = 0;
 					result[1] = 0;
 				}
