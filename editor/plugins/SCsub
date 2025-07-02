@@ -6,4 +6,5 @@ Import("env")
 env.add_source_files(env.editor_sources, "*.cpp")
 
 SConscript("gizmos/SCsub")
+SConscript("shader_baker/SCsub")
 SConscript("tiles/SCsub")

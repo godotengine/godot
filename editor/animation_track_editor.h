@@ -429,6 +429,7 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_PASTE,
 		MENU_KEY_ADD_RESET,
 		MENU_KEY_DELETE,
+		MENU_KEY_LOOKUP,
 		MENU_USE_BLEND_ENABLED,
 		MENU_USE_BLEND_DISABLED,
 	};
@@ -475,6 +476,9 @@ class AnimationTrackEdit : public Control {
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 
+	int lookup_key_idx = -1;
+	bool _lookup_key(int p_key_idx) const;
+
 	Ref<Texture2D> _get_key_type_icon() const;
 
 	mutable int dropping_at = 0;
@@ -485,6 +489,8 @@ class AnimationTrackEdit : public Control {
 	float moving_selection_mouse_begin_x = 0.0f;
 	int select_single_attempt = -1;
 	bool moving_selection = false;
+
+	bool command_or_control_pressed = false;
 
 	bool in_group = false;
 	AnimationTrackEditor *editor = nullptr;
@@ -500,6 +506,7 @@ public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	virtual int get_key_height() const;
@@ -611,6 +618,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	OptionButton *snap_mode = nullptr;
 	Button *auto_fit = nullptr;
 	Button *auto_fit_bezier = nullptr;
+	OptionButton *bezier_key_mode = nullptr;
 
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
@@ -760,6 +768,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
 	void _bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
+	void _bezier_track_set_key_handle_mode_at_time(Animation *p_anim, int p_track, float p_time, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
 
 	////////////// edit menu stuff
 
@@ -793,7 +802,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _edit_menu_about_to_popup();
 	void _edit_menu_pressed(int p_option);
-	int last_menu_track_opt = 0;
+	bool scale_from_cursor = false;
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 

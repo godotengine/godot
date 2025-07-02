@@ -36,9 +36,12 @@
 #include "scene/3d/lightmap_probe.h"
 
 LightmapProbeGizmoPlugin::LightmapProbeGizmoPlugin() {
+	// NOTE: This gizmo only renders LightmapProbe nodes as wireframes.
+	// The solid sphere representation is handled in LightmapGIGizmoPlugin.
 	create_icon_material("lightmap_probe_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoLightmapProbe"), EditorStringName(EditorIcons)));
 
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/lightprobe_lines");
+	probe_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size");
 
 	gizmo_color.a = 0.3;
 	create_material("lightprobe_lines", gizmo_color);
@@ -70,52 +73,54 @@ void LightmapProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	float stack_step = Math::PI / stack_count;
 
 	Vector<Vector3> vertices;
-	float radius = 0.2;
+	// Make the lines' radius slightly smaller than its mesh representation to avoid Z-fighting.
+	float radius = probe_size * 0.495f;
 
-	for (int i = 0; i <= stack_count; ++i) {
-		float stack_angle = Math::PI / 2 - i * stack_step; // starting from pi/2 to -pi/2
-		float xy = radius * Math::cos(stack_angle); // r * cos(u)
-		float z = radius * Math::sin(stack_angle); // r * sin(u)
+	if (!Math::is_zero_approx(radius)) {
+		for (int i = 0; i <= stack_count; ++i) {
+			float stack_angle = Math::PI / 2 - i * stack_step; // starting from pi/2 to -pi/2
+			float xy = radius * Math::cos(stack_angle); // r * cos(u)
+			float z = radius * Math::sin(stack_angle); // r * sin(u)
 
-		// add (sector_count+1) vertices per stack
-		// the first and last vertices have same position and normal, but different tex coords
-		for (int j = 0; j <= sector_count; ++j) {
-			float sector_angle = j * sector_step; // starting from 0 to 2pi
+			// add (sector_count+1) vertices per stack
+			// the first and last vertices have same position and normal, but different tex coords
+			for (int j = 0; j <= sector_count; ++j) {
+				float sector_angle = j * sector_step; // starting from 0 to 2pi
 
-			// vertex position (x, y, z)
-			float x = xy * Math::cos(sector_angle); // r * cos(u) * cos(v)
-			float y = xy * Math::sin(sector_angle); // r * cos(u) * sin(v)
+				// vertex position (x, y, z)
+				float x = xy * Math::cos(sector_angle); // r * cos(u) * cos(v)
+				float y = xy * Math::sin(sector_angle); // r * cos(u) * sin(v)
 
-			Vector3 n = Vector3(x, z, y);
-			vertices.push_back(n);
-		}
-	}
-
-	for (int i = 0; i < stack_count; ++i) {
-		int k1 = i * (sector_count + 1); // beginning of current stack
-		int k2 = k1 + sector_count + 1; // beginning of next stack
-
-		for (int j = 0; j < sector_count; ++j, ++k1, ++k2) {
-			// 2 triangles per sector excluding first and last stacks
-			// k1 => k2 => k1+1
-			if (i != 0) {
-				lines.push_back(vertices[k1]);
-				lines.push_back(vertices[k2]);
-				lines.push_back(vertices[k1]);
-				lines.push_back(vertices[k1 + 1]);
-			}
-
-			if (i != (stack_count - 1)) {
-				lines.push_back(vertices[k1 + 1]);
-				lines.push_back(vertices[k2]);
-				lines.push_back(vertices[k2]);
-				lines.push_back(vertices[k2 + 1]);
+				Vector3 n = Vector3(x, z, y);
+				vertices.push_back(n);
 			}
 		}
-	}
 
+		for (int i = 0; i < stack_count; ++i) {
+			int k1 = i * (sector_count + 1); // beginning of current stack
+			int k2 = k1 + sector_count + 1; // beginning of next stack
+
+			for (int j = 0; j < sector_count; ++j, ++k1, ++k2) {
+				// 2 triangles per sector excluding first and last stacks
+				// k1 => k2 => k1+1
+				if (i != 0) {
+					lines.push_back(vertices[k1]);
+					lines.push_back(vertices[k2]);
+					lines.push_back(vertices[k1]);
+					lines.push_back(vertices[k1 + 1]);
+				}
+
+				if (i != (stack_count - 1)) {
+					lines.push_back(vertices[k1 + 1]);
+					lines.push_back(vertices[k2]);
+					lines.push_back(vertices[k2]);
+					lines.push_back(vertices[k2 + 1]);
+				}
+			}
+		}
+
+		p_gizmo->add_lines(lines, material_lines);
+	}
 	const Ref<Material> icon = get_material("lightmap_probe_icon", p_gizmo);
-
-	p_gizmo->add_lines(lines, material_lines);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }

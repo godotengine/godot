@@ -14,7 +14,7 @@
 		extends EditorScript
 
 		func _run():
-		    print("Hello from the Godot Editor!")
+			print("Hello from the Godot Editor!")
 		[/gdscript]
 		[csharp]
 		using Godot;
@@ -22,10 +22,10 @@
 		[Tool]
 		public partial class HelloEditor : EditorScript
 		{
-		    public override void _Run()
-		    {
-		        GD.Print("Hello from the Godot Editor!");
-		    }
+			public override void _Run()
+			{
+				GD.Print("Hello from the Godot Editor!");
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -35,7 +35,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_run" qualifiers="virtual">
+		<method name="_run" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 				This method is executed by the Editor when [b]File &gt; Run[/b] is used.

@@ -575,14 +575,12 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					}
 
 					int closest = -1;
-					real_t closest_dist = 1e20;
 
-					for (int i = editing_points.size() - internal_vertices; i < editing_points.size(); i++) {
+					for (int i = editing_points.size() - 1; i >= editing_points.size() - internal_vertices; i--) {
 						Vector2 tuv = mtx.xform(previous_polygon[i]);
-						real_t dist = tuv.distance_to(mb->get_position());
-						if (dist < 8 && dist < closest_dist) {
+						if (tuv.distance_to(mb->get_position()) < 8) {
 							closest = i;
-							closest_dist = dist;
+							break;
 						}
 					}
 
@@ -629,9 +627,8 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				if (current_action == ACTION_EDIT_POINT) {
 					point_drag_index = -1;
 					for (int i = 0; i < editing_points.size(); i++) {
-						Vector2 tuv = mtx.xform(editing_points[i]);
-						if (tuv.distance_to(mb->get_position()) < 8) {
-							drag_from = tuv;
+						if (mtx.xform(editing_points[i]).distance_to(mb->get_position()) < 8) {
+							drag_from = mb->get_position();
 							point_drag_index = i;
 						}
 					}
@@ -1302,7 +1299,7 @@ Polygon2DEditor::Polygon2DEditor() {
 		action_buttons[i]->set_toggle_mode(true);
 		toolbar->add_child(action_buttons[i]);
 		action_buttons[i]->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_set_action).bind(i));
-		action_buttons[i]->set_focus_mode(FOCUS_NONE);
+		action_buttons[i]->set_focus_mode(FOCUS_ACCESSIBILITY);
 	}
 
 	action_buttons[ACTION_CREATE]->set_tooltip_text(TTR("Create Polygon"));
@@ -1326,10 +1323,10 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_MOVE]->set_accessibility_name(TTRC("Move Polygon"));
 	action_buttons[ACTION_ROTATE]->set_accessibility_name(TTRC("Rotate Polygon"));
 	action_buttons[ACTION_SCALE]->set_accessibility_name(TTRC("Scale Polygon"));
-	action_buttons[ACTION_ADD_POLYGON]->set_accessibility_name(TTRC("Create Custom Polygon"));
-	action_buttons[ACTION_REMOVE_POLYGON]->set_accessibility_name(TTRC("Remove Custom Polygon"));
-	action_buttons[ACTION_PAINT_WEIGHT]->set_accessibility_name(TTRC("Paint Weights"));
-	action_buttons[ACTION_CLEAR_WEIGHT]->set_accessibility_name(TTRC("Unpaint Weights"));
+	action_buttons[ACTION_ADD_POLYGON]->set_accessibility_name(TTRC("Create a custom polygon. Enables custom polygon rendering."));
+	action_buttons[ACTION_REMOVE_POLYGON]->set_accessibility_name(TTRC("Remove a custom polygon. If none remain, custom polygon rendering is disabled."));
+	action_buttons[ACTION_PAINT_WEIGHT]->set_accessibility_name(TTRC("Paint weights with specified intensity."));
+	action_buttons[ACTION_CLEAR_WEIGHT]->set_accessibility_name(TTRC("Unpaint weights with specified intensity."));
 
 	bone_paint_strength = memnew(HSlider);
 	toolbar->add_child(bone_paint_strength);
@@ -1350,7 +1347,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_paint_radius->set_max(100);
 	bone_paint_radius->set_step(1);
 	bone_paint_radius->set_value(32);
-	bone_paint_radius->set_accessibility_name(TTRC("Radius"));
+	bone_paint_radius->set_accessibility_name(TTRC("Radius:"));
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
 	polygon_edit->add_child(uv_main_hsc);
@@ -1392,7 +1389,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_enable->set_theme_type_variation(SceneStringName(FlatButton));
 	toolbar->add_child(b_snap_enable);
 	b_snap_enable->set_text(TTR("Snap"));
-	b_snap_enable->set_focus_mode(FOCUS_NONE);
+	b_snap_enable->set_focus_mode(FOCUS_ACCESSIBILITY);
 	b_snap_enable->set_toggle_mode(true);
 	b_snap_enable->set_pressed(use_snap);
 	b_snap_enable->set_tooltip_text(TTR("Enable Snap"));
@@ -1402,7 +1399,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_grid->set_theme_type_variation(SceneStringName(FlatButton));
 	toolbar->add_child(b_snap_grid);
 	b_snap_grid->set_text(TTR("Grid"));
-	b_snap_grid->set_focus_mode(FOCUS_NONE);
+	b_snap_grid->set_focus_mode(FOCUS_ACCESSIBILITY);
 	b_snap_grid->set_toggle_mode(true);
 	b_snap_grid->set_pressed(snap_show_grid);
 	b_snap_grid->set_tooltip_text(TTR("Show Grid"));
@@ -1421,7 +1418,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_x->set_value(snap_offset.x);
 	sb_off_x->set_suffix("px");
 	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_x));
-	sb_off_x->set_accessibility_name(TTRC("Grid Offset X"));
+	sb_off_x->set_accessibility_name(TTRC("Grid Offset X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset X:"), sb_off_x);
 
 	SpinBox *sb_off_y = memnew(SpinBox);
@@ -1431,7 +1428,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_y->set_value(snap_offset.y);
 	sb_off_y->set_suffix("px");
 	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_y));
-	sb_off_y->set_accessibility_name(TTRC("Grid Offset Y"));
+	sb_off_y->set_accessibility_name(TTRC("Grid Offset Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset Y:"), sb_off_y);
 
 	SpinBox *sb_step_x = memnew(SpinBox);
@@ -1441,7 +1438,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_x->set_value(snap_step.x);
 	sb_step_x->set_suffix("px");
 	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_x));
-	sb_step_x->set_accessibility_name(TTRC("Grid Step X"));
+	sb_step_x->set_accessibility_name(TTRC("Grid Step X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step X:"), sb_step_x);
 
 	SpinBox *sb_step_y = memnew(SpinBox);
@@ -1451,7 +1448,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_y->set_value(snap_step.y);
 	sb_step_y->set_suffix("px");
 	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_y));
-	sb_step_y->set_accessibility_name(TTRC("Grid Step Y"));
+	sb_step_y->set_accessibility_name(TTRC("Grid Step Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step Y:"), sb_step_y);
 
 	zoom_widget = memnew(EditorZoomWidget);
@@ -1495,7 +1492,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	error = memnew(AcceptDialog);
 	add_child(error);
 
-	dock_button = EditorNode::get_bottom_panel()->add_item(TTR("Polygon"), polygon_edit, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTR("Toggle Polygon Bottom Panel")));
+	dock_button = EditorNode::get_bottom_panel()->add_item(TTRC("Polygon"), polygon_edit, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTR("Toggle Polygon Bottom Panel")));
 	dock_button->hide();
 }
 

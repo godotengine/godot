@@ -53,6 +53,7 @@
 #import "metal_utils.h"
 #import "pixel_formats.h"
 #import "rendering_device_driver_metal.h"
+#import "rendering_shader_container_metal.h"
 
 #import <os/signpost.h>
 
@@ -602,18 +603,18 @@ void MDCommandBuffer::_render_clear_render_area() {
 	bool clear_stencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
 
 	uint32_t color_count = subpass.color_references.size();
-	uint32_t clear_count = color_count + (clear_depth || clear_stencil ? 1 : 0);
-	if (clear_count == 0) {
+	uint32_t clears_size = color_count + (clear_depth || clear_stencil ? 1 : 0);
+	if (clears_size == 0) {
 		return;
 	}
 
-	RDD::AttachmentClear *clears = ALLOCA_ARRAY(RDD::AttachmentClear, clear_count);
-	uint32_t clears_idx = 0;
+	RDD::AttachmentClear *clears = ALLOCA_ARRAY(RDD::AttachmentClear, clears_size);
+	uint32_t clears_count = 0;
 
 	for (uint32_t i = 0; i < color_count; i++) {
 		uint32_t idx = subpass.color_references[i].attachment;
 		if (idx != RDD::AttachmentReference::UNUSED && pass.attachments[idx].shouldClear(subpass, false)) {
-			clears[clears_idx++] = { .aspect = RDD::TEXTURE_ASPECT_COLOR_BIT, .color_attachment = idx, .value = render.clear_values[idx] };
+			clears[clears_count++] = { .aspect = RDD::TEXTURE_ASPECT_COLOR_BIT, .color_attachment = idx, .value = render.clear_values[idx] };
 		}
 	}
 
@@ -627,10 +628,14 @@ void MDCommandBuffer::_render_clear_render_area() {
 			bits.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
 		}
 
-		clears[clears_idx++] = { .aspect = bits, .color_attachment = ds_index, .value = render.clear_values[ds_index] };
+		clears[clears_count++] = { .aspect = bits, .color_attachment = ds_index, .value = render.clear_values[ds_index] };
 	}
 
-	render_clear_attachments(VectorView(clears, clear_count), { render.render_area });
+	if (clears_count == 0) {
+		return;
+	}
+
+	render_clear_attachments(VectorView(clears, clears_count), { render.render_area });
 }
 
 void MDCommandBuffer::render_next_subpass() {
@@ -1937,7 +1942,11 @@ void ShaderCacheEntry::notify_free() const {
 }
 
 @interface MDLibrary ()
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry;
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+#ifdef DEV_ENABLED
+							source:(NSString *)source;
+#endif
+;
 @end
 
 /// Loads the MTLLibrary when the library is first accessed.
@@ -1971,6 +1980,18 @@ void ShaderCacheEntry::notify_free() const {
 						   options:(MTLCompileOptions *)options;
 @end
 
+@interface MDBinaryLibrary : MDLibrary {
+	id<MTLLibrary> _library;
+	NSError *_error;
+}
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+							device:(id<MTLDevice>)device
+#ifdef DEV_ENABLED
+							source:(NSString *)source
+#endif
+							  data:(dispatch_data_t)data;
+@end
+
 @implementation MDLibrary
 
 + (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
@@ -1988,6 +2009,26 @@ void ShaderCacheEntry::notify_free() const {
 	}
 }
 
++ (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
+								  device:(id<MTLDevice>)device
+#ifdef DEV_ENABLED
+								  source:(NSString *)source
+#endif
+									data:(dispatch_data_t)data {
+	return [[MDBinaryLibrary alloc] initWithCacheEntry:entry
+												device:device
+#ifdef DEV_ENABLED
+												source:source
+#endif
+												  data:data];
+}
+
+#ifdef DEV_ENABLED
+- (NSString *)originalSource {
+	return _original_source;
+}
+#endif
+
 - (id<MTLLibrary>)library {
 	CRASH_NOW_MSG("Not implemented");
 	return nil;
@@ -2001,10 +2042,17 @@ void ShaderCacheEntry::notify_free() const {
 - (void)setLabel:(NSString *)label {
 }
 
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry {
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+#ifdef DEV_ENABLED
+							source:(NSString *)source
+#endif
+{
 	self = [super init];
 	_entry = entry;
 	_entry->library = self;
+#ifdef DEV_ENABLED
+	_original_source = source;
+#endif
 	return self;
 }
 
@@ -2020,7 +2068,11 @@ void ShaderCacheEntry::notify_free() const {
 							device:(id<MTLDevice>)device
 							source:(NSString *)source
 						   options:(MTLCompileOptions *)options {
-	self = [super initWithCacheEntry:entry];
+	self = [super initWithCacheEntry:entry
+#ifdef DEV_ENABLED
+							  source:source
+#endif
+	];
 	_complete = false;
 	_ready = false;
 
@@ -2072,7 +2124,11 @@ void ShaderCacheEntry::notify_free() const {
 							device:(id<MTLDevice>)device
 							source:(NSString *)source
 						   options:(MTLCompileOptions *)options {
-	self = [super initWithCacheEntry:entry];
+	self = [super initWithCacheEntry:entry
+#ifdef DEV_ENABLED
+							  source:source
+#endif
+	];
 	_device = device;
 	_source = source;
 	_options = options;
@@ -2113,6 +2169,39 @@ void ShaderCacheEntry::notify_free() const {
 
 - (NSError *)error {
 	[self load];
+	return _error;
+}
+
+@end
+
+@implementation MDBinaryLibrary
+
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+							device:(id<MTLDevice>)device
+#ifdef DEV_ENABLED
+							source:(NSString *)source
+#endif
+							  data:(dispatch_data_t)data {
+	self = [super initWithCacheEntry:entry
+#ifdef DEV_ENABLED
+							  source:source
+#endif
+	];
+	NSError *error = nil;
+	_library = [device newLibraryWithData:data error:&error];
+	if (error != nil) {
+		_error = error;
+		NSString *desc = [error description];
+		ERR_PRINT(vformat("Unable to load shader library: %s", desc.UTF8String));
+	}
+	return self;
+}
+
+- (id<MTLLibrary>)library {
+	return _library;
+}
+
+- (NSError *)error {
 	return _error;
 }
 

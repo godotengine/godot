@@ -8,7 +8,7 @@
 
 /**
  * @internal
- * @file texture1.h
+ * @file
  * @~English
  *
  * @brief Declare internal ktxTexture1 functions for sharing between

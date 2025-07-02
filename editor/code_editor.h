@@ -31,17 +31,17 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup.h"
-#include "scene/main/timer.h"
 
-class MenuButton;
+class Button;
+class CheckBox;
 class CodeTextEditor;
+class Label;
 class LineEdit;
+class MenuButton;
+class RichTextLabel;
+class Timer;
 
 class GotoLinePopup : public PopupPanel {
 	GDCLASS(GotoLinePopup, PopupPanel);
@@ -138,7 +138,6 @@ public:
 	bool is_case_sensitive() const;
 	bool is_whole_words() const;
 	bool is_selection_only() const;
-	void set_error(const String &p_label);
 
 	void set_text_edit(CodeTextEditor *p_text_editor);
 
@@ -183,7 +182,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	float zoom_factor = 1.0f;
 
-	Label *error = nullptr;
+	RichTextLabel *error = nullptr;
 	int error_line;
 	int error_column;
 
@@ -210,6 +209,8 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_to(float p_zoom_factor);
+
+	void _update_error_content_height();
 
 	void _error_button_pressed();
 	void _warning_button_pressed();

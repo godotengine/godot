@@ -134,6 +134,16 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		fileSizes: [],
 		/**
+		 * @ignore
+		 * @type {number}
+		 */
+		emscriptenPoolSize: 8,
+		/**
+		 * @ignore
+		 * @type {number}
+		 */
+		godotPoolSize: 4,
+		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
 		 * This is for example used in the Web Editor template to switch between project manager and editor, and for running the game.
@@ -259,6 +269,8 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.serviceWorker = parse('serviceWorker', this.serviceWorker);
 		this.gdextensionLibs = parse('gdextensionLibs', this.gdextensionLibs);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
+		this.emscriptenPoolSize = parse('emscriptenPoolSize', this.emscriptenPoolSize);
+		this.godotPoolSize = parse('godotPoolSize', this.godotPoolSize);
 		this.args = parse('args', this.args);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
@@ -278,6 +290,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'thisProgram': this.executable,
 			'noExitRuntime': false,
 			'dynamicLibraries': [`${loadPath}.side.wasm`].concat(this.gdextensionLibs),
+			'emscriptenPoolSize': this.emscriptenPoolSize,
 			'instantiateWasm': function (imports, onSuccess) {
 				function done(result) {
 					onSuccess(result['instance'], result['module']);
@@ -350,6 +363,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'locale': locale,
 			'persistentDrops': this.persistentDrops,
 			'virtualKeyboard': this.experimentalVK,
+			'godotPoolSize': this.godotPoolSize,
 			'focusCanvas': this.focusCanvas,
 			'onExecute': this.onExecute,
 			'onExit': function (p_code) {

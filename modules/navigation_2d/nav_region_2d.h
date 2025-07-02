@@ -36,7 +36,7 @@
 #include "core/os/rw_lock.h"
 #include "scene/resources/2d/navigation_polygon.h"
 
-struct NavRegionIteration2D;
+#include "2d/nav_region_iteration_2d.h"
 
 class NavRegion2D : public NavBase2D {
 	RWLock region_rwlock;
@@ -47,21 +47,30 @@ class NavRegion2D : public NavBase2D {
 
 	bool use_edge_connections = true;
 
-	bool region_dirty = true;
-	bool polygons_dirty = true;
-
-	LocalVector<Nav2D::Polygon> navmesh_polygons;
-
-	real_t surface_area = 0.0;
 	Rect2 bounds;
 
-	RWLock navmesh_rwlock;
-	Vector<Vector2> pending_navmesh_vertices;
-	Vector<Vector<int>> pending_navmesh_polygons;
+	Ref<NavigationPolygon> navmesh;
+
+	Nav2D::PerformanceData performance_data;
 
 	uint32_t iteration_id = 0;
 
 	SelfList<NavRegion2D> sync_dirty_request_list_element;
+	mutable RWLock iteration_rwlock;
+	Ref<NavRegionIteration2D> iteration;
+
+	NavRegionIterationBuild2D iteration_build;
+	bool use_async_iterations = true;
+	SelfList<NavRegion2D> async_list_element;
+	WorkerThreadPool::TaskID iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	static void _build_iteration_threaded(void *p_arg);
+
+	bool iteration_dirty = true;
+	bool iteration_building = false;
+	bool iteration_ready = false;
+
+	void _build_iteration();
+	void _sync_iteration();
 
 public:
 	NavRegion2D();
@@ -69,9 +78,7 @@ public:
 
 	uint32_t get_iteration_id() const { return iteration_id; }
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
+	void scratch_polygons();
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled() const { return enabled; }
@@ -84,22 +91,21 @@ public:
 	virtual void set_use_edge_connections(bool p_enabled) override;
 	virtual bool get_use_edge_connections() const override { return use_edge_connections; }
 
-	void set_transform(const Transform2D &p_transform);
+	void set_transform(Transform2D transform);
 	const Transform2D &get_transform() const {
 		return transform;
 	}
 
-	void set_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon);
+	void set_navigation_mesh(Ref<NavigationPolygon> p_navigation_mesh);
+	Ref<NavigationPolygon> get_navigation_mesh() const { return navmesh; }
 
-	LocalVector<Nav2D::Polygon> const &get_polygons() const {
-		return navmesh_polygons;
-	}
+	LocalVector<Nav2D::Polygon> const &get_polygons() const;
 
 	Nav2D::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
 	Vector2 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
-	real_t get_surface_area() const { return surface_area; }
-	Rect2 get_bounds() const { return bounds; }
+	real_t get_surface_area() const;
+	Rect2 get_bounds() const;
 
 	// NavBase properties.
 	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
@@ -111,8 +117,17 @@ public:
 	void request_sync();
 	void cancel_sync_request();
 
-	void get_iteration_update(NavRegionIteration2D &r_iteration);
+	void sync_async_tasks();
+	void request_async_thread_join();
+	void cancel_async_thread_join();
 
-private:
-	void update_polygons();
+	Ref<NavRegionIteration2D> get_iteration();
+
+	// Performance Monitor
+	int get_pm_polygon_count() const { return performance_data.pm_polygon_count; }
+	int get_pm_edge_count() const { return performance_data.pm_edge_count; }
+	int get_pm_edge_merge_count() const { return performance_data.pm_edge_merge_count; }
+
+	void set_use_async_iterations(bool p_enabled);
+	bool get_use_async_iterations() const;
 };

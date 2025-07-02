@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceImporterSVG" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Imports a SVG file as a scalable texture for use in 2D or 3D rendering.
+		Imports an SVG file as a scalable texture for use in 2D or 3D rendering.
 	</brief_description>
 	<description>
 		This importer imports [SVGTexture] resources. See also [ResourceImporterTexture] and [ResourceImporterImage].

@@ -148,31 +148,36 @@ public final class PermissionsUtil {
 			return true;
 		}
 
+		final List<String> permissions = new ArrayList<>();
+
 		final int requestCode;
-		final String updatedPermissionName;
 		switch (permissionName) {
 			case "RECORD_AUDIO":
-				updatedPermissionName = Manifest.permission.RECORD_AUDIO;
+				permissions.add(Manifest.permission.RECORD_AUDIO);
 				requestCode = REQUEST_RECORD_AUDIO_PERMISSION;
 				break;
 
 			case "CAMERA":
-				updatedPermissionName = Manifest.permission.CAMERA;
+				permissions.add(Manifest.permission.CAMERA);
+				if (DeviceUtils.isHorizonOSDevice(activity)) {
+					// On HorizonOS, these permissions are required to get access to all the device's cameras.
+					permissions.add("horizonos.permission.AVATAR_CAMERA");
+					permissions.add("horizonos.permission.HEADSET_CAMERA");
+				}
 				requestCode = REQUEST_CAMERA_PERMISSION;
 				break;
 
 			case "VIBRATE":
-				updatedPermissionName = Manifest.permission.VIBRATE;
+				permissions.add(Manifest.permission.VIBRATE);
 				requestCode = REQUEST_VIBRATE_PERMISSION;
 				break;
 
 			default:
-				updatedPermissionName = permissionName;
+				permissions.add(permissionName);
 				requestCode = REQUEST_SINGLE_PERMISSION_REQ_CODE;
 				break;
 		}
 
-		List<String> permissions = Collections.singletonList(updatedPermissionName);
 		return requestPermissions(activity, permissions, requestCode);
 	}
 

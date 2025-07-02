@@ -578,6 +578,9 @@
 		<member name="privacy/user_defaults_access_reasons" type="int" setter="" getter="">
 			The reasons your app use user defaults API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
 		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ and Mobile renderers.
+		</member>
 		<member name="user_data/accessible_from_files_app" type="bool" setter="" getter="">
 			If [code]true[/code], the app "Documents" folder can be accessed via "Files" app. See [url=https://developer.apple.com/documentation/bundleresources/information_property_list/lssupportsopeningdocumentsinplace]LSSupportsOpeningDocumentsInPlace[/url].
 		</member>

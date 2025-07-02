@@ -44,7 +44,7 @@ void NavLink3D::set_map(NavMap3D *p_map) {
 	}
 
 	map = p_map;
-	link_dirty = true;
+	iteration_dirty = true;
 
 	if (map) {
 		map->add_link(this);
@@ -57,9 +57,7 @@ void NavLink3D::set_enabled(bool p_enabled) {
 		return;
 	}
 	enabled = p_enabled;
-
-	// TODO: This should not require a full rebuild as the link has not really changed.
-	link_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -69,7 +67,7 @@ void NavLink3D::set_bidirectional(bool p_bidirectional) {
 		return;
 	}
 	bidirectional = p_bidirectional;
-	link_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -79,7 +77,7 @@ void NavLink3D::set_start_position(const Vector3 p_position) {
 		return;
 	}
 	start_position = p_position;
-	link_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -89,7 +87,7 @@ void NavLink3D::set_end_position(const Vector3 p_position) {
 		return;
 	}
 	end_position = p_position;
-	link_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -99,7 +97,7 @@ void NavLink3D::set_navigation_layers(uint32_t p_navigation_layers) {
 		return;
 	}
 	navigation_layers = p_navigation_layers;
-	link_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -110,7 +108,7 @@ void NavLink3D::set_enter_cost(real_t p_enter_cost) {
 		return;
 	}
 	enter_cost = new_enter_cost;
-	link_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -121,7 +119,7 @@ void NavLink3D::set_travel_cost(real_t p_travel_cost) {
 		return;
 	}
 	travel_cost = new_travel_cost;
-	link_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -131,21 +129,59 @@ void NavLink3D::set_owner_id(ObjectID p_owner_id) {
 		return;
 	}
 	owner_id = p_owner_id;
-	link_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
 
-bool NavLink3D::is_dirty() const {
-	return link_dirty;
-}
-
-void NavLink3D::sync() {
-	if (link_dirty) {
-		iteration_id = iteration_id % UINT32_MAX + 1;
+bool NavLink3D::sync() {
+	bool requires_map_update = false;
+	if (!map) {
+		return requires_map_update;
 	}
 
-	link_dirty = false;
+	if (iteration_dirty && !iteration_building && !iteration_ready) {
+		_build_iteration();
+		iteration_ready = false;
+		requires_map_update = true;
+	}
+
+	return requires_map_update;
+}
+
+void NavLink3D::_build_iteration() {
+	if (!iteration_dirty || iteration_building || iteration_ready) {
+		return;
+	}
+
+	iteration_dirty = false;
+	iteration_building = true;
+	iteration_ready = false;
+
+	Ref<NavLinkIteration3D> new_iteration;
+	new_iteration.instantiate();
+
+	new_iteration->navigation_layers = get_navigation_layers();
+	new_iteration->enter_cost = get_enter_cost();
+	new_iteration->travel_cost = get_travel_cost();
+	new_iteration->owner_object_id = get_owner_id();
+	new_iteration->owner_type = get_type();
+	new_iteration->owner_rid = get_self();
+
+	new_iteration->enabled = get_enabled();
+	new_iteration->start_position = get_start_position();
+	new_iteration->end_position = get_end_position();
+	new_iteration->bidirectional = is_bidirectional();
+
+	RWLockWrite write_lock(iteration_rwlock);
+	ERR_FAIL_COND(iteration.is_null());
+	iteration = Ref<NavLinkIteration3D>();
+	DEV_ASSERT(iteration.is_null());
+	iteration = new_iteration;
+	iteration_id = iteration_id % UINT32_MAX + 1;
+
+	iteration_building = false;
+	iteration_ready = true;
 }
 
 void NavLink3D::request_sync() {
@@ -160,27 +196,19 @@ void NavLink3D::cancel_sync_request() {
 	}
 }
 
+Ref<NavLinkIteration3D> NavLink3D::get_iteration() {
+	RWLockRead read_lock(iteration_rwlock);
+	return iteration;
+}
+
 NavLink3D::NavLink3D() :
 		sync_dirty_request_list_element(this) {
 	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
+	iteration.instantiate();
 }
 
 NavLink3D::~NavLink3D() {
 	cancel_sync_request();
-}
 
-void NavLink3D::get_iteration_update(NavLinkIteration3D &r_iteration) {
-	r_iteration.navigation_layers = get_navigation_layers();
-	r_iteration.enter_cost = get_enter_cost();
-	r_iteration.travel_cost = get_travel_cost();
-	r_iteration.owner_object_id = get_owner_id();
-	r_iteration.owner_type = get_type();
-	r_iteration.owner_rid = get_self();
-
-	r_iteration.enabled = get_enabled();
-	r_iteration.start_position = get_start_position();
-	r_iteration.end_position = get_end_position();
-	r_iteration.bidirectional = is_bidirectional();
-
-	r_iteration.navmesh_polygons.clear();
+	iteration = Ref<NavLinkIteration3D>();
 }

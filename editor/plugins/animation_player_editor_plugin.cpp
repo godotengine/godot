@@ -80,6 +80,7 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 void AnimationPlayerEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PROCESS: {
+			finishing = false;
 			if (!player || is_dummy) {
 				track_editor->show_inactive_player_warning(false);
 			} else {
@@ -1210,6 +1211,9 @@ void AnimationPlayerEditor::edit(AnimationMixer *p_node, AnimationPlayer *p_play
 		if (player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
 			player->disconnect(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
 		}
+		if (player->is_connected(SceneStringName(animation_finished), callable_mp(this, &AnimationPlayerEditor::_animation_finished))) {
+			player->disconnect(SceneStringName(animation_finished), callable_mp(this, &AnimationPlayerEditor::_animation_finished));
+		}
 		if (player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
 			player->disconnect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
 		}
@@ -1236,6 +1240,9 @@ void AnimationPlayerEditor::edit(AnimationMixer *p_node, AnimationPlayer *p_play
 	if (player) {
 		if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
 			player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated), CONNECT_DEFERRED);
+		}
+		if (!player->is_connected(SceneStringName(animation_finished), callable_mp(this, &AnimationPlayerEditor::_animation_finished))) {
+			player->connect(SceneStringName(animation_finished), callable_mp(this, &AnimationPlayerEditor::_animation_finished));
 		}
 		if (!player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
 			player->connect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
@@ -1428,9 +1435,16 @@ void AnimationPlayerEditor::_list_changed() {
 	}
 }
 
+void AnimationPlayerEditor::_animation_finished(const String &p_name) {
+	finishing = true;
+}
+
 void AnimationPlayerEditor::_current_animation_changed(const String &p_name) {
 	if (is_visible_in_tree()) {
-		if (p_name.is_empty()) {
+		if (finishing) {
+			finishing = false; // Maybe redundant since it will be false in the AnimationPlayerEditor::_process(), but for safety.
+			return;
+		} else if (p_name.is_empty()) {
 			// Means [stop].
 			frame->set_value(0);
 			track_editor->set_anim_pos(0);
@@ -1949,7 +1963,7 @@ bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 			for (int j = 0; j < key_len; j++) {
 				Quaternion q;
 				p_anim->rotation_track_get_key(i, j, &q);
-				ERR_BREAK_EDMSG(!q.is_normalized(), "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', 3D Rotation Track:  '" + p_anim->track_get_path(i) + "' contains unnormalized Quaternion key.");
+				ERR_BREAK_EDMSG(!q.is_normalized(), "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', 3D Rotation Track:  '" + String(p_anim->track_get_path(i)) + "' contains unnormalized Quaternion key.");
 			}
 		} else if (ttype == Animation::TYPE_VALUE) {
 			int key_len = p_anim->track_get_key_count(i);
@@ -1962,7 +1976,7 @@ bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 						Quaternion q = Quaternion(p_anim->track_get_key_value(i, j));
 						if (!q.is_normalized()) {
 							is_valid = false;
-							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', Value Track:  '" + p_anim->track_get_path(i) + "' contains unnormalized Quaternion key.");
+							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', Value Track:  '" + String(p_anim->track_get_path(i)) + "' contains unnormalized Quaternion key.");
 						}
 					}
 				} break;
@@ -1971,7 +1985,7 @@ bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 						Transform3D t = Transform3D(p_anim->track_get_key_value(i, j));
 						if (!t.basis.orthonormalized().is_rotation()) {
 							is_valid = false;
-							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', Value Track:  '" + p_anim->track_get_path(i) + "' contains corrupted basis (some axes are too close other axis or scaled by zero) Transform3D key.");
+							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', Value Track:  '" + String(p_anim->track_get_path(i)) + "' contains corrupted basis (some axes are too close other axis or scaled by zero) Transform3D key.");
 						}
 					}
 				} break;
@@ -2020,31 +2034,26 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
 	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards"));
-	play_bw_from->set_accessibility_name(TTRC("Play Backwards"));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
 	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End"));
-	play_bw->set_accessibility_name(TTRC("Play Backwards from End"));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation(SceneStringName(FlatButton));
 	stop->set_tooltip_text(TTR("Pause/Stop Animation"));
-	stop->set_accessibility_name(TTRC("Pause/Stop"));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation(SceneStringName(FlatButton));
 	play->set_tooltip_text(TTR("Play Animation from Start"));
-	play->set_accessibility_name(TTRC("Play from Start"));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
 	play_from->set_tooltip_text(TTR("Play Animation"));
-	play_from->set_accessibility_name(TTRC("Play"));
 	playback_container->add_child(play_from);
 
 	frame = memnew(SpinBox);
@@ -2053,7 +2062,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	frame->set_stretch_ratio(2);
 	frame->set_step(0.0001);
 	frame->set_tooltip_text(TTR("Animation position (in seconds)."));
-	frame->set_accessibility_name(TTRC("Frame"));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -2062,7 +2070,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	scale->set_h_size_flags(SIZE_EXPAND_FILL);
 	scale->set_stretch_ratio(1);
 	scale->set_tooltip_text(TTR("Scale animation playback globally for the node."));
-	scale->set_accessibility_name(TTRC("Scale"));
 	scale->hide();
 
 	delete_dialog = memnew(ConfirmationDialog);
@@ -2100,7 +2107,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	autoplay->set_theme_type_variation(SceneStringName(FlatButton));
 	hb->add_child(autoplay);
 	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
-	autoplay->set_accessibility_name(TTRC("Autoplay on Load"));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -2113,7 +2119,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_toggle->set_theme_type_variation(SceneStringName(FlatButton));
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip_text(TTR("Enable Onion Skinning"));
-	onion_toggle->set_accessibility_name(TTRC("Onion Skinning"));
 	onion_toggle->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
@@ -2145,7 +2150,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin AnimationPlayer"));
-	pin->set_accessibility_name(TTRC("Pin AnimationPlayer"));
 	hb->add_child(pin);
 	pin->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
 
@@ -2422,7 +2426,7 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	EditorNode::get_bottom_panel()->add_item(TTR("Animation"), anim_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Bottom Panel"), KeyModifierMask::ALT | Key::N));
+	EditorNode::get_bottom_panel()->add_item(TTRC("Animation"), anim_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Bottom Panel"), KeyModifierMask::ALT | Key::N));
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {

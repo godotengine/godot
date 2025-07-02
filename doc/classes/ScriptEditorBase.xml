@@ -13,7 +13,7 @@
 			<return type="void" />
 			<param index="0" name="highlighter" type="EditorSyntaxHighlighter" />
 			<description>
-				Adds a [EditorSyntaxHighlighter] to the open script.
+				Adds an [EditorSyntaxHighlighter] to the open script.
 			</description>
 		</method>
 		<method name="get_base_editor" qualifiers="const">

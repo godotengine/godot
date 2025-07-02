@@ -269,17 +269,31 @@ void ShaderTextEditor::_load_theme_settings() {
 				}
 			}
 
-			const Vector<ShaderLanguage::ModeInfo> &modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+			{
+				const Vector<ShaderLanguage::ModeInfo> &render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
 
-			for (int j = 0; j < modes.size(); j++) {
-				const ShaderLanguage::ModeInfo &mode_info = modes[j];
-
-				if (!mode_info.options.is_empty()) {
-					for (int k = 0; k < mode_info.options.size(); k++) {
-						built_ins.push_back(String(mode_info.name) + "_" + String(mode_info.options[k]));
+				for (const ShaderLanguage::ModeInfo &mode_info : render_modes) {
+					if (!mode_info.options.is_empty()) {
+						for (const StringName &option : mode_info.options) {
+							built_ins.push_back(String(mode_info.name) + "_" + String(option));
+						}
+					} else {
+						built_ins.push_back(String(mode_info.name));
 					}
-				} else {
-					built_ins.push_back(String(mode_info.name));
+				}
+			}
+
+			{
+				const Vector<ShaderLanguage::ModeInfo> &stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(i));
+
+				for (const ShaderLanguage::ModeInfo &mode_info : stencil_modes) {
+					if (!mode_info.options.is_empty()) {
+						for (const StringName &option : mode_info.options) {
+							built_ins.push_back(String(mode_info.name) + "_" + String(option));
+						}
+					} else {
+						built_ins.push_back(String(mode_info.name));
+					}
 				}
 			}
 		}
@@ -290,17 +304,31 @@ void ShaderTextEditor::_load_theme_settings() {
 			}
 		}
 
-		const Vector<ShaderLanguage::ModeInfo> &modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
+		{
+			const Vector<ShaderLanguage::ModeInfo> &shader_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
 
-		for (int i = 0; i < modes.size(); i++) {
-			const ShaderLanguage::ModeInfo &mode_info = modes[i];
-
-			if (!mode_info.options.is_empty()) {
-				for (int j = 0; j < mode_info.options.size(); j++) {
-					built_ins.push_back(String(mode_info.name) + "_" + String(mode_info.options[j]));
+			for (const ShaderLanguage::ModeInfo &mode_info : shader_modes) {
+				if (!mode_info.options.is_empty()) {
+					for (const StringName &option : mode_info.options) {
+						built_ins.push_back(String(mode_info.name) + "_" + String(option));
+					}
+				} else {
+					built_ins.push_back(String(mode_info.name));
 				}
-			} else {
-				built_ins.push_back(String(mode_info.name));
+			}
+		}
+
+		{
+			const Vector<ShaderLanguage::ModeInfo> &stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader->get_mode()));
+
+			for (const ShaderLanguage::ModeInfo &mode_info : stencil_modes) {
+				if (!mode_info.options.is_empty()) {
+					for (const StringName &option : mode_info.options) {
+						built_ins.push_back(String(mode_info.name) + "_" + String(option));
+					}
+				} else {
+					built_ins.push_back(String(mode_info.name));
+				}
 			}
 		}
 	}
@@ -437,6 +465,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	_check_shader_mode();
 	comp_info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()));
 	comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
+	comp_info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader->get_mode()));
 	comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 
 	sl.complete(code, comp_info, r_options, calltip);
@@ -486,28 +515,35 @@ void ShaderTextEditor::_validate_script() {
 	set_error_count(0);
 
 	if (last_compile_result != OK) {
-		//preprocessor error
+		// Preprocessor error.
 		ERR_FAIL_COND(err_positions.is_empty());
 
-		String err_text = error_pp;
-		int err_line = err_positions.front()->get().line;
+		String err_text;
+		const int err_line = err_positions.front()->get().line;
 		if (err_positions.size() == 1) {
-			// Error in main file
-			err_text = "error(" + itos(err_line) + "): " + err_text;
+			// Error in the main file.
+			const String message = error_pp.replace("[", "[lb]");
+
+			err_text = vformat(TTR("Error at line %d:"), err_line) + " " + message;
 		} else {
-			err_text = "error(" + itos(err_line) + ") in include " + err_positions.back()->get().file.get_file() + ":" + itos(err_positions.back()->get().line) + ": " + err_text;
+			// Error in an included file.
+			const String inc_file = err_positions.back()->get().file.get_file();
+			const int inc_line = err_positions.back()->get().line;
+			const String message = error_pp.replace("[", "[lb]");
+
+			err_text = vformat(TTR("Error at line %d in include %s:%d:"), err_line, inc_file, inc_line) + " " + message;
 			set_error_count(err_positions.size() - 1);
 		}
 
 		set_error(err_text);
 		set_error_pos(err_line - 1, 0);
+
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 		}
 		get_text_editor()->set_line_background_color(err_line - 1, marked_line_color);
 
 		set_warning_count(0);
-
 	} else {
 		ShaderLanguage sl;
 
@@ -541,6 +577,7 @@ void ShaderTextEditor::_validate_script() {
 			Shader::Mode mode = shader->get_mode();
 			comp_info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(mode));
 			comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(mode));
+			comp_info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(mode));
 			comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 		}
 
@@ -549,21 +586,33 @@ void ShaderTextEditor::_validate_script() {
 		last_compile_result = sl.compile(code, comp_info);
 
 		if (last_compile_result != OK) {
+			Vector<ShaderLanguage::FilePosition> include_positions = sl.get_include_positions();
+
 			String err_text;
 			int err_line;
-			Vector<ShaderLanguage::FilePosition> include_positions = sl.get_include_positions();
 			if (include_positions.size() > 1) {
-				//error is in an include
+				// Error in an included file.
 				err_line = include_positions[0].line;
-				err_text = "error(" + itos(err_line) + ") in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
+
+				const String inc_file = include_positions[include_positions.size() - 1].file;
+				const int inc_line = include_positions[include_positions.size() - 1].line;
+				const String message = sl.get_error_text().replace("[", "[lb]");
+
+				err_text = vformat(TTR("Error at line %d in include %s:%d:"), err_line, inc_file, inc_line) + " " + message;
 				set_error_count(include_positions.size() - 1);
 			} else {
+				// Error in the main file.
 				err_line = sl.get_error_line();
-				err_text = "error(" + itos(err_line) + "): " + sl.get_error_text();
+
+				const String message = sl.get_error_text().replace("[", "[lb]");
+
+				err_text = vformat(TTR("Error at line %d:"), err_line) + " " + message;
 				set_error_count(0);
 			}
+
 			set_error(err_text);
 			set_error_pos(err_line - 1, 0);
+
 			get_text_editor()->set_line_background_color(err_line - 1, marked_line_color);
 		} else {
 			set_error("");
@@ -594,9 +643,12 @@ void ShaderTextEditor::_update_warning_panel() {
 	for (const ShaderWarning &w : warnings) {
 		if (warning_count == 0) {
 			if (saved_treat_warning_as_errors) {
-				String error_text = "error(" + itos(w.get_line()) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");
-				set_error_pos(w.get_line() - 1, 0);
+				const String message = (w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.")).replace("[", "[lb]");
+				const String error_text = vformat(TTR("Error at line %d:"), w.get_line()) + " " + message;
+
 				set_error(error_text);
+				set_error_pos(w.get_line() - 1, 0);
+
 				get_text_editor()->set_line_background_color(w.get_line() - 1, marked_line_color);
 			}
 		}

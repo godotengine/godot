@@ -29,6 +29,7 @@ const emscriptenGlobals = {
 	'_free': true,
 	'_malloc': true,
 	'autoAddDeps': true,
+	'addToLibrary': true,
 	'addOnPostRun': true,
 	'getValue': true,
 	'lengthBytesUTF8': true,

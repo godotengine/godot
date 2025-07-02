@@ -54,7 +54,7 @@
 		<method name="get_status" qualifiers="const">
 			<return type="int" enum="StreamPeerTCP.Status" />
 			<description>
-				Returns the status of the connection, see [enum Status].
+				Returns the status of the connection.
 			</description>
 		</method>
 		<method name="poll">

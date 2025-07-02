@@ -102,6 +102,8 @@ public:
 		ARRAY_WEIGHTS_SIZE = 4,
 		CANVAS_ITEM_Z_MIN = -4096,
 		CANVAS_ITEM_Z_MAX = 4096,
+		CANVAS_LAYER_MIN = -2147483648,
+		CANVAS_LAYER_MAX = 2147483647,
 		MAX_GLOW_LEVELS = 7,
 		MAX_CURSORS = 8,
 		MAX_2D_DIRECTIONAL_LIGHTS = 8,
@@ -401,6 +403,7 @@ public:
 	virtual uint32_t mesh_surface_get_format_normal_tangent_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 	virtual uint32_t mesh_surface_get_format_attribute_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 	virtual uint32_t mesh_surface_get_format_skin_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
+	virtual uint32_t mesh_surface_get_format_index_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 
 	/// Returns stride
 	virtual void mesh_surface_make_offsets_from_format(uint64_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t &r_vertex_element_size, uint32_t &r_normal_element_size, uint32_t &r_attrib_element_size, uint32_t &r_skin_element_size) const;
@@ -426,6 +429,7 @@ public:
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
+	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
@@ -1073,6 +1077,7 @@ public:
 	enum ViewportScreenSpaceAA {
 		VIEWPORT_SCREEN_SPACE_AA_DISABLED,
 		VIEWPORT_SCREEN_SPACE_AA_FXAA,
+		VIEWPORT_SCREEN_SPACE_AA_SMAA,
 		VIEWPORT_SCREEN_SPACE_AA_MAX,
 	};
 

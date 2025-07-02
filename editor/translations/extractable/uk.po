@@ -25,25 +25,15 @@ msgstr "Усе розпізнано"
 msgid "Pick a color from the application window."
 msgstr "Вибрати колір з вікна програми."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Колір: #%s\n"
-"Ліва кнопка: застосувати колір\n"
-"Права кнопка: вилучити взірець"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Колір: #%s\n"
-"Ліва кнопка: Застосувати колір"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 "Введите шестнадцатеричный код (\"#ff0000\") или названный цвет (\"красный\")."
+
+msgid "Save"
+msgstr "Зберегти"
+
+msgid "Clear"
+msgstr "Очистити"
 
 msgid "Select a picker shape."
 msgstr "Виберіть фігуру вибору."
@@ -72,9 +62,6 @@ msgstr "Відкрити"
 
 msgid "Select Current Folder"
 msgstr "Вибрати поточну теку"
-
-msgid "Save"
-msgstr "Зберегти"
 
 msgid "Select This Folder"
 msgstr "Вибрати цю теку"
@@ -115,11 +102,11 @@ msgstr "Шлях:"
 msgid "Refresh files."
 msgstr "Освіжити файли."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Увімкнути або вимкнути видимість прихованих файлів."
-
 msgid "Directories & Files:"
 msgstr "Каталоги та файли:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Увімкнути або вимкнути видимість прихованих файлів."
 
 msgid "File:"
 msgstr "Файл:"
@@ -216,9 +203,6 @@ msgstr "Вставити"
 
 msgid "Select All"
 msgstr "Виділити все"
-
-msgid "Clear"
-msgstr "Очистити"
 
 msgid "Undo"
 msgstr "Скасувати"

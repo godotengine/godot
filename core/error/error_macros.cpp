@@ -92,22 +92,15 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
 	if (OS::get_singleton()) {
-		Vector<Ref<ScriptBacktrace>> script_backtraces;
-
-		// If script languages aren't initialized, we could be in the process of shutting down, in which case we don't want to allocate any objects, as we could be
-		// logging ObjectDB leaks, where ObjectDB would be locked, thus causing a deadlock.
-		if (ScriptServer::are_languages_initialized()) {
-			script_backtraces = ScriptServer::capture_script_backtraces(false);
-		}
-
-		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type, script_backtraces);
+		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type, ScriptServer::capture_script_backtraces(false));
 	} else {
 		// Fallback if errors happen before OS init or after it's destroyed.
 		const char *err_details = (p_message && *p_message) ? p_message : p_error;
-		fprintf(stderr, "ERROR: %s\n   at: %s (%s:%i)\n", err_details, p_function, p_file, p_line);
+		fprintf(stderr, "%s: %s\n   at: %s (%s:%i)\n", _error_handler_type_string(p_type), err_details, p_function, p_file, p_line);
 	}
 
 	_global_lock();
+
 	ErrorHandlerList *l = error_handler_list;
 	while (l) {
 		l->errfunc(l->userdata, p_function, p_file, p_line, p_error, p_message, p_editor_notify, p_type);
@@ -121,18 +114,20 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 // but we don't want to make it noisy by printing lots of file & line info (because it's already
 // been printing by a preceding _err_print_error).
 void _err_print_error_asap(const String &p_error, ErrorHandlerType p_type) {
+	const char *err_details = p_error.utf8().get_data();
+
 	if (OS::get_singleton()) {
-		OS::get_singleton()->printerr("ERROR: %s\n", p_error.utf8().get_data());
+		OS::get_singleton()->printerr("%s: %s\n", _error_handler_type_string(p_type), err_details);
 	} else {
 		// Fallback if errors happen before OS init or after it's destroyed.
-		const char *err_details = p_error.utf8().get_data();
-		fprintf(stderr, "ERROR: %s\n", err_details);
+		fprintf(stderr, "%s: %s\n", _error_handler_type_string(p_type), err_details);
 	}
 
 	_global_lock();
+
 	ErrorHandlerList *l = error_handler_list;
 	while (l) {
-		l->errfunc(l->userdata, "", "", 0, p_error.utf8().get_data(), "", false, p_type);
+		l->errfunc(l->userdata, "", "", 0, err_details, "", false, p_type);
 		l = l->next;
 	}
 

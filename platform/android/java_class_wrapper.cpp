@@ -1600,9 +1600,12 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 				if (_new != existing) {
 					this_valid = false;
 					break;
+				} else if ((_new == Variant::OBJECT || _new == Variant::ARRAY) && E->get().param_sigs[j] != mi.param_sigs[j]) {
+					this_valid = false;
+					break;
 				}
 				new_likeliness += new_l;
-				existing_likeliness = existing_l;
+				existing_likeliness += existing_l;
 			}
 
 			if (!this_valid) {

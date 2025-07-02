@@ -84,6 +84,12 @@ void hb_outline_t::replay (hb_draw_funcs_t *pen, void *pen_data) const
   }
 }
 
+void hb_outline_t::slant (float slant_xy)
+{
+  for (auto &p : points)
+    p.x += slant_xy * p.y;
+}
+
 float hb_outline_t::control_area () const
 {
   float a = 0;

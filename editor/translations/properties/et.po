@@ -73,6 +73,9 @@ msgstr "Põhi Tsükli Tüüp"
 msgid "Auto Accept Quit"
 msgstr "Auto Aktsepteeri Lõpeta"
 
+msgid "General"
+msgstr "Üldine"
+
 msgid "Display"
 msgstr "Ekraan"
 
@@ -138,9 +141,6 @@ msgstr "Siinid"
 
 msgid "Default Bus Layout"
 msgstr "Vaikimisi Siini Paigutus"
-
-msgid "General"
-msgstr "Üldine"
 
 msgid "Text to Speech"
 msgstr "Tekst-Kõneks"
@@ -273,6 +273,15 @@ msgstr "Luba Pikk Vajutus Paremklõpsuna"
 
 msgid "Enable Pan and Scale Gestures"
 msgstr "Luba Nihke Ja Skaala Liigutused"
+
+msgid "Navigation"
+msgstr "Navigatsioon"
+
+msgid "Thread Model"
+msgstr "Lõime Mudel"
+
+msgid "Max Threads"
+msgstr "Max Lõimed"
 
 msgid "Low Processor Usage Mode"
 msgstr "Protsessori Madala Võimsuse Režiim"
@@ -541,9 +550,6 @@ msgstr "Lõimelisus"
 msgid "Worker Pool"
 msgstr "Tööliste Hulk"
 
-msgid "Max Threads"
-msgstr "Max Lõimed"
-
 msgid "Low Priority Thread Ratio"
 msgstr "Madala Prioriteediga Lõime Suhe"
 
@@ -796,9 +802,6 @@ msgstr "Kohandatud Teema"
 msgid "Touchscreen"
 msgstr "Puuteekraan"
 
-msgid "Increase Scrollbar Touch Area"
-msgstr "Suurendage Kerimisriba Puuteala"
-
 msgid "Scene Tabs"
 msgstr "Stseeni Aknad"
 
@@ -901,9 +904,6 @@ msgstr "Alamresursi Värvitoon"
 msgid "Text Editor"
 msgstr "Tekstiredaktor"
 
-msgid "Line Spacing"
-msgstr "Reavahe"
-
 msgid "Color Theme"
 msgstr "Värviskeem"
 
@@ -964,8 +964,8 @@ msgstr "Joonista Vahelehed"
 msgid "Draw Spaces"
 msgstr "Joonista Tühimikud"
 
-msgid "Navigation"
-msgstr "Navigatsioon"
+msgid "Line Spacing"
+msgstr "Reavahe"
 
 msgid "Smooth Scrolling"
 msgstr "Sujuv Kerimine"
@@ -1438,6 +1438,63 @@ msgstr "Kohandatud mall"
 msgid "Release"
 msgstr "Väljalase"
 
+msgid "Architectures"
+msgstr "Arhidektuurid"
+
+msgid "Signature"
+msgstr "Allkiri"
+
+msgid "Short Version"
+msgstr "Lühiversioon"
+
+msgid "Icon Interpolation"
+msgstr "Ikooni Interpolatsioon"
+
+msgid "Plugins"
+msgstr "Pistikprogrammid"
+
+msgid "Entitlements"
+msgstr "Volitused"
+
+msgid "Push Notifications"
+msgstr "Tõukemärguanded"
+
+msgid "Capabilities"
+msgstr "Võimalused"
+
+msgid "Access Wi-Fi"
+msgstr "Juurdepääs Wifi'le"
+
+msgid "Enabled"
+msgstr "Sisselülitatud"
+
+msgid "User Data"
+msgstr "Kasutaja Andmed"
+
+msgid "Accessible From Files App"
+msgstr "Juurdepääsetavad Failid Rakendusest"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Juurdepääsetavad iTunes Sharing kaudu"
+
+msgid "Privacy"
+msgstr "Privaatsus"
+
+msgid "Camera Usage Description"
+msgstr "Kaamera Kasutamise Kirjeldus"
+
+msgid "Camera Usage Description Localized"
+msgstr "Lokaliseeritud Kaamera Kasutamise Kirjeldus"
+
+msgid "Microphone Usage Description"
+msgstr "Mikrofoni Kasutamise Kirjeldus"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Lokaliseeritud Mikrofoni Kasutamise Kirjeldus"
+
+msgid "Icons"
+msgstr "Ikooonid"
+
 msgid "Binary Format"
 msgstr "Binaarne formaat"
 
@@ -1572,9 +1629,6 @@ msgstr "Lihtsustamise Distants"
 
 msgid "Save to File"
 msgstr "Salvesta Faili"
-
-msgid "Enabled"
-msgstr "Sisselülitatud"
 
 msgid "Use External"
 msgstr "Kasuta Väliseid"
@@ -1914,9 +1968,6 @@ msgstr "Lubatud"
 
 msgid "Threads"
 msgstr "Lõimed"
-
-msgid "Thread Model"
-msgstr "Lõime Mudel"
 
 msgid "Orientation"
 msgstr "Orientatsioon"
@@ -2470,12 +2521,6 @@ msgstr "Min SDK"
 msgid "Target SDK"
 msgstr "Target SDK"
 
-msgid "Plugins"
-msgstr "Pistikprogrammid"
-
-msgid "Architectures"
-msgstr "Arhidektuurid"
-
 msgid "Keystore"
 msgstr "Keystore"
 
@@ -2557,59 +2602,11 @@ msgstr "Õigused"
 msgid "Custom Permissions"
 msgstr "Kohandatud Õigused"
 
-msgid "Icons"
-msgstr "Ikooonid"
-
 msgid "iPhone 120 X 120"
 msgstr "iPhone 120 X 120"
 
 msgid "iPhone 180 X 180"
 msgstr "iPhone 180 X 180"
-
-msgid "Signature"
-msgstr "Allkiri"
-
-msgid "Short Version"
-msgstr "Lühiversioon"
-
-msgid "Icon Interpolation"
-msgstr "Ikooni Interpolatsioon"
-
-msgid "Entitlements"
-msgstr "Volitused"
-
-msgid "Push Notifications"
-msgstr "Tõukemärguanded"
-
-msgid "Capabilities"
-msgstr "Võimalused"
-
-msgid "Access Wi-Fi"
-msgstr "Juurdepääs Wifi'le"
-
-msgid "User Data"
-msgstr "Kasutaja Andmed"
-
-msgid "Accessible From Files App"
-msgstr "Juurdepääsetavad Failid Rakendusest"
-
-msgid "Accessible From iTunes Sharing"
-msgstr "Juurdepääsetavad iTunes Sharing kaudu"
-
-msgid "Privacy"
-msgstr "Privaatsus"
-
-msgid "Camera Usage Description"
-msgstr "Kaamera Kasutamise Kirjeldus"
-
-msgid "Camera Usage Description Localized"
-msgstr "Lokaliseeritud Kaamera Kasutamise Kirjeldus"
-
-msgid "Microphone Usage Description"
-msgstr "Mikrofoni Kasutamise Kirjeldus"
-
-msgid "Microphone Usage Description Localized"
-msgstr "Lokaliseeritud Mikrofoni Kasutamise Kirjeldus"
 
 msgid "Architecture"
 msgstr "Arhidektuur"
@@ -3025,9 +3022,6 @@ msgstr "Udu"
 msgid "Features"
 msgstr "Funktsionaalsused"
 
-msgid "Subsurface Scattering"
-msgstr "Pinnaalune hajumine"
-
 msgid "Top Left"
 msgstr "Ülemine Vasak"
 
@@ -3090,6 +3084,9 @@ msgstr "Varju Atlas"
 
 msgid "Reflections"
 msgstr "Peegeldused"
+
+msgid "Subsurface Scattering"
+msgstr "Pinnaalune hajumine"
 
 msgid "Buffer Size"
 msgstr "Puhvri Suurus"

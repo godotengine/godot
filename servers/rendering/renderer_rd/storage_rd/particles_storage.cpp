@@ -439,7 +439,7 @@ void ParticlesStorage::particles_set_fractional_delta(RID p_particles, bool p_en
 void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
-	ERR_FAIL_COND(p_length < 0.01);
+	ERR_FAIL_COND(p_length < 0.01 - CMP_EPSILON);
 	p_length = MIN(10.0, p_length);
 
 	particles->trails_enabled = p_enable;
@@ -1379,7 +1379,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			particles->instance_motion_vectors_enabled = true;
 		}
 
-		data.resize_zeroed(particle_instance_buffer_size);
+		data.resize_initialized(particle_instance_buffer_size);
 
 		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data);
 
@@ -1746,6 +1746,10 @@ bool ParticlesStorage::ParticlesShaderData::casts_shadows() const {
 
 RS::ShaderNativeSourceCode ParticlesStorage::ParticlesShaderData::get_native_source_code() const {
 	return ParticlesStorage::get_singleton()->particles_shader.shader.version_get_native_source_code(version);
+}
+
+Pair<ShaderRD *, RID> ParticlesStorage::ParticlesShaderData::get_native_shader_and_version() const {
+	return { &ParticlesStorage::get_singleton()->particles_shader.shader, version };
 }
 
 ParticlesStorage::ParticlesShaderData::~ParticlesShaderData() {

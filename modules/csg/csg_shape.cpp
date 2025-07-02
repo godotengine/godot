@@ -36,6 +36,7 @@
 #include "core/math/geometry_2d.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/surface_tool.h"
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
@@ -576,7 +577,7 @@ void CSGShape3D::update_shape() {
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
-	OAHashMap<Vector3, Vector3> vec_map;
+	AHashMap<Vector3, Vector3> vec_map;
 
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
@@ -594,13 +595,12 @@ void CSGShape3D::update_shape() {
 
 			for (int j = 0; j < 3; j++) {
 				Vector3 v = n->faces[i].vertices[j];
-				Vector3 add;
-				if (vec_map.lookup(v, add)) {
-					add += p.normal;
+				Vector3 *vec = vec_map.getptr(v);
+				if (vec) {
+					*vec += p.normal;
 				} else {
-					add = p.normal;
+					vec_map.insert(v, p.normal);
 				}
-				vec_map.set(v, add);
 			}
 		}
 
@@ -655,8 +655,11 @@ void CSGShape3D::update_shape() {
 
 				Vector3 normal = p.normal;
 
-				if (n->faces[i].smooth && vec_map.lookup(v, normal)) {
-					normal.normalize();
+				if (n->faces[i].smooth) {
+					Vector3 *ptr = vec_map.getptr(v);
+					if (ptr) {
+						normal = ptr->normalized();
+					}
 				}
 
 				if (n->faces[i].invert) {
@@ -734,7 +737,19 @@ void CSGShape3D::update_shape() {
 Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
 	Ref<ArrayMesh> baked_mesh;
 	if (is_root_shape() && root_mesh.is_valid()) {
-		baked_mesh = root_mesh;
+		Ref<SurfaceTool> st;
+		st.instantiate();
+
+		int surface_count = root_mesh->get_surface_count();
+		for (int i = 0; i < surface_count; i++) {
+			st->append_from(root_mesh, i, Transform3D());
+		}
+		st->generate_normals();
+		st->generate_tangents();
+		st->index();
+		st->optimize_indices_for_cache();
+
+		baked_mesh = st->commit();
 	}
 	return baked_mesh;
 }
@@ -948,6 +963,9 @@ bool CSGShape3D::is_calculating_tangents() const {
 }
 
 void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	bool is_collision_prefixed = p_property.name.begins_with("collision_");
 	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root

@@ -43,6 +43,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
@@ -173,7 +174,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			if (!read_only) {
 				Button *delete_button = memnew(Button);
 				delete_button->set_flat(true);
-				delete_button->set_focus_mode(FOCUS_NONE);
+				delete_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 				delete_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 				delete_button->set_accessibility_name(TTRC("Delete"));
 				delete_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_node_request).bind(E), CONNECT_DEFERRED);
@@ -764,7 +765,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 		for (const StringName &E : animation_list) {
 			Ref<Animation> anim = tree->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
-				String track_path = anim->track_get_path(i);
+				String track_path = String(anim->track_get_path(i));
 				paths.insert(track_path);
 
 				String track_type_name;
@@ -889,8 +890,8 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			if (ti) {
 				//just a node, not a property track
 				String types_text = "[";
-				if (types.has(path)) {
-					RBSet<String>::Iterator F = types[path].begin();
+				if (types.has(String(path))) {
+					RBSet<String>::Iterator F = types[String(path)].begin();
 					types_text += *F;
 					while (F) {
 						types_text += " / " + *F;

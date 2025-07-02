@@ -142,7 +142,6 @@ private:
 
 	// -- Tile data editors --
 	String current_property;
-	Control *current_tile_data_editor_toolbar = nullptr;
 	HashMap<String, TileDataEditor *> tile_data_editors;
 	TileDataEditor *current_tile_data_editor = nullptr;
 	void _tile_data_editors_tree_selected();

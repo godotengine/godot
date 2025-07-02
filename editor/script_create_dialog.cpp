@@ -204,6 +204,11 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	load_enabled = p_load_enabled;
 
 	_language_changed(language_menu->get_selected());
+
+	if (_can_be_built_in()) {
+		built_in->set_pressed(EditorSettings::get_singleton()->get_project_metadata("script_setup", "create_built_in_script", false));
+		_built_in_pressed();
+	}
 }
 
 void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
@@ -344,6 +349,10 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 void ScriptCreateDialog::ok_pressed() {
 	if (is_new_script_created) {
 		_create_new();
+		if (_can_be_built_in()) {
+			// Only save state of built-in checkbox if it's enabled.
+			EditorSettings::get_singleton()->set_project_metadata("script_setup", "create_built_in_script", built_in->is_pressed());
+		}
 	} else {
 		_load_exist();
 	}
@@ -838,7 +847,9 @@ void ScriptCreateDialog::_bind_methods() {
 }
 
 ScriptCreateDialog::ScriptCreateDialog() {
-	EDITOR_DEF("_script_setup_templates_dictionary", Dictionary());
+	if (EditorSettings::get_singleton()) {
+		EDITOR_DEF("_script_setup_templates_dictionary", Dictionary());
+	}
 
 	/* Main Controls */
 
@@ -873,7 +884,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	language_menu->set_custom_minimum_size(Size2(350, 0) * EDSCALE);
 	language_menu->set_expand_icon(true);
 	language_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	language_menu->set_accessibility_name(TTRC("Language"));
+	language_menu->set_accessibility_name(TTRC("Language:"));
 	gc->add_child(memnew(Label(TTR("Language:"))));
 	gc->add_child(language_menu);
 
@@ -940,7 +951,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	built_in = memnew(CheckBox);
 	built_in->set_text(TTR("On"));
-	built_in->set_accessibility_name(TTRC("Built-in Script"));
+	built_in->set_accessibility_name(TTRC("Built-in Script:"));
 	built_in->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
 	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(built_in);
@@ -950,7 +961,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb = memnew(HBoxContainer);
 	hb->connect(SceneStringName(sort_children), callable_mp(this, &ScriptCreateDialog::_path_hbox_sorted));
 	file_path = memnew(LineEdit);
-	file_path->set_accessibility_name(TTRC("File Path"));
+	file_path->set_accessibility_name(TTRC("Path:"));
 	file_path->connect(SceneStringName(text_changed), callable_mp(this, &ScriptCreateDialog::_path_changed));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
@@ -969,7 +980,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	built_in_name = memnew(LineEdit);
 	built_in_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	built_in_name->set_accessibility_name(TTRC("Name"));
+	built_in_name->set_accessibility_name(TTRC("Name:"));
 	register_text_enter(built_in_name);
 	label = memnew(Label(TTR("Name:")));
 	gc->add_child(label);

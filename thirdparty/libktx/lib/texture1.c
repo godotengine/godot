@@ -8,7 +8,7 @@
 
 /**
  * @internal
- * @file texture2.c
+ * @file
  * @~English
  *
  * @brief ktxTexture1 implementation. Support for KTX format.
@@ -61,7 +61,8 @@ ktxTexture1_constructCommon(ktxTexture1* This)
  * @copydoc ktxTexture2_construct
  */
 static KTX_error_code
-ktxTexture1_construct(ktxTexture1* This, ktxTextureCreateInfo* createInfo,
+ktxTexture1_construct(ktxTexture1* This,
+                      const ktxTextureCreateInfo* const createInfo,
                       ktxTextureCreateStorageEnum storageAllocation)
 {
     ktxTexture_protected* prtctd;
@@ -590,9 +591,9 @@ ktxTexture1_destruct(ktxTexture1* This)
  * @exception KTX_OUT_OF_MEMORY Not enough memory for the texture's images.
  */
 KTX_error_code
-ktxTexture1_Create(ktxTextureCreateInfo* createInfo,
-                  ktxTextureCreateStorageEnum storageAllocation,
-                  ktxTexture1** newTex)
+ktxTexture1_Create(const ktxTextureCreateInfo* const createInfo,
+                   ktxTextureCreateStorageEnum storageAllocation,
+                   ktxTexture1** newTex)
 {
     KTX_error_code result;
 
@@ -1012,7 +1013,7 @@ ktxTexture1_GetDataSizeUncompressed(ktxTexture1* This)
  * @brief Calculate & return the size in bytes of an image at the specified
  *        mip level.
  *
- * For arrays, this is the size of layer, for cubemaps, the size of a face
+ * For arrays, this is the size of a layer, for cubemaps, the size of a face
  * and for 3D textures, the size of a depth slice.
  *
  * The size reflects the padding of each row to KTX_GL_UNPACK_ALIGNMENT.
@@ -1024,6 +1025,27 @@ ktx_size_t
 ktxTexture1_GetImageSize(ktxTexture1* This, ktx_uint32_t level)
 {
     return ktxTexture_calcImageSize(ktxTexture(This), level,
+                                    KTX_FORMAT_VERSION_ONE);
+}
+
+/**
+ * @memberof ktxTexture1
+ * @~English
+ * @brief Calculate & return the size in bytes of all the  images in the specified
+ *        mip level.
+ *
+ * For arrays, this is the size of all layers in the level, for cubemaps, the size of all
+ * faces in the level and for 3D textures, the size of all depth slices in the level.
+ *
+ * The size reflects the padding of each row to KTX_GL_UNPACK_ALIGNMENT.
+ *
+ * @param[in]     This     pointer to the ktxTexture1 object of interest.
+ * @param[in]     level    level of interest.
+ */
+ktx_size_t
+ktxTexture1_GetLevelSize(ktxTexture1* This, ktx_uint32_t level)
+{
+    return ktxTexture_calcLevelSize(ktxTexture(This), level,
                                     KTX_FORMAT_VERSION_ONE);
 }
 
@@ -1282,6 +1304,7 @@ ktxTexture1_LoadImageData(ktxTexture1* This,
     DECLARE_PRIVATE(ktxTexture1);
     ktx_uint32_t    miplevel;
     ktx_uint8_t*    pDest;
+    ktx_uint8_t*    pDestEnd;
     KTX_error_code  result = KTX_SUCCESS;
 
     if (This == NULL)
@@ -1296,10 +1319,12 @@ ktxTexture1_LoadImageData(ktxTexture1* This,
         if (This->pData == NULL)
             return KTX_OUT_OF_MEMORY;
         pDest = This->pData;
+        pDestEnd = pDest + This->dataSize;
     } else if (bufSize < This->dataSize) {
         return KTX_INVALID_VALUE;
     } else {
         pDest = pBuffer;
+        pDestEnd = pBuffer + bufSize;
     }
 
     // Need to loop through for correct byte swapping
@@ -1330,6 +1355,10 @@ ktxTexture1_LoadImageData(ktxTexture1* This,
             innerIterations = 1;
         for (face = 0; face < innerIterations; ++face)
         {
+            if (pDest + faceLodSizePadded > pDestEnd) {
+                result = KTX_INVALID_VALUE;
+                goto cleanup;
+            }
             result = prtctd->_stream.read(&prtctd->_stream, pDest,
                                           faceLodSizePadded);
             if (result != KTX_SUCCESS) {
@@ -1448,6 +1477,7 @@ struct ktxTexture_vtbl ktxTexture1_vtbl = {
     (PFNKTEXGETIMAGEOFFSET)ktxTexture1_GetImageOffset,
     (PFNKTEXGETDATASIZEUNCOMPRESSED)ktxTexture1_GetDataSizeUncompressed,
     (PFNKTEXGETIMAGESIZE)ktxTexture1_GetImageSize,
+    (PFNKTEXGETLEVELSIZE)ktxTexture1_GetLevelSize,
     (PFNKTEXITERATELEVELS)ktxTexture1_IterateLevels,
     (PFNKTEXITERATELOADLEVELFACES)ktxTexture1_IterateLoadLevelFaces,
     (PFNKTEXNEEDSTRANSCODING)ktxTexture1_NeedsTranscoding,

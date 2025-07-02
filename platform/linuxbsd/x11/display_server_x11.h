@@ -32,8 +32,6 @@
 
 #ifdef X11_ENABLED
 
-#include "joypad_linux.h"
-
 #include "core/input/input.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"

@@ -2458,7 +2458,7 @@ void Curve3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(pi);
 		}
 
-		pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/tilt", i));
+		pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/tilt", i), PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees");
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);
 	}

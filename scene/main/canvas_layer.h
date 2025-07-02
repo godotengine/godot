@@ -63,7 +63,6 @@ class CanvasLayer : public Node {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void update_draw_order();

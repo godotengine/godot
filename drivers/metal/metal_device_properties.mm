@@ -137,51 +137,8 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 
 	MTLCompileOptions *opts = [MTLCompileOptions new];
 	features.mslVersionEnum = opts.languageVersion; // By default, Metal uses the most recent language version.
-
-#define setMSLVersion(m_maj, m_min) \
-	features.mslVersion = SPIRV_CROSS_NAMESPACE::CompilerMSL::Options::make_msl_version(m_maj, m_min)
-
-	switch (features.mslVersionEnum) {
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 150000 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000 || __TV_OS_VERSION_MAX_ALLOWED >= 180000 || __VISION_OS_VERSION_MAX_ALLOWED >= 20000
-		case MTLLanguageVersion3_2:
-			setMSLVersion(3, 2);
-			break;
-#endif
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 || __TV_OS_VERSION_MAX_ALLOWED >= 170000
-		case MTLLanguageVersion3_1:
-			setMSLVersion(3, 1);
-			break;
-#endif
-		case MTLLanguageVersion3_0:
-			setMSLVersion(3, 0);
-			break;
-		case MTLLanguageVersion2_4:
-			setMSLVersion(2, 4);
-			break;
-		case MTLLanguageVersion2_3:
-			setMSLVersion(2, 3);
-			break;
-		case MTLLanguageVersion2_2:
-			setMSLVersion(2, 2);
-			break;
-		case MTLLanguageVersion2_1:
-			setMSLVersion(2, 1);
-			break;
-		case MTLLanguageVersion2_0:
-			setMSLVersion(2, 0);
-			break;
-		case MTLLanguageVersion1_2:
-			setMSLVersion(1, 2);
-			break;
-		case MTLLanguageVersion1_1:
-			setMSLVersion(1, 1);
-			break;
-#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST && !TARGET_OS_VISION
-		case MTLLanguageVersion1_0:
-			setMSLVersion(1, 0);
-			break;
-#endif
-	}
+	features.mslVersionMajor = (opts.languageVersion >> 0x10) & 0xff;
+	features.mslVersionMinor = (opts.languageVersion >> 0x00) & 0xff;
 }
 
 void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {

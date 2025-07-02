@@ -108,6 +108,7 @@ class AnimationBezierTrackEdit : public Control {
 	typedef Pair<int, int> IntPair;
 
 	bool moving_selection_attempt = false;
+	bool moving_inserted_key = false;
 	Point2 moving_selection_mouse_begin;
 	IntPair select_single_attempt;
 	bool moving_selection = false;
@@ -214,6 +215,7 @@ public:
 
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
@@ -229,7 +231,7 @@ public:
 	void paste_keys(real_t p_ofs, bool p_ofs_valid);
 	void delete_selection();
 
-	void _bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
+	void _bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode, Animation::HandleSetMode p_handle_set_mode = Animation::HANDLE_SET_MODE_NONE);
 
 	AnimationBezierTrackEdit();
 };

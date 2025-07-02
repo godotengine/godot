@@ -234,6 +234,19 @@ public:
 
 	GDScriptDataType() = default;
 
+	bool operator==(const GDScriptDataType &p_other) const {
+		return kind == p_other.kind &&
+				has_type == p_other.has_type &&
+				builtin_type == p_other.builtin_type &&
+				native_type == p_other.native_type &&
+				(script_type == p_other.script_type || script_type_ref == p_other.script_type_ref) &&
+				container_element_types == p_other.container_element_types;
+	}
+
+	bool operator!=(const GDScriptDataType &p_other) const {
+		return !(*this == p_other);
+	}
+
 	void operator=(const GDScriptDataType &p_other) {
 		kind = p_other.kind;
 		has_type = p_other.has_type;
@@ -345,6 +358,7 @@ public:
 		OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,
 		OPCODE_ITERATE_BEGIN_PACKED_VECTOR4_ARRAY,
 		OPCODE_ITERATE_BEGIN_OBJECT,
+		OPCODE_ITERATE_BEGIN_RANGE,
 		OPCODE_ITERATE,
 		OPCODE_ITERATE_INT,
 		OPCODE_ITERATE_FLOAT,
@@ -366,6 +380,7 @@ public:
 		OPCODE_ITERATE_PACKED_COLOR_ARRAY,
 		OPCODE_ITERATE_PACKED_VECTOR4_ARRAY,
 		OPCODE_ITERATE_OBJECT,
+		OPCODE_ITERATE_RANGE,
 		OPCODE_STORE_GLOBAL,
 		OPCODE_STORE_NAMED_GLOBAL,
 		OPCODE_TYPE_ADJUST_BOOL,
@@ -456,6 +471,7 @@ private:
 	GDScript *_script = nullptr;
 	int _initial_line = 0;
 	int _argument_count = 0;
+	int _vararg_index = -1;
 	int _stack_size = 0;
 	int _instruction_args_size = 0;
 
@@ -551,13 +567,15 @@ private:
 	} profile;
 #endif
 
-	_FORCE_INLINE_ String _get_call_error(const String &p_where, const Variant **p_argptrs, const Variant &p_ret, const Callable::CallError &p_err) const;
+	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
+	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
 
 	struct CallState {
+		Signal completed;
 		GDScript *script = nullptr;
 		GDScriptInstance *instance = nullptr;
 #ifdef DEBUG_ENABLED
@@ -576,6 +594,7 @@ public:
 	_FORCE_INLINE_ StringName get_source() const { return source; }
 	_FORCE_INLINE_ GDScript *get_script() const { return _script; }
 	_FORCE_INLINE_ bool is_static() const { return _static; }
+	_FORCE_INLINE_ bool is_vararg() const { return _vararg_index >= 0; }
 	_FORCE_INLINE_ MethodInfo get_method_info() const { return method_info; }
 	_FORCE_INLINE_ int get_argument_count() const { return _argument_count; }
 	_FORCE_INLINE_ Variant get_rpc_config() const { return rpc_config; }

@@ -175,7 +175,6 @@ public:
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
 	bool is_node_has_parameter_instances_relatively(VisualShader::Type p_type, int p_node) const;
-	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
 };
@@ -197,6 +196,8 @@ public:
 class VisualShaderEditor : public ShaderEditor {
 	GDCLASS(VisualShaderEditor, ShaderEditor);
 	friend class VisualShaderGraphPlugin;
+
+	Ref<ConfigFile> vs_editor_cache; // Keeps the graph offsets and zoom levels for each VisualShader that has been edited.
 
 	PopupPanel *property_editor_popup = nullptr;
 	EditorProperty *property_editor = nullptr;
@@ -295,6 +296,7 @@ class VisualShaderEditor : public ShaderEditor {
 	};
 
 	int mode = MODE_FLAGS_SPATIAL_CANVASITEM;
+	VisualShader::Type current_type = VisualShader::Type::TYPE_VERTEX; // The type of the currently edited VisualShader.
 
 	enum TypeFlags {
 		TYPE_FLAGS_VERTEX = 1,
@@ -381,6 +383,11 @@ class VisualShaderEditor : public ShaderEditor {
 	void _update_nodes();
 	void _update_graph();
 
+	void _restore_editor_state();
+
+	String _get_cache_id_string() const;
+	String _get_cache_key(const String &p_prop_name) const;
+
 	struct AddOption {
 		String name;
 		String category;
@@ -459,15 +466,17 @@ class VisualShaderEditor : public ShaderEditor {
 	};
 	List<DragOp> drag_buffer;
 
+	Timer *panning_debounce_timer = nullptr;
+	bool shader_fully_loaded = false;
+
 	bool drag_dirty = false;
 	void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node);
 	void _nodes_dragged();
-	bool updating = false;
 
 	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
 	void _disconnection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
 
-	void _scroll_changed(const Vector2 &p_scroll);
+	void _scroll_offset_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);
 
 	void _delete_nodes(int p_type, const List<int> &p_nodes);
@@ -556,7 +565,7 @@ class VisualShaderEditor : public ShaderEditor {
 	Vector<Ref<VisualShaderNodePlugin>> plugins;
 	Ref<VisualShaderGraphPlugin> graph_plugin;
 
-	void _mode_selected(int p_id);
+	void _type_selected(int p_id);
 	void _custom_mode_toggled(bool p_enabled);
 
 	void _input_select_item(Ref<VisualShaderNodeInput> p_input, const String &p_name);
@@ -564,8 +573,6 @@ class VisualShaderEditor : public ShaderEditor {
 	void _varying_select_item(Ref<VisualShaderNodeVarying> p_varying, const String &p_name);
 
 	void _float_constant_selected(int p_which);
-
-	VisualShader::Type get_current_shader_type() const;
 
 	void _add_input_port(int p_node, int p_port, int p_port_type, const String &p_name);
 	void _remove_input_port(int p_node, int p_port);
@@ -647,6 +654,12 @@ public:
 	virtual bool is_unsaved() const override;
 	virtual void save_external_data(const String &p_str = "") override;
 	virtual void validate_script() override;
+
+	void save_editor_layout();
+
+	void set_current_shader_type(VisualShader::Type p_type);
+	VisualShader::Type get_current_shader_type() const;
+
 	virtual Control *get_top_bar() override;
 
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);

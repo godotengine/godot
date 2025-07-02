@@ -40,6 +40,8 @@
 class FBXDocument : public GLTFDocument {
 	GDCLASS(FBXDocument, GLTFDocument);
 
+	int _naming_version = 2;
+
 public:
 	enum {
 		TEXTURE_TYPE_GENERIC = 0,
@@ -59,6 +61,9 @@ public:
 	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) override;
 	PackedByteArray generate_buffer(Ref<GLTFState> p_state) override;
 	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) override;
+
+	void set_naming_version(int p_version);
+	int get_naming_version() const;
 
 private:
 	String _get_texture_path(const String &p_base_directory, const String &p_source_file_path) const;

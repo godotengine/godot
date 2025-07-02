@@ -301,8 +301,9 @@ void FabrikInverseKinematic::_update_chain(const Skeleton3D *p_sk, ChainItem *p_
 }
 
 void SkeletonIK3D::_validate_property(PropertyInfo &p_property) const {
-	SkeletonModifier3D::_validate_property(p_property);
-
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "root_bone" || p_property.name == "tip_bone") {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {

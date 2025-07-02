@@ -368,6 +368,11 @@ RS::ShaderNativeSourceCode Fog::FogShaderData::get_native_source_code() const {
 	return fog_singleton->volumetric_fog.shader.version_get_native_source_code(version);
 }
 
+Pair<ShaderRD *, RID> Fog::FogShaderData::get_native_shader_and_version() const {
+	Fog *fog_singleton = Fog::get_singleton();
+	return { &fog_singleton->volumetric_fog.shader, version };
+}
+
 Fog::FogShaderData::~FogShaderData() {
 	Fog *fog_singleton = Fog::get_singleton();
 	ERR_FAIL_NULL(fog_singleton);
@@ -437,7 +442,7 @@ void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
 
 #if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	Vector<uint8_t> dm;
-	dm.resize_zeroed(fog_size.x * fog_size.y * fog_size.z * 4);
+	dm.resize_initialized(fog_size.x * fog_size.y * fog_size.z * 4);
 
 	density_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
 	RD::get_singleton()->set_resource_name(density_map, "Fog density map");

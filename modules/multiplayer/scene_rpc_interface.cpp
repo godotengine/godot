@@ -105,7 +105,7 @@ const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(con
 		return rpc_cache[oid];
 	}
 	RPCConfigCache cache;
-	_parse_rpc_config(p_node->get_rpc_config(), true, cache);
+	_parse_rpc_config(p_node->get_node_rpc_config(), true, cache);
 	if (p_node->get_script_instance()) {
 		_parse_rpc_config(p_node->get_script_instance()->get_rpc_config(), false, cache);
 	}
@@ -245,7 +245,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 		} break;
 	}
 
-	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + String(p_node->get_path()) + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
 
 	int argc = 0;
 

@@ -47,6 +47,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
+	virtual void get_build_dependencies(const String &p_path, HashSet<String> *r_build_dependencies) override;
 
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;

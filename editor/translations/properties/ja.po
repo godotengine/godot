@@ -56,13 +56,14 @@
 # Komaru Bomaru <ohmanhowwillithink@gmail.com>, 2023.
 # SonSui <sonsui37@gmail.com>, 2024.
 # Binnaga <polycharacter@gmail.com>, 2024.
+# rion <miyachikozin@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-12-22 21:02+0000\n"
-"Last-Translator: Binnaga <polycharacter@gmail.com>\n"
+"PO-Revision-Date: 2025-04-06 12:17+0000\n"
+"Last-Translator: rion <miyachikozin@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -70,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "アプリケーション"
@@ -128,6 +129,9 @@ msgstr "プログラム終了を自動的に受け入れる"
 
 msgid "Quit on Go Back"
 msgstr "戻るボタンで終了 (Android)"
+
+msgid "General"
+msgstr "一般"
 
 msgid "Display"
 msgstr "表示"
@@ -207,9 +211,6 @@ msgstr "バス"
 msgid "Default Bus Layout"
 msgstr "デフォルトのバスレイアウト"
 
-msgid "General"
-msgstr "一般"
-
 msgid "Default Playback Type"
 msgstr "デフォルトの Playback Type"
 
@@ -239,6 +240,9 @@ msgstr "サブウィンドウを埋め込む"
 
 msgid "Android"
 msgstr "Android"
+
+msgid "Swappy Mode"
+msgstr "スワッピーモード"
 
 msgid "Physics"
 msgstr "物理"
@@ -425,6 +429,15 @@ msgstr "長押しを右クリックとして有効にする"
 
 msgid "Enable Pan and Scale Gestures"
 msgstr "パンとスケールのジェスチャを有効にする"
+
+msgid "Navigation"
+msgstr "ナビゲーション"
+
+msgid "Thread Model"
+msgstr "スレッドモデル"
+
+msgid "Max Threads"
+msgstr "最大スレッド数"
 
 msgid "Low Processor Usage Mode"
 msgstr "プロセッサー低使用率モード"
@@ -692,9 +705,6 @@ msgstr "スレッド"
 
 msgid "Worker Pool"
 msgstr "ワーカープール"
-
-msgid "Max Threads"
-msgstr "最大スレッド数"
 
 msgid "Low Priority Thread Ratio"
 msgstr "優先度の低いスレッドの比率"
@@ -990,9 +1000,6 @@ msgstr "タッチスクリーン"
 msgid "Scale Gizmo Handles"
 msgstr "スケールのギズモハンドル"
 
-msgid "Increase Scrollbar Touch Area"
-msgstr "スクロールバーのタッチ領域を増やす"
-
 msgid "Scene Tabs"
 msgstr "シーンタブ"
 
@@ -1107,9 +1114,6 @@ msgstr "サブリソースの色相・色合い"
 msgid "Text Editor"
 msgstr "テキストエディター"
 
-msgid "Line Spacing"
-msgstr "行間隔"
-
 msgid "Color Theme"
 msgstr "カラーテーマ"
 
@@ -1185,11 +1189,11 @@ msgstr "タブを描画"
 msgid "Draw Spaces"
 msgstr "スペースを描画"
 
+msgid "Line Spacing"
+msgstr "行間隔"
+
 msgid "Behavior"
 msgstr "ビヘイビア"
-
-msgid "Navigation"
-msgstr "ナビゲーション"
 
 msgid "Move Caret on Right Click"
 msgstr "右クリックでキャレットを移動"
@@ -1725,6 +1729,9 @@ msgstr "メンバー変数の色"
 msgid "Mark Color"
 msgstr "マークの色"
 
+msgid "Warning Color"
+msgstr "警告マーカーの色"
+
 msgid "Bookmark Color"
 msgstr "ブックマークの色"
 
@@ -1805,6 +1812,21 @@ msgstr "カスタムテンプレート"
 
 msgid "Release"
 msgstr "リリース"
+
+msgid "App Store Team ID"
+msgstr "App Store Team ID"
+
+msgid "Plugins"
+msgstr "プラグイン"
+
+msgid "Enabled"
+msgstr "有効"
+
+msgid "User Data"
+msgstr "ユーザーデータ"
+
+msgid "Icons"
+msgstr "アイコン"
 
 msgid "Binary Format"
 msgstr "バイナリフォーマット"
@@ -1953,9 +1975,6 @@ msgstr "簡略化距離:"
 msgid "Save to File"
 msgstr "ファイルへ保存"
 
-msgid "Enabled"
-msgstr "有効"
-
 msgid "Shadow Meshes"
 msgstr "シャドウメッシュ"
 
@@ -2078,9 +2097,6 @@ msgstr "微調整モード"
 
 msgid "Subpixel Positioning"
 msgstr "サブピクセルの配置"
-
-msgid "Oversampling"
-msgstr "オーバーサンプリング"
 
 msgid "Metadata Overrides"
 msgstr "メタデータの上書き"
@@ -2373,9 +2389,6 @@ msgstr "許可"
 msgid "Threads"
 msgstr "スレッド"
 
-msgid "Thread Model"
-msgstr "スレッドモデル"
-
 msgid "Display Server"
 msgstr "ディスプレイサーバー"
 
@@ -2564,9 +2577,6 @@ msgstr "コメントマーカー"
 
 msgid "Critical Color"
 msgstr "致命的マーカーの色"
-
-msgid "Warning Color"
-msgstr "警告マーカーの色"
 
 msgid "Notice Color"
 msgstr "情報マーカーの色"
@@ -2907,9 +2917,6 @@ msgstr "エクスポート形式"
 msgid "Target SDK"
 msgstr "ターゲットSDK"
 
-msgid "Plugins"
-msgstr "プラグイン"
-
 msgid "Code"
 msgstr "コード"
 
@@ -2946,9 +2953,6 @@ msgstr "権限"
 msgid "Custom Permissions"
 msgstr "カスタムの権限"
 
-msgid "Icons"
-msgstr "アイコン"
-
 msgid "Spotlight 80 X 80"
 msgstr "Spotlight 80 x 80"
 
@@ -2966,12 +2970,6 @@ msgstr "iPad 152 x 152"
 
 msgid "App Store 1024 X 1024"
 msgstr "App Store 1024 x 1024"
-
-msgid "App Store Team ID"
-msgstr "App Store Team ID"
-
-msgid "User Data"
-msgstr "ユーザーデータ"
 
 msgid "Architecture"
 msgstr "アーキテクチャ"
@@ -3285,6 +3283,9 @@ msgstr "リニア"
 msgid "Torque"
 msgstr "トルク"
 
+msgid "Bitmask"
+msgstr "ビットマスク"
+
 msgid "UV"
 msgstr "UV"
 
@@ -3299,9 +3300,6 @@ msgstr "タイルセット"
 
 msgid "Y Sort Origin"
 msgstr "Yソート原点"
-
-msgid "Bitmask"
-msgstr "ビットマスク"
 
 msgid "Max dB"
 msgstr "最大dB"
@@ -3381,18 +3379,6 @@ msgstr "角度Y"
 msgid "Angular Z"
 msgstr "角度Z"
 
-msgid "Wheel"
-msgstr "ホイール"
-
-msgid "Travel"
-msgstr "トラベル"
-
-msgid "Enable Shadows"
-msgstr "シャドウを有効化"
-
-msgid "Target"
-msgstr "ターゲット"
-
 msgid "Simulation Precision"
 msgstr "シミュレーション精度"
 
@@ -3404,6 +3390,18 @@ msgstr "圧力係数"
 
 msgid "Damping Coefficient"
 msgstr "減衰係数"
+
+msgid "Wheel"
+msgstr "ホイール"
+
+msgid "Travel"
+msgstr "トラベル"
+
+msgid "Enable Shadows"
+msgstr "シャドウを有効化"
+
+msgid "Target"
+msgstr "ターゲット"
 
 msgid "Track Physics Step"
 msgstr "物理ステップの追跡"
@@ -3579,6 +3577,9 @@ msgstr "3D有効化"
 msgid "Disable Input"
 msgstr "入力無効化"
 
+msgid "Oversampling"
+msgstr "オーバーサンプリング"
+
 msgid "Current Screen"
 msgstr "現在の画面"
 
@@ -3719,9 +3720,6 @@ msgstr "演算子"
 
 msgid "Ambient Occlusion"
 msgstr "アンビエントオクルージョン"
-
-msgid "Subsurface Scattering"
-msgstr "サブサーフェススキャタリング"
 
 msgid "Shadows"
 msgstr "シャドウ"
@@ -3998,6 +3996,9 @@ msgstr "デカール"
 
 msgid "Screen Space Reflection"
 msgstr "スクリーンスペース反射"
+
+msgid "Subsurface Scattering"
+msgstr "サブサーフェススキャタリング"
 
 msgid "OpenGL"
 msgstr "OpenGL"

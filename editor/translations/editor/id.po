@@ -66,13 +66,14 @@
 # "Achmad Izzuddin (Adin)" <achmadizzuddin999@gmail.com>, 2024.
 # meghundul <meghundul@gmail.com>, 2025.
 # Fatih Faisal Faruk <honeylimecraft@gmail.com>, 2025.
+# gio <toktegar28@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-18 23:08+0000\n"
-"Last-Translator: Fatih Faisal Faruk <honeylimecraft@gmail.com>\n"
+"PO-Revision-Date: 2025-04-30 02:21+0000\n"
+"Last-Translator: gio <toktegar28@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -80,10 +81,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.11-dev\n"
-
-msgid "Main Thread"
-msgstr "Utas Utama"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Unset"
 msgstr "Belum disetel"
@@ -713,9 +711,6 @@ msgstr "Panjang Animasi (frame)"
 msgid "Animation length (seconds)"
 msgstr "Panjang Animasi (detik)"
 
-msgid "Add Track"
-msgstr "Tambah Track"
-
 msgid "Animation Looping"
 msgstr "Perulangan Animasi"
 
@@ -915,6 +910,9 @@ msgstr "Trek Campuran Shape hanya berlaku untuk node MeshInstance3D."
 
 msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
 msgstr "Trek Posisi/Rotasi/Skala 3D hanya berlaku untuk node berbasis 3D."
+
+msgid "Add Track"
+msgstr "Tambah Track"
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -1285,6 +1283,9 @@ msgstr "Pilih Trek untuk Disalin"
 msgid "Select All/None"
 msgstr "Pilih Semua/Tidak Pilih Semua"
 
+msgid "Copy Selection"
+msgstr "Salin Seleksi"
+
 msgid "Animation Change Keyframe Time"
 msgstr "Animasi Ubah Waktu Keyframe"
 
@@ -1348,9 +1349,6 @@ msgstr "Spasi"
 msgctxt "Indentation"
 msgid "Tabs"
 msgstr "Tab"
-
-msgid "Toggle Scripts Panel"
-msgstr "Jungkitkan Panel Skrip"
 
 msgid "Zoom In"
 msgstr "Perbesar Pandangan"
@@ -1421,6 +1419,9 @@ msgstr "Metode Skrip Saja"
 
 msgid "Compatible Methods Only"
 msgstr "Metode yang Kompatibel Saja"
+
+msgid "Type"
+msgstr "Tipe"
 
 msgid "Remove"
 msgstr "Hapus"
@@ -1530,11 +1531,17 @@ msgstr "Kelas ini ditandai sebagai usang."
 msgid "This class is marked as experimental."
 msgstr "Kelas ini ditandai sebagai eksperimental."
 
+msgid "Favorites"
+msgstr "Favorit"
+
 msgid "Favorites:"
 msgstr "Favorit:"
 
 msgid "Recent:"
 msgstr "Saat ini:"
+
+msgid "Search"
+msgstr "Cari"
 
 msgid "(Un)favorite selected item."
 msgstr "(Batalkan) item pilihan favorit."
@@ -1545,20 +1552,54 @@ msgstr "Cari:"
 msgid "Matches:"
 msgstr "Kecocokan:"
 
+msgid "Description"
+msgstr "Deskripsi"
+
 msgid "Description:"
 msgstr "Deskripsi:"
 
-msgid "Remote %s:"
-msgstr "Jarak jauh %s:"
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "Manajer Proyek"
+
+msgid "Project Founders"
+msgstr "Penemu Proyek"
+
+msgid "Lead Developer"
+msgstr "Pengembang Utama"
+
+msgid "Developers"
+msgstr "Pengembang"
+
+msgid "Patrons"
+msgstr "Patron"
+
+msgid "Platinum Sponsors"
+msgstr "Sponsor Platinum"
+
+msgid "Gold Sponsors"
+msgstr "Sponsor Emas"
+
+msgid "Silver Sponsors"
+msgstr "Donatur Perak"
+
+msgid "Diamond Members"
+msgstr "Donatur Bertingkat Diamon"
+
+msgid "Titanium Members"
+msgstr "Donatur Bertingkat Titanium"
+
+msgid "Gold Members"
+msgstr "Donatur Bertingkat Gold"
+
+msgid "Set %s"
+msgstr "Setel %s"
 
 msgid "Debugger"
 msgstr "Pendebug"
 
 msgid "Debug"
 msgstr "Debug"
-
-msgid "Save Branch as Scene"
-msgstr "Simpan Cabang sebagai Skena"
 
 msgid "Copy Node Path"
 msgstr "Salin Lokasi Node"
@@ -1577,6 +1618,13 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Alihkan Visibilitas"
+
+msgid ""
+"Saving the branch as a scene requires selecting only one node, but you have "
+"selected %d nodes."
+msgstr ""
+"Menyimpan cabang sebagai skena hanya memerlukan satu node, tetapi Anda telah "
+"memilih %d node."
 
 msgid "Clear"
 msgstr "Bersihkan"
@@ -1638,6 +1686,9 @@ msgstr "Bingkai %"
 msgid "Physics Frame %"
 msgstr "Frame Fisika %"
 
+msgid "Time"
+msgstr "Waktu"
+
 msgid "Inclusive"
 msgstr "Inklusif"
 
@@ -1668,9 +1719,6 @@ msgstr "Bingkai #:"
 msgid "Name"
 msgstr "Nama"
 
-msgid "Time"
-msgstr "Waktu"
-
 msgid "Calls"
 msgstr "Panggil"
 
@@ -1685,6 +1733,9 @@ msgstr "CPU"
 
 msgid "GPU"
 msgstr "GPU"
+
+msgid "Main Thread"
+msgstr "Utas Utama"
 
 msgid "Execution resumed."
 msgstr "Eksekusi dilanjutkan."
@@ -1796,9 +1847,6 @@ msgstr "Ekspor daftar ke berkas CSV"
 
 msgid "Resource Path"
 msgstr "Lokasi Resource"
-
-msgid "Type"
-msgstr "Tipe"
 
 msgid "Format"
 msgstr "Format"
@@ -1959,51 +2007,17 @@ msgstr ""
 msgid "Folder name is valid."
 msgstr "Nama berkas sudah valid."
 
+msgid "Godot Engine contributors"
+msgstr "Kontributor Godot Engine"
+
 msgid "Double-click to open in browser."
 msgstr "Klik dua kali untuk membuka di browser."
 
 msgid "Thanks from the Godot community!"
 msgstr "Terimakasih dari komunitas Godot!"
 
-msgid "Godot Engine contributors"
-msgstr "Kontributor Godot Engine"
-
-msgid "Project Founders"
-msgstr "Penemu Proyek"
-
-msgid "Lead Developer"
-msgstr "Pengembang Utama"
-
-msgctxt "Job Title"
-msgid "Project Manager"
-msgstr "Manajer Proyek"
-
-msgid "Developers"
-msgstr "Pengembang"
-
 msgid "Authors"
 msgstr "Pengarang"
-
-msgid "Patrons"
-msgstr "Patron"
-
-msgid "Platinum Sponsors"
-msgstr "Sponsor Platinum"
-
-msgid "Gold Sponsors"
-msgstr "Sponsor Emas"
-
-msgid "Silver Sponsors"
-msgstr "Donatur Perak"
-
-msgid "Diamond Members"
-msgstr "Donatur Bertingkat Diamon"
-
-msgid "Titanium Members"
-msgstr "Donatur Bertingkat Titanium"
-
-msgid "Gold Members"
-msgstr "Donatur Bertingkat Gold"
 
 msgid "Donors"
 msgstr "Donatur"
@@ -2148,6 +2162,9 @@ msgstr "Bisu"
 msgid "Bypass"
 msgstr "Jalan Lingkar"
 
+msgid "Volume"
+msgstr "Volume"
+
 msgid "Bus Options"
 msgstr "Pilihan Bus"
 
@@ -2275,26 +2292,17 @@ msgstr "Variabel Global"
 msgid "3D Engine"
 msgstr "Mesin 3D"
 
-msgid "2D Physics"
-msgstr "Fisik 2D"
-
-msgid "3D Physics"
-msgstr "Fisik 3D"
-
-msgid "Navigation"
-msgstr "Navigasi"
-
 msgid "XR"
 msgstr "XR"
 
 msgid "RenderingDevice"
 msgstr "PerangkatRendering"
 
-msgid "OpenGL"
-msgstr "OpenGL"
-
 msgid "Vulkan"
 msgstr "Vulkan"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Text Server: Fallback"
 msgstr "Server Teks: Mundur"
@@ -2317,31 +2325,8 @@ msgstr "Rendering Font Bidang Jarak Bertanda Multi-saluran"
 msgid "3D Nodes as well as RenderingServer access to 3D features."
 msgstr "Node 3D serta akses RenderingServer ke fitur 3D."
 
-msgid "2D Physics nodes and PhysicsServer2D."
-msgstr "Node Fisika 2D dan PhysicsServer2D."
-
-msgid "3D Physics nodes and PhysicsServer3D."
-msgstr "Node Fisika 3D dan PhysicsServer3D."
-
-msgid "Navigation, both 2D and 3D."
-msgstr "Navigasi, baik 2D maupun 3D."
-
 msgid "XR (AR and VR)."
 msgstr "XR (AR dan VR)."
-
-msgid ""
-"RenderingDevice based rendering (if disabled, the OpenGL back-end is "
-"required)."
-msgstr ""
-"RenderingDevice berbasis perangkat (jika dinonaktifkan, diperlukan back-end "
-"OpenGL)."
-
-msgid "OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
-msgstr ""
-"Back-end OpenGL (jika dinonaktifkan, diperlukan back-end RenderingDevice)."
-
-msgid "Vulkan back-end of RenderingDevice."
-msgstr "Vulkan back-end dari RenderingDevice."
 
 msgid ""
 "Fallback implementation of Text Server\n"
@@ -2741,9 +2726,6 @@ msgstr "Mewarisi:"
 msgid "Inherited by:"
 msgstr "Diturunkan oleh:"
 
-msgid "Description"
-msgstr "Deskripsi"
-
 msgid "There is currently no description for this class."
 msgstr "Saat ini tidak ada deskripsi untuk kelas ini."
 
@@ -2872,9 +2854,6 @@ msgstr "Anotasi"
 msgid "File"
 msgstr "File"
 
-msgid "%d matches."
-msgstr "Ditemukan %d kecocokan."
-
 msgid "Search Help"
 msgstr "Mencari Bantuan"
 
@@ -2883,6 +2862,9 @@ msgstr "Peka terhadap Huruf Besar/Kecil"
 
 msgid "Show Hierarchy"
 msgstr "Tampilkan Hirarki"
+
+msgid "Filter"
+msgstr "Filter"
 
 msgid "Display All"
 msgstr "Tampilkan Semua"
@@ -2943,6 +2925,9 @@ msgstr ""
 "Menyematkan nilai memaksanya untuk disimpan meskipun nilainya sama dengan "
 "default."
 
+msgid "On"
+msgstr "Nyala"
+
 msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "(%d perubahan)"
@@ -2971,6 +2956,9 @@ msgstr "Naikkan"
 msgid "Move Down"
 msgstr "Turunkan"
 
+msgid "Move"
+msgstr "Pindahkan"
+
 msgid "Insert New Before"
 msgstr "Sisipkan Baru Sebelum"
 
@@ -2989,6 +2977,9 @@ msgstr "Tambahkan Elemen"
 msgid "Resize Array"
 msgstr "Ubah ukuran Array"
 
+msgid "Size"
+msgstr "Ukuran"
+
 msgid "New Size:"
 msgstr "Ukuran Baru:"
 
@@ -2998,9 +2989,6 @@ msgstr "Elemen %s"
 msgid "Add Metadata"
 msgstr "Tambahkan Metadata"
 
-msgid "Set %s"
-msgstr "Setel %s"
-
 msgid "Remove metadata %s"
 msgstr "Hapus metadata %s"
 
@@ -3009,9 +2997,6 @@ msgstr "Lepas sematan %s"
 
 msgid "Add metadata %s"
 msgstr "Tambahkan metadata %s"
-
-msgid "Favorites"
-msgstr "Favorit"
 
 msgid "Copy Value"
 msgstr "Salin Nilai"
@@ -3033,6 +3018,14 @@ msgstr "Pilih tata letak yang ada:"
 
 msgid "Or enter new layout name"
 msgstr "Atau masukkan nama tata letak baru"
+
+msgctxt "Locale"
+msgid "Script:"
+msgstr "Skrip:"
+
+msgctxt "Locale"
+msgid "Script"
+msgstr "Skrip"
 
 msgid "Changed Locale Language Filter"
 msgstr "Filter Bahasa Lokal yang Diubah"
@@ -3064,19 +3057,11 @@ msgstr "Sunting Filter"
 msgid "Language:"
 msgstr "Bahasa:"
 
-msgctxt "Locale"
-msgid "Script:"
-msgstr "Skrip:"
-
-msgid "Country:"
-msgstr "Negara:"
-
 msgid "Language"
 msgstr "Bahasa"
 
-msgctxt "Locale"
-msgid "Script"
-msgstr "Skrip"
+msgid "Country:"
+msgstr "Negara:"
 
 msgid "Country"
 msgstr "Negara"
@@ -3089,9 +3074,6 @@ msgstr "Filter Pesan"
 
 msgid "Clear Output"
 msgstr "Bersihkan Luaran"
-
-msgid "Copy Selection"
-msgstr "Salin Seleksi"
 
 msgid ""
 "Collapse duplicate messages into one log entry. Shows number of occurrences."
@@ -3160,14 +3142,8 @@ msgstr "Menyimpan Adegan"
 msgid "Analyzing"
 msgstr "Menganalisis"
 
-msgid "Creating Thumbnail"
-msgstr "Membuat Thumbnail"
-
 msgid "Save scene before running..."
 msgstr "Simpan adegan sebelum menjalankan..."
-
-msgid "Save All Scenes"
-msgstr "Simpan Semua Adegan"
 
 msgid "Can't overwrite scene that is still open!"
 msgstr "Tidak bisa menimpa adegan yang masih terbuka!"
@@ -3241,6 +3217,25 @@ msgstr ""
 msgid "This object is read-only."
 msgstr "Objek ini hanya dapat dibaca."
 
+msgid "%d second ago"
+msgid_plural "%d seconds ago"
+msgstr[0] "%d detik yang lalu"
+
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "%d menit yang lalu"
+
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "%d jam yang lalu"
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"Last saved: %s."
+msgstr ""
+"Adegan \"%s\" memiliki perubahan yang belum disimpan.\n"
+"Terakhir disimpan: %s."
+
 msgid "Open Base Scene"
 msgstr "Buka Adegan Dasar"
 
@@ -3253,9 +3248,6 @@ msgstr ""
 
 msgid "Save Scene As..."
 msgstr "Simpan Adegan Sebagai..."
-
-msgid "Pack Project as ZIP..."
-msgstr "Bungkus proyek sebagai ZIP..."
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Tidak bisa membatalkan ketika tombol mouse ditekan."
@@ -3289,16 +3281,6 @@ msgstr "Redo Adegan: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Tidak bisa memuat ulang adegan yang belum pernah disimpan."
-
-msgid "Reload Saved Scene"
-msgstr "Muat ulang adegan yang sudah disimpan"
-
-msgid ""
-"The current scene has unsaved changes.\n"
-"Reload the saved scene anyway? This action cannot be undone."
-msgstr ""
-"Adegan saat ini mempunyai perubahan yang belum tersimpan.\n"
-"Tetap muat ulang adegan yang tersimpan? Tindakan ini tidak dapat dibatalkan."
 
 msgid "Save & Reload"
 msgstr "Simpan & Mulai Ulang"
@@ -3365,6 +3347,22 @@ msgstr ""
 msgid "Clear Recent Scenes"
 msgstr "Bersihkan Adegan baru-baru ini"
 
+msgid "Cannot run the script because it contains errors, check the output log."
+msgstr "Tidak bisa menjalankan skrip karena mengandung error, periksa log."
+
+msgid "Cannot run the script because it doesn't extend EditorScript."
+msgstr "Tidak bisa menjalankan skrip karena memperluaskan EditorScript."
+
+msgid ""
+"Cannot run the script because it's not a tool script (add the @tool "
+"annotation at the top)."
+msgstr ""
+"Tidak bisa menjalankan skrip karena itu bukan skrip tool (tambahkan @tool "
+"anotasi di bagian atas)."
+
+msgid "Cannot run the script because it's not a tool script."
+msgstr "Tidak bisa menjalankan skrip karena itu bukan sebuah alat skrip."
+
 msgid "Default"
 msgstr "Bawaan"
 
@@ -3376,25 +3374,6 @@ msgstr "Hapus Penampilan"
 
 msgid "This scene was never saved."
 msgstr "Tidak bisa memuat ulang adegan yang belum pernah disimpan."
-
-msgid "%d second ago"
-msgid_plural "%d seconds ago"
-msgstr[0] "%d detik yang lalu"
-
-msgid "%d minute ago"
-msgid_plural "%d minutes ago"
-msgstr[0] "%d menit yang lalu"
-
-msgid "%d hour ago"
-msgid_plural "%d hours ago"
-msgstr[0] "%d jam yang lalu"
-
-msgid ""
-"Scene \"%s\" has unsaved changes.\n"
-"Last saved: %s."
-msgstr ""
-"Adegan \"%s\" memiliki perubahan yang belum disimpan.\n"
-"Terakhir disimpan: %s."
 
 msgid "Save & Close"
 msgstr "Simpan & Tutup"
@@ -3468,9 +3447,6 @@ msgstr "Toggle mode tanpa gangguan."
 msgid "Scene"
 msgstr "Adegan"
 
-msgid "Operations with scene files."
-msgstr "Operasi dengan berkas adegan."
-
 msgid "Copy Text"
 msgstr "Salin Teks"
 
@@ -3504,6 +3480,9 @@ msgstr "Buka baru-baru ini"
 msgid "Save Scene"
 msgstr "Simpan Adegan"
 
+msgid "Save All Scenes"
+msgstr "Simpan Semua Adegan"
+
 msgid "Quick Open..."
 msgstr "Buka Cepat..."
 
@@ -3518,6 +3497,9 @@ msgstr "Ekspor Sebagai..."
 
 msgid "MeshLibrary..."
 msgstr "PerpustakaanMesh..."
+
+msgid "Reload Saved Scene"
+msgstr "Muat ulang adegan yang sudah disimpan"
 
 msgid "Close Scene"
 msgstr "Tutup Adegan"
@@ -3534,8 +3516,14 @@ msgstr "Proyek"
 msgid "Project Settings"
 msgstr "Pengaturan Proyek"
 
+msgid "Find in Files..."
+msgstr "Cari Dalam Berkas..."
+
 msgid "Version Control"
 msgstr "Kontrol Versi"
+
+msgid "Pack Project as ZIP..."
+msgstr "Bungkus proyek sebagai ZIP..."
 
 msgid "Install Android Build Template..."
 msgstr "Pasang Templat Build Android..."
@@ -3548,9 +3536,6 @@ msgstr "Alat-alat"
 
 msgid "Orphan Resource Explorer..."
 msgstr "Penjelajah Resource Orphan..."
-
-msgid "Upgrade Mesh Surfaces..."
-msgstr "Tingkatkan Permukaan Mesh..."
 
 msgid "Reload Current Project"
 msgstr "Muat Ulang Project Saat Ini"
@@ -3720,8 +3705,8 @@ msgstr "Peringatan!"
 msgid "Edit Text:"
 msgstr "Sunting Teks:"
 
-msgid "On"
-msgstr "Nyala"
+msgid "Locale"
+msgstr "Lokal"
 
 msgid "Renaming layer %d:"
 msgstr "Mengganti nama layer %d:"
@@ -3836,9 +3821,6 @@ msgstr "(Nihil) %s"
 msgid "Size:"
 msgstr "Ukuran:"
 
-msgid "Remove Item"
-msgstr "Hapus item"
-
 msgid "Add Key/Value Pair"
 msgstr "Tambahkan pasangan Key/Value"
 
@@ -3847,6 +3829,9 @@ msgstr "String yang Dapat Dilokalkan (Nihil)"
 
 msgid "Localizable String (size %d)"
 msgstr "String yang Dapat Dilokalkan (ukuran %d)"
+
+msgid "Remove Translation"
+msgstr "Hapus Terjemahan"
 
 msgid "Add Translation"
 msgstr "Tambah Terjemahan"
@@ -3886,9 +3871,6 @@ msgstr "Konversi ke %s"
 
 msgid "Select resources to make unique:"
 msgstr "Pilih berkas untuk membuatnya unik:"
-
-msgid "New %s"
-msgstr "%s baru"
 
 msgid "New Script..."
 msgstr "Skrip Baru..."
@@ -4081,17 +4063,14 @@ msgstr "Tidak dapat membuka file untuk dibaca dari path \"%s\"."
 msgid "Packing"
 msgstr "Mengemas"
 
-msgid "Cannot create file \"%s\"."
-msgstr "Tidak dapat membuat file \"%s\"."
-
-msgid "Failed to export project files."
-msgstr "Tidak dapat ekspor berkas proyek."
-
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Tidak dapat membuka file untuk menulis di path \"%s\"."
 
 msgid "Can't open file for reading-writing at path \"%s\"."
 msgstr "Tidak dapat membuka file untuk membaca-menulis di path \"%s\"."
+
+msgid "Failed to export project files."
+msgstr "Tidak dapat ekspor berkas proyek."
 
 msgid "Can't create encrypted file."
 msgstr "Tidak dapat membuat file terenkripsi."
@@ -4099,14 +4078,23 @@ msgstr "Tidak dapat membuat file terenkripsi."
 msgid "Can't open encrypted file to write."
 msgstr "Tidak dapat membuka file terenkripsi untuk menulis."
 
-msgid "Can't open file to read from path \"%s\"."
-msgstr "Tidak dapat membuka file untuk dibaca dari path \"%s\"."
+msgid "Invalid Identifier:"
+msgstr "Identifier tidak valid:"
 
 msgid "Custom debug template not found."
 msgstr "Templat awakutu kustom tidak ditemukan."
 
 msgid "Custom release template not found."
 msgstr "Templat rilis kustom tidak ditemukan."
+
+msgid "Select device from the list"
+msgstr "Pilih perangkat pada daftar"
+
+msgid "Run"
+msgstr "Menjalankan"
+
+msgid "Running on %s"
+msgstr "Berjalan pada %s"
 
 msgid ""
 "A texture format must be selected to export the project. Please select at "
@@ -4740,9 +4728,6 @@ msgstr "Buka folder/file yang dipilih sebelumnya."
 msgid "Go to next selected folder/file."
 msgstr "Buka folder/file yang dipilih berikutnya."
 
-msgid "Re-Scan Filesystem"
-msgstr "Pindai Ulang Berkas Sistem"
-
 msgid "Filter Files"
 msgstr "Filter File"
 
@@ -4821,9 +4806,6 @@ msgstr "Global"
 
 msgid "Expand Bottom Panel"
 msgstr "Perluas Panel Bawah"
-
-msgid "Move"
-msgstr "Pindahkan"
 
 msgid "Network"
 msgstr "Jaringan"
@@ -4921,9 +4903,6 @@ msgstr "Beralih visibilitas berkas yang tersembunyi."
 
 msgid "Preview:"
 msgstr "Pratinjau:"
-
-msgid "Filter"
-msgstr "Filter"
 
 msgid "File:"
 msgstr "File:"
@@ -5038,6 +5017,9 @@ msgstr "Tampilkan notifikasi."
 
 msgid "Silence the notifications."
 msgstr "Matikan notifikasi."
+
+msgid "Remove Item"
+msgstr "Hapus item"
 
 msgid "(unknown)"
 msgstr "(tidak diketahui)"
@@ -5278,6 +5260,9 @@ msgstr "Mesh"
 msgid "Materials"
 msgstr "Material"
 
+msgid "Animation"
+msgstr "Animasi"
+
 msgid "Status"
 msgstr "Status"
 
@@ -5411,9 +5396,6 @@ msgstr ""
 
 msgid "Configuration:"
 msgstr "Konfigurasi:"
-
-msgid "Add configuration"
-msgstr "Tambahkan konfigurasi"
 
 msgid "Clear Glyph List"
 msgstr "Hapus Daftar Glyph"
@@ -5630,6 +5612,9 @@ msgstr "Buat resource baru pada memori dan mengubahnya."
 msgid "Load an existing resource from disk and edit it."
 msgstr "Muat resource yang ada dari diska dan mengubahnya."
 
+msgid "Load Resource"
+msgstr "Muat Resource"
+
 msgid "Save the currently edited resource."
 msgstr "Simpan resource yang sedang disunting saat ini."
 
@@ -5666,9 +5651,6 @@ msgstr "Atur properti objek."
 msgid "This cannot be undone. Are you sure?"
 msgstr "Hal ini tidak dapat dibatalkan. Apa kau yakin?"
 
-msgid "Remove Translation"
-msgstr "Hapus Terjemahan"
-
 msgid "Change Resource Remap Language"
 msgstr "Ubah Bahasa Resource Remap"
 
@@ -5701,9 +5683,6 @@ msgstr "Resource:"
 
 msgid "Remaps by Locale:"
 msgstr "Pemetaan ulang berdasar Pelokalan:"
-
-msgid "Locale"
-msgstr "Lokal"
 
 msgid "POT Generation"
 msgstr "Pembuatan POT"
@@ -6109,9 +6088,6 @@ msgstr "Skalakan pemutaran animasi secara global untuk node ini."
 msgid "Animation Tools"
 msgstr "Perkakas Animasi"
 
-msgid "Animation"
-msgstr "Animasi"
-
 msgid "Manage Animations..."
 msgstr "Mengelola Animasi..."
 
@@ -6233,12 +6209,6 @@ msgstr "Transisi Baru Harus Auto Advance"
 
 msgid "Play Mode:"
 msgstr "Mode Putar:"
-
-msgid "Delete Selected"
-msgstr "Hapus yang Dipilih"
-
-msgid "Delete All"
-msgstr "Hapus Semua"
 
 msgid "Root"
 msgstr "Root"
@@ -6541,6 +6511,20 @@ msgstr "Memutar:"
 msgid "Scaling:"
 msgstr "Penskalaan:"
 
+msgid "Alt+Drag: Move selected node."
+msgstr "Alt+Drag: Memindahkan node yang dipilih."
+
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+Drag: Menskalakan node yang dipilih."
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Klik Kanan: Tampilkan semua daftar node di posisi yang diklik, termasuk "
+"yang dikunci."
+
+msgid "RMB: Add node at position clicked."
+msgstr "Klik Kanan: Tambah node di posisi yang diklik."
+
 msgid "Lock Selected"
 msgstr "Kunci yang Dipilih"
 
@@ -6601,20 +6585,6 @@ msgstr "Tampilan Tengah"
 msgid "Select Mode"
 msgstr "Mode Seleksi"
 
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Drag: Memindahkan node yang dipilih."
-
-msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Drag: Menskalakan node yang dipilih."
-
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Klik Kanan: Tampilkan semua daftar node di posisi yang diklik, termasuk "
-"yang dikunci."
-
-msgid "RMB: Add node at position clicked."
-msgstr "Klik Kanan: Tambah node di posisi yang diklik."
-
 msgid "Move Mode"
 msgstr "Mode Pindah"
 
@@ -6653,6 +6623,9 @@ msgstr "Jungkitkan pengancingan kisi."
 
 msgid "Use Grid Snap"
 msgstr "Gunakan Pengancingan Kisi"
+
+msgid "Grid Snap"
+msgstr "Pengancingan Kisi"
 
 msgid "Snapping Options"
 msgstr "Opsi-opsi Snap"
@@ -6803,9 +6776,6 @@ msgstr "Menambahkan %s..."
 
 msgid "Create Node"
 msgstr "Buat Node"
-
-msgid "Change Default Type"
-msgstr "Ubah Tipe Baku"
 
 msgid ""
 "All selected CanvasItems are either invisible or locked in some way and can't "
@@ -7219,15 +7189,6 @@ msgstr "Ubah Radius"
 msgid "Change Light Radius"
 msgstr "Ganti Radius Lampu"
 
-msgid "End Location"
-msgstr "Lokasi Akhir"
-
-msgid "Change Start Position"
-msgstr "Ubah Posisi Awal"
-
-msgid "Change End Position"
-msgstr "Ubah Posisi Akhir"
-
 msgid "Change Probe Size"
 msgstr "Ubah Ukuran Probe"
 
@@ -7551,18 +7512,6 @@ msgstr "Jumlah:"
 msgid "Populate"
 msgstr "Isi"
 
-msgid "Set start_position"
-msgstr "Atur start_position"
-
-msgid "Set end_position"
-msgstr "Atur end_position"
-
-msgid "Please Confirm..."
-msgstr "Mohon konfirmasi..."
-
-msgid "Create Navigation Polygon"
-msgstr "Buat Poligon Navigasi"
-
 msgid "Unnamed Gizmo"
 msgstr "Gizmo Tanpa Nama"
 
@@ -7818,9 +7767,6 @@ msgstr "Aktifkan Efek Doppler"
 msgid "Cinematic Preview"
 msgstr "Pratinjau Sinematik"
 
-msgid "Not available when using the OpenGL renderer."
-msgstr "Tidak tersedia saat menggunakan perender OpenGL."
-
 msgid "Freelook Left"
 msgstr "Tampilan Bebas Kiri"
 
@@ -7968,6 +7914,9 @@ msgstr ""
 "Mengalihkan pratinjau lingkungan.\n"
 "Jika node WorldEnvironment ditambahkan ke adegan, pratinjau lingkungan "
 "dinonaktifkan."
+
+msgid "Preview Environment"
+msgstr "Pratinjau Lingkungan"
 
 msgid "Edit Sun and Environment settings."
 msgstr "Sunting setelan Matahari dan Lingkungan."
@@ -8146,9 +8095,6 @@ msgstr ""
 "Tahan Shift sambil mengeklik untuk menambahkan lingkungan pratinjau ke "
 "pemandangan saat ini."
 
-msgid "Preview Environment"
-msgstr "Pratinjau Lingkungan"
-
 msgid "Sky Color"
 msgstr "Warna Langit"
 
@@ -8283,9 +8229,6 @@ msgstr "Titik Permukaan"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Titik+Normal Permukaan (Diarahkan)"
 
-msgid "Volume"
-msgstr "Volume"
-
 msgid "Emission Source:"
 msgstr "Sumber Emisi:"
 
@@ -8336,6 +8279,9 @@ msgstr "Hapus Titik"
 
 msgid "Close Curve"
 msgstr "Tutup Kurva"
+
+msgid "Please Confirm..."
+msgstr "Mohon konfirmasi..."
 
 msgid "Mirror Handle Angles"
 msgstr "Cermin Pengatur Sudut"
@@ -8558,9 +8504,6 @@ msgstr "Papan klip resource kosong!"
 msgid "Paste Resource"
 msgstr "Tempel Resource"
 
-msgid "Load Resource"
-msgstr "Muat Resource"
-
 msgid "Toggle ResourcePreloader Bottom Panel"
 msgstr "Mengaktifkan Panel Bawah ResourcePreloader"
 
@@ -8593,22 +8536,6 @@ msgstr "Muat ulang hanya berlaku pada skrip alat."
 
 msgid "Cannot run the edited file because it's not a script."
 msgstr "Tidak bisa menjalankan file yang sedang diedit karena itu bukan skrip."
-
-msgid "Cannot run the script because it contains errors, check the output log."
-msgstr "Tidak bisa menjalankan skrip karena mengandung error, periksa log."
-
-msgid "Cannot run the script because it doesn't extend EditorScript."
-msgstr "Tidak bisa menjalankan skrip karena memperluaskan EditorScript."
-
-msgid ""
-"Cannot run the script because it's not a tool script (add the @tool "
-"annotation at the top)."
-msgstr ""
-"Tidak bisa menjalankan skrip karena itu bukan skrip tool (tambahkan @tool "
-"anotasi di bagian atas)."
-
-msgid "Cannot run the script because it's not a tool script."
-msgstr "Tidak bisa menjalankan skrip karena itu bukan sebuah alat skrip."
 
 msgid "Import Theme"
 msgstr "Impor Tema"
@@ -8688,12 +8615,6 @@ msgstr "Tutup Semua"
 msgid "Close Docs"
 msgstr "Tutup Dokumentasi"
 
-msgid "Run"
-msgstr "Menjalankan"
-
-msgid "Search"
-msgstr "Cari"
-
 msgid "Search the reference documentation."
 msgstr "Cari dokumentasi referensi."
 
@@ -8754,9 +8675,6 @@ msgstr ""
 msgid "[Ignore]"
 msgstr "[abaikan]"
 
-msgid "Go to Function"
-msgstr "Pergi ke Fungsi"
-
 msgid ""
 "The resource does not have a valid path because it has not been saved.\n"
 "Please save the scene or resource that contains this resource and try again."
@@ -8770,6 +8688,9 @@ msgstr "Tidak dapat menempatkan node tanpa skena yang terbuka."
 
 msgid "Pick Color"
 msgstr "Pilih Warna"
+
+msgid "Go to Function"
+msgstr "Pergi ke Fungsi"
 
 msgid "Line"
 msgstr "Baris"
@@ -8827,9 +8748,6 @@ msgstr "Konversikan Indentasi ke Tab"
 
 msgid "Auto Indent"
 msgstr "Indentasi Otomatis"
-
-msgid "Find in Files..."
-msgstr "Cari Dalam Berkas..."
 
 msgid "Replace in Files..."
 msgstr "Ganti di File..."
@@ -9074,14 +8992,14 @@ msgstr "(kosong)"
 msgid "Animations:"
 msgstr "Animasi:"
 
+msgid "Delete Animation"
+msgstr "Hapus Animasi"
+
 msgid "Animation Speed"
 msgstr "Kecepatan Animasi"
 
 msgid "Filter Animations"
 msgstr "Filter Animasi"
-
-msgid "Delete Animation"
-msgstr "Hapus Animasi"
 
 msgid "This resource does not have any animations."
 msgstr "Sumber ini tidak memiliki animasi apa pun."
@@ -9104,6 +9022,9 @@ msgstr "Mainkan animasi terpilih dari awal. (Shift+D)"
 msgid "Play selected animation from current pos. (D)"
 msgstr "Mainkan animasi terpilih dari posisi sekarang. (D)"
 
+msgid "Delete Frame"
+msgstr "Hapus Bingkai"
+
 msgid "Frame Duration:"
 msgstr "Durasi Bingkai:"
 
@@ -9115,9 +9036,6 @@ msgstr "Tambahkan bingkai dari file"
 
 msgid "Add frames from sprite sheet"
 msgstr "Tambahkan bingkai dari lembar sprite"
-
-msgid "Delete Frame"
-msgstr "Hapus Bingkai"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "Sisipkan Kosong (Sebelum Dipilih)"
@@ -9182,9 +9100,6 @@ msgstr "Horizontal"
 msgid "Vertical"
 msgstr "Vertikal"
 
-msgid "Size"
-msgstr "Ukuran"
-
 msgid "Separation"
 msgstr "Pemisahan"
 
@@ -9236,9 +9151,6 @@ msgstr "Mode Pengancingan:"
 
 msgid "Pixel Snap"
 msgstr "Pengancingan Piksel"
-
-msgid "Grid Snap"
-msgstr "Pengancingan Kisi"
 
 msgid "Step:"
 msgstr "Langkah:"
@@ -9697,6 +9609,9 @@ msgstr "Tidak ada lahan"
 msgid "No terrain"
 msgstr "Tidak ada lahan"
 
+msgid "Drawing Rect:"
+msgstr "Menggambar Persegi:"
+
 msgid "Can't rotate patterns when using non-square tile grid."
 msgstr "Tidak dapat memutar pola ketika menggunakan ubin non-bujur sangkar."
 
@@ -9724,9 +9639,6 @@ msgstr ""
 
 msgid "Delete tiles"
 msgstr "Hapus Petak"
-
-msgid "Drawing Rect:"
-msgstr "Menggambar Persegi:"
 
 msgid "Change selection"
 msgstr "Ubah seleksi"
@@ -9805,6 +9717,9 @@ msgstr "Asal Urutan Y"
 
 msgid "Probability"
 msgstr "Kemungkinan"
+
+msgid "Navigation"
+msgstr "Navigasi"
 
 msgid "Custom Data"
 msgstr "Data Kustom"
@@ -9926,6 +9841,9 @@ msgstr "Hapus Cabang"
 
 msgid "Branch Name"
 msgstr "Nama Cabang"
+
+msgid "Remote"
+msgstr "Remot"
 
 msgid "Remotes"
 msgstr "Remot"
@@ -10675,6 +10593,9 @@ msgstr "Lokasi Pemasangan Proyek:"
 msgid "Renderer:"
 msgstr "Perender:"
 
+msgid "Edit Now"
+msgstr "edit sekarang"
+
 msgid "Error: Project is missing on the filesystem."
 msgstr "Error: Proyek ini tidak ditemukan dalam berkas sistem."
 
@@ -10866,13 +10787,6 @@ msgid "Saving the branch as a scene requires having a scene open in the editor."
 msgstr "Menyimpan cabang sebagai skena membutuhkan skena terbuka di editor."
 
 msgid ""
-"Saving the branch as a scene requires selecting only one node, but you have "
-"selected %d nodes."
-msgstr ""
-"Menyimpan cabang sebagai skena hanya memerlukan satu node, tetapi Anda telah "
-"memilih %d node."
-
-msgid ""
 "Can't save a branch which is a child of an already instantiated scene.\n"
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
@@ -10993,9 +10907,6 @@ msgstr "Lampirkan skrip baru atau yang sudah ada untuk node yang dipilih."
 
 msgid "Detach the script from the selected node."
 msgstr "Lepas skrip dari node yang dipilih."
-
-msgid "Remote"
-msgstr "Remot"
 
 msgid ""
 "If selected, the Remote scene tree dock will cause the project to stutter "
@@ -11173,6 +11084,21 @@ msgstr "Konfigurasi"
 msgid "Count"
 msgstr "Jumlah"
 
+msgid "Set start_position"
+msgstr "Atur start_position"
+
+msgid "Set end_position"
+msgstr "Atur end_position"
+
+msgid "Create Navigation Polygon"
+msgstr "Buat Poligon Navigasi"
+
+msgid "Change Start Position"
+msgstr "Ubah Posisi Awal"
+
+msgid "Change End Position"
+msgstr "Ubah Posisi Akhir"
+
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
 "Sebuah resource NavigationMesh harus diatur atau diciptakan supaya node ini "
@@ -11186,12 +11112,6 @@ msgstr "Kunci Publik untuk ekspansi APK tidak valid."
 
 msgid "Invalid package name:"
 msgstr "Nama paket tidak valid:"
-
-msgid "Select device from the list"
-msgstr "Pilih perangkat pada daftar"
-
-msgid "Running on %s"
-msgstr "Berjalan pada %s"
 
 msgid "Exporting APK..."
 msgstr "Mengekspor APK..."
@@ -11248,9 +11168,6 @@ msgstr "Direktori 'build-tools' tidak ditemukan!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Tidak dapat menemukan apksigner dalam Android SDK build-tools."
 
-msgid "Could not find keystore, unable to export."
-msgstr "Tidak dapat menemukan keystore, tidak bisa ekspor."
-
 msgid "Could not start apksigner executable."
 msgstr "Tidak dapat memulai apksigner."
 
@@ -11290,9 +11207,6 @@ msgstr "Memindahkan keluaran"
 
 msgid "Could not find template APK to export: \"%s\"."
 msgstr "Tidak dapat menemukan contoh APK untuk ekspor: \"%s\""
-
-msgid "Invalid Identifier:"
-msgstr "Identifier tidak valid:"
 
 msgid "Invalid bundle identifier:"
 msgstr "Identifier bundel tidak valid:"
@@ -11545,10 +11459,6 @@ msgstr ""
 "Tips Petunjuk tidak akan ditampilkan karena Filter Tetikus kontrolnya diatur "
 "ke \"Abaikan/Ignore\". Untuk mengatasinya, setel Filter Tetikus ke \"Stop\" "
 "atau \"Pass\"."
-
-msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
-msgstr ""
-"Jika \"Exp Edit\" diaktifkan, \"Nilai Minimal\" seharusnya lebih besar dari 0."
 
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"

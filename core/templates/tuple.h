@@ -42,7 +42,7 @@
 // recursion. So: float value;  int value; etc.
 //
 // This works by splitting up the parameter pack for each step in the recursion minus the first.
-// so the the first step creates the "T value" from the first template parameter.
+// so the first step creates the "T value" from the first template parameter.
 // any further template arguments end up in "Rest", which we then use to instantiate a new
 // tuple, but now minus the first argument. To write this all out:
 //
