@@ -96,7 +96,7 @@ bool Polygon2D::_edit_use_rect() const {
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	Vector<Vector2> polygon2d = Variant(polygon);
 	if (internal_vertices > 0) {
-		polygon2d.resize(polygon2d.size() - internal_vertices);
+		polygon2d.resize(MAX(polygon2d.size() - internal_vertices, 0));
 	}
 	return Geometry2D::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
