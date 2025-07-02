@@ -9392,14 +9392,6 @@ StringName AnimationMarkerEdit::get_key_name(const int p_index) const {
 	return editor->get_marker_name(p_index);
 }
 
-float AnimationMarkerEdit::get_key_width(const int p_index) const {
-	return _get_key_type_icon()->get_width();
-}
-
-float AnimationMarkerEdit::get_key_height(const int p_index) const {
-	return _get_key_type_icon()->get_height();
-}
-
 StringName AnimationMarkerEdit::get_edit_name(const int p_index) const {
 	return get_key_name(p_index);
 }
